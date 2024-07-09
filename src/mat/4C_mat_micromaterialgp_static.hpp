@@ -72,13 +72,13 @@ namespace Mat
 
     /// Reset global time and step number (needed for multi-scale inverse
     /// analyses with multiple runs)
-    void ResetTimeAndStep();
+    void reset_time_and_step();
 
     /// get ele id
-    int eleID() { return ele_id_; }
+    int ele_id() { return ele_id_; }
 
     /// get density
-    double Density() const { return density_; }
+    double density() const { return density_; }
 
 
    private:

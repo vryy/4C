@@ -43,10 +43,10 @@ namespace Core::Geo
     virtual IntCell& operator=(const IntCell& intcell);
 
     //! brief returns the shape of the integration cell
-    Core::FE::CellType Shape() const { return distype_; };
+    Core::FE::CellType shape() const { return distype_; };
 
     //! return boolean indicating plus domain
-    bool getDomainPlus() const { return indomainplus_; }
+    bool get_domain_plus() const { return indomainplus_; }
 
    private:
     //! hidden default constructor
@@ -82,7 +82,7 @@ namespace Core::Geo
      *  \param indomainplus             (in) : domain part of the integration cell
      *
      *  \author hiermeier \date 11/16 */
-    static BoundaryIntCell* Create(const Core::FE::CellType& distype, const int& surface_ele_gid,
+    static BoundaryIntCell* create(const Core::FE::CellType& distype, const int& surface_ele_gid,
         const Core::LinAlg::SerialDenseMatrix& xfemEleDomainCoordinates,
         const Core::LinAlg::SerialDenseMatrix* eleBoundaryCoordinates,
         const Core::LinAlg::SerialDenseMatrix& physDomainCoordinates, const bool& indomainplus);
@@ -131,13 +131,16 @@ namespace Core::Geo
     };
 
     //! returns an array with the coordinates of the integration cell in physical coordinates
-    const Core::LinAlg::SerialDenseMatrix& CellNodalPosXYZ() const { return nodalpos_xyz_domain_; }
+    const Core::LinAlg::SerialDenseMatrix& cell_nodal_pos_xyz() const
+    {
+      return nodalpos_xyz_domain_;
+    }
 
     //! returns an array with the coordinates of the integration cell in physical coordinates
     const Core::LinAlg::Matrix<3, 1>& get_physical_center_position() const { return phys_center_; }
 
     //! return "parent" cutter element id (global id)
-    int GetSurfaceEleGid() const { return surface_ele_gid_; }
+    int get_surface_ele_gid() const { return surface_ele_gid_; }
 
    protected:
     //! constructor for derived class only.

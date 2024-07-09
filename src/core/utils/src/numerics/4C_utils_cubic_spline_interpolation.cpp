@@ -88,7 +88,7 @@ double Core::UTILS::CubicSplineInterpolation::evaluate(const double x) const
 }
 
 /*----------------------------------------------------------------------*/
-double Core::UTILS::CubicSplineInterpolation::EvaluateDerivative(
+double Core::UTILS::CubicSplineInterpolation::evaluate_derivative(
     const double x, const int deriv_order) const
 {
   // safety check

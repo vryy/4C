@@ -298,7 +298,7 @@ void Solid::Nln::CreateConstraintInterfaces(NOX::Nln::CONSTRAINT::ReqInterfaceMa
         Solid::MODELEVALUATOR::Generic& model = integrator.evaluator(Inpar::Solid::model_meshtying);
         Solid::MODELEVALUATOR::Meshtying& mt_model =
             dynamic_cast<Solid::MODELEVALUATOR::Meshtying&>(model);
-        iconstr[NOX::Nln::sol_meshtying] = mt_model.StrategyPtr()->nox_interface_ptr();
+        iconstr[NOX::Nln::sol_meshtying] = mt_model.strategy_ptr()->nox_interface_ptr();
         break;
       }
       case NOX::Nln::sol_lag_pen_constraint:
@@ -345,7 +345,7 @@ void Solid::Nln::CreateConstraintPreconditioner(
         Solid::MODELEVALUATOR::Generic& model = integrator.evaluator(Inpar::Solid::model_meshtying);
         Solid::MODELEVALUATOR::Meshtying& mt_model =
             dynamic_cast<Solid::MODELEVALUATOR::Meshtying&>(model);
-        iconstr_prec[NOX::Nln::sol_meshtying] = mt_model.StrategyPtr();
+        iconstr_prec[NOX::Nln::sol_meshtying] = mt_model.strategy_ptr();
         break;
       }
       case NOX::Nln::sol_lag_pen_constraint:
@@ -355,7 +355,7 @@ void Solid::Nln::CreateConstraintPreconditioner(
         Solid::MODELEVALUATOR::LagPenConstraint& lagpenconstraint_model =
             dynamic_cast<Solid::MODELEVALUATOR::LagPenConstraint&>(model);
         iconstr_prec[NOX::Nln::sol_lag_pen_constraint] =
-            lagpenconstraint_model.NoxInterfacePrecPtr();
+            lagpenconstraint_model.nox_interface_prec_ptr();
         break;
       }
       default:

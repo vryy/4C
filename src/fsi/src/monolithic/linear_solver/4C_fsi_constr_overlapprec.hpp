@@ -51,7 +51,7 @@ namespace FSI
     //@}
 
     /// setup of block preconditioners
-    void SetupPreconditioner() override;
+    void setup_preconditioner() override;
 
 
    protected:

@@ -35,7 +35,7 @@ GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<ScalarTyp
 {
   // Check if a projection tracking vector exists for this line element. If not a new one is
   // created.
-  int line_element_id = this->Element1()->Id();
+  int line_element_id = this->element1()->id();
   std::map<int, std::vector<bool>>& projection_tracker =
       this->line_to_3d_evaluation_data_->get_gauss_point_projection_tracker();
 
@@ -67,7 +67,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<Scal
 
   // Gauss rule.
   Core::FE::IntegrationPoints1D gauss_points_axis =
-      this->line_to_3d_evaluation_data_->GetGaussPoints();
+      this->line_to_3d_evaluation_data_->get_gauss_points();
   unsigned int n_gauss_points_axis =
       this->line_to_3d_evaluation_data_->get_number_of_gauss_points();
   unsigned int n_integration_points_circ =
@@ -89,7 +89,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<Scal
   LineSegment<ScalarType> projection_point_segment;
 
   // Get the radius from the beam element.
-  const double radius = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->Element1()))
+  const double radius = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->element1()))
                             ->get_circular_cross_section_radius_for_interactions();
 
   // Loop over Gauss points and check if they project to this volume.
@@ -127,7 +127,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<Scal
         r_surface += r_cross_section;
 
         // Project point to the volume.
-        this->ProjectPointToOther(r_surface, element_data_volume, xi_volume, projection_result);
+        this->project_point_to_other(r_surface, element_data_volume, xi_volume, projection_result);
         if (projection_result == ProjectionResult::projection_found_valid)
         {
           // Valid Gauss point was found, add to this segment and set tracking point to true.
@@ -135,8 +135,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<Scal
               gauss_points_axis.qwgt[index_gp_axis] * 2.0 / double(n_integration_points_circ));
           for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
             eta_cross_section_2d(i_dim) = eta_cross_section(i_dim + 1);
-          new_point.SetEtaCrossSection(eta_cross_section_2d);
-          projection_point_segment.AddProjectionPoint(new_point);
+          new_point.set_eta_cross_section(eta_cross_section_2d);
+          projection_point_segment.add_projection_point(new_point);
           line_projection_tracker[index_gp] = true;
 
           one_projects = true;
@@ -199,7 +199,7 @@ std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCro
     ScalarType, Line, Volume>::get_line_projection_vector() const
 {
   // Get the Gauss point projection tracker for this line element.
-  int line_element_id = this->Element1()->Id();
+  int line_element_id = this->element1()->id();
   std::map<int, std::vector<bool>>& projection_tracker =
       this->line_to_3d_evaluation_data_->get_gauss_point_projection_tracker();
   return projection_tracker[line_element_id];

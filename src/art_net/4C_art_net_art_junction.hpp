@@ -83,12 +83,12 @@ namespace Arteries
       /*!
       \brief Standard solver
       */
-      int Solve(Teuchos::ParameterList &params);
+      int solve(Teuchos::ParameterList &params);
 
       /*!
       \brief Standard solver
       */
-      void ApplyBC(Teuchos::ParameterList &params);
+      void apply_bc(Teuchos::ParameterList &params);
 
 
 

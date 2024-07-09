@@ -35,9 +35,9 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::SoTet10Type Discret::ELEMENTS::SoTet10Type::instance_;
 
-Discret::ELEMENTS::SoTet10Type& Discret::ELEMENTS::SoTet10Type::Instance() { return instance_; }
+Discret::ELEMENTS::SoTet10Type& Discret::ELEMENTS::SoTet10Type::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoTet10Type::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::SoTet10Type::create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoTet10(-1, -1);
@@ -46,7 +46,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet10Type::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -59,7 +59,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10Type::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -76,7 +76,7 @@ void Discret::ELEMENTS::SoTet10Type::nodal_block_information(
   nv = 3;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoTet10Type::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoTet10Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
@@ -117,14 +117,14 @@ Discret::ELEMENTS::SoTet10::SoTet10(int id, int owner)
   detJ_mass_.resize(NUMGPT_MASS_SOTET10, 0.0);
 
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      Global::Problem::Instance()->getParameterList();
+      Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
     pstype_ = Prestress::GetType();
     pstime_ = Prestress::GetPrestressTime();
 
     Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+        Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
   if (Prestress::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOTET10, NUMGPT_SOTET10));
@@ -167,7 +167,7 @@ Discret::ELEMENTS::SoTet10::SoTet10(const Discret::ELEMENTS::SoTet10& old)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                                      |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoTet10::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SoTet10::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::SoTet10(*this);
   return newelement;
@@ -177,7 +177,7 @@ Core::Elements::Element* Discret::ELEMENTS::SoTet10::Clone() const
  |                                                             (public) |
  |                                                                      |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::SoTet10::Shape() const { return Core::FE::CellType::tet10; }
+Core::FE::CellType Discret::ELEMENTS::SoTet10::shape() const { return Core::FE::CellType::tet10; }
 
 /*----------------------------------------------------------------------***
  |  Pack data                                                  (public) |
@@ -188,7 +188,7 @@ void Discret::ELEMENTS::SoTet10::pack(Core::Communication::PackBuffer& data) con
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   SoBase::pack(data);
@@ -226,7 +226,7 @@ void Discret::ELEMENTS::SoTet10::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -309,7 +309,7 @@ void Discret::ELEMENTS::SoTet10::print(std::ostream& os) const
 |  get vector of surfaces (public)                                     |
 |  surface normals always point outward                                |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoTet10::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoTet10::surfaces()
 {
   return Core::Communication::ElementBoundaryFactory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -318,7 +318,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoTet10::S
 /*----------------------------------------------------------------------***++
  |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoTet10::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoTet10::lines()
 {
   return Core::Communication::ElementBoundaryFactory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
@@ -329,16 +329,15 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoTet10::L
 std::vector<double> Discret::ELEMENTS::SoTet10::element_center_refe_coords()
 {
   // update element geometry
-  Core::Nodes::Node** nodes = Nodes();
   Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
   for (int i = 0; i < NUMNOD_SOTET10; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
   }
-  const Core::FE::CellType distype = Shape();
+  const Core::FE::CellType distype = shape();
   Core::LinAlg::Matrix<NUMNOD_SOTET10, 1> funct;
   // Centroid of a tet with (0,1)(0,1)(0,1) is (0.25, 0.25, 0.25)
   Core::FE::shape_function_3D(funct, 0.25, 0.25, 0.25, distype);
@@ -354,21 +353,21 @@ std::vector<double> Discret::ELEMENTS::SoTet10::element_center_refe_coords()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                 st 01/10|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet10::VisNames(std::map<std::string, int>& names)
+void Discret::ELEMENTS::SoTet10::vis_names(std::map<std::string, int>& names)
 {
-  SolidMaterial()->VisNames(names);
+  solid_material()->vis_names(names);
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                          st 01/10|
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoTet10::VisData(const std::string& name, std::vector<double>& data)
+bool Discret::ELEMENTS::SoTet10::vis_data(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (Core::Elements::Element::VisData(name, data)) return true;
+  if (Core::Elements::Element::vis_data(name, data)) return true;
 
-  return SolidMaterial()->VisData(name, data, NUMGPT_SOTET10, this->Id());
+  return solid_material()->vis_data(name, data, NUMGPT_SOTET10, this->id());
 }
 
 /*----------------------------------------------------------------------*
@@ -376,7 +375,7 @@ bool Discret::ELEMENTS::SoTet10::VisData(const std::string& name, std::vector<do
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::SoTet10::material_post_setup(Teuchos::ParameterList& params)
 {
-  if (Core::Nodes::HaveNodalFibers<Core::FE::CellType::tet10>(Nodes()))
+  if (Core::Nodes::HaveNodalFibers<Core::FE::CellType::tet10>(nodes()))
   {
     // This element has fiber nodes.
     // Interpolate fibers to the Gauss points and pass them to the material
@@ -392,7 +391,7 @@ void Discret::ELEMENTS::SoTet10::material_post_setup(Teuchos::ParameterList& par
 
     // Do the interpolation
     Core::Nodes::ProjectFibersToGaussPoints<Core::FE::CellType::tet10>(
-        Nodes(), shapefcts_4gp, fiberHolder);
+        nodes(), shapefcts_4gp, fiberHolder);
 
     params.set("fiberholder", fiberHolder);
   }

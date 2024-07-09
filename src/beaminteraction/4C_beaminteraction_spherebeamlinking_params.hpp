@@ -56,7 +56,7 @@ namespace BEAMINTERACTION
     void setup();
 
     //! reset time step in case structure time is adapted during simulation time
-    void ResetTimeStep(double structure_delta_time);
+    void reset_time_step(double structure_delta_time);
 
     //! returns the isinit_ flag
     inline const bool& is_init() const { return isinit_; };
@@ -77,7 +77,7 @@ namespace BEAMINTERACTION
     }
 
     /// linker material id
-    Teuchos::RCP<Mat::CrosslinkerMat> GetLinkerMaterial() const
+    Teuchos::RCP<Mat::CrosslinkerMat> get_linker_material() const
     {
       /// HACK: FIX IF MORE THAN ONE CROSSLINKER TYPE
       check_init_setup();
@@ -85,35 +85,35 @@ namespace BEAMINTERACTION
     };
 
     /// time step for stochastic events concerning crosslinking
-    double const& DeltaTime() const
+    double const& delta_time() const
     {
       check_init_setup();
       return deltatime_;
     };
 
     /// contraction rate of cell (integrin linker) in [microm/s]
-    double ContractionRate(Inpar::BEAMINTERACTION::CrosslinkerType linkertype) const
+    double contraction_rate(Inpar::BEAMINTERACTION::CrosslinkerType linkertype) const
     {
       check_init_setup();
       return contractionrate_.at(linkertype);
     };
 
     /// number of linker per type
-    std::vector<int> const& MaxNumLinkerPerType() const
+    std::vector<int> const& max_num_linker_per_type() const
     {
       check_init_setup();
       return maxnumlinkerpertype_;
     };
 
     /// material number for linker types
-    std::vector<int> const& MatLinkerPerType() const
+    std::vector<int> const& mat_linker_per_type() const
     {
       check_init_setup();
       return matlinkerpertype_;
     };
 
     /// get all active linker types
-    std::vector<Inpar::BEAMINTERACTION::CrosslinkerType> const& LinkerTypes() const
+    std::vector<Inpar::BEAMINTERACTION::CrosslinkerType> const& linker_types() const
     {
       check_init_setup();
       return linkertypes_;

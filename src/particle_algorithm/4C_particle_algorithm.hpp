@@ -130,7 +130,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 04/2018
      */
-    void Timeloop();
+    void timeloop();
 
     /*!
      * \brief prepare time step
@@ -153,7 +153,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 04/2018
      */
-    void IntegrateTimeStep();
+    void integrate_time_step();
 
     /*!
      * \brief post evaluate time step
@@ -167,7 +167,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 07/2020
      */
-    void WriteOutput() const;
+    void write_output() const;
 
     /*!
      * \brief write restart information
@@ -188,7 +188,7 @@ namespace PARTICLEALGORITHM
      *
      * \return particle field specific result test objects
      */
-    std::vector<std::shared_ptr<Core::UTILS::ResultTest>> CreateResultTests();
+    std::vector<std::shared_ptr<Core::UTILS::ResultTest>> create_result_tests();
 
     /*!
      * \brief get interface to particle engine

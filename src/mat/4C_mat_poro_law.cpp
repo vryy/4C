@@ -269,7 +269,7 @@ Mat::PAR::PoroLawDensityDependent::PoroLawDensityDependent(
     : PoroLaw(matdata)
 {
   const int densityID = matdata.parameters.get<int>("DENSITYLAWID");
-  density_law_ = Mat::PAR::PoroDensityLaw::CreateDensityLaw(densityID);
+  density_law_ = Mat::PAR::PoroDensityLaw::create_density_law(densityID);
 }
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::PoroLawDensityDependent::create_material()
@@ -314,9 +314,9 @@ void Mat::PAR::PoroLawDensityDependent::constitutive_derivatives(
   if (dW_dphiref) *dW_dphiref = -1.0 * reldensity / J;
 }
 
-double Mat::PAR::PoroLawDensityDependent::InvBulkModulus() const
+double Mat::PAR::PoroLawDensityDependent::inv_bulk_modulus() const
 {
-  return density_law_->InvBulkmodulus();
+  return density_law_->inv_bulkmodulus();
 }
 
 FOUR_C_NAMESPACE_CLOSE

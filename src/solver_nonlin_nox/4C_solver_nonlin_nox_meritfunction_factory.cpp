@@ -89,7 +89,7 @@ NOX::Nln::MeritFunction::Factory::build_constrained_merit_function(
   }
   else if (mftype.substr(0, 10) == "Lagrangian")
   {
-    mrtFctPtr = Teuchos::rcp(new Lagrangian(mftype, noxNlnGlobalData.get_NOX_utils_ptr()));
+    mrtFctPtr = Teuchos::rcp(new Lagrangian(mftype, noxNlnGlobalData.get_nox_utils_ptr()));
   }
   else
   {

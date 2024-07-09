@@ -41,12 +41,12 @@ FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
 
   // Get the surfaces to whome the Womersley flow profile must be applied
   std::vector<Core::Conditions::Condition*> womersleycond;
-  discret_->GetCondition("VolumetricSurfaceFlowCond", womersleycond);
+  discret_->get_condition("VolumetricSurfaceFlowCond", womersleycond);
   int num_of_wom_conds = womersleycond.size();
 
   // Get the lines which define the surrounding nodes of the womersley surface
   std::vector<Core::Conditions::Condition*> womersley_border_nodes_cond;
-  discret_->GetCondition("VolumetricFlowBorderNodesCond", womersley_border_nodes_cond);
+  discret_->get_condition("VolumetricFlowBorderNodesCond", womersley_border_nodes_cond);
   int num_of_borders = womersley_border_nodes_cond.size();
 
   //--------------------------------------------------------------------
@@ -157,7 +157,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::read_restart(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateVelocities(
+void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::evaluate_velocities(
     const Teuchos::RCP<Epetra_Vector> velocities, const double time)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
@@ -165,18 +165,18 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateVelocities(
   for (mapiter = fvsf_map_.begin(); mapiter != fvsf_map_.end(); mapiter++)
   {
     {
-      double flowrate = mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateFlowrate(
+      double flowrate = mapiter->second->FluidVolumetricSurfaceFlowBc::evaluate_flowrate(
           "VolumetricSurfaceFlowCond", time);
-      mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
+      mapiter->second->FluidVolumetricSurfaceFlowBc::evaluate_velocities(
           flowrate, "VolumetricSurfaceFlowCond", time);
     }
 
     {
       Teuchos::ParameterList eleparams;
-      mapiter->second->FluidVolumetricSurfaceFlowBc::CorrectFlowRate(
+      mapiter->second->FluidVolumetricSurfaceFlowBc::correct_flow_rate(
           eleparams, "VolumetricSurfaceFlowCond", FLD::calc_flowrate, time, false);
 
-      mapiter->second->FluidVolumetricSurfaceFlowBc::SetVelocities(velocities);
+      mapiter->second->FluidVolumetricSurfaceFlowBc::set_velocities(velocities);
     }
   }
 
@@ -202,7 +202,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
-  myrank_ = discret_->Comm().MyPID();
+  myrank_ = discret_->get_comm().MyPID();
 
   // -------------------------------------------------------------------
   // get dof row map
@@ -213,7 +213,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   // get condition
   // -------------------------------------------------------------------
   std::vector<Core::Conditions::Condition*> conditions;
-  discret_->GetCondition(ds_condname, conditions);
+  discret_->get_condition(ds_condname, conditions);
   // -------------------------------------------------------------------
   // some standard initialized variables
   // -------------------------------------------------------------------
@@ -334,7 +334,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   {
     for (unsigned int i = 0; i < flowrates_->size(); i++)
     {
-      (*flowrates_)[i] = this->EvaluateFlowrate(ds_condname, dta * double(i));
+      (*flowrates_)[i] = this->evaluate_flowrate(ds_condname, dta * double(i));
     }
   }
 
@@ -423,9 +423,9 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::center_of_mass_calculation(
     double par_n_val = 0.0;
 
     // Summ all of the local processor values in one values
-    discret_->Comm().SumAll(&act_val, &par_val, 1);
-    discret_->Comm().SumAll(&act_n_val, &par_n_val, 1);
-    discret_->Comm().SumAll(&act_area, &par_area, 1);
+    discret_->get_comm().SumAll(&act_val, &par_val, 1);
+    discret_->get_comm().SumAll(&act_n_val, &par_n_val, 1);
+    discret_->get_comm().SumAll(&act_area, &par_area, 1);
 
     // finally evaluate the actual center of mass and avarage normal
     (*coords)[i] = par_val / par_area;
@@ -472,7 +472,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
   //--------------------------------------------------------------------
   // get the processor rank
   //--------------------------------------------------------------------
-  int myrank = discret_->Comm().MyPID();
+  int myrank = discret_->get_comm().MyPID();
 
   local_radii_ = Core::LinAlg::CreateVector(*cond_surfnoderowmap_, true);
 
@@ -481,14 +481,14 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
   // get all of the border nodes
   //--------------------------------------------------------------------
   std::vector<Core::Conditions::Condition*> conditions;
-  discret_->GetCondition(dl_condname, conditions);
+  discret_->get_condition(dl_condname, conditions);
 
   Core::Conditions::Condition* cond = conditions[condnum_l_];
 
   //--------------------------------------------------------------------
   // get the nodes of the condition
   //--------------------------------------------------------------------
-  const std::vector<int>* border_nodes = cond->GetNodes();
+  const std::vector<int>* border_nodes = cond->get_nodes();
 
   //--------------------------------------------------------------------
   // Create a map of the border nodes
@@ -525,13 +525,13 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
     }
 
     // get the coordinate of a node, if it exists on the current proc
-    if (discret_->HaveGlobalNode(it->first))
+    if (discret_->have_global_node(it->first))
     {
       // check if the node is not a gohst node
-      if (discret_->gNode(it->first)->Owner() == myrank)
+      if (discret_->g_node(it->first)->owner() == myrank)
       {
         // get the coordinate of a node
-        const auto& x = discret_->gNode(it->first)->X();
+        const auto& x = discret_->g_node(it->first)->x();
         for (unsigned int i = 0; i < xyze.size(); i++)
         {
           xyze[i] = x[i];
@@ -551,7 +551,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
       double par_val = 0.0;
 
       // Summ all of the local processor values in one values
-      discret_->Comm().SumAll(&act_val, &par_val, 1);
+      discret_->get_comm().SumAll(&act_val, &par_val, 1);
 
       // set the coordinate of the nodes on the local processor
       (it->second)[i] = par_val;
@@ -595,13 +595,13 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
     double R_l = 0.0;
     double R = 0.0;
     // check if the node exists on the current processor
-    if (discret_->HaveGlobalNode(gid))
+    if (discret_->have_global_node(gid))
     {
       // check if the node is not a gohst node
-      if (discret_->gNode(gid)->Owner() == myrank)
+      if (discret_->g_node(gid)->owner() == myrank)
       {
         double border_raduis = 0.0;
-        const auto& curr_xyze = discret_->gNode(gid)->X();
+        const auto& curr_xyze = discret_->g_node(gid)->x();
 
         //----------------------------------------------------------------
         // loop over all of the border nodes
@@ -742,20 +742,20 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_node_row_map(
   //--------------------------------------------------------------------
   // get the processor rank
   //--------------------------------------------------------------------
-  int myrank = dis->Comm().MyPID();
+  int myrank = dis->get_comm().MyPID();
 
   //--------------------------------------------------------------------
   // read in the condition
   //--------------------------------------------------------------------
   std::vector<Core::Conditions::Condition*> conditions;
-  discret_->GetCondition(condname, conditions);
+  discret_->get_condition(condname, conditions);
 
   Core::Conditions::Condition* cond = conditions[condnum];
 
   //--------------------------------------------------------------------
   // get the nodes of the condition
   //--------------------------------------------------------------------
-  const std::vector<int>* nodes = cond->GetNodes();
+  const std::vector<int>* nodes = cond->get_nodes();
   std::vector<int> nodeids;
 
   //--------------------------------------------------------------------
@@ -764,10 +764,10 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_node_row_map(
   for (unsigned int i = 0; i < nodes->size(); i++)
   {
     int Id = (*nodes)[i];
-    if (dis->HaveGlobalNode(Id))
+    if (dis->have_global_node(Id))
     {
       // check if the node is not a gohst node
-      if (dis->gNode(Id)->Owner() == myrank)
+      if (dis->g_node(Id)->owner() == myrank)
       {
         nodeids.push_back(Id);
       }
@@ -778,7 +778,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_node_row_map(
   // create the node row map of the nodes on the current proc
   //--------------------------------------------------------------------
   cond_noderowmap =
-      Teuchos::rcp(new Epetra_Map(-1, nodeids.size(), nodeids.data(), 0, dis->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, nodeids.size(), nodeids.data(), 0, dis->get_comm()));
 
 }  // build_condition_node_row_map
 
@@ -798,20 +798,20 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map(
   //--------------------------------------------------------------------
   // get the processor rank
   //--------------------------------------------------------------------
-  int myrank = dis->Comm().MyPID();
+  int myrank = dis->get_comm().MyPID();
 
   //--------------------------------------------------------------------
   // read in the condition
   //--------------------------------------------------------------------
   std::vector<Core::Conditions::Condition*> conditions;
-  discret_->GetCondition(condname, conditions);
+  discret_->get_condition(condname, conditions);
 
   Core::Conditions::Condition* cond = conditions[condnum];
 
   //--------------------------------------------------------------------
   // get the nodes of the condition
   //--------------------------------------------------------------------
-  const std::vector<int>* nodes = cond->GetNodes();
+  const std::vector<int>* nodes = cond->get_nodes();
   std::vector<int> dofids;
 
   //--------------------------------------------------------------------
@@ -820,15 +820,15 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map(
   for (unsigned int i = 0; i < nodes->size(); i++)
   {
     int Id = (*nodes)[i];
-    if (dis->HaveGlobalNode(Id))
+    if (dis->have_global_node(Id))
     {
       // check if the node is not a gohst node
-      Core::Nodes::Node* node = dis->gNode(Id);
-      if (node->Owner() == myrank)
+      Core::Nodes::Node* node = dis->g_node(Id);
+      if (node->owner() == myrank)
       {
         for (int ldof = 0; ldof < 3; ldof++)
         {
-          dofids.push_back(dis->Dof(node, ldof));
+          dofids.push_back(dis->dof(node, ldof));
         }
       }
     }
@@ -837,7 +837,8 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map(
   //--------------------------------------------------------------------
   // create the node row map of the nodes on the current proc
   //--------------------------------------------------------------------
-  cond_dofrowmap = Teuchos::rcp(new Epetra_Map(-1, dofids.size(), dofids.data(), 0, dis->Comm()));
+  cond_dofrowmap =
+      Teuchos::rcp(new Epetra_Map(-1, dofids.size(), dofids.data(), 0, dis->get_comm()));
 
 }  // FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map
 
@@ -947,7 +948,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::read_restart(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::evaluate_velocities(
     const double flowrate, const std::string ds_condname, const double time)
 {
   const double time_in_a_period = fmod(time, period_);  // time - period_*floor(time/period_);
@@ -984,7 +985,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
   params->set<double>("area", area_);
 
 
-  this->Velocities(discret_, cond_velocities_, cond_surfnoderowmap_, local_radii_, border_radii_,
+  this->velocities(discret_, cond_velocities_, cond_surfnoderowmap_, local_radii_, border_radii_,
       vnormal_, params);
 
 }  // FLD::UTILS::FluidWomersleyBc::EvaluateVelocities
@@ -1046,7 +1047,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::evaluate_traction_velocity_comp(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-double FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateFlowrate(
+double FLD::UTILS::FluidVolumetricSurfaceFlowBc::evaluate_flowrate(
     const std::string ds_condname, const double time)
 {
   // -------------------------------------------------------------------
@@ -1055,7 +1056,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateFlowrate(
 
   // get condition
   std::vector<Core::Conditions::Condition*> conditions;
-  discret_->GetCondition(ds_condname, conditions);
+  discret_->get_condition(ds_condname, conditions);
   Core::Conditions::Condition* condition = conditions[condnum_s_];
 
   // get curve and curve_factor
@@ -1071,8 +1072,8 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateFlowrate(
 
   if (functnum > 0)
   {
-    functfac = Global::Problem::Instance()
-                   ->FunctionById<Core::UTILS::FunctionOfTime>(functnum - 1)
+    functfac = Global::Problem::instance()
+                   ->function_by_id<Core::UTILS::FunctionOfTime>(functnum - 1)
                    .evaluate(time);
     flowrate = val * functfac;
   }
@@ -1089,7 +1090,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateFlowrate(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::velocities(
     Teuchos::RCP<Core::FE::Discretization> disc, Teuchos::RCP<Epetra_Vector> bcdof,
     Teuchos::RCP<Epetra_Map> cond_noderowmap, Teuchos::RCP<Epetra_Vector> local_radii,
     Teuchos::RCP<Epetra_Vector> border_radii, Teuchos::RCP<std::vector<double>> normal,
@@ -1100,7 +1101,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
   //--------------------------------------------------------------------
   // get the processor rank
   //--------------------------------------------------------------------
-  int myrank = disc->Comm().MyPID();
+  int myrank = disc->get_comm().MyPID();
 
 
   // -------------------------------------------------------------------
@@ -1157,7 +1158,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
       FOUR_C_THROW("The number of Womersley harmonics is %d (less than 1)", n_harmonics);
     }
 
-    this->DFT(velocities, Vn, flowratespos_);
+    this->dft(velocities, Vn, flowratespos_);
 
     Bn = std::vector<double>(n_harmonics, 0.0);
 
@@ -1186,12 +1187,12 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
     int gid = cond_noderowmap->GID(lid);
 
     // check if the node exists on the current processor
-    if (disc->HaveGlobalNode(gid))
+    if (disc->have_global_node(gid))
     {
-      const Core::Nodes::Node* node = disc->gNode(gid);
+      const Core::Nodes::Node* node = disc->g_node(gid);
 
       // check if the node is not a gohst node
-      if (node->Owner() == myrank)
+      if (node->owner() == myrank)
       {
         // loop over the dof of a map
         // eval the velocity of a dof
@@ -1208,7 +1209,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
           if (order != 0)
           {
             velocity = (1.0 + 2.0 / double(order)) * (*velocities)[velocityposition];
-            velocity *= this->PolynomailVelocity(r, order);
+            velocity *= this->polynomail_velocity(r, order);
           }
           else
           {
@@ -1224,7 +1225,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
           // harmonics
           if (order != 0)
           {
-            velocity = (1.0 + 2.0 / double(order)) * Bn[0] * this->PolynomailVelocity(r, order);
+            velocity = (1.0 + 2.0 / double(order)) * Bn[0] * this->polynomail_velocity(r, order);
           }
           else
           {
@@ -1243,7 +1244,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
             const double Phik = atan2(-imag((*Vn)[k]), real((*Vn)[k]));
             Bn[k] = Mk * cos(2.0 * M_PI * double(k) - Phik);
 
-            velocity_wom += this->WomersleyVelocity(r, R, Mk, Phik, k, period);
+            velocity_wom += this->womersley_velocity(r, R, Mk, Phik, k, period);
           }
           velocity += velocity_wom;
         }
@@ -1257,7 +1258,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
         for (unsigned int ldof = 0; ldof < normal->size(); ldof++)
         {
           // get the global dof from using the local one
-          int gdof = disc->Dof(node, ldof);
+          int gdof = disc->dof(node, ldof);
 
           //------------------------------------------------------------
           // Apply the velocity in the normal direction
@@ -1283,7 +1284,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate(
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::correct_flow_rate(
     const Teuchos::ParameterList eleparams, const std::string ds_condname,
     const FLD::BoundaryAction action, const double time, const bool force_correction)
 {
@@ -1298,7 +1299,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate(
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
-  int myrank = discret_->Comm().MyPID();
+  int myrank = discret_->get_comm().MyPID();
 
   // -------------------------------------------------------------------
   // calculate flow rate
@@ -1355,7 +1356,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate(
   // surface area
   params->set<double>("area", area_);
 
-  this->Velocities(discret_, correction_velnp, cond_surfnoderowmap_, local_radii_, border_radii_,
+  this->velocities(discret_, correction_velnp, cond_surfnoderowmap_, local_radii_, border_radii_,
       vnormal_, params);
 
   // Export and set state
@@ -1411,7 +1412,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::SetVelocities(
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::set_velocities(
     const Teuchos::RCP<Epetra_Vector> velocities)
 {
   for (int lid = 0; lid < cond_velocities_->MyLength(); lid++)
@@ -1518,7 +1519,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::pressure_calculation(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-double FLD::UTILS::FluidVolumetricSurfaceFlowBc::PolynomailVelocity(double r, int order)
+double FLD::UTILS::FluidVolumetricSurfaceFlowBc::polynomail_velocity(double r, int order)
 {
   return (1.0 - pow(r, double(order)));
 
@@ -1534,7 +1535,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::PolynomailVelocity(double r, in
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-double FLD::UTILS::FluidVolumetricSurfaceFlowBc::WomersleyVelocity(double r, double R, double Bn,
+double FLD::UTILS::FluidVolumetricSurfaceFlowBc::womersley_velocity(double r, double R, double Bn,
     double Phi,
     // complex<double> Bn,
     int n, double time)
@@ -1733,11 +1734,11 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::area(
   viscosity = eleparams.get<double>("viscosity");
 
   // find the lowest proc number that knows the material data
-  int numproc = discret_->Comm().NumProc();
+  int numproc = discret_->get_comm().NumProc();
   int theproc = -1;  // the lowest proc that has the desired information
   std::vector<double> alldens(numproc);
 
-  discret_->Comm().GatherAll(&density, alldens.data(), 1);
+  discret_->get_comm().GatherAll(&density, alldens.data(), 1);
   for (int i = 0; i < numproc; i++)
     if (alldens[i] > 0.0)
     {
@@ -1747,13 +1748,13 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::area(
   if (theproc < 0) FOUR_C_THROW("Something parallel went terribly wrong!");
 
   // do the actual communication of density ...
-  discret_->Comm().Broadcast(&density, 1, theproc);
+  discret_->get_comm().Broadcast(&density, 1, theproc);
   // ... and viscosity
-  discret_->Comm().Broadcast(&viscosity, 1, theproc);
+  discret_->get_comm().Broadcast(&viscosity, 1, theproc);
 
   // get total area in parallel case
   double pararea = 0.0;
-  discret_->Comm().SumAll(&actarea, &pararea, 1);
+  discret_->get_comm().SumAll(&actarea, &pararea, 1);
 
   if (myrank_ == 0)
   {
@@ -1772,7 +1773,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::area(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::DFT(Teuchos::RCP<std::vector<double>> f,
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::dft(Teuchos::RCP<std::vector<double>> f,
     Teuchos::RCP<std::vector<std::complex<double>>>& F, int starting_pos)
 {
   //--------------------------------------------------------------------
@@ -1947,12 +1948,12 @@ FLD::UTILS::TotalTractionCorrector::TotalTractionCorrector(
 
   // Get the surfaces to whome the traction flow profile must be applied
   std::vector<Core::Conditions::Condition*> tractioncond;
-  discret_->GetCondition("TotalTractionCorrectionCond", tractioncond);
+  discret_->get_condition("TotalTractionCorrectionCond", tractioncond);
   int num_of_tr_conds = tractioncond.size();
 
   // Get the lines which define the surrounding nodes of the traction surface
   std::vector<Core::Conditions::Condition*> traction_border_nodes_cond;
-  discret_->GetCondition("TotalTractionCorrectionBorderNodesCond", traction_border_nodes_cond);
+  discret_->get_condition("TotalTractionCorrectionBorderNodesCond", traction_border_nodes_cond);
   int num_of_borders = traction_border_nodes_cond.size();
 
   //--------------------------------------------------------------------
@@ -2019,7 +2020,7 @@ FLD::UTILS::TotalTractionCorrector::TotalTractionCorrector(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::TotalTractionCorrector::EvaluateVelocities(
+void FLD::UTILS::TotalTractionCorrector::evaluate_velocities(
     Teuchos::RCP<Epetra_Vector> velocities, double time, double theta, double dta)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
@@ -2030,7 +2031,7 @@ void FLD::UTILS::TotalTractionCorrector::EvaluateVelocities(
 
     if (mapiter->second->prebiasing_flag() == "FORCED")
     {
-      flowrate = mapiter->second->EvaluateFlowrate("TotalTractionCorrectionCond", time);
+      flowrate = mapiter->second->evaluate_flowrate("TotalTractionCorrectionCond", time);
     }
     else
     {
@@ -2043,11 +2044,11 @@ void FLD::UTILS::TotalTractionCorrector::EvaluateVelocities(
       std::cout << "Traction Corrector_1: Q=" << flowrate << std::endl;
     }
 
-    mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
+    mapiter->second->FluidVolumetricSurfaceFlowBc::evaluate_velocities(
         flowrate, "TotalTractionCorrectionCond", time);
 
     Teuchos::ParameterList eleparams;
-    mapiter->second->FluidVolumetricSurfaceFlowBc::CorrectFlowRate(
+    mapiter->second->FluidVolumetricSurfaceFlowBc::correct_flow_rate(
         eleparams, "TotalTractionCorrectionCond", FLD::calc_flowrate, time, true);
     mapiter->second->FluidVolumetricSurfaceFlowBc::reset_traction_velocity_comp();
     mapiter->second->FluidVolumetricSurfaceFlowBc::evaluate_traction_velocity_comp(

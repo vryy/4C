@@ -24,10 +24,10 @@ SSTI::SSTIResultTest::SSTIResultTest(const SSTI::SSTIAlgorithm& ssti_algorithm)
 
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
-void SSTI::SSTIResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count)
+void SSTI::SSTIResultTest::test_special(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only by one processor
-  if (ssti_algorithm_.Comm().MyPID() == 0)
+  if (ssti_algorithm_.get_comm().MyPID() == 0)
   {
     // extract name of quantity to be tested
     std::string quantity;
@@ -52,13 +52,13 @@ double SSTI::SSTIResultTest::result_special(const std::string& quantity) const
   // number of Newton-Raphson iterations (monolithic SSTI) in last time step
   if (quantity == "numiterlastnonlinearsolve")
   {
-    result = static_cast<double>(ssti_algorithm_.Iter());
+    result = static_cast<double>(ssti_algorithm_.iter());
   }
 
   // test total number of time steps
   else if (!quantity.compare(0, 7, "numstep"))
   {
-    result = static_cast<double>(ssti_algorithm_.Step());
+    result = static_cast<double>(ssti_algorithm_.step());
   }
   // catch unknown quantity strings
   else

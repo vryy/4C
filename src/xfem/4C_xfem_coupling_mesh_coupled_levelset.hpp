@@ -119,7 +119,7 @@ namespace XFEM
         }
       }
 
-      if (force_tangvel_map_.find(cond->Id())->second)
+      if (force_tangvel_map_.find(cond->id())->second)
       {
         Core::LinAlg::Matrix<3, 1> tmp_ivel(true);
         tmp_ivel.multiply_tn(
@@ -139,7 +139,7 @@ namespace XFEM
         }
       }
       std::map<int, bool>::iterator it_bool;
-      if ((it_bool = force_tangvel_map_.find(cond->Id())) == force_tangvel_map_.end())
+      if ((it_bool = force_tangvel_map_.find(cond->id())) == force_tangvel_map_.end())
       {
         FOUR_C_THROW("Key was not found in this instance!! Fatal error! (force_tangvel_map_)");
       }
@@ -170,7 +170,7 @@ namespace XFEM
       double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
       double sliplength = 0.0;
 
-      if (ele->Shape() == Core::FE::CellType::hex8)
+      if (ele->shape() == Core::FE::CellType::hex8)
       {
         const Core::FE::CellType shape = Core::FE::CellType::hex8;
         //
@@ -179,7 +179,7 @@ namespace XFEM
         Core::LinAlg::Matrix<nen, 1> funct_(funct, true);
         Core::LinAlg::Matrix<nen, nsd> derxy_(derxy, true);
       }
-      else if (ele->Shape() == Core::FE::CellType::hex27)
+      else if (ele->shape() == Core::FE::CellType::hex27)
       {
         const Core::FE::CellType shape = Core::FE::CellType::hex27;
         //
@@ -188,7 +188,7 @@ namespace XFEM
         Core::LinAlg::Matrix<nen, 1> funct_(funct, true);
         Core::LinAlg::Matrix<nen, nsd> derxy_(derxy, true);
       }
-      else if (ele->Shape() == Core::FE::CellType::hex20)
+      else if (ele->shape() == Core::FE::CellType::hex20)
       {
         const Core::FE::CellType shape = Core::FE::CellType::hex20;
         //

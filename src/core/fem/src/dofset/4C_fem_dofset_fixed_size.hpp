@@ -67,13 +67,13 @@ namespace Core::DOFSets
 
 
     /// create a copy of this object
-    Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new FixedSizeDofSet(*this)); }
+    Teuchos::RCP<DofSet> clone() override { return Teuchos::rcp(new FixedSizeDofSet(*this)); }
 
     /// Get maximum GID of degree of freedom row map
-    int MaxAllGID() const override { return MinAllGID() + numMyReservedDofs_; }
+    int max_all_gid() const override { return min_all_gid() + numMyReservedDofs_; }
 
     /// Get minimum GID of degree of freedom row map
-    int MinAllGID() const override
+    int min_all_gid() const override
     {
       int mymindof;
       if (minGID_ == -1)
@@ -87,7 +87,7 @@ namespace Core::DOFSets
     }
 
     /// set the minimal global id
-    virtual void SetMinGID(int mingid) { minGID_ = mingid; }
+    virtual void set_min_gid(int mingid) { minGID_ = mingid; }
 
     /// Get Reserved Max Number Dofs per Node
     void get_reserved_max_num_dofper_node(int& maxnodenumdf) override
@@ -104,7 +104,7 @@ namespace Core::DOFSets
     }
 
     /// get the number of reserved DoF's (see also num_my_reserved_dofs_per_node())
-    int NumMyReservedDofs() const { return numMyReservedDofs_; }
+    int num_my_reserved_dofs() const { return numMyReservedDofs_; }
 
     /// get the number of reserved DoF's per node
     int num_my_reserved_dofs_per_node() const { return numMyReservedDofsperNode_; }

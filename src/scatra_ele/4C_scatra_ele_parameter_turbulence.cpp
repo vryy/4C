@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  | singleton access method                                   fang 08/15 |
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::ScaTraEleParameterTurbulence*
-Discret::ELEMENTS::ScaTraEleParameterTurbulence::Instance(const std::string& disname)
+Discret::ELEMENTS::ScaTraEleParameterTurbulence::instance(const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const std::string& disname)
@@ -35,7 +35,7 @@ Discret::ELEMENTS::ScaTraEleParameterTurbulence::Instance(const std::string& dis
             new ScaTraEleParameterTurbulence(disname));
       });
 
-  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, disname);
 }
 
 
@@ -69,7 +69,7 @@ Discret::ELEMENTS::ScaTraEleParameterTurbulence::ScaTraEleParameterTurbulence(
       mean_cai_(0.0),
       adapt_csgs_phi_(false),
       turbinflow_(false),
-      timintparams_(Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance(disname))
+      timintparams_(Discret::ELEMENTS::ScaTraEleParameterTimInt::instance(disname))
 {
   return;
 }
@@ -78,7 +78,7 @@ Discret::ELEMENTS::ScaTraEleParameterTurbulence::ScaTraEleParameterTurbulence(
 /*----------------------------------------------------------------------*
  | set parameters                                       rasthofer 11/11 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterTurbulence::SetParameters(
+void Discret::ELEMENTS::ScaTraEleParameterTurbulence::set_parameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {
@@ -117,7 +117,7 @@ void Discret::ELEMENTS::ScaTraEleParameterTurbulence::SetParameters(
     fssgd_ = true;
 
     // check for solver type
-    if (timintparams_->IsIncremental())
+    if (timintparams_->is_incremental())
       FOUR_C_THROW(
           "Artificial fine-scale subgrid-diffusivity approach only in combination with "
           "non-incremental solver so far!");
@@ -128,7 +128,7 @@ void Discret::ELEMENTS::ScaTraEleParameterTurbulence::SetParameters(
     fssgd_ = true;
 
     // check for solver type
-    if (not timintparams_->IsIncremental())
+    if (not timintparams_->is_incremental())
       FOUR_C_THROW(
           "Fine-scale subgrid-diffusivity approach using all/small-scale Smagorinsky model only in "
           "combination with incremental solver so far!");
@@ -142,7 +142,7 @@ void Discret::ELEMENTS::ScaTraEleParameterTurbulence::SetParameters(
     turbmodel_ = Inpar::FLUID::no_model;
   }
 
-  if (turbmodel_ != Inpar::FLUID::no_model or (timintparams_->IsIncremental() and fssgd_))
+  if (turbmodel_ != Inpar::FLUID::no_model or (timintparams_->is_incremental() and fssgd_))
   {
     // get Smagorinsky constant and turbulent Prandtl number
     cs_ = sgvisclist.get<double>("C_SMAGORINSKY");

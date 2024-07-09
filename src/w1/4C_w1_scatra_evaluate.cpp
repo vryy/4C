@@ -26,18 +26,18 @@ void Discret::ELEMENTS::Wall1Scatra::pre_evaluate(Teuchos::ParameterList& params
 {
   const int numnode = num_node();
 
-  if (la.Size() > 1)
+  if (la.size() > 1)
   {
     //  dofs per node of second dofset
-    const int numdofpernode = NumDofPerNode(1, *(Nodes()[0]), discretization.Name());
+    const int numdofpernode = num_dof_per_node(1, *(nodes()[0]), discretization.name());
 
-    if (la[1].Size() != numnode * numdofpernode)
+    if (la[1].size() != numnode * numdofpernode)
       FOUR_C_THROW("calc_struct_nlnstiff: Location vector length for velocities does not match!");
 
-    if (discretization.HasState(1, "scalarfield"))
+    if (discretization.has_state(1, "scalarfield"))
     {
       // check if you can get the scalar state
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState(1, "scalarfield");
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state(1, "scalarfield");
 
       if (phinp == Teuchos::null) FOUR_C_THROW("pre_evaluate: Cannot get state vector 'phinp' ");
 
@@ -55,17 +55,16 @@ void Discret::ELEMENTS::Wall1Scatra::pre_evaluate(Teuchos::ParameterList& params
     }
     // Get pointer for scatra material in the same element
     Teuchos::RCP<Core::FE::Discretization> scatradis = Teuchos::null;
-    scatradis = Global::Problem::Instance()->GetDis("scatra");
-    Core::Elements::Element* scatraele = scatradis->gElement(Id());
+    scatradis = Global::Problem::instance()->get_dis("scatra");
+    Core::Elements::Element* scatraele = scatradis->g_element(id());
     Teuchos::RCP<Core::Mat::Material> scatramat =
-        Teuchos::rcp_dynamic_cast<Core::Mat::Material>(scatraele->Material());
+        Teuchos::rcp_dynamic_cast<Core::Mat::Material>(scatraele->material());
     params.set<Teuchos::RCP<Core::Mat::Material>>("scatramat", scatramat);
   }
   Core::LinAlg::Matrix<2, 1> xrefe(true);
-  Core::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < numnode; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(0) += x[0] / numnode;
     xrefe(1) += x[1] / numnode;
   }
@@ -101,7 +100,7 @@ int Discret::ELEMENTS::Wall1Scatra::evaluate(Teuchos::ParameterList& params,
   // start with "none"
   Core::Elements::ActionType act = Core::Elements::none;
 
-  if (IsParamsInterface())
+  if (is_params_interface())
   {
     act = params_interface().get_action_type();
   }

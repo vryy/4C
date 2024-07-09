@@ -118,24 +118,24 @@ namespace Discret
     class Beam3kType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "Beam3kType"; }
+      std::string name() const override { return "Beam3kType"; }
 
-      static Beam3kType& Instance();
+      static Beam3kType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(Core::Nodes::Node& actnode, const double* x0,
-          const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix compute_null_space(Core::Nodes::Node& actnode,
+          const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -178,16 +178,16 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Beam3k and return pointer to the copy
 
-      The Clone() method is used by the virtual base class Element in cases
+      The clone() method is used by the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
     .
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
      \brief Get shape type of element
      */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
 
       /*!
@@ -196,7 +196,10 @@ namespace Discret
       Every class implementing ParObject needs a unique id defined at the
       top of parobject.H
       */
-      int UniqueParObjectId() const override { return Beam3kType::Instance().UniqueParObjectId(); }
+      int unique_par_object_id() const override
+      {
+        return Beam3kType::instance().unique_par_object_id();
+      }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -214,51 +217,51 @@ namespace Discret
       */
       void unpack(const std::vector<char>& data) override;
 
-      Core::Elements::ElementType& ElementType() const override { return Beam3kType::Instance(); }
+      Core::Elements::ElementType& element_type() const override { return Beam3kType::instance(); }
 
       //@}
 
       /*!
        \brief Get bool inidcating usage of rotation vectors
        */
-      const bool& RotVec() const { return rotvec_; }
+      const bool& rot_vec() const { return rotvec_; }
 
       /*!
       \brief get reference rotation vector i.e. theta0_
       */
-      std::vector<Core::LinAlg::Matrix<3, 1>> Theta0() const { return theta0_; }
+      std::vector<Core::LinAlg::Matrix<3, 1>> theta0() const { return theta0_; }
 
       /*!
        \brief Get (non-unit) tangent vectors at the two boundary nodes
       */
-      std::vector<Core::LinAlg::Matrix<3, 1>> GetNodalTangents() const { return t_; }
+      std::vector<Core::LinAlg::Matrix<3, 1>> get_nodal_tangents() const { return t_; }
 
       /** \brief get unit tangent vector in reference configuration at i-th node of beam element
        * (element-internal numbering)
        *
        *  \author grill
        *  \date 06/16 */
-      inline void GetRefTangentAtNode(
+      inline void get_ref_tangent_at_node(
           Core::LinAlg::Matrix<3, 1>& Tref_i, const int& i) const override
       {
-        if (not((unsigned)i < Tref().size()))
+        if (not((unsigned)i < tref().size()))
           FOUR_C_THROW("asked for tangent at node index %d, but only %d centerline nodes existing",
-              i, Tref().size());
-        Tref_i = Tref()[i];
+              i, tref().size());
+        Tref_i = tref()[i];
       }
 
       /** \brief get centerline position at xi \in [-1,1] (element parameter space)
        *
        *  \author grill
        *  \date 06/16 */
-      void GetPosAtXi(Core::LinAlg::Matrix<3, 1>& pos, const double& xi,
+      void get_pos_at_xi(Core::LinAlg::Matrix<3, 1>& pos, const double& xi,
           const std::vector<double>& disp) const override;
 
       /** \brief get triad at xi \in [-1,1] (element parameter space)
        *
        *  \author grill
        *  \date 01/17 */
-      void GetTriadAtXi(Core::LinAlg::Matrix<3, 3>& triad, const double& xi,
+      void get_triad_at_xi(Core::LinAlg::Matrix<3, 3>& triad, const double& xi,
           const std::vector<double>& disp) const override;
 
       /** \brief Get scaled base vectors describing the cross-section orientation and size at given
@@ -307,7 +310,7 @@ namespace Discret
        *
        *  \author grill
        *  \date 05/16 */
-      inline double RefLength() const override { return length_; }
+      inline double ref_length() const override { return length_; }
 
       /*!
       \brief Get jacobi factor of first Gauss point
@@ -318,7 +321,7 @@ namespace Discret
        *
        *  \author grill
        *  \date 06/16 */
-      double GetJacobiFacAtXi(const double& xi) const override;
+      double get_jacobi_fac_at_xi(const double& xi) const override;
 
       /** \brief Get material cross-section deformation measures, i.e. strain resultants
        *
@@ -359,24 +362,24 @@ namespace Discret
       }
 
       //! get internal (elastic) energy of element
-      double GetInternalEnergy() const override { return eint_; };
+      double get_internal_energy() const override { return eint_; };
 
       //! get kinetic energy of element
-      double GetKineticEnergy() const override { return ekin_; };
+      double get_kinetic_energy() const override { return ekin_; };
 
       /** \brief get number of nodes used for centerline interpolation
        *
        *  \author grill
        *  \date 05/16 */
-      inline int NumCenterlineNodes() const override { return 2; }
+      inline int num_centerline_nodes() const override { return 2; }
 
       /** \brief find out whether given node is used for centerline interpolation
        *
        *  \author grill
        *  \date 10/16 */
-      inline bool IsCenterlineNode(const Core::Nodes::Node& node) const override
+      inline bool is_centerline_node(const Core::Nodes::Node& node) const override
       {
-        if (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id())
+        if (node.id() == this->nodes()[0]->id() or node.id() == this->nodes()[1]->id())
           return true;
         else
           return false;
@@ -385,19 +388,19 @@ namespace Discret
       /*!
       \brief Return number of lines to this element
       */
-      int NumLine() const override { return 1; }
+      int num_line() const override { return 1; }
 
 
       /*!
       \brief Get vector of RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
 
       /*!
       \brief Get number of degrees of freedom of a single node
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override
+      int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
         /*note: this is not necessarily the number of DOF assigned to this node by the
          *discretization finally, but only the number of DOF requested for this node by this
@@ -405,7 +408,7 @@ namespace Discret
          *requested by any element connected to this node*/
         int dofpn = 0;
 
-        if (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id())
+        if (node.id() == this->nodes()[0]->id() or node.id() == this->nodes()[1]->id())
           dofpn = 7;
         else
           dofpn = 1;
@@ -436,12 +439,12 @@ namespace Discret
       store all necessary information.
 
       */
-      // virtual bool ReadElement();
+      // virtual bool read_element();
 
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -528,17 +531,17 @@ namespace Discret
       /*!
       \brief get (non-unit) tangent vectors at the two boundary nodes in the initial configuration
       */
-      std::vector<Core::LinAlg::Matrix<3, 1>> Tref() const { return Tref_; }
+      std::vector<Core::LinAlg::Matrix<3, 1>> tref() const { return Tref_; }
       //@}
 
       /** \brief add indices of those DOFs of a given node that are positions
        *
        *  \author grill
        *  \date 07/16 */
-      inline void PositionDofIndices(
+      inline void position_dof_indices(
           std::vector<int>& posdofs, const Core::Nodes::Node& node) const override
       {
-        if (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id())
+        if (node.id() == this->nodes()[0]->id() or node.id() == this->nodes()[1]->id())
         {
           posdofs.push_back(0);
           posdofs.push_back(1);
@@ -552,11 +555,11 @@ namespace Discret
        *
        *  \author grill
        *  \date 07/16 */
-      inline void TangentDofIndices(
+      inline void tangent_dof_indices(
           std::vector<int>& tangdofs, const Core::Nodes::Node& node) const override
       {
         if ((not rotvec_) and
-            (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id()))
+            (node.id() == this->nodes()[0]->id() or node.id() == this->nodes()[1]->id()))
         {
           tangdofs.push_back(3);
           tangdofs.push_back(4);
@@ -574,7 +577,7 @@ namespace Discret
           std::vector<int>& rotvecdofs, const Core::Nodes::Node& node) const override
       {
         if ((rotvec_) and
-            (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id()))
+            (node.id() == this->nodes()[0]->id() or node.id() == this->nodes()[1]->id()))
         {
           rotvecdofs.push_back(3);
           rotvecdofs.push_back(4);
@@ -593,11 +596,11 @@ namespace Discret
           std::vector<int>& twistdofs, const Core::Nodes::Node& node) const override
       {
         if ((not rotvec_) and
-            (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id()))
+            (node.id() == this->nodes()[0]->id() or node.id() == this->nodes()[1]->id()))
         {
           twistdofs.push_back(6);
         }
-        else if (node.Id() == this->Nodes()[2]->Id())
+        else if (node.id() == this->nodes()[2]->id())
         {
           twistdofs.push_back(0);
         }
@@ -615,7 +618,7 @@ namespace Discret
       {
         if (rotvec_)
         {
-          if (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id())
+          if (node.id() == this->nodes()[0]->id() or node.id() == this->nodes()[1]->id())
           {
             tangnormdofs.push_back(6);
           }
@@ -638,7 +641,7 @@ namespace Discret
               "Dofs "
               "automatically and apply them consistently to rotvec Dofs");
 
-        const unsigned int nnodecl = this->NumCenterlineNodes();
+        const unsigned int nnodecl = this->num_centerline_nodes();
         centerlinedofindices.resize(6 * nnodecl, 0);
 
         for (unsigned int inodecl = 0; inodecl < nnodecl; ++inodecl)

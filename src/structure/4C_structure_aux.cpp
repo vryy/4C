@@ -64,25 +64,25 @@ double Solid::calculate_vector_norm(const enum Inpar::Solid::VectorNorm norm,
 void Solid::MapExtractor::setup(
     const Core::FE::Discretization& dis, const Epetra_Map& fullmap, bool overlapping)
 {
-  const int ndim = Global::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::instance()->n_dim();
   Core::Conditions::MultiConditionSelector mcs;
-  mcs.SetOverlapping(overlapping);
-  mcs.AddSelector(
+  mcs.set_overlapping(overlapping);
+  mcs.add_selector(
       Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
-  mcs.AddSelector(
+  mcs.add_selector(
       Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "StructAleCoupling", 0, ndim)));
-  mcs.AddSelector(
+  mcs.add_selector(
       Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "BioGrCoupling", 0, ndim)));
-  mcs.AddSelector(
+  mcs.add_selector(
       Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "AleWear", 0, ndim)));
-  mcs.AddSelector(
+  mcs.add_selector(
       Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "fpsi_coupling", 0, ndim)));
-  mcs.AddSelector(
+  mcs.add_selector(
       Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "IMMERSEDCoupling", 0, ndim)));
-  mcs.AddSelector(
+  mcs.add_selector(
       Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "ParticleWall", 0, ndim)));
 
-  mcs.SetupExtractor(dis, fullmap, *this);
+  mcs.setup_extractor(dis, fullmap, *this);
 }
 
 

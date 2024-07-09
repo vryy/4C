@@ -49,11 +49,11 @@ Teuchos::RCP<Core::FE::Discretization> Adapter::FluidAleXFEM::boundary_discretiz
 /*----------------------------------------------------------------------*/
 /// communication object at the struct interface
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::UTILS::MapExtractor> const& Adapter::FluidAleXFEM::StructInterface()
+Teuchos::RCP<FLD::UTILS::MapExtractor> const& Adapter::FluidAleXFEM::struct_interface()
 {
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(fluid_field(), true);
 
-  return xfluid->StructInterface();
+  return xfluid->struct_interface();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -75,21 +75,21 @@ void Adapter::FluidAleXFEM::nonlinear_solve(
   if (ivel != Teuchos::null) xfluid->apply_struct_interface_velocities(ivel);
 
   // Update the ale update part
-  if (fluid_field()->Interface()->au_cond_relevant())
+  if (fluid_field()->interface()->au_cond_relevant())
   {
-    Teuchos::RCP<const Epetra_Vector> dispnp = fluid_field()->Dispnp();
+    Teuchos::RCP<const Epetra_Vector> dispnp = fluid_field()->dispnp();
     Teuchos::RCP<Epetra_Vector> audispnp =
-        fluid_field()->Interface()->extract_au_cond_vector(dispnp);
-    ale_field()->apply_ale_update_displacements(aucoupfa_->MasterToSlave(audispnp));
+        fluid_field()->interface()->extract_au_cond_vector(dispnp);
+    ale_field()->apply_ale_update_displacements(aucoupfa_->master_to_slave(audispnp));
   }
 
   // Update the free-surface part
-  if (fluid_field()->Interface()->fs_cond_relevant())
+  if (fluid_field()->interface()->fs_cond_relevant())
   {
-    Teuchos::RCP<const Epetra_Vector> dispnp = fluid_field()->Dispnp();
+    Teuchos::RCP<const Epetra_Vector> dispnp = fluid_field()->dispnp();
     Teuchos::RCP<Epetra_Vector> fsdispnp =
-        fluid_field()->Interface()->extract_fs_cond_vector(dispnp);
-    ale_field()->apply_free_surface_displacements(fscoupfa_->MasterToSlave(fsdispnp));
+        fluid_field()->interface()->extract_fs_cond_vector(dispnp);
+    ale_field()->apply_free_surface_displacements(fscoupfa_->master_to_slave(fsdispnp));
   }
 
   // Note: We do not look for moving ale boundaries (outside the coupling
@@ -98,16 +98,16 @@ void Adapter::FluidAleXFEM::nonlinear_solve(
   // notice.
 
 
-  ale_field()->Solve();
-  Teuchos::RCP<Epetra_Vector> fluiddisp = ale_to_fluid_field(ale_field()->Dispnp());
+  ale_field()->solve();
+  Teuchos::RCP<Epetra_Vector> fluiddisp = ale_to_fluid_field(ale_field()->dispnp());
   fluid_field()->apply_mesh_displacement(fluiddisp);
-  fluid_field()->Solve();
+  fluid_field()->solve();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidAleXFEM::RelaxationSolve(
+Teuchos::RCP<Epetra_Vector> Adapter::FluidAleXFEM::relaxation_solve(
     Teuchos::RCP<Epetra_Vector> idisp, double dt)
 {
   FOUR_C_THROW("RelaxationSolve for XFEM useful?");
@@ -116,7 +116,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidAleXFEM::RelaxationSolve(
   // the displacement -> velocity conversion at the interface
   idisp->Scale(1. / dt);
 
-  return fluid_field()->RelaxationSolve(idisp);
+  return fluid_field()->relaxation_solve(idisp);
 }
 
 

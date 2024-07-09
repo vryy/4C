@@ -32,7 +32,7 @@ void FBI::UTILS::GetFBIElementCenterlineDOFIndices(Core::FE::Discretization cons
   std::vector<int> lmrow;
   std::vector<int> dummy1, dummy2;
 
-  ele->LocationVector(discret, lmrow, dummy1, dummy2);
+  ele->location_vector(discret, lmrow, dummy1, dummy2);
   num_dof = lmrow.size();
 
   const Discret::ELEMENTS::Beam3Base* beamele =
@@ -71,12 +71,12 @@ void FBI::UTILS::AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
   std::vector<std::vector<unsigned int>> ele_centerlinedofindices(2);
 
   // Get DOFs for beam element
-  Core::Elements::Element* ele = discretization1.gElement(elegid[0]);
+  Core::Elements::Element* ele = discretization1.g_element(elegid[0]);
   GetFBIElementCenterlineDOFIndices(
       discretization1, ele, ele_centerlinedofindices[0], numdof_ele[0]);
 
   // Get DOFs for fluid element
-  ele = discretization2.gElement(elegid[1]);
+  ele = discretization2.g_element(elegid[1]);
   GetFBIElementCenterlineDOFIndices(
       discretization2, ele, ele_centerlinedofindices[1], numdof_ele[1]);
 

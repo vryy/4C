@@ -93,14 +93,14 @@ namespace Mat
       Every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const override = 0;
+    int unique_par_object_id() const override = 0;
 
     /*!
       \brief Pack this class so it can be communicated
 
       Resizes the vector data and stores all information of a class in it.
       The first information to be stored in data has to be the
-      unique ParObject ID delivered by UniqueParObjectId() which will then
+      unique ParObject ID delivered by unique_par_object_id() which will then
       identify the exact class on the receiving processor.
 
       \param data (in/out): char vector to store class information
@@ -114,7 +114,7 @@ namespace Mat
       exact copy of an instance of a class on a different processor.
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
-      UniqueParObjectId().
+      unique_par_object_id().
 
       \param data (in) : vector storing all data to be unpacked into this instance.
     */
@@ -180,54 +180,54 @@ namespace Mat
     //! return function number describing concentration dependence of the diffusion coefficient
     int diffusion_coefficient_concentration_dependence_funct_num() const
     {
-      return dynamic_cast<Mat::PAR::ElchSingleMat*>(Parameter())
+      return dynamic_cast<Mat::PAR::ElchSingleMat*>(parameter())
           ->diffusion_coefficient_concentration_dependence_funct_num_;
     };
 
     //! return the function number describing the temperature scaling of the diffusion coefficient
     int diffusion_coefficient_temperature_scaling_funct_num() const
     {
-      return dynamic_cast<Mat::PAR::ElchSingleMat*>(Parameter())
+      return dynamic_cast<Mat::PAR::ElchSingleMat*>(parameter())
           ->diffusion_coefficient_temperature_scaling_funct_num_;
     };
 
     //! return function number describing concentration dependence of the conductivity
     int conductivity_concentration_dependence_funct_num() const
     {
-      return dynamic_cast<Mat::PAR::ElchSingleMat*>(Parameter())
+      return dynamic_cast<Mat::PAR::ElchSingleMat*>(parameter())
           ->conductivity_concentration_dependence_funct_num_;
     };
 
     //! return the function number describing the temperature scaling of the conductivity
     int conductivity_temperature_scaling_funct_num() const
     {
-      return dynamic_cast<Mat::PAR::ElchSingleMat*>(Parameter())
+      return dynamic_cast<Mat::PAR::ElchSingleMat*>(parameter())
           ->conductivity_temperature_scaling_funct_num_;
     };
 
     //! return parameters for diffusion coefficient
     const std::vector<double>& diffusion_coefficient_params() const
     {
-      return dynamic_cast<Mat::PAR::ElchSingleMat*>(Parameter())->diffusion_coefficent_params_;
+      return dynamic_cast<Mat::PAR::ElchSingleMat*>(parameter())->diffusion_coefficent_params_;
     };
 
     //! return parameters for temperature scaling function for diffusion coefficient
     const std::vector<double>& temp_scale_function_params_diff() const
     {
-      return dynamic_cast<Mat::PAR::ElchSingleMat*>(Parameter())
+      return dynamic_cast<Mat::PAR::ElchSingleMat*>(parameter())
           ->diffusion_temp_scale_funct_params_;
     };
 
     //! return parameters for conductivity
     const std::vector<double>& conductivity_params() const
     {
-      return dynamic_cast<Mat::PAR::ElchSingleMat*>(Parameter())->conductivity_params_;
+      return dynamic_cast<Mat::PAR::ElchSingleMat*>(parameter())->conductivity_params_;
     };
 
     //! return parameters for temperature scaling function for conductivity
     const std::vector<double>& temp_scale_function_params_cond() const
     {
-      return dynamic_cast<Mat::PAR::ElchSingleMat*>(Parameter())
+      return dynamic_cast<Mat::PAR::ElchSingleMat*>(parameter())
           ->conductivity_temp_scale_funct_params_;
     };
 

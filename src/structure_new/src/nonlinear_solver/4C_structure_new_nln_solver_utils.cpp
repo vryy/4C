@@ -54,7 +54,7 @@ void Solid::Nln::SOLVER::create_quantity_types(
   // ---------------------------------------------------------------------------
   // get the model types
   // ---------------------------------------------------------------------------
-  const std::set<enum Inpar::Solid::ModelType>& mtypes = datasdyn.GetModelTypes();
+  const std::set<enum Inpar::Solid::ModelType>& mtypes = datasdyn.get_model_types();
   std::vector<enum NOX::Nln::StatusTest::QuantityType> qt_vec;
 
   std::set<enum Inpar::Solid::ModelType>::const_iterator miter;
@@ -113,7 +113,7 @@ void Solid::Nln::SOLVER::convert_model_type_to_quantity_type(const enum Inpar::S
       qt.push_back(NOX::Nln::StatusTest::quantity_contact_normal);
       // check for friction
       const Teuchos::ParameterList& p_contact =
-          Global::Problem::Instance()->contact_dynamic_params();
+          Global::Problem::instance()->contact_dynamic_params();
       enum Inpar::CONTACT::FrictionType frictiontype =
           Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(p_contact, "FRICTION");
       switch (frictiontype)
@@ -232,7 +232,7 @@ void Solid::Nln::SOLVER::set_status_test_params(Teuchos::ParameterList& pstatus,
   // ---------------------------------------------------------------------------
   Teuchos::ParameterList& pcombo_incr_fres = pcombo_incr_fres_constr.sublist("Test 0");
   pcombo_incr_fres.set("Test Type", "Combo");
-  switch (datasdyn.GetResIncrComboType(
+  switch (datasdyn.get_res_incr_combo_type(
       NOX::Nln::StatusTest::quantity_structure, NOX::Nln::StatusTest::quantity_structure))
   {
     case Inpar::Solid::bop_and:
@@ -431,10 +431,10 @@ void Solid::Nln::SOLVER::set_quantity_test_params(Teuchos::ParameterList& p,
 {
   if (testname == "NormUpdate")
     set_norm_update_params(p, qtype, datasdyn.get_incr_tolerance_type(qtype),
-        datasdyn.GetIncrTolerance(qtype), datasdyn.GetNormType());
+        datasdyn.get_incr_tolerance(qtype), datasdyn.get_norm_type());
   else if (testname == "NormF")
-    set_norm_f_params(p, qtype, datasdyn.GetResToleranceType(qtype),
-        datasdyn.GetResTolerance(qtype), datasdyn.GetNormType());
+    set_norm_f_params(p, qtype, datasdyn.get_res_tolerance_type(qtype),
+        datasdyn.get_res_tolerance(qtype), datasdyn.get_norm_type());
   else if (testname == "ActiveSet")
     set_active_set_params(p, qtype);
   else
@@ -456,9 +456,9 @@ void Solid::Nln::SOLVER::split_and_or_combo(
   {
     if (*qtiter == NOX::Nln::StatusTest::quantity_structure) continue;
 
-    enum Inpar::Solid::BinaryOp combotype = datasdyn.GetIncrComboType(*qtiter);
+    enum Inpar::Solid::BinaryOp combotype = datasdyn.get_incr_combo_type(*qtiter);
     if (testname == "NormF")
-      combotype = datasdyn.GetResComboType(*qtiter);
+      combotype = datasdyn.get_res_combo_type(*qtiter);
     else if (testname != "NormUpdate")
       FOUR_C_THROW("The given test \"%s\" name is not supported!", testname.c_str());
 

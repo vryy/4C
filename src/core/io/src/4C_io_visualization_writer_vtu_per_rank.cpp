@@ -33,13 +33,13 @@ Core::IO::VisualizationWriterVtuPerRank::VisualizationWriterVtuPerRank(
 /**
  *
  */
-void Core::IO::VisualizationWriterVtuPerRank::InitializeTimeStep(
+void Core::IO::VisualizationWriterVtuPerRank::initialize_time_step(
     const double visualziation_time, const int visualization_step)
 {
   vtu_writer_.reset_time_and_time_step(visualziation_time, visualization_step);
 
   vtu_writer_.initialize_vtk_file_streams_for_new_geometry_and_or_time_step();
-  vtu_writer_.WriteVtkHeaders();
+  vtu_writer_.write_vtk_headers();
 }
 
 /**
@@ -54,7 +54,7 @@ void Core::IO::VisualizationWriterVtuPerRank::write_field_data_to_disk(
 /**
  *
  */
-void Core::IO::VisualizationWriterVtuPerRank::WriteGeometryToDisk(
+void Core::IO::VisualizationWriterVtuPerRank::write_geometry_to_disk(
     const std::vector<double>& point_coordinates,
     const std::vector<Core::IO::index_type>& point_cell_connectivity,
     const std::vector<Core::IO::index_type>& cell_offset, const std::vector<uint8_t>& cell_types,
@@ -82,15 +82,15 @@ void Core::IO::VisualizationWriterVtuPerRank::write_cell_data_vector_to_disk(
     const visualization_vector_type_variant& data, unsigned int num_components_per_point,
     const std::string& name)
 {
-  vtu_writer_.WriteCellDataVector(data, num_components_per_point, name);
+  vtu_writer_.write_cell_data_vector(data, num_components_per_point, name);
 }
 
 /**
  *
  */
-void Core::IO::VisualizationWriterVtuPerRank::FinalizeTimeStep()
+void Core::IO::VisualizationWriterVtuPerRank::finalize_time_step()
 {
-  vtu_writer_.WriteVtkFooters();
+  vtu_writer_.write_vtk_footers();
 
   // Write a collection file summarizing all previously written files
   vtu_writer_.write_vtk_collection_file_for_all_written_master_files(

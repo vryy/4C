@@ -102,7 +102,7 @@ Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Shell7pEleCalcEas()
           Shell::create_gauss_integration_points<distype>(Shell::get_gauss_rule<distype>()))
 {
   old_step_length_ = 0.0;
-  cur_thickness_.resize(intpoints_midsurface_.NumPoints(), shell_data_.thickness);
+  cur_thickness_.resize(intpoints_midsurface_.num_points(), shell_data_.thickness);
 }
 
 template <Core::FE::CellType distype>
@@ -112,7 +112,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::setup(Core::Elements::Elemen
     const Solid::ELEMENTS::ShellData& shell_data)
 {
   shell_data_ = shell_data;
-  cur_thickness_.resize(intpoints_midsurface_.NumPoints(), shell_data_.thickness);
+  cur_thickness_.resize(intpoints_midsurface_.num_points(), shell_data_.thickness);
   locking_types_ = locking_types;
 
   // init sizes of EAS data for integration
@@ -122,7 +122,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::setup(Core::Elements::Elemen
   eas_iteration_data_.transL_.shape(locking_types_.total, Shell::DETAIL::numdofperelement<distype>);
 
   //  set up of materials with GP data (e.g., history variables)
-  solid_material.setup(intpoints_midsurface_.NumPoints(), linedef);
+  solid_material.setup(intpoints_midsurface_.num_points(), linedef);
 }
 
 template <Core::FE::CellType distype>
@@ -183,7 +183,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::material_post_setup(
   // element/nodal wise defined data
   Teuchos::ParameterList params{};
   // Call post_setup of material
-  solid_material.post_setup(params, ele.Id());
+  solid_material.post_setup(params, ele.id());
 }
 
 
@@ -203,8 +203,8 @@ double Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_internal_energy(
 {
   double intenergy = 0.0;
 
-  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-  Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+  Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+  Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
   std::vector<double> displacement(dof_index_array.size());
   Core::FE::ExtractMyValues(*disp, displacement, dof_index_array);
   std::vector<double> residual(dof_index_array.size());
@@ -215,7 +215,7 @@ double Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_internal_energy(
 
   // get nodal coordinates
   Shell::NodalCoordinates<distype> nodal_coordinates = Shell::EvaluateNodalCoordinates<distype>(
-      ele.Nodes(), displacement, shell_data_.thickness, nodal_directors, condfac);
+      ele.nodes(), displacement, shell_data_.thickness, nodal_directors, condfac);
 
   // init gauss point in thickness direction that will be modified via SDC
   double zeta = 0.0;
@@ -225,7 +225,7 @@ double Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_internal_energy(
 
   // EAS Update of alphas: the current alphas are (re-)evaluated out of DTilde and L^T of previous
   // step to avoid additional element call
-  if (not ele.IsParamsInterface())
+  if (not ele.is_params_interface())
   {
     // compute the EAS increment delta_alpha
     EvaluateAlphaIncrement<distype>(
@@ -288,7 +288,7 @@ double Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_internal_energy(
             Shell::GetShapefunctionsForAns<distype>(xi_gp, shell_data_.num_ans);
 
         // integration loop in thickness direction, here we prescribe 2 integration points
-        for (int gpt = 0; gpt < intpoints_thickness_.NumPoints(); ++gpt)
+        for (int gpt = 0; gpt < intpoints_thickness_.num_points(); ++gpt)
         {
           zeta = intpoints_thickness_.qxg[gpt][0] / condfac;
 
@@ -309,7 +309,7 @@ double Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_internal_energy(
           // call material for evaluation of strain energy function
           double psi = 0.0;
 
-          solid_material.StrainEnergy(strains.gl_strain_, psi, gp, ele.Id());
+          solid_material.strain_energy(strains.gl_strain_, psi, gp, ele.id());
 
           double thickness = 0.0;
           for (int i = 0; i < Shell::DETAIL::num_node<distype>; ++i)
@@ -333,12 +333,12 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_stresses_strains(
   std::vector<char>& serialized_stress_data = stressIO.mutable_data;
   std::vector<char>& serialized_strain_data = strainIO.mutable_data;
   Core::LinAlg::SerialDenseMatrix stress_data(
-      intpoints_midsurface_.NumPoints(), Mat::NUM_STRESS_3D);
+      intpoints_midsurface_.num_points(), Mat::NUM_STRESS_3D);
   Core::LinAlg::SerialDenseMatrix strain_data(
-      intpoints_midsurface_.NumPoints(), Mat::NUM_STRESS_3D);
+      intpoints_midsurface_.num_points(), Mat::NUM_STRESS_3D);
 
-  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-  Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+  Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+  Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
   std::vector<double> displacement(dof_index_array.size());
   Core::FE::ExtractMyValues(*disp, displacement, dof_index_array);
   std::vector<double> residual(dof_index_array.size());
@@ -352,7 +352,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_stresses_strains(
 
   // get nodal coordinates
   Shell::NodalCoordinates<distype> nodal_coordinates = Shell::EvaluateNodalCoordinates<distype>(
-      ele.Nodes(), displacement, shell_data_.thickness, nodal_directors, condfac);
+      ele.nodes(), displacement, shell_data_.thickness, nodal_directors, condfac);
 
   // Enhanced Assumed Strain (EAS) Technology: declare, initialize, set up, and alpha history
 
@@ -360,7 +360,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_stresses_strains(
   // step to avoid additional element call
   Core::LinAlg::SerialDenseMatrix delta_alpha(locking_types_.total, 1);
 
-  if (not ele.IsParamsInterface())
+  if (not ele.is_params_interface())
   {
     // compute the EAS increment delta_alpha
     EvaluateAlphaIncrement<distype>(
@@ -424,7 +424,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_stresses_strains(
 
         // integration loop in thickness direction, here we prescribe 2 integration points to avoid
         // nonlinear poisson stiffening
-        for (int gpt = 0; gpt < intpoints_thickness_.NumPoints(); ++gpt)
+        for (int gpt = 0; gpt < intpoints_thickness_.num_points(); ++gpt)
         {
           zeta = intpoints_thickness_.qxg[gpt][0] / condfac;
           Shell::EvaluateMetrics(shape_functions, g_reference, g_current, nodal_coordinates, zeta);
@@ -449,7 +449,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_stresses_strains(
 
           // evaluate stress in local cartesian system
           auto stress = Shell::EvaluateMaterialStressCartesianSystem<Shell::DETAIL::num_dim>(
-              solid_material, strains, params, gp, ele.Id());
+              solid_material, strains, params, gp, ele.id());
           Shell::AssembleStrainTypeToMatrixRow<distype>(
               strains, strainIO.type, strain_data, gp, 0.5);
           Shell::assemble_stress_type_to_matrix_row<distype>(
@@ -468,8 +468,8 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector* force_vector,
     Core::LinAlg::SerialDenseMatrix* stiffness_matrix, Core::LinAlg::SerialDenseMatrix* mass_matrix)
 {
-  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-  Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+  Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+  Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
   std::vector<double> displacement(dof_index_array.size());
   Core::FE::ExtractMyValues(*disp, displacement, dof_index_array);
   std::vector<double> residual(dof_index_array.size());
@@ -483,7 +483,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
 
   // get nodal coordinates
   Shell::NodalCoordinates<distype> nodal_coordinates = Shell::EvaluateNodalCoordinates<distype>(
-      ele.Nodes(), displacement, shell_data_.thickness, nodal_directors, condfac);
+      ele.nodes(), displacement, shell_data_.thickness, nodal_directors, condfac);
 
   // Enhanced Assumed Strain (EAS) Technology: declare, initialize, set up, and alpha history
 
@@ -491,7 +491,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
   // step to avoid additional element call
   Core::LinAlg::SerialDenseMatrix delta_alpha(locking_types_.total, 1);
 
-  if (not ele.IsParamsInterface())
+  if (not ele.is_params_interface())
   {
     // compute the EAS increment delta_alpha
     EvaluateAlphaIncrement<distype>(
@@ -587,7 +587,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
 
         // integration loop in thickness direction, here we prescribe 2 integration points to avoid
         // nonlinear poisson stiffening
-        for (int gpt = 0; gpt < intpoints_thickness_.NumPoints(); ++gpt)
+        for (int gpt = 0; gpt < intpoints_thickness_.num_points(); ++gpt)
         {
           zeta = intpoints_thickness_.qxg[gpt][0] / condfac;
           double factor = intpoints_thickness_.qwgt[gpt];
@@ -619,7 +619,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
           }
 
           auto stress = Shell::EvaluateMaterialStressCartesianSystem<Shell::DETAIL::num_dim>(
-              solid_material, strains, params, gp, ele.Id());
+              solid_material, strains, params, gp, ele.id());
           Shell::MapMaterialStressToCurvilinearSystem(stress, g_reference);
           Shell::ThicknessIntegration<distype>(stress_enh, stress, factor, zeta);
           // thickness integration of mass matrix variables
@@ -659,7 +659,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
         // add internal mass_matrix
         if (mass_matrix != nullptr)
         {
-          double density = solid_material.Density(gp);
+          double density = solid_material.density(gp);
           mass_matrix_variables.factor_v_ *= gpweight * density;
           mass_matrix_variables.factor_w_ *= gpweight * density;
           mass_matrix_variables.factor_vw_ *= gpweight * density;
@@ -705,11 +705,11 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Recover(Core::Elements::Element& ele,
+void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::recover(Core::Elements::Element& ele,
     const Core::FE::Discretization& discretization, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params, Solid::ELEMENTS::ParamsInterface& interface_ptr)
 {
-  Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+  Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
   if (res == Teuchos::null) FOUR_C_THROW("Cannot get residual displacement state vector");
   std::vector<double> residual(dof_index_array.size());
   Core::FE::ExtractMyValues(*res, residual, dof_index_array);
@@ -725,7 +725,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Recover(Core::Elements::Elem
   {
     // first, store the eas state of the previous accepted Newton step
     interface_ptr.sum_into_my_previous_sol_norm(NOX::Nln::StatusTest::quantity_eas,
-        locking_types_.total, eas_iteration_data_.alpha_[0], ele.Owner());
+        locking_types_.total, eas_iteration_data_.alpha_[0], ele.owner());
 
     // compute the EAS increment delta_alpha
     EvaluateAlphaIncrement<distype>(
@@ -753,19 +753,19 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Recover(Core::Elements::Elem
   // Check if delta alpha is tested and if yes, calculate the element
   // contribution to the norm
   interface_ptr.sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_eas, locking_types_.total,
-      delta_alpha[0], eas_iteration_data_.alpha_[0], step_length, ele.Owner());
+      delta_alpha[0], eas_iteration_data_.alpha_[0], step_length, ele.owner());
 
   // save the old step length
   old_step_length_ = step_length;
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Update(Core::Elements::Element& ele,
+void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::update(Core::Elements::Element& ele,
     Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
     const Core::LinAlg::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params)
 {
-  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+  Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement' ");
   std::vector<double> displacement(dof_index_array.size());
   Core::FE::ExtractMyValues(*disp, displacement, dof_index_array);
@@ -775,7 +775,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Update(Core::Elements::Eleme
   // require an update of alpha
 
   // calculate and update inelastic deformation gradient if needed
-  if (solid_material.UsesExtendedUpdate())
+  if (solid_material.uses_extended_update())
   {
     // init scale factor for scaled director approach (SDC)
     const double condfac = shell_data_.sdc;
@@ -785,7 +785,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Update(Core::Elements::Eleme
 
     // get nodal coordinates
     Shell::NodalCoordinates<distype> nodal_coordinates = Shell::EvaluateNodalCoordinates<distype>(
-        ele.Nodes(), displacement, shell_data_.thickness, nodal_directors, condfac);
+        ele.nodes(), displacement, shell_data_.thickness, nodal_directors, condfac);
 
     // metric of element centroid point (for EAS)
     const std::array<double, 2> centroid_point = {0.0, 0.0};
@@ -841,7 +841,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Update(Core::Elements::Eleme
               Shell::GetShapefunctionsForAns<distype>(xi_gp, shell_data_.num_ans);
 
           // integration loop in thickness direction, here we prescribe 2 integration points
-          for (int gpt = 0; gpt < intpoints_thickness_.NumPoints(); ++gpt)
+          for (int gpt = 0; gpt < intpoints_thickness_.num_points(); ++gpt)
           {
             zeta = intpoints_thickness_.qxg[gpt][0] / condfac;
 
@@ -870,7 +870,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Update(Core::Elements::Eleme
                   strains.defgrd_, strains.gl_strain_, defgrd_enh);
               strains.defgrd_ = defgrd_enh;
             }
-            solid_material.update(strains.defgrd_, gp, params, ele.Id());
+            solid_material.update(strains.defgrd_, gp, params, ele.id());
           }
         });
   }
@@ -878,7 +878,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Update(Core::Elements::Eleme
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::VisData(
+void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::vis_data(
     const std::string& name, std::vector<double>& data)
 {
   if (name == "thickness")
@@ -888,10 +888,10 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::VisData(
     {
       data[0] += thickness_data;
     }
-    data[0] = data[0] / intpoints_midsurface_.NumPoints();
+    data[0] = data[0] / intpoints_midsurface_.num_points();
   }
 
-}  // VisData()
+}  // vis_data()
 
 // template classes
 template class Discret::ELEMENTS::Shell7pEleCalcEas<Core::FE::CellType::quad4>;

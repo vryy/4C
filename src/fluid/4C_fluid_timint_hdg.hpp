@@ -46,7 +46,7 @@ namespace FLD
     \brief Set theta_ to its value, dependent on integration method for GenAlpha and BDF2
 
     */
-    void SetTheta() override;
+    void set_theta() override;
 
     /*!
     \brief do explicit predictor step to start nonlinear iteration from
@@ -64,7 +64,7 @@ namespace FLD
     \brief Set states in the time integration schemes: additional vectors for HDG
 
     */
-    void SetStateTimInt() override;
+    void set_state_tim_int() override;
 
     /*!
     \brief Call discret_->ClearState() after assembly (HDG needs to read from state vectors...)
@@ -103,13 +103,13 @@ namespace FLD
            iteration. Current solution becomes old solution of next
            time step.
     */
-    void TimeUpdate() override;
+    void time_update() override;
 
     /*!
     \brief set initial flow field for analytical test problems
 
     */
-    void SetInitialFlowField(
+    void set_initial_flow_field(
         const Inpar::FLUID::InitialField initfield, const int startfuncno) override;
 
     /*!
@@ -134,9 +134,9 @@ namespace FLD
     \brief accessor to interior velocity
 
     */
-    virtual Teuchos::RCP<Epetra_Vector> ReturnIntVelnp() { return intvelnp_; }
-    virtual Teuchos::RCP<Epetra_Vector> ReturnIntVeln() { return intveln_; }
-    virtual Teuchos::RCP<Epetra_Vector> ReturnIntVelnm() { return intvelnm_; }
+    virtual Teuchos::RCP<Epetra_Vector> return_int_velnp() { return intvelnp_; }
+    virtual Teuchos::RCP<Epetra_Vector> return_int_veln() { return intveln_; }
+    virtual Teuchos::RCP<Epetra_Vector> return_int_velnm() { return intvelnm_; }
 
 
    protected:

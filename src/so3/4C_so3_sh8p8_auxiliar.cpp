@@ -1293,7 +1293,7 @@ void Discret::ELEMENTS::SoSh8p8::gnuplot_out(
   static Core::LinAlg::Matrix<NUMDOF_, NUMDOF_> lasttangent;
 
   const double time = params.get<double>("total time");
-  const std::string filebase = Global::Problem::Instance()->OutputControlFile()->file_name();
+  const std::string filebase = Global::Problem::instance()->output_control_file()->file_name();
   const std::string txtname = filebase + ".sosh8p8.txt";
 
   // store last converged state

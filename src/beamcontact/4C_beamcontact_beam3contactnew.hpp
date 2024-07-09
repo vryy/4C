@@ -66,40 +66,40 @@ namespace CONTACT
     /*!
     \brief Get problem discretization
     */
-    inline const Core::FE::Discretization& ProblemDiscret() const override { return pdiscret_; };
+    inline const Core::FE::Discretization& problem_discret() const override { return pdiscret_; };
 
     /*!
     \brief Get beam contact discretization
     */
-    inline const Core::FE::Discretization& ContactDiscret() const override { return cdiscret_; };
+    inline const Core::FE::Discretization& contact_discret() const override { return cdiscret_; };
 
     /*!
     \brief Get offset of dofs between cdiscret and pdiscret
     */
-    inline const std::map<int, int>& DofOffset() const override { return dofoffsetmap_; };
+    inline const std::map<int, int>& dof_offset() const override { return dofoffsetmap_; };
 
     /*!
     \brief Get first element
     */
-    inline const Core::Elements::Element* Element1() override { return element1_; };
+    inline const Core::Elements::Element* element1() override { return element1_; };
 
     /*!
     \brief Get first element
     */
-    inline const Core::Elements::Element* Element2() override { return element2_; };
+    inline const Core::Elements::Element* element2() override { return element2_; };
 
     /*!
     \brief Get number of contact points on this element pair
     */
-    int GetNumCps() override { return 1; };
-    int GetNumGps() override { return 0; };
-    int GetNumEps() override { return 0; };
+    int get_num_cps() override { return 1; };
+    int get_num_gps() override { return 0; };
+    int get_num_eps() override { return 0; };
 
     /*!
     \brief Get vector of type declarations (0=closest point contact, 1=gauss point contact, 2= end
     point contact) of all contact pairs
     */
-    std::vector<int> GetContactType() override
+    std::vector<int> get_contact_type() override
     {
       std::vector<int> types(1, 0);
 
@@ -109,7 +109,7 @@ namespace CONTACT
     /*!
     \brief Get gap of this contact pair
     */
-    std::vector<double> GetGap() override
+    std::vector<double> get_gap() override
     {
       std::vector<double> gaps(1, Core::FADUtils::CastToDouble(gap_));
 
@@ -119,7 +119,7 @@ namespace CONTACT
     /*!
     \brief Get contact force of this contact pair
     */
-    std::vector<double> GetContactForce() override
+    std::vector<double> get_contact_force() override
     {
       std::vector<double> forces(1, Core::FADUtils::CastToDouble(fp_));
 
@@ -129,7 +129,7 @@ namespace CONTACT
     /*!
     \brief Get contact angle of this contact pair
     */
-    std::vector<double> GetContactAngle() override
+    std::vector<double> get_contact_angle() override
     {
       double angle = 0.0;
       double cosangle = Core::FADUtils::CastToDouble(tangentproduct_);
@@ -145,7 +145,7 @@ namespace CONTACT
     /*!
     \brief Get closest point of this contact pair
     */
-    std::vector<std::pair<double, double>> GetClosestPoint() override
+    std::vector<std::pair<double, double>> get_closest_point() override
     {
       std::pair<double, double> cp(0.0, 0.0);
       cp.first = Core::FADUtils::CastToDouble(xi1_);
@@ -158,12 +158,12 @@ namespace CONTACT
     /*!
     \brief Return number of individual contact segments on element pair
     */
-    std::pair<int, int> GetNumSegments() override { return std::make_pair(1, 1); };
+    std::pair<int, int> get_num_segments() override { return std::make_pair(1, 1); };
 
     /*!
     \brief Return ids of active segments
     */
-    std::vector<std::pair<int, int>> GetSegmentIds() override
+    std::vector<std::pair<int, int>> get_segment_ids() override
     {
       std::vector<std::pair<int, int>> ids(1, std::make_pair(0, 0));
 
@@ -173,12 +173,12 @@ namespace CONTACT
     /*!
     \brief Get flag indicating whether contact is active (true) or inactive (false)
     */
-    bool GetContactFlag() override { return contactflag_; };
+    bool get_contact_flag() override { return contactflag_; };
 
     /*!
     \brief Get coordinates of contact point of element1
     */
-    std::vector<Core::LinAlg::Matrix<3, 1>> GetX1() override
+    std::vector<Core::LinAlg::Matrix<3, 1>> get_x1() override
     {
       std::vector<Core::LinAlg::Matrix<3, 1>> r1(1, Core::LinAlg::Matrix<3, 1>(true));
 
@@ -190,7 +190,7 @@ namespace CONTACT
     /*!
     \brief Get coordinates of contact point of element2
     */
-    std::vector<Core::LinAlg::Matrix<3, 1>> GetX2() override
+    std::vector<Core::LinAlg::Matrix<3, 1>> get_x2() override
     {
       std::vector<Core::LinAlg::Matrix<3, 1>> r2(1, Core::LinAlg::Matrix<3, 1>(true));
 
@@ -202,11 +202,11 @@ namespace CONTACT
     /*!
     \brief Get normal vector
     */
-    Core::LinAlg::SerialDenseVector GetNormal() override
+    Core::LinAlg::SerialDenseVector get_normal() override
     {
       Core::LinAlg::SerialDenseVector normal(3);
 
-      if (GetNewGapStatus() == true)
+      if (get_new_gap_status() == true)
       {
         for (int i = 0; i < 3; i++) normal(i) = -Core::FADUtils::CastToDouble(normal_(i));
       }
@@ -221,13 +221,13 @@ namespace CONTACT
     /*!
     \brief Get flag indicating whether the nodal values of one element had been shifted due to r1=r2
     */
-    bool GetShiftStatus() override { return shiftnodalvalues_; };
+    bool get_shift_status() override { return shiftnodalvalues_; };
 
     /*!
       \Check, if there is a difference between the result of the new and old gap definition, i.e. if
       the beams centerlines have already crossed or not.
     */
-    bool GetNewGapStatus() override;
+    bool get_new_gap_status() override;
     //@}
 
     /*!
@@ -252,7 +252,7 @@ namespace CONTACT
     /*!
     \brief Get normal vector of last time step
     */
-    Core::LinAlg::Matrix<3, 1, TYPE>* GetNormalOld() override
+    Core::LinAlg::Matrix<3, 1, TYPE>* get_normal_old() override
     {
       if (firsttimestep_)
       {
@@ -274,7 +274,7 @@ namespace CONTACT
     /*!
     \brief Check, if it is the first time step the element is in contact
     */
-    bool FirstTimeStep() override { return firsttimestep_; };
+    bool first_time_step() override { return firsttimestep_; };
     //@}
 
     /** \brief print this beam contact element pair to screen
@@ -297,7 +297,7 @@ namespace CONTACT
     could cross in the next time step when the new gap function definition (ngf_=true) for slender
     beams is applied!
     */
-    void InvertNormal() override;
+    void invert_normal() override;
 
     /*!
       \brief Update of class variables at the end of a time step
@@ -307,7 +307,7 @@ namespace CONTACT
     /*
     \brief Update nodal coordinates of both elements at the beginning of a new time step!
     */
-    void UpdateElePos(Core::LinAlg::SerialDenseMatrix& newele1pos,
+    void update_ele_pos(Core::LinAlg::SerialDenseMatrix& newele1pos,
         Core::LinAlg::SerialDenseMatrix& newele2pos) override;
 
     /*

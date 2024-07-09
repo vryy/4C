@@ -28,25 +28,25 @@ namespace
     void SetUp() override
     {
       Core::IO::InputParameterContainer container;
-      container.Add("YOUNG", 1.0);
-      container.Add("NUE", 0.25);
-      container.Add("DENS", 0.0);
-      container.Add("ISOHARD", 1.0);
-      container.Add("TOL", 1.e-12);
-      container.Add("C", 1.);
-      container.Add("ETA", 1.);
-      container.Add("XI", 1.);
-      container.Add("ETABAR", 1.);
-      container.Add("MAXITER", 50);
-      container.Add("TANG", std::string("consistent"));
+      container.add("YOUNG", 1.0);
+      container.add("NUE", 0.25);
+      container.add("DENS", 0.0);
+      container.add("ISOHARD", 1.0);
+      container.add("TOL", 1.e-12);
+      container.add("C", 1.);
+      container.add("ETA", 1.);
+      container.add("XI", 1.);
+      container.add("ETABAR", 1.);
+      container.add("MAXITER", 50);
+      container.add("TANG", std::string("consistent"));
 
       param_druckprag_ = std::shared_ptr(
           Mat::make_parameter(1, Core::Materials::MaterialType::m_pldruckprag, container));
 
-      Global::Problem& problem = (*Global::Problem::Instance());
-      problem.Materials()->SetReadFromProblem(0);
-      problem.Materials()->insert(1, param_druckprag_);
-      problem.Materials().assert_not_null();
+      Global::Problem& problem = (*Global::Problem::instance());
+      problem.materials()->set_read_from_problem(0);
+      problem.materials()->insert(1, param_druckprag_);
+      problem.materials().assert_not_null();
       druckprag_ = Teuchos::rcp(new Mat::PlasticDruckerPrager(
           dynamic_cast<Mat::PAR::PlasticDruckerPrager*>(param_druckprag_.get())));
     }
@@ -56,7 +56,7 @@ namespace
       // We need to make sure the Global::Problem instance created in SetUp is deleted again. If
       // this is not done, some troubles arise where unit tests influence each other on some
       // configurations. We suspect that missing singleton destruction might be the reason for that.
-      Global::Problem::Done();
+      Global::Problem::done();
     };
     std::shared_ptr<Core::Mat::PAR::Parameter> param_druckprag_;
     Core::Communication::PackBuffer data;

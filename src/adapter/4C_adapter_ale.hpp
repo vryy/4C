@@ -83,13 +83,13 @@ namespace Adapter
     virtual Teuchos::RCP<const Epetra_Vector> initial_guess() const = 0;
 
     //! rhs of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> rhs() const = 0;
 
     //! unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> dispnp() const = 0;
 
     //! known displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispn() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> dispn() const = 0;
 
     //@}
 
@@ -99,13 +99,13 @@ namespace Adapter
     virtual Teuchos::RCP<const Epetra_Map> dof_row_map() const = 0;
 
     //! direct access to system matrix
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() = 0;
 
     //! direct access to system matrix
-    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() = 0;
 
     // access to locsys manager
-    virtual Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() = 0;
+    virtual Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() = 0;
 
     //! direct access to discretization
     virtual Teuchos::RCP<const Core::FE::Discretization> discretization() const = 0;
@@ -121,8 +121,8 @@ namespace Adapter
     //@}
 
     /// setup Dirichlet boundary condition map extractor
-    virtual void SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType
-                                   dbc_type,  //!< application-specific type of Dirichlet set
+    virtual void setup_dbc_map_ex(ALE::UTILS::MapExtractor::AleDBCSetType
+                                      dbc_type,  //!< application-specific type of Dirichlet set
         Teuchos::RCP<const ALE::UTILS::MapExtractor>
             interface,  //!< interface for creation of additional, application-specific Dirichlet
                         //!< map extractors
@@ -137,20 +137,20 @@ namespace Adapter
     virtual void reset_time(const double dtold) = 0;
 
     //! Return target time \f$t_{n+1}\f$
-    virtual double Time() const = 0;
+    virtual double time() const = 0;
 
     //! Return target step counter \f$step_{n+1}\f$
-    virtual double Step() const = 0;
+    virtual double step() const = 0;
 
     //! Evaluate time step
-    virtual void TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
-                              ALE::UTILS::MapExtractor::dbc_set_std) = 0;
+    virtual void time_step(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
+                               ALE::UTILS::MapExtractor::dbc_set_std) = 0;
 
     //! Get time step size \f$\Delta t_n\f$
-    virtual double Dt() const = 0;
+    virtual double dt() const = 0;
 
     //! Take the time and integrate (time loop)
-    virtual int Integrate() = 0;
+    virtual int integrate() = 0;
 
     //! start new time step
     virtual void prepare_time_step() = 0;
@@ -159,7 +159,7 @@ namespace Adapter
     virtual void set_dt(const double dtnew) = 0;
 
     //! Set time and step
-    virtual void SetTimeStep(const double time, const int step) = 0;
+    virtual void set_time_step(const double time, const int step) = 0;
 
     /*! \brief update displacement and evaluate elements
      *
@@ -180,7 +180,7 @@ namespace Adapter
         ) = 0;
 
     //! iterative update of solution after solving the linear system
-    virtual void UpdateIter() = 0;
+    virtual void update_iter() = 0;
 
     //! update at time step end
     virtual void update() = 0;
@@ -212,10 +212,10 @@ namespace Adapter
      for the time step. All boundary conditions have
      been set.
      */
-    virtual int Solve() = 0;
+    virtual int solve() = 0;
 
     //! Access to linear solver
-    virtual Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Solver> linear_solver() = 0;
 
     //@}
 
@@ -223,12 +223,12 @@ namespace Adapter
     //@{
 
     //! write access to extract displacements at \f$t^{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() const = 0;
+    virtual Teuchos::RCP<Epetra_Vector> write_access_dispnp() const = 0;
 
     //@}
 
     //! create result test for encapsulated structure algorithm
-    virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() = 0;
 
     //! reset state vectors to zero
     virtual void reset() = 0;
@@ -242,7 +242,7 @@ namespace Adapter
         Teuchos::RCP<const ALE::UTILS::MapExtractor> interface = Teuchos::null) = 0;
 
     //! update slave dofs for multifield simulations with ale mesh tying
-    virtual void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& a) = 0;
+    virtual void update_slave_dof(Teuchos::RCP<Epetra_Vector>& a) = 0;
 
   };  // class Ale
 

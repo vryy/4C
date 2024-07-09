@@ -57,7 +57,7 @@ namespace ScaTra
     ) const = 0;
 
     //! perform convergence check for outer iteration in partitioned coupling schemes
-    virtual bool AbortOuterIter(
+    virtual bool abort_outer_iter(
         const ScaTraTimIntImpl& scatratimint  //!< scalar transport time integrator
     ) const
     {
@@ -112,7 +112,8 @@ namespace ScaTra
     ) const override;
 
     //! perform convergence check for outer iteration in partitioned coupling schemes
-    bool AbortOuterIter(const ScaTraTimIntImpl& scatratimint  //!< scalar transport time integrator
+    bool abort_outer_iter(
+        const ScaTraTimIntImpl& scatratimint  //!< scalar transport time integrator
     ) const override;
 
    private:
@@ -266,7 +267,8 @@ namespace ScaTra
     ) const override;
 
     //! perform convergence check for outer iteration in partitioned coupling schemes
-    bool AbortOuterIter(const ScaTraTimIntImpl& scatratimint  //!< scalar transport time integrator
+    bool abort_outer_iter(
+        const ScaTraTimIntImpl& scatratimint  //!< scalar transport time integrator
     ) const override;
 
    private:

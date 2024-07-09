@@ -32,20 +32,23 @@ namespace Core::LinAlg
       }
     }
 
-    bool IsUsed(unsigned row, unsigned col) const { return blocks_[position(row, col)] != nullptr; }
+    bool is_used(unsigned row, unsigned col) const
+    {
+      return blocks_[position(row, col)] != nullptr;
+    }
 
-    bool IsUsed(unsigned pos) const { return blocks_[pos] != nullptr; }
+    bool is_used(unsigned pos) const { return blocks_[pos] != nullptr; }
 
-    void Clear(unsigned row, unsigned col)
+    void clear(unsigned row, unsigned col)
     {
       int p = position(row, col);
       delete blocks_[p];
       blocks_[p] = nullptr;
     }
 
-    void AddView(unsigned row, unsigned col, ValueType& matrix)
+    void add_view(unsigned row, unsigned col, ValueType& matrix)
     {
-      Clear(row, col);
+      clear(row, col);
       int p = position(row, col);
       blocks_[p] = new ValueType(matrix, true);
     }
@@ -103,11 +106,11 @@ namespace Core::LinAlg
       {
         for (unsigned int i = 0; i < inner; ++i)
         {
-          if (right.IsUsed(i, ic))
+          if (right.is_used(i, ic))
           {
             for (unsigned int ir = 0; ir < brows; ++ir)
             {
-              if (left.IsUsed(ir, i))
+              if (left.is_used(ir, i))
               {
                 ValueType* b = (*this)(ir, ic);
                 b->multiply(1, *left(ir, i), *right(i, ic), 1);
@@ -130,7 +133,7 @@ namespace Core::LinAlg
     }
 
     template <int rows, int cols>
-    void AssembleTo(Core::LinAlg::Matrix<rows, cols, scalar_type>& dest, double f)
+    void assemble_to(Core::LinAlg::Matrix<rows, cols, scalar_type>& dest, double f)
     {
       const int local_rows = rows / brows;
       const int local_cols = cols / bcols;
@@ -140,7 +143,7 @@ namespace Core::LinAlg
       {
         for (unsigned irb = 0; irb < row_blocks; ++irb)
         {
-          if (IsUsed(irb, icb))
+          if (is_used(irb, icb))
           {
             Core::LinAlg::Matrix<local_rows, local_cols>& local = *(*this)(irb, icb);
             for (int ic = 0; ic < local_cols; ++ic)

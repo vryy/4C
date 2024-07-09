@@ -77,14 +77,14 @@ void ParticleInteraction::SPHBarrierForce::setup(
 
   // safety check
   for (const auto& type_i : fluidtypes_)
-    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+    if (not particlecontainerbundle_->get_particle_types().count(type_i))
       FOUR_C_THROW("no particle container for particle type '%s' found!",
           PARTICLEENGINE::EnumToTypeName(type_i).c_str());
 
   // update with actual boundary particle types
   const auto boundarytypes = boundarytypes_;
   for (const auto& type_i : boundarytypes)
-    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+    if (not particlecontainerbundle_->get_particle_types().count(type_i))
       boundarytypes_.erase(type_i);
 }
 
@@ -128,15 +128,17 @@ void ParticleInteraction::SPHBarrierForce::compute_barrier_force_particle_contri
         particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get pointer to particle states
-    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
-    const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
-    const double* temp_i = container_i->CondGetPtrToState(PARTICLEENGINE::Temperature, particle_i);
-    double* acc_i = container_i->GetPtrToState(PARTICLEENGINE::Acceleration, particle_i);
+    const double* mass_i = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
+    const double* vel_i = container_i->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_i);
+    const double* temp_i =
+        container_i->cond_get_ptr_to_state(PARTICLEENGINE::Temperature, particle_i);
+    double* acc_i = container_i->get_ptr_to_state(PARTICLEENGINE::Acceleration, particle_i);
 
-    const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
-    const double* vel_j = container_j->GetPtrToState(PARTICLEENGINE::Velocity, particle_j);
-    const double* temp_j = container_j->CondGetPtrToState(PARTICLEENGINE::Temperature, particle_j);
-    double* acc_j = container_j->GetPtrToState(PARTICLEENGINE::Acceleration, particle_j);
+    const double* mass_j = container_j->get_ptr_to_state(PARTICLEENGINE::Mass, particle_j);
+    const double* vel_j = container_j->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_j);
+    const double* temp_j =
+        container_j->cond_get_ptr_to_state(PARTICLEENGINE::Temperature, particle_j);
+    double* acc_j = container_j->get_ptr_to_state(PARTICLEENGINE::Acceleration, particle_j);
 
     // evaluate transition factor above reference temperature
     double tempfac_i = 0.0;
@@ -224,17 +226,19 @@ void ParticleInteraction::SPHBarrierForce::compute_barrier_force_particle_bounda
         particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get pointer to particle states
-    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
-    const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
-    const double* temp_i = container_i->CondGetPtrToState(PARTICLEENGINE::Temperature, particle_i);
+    const double* mass_i = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
+    const double* vel_i = container_i->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_i);
+    const double* temp_i =
+        container_i->cond_get_ptr_to_state(PARTICLEENGINE::Temperature, particle_i);
 
     double* acc_i = nullptr;
     if (status_i == PARTICLEENGINE::Owned)
-      acc_i = container_i->GetPtrToState(PARTICLEENGINE::Acceleration, particle_i);
+      acc_i = container_i->get_ptr_to_state(PARTICLEENGINE::Acceleration, particle_i);
 
     // get pointer to boundary particle states
-    const double* vel_j = container_j->GetPtrToState(PARTICLEENGINE::Velocity, particle_j);
-    const double* temp_j = container_j->CondGetPtrToState(PARTICLEENGINE::Temperature, particle_j);
+    const double* vel_j = container_j->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_j);
+    const double* temp_j =
+        container_j->cond_get_ptr_to_state(PARTICLEENGINE::Temperature, particle_j);
 
     // evaluate transition factor above reference temperature
     double tempfac_i = 0.0;

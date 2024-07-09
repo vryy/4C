@@ -36,16 +36,16 @@ namespace Discret
     class SoHex8ScatraType : public SoHex8Type
     {
      public:
-      std::string Name() const override { return "So_hex8ScatraType"; }
+      std::string name() const override { return "So_hex8ScatraType"; }
 
-      static SoHex8ScatraType& Instance();
+      static SoHex8ScatraType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -66,16 +66,16 @@ namespace Discret
     class SoHex8fbarScatraType : public SoHex8fbarType
     {
      public:
-      std::string Name() const override { return "So_hex8fbarScatraType"; }
+      std::string name() const override { return "So_hex8fbarScatraType"; }
 
-      static SoHex8fbarScatraType& Instance();
+      static SoHex8fbarScatraType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -96,16 +96,16 @@ namespace Discret
     class SoHex27ScatraType : public SoHex27Type
     {
      public:
-      std::string Name() const override { return "So_hex27ScatraType"; }
+      std::string name() const override { return "So_hex27ScatraType"; }
 
-      static SoHex27ScatraType& Instance();
+      static SoHex27ScatraType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -125,16 +125,16 @@ namespace Discret
     class SoTet4ScatraType : public SoTet4Type
     {
      public:
-      std::string Name() const override { return "So_tet4ScatraType"; }
+      std::string name() const override { return "So_tet4ScatraType"; }
 
-      static SoTet4ScatraType& Instance();
+      static SoTet4ScatraType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -154,16 +154,16 @@ namespace Discret
     class SoTet10ScatraType : public SoTet10Type
     {
      public:
-      std::string Name() const override { return "So_tet10ScatraType"; }
+      std::string name() const override { return "So_tet10ScatraType"; }
 
-      static SoTet10ScatraType& Instance();
+      static SoTet10ScatraType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -183,16 +183,16 @@ namespace Discret
     class SoWeg6ScatraType : public SoWeg6Type
     {
      public:
-      std::string Name() const override { return "So_weg6ScatraType"; }
+      std::string name() const override { return "So_weg6ScatraType"; }
 
-      static SoWeg6ScatraType& Instance();
+      static SoWeg6ScatraType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 

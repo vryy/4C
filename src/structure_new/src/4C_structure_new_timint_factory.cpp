@@ -71,7 +71,7 @@ Teuchos::RCP<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_implicit_strat
       Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP");
 
   const bool is_prestress = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
-                                Global::Problem::Instance()->structural_dynamic_params(),
+                                Global::Problem::instance()->structural_dynamic_params(),
                                 "PRESTRESS") != Inpar::Solid::PreStress::none;
   if (is_prestress or dyntype == Inpar::Solid::dyna_statics or  // dynamic type
       dyntype == Inpar::Solid::dyna_genalpha or dyntype == Inpar::Solid::dyna_genalpha_liegroup or
@@ -89,7 +89,7 @@ Teuchos::RCP<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_explicit_strat
   Teuchos::RCP<Solid::TimeInt::Base> ti_strategy = Teuchos::null;
 
   // what's the current problem type?
-  Core::ProblemType probtype = Global::Problem::Instance()->GetProblemType();
+  Core::ProblemType probtype = Global::Problem::instance()->get_problem_type();
 
   if (probtype == Core::ProblemType::fsi or probtype == Core::ProblemType::fsi_redmodels or
       probtype == Core::ProblemType::fsi_lung or probtype == Core::ProblemType::gas_fsi or

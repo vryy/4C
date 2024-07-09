@@ -29,9 +29,9 @@ Discret::ELEMENTS::SoSh8::ThicknessDirection Discret::ELEMENTS::SoSh8::sosh8_fin
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(false);  // material coord. of element
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
-    xrefe(i, 0) = this->Nodes()[i]->X()[0];
-    xrefe(i, 1) = this->Nodes()[i]->X()[1];
-    xrefe(i, 2) = this->Nodes()[i]->X()[2];
+    xrefe(i, 0) = this->nodes()[i]->x()[0];
+    xrefe(i, 1) = this->nodes()[i]->x()[1];
+    xrefe(i, 2) = this->nodes()[i]->x()[2];
   }
   // vector of df(origin), ie parametric derivatives of shape functions
   // evaluated at the origin (r,s,t)=(0,0,0)
@@ -134,9 +134,9 @@ double Discret::ELEMENTS::SoSh8::sosh8_calcaspectratio()
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(false);  // material coord. of element
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
-    xrefe(i, 0) = this->Nodes()[i]->X()[0];
-    xrefe(i, 1) = this->Nodes()[i]->X()[1];
-    xrefe(i, 2) = this->Nodes()[i]->X()[2];
+    xrefe(i, 0) = this->nodes()[i]->x()[0];
+    xrefe(i, 1) = this->nodes()[i]->x()[1];
+    xrefe(i, 2) = this->nodes()[i]->x()[2];
   }
   // vector of df(origin), ie parametric derivatives of shape functions
   // evaluated at the origin (r,s,t)=(0,0,0)
@@ -193,9 +193,9 @@ Discret::ELEMENTS::SoSh8::ThicknessDirection Discret::ELEMENTS::SoSh8::sosh8_enf
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(false);  // material coord. of element
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
-    xrefe(i, 0) = this->Nodes()[i]->X()[0];
-    xrefe(i, 1) = this->Nodes()[i]->X()[1];
-    xrefe(i, 2) = this->Nodes()[i]->X()[2];
+    xrefe(i, 0) = this->nodes()[i]->x()[0];
+    xrefe(i, 1) = this->nodes()[i]->x()[1];
+    xrefe(i, 2) = this->nodes()[i]->x()[2];
   }
   // vector of df(origin), ie parametric derivatives of shape functions
   // evaluated at the origin (r,s,t)=(0,0,0)
@@ -281,7 +281,7 @@ Discret::ELEMENTS::SoSh8::ThicknessDirection Discret::ELEMENTS::SoSh8::sosh8_enf
 void Discret::ELEMENTS::SoSh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8])
 {
   std::stringstream filename;
-  filename << "solidelement" << this->Id() << ".gmsh";
+  filename << "solidelement" << this->id() << ".gmsh";
   std::ofstream f_system("solidelement.gmsh");
   std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" One Solid Element \" {" << std::endl;
@@ -289,30 +289,30 @@ void Discret::ELEMENTS::SoSh8::sosh8_gmshplotlabeledelement(const int LabelIds[N
                   << std::endl;
   // plot vector from 1st node to 5th node which is parametric t-dir
   std::vector<double> X15(3);
-  X15[0] = this->Nodes()[4]->X()[0] - this->Nodes()[0]->X()[0];
-  X15[1] = this->Nodes()[4]->X()[1] - this->Nodes()[0]->X()[1];
-  X15[2] = this->Nodes()[4]->X()[2] - this->Nodes()[0]->X()[2];
-  gmshfilecontent << "VP(" << std::scientific << this->Nodes()[0]->X()[0] << ",";
-  gmshfilecontent << std::scientific << this->Nodes()[0]->X()[1] << ",";
-  gmshfilecontent << std::scientific << this->Nodes()[0]->X()[2] << ")";
+  X15[0] = this->nodes()[4]->x()[0] - this->nodes()[0]->x()[0];
+  X15[1] = this->nodes()[4]->x()[1] - this->nodes()[0]->x()[1];
+  X15[2] = this->nodes()[4]->x()[2] - this->nodes()[0]->x()[2];
+  gmshfilecontent << "VP(" << std::scientific << this->nodes()[0]->x()[0] << ",";
+  gmshfilecontent << std::scientific << this->nodes()[0]->x()[1] << ",";
+  gmshfilecontent << std::scientific << this->nodes()[0]->x()[2] << ")";
   gmshfilecontent << "{" << std::scientific << X15[0] << "," << X15[1] << "," << X15[2] << "};"
                   << std::endl;
   gmshfilecontent << "};" << std::endl;
   gmshfilecontent << "View \" LabelIds \" {" << std::endl;
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
-    gmshfilecontent << "SP(" << std::scientific << this->Nodes()[i]->X()[0] << ",";
-    gmshfilecontent << std::scientific << this->Nodes()[i]->X()[1] << ",";
-    gmshfilecontent << std::scientific << this->Nodes()[i]->X()[2] << ")";
+    gmshfilecontent << "SP(" << std::scientific << this->nodes()[i]->x()[0] << ",";
+    gmshfilecontent << std::scientific << this->nodes()[i]->x()[1] << ",";
+    gmshfilecontent << std::scientific << this->nodes()[i]->x()[2] << ")";
     gmshfilecontent << "{" << LabelIds[i] << "};" << std::endl;
   }
   gmshfilecontent << "};" << std::endl;
   gmshfilecontent << "View \" I order \" {" << std::endl;
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
-    gmshfilecontent << "SP(" << std::scientific << this->Nodes()[i]->X()[0] << ",";
-    gmshfilecontent << std::scientific << this->Nodes()[i]->X()[1] << ",";
-    gmshfilecontent << std::scientific << this->Nodes()[i]->X()[2] << ")";
+    gmshfilecontent << "SP(" << std::scientific << this->nodes()[i]->x()[0] << ",";
+    gmshfilecontent << std::scientific << this->nodes()[i]->x()[1] << ",";
+    gmshfilecontent << std::scientific << this->nodes()[i]->x()[2] << ")";
     gmshfilecontent << "{" << i << "};" << std::endl;
   }
   gmshfilecontent << "};" << std::endl;

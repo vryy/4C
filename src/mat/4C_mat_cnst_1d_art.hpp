@@ -88,11 +88,11 @@ namespace Mat
   class Cnst1dArtType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "Cnst_1d_artType"; }
+    std::string name() const override { return "Cnst_1d_artType"; }
 
-    static Cnst1dArtType& Instance() { return instance_; };
+    static Cnst1dArtType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static Cnst1dArtType instance_;
@@ -119,14 +119,17 @@ namespace Mat
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const override { return Cnst1dArtType::Instance().UniqueParObjectId(); }
+    int unique_par_object_id() const override
+    {
+      return Cnst1dArtType::instance().unique_par_object_id();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
 
       Resizes the vector data and stores all information of a class in it.
       The first information to be stored in data has to be the
-      unique parobject id delivered by UniqueParObjectId() which will then
+      unique parobject id delivered by unique_par_object_id() which will then
       identify the exact class on the receiving processor.
 
       \param data (in/out): char vector to store class information
@@ -140,7 +143,7 @@ namespace Mat
       exact copy of an instance of a class on a different processor.
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
-      UniqueParObjectId().
+      unique_par_object_id().
 
       \param data (in) : vector storing all data to be unpacked into this
       instance.
@@ -150,46 +153,46 @@ namespace Mat
     //@}
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_cnst_art;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new Cnst1dArt(*this));
     }
 
     /// return viscosity
-    double Viscosity() const;
+    double viscosity() const;
 
     /// return density
-    double Density() const override { return params_->density_; }
+    double density() const override { return params_->density_; }
 
     /// return DiameterLaw
-    virtual Mat::PAR::ArteryDiameterLaw DiameterLaw() const { return params_->diameterlaw_; }
+    virtual Mat::PAR::ArteryDiameterLaw diameter_law() const { return params_->diameterlaw_; }
 
     /// return DiameterFunction
-    virtual int DiameterFunction() const { return params_->diameter_law_funct_; }
+    virtual int diameter_function() const { return params_->diameter_law_funct_; }
 
     /// return Youngs modulus
-    double Young() const { return params_->young_; }
+    double young() const { return params_->young_; }
 
     /// return Poisson's ratio
-    double Nue() const { return params_->nue_; }
+    double nue() const { return params_->nue_; }
 
     /// set the artery diameter
-    void SetDiam(const double diam) { diam_ = diam; }
+    void set_diam(const double diam) { diam_ = diam; }
 
     /// set the initial artery diameter
-    void SetDiamInitial(const double diam) { diam_init_ = diam; }
+    void set_diam_initial(const double diam) { diam_init_ = diam; }
 
     /// return artery diameter
-    double Diam() const { return diam_; }
+    double diam() const { return diam_; }
 
     /// return initial artery diameter
-    double DiamInitial() const { return diam_init_; }
+    double diam_initial() const { return diam_init_; }
 
     /// return artery diameter of previous time step
     double diam_previous_time_step() const { return diam_previous_time_step_; }
@@ -201,13 +204,13 @@ namespace Mat
     }
 
     /// check if element is collapsed
-    bool IsCollapsed() const { return diam_ < params_->collapse_threshold_; }
+    bool is_collapsed() const { return diam_ < params_->collapse_threshold_; }
 
     /// return threshold for collapse
-    double CollapseThreshold() const { return params_->collapse_threshold_; }
+    double collapse_threshold() const { return params_->collapse_threshold_; }
 
     /// return artery wall thickness
-    double Th() const { return params_->th_; }
+    double th() const { return params_->th_; }
 
     /// return artery external pressure
     double pext(int i) const
@@ -222,7 +225,7 @@ namespace Mat
     }
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
    private:
     /*! \brief Calculate blood viscosity based on empirical law for blood fully saturated with

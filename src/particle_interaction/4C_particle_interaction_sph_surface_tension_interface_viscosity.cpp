@@ -89,18 +89,18 @@ void ParticleInteraction::SPHInterfaceViscosity::setup(
 
   // safety check
   for (const auto& type_i : fluidtypes_)
-    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+    if (not particlecontainerbundle_->get_particle_types().count(type_i))
       FOUR_C_THROW("no particle container for particle type '%s' found!",
           PARTICLEENGINE::EnumToTypeName(type_i).c_str());
 
   // update with actual boundary particle types
   const auto boundarytypes = boundarytypes_;
   for (const auto& type_i : boundarytypes)
-    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+    if (not particlecontainerbundle_->get_particle_types().count(type_i))
       boundarytypes_.erase(type_i);
 
   // determine size of vectors indexed by particle types
-  const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
+  const int typevectorsize = *(--particlecontainerbundle_->get_particle_types().end()) + 1;
 
   // allocate memory to hold particle types
   fluidmaterial_.resize(typevectorsize);
@@ -168,27 +168,29 @@ void ParticleInteraction::SPHInterfaceViscosity::compute_interface_viscosity_par
     const Mat::PAR::ParticleMaterialSPHFluid* material_j = fluidmaterial_[type_j];
 
     // get pointer to particle states
-    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
-    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
-    const double* dens_i = container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i);
-    const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
+    const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
+    const double* mass_i = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
+    const double* dens_i = container_i->get_ptr_to_state(PARTICLEENGINE::Density, particle_i);
+    const double* vel_i = container_i->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_i);
     const double* cfg_i =
-        container_i->GetPtrToState(PARTICLEENGINE::ColorfieldGradient, particle_i);
-    const double* temp_i = container_i->CondGetPtrToState(PARTICLEENGINE::Temperature, particle_i);
-    double* acc_i = container_i->GetPtrToState(PARTICLEENGINE::Acceleration, particle_i);
+        container_i->get_ptr_to_state(PARTICLEENGINE::ColorfieldGradient, particle_i);
+    const double* temp_i =
+        container_i->cond_get_ptr_to_state(PARTICLEENGINE::Temperature, particle_i);
+    double* acc_i = container_i->get_ptr_to_state(PARTICLEENGINE::Acceleration, particle_i);
 
-    const double* rad_j = container_j->GetPtrToState(PARTICLEENGINE::Radius, particle_j);
-    const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
-    const double* dens_j = container_j->GetPtrToState(PARTICLEENGINE::Density, particle_j);
-    const double* vel_j = container_j->GetPtrToState(PARTICLEENGINE::Velocity, particle_j);
+    const double* rad_j = container_j->get_ptr_to_state(PARTICLEENGINE::Radius, particle_j);
+    const double* mass_j = container_j->get_ptr_to_state(PARTICLEENGINE::Mass, particle_j);
+    const double* dens_j = container_j->get_ptr_to_state(PARTICLEENGINE::Density, particle_j);
+    const double* vel_j = container_j->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_j);
     const double* cfg_j =
-        container_j->GetPtrToState(PARTICLEENGINE::ColorfieldGradient, particle_j);
-    const double* temp_j = container_j->CondGetPtrToState(PARTICLEENGINE::Temperature, particle_j);
-    double* acc_j = container_j->GetPtrToState(PARTICLEENGINE::Acceleration, particle_j);
+        container_j->get_ptr_to_state(PARTICLEENGINE::ColorfieldGradient, particle_j);
+    const double* temp_j =
+        container_j->cond_get_ptr_to_state(PARTICLEENGINE::Temperature, particle_j);
+    double* acc_j = container_j->get_ptr_to_state(PARTICLEENGINE::Acceleration, particle_j);
 
     // get smoothing length
-    const double h_i = kernel_->SmoothingLength(rad_i[0]);
-    const double h_j = (rad_i[0] == rad_j[0]) ? h_i : kernel_->SmoothingLength(rad_j[0]);
+    const double h_i = kernel_->smoothing_length(rad_i[0]);
+    const double h_j = (rad_i[0] == rad_j[0]) ? h_i : kernel_->smoothing_length(rad_j[0]);
 
     // evaluate transition factor above reference temperature
     double tempfac_i = 1.0;
@@ -214,8 +216,8 @@ void ParticleInteraction::SPHInterfaceViscosity::compute_interface_viscosity_par
       const double h_ij = 0.5 * (h_i + h_j);
 
       // get speed of sound
-      const double c_i = material_i->SpeedOfSound();
-      const double c_j = (type_i == type_j) ? c_i : material_j->SpeedOfSound();
+      const double c_i = material_i->speed_of_sound();
+      const double c_j = (type_i == type_j) ? c_i : material_j->speed_of_sound();
 
       // particle averaged speed of sound
       const double c_ij = 0.5 * (c_i + c_j);
@@ -224,7 +226,7 @@ void ParticleInteraction::SPHInterfaceViscosity::compute_interface_viscosity_par
       const double dens_ij = 0.5 * (dens_i[0] + dens_j[0]);
 
       // evaluate artificial viscosity
-      artificialviscosity_->ArtificialViscosity(vel_i, vel_j, mass_i, mass_j, artvisc_i, artvisc_j,
+      artificialviscosity_->artificial_viscosity(vel_i, vel_j, mass_i, mass_j, artvisc_i, artvisc_j,
           particlepair.dWdrij_, particlepair.dWdrji_, dens_ij, h_ij, c_ij, particlepair.absdist_,
           particlepair.e_ij_, acc_i, acc_j);
     }
@@ -290,30 +292,32 @@ void ParticleInteraction::SPHInterfaceViscosity::
         equationofstatebundle_->get_ptr_to_specific_equation_of_state(type_i);
 
     // get pointer to particle states
-    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
-    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
-    const double* dens_i = container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i);
-    const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
+    const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
+    const double* mass_i = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
+    const double* dens_i = container_i->get_ptr_to_state(PARTICLEENGINE::Density, particle_i);
+    const double* vel_i = container_i->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_i);
     const double* cfg_i =
-        container_i->GetPtrToState(PARTICLEENGINE::ColorfieldGradient, particle_i);
-    const double* temp_i = container_i->CondGetPtrToState(PARTICLEENGINE::Temperature, particle_i);
+        container_i->get_ptr_to_state(PARTICLEENGINE::ColorfieldGradient, particle_i);
+    const double* temp_i =
+        container_i->cond_get_ptr_to_state(PARTICLEENGINE::Temperature, particle_i);
 
     double* acc_i = nullptr;
     if (status_i == PARTICLEENGINE::Owned)
-      acc_i = container_i->GetPtrToState(PARTICLEENGINE::Acceleration, particle_i);
+      acc_i = container_i->get_ptr_to_state(PARTICLEENGINE::Acceleration, particle_i);
 
     // get pointer to boundary particle states
-    const double* mass_j = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_j = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
     const double* press_j =
-        container_j->GetPtrToState(PARTICLEENGINE::BoundaryPressure, particle_j);
-    const double* vel_j = container_j->GetPtrToState(PARTICLEENGINE::BoundaryVelocity, particle_j);
+        container_j->get_ptr_to_state(PARTICLEENGINE::BoundaryPressure, particle_j);
+    const double* vel_j =
+        container_j->get_ptr_to_state(PARTICLEENGINE::BoundaryVelocity, particle_j);
 
     double temp_dens(0.0);
-    temp_dens = equationofstate_i->PressureToDensity(press_j[0], material_i->initDensity_);
+    temp_dens = equationofstate_i->pressure_to_density(press_j[0], material_i->initDensity_);
     const double* dens_j = &temp_dens;
 
     // get smoothing length
-    const double h_i = kernel_->SmoothingLength(rad_i[0]);
+    const double h_i = kernel_->smoothing_length(rad_i[0]);
 
     // evaluate transition factor above reference temperature
     double tempfac_i = 1.0;
@@ -329,13 +333,13 @@ void ParticleInteraction::SPHInterfaceViscosity::
     if (artvisc_i > 0.0)
     {
       // get speed of sound
-      const double c_i = material_i->SpeedOfSound();
+      const double c_i = material_i->speed_of_sound();
 
       // particle averaged density
       const double dens_ij = 0.5 * (dens_i[0] + dens_j[0]);
 
       // evaluate artificial viscosity
-      artificialviscosity_->ArtificialViscosity(vel_i, vel_j, mass_i, mass_j, artvisc_i, 0.0,
+      artificialviscosity_->artificial_viscosity(vel_i, vel_j, mass_i, mass_j, artvisc_i, 0.0,
           dWdrij, 0.0, dens_ij, h_i, c_i, absdist, e_ij, acc_i, nullptr);
     }
   }

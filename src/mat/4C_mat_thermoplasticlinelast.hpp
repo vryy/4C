@@ -103,11 +103,11 @@ namespace Mat
   class ThermoPlasticLinElastType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "ThermoPlasticLinElastType"; }
+    std::string name() const override { return "ThermoPlasticLinElastType"; }
 
-    static ThermoPlasticLinElastType& Instance() { return instance_; };
+    static ThermoPlasticLinElastType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static ThermoPlasticLinElastType instance_;
@@ -132,16 +132,16 @@ namespace Mat
     //!
     //!  every class implementing ParObject needs a unique id defined at the
     //!  top of parobject.H (this file) and should return it in this method.
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ThermoPlasticLinElastType::Instance().UniqueParObjectId();
+      return ThermoPlasticLinElastType::instance().unique_par_object_id();
     }
 
     //!  \brief Pack this class so it can be communicated
     //!
     //!  Resizes the vector data and stores all information of a class in it.
     //!  The first information to be stored in data has to be the
-    //!  unique parobject id delivered by UniqueParObjectId() which will then
+    //!  unique parobject id delivered by unique_par_object_id() which will then
     //!  identify the exact class on the receiving processor.
     void pack(Core::Communication::PackBuffer&
             data  //!<  data (i/o): char vector to store class information
@@ -153,7 +153,7 @@ namespace Mat
     //!  exact copy of an instance of a class on a different processor.
     //!  The first entry in data has to be an integer which is the unique
     //!  parobject id defined at the top of this file and delivered by
-    //!  UniqueParObjectId().
+    //!  unique_par_object_id().
     void unpack(const std::vector<char>&
             data  //!< (i) : vector storing all data to be unpacked into this instance.
         ) override;
@@ -161,20 +161,20 @@ namespace Mat
     //@}
 
     //! material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_thermopllinelast;
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Inpar::Solid::KinemType kinem) override
     {
       if (!(kinem == Inpar::Solid::KinemType::linear))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new ThermoPlasticLinElast(*this));
     }
@@ -198,13 +198,13 @@ namespace Mat
         int eleGID) override;
 
     // computes stress
-    void Stress(const double p,                                   //!< volumetric stress tensor
+    void stress(const double p,                                   //!< volumetric stress tensor
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& stress            //!< 2nd PK-stress
     );
 
     //! calculate relative/over strees
-    void RelDevStress(
+    void rel_dev_stress(
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& beta,       //!< back stress tensor
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& eta               //!< relative stress
@@ -252,11 +252,11 @@ namespace Mat
     );
 
     //! return density
-    double Density() const override { return params_->density_; }
+    double density() const override { return params_->density_; }
 
     //! return scalar-valued accumulated strain at Gauss points
     //! use method to return values at END of time step
-    double AccumulatedStrain(int gp  //!< current Gauss point
+    double accumulated_strain(int gp  //!< current Gauss point
     ) const
     {
       //! use the old vector (last_) for postprocessing
@@ -274,10 +274,10 @@ namespace Mat
     }
 
     //! check if history variables are already initialised
-    bool Initialized() const { return (isinit_ and (strainplcurr_ != Teuchos::null)); }
+    bool initialized() const { return (isinit_ and (strainplcurr_ != Teuchos::null)); }
 
     //! return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     //! @name temperature specific methods
     //@{
@@ -299,7 +299,7 @@ namespace Mat
     double st_modulus();
 
     //! initial temperature
-    double InitTemp() const { return params_->thetainit_; }
+    double init_temp() const { return params_->thetainit_; }
 
     //@}
 
@@ -308,27 +308,27 @@ namespace Mat
 
     //! calculate elastic strain rate, using additive split of strains
     //! (o) save strain^e' in strainelrate_
-    void StrainRateSplit(int gp,                            //!< (i): current Gauss point
+    void strain_rate_split(int gp,                          //!< (i): current Gauss point
         const double stepsize,                              //!< (i): stepsize
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& strainrate  //!< (i): total strain rate ( B d')
     );
 
     //! return current plastic strain vector
     //! \f${\boldsymbol \varepsilon}^p_{n+1}\f$
-    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> PlasticStrain(int gp) const
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> plastic_strain(int gp) const
     {
       return strainplcurr_->at(gp);
     }
 
     //! return current elastic strain rate vector
     //! \f$\dot{\boldsymbol \varepsilon}^e_{n+1}\f$
-    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> ElasticStrainRate(int gp) const
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> elastic_strain_rate(int gp) const
     {
       return strainelrate_->at(gp);
     }
 
     //! compute internal dissipation terms
-    void Dissipation(int gp,                           // current Gauss point
+    void dissipation(int gp,                           // current Gauss point
         double sigma_yiso,                             // isotropic work hardening von Mises stress
         double Dgamma,                                 // plastic multiplier/increment
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1> N,      // flow vector
@@ -363,10 +363,11 @@ namespace Mat
     //@}
 
     /// Return names of visualization data
-    void VisNames(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) override;
 
     /// Return visualization data
-    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+    bool vis_data(
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
 
    private:

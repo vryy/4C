@@ -70,50 +70,50 @@ namespace Adapter
     Teuchos::RCP<const Epetra_Vector> initial_guess() override = 0;
 
     /// rhs of Newton's method
-    Teuchos::RCP<const Epetra_Vector> RHS() override = 0;
+    Teuchos::RCP<const Epetra_Vector> rhs() override = 0;
 
     /// unknown displacements at \f$t_{n+1}\f$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> DispNp() const = 0;
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> Dispnp() const override { return DispNp(); }
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispNp() = 0;
-    Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() override { return WriteAccessDispNp(); }
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> disp_np() const = 0;
+    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> dispnp() const override { return disp_np(); }
+    virtual Teuchos::RCP<Epetra_Vector> write_access_disp_np() = 0;
+    Teuchos::RCP<Epetra_Vector> write_access_dispnp() override { return write_access_disp_np(); }
 
     /// known displacements at \f$t_{n}\f$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> DispN() const = 0;
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> Dispn() const override { return DispN(); }
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispN() = 0;
-    Teuchos::RCP<Epetra_Vector> WriteAccessDispn() override { return WriteAccessDispN(); }
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> disp_n() const = 0;
+    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> dispn() const override { return disp_n(); }
+    virtual Teuchos::RCP<Epetra_Vector> write_access_disp_n() = 0;
+    Teuchos::RCP<Epetra_Vector> write_access_dispn() override { return write_access_disp_n(); }
 
     /// unknown velocity at \f$t_{n+1}\f$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> VelNp() const = 0;
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> Velnp() const override { return VelNp(); }
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelNp() = 0;
-    Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() override { return WriteAccessVelNp(); }
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> vel_np() const = 0;
+    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> velnp() const override { return vel_np(); }
+    virtual Teuchos::RCP<Epetra_Vector> write_access_vel_np() = 0;
+    Teuchos::RCP<Epetra_Vector> write_access_velnp() override { return write_access_vel_np(); }
 
     /// known velocity at \f$t_{n}\f$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> VelN() const = 0;
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> Veln() const override { return VelN(); }
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelN() = 0;
-    Teuchos::RCP<Epetra_Vector> WriteAccessVeln() override { return WriteAccessVelN(); }
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> vel_n() const = 0;
+    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> veln() const override { return vel_n(); }
+    virtual Teuchos::RCP<Epetra_Vector> write_access_vel_n() = 0;
+    Teuchos::RCP<Epetra_Vector> write_access_veln() override { return write_access_vel_n(); }
 
     /// known velocity at \f$t_{n-1}\f$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> VelNm() const = 0;
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> Velnm() const override { return VelNm(); }
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> vel_nm() const = 0;
+    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> velnm() const override { return vel_nm(); }
 
     /// unknown acceleration at \f$t_{n+1}\f$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> AccNp() const = 0;
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> Accnp() const override { return AccNp(); }
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> acc_np() const = 0;
+    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> accnp() const override { return acc_np(); }
 
     /// known acceleration at \f$t_{n}\f$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> AccN() const = 0;
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> Accn() const override { return AccN(); }
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> acc_n() const = 0;
+    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> accn() const override { return acc_n(); }
 
     /// resize the multi step class vector
     void resize_m_step_tim_ada() override = 0;
@@ -123,80 +123,80 @@ namespace Adapter
     ///@{
 
     /// return time integration factor
-    [[nodiscard]] double TimIntParam() const override = 0;
+    [[nodiscard]] double tim_int_param() const override = 0;
 
     /// Return current time \f$t_{n}\f$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual double GetTimeN() const = 0;
-    [[nodiscard]] double TimeOld() const override { return GetTimeN(); }
+    [[nodiscard]] virtual double get_time_n() const = 0;
+    [[nodiscard]] double time_old() const override { return get_time_n(); }
 
     /// Sets the current time \f$t_{n}\f$
     /// ToDo Replace the deprecated version with the new version
-    virtual void SetTimeN(const double time_n) = 0;
-    void set_time(const double time_n) override { SetTimeN(time_n); }
+    virtual void set_time_n(const double time_n) = 0;
+    void set_time(const double time_n) override { set_time_n(time_n); }
 
     /// Return target time \f$t_{n+1}\f$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual double GetTimeNp() const = 0;
-    [[nodiscard]] double Time() const override { return GetTimeNp(); }
+    [[nodiscard]] virtual double get_time_np() const = 0;
+    [[nodiscard]] double time() const override { return get_time_np(); }
 
     /// Get upper limit of time range of interest
-    [[nodiscard]] double GetTimeEnd() const override = 0;
+    [[nodiscard]] double get_time_end() const override = 0;
 
     //! Set upper limit of time range of interest
-    void SetTimeEnd(double timemax) override = 0;
+    void set_time_end(double timemax) override = 0;
 
     /// Sets the target time \f$t_{n+1}\f$ of this time step
     /// ToDo Replace the deprecated version with the new version
-    virtual void SetTimeNp(const double time_np) = 0;
-    void SetTimen(const double time_np) override { SetTimeNp(time_np); }
+    virtual void set_time_np(const double time_np) = 0;
+    void set_timen(const double time_np) override { set_time_np(time_np); }
 
     /// Get time step size \f$\Delta t_n\f$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual double GetDeltaTime() const = 0;
-    [[nodiscard]] double Dt() const override { return GetDeltaTime(); }
+    [[nodiscard]] virtual double get_delta_time() const = 0;
+    [[nodiscard]] double dt() const override { return get_delta_time(); }
 
     /// set time step size
     /// ToDo Replace the deprecated version with the new version
-    virtual void SetDeltaTime(const double dt) = 0;
-    void set_dt(const double dt) override { SetDeltaTime(dt); }
+    virtual void set_delta_time(const double dt) = 0;
+    void set_dt(const double dt) override { set_delta_time(dt); }
 
     /// Return current step number $n$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual int GetStepN() const = 0;
-    [[nodiscard]] int StepOld() const override { return GetStepN(); }
+    [[nodiscard]] virtual int get_step_n() const = 0;
+    [[nodiscard]] int step_old() const override { return get_step_n(); }
 
     /// Sets the current step \f$n\f$
     /// ToDo Replace the deprecated version with the new version
-    virtual void SetStepN(int step_n) = 0;
-    void SetStep(int step_n) override { SetStepN(step_n); }
+    virtual void set_step_n(int step_n) = 0;
+    void set_step(int step_n) override { set_step_n(step_n); }
 
     /// Return current step number $n+1$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual int GetStepNp() const = 0;
-    [[nodiscard]] int Step() const override { return GetStepNp(); }
+    [[nodiscard]] virtual int get_step_np() const = 0;
+    [[nodiscard]] int step() const override { return get_step_np(); }
 
     /// Sets the current step \f$n+1\f$
     /// ToDo Replace the deprecated version with the new version
-    virtual void SetStepNp(int step_np) = 0;
-    void SetStepn(int step_np) override { SetStepNp(step_np); }
+    virtual void set_step_np(int step_np) = 0;
+    void set_stepn(int step_np) override { set_step_np(step_np); }
 
     /// Get number of time steps
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual int GetStepEnd() const = 0;
-    [[nodiscard]] int NumStep() const override { return GetStepEnd(); }
+    [[nodiscard]] virtual int get_step_end() const = 0;
+    [[nodiscard]] int num_step() const override { return get_step_end(); }
 
     /// Sets number of time steps (in case of time adaptivity)
-    virtual void SetStepEnd(int step_end) = 0;
+    virtual void set_step_end(int step_end) = 0;
 
     /// Take the time and integrate (time loop)
     /// \date 11/08
-    int Integrate() override = 0;
+    int integrate() override = 0;
 
     /// fixme: this can go when the old structure time integration is gone and PerformErrorAction is
     /// only called in Solid::TimeInt::Implicit::Solve() and not on the structure in the adapter
     /// time loop
-    Inpar::Solid::ConvergenceStatus PerformErrorAction(
+    Inpar::Solid::ConvergenceStatus perform_error_action(
         Inpar::Solid::ConvergenceStatus nonlinsoldiv) override
     {
       FOUR_C_THROW("You should not be here");
@@ -253,7 +253,7 @@ namespace Adapter
     void update() override = 0;
 
     /// update at time step end in case of FSI time adaptivity
-    void Update(double endtime) override = 0;
+    void update(double endtime) override = 0;
 
     /// Update iteration
     /// Add residual increment to Lagrange multipliers stored in Constraint manager
@@ -303,22 +303,22 @@ namespace Adapter
         Teuchos::RCP<std::vector<char>> nodedata) override = 0;
 
     /// wrapper for things that should be done before prepare_time_step is called
-    void PrePredict() override = 0;
+    void pre_predict() override = 0;
 
     /// wrapper for things that should be done before solving the nonlinear iterations
-    void PreSolve() override = 0;
+    void pre_solve() override = 0;
 
     /// wrapper for things that should be done before updating
-    void PreUpdate() override = 0;
+    void pre_update() override = 0;
 
     /// wrapper for things that should be done after solving the update
     void post_update() override = 0;
 
     /// wrapper for things that should be done after the output
-    void PostOutput() override = 0;
+    void post_output() override = 0;
 
     /// wrapper for things that should be done after the actual time loop is finished
-    void PostTimeLoop() override = 0;
+    void post_time_loop() override = 0;
 
     ///@}
 
@@ -331,7 +331,7 @@ namespace Adapter
     for the time step. All boundary conditions have
     been set.
     */
-    Inpar::Solid::ConvergenceStatus Solve() override = 0;
+    Inpar::Solid::ConvergenceStatus solve() override = 0;
 
     /*!
     \brief linear structure solve with just a interface load
@@ -364,7 +364,7 @@ namespace Adapter
     //@{
 
     /// Set forces due to interface with fluid, the force is expected external-force-like
-    void SetForceInterface(Teuchos::RCP<Epetra_MultiVector> iforce) override
+    void set_force_interface(Teuchos::RCP<Epetra_MultiVector> iforce) override
     {
       FOUR_C_THROW(
           "This method is deprecated. In the new structural time integration"
@@ -389,11 +389,11 @@ namespace Adapter
     /// unknown material displacements at \f$t_{n+1}\f$
     /// ToDo Replace the deprecated version with the new version
     virtual Teuchos::RCP<Epetra_Vector> write_access_disp_mat_np() = 0;
-    Teuchos::RCP<Epetra_Vector> DispMat() override { return write_access_disp_mat_np(); }
+    Teuchos::RCP<Epetra_Vector> disp_mat() override { return write_access_disp_mat_np(); }
 
     /// set/apply material displacements to structure field (structure with ale)
-    virtual void SetDispMatNp(Teuchos::RCP<Epetra_Vector> dispmatnp) = 0;
-    void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat) override { SetDispMatNp(dismat); };
+    virtual void set_disp_mat_np(Teuchos::RCP<Epetra_Vector> dispmatnp) = 0;
+    void apply_dis_mat(Teuchos::RCP<Epetra_Vector> dismat) override { set_disp_mat_np(dismat); };
     ///@}
 
     /// @name Misc
@@ -409,8 +409,8 @@ namespace Adapter
 
     /// domain map of system matrix (do we really need this?)
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual const Epetra_Map& GetMassDomainMap() const = 0;
-    [[nodiscard]] const Epetra_Map& DomainMap() const override { return GetMassDomainMap(); }
+    [[nodiscard]] virtual const Epetra_Map& get_mass_domain_map() const = 0;
+    [[nodiscard]] const Epetra_Map& domain_map() const override { return get_mass_domain_map(); }
 
     /// direct access to system matrix
     Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override = 0;
@@ -426,20 +426,20 @@ namespace Adapter
     Teuchos::RCP<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() override = 0;
 
     /// access to locsys manager
-    Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() override = 0;
+    Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() override = 0;
 
     /// access the desired model evaluator (read-only)
-    [[nodiscard]] virtual const Solid::MODELEVALUATOR::Generic& ModelEvaluator(
+    [[nodiscard]] virtual const Solid::MODELEVALUATOR::Generic& model_evaluator(
         Inpar::Solid::ModelType mtype) const = 0;
 
     /// access the desired model evaluator (read and write)
-    Solid::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::Solid::ModelType mtype) override = 0;
+    Solid::MODELEVALUATOR::Generic& model_evaluator(Inpar::Solid::ModelType mtype) override = 0;
 
     /// direct access to discretization
     Teuchos::RCP<Core::FE::Discretization> discretization() override = 0;
 
     /// are there any algebraic constraints?
-    bool HaveConstraint() override = 0;
+    bool have_constraint() override = 0;
 
     /// get constraint manager defined in the structure
     Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override = 0;
@@ -454,16 +454,16 @@ namespace Adapter
     Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override = 0;
 
     /// create result test for encapsulated structure algorithm
-    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override = 0;
+    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override = 0;
 
     /// reset time and state vectors (needed for biofilm growth simulations)
     void reset() override = 0;
 
     /// set structure displacement vector due to biofilm growth
-    void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) override = 0;
+    void set_str_gr_disp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) override = 0;
 
     /// bool indicating if micro material is used
-    bool HaveMicroMat() override = 0;
+    bool have_micro_mat() override = 0;
 
     ///@}
 
@@ -471,7 +471,7 @@ namespace Adapter
     /// if they stay unnecessary.
     ///@{
     /// are there any spring dashpot bcs?
-    bool HaveSpringDashpot() override
+    bool have_spring_dashpot() override
     {
       FOUR_C_THROW("This function seems to be unused!");
       return false;

@@ -106,7 +106,7 @@ namespace Core::LinAlg
     const Teuchos::RCP<const Epetra_Map>& Map(int i) const { return maps_[i]; }
 
     /// the full map
-    const Teuchos::RCP<const Epetra_Map>& FullMap() const { return fullmap_; }
+    const Teuchos::RCP<const Epetra_Map>& full_map() const { return fullmap_; }
 
     //@}
 

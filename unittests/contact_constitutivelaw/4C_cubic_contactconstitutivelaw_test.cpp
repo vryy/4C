@@ -28,14 +28,14 @@ namespace
               1, Inpar::CONTACT::ConstitutiveLawType::colaw_cubic, "Cubic Constitutivelaw"));
 
       // add parameters to container
-      container->Add("A", 1.5);
-      container->Add("B", 2.0);
-      container->Add("C", 3.0);
-      container->Add("D", 0.0);
-      container->Add("Offset", 0.5);
+      container->add("A", 1.5);
+      container->add("B", 2.0);
+      container->add("C", 3.0);
+      container->add("D", 0.0);
+      container->add("Offset", 0.5);
 
       const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> cubiccoconstlaw =
-          CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(container);
+          CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(container);
       coconstlaw_ = cubiccoconstlaw;
     }
 
@@ -59,7 +59,7 @@ namespace
   //! test member function EvaluateDeriv
   TEST_F(CubicConstitutiveLawTest, TestEvaluateDeriv)
   {
-    EXPECT_NEAR(coconstlaw_->EvaluateDeriv(-0.75, cnode.get()), 4.28125, 1.e-15);
-    EXPECT_ANY_THROW(coconstlaw_->EvaluateDeriv(-0.25, cnode.get()));
+    EXPECT_NEAR(coconstlaw_->evaluate_deriv(-0.75, cnode.get()), 4.28125, 1.e-15);
+    EXPECT_ANY_THROW(coconstlaw_->evaluate_deriv(-0.25, cnode.get()));
   }
 }  // namespace

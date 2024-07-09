@@ -34,32 +34,32 @@ FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<Core::FE::Discretization> dis)
   dis_->fill_complete(true, true, true);
 
   coup_ = Teuchos::rcp(new Core::Adapter::Coupling());
-  const int ndim = Global::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::instance()->n_dim();
   coup_->setup_coupling(*dis, *dis_, *Core::Conditions::ConditionNodeRowMap(*dis, "FSICoupling"),
-      *dis_->NodeRowMap(), ndim);
+      *dis_->node_row_map(), ndim);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::DebugWriter::NewTimeStep(int step, std::string name)
+void FSI::UTILS::DebugWriter::new_time_step(int step, std::string name)
 {
   std::stringstream s;
-  s << Global::Problem::Instance()->OutputControlFile()->file_name();
+  s << Global::Problem::instance()->output_control_file()->file_name();
   if (name != "") s << "-" << name;
   s << "-step" << step;
 
-  control_ = Teuchos::rcp(new Core::IO::OutputControl(dis_->Comm(),
+  control_ = Teuchos::rcp(new Core::IO::OutputControl(dis_->get_comm(),
       "none",                                   // we do not have a problem type
       Core::FE::ShapeFunctionType::polynomial,  // this is a FE code ... no nurbs
       "debug-output",                           // no input file either
       s.str(),                                  // an output file name is needed
-      Global::Problem::Instance()->NDim(),
+      Global::Problem::instance()->n_dim(),
       0,     // restart is meaningless here
       1000,  // we never expect to get 1000 iterations
-      Core::UTILS::IntegralValue<bool>(Global::Problem::Instance()->IOParams(), "OUTPUT_BIN")));
+      Core::UTILS::IntegralValue<bool>(Global::Problem::instance()->io_params(), "OUTPUT_BIN")));
 
-  writer_ = dis_->Writer();
+  writer_ = dis_->writer();
   writer_->set_output(control_);
   itnum_ = 0;
   writer_->write_mesh(0, 0.0);
@@ -68,7 +68,7 @@ void FSI::UTILS::DebugWriter::NewTimeStep(int step, std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::DebugWriter::NewIteration()
+void FSI::UTILS::DebugWriter::new_iteration()
 {
   writer_->new_step(itnum_, itnum_);
   itnum_ += 1;
@@ -79,7 +79,7 @@ void FSI::UTILS::DebugWriter::NewIteration()
 /*----------------------------------------------------------------------*/
 void FSI::UTILS::DebugWriter::write_vector(const std::string& name, const Epetra_Vector& v)
 {
-  writer_->write_vector(name, coup_->MasterToSlave(Teuchos::rcp(&v, false)));
+  writer_->write_vector(name, coup_->master_to_slave(Teuchos::rcp(&v, false)));
 }
 
 
@@ -94,24 +94,24 @@ FSI::UTILS::SimpleDebugWriter::SimpleDebugWriter(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::SimpleDebugWriter::NewLinearSystem(int step, std::string name)
+void FSI::UTILS::SimpleDebugWriter::new_linear_system(int step, std::string name)
 {
   std::stringstream s;
-  s << Global::Problem::Instance()->OutputControlFile()->file_name() << "-" << name_;
+  s << Global::Problem::instance()->output_control_file()->file_name() << "-" << name_;
   if (name != "") s << "-" << name;
   s << "-step" << step;
 
-  control_ = Teuchos::rcp(new Core::IO::OutputControl(dis_->Comm(),
+  control_ = Teuchos::rcp(new Core::IO::OutputControl(dis_->get_comm(),
       "none",                                   // we do not have a problem type
       Core::FE::ShapeFunctionType::polynomial,  // this is a FE code ... no nurbs
       "debug-output",                           // no input file either
       s.str(),                                  // an output file name is needed
-      Global::Problem::Instance()->NDim(),
+      Global::Problem::instance()->n_dim(),
       0,     // restart is meaningless here
       1000,  // we never expect to get 1000 iterations
-      Core::UTILS::IntegralValue<bool>(Global::Problem::Instance()->IOParams(), "OUTPUT_BIN")));
+      Core::UTILS::IntegralValue<bool>(Global::Problem::instance()->io_params(), "OUTPUT_BIN")));
 
-  writer_ = dis_->Writer();
+  writer_ = dis_->writer();
   writer_->set_output(control_);
   itnum_ = 0;
   writer_->write_mesh(0, 0.0);
@@ -120,7 +120,7 @@ void FSI::UTILS::SimpleDebugWriter::NewLinearSystem(int step, std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::SimpleDebugWriter::NewIteration()
+void FSI::UTILS::SimpleDebugWriter::new_iteration()
 {
   writer_->new_step(itnum_, itnum_);
   itnum_ += 1;
@@ -151,22 +151,22 @@ FSI::UTILS::MonolithicDebugWriter::MonolithicDebugWriter(Monolithic& algorithm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::MonolithicDebugWriter::NewLinearSystem()
+void FSI::UTILS::MonolithicDebugWriter::new_linear_system()
 {
   counter_ += 1;
-  struct_writer_->NewLinearSystem(counter_);
-  fluid_writer_->NewLinearSystem(counter_);
-  ale_writer_->NewLinearSystem(counter_);
+  struct_writer_->new_linear_system(counter_);
+  fluid_writer_->new_linear_system(counter_);
+  ale_writer_->new_linear_system(counter_);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::MonolithicDebugWriter::NewIteration()
+void FSI::UTILS::MonolithicDebugWriter::new_iteration()
 {
-  struct_writer_->NewIteration();
-  fluid_writer_->NewIteration();
-  ale_writer_->NewIteration();
+  struct_writer_->new_iteration();
+  fluid_writer_->new_iteration();
+  ale_writer_->new_iteration();
 }
 
 

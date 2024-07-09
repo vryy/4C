@@ -30,18 +30,18 @@ bool Core::LinAlg::MatrixLogicalSplitAndTransform::operator()(const Core::LinAlg
     const Core::Adapter::CouplingConverter* col_converter, Core::LinAlg::SparseMatrix& dst,
     bool exactmatch, bool addmatrix)
 {
-  Teuchos::RCP<Epetra_CrsMatrix> esrc = src.EpetraMatrix();
+  Teuchos::RCP<Epetra_CrsMatrix> esrc = src.epetra_matrix();
   const Epetra_Map* final_range_map = &logical_range_map;
   const Epetra_Map* matching_dst_rows = &logical_range_map;
 
   if (row_converter)
   {
-    const Epetra_Map& permsrcmap = *row_converter->PermSrcMap();
+    const Epetra_Map& permsrcmap = *row_converter->perm_src_map();
 
     // check if the permuted map is simply a subset of the current rowmap (no communication)
     int subset = 1;
     for (int i = 0; i < permsrcmap.NumMyElements(); ++i)
-      if (!src.RowMap().MyGID(permsrcmap.GID(i)))
+      if (!src.row_map().MyGID(permsrcmap.GID(i)))
       {
         subset = 0;
         break;
@@ -55,30 +55,30 @@ bool Core::LinAlg::MatrixLogicalSplitAndTransform::operator()(const Core::LinAlg
     {
       if (exporter_ == Teuchos::null)
       {
-        exporter_ = Teuchos::rcp(new Epetra_Export(permsrcmap, src.RowMap()));
+        exporter_ = Teuchos::rcp(new Epetra_Export(permsrcmap, src.row_map()));
       }
 
       Teuchos::RCP<Epetra_CrsMatrix> permsrc =
           Teuchos::rcp(new Epetra_CrsMatrix(::Copy, permsrcmap, 0));
-      int err = permsrc->Import(*src.EpetraMatrix(), *exporter_, Insert);
+      int err = permsrc->Import(*src.epetra_matrix(), *exporter_, Insert);
       if (err) FOUR_C_THROW("Import failed with err=%d", err);
 
-      permsrc->FillComplete(src.DomainMap(), permsrcmap);
+      permsrc->FillComplete(src.domain_map(), permsrcmap);
       esrc = permsrc;
     }
 
     final_range_map = &permsrcmap;
-    matching_dst_rows = row_converter->DstMap().get();
+    matching_dst_rows = row_converter->dst_map().get();
   }
 
-  setup_gid_map(col_converter ? *col_converter->SrcMap() : esrc->RowMap(), esrc->ColMap(),
+  setup_gid_map(col_converter ? *col_converter->src_map() : esrc->RowMap(), esrc->ColMap(),
       col_converter, src.Comm());
 
-  if (!addmatrix) dst.Zero();
+  if (!addmatrix) dst.zero();
 
   internal_add(esrc, *final_range_map,
-      col_converter ? *col_converter->SrcMap() : logical_domain_map, *matching_dst_rows,
-      dst.EpetraMatrix(), exactmatch, scale);
+      col_converter ? *col_converter->src_map() : logical_domain_map, *matching_dst_rows,
+      dst.epetra_matrix(), exactmatch, scale);
 
   return true;
 }
@@ -96,7 +96,7 @@ void Core::LinAlg::MatrixLogicalSplitAndTransform::setup_gid_map(const Epetra_Ma
     if (converter != nullptr)
     {
       Core::Communication::Exporter ex(rowmap, colmap, comm);
-      converter->FillSrcToDstMap(gidmap_);
+      converter->fill_src_to_dst_map(gidmap_);
       ex.Export(gidmap_);
     }
     else
@@ -308,7 +308,7 @@ bool Core::LinAlg::MatrixRowTransform::operator()(const Core::LinAlg::SparseMatr
     Core::LinAlg::SparseMatrix& dst, bool addmatrix)
 {
   return transformer_(
-      src, src.RangeMap(), src.DomainMap(), scale, &converter, nullptr, dst, false, addmatrix);
+      src, src.range_map(), src.domain_map(), scale, &converter, nullptr, dst, false, addmatrix);
 }
 
 
@@ -318,8 +318,8 @@ bool Core::LinAlg::MatrixColTransform::operator()(const Epetra_Map&, const Epetr
     const Core::Adapter::CouplingConverter& converter, Core::LinAlg::SparseMatrix& dst,
     bool exactmatch, bool addmatrix)
 {
-  return transformer_(
-      src, src.RangeMap(), src.DomainMap(), scale, nullptr, &converter, dst, exactmatch, addmatrix);
+  return transformer_(src, src.range_map(), src.domain_map(), scale, nullptr, &converter, dst,
+      exactmatch, addmatrix);
 }
 
 
@@ -329,7 +329,7 @@ bool Core::LinAlg::MatrixRowColTransform::operator()(const Core::LinAlg::SparseM
     const Core::Adapter::CouplingConverter& colconverter, Core::LinAlg::SparseMatrix& dst,
     bool exactmatch, bool addmatrix)
 {
-  return transformer_(src, src.RangeMap(), src.DomainMap(), scale, &rowconverter, &colconverter,
+  return transformer_(src, src.range_map(), src.domain_map(), scale, &rowconverter, &colconverter,
       dst, exactmatch, addmatrix);
 }
 

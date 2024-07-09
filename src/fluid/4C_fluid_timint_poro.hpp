@@ -79,7 +79,7 @@ namespace FLD
     \brief Do some poro-specific stuff in assemble_mat_and_rhs
 
     */
-    virtual void PoroIntUpdate();
+    virtual void poro_int_update();
 
     /*!
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)

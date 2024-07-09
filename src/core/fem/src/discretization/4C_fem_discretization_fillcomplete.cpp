@@ -62,7 +62,7 @@ int Core::FE::Discretization::fill_complete(
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
   // my processor id
-  const int myrank = Comm().MyPID();
+  const int myrank = get_comm().MyPID();
 
   // print information to screen
   if (myrank == 0)
@@ -71,7 +71,7 @@ int Core::FE::Discretization::fill_complete(
         << "\n+--------------------------------------------------------------------+"
         << Core::IO::endl;
     Core::IO::cout(Core::IO::verbose)
-        << "| fill_complete() on discretization " << std::setw(34) << std::left << Name()
+        << "| fill_complete() on discretization " << std::setw(34) << std::left << name()
         << std::setw(1) << std::right << "|" << Core::IO::endl;
   }
 
@@ -153,9 +153,9 @@ int Core::FE::Discretization::fill_complete(
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::initialize_elements()
 {
-  if (!Filled()) FOUR_C_THROW("fill_complete was not called");
+  if (!filled()) FOUR_C_THROW("fill_complete was not called");
 
-  Core::Communication::ParObjectFactory::Instance().initialize_elements(*this);
+  Core::Communication::ParObjectFactory::instance().initialize_elements(*this);
 
   return;
 }
@@ -166,24 +166,24 @@ void Core::FE::Discretization::initialize_elements()
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::build_node_row_map()
 {
-  const int myrank = Comm().MyPID();
+  const int myrank = get_comm().MyPID();
   int nummynodes = 0;
   std::map<int, Teuchos::RCP<Core::Nodes::Node>>::iterator curr;
   for (curr = node_.begin(); curr != node_.end(); ++curr)
-    if (curr->second->Owner() == myrank) ++nummynodes;
+    if (curr->second->owner() == myrank) ++nummynodes;
   std::vector<int> nodeids(nummynodes);
   noderowptr_.resize(nummynodes);
 
   int count = 0;
   for (curr = node_.begin(); curr != node_.end(); ++curr)
-    if (curr->second->Owner() == myrank)
+    if (curr->second->owner() == myrank)
     {
-      nodeids[count] = curr->second->Id();
+      nodeids[count] = curr->second->id();
       noderowptr_[count] = curr->second.get();
       ++count;
     }
   if (count != nummynodes) FOUR_C_THROW("Mismatch in no. of nodes");
-  noderowmap_ = Teuchos::rcp(new Epetra_Map(-1, nummynodes, nodeids.data(), 0, Comm()));
+  noderowmap_ = Teuchos::rcp(new Epetra_Map(-1, nummynodes, nodeids.data(), 0, get_comm()));
   return;
 }
 
@@ -200,13 +200,13 @@ void Core::FE::Discretization::build_node_col_map()
   std::map<int, Teuchos::RCP<Core::Nodes::Node>>::iterator curr;
   for (curr = node_.begin(); curr != node_.end(); ++curr)
   {
-    nodeids[count] = curr->second->Id();
+    nodeids[count] = curr->second->id();
     nodecolptr_[count] = curr->second.get();
-    curr->second->SetLID(count);
+    curr->second->set_lid(count);
     ++count;
   }
   if (count != nummynodes) FOUR_C_THROW("Mismatch in no. of nodes");
-  nodecolmap_ = Teuchos::rcp(new Epetra_Map(-1, nummynodes, nodeids.data(), 0, Comm()));
+  nodecolmap_ = Teuchos::rcp(new Epetra_Map(-1, nummynodes, nodeids.data(), 0, get_comm()));
   return;
 }
 
@@ -216,23 +216,23 @@ void Core::FE::Discretization::build_node_col_map()
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::build_element_row_map()
 {
-  const int myrank = Comm().MyPID();
+  const int myrank = get_comm().MyPID();
   int nummyeles = 0;
   std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
   for (curr = element_.begin(); curr != element_.end(); ++curr)
-    if (curr->second->Owner() == myrank) nummyeles++;
+    if (curr->second->owner() == myrank) nummyeles++;
   std::vector<int> eleids(nummyeles);
   elerowptr_.resize(nummyeles);
   int count = 0;
   for (curr = element_.begin(); curr != element_.end(); ++curr)
-    if (curr->second->Owner() == myrank)
+    if (curr->second->owner() == myrank)
     {
-      eleids[count] = curr->second->Id();
+      eleids[count] = curr->second->id();
       elerowptr_[count] = curr->second.get();
       ++count;
     }
   if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of elements");
-  elerowmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyeles, eleids.data(), 0, Comm()));
+  elerowmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyeles, eleids.data(), 0, get_comm()));
   return;
 }
 
@@ -248,13 +248,13 @@ void Core::FE::Discretization::build_element_col_map()
   int count = 0;
   for (curr = element_.begin(); curr != element_.end(); ++curr)
   {
-    eleids[count] = curr->second->Id();
+    eleids[count] = curr->second->id();
     elecolptr_[count] = curr->second.get();
-    curr->second->SetLID(count);
+    curr->second->set_lid(count);
     ++count;
   }
   if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of elements");
-  elecolmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyeles, eleids.data(), 0, Comm()));
+  elecolmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyeles, eleids.data(), 0, get_comm()));
   return;
 }
 
@@ -266,7 +266,7 @@ void Core::FE::Discretization::build_element_to_node_pointers()
   std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator elecurr;
   for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
   {
-    bool success = elecurr->second->BuildNodalPointers(node_);
+    bool success = elecurr->second->build_nodal_pointers(node_);
     if (!success) FOUR_C_THROW("Building element <-> node topology failed");
   }
   return;
@@ -299,12 +299,12 @@ void Core::FE::Discretization::build_node_to_element_pointers()
   for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     const int nnode = elecurr->second->num_node();
-    const int* nodes = elecurr->second->NodeIds();
+    const int* nodes = elecurr->second->node_ids();
     for (int j = 0; j < nnode; ++j)
     {
-      Core::Nodes::Node* node = gNode(nodes[j]);
+      Core::Nodes::Node* node = g_node(nodes[j]);
       if (!node)
-        FOUR_C_THROW("Node %d is not on this proc %d", j, Comm().MyPID());
+        FOUR_C_THROW("Node %d is not on this proc %d", j, get_comm().MyPID());
       else
         node->add_element_ptr(elecurr->second.get());
     }
@@ -317,9 +317,9 @@ void Core::FE::Discretization::build_node_to_element_pointers()
  *----------------------------------------------------------------------*/
 int Core::FE::Discretization::assign_degrees_of_freedom(int start)
 {
-  if (!Filled()) FOUR_C_THROW("Filled()==false");
-  if (!NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("Nodal row map is not unique");
-  if (!ElementRowMap()->UniqueGIDs()) FOUR_C_THROW("Element row map is not unique");
+  if (!filled()) FOUR_C_THROW("Filled()==false");
+  if (!node_row_map()->UniqueGIDs()) FOUR_C_THROW("Nodal row map is not unique");
+  if (!element_row_map()->UniqueGIDs()) FOUR_C_THROW("Element row map is not unique");
 
   // Set the havedof flag before dofs are assigned. Some dof set
   // implementations do query the discretization after the assignment has been

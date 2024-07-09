@@ -63,26 +63,26 @@ namespace FLD
     virtual ~XWall() = default;
 
     // set element params for xwall EnrichmentType
-    virtual void SetXWallParams(Teuchos::ParameterList& eleparams);
+    virtual void set_x_wall_params(Teuchos::ParameterList& eleparams);
 
     // adapt ml nullspace for aggregation for scale separation (mfs)
-    void AdaptMLNullspace(const Teuchos::RCP<Core::LinAlg::Solver>& solver);
+    void adapt_ml_nullspace(const Teuchos::RCP<Core::LinAlg::Solver>& solver);
 
     // get output vector of enriched dofs
-    Teuchos::RCP<Epetra_Vector> GetOutputVector(Teuchos::RCP<Epetra_Vector> vel);
+    Teuchos::RCP<Epetra_Vector> get_output_vector(Teuchos::RCP<Epetra_Vector> vel);
 
     // returns, if Properties for GenAlpha have to be updated
-    virtual void UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresidual, int itnum,
+    virtual void update_tau_w(int step, Teuchos::RCP<Epetra_Vector> trueresidual, int itnum,
         Teuchos::RCP<Epetra_Vector> accn, Teuchos::RCP<Epetra_Vector> velnp,
         Teuchos::RCP<Epetra_Vector> veln);
 
     // returns tauw of discret_
-    Teuchos::RCP<Epetra_Vector> GetTauw();
+    Teuchos::RCP<Epetra_Vector> get_tauw();
 
-    Teuchos::RCP<Epetra_Vector> GetTauwVector()
+    Teuchos::RCP<Epetra_Vector> get_tauw_vector()
     {
       Teuchos::RCP<Epetra_Vector> tauw =
-          Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
+          Teuchos::rcp(new Epetra_Vector(*(discret_->node_row_map()), true));
       Core::LinAlg::Export(*tauw_, *tauw);
       return tauw;
     }
@@ -91,10 +91,10 @@ namespace FLD
     void read_restart(Core::IO::DiscretizationReader& reader);
 
     // fix residual at Dirichlet-inflow nodes such that the wss can be calculated
-    Teuchos::RCP<Epetra_Vector> FixDirichletInflow(Teuchos::RCP<Epetra_Vector> trueresidual);
+    Teuchos::RCP<Epetra_Vector> fix_dirichlet_inflow(Teuchos::RCP<Epetra_Vector> trueresidual);
 
     // set current non-linear iteration number
-    void SetIter(int iter)
+    void set_iter(int iter)
     {
       iter_ = iter;
       return;
@@ -302,13 +302,13 @@ namespace FLD
         Teuchos::RCP<FLD::UTILS::StressManager> wssmanager, Teuchos::RCP<Epetra_Vector> dispnp,
         Teuchos::RCP<Epetra_Vector> gridv);
 
-    void UpdateWDistWALE();
+    void update_w_dist_wale();
 
     // set element params for xwall EnrichmentType
-    void SetXWallParams(Teuchos::ParameterList& eleparams) override;
+    void set_x_wall_params(Teuchos::ParameterList& eleparams) override;
 
     // returns, if Properties for GenAlpha have to be updated
-    void UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresidual, int itnum,
+    void update_tau_w(int step, Teuchos::RCP<Epetra_Vector> trueresidual, int itnum,
         Teuchos::RCP<Epetra_Vector> accn, Teuchos::RCP<Epetra_Vector> velnp,
         Teuchos::RCP<Epetra_Vector> veln) override;
 

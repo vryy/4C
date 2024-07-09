@@ -57,10 +57,10 @@ FSI::LungMonolithic::LungMonolithic(
   // consistency check: all dofs contained in ale(fluid)-structure coupling need to
   // be part of the structure volume constraint, too. this needs to be checked because during
   // setup_system_matrix, we rely on this information!
-  const Teuchos::RCP<const Epetra_Map> asimap = structure_field()->Interface()->lung_asi_cond_map();
+  const Teuchos::RCP<const Epetra_Map> asimap = structure_field()->interface()->lung_asi_cond_map();
   for (int i = 0; i < asimap->NumMyElements(); ++i)
   {
-    if (structfield->LungConstrMap()->LID(asimap->GID(i)) == -1)
+    if (structfield->lung_constr_map()->LID(asimap->GID(i)) == -1)
       FOUR_C_THROW("dof of asi coupling is not contained in enclosing boundary");
   }
 
@@ -69,8 +69,8 @@ FSI::LungMonolithic::LungMonolithic(
   int FluidMinLungVolConID;
   int StructMinLungVolConID;
 
-  structfield->ListLungVolCons(StructLungVolConIDs, StructMinLungVolConID);
-  fluidfield->ListLungVolCons(FluidLungVolConIDs, FluidMinLungVolConID);
+  structfield->list_lung_vol_cons(StructLungVolConIDs, StructMinLungVolConID);
+  fluidfield->list_lung_vol_cons(FluidLungVolConIDs, FluidMinLungVolConID);
 
   // We want to be sure that both fluid and structure fields hold the
   // same constraint IDs. After all, every airway outlet needs to be
@@ -103,7 +103,7 @@ FSI::LungMonolithic::LungMonolithic(
   // Since the "OffsetID" is subtracted later on, we save its negative
   // value here.
 
-  OffsetID_ = FluidMinLungVolConID - ConstrDofSet_->FirstGID();
+  OffsetID_ = FluidMinLungVolConID - ConstrDofSet_->first_gid();
   ConstrMap_ = Teuchos::rcp(new Epetra_Map(*(ConstrDofSet_->dof_row_map())));
 
   // build an all reduced version of the constraintmap, since sometimes all processors
@@ -136,7 +136,7 @@ FSI::LungMonolithic::LungMonolithic(
 
   AddFluidShapeDerivMatrix_ =
       Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *fluid_field()->Interface(), *fluid_field()->Interface(), 108, false, true));
+          *fluid_field()->interface(), *fluid_field()->interface(), 108, false, true));
   FluidConstrMatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
       *fluid_field()->discretization()->dof_row_map(), NumConstrID_, false, true));
   ConstrFluidMatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*ConstrMap_,
@@ -144,15 +144,15 @@ FSI::LungMonolithic::LungMonolithic(
 
   // additional "ale" matrices filled in the fluid elements
   Teuchos::RCP<Epetra_Map> emptymap =
-      Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, fluid_field()->discretization()->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, fluid_field()->discretization()->get_comm()));
   Core::LinAlg::MapExtractor constrextractor;
   constrextractor.setup(*ConstrMap_, emptymap, ConstrMap_);
   AleConstrMatrix_ =
       Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          constrextractor, *fluid_field()->Interface(), 108, false, true));
+          constrextractor, *fluid_field()->interface(), 108, false, true));
   ConstrAleMatrix_ =
       Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *fluid_field()->Interface(), constrextractor, 108, false, true));
+          *fluid_field()->interface(), constrextractor, 108, false, true));
 
   AddStructRHS_ =
       Teuchos::rcp(new Epetra_Vector(*structure_field()->discretization()->dof_row_map(), true));
@@ -175,7 +175,7 @@ FSI::LungMonolithic::LungMonolithic(
   // determine initial volumes of parenchyma balloons
   Teuchos::RCP<Epetra_Vector> OldVolsRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
 
-  structfield->InitializeVolCon(OldVolsRed, SignVolsRed_, OffsetID_);
+  structfield->initialize_vol_con(OldVolsRed, SignVolsRed_, OffsetID_);
 
   OldVols_->PutScalar(0.0);
   OldVols_->Export(*OldVolsRed, *ConstrImport_, Add);
@@ -183,7 +183,7 @@ FSI::LungMonolithic::LungMonolithic(
   // determine initial flow rates at outlets
   Teuchos::RCP<Epetra_Vector> OldFlowRatesRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
 
-  fluidfield->InitializeVolCon(OldFlowRatesRed, OffsetID_);
+  fluidfield->initialize_vol_con(OldFlowRatesRed, OffsetID_);
 
   OldFlowRates_->PutScalar(0.0);
   OldFlowRates_->Export(*OldFlowRatesRed, *ConstrImport_, Add);
@@ -193,9 +193,9 @@ FSI::LungMonolithic::LungMonolithic(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungMonolithic::GeneralSetup()
+void FSI::LungMonolithic::general_setup()
 {
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   linearsolverstrategy_ =
       Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
@@ -216,46 +216,46 @@ void FSI::LungMonolithic::GeneralSetup()
   Core::Adapter::Coupling& coupsa = structure_ale_coupling();
   Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
-  const int ndim = Global::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::instance()->n_dim();
 
   // structure to fluid
 
   coupsf.setup_condition_coupling(*structure_field()->discretization(),
-      structure_field()->Interface()->fsi_cond_map(), *fluid_field()->discretization(),
-      fluid_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
+      structure_field()->interface()->fsi_cond_map(), *fluid_field()->discretization(),
+      fluid_field()->interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // structure to ale
 
   coupsa.setup_condition_coupling(*structure_field()->discretization(),
-      structure_field()->Interface()->fsi_cond_map(), *ale_field()->discretization(),
-      ale_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
+      structure_field()->interface()->fsi_cond_map(), *ale_field()->discretization(),
+      ale_field()->interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // fluid to ale at the interface
 
   icoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
-      fluid_field()->Interface()->fsi_cond_map(), *ale_field()->discretization(),
-      ale_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
+      fluid_field()->interface()->fsi_cond_map(), *ale_field()->discretization(),
+      ale_field()->interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
   // interface dof map for all fields and have just one transfer
   // operator from the interface map to the full field map.
-  if (not coupsf.MasterDofMap()->SameAs(*coupsa.MasterDofMap()))
+  if (not coupsf.master_dof_map()->SameAs(*coupsa.master_dof_map()))
     FOUR_C_THROW("structure interface dof maps do not match");
 
-  if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
+  if (coupsf.master_dof_map()->NumGlobalElements() == 0)
     FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
   // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = fluid_field()->discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap = ale_field()->discretization()->NodeRowMap();
+  const Epetra_Map* fluidnodemap = fluid_field()->discretization()->node_row_map();
+  const Epetra_Map* alenodemap = ale_field()->discretization()->node_row_map();
 
   coupfa.setup_coupling(*fluid_field()->discretization(), *ale_field()->discretization(),
       *fluidnodemap, *alenodemap, ndim);
 
-  fluid_field()->SetMeshMap(coupfa.MasterDofMap());
+  fluid_field()->set_mesh_map(coupfa.master_dof_map());
 
-  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*ale_field()->Interface()->Map(0)));
+  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*ale_field()->interface()->Map(0)));
 
   //-----------------------------------------------------------------------------
   // additional coupling of structure and ale field at the outflow boundary
@@ -263,34 +263,34 @@ void FSI::LungMonolithic::GeneralSetup()
 
   // coupling of structure and ale dofs at airway outflow
   coupsaout_->setup_constrained_condition_coupling(*structure_field()->discretization(),
-      structure_field()->Interface()->lung_asi_cond_map(), *ale_field()->discretization(),
-      ale_field()->Interface()->lung_asi_cond_map(), "StructAleCoupling", "FSICoupling", ndim);
-  if (coupsaout_->MasterDofMap()->NumGlobalElements() == 0)
+      structure_field()->interface()->lung_asi_cond_map(), *ale_field()->discretization(),
+      ale_field()->interface()->lung_asi_cond_map(), "StructAleCoupling", "FSICoupling", ndim);
+  if (coupsaout_->master_dof_map()->NumGlobalElements() == 0)
     FOUR_C_THROW("No nodes in matching structure ale interface. Empty coupling condition?");
 
   // coupling of fluid and structure dofs at airway outflow
   coupfsout_->setup_constrained_condition_coupling(*fluid_field()->discretization(),
-      fluid_field()->Interface()->lung_asi_cond_map(), *structure_field()->discretization(),
-      structure_field()->Interface()->lung_asi_cond_map(), "StructAleCoupling", "FSICoupling",
+      fluid_field()->interface()->lung_asi_cond_map(), *structure_field()->discretization(),
+      structure_field()->interface()->lung_asi_cond_map(), "StructAleCoupling", "FSICoupling",
       ndim);
-  if (coupfsout_->MasterDofMap()->NumGlobalElements() == 0)
+  if (coupfsout_->master_dof_map()->NumGlobalElements() == 0)
     FOUR_C_THROW("No nodes in matching structure ale/fluid interface. Empty coupling condition?");
 
   // coupling of fluid and ale dofs at airway outflow
   coupfaout_->setup_constrained_condition_coupling(*fluid_field()->discretization(),
-      fluid_field()->Interface()->lung_asi_cond_map(), *ale_field()->discretization(),
-      ale_field()->Interface()->lung_asi_cond_map(), "StructAleCoupling", "FSICoupling", ndim);
-  if (coupfaout_->MasterDofMap()->NumGlobalElements() == 0)
+      fluid_field()->interface()->lung_asi_cond_map(), *ale_field()->discretization(),
+      ale_field()->interface()->lung_asi_cond_map(), "StructAleCoupling", "FSICoupling", ndim);
+  if (coupfaout_->master_dof_map()->NumGlobalElements() == 0)
     FOUR_C_THROW("No nodes in matching ale fluid ouflow interface. Empty coupling condition?");
 
   //-----------------------------------------------------------------------------
   // enable output of changes in volumes in text file
   //-----------------------------------------------------------------------------
 
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::string outputprefix =
-        Global::Problem::Instance()->OutputControlFile()->new_output_file_name();
+        Global::Problem::instance()->output_control_file()->new_output_file_name();
     std::string dfluidfilename;
     std::string dstructfilename;
     std::string absstructfilename;
@@ -345,7 +345,7 @@ void FSI::LungMonolithic::GeneralSetup()
 Teuchos::RCP<Epetra_Vector> FSI::LungMonolithic::struct_to_ale_outflow(
     Teuchos::RCP<Epetra_Vector> iv) const
 {
-  return coupsaout_->MasterToSlave(iv);
+  return coupsaout_->master_to_slave(iv);
 }
 
 
@@ -385,9 +385,9 @@ void FSI::LungMonolithic::evaluate(Teuchos::RCP<const Epetra_Vector> step_increm
       Teuchos::rcp_dynamic_cast<Adapter::StructureLung>(structure_field());
   CurrVolsRed->PutScalar(0.0);
   AddStructRHS_->PutScalar(0.0);
-  AddStructConstrMatrix_->Zero();
+  AddStructConstrMatrix_->zero();
 
-  structfield->EvaluateVolCon(
+  structfield->evaluate_vol_con(
       AddStructConstrMatrix_, AddStructRHS_, CurrVolsRed, SignVolsRed_, LagrMultVecRed, OffsetID_);
 
   // Export redundant vector into distributed one
@@ -410,16 +410,16 @@ void FSI::LungMonolithic::evaluate(Teuchos::RCP<const Epetra_Vector> step_increm
 
   CurrFlowRatesRed->PutScalar(0.0);
   AddFluidRHS_->PutScalar(0.0);
-  AddFluidShapeDerivMatrix_->Zero();
-  FluidConstrMatrix_->Zero();
-  ConstrFluidMatrix_->Zero();
-  AleConstrMatrix_->Zero();
-  ConstrAleMatrix_->Zero();
+  AddFluidShapeDerivMatrix_->zero();
+  FluidConstrMatrix_->zero();
+  ConstrFluidMatrix_->zero();
+  AleConstrMatrix_->zero();
+  ConstrAleMatrix_->zero();
 
-  const double dt = Dt();
+  const double dt = LungMonolithic::dt();
   const double dttheta = dt * theta_;
 
-  fluidfield->EvaluateVolCon(AddFluidShapeDerivMatrix_, FluidConstrMatrix_, ConstrFluidMatrix_,
+  fluidfield->evaluate_vol_con(AddFluidShapeDerivMatrix_, FluidConstrMatrix_, ConstrFluidMatrix_,
       AleConstrMatrix_, ConstrAleMatrix_, AddFluidRHS_, CurrFlowRatesRed, LagrMultVecRed, OffsetID_,
       dttheta);
 
@@ -442,7 +442,7 @@ void FSI::LungMonolithic::evaluate(Teuchos::RCP<const Epetra_Vector> step_increm
 void FSI::LungMonolithic::scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   // should we scale the system?
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
@@ -450,32 +450,32 @@ void FSI::LungMonolithic::scale_system(Core::LinAlg::BlockSparseMatrixBase& mat,
   {
     // The matrices are modified here. Do we have to change them back later on?
 
-    Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0, 0).EpetraMatrix();
+    Teuchos::RCP<Epetra_CrsMatrix> A = mat.matrix(0, 0).epetra_matrix();
     srowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
     scolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
     A->InvRowSums(*srowsum_);
     A->InvColSums(*scolsum_);
     if (A->LeftScale(*srowsum_) or A->RightScale(*scolsum_) or
-        mat.Matrix(0, 1).EpetraMatrix()->LeftScale(*srowsum_) or
-        mat.Matrix(0, 2).EpetraMatrix()->LeftScale(*srowsum_) or
-        mat.Matrix(0, 3).EpetraMatrix()->LeftScale(*srowsum_) or
-        mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
-        mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_) or
-        mat.Matrix(3, 0).EpetraMatrix()->RightScale(*scolsum_))
+        mat.matrix(0, 1).epetra_matrix()->LeftScale(*srowsum_) or
+        mat.matrix(0, 2).epetra_matrix()->LeftScale(*srowsum_) or
+        mat.matrix(0, 3).epetra_matrix()->LeftScale(*srowsum_) or
+        mat.matrix(1, 0).epetra_matrix()->RightScale(*scolsum_) or
+        mat.matrix(2, 0).epetra_matrix()->RightScale(*scolsum_) or
+        mat.matrix(3, 0).epetra_matrix()->RightScale(*scolsum_))
       FOUR_C_THROW("structure scaling failed");
 
-    A = mat.Matrix(2, 2).EpetraMatrix();
+    A = mat.matrix(2, 2).epetra_matrix();
     arowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
     acolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
     A->InvRowSums(*arowsum_);
     A->InvColSums(*acolsum_);
     if (A->LeftScale(*arowsum_) or A->RightScale(*acolsum_) or
-        mat.Matrix(2, 0).EpetraMatrix()->LeftScale(*arowsum_) or
-        mat.Matrix(2, 1).EpetraMatrix()->LeftScale(*arowsum_) or
-        mat.Matrix(2, 3).EpetraMatrix()->LeftScale(*arowsum_) or
-        mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
-        mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_) or
-        mat.Matrix(3, 2).EpetraMatrix()->RightScale(*acolsum_))
+        mat.matrix(2, 0).epetra_matrix()->LeftScale(*arowsum_) or
+        mat.matrix(2, 1).epetra_matrix()->LeftScale(*arowsum_) or
+        mat.matrix(2, 3).epetra_matrix()->LeftScale(*arowsum_) or
+        mat.matrix(0, 2).epetra_matrix()->RightScale(*acolsum_) or
+        mat.matrix(1, 2).epetra_matrix()->RightScale(*acolsum_) or
+        mat.matrix(3, 2).epetra_matrix()->RightScale(*acolsum_))
       FOUR_C_THROW("ale scaling failed");
 
     Teuchos::RCP<Epetra_Vector> sx = extractor().extract_vector(b, 0);
@@ -495,7 +495,7 @@ void FSI::LungMonolithic::scale_system(Core::LinAlg::BlockSparseMatrixBase& mat,
 void FSI::LungMonolithic::unscale_solution(
     Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
@@ -519,28 +519,28 @@ void FSI::LungMonolithic::unscale_solution(
     extractor().insert_vector(*sx, 0, b);
     extractor().insert_vector(*ax, 2, b);
 
-    Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0, 0).EpetraMatrix();
+    Teuchos::RCP<Epetra_CrsMatrix> A = mat.matrix(0, 0).epetra_matrix();
     srowsum_->Reciprocal(*srowsum_);
     scolsum_->Reciprocal(*scolsum_);
     if (A->LeftScale(*srowsum_) or A->RightScale(*scolsum_) or
-        mat.Matrix(0, 1).EpetraMatrix()->LeftScale(*srowsum_) or
-        mat.Matrix(0, 2).EpetraMatrix()->LeftScale(*srowsum_) or
-        mat.Matrix(0, 3).EpetraMatrix()->LeftScale(*srowsum_) or
-        mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
-        mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_) or
-        mat.Matrix(3, 0).EpetraMatrix()->RightScale(*scolsum_))
+        mat.matrix(0, 1).epetra_matrix()->LeftScale(*srowsum_) or
+        mat.matrix(0, 2).epetra_matrix()->LeftScale(*srowsum_) or
+        mat.matrix(0, 3).epetra_matrix()->LeftScale(*srowsum_) or
+        mat.matrix(1, 0).epetra_matrix()->RightScale(*scolsum_) or
+        mat.matrix(2, 0).epetra_matrix()->RightScale(*scolsum_) or
+        mat.matrix(3, 0).epetra_matrix()->RightScale(*scolsum_))
       FOUR_C_THROW("structure scaling failed");
 
-    A = mat.Matrix(2, 2).EpetraMatrix();
+    A = mat.matrix(2, 2).epetra_matrix();
     arowsum_->Reciprocal(*arowsum_);
     acolsum_->Reciprocal(*acolsum_);
     if (A->LeftScale(*arowsum_) or A->RightScale(*acolsum_) or
-        mat.Matrix(2, 0).EpetraMatrix()->LeftScale(*arowsum_) or
-        mat.Matrix(2, 1).EpetraMatrix()->LeftScale(*arowsum_) or
-        mat.Matrix(2, 3).EpetraMatrix()->LeftScale(*arowsum_) or
-        mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
-        mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_) or
-        mat.Matrix(3, 2).EpetraMatrix()->RightScale(*acolsum_))
+        mat.matrix(2, 0).epetra_matrix()->LeftScale(*arowsum_) or
+        mat.matrix(2, 1).epetra_matrix()->LeftScale(*arowsum_) or
+        mat.matrix(2, 3).epetra_matrix()->LeftScale(*arowsum_) or
+        mat.matrix(0, 2).epetra_matrix()->RightScale(*acolsum_) or
+        mat.matrix(1, 2).epetra_matrix()->RightScale(*acolsum_) or
+        mat.matrix(3, 2).epetra_matrix()->RightScale(*acolsum_))
       FOUR_C_THROW("ale scaling failed");
   }
 
@@ -668,7 +668,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
   // setup tests for interface
 
   std::vector<Teuchos::RCP<const Epetra_Map>> interface;
-  interface.push_back(fluid_field()->Interface()->fsi_cond_map());
+  interface.push_back(fluid_field()->interface()->fsi_cond_map());
   interface.push_back(Teuchos::null);
   Core::LinAlg::MultiMapExtractor interfaceextract(*dof_row_map(), interface);
 
@@ -690,7 +690,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
   // setup tests for fluid velocities
 
   std::vector<Teuchos::RCP<const Epetra_Map>> fluidvel;
-  fluidvel.push_back(fluid_field()->InnerVelocityRowMap());
+  fluidvel.push_back(fluid_field()->inner_velocity_row_map());
   fluidvel.push_back(Teuchos::null);
   Core::LinAlg::MultiMapExtractor fluidvelextract(*dof_row_map(), fluidvel);
 
@@ -712,7 +712,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
   // setup tests for fluid pressure
 
   std::vector<Teuchos::RCP<const Epetra_Map>> fluidpress;
-  fluidpress.push_back(fluid_field()->PressureRowMap());
+  fluidpress.push_back(fluid_field()->pressure_row_map());
   fluidpress.push_back(Teuchos::null);
   Core::LinAlg::MultiMapExtractor fluidpressextract(*dof_row_map(), fluidpress);
 
@@ -788,7 +788,7 @@ void FSI::LungMonolithic::output()
   // Write history vectors in case of restart
   // This is done using the structure DiscretizationWriter, hence it
   // is placed in between the output of the single fields.
-  if (writerestartevery_ and (Step() % writerestartevery_ == 0))
+  if (writerestartevery_ and (step() % writerestartevery_ == 0))
   {
     const Teuchos::RCP<Adapter::StructureLung>& structfield =
         Teuchos::rcp_dynamic_cast<Adapter::StructureLung>(structure_field());
@@ -798,7 +798,7 @@ void FSI::LungMonolithic::output()
     Core::LinAlg::Export(*OldVols_, *OldVolsRed);
     Teuchos::RCP<Epetra_Vector> LagrMultVecOldRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
     Core::LinAlg::Export(*LagrMultVecOld_, *LagrMultVecOldRed);
-    structfield->WriteVolConRestart(OldFlowRatesRed, OldVolsRed, LagrMultVecOldRed);
+    structfield->write_vol_con_restart(OldFlowRatesRed, OldVolsRed, LagrMultVecOldRed);
   }
 
   fluid_field()->output();
@@ -814,9 +814,9 @@ void FSI::LungMonolithic::output()
   Teuchos::RCP<Epetra_Vector> dVfluidRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
   Core::LinAlg::Export(*dVfluid_, *dVfluidRed);
 
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
-    outfluiddvol_ << Step();
+    outfluiddvol_ << step();
     for (int i = 0; i < dVfluidRed->MyLength(); ++i)
     {
       outfluiddvol_ << "\t" << (*dVfluidRed)[i];
@@ -827,9 +827,9 @@ void FSI::LungMonolithic::output()
   Teuchos::RCP<Epetra_Vector> dVstructRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
   Core::LinAlg::Export(*dVstruct_, *dVstructRed);
 
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
-    outstructdvol_ << Step();
+    outstructdvol_ << step();
     for (int i = 0; i < dVstructRed->MyLength(); ++i)
     {
       outstructdvol_ << "\t" << (*dVstructRed)[i];
@@ -840,9 +840,9 @@ void FSI::LungMonolithic::output()
   Teuchos::RCP<Epetra_Vector> VstructRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
   Core::LinAlg::Export(*CurrVols_, *VstructRed);
 
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
-    outstructabsvol_ << Step();
+    outstructabsvol_ << step();
     for (int i = 0; i < VstructRed->MyLength(); ++i)
     {
       outstructabsvol_ << "\t" << (*VstructRed)[i];
@@ -865,7 +865,7 @@ void FSI::LungMonolithic::read_restart(int step)
   Teuchos::RCP<Epetra_Vector> OldVolsRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
   Teuchos::RCP<Epetra_Vector> OldLagrMultRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
 
-  structfield->ReadVolConRestart(step, OldFlowRatesRed, OldVolsRed, OldLagrMultRed);
+  structfield->read_vol_con_restart(step, OldFlowRatesRed, OldVolsRed, OldLagrMultRed);
 
   // Export redundant vector into distributed one
   OldVols_->PutScalar(0.0);
@@ -899,7 +899,7 @@ void FSI::LungMonolithic::prepare_time_step()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> FSI::LungMonolithic::SystemMatrix() const
+Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> FSI::LungMonolithic::system_matrix() const
 {
   return systemmatrix_;
 }
@@ -908,7 +908,7 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> FSI::LungMonolithic::SystemMat
 /*----------------------------------------------------------------------*/
 void FSI::LungMonolithic::create_system_matrix(bool structuresplit)
 {
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   // get the PCITER from inputfile

@@ -53,7 +53,7 @@ namespace Solid
       Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override;
 
       /// Update routine for coupled problems with monolithic approach with time adaptivity
-      void Update(double endtime) override;
+      void update(double endtime) override;
 
       /// @name Access linear system of equation via adapter (implicit only!)
       /// @{

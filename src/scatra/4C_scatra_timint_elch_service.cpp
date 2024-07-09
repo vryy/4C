@@ -97,8 +97,8 @@ void ScaTra::CCCVCondition::set_first_cccv_half_cycle(const int step)
     ihalfcycle_ = 1;
 
     // set phase of half cycles to constant current
-    halfcycle_charge_->ResetPhase();
-    halfcycle_discharge_->ResetPhase();
+    halfcycle_charge_->reset_phase();
+    halfcycle_discharge_->reset_phase();
 
     // initial relaxation is over (or has never been started)
     phaseinitialrelaxation_ = false;
@@ -128,17 +128,17 @@ bool ScaTra::CCCVCondition::is_end_of_half_cycle_phase(
   {
     case Inpar::ElCh::CCCVHalfCyclePhase::constant_current:
     {
-      phasefinished = ExceedCellVoltage(cellvoltage);
+      phasefinished = exceed_cell_voltage(cellvoltage);
       break;
     }
     case Inpar::ElCh::CCCVHalfCyclePhase::constant_voltage:
     {
-      phasefinished = ExceedCellCRate(cellcrate);
+      phasefinished = exceed_cell_c_rate(cellcrate);
       break;
     }
     case Inpar::ElCh::CCCVHalfCyclePhase::relaxation:
     {
-      phasefinished = (time >= GetRelaxEndTime() - 1e-14);
+      phasefinished = (time >= get_relax_end_time() - 1e-14);
       break;
     }
     default:
@@ -151,7 +151,7 @@ bool ScaTra::CCCVCondition::is_end_of_half_cycle_phase(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void ScaTra::CCCVCondition::NextPhase(const int step, const double time, const bool print)
+void ScaTra::CCCVCondition::next_phase(const int step, const double time, const bool print)
 {
   // store, that phase is changed now.
   set_phase_change_observer(step);
@@ -172,7 +172,7 @@ void ScaTra::CCCVCondition::NextPhase(const int step, const double time, const b
   {
     // if half cylce is over reset all phases to constant current, flip charge mode and increase
     // counter
-    charging_ ? halfcycle_discharge_->ResetPhase() : halfcycle_charge_->ResetPhase();
+    charging_ ? halfcycle_discharge_->reset_phase() : halfcycle_charge_->reset_phase();
     charging_ = !charging_;
     ihalfcycle_++;
   }
@@ -180,25 +180,28 @@ void ScaTra::CCCVCondition::NextPhase(const int step, const double time, const b
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-bool ScaTra::CCCVCondition::ExceedCellVoltage(const double expected_cellvoltage) const
+bool ScaTra::CCCVCondition::exceed_cell_voltage(const double expected_cellvoltage) const
 {
-  return ((charging_ and expected_cellvoltage > halfcycle_charge_->GetCutOffVoltage() - 1e-14) or
-          (!charging_ and expected_cellvoltage < halfcycle_discharge_->GetCutOffVoltage() + 1e-14));
+  return (
+      (charging_ and expected_cellvoltage > halfcycle_charge_->get_cut_off_voltage() - 1e-14) or
+      (!charging_ and expected_cellvoltage < halfcycle_discharge_->get_cut_off_voltage() + 1e-14));
 }
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-bool ScaTra::CCCVCondition::ExceedCellCRate(const double expected_cellcrate) const
+bool ScaTra::CCCVCondition::exceed_cell_c_rate(const double expected_cellcrate) const
 {
-  return ((charging_ and expected_cellcrate < (halfcycle_charge_->GetCutOffCRate() + 1e-14)) or
-          (!charging_ and expected_cellcrate < (halfcycle_discharge_->GetCutOffCRate() + 1e-14)));
+  return (
+      (charging_ and expected_cellcrate < (halfcycle_charge_->get_cut_off_c_rate() + 1e-14)) or
+      (!charging_ and expected_cellcrate < (halfcycle_discharge_->get_cut_off_c_rate() + 1e-14)));
 }
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 int ScaTra::CCCVCondition::get_half_cycle_condition_id() const
 {
-  return charging_ ? halfcycle_charge_->GetConditionID() : halfcycle_discharge_->GetConditionID();
+  return charging_ ? halfcycle_charge_->get_condition_id()
+                   : halfcycle_discharge_->get_condition_id();
 }
 
 /*-----------------------------------------------------------------------------*
@@ -213,9 +216,10 @@ bool ScaTra::CCCVCondition::exceed_max_steps_from_last_phase_change(const int st
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-double ScaTra::CCCVCondition::GetRelaxEndTime() const
+double ScaTra::CCCVCondition::get_relax_end_time() const
 {
-  return charging_ ? halfcycle_charge_->GetRelaxEndTime() : halfcycle_discharge_->GetRelaxEndTime();
+  return charging_ ? halfcycle_charge_->get_relax_end_time()
+                   : halfcycle_discharge_->get_relax_end_time();
 }
 
 /*-----------------------------------------------------------------------------*
@@ -330,7 +334,7 @@ bool ScaTra::CCCVHalfCycleCondition::is_end_of_half_cycle_next_phase(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void ScaTra::CCCVHalfCycleCondition::ResetPhase()
+void ScaTra::CCCVHalfCycleCondition::reset_phase()
 {
   phase_cccv_ = Inpar::ElCh::CCCVHalfCyclePhase::constant_current;
 }

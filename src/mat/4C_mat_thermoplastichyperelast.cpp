@@ -74,7 +74,7 @@ Mat::ThermoPlasticHyperElastType Mat::ThermoPlasticHyperElastType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 03/13 |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::ThermoPlasticHyperElastType::Create(
+Core::Communication::ParObject* Mat::ThermoPlasticHyperElastType::create(
     const std::vector<char>& data)
 {
   Mat::ThermoPlasticHyperElast* thrplhyper = new Mat::ThermoPlasticHyperElast();
@@ -106,18 +106,18 @@ void Mat::ThermoPlasticHyperElast::pack(Core::Communication::PackBuffer& data) c
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 
   // pack history data
   int histsize;
   // if material is not initialised, i.e. start simulation, nothing to pack
-  if (!Initialized())
+  if (!initialized())
   {
     histsize = 0;
   }
@@ -159,24 +159,24 @@ void Mat::ThermoPlasticHyperElast::unpack(const std::vector<char>& data)
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
   {
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::ThermoPlasticHyperElast*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
   }
 
@@ -1107,7 +1107,7 @@ void Mat::ThermoPlasticHyperElast::evaluate(const Core::LinAlg::Matrix<1, 1>& Nt
   setup_cthermo(ctemp, params);
 
   // get the temperature-dependent mechanical material tangent
-  SetupCmatThermo(Ntemp, cmat_T, params);
+  setup_cmat_thermo(Ntemp, cmat_T, params);
 
   // calculate thermal stresses
   // tau = ctemp_AK . Delta T = m_0/2.0 . (J + 1/J) . I . Delta T
@@ -1141,7 +1141,7 @@ void Mat::ThermoPlasticHyperElast::evaluate(const Core::LinAlg::Matrix<1, 1>& Nt
  | computes temperature-dependent isotropic                  dano 09/13 |
  | elasticity tensor in matrix notion for 3d, second(!) order tensor    |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticHyperElast::SetupCmatThermo(const Core::LinAlg::Matrix<1, 1>& Ntemp,
+void Mat::ThermoPlasticHyperElast::setup_cmat_thermo(const Core::LinAlg::Matrix<1, 1>& Ntemp,
     Core::LinAlg::Matrix<6, 6>& cmat_T, Teuchos::ParameterList& params)
 {
   // temperature-dependent material tangent
@@ -1240,7 +1240,7 @@ double Mat::ThermoPlasticHyperElast::st_modulus()
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)                         |
  *---------------------------------------------------------------------*/
-void Mat::ThermoPlasticHyperElast::VisNames(std::map<std::string, int>& names)
+void Mat::ThermoPlasticHyperElast::vis_names(std::map<std::string, int>& names)
 {
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1;  // scalar
@@ -1250,13 +1250,13 @@ void Mat::ThermoPlasticHyperElast::VisNames(std::map<std::string, int>& names)
 
   std::string thrplheating = "thrplheating";
   names[thrplheating] = 1;  // scalar
-}  // VisNames()
+}  // vis_names()
 
 
 /*---------------------------------------------------------------------*
  | return visualization data (public)                                  |
  *---------------------------------------------------------------------*/
-bool Mat::ThermoPlasticHyperElast::VisData(
+bool Mat::ThermoPlasticHyperElast::vis_data(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   // accumulated strain
@@ -1264,7 +1264,7 @@ bool Mat::ThermoPlasticHyperElast::VisData(
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
-    for (int iter = 0; iter < numgp; iter++) temp += AccumulatedStrain(iter);
+    for (int iter = 0; iter < numgp; iter++) temp += accumulated_strain(iter);
     data[0] = temp / numgp;
   }
 
@@ -1273,7 +1273,7 @@ bool Mat::ThermoPlasticHyperElast::VisData(
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
-    for (int iter = 0; iter < numgp; iter++) temp += MechDiss(iter);
+    for (int iter = 0; iter < numgp; iter++) temp += mech_diss(iter);
     data[0] = temp / numgp;
   }
 
@@ -1282,12 +1282,12 @@ bool Mat::ThermoPlasticHyperElast::VisData(
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
-    for (int iter = 0; iter < numgp; iter++) temp += ThermoPlastHeating(iter);
+    for (int iter = 0; iter < numgp; iter++) temp += thermo_plast_heating(iter);
     data[0] = temp / numgp;
   }
 
   return true;
-}  // VisData()
+}  // vis_data()
 
 
 /*---------------------------------------------------------------------*

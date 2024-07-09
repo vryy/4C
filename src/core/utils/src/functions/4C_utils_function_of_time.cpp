@@ -36,13 +36,13 @@ double Core::UTILS::SymbolicFunctionOfTime::evaluate(
 
   for (const auto& variable : variables_)
   {
-    variable_values.emplace(variable->Name(), variable->Value(time));
+    variable_values.emplace(variable->name(), variable->value(time));
   }
 
-  return expr_[component]->Value(variable_values);
+  return expr_[component]->value(variable_values);
 }
 
-double Core::UTILS::SymbolicFunctionOfTime::EvaluateDerivative(
+double Core::UTILS::SymbolicFunctionOfTime::evaluate_derivative(
     const double time, const std::size_t component) const
 {
   std::map<std::string, FirstDerivativeType> variable_values;
@@ -58,8 +58,8 @@ double Core::UTILS::SymbolicFunctionOfTime::EvaluateDerivative(
   for (int i = 0; i < static_cast<int>(variables_.size()); ++i)
   {
     fadvectvars[i] =
-        FirstDerivativeType(fad_size, number_of_arguments + i, variables_[i]->Value(time));
-    fadvectvars[i].val() = variables_[i]->Value(time);
+        FirstDerivativeType(fad_size, number_of_arguments + i, variables_[i]->value(time));
+    fadvectvars[i].val() = variables_[i]->value(time);
   }
 
   // set temporal variable
@@ -68,15 +68,15 @@ double Core::UTILS::SymbolicFunctionOfTime::EvaluateDerivative(
   // set the values of the variables at time t
   for (unsigned int i = 0; i < variables_.size(); ++i)
   {
-    variable_values.emplace(variables_[i]->Name(), fadvectvars[i]);
+    variable_values.emplace(variables_[i]->name(), fadvectvars[i]);
   }
 
-  auto f_dfad = expr_[component]->FirstDerivative(variable_values, {});
+  auto f_dfad = expr_[component]->first_derivative(variable_values, {});
 
   double f_dt = f_dfad.dx(0);
   for (int i = 0; i < static_cast<int>(variables_.size()); ++i)
   {
-    f_dt += f_dfad.dx(number_of_arguments + i) * variables_[i]->TimeDerivativeValue(time);
+    f_dt += f_dfad.dx(number_of_arguments + i) * variables_[i]->time_derivative_value(time);
   }
 
   return f_dt;
@@ -191,7 +191,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
           else if (vartype == "linearinterpolation")
           {
             // read times
-            std::vector<double> times = INTERNAL::ExtractTimeVector(line);
+            std::vector<double> times = INTERNAL::extract_time_vector(line);
 
             // read values
             std::vector<double> values;
@@ -203,7 +203,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
           else if (vartype == "multifunction")
           {
             // read times
-            std::vector<double> times = INTERNAL::ExtractTimeVector(line);
+            std::vector<double> times = INTERNAL::extract_time_vector(line);
 
             // read descriptions (strings separated with spaces)
             std::vector<std::string> description_vec;
@@ -221,7 +221,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
           else if (vartype == "fourierinterpolation")
           {
             // read times
-            std::vector<double> times = INTERNAL::ExtractTimeVector(line);
+            std::vector<double> times = INTERNAL::extract_time_vector(line);
 
             // read values
             std::vector<double> values;
@@ -249,10 +249,10 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
     // multiple pieces make up this variable -> join them in a PiecewiseVariable
     else
     {
-      const auto& name = pieces.front()->Name();
+      const auto& name = pieces.front()->name();
 
       const bool names_of_all_pieces_equal = std::all_of(
-          pieces.begin(), pieces.end(), [&name](auto& var) { return var->Name() == name; });
+          pieces.begin(), pieces.end(), [&name](auto& var) { return var->name() == name; });
       if (not names_of_all_pieces_equal)
         FOUR_C_THROW("Variable %d has a piece-wise definition with inconsistent names.", id);
 

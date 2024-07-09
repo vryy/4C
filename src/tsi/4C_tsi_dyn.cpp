@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 void tsi_dyn_drt()
 {
   // create a communicator
-  const Epetra_Comm& comm = Global::Problem::Instance()->GetDis("structure")->Comm();
+  const Epetra_Comm& comm = Global::Problem::instance()->get_dis("structure")->get_comm();
 
   // print TSI-Logo to screen
   if (comm.MyPID() == 0) TSI::printlogo();
@@ -43,10 +43,10 @@ void tsi_dyn_drt()
   TSI::UTILS::SetupTSI(comm);
 
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& tsidyn = Global::Problem::Instance()->TSIDynamicParams();
+  const Teuchos::ParameterList& tsidyn = Global::Problem::instance()->tsi_dynamic_params();
   // access the problem-specific parameter list
   const Teuchos::ParameterList& sdynparams =
-      Global::Problem::Instance()->structural_dynamic_params();
+      Global::Problem::instance()->structural_dynamic_params();
   const Inpar::TSI::SolutionSchemeOverFields coupling =
       Core::UTILS::IntegralValue<Inpar::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
 
@@ -79,7 +79,7 @@ void tsi_dyn_drt()
       break;
   }  // end switch
 
-  const int restart = Global::Problem::Instance()->restart();
+  const int restart = Global::Problem::instance()->restart();
   if (restart)
   {
     // read the restart information, set vectors and variables
@@ -87,18 +87,18 @@ void tsi_dyn_drt()
   }
 
   // now do the coupling setup and create the combined dofmap
-  tsi->SetupSystem();
+  tsi->setup_system();
 
   // solve the whole tsi problem
-  tsi->TimeLoop();
+  tsi->time_loop();
 
   // summarize the performance measurements
   Teuchos::TimeMonitor::summarize();
 
   // perform the result test
-  Global::Problem::Instance()->AddFieldTest(tsi->structure_field()->CreateFieldTest());
-  Global::Problem::Instance()->AddFieldTest(tsi->ThermoField()->CreateFieldTest());
-  Global::Problem::Instance()->TestAll(comm);
+  Global::Problem::instance()->add_field_test(tsi->structure_field()->create_field_test());
+  Global::Problem::instance()->add_field_test(tsi->thermo_field()->create_field_test());
+  Global::Problem::instance()->test_all(comm);
 
   return;
 }  // tsi_dyn_drt()

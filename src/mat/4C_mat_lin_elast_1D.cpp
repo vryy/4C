@@ -39,7 +39,7 @@ Mat::LinElast1DType Mat::LinElast1DType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::LinElast1DType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::LinElast1DType::create(const std::vector<char>& data)
 {
   auto* stvenantk = new Mat::LinElast1D(nullptr);
   stvenantk->unpack(data);
@@ -57,12 +57,12 @@ void Mat::LinElast1D::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 }
 
@@ -72,24 +72,24 @@ void Mat::LinElast1D::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
   {
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::LinElast1D*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
   }
 
@@ -123,7 +123,7 @@ Mat::LinElast1DGrowthType Mat::LinElast1DGrowthType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::LinElast1DGrowthType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::LinElast1DGrowthType::create(const std::vector<char>& data)
 {
   auto* stvk_growth = new Mat::LinElast1DGrowth(nullptr);
   stvk_growth->unpack(data);
@@ -144,14 +144,14 @@ void Mat::LinElast1DGrowth::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   Mat::LinElast1D::pack(data);
 
   // matid
   int matid = -1;
   if (growth_params_ != nullptr)
-    matid = growth_params_->Id();  // in case we are in post-process mode
+    matid = growth_params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 }
 
@@ -161,7 +161,7 @@ void Mat::LinElast1DGrowth::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class
   std::vector<char> basedata(0);
@@ -172,18 +172,18 @@ void Mat::LinElast1DGrowth::unpack(const std::vector<char>& data)
   int matid;
   extract_from_pack(position, data, matid);
   growth_params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
   {
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         growth_params_ = static_cast<Mat::PAR::LinElast1DGrowth*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
   }
 
@@ -193,10 +193,10 @@ void Mat::LinElast1DGrowth::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Mat::LinElast1DGrowth::EvaluatePK2(const double def_grad, const double conc) const
+double Mat::LinElast1DGrowth::evaluate_p_k2(const double def_grad, const double conc) const
 {
-  const double def_grad_inel = AmountPropGrowth() ? get_growth_factor_ao_s_prop(conc, def_grad)
-                                                  : get_growth_factor_conc_prop(conc);
+  const double def_grad_inel = amount_prop_growth() ? get_growth_factor_ao_s_prop(conc, def_grad)
+                                                    : get_growth_factor_conc_prop(conc);
 
   const double def_grad_el = def_grad / def_grad_inel;
   const double epsilon_el = 0.5 * (def_grad_el * def_grad_el - 1.0);
@@ -206,11 +206,11 @@ double Mat::LinElast1DGrowth::EvaluatePK2(const double def_grad, const double co
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Mat::LinElast1DGrowth::EvaluateStiffness(const double def_grad, const double conc) const
+double Mat::LinElast1DGrowth::evaluate_stiffness(const double def_grad, const double conc) const
 {
   // F_in
-  const double def_grad_inel = AmountPropGrowth() ? get_growth_factor_ao_s_prop(conc, def_grad)
-                                                  : get_growth_factor_conc_prop(conc);
+  const double def_grad_inel = amount_prop_growth() ? get_growth_factor_ao_s_prop(conc, def_grad)
+                                                    : get_growth_factor_conc_prop(conc);
 
   // F_el
   const double def_grad_el = def_grad / def_grad_inel;
@@ -220,7 +220,7 @@ double Mat::LinElast1DGrowth::EvaluateStiffness(const double def_grad, const dou
 
   // dF_in/dF
   const double d_def_grad_inel_d_def_grad =
-      AmountPropGrowth() ? get_growth_factor_ao_s_prop_deriv(conc, def_grad) : 0.0;
+      amount_prop_growth() ? get_growth_factor_ao_s_prop_deriv(conc, def_grad) : 0.0;
 
   // dF_el_dF
   const double d_def_grad_el_d_def_grad =
@@ -241,8 +241,8 @@ double Mat::LinElast1DGrowth::EvaluateStiffness(const double def_grad, const dou
  *----------------------------------------------------------------------*/
 double Mat::LinElast1DGrowth::evaluate_elastic_energy(double def_grad, double conc) const
 {
-  const double def_grad_inel = AmountPropGrowth() ? get_growth_factor_ao_s_prop(conc, def_grad)
-                                                  : get_growth_factor_conc_prop(conc);
+  const double def_grad_inel = amount_prop_growth() ? get_growth_factor_ao_s_prop(conc, def_grad)
+                                                    : get_growth_factor_conc_prop(conc);
 
   const double def_grad_el = def_grad / def_grad_inel;
   const double epsilon_el = 0.5 * (def_grad_el * def_grad_el - 1.0);
@@ -272,7 +272,7 @@ double Mat::LinElast1DGrowth::get_growth_factor_ao_s_prop_deriv(
     const double conc, const double def_grad) const
 {
   const double first_deriv = Core::FE::Polynomial(growth_params_->poly_params_)
-                                 .EvaluateDerivative(conc * def_grad - growth_params_->c0_, 1);
+                                 .evaluate_derivative(conc * def_grad - growth_params_->c0_, 1);
 
   return first_deriv * conc;
 }

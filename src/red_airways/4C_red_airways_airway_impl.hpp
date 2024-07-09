@@ -50,25 +50,25 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
-      virtual void Initial(RedAirway* ele, Teuchos::ParameterList& params,
+      virtual void initial(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& radii_in, Core::LinAlg::SerialDenseVector& radii_out,
           Teuchos::RCP<const Core::Mat::Material> material) = 0;
 
-      virtual void EvaluateTerminalBC(RedAirway* ele, Teuchos::ParameterList& params,
+      virtual void evaluate_terminal_bc(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
-      virtual void CalcFlowRates(RedAirway* ele, Teuchos::ParameterList& params,
+      virtual void calc_flow_rates(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
-      virtual void CalcElemVolume(RedAirway* ele, Teuchos::ParameterList& params,
+      virtual void calc_elem_volume(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
-      virtual void GetCoupledValues(RedAirway* ele, Teuchos::ParameterList& params,
+      virtual void get_coupled_values(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) = 0;
 
@@ -76,7 +76,7 @@ namespace Discret
           Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& volumeMix_np,
           std::vector<int>& lm, Teuchos::RCP<Core::Mat::Material> material) = 0;
 
-      virtual void CalcCFL(RedAirway* ele, Teuchos::ParameterList& params,
+      virtual void calc_cfl(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) = 0;
 
@@ -84,7 +84,7 @@ namespace Discret
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) = 0;
 
-      virtual void UpdateElem12Scatra(RedAirway* ele, Teuchos::ParameterList& params,
+      virtual void update_elem12_scatra(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) = 0;
 
@@ -96,7 +96,7 @@ namespace Discret
 
 
       /// Internal implementation class for airway element
-      static RedAirwayImplInterface* Impl(Discret::ELEMENTS::RedAirway* airway);
+      static RedAirwayImplInterface* impl(Discret::ELEMENTS::RedAirway* airway);
     };
 
 
@@ -143,7 +143,7 @@ namespace Discret
         \param epn              (i) nodal pressure at n
         \param dt               (i) timestep
         */
-      void EvaluateCollapse(RedAirway* ele, Core::LinAlg::SerialDenseVector& epn,
+      void evaluate_collapse(RedAirway* ele, Core::LinAlg::SerialDenseVector& epn,
           Teuchos::ParameterList& params, double dt);
       /*!
         \brief Calculate Pextn and Pextnp
@@ -152,11 +152,11 @@ namespace Discret
         \param epn              (i) nodal pressure at n
         \param dt               (i) timestep
         */
-      void ComputePext(RedAirway* ele, Teuchos::RCP<const Epetra_Vector> pn,
+      void compute_pext(RedAirway* ele, Teuchos::RCP<const Epetra_Vector> pn,
           Teuchos::RCP<const Epetra_Vector> pnp, Teuchos::ParameterList& params);
 
 
-      void EvaluateTerminalBC(RedAirway* ele, Teuchos::ParameterList& params,
+      void evaluate_terminal_bc(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& rhs, Teuchos::RCP<Core::Mat::Material> mat) override;
 
@@ -174,7 +174,7 @@ namespace Discret
         \param time             (i) current simulation time
         \param dt               (i) timestep
         */
-      void Initial(RedAirway* ele, Teuchos::ParameterList& params,
+      void initial(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& radii_in, Core::LinAlg::SerialDenseVector& radii_out,
           Teuchos::RCP<const Core::Mat::Material> material) override;
@@ -182,14 +182,14 @@ namespace Discret
       /*!
        \Essential functions to compute the results of essentail matrices
       */
-      void CalcFlowRates(RedAirway* ele, Teuchos::ParameterList& params,
+      void calc_flow_rates(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> mat) override;
 
       /*!
        \Essential functions to compute the volume of elements
       */
-      void CalcElemVolume(RedAirway* ele, Teuchos::ParameterList& params,
+      void calc_elem_volume(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> mat) override;
 
@@ -204,11 +204,11 @@ namespace Discret
       /*!
        \Essential functions to evaluate the coupled results
       */
-      void GetCoupledValues(RedAirway* ele, Teuchos::ParameterList& params,
+      void get_coupled_values(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) override;
 
-      void CalcCFL(RedAirway* ele, Teuchos::ParameterList& params,
+      void calc_cfl(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) override;
 
@@ -216,7 +216,7 @@ namespace Discret
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) override;
 
-      void UpdateElem12Scatra(RedAirway* ele, Teuchos::ParameterList& params,
+      void update_elem12_scatra(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) override;
 

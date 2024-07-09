@@ -28,18 +28,19 @@ Mat::PAR::LubricationMat::LubricationMat(const Core::Mat::PAR::Parameter::Data& 
       lubricationlaw_(nullptr)
 {
   // retrieve problem instance to read from
-  const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
 
   // for the sake of safety
-  if (Global::Problem::Instance(probinst)->Materials() == Teuchos::null)
+  if (Global::Problem::instance(probinst)->materials() == Teuchos::null)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
-  if (Global::Problem::Instance(probinst)->Materials()->Num() == 0)
+  if (Global::Problem::instance(probinst)->materials()->num() == 0)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
-  auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(lubricationlawID_);
+  auto* curmat =
+      Global::Problem::instance(probinst)->materials()->parameter_by_id(lubricationlawID_);
 
-  switch (curmat->Type())
+  switch (curmat->type())
   {
     case Core::Materials::m_lubrication_law_constant:
     {
@@ -57,7 +58,7 @@ Mat::PAR::LubricationMat::LubricationMat(const Core::Mat::PAR::Parameter::Data& 
       break;
     }
     default:
-      FOUR_C_THROW("invalid material for lubrication law %d", curmat->Type());
+      FOUR_C_THROW("invalid material for lubrication law %d", curmat->type());
       break;
   }
 }
@@ -70,7 +71,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::LubricationMat::create_material()
 
 Mat::LubricationMatType Mat::LubricationMatType::instance_;
 
-Core::Communication::ParObject* Mat::LubricationMatType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::LubricationMatType::create(const std::vector<char>& data)
 {
   Mat::LubricationMat* lubrication_mat = new Mat::LubricationMat();
   lubrication_mat->unpack(data);
@@ -95,12 +96,12 @@ void Mat::LubricationMat::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 }
 
@@ -111,23 +112,23 @@ void Mat::LubricationMat::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::LubricationMat*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   if (position != data.size())
@@ -137,10 +138,10 @@ void Mat::LubricationMat::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
                                                               wirtz 09/16|
 *----------------------------------------------------------------------*/
-double Mat::LubricationMat::ComputeViscosity(const double press)
+double Mat::LubricationMat::compute_viscosity(const double press)
 {
   double visc = -1.;
-  params_->lubricationlaw_->ComputeViscosity(press, visc);
+  params_->lubricationlaw_->compute_viscosity(press, visc);
 
   return visc;
 }

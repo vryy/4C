@@ -51,7 +51,7 @@ namespace PoroElastScaTra
       virtual ~PoroScatraCloneStrategy() = default;
 
       //! return ScaTra::ImplType of the element
-      Inpar::ScaTra::ImplType GetImplType(
+      Inpar::ScaTra::ImplType get_impl_type(
           Core::Elements::Element* ele  //! element whose ScaTra::ImplType shall be determined
       );
 

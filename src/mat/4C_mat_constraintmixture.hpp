@@ -128,7 +128,7 @@ namespace Mat
         last = elastin_survival
       };
 
-      double GetParameter(int parametername, const int EleId)
+      double get_parameter(int parametername, const int EleId)
       {
         // check if we have an element based value via size
         if (matparams_[parametername]->GlobalLength() == 1)
@@ -162,11 +162,11 @@ namespace Mat
   class ConstraintMixtureType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "ConstraintMixtureType"; }
+    std::string name() const override { return "ConstraintMixtureType"; }
 
-    static ConstraintMixtureType& Instance() { return instance_; };
+    static ConstraintMixtureType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static ConstraintMixtureType instance_;
@@ -191,9 +191,9 @@ namespace Mat
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ConstraintMixtureType::Instance().UniqueParObjectId();
+      return ConstraintMixtureType::instance().unique_par_object_id();
     }
 
     /*!
@@ -201,7 +201,7 @@ namespace Mat
 
       Resizes the vector data and stores all information of a class in it.
       The first information to be stored in data has to be the
-      unique parobject id delivered by UniqueParObjectId() which will then
+      unique parobject id delivered by unique_par_object_id() which will then
       identify the exact class on the receiving processor.
       This material contains history variables, which are packed for restart purposes.
 
@@ -216,7 +216,7 @@ namespace Mat
       exact copy of an instance of a class on a different processor.
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
-      UniqueParObjectId().
+      unique_par_object_id().
       History data is unpacked in restart.
 
       \param data (in) : vector storing all data to be unpacked into this
@@ -227,20 +227,20 @@ namespace Mat
     //@}
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_constraintmixture;
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Inpar::Solid::KinemType kinem) override
     {
       if (!(kinem == Inpar::Solid::KinemType::nonlinearTotLag))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new ConstraintMixture(*this));
     }
@@ -251,7 +251,7 @@ namespace Mat
         ) override;
 
     /// SetupHistory
-    void ResetAll(const int numgp);
+    void reset_all(const int numgp);
 
     /// Update
     void update() override;
@@ -267,22 +267,22 @@ namespace Mat
         const int eleGID) override;
 
     /// Return density
-    double Density() const override { return params_->density_; }
+    double density() const override { return params_->density_; }
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     /// Return variables for visualization
-    Core::LinAlg::Matrix<3, 1> GetVis(int gp) const { return vismassstress_->at(gp); }
+    Core::LinAlg::Matrix<3, 1> get_vis(int gp) const { return vismassstress_->at(gp); }
     /// Return actual mass density in reference configuration
-    double GetMassDensity(int gp) const { return refmassdens_->at(gp); }
+    double get_mass_density(int gp) const { return refmassdens_->at(gp); }
     /// Return actual mass density in reference configuration
     Core::LinAlg::Matrix<3, 1> get_mass_density_collagen(int gp) const
     {
       return visrefmassdens_->at(gp);
     }
     /// Return prestretch of collagen fibers
-    Core::LinAlg::Matrix<3, 1> GetPrestretch(int gp) const
+    Core::LinAlg::Matrix<3, 1> get_prestretch(int gp) const
     {
       Core::LinAlg::Matrix<3, 1> visprestretch(true);
       visprestretch(0) = localprestretch_->at(gp)(0);
@@ -291,7 +291,7 @@ namespace Mat
       return visprestretch;
     }
     /// Return prestretch of collagen fibers
-    Core::LinAlg::Matrix<3, 1> GetHomstress(int gp) const
+    Core::LinAlg::Matrix<3, 1> get_homstress(int gp) const
     {
       Core::LinAlg::Matrix<3, 1> visprestretch(true);
       visprestretch(0) = localhomstress_->at(gp)(0);
@@ -300,19 +300,20 @@ namespace Mat
       return visprestretch;
     }
     /// Return circumferential fiber direction
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> Geta1() const { return a1_; }
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> geta1() const { return a1_; }
     /// Return axial fiber direction
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> Geta2() const { return a2_; }
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> geta2() const { return a2_; }
 
     /// evaluate fiber directions from locsys, pull back
-    void EvaluateFiberVecs(const int gp, const Core::LinAlg::Matrix<3, 3>& locsys,
+    void evaluate_fiber_vecs(const int gp, const Core::LinAlg::Matrix<3, 3>& locsys,
         const Core::LinAlg::Matrix<3, 3>& defgrd);
 
     /// Return names of visualization data
-    void VisNames(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) override;
 
     /// Return visualization data
-    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+    bool vis_data(
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
    private:
     /// my material parameters

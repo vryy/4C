@@ -105,14 +105,14 @@ void Core::LinAlg::DownwindMatrix::setup(const Epetra_CrsMatrix& A)
             int jjj = jj + j;
             sum += values[jjj] * values[jjj];
           }
-          if (sum != 0.0) tmp->Assemble(sum, gnoderow, gnodecol);
+          if (sum != 0.0) tmp->assemble(sum, gnoderow, gnodecol);
           j += (bsize - 1);
         }
       }
       i += (bsize - 1);
     }
-    tmp->Complete(*onoderowmap, *onoderowmap);
-    onodegraph = tmp->EpetraMatrix();
+    tmp->complete(*onoderowmap, *onoderowmap);
+    onodegraph = tmp->epetra_matrix();
   }
 
   // scale nodal block weighted graph by sqrt and compute number of inflows for each node
@@ -183,11 +183,11 @@ void Core::LinAlg::DownwindMatrix::setup(const Epetra_CrsMatrix& A)
             break;
           }
         }
-        if (!foundit || (values[j] >= valuest[k])) tmp->Assemble(values[j], grnode, gcnode);
+        if (!foundit || (values[j] >= valuest[k])) tmp->assemble(values[j], grnode, gcnode);
       }
     }  // for (int i=0; i<rowmap.NumMyElements(); ++i)
-    tmp->Complete(rowmap, rowmap);
-    nnodegraph = tmp->EpetraMatrix();
+    tmp->complete(rowmap, rowmap);
+    nnodegraph = tmp->epetra_matrix();
   }
   // coarsen directed graph
   {
@@ -211,11 +211,11 @@ void Core::LinAlg::DownwindMatrix::setup(const Epetra_CrsMatrix& A)
       {
         const int gcnode = colmap.GID(indices[j]);
         if (!rowmap.MyGID(gcnode)) continue;
-        if (values[j] >= tau_ * average) tmp->Assemble(values[j], grnode, gcnode);
+        if (values[j] >= tau_ * average) tmp->assemble(values[j], grnode, gcnode);
       }
     }  // for (int i=0; i<rowmap.NumMyElements(); ++i)
-    tmp->Complete(rowmap, rowmap);
-    nnodegraph = tmp->EpetraMatrix();
+    tmp->complete(rowmap, rowmap);
+    nnodegraph = tmp->epetra_matrix();
   }
 
   Epetra_IntVector index(nnodegraph->RowMap(), false);

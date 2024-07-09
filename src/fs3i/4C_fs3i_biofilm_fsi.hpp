@@ -52,50 +52,50 @@ namespace FS3I
 
     void setup() override;
 
-    void Timeloop() override;
+    void timeloop() override;
 
-    void InnerTimeloop();
+    void inner_timeloop();
 
     //! information transfer FSI -> ScaTra
-    void SetFSISolution();
+    void set_fsi_solution();
 
     void compute_interface_vectors(Teuchos::RCP<Epetra_Vector> idispnp_,
         Teuchos::RCP<Epetra_Vector> iveln_, Teuchos::RCP<Epetra_Vector> struidispnp_,
         Teuchos::RCP<Epetra_Vector> struiveln_);
 
-    Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const;
+    Teuchos::RCP<Epetra_Vector> fluid_to_ale(Teuchos::RCP<Epetra_Vector> iv) const;
 
     Teuchos::RCP<Epetra_Vector> ale_to_fluid_field(Teuchos::RCP<Epetra_Vector> iv) const;
 
     /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> AleToStructField(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_struct_field(Teuchos::RCP<Epetra_Vector> iv) const;
 
     /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> AleToStructField(
+    virtual Teuchos::RCP<Epetra_Vector> ale_to_struct_field(
         Teuchos::RCP<const Epetra_Vector> iv) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> struct_to_ale(Teuchos::RCP<Epetra_Vector> iv) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> struct_to_ale(Teuchos::RCP<const Epetra_Vector> iv) const;
 
     /// solve fluid-ale
-    virtual void FluidAleSolve();
+    virtual void fluid_ale_solve();
 
     /// solve structure-ale
-    virtual void StructAleSolve();
+    virtual void struct_ale_solve();
 
     void update_and_output();
 
-    const Epetra_Comm& Comm() { return comm_; }
+    const Epetra_Comm& comm() { return comm_; }
 
-    void VecToScatravec(Teuchos::RCP<Core::FE::Discretization> scatradis,
+    void vec_to_scatravec(Teuchos::RCP<Core::FE::Discretization> scatradis,
         Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<Epetra_MultiVector> scatravec);
 
-    void StructGmshOutput();
+    void struct_gmsh_output();
 
-    void FluidGmshOutput();
+    void fluid_gmsh_output();
 
    private:
     /// communication (mainly for screen output)

@@ -98,48 +98,48 @@ namespace GEOMETRYPAIR
     inline void set_from_other_point_double(
         const ProjectionPoint1DTo3D<ScalarTypeOther>& point_other)
     {
-      eta_ = Core::FADUtils::CastToDouble(point_other.GetEta());
+      eta_ = Core::FADUtils::CastToDouble(point_other.get_eta());
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-        xi_(i_dim) = Core::FADUtils::CastToDouble(point_other.GetXi()(i_dim));
-      projection_result_ = point_other.GetProjectionResult();
+        xi_(i_dim) = Core::FADUtils::CastToDouble(point_other.get_xi()(i_dim));
+      projection_result_ = point_other.get_projection_result();
       gauss_weight_ = point_other.get_gauss_weight_no_check();
-      intersection_face_ = point_other.GetIntersectionFace();
+      intersection_face_ = point_other.get_intersection_face();
     }
 
     /**
      * \brief Set the parameter coordinate on the line.
      */
-    inline void SetEta(const ScalarType& eta) { eta_ = eta; };
+    inline void set_eta(const ScalarType& eta) { eta_ = eta; };
 
     /**
      * \brief Get the parameter coordinate on the line.
      */
-    inline const ScalarType& GetEta() const { return eta_; };
+    inline const ScalarType& get_eta() const { return eta_; };
 
     /**
      * \brief Get a mutable reference to the parameter coordinate on the line.
      */
-    inline ScalarType& GetEta() { return eta_; };
+    inline ScalarType& get_eta() { return eta_; };
 
     /**
      * \brief Set the parameter coordinates in the volume.
      */
-    inline void SetXi(const Core::LinAlg::Matrix<3, 1, ScalarType>& xi) { xi_ = xi; };
+    inline void set_xi(const Core::LinAlg::Matrix<3, 1, ScalarType>& xi) { xi_ = xi; };
 
     /**
      * \brief Get the parameter coordinates in the volume.
      */
-    inline const Core::LinAlg::Matrix<3, 1, ScalarType>& GetXi() const { return xi_; };
+    inline const Core::LinAlg::Matrix<3, 1, ScalarType>& get_xi() const { return xi_; };
 
     /**
      * \brief Get the parameter coordinates in the volume as a reference.
      */
-    inline Core::LinAlg::Matrix<3, 1, ScalarType>& GetXi() { return xi_; };
+    inline Core::LinAlg::Matrix<3, 1, ScalarType>& get_xi() { return xi_; };
 
     /**
      * \brief Set the parameter coordinates in the cross section.
      */
-    inline void SetEtaCrossSection(Core::LinAlg::Matrix<2, 1, ScalarType> eta_cross_section)
+    inline void set_eta_cross_section(Core::LinAlg::Matrix<2, 1, ScalarType> eta_cross_section)
     {
       eta_cross_section_ = eta_cross_section;
       is_cross_section_point_ = true;
@@ -148,7 +148,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Get the parameter coordinates in the cross section.
      */
-    inline Core::LinAlg::Matrix<2, 1, ScalarType> GetEtaCrossSection() const
+    inline Core::LinAlg::Matrix<2, 1, ScalarType> get_eta_cross_section() const
     {
       if (!is_cross_section_point_) FOUR_C_THROW("The cross section coordinate has not been set!");
       return eta_cross_section_;
@@ -158,7 +158,7 @@ namespace GEOMETRYPAIR
      * Set the projection result for this projection point.
      * @param projection_result
      */
-    inline void SetProjectionResult(ProjectionResult projection_result)
+    inline void set_projection_result(ProjectionResult projection_result)
     {
       projection_result_ = projection_result;
     }
@@ -166,23 +166,23 @@ namespace GEOMETRYPAIR
     /**
      * Get the projection result for this projection point.
      */
-    inline ProjectionResult GetProjectionResult() const { return projection_result_; }
+    inline ProjectionResult get_projection_result() const { return projection_result_; }
 
     /**
      * Get the projection result for this projection point as a reference.
      */
-    inline ProjectionResult& GetProjectionResult() { return projection_result_; }
+    inline ProjectionResult& get_projection_result() { return projection_result_; }
 
     /**
      * \brief Set the Gauss weight for this point.
      * @param gauss_weight
      */
-    inline void SetGaussWeight(double gauss_weight) { gauss_weight_ = gauss_weight; };
+    inline void set_gauss_weight(double gauss_weight) { gauss_weight_ = gauss_weight; };
 
     /**
      * \brief Get the Gauss weight for this point, if none is defined, an error is thrown.
      */
-    inline double GetGaussWeight() const
+    inline double get_gauss_weight() const
     {
       if (gauss_weight_ < 0.)
         FOUR_C_THROW(
@@ -198,7 +198,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Set the index of the intersection face.
      */
-    inline void SetIntersectionFace(const int intersection_face)
+    inline void set_intersection_face(const int intersection_face)
     {
       intersection_face_ = intersection_face;
     }
@@ -206,7 +206,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Get the index of the intersection face.
      */
-    inline int GetIntersectionFace() const { return intersection_face_; }
+    inline int get_intersection_face() const { return intersection_face_; }
 
     /**
      * \brief Overloaded $<$ operator.
@@ -217,7 +217,7 @@ namespace GEOMETRYPAIR
     friend bool operator<(
         const ProjectionPoint1DTo3D<ScalarType>& lhs, const ProjectionPoint1DTo3D<ScalarType>& rhs)
     {
-      if (lhs.GetEta() < rhs.GetEta() - Constants::projection_xi_eta_tol)
+      if (lhs.get_eta() < rhs.get_eta() - Constants::projection_xi_eta_tol)
         return true;
       else
         return false;
@@ -232,7 +232,7 @@ namespace GEOMETRYPAIR
     friend bool operator>(
         const ProjectionPoint1DTo3D<ScalarType>& lhs, const ProjectionPoint1DTo3D<ScalarType>& rhs)
     {
-      if (lhs.GetEta() > rhs.GetEta() + Constants::projection_xi_eta_tol)
+      if (lhs.get_eta() > rhs.get_eta() + Constants::projection_xi_eta_tol)
         return true;
       else
         return false;
@@ -285,55 +285,58 @@ namespace GEOMETRYPAIR
         : start_point_(start_point), end_point_(end_point), segment_projection_points_()
     {
       // Sanity check that eta_a is larger than eta_b.
-      if (!(GetEtadata() < GetEtaB()))
+      if (!(get_etadata() < get_eta_b()))
         FOUR_C_THROW(
             "The segment is created with eta_a=%f and eta_b=%f, this is not possible, as eta_a "
             "has "
             "to be smaller than eta_b!",
-            Core::FADUtils::CastToDouble(GetEtadata()), Core::FADUtils::CastToDouble(GetEtaB()));
+            Core::FADUtils::CastToDouble(get_etadata()), Core::FADUtils::CastToDouble(get_eta_b()));
     }
 
     /**
      * \brief Get the length of the segment in parameter coordinates.
      * @return Segment length.
      */
-    inline ScalarType GetSegmentLength() const { return GetEtaB() - GetEtadata(); }
+    inline ScalarType get_segment_length() const { return get_eta_b() - get_etadata(); }
 
     /**
      * \brief Return a const reference to eta start.
      */
-    inline const ScalarType& GetEtadata() const { return start_point_.GetEta(); };
+    inline const ScalarType& get_etadata() const { return start_point_.get_eta(); };
 
     /**
      * \brief Return a const reference to eta end.
      */
-    inline const ScalarType& GetEtaB() const { return end_point_.GetEta(); };
+    inline const ScalarType& get_eta_b() const { return end_point_.get_eta(); };
 
     /**
      * \brief Return a const reference to the start point.
      */
-    inline const ProjectionPoint1DTo3D<ScalarType>& GetStartPoint() const { return start_point_; };
+    inline const ProjectionPoint1DTo3D<ScalarType>& get_start_point() const
+    {
+      return start_point_;
+    };
 
     /**
      * \brief Return a mutable reference to the start point.
      */
-    inline ProjectionPoint1DTo3D<ScalarType>& GetStartPoint() { return start_point_; };
+    inline ProjectionPoint1DTo3D<ScalarType>& get_start_point() { return start_point_; };
 
     /**
      * \brief Return a const reference to the end point.
      */
-    inline const ProjectionPoint1DTo3D<ScalarType>& GetEndPoint() const { return end_point_; };
+    inline const ProjectionPoint1DTo3D<ScalarType>& get_end_point() const { return end_point_; };
 
     /**
      * \brief Return a mutable reference to the end point.
      */
-    inline ProjectionPoint1DTo3D<ScalarType>& GetEndPoint() { return end_point_; };
+    inline ProjectionPoint1DTo3D<ScalarType>& get_end_point() { return end_point_; };
 
     /**
      * \brief Add a projection point to the projection point vector.
      * @param projection_point projection point to add to the end of the vector.
      */
-    inline void AddProjectionPoint(ProjectionPoint1DTo3D<ScalarType> projection_point)
+    inline void add_projection_point(ProjectionPoint1DTo3D<ScalarType> projection_point)
     {
       segment_projection_points_.push_back(projection_point);
     }
@@ -351,7 +354,7 @@ namespace GEOMETRYPAIR
      * \brief Return a const reference to the projection points in this segment.
      * @return Reference to projection point vector.
      */
-    inline const std::vector<ProjectionPoint1DTo3D<ScalarType>>& GetProjectionPoints() const
+    inline const std::vector<ProjectionPoint1DTo3D<ScalarType>>& get_projection_points() const
     {
       return segment_projection_points_;
     }
@@ -360,7 +363,7 @@ namespace GEOMETRYPAIR
      * \brief Return a mutable reference to the projection points in this segment.
      * @return Reference to projection point vector.
      */
-    inline std::vector<ProjectionPoint1DTo3D<ScalarType>>& GetProjectionPoints()
+    inline std::vector<ProjectionPoint1DTo3D<ScalarType>>& get_projection_points()
     {
       return segment_projection_points_;
     }
@@ -373,14 +376,14 @@ namespace GEOMETRYPAIR
      */
     friend bool operator<(const LineSegment<ScalarType>& lhs, const LineSegment<ScalarType>& rhs)
     {
-      if (lhs.GetEtaB() < rhs.GetEtadata() + Constants::projection_xi_eta_tol)
+      if (lhs.get_eta_b() < rhs.get_etadata() + Constants::projection_xi_eta_tol)
         return true;
-      else if (lhs.GetEtadata() > rhs.GetEtaB() - Constants::projection_xi_eta_tol)
+      else if (lhs.get_etadata() > rhs.get_eta_b() - Constants::projection_xi_eta_tol)
       {
         // The segments do not overlap.
       }
-      else if (abs(lhs.GetEtadata() - rhs.GetEtadata()) < Constants::projection_xi_eta_tol &&
-               abs(lhs.GetEtaB() - rhs.GetEtaB()) < Constants::projection_xi_eta_tol)
+      else if (abs(lhs.get_etadata() - rhs.get_etadata()) < Constants::projection_xi_eta_tol &&
+               abs(lhs.get_eta_b() - rhs.get_eta_b()) < Constants::projection_xi_eta_tol)
       {
         // The segments are equal.
       }
@@ -398,14 +401,14 @@ namespace GEOMETRYPAIR
      */
     friend bool operator>(const LineSegment<ScalarType>& lhs, const LineSegment<ScalarType>& rhs)
     {
-      if (lhs.GetEtadata() > rhs.GetEtaB() - Constants::projection_xi_eta_tol)
+      if (lhs.get_etadata() > rhs.get_eta_b() - Constants::projection_xi_eta_tol)
         return true;
-      else if (lhs.GetEtaB() < rhs.GetEtadata() + Constants::projection_xi_eta_tol)
+      else if (lhs.get_eta_b() < rhs.get_etadata() + Constants::projection_xi_eta_tol)
       {
         // The segments do not overlap.
       }
-      else if (abs(lhs.GetEtadata() - rhs.GetEtadata()) < Constants::projection_xi_eta_tol &&
-               abs(lhs.GetEtaB() - rhs.GetEtaB()) < Constants::projection_xi_eta_tol)
+      else if (abs(lhs.get_etadata() - rhs.get_etadata()) < Constants::projection_xi_eta_tol &&
+               abs(lhs.get_eta_b() - rhs.get_eta_b()) < Constants::projection_xi_eta_tol)
       {
         // The segments are equal.
       }

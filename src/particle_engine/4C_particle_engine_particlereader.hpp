@@ -28,7 +28,7 @@ namespace Input
     ParticleReader(const Core::IO::DatFileReader& reader, std::string sectionname);
 
     //! do the actual reading of particles
-    void Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particles);
+    void read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particles);
 
    private:
     //! the main dat file reader

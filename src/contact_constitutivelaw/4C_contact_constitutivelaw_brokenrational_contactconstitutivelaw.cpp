@@ -49,14 +49,14 @@ CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::BrokenRationalConstitut
 double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::evaluate(
     double gap, CONTACT::Node* cnode)
 {
-  if (gap + params_->GetOffset() > 0)
+  if (gap + params_->get_offset() > 0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   double result = -1.0;
   gap = -gap;
-  result *=
-      (params_->Getdata() * 1. / (gap - params_->GetOffset() - params_->GetB()) + params_->GetC());
+  result *= (params_->getdata() * 1. / (gap - params_->get_offset() - params_->get_b()) +
+             params_->get_c());
   if (result > 0)
     FOUR_C_THROW(
         "The constitutive function you are using seems to be positive, even though the gap is "
@@ -66,17 +66,17 @@ double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::evaluate(
 /*----------------------------------------------------------------------*
  |  Calculate the derivative of the contact constitutive law|
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::EvaluateDeriv(
+double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::evaluate_deriv(
     double gap, CONTACT::Node* cnode)
 {
-  if (gap + params_->GetOffset() > 0)
+  if (gap + params_->get_offset() > 0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   gap = -gap;
-  return (-params_->Getdata() * 1. /
-          ((gap - params_->GetOffset() - params_->GetB()) *
-              (gap - params_->GetOffset() - params_->GetB())));
+  return (-params_->getdata() * 1. /
+          ((gap - params_->get_offset() - params_->get_b()) *
+              (gap - params_->get_offset() - params_->get_b())));
 }
 
 FOUR_C_NAMESPACE_CLOSE

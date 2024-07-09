@@ -22,12 +22,12 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::WallQuad4PoroType Discret::ELEMENTS::WallQuad4PoroType::instance_;
 
-Discret::ELEMENTS::WallQuad4PoroType& Discret::ELEMENTS::WallQuad4PoroType::Instance()
+Discret::ELEMENTS::WallQuad4PoroType& Discret::ELEMENTS::WallQuad4PoroType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::WallQuad4PoroType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::WallQuad4PoroType::create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad4>(-1, -1);
@@ -35,7 +35,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::WallQuad4PoroType::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad4PoroType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad4PoroType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLQ4PORO")
@@ -47,7 +47,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad4PoroType::Crea
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad4PoroType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad4PoroType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -76,13 +76,13 @@ void Discret::ELEMENTS::WallQuad4PoroType::setup_element_definition(
 int Discret::ELEMENTS::WallQuad4PoroType::initialize(Core::FE::Discretization& dis)
 {
   Discret::ELEMENTS::Wall1Type::initialize(dis);
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele =
-        dynamic_cast<Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad4>*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad4>*>(
+        dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to Wall1_Poro* failed");
-    actele->InitElement();
+    actele->init_element();
   }
   return 0;
 }
@@ -92,12 +92,12 @@ int Discret::ELEMENTS::WallQuad4PoroType::initialize(Core::FE::Discretization& d
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::WallQuad9PoroType Discret::ELEMENTS::WallQuad9PoroType::instance_;
 
-Discret::ELEMENTS::WallQuad9PoroType& Discret::ELEMENTS::WallQuad9PoroType::Instance()
+Discret::ELEMENTS::WallQuad9PoroType& Discret::ELEMENTS::WallQuad9PoroType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::WallQuad9PoroType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::WallQuad9PoroType::create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad9>(-1, -1);
@@ -105,7 +105,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::WallQuad9PoroType::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad9PoroType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad9PoroType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLQ9PORO")
@@ -117,7 +117,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad9PoroType::Crea
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad9PoroType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad9PoroType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -144,13 +144,13 @@ void Discret::ELEMENTS::WallQuad9PoroType::setup_element_definition(
 int Discret::ELEMENTS::WallQuad9PoroType::initialize(Core::FE::Discretization& dis)
 {
   Discret::ELEMENTS::Wall1Type::initialize(dis);
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele =
-        dynamic_cast<Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad9>*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad9>*>(
+        dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to Wall1_Poro* failed");
-    actele->InitElement();
+    actele->init_element();
   }
   return 0;
 }
@@ -161,12 +161,12 @@ int Discret::ELEMENTS::WallQuad9PoroType::initialize(Core::FE::Discretization& d
 
 Discret::ELEMENTS::WallNurbs4PoroType Discret::ELEMENTS::WallNurbs4PoroType::instance_;
 
-Discret::ELEMENTS::WallNurbs4PoroType& Discret::ELEMENTS::WallNurbs4PoroType::Instance()
+Discret::ELEMENTS::WallNurbs4PoroType& Discret::ELEMENTS::WallNurbs4PoroType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs4PoroType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs4PoroType::create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs4>(-1, -1);
@@ -174,7 +174,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs4PoroType::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs4PoroType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs4PoroType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLN4PORO")
@@ -186,7 +186,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs4PoroType::Cre
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs4PoroType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs4PoroType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -213,13 +213,13 @@ void Discret::ELEMENTS::WallNurbs4PoroType::setup_element_definition(
 int Discret::ELEMENTS::WallNurbs4PoroType::initialize(Core::FE::Discretization& dis)
 {
   Discret::ELEMENTS::Wall1Type::initialize(dis);
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele =
-        dynamic_cast<Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs4>*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs4>*>(
+        dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to Wall1_Poro* failed");
-    actele->InitElement();
+    actele->init_element();
   }
   return 0;
 }
@@ -230,12 +230,12 @@ int Discret::ELEMENTS::WallNurbs4PoroType::initialize(Core::FE::Discretization& 
 
 Discret::ELEMENTS::WallNurbs9PoroType Discret::ELEMENTS::WallNurbs9PoroType::instance_;
 
-Discret::ELEMENTS::WallNurbs9PoroType& Discret::ELEMENTS::WallNurbs9PoroType::Instance()
+Discret::ELEMENTS::WallNurbs9PoroType& Discret::ELEMENTS::WallNurbs9PoroType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs9PoroType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs9PoroType::create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs9>(-1, -1);
@@ -243,7 +243,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs9PoroType::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs9PoroType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs9PoroType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLN9PORO")
@@ -255,7 +255,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs9PoroType::Cre
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs9PoroType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs9PoroType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -282,13 +282,13 @@ void Discret::ELEMENTS::WallNurbs9PoroType::setup_element_definition(
 int Discret::ELEMENTS::WallNurbs9PoroType::initialize(Core::FE::Discretization& dis)
 {
   Discret::ELEMENTS::Wall1Type::initialize(dis);
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele =
-        dynamic_cast<Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs9>*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs9>*>(
+        dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to Wall1_Poro* failed");
-    actele->InitElement();
+    actele->init_element();
   }
   return 0;
 }
@@ -299,12 +299,12 @@ int Discret::ELEMENTS::WallNurbs9PoroType::initialize(Core::FE::Discretization& 
 
 Discret::ELEMENTS::WallTri3PoroType Discret::ELEMENTS::WallTri3PoroType::instance_;
 
-Discret::ELEMENTS::WallTri3PoroType& Discret::ELEMENTS::WallTri3PoroType::Instance()
+Discret::ELEMENTS::WallTri3PoroType& Discret::ELEMENTS::WallTri3PoroType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::WallTri3PoroType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::WallTri3PoroType::create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::tri3>(-1, -1);
@@ -312,7 +312,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::WallTri3PoroType::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallTri3PoroType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallTri3PoroType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLT3PORO")
@@ -324,7 +324,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallTri3PoroType::Creat
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallTri3PoroType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallTri3PoroType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -353,13 +353,13 @@ void Discret::ELEMENTS::WallTri3PoroType::setup_element_definition(
 int Discret::ELEMENTS::WallTri3PoroType::initialize(Core::FE::Discretization& dis)
 {
   Discret::ELEMENTS::Wall1Type::initialize(dis);
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
+    if (dis.l_col_element(i)->element_type() != *this) continue;
     auto* actele =
-        dynamic_cast<Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::tri3>*>(dis.lColElement(i));
+        dynamic_cast<Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::tri3>*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to Wall1_Poro* failed");
-    actele->InitElement();
+    actele->init_element();
   }
   return 0;
 }

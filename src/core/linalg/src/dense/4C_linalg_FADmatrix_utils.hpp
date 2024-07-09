@@ -89,7 +89,7 @@ namespace Core::LinAlg
     };
 
     /// Convert FADMatrix to Matrix<rows,cols,double>
-    inline Matrix<rows, cols> ConverttoDouble() const
+    inline Matrix<rows, cols> convertto_double() const
     {
       Core::LinAlg::Matrix<rows, cols> tmp(true);
       for (unsigned i = 0; i < rows; ++i)

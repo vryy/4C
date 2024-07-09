@@ -101,7 +101,7 @@ namespace Adapter
      *
      *  \param[in] binning binning strategy object
      */
-    void SetBinning(Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning);
+    void set_binning(Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning);
 
     /**
      * \brief Computes the coupling matrices
@@ -130,7 +130,7 @@ namespace Adapter
      * \returns structure force vector
      */
 
-    virtual Teuchos::RCP<Epetra_Vector> FluidToStructure();
+    virtual Teuchos::RCP<Epetra_Vector> fluid_to_structure();
 
     /**
      * \brief Abstractly, we do everything we have to, to introduce the coupling condition into the
@@ -145,16 +145,16 @@ namespace Adapter
      * \returns fluid velocity on the whole domain
      */
 
-    virtual Teuchos::RCP<Epetra_Vector> StructureToFluid(int step);
+    virtual Teuchos::RCP<Epetra_Vector> structure_to_fluid(int step);
 
     /// Interface to do preparations to solve the fluid
-    virtual void PrepareFluidSolve() = 0;
+    virtual void prepare_fluid_solve() = 0;
 
     /// Get function for the structure field #structure_
-    Teuchos::RCP<const Adapter::FSIStructureWrapper> GetStructure() const { return structure_; };
+    Teuchos::RCP<const Adapter::FSIStructureWrapper> get_structure() const { return structure_; };
 
     /// Get function for the bridge object #bridge_
-    Teuchos::RCP<const Adapter::FBIConstraintBridge> GetBridge() const { return bridge_; };
+    Teuchos::RCP<const Adapter::FBIConstraintBridge> get_bridge() const { return bridge_; };
 
     /// Handle fbi specific output
     virtual void output(double time, int step) = 0;

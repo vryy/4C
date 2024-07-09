@@ -50,9 +50,9 @@ namespace BEAMINTERACTION
   class BeamLinkType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "BeamLinkType"; };
+    std::string name() const override { return "BeamLinkType"; };
 
-    static BeamLinkType& Instance() { return instance_; };
+    static BeamLinkType& instance() { return instance_; };
 
    private:
     static BeamLinkType instance_;
@@ -93,10 +93,10 @@ namespace BEAMINTERACTION
     Every class implementing ParObject needs a unique id defined at the
     top of parobject.H
     */
-    int UniqueParObjectId() const override = 0;
+    int unique_par_object_id() const override = 0;
 
     //! return copy of this linking object object
-    virtual Teuchos::RCP<BeamLink> Clone() const = 0;
+    virtual Teuchos::RCP<BeamLink> clone() const = 0;
 
     /*!
     \brief Pack this class so it can be communicated
@@ -121,12 +121,12 @@ namespace BEAMINTERACTION
     /*!
     \brief Return global id
     */
-    virtual inline int Id() const { return id_; }
+    virtual inline int id() const { return id_; }
 
     /*!
     \brief Return gid of first/second element (specified via given local element number 0/1)
     */
-    virtual inline const int& GetEleGid(const int& elenum) const
+    virtual inline const int& get_ele_gid(const int& elenum) const
     {
       return bspot_ids_[elenum].first;
     }
@@ -135,34 +135,40 @@ namespace BEAMINTERACTION
     \brief Return element-local binding spot number of first/second element
            (specified via given local element number 0/1)
     */
-    virtual inline const int& GetLocBSpotNum(const int& elenum) const
+    virtual inline const int& get_loc_b_spot_num(const int& elenum) const
     {
       return bspot_ids_[elenum].second;
     }
 
     //! return position of first connection site
-    inline const Core::LinAlg::Matrix<3, 1, double>& GetBindSpotPos1() const { return bspotpos1_; }
+    inline const Core::LinAlg::Matrix<3, 1, double>& get_bind_spot_pos1() const
+    {
+      return bspotpos1_;
+    }
 
     //! return position of second connection site
-    inline const Core::LinAlg::Matrix<3, 1, double>& GetBindSpotPos2() const { return bspotpos2_; }
+    inline const Core::LinAlg::Matrix<3, 1, double>& get_bind_spot_pos2() const
+    {
+      return bspotpos2_;
+    }
 
-    inline Inpar::BEAMINTERACTION::CrosslinkerType GetLinkerType() const { return linkertype_; }
+    inline Inpar::BEAMINTERACTION::CrosslinkerType get_linker_type() const { return linkertype_; }
 
     //! return time at which linker was set
-    inline double GetTimeLinkWasSet() const { return timelinkwasset_; }
+    inline double get_time_link_was_set() const { return timelinkwasset_; }
 
     //! return time at which linker was set
-    inline double GetReferenceLength() const { return reflength_; }
+    inline double get_reference_length() const { return reflength_; }
 
     //! get force in first or second binding spot
-    virtual void GetBindingSpotForce(
+    virtual void get_binding_spot_force(
         int bspotid, Core::LinAlg::SerialDenseVector& bspotforce) const = 0;
 
     //! get internal linker energy
-    virtual double GetInternalEnergy() const = 0;
+    virtual double get_internal_energy() const = 0;
 
     //! get kinetic linker energy
-    virtual double GetKineticEnergy() const = 0;
+    virtual double get_kinetic_energy() const = 0;
 
     //! scale linker element reference length
     virtual void scale_linker_reference_length(double scalefac) = 0;
@@ -174,7 +180,7 @@ namespace BEAMINTERACTION
     /*
     \brief Update position and triad of both connection sites (a.k.a. binding spots)
     */
-    virtual void ResetState(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
+    virtual void reset_state(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
         std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad);
 
     /*!

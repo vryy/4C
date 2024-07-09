@@ -100,7 +100,7 @@ namespace CONTACT
     \brief Return Lagrange multiplier vector from last Uzawa step
 
     */
-    Teuchos::RCP<Epetra_Vector> LagrMultUzawa() { return zuzawa_; }
+    Teuchos::RCP<Epetra_Vector> lagr_mult_uzawa() { return zuzawa_; }
 
     /*!
     \brief Return constraint rhs vector (only in saddle-point formulation
@@ -145,17 +145,17 @@ namespace CONTACT
     dual Lagrange multiplier shape functions in any interface.
 
     */
-    virtual const bool& Dualquadslavetrafo() const { return dualquadslavetrafo_; };
+    virtual const bool& dualquadslavetrafo() const { return dualquadslavetrafo_; };
 
     /*!
     \brief Return parallel redistribution status (yes or no)
 
     */
-    bool ParRedist() const
+    bool par_redist() const
     {
       Inpar::Mortar::ParallelRedist partype =
           Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(
-              Params().sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
+              params().sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
       if (partype != Inpar::Mortar::ParallelRedist::redist_none)
         return true;
       else
@@ -303,7 +303,7 @@ namespace CONTACT
     \param dis (in):  current displacements (-> old displacements)
 
     */
-    void Update(Teuchos::RCP<const Epetra_Vector> dis) override;
+    void update(Teuchos::RCP<const Epetra_Vector> dis) override;
 
     /*!
     \brief Perform a write restart
@@ -314,7 +314,7 @@ namespace CONTACT
     for short: here's the right place.
 
     */
-    void DoReadRestart(
+    void do_read_restart(
         Core::IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) override;
 
     //@}
@@ -442,7 +442,7 @@ namespace CONTACT
     bool active_set_converged() override { return true; }
     bool active_set_semi_smooth_converged() const override { return true; }
     bool is_friction() const override { return false; }
-    bool WearBothDiscrete() const override { return false; }
+    bool wear_both_discrete() const override { return false; }
     bool is_in_contact() const override { return true; }
     bool was_in_contact() const override { return true; }
     bool was_in_contact_last_time_step() const override { return true; }
@@ -451,19 +451,19 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Vector> contact_normal_force() override { return Teuchos::null; }
     Teuchos::RCP<Epetra_Vector> contact_tangential_force() override { return Teuchos::null; }
     void assemble_mortar() override {}
-    void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
+    void do_write_restart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
         bool forcedrestart = false) const override
     {
     }
     void initialize_and_evaluate_interface() override {}
     void initialize_mortar() override {}
     void initialize() override {}
-    double Inttime() override { return inttime_; };
-    void Inttime_init() override { inttime_ = 0.0; };
+    double inttime() override { return inttime_; };
+    void inttime_init() override { inttime_ = 0.0; };
     int number_of_active_nodes() const override { return 0; }
     int number_of_slip_nodes() const override { return 0; }
     void compute_contact_stresses() final{};
-    void AugForces(Epetra_Vector& augfs_lm, Epetra_Vector& augfs_g, Epetra_Vector& augfm_lm,
+    void aug_forces(Epetra_Vector& augfs_lm, Epetra_Vector& augfs_g, Epetra_Vector& augfm_lm,
         Epetra_Vector& augfm_g){};
     bool redistribute_contact(
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel) final
@@ -506,7 +506,7 @@ namespace CONTACT
      *
      *  \date 05/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+    virtual Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const = 0;
 
     /*! \brief Return the desired matrix block pointer (read-only)
@@ -518,7 +518,7 @@ namespace CONTACT
      *
      *  \date 05/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt) const = 0;
 
     /*! \brief Return the Lagrange multiplier dof row map
@@ -528,9 +528,9 @@ namespace CONTACT
      *
      *  \date 04/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<const Epetra_Map> LMDoFRowMapPtr(const bool& redist) const
+    virtual Teuchos::RCP<const Epetra_Map> lm_do_f_row_map_ptr(const bool& redist) const
     {
-      if ((not redist) and ParRedist()) return pglmdofrowmap_;
+      if ((not redist) and par_redist()) return pglmdofrowmap_;
 
       return glmdofrowmap_;
     };

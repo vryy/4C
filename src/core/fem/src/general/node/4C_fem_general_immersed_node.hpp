@@ -24,11 +24,11 @@ namespace Core::Nodes
   class ImmersedNodeType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "ImmersedNodeType"; }
+    std::string name() const override { return "ImmersedNodeType"; }
 
-    static ImmersedNodeType& Instance() { return instance_; };
+    static ImmersedNodeType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
 
    private:
@@ -74,7 +74,7 @@ namespace Core::Nodes
     \brief Deep copy the derived class and return pointer to it
 
     */
-    ImmersedNode* Clone() const override;
+    ImmersedNode* clone() const override;
 
 
     /*!
@@ -83,9 +83,9 @@ namespace Core::Nodes
     every class implementing ParObject needs a unique id defined at the
     top of this file.
     */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ImmersedNodeType::Instance().UniqueParObjectId();
+      return ImmersedNodeType::instance().unique_par_object_id();
     }
 
     /*!
@@ -107,12 +107,12 @@ namespace Core::Nodes
     /*!
     \brief set 'true' if node is covered by an immersed discretization
     */
-    void SetIsMatched(int ismatched) { ismatched_ = ismatched; }
+    void set_is_matched(int ismatched) { ismatched_ = ismatched; }
 
     /*!
     \brief is node covered by an immersed discretization ?
     */
-    int IsMatched() const { return ismatched_; }
+    int is_matched() const { return ismatched_; }
 
     /*!
     \brief set 'true' if parent element is cut by an immersed boundary
@@ -123,17 +123,17 @@ namespace Core::Nodes
     \brief set 'true' if parent element is adjacent to immersed boundary and fully covered by
     immersed body.
     */
-    void SetIsPseudoBoundary(bool isbdryimmersed) { IsPseudoBoundary_ = isbdryimmersed; }
+    void set_is_pseudo_boundary(bool isbdryimmersed) { IsPseudoBoundary_ = isbdryimmersed; }
 
     /*!
     \brief is an boundary immersed in parent element ?
     */
-    int IsBoundaryImmersed() const { return IsBoundaryImmersed_; }
+    int is_boundary_immersed() const { return IsBoundaryImmersed_; }
 
     /*!
     \brief is pseudo boundary node ?
     */
-    int IsPseudoBoundary() const { return IsPseudoBoundary_; }
+    int is_pseudo_boundary() const { return IsPseudoBoundary_; }
 
     /*!
     \brief Print this node
@@ -143,12 +143,12 @@ namespace Core::Nodes
     /*! \brief Query names of node data to be visualized using BINIO
      *
      */
-    void VisNames(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) override;
 
     /*! \brief Query data to be visualized using BINIO of a given name
      *
      */
-    bool VisData(const std::string& name, std::vector<double>& data) override;
+    bool vis_data(const std::string& name, std::vector<double>& data) override;
 
    protected:
     //! @name immersed information

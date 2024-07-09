@@ -30,7 +30,7 @@ namespace Mat
           : Parameter(matdata), constrelpermeability_(constrelpermeability){};
 
       // get relative permeability
-      virtual double GetRelPermeability(const double saturation) const = 0;
+      virtual double get_rel_permeability(const double saturation) const = 0;
 
       // get derivative of relative permeability with respect to the saturation of this phase
       virtual double get_deriv_of_rel_permeability_wrt_saturation(
@@ -57,7 +57,7 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
 
       // get permeability
-      double GetRelPermeability(const double saturation) const override
+      double get_rel_permeability(const double saturation) const override
       {
         return relpermeability_;
       };
@@ -90,7 +90,7 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
 
       // get permeability
-      double GetRelPermeability(const double saturation) const override
+      double get_rel_permeability(const double saturation) const override
       {
         if (saturation > minsat_)
           return std::pow(saturation, exp_);

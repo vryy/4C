@@ -48,35 +48,35 @@ void Discret::ELEMENTS::FluidType::pre_evaluate(Core::FE::Discretization& dis,
   if (action == FLD::set_general_fluid_parameter)
   {
     Discret::ELEMENTS::FluidEleParameterStd* fldpara =
-        Discret::ELEMENTS::FluidEleParameterStd::Instance();
-    fldpara->set_element_general_fluid_parameter(p, dis.Comm().MyPID());
+        Discret::ELEMENTS::FluidEleParameterStd::instance();
+    fldpara->set_element_general_fluid_parameter(p, dis.get_comm().MyPID());
   }
   else if (action == FLD::set_time_parameter)
   {
     Discret::ELEMENTS::FluidEleParameterTimInt* fldpara =
-        Discret::ELEMENTS::FluidEleParameterTimInt::Instance();
+        Discret::ELEMENTS::FluidEleParameterTimInt::instance();
     fldpara->set_element_time_parameter(p);
   }
   else if (action == FLD::set_turbulence_parameter)
   {
     Discret::ELEMENTS::FluidEleParameterStd* fldpara =
-        Discret::ELEMENTS::FluidEleParameterStd::Instance();
+        Discret::ELEMENTS::FluidEleParameterStd::instance();
     fldpara->set_element_turbulence_parameters(p);
   }
   else if (action == FLD::set_loma_parameter)
   {
     Discret::ELEMENTS::FluidEleParameterStd* fldpara =
-        Discret::ELEMENTS::FluidEleParameterStd::Instance();
+        Discret::ELEMENTS::FluidEleParameterStd::instance();
     fldpara->set_element_loma_parameter(p);
   }
   else if (action == FLD::set_general_fluid_xfem_parameter)
   {
     Discret::ELEMENTS::FluidEleParameterXFEM* fldpara =
-        Discret::ELEMENTS::FluidEleParameterXFEM::Instance();
+        Discret::ELEMENTS::FluidEleParameterXFEM::instance();
 
-    fldpara->set_element_general_fluid_parameter(p, dis.Comm().MyPID());
+    fldpara->set_element_general_fluid_parameter(p, dis.get_comm().MyPID());
     fldpara->set_element_turbulence_parameters(p);
-    fldpara->set_element_xfem_parameter(p, dis.Comm().MyPID());
+    fldpara->set_element_xfem_parameter(p, dis.get_comm().MyPID());
   }
 
   return;
@@ -96,10 +96,10 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
   const FLD::Action act = Core::UTILS::GetAsEnum<FLD::Action>(params, "action");
 
   // get material
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
   // get space dimensions
-  const int nsd = Core::FE::getDimension(Shape());
+  const int nsd = Core::FE::getDimension(shape());
 
   // switch between different physical types as used below
   std::string impltype = "std";
@@ -128,7 +128,7 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
     //-----------------------------------------------------------------------
     case FLD::calc_fluid_systemmat_and_residual:
     {
-      return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
+      return Discret::ELEMENTS::FluidFactory::provide_impl(shape(), impltype)
           ->evaluate(
               this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
     }
@@ -141,7 +141,7 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
     //-----------------------------------------------------------------------
     case FLD::calc_loma_mono_odblock:
     {
-      return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "loma")
+      return Discret::ELEMENTS::FluidFactory::provide_impl(shape(), "loma")
           ->evaluate(this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2,
               elevec3, true);
     }
@@ -151,7 +151,7 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
       if (nsd == 3)
       {
         // do nothing if you do not own this element
-        if (this->Owner() == discretization.Comm().MyPID())
+        if (this->owner() == discretization.get_comm().MyPID())
         {
           // --------------------------------------------------
           // extract velocity, pressure, and scalar from global
@@ -159,9 +159,9 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
           // --------------------------------------------------
           // velocity/pressure and scalar values (n+1)
           Teuchos::RCP<const Epetra_Vector> velnp =
-              discretization.GetState("u and p (n+1,converged)");
+              discretization.get_state("u and p (n+1,converged)");
           Teuchos::RCP<const Epetra_Vector> scanp =
-              discretization.GetState("scalar (n+1,converged)");
+              discretization.get_state("scalar (n+1,converged)");
           if (velnp == Teuchos::null || scanp == Teuchos::null)
             FOUR_C_THROW("Cannot get state vectors 'velnp' and/or 'scanp'");
 
@@ -172,7 +172,7 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
           Core::FE::ExtractMyValues(*scanp, mysca, lm);
 
           // integrate mean values
-          const Core::FE::CellType distype = this->Shape();
+          const Core::FE::CellType distype = this->shape();
 
           switch (distype)
           {
@@ -208,7 +208,7 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
       if (nsd == 3)
       {
         // do nothing if you do not own this element
-        if (this->Owner() == discretization.Comm().MyPID())
+        if (this->owner() == discretization.get_comm().MyPID())
         {
           // --------------------------------------------------
           // extract velocity, pressure, and temperature from
@@ -216,9 +216,9 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
           // --------------------------------------------------
           // velocity/pressure and scalar values (n+1)
           Teuchos::RCP<const Epetra_Vector> velnp =
-              discretization.GetState("u and p (n+1,converged)");
+              discretization.get_state("u and p (n+1,converged)");
           Teuchos::RCP<const Epetra_Vector> scanp =
-              discretization.GetState("scalar (n+1,converged)");
+              discretization.get_state("scalar (n+1,converged)");
           if (velnp == Teuchos::null || scanp == Teuchos::null)
             FOUR_C_THROW("Cannot get state vectors 'velnp' and/or 'scanp'");
 
@@ -232,7 +232,7 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
           const double eosfac = params.get<double>("eos factor", 100000.0 / 287.0);
 
           // integrate mean values
-          const Core::FE::CellType distype = this->Shape();
+          const Core::FE::CellType distype = this->shape();
 
           switch (distype)
           {
@@ -266,7 +266,7 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
     {
       if (nsd == 3)
       {
-        const Core::FE::CellType distype = this->Shape();
+        const Core::FE::CellType distype = this->shape();
         int nen = 0;
         if (distype == Core::FE::CellType::hex8)
           nen = 8;
@@ -282,7 +282,7 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
         // velocity, pressure and temperature values (most recent
         // intermediate solution, i.e. n+alphaF for genalpha
         // and n+1 for one-step-theta)
-        Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("u and p (trial)");
+        Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("u and p (trial)");
         if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'vel'");
         // extract local values from the global vectors
         std::vector<double> myvel(lm.size());
@@ -293,10 +293,10 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
         double thermpress = 0.0;
         // pointer to class FluidEleParameter (access to the general parameter)
         Discret::ELEMENTS::FluidEleParameterStd* fldpara =
-            Discret::ELEMENTS::FluidEleParameterStd::Instance();
-        if (fldpara->PhysicalType() == Inpar::FLUID::loma)
+            Discret::ELEMENTS::FluidEleParameterStd::instance();
+        if (fldpara->physical_type() == Inpar::FLUID::loma)
         {
-          Teuchos::RCP<const Epetra_Vector> temp = discretization.GetState("T (trial)");
+          Teuchos::RCP<const Epetra_Vector> temp = discretization.get_state("T (trial)");
           if (temp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'temp'");
           Core::FE::ExtractMyValues(*temp, tmp_temp, lm);
 
@@ -380,12 +380,12 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
 
         // pointer to class FluidEleParameter (access to the general parameter)
         Discret::ELEMENTS::FluidEleParameterStd* fldpara =
-            Discret::ELEMENTS::FluidEleParameterStd::Instance();
+            Discret::ELEMENTS::FluidEleParameterStd::instance();
         // add potential loma specific vectors
         Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_vel = Teuchos::null;
         Teuchos::RCP<Epetra_Vector> col_filtered_dens = Teuchos::null;
         Teuchos::RCP<Epetra_Vector> col_filtered_dens_strainrate = Teuchos::null;
-        if (fldpara->PhysicalType() == Inpar::FLUID::loma)
+        if (fldpara->physical_type() == Inpar::FLUID::loma)
         {
           col_filtered_dens_vel =
               params.get<Teuchos::RCP<Epetra_MultiVector>>("col_filtered_dens_vel");
@@ -402,7 +402,7 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
         double ycenter = 0.0;
         double zcenter = 0.0;
 
-        const Core::FE::CellType distype = this->Shape();
+        const Core::FE::CellType distype = this->shape();
         switch (distype)
         {
           case Core::FE::CellType::hex8:
@@ -439,7 +439,7 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
           Cs_delta_sq = 0.0;
         }
 
-        if (fldpara->PhysicalType() == Inpar::FLUID::loma)
+        if (fldpara->physical_type() == Inpar::FLUID::loma)
         {
           // and set Ci_delta_sq without averaging (only clipping) for loma
           if (abs(CI_denominator) < 1E-16)
@@ -485,7 +485,7 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
         double cv_numerator = 0.0;
         double cv_denominator = 0.0;
         double volume = 0.0;
-        const Core::FE::CellType distype = this->Shape();
+        const Core::FE::CellType distype = this->shape();
         switch (distype)
         {
           case Core::FE::CellType::hex8:
@@ -518,7 +518,7 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
       // time update for time-dependent subgrid-scales
       const double dt = params.get<double>("dt");
       const double gamma = params.get<double>("gamma");
-      this->TDS()->update(dt, gamma);
+      this->tds()->update(dt, gamma);
     }
     break;
     case FLD::calc_model_params_mfsubgr_scales:
@@ -526,9 +526,9 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
       if (nsd == 3)
       {
         // velocity values
-        Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+        Teuchos::RCP<const Epetra_Vector> velnp = discretization.get_state("velnp");
         // fine-scale velocity values
-        Teuchos::RCP<const Epetra_Vector> fsvelnp = discretization.GetState("fsvelnp");
+        Teuchos::RCP<const Epetra_Vector> fsvelnp = discretization.get_state("fsvelnp");
         if (velnp == Teuchos::null or fsvelnp == Teuchos::null)
         {
           FOUR_C_THROW("Cannot get state vectors");
@@ -542,15 +542,15 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
 
         // pointer to class FluidEleParameter (access to the general parameter)
         Discret::ELEMENTS::FluidEleParameterStd* fldpara =
-            Discret::ELEMENTS::FluidEleParameterStd::Instance();
+            Discret::ELEMENTS::FluidEleParameterStd::instance();
 
-        const Core::FE::CellType distype = this->Shape();
+        const Core::FE::CellType distype = this->shape();
         switch (distype)
         {
           case Core::FE::CellType::hex8:
           {
             // don't store values of ghosted elements
-            if (this->Owner() == discretization.Comm().MyPID())
+            if (this->owner() == discretization.get_comm().MyPID())
             {
               FLD::f3_get_mf_params<8, 3, Core::FE::CellType::hex8>(
                   this, fldpara, params, mat, myvel, myfsvel);
@@ -571,7 +571,7 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
     {
       if (nsd == 3)
       {
-        const Core::FE::CellType distype = this->Shape();
+        const Core::FE::CellType distype = this->shape();
         int nen = 0;
         if (distype == Core::FE::CellType::hex8)
           nen = 8;
@@ -580,9 +580,9 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
 
         // velocity values
         // renamed to "velaf" to be consistent i fluidimplicitintegration.cpp (krank 12/13)
-        Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velaf");
+        Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("velaf");
         // scalar values
-        Teuchos::RCP<const Epetra_Vector> sca = discretization.GetState("scalar");
+        Teuchos::RCP<const Epetra_Vector> sca = discretization.get_state("scalar");
         if (vel == Teuchos::null or sca == Teuchos::null)
         {
           FOUR_C_THROW("Cannot get state vectors");
@@ -599,7 +599,7 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
 
         // pointer to class FluidEleParameter
         Discret::ELEMENTS::FluidEleParameterStd* fldpara =
-            Discret::ELEMENTS::FluidEleParameterStd::Instance();
+            Discret::ELEMENTS::FluidEleParameterStd::instance();
 
         double Cai = 0.0;
         double vol = 0.0;
@@ -644,15 +644,15 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
     {
       // pointer to class FluidEleParameter
       Discret::ELEMENTS::FluidEleParameterStd* fldpara =
-          Discret::ELEMENTS::FluidEleParameterStd::Instance();
-      fldpara->SetCsgsPhi(params.get<double>("meanCai"));
+          Discret::ELEMENTS::FluidEleParameterStd::instance();
+      fldpara->set_csgs_phi(params.get<double>("meanCai"));
     }
     break;
     case FLD::calc_node_normal:
     {
       if (nsd == 3)
       {
-        const Core::FE::CellType distype = this->Shape();
+        const Core::FE::CellType distype = this->shape();
         switch (distype)
         {
           case Core::FE::CellType::hex27:
@@ -720,8 +720,8 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
     case FLD::reset_immersed_ele:
     case FLD::update_immersed_information:
     {
-      return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
-          ->EvaluateService(
+      return Discret::ELEMENTS::FluidFactory::provide_impl(shape(), impltype)
+          ->evaluate_service(
               this, params, mat, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
@@ -774,14 +774,14 @@ void Discret::ELEMENTS::FluidIntFaceType::pre_evaluate(Core::FE::Discretization&
   if (action == FLD::set_general_face_fluid_parameter)
   {
     Discret::ELEMENTS::FluidEleParameterIntFace* fldintfacepara =
-        Discret::ELEMENTS::FluidEleParameterIntFace::Instance();
-    fldintfacepara->set_face_general_fluid_parameter(p, dis.Comm().MyPID());
+        Discret::ELEMENTS::FluidEleParameterIntFace::instance();
+    fldintfacepara->set_face_general_fluid_parameter(p, dis.get_comm().MyPID());
   }
   else if (action == FLD::set_general_face_xfem_parameter)
   {
     Discret::ELEMENTS::FluidEleParameterIntFace* fldintfacepara =
-        Discret::ELEMENTS::FluidEleParameterIntFace::Instance();
-    fldintfacepara->set_face_general_xfem_parameter(p, dis.Comm().MyPID());
+        Discret::ELEMENTS::FluidEleParameterIntFace::instance();
+    fldintfacepara->set_face_general_xfem_parameter(p, dis.get_comm().MyPID());
   }
   else
     FOUR_C_THROW("unknown action type for FluidIntFaceType::pre_evaluate");

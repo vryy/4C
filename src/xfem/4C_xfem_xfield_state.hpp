@@ -57,20 +57,20 @@ namespace XFEM
     virtual void setup() = 0;
 
     /// destroy the stored objects
-    virtual bool Destroy() = 0;
+    virtual bool destroy() = 0;
 
     /// transfer the old to a new state object
-    virtual void TransferToNewState(
+    virtual void transfer_to_new_state(
         const Core::FE::Discretization& new_discret, XFEM::XFieldState& new_xstate) const = 0;
 
     virtual void reset_non_standard_dofs(const Core::FE::Discretization& full_discret) = 0;
 
-    virtual void SetNewState(const XFEM::XFieldState& xstate);
+    virtual void set_new_state(const XFEM::XFieldState& xstate);
 
     /// @name Accessors
     /// @{
     /// Get cut wizard
-    Core::Geo::CutWizard& CutWizard()
+    Core::Geo::CutWizard& cut_wizard()
     {
       check_init();
       if (wizard_.is_null()) FOUR_C_THROW("The CutWizard was not initialized! (Teuchos::null)");
@@ -78,7 +78,7 @@ namespace XFEM
     }
 
     /// Get condition manager
-    XFEM::ConditionManager& ConditionManager()
+    XFEM::ConditionManager& condition_manager()
     {
       check_init();
       if (condition_manager_.is_null())
@@ -87,7 +87,7 @@ namespace XFEM
     }
 
     /// Get dofset of the cut discretization
-    XFEM::XFEMDofSet& XDofSet()
+    XFEM::XFEMDofSet& x_dof_set()
     {
       check_init();
       if (xdofset_.is_null()) FOUR_C_THROW("The xDoF set was not initialized! (Teuchos::null)");

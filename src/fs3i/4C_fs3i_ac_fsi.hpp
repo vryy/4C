@@ -71,10 +71,10 @@ namespace FS3I
     void read_restart() override;
 
     /// timeloop
-    void Timeloop() override;
+    void timeloop() override;
 
     /// timeloop for small time scales
-    void SmallTimeScaleLoop();
+    void small_time_scale_loop();
 
     /// flag whether small time scale time loop should be finished
     bool small_time_scale_loop_not_finished();
@@ -100,27 +100,27 @@ namespace FS3I
     void small_time_scale_outer_loop_iter_stagg();
 
     /// Do a single fsi step (including all subcycles)
-    void DoFSIStep();
+    void do_fsi_step();
 
     void is_small_time_scale_periodic();
 
     /// Decide if fsi problem is already periodic
-    void IsFsiPeriodic();
+    void is_fsi_periodic();
 
     /// provide wall shear stresses from FS3I subproblem for scatra subproblem
     void set_wall_shear_stresses() const override;
 
     /// Decide if fluid scatra problem is periodic
-    void IsScatraPeriodic();
+    void is_scatra_periodic();
 
     /// Do a standard fsi step
-    void DoFSIStepStandard();
+    void do_fsi_step_standard();
 
     /// Do a fsi step with subcycling
-    void DoFSIStepSubcycled(const int subcyclingsteps);
+    void do_fsi_step_subcycled(const int subcyclingsteps);
 
     /// Get fsi solution from one period before
-    void DoFSIStepPeriodic();
+    void do_fsi_step_periodic();
 
     /// Get step number of on cycle ago
     double get_step_of_one_period_ago_and_prepare_reading(const int actstep, const double time);
@@ -130,10 +130,10 @@ namespace FS3I
         const int actstep, const double acttime, const double dt);
 
     /// Get filename in which the equivalent step of the last period is written
-    std::string GetFileName(const int step);
+    std::string get_file_name(const int step);
 
     /// Set time and step in FSI and all subfields
-    void SetTimeAndStepInFSI(const double time, const int step);
+    void set_time_and_step_in_fsi(const double time, const int step);
 
     /// Do a single scatra step
     void small_time_scale_do_scatra_step();
@@ -142,7 +142,7 @@ namespace FS3I
     void small_time_scale_update_and_output();
 
     /// Write FSI output
-    void FsiOutput();
+    void fsi_output();
 
     /// check convergence of scatra fields
     bool scatra_convergence_check(const int itnum) override;
@@ -155,7 +155,7 @@ namespace FS3I
     //--------------------------------------------------------------------
 
     /// timeloop for large time scales
-    void LargeTimeScaleLoop();
+    void large_time_scale_loop();
 
     /// Prepare the large time scale loop
     void prepare_large_time_scale_loop();
@@ -186,7 +186,7 @@ namespace FS3I
     void large_time_scale_outer_loop();
 
     /// Do a large time scale structe scatra step
-    void DoStructScatraStep();
+    void do_struct_scatra_step();
 
     /// evaluate, solver and iteratively update structure scalar problem
     void struct_scatra_evaluate_solve_iter_update();
@@ -212,15 +212,15 @@ namespace FS3I
     //@}
 
     /// Build map extractor which extracts the j-th dof
-    std::vector<Teuchos::RCP<Core::LinAlg::MapExtractor>> BuildMapExtractor();
+    std::vector<Teuchos::RCP<Core::LinAlg::MapExtractor>> build_map_extractor();
 
     /// optional safety check for times and dt's of all fields
     void check_if_times_and_steps_and_dts_match();
 
     /// Compare if two doubles are relatively zero
-    bool IsRealtiveEqualTo(const double A,  ///< first value
-        const double B,                     ///< second value
-        const double Ref = 1.0              ///< reference value
+    bool is_realtive_equal_to(const double A,  ///< first value
+        const double B,                        ///< second value
+        const double Ref = 1.0                 ///< reference value
     );
 
     /// Compare if A mod B is relatively equal to zero
@@ -278,14 +278,14 @@ namespace FS3I
     virtual ~MeanManager() = default;
 
     /// add value into the mean manager
-    void AddValue(
+    void add_value(
         const std::string type, const Teuchos::RCP<const Epetra_Vector> value, const double dt);
 
     /// reset mean manager
     void reset();
 
     /// get some mean value
-    Teuchos::RCP<const Epetra_Vector> GetMeanValue(const std::string type) const;
+    Teuchos::RCP<const Epetra_Vector> get_mean_value(const std::string type) const;
 
     /// Write restart of mean manager
     void write_restart(Teuchos::RCP<Core::IO::DiscretizationWriter> fluidwriter) const;

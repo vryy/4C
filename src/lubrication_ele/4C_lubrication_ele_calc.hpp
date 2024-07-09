@@ -79,13 +79,13 @@ namespace Discret
 
      public:
       //! singleton access method
-      static LubricationEleCalc<distype, probdim>* Instance(const std::string& disname);
+      static LubricationEleCalc<distype, probdim>* instance(const std::string& disname);
 
       /// In this class we do not define a static LubricationEle...* Instance
       /// since only derived child classes are free to be allocated!!
 
       /// Setup element evaluation
-      int SetupCalc(
+      int setup_calc(
           Core::Elements::Element* ele, Core::FE::Discretization& discretization) override;
 
       /// Evaluate the element
@@ -101,7 +101,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
       // Evaluate the off-diagonal coupling block of monotlitic EHL matrix
-      int EvaluateEHLMon(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_ehl_mon(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -120,7 +120,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra);
 
       //! evaluate service routine
-      int EvaluateService(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_service(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -434,9 +434,9 @@ namespace Discret
       /*========================================================================*/
 
       //! return pressure values at t_(n+1) or t_(n+alpha_F)
-      virtual const double& Prenp() const { return prenp_; };
+      virtual const double& prenp() const { return prenp_; };
       //! return spatial gradient of all pressure values
-      virtual const Core::LinAlg::Matrix<nsd, 1>& GradPre() const { return gradpre_; };
+      virtual const Core::LinAlg::Matrix<nsd, 1>& grad_pre() const { return gradpre_; };
 
      protected:
       /*========================================================================*/
@@ -465,7 +465,7 @@ namespace Discret
       virtual ~LubricationEleViscManager() = default;
 
       //! Set the isotropic diffusion coefficient
-      virtual void SetIsotropicVisc(const double visc)
+      virtual void set_isotropic_visc(const double visc)
       {
         if (visc < 0.0) FOUR_C_THROW("negative (physical) viscosity: %f", 0, visc);
 
@@ -474,7 +474,7 @@ namespace Discret
       }
 
       //! Return the stored isotropic diffusion coefficients
-      virtual double GetIsotropicDiff() { return visc_; }
+      virtual double get_isotropic_diff() { return visc_; }
 
      protected:
       //! lubricant viscosity

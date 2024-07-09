@@ -73,8 +73,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::evalu
 
     if (pair_is_active)
     {
-      elegids[0] = elepairptr->Element1()->Id();
-      elegids[1] = elepairptr->Element2()->Id();
+      elegids[0] = elepairptr->element1()->id();
+      elegids[1] = elepairptr->element2()->id();
 
       // assemble force vector and stiffness matrix affecting the centerline DoFs only
       // into element force vector and stiffness matrix ('all DoFs' format, as usual)
@@ -93,7 +93,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::evalu
     }
 
     // Each pair can also directly assembles terms into the global force vector and system matrix.
-    elepairptr->EvaluateAndAssemble(discret, fe_sysvec, fe_sysmat, data_state->GetDisColNp());
+    elepairptr->evaluate_and_assemble(discret, fe_sysvec, fe_sysmat, data_state->get_dis_col_np());
   }
 }
 

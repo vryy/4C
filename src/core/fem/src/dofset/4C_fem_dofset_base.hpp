@@ -51,14 +51,14 @@ namespace Core::DOFSets
 
     /// Get Max of all GID assigned in the DofSets in front of current one in the list
     /// #static_dofsets_
-    int MaxGIDinList(const Epetra_Comm& comm) const override;
+    int max_gi_din_list(const Epetra_Comm& comm) const override;
 
     //@}
 
     //! @name Construction
 
     /// Add Dof Set to list #static_dofsets_
-    void AddDofSettoList() override;
+    void add_dof_setto_list() override;
 
     /// Replace a Dof Set in list #static_dofsets_ with this
     void replace_in_static_dofsets(Teuchos::RCP<DofSetInterface> olddofset) override;
@@ -66,23 +66,23 @@ namespace Core::DOFSets
     //@}
 
     /// Print the dofsets in the static_dofsets_ list
-    void PrintAllDofsets(const Epetra_Comm& comm) const override;
+    void print_all_dofsets(const Epetra_Comm& comm) const override;
 
 
     //! @name DofSet management
     /// Registered DofSets need to know about changes to the DofSet.
 
     /// Notify proxies of new dofs
-    void NotifyAssigned() override;
+    void notify_assigned() override;
 
     /// Notify proxies of reset
-    void NotifyReset() override;
+    void notify_reset() override;
 
     /// Register new dofset to notify
-    void Register(DofSetInterface* dofset) override;
+    void register_proxy(DofSetInterface* dofset) override;
 
     /// Remove dofset from list
-    void Unregister(DofSetInterface* dofset) override;
+    void unregister(DofSetInterface* dofset) override;
 
     //@}
 

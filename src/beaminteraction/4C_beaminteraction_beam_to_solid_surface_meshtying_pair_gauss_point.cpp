@@ -37,8 +37,8 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam,
  *
  */
 template <typename Beam, typename Surface>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam, Surface>::EvaluateAndAssemble(
-    const Teuchos::RCP<const Core::FE::Discretization>& discret,
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam,
+    Surface>::evaluate_and_assemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
@@ -64,7 +64,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam, Surface>::
   double segment_jacobian = 0.0;
   double beam_segmentation_factor = 0.0;
   double penalty_parameter =
-      this->Params()->beam_to_solid_surface_meshtying_params()->GetPenaltyParameter();
+      this->params()->beam_to_solid_surface_meshtying_params()->get_penalty_parameter();
 
   // Calculate the mesh tying forces.
   // Loop over segments.
@@ -72,19 +72,19 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam, Surface>::
   for (unsigned int i_segment = 0; i_segment < n_segments; i_segment++)
   {
     // Factor to account for the integration segment length.
-    beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();
+    beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].get_segment_length();
 
     // Gauss point loop.
-    const unsigned int n_gp = this->line_to_3D_segments_[i_segment].GetProjectionPoints().size();
+    const unsigned int n_gp = this->line_to_3D_segments_[i_segment].get_projection_points().size();
     for (unsigned int i_gp = 0; i_gp < n_gp; i_gp++)
     {
       // Get the current Gauss point.
       const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
-          this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
+          this->line_to_3D_segments_[i_segment].get_projection_points()[i_gp];
 
       // Get the Jacobian in the reference configuration.
       GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
-          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
+          projected_gauss_point.get_eta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
@@ -100,12 +100,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam, Surface>::
       for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
         for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
           force_pair(i_dof) += force(i_dir) * coupling_vector(i_dir).dx(i_dof) *
-                               projected_gauss_point.GetGaussWeight() * segment_jacobian;
+                               projected_gauss_point.get_gauss_weight() * segment_jacobian;
       for (unsigned int i_dof = 0; i_dof < Surface::n_dof_; i_dof++)
         for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
           force_pair(i_dof + Beam::n_dof_) +=
               force(i_dir) * coupling_vector(i_dir).dx(i_dof + Beam::n_dof_) *
-              projected_gauss_point.GetGaussWeight() * segment_jacobian;
+              projected_gauss_point.get_gauss_weight() * segment_jacobian;
     }
   }
 
@@ -114,10 +114,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam, Surface>::
   {
     // Get the beam centerline GIDs.
     Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
-    UTILS::GetElementCenterlineGIDIndices(*discret, this->Element1(), beam_centerline_gid);
+    UTILS::GetElementCenterlineGIDIndices(*discret, this->element1(), beam_centerline_gid);
 
     // Get the patch (in this case just the one face element) GIDs.
-    const std::vector<int>& patch_gid = this->face_element_->GetPatchGID();
+    const std::vector<int>& patch_gid = this->face_element_->get_patch_gid();
 
     // Combine beam and solid GIDs into one vector.
     for (unsigned int i_dof_beam = 0; i_dof_beam < Beam::n_dof_; i_dof_beam++)
@@ -138,7 +138,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam, Surface>::
   if (stiffness_matrix != Teuchos::null)
     for (unsigned int i_dof = 0; i_dof < Beam::n_dof_ + Surface::n_dof_; i_dof++)
       for (unsigned int j_dof = 0; j_dof < Beam::n_dof_ + Surface::n_dof_; j_dof++)
-        stiffness_matrix->FEAssemble(Core::FADUtils::CastToDouble(force_pair(i_dof).dx(j_dof)),
+        stiffness_matrix->fe_assemble(Core::FADUtils::CastToDouble(force_pair(i_dof).dx(j_dof)),
             pair_gid(i_dof), pair_gid(j_dof));
 }
 

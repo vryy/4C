@@ -481,7 +481,7 @@ MyocardSanGarny::MyocardSanGarny(const double eps_deriv_myocard, const std::stri
 }
 
 
-double MyocardSanGarny::ReaCoeff(const double phi, const double dt)
+double MyocardSanGarny::rea_coeff(const double phi, const double dt)
 {
   s0_[0] = phi;
   s_[0] = phi;
@@ -493,7 +493,7 @@ double MyocardSanGarny::ReaCoeff(const double phi, const double dt)
   // (dimensionless).
   a_[10] = 1.0 / (1.0 + (exp(((s0_[0] + 18.6) / 10.1))));
   r_[12] = (a_[10] - s0_[12]) / c_[113];
-  s_[12] = tools_.GatingVarCalc(dt, s0_[12], a_[10], c_[113]);
+  s_[12] = tools_.gating_var_calc(dt, s0_[12], a_[10], c_[113]);
 
   // s0_[1] is m in component sodium_current_m_gate (dimensionless).
   a_[1] = (c_[0] == 0.0 ? (pow((1.0 / (1.0 + (exp((-s0_[0] / 5.46))))), (1.0 / 3.0)))
@@ -505,7 +505,7 @@ double MyocardSanGarny::ReaCoeff(const double phi, const double dt)
                                            0.627400 * (exp((0.0823000 * (s0_[0] + 65.0131))))) +
                                4.56900e-05);
   r_[1] = (a_[1] - s0_[1]) / a_[14];
-  s_[1] = tools_.GatingVarCalc(dt, s0_[1], a_[1], a_[14]);
+  s_[1] = tools_.gating_var_calc(dt, s0_[1], a_[1], a_[14]);
 
   // s0_[2] is h1 in component sodium_current_h_gate (dimensionless).
   a_[2] = 1.0 / (1.0 + (exp(((s0_[0] + 66.1) / 6.4))));
@@ -513,7 +513,7 @@ double MyocardSanGarny::ReaCoeff(const double phi, const double dt)
                (1.0 + 0.003732 * (exp((-0.342600 * (s0_[0] + 37.7600))))) +
            0.0005977;
   r_[2] = (a_[2] - s0_[2]) / a_[16];
-  s_[2] = tools_.GatingVarCalc(dt, s0_[2], a_[2], a_[16]);
+  s_[2] = tools_.gating_var_calc(dt, s0_[2], a_[2], a_[16]);
 
   // s0_[8] is q in component four_AP_sensitive_currents_q_gate (dimensionless).
   a_[7] = 1.0 / (1.0 + (exp(((s0_[0] + 59.37) / 13.1))));
@@ -529,7 +529,7 @@ double MyocardSanGarny::ReaCoeff(const double phi, const double dt)
                 : 0.0101 + 0.06517 / (0.5686 * (exp((-0.08161 * (s0_[0] + 39.0)))) +
                                          0.7174 * (exp((0.2719 * (s0_[0] + 40.93))))));
   r_[8] = (a_[7] - s0_[8]) / a_[21];
-  s_[8] = tools_.GatingVarCalc(dt, s0_[8], a_[7], a_[21]);
+  s_[8] = tools_.gating_var_calc(dt, s0_[8], a_[7], a_[21]);
 
   // s0_[9] is r in component four_AP_sensitive_currents_r_gate (dimensionless).
   a_[8] = 1.0 / (1.0 + (exp((-(s0_[0] - 10.93) / 19.7))));
@@ -541,7 +541,7 @@ double MyocardSanGarny::ReaCoeff(const double phi, const double dt)
                 : 0.001 * (2.98 + 19.59 / (1.037 * (exp((0.09012 * (s0_[0] + 30.61)))) +
                                               0.369 * (exp((-0.119 * (s0_[0] + 23.84)))))));
   r_[9] = (a_[8] - s0_[9]) / a_[22];
-  s_[9] = tools_.GatingVarCalc(dt, s0_[9], a_[8], a_[22]);
+  s_[9] = tools_.gating_var_calc(dt, s0_[9], a_[8], a_[22]);
 
   // s0_[10] is P_af in component rapid_delayed_rectifying_potassium_current_P_af_gate
   // (dimensionless).
@@ -552,20 +552,20 @@ double MyocardSanGarny::ReaCoeff(const double phi, const double dt)
                          : 1.0 / (37.2 * (exp(((s0_[0] - 10.0) / 15.9))) +
                                      0.96 * (exp((-(s0_[0] - 10.0) / 22.5)))));
   r_[10] = (a_[9] - s0_[10]) / a_[23];
-  s_[10] = tools_.GatingVarCalc(dt, s0_[10], a_[9], a_[23]);
+  s_[10] = tools_.gating_var_calc(dt, s0_[10], a_[9], a_[23]);
 
   // s0_[13] is xs in component slow_delayed_rectifying_potassium_current_xs_gate (dimensionless).
   a_[11] = 14.0000 / (1.0 + (exp((-(s0_[0] - 40.0) / 9.0))));
   a_[25] = 1.0 * (exp((-s0_[0] / 45.0)));
   r_[13] = a_[11] * (1.0 - s0_[13]) - a_[25] * s0_[13];
-  s_[13] = tools_.GatingVarCalc(dt, s0_[13], a_[11] / (a_[11] + a_[25]), 1 / (a_[11] + a_[25]));
+  s_[13] = tools_.gating_var_calc(dt, s0_[13], a_[11] / (a_[11] + a_[25]), 1 / (a_[11] + a_[25]));
 
   // s0_[14] is y in component hyperpolarisation_activated_current_y_gate (dimensionless).
   a_[12] = (c_[0] == 0.0 ? 1.0 * (exp((-(s0_[0] + 78.9100) / 26.6200)))
                          : 1.0 * (exp((-(s0_[0] + 78.9100) / 26.63))));
   a_[26] = 1.0 * (exp(((s0_[0] + 75.1300) / 21.2500)));
   r_[14] = a_[12] * (1.0 - s0_[14]) - a_[26] * s0_[14];
-  s_[14] = tools_.GatingVarCalc(dt, s0_[14], a_[12] / (a_[12] + a_[26]), 1 / (a_[12] + a_[26]));
+  s_[14] = tools_.gating_var_calc(dt, s0_[14], a_[12] / (a_[12] + a_[26]), 1 / (a_[12] + a_[26]));
 
   // s0_[3] is h2 in component sodium_current_h_gate (dimensionless).
   a_[15] = a_[2];
@@ -573,7 +573,7 @@ double MyocardSanGarny::ReaCoeff(const double phi, const double dt)
                (1.0 + 7.18900e-05 * (exp((-0.668300 * (s0_[0] + 34.0700))))) +
            0.00355600;
   r_[3] = (a_[15] - s0_[3]) / a_[28];
-  s_[3] = tools_.GatingVarCalc(dt, s0_[3], a_[15], a_[28]);
+  s_[3] = tools_.gating_var_calc(dt, s0_[3], a_[15], a_[28]);
 
   // s0_[11] is P_as in component rapid_delayed_rectifying_potassium_current_P_as_gate
   // (dimensionless).
@@ -583,7 +583,7 @@ double MyocardSanGarny::ReaCoeff(const double phi, const double dt)
                          : 1.0 / (4.20000 * (exp(((s0_[0] - 10.0) / 17.0))) +
                                      0.150000 * (exp((-(s0_[0] - 10.0) / 21.6000)))));
   r_[11] = (a_[24] - s0_[11]) / a_[33];
-  s_[11] = tools_.GatingVarCalc(dt, s0_[11], a_[24], a_[33]);
+  s_[11] = tools_.gating_var_calc(dt, s0_[11], a_[24], a_[33]);
 
   // s0_[4] is d_L in component L_type_Ca_channel_d_gate (dimensionless).
   a_[35] = (c_[0] == 0.0   ? 1.0 / (1.0 + (exp((-(s0_[0] + 23.1000) / 6.0))))
@@ -601,7 +601,7 @@ double MyocardSanGarny::ReaCoeff(const double phi, const double dt)
                          : (11.4200 * (s0_[0] - 5.0)) / ((exp((0.400000 * (s0_[0] - 5.0)))) - 1.0));
   a_[29] = 2.0 / (a_[3] + a_[17]);
   r_[4] = (a_[35] - s0_[4]) / a_[29];
-  s_[4] = tools_.GatingVarCalc(dt, s0_[4], a_[35], a_[29]);
+  s_[4] = tools_.gating_var_calc(dt, s0_[4], a_[35], a_[29]);
 
   // s0_[5] is f_L in component L_type_Ca_channel_f_gate (dimensionless).
   a_[36] = 1.0 / (1.0 + (exp(((s0_[0] + 45.0) / 5.0))));
@@ -612,7 +612,7 @@ double MyocardSanGarny::ReaCoeff(const double phi, const double dt)
   a_[30] =
       (c_[0] == 1.0 ? (1.20000 - 0.200000 * c_[110]) / (a_[4] + a_[18]) : 1.0 / (a_[4] + a_[18]));
   r_[5] = (a_[36] - s0_[5]) / a_[30];
-  s_[5] = tools_.GatingVarCalc(dt, s0_[5], a_[36], a_[30]);
+  s_[5] = tools_.gating_var_calc(dt, s0_[5], a_[36], a_[30]);
 
   // s0_[6] is d_T in component T_type_Ca_channel_d_gate (dimensionless).
   a_[37] = 1.0 / (1.0 + (exp((-(s0_[0] + 37.0) / 6.80000))));
@@ -620,7 +620,7 @@ double MyocardSanGarny::ReaCoeff(const double phi, const double dt)
   a_[19] = 1068.00 * (exp((-(s0_[0] + 26.3000) / 30.0)));
   a_[31] = 1.0 / (a_[5] + a_[19]);
   r_[6] = (a_[37] - s0_[6]) / a_[31];
-  s_[6] = tools_.GatingVarCalc(dt, s0_[6], a_[37], a_[31]);
+  s_[6] = tools_.gating_var_calc(dt, s0_[6], a_[37], a_[31]);
 
   // s0_[7] is f_T in component T_type_Ca_channel_f_gate (dimensionless).
   a_[38] = 1.0 / (1.0 + (exp(((s0_[0] + 71.0) / 9.0))));
@@ -630,7 +630,7 @@ double MyocardSanGarny::ReaCoeff(const double phi, const double dt)
                          : 15.0 * (exp(((s0_[0] + 71.7) / 15.38))));
   a_[32] = 1.0 / (a_[6] + a_[20]);
   r_[7] = (a_[38] - s0_[7]) / a_[32];
-  s_[7] = tools_.GatingVarCalc(dt, s0_[7], a_[38], a_[32]);
+  s_[7] = tools_.gating_var_calc(dt, s0_[7], a_[38], a_[32]);
 
 
   // Compute membrane currents
@@ -697,7 +697,7 @@ int MyocardSanGarny::get_number_of_internal_state_variables() const { return 15;
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material          cbert 08/13 |
  *----------------------------------------------------------------------*/
-double MyocardSanGarny::GetInternalState(const int k) const
+double MyocardSanGarny::get_internal_state(const int k) const
 {
   double val = 0.0;
   if (k == -1 && s0_[0] > -20)
@@ -711,7 +711,7 @@ double MyocardSanGarny::GetInternalState(const int k) const
 /*----------------------------------------------------------------------*
  |  set  internal state of the material                     cbert 08/13 |
  *----------------------------------------------------------------------*/
-void MyocardSanGarny::SetInternalState(const int k, const double val)
+void MyocardSanGarny::set_internal_state(const int k, const double val)
 {
   s0_[k] = val;
   s_[k] = val;
@@ -726,7 +726,7 @@ int MyocardSanGarny::get_number_of_ionic_currents() const { return 13; }
 /*----------------------------------------------------------------------*
  |  returns current internal currents          cbert 08/13 |
  *----------------------------------------------------------------------*/
-double MyocardSanGarny::GetIonicCurrents(const int k) const
+double MyocardSanGarny::get_ionic_currents(const int k) const
 {
   double val = 0.0;
   switch (k)

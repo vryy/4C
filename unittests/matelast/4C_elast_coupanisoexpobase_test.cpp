@@ -62,7 +62,7 @@ namespace
       }
     }
 
-    [[nodiscard]] double GetScalarProduct(int gp) const override { return scalar_products_[gp]; }
+    [[nodiscard]] double get_scalar_product(int gp) const override { return scalar_products_[gp]; }
 
     [[nodiscard]] const Core::LinAlg::Matrix<3, 3>& get_structural_tensor(int gp) const override
     {
@@ -89,7 +89,7 @@ namespace
     {
     }
 
-    [[nodiscard]] Core::Materials::MaterialType MaterialType() const override
+    [[nodiscard]] Core::Materials::MaterialType material_type() const override
     {
       FOUR_C_THROW("This is only a Mock. Don't use this here!");
       std::abort();
@@ -169,19 +169,19 @@ namespace
     Core::LinAlg::Matrix<3, 1> modinv(true);
 
     double psi = 3.3;
-    summand_.AddStrainEnergy(psi, prinv, modinv, E1_strain_, 0, 0);
+    summand_.add_strain_energy(psi, prinv, modinv, E1_strain_, 0, 0);
     EXPECT_NEAR(psi, 3.3970087043259376, 1e-10);
 
     psi = 3.3;
-    summand_.AddStrainEnergy(psi, prinv, modinv, E2_strain_, 0, 0);
+    summand_.add_strain_energy(psi, prinv, modinv, E2_strain_, 0, 0);
     EXPECT_NEAR(psi, 3.308930242120174, 1e-10);
 
     psi = 3.3;
-    summand_.AddStrainEnergy(psi, prinv, modinv, E1_strain_, 1, 0);
+    summand_.add_strain_energy(psi, prinv, modinv, E1_strain_, 1, 0);
     EXPECT_NEAR(psi, 3.358837786011725, 1e-10);
 
     psi = 3.3;
-    summand_.AddStrainEnergy(psi, prinv, modinv, E2_strain_, 1, 0);
+    summand_.add_strain_energy(psi, prinv, modinv, E2_strain_, 1, 0);
     EXPECT_NEAR(psi, 3.3088538178019045, 1e-10);
   }
 
@@ -191,19 +191,19 @@ namespace
     Core::LinAlg::Matrix<3, 1> modinv(true);
 
     double psi = 3.3;
-    summand_.EvaluateFunc(psi, C1_, 0, 0);
+    summand_.evaluate_func(psi, C1_, 0, 0);
     EXPECT_NEAR(psi, 3.3970087043259376, 1e-10);
 
     psi = 3.3;
-    summand_.EvaluateFunc(psi, C2_, 0, 0);
+    summand_.evaluate_func(psi, C2_, 0, 0);
     EXPECT_NEAR(psi, 3.308930242120174, 1e-10);
 
     psi = 3.3;
-    summand_.EvaluateFunc(psi, C1_, 1, 0);
+    summand_.evaluate_func(psi, C1_, 1, 0);
     EXPECT_NEAR(psi, 3.358837786011725, 1e-10);
 
     psi = 3.3;
-    summand_.EvaluateFunc(psi, C2_, 1, 0);
+    summand_.evaluate_func(psi, C2_, 1, 0);
     EXPECT_NEAR(psi, 3.3088538178019045, 1e-10);
   }
 
@@ -266,7 +266,7 @@ namespace
     Core::LinAlg::Matrix<3, 1> ddPIaniso(true);
     Core::LinAlg::Matrix<4, 1> dddPIaniso(true);
 
-    summand_.GetDerivativesAniso(dPIaniso, ddPIaniso, dddPIaniso, C1_, 0, 0);
+    summand_.get_derivatives_aniso(dPIaniso, ddPIaniso, dddPIaniso, C1_, 0, 0);
     EXPECT_NEAR(dPIaniso(0), 0.6000375695574949, 1e-10);
     EXPECT_NEAR(dPIaniso(1), 0.0, 1e-10);
 
@@ -282,7 +282,7 @@ namespace
     dPIaniso.clear();
     ddPIaniso.clear();
     dddPIaniso.clear();
-    summand_.GetDerivativesAniso(dPIaniso, ddPIaniso, dddPIaniso, C2_, 0, 0);
+    summand_.get_derivatives_aniso(dPIaniso, ddPIaniso, dddPIaniso, C2_, 0, 0);
     EXPECT_NEAR(dPIaniso(0), -0.1603915791546372, 1e-10);
     EXPECT_NEAR(dPIaniso(1), 0.0, 1e-10);
 
@@ -298,7 +298,7 @@ namespace
     dPIaniso.clear();
     ddPIaniso.clear();
     dddPIaniso.clear();
-    summand_.GetDerivativesAniso(dPIaniso, ddPIaniso, dddPIaniso, C1_, 1, 0);
+    summand_.get_derivatives_aniso(dPIaniso, ddPIaniso, dddPIaniso, C1_, 1, 0);
     EXPECT_NEAR(dPIaniso(0), 0.4435645526048857, 1e-10);
     EXPECT_NEAR(dPIaniso(1), 0.0, 1e-10);
 
@@ -314,7 +314,7 @@ namespace
     dPIaniso.clear();
     ddPIaniso.clear();
     dddPIaniso.clear();
-    summand_.GetDerivativesAniso(dPIaniso, ddPIaniso, dddPIaniso, C2_, 1, 0);
+    summand_.get_derivatives_aniso(dPIaniso, ddPIaniso, dddPIaniso, C2_, 1, 0);
     EXPECT_NEAR(dPIaniso(0), -0.15968456768492822, 1e-10);
     EXPECT_NEAR(dPIaniso(1), 0.0, 1e-10);
 

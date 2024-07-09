@@ -45,7 +45,7 @@ void ScaTra::LevelSet::Intersection::reset()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ScaTra::LevelSet::Intersection::CaptureZeroLevelSet(
+void ScaTra::LevelSet::Intersection::capture_zero_level_set(
     const Teuchos::RCP<const Epetra_Vector>& phi,
     const Teuchos::RCP<const Core::FE::Discretization>& scatradis, double& volumedomainminus,
     double& volumedomainplus, double& zerosurface,
@@ -62,12 +62,12 @@ void ScaTra::LevelSet::Intersection::CaptureZeroLevelSet(
   get_zero_level_set(*phi, *scatradis, elementBoundaryIntCells);
 
   // collect contributions from all procs and store in respective variables
-  scatradis->Comm().SumAll(&volume_plus(), &volumedomainplus, 1);
-  scatradis->Comm().SumAll(&volume_minus(), &volumedomainminus, 1);
-  scatradis->Comm().SumAll(&surface(), &zerosurface, 1);
+  scatradis->get_comm().SumAll(&volume_plus(), &volumedomainplus, 1);
+  scatradis->get_comm().SumAll(&volume_minus(), &volumedomainminus, 1);
+  scatradis->get_comm().SumAll(&surface(), &zerosurface, 1);
 
   // export also interface to all procs
-  export_interface(elementBoundaryIntCells, scatradis->Comm());
+  export_interface(elementBoundaryIntCells, scatradis->get_comm());
 }
 
 /*----------------------------------------------------------------------------*
@@ -79,15 +79,15 @@ void ScaTra::LevelSet::Intersection::get_zero_level_set(const Epetra_Vector& phi
 {
   // export phi from row to column map
   const Teuchos::RCP<Epetra_Vector> phicol =
-      Teuchos::rcp(new Epetra_Vector(*scatradis.DofColMap()));
+      Teuchos::rcp(new Epetra_Vector(*scatradis.dof_col_map()));
   Core::LinAlg::Export(phi, *phicol);
 
   // remark: loop over row elements is sufficient
-  for (int iele = 0; iele < scatradis.NumMyRowElements(); ++iele)
+  for (int iele = 0; iele < scatradis.num_my_row_elements(); ++iele)
   {
     // get element from discretization
-    const Core::Elements::Element* ele = scatradis.lRowElement(iele);
-    const Core::FE::CellType distype = ele->Shape();
+    const Core::Elements::Element* ele = scatradis.l_row_element(iele);
+    const Core::FE::CellType distype = ele->shape();
 
     // clear vector each loop
     boundary_int_cells_per_ele<T>().clear();
@@ -95,7 +95,7 @@ void ScaTra::LevelSet::Intersection::get_zero_level_set(const Epetra_Vector& phi
     // ------------------------------------------------------------------------
     // Prepare cut
     // ------------------------------------------------------------------------
-    Core::Geo::Cut::LevelSetIntersection levelset(scatradis.Comm());
+    Core::Geo::Cut::LevelSetIntersection levelset(scatradis.get_comm());
     Core::LinAlg::SerialDenseMatrix xyze;
     std::vector<double> phi_nodes;
     std::vector<int> nids;
@@ -104,7 +104,7 @@ void ScaTra::LevelSet::Intersection::get_zero_level_set(const Epetra_Vector& phi
     // check if this element is cut, according to its level-set values
     // -> add it to 'levelset'
     // note: cut is performed in physical space
-    if (!levelset.add_element(1, nids, xyze, ele->Shape(), phi_nodes.data(), false, check_lsv_))
+    if (!levelset.add_element(1, nids, xyze, ele->shape(), phi_nodes.data(), false, check_lsv_))
       continue;
 
     // ------------------------------------------------------------------------
@@ -143,7 +143,7 @@ void ScaTra::LevelSet::Intersection::get_zero_level_set(const Epetra_Vector& phi
 
     // store interface of element
     if (boundary_int_cells_per_ele<T>().size() > 0)
-      elementBoundaryIntCells[ele->Id()] = boundary_int_cells_per_ele<T>();
+      elementBoundaryIntCells[ele->id()] = boundary_int_cells_per_ele<T>();
   }
 
   return;
@@ -162,20 +162,20 @@ void ScaTra::LevelSet::Intersection::get_zero_level_set_contour(
     Core::Geo::Cut::Element* cutele = *icutele;
 
     Core::Geo::Cut::plain_volumecell_set volcells;
-    volcells = cutele->VolumeCells();
+    volcells = cutele->volume_cells();
 
     for (Core::Geo::Cut::plain_volumecell_set::const_iterator ivolcell = volcells.begin();
          ivolcell != volcells.end(); ++ivolcell)
     {
       Core::Geo::Cut::VolumeCell* volcell = *ivolcell;
-      const Core::Geo::Cut::Point::PointPosition vol_pos = volcell->Position();
+      const Core::Geo::Cut::Point::PointPosition vol_pos = volcell->position();
       if (is_point_position(vol_pos))
       {
-        add_to_volume(vol_pos, volcell->Volume());
+        add_to_volume(vol_pos, volcell->volume());
         // get boundary integration cells for this volume cell
         // we consider only the cells for one position, otherwise we would have the boundary
         // cells twice
-        const Core::Geo::Cut::plain_boundarycell_set& bcells = volcell->BoundaryCells();
+        const Core::Geo::Cut::plain_boundarycell_set& bcells = volcell->boundary_cells();
         for (Core::Geo::Cut::plain_boundarycell_set::const_iterator ibcell = bcells.begin();
              ibcell != bcells.end(); ++ibcell)
         {
@@ -183,12 +183,12 @@ void ScaTra::LevelSet::Intersection::get_zero_level_set_contour(
 
           add_to_boundary_int_cells_per_ele(xyze, *bcell, distype);
 
-          surface() += bcell->Area();
+          surface() += bcell->area();
         }
       }
       else
       {
-        add_to_volume(vol_pos, volcell->Volume());
+        add_to_volume(vol_pos, volcell->volume());
       }
     }
   }
@@ -200,13 +200,13 @@ void ScaTra::LevelSet::Intersection::add_to_boundary_int_cells_per_ele(
     const Core::LinAlg::SerialDenseMatrix& xyze, const Core::Geo::Cut::BoundaryCell& bcell,
     Core::FE::CellType distype_ele)
 {
-  Core::FE::CellType distype_bc = bcell.Shape();
+  Core::FE::CellType distype_bc = bcell.shape();
   check_boundary_cell_type(distype_bc);
 
   const int numnodebc = Core::FE::getNumberOfElementNodes(distype_bc);
 
   // get physical coordinates of this cell
-  Core::LinAlg::SerialDenseMatrix coord = bcell.Coordinates();
+  Core::LinAlg::SerialDenseMatrix coord = bcell.coordinates();
 
   // transfer to element coordinates
   Core::LinAlg::SerialDenseMatrix localcoord(3, numnodebc, true);
@@ -265,7 +265,7 @@ void ScaTra::LevelSet::Intersection::add_to_volume(
 void ScaTra::LevelSet::Intersection::collect_cut_eles(Core::Geo::Cut::ElementHandle& ehandle,
     Core::Geo::Cut::plain_element_set& cuteles, Core::FE::CellType distype) const
 {
-  ehandle.CollectElements(cuteles);
+  ehandle.collect_elements(cuteles);
 
   switch (distype)
   {
@@ -296,9 +296,9 @@ void ScaTra::LevelSet::Intersection::prepare_cut(const Core::Elements::Element* 
     Core::LinAlg::SerialDenseMatrix& xyze, std::vector<double>& phi_nodes,
     std::vector<int>& node_ids) const
 {
-  const Core::FE::CellType distype = ele->Shape();
+  const Core::FE::CellType distype = ele->shape();
   unsigned numnode = Core::FE::getNumberOfElementNodes(distype);
-  const unsigned probdim = Global::Problem::Instance()->NDim();
+  const unsigned probdim = Global::Problem::instance()->n_dim();
 
   xyze.shape(3, numnode);
   switch (distype)
@@ -342,7 +342,7 @@ void ScaTra::LevelSet::Intersection::prepare_cut(const Core::Elements::Element* 
   lm.clear();
   lmowner.clear();
   lmstride.clear();
-  ele->LocationVector(scatradis, lm, lmowner, lmstride);
+  ele->location_vector(scatradis, lm, lmowner, lmstride);
   Core::FE::ExtractMyValues(phicol, phi_nodes, lm);
 
   // define nodal ID's
@@ -358,7 +358,7 @@ Core::Geo::Cut::ElementHandle* ScaTra::LevelSet::Intersection::cut(
 {
   try
   {
-    levelset.Cut(true, cut_screenoutput);
+    levelset.cut(true, cut_screenoutput);
   }
   catch (Core::Exception& err)
   {
@@ -371,7 +371,7 @@ Core::Geo::Cut::ElementHandle* ScaTra::LevelSet::Intersection::cut(
     throw;
   }
 
-  return levelset.GetElement(1);
+  return levelset.get_element(1);
 }
 
 /*----------------------------------------------------------------------------*
@@ -401,7 +401,7 @@ ScaTra::LevelSet::Intersection::desired_positions()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ScaTra::LevelSet::Intersection::SetDesiredPositions(
+void ScaTra::LevelSet::Intersection::set_desired_positions(
     const std::vector<Core::Geo::Cut::Point::PointPosition>& desired_pos)
 {
   desired_positions_.resize(desired_pos.size(), Core::Geo::Cut::Point::undecided);
@@ -465,8 +465,8 @@ void ScaTra::LevelSet::Intersection::export_interface(
     exporter.i_send(myrank, dest, lengthSend.data(), size_one, length_tag, req_length_data);
     // ... and receive length
     std::vector<int> lengthRecv(1, 0);
-    exporter.Receive(source, length_tag, lengthRecv, size_one);
-    exporter.Wait(req_length_data);
+    exporter.receive(source, length_tag, lengthRecv, size_one);
+    exporter.wait(req_length_data);
 
     // send actual data ...
     int data_tag = 4;
@@ -474,8 +474,8 @@ void ScaTra::LevelSet::Intersection::export_interface(
     exporter.i_send(myrank, dest, dataSend.data(), lengthSend[0], data_tag, req_data);
     // ... and receive data
     std::vector<char> dataRecv(lengthRecv[0]);
-    exporter.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
-    exporter.Wait(req_data);
+    exporter.receive_any(source, data_tag, dataRecv, lengthRecv[0]);
+    exporter.wait(req_data);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     Core::IO::cout << "--- receiving " << lengthRecv[0] << " bytes: to proc " << myrank
@@ -534,7 +534,7 @@ void ScaTra::LevelSet::Intersection::pack_boundary_int_cells(
     {
       Core::Geo::BoundaryIntCell cell = cellgroup->second[icell];
       // get all member variables from a single boundary integration cell
-      const Core::FE::CellType distype = cell.Shape();
+      const Core::FE::CellType distype = cell.shape();
       Core::Communication::ParObject::add_to_pack(dataSend, distype);
 
       // coordinates of cell vertices in (scatra) element parameter space
@@ -542,7 +542,7 @@ void ScaTra::LevelSet::Intersection::pack_boundary_int_cells(
       Core::Communication::ParObject::add_to_pack(dataSend, vertices_xi);
 
       // coordinates of cell vertices in physical space
-      const Core::LinAlg::SerialDenseMatrix vertices_xyz = cell.CellNodalPosXYZ();
+      const Core::LinAlg::SerialDenseMatrix vertices_xyz = cell.cell_nodal_pos_xyz();
       Core::Communication::ParObject::add_to_pack(dataSend, vertices_xyz);
     }
   }

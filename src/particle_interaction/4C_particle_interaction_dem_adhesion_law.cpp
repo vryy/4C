@@ -94,7 +94,7 @@ void ParticleInteraction::DEMAdhesionLawVdWDMT::init()
   if (hamaker_constant_ <= 0.0) FOUR_C_THROW("negative hamaker constant!");
 }
 
-void ParticleInteraction::DEMAdhesionLawVdWDMT::AdhesionForce(const double& gap,
+void ParticleInteraction::DEMAdhesionLawVdWDMT::adhesion_force(const double& gap,
     const double& surfaceenergy, const double& r_eff, const double& v_rel_normal,
     const double& m_eff, double& adhesionforce) const
 {
@@ -258,7 +258,7 @@ ParticleInteraction::DEMAdhesionLawRegDMT::DEMAdhesionLawRegDMT(
   // empty constructor
 }
 
-void ParticleInteraction::DEMAdhesionLawRegDMT::AdhesionForce(const double& gap,
+void ParticleInteraction::DEMAdhesionLawRegDMT::adhesion_force(const double& gap,
     const double& surfaceenergy, const double& r_eff, const double& v_rel_normal,
     const double& m_eff, double& adhesionforce) const
 {

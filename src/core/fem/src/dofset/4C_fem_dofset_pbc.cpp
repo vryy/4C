@@ -24,19 +24,19 @@ FOUR_C_NAMESPACE_OPEN
 Core::DOFSets::PBCDofSet::PBCDofSet(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes)
     : DofSet(), perbndcouples_(Teuchos::null), myMaxGID_(-1)
 {
-  SetCoupledNodes(couplednodes);
+  set_coupled_nodes(couplednodes);
 }
 
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::DOFSets::PBCDofSet::MaxAllGID() const { return myMaxGID_; }
+int Core::DOFSets::PBCDofSet::max_all_gid() const { return myMaxGID_; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::DOFSets::PBCDofSet::MinAllGID() const { return myMinGID_; }
+int Core::DOFSets::PBCDofSet::min_all_gid() const { return myMinGID_; }
 
 
 int Core::DOFSets::PBCDofSet::assign_degrees_of_freedom(
@@ -52,8 +52,8 @@ int Core::DOFSets::PBCDofSet::assign_degrees_of_freedom(
   if (pccdofhandling_)
     FOUR_C_THROW("ERROR: Point coupling cinditions not yet implemented for PBCDofSet");
 
-  myMaxGID_ = DofSet::MaxAllGID();
-  myMinGID_ = DofSet::MinAllGID();
+  myMaxGID_ = DofSet::max_all_gid();
+  myMinGID_ = DofSet::min_all_gid();
 
   // restore the slave node set
   slavenodeids_ = tempset;
@@ -68,18 +68,18 @@ int Core::DOFSets::PBCDofSet::assign_degrees_of_freedom(
   for (std::map<int, std::vector<int>>::iterator master = perbndcouples_->begin();
        master != perbndcouples_->end(); ++master)
   {
-    int master_lid = dis.NodeColMap()->LID(master->first);
+    int master_lid = dis.node_col_map()->LID(master->first);
 
     if (master_lid < 0)
     {
       FOUR_C_THROW("master gid %d not on proc %d, but required by slave %d", master->first,
-          dis.Comm().MyPID(), master->second[0]);
+          dis.get_comm().MyPID(), master->second[0]);
     }
 
     for (std::vector<int>::iterator slave = master->second.begin(); slave != master->second.end();
          ++slave)
     {
-      int slave_lid = dis.NodeColMap()->LID(*slave);
+      int slave_lid = dis.node_col_map()->LID(*slave);
 
       if (slave_lid > -1)
       {
@@ -89,7 +89,7 @@ int Core::DOFSets::PBCDofSet::assign_degrees_of_freedom(
       else
       {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-        if (dis.NodeRowMap()->MyGID(master->first))
+        if (dis.node_row_map()->MyGID(master->first))
         {
           FOUR_C_THROW("slave not on proc but master owned by proc\n");
         }
@@ -106,7 +106,7 @@ int Core::DOFSets::PBCDofSet::assign_degrees_of_freedom(
  |  update coupled nodes map                             rasthofer 07/11|
  |                                                       DA wichmann    |
  *----------------------------------------------------------------------*/
-void Core::DOFSets::PBCDofSet::SetCoupledNodes(
+void Core::DOFSets::PBCDofSet::set_coupled_nodes(
     Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes)
 {
   perbndcouples_ = couplednodes;

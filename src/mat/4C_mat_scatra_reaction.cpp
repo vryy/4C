@@ -188,7 +188,7 @@ Mat::PAR::ScatraReactionMat::ScatraReactionMat(const Core::Mat::PAR::Parameter::
   }
 
   // if all checks are passed, we can build the reaction class
-  reaction_ = Mat::PAR::REACTIONCOUPLING::ReactionInterface::CreateReaction(
+  reaction_ = Mat::PAR::REACTIONCOUPLING::ReactionInterface::create_reaction(
       coupling_, isreacstart_, reacstart_);
 
   return;
@@ -246,7 +246,7 @@ Mat::PAR::ReactionCoupling Mat::PAR::ScatraReactionMat::set_coupling_type(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::ScatraReactionMatType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ScatraReactionMatType::create(const std::vector<char>& data)
 {
   Mat::ScatraReactionMat* scatra_reaction_mat = new Mat::ScatraReactionMat();
   scatra_reaction_mat->unpack(data);
@@ -271,12 +271,12 @@ void Mat::ScatraReactionMat::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 }
 
@@ -287,23 +287,23 @@ void Mat::ScatraReactionMat::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::ScatraReactionMat*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   if (position != data.size())
@@ -334,8 +334,8 @@ double Mat::ScatraReactionMat::reac_coeff(const std::vector<std::pair<std::strin
     gpcoord[2] = constants[size - 1].second;
 
     reaccoeff *=
-        (Global::Problem::Instance()
-                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(dis_funct_reac_coeff_id() - 1)
+        (Global::Problem::instance()
+                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(dis_funct_reac_coeff_id() - 1)
                 .evaluate(gpcoord, time, 0));
   }
 
@@ -436,7 +436,7 @@ double Mat::ScatraReactionMat::calc_rea_body_force_term(int k,  //!< current sca
 ) const
 {
   return params_->reaction_->calc_rea_body_force_term(
-      k, NumScal(), phinp, constants, *couprole(), scale_reac, scale_phi);
+      k, num_scal(), phinp, constants, *couprole(), scale_reac, scale_phi);
 }
 
 /*--------------------------------------------------------------------------------*
@@ -453,7 +453,7 @@ void Mat::ScatraReactionMat::calc_rea_body_force_deriv(int k,  //!< current scal
 ) const
 {
   params_->reaction_->calc_rea_body_force_deriv(
-      k, NumScal(), derivs, phinp, constants, *couprole(), scale_reac, scale_phi);
+      k, num_scal(), derivs, phinp, constants, *couprole(), scale_reac, scale_phi);
 
   return;
 }
@@ -481,10 +481,10 @@ void Mat::ScatraReactionMat::calc_rea_body_force_deriv_add_variables(int k,  //!
 /*---------------------------------------------------------------------------------/
  | Calculate influence factor for scalar dependent membrane transport   Thon 08/16 |
 /--------------------------------------------------------------------------------- */
-double Mat::ScatraReactionMat::CalcPermInfluence(const int k,  //!< current scalar id
-    const std::vector<double>& phinp,                          //!< scalar values at t_(n+1)
-    const double time,                                         //!< current time
-    const double* gpcoord,                                     //!< Gauss-point coordinates
+double Mat::ScatraReactionMat::calc_perm_influence(const int k,  //!< current scalar id
+    const std::vector<double>& phinp,                            //!< scalar values at t_(n+1)
+    const double time,                                           //!< current time
+    const double* gpcoord,                                       //!< Gauss-point coordinates
     const double scale  //!< scaling factor for reference concentrations
 ) const
 {

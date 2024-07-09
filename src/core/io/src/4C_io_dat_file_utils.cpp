@@ -69,7 +69,7 @@ std::pair<std::vector<Input::LineDefinition>, std::vector<std::string>>
 Core::IO::DatFileUtils::read_matching_lines_in_section(Core::IO::DatFileReader& reader,
     const std::string& section, const std::vector<Input::LineDefinition>& possible_lines)
 {
-  const std::vector<const char*> lines_in_section = reader.Section("--" + section);
+  const std::vector<const char*> lines_in_section = reader.section("--" + section);
 
   std::vector<std::string> unparsed_lines;
   std::vector<Input::LineDefinition> parsed_lines;

@@ -82,11 +82,11 @@ namespace Mat
   class CrosslinkerMatType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "CrosslinkerMatType"; }
+    std::string name() const override { return "CrosslinkerMatType"; }
 
-    static CrosslinkerMatType& Instance() { return instance_; };
+    static CrosslinkerMatType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static CrosslinkerMatType instance_;
@@ -111,9 +111,9 @@ namespace Mat
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return CrosslinkerMatType::Instance().UniqueParObjectId();
+      return CrosslinkerMatType::instance().unique_par_object_id();
     }
 
     /*!
@@ -121,7 +121,7 @@ namespace Mat
 
       Resizes the vector data and stores all information of a class in it.
       The first information to be stored in data has to be the
-      unique parobject id delivered by UniqueParObjectId() which will then
+      unique parobject id delivered by unique_par_object_id() which will then
       identify the exact class on the receiving processor.
 
       \param data (in/out): char vector to store class information
@@ -135,7 +135,7 @@ namespace Mat
       exact copy of an instance of a class on a different processor.
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
-      UniqueParObjectId().
+      unique_par_object_id().
 
       \param data (in) : vector storing all data to be unpacked into this
       instance.
@@ -147,13 +147,13 @@ namespace Mat
     //! @name Access methods
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_crosslinkermat;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new CrosslinkerMat(*this));
     }
@@ -162,40 +162,40 @@ namespace Mat
     virtual double beam_elast_hyper_mat_num() const { return params_->link_element_matnum_; }
 
     /// force depedent off rate according to bells equation
-    virtual Inpar::BEAMINTERACTION::JointType JointType() const { return params_->jointtype_; };
+    virtual Inpar::BEAMINTERACTION::JointType joint_type() const { return params_->jointtype_; };
 
     /// distance between the two binding domains of a linker
-    virtual double LinkingLength() const { return params_->linkinglength_; }
+    virtual double linking_length() const { return params_->linkinglength_; }
 
     /// tolerance for linker length in the sense: length +- tolerance
     virtual double linking_length_tolerance() const { return params_->linkinglengthtol_; }
 
     /// preferred binding angle enclosed by two filaments' axes in radians
-    virtual double LinkingAngle() const { return params_->linkingangle_; }
+    virtual double linking_angle() const { return params_->linkingangle_; }
 
     /// tolerance for preferred binding angle in radians in the sense of: angle +- tolerance
     virtual double linking_angle_tolerance() const { return params_->linkingangletol_; }
 
     /// chemical association rate
-    virtual double const& KOn() const { return params_->k_on_; }
+    virtual double const& k_on() const { return params_->k_on_; }
 
     /// chemical dissociation rate
-    virtual double KOff() const { return params_->k_off_; }
+    virtual double k_off() const { return params_->k_off_; }
 
     /// force depedent off rate according to bells equation
-    virtual double DeltaBellEq() const { return params_->deltabelleq_; };
+    virtual double delta_bell_eq() const { return params_->deltabelleq_; };
 
     /// distance to sphere elements in which no double bonded beam to beam linker is allowed
-    virtual double NoBondDistSphere() const { return params_->nobonddistsphere; };
+    virtual double no_bond_dist_sphere() const { return params_->nobonddistsphere; };
 
     /// force depedent off rate according to bells equation
-    virtual Inpar::BEAMINTERACTION::CrosslinkerType LinkerType() const
+    virtual Inpar::BEAMINTERACTION::CrosslinkerType linker_type() const
     {
       return params_->linkertype_;
     };
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     //@}
 

@@ -29,29 +29,29 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::check_elch_
 {
   // 1) Check material specific options
   // 2) Check if numdofpernode, numscal is set correctly
-  if (ele->Material()->MaterialType() == Core::Materials::m_elchmat)
+  if (ele->material()->material_type() == Core::Materials::m_elchmat)
   {
     const Teuchos::RCP<const Mat::ElchMat>& actmat =
-        Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->Material());
+        Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->material());
 
-    int numphase = actmat->NumPhase();
+    int numphase = actmat->num_phase();
 
     // access mat_elchmat: container material for porous structures in elch
     if (numphase != 1) FOUR_C_THROW("In the moment a single phase is only allowed.");
 
     // 1) loop over single phases
-    for (int iphase = 0; iphase < actmat->NumPhase(); ++iphase)
+    for (int iphase = 0; iphase < actmat->num_phase(); ++iphase)
     {
       // access phase material
-      const int phaseid = actmat->PhaseID(iphase);
-      Teuchos::RCP<const Core::Mat::Material> singlephase = actmat->PhaseById(phaseid);
+      const int phaseid = actmat->phase_id(iphase);
+      Teuchos::RCP<const Core::Mat::Material> singlephase = actmat->phase_by_id(phaseid);
 
       // dynmic cast: get access to mat_phase
       const Teuchos::RCP<const Mat::ElchPhase>& actphase =
           Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(singlephase);
 
       // Check if numdofpernode, numscal is set correctly
-      int nummat = actphase->NumMat();
+      int nummat = actphase->num_mat();
       // enough materials defined
       if (nummat != my::numscal_)
       {
@@ -61,9 +61,9 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::check_elch_
       }
 
       int numdofpernode = 0;
-      if (diffcondparams_->CurSolVar())
-        numdofpernode = nummat + Global::Problem::Instance()->NDim() + numphase;
-      else if (actphase->MatById(actphase->MatID(0))->MaterialType() ==
+      if (diffcondparams_->cur_sol_var())
+        numdofpernode = nummat + Global::Problem::instance()->n_dim() + numphase;
+      else if (actphase->mat_by_id(actphase->mat_id(0))->material_type() ==
                Core::Materials::m_newman_multiscale)
         numdofpernode = 3;
       else
@@ -77,15 +77,15 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::check_elch_
       }
 
       // 2) loop over materials of the single phase
-      for (int imat = 0; imat < actphase->NumMat(); ++imat)
+      for (int imat = 0; imat < actphase->num_mat(); ++imat)
       {
-        const int matid = actphase->MatID(imat);
-        Teuchos::RCP<const Core::Mat::Material> singlemat = actphase->MatById(matid);
+        const int matid = actphase->mat_id(imat);
+        Teuchos::RCP<const Core::Mat::Material> singlemat = actphase->mat_by_id(matid);
 
-        if (singlemat->MaterialType() == Core::Materials::m_newman)
+        if (singlemat->material_type() == Core::Materials::m_newman)
         {
           // Newman material must be combined with divi closing equation for electric potential
-          if (myelch::elchparams_->EquPot() != Inpar::ElCh::equpot_divi)
+          if (myelch::elchparams_->equ_pot() != Inpar::ElCh::equpot_divi)
           {
             FOUR_C_THROW(
                 "Newman material must be combined with divi closing equation for electric "
@@ -122,7 +122,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_initia
   // porosities, we do not fill the diffusion manager again at the element center The solution
   // variable is the initial time derivative. Therefore, we have to correct emat by the initial
   // porosity Attention: this procedure is only valid for a constant porosity in the beginning
-  emat.scale(diff_manager()->GetPhasePoro(0));
+  emat.scale(diff_manager()->get_phase_poro(0));
 }
 
 /*----------------------------------------------------------------------*
@@ -133,8 +133,8 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
     const double fac, const double densnp, const double phinp)
 {
   // fac->-fac to change sign of rhs
-  if (my::scatraparatimint_->IsIncremental())
-    my::calc_rhs_lin_mass(erhs, k, 0.0, -fac, 0.0, diff_manager()->GetPhasePoro(0));
+  if (my::scatraparatimint_->is_incremental())
+    my::calc_rhs_lin_mass(erhs, k, 0.0, -fac, 0.0, diff_manager()->get_phase_poro(0));
   else
     FOUR_C_THROW("Must be incremental!");
 }
@@ -157,22 +157,22 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_act
     case ScaTra::Action::calc_elch_boundary_kinetics_point:
     {
       // access material of parent element
-      Teuchos::RCP<Core::Mat::Material> material = ele->Material();
+      Teuchos::RCP<Core::Mat::Material> material = ele->material();
 
       // extract porosity from material and store in diffusion manager
-      if (material->MaterialType() == Core::Materials::m_elchmat)
+      if (material->material_type() == Core::Materials::m_elchmat)
       {
         const auto* elchmat = static_cast<const Mat::ElchMat*>(material.get());
 
-        for (int iphase = 0; iphase < elchmat->NumPhase(); ++iphase)
+        for (int iphase = 0; iphase < elchmat->num_phase(); ++iphase)
         {
           Teuchos::RCP<const Core::Mat::Material> phase =
-              elchmat->PhaseById(elchmat->PhaseID(iphase));
+              elchmat->phase_by_id(elchmat->phase_id(iphase));
 
-          if (phase->MaterialType() == Core::Materials::m_elchphase)
+          if (phase->material_type() == Core::Materials::m_elchphase)
           {
-            diff_manager()->SetPhasePoro(
-                (static_cast<const Mat::ElchPhase*>(phase.get()))->Epsilon(), iphase);
+            diff_manager()->set_phase_poro(
+                (static_cast<const Mat::ElchPhase*>(phase.get()))->epsilon(), iphase);
           }
           else
             FOUR_C_THROW("Invalid material!");
@@ -184,7 +184,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_act
 
       // process electrode boundary kinetics point condition
       myelch::calc_elch_boundary_kinetics_point(ele, params, discretization, la[0].lm_,
-          elemat1_epetra, elevec1_epetra, diff_manager()->GetPhasePoro(0));
+          elemat1_epetra, elevec1_epetra, diff_manager()->get_phase_poro(0));
 
       break;
     }
@@ -219,20 +219,21 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
     Core::LinAlg::SerialDenseVector& elevec1_epetra)
 {
   // from scatra_ele_boundary_calc_elch_diffcond.cpp
-  Teuchos::RCP<Core::Mat::Material> material = ele->Material();
+  Teuchos::RCP<Core::Mat::Material> material = ele->material();
 
-  if (material->MaterialType() == Core::Materials::m_elchmat)
+  if (material->material_type() == Core::Materials::m_elchmat)
   {
     const auto* elchmat = static_cast<const Mat::ElchMat*>(material.get());
 
-    for (int iphase = 0; iphase < elchmat->NumPhase(); ++iphase)
+    for (int iphase = 0; iphase < elchmat->num_phase(); ++iphase)
     {
-      Teuchos::RCP<const Core::Mat::Material> phase = elchmat->PhaseById(elchmat->PhaseID(iphase));
+      Teuchos::RCP<const Core::Mat::Material> phase =
+          elchmat->phase_by_id(elchmat->phase_id(iphase));
 
-      if (phase->MaterialType() == Core::Materials::m_elchphase)
+      if (phase->material_type() == Core::Materials::m_elchphase)
       {
-        diff_manager()->SetPhasePoro(
-            (static_cast<const Mat::ElchPhase*>(phase.get()))->Epsilon(), iphase);
+        diff_manager()->set_phase_poro(
+            (static_cast<const Mat::ElchPhase*>(phase.get()))->epsilon(), iphase);
       }
       else
         FOUR_C_THROW("Invalid material!");
@@ -243,11 +244,11 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
     FOUR_C_THROW("Invalid material!");
 
   // get actual values of transported scalars
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
   // get history variable (needed for double layer modeling)
-  Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
+  Teuchos::RCP<const Epetra_Vector> hist = discretization.get_state("hist");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'hist'");
 
   // state and history variables at element nodes
@@ -307,8 +308,8 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
   }
 
   // get control parameter from parameter list
-  const bool is_stationary = my::scatraparatimint_->IsStationary();
-  const double time = my::scatraparatimint_->Time();
+  const bool is_stationary = my::scatraparatimint_->is_stationary();
+  const double time = my::scatraparatimint_->time();
   double timefac = 1.0;
   double rhsfac = 1.0;
   // find out whether we shell use a time curve and get the factor
@@ -316,7 +317,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
   if (curvenum >= 0)
   {
     const double curvefac =
-        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).evaluate(
+        Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfTime>(curvenum).evaluate(
             time);
     // adjust potential at metal side accordingly
     pot0 *= curvefac;
@@ -329,10 +330,10 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
       // One-step-Theta:    timefac = theta*dt
       // BDF2:              timefac = 2/3 * dt
       // generalized-alpha: timefac = (gamma*alpha_F/alpha_M) * dt
-      timefac = my::scatraparatimint_->TimeFac();
+      timefac = my::scatraparatimint_->time_fac();
       if (timefac < 0.0) FOUR_C_THROW("time factor is negative.");
       // for correct scaling of rhs contribution (see below)
-      rhsfac = 1 / my::scatraparatimint_->AlphaF();
+      rhsfac = 1 / my::scatraparatimint_->alpha_f();
     }
 
     if (zerocur == 0)
@@ -351,7 +352,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
   else
   {
     // get actual values of transported scalars
-    Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
+    Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.get_state("phidtnp");
     if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'ephidtnp'");
     std::vector<Core::LinAlg::Matrix<nen_, 1>> ephidtnp(
         my::numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));
@@ -362,7 +363,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
       // One-step-Theta:    timefacrhs = theta*dt
       // BDF2:              timefacrhs = 2/3 * dt
       // generalized-alpha: timefacrhs = (gamma/alpha_M) * dt
-      timefac = my::scatraparatimint_->TimeFacRhs();
+      timefac = my::scatraparatimint_->time_fac_rhs();
       if (timefac < 0.) FOUR_C_THROW("time factor is negative.");
     }
 
@@ -387,7 +388,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
       ele, emat, erhs, ephinp, ehist, timefac, cond, nume, stoich, kinetics, pot0, frt, scalar);
 
   // compute matrix and residual contributions arising from closing equation for electric potential
-  switch (myelch::elchparams_->EquPot())
+  switch (myelch::elchparams_->equ_pot())
   {
     case Inpar::ElCh::equpot_enc:
     {
@@ -435,7 +436,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_el
     const int kinetics, const double pot0)
 {
   // for pre-multiplication of i0 with 1/(F z_k)
-  const double faraday = myelch::elchparams_->Faraday();
+  const double faraday = myelch::elchparams_->faraday();
 
   // integration points and weights
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -456,17 +457,17 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_el
     fns *= stoich[k];
 
     // get valence of the single reactant
-    const double valence_k = myelch::diff_manager()->GetValence(k);
+    const double valence_k = myelch::diff_manager()->get_valence(k);
 
     /*----------------------------------------------------------------------*
      |               start loop over integration points                     |
      *----------------------------------------------------------------------*/
-    for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+    for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
     {
       set_internal_variables_for_mat_and_rhs();
 
       // access input parameter
-      const double frt = var_manager()->FRT();
+      const double frt = var_manager()->frt();
       if (frt <= 0.0) FOUR_C_THROW("A negative factor frt is not possible by definition");
 
       const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, gpid);
@@ -481,7 +482,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_el
   }    // end loop over scalars
 
   // compute matrix and residual contributions arising from closing equation for electric potential
-  switch (myelch::elchparams_->EquPot())
+  switch (myelch::elchparams_->equ_pot())
   {
     case Inpar::ElCh::equpot_enc:
     {
@@ -561,14 +562,14 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_el
     statistics = true;
 
     // loop over integration points
-    for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+    for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
     {
       const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, gpid);
 
       set_internal_variables_for_mat_and_rhs();
 
       // access input parameter
-      const double frt = var_manager()->FRT();
+      const double frt = var_manager()->frt();
       if (frt <= 0.0) FOUR_C_THROW("A negative factor frt is not possible by definition");
 
       // call utility class for element evaluation
@@ -612,25 +613,25 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calculate_f
   {
     case Inpar::ScaTra::flux_total:
       // convective flux contribution
-      q.update(var_manager()->Phinp(k), var_manager()->ConVel(k));
+      q.update(var_manager()->phinp(k), var_manager()->con_vel(k));
 
       [[fallthrough]];
     case Inpar::ScaTra::flux_diffusive:
       // diffusive flux contribution
-      q.update(-diff_manager()->GetIsotropicDiff(k) * diff_manager()->GetPhasePoroTort(0),
-          var_manager()->GradPhi(k), 1.0);
+      q.update(-diff_manager()->get_isotropic_diff(k) * diff_manager()->get_phase_poro_tort(0),
+          var_manager()->grad_phi(k), 1.0);
       // flux due to ohmic overpotential
-      q.update(-diff_manager()->GetTransNum(k) * diff_manager()->InvFVal(k) *
-                   diff_manager()->GetCond() * diff_manager()->GetPhasePoroTort(0),
-          var_manager()->GradPot(), 1.0);
+      q.update(-diff_manager()->get_trans_num(k) * diff_manager()->inv_f_val(k) *
+                   diff_manager()->get_cond() * diff_manager()->get_phase_poro_tort(0),
+          var_manager()->grad_pot(), 1.0);
       // flux due to concentration overpotential
-      q.update(-diff_manager()->GetTransNum(k) * var_manager()->RTFFC() /
-                   diff_manager()->GetValence(k) * diff_manager()->GetCond() *
-                   diff_manager()->GetPhasePoroTort(0) * diff_manager()->GetThermFac() *
-                   (diffcondparams_->NewmanConstdata() +
-                       (diffcondparams_->NewmanConstB() * diff_manager()->GetTransNum(k))) *
-                   var_manager()->ConIntInv(k),
-          var_manager()->GradPhi(k), 1.0);
+      q.update(-diff_manager()->get_trans_num(k) * var_manager()->rtffc() /
+                   diff_manager()->get_valence(k) * diff_manager()->get_cond() *
+                   diff_manager()->get_phase_poro_tort(0) * diff_manager()->get_therm_fac() *
+                   (diffcondparams_->newman_constdata() +
+                       (diffcondparams_->newman_const_b() * diff_manager()->get_trans_num(k))) *
+                   var_manager()->con_int_inv(k),
+          var_manager()->grad_phi(k), 1.0);
       break;
     default:
       FOUR_C_THROW("received illegal flag inside flux evaluation for whole domain");
@@ -662,16 +663,16 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calculate_c
     case Inpar::ScaTra::flux_total:
     case Inpar::ScaTra::flux_diffusive:
       // ohmic flux contribution
-      q.update(-diff_manager()->GetCond(), var_manager()->GradPot());
+      q.update(-diff_manager()->get_cond(), var_manager()->grad_pot());
       // diffusion overpotential flux contribution
       for (int k = 0; k < my::numscal_; ++k)
       {
-        q.update(-var_manager()->RTF() / diffcondparams_->NewmanConstC() *
-                     diff_manager()->GetCond() * diff_manager()->GetThermFac() *
-                     (diffcondparams_->NewmanConstdata() +
-                         (diffcondparams_->NewmanConstB() * diff_manager()->GetTransNum(k))) *
-                     var_manager()->ConIntInv(k),
-            var_manager()->GradPhi(k), 1.0);
+        q.update(-var_manager()->rtf() / diffcondparams_->newman_const_c() *
+                     diff_manager()->get_cond() * diff_manager()->get_therm_fac() *
+                     (diffcondparams_->newman_constdata() +
+                         (diffcondparams_->newman_const_b() * diff_manager()->get_trans_num(k))) *
+                     var_manager()->con_int_inv(k),
+            var_manager()->grad_phi(k), 1.0);
       }
 
       break;
@@ -705,14 +706,15 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
       // safety checks
       if (Teuchos::getIntegralValue<ScaTra::Action>(params, "action") != ScaTra::Action::calc_error)
         FOUR_C_THROW("How did you get here?");
-      if (my::scatrapara_->IsAle()) FOUR_C_THROW("No ALE for Kwok & Wu error calculation allowed.");
+      if (my::scatrapara_->is_ale())
+        FOUR_C_THROW("No ALE for Kwok & Wu error calculation allowed.");
       if (my::numscal_ != 1) FOUR_C_THROW("Numscal_ != 1 for desired error calculation.");
 
       // set constants for analytical solution
       const double t =
-          my::scatraparatimint_->Time() +
-          (1 - my::scatraparatimint_->AlphaF()) * my::scatraparatimint_->Dt();  //-(1-alphaF_)*dta_
-      const double frt = var_manager()->FRT();
+          my::scatraparatimint_->time() +
+          (1 - my::scatraparatimint_->alpha_f()) * my::scatraparatimint_->dt();  //-(1-alphaF_)*dta_
+      const double frt = var_manager()->frt();
 
       // integration points and weights
       // more GP than usual due to (possible) cos/exp fcts in analytical solutions
@@ -728,7 +730,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
       Core::LinAlg::Matrix<1, 1> deltacon(true);
 
       // start loop over integration points
-      for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
+      for (int iquad = 0; iquad < intpoints.ip().nquad; iquad++)
       {
         const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -755,7 +757,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
         // get global coordinate of integration point
         xint.multiply(my::xyze_, my::funct_);
 
-        const double D = diff_manager()->GetIsotropicDiff(0);
+        const double D = diff_manager()->get_isotropic_diff(0);
 
         // compute analytical solution for cation and anion concentrations
         const double A0 = 2.0;
@@ -794,10 +796,11 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
         // const double pot =
         // ((diff_manager()->GetIsotropicDiff(1)-diff_manager()->GetIsotropicDiff(0))/d) *
         // log(c(0)/c_0_0_0_t);
-        const double pot = -1 / frt *
-                           (diffcondparams_->NewmanConstdata() +
-                               (diffcondparams_->NewmanConstB() * diff_manager()->GetTransNum(0))) /
-                           diffcondparams_->NewmanConstC() * log(c(0) / c_0_0_0_t);
+        const double pot =
+            -1 / frt *
+            (diffcondparams_->newman_constdata() +
+                (diffcondparams_->newman_const_b() * diff_manager()->get_trans_num(0))) /
+            diffcondparams_->newman_const_c() * log(c(0) / c_0_0_0_t);
 
         // compute differences between analytical solution and numerical solution
         deltapot = potint - pot;

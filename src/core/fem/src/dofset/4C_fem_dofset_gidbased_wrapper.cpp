@@ -25,19 +25,19 @@ Core::DOFSets::DofSetGIDBasedWrapper::DofSetGIDBasedWrapper(
     : DofSetBase(),
       sourcedis_(sourcedis),
       sourcedofset_(sourcedofset),
-      isassigned_(sourcedofset->Filled())
+      isassigned_(sourcedofset->filled())
 {
   if (sourcedofset_ == Teuchos::null) FOUR_C_THROW("Source dof set is null pointer.");
   if (sourcedis_ == Teuchos::null) FOUR_C_THROW("Source discretization is null pointer.");
 
-  sourcedofset_->Register(this);
+  sourcedofset_->register_proxy(this);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::DOFSets::DofSetGIDBasedWrapper::~DofSetGIDBasedWrapper()
 {
-  if (sourcedofset_ != Teuchos::null) sourcedofset_->Unregister(this);
+  if (sourcedofset_ != Teuchos::null) sourcedofset_->unregister(this);
 }
 
 /*----------------------------------------------------------------------*
@@ -45,7 +45,7 @@ Core::DOFSets::DofSetGIDBasedWrapper::~DofSetGIDBasedWrapper()
 void Core::DOFSets::DofSetGIDBasedWrapper::reset()
 {
   isassigned_ = false;
-  NotifyReset();
+  notify_reset();
 }
 
 /*----------------------------------------------------------------------*
@@ -53,26 +53,26 @@ void Core::DOFSets::DofSetGIDBasedWrapper::reset()
 int Core::DOFSets::DofSetGIDBasedWrapper::assign_degrees_of_freedom(
     const Core::FE::Discretization& dis, const unsigned dspos, const int start)
 {
-  NotifyAssigned();
+  notify_assigned();
   return start;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetGIDBasedWrapper::NotifyAssigned()
+void Core::DOFSets::DofSetGIDBasedWrapper::notify_assigned()
 {
-  if (sourcedis_->NodeColMap() == nullptr) FOUR_C_THROW("No NodeColMap on sourcedis");
-  if (sourcedis_->ElementColMap() == nullptr) FOUR_C_THROW("No ElementColMap on sourcedis");
+  if (sourcedis_->node_col_map() == nullptr) FOUR_C_THROW("No NodeColMap on sourcedis");
+  if (sourcedis_->element_col_map() == nullptr) FOUR_C_THROW("No ElementColMap on sourcedis");
 
-  isassigned_ = sourcedofset_->Filled();
+  isassigned_ = sourcedofset_->filled();
 
   // call base class
-  DofSetBase::NotifyAssigned();
+  DofSetBase::notify_assigned();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetGIDBasedWrapper::Disconnect(DofSetInterface* dofset)
+void Core::DOFSets::DofSetGIDBasedWrapper::disconnect(DofSetInterface* dofset)
 {
   if (dofset == sourcedofset_.get())
   {

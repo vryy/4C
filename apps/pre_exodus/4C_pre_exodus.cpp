@@ -102,7 +102,7 @@ namespace
               << std::endl;
 
     // write ElementBlocks with specification proposal
-    const std::map<int, Teuchos::RCP<EXODUS::ElementBlock>> myblocks = mymesh.GetElementBlocks();
+    const std::map<int, Teuchos::RCP<EXODUS::ElementBlock>> myblocks = mymesh.get_element_blocks();
     std::map<int, Teuchos::RCP<EXODUS::ElementBlock>>::const_iterator it;
     for (it = myblocks.begin(); it != myblocks.end(); ++it)
     {
@@ -119,7 +119,7 @@ namespace
     }
 
     // write NodeSets with specification proposal
-    const std::map<int, EXODUS::NodeSet> mynodesets = mymesh.GetNodeSets();
+    const std::map<int, EXODUS::NodeSet> mynodesets = mymesh.get_node_sets();
     std::map<int, EXODUS::NodeSet>::const_iterator ins;
     for (ins = mynodesets.begin(); ins != mynodesets.end(); ++ins)
     {
@@ -131,7 +131,7 @@ namespace
     }
 
     // write SideSets with specification proposal
-    const std::map<int, EXODUS::SideSet> mysidesets = mymesh.GetSideSets();
+    const std::map<int, EXODUS::SideSet> mysidesets = mymesh.get_side_sets();
     std::map<int, EXODUS::SideSet>::const_iterator iss;
     for (iss = mysidesets.begin(); iss != mysidesets.end(); ++iss)
     {
@@ -179,12 +179,12 @@ int main(int argc, char** argv)
   GlobalLegacyModuleCallbacks().RegisterParObjectTypes();
 
   // create a problem instance
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
   // create default communicators
   Teuchos::RCP<Core::Communication::Communicators> communicators =
       Core::Communication::CreateComm({});
-  Global::Problem::Instance()->SetCommunicators(communicators);
-  Teuchos::RCP<Epetra_Comm> comm = communicators->GlobalComm();
+  Global::Problem::instance()->set_communicators(communicators);
+  Teuchos::RCP<Epetra_Comm> comm = communicators->global_comm();
 
   try
   {
@@ -222,7 +222,7 @@ int main(int argc, char** argv)
     if (parseReturn == Teuchos::CommandLineProcessor::PARSE_HELP_PRINTED)
     {
       // free the global problem instance
-      problem->Done();
+      problem->done();
       return 0;
     }
     if (parseReturn != Teuchos::CommandLineProcessor::PARSE_SUCCESSFUL)
@@ -274,7 +274,7 @@ int main(int argc, char** argv)
     if (quadtri)
     {
       EXODUS::Mesh trimesh = EXODUS::QuadtoTri(mymesh);
-      trimesh.WriteMesh("tri_" + exofile);
+      trimesh.write_mesh("tri_" + exofile);
       exit(0);
     }
 
@@ -296,7 +296,8 @@ int main(int argc, char** argv)
       // read provided bc-file
       EXODUS::ReadBCFile(bcfile, eledefs, condefs);
 
-      int sum = mymesh.GetNumElementBlocks() + mymesh.GetNumNodeSets() + mymesh.GetNumSideSets();
+      int sum =
+          mymesh.get_num_element_blocks() + mymesh.get_num_node_sets() + mymesh.get_num_side_sets();
       int test = eledefs.size() + condefs.size();
       if (test != sum)
         std::cout
@@ -430,7 +431,7 @@ int main(int argc, char** argv)
 
       // write the 4C input file
       {
-        if (twodim) mymesh.SetNsd(2);
+        if (twodim) mymesh.set_nsd(2);
         std::cout << "...Writing dat-file";
         timer->start();
         EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs);
@@ -450,7 +451,7 @@ int main(int argc, char** argv)
     std::cout << "\n\n" << line << err.what_with_stacktrace() << "\n" << line << "\n" << std::endl;
 
     // free the global problem instance and the communicator
-    problem->Done();
+    problem->done();
     comm = Teuchos::null;
 
 #ifdef FOUR_C_ENABLE_CORE_DUMP
@@ -461,7 +462,7 @@ int main(int argc, char** argv)
   }
 
   // free the global problem instance
-  problem->Done();
+  problem->done();
 
   MPI_Finalize();
 

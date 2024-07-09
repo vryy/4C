@@ -50,7 +50,7 @@ namespace PoroElastScaTra
     // Methods
 
     //! solve one time/incremental step of porous media problem (depending on coupling algorithm)
-    virtual void DoPoroStep() = 0;
+    virtual void do_poro_step() = 0;
     //! solve one time/incremental step of scalar transport problem (depending on coupling
     //! algorithm)
     virtual void do_scatra_step() = 0;

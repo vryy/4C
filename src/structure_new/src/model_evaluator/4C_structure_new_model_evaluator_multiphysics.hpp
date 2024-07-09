@@ -91,7 +91,7 @@ namespace Solid
       //! set the active model type wrapped in this class.
       //! only active model type is evaluated.
       //! e.g. mt_fsi in case fluid-structure interaction is to be evaluated
-      void SetActiveModelType(enum Solid::MODELEVALUATOR::MultiphysicType mtype)
+      void set_active_model_type(enum Solid::MODELEVALUATOR::MultiphysicType mtype)
       {
         active_mt_ = mtype;
       };
@@ -104,7 +104,7 @@ namespace Solid
       //! @name Functions which are derived from the base generic class
       //! @{
       //! [derived]
-      Inpar::Solid::ModelType Type() const override
+      Inpar::Solid::ModelType type() const override
       {
         return Inpar::Solid::model_partitioned_coupling;
       }
@@ -142,7 +142,7 @@ namespace Solid
       void read_restart(Core::IO::DiscretizationReader& ioreader) override{};
 
       //! [derived]
-      void Predict(const Inpar::Solid::PredEnum& pred_type) override{};
+      void predict(const Inpar::Solid::PredEnum& pred_type) override{};
 
       //! derived
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,

@@ -45,13 +45,13 @@ namespace Adapter
     }
 
     //! right-hand-side of Newton's method
-    Teuchos::RCP<const Epetra_Vector> RHS() const override { return ale_->RHS(); }
+    Teuchos::RCP<const Epetra_Vector> rhs() const override { return ale_->rhs(); }
 
     //! unknown displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispnp() const override { return ale_->Dispnp(); }
+    Teuchos::RCP<const Epetra_Vector> dispnp() const override { return ale_->dispnp(); }
 
     //! known displacements at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispn() const override { return ale_->Dispn(); }
+    Teuchos::RCP<const Epetra_Vector> dispn() const override { return ale_->dispn(); }
 
     //@}
 
@@ -62,21 +62,21 @@ namespace Adapter
     Teuchos::RCP<const Epetra_Map> dof_row_map() const override { return ale_->dof_row_map(); }
 
     //! direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override
     {
-      return ale_->SystemMatrix();
+      return ale_->system_matrix();
     }
 
     //! direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
     {
-      return ale_->BlockSystemMatrix();
+      return ale_->block_system_matrix();
     }
 
     //! access to locsys manager
-    Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() override
+    Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() override
     {
-      return ale_->LocsysManager();
+      return ale_->locsys_manager();
     }
 
     //! direct access to discretization
@@ -118,21 +118,21 @@ namespace Adapter
 
     void reset_time(const double dtold) override { ale_->reset_time(dtold); }
     //! Return target time \f$t_{n+1}\f$
-    double Time() const override { return ale_->Time(); }
+    double time() const override { return ale_->time(); }
 
     //! Return target step counter \f$step_{n+1}\f$
-    double Step() const override { return ale_->Step(); }
+    double step() const override { return ale_->step(); }
 
     //! get time step size \f$\Delta t_n\f$
-    double Dt() const override { return ale_->Dt(); }
+    double dt() const override { return ale_->dt(); }
 
     //! integrate from t1 to t2
-    int Integrate() override { return ale_->Integrate(); }
+    int integrate() override { return ale_->integrate(); }
 
-    void TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
-                      ALE::UTILS::MapExtractor::dbc_set_std) override
+    void time_step(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
+                       ALE::UTILS::MapExtractor::dbc_set_std) override
     {
-      ale_->TimeStep(dbc_type);
+      ale_->time_step(dbc_type);
       return;
     }
 
@@ -144,11 +144,11 @@ namespace Adapter
     }
 
     //! Set time and step
-    void SetTimeStep(const double time,  ///< simulation time (to be set)
-        const int step                   ///< step number (to be set)
+    void set_time_step(const double time,  ///< simulation time (to be set)
+        const int step                     ///< step number (to be set)
         ) override
     {
-      ale_->SetTimeStep(time, step);
+      ale_->set_time_step(time, step);
     }
 
     //! start new time step
@@ -178,7 +178,7 @@ namespace Adapter
     void update() override { ale_->update(); }
 
     //! update at time step end
-    void UpdateIter() override { ale_->UpdateIter(); }
+    void update_iter() override { ale_->update_iter(); }
 
     //! output results
     void output() override { return ale_->output(); }
@@ -194,7 +194,7 @@ namespace Adapter
     //@}
 
     /// setup Dirichlet boundary condition map extractor
-    void SetupDBCMapEx(
+    void setup_dbc_map_ex(
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
             ALE::UTILS::MapExtractor::dbc_set_std,  //!< application-specific type of Dirichlet set
         Teuchos::RCP<const ALE::UTILS::MapExtractor> interface =
@@ -205,17 +205,17 @@ namespace Adapter
                            //!< XFFSI
         ) override
     {
-      ale_->SetupDBCMapEx(dbc_type, interface, xff_interface);
+      ale_->setup_dbc_map_ex(dbc_type, interface, xff_interface);
     }
 
     //! @name Solver calls
     //@{
 
     //! nonlinear solve
-    int Solve() override { return ale_->Solve(); }
+    int solve() override { return ale_->solve(); }
 
     //! Access to linear solver of ALE field
-    Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override { return ale_->LinearSolver(); }
+    Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override { return ale_->linear_solver(); }
 
     //@}
 
@@ -223,17 +223,17 @@ namespace Adapter
     //@{
 
     //! write access to extract displacements at \f$t^{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() const override
+    Teuchos::RCP<Epetra_Vector> write_access_dispnp() const override
     {
-      return ale_->WriteAccessDispnp();
+      return ale_->write_access_dispnp();
     }
 
     //@}
 
     //! create result test for encapsulated structure algorithm
-    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override
+    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override
     {
-      return ale_->CreateFieldTest();
+      return ale_->create_field_test();
     }
 
     /*! \brief Create Systemmatrix
@@ -251,7 +251,7 @@ namespace Adapter
     }
 
     //! update slave dofs for fsi simulations with ale mesh tying
-    void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& a) override { ale_->UpdateSlaveDOF(a); }
+    void update_slave_dof(Teuchos::RCP<Epetra_Vector>& a) override { ale_->update_slave_dof(a); }
 
    private:
     Teuchos::RCP<Ale> ale_;  //!< underlying ALE time integration

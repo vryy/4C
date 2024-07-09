@@ -46,19 +46,19 @@ namespace Core::Geo
       /*!
       \brief Generate integration points on the facets of the volumecell
       */
-      Teuchos::RCP<Core::FE::GaussPoints> VCIntegrationRule(std::vector<double>& RefPlaneEqn);
+      Teuchos::RCP<Core::FE::GaussPoints> vc_integration_rule(std::vector<double>& RefPlaneEqn);
 
       /*!
       \brief Compute and set correspondingly the volume of the considered volumecell from the
       generated integration rule and compare it with full application of divergence theorem
        */
-      void DebugVolume(const Core::FE::GaussIntegration& gpv, bool& isNeg);
+      void debug_volume(const Core::FE::GaussIntegration& gpv, bool& isNeg);
 
       /*!
       \brief Geometry of volumecell, reference facet, main and internal gauss points for gmsh
       output.
        */
-      void DivengenceCellsGMSH(
+      void divengence_cells_gmsh(
           const Core::FE::GaussIntegration& gpv, Teuchos::RCP<Core::FE::GaussPoints>& gpmain);
 
      private:

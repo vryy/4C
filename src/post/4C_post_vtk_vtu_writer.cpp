@@ -83,13 +83,13 @@ void PostVtuWriter::write_geo()
 {
   using namespace FourC;
 
-  Teuchos::RCP<Core::FE::Discretization> dis = this->GetField()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> dis = this->get_field()->discretization();
 
   // count number of nodes and number for each processor; output is completely independent of
   // the number of processors involved
-  int nelements = dis->NumMyRowElements();
+  int nelements = dis->num_my_row_elements();
   int nnodes = 0;
-  for (int e = 0; e < nelements; ++e) nnodes += dis->lRowElement(e)->num_node();
+  for (int e = 0; e < nelements; ++e) nnodes += dis->l_row_element(e)->num_node();
 
   // do not need to store connectivity indices here because we create a
   // contiguous array by the order in which we fill the coordinates (otherwise
@@ -105,12 +105,12 @@ void PostVtuWriter::write_geo()
   int outNodeId = 0;
   for (int e = 0; e < nelements; ++e)
   {
-    const Core::Elements::Element* ele = dis->lRowElement(e);
+    const Core::Elements::Element* ele = dis->l_row_element(e);
     // check for beam element that potentially needs special treatment due to Hermite interpolation
     const Discret::ELEMENTS::Beam3Base* beamele =
         dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
-    if (Core::FE::IsNurbsDisType(ele->Shape()))
+    if (Core::FE::IsNurbsDisType(ele->shape()))
     {
       write_geo_nurbs_ele(ele, celltypes, outNodeId, celloffset, coordinates);
     }
@@ -120,12 +120,12 @@ void PostVtuWriter::write_geo()
     }
     else
     {
-      celltypes.push_back(Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).first);
+      celltypes.push_back(Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->shape()).first);
       const std::vector<int>& numbering =
-          Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
-      const Core::Nodes::Node* const* nodes = ele->Nodes();
+          Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->shape()).second;
+      const Core::Nodes::Node* const* nodes = ele->nodes();
       for (int n = 0; n < ele->num_node(); ++n)
-        for (int d = 0; d < 3; ++d) coordinates.push_back(nodes[numbering[n]]->X()[d]);
+        for (int d = 0; d < 3; ++d) coordinates.push_back(nodes[numbering[n]]->x()[d]);
       outNodeId += ele->num_node();
       celloffset.push_back(outNodeId);
     }
@@ -250,7 +250,7 @@ void PostVtuWriter::write_dof_result_step(std::ofstream& file,
   // For parallel computations, we need to access all dofs on the elements, including the
   // nodes owned by other processors. Therefore, we need to import that data here.
   const Epetra_BlockMap& vecmap = data->Map();
-  const Epetra_Map* colmap = dis->DofColMap(0);
+  const Epetra_Map* colmap = dis->dof_col_map(0);
 
   int offset = vecmap.MinAllGID() - dis->dof_row_map()->MinAllGID();
   if (fillzeros) offset = 0;
@@ -281,20 +281,20 @@ void PostVtuWriter::write_dof_result_step(std::ofstream& file,
 
   // count number of nodes and number of elements for each processor
   int nnodes = 0;
-  for (int e = 0; e < dis->NumMyRowElements(); ++e) nnodes += dis->lRowElement(e)->num_node();
+  for (int e = 0; e < dis->num_my_row_elements(); ++e) nnodes += dis->l_row_element(e)->num_node();
 
   std::vector<double> solution;
   solution.reserve(ncomponents * nnodes);
 
   std::vector<int> nodedofs;
-  for (int e = 0; e < dis->NumMyRowElements(); ++e)
+  for (int e = 0; e < dis->num_my_row_elements(); ++e)
   {
-    const Core::Elements::Element* ele = dis->lRowElement(e);
+    const Core::Elements::Element* ele = dis->l_row_element(e);
     // check for beam element that potentially needs special treatment due to Hermite interpolation
     const Discret::ELEMENTS::Beam3Base* beamele =
         dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
-    if (Core::FE::IsNurbsDisType(ele->Shape()))
+    if (Core::FE::IsNurbsDisType(ele->shape()))
     {
       wirte_dof_result_step_nurbs_ele(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
@@ -307,14 +307,14 @@ void PostVtuWriter::write_dof_result_step(std::ofstream& file,
     else
     {
       const std::vector<int>& numbering =
-          Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
+          Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->shape()).second;
 
       for (int n = 0; n < ele->num_node(); ++n)
       {
         nodedofs.clear();
 
         // local storage position of desired dof gid
-        dis->Dof(ele->Nodes()[numbering[n]], nodedofs);
+        dis->dof(ele->nodes()[numbering[n]], nodedofs);
 
         for (int d = 0; d < numdf; ++d)
         {
@@ -369,7 +369,7 @@ void PostVtuWriter::write_nodal_result_step(std::ofstream& file,
 
   // Here is the only thing we need to do for parallel computations: We need read access to all dofs
   // on the row elements, so need to get the NodeColMap to have this access
-  const Epetra_Map* colmap = dis->NodeColMap();
+  const Epetra_Map* colmap = dis->node_col_map();
   const Epetra_BlockMap& vecmap = data->Map();
 
   FOUR_C_ASSERT(
@@ -391,30 +391,30 @@ void PostVtuWriter::write_nodal_result_step(std::ofstream& file,
 
   // count number of nodes and number of elements for each processor
   int nnodes = 0;
-  for (int e = 0; e < dis->NumMyRowElements(); ++e) nnodes += dis->lRowElement(e)->num_node();
+  for (int e = 0; e < dis->num_my_row_elements(); ++e) nnodes += dis->l_row_element(e)->num_node();
 
   std::vector<double> solution;
   solution.reserve(ncomponents * nnodes);
 
-  for (int e = 0; e < dis->NumMyRowElements(); ++e)
+  for (int e = 0; e < dis->num_my_row_elements(); ++e)
   {
-    const Core::Elements::Element* ele = dis->lRowElement(e);
+    const Core::Elements::Element* ele = dis->l_row_element(e);
 
-    if (Core::FE::IsNurbsDisType(ele->Shape()))
+    if (Core::FE::IsNurbsDisType(ele->shape()))
     {
       write_nodal_result_step_nurbs_ele(ele, ncomponents, numdf, solution, ghostedData);
     }
     else
     {
       const std::vector<int>& numbering =
-          Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
+          Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->shape()).second;
       for (int n = 0; n < ele->num_node(); ++n)
       {
         for (int idf = 0; idf < numdf; ++idf)
         {
           Epetra_Vector* column = (*ghostedData)(idf);
 
-          int lid = ghostedData->Map().LID(ele->Nodes()[numbering[n]]->Id());
+          int lid = ghostedData->Map().LID(ele->nodes()[numbering[n]]->id());
 
           if (lid > -1)
             solution.push_back((*column)[lid]);
@@ -464,7 +464,7 @@ void PostVtuWriter::write_element_result_step(std::ofstream& file,
 
   int ncomponents = numdf;
   if (numdf > 1 && numdf == field_->problem()->num_dim()) ncomponents = 3;
-  int neles = dis->NumMyRowElements();
+  int neles = dis->num_my_row_elements();
 
   std::vector<double> solution;
   solution.reserve(ncomponents * neles);
@@ -474,16 +474,16 @@ void PostVtuWriter::write_element_result_step(std::ofstream& file,
     FOUR_C_THROW("violated column range of Epetra_MultiVector: %d", numcol);
 
   Teuchos::RCP<Epetra_MultiVector> importedData;
-  if (dis->ElementRowMap()->SameAs(data->Map()))
+  if (dis->element_row_map()->SameAs(data->Map()))
     importedData = data;
   else
   {
     importedData =
-        Teuchos::rcp(new Epetra_MultiVector(*dis->ElementRowMap(), data->NumVectors(), false));
+        Teuchos::rcp(new Epetra_MultiVector(*dis->element_row_map(), data->NumVectors(), false));
     Core::LinAlg::Export(*data, *importedData);
   }
 
-  for (int e = 0; e < dis->NumMyRowElements(); ++e)
+  for (int e = 0; e < dis->num_my_row_elements(); ++e)
   {
     for (int d = 0; d < numdf; ++d)
     {
@@ -530,7 +530,7 @@ void PostVtuWriter::write_geo_nurbs_ele(const Core::Elements::Element* ele,
 {
   using namespace FourC;
 
-  switch (ele->Shape())
+  switch (ele->shape())
   {
     case Core::FE::CellType::nurbs2:
     {
@@ -593,18 +593,18 @@ void PostVtuWriter::write_geo_nurbs_ele(const Core::Elements::Element* ele,
   const std::vector<int>& numbering =
       Core::IO::GetVtkCellTypeFromFourCElementShapeType(mapped_dis_type).second;
 
-  Teuchos::RCP<const Core::FE::Discretization> dis = this->GetField()->discretization();
+  Teuchos::RCP<const Core::FE::Discretization> dis = this->get_field()->discretization();
 
   celltypes.push_back(Core::IO::GetVtkCellTypeFromFourCElementShapeType(mapped_dis_type).first);
 
   Core::LinAlg::Matrix<NUMNODES, 1> weights;
-  const Core::Nodes::Node* const* nodes = ele->Nodes();
+  const Core::Nodes::Node* const* nodes = ele->nodes();
   for (unsigned inode = 0; inode < NUMNODES; inode++)
   {
     const Core::FE::Nurbs::ControlPoint* cp =
         dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
-    weights(inode) = cp->W();
+    weights(inode) = cp->w();
   }
   const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
       dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(dis.get());
@@ -613,7 +613,7 @@ void PostVtuWriter::write_geo_nurbs_ele(const Core::Elements::Element* ele,
 
   std::vector<Core::LinAlg::SerialDenseVector> myknots(3);
 
-  const bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, ele->Id());
+  const bool zero_ele = (*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, ele->id());
 
   if (zero_ele) return;
 
@@ -629,7 +629,7 @@ void PostVtuWriter::write_geo_nurbs_ele(const Core::Elements::Element* ele,
 
     std::array<double, 3> X = {0., 0., 0.};
     for (unsigned i = 0; i < 3; ++i)
-      for (unsigned m = 0; m < NUMNODES; ++m) X[i] += funct(m) * (nodes[m]->X()[i]);
+      for (unsigned m = 0; m < NUMNODES; ++m) X[i] += funct(m) * (nodes[m]->x()[i]);
 
     for (unsigned d = 0; d < 3; ++d) coordinates.push_back(X[d]);
   }
@@ -684,7 +684,7 @@ void PostVtuWriter::write_geo_beam_ele(const Discret::ELEMENTS::Beam3Base* beame
     r.clear();
     xi = -1.0 + i * 2.0 / BEAMSVTUVISUALSUBSEGMENTS;
 
-    beamele->GetRefPosAtXi(r, xi);
+    beamele->get_ref_pos_at_xi(r, xi);
 
     for (int d = 0; d < 3; ++d) coordinates.push_back(r(d));
   }
@@ -699,7 +699,7 @@ void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Elemen
 {
   using namespace FourC;
 
-  switch (ele->Shape())
+  switch (ele->shape())
   {
     case Core::FE::CellType::nurbs2:
     {
@@ -766,13 +766,13 @@ void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Elemen
       Core::IO::GetVtkCellTypeFromFourCElementShapeType(mapped_dis_type).second;
 
   Core::LinAlg::Matrix<NUMNODES, 1> weights;
-  const Core::Nodes::Node* const* nodes = ele->Nodes();
+  const Core::Nodes::Node* const* nodes = ele->nodes();
   for (unsigned inode = 0; inode < NUMNODES; inode++)
   {
     const Core::FE::Nurbs::ControlPoint* cp =
         dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
-    weights(inode) = cp->W();
+    weights(inode) = cp->w();
   }
   const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
       dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(dis.get());
@@ -780,7 +780,7 @@ void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Elemen
   if (not nurbsdis) FOUR_C_THROW("Cast to NURBS discretization failed.\n");
 
   std::vector<Core::LinAlg::SerialDenseVector> myknots(3);
-  const bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, ele->Id());
+  const bool zero_ele = (*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, ele->id());
 
   if (zero_ele) return;
 
@@ -799,7 +799,7 @@ void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Elemen
     for (unsigned m = 0; m < NUMNODES; ++m)
     {
       nodedofs.clear();
-      dis->Dof(ele->Nodes()[m], nodedofs);
+      dis->dof(ele->nodes()[m], nodedofs);
       for (int d = 0; d < numdf; ++d)
       {
         const int lid = ghostedData->Map().LID(nodedofs[d + from]);
@@ -835,7 +835,7 @@ void PostVtuWriter::write_dof_result_step_beam_ele(const Discret::ELEMENTS::Beam
         "restricted to centerline displacements where numdof = ncomponents = 3");
   }
 
-  const Teuchos::RCP<Core::FE::Discretization> dis = this->GetField()->discretization();
+  const Teuchos::RCP<Core::FE::Discretization> dis = this->get_field()->discretization();
   std::vector<int> nodedofs;
   std::vector<double> elementdofvals;
 
@@ -844,7 +844,7 @@ void PostVtuWriter::write_dof_result_step_beam_ele(const Discret::ELEMENTS::Beam
     nodedofs.clear();
 
     // local storage position of desired dof gid
-    dis->Dof(beamele->Nodes()[n], nodedofs);
+    dis->dof(beamele->nodes()[n], nodedofs);
 
     for (std::vector<int>::const_iterator it = nodedofs.begin(); it != nodedofs.end(); ++it)
     {
@@ -875,8 +875,8 @@ void PostVtuWriter::write_dof_result_step_beam_ele(const Discret::ELEMENTS::Beam
     xi = -1.0 + i * 2.0 / BEAMSVTUVISUALSUBSEGMENTS;
 
     // let the beam element do the interpolation
-    beamele->GetRefPosAtXi(refpos, xi);
-    beamele->GetPosAtXi(pos, xi, elementdofvals);
+    beamele->get_ref_pos_at_xi(refpos, xi);
+    beamele->get_pos_at_xi(pos, xi, elementdofvals);
 
     for (int d = 0; d < 3; ++d) solution.push_back(pos(d) - refpos(d));
   }
@@ -888,7 +888,7 @@ void PostVtuWriter::write_nodal_result_step_nurbs_ele(const Core::Elements::Elem
 {
   using namespace FourC;
 
-  switch (ele->Shape())
+  switch (ele->shape())
   {
     case Core::FE::CellType::nurbs2:
     {
@@ -954,13 +954,13 @@ void PostVtuWriter::write_nodal_result_step_nurbs_ele(const Core::Elements::Elem
       Core::IO::GetVtkCellTypeFromFourCElementShapeType(mapped_dis_type).second;
 
   Core::LinAlg::Matrix<NUMNODES, 1> weights;
-  const Core::Nodes::Node* const* nodes = ele->Nodes();
+  const Core::Nodes::Node* const* nodes = ele->nodes();
   for (unsigned inode = 0; inode < NUMNODES; inode++)
   {
     const Core::FE::Nurbs::ControlPoint* cp =
         dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
-    weights(inode) = cp->W();
+    weights(inode) = cp->w();
   }
 
   const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
@@ -969,7 +969,7 @@ void PostVtuWriter::write_nodal_result_step_nurbs_ele(const Core::Elements::Elem
   if (not nurbsdis) FOUR_C_THROW("Cast to NURBS discretization failed.\n");
 
   std::vector<Core::LinAlg::SerialDenseVector> myknots(3);
-  bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, ele->Id());
+  bool zero_ele = (*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, ele->id());
   if (zero_ele) return;
   std::vector<double> val(numdf);
   for (unsigned n = 0; n < NUMNODES; ++n)
@@ -990,7 +990,7 @@ void PostVtuWriter::write_nodal_result_step_nurbs_ele(const Core::Elements::Elem
 
       for (unsigned m = 0; m < NUMNODES; ++m)
       {
-        int lid = ghostedData->Map().LID(ele->Nodes()[m]->Id());
+        int lid = ghostedData->Map().LID(ele->nodes()[m]->id());
         if (lid > -1)
           val[idf] += funct(m) * (*column)[lid];
         else

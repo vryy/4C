@@ -41,17 +41,17 @@ namespace ParticleInteraction
     virtual void setup();
 
     //! evaluate specific coefficient
-    virtual void SpecificCoefficient(const double* dens_i, const double* dens_j,
+    virtual void specific_coefficient(const double* dens_i, const double* dens_j,
         const double* mass_i, const double* mass_j, const double& dWdrij, const double& dWdrji,
         double* speccoeff_ij, double* speccoeff_ji) const = 0;
 
     //! evaluate pressure gradient
-    virtual void PressureGradient(const double* dens_i, const double* dens_j, const double* press_i,
-        const double* press_j, const double& speccoeff_ij, const double& speccoeff_ji,
-        const double* e_ij, double* acc_i, double* acc_j) const = 0;
+    virtual void pressure_gradient(const double* dens_i, const double* dens_j,
+        const double* press_i, const double* press_j, const double& speccoeff_ij,
+        const double& speccoeff_ji, const double* e_ij, double* acc_i, double* acc_j) const = 0;
 
     //! evaluate shear forces
-    virtual void ShearForces(const double* dens_i, const double* dens_j, const double* vel_i,
+    virtual void shear_forces(const double* dens_i, const double* dens_j, const double* vel_i,
         const double* vel_j, const double& kernelfac, const double& visc_i, const double& visc_j,
         const double& bulk_visc_i, const double& bulk_visc_j, const double& abs_rij,
         const double& speccoeff_ij, const double& speccoeff_ji, const double* e_ij, double* acc_i,
@@ -83,17 +83,17 @@ namespace ParticleInteraction
     explicit SPHMomentumFormulationMonaghan();
 
     //! evaluate specific coefficient
-    void SpecificCoefficient(const double* dens_i, const double* dens_j, const double* mass_i,
+    void specific_coefficient(const double* dens_i, const double* dens_j, const double* mass_i,
         const double* mass_j, const double& dWdrij, const double& dWdrji, double* speccoeff_ij,
         double* speccoeff_ji) const override;
 
     //! evaluate pressure gradient
-    void PressureGradient(const double* dens_i, const double* dens_j, const double* press_i,
+    void pressure_gradient(const double* dens_i, const double* dens_j, const double* press_i,
         const double* press_j, const double& speccoeff_ij, const double& speccoeff_ji,
         const double* e_ij, double* acc_i, double* acc_j) const override;
 
     //! evaluate shear forces
-    void ShearForces(const double* dens_i, const double* dens_j, const double* vel_i,
+    void shear_forces(const double* dens_i, const double* dens_j, const double* vel_i,
         const double* vel_j, const double& kernelfac, const double& visc_i, const double& visc_j,
         const double& bulk_visc_i, const double& bulk_visc_j, const double& abs_rij,
         const double& speccoeff_ij, const double& speccoeff_ji, const double* e_ij, double* acc_i,
@@ -125,17 +125,17 @@ namespace ParticleInteraction
     explicit SPHMomentumFormulationAdami();
 
     //! evaluate specific coefficient
-    void SpecificCoefficient(const double* dens_i, const double* dens_j, const double* mass_i,
+    void specific_coefficient(const double* dens_i, const double* dens_j, const double* mass_i,
         const double* mass_j, const double& dWdrij, const double& dWdrji, double* speccoeff_ij,
         double* speccoeff_ji) const override;
 
     //! evaluate pressure gradient
-    void PressureGradient(const double* dens_i, const double* dens_j, const double* press_i,
+    void pressure_gradient(const double* dens_i, const double* dens_j, const double* press_i,
         const double* press_j, const double& speccoeff_ij, const double& speccoeff_ji,
         const double* e_ij, double* acc_i, double* acc_j) const override;
 
     //! evaluate shear forces
-    void ShearForces(const double* dens_i, const double* dens_j, const double* vel_i,
+    void shear_forces(const double* dens_i, const double* dens_j, const double* vel_i,
         const double* vel_j, const double& kernelfac, const double& visc_i, const double& visc_j,
         const double& bulk_visc_i, const double& bulk_visc_j, const double& abs_rij,
         const double& speccoeff_ij, const double& speccoeff_ji, const double* e_ij, double* acc_i,

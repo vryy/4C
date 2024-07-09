@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 void STI::ScatraThermoCloneStrategy::check_material_type(const int matid)
 {
   // check whether material with specified ID is compatible with cloned element or not
-  switch (Global::Problem::Instance()->Materials()->ParameterById(matid)->Type())
+  switch (Global::Problem::instance()->materials()->parameter_by_id(matid)->type())
   {
     case Core::Materials::m_soret:
     case Core::Materials::m_th_fourier_iso:
@@ -77,24 +77,24 @@ void STI::ScatraThermoCloneStrategy::set_element_data(Teuchos::RCP<Core::Element
         "Expected transport element, but received element of type '%s'!", typeid(*newele).name());
 
   // provide cloned element with material
-  newele_transport->SetMaterial(matid, oldele);
+  newele_transport->set_material(matid, oldele);
 
   // provide cloned element with discretization type
-  newele_transport->SetDisType(oldele->Shape());
+  newele_transport->set_dis_type(oldele->shape());
 
   // provide cloned element with physical implementation type
-  switch (oldele_transport->ImplType())
+  switch (oldele_transport->impl_type())
   {
     case Inpar::ScaTra::impltype_elch_diffcond_thermo:
     case Inpar::ScaTra::impltype_elch_diffcond:
     {
-      newele_transport->SetImplType(Inpar::ScaTra::impltype_thermo_elch_diffcond);
+      newele_transport->set_impl_type(Inpar::ScaTra::impltype_thermo_elch_diffcond);
       break;
     }
     case Inpar::ScaTra::impltype_elch_electrode_thermo:
     case Inpar::ScaTra::impltype_elch_electrode:
     {
-      newele_transport->SetImplType(Inpar::ScaTra::impltype_thermo_elch_electrode);
+      newele_transport->set_impl_type(Inpar::ScaTra::impltype_thermo_elch_electrode);
       break;
     }
     default:

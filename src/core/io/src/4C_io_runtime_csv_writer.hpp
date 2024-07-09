@@ -53,13 +53,13 @@ namespace Core::IO
 
     //! append data @p datavalues to column @p dataname. In case of sub columns @p datavalues must
     //! have as many entries as the number of subcolumns
-    void AppendDataVector(const std::string& dataname, const std::vector<double>& datavalues);
+    void append_data_vector(const std::string& dataname, const std::vector<double>& datavalues);
 
     //! write one line to csv file. Data must have been passed via AppendDataVector()
     void write_collected_data_to_file();
 
     //! write @p data to file at @p time and @p timestep
-    void WriteDataToFile(double time, unsigned int timestep,
+    void write_data_to_file(double time, unsigned int timestep,
         const std::map<std::string, std::vector<double>>& data) const;
 
    private:

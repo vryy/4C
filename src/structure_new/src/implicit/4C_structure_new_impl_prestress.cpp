@@ -24,25 +24,25 @@ namespace
   inline bool IsMaterialIterative()
   {
     return Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
-               Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS") ==
+               Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS") ==
            Inpar::Solid::PreStress::material_iterative;
   }
 
   inline bool IsMaterialIterativeActive(const double currentTime)
   {
     Inpar::Solid::PreStress pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
-        Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
+        Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
     double pstime =
-        Global::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
+        Global::Problem::instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
     return pstype == Inpar::Solid::PreStress::material_iterative && currentTime <= pstime + 1.0e-15;
   }
 
   static inline bool IsMulfActive(const double currentTime)
   {
     Inpar::Solid::PreStress pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
-        Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
+        Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
     double pstime =
-        Global::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
+        Global::Problem::instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
     return pstype == Inpar::Solid::PreStress::mulf && currentTime <= pstime + 1.0e-15;
   }
 }  // namespace

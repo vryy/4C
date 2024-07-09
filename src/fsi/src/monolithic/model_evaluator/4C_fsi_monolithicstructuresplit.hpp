@@ -81,7 +81,7 @@ namespace FSI
 
 
     */
-    void SetupSystem() override;
+    void setup_system() override;
 
     //! @name Apply current field state to system
 
@@ -112,7 +112,7 @@ namespace FSI
     void calculate_interface_energy_increment() override;
 
     /// the composed system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const override;
 
     //! @name Methods for infnorm-scaling of the system
 
@@ -129,7 +129,7 @@ namespace FSI
     void output() override;
 
     /// Write Lagrange multiplier
-    void OutputLambda() override;
+    void output_lambda() override;
 
     //! take current results for converged and save for next time step
     void update() override;
@@ -138,7 +138,7 @@ namespace FSI
     void read_restart(int step) override;
 
     /// return Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface
-    Teuchos::RCP<Epetra_Vector> GetLambda() override { return lambda_; };
+    Teuchos::RCP<Epetra_Vector> get_lambda() override { return lambda_; };
 
     //! @name Time Adaptivity
     //@{

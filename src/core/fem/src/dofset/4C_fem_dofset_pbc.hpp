@@ -69,23 +69,23 @@ namespace Core::DOFSets
 
 
     /// Get maximum GID of degree of freedom row map
-    int MaxAllGID() const override;
+    int max_all_gid() const override;
 
     /// Get minimum GID of degree of freedom row map
-    int MinAllGID() const override;
+    int min_all_gid() const override;
 
     /// create a copy of this object
-    Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new PBCDofSet(*this)); }
+    Teuchos::RCP<DofSet> clone() override { return Teuchos::rcp(new PBCDofSet(*this)); }
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     int assign_degrees_of_freedom(
         const Core::FE::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// Update the coupled nodes map of dofset
-    virtual void SetCoupledNodes(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes);
+    virtual void set_coupled_nodes(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes);
 
     /// Get coupled nodes map (corresponding col format)
-    std::map<int, std::vector<int>>* GetCoupledNodes() { return perbndcouples_.get(); }
+    std::map<int, std::vector<int>>* get_coupled_nodes() { return perbndcouples_.get(); }
 
     /// Get connectivity map between slave node and its master node
     virtual Teuchos::RCP<std::map<int, int>> get_slave_to_master_node_connectivity()
@@ -95,11 +95,11 @@ namespace Core::DOFSets
 
    protected:
     /// get number of nodal dofs for this element at this node
-    int NumDofPerNode(const Core::Nodes::Node& node) const override
+    int num_dof_per_node(const Core::Nodes::Node& node) const override
     {
-      if (slavenodeids_->count(node.Id()) == 0)
+      if (slavenodeids_->count(node.id()) == 0)
       {
-        return DofSet::NumDofPerNode(node);
+        return DofSet::num_dof_per_node(node);
       }
       return 0;
     }

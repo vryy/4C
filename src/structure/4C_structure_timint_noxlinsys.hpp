@@ -80,7 +80,7 @@ namespace NOX
 
 
       /// provide storage pattern of tangent matrix, i.e. the operator
-      virtual OperatorType getOperatorType(const Epetra_Operator& Op);
+      virtual OperatorType get_operator_type(const Epetra_Operator& Op);
 
       ///
       virtual void reset(Teuchos::ParameterList& linearSolverParams);

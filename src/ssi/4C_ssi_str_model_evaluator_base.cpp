@@ -37,7 +37,7 @@ void Solid::MODELEVALUATOR::BaseSSI::determine_stress_strain()
   std::vector<char>::size_type position(0);
 
   // loop over all row elements
-  for (int i = 0; i < discret().ElementRowMap()->NumMyElements(); ++i)
+  for (int i = 0; i < discret().element_row_map()->NumMyElements(); ++i)
   {
     // initialize matrix for stresses associated with current element
     const auto stresses_ele = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
@@ -46,35 +46,35 @@ void Solid::MODELEVALUATOR::BaseSSI::determine_stress_strain()
     Core::Communication::ParObject::extract_from_pack(position, stressdata, *stresses_ele);
 
     // store stresses
-    (*stresses)[discret().ElementRowMap()->GID(i)] = stresses_ele;
+    (*stresses)[discret().element_row_map()->GID(i)] = stresses_ele;
   }
 
   // export map to column format
   Core::Communication::Exporter exporter(
-      *discret().ElementRowMap(), *discret().ElementColMap(), discret().Comm());
+      *discret().element_row_map(), *discret().element_col_map(), discret().get_comm());
   exporter.Export(*stresses);
 
   // prepare nodal stress vectors
-  Epetra_MultiVector nodal_stresses_source(*discret().NodeRowMap(), 6);
+  Epetra_MultiVector nodal_stresses_source(*discret().node_row_map(), 6);
 
   discret().evaluate(
       [&](Core::Elements::Element& ele)
       {
         Core::FE::ExtrapolateGaussPointQuantityToNodes(
-            ele, *stresses->at(ele.Id()), discret(), nodal_stresses_source);
+            ele, *stresses->at(ele.id()), discret(), nodal_stresses_source);
       });
 
-  const auto* nodegids = discret().NodeRowMap();
+  const auto* nodegids = discret().node_row_map();
   for (int i = 0; i < nodegids->NumMyElements(); ++i)
   {
     const int nodegid = nodegids->GID(i);
 
     // extract lid of node as multi-vector is sorted according to the node ids
-    const Core::Nodes::Node* const node = discret().gNode(nodegid);
-    const int nodelid = discret().NodeRowMap()->LID(nodegid);
+    const Core::Nodes::Node* const node = discret().g_node(nodegid);
+    const int nodelid = discret().node_row_map()->LID(nodegid);
 
     // extract dof lid of first degree of freedom associated with current node in second nodeset
-    const int dofgid_epetra = discret().Dof(2, node, 0);
+    const int dofgid_epetra = discret().dof(2, node, 0);
     const int doflid_epetra = mechanical_stress_state_->Map().LID(dofgid_epetra);
     if (doflid_epetra < 0) FOUR_C_THROW("Local ID not found in epetra vector!");
 
@@ -102,7 +102,7 @@ void Solid::MODELEVALUATOR::BaseSSI::setup()
   // check initialization
   check_init();
 
-  if (discret().NumDofSets() - 1 == 2)
+  if (discret().num_dof_sets() - 1 == 2)
     mechanical_stress_state_ = Teuchos::rcp(new Epetra_Vector(*discret().dof_row_map(2), true));
 
   // set flag

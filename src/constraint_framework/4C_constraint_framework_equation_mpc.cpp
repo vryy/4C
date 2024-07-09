@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONSTRAINTS::SUBMODELEVALUATOR::LinearCoupledEquation::EvaluateEquation(
+void CONSTRAINTS::SUBMODELEVALUATOR::LinearCoupledEquation::evaluate_equation(
     Core::LinAlg::SparseMatrix& Q_dd, Core::LinAlg::SparseMatrix& Q_dL,
     Core::LinAlg::SparseMatrix& Q_Ld, Epetra_Vector& constraint_vector, const Epetra_Vector& D_np1)
 {
@@ -29,8 +29,8 @@ void CONSTRAINTS::SUBMODELEVALUATOR::LinearCoupledEquation::EvaluateEquation(
   {
     // stiffness contribution
     // FixMe: Switch to FEAssemble
-    Q_dL.Assemble(coefficient, dofId, rowId);
-    Q_Ld.Assemble(coefficient, rowId, dofId);
+    Q_dL.assemble(coefficient, dofId, rowId);
+    Q_Ld.assemble(coefficient, rowId, dofId);
 
     // force contribution
     constraintViolation = D_np1.Values()[dofId] * coefficient;
@@ -39,19 +39,19 @@ void CONSTRAINTS::SUBMODELEVALUATOR::LinearCoupledEquation::EvaluateEquation(
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CONSTRAINTS::SUBMODELEVALUATOR::MultiPointConstraintEquationBase::GetNumberOfMPCs() const
+int CONSTRAINTS::SUBMODELEVALUATOR::MultiPointConstraintEquationBase::get_number_of_mp_cs() const
 {
   return n_dof_coupled_;
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CONSTRAINTS::SUBMODELEVALUATOR::MultiPointConstraintEquationBase::GetFirstRowId() const
+int CONSTRAINTS::SUBMODELEVALUATOR::MultiPointConstraintEquationBase::get_first_row_id() const
 {
   return first_row_id_;
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONSTRAINTS::SUBMODELEVALUATOR::MultiPointConstraintEquationBase::SetFirstRowId(
+void CONSTRAINTS::SUBMODELEVALUATOR::MultiPointConstraintEquationBase::set_first_row_id(
     int global_row_id)
 {
   first_row_id_ = global_row_id;
@@ -64,7 +64,7 @@ CONSTRAINTS::SUBMODELEVALUATOR::LinearCoupledEquation::LinearCoupledEquation(
   Core::IO::cout(Core::IO::debug) << "\nLinear coupled equation saved (ID: " << id << ")\n ";
   Core::IO::cout(Core::IO::debug) << " 0 = ";  // #Todo
 
-  SetFirstRowId(id);
+  set_first_row_id(id);
 
   for (std::vector<double>::size_type i = 0; i < coefficients.size(); ++i)
   {

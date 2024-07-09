@@ -70,7 +70,7 @@ namespace Core::Geo
       /*!
       \brief Return whether the vertices numbering of the facet is clockwise
       */
-      bool IsClockwiseOrdering();
+      bool is_clockwise_ordering();
 
       /*!
       \brief Generate Gaussian points over the considered facet by triangulating it. This is used

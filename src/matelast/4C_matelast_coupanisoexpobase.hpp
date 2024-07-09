@@ -38,7 +38,7 @@ namespace Mat
        * \param gp Gauss point
        * \return double
        */
-      virtual double GetScalarProduct(int gp) const = 0;
+      virtual double get_scalar_product(int gp) const = 0;
 
       /*!
        * \brief Returns the structural tensor that should be used
@@ -189,8 +189,8 @@ namespace Mat
        * \f]
        */
       template <typename T>
-      void GetDerivativesAniso(Core::LinAlg::Matrix<2, 1, T>&
-                                   dPI_aniso,  ///< first derivative with respect to invariants
+      void get_derivatives_aniso(Core::LinAlg::Matrix<2, 1, T>&
+                                     dPI_aniso,  ///< first derivative with respect to invariants
           Core::LinAlg::Matrix<3, 1, T>&
               ddPII_aniso,  ///< second derivative with respect to invariants
           Core::LinAlg::Matrix<4, 1, T>&
@@ -211,7 +211,7 @@ namespace Mat
           ) override;
 
       /// add strain energy
-      void AddStrainEnergy(double& psi,  ///< strain energy functions
+      void add_strain_energy(double& psi,  ///< strain energy functions
           const Core::LinAlg::Matrix<3, 1>&
               prinv,  ///< principal invariants of right Cauchy-Green tensor
           const Core::LinAlg::Matrix<3, 1>&
@@ -224,28 +224,28 @@ namespace Mat
 
       /// Evaluates strain energy for automatic differentiation with FAD
       template <typename T>
-      void EvaluateFunc(T& psi,                    ///< strain energy functions
+      void evaluate_func(T& psi,                   ///< strain energy functions
           Core::LinAlg::Matrix<3, 3, T> const& C,  ///< Right Cauchy-Green tensor
           int gp,                                  ///< Gauss point
           int eleGID) const;                       ///< element GID
 
       /// Set fiber directions
-      void SetFiberVecs(double newgamma,             ///< new angle
+      void set_fiber_vecs(double newgamma,           ///< new angle
           const Core::LinAlg::Matrix<3, 3>& locsys,  ///< local coordinate system
           const Core::LinAlg::Matrix<3, 3>& defgrd   ///< deformation gradient
           ) override;
 
       /// Set fiber directions
-      void SetFiberVecs(const Core::LinAlg::Matrix<3, 1>& fibervec  ///< new fiber vector
+      void set_fiber_vecs(const Core::LinAlg::Matrix<3, 1>& fibervec  ///< new fiber vector
           ) override;
 
       /// Get fiber directions
-      void GetFiberVecs(
+      void get_fiber_vecs(
           std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 
       /// Indicator for formulation
-      void SpecifyFormulation(
+      void specify_formulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation

@@ -57,7 +57,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
 
   // start with "none"
   Core::Elements::ActionType act = Core::Elements::none;
-  if (IsParamsInterface())
+  if (is_params_interface())
   {
     act = params_interface().get_action_type();
   }
@@ -89,7 +89,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       // elemat1+2, elevec2+3 are not used anyway
 
       // need current displacement and residual/incremental displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(0, "displacement");
       if ((disp == Teuchos::null))
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(la[0].lm_.size());
@@ -107,24 +107,24 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       std::vector<double> mytempnp(0);
       if (tsi_)
       {
-        if (discretization.HasState(0, "velocity"))
+        if (discretization.has_state(0, "velocity"))
         {
           // get the velocities
-          Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0, "velocity");
+          Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state(0, "velocity");
           if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
           Core::FE::ExtractMyValues(*vel, myvel, la[0].lm_);
         }
-        if (discretization.HasState(1, "temperature"))
+        if (discretization.has_state(1, "temperature"))
         {
-          Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
+          Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(1, "temperature");
           if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
           // problem
-          const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
-          if (la[1].Size() != nen_ * numdofpernode_thr)
+          const int numdofpernode_thr = discretization.num_dof(1, nodes()[0]);
+          if (la[1].size() != nen_ * numdofpernode_thr)
             FOUR_C_THROW("Location vector length for temperature does not match!");
           // extract the current temperatures
           mytempnp.resize(((la[0].lm_).size()) / nsd_, 0.0);
@@ -152,7 +152,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       Core::LinAlg::Matrix<numdofperelement_, 1> elevec1(elevec1_epetra.values(), true);
 
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(la[0].lm_.size());
       Core::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
@@ -167,25 +167,25 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       std::vector<double> mytempnp(0);
       if (tsi_)
       {
-        if (discretization.HasState(0, "velocity"))
+        if (discretization.has_state(0, "velocity"))
         {
           // get the velocities
-          Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0, "velocity");
+          Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state(0, "velocity");
           if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
           Core::FE::ExtractMyValues(*vel, myvel, la[0].lm_);
         }
 
-        if (discretization.HasState(1, "temperature"))
+        if (discretization.has_state(1, "temperature"))
         {
-          Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
+          Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(1, "temperature");
           if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
           // problem
-          const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
-          if (la[1].Size() != nen_ * numdofpernode_thr)
+          const int numdofpernode_thr = discretization.num_dof(1, nodes()[0]);
+          if (la[1].size() != nen_ * numdofpernode_thr)
             FOUR_C_THROW("Location vector length for temperature does not match!");
           // extract the current temperatures
           mytempnp.resize(((la[0].lm_).size()) / nsd_, 0.0);
@@ -206,7 +206,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_nlnstifflmass:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(la[0].lm_.size());
       Core::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
@@ -229,24 +229,24 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       std::vector<double> mytempnp(0);
       if (tsi_)
       {
-        if (discretization.HasState(0, "velocity"))
+        if (discretization.has_state(0, "velocity"))
         {
           // get the velocities
-          Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0, "velocity");
+          Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state(0, "velocity");
           if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
           Core::FE::ExtractMyValues(*vel, myvel, la[0].lm_);
         }
-        if (discretization.HasState(1, "temperature"))
+        if (discretization.has_state(1, "temperature"))
         {
-          Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
+          Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(1, "temperature");
           if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
           // problem
-          const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
-          if (la[1].Size() != nen_ * numdofpernode_thr)
+          const int numdofpernode_thr = discretization.num_dof(1, nodes()[0]);
+          if (la[1].size() != nen_ * numdofpernode_thr)
             FOUR_C_THROW("Location vector length for temperature does not match!");
           // extract the current temperatures
           mytempnp.resize(((la[0].lm_).size()) / nsd_, 0.0);
@@ -277,12 +277,12 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_stress:
     {
       // elemat1+2,elevec1-3 are not used anyway
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(0, "displacement");
       Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
       Teuchos::RCP<std::vector<char>> straindata = Teuchos::null;
       Inpar::Solid::StressType iostress = Inpar::Solid::stress_none;
       Inpar::Solid::StrainType iostrain = Inpar::Solid::strain_none;
-      if (IsParamsInterface())
+      if (is_params_interface())
       {
         stressdata = str_params_interface().stress_data_ptr();
         straindata = str_params_interface().strain_data_ptr();
@@ -317,24 +317,24 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       std::vector<double> mytempres(0);
       if (tsi_)
       {
-        if (discretization.HasState(0, "velocity"))
+        if (discretization.has_state(0, "velocity"))
         {
           // get the velocities
-          Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0, "velocity");
+          Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state(0, "velocity");
           if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
           Core::FE::ExtractMyValues(*vel, myvel, la[0].lm_);
         }
-        if (discretization.HasState(1, "temperature"))
+        if (discretization.has_state(1, "temperature"))
         {
-          Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
+          Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(1, "temperature");
           if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
           // problem
-          const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
-          if (la[1].Size() != nen_ * numdofpernode_thr)
+          const int numdofpernode_thr = discretization.num_dof(1, nodes()[0]);
+          if (la[1].size() != nen_ * numdofpernode_thr)
             FOUR_C_THROW("Location vector length for temperature does not match!");
           // extract the current temperatures
           mytempnp.resize(((la[0].lm_).size()) / nsd_, 0.0);
@@ -400,20 +400,20 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_energy:
     {
       // need current displacement
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(0, "displacement");
       std::vector<double> mydisp(la[0].lm_.size());
       Core::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       std::vector<double> mytempnp(0);
-      if (discretization.HasState(1, "temperature"))
+      if (discretization.has_state(1, "temperature"))
       {
-        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
+        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(1, "temperature");
         if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the dimension of the
         // problem
-        const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
-        if (la[1].Size() != nen_ * numdofpernode_thr)
+        const int numdofpernode_thr = discretization.num_dof(1, nodes()[0]);
+        if (la[1].size() != nen_ * numdofpernode_thr)
           FOUR_C_THROW("Location vector length for temperature does not match!");
         // extract the current temperatures
         mytempnp.resize(((la[0].lm_).size()) / nsd_, 0.0);
@@ -422,7 +422,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
 
       double intenergy = calc_int_energy(mydisp, mytempnp, params);
 
-      if (IsParamsInterface())  // new structural time integration
+      if (is_params_interface())  // new structural time integration
       {
         str_params_interface().add_contribution_to_energy_type(intenergy, Solid::internal_energy);
       }
@@ -436,7 +436,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
 
     case Core::Elements::struct_calc_recover:
     {
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> myres((la[0].lm_).size());
@@ -446,17 +446,17 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       std::vector<double> mytempres(0);
       Core::LinAlg::Matrix<nen_, 1> res_t;
       Core::LinAlg::Matrix<nen_, 1>* res_t_ptr = nullptr;
-      if (discretization.NumDofSets() > 1)
-        if (discretization.HasState(1, "residual temperature"))
+      if (discretization.num_dof_sets() > 1)
+        if (discretization.has_state(1, "residual temperature"))
         {
           Teuchos::RCP<const Epetra_Vector> tempres =
-              discretization.GetState(1, "residual temperature");
+              discretization.get_state(1, "residual temperature");
           if (tempres == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempres'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
           // problem
-          const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
-          if (la[1].Size() != nen_ * numdofpernode_thr)
+          const int numdofpernode_thr = discretization.num_dof(1, nodes()[0]);
+          if (la[1].size() != nen_ * numdofpernode_thr)
             FOUR_C_THROW("Location vector length for temperature does not match!");
           // extract the current temperatures
           mytempres.resize(((la[0].lm_).size()) / nsd_, 0.0);
@@ -493,7 +493,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
 
     case Core::Elements::struct_init_gauss_point_data_output:
     {
-      FOUR_C_ASSERT(IsParamsInterface(),
+      FOUR_C_ASSERT(is_params_interface(),
           "This action type should only be called from the new time integration framework!");
       // Save number of Gauss of the element for gauss point data output
       str_params_interface()
@@ -502,7 +502,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       // holder for output quantity names and their size
       std::unordered_map<std::string, int> quantities_map{};
       // Ask material for the output quantity names and sizes
-      SolidMaterial()->register_output_data_names(quantities_map);
+      solid_material()->register_output_data_names(quantities_map);
       // Add quantities to the Gauss point output data manager (if they do not already exist)
       str_params_interface().gauss_point_data_output_manager_ptr()->merge_quantities(
           quantities_map);
@@ -511,7 +511,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
 
     case Core::Elements::struct_gauss_point_data_output:
     {
-      FOUR_C_ASSERT(IsParamsInterface(),
+      FOUR_C_ASSERT(is_params_interface(),
           "This action type should only be called from the new time integration framework!");
 
       // Collection and assembly of gauss point data
@@ -520,7 +520,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       {
         // Step 1: Collect the data for each Gauss point for the material
         Core::LinAlg::SerialDenseMatrix gp_data(numgpt_post, quantity_size, true);
-        bool data_available = SolidMaterial()->EvaluateOutputData(quantity_name, gp_data);
+        bool data_available = solid_material()->evaluate_output_data(quantity_name, gp_data);
 
         // Step 2: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
         // point)
@@ -688,15 +688,15 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate_neumann(Teuchos::ParameterLis
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
-  const auto* onoff = condition.parameters().GetIf<std::vector<int>>("onoff");
-  const auto* val = condition.parameters().GetIf<std::vector<double>>("val");
+  const auto* onoff = condition.parameters().get_if<std::vector<int>>("onoff");
+  const auto* val = condition.parameters().get_if<std::vector<double>>("val");
 
   /*
   **    TIME CURVE BUSINESS
   */
   // find out whether we will use a time curve
   double time = -1.0;
-  if (IsParamsInterface())
+  if (is_params_interface())
     time = params_interface().get_total_time();
   else
     time = params.get("total time", -1.0);
@@ -713,17 +713,16 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate_neumann(Teuchos::ParameterLis
   }
 
   // (SPATIAL) FUNCTION BUSINESS
-  const auto* funct = condition.parameters().GetIf<std::vector<int>>("funct");
+  const auto* funct = condition.parameters().get_if<std::vector<int>>("funct");
   Core::LinAlg::Matrix<nsd_, 1> xrefegp(false);
   const bool havefunct = funct != nullptr && std::any_of(funct->begin(), funct->end(),
                                                  [](const int i) { return i > 0; });
 
   // update element geometry
   Core::LinAlg::Matrix<nen_, nsd_> xrefe;  // material coord. of element
-  Core::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < nen_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -767,8 +766,8 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate_neumann(Teuchos::ParameterLis
       // function evaluation
       const int functnum = (funct) ? (*funct)[dim] : -1;
       const double functfac =
-          (functnum > 0) ? Global::Problem::Instance()
-                               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+          (functnum > 0) ? Global::Problem::instance()
+                               ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                .evaluate(xrefegp.data(), time, dim)
                          : 1.0;
       const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfac;
@@ -829,8 +828,8 @@ void Discret::ELEMENTS::So3Plast<distype>::nln_stiffmass(
 
   // get plastic hyperelastic material
   Mat::PlasticElastHyper* plmat = nullptr;
-  if (Material()->MaterialType() == Core::Materials::m_plelasthyper)
-    plmat = static_cast<Mat::PlasticElastHyper*>(Material().get());
+  if (material()->material_type() == Core::Materials::m_plelasthyper)
+    plmat = static_cast<Mat::PlasticElastHyper*>(material().get());
   else
   {
     if (tsi_) FOUR_C_THROW("TSI with so3Plast elements only with PlasticElastHyper material");
@@ -878,9 +877,9 @@ void Discret::ELEMENTS::So3Plast<distype>::nln_stiffmass(
     // material call *********************************************
     if (plmat != nullptr)
     {
-      plmat->EvaluateElast(&defgrd_mod(), &delta_lp(), &set_p_k2(), &set_cmat(), gp, Id());
+      plmat->evaluate_elast(&defgrd_mod(), &delta_lp(), &set_p_k2(), &set_cmat(), gp, id());
       if (eval_tsi)
-        plmat->evaluate_thermal_stress(&defgrd_mod(), gp_temp, &set_p_k2(), &set_cmat(), gp, Id());
+        plmat->evaluate_thermal_stress(&defgrd_mod(), gp_temp, &set_p_k2(), &set_cmat(), gp, id());
     }
     else
     {
@@ -892,8 +891,8 @@ void Discret::ELEMENTS::So3Plast<distype>::nln_stiffmass(
       total_glstrain(4) = rcg()(1, 2);
       total_glstrain(5) = rcg()(2, 0);
 
-      SolidMaterial()->evaluate(
-          &defgrd_mod(), &total_glstrain, params, &set_p_k2(), &set_cmat(), gp, Id());
+      solid_material()->evaluate(
+          &defgrd_mod(), &total_glstrain, params, &set_p_k2(), &set_cmat(), gp, id());
     }
     // material call *********************************************
 
@@ -916,7 +915,7 @@ void Discret::ELEMENTS::So3Plast<distype>::nln_stiffmass(
 
     // plastic modifications
     if (plmat != nullptr)
-      if (!plmat->AllElastic())
+      if (!plmat->all_elastic())
         if ((stiffmatrix != nullptr || force != nullptr) && !is_tangDis)
         {
           if (have_plastic_spin())
@@ -1018,13 +1017,13 @@ void Discret::ELEMENTS::So3Plast<distype>::nln_stiffmass(
                 0., dHdaKaai.values(), 1., dHda.at(gp).values(), KaaInv_->values());
             Core::LinAlg::DenseFunctions::multiply_tn<double, numdofperelement_,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas, 1>(
-                1., plmat->dHepDissDd(gp).values(), -1., Kad_->values(), dHdaKaai.values());
+                1., plmat->d_hep_diss_dd(gp).values(), -1., Kad_->values(), dHdaKaai.values());
             Core::LinAlg::DenseFunctions::multiply<double, 1,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas, 1>(
-                1., &(plmat->HepDiss(gp)), -1., dHdaKaai.values(), feas_->values());
+                1., &(plmat->hep_diss(gp)), -1., dHdaKaai.values(), feas_->values());
             Core::LinAlg::DenseFunctions::multiply_tn<double, nen_,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas, 1>(
-                0., plmat->dHepDTeas()->at(gp).values(), -1., KaT_->values(), dHdaKaai.values());
+                0., plmat->d_hep_d_teas()->at(gp).values(), -1., KaT_->values(), dHdaKaai.values());
           }
           break;
         case soh8p_easmild:
@@ -1039,13 +1038,13 @@ void Discret::ELEMENTS::So3Plast<distype>::nln_stiffmass(
                 0., dHdaKaai.values(), 1., dHda.at(gp).values(), KaaInv_->values());
             Core::LinAlg::DenseFunctions::multiply_tn<double, numdofperelement_,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, 1>(
-                1., plmat->dHepDissDd(gp).values(), -1., Kad_->values(), dHdaKaai.values());
+                1., plmat->d_hep_diss_dd(gp).values(), -1., Kad_->values(), dHdaKaai.values());
             Core::LinAlg::DenseFunctions::multiply<double, 1,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, 1>(
-                1., &(plmat->HepDiss(gp)), -1., dHdaKaai.values(), feas_->values());
+                1., &(plmat->hep_diss(gp)), -1., dHdaKaai.values(), feas_->values());
             Core::LinAlg::DenseFunctions::multiply_tn<double, nen_,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, 1>(
-                0., plmat->dHepDTeas()->at(gp).values(), -1., KaT_->values(), dHdaKaai.values());
+                0., plmat->d_hep_d_teas()->at(gp).values(), -1., KaT_->values(), dHdaKaai.values());
           }
           break;
         case soh8p_easnone:
@@ -1111,8 +1110,8 @@ void Discret::ELEMENTS::So3Plast<distype>::condense_plasticity(
 
   // get plastic hyperelastic material
   Mat::PlasticElastHyper* plmat = nullptr;
-  if (Material()->MaterialType() == Core::Materials::m_plelasthyper)
-    plmat = static_cast<Mat::PlasticElastHyper*>(Material().get());
+  if (material()->material_type() == Core::Materials::m_plelasthyper)
+    plmat = static_cast<Mat::PlasticElastHyper*>(material().get());
   else
     FOUR_C_THROW("so3_ssn_plast elements only with PlasticElastHyper material");
 
@@ -1127,8 +1126,8 @@ void Discret::ELEMENTS::So3Plast<distype>::condense_plasticity(
   Core::LinAlg::Matrix<numstr_, numstr_>* d_cauchy_dC_ptr = nullptr;
   Core::LinAlg::Matrix<numstr_, 9> d_cauchy_dF;
   Core::LinAlg::Matrix<numstr_, 9>* d_cauchy_dF_ptr = nullptr;
-  Core::LinAlg::Matrix<numstr_, 1>
-      d_cauchy_dT;  // todo: continue with this one; plmat->EvaluatePlast(...) should give you this;
+  Core::LinAlg::Matrix<numstr_, 1> d_cauchy_dT;  // todo: continue with this one;
+                                                 // plmat->evaluate_plast(...) should give you this;
   // however not tested yet
   Core::LinAlg::Matrix<numstr_, 1>* d_cauchy_dT_ptr = nullptr;
   if (is_nitsche_contact_)
@@ -1152,14 +1151,14 @@ void Discret::ELEMENTS::So3Plast<distype>::condense_plasticity(
   bool elast = false;
   bool as_converged = true;
   if (!eval_tsi)
-    plmat->EvaluatePlast(&defgrd, &deltaLp, nullptr, params, &dpk2ddp, &ncp, &dncpdc, &dncpddp,
+    plmat->evaluate_plast(&defgrd, &deltaLp, nullptr, params, &dpk2ddp, &ncp, &dncpdc, &dncpddp,
         &active, &elast, &as_converged, gp, nullptr, nullptr, nullptr,
-        str_params_interface().get_delta_time(), Id(), cauchy_ptr, d_cauchy_ddp_ptr,
+        str_params_interface().get_delta_time(), id(), cauchy_ptr, d_cauchy_ddp_ptr,
         d_cauchy_dC_ptr, d_cauchy_dF_ptr, d_cauchy_dT_ptr);
   else
-    plmat->EvaluatePlast(&defgrd, &deltaLp, &temp, params, &dpk2ddp, &ncp, &dncpdc, &dncpddp,
+    plmat->evaluate_plast(&defgrd, &deltaLp, &temp, params, &dpk2ddp, &ncp, &dncpdc, &dncpddp,
         &active, &elast, &as_converged, gp, &dncpdT, &dHdC, &dHdLp,
-        str_params_interface().get_delta_time(), Id(), cauchy_ptr, d_cauchy_ddp_ptr,
+        str_params_interface().get_delta_time(), id(), cauchy_ptr, d_cauchy_ddp_ptr,
         d_cauchy_dC_ptr, d_cauchy_dF_ptr, d_cauchy_dT_ptr);
   // *************************************************************************
 
@@ -1448,7 +1447,7 @@ void Discret::ELEMENTS::So3Plast<distype>::condense_plasticity(
 
       // store in material
       Core::LinAlg::DenseFunctions::update<double, numdofperelement_, 1>(
-          1., plmat->dHepDissDd(gp).values(), 1., dHepDissDd.data());
+          1., plmat->d_hep_diss_dd(gp).values(), 1., dHepDissDd.data());
 
       // Plastic heating and dissipation dbeta
       Core::LinAlg::Matrix<spintype, 1> dHepDissDbeta;
@@ -1463,11 +1462,11 @@ void Discret::ELEMENTS::So3Plast<distype>::condense_plasticity(
       Core::LinAlg::DenseFunctions::multiply_tn<double, spintype, spintype, 1>(
           0., dHdbKbbi.data(), 1., KbbInv_[gp].values(), dHepDissDbeta.data());
       Core::LinAlg::DenseFunctions::multiply_tn<double, 1, spintype, 1>(
-          1., &(plmat->HepDiss(gp)), -1., dHdbKbbi.data(), fbeta_[gp].values());
+          1., &(plmat->hep_diss(gp)), -1., dHdbKbbi.data(), fbeta_[gp].values());
       Core::LinAlg::DenseFunctions::multiply_tn<double, numdofperelement_, spintype, 1>(
-          1., plmat->dHepDissDd(gp).values(), -1., Kbd_[gp].values(), dHdbKbbi.data());
+          1., plmat->d_hep_diss_dd(gp).values(), -1., Kbd_[gp].values(), dHdbKbbi.data());
       Core::LinAlg::DenseFunctions::multiply_tn<double, 1, spintype, 1>(
-          1., &(plmat->dHepDT(gp)), -1., (*KbT_)[gp].values(), dHdbKbbi.data());
+          1., &(plmat->d_hep_dt(gp)), -1., (*KbT_)[gp].values(), dHdbKbbi.data());
 
       // TSI with EAS
       if (eastype_ != soh8p_easnone)
@@ -1758,7 +1757,7 @@ void Discret::ELEMENTS::So3Plast<distype>::recover_plasticity_and_eas(
     if (eastype_ != soh8p_easnone) recover_eas(res_d, res_T);
 
 
-    if (Material()->MaterialType() == Core::Materials::m_plelasthyper)
+    if (material()->material_type() == Core::Materials::m_plelasthyper)
     {
       Core::LinAlg::Matrix<nen_, 1> shapefunct;
       double res_t = -1.;
@@ -1789,7 +1788,7 @@ void Discret::ELEMENTS::So3Plast<distype>::recover_plasticity_and_eas(
     //    if (eastype_!=soh8p_easnone)
     //      reduce_eas_step(new_step_length,old_step_length_);
     //
-    //    if (Material()->MaterialType()==Core::Materials::m_plelasthyper)
+    //    if (Material()->material_type()==Core::Materials::m_plelasthyper)
     //      for (int gp=0;gp<numgpt_;++gp)
     //        reduce_plasticity_step(new_step_length,old_step_length_,gp);
     //
@@ -1811,7 +1810,7 @@ void Discret::ELEMENTS::So3Plast<distype>::recover_eas(
 
   // first, store the eas state of the previous accepted Newton step
   str_params_interface().sum_into_my_previous_sol_norm(
-      NOX::Nln::StatusTest::quantity_eas, neas_, alpha_eas_->values(), Owner());
+      NOX::Nln::StatusTest::quantity_eas, neas_, alpha_eas_->values(), owner());
 
   if (str_params_interface().is_default_step()) switch (eastype_)
     {
@@ -1889,7 +1888,7 @@ void Discret::ELEMENTS::So3Plast<distype>::recover_eas(
     FOUR_C_THROW("no line search implemented yet");
 
   str_params_interface().sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_eas, neas_,
-      alpha_eas_inc_->values(), alpha_eas_->values(), step_length, Owner());
+      alpha_eas_inc_->values(), alpha_eas_->values(), step_length, owner());
 
   return;
 }
@@ -1909,7 +1908,7 @@ void Discret::ELEMENTS::So3Plast<distype>::recover_plasticity(
 
   // first, store the state of the previous accepted Newton step
   str_params_interface().sum_into_my_previous_sol_norm(
-      NOX::Nln::StatusTest::quantity_plasticity, spintype, dDp_last_iter_[gp].values(), Owner());
+      NOX::Nln::StatusTest::quantity_plasticity, spintype, dDp_last_iter_[gp].values(), owner());
 
   // temporary Epetra matrix
   Core::LinAlg::SerialDenseVector tmp_v(spintype);
@@ -1983,7 +1982,7 @@ void Discret::ELEMENTS::So3Plast<distype>::recover_plasticity(
       1., dDp_last_iter_[gp], 1., dDp_inc_[gp]);
 
   str_params_interface().sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_plasticity,
-      spintype, dDp_inc_[gp].values(), dDp_inc_[gp].values(), step_length, Owner());
+      spintype, dDp_inc_[gp].values(), dDp_inc_[gp].values(), step_length, owner());
 }
 
 template <Core::FE::CellType distype>
@@ -1997,7 +1996,7 @@ void Discret::ELEMENTS::So3Plast<distype>::reduce_eas_step(
   Core::LinAlg::Update(+1., *alpha_eas_inc_, 1., *alpha_eas_);
 
   str_params_interface().sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_eas, neas_,
-      alpha_eas_inc_->values(), alpha_eas_->values(), new_step_length, Owner());
+      alpha_eas_inc_->values(), alpha_eas_->values(), new_step_length, owner());
 }
 
 template <Core::FE::CellType distype>
@@ -2009,7 +2008,7 @@ void Discret::ELEMENTS::So3Plast<distype>::reduce_plasticity_step(
   Core::LinAlg::Update(+1., dDp_inc_[gp], 1., dDp_last_iter_[gp]);
 
   str_params_interface().sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_plasticity,
-      plspintype_, dDp_inc_[gp].values(), dDp_inc_[gp].values(), new_step_length, Owner());
+      plspintype_, dDp_inc_[gp].values(), dDp_inc_[gp].values(), new_step_length, owner());
 }
 
 /*----------------------------------------------------------------------*
@@ -2018,13 +2017,13 @@ void Discret::ELEMENTS::So3Plast<distype>::reduce_plasticity_step(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Plast<distype>::update_plastic_deformation_nln(PlSpinType spintype)
 {
-  if (Material()->MaterialType() == Core::Materials::m_plelasthyper)
+  if (material()->material_type() == Core::Materials::m_plelasthyper)
   {
     // loop over all Gauss points
     for (int gp = 0; gp < numgpt_; gp++)
     {
       build_delta_lp(gp);
-      static_cast<Mat::PlasticElastHyper*>(Material().get())->UpdateGP(gp, &delta_lp());
+      static_cast<Mat::PlasticElastHyper*>(material().get())->update_gp(gp, &delta_lp());
 
       KbbInv_[gp].putScalar(0.0);
       Kbd_[gp].putScalar(0.0);
@@ -2034,7 +2033,7 @@ void Discret::ELEMENTS::So3Plast<distype>::update_plastic_deformation_nln(PlSpin
   }
   else
   {
-    SolidMaterial()->update();
+    solid_material()->update();
   }
 
   if (eastype_ != soh8p_easnone)
@@ -2076,8 +2075,8 @@ double Discret::ELEMENTS::So3Plast<distype>::calc_int_energy(
 
   // get plastic hyperelastic material
   Mat::PlasticElastHyper* plmat = nullptr;
-  if (Material()->MaterialType() == Core::Materials::m_plelasthyper)
-    plmat = static_cast<Mat::PlasticElastHyper*>(Material().get());
+  if (material()->material_type() == Core::Materials::m_plelasthyper)
+    plmat = static_cast<Mat::PlasticElastHyper*>(material().get());
   else
     FOUR_C_THROW("elastic strain energy in so3plast elements only for plastic material");
 
@@ -2108,7 +2107,7 @@ double Discret::ELEMENTS::So3Plast<distype>::calc_int_energy(
     else
       set_defgrd_mod() = defgrd();
 
-    const double psi = plmat->StrainEnergyTSI(defgrd_mod(), gp, Id(), gp_temp);
+    const double psi = plmat->strain_energy_tsi(defgrd_mod(), gp, id(), gp_temp);
 
     const double detJ_w = det_j() * wgt_[gp];
     energy += detJ_w * psi;
@@ -2140,14 +2139,14 @@ void Discret::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_x
   if (temp || d_cauchyndir_dT || d2_cauchyndir_dd_dT)
     if (!temp || !d_cauchyndir_dT || !d2_cauchyndir_dd_dT)
       FOUR_C_THROW("inconsistent temperature dependency input");
-  if (temp && Material()->MaterialType() != Core::Materials::m_plelasthyper)
+  if (temp && material()->material_type() != Core::Materials::m_plelasthyper)
   {
     FOUR_C_THROW(
         "thermo-mechanical Nitsche contact only with PlasticElastHyper"
         "\nIf you want to do elasticity, set a negative yield stress ;)");
   }
 
-  auto* plmat = dynamic_cast<Mat::PlasticElastHyper*>(Material().get());
+  auto* plmat = dynamic_cast<Mat::PlasticElastHyper*>(material().get());
 
   cauchy_n_dir = 0.0;
 
@@ -2157,11 +2156,10 @@ void Discret::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_x
   xrefe.clear();
   xcurr.clear();
   ele_temp.clear();
-  Core::Nodes::Node** nodes = Nodes();
 
   for (int i = 0; i < nen_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     for (int d = 0; d < nsd_; ++d)
     {
       xrefe(i, d) = x[d];
@@ -2217,14 +2215,14 @@ void Discret::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_x
   {
     plmat->evaluate_cauchy_n_dir_and_derivatives(defgrd, n, dir, cauchy_n_dir, d_cauchyndir_dn,
         d_cauchyndir_ddir, &d_cauchyndir_dF, &d2_cauchyndir_dF2, &d2_cauchyndir_dF_dn,
-        &d2_cauchyndir_dF_ddir, -1, Id(), nullptr, &gp_temp, &d_cauchyndir_dT_gp,
+        &d2_cauchyndir_dF_ddir, -1, id(), nullptr, &gp_temp, &d_cauchyndir_dT_gp,
         &d2_cauchyndir_dF_dT);
   }
   else
   {
-    SolidMaterial()->evaluate_cauchy_n_dir_and_derivatives(defgrd, n, dir, cauchy_n_dir,
+    solid_material()->evaluate_cauchy_n_dir_and_derivatives(defgrd, n, dir, cauchy_n_dir,
         d_cauchyndir_dn, d_cauchyndir_ddir, &d_cauchyndir_dF, &d2_cauchyndir_dF2,
-        &d2_cauchyndir_dF_dn, &d2_cauchyndir_dF_ddir, -1, Id(), nullptr, nullptr, nullptr, nullptr);
+        &d2_cauchyndir_dF_dn, &d2_cauchyndir_dF_ddir, -1, id(), nullptr, nullptr, nullptr, nullptr);
   }
 
   if (d_cauchyndir_dd)
@@ -2397,7 +2395,7 @@ void Discret::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_x
     Core::LinAlg::SerialDenseMatrix* d2_cauchyndir_dd_dT)
 {
   if (distype != Core::FE::CellType::hex8 || numgpt_ != 8) FOUR_C_THROW("only for hex8 with 8 gp");
-  if (Material()->MaterialType() != Core::Materials::m_plelasthyper)
+  if (material()->material_type() != Core::Materials::m_plelasthyper)
     FOUR_C_THROW("only PlasticElastHyper materials here");
   if ((int)cauchy_.size() != numgpt_ || (int)cauchy_deriv_.size() != numgpt_)
     FOUR_C_THROW("have you evaluated the cauchy stress???");
@@ -2510,11 +2508,11 @@ void Discret::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_x
   if (d_cauchyndir_dc != nullptr) FOUR_C_THROW("Not implemented");
 
   bool elastic = true;
-  auto* plmat = dynamic_cast<Mat::PlasticElastHyper*>(Material().get());
+  auto* plmat = dynamic_cast<Mat::PlasticElastHyper*>(material().get());
   if (!plmat)
     elastic = true;
   else
-    elastic = plmat->AllElastic();
+    elastic = plmat->all_elastic();
 
   if (!elastic)
   {
@@ -2706,7 +2704,7 @@ void Discret::ELEMENTS::So3Plast<distype>::kinematics(const int gp)
   calculate_bop(&set_bop(), &defgrd(), &deriv_shape_function_xyz(), gp);
 
   // build plastic velocity gradient from condensed variables
-  if (Material()->MaterialType() == Core::Materials::m_plelasthyper && gp >= 0 && gp < numgpt_)
+  if (material()->material_type() == Core::Materials::m_plelasthyper && gp >= 0 && gp < numgpt_)
     build_delta_lp(gp);
 }
 
@@ -2714,7 +2712,7 @@ template <Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Plast<distype>::integrate_mass_matrix(
     const int gp, Core::LinAlg::Matrix<numdofperelement_, numdofperelement_>& mass)
 {
-  const double density = Material()->Density(gp);
+  const double density = material()->density(gp);
   // integrate consistent mass matrix
   const double factor = det_j() * wgt_[gp] * density;
   double ifactor, massfactor;
@@ -2868,8 +2866,8 @@ void Discret::ELEMENTS::So3Plast<distype>::integrate_thermo_gp(
 
   // get plastic hyperelastic material
   Mat::PlasticElastHyper* plmat = nullptr;
-  if (Material()->MaterialType() == Core::Materials::m_plelasthyper)
-    plmat = static_cast<Mat::PlasticElastHyper*>(Material().get());
+  if (material()->material_type() == Core::Materials::m_plelasthyper)
+    plmat = static_cast<Mat::PlasticElastHyper*>(material().get());
   else
     FOUR_C_THROW("tsi only with m_plelasthyper material type");
 
@@ -2881,7 +2879,7 @@ void Discret::ELEMENTS::So3Plast<distype>::integrate_thermo_gp(
   // get the thermal material tangent
   Core::LinAlg::Matrix<numstr_, 1> cTvol(true);
   Core::LinAlg::Matrix<numstr_, numstr_> dcTvoldE;
-  plmat->EvaluateCTvol(&defgrd_mod(), &cTvol, &dcTvoldE, gp, Id());
+  plmat->evaluate_c_tvol(&defgrd_mod(), &cTvol, &dcTvoldE, gp, id());
   // end of call material law ccccccccccccccccccccccccccccccccccccccccccccc
   if (fbar_)
     (*dFintdT_)[gp].multiply_tn(detJ_w / (fbar_fac()), bop(), cTvol, 0.);
@@ -2912,10 +2910,10 @@ void Discret::ELEMENTS::So3Plast<distype>::integrate_thermo_gp(
   }
 
   // elastic heating ******************************************************
-  plmat->HepDiss(gp) = 0.;
-  plmat->dHepDT(gp) = 0.;
-  plmat->dHepDissDd(gp).size(numdofperelement_);
-  plmat->dHepDissDd(gp).putScalar(0.0);
+  plmat->hep_diss(gp) = 0.;
+  plmat->d_hep_dt(gp) = 0.;
+  plmat->d_hep_diss_dd(gp).size(numdofperelement_);
+  plmat->d_hep_diss_dd(gp).putScalar(0.0);
   if (eastype_ == soh8p_easnone)
   {
     if (fbar_)
@@ -2925,7 +2923,7 @@ void Discret::ELEMENTS::So3Plast<distype>::integrate_thermo_gp(
 
       double he_fac;
       double he_fac_deriv;
-      plmat->EvaluateGoughJoule(det_f_0(), gp, Id(), he_fac, he_fac_deriv);
+      plmat->evaluate_gough_joule(det_f_0(), gp, id(), he_fac, he_fac_deriv);
 
       double fiddfdot = 0.;
       for (int i = 0; i < 3; ++i)
@@ -2937,10 +2935,10 @@ void Discret::ELEMENTS::So3Plast<distype>::integrate_thermo_gp(
 
       double He = he_fac * gp_temp * j_dot;
 
-      plmat->HepDiss(gp) = He;
+      plmat->hep_diss(gp) = He;
 
       // derivative of elastic heating w.r.t. temperature *******************
-      plmat->dHepDT(gp) = he_fac * j_dot;
+      plmat->d_hep_dt(gp) = he_fac * j_dot;
 
       Core::LinAlg::Matrix<numdofperelement_, 1> deriv_jdot_d(true);
       Core::LinAlg::Matrix<numdofperelement_, 1> deriv_j_d(true);
@@ -2967,7 +2965,7 @@ void Discret::ELEMENTS::So3Plast<distype>::integrate_thermo_gp(
       dHedd.update(he_fac_deriv * gp_temp * j_dot, deriv_j_d, 1.);
 
       Core::LinAlg::DenseFunctions::update<double, numdofperelement_, 1>(
-          plmat->dHepDissDd(gp).values(), dHedd.data());
+          plmat->d_hep_diss_dd(gp).values(), dHedd.data());
     }
     else
     {
@@ -2976,7 +2974,7 @@ void Discret::ELEMENTS::So3Plast<distype>::integrate_thermo_gp(
 
       double he_fac;
       double he_fac_deriv;
-      plmat->EvaluateGoughJoule(det_f(), gp, Id(), he_fac, he_fac_deriv);
+      plmat->evaluate_gough_joule(det_f(), gp, id(), he_fac, he_fac_deriv);
 
       double fiddfdot = 0.;
       for (int i = 0; i < 3; ++i)
@@ -2988,10 +2986,10 @@ void Discret::ELEMENTS::So3Plast<distype>::integrate_thermo_gp(
 
       double He = he_fac * gp_temp * j_dot;
 
-      plmat->HepDiss(gp) = He;
+      plmat->hep_diss(gp) = He;
 
       // derivative of elastic heating w.r.t. temperature *******************
-      plmat->dHepDT(gp) = he_fac * j_dot;
+      plmat->d_hep_dt(gp) = he_fac * j_dot;
 
       Core::LinAlg::Matrix<numdofperelement_, 1> deriv_jdot_d(true);
       Core::LinAlg::Matrix<numdofperelement_, 1> deriv_j_d(true);
@@ -3017,7 +3015,7 @@ void Discret::ELEMENTS::So3Plast<distype>::integrate_thermo_gp(
       dHedd.update(he_fac_deriv * gp_temp * j_dot, deriv_j_d, 1.);
 
       Core::LinAlg::DenseFunctions::update<double, numdofperelement_, 1>(
-          plmat->dHepDissDd(gp).values(), dHedd.data());
+          plmat->d_hep_diss_dd(gp).values(), dHedd.data());
     }
   }
   else
@@ -3026,9 +3024,9 @@ void Discret::ELEMENTS::So3Plast<distype>::integrate_thermo_gp(
     defgrd_rate.multiply_tt(xcurr_rate(), deriv_shape_function_xyz());
 
     // Gough-Joule effect
-    plmat->HepDiss(gp) = 0.;
-    plmat->dHepDT(gp) = 0.;
-    plmat->dHepDissDd(gp).size(numdofperelement_);
+    plmat->hep_diss(gp) = 0.;
+    plmat->d_hep_dt(gp) = 0.;
+    plmat->d_hep_diss_dd(gp).size(numdofperelement_);
     // Like this it should be easier to do EAS as well
     Core::LinAlg::Matrix<3, 3> RCGrate;
     RCGrate.multiply_tn(defgrd_rate, defgrd());
@@ -3086,10 +3084,10 @@ void Discret::ELEMENTS::So3Plast<distype>::integrate_thermo_gp(
     // heating ************************************************************
     double He = .5 * gp_temp * cTvol.dot(RCGrateVec);
 
-    plmat->HepDiss(gp) = He;
+    plmat->hep_diss(gp) = He;
 
     // derivative of elastic heating w.r.t. temperature *******************
-    plmat->dHepDT(gp) = .5 * cTvol.dot(RCGrateVec);
+    plmat->d_hep_dt(gp) = .5 * cTvol.dot(RCGrateVec);
 
     // derivative of elastic heating w.r.t. displacement ******************
     Core::LinAlg::Matrix<numdofperelement_, 1> dHedd(true);
@@ -3132,14 +3130,14 @@ void Discret::ELEMENTS::So3Plast<distype>::integrate_thermo_gp(
       }
     }
 
-    plmat->dHepDissDd(gp).putScalar(0.0);
+    plmat->d_hep_diss_dd(gp).putScalar(0.0);
     Core::LinAlg::DenseFunctions::update<double, numdofperelement_, 1>(
-        plmat->dHepDissDd(gp).values(), dHedd.data());
+        plmat->d_hep_diss_dd(gp).values(), dHedd.data());
   }
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temperature,
+void Discret::ELEMENTS::So3Plast<distype>::heat_flux(const std::vector<double>& temperature,
     const std::vector<double>& disp, const Core::LinAlg::Matrix<nsd_, 1>& xi,
     const Core::LinAlg::Matrix<nsd_, 1>& n, double& q, Core::LinAlg::SerialDenseMatrix* dq_dT,
     Core::LinAlg::SerialDenseMatrix* dq_dd, Core::LinAlg::Matrix<nsd_, 1>* dq_dn,
@@ -3152,10 +3150,10 @@ void Discret::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& t
   invalid_gp_data();
   invalid_ele_data();
 
-  if (NumMaterial() < 2) FOUR_C_THROW("where's my second material");
+  if (num_material() < 2) FOUR_C_THROW("where's my second material");
   Teuchos::RCP<Mat::FourierIso> mat_thr =
-      Teuchos::rcp_dynamic_cast<Mat::FourierIso>(Material(1), true);
-  const double k0 = mat_thr->Conductivity();
+      Teuchos::rcp_dynamic_cast<Mat::FourierIso>(material(1), true);
+  const double k0 = mat_thr->conductivity();
 
   std::vector<double> vel(0);
   fill_position_arrays(disp, vel, temperature);
@@ -3292,14 +3290,14 @@ void Discret::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& t
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Plast<distype>::get_nurbs_ele_info(Core::FE::Discretization* dis)
 {
-  if (!IsNurbsElement()) return;
+  if (!is_nurbs_element()) return;
 
-  if (dis == nullptr) dis = Global::Problem::Instance()->GetDis("structure").get();
+  if (dis == nullptr) dis = Global::Problem::instance()->get_dis("structure").get();
 
-  dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(dis)->GetKnotVector()->GetEleKnots(
-      set_knots(), Id());
+  dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(dis)->get_knot_vector()->get_ele_knots(
+      set_knots(), id());
   for (int i = 0; i < nen_; ++i)
-    set_weights()(i) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[i])->W();
+    set_weights()(i) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[i])->w();
 }
 
 // template functions
@@ -3383,7 +3381,7 @@ template void Discret::ELEMENTS::So3Plast<Core::FE::CellType::nurbs27>::condense
     std::vector<Core::LinAlg::SerialDenseVector>*, const double*,
     const Core::LinAlg::Matrix<numdofperelement_, 1>*);
 
-template void Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::HeatFlux(
+template void Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::heat_flux(
     const std::vector<double>&, const std::vector<double>&, const Core::LinAlg::Matrix<nsd_, 1>&,
     const Core::LinAlg::Matrix<nsd_, 1>&, double&, Core::LinAlg::SerialDenseMatrix*,
     Core::LinAlg::SerialDenseMatrix*, Core::LinAlg::Matrix<nsd_, 1>*,
@@ -3391,21 +3389,21 @@ template void Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::HeatFlux(
     Core::LinAlg::SerialDenseMatrix*, Core::LinAlg::SerialDenseMatrix*);
 
 
-template void Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex27>::HeatFlux(
+template void Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex27>::heat_flux(
     const std::vector<double>&, const std::vector<double>&, const Core::LinAlg::Matrix<nsd_, 1>&,
     const Core::LinAlg::Matrix<nsd_, 1>&, double&, Core::LinAlg::SerialDenseMatrix*,
     Core::LinAlg::SerialDenseMatrix*, Core::LinAlg::Matrix<nsd_, 1>*,
     Core::LinAlg::Matrix<nsd_, 1>*, Core::LinAlg::SerialDenseMatrix*,
     Core::LinAlg::SerialDenseMatrix*, Core::LinAlg::SerialDenseMatrix*);
 
-template void Discret::ELEMENTS::So3Plast<Core::FE::CellType::tet4>::HeatFlux(
+template void Discret::ELEMENTS::So3Plast<Core::FE::CellType::tet4>::heat_flux(
     const std::vector<double>&, const std::vector<double>&, const Core::LinAlg::Matrix<nsd_, 1>&,
     const Core::LinAlg::Matrix<nsd_, 1>&, double&, Core::LinAlg::SerialDenseMatrix*,
     Core::LinAlg::SerialDenseMatrix*, Core::LinAlg::Matrix<nsd_, 1>*,
     Core::LinAlg::Matrix<nsd_, 1>*, Core::LinAlg::SerialDenseMatrix*,
     Core::LinAlg::SerialDenseMatrix*, Core::LinAlg::SerialDenseMatrix*);
 
-template void Discret::ELEMENTS::So3Plast<Core::FE::CellType::nurbs27>::HeatFlux(
+template void Discret::ELEMENTS::So3Plast<Core::FE::CellType::nurbs27>::heat_flux(
     const std::vector<double>&, const std::vector<double>&, const Core::LinAlg::Matrix<nsd_, 1>&,
     const Core::LinAlg::Matrix<nsd_, 1>&, double&, Core::LinAlg::SerialDenseMatrix*,
     Core::LinAlg::SerialDenseMatrix*, Core::LinAlg::Matrix<nsd_, 1>*,

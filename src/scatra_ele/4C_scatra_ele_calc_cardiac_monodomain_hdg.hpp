@@ -46,7 +46,7 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>* Instance(const int numdofpernode,
+      static ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>* instance(const int numdofpernode,
           const int numscal, const std::string& disname, bool create = true);
 
       //! evaluate the element

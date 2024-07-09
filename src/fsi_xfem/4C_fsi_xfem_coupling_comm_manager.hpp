@@ -101,14 +101,14 @@ namespace XFEM
 
     //! Insert a Matrix A (from discretization A) into Matrix B (from discretization B) (choose type
     //! of transfer, add or scaling)
-    bool InsertMatrix(
+    bool insert_matrix(
         int transform_id,  // Unique Id to be set for this transformation object (to be save use
                            // different one, for different matrix transformation)
         int idxA, const Core::LinAlg::SparseMatrix& matA, int idxB,
         Core::LinAlg::SparseMatrix& matB, const CouplingCommManager::MatrixTransferType mttype,
         double scale = 1.0, bool exactmatch = true, bool addmatrix = false);
 
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> GetMapExtractor(int idx);
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> get_map_extractor(int idx);
 
    protected:
     Teuchos::RCP<Core::Adapter::CouplingConverter> get_coupling_converter(int idxA, int idxB);

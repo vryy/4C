@@ -34,7 +34,7 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static ScaTraEleCalcLS<distype>* Instance(
+      static ScaTraEleCalcLS<distype>* instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
       int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,

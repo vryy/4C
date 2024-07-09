@@ -44,13 +44,13 @@ namespace Core::Elements
     void print_element_dat_header_to_stream(std::ostream& stream);
 
     /// Print section header to stream
-    void PrintSectionHeader(std::ostream& stream, std::string name);
+    void print_section_header(std::ostream& stream, std::string name);
 
     /// Print valid input lines for given element type
-    void PrintElementLines(std::ostream& stream, std::string name);
+    void print_element_lines(std::ostream& stream, std::string name);
 
     /// return line definitions for given element type
-    Input::LineDefinition* ElementLines(std::string name, std::string distype);
+    Input::LineDefinition* element_lines(std::string name, std::string distype);
 
    private:
     /// input line definitions per element type

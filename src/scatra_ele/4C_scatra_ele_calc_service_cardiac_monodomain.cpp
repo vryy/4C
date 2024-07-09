@@ -46,20 +46,20 @@ int Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
       updatemat.reserve(my::numscal_);
 
       // access the general material
-      Teuchos::RCP<Core::Mat::Material> material = ele->Material();
+      Teuchos::RCP<Core::Mat::Material> material = ele->material();
 
       // first, determine the materials which need a time update, i.e. myocard materials
-      if (material->MaterialType() == Core::Materials::m_matlist)
+      if (material->material_type() == Core::Materials::m_matlist)
       {
         const Teuchos::RCP<Mat::MatList> actmat = Teuchos::rcp_dynamic_cast<Mat::MatList>(material);
-        if (actmat->NumMat() < my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
+        if (actmat->num_mat() < my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
         for (int k = 0; k < my::numscal_; ++k)
         {
-          const int matid = actmat->MatID(k);
-          Teuchos::RCP<Core::Mat::Material> singlemat = actmat->MaterialById(matid);
+          const int matid = actmat->mat_id(k);
+          Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
-          if (singlemat->MaterialType() == Core::Materials::m_myocard)
+          if (singlemat->material_type() == Core::Materials::m_myocard)
           {
             // reference to Teuchos::rcp not possible here, since the material
             // is required to be not const for this application
@@ -68,7 +68,7 @@ int Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
         }
       }
 
-      if (material->MaterialType() == Core::Materials::m_myocard)
+      if (material->material_type() == Core::Materials::m_myocard)
       {  // reference to Teuchos::rcp not possible here, since the material is required to be
         // not const for this application
         updatemat.push_back(Teuchos::rcp_dynamic_cast<Mat::Myocard>(material));
@@ -81,10 +81,10 @@ int Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
           FOUR_C_THROW("Number of materials to be updated is not equal to number of scalars!");
 
         // get time-step length
-        const double dt = my::scatraparatimint_->Dt();
+        const double dt = my::scatraparatimint_->dt();
 
         // extract local values from the global vectors
-        Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+        Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
         if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
         Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
@@ -103,21 +103,21 @@ int Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
     case ScaTra::Action::get_material_internal_state:
     {
       // NOTE: add integral values only for elements which are NOT ghosted!
-      if (ele->Owner() == discretization.Comm().MyPID())
+      if (ele->owner() == discretization.get_comm().MyPID())
       {
         // access the general material
-        Teuchos::RCP<Core::Mat::Material> material = ele->Material();
+        Teuchos::RCP<Core::Mat::Material> material = ele->material();
         Teuchos::RCP<Epetra_MultiVector> material_internal_state =
             params.get<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state");
 
-        if (material->MaterialType() == Core::Materials::m_myocard)
+        if (material->material_type() == Core::Materials::m_myocard)
         {
           Teuchos::RCP<Mat::Myocard> material =
-              Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->Material());
+              Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
           for (int k = 0; k < material_internal_state->NumVectors(); ++k)
           {
             int err = material_internal_state->ReplaceGlobalValue(
-                ele->Id(), k, material->GetInternalState(k));
+                ele->id(), k, material->get_internal_state(k));
             if (err != 0) FOUR_C_THROW("%i", err);
           }
         }
@@ -131,19 +131,19 @@ int Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
     case ScaTra::Action::set_material_internal_state:
     {
       // NOTE: add integral values only for elements which are NOT ghosted!
-      if (ele->Owner() == discretization.Comm().MyPID())
+      if (ele->owner() == discretization.get_comm().MyPID())
       {
         // access the general material
-        Teuchos::RCP<Core::Mat::Material> material = ele->Material();
+        Teuchos::RCP<Core::Mat::Material> material = ele->material();
         Teuchos::RCP<Epetra_Vector> material_internal_state_component =
             params.get<Teuchos::RCP<Epetra_Vector>>("material_internal_state_component");
 
-        if (material->MaterialType() == Core::Materials::m_myocard)
+        if (material->material_type() == Core::Materials::m_myocard)
         {
           Teuchos::RCP<Mat::Myocard> material =
-              Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->Material());
+              Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
           int k = params.get<int>("k");
-          material->SetInternalState(k, (*material_internal_state_component)[ele->Id()]);
+          material->set_internal_state(k, (*material_internal_state_component)[ele->id()]);
         }
       }
     }
@@ -153,21 +153,21 @@ int Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
     case ScaTra::Action::get_material_ionic_currents:
     {
       // NOTE: add integral values only for elements which are NOT ghosted!
-      if (ele->Owner() == discretization.Comm().MyPID())
+      if (ele->owner() == discretization.get_comm().MyPID())
       {
         // access the general material
-        Teuchos::RCP<Core::Mat::Material> material = ele->Material();
+        Teuchos::RCP<Core::Mat::Material> material = ele->material();
         Teuchos::RCP<Epetra_MultiVector> material_ionic_currents =
             params.get<Teuchos::RCP<Epetra_MultiVector>>("material_ionic_currents");
 
-        if (material->MaterialType() == Core::Materials::m_myocard)
+        if (material->material_type() == Core::Materials::m_myocard)
         {
           Teuchos::RCP<Mat::Myocard> material =
-              Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->Material());
+              Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
           for (int k = 0; k < material_ionic_currents->NumVectors(); ++k)
           {
             int err = material_ionic_currents->ReplaceGlobalValue(
-                ele->Id(), k, material->GetIonicCurrents(k));
+                ele->id(), k, material->get_ionic_currents(k));
             if (err != 0) FOUR_C_THROW("%i", err);
           }
         }

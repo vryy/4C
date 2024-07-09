@@ -66,21 +66,21 @@ namespace Adapter
         Teuchos::RCP<const Epetra_Vector> beam_vel) override;
 
     /// resets the matrices and vectors to zero
-    void ResetBridge() override;
+    void reset_bridge() override;
 
-    void PrepareFluidSolve() override { set_weak_dirichlet_flag(); };
+    void prepare_fluid_solve() override { set_weak_dirichlet_flag(); };
 
     /// Matrix containing only structure side contributions \f$C_{ss}\f$
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetCss() const override { return css_; };
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_css() const override { return css_; };
 
     /// Matrix containing only fluid side contributions \f$C_{ff}\f$
-    Teuchos::RCP<const Core::LinAlg::SparseOperator> GetCff() const override { return cff_; };
+    Teuchos::RCP<const Core::LinAlg::SparseOperator> get_cff() const override { return cff_; };
 
     /// Matrix containing mixed fluid side contributions \f$C_{fs}\f$
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetCfs() const override { return cfs_; };
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_cfs() const override { return cfs_; };
 
     /// Matrix containing mixed structure side contributions \f$C_{sf}\f$
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetCsf() const override { return csf_; };
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_csf() const override { return csf_; };
 
     /// Negative RHS coupling contribution for the fluid partition \f$f_f\f$
     Teuchos::RCP<const Epetra_FEVector> get_fluid_coupling_residual() const override

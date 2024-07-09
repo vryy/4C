@@ -23,8 +23,8 @@ namespace
   /// returns St. Venant Kirchhof quick access parameters from given material id
   const Mat::PAR::StVenantKirchhoff& GetSVKMatPars(int mat_id)
   {
-    auto* params = Global::Problem::Instance()->Materials()->ParameterById(mat_id);
-    if (params->Type() != Core::Materials::m_stvenant)
+    auto* params = Global::Problem::instance()->materials()->parameter_by_id(mat_id);
+    if (params->type() != Core::Materials::m_stvenant)
       FOUR_C_THROW("Material %d is not a St.Venant-Kirchhoff structure material", mat_id);
     auto* fparams = dynamic_cast<Mat::PAR::StVenantKirchhoff*>(params);
     if (!fparams) FOUR_C_THROW("Material does not cast to St.Venant-Kirchhoff structure material");

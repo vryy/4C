@@ -36,16 +36,16 @@ namespace Discret
       //! @name Friends
       friend class SoSh18PlastType;
 
-      std::string Name() const override { return "SoSh18Type"; }
+      std::string name() const override { return "SoSh18Type"; }
 
-      static SoSh18Type& Instance();
+      static SoSh18Type& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -94,11 +94,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
 
       /*!
@@ -107,7 +107,10 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override { return SoSh18Type::Instance().UniqueParObjectId(); }
+      int unique_par_object_id() const override
+      {
+        return SoSh18Type::instance().unique_par_object_id();
+      }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -133,7 +136,7 @@ namespace Discret
       /*!
        \brief Does this element use EAS?
        */
-      bool HaveEAS() const override { return eas_; };
+      bool have_eas() const override { return eas_; };
 
       /*!
       \brief Print this element
@@ -142,7 +145,7 @@ namespace Discret
 
 
 
-      Core::Elements::ElementType& ElementType() const override { return SoSh18Type::Instance(); }
+      Core::Elements::ElementType& element_type() const override { return SoSh18Type::instance(); }
 
       //@}
 
@@ -155,7 +158,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //@}

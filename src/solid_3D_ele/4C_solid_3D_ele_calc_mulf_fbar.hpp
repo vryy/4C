@@ -113,7 +113,7 @@ namespace Discret::ELEMENTS
     using GlobalHistory = MulfHistoryData<celltype>;
     using PreparationData = MulfFBarPreparationData<celltype>;
 
-    static MulfFBarPreparationData<celltype> Prepare(const Core::Elements::Element& ele,
+    static MulfFBarPreparationData<celltype> prepare(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& nodal_coordinates, GlobalHistory& global_history)
     {
       if (!global_history.is_setup)

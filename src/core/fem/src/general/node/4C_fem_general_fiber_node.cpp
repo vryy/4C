@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 Core::Nodes::FiberNodeType Core::Nodes::FiberNodeType::instance_;
 
 
-Core::Communication::ParObject* Core::Nodes::FiberNodeType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Core::Nodes::FiberNodeType::create(const std::vector<char>& data)
 {
   std::vector<double> dummy_coords(3, 999.0);
   std::map<CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections;
@@ -41,7 +41,7 @@ Core::Nodes::FiberNode::FiberNode(int id, const std::vector<double>& coords,
 /*
   Deep copy the derived class and return pointer to it
 */
-Core::Nodes::FiberNode* Core::Nodes::FiberNode::Clone() const
+Core::Nodes::FiberNode* Core::Nodes::FiberNode::clone() const
 {
   auto* newfn = new Core::Nodes::FiberNode(*this);
 
@@ -59,7 +59,7 @@ void Core::Nodes::FiberNode::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   Core::Nodes::Node::add_to_pack(data, type);
   // add base class of fiber node
   Core::Nodes::Node::pack(data);
@@ -79,7 +79,7 @@ void Core::Nodes::FiberNode::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Node
   std::vector<char> basedata(0);

@@ -92,7 +92,7 @@ namespace EleMag
     /*!
     \brief print the name of the scheme as std::string.
     */
-    virtual std::string Name()
+    virtual std::string name()
     {
       switch (elemagdyna_)
       {
@@ -112,22 +112,22 @@ namespace EleMag
     /*!
     \brief Print system matrix.
     */
-    virtual void PrintSysmat_() { std::cout << sysmat_ << std::endl; };
+    virtual void print_sysmat() { std::cout << sysmat_ << std::endl; };
 
     /*!
     \brief Iterates in time untill either the max number of steps or the final time has been
     reached.
     */
-    virtual void Integrate();
+    virtual void integrate();
     // void Integrate();
 
     /// Elements initialization
-    virtual void ElementsInit();
+    virtual void elements_init();
 
     /*!
     \brief Set initial field by given function or null function.
     */
-    virtual void SetInitialField(const Inpar::EleMag::InitialField init, int startfuncno);
+    virtual void set_initial_field(const Inpar::EleMag::InitialField init, int startfuncno);
 
     /*!
     \brief Import initial electric field from scatra solution
@@ -143,14 +143,14 @@ namespace EleMag
     /*!
     \brief Print the computed errors to screen.
     */
-    virtual void PrintErrors(Teuchos::RCP<Core::LinAlg::SerialDenseVector>& errors);
+    virtual void print_errors(Teuchos::RCP<Core::LinAlg::SerialDenseVector>& errors);
     /*!
     \brief ProjectfieldTest is used for debugging purposes.
 
     This function projects a defined function to the interior fields and can be used to check if the
     global solver works. It is the dual of project_field_test_trace.
     */
-    virtual void ProjectFieldTest(int startfuncno);
+    virtual void project_field_test(int startfuncno);
 
     /*!
     \brief ProjectfieldTestTrace is used for debugging purposes.
@@ -163,7 +163,7 @@ namespace EleMag
     /*!
     \brief Initialize the algorithm using BDF1 as first step
     */
-    void InitializeAlgorithm();
+    void initialize_algorithm();
 
     /*!
     \brief Call elements to calculate system matrix and RHS.
@@ -205,13 +205,13 @@ namespace EleMag
     /*!
     \brief Solve the system for trace and interior variables.
     */
-    virtual void Solve();
+    virtual void solve();
     // void Solve();
 
     /*!
     \brief Output to screen.
     */
-    virtual void OutputToScreen();
+    virtual void output_to_screen();
     // void OutputToScreen();
 
     /*!
@@ -245,21 +245,21 @@ namespace EleMag
     /*!
     \brief Obtain system matrix
     */
-    Epetra_CrsMatrix SystemMatrix()
+    Epetra_CrsMatrix system_matrix()
     {
       return (
-          *Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_, true)->EpetraMatrix());
+          *Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_, true)->epetra_matrix());
     };
 
     /*!
     \brief print the system matrix giving the output filename
 
     */
-    void SpySysmat(std::string filename, int precision = 20)
+    void spy_sysmat(std::string filename, int precision = 20)
     {
       std::ofstream out;
       out.open(filename);
-      SpySysmat(out << std::setprecision(precision));
+      spy_sysmat(out << std::setprecision(precision));
       out.close();
     };
     /*!
@@ -268,7 +268,7 @@ namespace EleMag
     This function still ha to be implemented.
     This function is supposed to work as a matlab or numpy spy().
     */
-    void SpySysmat(std::ostream& out = std::cout);
+    void spy_sysmat(std::ostream& out = std::cout);
 
     /*!
     \brief increment time and step value
@@ -279,10 +279,10 @@ namespace EleMag
       time_ += dtp_;
     }
 
-    double Time() { return time_; }
-    int Step() { return step_; }
-    int UpRes() { return upres_; }
-    double TimeStep() { return dtp_; }
+    double time() { return time_; }
+    int step() { return step_; }
+    int up_res() { return upres_; }
+    double time_step() { return dtp_; }
 
     /*!
     \brief returns pointer to the discretization
@@ -292,7 +292,7 @@ namespace EleMag
     /*!
     \brief create result test
     */
-    virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest();
+    virtual Teuchos::RCP<Core::UTILS::ResultTest> create_field_test();
 
    protected:
     /// discretization, solver, parameter list and output

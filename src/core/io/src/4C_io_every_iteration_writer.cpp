@@ -185,7 +185,7 @@ std::string Core::IO::RemoveRestartStepFromFileName(
  *----------------------------------------------------------------------------*/
 bool Core::IO::EveryIterationWriter::write_this_step() const
 {
-  return (write_only_this_step_ < 0 or write_only_this_step_ == interface_->GetStepNp());
+  return (write_only_this_step_ < 0 or write_only_this_step_ == interface_->get_step_np());
 }
 
 /*----------------------------------------------------------------------------*
@@ -208,13 +208,13 @@ void Core::IO::EveryIterationWriter::print_path2_screen(const std::string& path)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::IO::EveryIterationWriter::InitNewtonIteration()
+void Core::IO::EveryIterationWriter::init_newton_iteration()
 {
   throw_if_not_setup(__LINE__);
 
   if (not write_this_step()) return;
 
-  const int curr_step = interface_->GetStepNp();
+  const int curr_step = interface_->get_step_np();
 
   // create new result and mesh files for each step
   std::ostringstream result_name;
@@ -229,14 +229,14 @@ void Core::IO::EveryIterationWriter::InitNewtonIteration()
 
   constexpr bool force_prepare = false;
   interface_->prepare_output(force_prepare);
-  interface_->OutputDebugState(*every_iter_writer_, true);
+  interface_->output_debug_state(*every_iter_writer_, true);
 
   isnewton_initialized_ = true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::IO::EveryIterationWriter::AddNewtonIteration(const int newton_iteration)
+void Core::IO::EveryIterationWriter::add_newton_iteration(const int newton_iteration)
 {
   throw_if_not_setup(__LINE__);
 
@@ -250,7 +250,7 @@ void Core::IO::EveryIterationWriter::AddNewtonIteration(const int newton_iterati
 
   constexpr bool force_prepare = false;
   interface_->prepare_output(force_prepare);
-  interface_->OutputDebugState(*every_iter_writer_, write_owner_each_newton_iteration_);
+  interface_->output_debug_state(*every_iter_writer_, write_owner_each_newton_iteration_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -276,7 +276,7 @@ void Core::IO::EveryIterationWriter::add_line_search_iteration(
 
   constexpr bool force_prepare = false;
   interface_->prepare_output(force_prepare);
-  interface_->OutputDebugState(*every_iter_writer_, write_owner_each_newton_iteration_);
+  interface_->output_debug_state(*every_iter_writer_, write_owner_each_newton_iteration_);
 }
 
 /*----------------------------------------------------------------------------*

@@ -56,7 +56,7 @@ namespace Core::LinAlg
      * @return 4-tensor
      */
     inline const std::array<std::array<std::array<std::array<double, dim>, dim>, dim>, dim>&
-    GetConst() const
+    get_const() const
     {
       return four_tensor_;
     }
@@ -106,7 +106,7 @@ namespace Core::LinAlg
     if (i1 >= dim or i2 >= dim or i3 >= dim or i4 >= dim)
       FOUR_C_THROW("Indices %i,%i,%i,%i out of range in FourTensor<%i>.", i1, i2, i3, i4, dim);
 #endif
-    return GetConst()[i1][i2][i3][i4];
+    return get_const()[i1][i2][i3][i4];
   }
 }  // namespace Core::LinAlg
 

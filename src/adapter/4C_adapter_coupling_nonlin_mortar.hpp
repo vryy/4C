@@ -78,50 +78,50 @@ namespace Adapter
         Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond);
 
-    virtual void SetupSpringDashpot(Teuchos::RCP<Core::FE::Discretization> masterdis,
+    virtual void setup_spring_dashpot(Teuchos::RCP<Core::FE::Discretization> masterdis,
         Teuchos::RCP<Core::FE::Discretization> slavedis,
         Teuchos::RCP<Core::Conditions::Condition> spring, const int coupling_id,
         const Epetra_Comm& comm);
 
-    virtual void IntegrateLinD(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec,
-        const Teuchos::RCP<Epetra_Vector> veclm);
-
-    virtual void IntegrateLinDM(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec,
-        const Teuchos::RCP<Epetra_Vector> veclm);
-
-    virtual void IntegrateAll(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec,
-        const Teuchos::RCP<Epetra_Vector> veclm);
-
-    virtual void EvaluateSliding(const std::string& statename,
+    virtual void integrate_lin_d(const std::string& statename,
         const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> veclm);
 
-    virtual void PrintInterface(std::ostream& os);
+    virtual void integrate_lin_dm(const std::string& statename,
+        const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> veclm);
 
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> DLinMatrix()
+    virtual void integrate_all(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec,
+        const Teuchos::RCP<Epetra_Vector> veclm);
+
+    virtual void evaluate_sliding(const std::string& statename,
+        const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> veclm);
+
+    virtual void print_interface(std::ostream& os);
+
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> d_lin_matrix()
     {
       if (DLin_ == Teuchos::null) FOUR_C_THROW("ERROR: DLin Matrix is null pointer!");
       return DLin_;
     };
 
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> MLinMatrix()
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> m_lin_matrix()
     {
       if (MLin_ == Teuchos::null) FOUR_C_THROW("ERROR: MLin Matrix is null pointer!");
       return MLin_;
     };
 
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> HMatrix()
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> h_matrix()
     {
       if (H_ == Teuchos::null) FOUR_C_THROW("ERROR: H Matrix is null pointer!");
       return H_;
     };
 
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> TMatrix()
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> t_matrix()
     {
       if (T_ == Teuchos::null) FOUR_C_THROW("ERROR: T Matrix is null pointer!");
       return T_;
     };
 
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> NMatrix()
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> n_matrix()
     {
       if (N_ == Teuchos::null) FOUR_C_THROW("ERROR: N Matrix is null pointer!");
       return N_;
@@ -130,14 +130,14 @@ namespace Adapter
     // create projection operator Dinv*M
     void create_p() override;
 
-    virtual Teuchos::RCP<Epetra_Vector> Gap()
+    virtual Teuchos::RCP<Epetra_Vector> gap()
     {
       if (gap_ == Teuchos::null) FOUR_C_THROW("ERROR: gap vector is null pointer!");
       return gap_;
     };
 
     /// the mortar interface itself
-    Teuchos::RCP<CONTACT::Interface> Interface() const { return interface_; }
+    Teuchos::RCP<CONTACT::Interface> interface() const { return interface_; }
 
    protected:
     /*!

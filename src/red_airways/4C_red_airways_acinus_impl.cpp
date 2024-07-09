@@ -35,10 +35,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::RedAcinusImplInterface* Discret::ELEMENTS::RedAcinusImplInterface::Impl(
+Discret::ELEMENTS::RedAcinusImplInterface* Discret::ELEMENTS::RedAcinusImplInterface::impl(
     Discret::ELEMENTS::RedAcinus* red_acinus)
 {
-  switch (red_acinus->Shape())
+  switch (red_acinus->shape())
   {
     case Core::FE::CellType::line2:
     {
@@ -51,7 +51,7 @@ Discret::ELEMENTS::RedAcinusImplInterface* Discret::ELEMENTS::RedAcinusImplInter
     }
     default:
       FOUR_C_THROW(
-          "shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->num_node());
+          "shape %d (%d nodes) not supported", red_acinus->shape(), red_acinus->num_node());
       break;
   }
   return nullptr;
@@ -92,20 +92,20 @@ void Sysmat(Discret::ELEMENTS::RedAcinus* ele, Core::LinAlg::SerialDenseVector& 
     Teuchos::RCP<const Core::Mat::Material> material, Discret::ReducedLung::ElemParams& params,
     double time, double dt)
 {
-  const auto acinus_params = ele->GetAcinusParams();
+  const auto acinus_params = ele->get_acinus_params();
 
   // Decide which acinus material should be used
-  if ((material->MaterialType() == Core::Materials::m_0d_maxwell_acinus_neohookean) ||
-      (material->MaterialType() == Core::Materials::m_0d_maxwell_acinus_exponential) ||
-      (material->MaterialType() == Core::Materials::m_0d_maxwell_acinus_doubleexponential) ||
-      (material->MaterialType() == Core::Materials::m_0d_maxwell_acinus_ogden))
+  if ((material->material_type() == Core::Materials::m_0d_maxwell_acinus_neohookean) ||
+      (material->material_type() == Core::Materials::m_0d_maxwell_acinus_exponential) ||
+      (material->material_type() == Core::Materials::m_0d_maxwell_acinus_doubleexponential) ||
+      (material->material_type() == Core::Materials::m_0d_maxwell_acinus_ogden))
   {
     const double VolAcinus = acinus_params.volume_relaxed;
     const double volAlvDuct = acinus_params.alveolar_duct_volume;
     const auto NumOfAcini = double(floor(VolAcinus / volAlvDuct));
 
     const Teuchos::RCP<Mat::Maxwell0dAcinus> acinus_mat =
-        Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(ele->Material());
+        Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(ele->material());
 
     // Evaluate material law for acinus
     acinus_mat->evaluate(epnp, epn, epnm, sysmat, rhs, params, NumOfAcini, volAlvDuct, time, dt);
@@ -146,11 +146,11 @@ int Discret::ELEMENTS::AcinusImpl<distype>::evaluate(RedAcinus* ele, Teuchos::Pa
   // bool higher_order_ele = ele->is_higher_order_element(distype);
 
   // Get all general state vectors: flow, pressure,
-  Teuchos::RCP<const Epetra_Vector> pnp = discretization.GetState("pnp");
-  Teuchos::RCP<const Epetra_Vector> pn = discretization.GetState("pn");
-  Teuchos::RCP<const Epetra_Vector> pnm = discretization.GetState("pnm");
+  Teuchos::RCP<const Epetra_Vector> pnp = discretization.get_state("pnp");
+  Teuchos::RCP<const Epetra_Vector> pn = discretization.get_state("pn");
+  Teuchos::RCP<const Epetra_Vector> pnm = discretization.get_state("pnm");
 
-  Teuchos::RCP<const Epetra_Vector> ial = discretization.GetState("intr_ac_link");
+  Teuchos::RCP<const Epetra_Vector> ial = discretization.get_state("intr_ac_link");
 
   if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
     FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
@@ -187,17 +187,17 @@ int Discret::ELEMENTS::AcinusImpl<distype>::evaluate(RedAcinus* ele, Teuchos::Pa
   double e_acin_e_vn;
 
   // Split area and volumetric flow rate, insert into element arrays
-  e_acin_e_vnp = (*evaluation_data.acinar_vnp)[ele->LID()];
-  e_acin_e_vn = (*evaluation_data.acinar_vn)[ele->LID()];
+  e_acin_e_vnp = (*evaluation_data.acinar_vnp)[ele->lid()];
+  e_acin_e_vn = (*evaluation_data.acinar_vn)[ele->lid()];
 
   // Get the volumetric flow rate from the previous time step
   Discret::ReducedLung::ElemParams elem_params;
-  elem_params.qout_np = (*evaluation_data.qout_np)[ele->LID()];
-  elem_params.qout_n = (*evaluation_data.qout_n)[ele->LID()];
-  elem_params.qout_nm = (*evaluation_data.qout_nm)[ele->LID()];
-  elem_params.qin_np = (*evaluation_data.qin_np)[ele->LID()];
-  elem_params.qin_n = (*evaluation_data.qin_n)[ele->LID()];
-  elem_params.qin_nm = (*evaluation_data.qin_nm)[ele->LID()];
+  elem_params.qout_np = (*evaluation_data.qout_np)[ele->lid()];
+  elem_params.qout_n = (*evaluation_data.qout_n)[ele->lid()];
+  elem_params.qout_nm = (*evaluation_data.qout_nm)[ele->lid()];
+  elem_params.qin_np = (*evaluation_data.qin_np)[ele->lid()];
+  elem_params.qin_n = (*evaluation_data.qin_n)[ele->lid()];
+  elem_params.qin_nm = (*evaluation_data.qin_nm)[ele->lid()];
 
   elem_params.acin_vnp = e_acin_e_vnp;
   elem_params.acin_vn = e_acin_e_vn;
@@ -225,19 +225,19 @@ int Discret::ELEMENTS::AcinusImpl<distype>::evaluate(RedAcinus* ele, Teuchos::Pa
  |  calculate element matrix and right hand side (private)  ismail 01/10|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::ParameterList& params,
+void Discret::ELEMENTS::AcinusImpl<distype>::initial(RedAcinus* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<const Core::Mat::Material> material)
 {
-  const int myrank = discretization.Comm().MyPID();
+  const int myrank = discretization.get_comm().MyPID();
 
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
-  const auto acinus_params = ele->GetAcinusParams();
+  const auto acinus_params = ele->get_acinus_params();
 
   std::vector<int> lmstride;
   Teuchos::RCP<std::vector<int>> lmowner = Teuchos::rcp(new std::vector<int>);
-  ele->LocationVector(discretization, lm, *lmowner, lmstride);
+  ele->location_vector(discretization, lm, *lmowner, lmstride);
 
   // Initialize the pressure vectors
   if (myrank == (*lmowner)[0])
@@ -251,7 +251,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Pa
 
   // Find the volume of an acinus element
   {
-    int gid2 = ele->Id();
+    int gid2 = ele->id();
     double acin_vol = acinus_params.volume_relaxed;
     evaluation_data.acini_e_volume->ReplaceGlobalValues(1, &acin_vol, &gid2);
   }
@@ -259,16 +259,16 @@ void Discret::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Pa
   // Get the generation numbers
   for (int i = 0; i < 2; i++)
   {
-    if (ele->Nodes()[i]->GetCondition("RedAirwayEvalLungVolCond"))
+    if (ele->nodes()[i]->get_condition("RedAirwayEvalLungVolCond"))
     {
       // find the acinus condition
-      int gid = ele->Id();
+      int gid = ele->id();
       double val = 1.0;
       evaluation_data.acini_bc->ReplaceGlobalValues(1, &val, &gid);
     }
   }
   {
-    int gid = ele->Id();
+    int gid = ele->id();
     int generation = -1;
     double val = double(generation);
     evaluation_data.generations->ReplaceGlobalValues(1, &val, &gid);
@@ -282,11 +282,11 @@ void Discret::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Pa
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
+void Discret::ELEMENTS::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& rhs, Teuchos::RCP<Core::Mat::Material> material)
 {
-  const int myrank = discretization.Comm().MyPID();
+  const int myrank = discretization.get_comm().MyPID();
 
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
@@ -297,7 +297,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
   // The number of nodes
   const int numnode = lm.size();
 
-  Teuchos::RCP<const Epetra_Vector> pnp = discretization.GetState("pnp");
+  Teuchos::RCP<const Epetra_Vector> pnp = discretization.get_state("pnp");
 
   if (pnp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pnp'");
 
@@ -320,18 +320,18 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
    **/
   for (int i = 0; i < ele->num_node(); i++)
   {
-    if (ele->Nodes()[i]->Owner() == myrank)
+    if (ele->nodes()[i]->owner() == myrank)
     {
-      if (ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond") ||
-          ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond") ||
-          ele->Nodes()[i]->GetCondition("RedAcinusVentilatorCond"))
+      if (ele->nodes()[i]->get_condition("RedAirwayPrescribedCond") ||
+          ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond") ||
+          ele->nodes()[i]->get_condition("RedAcinusVentilatorCond"))
       {
         std::string Bc;
         double BCin = 0.0;
-        if (ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
+        if (ele->nodes()[i]->get_condition("RedAirwayPrescribedCond"))
         {
           Core::Conditions::Condition* condition =
-              ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
+              ele->nodes()[i]->get_condition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().get<std::string>("boundarycond"));
 
@@ -344,8 +344,8 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           double curvefac = 1.0;
           if ((*curve)[0] >= 0)
           {
-            curvefac = Global::Problem::Instance()
-                           ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[0])
+            curvefac = Global::Problem::instance()
+                           ->function_by_id<Core::UTILS::FunctionOfTime>((*curve)[0])
                            .evaluate(time);
             BCin = (*vals)[0] * curvefac;
           }
@@ -365,9 +365,9 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           double functionfac = 0.0;
           if (functnum > 0)
           {
-            functionfac = Global::Problem::Instance()
-                              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .evaluate((ele->Nodes()[i])->X().data(), time, 0);
+            functionfac = Global::Problem::instance()
+                              ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              .evaluate((ele->nodes()[i])->x().data(), time, 0);
           }
 
           // Get factor of second CURVE
@@ -375,29 +375,29 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           double curve2fac = 1.0;
           if (curve) curve2num = (*curve)[1];
           if (curve2num >= 0)
-            curve2fac = Global::Problem::Instance()
-                            ->FunctionById<Core::UTILS::FunctionOfTime>(curve2num)
+            curve2fac = Global::Problem::instance()
+                            ->function_by_id<Core::UTILS::FunctionOfTime>(curve2num)
                             .evaluate(time);
 
           // Add first_CURVE + FUNCTION * second_CURVE
           BCin += functionfac * curve2fac;
 
           // Get the local id of the node to whom the bc is prescribed
-          int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+          int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
           if (local_id < 0)
           {
-            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i]->Id(),
-                discretization.Comm().MyPID());
+            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->nodes()[i]->id(),
+                discretization.get_comm().MyPID());
             exit(1);
           }
         }
         /**
          * For Art_redD_3D_CouplingCond bc
          **/
-        else if (ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
+        else if (ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond"))
         {
           const Core::Conditions::Condition* condition =
-              ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
+              ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond");
 
           Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
               params.get<Teuchos::RCP<Teuchos::ParameterList>>("coupling with 3D fluid params");
@@ -461,10 +461,10 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
         /**
          * For RedAcinusVentilatorCond bc
          **/
-        else if (ele->Nodes()[i]->GetCondition("RedAcinusVentilatorCond"))
+        else if (ele->nodes()[i]->get_condition("RedAcinusVentilatorCond"))
         {
           Core::Conditions::Condition* condition =
-              ele->Nodes()[i]->GetCondition("RedAcinusVentilatorCond");
+              ele->nodes()[i]->get_condition("RedAcinusVentilatorCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().get<std::string>("phase1"));
 
@@ -486,8 +486,8 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           // Read in the value of the applied BC
           if ((*curve)[phase_number] >= 0)
           {
-            curvefac = Global::Problem::Instance()
-                           ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[phase_number])
+            curvefac = Global::Problem::instance()
+                           ->function_by_id<Core::UTILS::FunctionOfTime>((*curve)[phase_number])
                            .evaluate(time);
             BCin = (*vals)[phase_number] * curvefac;
           }
@@ -498,11 +498,11 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           }
 
           // Get the local id of the node to whom the bc is prescribed
-          int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+          int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
           if (local_id < 0)
           {
-            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i]->Id(),
-                discretization.Comm().MyPID());
+            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->nodes()[i]->id(),
+                discretization.get_comm().MyPID());
             exit(1);
           }
         }
@@ -518,7 +518,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           if (Bc == "VolumeDependentPleuralPressure")
           {
             Core::Conditions::Condition* pplCond =
-                ele->Nodes()[i]->GetCondition("RedAirwayVolDependentPleuralPressureCond");
+                ele->nodes()[i]->get_condition("RedAirwayVolDependentPleuralPressureCond");
             double Pp_np = 0.0;
             if (pplCond)
             {
@@ -529,8 +529,8 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
               // Read in the value of the applied BC
               if ((*curve)[0] >= 0)
               {
-                curvefac = Global::Problem::Instance()
-                               ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[0])
+                curvefac = Global::Problem::instance()
+                               ->function_by_id<Core::UTILS::FunctionOfTime>((*curve)[0])
                                .evaluate(time);
               }
 
@@ -637,7 +637,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           // (which is the number of branches). Thus the sum of the
           // final added values is the actual prescribed flow.
           // ----------------------------------------------------------
-          int numOfElems = (ele->Nodes()[i])->NumElement();
+          int numOfElems = (ele->nodes()[i])->num_element();
           BCin /= double(numOfElems);
           rhs(i) += -BCin + rhs(i);
         }
@@ -653,14 +653,14 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
        **/
       else
       {
-        if (ele->Nodes()[i]->NumElement() == 1)
+        if (ele->nodes()[i]->num_element() == 1)
         {
           // Get the local id of the node to whome the bc is prescribed
-          int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+          int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
           if (local_id < 0)
           {
-            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i],
-                discretization.Comm().MyPID());
+            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->nodes()[i],
+                discretization.get_comm().MyPID());
             exit(1);
           }
 
@@ -691,7 +691,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
  |  correponding acinus volume via dV = 0.5*(qnp+qn)*dt                 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
+void Discret::ELEMENTS::AcinusImpl<distype>::calc_flow_rates(RedAcinus* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 
@@ -700,7 +700,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
 
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
-  const auto acinus_params = ele->GetAcinusParams();
+  const auto acinus_params = ele->get_acinus_params();
 
   // Get control parameters for time integration
   // Get time-step size
@@ -713,9 +713,9 @@ void Discret::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
   //  bool higher_order_ele = ele->is_higher_order_element(distype);
 
   // Get all general state vectors: flow, pressure,
-  Teuchos::RCP<const Epetra_Vector> pnp = discretization.GetState("pnp");
-  Teuchos::RCP<const Epetra_Vector> pn = discretization.GetState("pn");
-  Teuchos::RCP<const Epetra_Vector> pnm = discretization.GetState("pnm");
+  Teuchos::RCP<const Epetra_Vector> pnp = discretization.get_state("pnp");
+  Teuchos::RCP<const Epetra_Vector> pn = discretization.get_state("pn");
+  Teuchos::RCP<const Epetra_Vector> pnm = discretization.get_state("pnm");
 
   if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
     FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
@@ -750,18 +750,18 @@ void Discret::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
   for (int i = 0; i < elemVecdim; ++i)
   {
     // Split area and volumetric flow rate, insert into element arrays
-    e_acin_vnp = (*evaluation_data.acinar_vnp)[ele->LID()];
-    e_acin_vn = (*evaluation_data.acinar_vn)[ele->LID()];
+    e_acin_vnp = (*evaluation_data.acinar_vnp)[ele->lid()];
+    e_acin_vn = (*evaluation_data.acinar_vn)[ele->lid()];
   }
 
   // Get the volumetric flow rate from the previous time step
   Discret::ReducedLung::ElemParams elem_params;
-  elem_params.qout_np = (*evaluation_data.qout_np)[ele->LID()];
-  elem_params.qout_n = (*evaluation_data.qout_n)[ele->LID()];
-  elem_params.qout_nm = (*evaluation_data.qout_nm)[ele->LID()];
-  elem_params.qin_np = (*evaluation_data.qin_np)[ele->LID()];
-  elem_params.qin_n = (*evaluation_data.qin_n)[ele->LID()];
-  elem_params.qin_nm = (*evaluation_data.qin_nm)[ele->LID()];
+  elem_params.qout_np = (*evaluation_data.qout_np)[ele->lid()];
+  elem_params.qout_n = (*evaluation_data.qout_n)[ele->lid()];
+  elem_params.qout_nm = (*evaluation_data.qout_nm)[ele->lid()];
+  elem_params.qin_np = (*evaluation_data.qin_np)[ele->lid()];
+  elem_params.qin_n = (*evaluation_data.qin_n)[ele->lid()];
+  elem_params.qin_nm = (*evaluation_data.qin_nm)[ele->lid()];
 
   elem_params.acin_vnp = e_acin_vnp;
   elem_params.acin_vn = e_acin_vn;
@@ -772,10 +772,10 @@ void Discret::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
   // Call routine for calculating element matrix and right hand side
   Sysmat<distype>(ele, epnp, epn, epnm, sysmat, rhs, material, elem_params, time, dt);
 
-  double qn = (*evaluation_data.qin_n)[ele->LID()];
+  double qn = (*evaluation_data.qin_n)[ele->lid()];
   double qnp = -1.0 * (sysmat(0, 0) * epnp(0) + sysmat(0, 1) * epnp(1) - rhs(0));
 
-  int gid = ele->Id();
+  int gid = ele->id();
 
   evaluation_data.qin_np->ReplaceGlobalValues(1, &qnp, &gid);
   evaluation_data.qout_np->ReplaceGlobalValues(1, &qnp, &gid);
@@ -799,7 +799,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AcinusImpl<distype>::CalcElemVolume(RedAcinus* ele,
+void Discret::ELEMENTS::AcinusImpl<distype>::calc_elem_volume(RedAcinus* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 
@@ -808,10 +808,10 @@ void Discret::ELEMENTS::AcinusImpl<distype>::CalcElemVolume(RedAcinus* ele,
       Discret::ReducedLung::EvaluationData::get();
 
   // Get acinus size
-  double evolnp = (*evaluation_data.elemVolumenp)[ele->LID()];
+  double evolnp = (*evaluation_data.elemVolumenp)[ele->lid()];
 
   // Get element global ID
-  int gid = ele->Id();
+  int gid = ele->id();
 
   // Update elem
   evaluation_data.elemVolumenp->ReplaceGlobalValues(1, &evolnp, &gid);
@@ -826,16 +826,16 @@ void Discret::ELEMENTS::AcinusImpl<distype>::CalcElemVolume(RedAcinus* ele,
  |  of the 3D/reduced-D problem                                         |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
+void Discret::ELEMENTS::AcinusImpl<distype>::get_coupled_values(RedAcinus* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
-  const int myrank = discretization.Comm().MyPID();
+  const int myrank = discretization.get_comm().MyPID();
 
   // The number of nodes
   const int numnode = lm.size();
 
-  Teuchos::RCP<const Epetra_Vector> pnp = discretization.GetState("pnp");
+  Teuchos::RCP<const Epetra_Vector> pnp = discretization.get_state("pnp");
 
   if (pnp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pnp'");
 
@@ -858,12 +858,12 @@ void Discret::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
   // ---------------------------------------------------------------------------------
   for (int i = 0; i < ele->num_node(); i++)
   {
-    if (ele->Nodes()[i]->Owner() == myrank)
+    if (ele->nodes()[i]->owner() == myrank)
     {
-      if (ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
+      if (ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond"))
       {
         const Core::Conditions::Condition* condition =
-            ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
+            ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond");
         Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
             params.get<Teuchos::RCP<Teuchos::ParameterList>>("coupling with 3D fluid params");
         // -----------------------------------------------------------------
@@ -963,10 +963,10 @@ void Discret::ELEMENTS::AcinusImpl<distype>::get_junction_volume_mix(RedAcinus* 
 {
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
-  const auto acinus_params = ele->GetAcinusParams();
+  const auto acinus_params = ele->get_acinus_params();
 
   // get the element qout
-  double q_out = (*evaluation_data.qout_np)[ele->LID()];
+  double q_out = (*evaluation_data.qout_np)[ele->lid()];
 
   // if transport is flowing into the acinus
   if (q_out >= 0.0)
@@ -983,7 +983,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::get_junction_volume_mix(RedAcinus* 
   // extra treatment if an acinus is not connected to anything else
   for (int i = 0; i < iel; i++)
   {
-    if (ele->Nodes()[i]->NumElement() == 1)
+    if (ele->nodes()[i]->num_element() == 1)
     {
       volumeMix_np(1) = acinus_params.area;
     }
@@ -1000,14 +1000,14 @@ void Discret::ELEMENTS::AcinusImpl<distype>::update_scatra(RedAcinus* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
-  const int myrank = discretization.Comm().MyPID();
+  const int myrank = discretization.get_comm().MyPID();
 
-  Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.GetState("dscatranp");
+  Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.get_state("dscatranp");
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
 
   // get flowrate
-  double qin = (*evaluation_data.qin_np)[ele->LID()];
+  double qin = (*evaluation_data.qin_np)[ele->lid()];
 
   // extract local values from the global vectors
   std::vector<double> mydscatra(lm.size());
@@ -1023,7 +1023,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::update_scatra(RedAcinus* ele,
   {
     int gid = lm[1];
     double val = mydscatra[1];
-    if (myrank == ele->Nodes()[1]->Owner())
+    if (myrank == ele->nodes()[1]->owner())
     {
       evaluation_data.dscatranp->ReplaceGlobalValues(1, &val, &gid);
     }
@@ -1032,13 +1032,13 @@ void Discret::ELEMENTS::AcinusImpl<distype>::update_scatra(RedAcinus* ele,
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AcinusImpl<distype>::UpdateElem12Scatra(RedAcinus* ele,
+void Discret::ELEMENTS::AcinusImpl<distype>::update_elem12_scatra(RedAcinus* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
-  Teuchos::RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
-  Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.GetState("dscatranp");
-  Teuchos::RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
+  Teuchos::RCP<const Epetra_Vector> scatranp = discretization.get_state("scatranp");
+  Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.get_state("dscatranp");
+  Teuchos::RCP<const Epetra_Vector> volumeMix = discretization.get_state("junctionVolumeInMix");
 
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
@@ -1056,7 +1056,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::UpdateElem12Scatra(RedAcinus* ele,
   Core::FE::ExtractMyValues(*volumeMix, myvolmix, lm);
 
   // get flowrate
-  double qin = (*evaluation_data.qin_np)[ele->LID()];
+  double qin = (*evaluation_data.qin_np)[ele->lid()];
   // Get the average concentration
 
   // ---------------------------------------------------------------------
@@ -1065,7 +1065,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::UpdateElem12Scatra(RedAcinus* ele,
   //  double e2s = (*e2scatranp)[ele->LID()] + mydscatranp[1]*myvolmix[1];
   double e2s = myscatranp[1];
 
-  int gid = ele->Id();
+  int gid = ele->id();
   evaluation_data.e2scatranp->ReplaceGlobalValues(1, &e2s, &gid);
   if (qin < 0.0)
   {
@@ -1088,9 +1088,9 @@ void Discret::ELEMENTS::AcinusImpl<distype>::eval_nodal_essential_values(RedAcin
   // Get all general state vectors: flow, pressure,
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
-  const auto acinus_params = ele->GetAcinusParams();
+  const auto acinus_params = ele->get_acinus_params();
 
-  Teuchos::RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
+  Teuchos::RCP<const Epetra_Vector> scatranp = discretization.get_state("scatranp");
 
   // Extract scatra values
   // Extract local values from the global vectors
@@ -1099,7 +1099,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::eval_nodal_essential_values(RedAcin
 
   // Find the volume of an acinus
   // Get the current acinar volume
-  double volAcinus = (*evaluation_data.acinar_v)[ele->LID()];
+  double volAcinus = (*evaluation_data.acinar_v)[ele->lid()];
   // Set nodal volume
   nodal_volume[1] = volAcinus;
 

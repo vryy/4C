@@ -65,10 +65,10 @@ Teuchos::RCP<Adapter::ArtNet> Arteries::UTILS::CreateAlgorithm(
 void Arteries::UTILS::assign_material_pointers(
     const std::string& artery_disname, const std::string& scatra_disname)
 {
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
-  Teuchos::RCP<Core::FE::Discretization> arterydis = problem->GetDis(artery_disname);
-  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis(scatra_disname);
+  Teuchos::RCP<Core::FE::Discretization> arterydis = problem->get_dis(artery_disname);
+  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis(scatra_disname);
 
   SetMaterialPointersMatchingGrid(arterydis, scatradis);
 }
@@ -80,18 +80,18 @@ void Arteries::UTILS::SetMaterialPointersMatchingGrid(
     Teuchos::RCP<const Core::FE::Discretization> sourcedis,
     Teuchos::RCP<const Core::FE::Discretization> targetdis)
 {
-  const int numelements = targetdis->NumMyColElements();
+  const int numelements = targetdis->num_my_col_elements();
 
   for (int i = 0; i < numelements; ++i)
   {
-    Core::Elements::Element* targetele = targetdis->lColElement(i);
-    const int gid = targetele->Id();
+    Core::Elements::Element* targetele = targetdis->l_col_element(i);
+    const int gid = targetele->id();
 
-    Core::Elements::Element* sourceele = sourcedis->gElement(gid);
+    Core::Elements::Element* sourceele = sourcedis->g_element(gid);
 
     // for coupling we add the source material to the target element and vice versa
-    targetele->AddMaterial(sourceele->Material());
-    sourceele->AddMaterial(targetele->Material());
+    targetele->add_material(sourceele->material());
+    sourceele->add_material(targetele->material());
   }
 }
 
@@ -104,7 +104,7 @@ bool Arteries::ArteryScatraCloneStrategy::determine_ele_type(
   // clone the element
   Discret::ELEMENTS::Artery* myele = static_cast<Discret::ELEMENTS::Artery*>(actele);
   // only the pressure based artery supports this function so far
-  if (myele->ImplType() == Inpar::ArtDyn::impltype_pressure_based)
+  if (myele->impl_type() == Inpar::ArtDyn::impltype_pressure_based)
   {
     // we only support transport elements here
     eletype.push_back("TRANSP");
@@ -131,13 +131,13 @@ void Arteries::ArteryScatraCloneStrategy::set_element_data(
   if (trans != nullptr)
   {
     // set material
-    trans->SetMaterial(matid, oldele);
+    trans->set_material(matid, oldele);
     // set distype as well!
-    trans->SetDisType(oldele->Shape());
+    trans->set_dis_type(oldele->shape());
 
     // we only have one possible impltype
     Inpar::ScaTra::ImplType impltype = Inpar::ScaTra::impltype_one_d_artery;
-    trans->SetImplType(impltype);
+    trans->set_impl_type(impltype);
   }
   else
   {
@@ -154,7 +154,7 @@ void Arteries::ArteryScatraCloneStrategy::check_material_type(const int matid)
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
   Core::Materials::MaterialType mtype =
-      Global::Problem::Instance()->Materials()->ParameterById(matid)->Type();
+      Global::Problem::instance()->materials()->parameter_by_id(matid)->type();
   if ((mtype != Core::Materials::m_scatra) && (mtype != Core::Materials::m_matlist))
     FOUR_C_THROW("Material with ID %d is not admissible for scalar transport elements", matid);
 }

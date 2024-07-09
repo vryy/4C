@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 Adapter::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
     const Teuchos::ParameterList& prbdyn, std::string condname)
 {
-  const Core::ProblemType probtyp = Global::Problem::Instance()->GetProblemType();
+  const Core::ProblemType probtyp = Global::Problem::instance()->get_problem_type();
 
   // switch between moving domain fluid implementations
   switch (probtyp)
@@ -44,7 +44,7 @@ Adapter::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
     case Core::ProblemType::fluid_xfem:
     case Core::ProblemType::fsi_xfem:
     {
-      const Teuchos::ParameterList xfluid = Global::Problem::Instance()->XFluidDynamicParams();
+      const Teuchos::ParameterList xfluid = Global::Problem::instance()->x_fluid_dynamic_params();
       bool alefluid = Core::UTILS::IntegralValue<bool>((xfluid.sublist("GENERAL")), "ALE_XFluid");
       if (!alefluid)  // xfluid
       {

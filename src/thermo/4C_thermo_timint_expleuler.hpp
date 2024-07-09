@@ -58,7 +58,7 @@ namespace THR
     TimIntExplEuler(const TimIntExplEuler& old) : TimIntExpl(old) { ; }
 
     //! Resize #TimIntMStep<T> multi-step quantities
-    void ResizeMStep() override { FOUR_C_THROW("not a multistep method"); }
+    void resize_m_step() override { FOUR_C_THROW("not a multistep method"); }
 
     //@}
 
@@ -66,16 +66,16 @@ namespace THR
     //@{
 
     //! Do time integration of single step
-    void IntegrateStep() override;
+    void integrate_step() override;
 
     //! Update configuration after time step
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
     //! becomes impossible. We are ready and keen awating the next time step.
-    void UpdateStepState() override;
+    void update_step_state() override;
 
     //! Update Element
-    void UpdateStepElement() override;
+    void update_step_element() override;
 
     //@}
 
@@ -83,17 +83,17 @@ namespace THR
     //@{
 
     //! Return time integrator name
-    enum Inpar::THR::DynamicType MethodName() const override { return Inpar::THR::dyna_expleuler; }
+    enum Inpar::THR::DynamicType method_name() const override { return Inpar::THR::dyna_expleuler; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    int MethodSteps() override { return 1; }
+    int method_steps() override { return 1; }
 
     //! Give local order of accuracy of temperature part
     int method_order_of_accuracy() override { return 1; }
 
     //! Return linear error coefficient of temperatures
-    double MethodLinErrCoeff() override
+    double method_lin_err_coeff() override
     {
       FOUR_C_THROW("no time adaptivity possible.");
       return 0.0;
@@ -105,20 +105,20 @@ namespace THR
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext() override { return fextn_; }
+    Teuchos::RCP<Epetra_Vector> fext() override { return fextn_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Epetra_Vector> FextNew()
+    Teuchos::RCP<Epetra_Vector> fext_new()
     {
       FOUR_C_THROW("FextNew() not available in ExplEuler");
       return Teuchos::null;
     }
 
     //! Read and set restart for forces
-    void ReadRestartForce() override;
+    void read_restart_force() override;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
+    void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
 
     //@}
 

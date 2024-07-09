@@ -37,7 +37,7 @@ Solid::TimAdaZienXie::TimAdaZienXie(
     FOUR_C_THROW(
         "%s can only work with 2nd order accurate marching scheme,"
         " whereas the actual %s is of order %i",
-        MethodTitle().c_str(), sti_->MethodTitle().c_str(), sti_->method_order_of_accuracy_dis());
+        method_title().c_str(), sti_->method_title().c_str(), sti_->method_order_of_accuracy_dis());
   }
 
   return;
@@ -48,10 +48,10 @@ Solid::TimAdaZienXie::TimAdaZienXie(
 void Solid::TimAdaZienXie::integrate_step_auxiliar()
 {
   // get state vectors of marching integrator
-  const Teuchos::RCP<Epetra_Vector> dis = sti_->Dis();      // D_{n}^{A2}
-  const Teuchos::RCP<Epetra_Vector> vel = sti_->Vel();      // V_{n}^{A2}
-  const Teuchos::RCP<Epetra_Vector> acc = sti_->Acc();      // A_{n}^{A2}
-  const Teuchos::RCP<Epetra_Vector> accn = sti_->AccNew();  // A_{n+1}^{A2}
+  const Teuchos::RCP<Epetra_Vector> dis = sti_->dis();       // D_{n}^{A2}
+  const Teuchos::RCP<Epetra_Vector> vel = sti_->vel();       // V_{n}^{A2}
+  const Teuchos::RCP<Epetra_Vector> acc = sti_->acc();       // A_{n}^{A2}
+  const Teuchos::RCP<Epetra_Vector> accn = sti_->acc_new();  // A_{n+1}^{A2}
 
   // build ZX displacements D_{n+1}^{ZX}
   // using the second order (or lower) accurate new accelerations

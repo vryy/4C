@@ -39,7 +39,7 @@ namespace RTD
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void Table::AddRow(const std::vector<std::string> &row)
+  void Table::add_row(const std::vector<std::string> &row)
   {
     if (row.size() != tablewidth_)
     {
@@ -50,7 +50,7 @@ namespace RTD
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void Table::SetWidths(const std::vector<unsigned> &widths)
+  void Table::set_widths(const std::vector<unsigned> &widths)
   {
     if (widths.size() != tablewidth_)
     {
@@ -63,13 +63,13 @@ namespace RTD
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void Table::AddDirective(const std::string &key, const std::string &value)
+  void Table::add_directive(const std::string &key, const std::string &value)
   {
     directives_[key] = value;
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  unsigned Table::GetRows() const { return tablerows_.size(); }
+  unsigned Table::get_rows() const { return tablerows_.size(); }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   void Table::print(std::ostream &stream) const
@@ -309,15 +309,15 @@ namespace RTD
     - parameter description */
 
     // the Material title
-    WriteLinktarget(stream, material->Name());
-    write_header(stream, 1, material->Name());
+    WriteLinktarget(stream, material->name());
+    write_header(stream, 1, material->name());
 
     // the description of the material
-    std::string materialDescription = material->Description();
+    std::string materialDescription = material->description();
     WriteParagraph(stream, materialDescription);
 
     // the material line as it occurs in the dat file
-    std::string parameter = "   MAT <matID>  " + material->Name();
+    std::string parameter = "   MAT <matID>  " + material->name();
     std::vector<std::string> materialcode;
     //
     // Also: create the table from the parameter descriptions (based on the so-called
@@ -326,13 +326,13 @@ namespace RTD
     Table parametertable(tablesize);
     std::vector<std::string> tablerow(tablesize);
     tablerow = {"Parameter", "optional", "Description"};
-    parametertable.AddRow(tablerow);
+    parametertable.add_row(tablerow);
 
-    for (auto &parameterterm : material->Inputline())
+    for (auto &parameterterm : material->inputline())
     {
       if (auto *separator = dynamic_cast<Input::SeparatorComponent *>(parameterterm.get()))
       {
-        parametertable.AddRow(separator->write_read_the_docs_table_row());
+        parametertable.add_row(separator->write_read_the_docs_table_row());
 
         if (parameter.length() > 60)
         {
@@ -349,13 +349,13 @@ namespace RTD
     WriteCode(stream, materialcode);
     //
     // Now printing the parameter table
-    parametertable.SetWidths({10, 10, 50});
-    parametertable.AddDirective("header-rows", "1");
+    parametertable.set_widths({10, 10, 50});
+    parametertable.add_directive("header-rows", "1");
 
-    if (parametertable.GetRows() == 1)
+    if (parametertable.get_rows() == 1)
     {
       tablerow = {"no parameters", "", ""};
-      parametertable.AddRow(tablerow);
+      parametertable.add_row(tablerow);
     }
     parametertable.print(stream);
 
@@ -470,7 +470,7 @@ namespace RTD
       or the complex ConditionComponentBundleSelectors
     */
 
-    std::string sectionname = condition->SectionName();
+    std::string sectionname = condition->section_name();
     const std::string sectionlinktarget =
         Teuchos::StrUtils::removeAllSpaces(Core::UTILS::ToLower(sectionname));
     //
@@ -488,7 +488,7 @@ namespace RTD
      * boundary condition description string
      */
     std::string descriptionline =
-        (condition->Description() == "") ? "no description yet" : condition->Description();
+        (condition->description() == "") ? "no description yet" : condition->description();
     WriteParagraph(stream, descriptionline);
 
     /*------ PART 3 -------------------------
@@ -501,7 +501,7 @@ namespace RTD
         "--" + std::string(std::max<int>(65 - l, 0), '-') + sectionname};
     // second line: geometry type
     std::string name;
-    switch (condition->GeometryType())
+    switch (condition->geometry_type())
     {
       case Core::Conditions::geometry_type_point:
         conditioncode.push_back("DPOINT  0");
@@ -532,8 +532,8 @@ namespace RTD
     std::vector<std::string> tablerow = {"Parameter", "Default", "Admissible values"};
     std::vector<std::string> condCompStrings;
     std::string condCompName("");
-    parametertable.AddRow(tablerow);
-    for (auto &condparameter : condition->Inputline())
+    parametertable.add_row(tablerow);
+    for (auto &condparameter : condition->inputline())
     {
       // newline after some 60 characters, but no newline after a separator condition
       if (isNewlinePossible)
@@ -557,7 +557,7 @@ namespace RTD
         tablerow[1] = parametercell.str();
         Teuchos::Array<std::string> datfilevalues = stringComponent->get_options();
         tablerow[2] = boost::algorithm::join(datfilevalues, ", ");
-        parametertable.AddRow(tablerow);
+        parametertable.add_row(tablerow);
       }
       // if the component is a bundleselector (bundle of variables following a string keyword):
       if (auto *compBundleSelector = dynamic_cast<Input::SwitchComponent *>(condparameter.get()))
@@ -569,7 +569,7 @@ namespace RTD
         Teuchos::Array<std::string> datfilevalues = compBundleSelector->get_options();
         tablerow[1] = datfilevalues[0];
         tablerow[2] = boost::algorithm::join(datfilevalues, ", ");
-        parametertable.AddRow(tablerow);
+        parametertable.add_row(tablerow);
       }
     }
     // Now write the complete code of this condition to the readthedocs file
@@ -579,13 +579,13 @@ namespace RTD
     /*------ PART 4 -------------------------
      * Now write a table for the options of the string variables, if any have been stored above
      */
-    if (parametertable.GetRows() > 1)
+    if (parametertable.get_rows() > 1)
     {
       std::string optionheaderstring("**String options:**");
       WriteParagraph(stream, optionheaderstring);
       // table header for the options in string parameters
-      parametertable.SetWidths({0, 0, 50});
-      parametertable.AddDirective("header-rows", "1");
+      parametertable.set_widths({0, 0, 50});
+      parametertable.add_directive("header-rows", "1");
 
       parametertable.print(stream);
     }
@@ -640,15 +640,15 @@ namespace RTD
     - parameter description */
 
     // the Law title
-    WriteLinktarget(stream, contactlaw->Name());
-    write_header(stream, 1, contactlaw->Name());
+    WriteLinktarget(stream, contactlaw->name());
+    write_header(stream, 1, contactlaw->name());
 
     // the description of the contact law
-    std::string contactDescription = contactlaw->Description();
+    std::string contactDescription = contactlaw->description();
     WriteParagraph(stream, contactDescription);
 
     // the material line as it occurs in the dat file
-    std::string parameter = "LAW <lawID>   " + contactlaw->Name();
+    std::string parameter = "LAW <lawID>   " + contactlaw->name();
     std::vector<std::string> contactlawCode;
     //
     // Also: create the table from the parameter descriptions (based on the so-called
@@ -657,13 +657,13 @@ namespace RTD
     Table parametertable(tablesize);
     std::vector<std::string> tablerow(tablesize);
     tablerow = {"Parameter", "optional", "Description"};
-    parametertable.AddRow(tablerow);
+    parametertable.add_row(tablerow);
 
-    for (auto &parameterterm : contactlaw->Inputline())
+    for (auto &parameterterm : contactlaw->inputline())
     {
       if (auto *separator = dynamic_cast<Input::SeparatorComponent *>(parameterterm.get()))
       {
-        parametertable.AddRow(separator->write_read_the_docs_table_row());
+        parametertable.add_row(separator->write_read_the_docs_table_row());
 
         if (parameter.length() > 60)
         {
@@ -680,13 +680,13 @@ namespace RTD
     WriteCode(stream, contactlawCode);
     //
     // Now printing the parameter table
-    parametertable.SetWidths({10, 10, 50});
-    parametertable.AddDirective("header-rows", "1");
+    parametertable.set_widths({10, 10, 50});
+    parametertable.add_directive("header-rows", "1");
 
-    if (parametertable.GetRows() == 1)
+    if (parametertable.get_rows() == 1)
     {
       tablerow = {"no parameters", "", ""};
-      parametertable.AddRow(tablerow);
+      parametertable.add_row(tablerow);
     }
     parametertable.print(stream);
 

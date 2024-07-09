@@ -42,7 +42,7 @@ namespace PoroElast
         Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter);
 
     //! Setup the monolithic system
-    void SetupSystem() override;
+    void setup_system() override;
 
     //! setup composed right hand side from field solvers
     void setup_rhs(bool firstcall = false) override;

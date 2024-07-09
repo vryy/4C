@@ -45,7 +45,7 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static ScaTraEleCalcPoroReacECM<distype>* Instance(
+      static ScaTraEleCalcPoroReacECM<distype>* instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! get the material parameters

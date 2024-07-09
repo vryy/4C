@@ -61,7 +61,7 @@ namespace THR
 
     //! Resize #TimIntMStep<T> multi-step quantities
     //! Single-step method: nothing to do here
-    void ResizeMStep() override { ; }
+    void resize_m_step() override { ; }
 
     //@}
 
@@ -69,10 +69,10 @@ namespace THR
     //@{
 
     //! Return name
-    enum Inpar::THR::DynamicType MethodName() const override { return Inpar::THR::dyna_statics; }
+    enum Inpar::THR::DynamicType method_name() const override { return Inpar::THR::dyna_statics; }
 
     //! Provide number of steps, a single-step method returns 1
-    int MethodSteps() override { return 1; }
+    int method_steps() override { return 1; }
 
     //! Give local order of accuracy of temperature part
     int method_order_of_accuracy() override
@@ -83,7 +83,7 @@ namespace THR
 
     //! Return linear error coefficient of temperature
     // virtual double MethodLinErrCoeffTemp()
-    double MethodLinErrCoeff() override
+    double method_lin_err_coeff() override
     {
       FOUR_C_THROW("Sensible to ask?");
       return 0.0;
@@ -132,7 +132,7 @@ namespace THR
 
     //! Determine characteristic norm for force
     //! \author lw (originally)
-    double CalcRefNormForce() override;
+    double calc_ref_norm_force() override;
 
     //! Update iteration incrementally
     //!
@@ -153,16 +153,16 @@ namespace THR
     void update_iter_iteratively() override;
 
     //! Update step
-    void UpdateStepState() override;
+    void update_step_state() override;
 
     //! Update element
-    void UpdateStepElement() override;
+    void update_step_element() override;
 
     //! Read and set restart for forces
-    void ReadRestartForce() override;
+    void read_restart_force() override;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
+    void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
 
     //@}
 
@@ -170,10 +170,10 @@ namespace THR
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext() override { return fext_; }
+    Teuchos::RCP<Epetra_Vector> fext() override { return fext_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Epetra_Vector> FextNew() override { return fextn_; }
+    Teuchos::RCP<Epetra_Vector> fext_new() override { return fextn_; }
 
     //@}
 

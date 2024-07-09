@@ -101,7 +101,7 @@ namespace Core::UTILS
     };
 
     /// Return number of components of function
-    [[nodiscard]] virtual std::size_t NumberComponents() const = 0;
+    [[nodiscard]] virtual std::size_t number_components() const = 0;
   };
 
 
@@ -133,7 +133,7 @@ namespace Core::UTILS
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    [[nodiscard]] std::size_t NumberComponents() const override { return (expr_.size()); }
+    [[nodiscard]] std::size_t number_components() const override { return (expr_.size()); }
 
    private:
     using ValueType = double;
@@ -205,13 +205,13 @@ namespace Core::UTILS
      * \param component (i) For vector-valued functions, component defines the function-component
      * which should be evaluated
      */
-    virtual std::vector<double> EvaluateDerivative(
+    virtual std::vector<double> evaluate_derivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const = 0;
 
     //! Return number of components of function
-    [[nodiscard]] virtual std::size_t NumberComponents() const = 0;
+    [[nodiscard]] virtual std::size_t number_components() const = 0;
   };
 
 
@@ -238,13 +238,13 @@ namespace Core::UTILS
         const std::size_t component) const override;
 
 
-    std::vector<double> EvaluateDerivative(
+    std::vector<double> evaluate_derivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
     /// return the number of components
-    [[nodiscard]] std::size_t NumberComponents() const override { return (expr_.size()); }
+    [[nodiscard]] std::size_t number_components() const override { return (expr_.size()); }
 
    private:
     using ValueType = double;

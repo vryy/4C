@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::Instance(
+Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -34,7 +34,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::Instance(
             new ScaTraEleBoundaryCalcElchNP<distype, probdim>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -106,7 +106,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_n
   my::evaluate_neumann(ele, params, discretization, condition, la, elevec1, scalar);
 
   // add boundary flux contributions to potential equation
-  switch (myelch::elchparams_->EquPot())
+  switch (myelch::elchparams_->equ_pot())
   {
     case Inpar::ElCh::equpot_enc_pde:
     case Inpar::ElCh::equpot_enc_pde_elim:
@@ -114,7 +114,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_n
       for (int k = 0; k < my::numscal_; ++k)
       {
         // get valence
-        const double valence_k = get_valence(ele->parent_element()->Material(), k);
+        const double valence_k = get_valence(ele->parent_element()->material(), k);
 
         for (int vi = 0; vi < nen_; ++vi)
           elevec1[vi * my::numdofpernode_ + my::numscal_] +=
@@ -169,7 +169,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype,
       nume, stoich, kinetics, pot0, frt, scalar);
 
   // compute matrix and residual contributions arising from closing equation for electric potential
-  switch (myelch::elchparams_->EquPot())
+  switch (myelch::elchparams_->equ_pot())
   {
     case Inpar::ElCh::equpot_enc:
     {
@@ -203,7 +203,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype,
     // constant
     case Inpar::ElCh::equpot_laplace:
     {
-      const double faraday = myelch::elchparams_->Faraday();
+      const double faraday = myelch::elchparams_->faraday();
       for (int k = 0; k < my::numscal_; ++k)
       {
         for (int vi = 0; vi < nen_; ++vi)
@@ -254,17 +254,17 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::get_val
 {
   double valence(0.);
 
-  if (material->MaterialType() == Core::Materials::m_matlist)
+  if (material->material_type() == Core::Materials::m_matlist)
   {
     const Teuchos::RCP<const Mat::MatList> matlist =
         Teuchos::rcp_static_cast<const Mat::MatList>(material);
 
     const Teuchos::RCP<const Core::Mat::Material> species =
-        matlist->MaterialById(matlist->MatID(k));
+        matlist->material_by_id(matlist->mat_id(k));
 
-    if (species->MaterialType() == Core::Materials::m_ion)
+    if (species->material_type() == Core::Materials::m_ion)
     {
-      valence = Teuchos::rcp_static_cast<const Mat::Ion>(species)->Valence();
+      valence = Teuchos::rcp_static_cast<const Mat::Ion>(species)->valence();
       if (abs(valence) < 1.e-14) FOUR_C_THROW("Received zero valence!");
     }
     else

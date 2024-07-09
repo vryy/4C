@@ -128,13 +128,13 @@ class PostProblem
   //! returns the step parameter the user specified
   int step() const { return step_; }
 
-  Teuchos::RCP<Epetra_Comm> comm();
+  Teuchos::RCP<Epetra_Comm> get_comm();
 
   //! returns the directory name in which the control files and data files are
   std::string input_dir() { return input_dir_; }
 
   //! returns type of the simulation
-  Core::ProblemType Problemtype() { return problemtype_; }
+  Core::ProblemType problemtype() { return problemtype_; }
 
   //! returns type of the spatial approximation (nurbs/polynomial)
   Core::FE::ShapeFunctionType spatial_approximation_type() { return spatial_approx_; }
@@ -167,7 +167,7 @@ class PostProblem
   std::string outputtype() { return outputtype_; }
 
   //! Is post-processing of mortar interfaces activated?
-  bool DoMortarInterfaces() { return mortar_; }
+  bool do_mortar_interfaces() { return mortar_; }
 
   //@}
 

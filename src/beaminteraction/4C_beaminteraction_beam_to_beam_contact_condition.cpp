@@ -35,11 +35,11 @@ BEAMINTERACTION::BeamToBeamContactCondition::BeamToBeamContactCondition(
 /**
  *
  */
-void BEAMINTERACTION::BeamToBeamContactCondition::BuildIdSets(
+void BEAMINTERACTION::BeamToBeamContactCondition::build_id_sets(
     const Teuchos::RCP<const Core::FE::Discretization>& discretization)
 {
   // Call the parent method to build the line maps.
-  BeamInteractionConditionBase::BuildIdSets(discretization);
+  BeamInteractionConditionBase::build_id_sets(discretization);
 
   // Build the other line map.
   std::vector<int> line_ids;
@@ -50,7 +50,7 @@ void BEAMINTERACTION::BeamToBeamContactCondition::BuildIdSets(
 /**
  *
  */
-bool BEAMINTERACTION::BeamToBeamContactCondition::IdsInCondition(
+bool BEAMINTERACTION::BeamToBeamContactCondition::ids_in_condition(
     const int id_line, const int id_other) const
 {
   if (id_is_in_condition(line_ids_, id_line) and id_is_in_condition(other_line_ids_, id_other))
@@ -73,11 +73,11 @@ void BEAMINTERACTION::BeamToBeamContactCondition::clear()
  *
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::BeamToBeamContactCondition::CreateContactPair(
+BEAMINTERACTION::BeamToBeamContactCondition::create_contact_pair(
     const std::vector<Core::Elements::Element const*>& ele_ptrs)
 {
   // Check if the given elements are in this condition.
-  if (!IdsInCondition(ele_ptrs[0]->Id(), ele_ptrs[1]->Id())) return Teuchos::null;
+  if (!ids_in_condition(ele_ptrs[0]->id(), ele_ptrs[1]->id())) return Teuchos::null;
 
   // note: numnodes is to be interpreted as number of nodes used for centerline interpolation.
   // numnodalvalues = 1: only positions as primary nodal DoFs ==> Lagrange interpolation
@@ -86,7 +86,7 @@ BEAMINTERACTION::BeamToBeamContactCondition::CreateContactPair(
   const Discret::ELEMENTS::Beam3Base* beamele1 =
       dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele_ptrs[0]);
 
-  const unsigned int numnodes_centerline = beamele1->NumCenterlineNodes();
+  const unsigned int numnodes_centerline = beamele1->num_centerline_nodes();
   const unsigned int numnodalvalues = beamele1->hermite_centerline_interpolation() ? 2 : 1;
 
   switch (numnodalvalues)

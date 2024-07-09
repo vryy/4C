@@ -23,9 +23,9 @@ namespace Discret
     class PreStressType : public Core::Communication::ParObjectType
     {
      public:
-      std::string Name() const override { return "PreStressType"; }
+      std::string name() const override { return "PreStressType"; }
 
-      static PreStressType& Instance() { return instance_; };
+      static PreStressType& instance() { return instance_; };
 
      private:
       static PreStressType instance_;
@@ -54,7 +54,7 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override;
+      int unique_par_object_id() const override;
       /*!
       \brief Pack this class so it can be communicated
 
@@ -72,13 +72,13 @@ namespace Discret
       void unpack(const std::vector<char>& data) override;
 
       /// get history of deformation gradient
-      inline Core::LinAlg::SerialDenseMatrix& FHistory() const { return *fhist_; }
+      inline Core::LinAlg::SerialDenseMatrix& f_history() const { return *fhist_; }
 
       /// get history of of reference configuration (inverse of Jacobian)
-      inline Core::LinAlg::SerialDenseMatrix& JHistory() const { return *inv_jhist_; }
+      inline Core::LinAlg::SerialDenseMatrix& j_history() const { return *inv_jhist_; }
 
       /// put a matrix to storage
-      inline void MatrixtoStorage(const int gp, const Core::LinAlg::Matrix<3, 3>& Mat,
+      inline void matrixto_storage(const int gp, const Core::LinAlg::Matrix<3, 3>& Mat,
           Core::LinAlg::SerialDenseMatrix& gpMat) const
       {
         for (int i = 0; i < gpMat.numCols(); ++i) gpMat(gp, i) = Mat.data()[i];
@@ -86,7 +86,7 @@ namespace Discret
       }
 
       /// put a matrix to storage
-      inline void MatrixtoStorage(const int gp, const Core::LinAlg::Matrix<4, 3>& Mat,
+      inline void matrixto_storage(const int gp, const Core::LinAlg::Matrix<4, 3>& Mat,
           Core::LinAlg::SerialDenseMatrix& gpMat) const
       {
         for (int i = 0; i < gpMat.numCols(); ++i) gpMat(gp, i) = Mat.data()[i];
@@ -94,7 +94,7 @@ namespace Discret
       }
 
       /// get matrix from storage
-      inline void StoragetoMatrix(const int gp, Core::LinAlg::Matrix<3, 3>& Mat,
+      inline void storageto_matrix(const int gp, Core::LinAlg::Matrix<3, 3>& Mat,
           const Core::LinAlg::SerialDenseMatrix& gpMat) const
       {
         for (int i = 0; i < gpMat.numCols(); ++i) Mat.data()[i] = gpMat(gp, i);
@@ -102,7 +102,7 @@ namespace Discret
       }
 
       /// get matrix from storage
-      inline void StoragetoMatrix(const int gp, Core::LinAlg::Matrix<4, 3>& Mat,
+      inline void storageto_matrix(const int gp, Core::LinAlg::Matrix<4, 3>& Mat,
           const Core::LinAlg::SerialDenseMatrix& gpMat) const
       {
         for (int i = 0; i < gpMat.numCols(); ++i) Mat.data()[i] = gpMat(gp, i);

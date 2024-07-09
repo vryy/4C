@@ -21,15 +21,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Beam3k::ReadElement(
+bool Discret::ELEMENTS::Beam3k::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model and cross-sections specs
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  SetMaterial(0, Mat::Factory(material));
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  set_material(0, Mat::Factory(material_id));
 
-  const auto mat_type = Material()->Parameter()->Type();
+  const auto mat_type = material()->parameter()->type();
   FOUR_C_THROW_UNLESS(mat_type == Core::Materials::m_beam_kirchhoff_elast_hyper ||
                           mat_type == Core::Materials::m_beam_kirchhoff_elast_hyper_bymodes,
       "The material parameter definition '%s' is not supported by Beam3k element! "

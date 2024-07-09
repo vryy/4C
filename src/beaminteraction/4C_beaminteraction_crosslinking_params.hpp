@@ -95,7 +95,7 @@ namespace BEAMINTERACTION
     };
 
     /// get all active crosslinker types
-    std::vector<Inpar::BEAMINTERACTION::CrosslinkerType> const& LinkerTypes() const
+    std::vector<Inpar::BEAMINTERACTION::CrosslinkerType> const& linker_types() const
     {
       check_init_setup();
       return linkertypes_;
@@ -109,21 +109,21 @@ namespace BEAMINTERACTION
     };
 
     /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
-    double const& Viscosity() const
+    double const& viscosity() const
     {
       check_init_setup();
       return viscosity_;
     };
 
     /// thermal energy
-    double const& KT() const
+    double const& kt() const
     {
       check_init_setup();
       return kt_;
     };
 
     /// time step for stochastic events concerning crosslinking
-    double const& DeltaTime() const
+    double const& delta_time() const
     {
       check_init_setup();
       return deltatime_;

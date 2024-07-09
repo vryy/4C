@@ -41,7 +41,7 @@ void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::check_material_typ
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
   Core::Materials::MaterialType mtype =
-      Global::Problem::Instance()->Materials()->ParameterById(matid)->Type();
+      Global::Problem::instance()->materials()->parameter_by_id(matid)->type();
   if ((mtype != Core::Materials::m_fluidporo_multiphase) and
       (mtype != Core::Materials::m_fluidporo_multiphase_reactions))
     FOUR_C_THROW("Material with ID %d is not admissible for porofluid multiphase elements", matid);
@@ -64,8 +64,8 @@ void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::set_element_data(
       dynamic_cast<Discret::ELEMENTS::PoroFluidMultiPhase*>(newele.get());
   if (porofluidele != nullptr)
   {
-    porofluidele->SetMaterial(0, Mat::Factory(matid));
-    porofluidele->SetDisType(oldele->Shape());  // set distype as well!
+    porofluidele->set_material(0, Mat::Factory(matid));
+    porofluidele->set_dis_type(oldele->shape());  // set distype as well!
   }
   else
   {

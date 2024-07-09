@@ -61,7 +61,7 @@ namespace
     const std::vector<double> solutions = {-1.968, -8.4e-1, -1.8, -2.952};
 
     for (std::size_t i = 0; i < x_test.size(); ++i)
-      EXPECT_NEAR(cubic_spline_from_csv_->EvaluateDerivative(x_test[i], 1), solutions[i], 1.0e-12);
+      EXPECT_NEAR(cubic_spline_from_csv_->evaluate_derivative(x_test[i], 1), solutions[i], 1.0e-12);
   }
 }  // namespace
 FOUR_C_NAMESPACE_CLOSE

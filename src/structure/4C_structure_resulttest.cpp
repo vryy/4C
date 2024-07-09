@@ -25,13 +25,13 @@ FOUR_C_NAMESPACE_OPEN
 StruResultTest::StruResultTest(Solid::TimInt& tintegrator)
     : Core::UTILS::ResultTest("STRUCTURE"), timeintegrator_(Teuchos::rcpFromRef(tintegrator))
 {
-  dis_ = tintegrator.Dis();
-  vel_ = tintegrator.Vel();
-  acc_ = tintegrator.Acc();
+  dis_ = tintegrator.dis();
+  vel_ = tintegrator.vel();
+  acc_ = tintegrator.acc();
   strudisc_ = tintegrator.discretization();
 
-  if (tintegrator.DispMat() != Teuchos::null)
-    dism_ = tintegrator.Dismat();
+  if (tintegrator.disp_mat() != Teuchos::null)
+    dism_ = tintegrator.dismat();
   else
     dism_ = Teuchos::null;
 }
@@ -45,29 +45,29 @@ void StruResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_
   // care for the case of multiple discretizations of the same field type
   std::string dis;
   res.extract_string("DIS", dis);
-  if (dis != strudisc_->Name()) return;
+  if (dis != strudisc_->name()) return;
 
   int node;
   res.extract_int("NODE", node);
   node -= 1;
 
-  int havenode(strudisc_->HaveGlobalNode(node));
+  int havenode(strudisc_->have_global_node(node));
   int isnodeofanybody(0);
-  strudisc_->Comm().SumAll(&havenode, &isnodeofanybody, 1);
+  strudisc_->get_comm().SumAll(&havenode, &isnodeofanybody, 1);
 
   if (isnodeofanybody == 0)
   {
     FOUR_C_THROW(
-        "Node %d does not belong to discretization %s", node + 1, strudisc_->Name().c_str());
+        "Node %d does not belong to discretization %s", node + 1, strudisc_->name().c_str());
   }
   else
   {
-    if (strudisc_->HaveGlobalNode(node))
+    if (strudisc_->have_global_node(node))
     {
-      const Core::Nodes::Node* actnode = strudisc_->gNode(node);
+      const Core::Nodes::Node* actnode = strudisc_->g_node(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->Owner() != strudisc_->Comm().MyPID()) return;
+      if (actnode->owner() != strudisc_->get_comm().MyPID()) return;
 
       std::string position;
       res.extract_string("QUANTITY", position);
@@ -91,10 +91,10 @@ void StruResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = disnpmap.LID(strudisc_->Dof(0, actnode, idx));
+          int lid = disnpmap.LID(strudisc_->dof(0, actnode, idx));
           if (lid < 0)
             FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
-                idx, actnode->Id());
+                idx, actnode->id());
           result = (*dis_)[lid];
         }
       }
@@ -114,10 +114,10 @@ void StruResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = dismpmap.LID(strudisc_->Dof(0, actnode, idx));
+          int lid = dismpmap.LID(strudisc_->dof(0, actnode, idx));
           if (lid < 0)
             FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
-                idx, actnode->Id());
+                idx, actnode->id());
           result = (*dism_)[lid];
         }
       }
@@ -137,10 +137,10 @@ void StruResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = velnpmap.LID(strudisc_->Dof(0, actnode, idx));
+          int lid = velnpmap.LID(strudisc_->dof(0, actnode, idx));
           if (lid < 0)
             FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
-                idx, actnode->Id());
+                idx, actnode->id());
           result = (*vel_)[lid];
         }
       }
@@ -160,10 +160,10 @@ void StruResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = accnpmap.LID(strudisc_->Dof(0, actnode, idx));
+          int lid = accnpmap.LID(strudisc_->dof(0, actnode, idx));
           if (lid < 0)
             FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
-                idx, actnode->Id());
+                idx, actnode->id());
           result = (*acc_)[lid];
         }
       }
@@ -182,7 +182,7 @@ void StruResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StruResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count)
+void StruResultTest::test_special(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // extract name of quantity to be tested
   std::string quantity;
@@ -192,7 +192,7 @@ void StruResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& tes
   const double result = get_special_result_for_testing(quantity);
 
   // compare values on one processor only, as they are the same everywhere
-  if (strudisc_->Comm().MyPID() == 0)
+  if (strudisc_->get_comm().MyPID() == 0)
   {
     const int err = compare_values(result, "SPECIAL", res);
     nerr += err;
@@ -208,9 +208,9 @@ double StruResultTest::get_special_result_for_testing(const std::string& quantit
   double result(0.);
 
   if (quantity == "lin_iters")  // number of iterations in solid linear solver
-    result = static_cast<double>(timeintegrator_->Solver()->getNumIters());
+    result = static_cast<double>(timeintegrator_->solver()->get_num_iters());
   else if (quantity == "lin_iters_contact")  // number of iterations in contact linear solver
-    result = static_cast<double>(timeintegrator_->ContactSolver()->getNumIters());
+    result = static_cast<double>(timeintegrator_->contact_solver()->get_num_iters());
   else  // Catch unknown quantity strings
     FOUR_C_THROW("Quantity '%s' not supported in structure result test!", quantity.c_str());
 

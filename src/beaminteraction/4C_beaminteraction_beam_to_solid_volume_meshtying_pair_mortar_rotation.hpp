@@ -90,7 +90,7 @@ namespace BEAMINTERACTION
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
      * matrix (derived).
      */
-    void EvaluateAndAssemble(const Core::FE::Discretization& discret,
+    void evaluate_and_assemble(const Core::FE::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,

@@ -58,11 +58,11 @@ namespace Mat
   class ViscoNeoHookeType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "ViscoNeoHookeType"; }
+    std::string name() const override { return "ViscoNeoHookeType"; }
 
-    static ViscoNeoHookeType& Instance() { return instance_; };
+    static ViscoNeoHookeType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static ViscoNeoHookeType instance_;
@@ -87,9 +87,9 @@ namespace Mat
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ViscoNeoHookeType::Instance().UniqueParObjectId();
+      return ViscoNeoHookeType::instance().unique_par_object_id();
     }
 
     /*!
@@ -97,7 +97,7 @@ namespace Mat
 
       Resizes the vector data and stores all information of a class in it.
       The first information to be stored in data has to be the
-      unique parobject id delivered by UniqueParObjectId() which will then
+      unique parobject id delivered by unique_par_object_id() which will then
       identify the exact class on the receiving processor.
       This material contains history variables, which are packed for restart purposes.
 
@@ -112,7 +112,7 @@ namespace Mat
       exact copy of an instance of a class on a different processor.
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
-      UniqueParObjectId().
+      unique_par_object_id().
       History data is unpacked in restart.
 
       \param data (in) : vector storing all data to be unpacked into this
@@ -123,20 +123,20 @@ namespace Mat
     //@}
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_visconeohooke;
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Inpar::Solid::KinemType kinem) override
     {
       if (!(kinem == Inpar::Solid::KinemType::nonlinearTotLag))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new ViscoNeoHooke(*this));
     }
@@ -157,16 +157,16 @@ namespace Mat
         int eleGID) override;
 
     /// Return density
-    double Density() const override { return params_->density_; }
+    double density() const override { return params_->density_; }
 
     /// Return shear modulus
     double shear_mod() const { return 0.5 * params_->youngs_slow_ / (1.0 + params_->poisson_); };
 
     /// Check if history variables are already initialized
-    bool Initialized() const { return isinit_ && (histstresscurr_ != Teuchos::null); }
+    bool initialized() const { return isinit_ && (histstresscurr_ != Teuchos::null); }
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
    private:
     /// my material parameters

@@ -65,7 +65,7 @@ namespace Solid::MODELEVALUATOR
 
     void post_output() override {}
 
-    void Predict(const Inpar::Solid::PredEnum& pred_type) override {}
+    void predict(const Inpar::Solid::PredEnum& pred_type) override {}
 
     void pre_evaluate() override {}
 
@@ -89,7 +89,7 @@ namespace Solid::MODELEVALUATOR
 
     void setup() override;
 
-    [[nodiscard]] Inpar::Solid::ModelType Type() const override
+    [[nodiscard]] Inpar::Solid::ModelType type() const override
     {
       return Inpar::Solid::model_basic_coupling;
     }

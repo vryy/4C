@@ -53,7 +53,7 @@ void ScaTra::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
   if (intlayergrowth_timestep_ > 0.0)
   {
     // add state vectors to discretization
-    scatratimint_->discretization()->ClearState();
+    scatratimint_->discretization()->clear_state();
     scatratimint_->add_time_integration_specific_vectors();
 
     // create parameter list
@@ -69,7 +69,7 @@ void ScaTra::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
 
     // extract boundary conditions for scatra-scatra interface layer growth
     std::vector<Core::Conditions::Condition*> conditions;
-    scatratimint_->discretization()->GetCondition("S2IKineticsGrowth", conditions);
+    scatratimint_->discretization()->get_condition("S2IKineticsGrowth", conditions);
 
     // collect condition specific data and store to scatra boundary parameter class
     set_condition_specific_sca_tra_parameters(*conditions[0]);
@@ -77,12 +77,12 @@ void ScaTra::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
     // interface layer growth
     scatratimint_->discretization()->evaluate_condition(condparams, Teuchos::null, Teuchos::null,
         Teuchos::null, Teuchos::null, Teuchos::null, "S2IKineticsGrowth");
-    scatratimint_->discretization()->ClearState();
+    scatratimint_->discretization()->clear_state();
 
     // communicate minimum interfacial overpotential associated with scatra-scatra interface layer
     // growth
     double etagrowthmin(0.0);
-    scatratimint_->discretization()->Comm().MinAll(
+    scatratimint_->discretization()->get_comm().MinAll(
         &condparams.get<double>("etagrowthmin"), &etagrowthmin, 1);
 
     // adaptive time stepping for scatra-scatra interface layer growth is currently inactive
@@ -104,7 +104,7 @@ void ScaTra::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
       // communicate maximum interfacial overpotential associated with scatra-scatra interface layer
       // growth
       double etagrowthmax(0.0);
-      scatratimint_->discretization()->Comm().MaxAll(
+      scatratimint_->discretization()->get_comm().MaxAll(
           &condparams.get<double>("etagrowthmax"), &etagrowthmax, 1);
 
       // check whether maximum interfacial overpotential has become negative
@@ -112,14 +112,14 @@ void ScaTra::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
       {
         // store current time step as indicator for completed onset of scatra-scatra interface layer
         // growth
-        intlayergrowth_startstep_ = scatratimint_->Step();
+        intlayergrowth_startstep_ = scatratimint_->step();
       }
 
       // check whether adaptive time stepping for scatra-scatra interface layer growth needs to be
       // deactivated this is the case if ten time steps have passed since the completed onset of
       // scatra-scatra interface layer growth or if the minimum interfacial overpotential is
       // positive and increasing
-      if (scatratimint_->Step() == intlayergrowth_startstep_ + 10 or
+      if (scatratimint_->step() == intlayergrowth_startstep_ + 10 or
           (etagrowthmin > 0.0 and etagrowthmin > etagrowthmin_))
       {
         // deactivate adaptive time stepping for scatra-scatra interface layer growth
@@ -143,14 +143,14 @@ void ScaTra::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
 /*--------------------------------------------------------------------------------------*
  | evaluate scatra-scatra interface coupling conditions (electrochemistry)   fang 10/14 |
  *--------------------------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyS2IElch::EvaluateMeshtying()
+void ScaTra::MeshtyingStrategyS2IElch::evaluate_meshtying()
 {
   // safety check
-  if (Core::UTILS::IntegralValue<int>(*(elch_tim_int()->ElchParameterList()), "BLOCKPRECOND"))
+  if (Core::UTILS::IntegralValue<int>(*(elch_tim_int()->elch_parameter_list()), "BLOCKPRECOND"))
     FOUR_C_THROW("Block preconditioning doesn't work for scatra-scatra interface coupling yet!");
 
   // call base class routine
-  ScaTra::MeshtyingStrategyS2I::EvaluateMeshtying();
+  ScaTra::MeshtyingStrategyS2I::evaluate_meshtying();
 }  // ScaTra::MeshtyingStrategyS2IElch::evaluate_meshtying
 
 /*-----------------------------------------------------------------------*
@@ -164,13 +164,13 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
     auto* cond_slave = slave_condition.second;
 
     // only evaluate point coupling conditions
-    if (cond_slave->GType() != Core::Conditions::geometry_type_point) continue;
+    if (cond_slave->g_type() != Core::Conditions::geometry_type_point) continue;
 
-    auto* cond_master = MasterConditions()[slave_condition.first];
+    auto* cond_master = master_conditions()[slave_condition.first];
 
     // extract nodal cloud
-    const std::vector<int>* const nodeids_slave = cond_slave->GetNodes();
-    const std::vector<int>* const nodeids_master = cond_master->GetNodes();
+    const std::vector<int>* const nodeids_slave = cond_slave->get_nodes();
+    const std::vector<int>* const nodeids_master = cond_master->get_nodes();
 
     if (nodeids_slave->size() != 1 or nodeids_master->size() != 1)
       FOUR_C_THROW("only one node per condition allowed");
@@ -180,12 +180,12 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
 
     auto dis = scatratimint_->discretization();
 
-    auto* slave_node = dis->gNode(nodeid_slave);
-    auto* master_node = dis->gNode(nodeid_master);
+    auto* slave_node = dis->g_node(nodeid_slave);
+    auto* master_node = dis->g_node(nodeid_master);
 
     // extract degrees of freedom from node
-    const std::vector<int> slave_dofs = dis->Dof(0, slave_node);
-    const std::vector<int> master_dofs = dis->Dof(0, master_node);
+    const std::vector<int> slave_dofs = dis->dof(0, slave_node);
+    const std::vector<int> master_dofs = dis->dof(0, master_node);
 
     const int ed_conc_gid = slave_dofs[0];
     const int ed_pot_gid = slave_dofs[1];
@@ -199,7 +199,7 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
     const int el_pot_lid = dof_row_map->LID(el_pot_gid);
 
     // extract electrode-side and electrolyte-side values at coupling point
-    auto phinp = scatratimint_->Phinp();
+    auto phinp = scatratimint_->phinp();
     const double ed_conc = (*phinp)[ed_conc_lid];
     const double ed_pot = (*phinp)[ed_pot_lid];
     const double el_conc = (*phinp)[el_conc_lid];
@@ -215,7 +215,7 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
       {
         // access material of electrode
         auto matelectrode =
-            Teuchos::rcp_dynamic_cast<const Mat::Electrode>(slave_node->Elements()[0]->Material());
+            Teuchos::rcp_dynamic_cast<const Mat::Electrode>(slave_node->elements()[0]->material());
         if (matelectrode == Teuchos::null)
           FOUR_C_THROW("Invalid electrode material for multi-scale coupling!");
 
@@ -228,7 +228,7 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
               "electrode-electrolyte interface!");
         }
         const std::vector<int>* stoichiometries =
-            cond_slave->parameters().GetIf<std::vector<int>>("stoichiometries");
+            cond_slave->parameters().get_if<std::vector<int>>("stoichiometries");
         if (stoichiometries == nullptr)
         {
           FOUR_C_THROW(
@@ -239,19 +239,20 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
           FOUR_C_THROW("Number of stoichiometric coefficients does not match number of scalars!");
         if ((*stoichiometries)[0] != -1) FOUR_C_THROW("Invalid stoichiometric coefficient!");
         const double faraday =
-            Global::Problem::Instance(0)->ELCHControlParams().get<double>("FARADAY_CONSTANT");
+            Global::Problem::instance(0)->elch_control_params().get<double>("FARADAY_CONSTANT");
         const double gasconstant =
-            Global::Problem::Instance(0)->ELCHControlParams().get<double>("GAS_CONSTANT");
+            Global::Problem::instance(0)->elch_control_params().get<double>("GAS_CONSTANT");
         const double frt =
-            faraday / (gasconstant * (Global::Problem::Instance(0)->ELCHControlParams().get<double>(
-                                         "TEMPERATURE")));
+            faraday /
+            (gasconstant *
+                (Global::Problem::instance(0)->elch_control_params().get<double>("TEMPERATURE")));
         const double alphaa = cond_slave->parameters().get<double>("alpha_a");
         const double alphac = cond_slave->parameters().get<double>("alpha_c");
         const double kr = cond_slave->parameters().get<double>("k_r");
         if (kr < 0.0) FOUR_C_THROW("Charge transfer constant k_r is negative!");
 
         // extract saturation value of intercalated lithium concentration from electrode material
-        const double cmax = matelectrode->CMax();
+        const double cmax = matelectrode->c_max();
         if (cmax < 1.0e-12)
           FOUR_C_THROW(
               "Saturation value c_max of intercalated lithium concentration is too small!");
@@ -259,13 +260,14 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
         // compute domain integration factor
         constexpr double four_pi = 4.0 * M_PI;
         const double fac = Core::UTILS::IntegralValue<bool>(
-                               *scatratimint_->ScatraParameterList(), "SPHERICALCOORDS")
-                               ? *slave_node->X().data() * *slave_node->X().data() * four_pi
+                               *scatratimint_->scatra_parameter_list(), "SPHERICALCOORDS")
+                               ? *slave_node->x().data() * *slave_node->x().data() * four_pi
                                : 1.0;
         const double timefacfac =
-            Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis->Name())->TimeFac() * fac;
+            Discret::ELEMENTS::ScaTraEleParameterTimInt::instance(dis->name())->time_fac() * fac;
         const double timefacrhsfac =
-            Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis->Name())->TimeFacRhs() * fac;
+            Discret::ELEMENTS::ScaTraEleParameterTimInt::instance(dis->name())->time_fac_rhs() *
+            fac;
         if (timefacfac < 0.0 or timefacrhsfac < 0.0)
           FOUR_C_THROW("Integration factor is negative!");
         // no deformation available
@@ -307,7 +309,7 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
             cmax, eta, dj_ded_conc, dj_del_conc, dj_ded_pot, dj_del_pot);
 
         // assemble concentration residuals
-        auto residual = scatratimint_->Residual();
+        auto residual = scatratimint_->residual();
         (*residual)[ed_conc_lid] -= timefacrhsfac * j;
         (*residual)[el_conc_lid] -= timefacrhsfac * j * -1.0;
 
@@ -317,26 +319,26 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
 
         // assemble concentration linearizations
         auto sys_mat = scatratimint_->system_matrix_operator();
-        sys_mat->Assemble(timefacfac * dj_ded_conc, ed_conc_gid, ed_conc_gid);
-        sys_mat->Assemble(timefacfac * dj_del_conc, ed_conc_gid, el_conc_gid);
-        sys_mat->Assemble(timefacfac * dj_ded_pot, ed_conc_gid, ed_pot_gid);
-        sys_mat->Assemble(timefacfac * dj_del_pot, ed_conc_gid, el_pot_gid);
+        sys_mat->assemble(timefacfac * dj_ded_conc, ed_conc_gid, ed_conc_gid);
+        sys_mat->assemble(timefacfac * dj_del_conc, ed_conc_gid, el_conc_gid);
+        sys_mat->assemble(timefacfac * dj_ded_pot, ed_conc_gid, ed_pot_gid);
+        sys_mat->assemble(timefacfac * dj_del_pot, ed_conc_gid, el_pot_gid);
 
-        sys_mat->Assemble(timefacfac * dj_ded_conc * -1.0, el_conc_gid, ed_conc_gid);
-        sys_mat->Assemble(timefacfac * dj_del_conc * -1.0, el_conc_gid, el_conc_gid);
-        sys_mat->Assemble(timefacfac * dj_ded_pot * -1.0, el_conc_gid, ed_pot_gid);
-        sys_mat->Assemble(timefacfac * dj_del_pot * -1.0, el_conc_gid, el_pot_gid);
+        sys_mat->assemble(timefacfac * dj_ded_conc * -1.0, el_conc_gid, ed_conc_gid);
+        sys_mat->assemble(timefacfac * dj_del_conc * -1.0, el_conc_gid, el_conc_gid);
+        sys_mat->assemble(timefacfac * dj_ded_pot * -1.0, el_conc_gid, ed_pot_gid);
+        sys_mat->assemble(timefacfac * dj_del_pot * -1.0, el_conc_gid, el_pot_gid);
 
         // assemble potential linearizations
-        sys_mat->Assemble(timefacfac * nume * dj_ded_conc, ed_pot_gid, ed_conc_gid);
-        sys_mat->Assemble(timefacfac * nume * dj_del_conc, ed_pot_gid, el_conc_gid);
-        sys_mat->Assemble(timefacfac * nume * dj_ded_pot, ed_pot_gid, ed_pot_gid);
-        sys_mat->Assemble(timefacfac * nume * dj_del_pot, ed_pot_gid, el_pot_gid);
+        sys_mat->assemble(timefacfac * nume * dj_ded_conc, ed_pot_gid, ed_conc_gid);
+        sys_mat->assemble(timefacfac * nume * dj_del_conc, ed_pot_gid, el_conc_gid);
+        sys_mat->assemble(timefacfac * nume * dj_ded_pot, ed_pot_gid, ed_pot_gid);
+        sys_mat->assemble(timefacfac * nume * dj_del_pot, ed_pot_gid, el_pot_gid);
 
-        sys_mat->Assemble(timefacfac * nume * dj_ded_conc * -1.0, el_pot_gid, ed_conc_gid);
-        sys_mat->Assemble(timefacfac * nume * dj_del_conc * -1.0, el_pot_gid, el_conc_gid);
-        sys_mat->Assemble(timefacfac * nume * dj_ded_pot * -1.0, el_pot_gid, ed_pot_gid);
-        sys_mat->Assemble(timefacfac * nume * dj_del_pot * -1.0, el_pot_gid, el_pot_gid);
+        sys_mat->assemble(timefacfac * nume * dj_ded_conc * -1.0, el_pot_gid, ed_conc_gid);
+        sys_mat->assemble(timefacfac * nume * dj_del_conc * -1.0, el_pot_gid, el_conc_gid);
+        sys_mat->assemble(timefacfac * nume * dj_ded_pot * -1.0, el_pot_gid, ed_pot_gid);
+        sys_mat->assemble(timefacfac * nume * dj_del_pot * -1.0, el_pot_gid, el_pot_gid);
 
         break;
       }
@@ -360,16 +362,16 @@ void ScaTra::MeshtyingStrategyS2IElch::init_conv_check_strategy()
       couplingtype_ == Inpar::S2I::coupling_mortar_saddlepoint_bubnov)
   {
     convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyS2ILMElch(
-        scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
   }
-  else if (elch_tim_int()->MacroScale())
+  else if (elch_tim_int()->macro_scale())
   {
     convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyStdMacroScaleElch(
-        scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
   }
   else
     convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyStdElch(
-        scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
 }  // ScaTra::MeshtyingStrategyS2IElch::init_conv_check_strategy
 
 
@@ -383,7 +385,7 @@ void ScaTra::MeshtyingStrategyS2IElch::update() const
   {
     // extract boundary conditions for scatra-scatra interface layer growth
     std::vector<Core::Conditions::Condition*> conditions;
-    scatratimint_->discretization()->GetCondition("S2IKineticsGrowth", conditions);
+    scatratimint_->discretization()->get_condition("S2IKineticsGrowth", conditions);
 
     // loop over all conditions
     for (const auto& condition : conditions)
@@ -398,37 +400,38 @@ void ScaTra::MeshtyingStrategyS2IElch::update() const
           const auto kr = condition->parameters().get<double>("k_r");
           const auto alphaa = condition->parameters().get<double>("alpha_a");
           const auto alphac = condition->parameters().get<double>("alpha_c");
-          const double frt = elch_tim_int()->FRT();
+          const double frt = elch_tim_int()->frt();
           const double conductivity_inverse =
               1. / condition->parameters().get<double>("conductivity");
           const double faraday =
-              Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+              Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
 
           // pre-compute integration factor
           const double integrationfac(condition->parameters().get<double>("molar mass") *
-                                      scatratimint_->Dt() /
+                                      scatratimint_->dt() /
                                       (condition->parameters().get<double>("density") * faraday));
 
           // extract nodal cloud from current condition
-          const std::vector<int>* nodegids = condition->GetNodes();
+          const std::vector<int>* nodegids = condition->get_nodes();
 
           // loop over all nodes
           for (int nodegid : *nodegids)
           {
             // extract global ID of current node
             // process only nodes stored by current processor
-            if (scatratimint_->discretization()->HaveGlobalNode(nodegid))
+            if (scatratimint_->discretization()->have_global_node(nodegid))
             {
               // extract current node
-              const Core::Nodes::Node* const node = scatratimint_->discretization()->gNode(nodegid);
+              const Core::Nodes::Node* const node =
+                  scatratimint_->discretization()->g_node(nodegid);
 
               // process only nodes owned by current processor
-              if (node->Owner() == scatratimint_->discretization()->Comm().MyPID())
+              if (node->owner() == scatratimint_->discretization()->get_comm().MyPID())
               {
                 // extract local ID of first scalar transport degree of freedom associated with
                 // current node
                 const int doflid_scatra = scatratimint_->discretization()->dof_row_map()->LID(
-                    scatratimint_->discretization()->Dof(
+                    scatratimint_->discretization()->dof(
                         0, node, 0));  // Do not remove the first zero, i.e., the first function
                                        // argument, otherwise an error is thrown in debug mode!
                 if (doflid_scatra < 0)
@@ -437,13 +440,13 @@ void ScaTra::MeshtyingStrategyS2IElch::update() const
                 // extract local ID of scatra-scatra interface layer thickness variable associated
                 // with current node
                 const int doflid_growth = scatratimint_->discretization()->dof_row_map(2)->LID(
-                    scatratimint_->discretization()->Dof(2, node, 0));
+                    scatratimint_->discretization()->dof(2, node, 0));
                 if (doflid_growth < 0)
                   FOUR_C_THROW(
                       "Couldn't extract local ID of scatra-scatra interface layer thickness!");
 
                 // extract slave-side electric potential associated with current node
-                const double slavepot = (*scatratimint_->Phiafnp())[doflid_scatra + 1];
+                const double slavepot = (*scatratimint_->phiafnp())[doflid_scatra + 1];
 
                 // extract master-side lithium concentration associated with current node
                 const double masterphi = (*imasterphi_on_slave_side_np_)[doflid_scatra];
@@ -536,7 +539,7 @@ void ScaTra::MeshtyingStrategyS2IElch::update() const
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 ScaTra::MortarCellCalcElch<distype_s, distype_m>*
-ScaTra::MortarCellCalcElch<distype_s, distype_m>::Instance(
+ScaTra::MortarCellCalcElch<distype_s, distype_m>::instance(
     const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
     const Inpar::S2I::InterfaceSides&
         lmside,  //!< flag for interface side underlying Lagrange multiplier definition
@@ -554,7 +557,7 @@ ScaTra::MortarCellCalcElch<distype_s, distype_m>::Instance(
                 couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
       });
 
-  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, couplingtype, lmside,
+  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, couplingtype, lmside,
       numdofpernode_slave, numdofpernode_master);
 }
 
@@ -588,7 +591,7 @@ void ScaTra::MortarCellCalcElch<distype_s, distype_m>::evaluate_condition(
   // safety checks
   if (my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)
     FOUR_C_THROW("Invalid number of degrees of freedom per node!");
-  if (Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->EquPot() !=
+  if (Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->equ_pot() !=
       Inpar::ElCh::equpot_divi)
     FOUR_C_THROW("Invalid closing equation for electric potential!");
 
@@ -599,7 +602,7 @@ void ScaTra::MortarCellCalcElch<distype_s, distype_m>::evaluate_condition(
 
   // access material of slave element
   Teuchos::RCP<const Mat::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(slaveelement.Material());
+      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(slaveelement.material());
   if (matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
@@ -616,7 +619,7 @@ void ScaTra::MortarCellCalcElch<distype_s, distype_m>::evaluate_condition(
   const double pseudo_contact_fac = 1.0;
 
   // loop over all integration points
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     // evaluate shape functions and domain integration factor at current integration point
     const double fac = my::eval_shape_func_and_dom_int_fac_at_int_point(
@@ -626,9 +629,9 @@ void ScaTra::MortarCellCalcElch<distype_s, distype_m>::evaluate_condition(
 
     // overall integration factors
     const double timefacfac =
-        Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac() * fac;
+        Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time_fac() * fac;
     const double timefacrhsfac =
-        Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFacRhs() * fac;
+        Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time_fac_rhs() * fac;
     if (timefacfac < 0.0 or timefacrhsfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
@@ -655,16 +658,16 @@ void ScaTra::MortarCellCalcElch<distype_s, distype_m>::evaluate_condition_nts(
   // safety checks
   if (my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)
     FOUR_C_THROW("Invalid number of degrees of freedom per node!");
-  if (Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->EquPot() !=
+  if (Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->equ_pot() !=
       Inpar::ElCh::equpot_divi)
     FOUR_C_THROW("Invalid closing equation for electric potential!");
 
   // access material of slave element
   Teuchos::RCP<const Mat::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const Mat::Electrode>(
       Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
-          condition.Geometry()[slaveelement.Id()])
+          condition.geometry()[slaveelement.id()])
           ->parent_element()
-          ->Material());
+          ->material());
   if (matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
@@ -679,9 +682,9 @@ void ScaTra::MortarCellCalcElch<distype_s, distype_m>::evaluate_condition_nts(
 
   // overall integration factors
   const double timefacfac =
-      Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac() * lumpedarea;
+      Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time_fac() * lumpedarea;
   const double timefacrhsfac =
-      Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFacRhs() * lumpedarea;
+      Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time_fac_rhs() * lumpedarea;
   if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
   // no deformation available
@@ -692,7 +695,7 @@ void ScaTra::MortarCellCalcElch<distype_s, distype_m>::evaluate_condition_nts(
       ephinp_slave, ephinp_master, dummy_slave_temp, dummy_master_temp, pseudo_contact_fac,
       my::funct_slave_, my::funct_master_, my::funct_slave_, my::funct_master_,
       my::scatraparamsboundary_, timefacfac, timefacrhsfac, dummy_detF,
-      Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(),
+      Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->frt(),
       my::numdofpernode_slave_, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
 }
 
@@ -704,7 +707,7 @@ template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 double ScaTra::MortarCellCalcElch<distype_s, distype_m>::get_frt() const
 {
   // fetch factor F/RT from electrochemistry parameter list
-  return Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT();
+  return Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->frt();
 }
 
 
@@ -713,7 +716,7 @@ double ScaTra::MortarCellCalcElch<distype_s, distype_m>::get_frt() const
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>*
-ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::Instance(
+ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::instance(
     const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
     const Inpar::S2I::InterfaceSides&
         lmside,  //!< flag for interface side underlying Lagrange multiplier definition
@@ -731,7 +734,7 @@ ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::Instance(
                 couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
       });
 
-  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, couplingtype, lmside,
+  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, couplingtype, lmside,
       numdofpernode_slave, numdofpernode_master);
 }
 
@@ -822,7 +825,7 @@ void ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::evaluate_conditi
   // safety checks
   if (my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)
     FOUR_C_THROW("Invalid number of degrees of freedom per node!");
-  if (Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->EquPot() !=
+  if (Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->equ_pot() !=
       Inpar::ElCh::equpot_divi)
     FOUR_C_THROW("Invalid closing equation for electric potential!");
 
@@ -834,9 +837,9 @@ void ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::evaluate_conditi
   // access material of slave element
   Teuchos::RCP<const Mat::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const Mat::Electrode>(
       Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
-          s2icondition->Geometry()[slaveelement.Id()])
+          s2icondition->geometry()[slaveelement.id()])
           ->parent_element()
-          ->Material());
+          ->material());
   if (matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
@@ -853,7 +856,7 @@ void ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::evaluate_conditi
   const double pseudo_contact_fac = 1.0;
 
   // loop over integration points
-  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::eval_shape_func_and_dom_int_fac_at_int_point(
@@ -861,11 +864,11 @@ void ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::evaluate_conditi
 
     // evaluate overall integration factor
     const double timefac =
-        Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac();
+        Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time_fac();
     const double timefacfac = timefac * fac;
     if (timefacfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
-    const double timefacwgt = timefac * intpoints.IP().qwgt[gpid];
+    const double timefacwgt = timefac * intpoints.ip().qwgt[gpid];
 
     // no deformation available
     const double dummy_detF(1.0);
@@ -911,9 +914,9 @@ double ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::get_frt() cons
   // safety check
   if (temperature <= 0.) FOUR_C_THROW("Temperature is non-positive!");
 
-  const double faraday = Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+  const double faraday = Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
   const double gasconstant =
-      Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
+      Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->gas_constant();
 
   // evaluate factor F/RT
   return faraday / (gasconstant * temperature);
@@ -925,7 +928,7 @@ double ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::get_frt() cons
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>*
-ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::Instance(
+ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::instance(
     const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
     const Inpar::S2I::InterfaceSides&
         lmside,  //!< flag for interface side underlying Lagrange multiplier definition
@@ -943,7 +946,7 @@ ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::Instance(
                 couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
       });
 
-  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, couplingtype, lmside,
+  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, couplingtype, lmside,
       numdofpernode_slave, numdofpernode_master);
 }
 
@@ -1052,15 +1055,15 @@ void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate_condition(
   // access primary and secondary materials of slave element
   const Teuchos::RCP<const Mat::Soret> matsoret = Teuchos::rcp_dynamic_cast<const Mat::Soret>(
       Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
-          s2icondition->Geometry()[slaveelement.Id()])
+          s2icondition->geometry()[slaveelement.id()])
           ->parent_element()
-          ->Material());
+          ->material());
   const Teuchos::RCP<const Mat::Electrode> matelectrode =
       Teuchos::rcp_dynamic_cast<const Mat::Electrode>(
           Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
-              s2icondition->Geometry()[slaveelement.Id()])
+              s2icondition->geometry()[slaveelement.id()])
               ->parent_element()
-              ->Material(1));
+              ->material(1));
   if (matsoret == Teuchos::null or matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
@@ -1076,7 +1079,7 @@ void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate_condition(
   const double pseudo_contact_fac = 1.0;
 
   // loop over integration points
-  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::eval_shape_func_and_dom_int_fac_at_int_point(
@@ -1084,9 +1087,9 @@ void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate_condition(
 
     // evaluate overall integration factors
     const double timefacfac =
-        Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("thermo")->TimeFac() * fac;
+        Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("thermo")->time_fac() * fac;
     const double timefacrhsfac =
-        Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("thermo")->TimeFacRhs() * fac;
+        Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("thermo")->time_fac_rhs() * fac;
     if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
     // no deformation available
@@ -1131,14 +1134,14 @@ void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate_condition_od(
   // access primary and secondary materials of parent element
   Teuchos::RCP<const Mat::Soret> matsoret = Teuchos::rcp_dynamic_cast<const Mat::Soret>(
       Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
-          s2icondition->Geometry()[slaveelement.Id()])
+          s2icondition->geometry()[slaveelement.id()])
           ->parent_element()
-          ->Material());
+          ->material());
   Teuchos::RCP<const Mat::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const Mat::Electrode>(
       Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
-          s2icondition->Geometry()[slaveelement.Id()])
+          s2icondition->geometry()[slaveelement.id()])
           ->parent_element()
-          ->Material(1));
+          ->material(1));
   if (matsoret == Teuchos::null or matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode or soret material for scatra-scatra interface coupling!");
 
@@ -1154,7 +1157,7 @@ void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate_condition_od(
   const double pseudo_contact_fac = 1.0;
 
   // loop over all integration points
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     // evaluate shape functions and domain integration factor at current integration point
     const double fac = my::eval_shape_func_and_dom_int_fac_at_int_point(
@@ -1162,7 +1165,7 @@ void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate_condition_od(
 
     // overall integration factors
     const double timefacfac =
-        Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("thermo")->TimeFac() * fac;
+        Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("thermo")->time_fac() * fac;
     if (timefacfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
     // no deformation available
@@ -1211,7 +1214,7 @@ void ScaTra::MeshtyingStrategyS2IElchSCL::setup_meshtying()
 {
   // extract scatra-scatra coupling conditions from discretization
   std::vector<Core::Conditions::Condition*> s2imeshtying_conditions(0, nullptr);
-  scatratimint_->discretization()->GetCondition("S2IMeshtying", s2imeshtying_conditions);
+  scatratimint_->discretization()->get_condition("S2IMeshtying", s2imeshtying_conditions);
 
   std::set<int> islavenodegidset;
   std::set<int> imasternodegidset;
@@ -1226,13 +1229,13 @@ void ScaTra::MeshtyingStrategyS2IElchSCL::setup_meshtying()
       case Inpar::S2I::side_slave:
       {
         Core::Communication::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
-            *s2imeshtying_condition->GetNodes(), islavenodegidset);
+            *s2imeshtying_condition->get_nodes(), islavenodegidset);
         break;
       }
       case Inpar::S2I::side_master:
       {
         Core::Communication::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
-            *s2imeshtying_condition->GetNodes(), imasternodegidset);
+            *s2imeshtying_condition->get_nodes(), imasternodegidset);
         break;
       }
       default:
@@ -1253,7 +1256,7 @@ void ScaTra::MeshtyingStrategyS2IElchSCL::setup_meshtying()
 
 /*------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyS2IElchSCL::Solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,
+void ScaTra::MeshtyingStrategyS2IElchSCL::solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
     const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
     const Teuchos::RCP<Epetra_Vector>& phinp, const int iteration,
@@ -1261,7 +1264,7 @@ void ScaTra::MeshtyingStrategyS2IElchSCL::Solve(const Teuchos::RCP<Core::LinAlg:
 {
   solver_params.refactor = true;
   solver_params.reset = iteration == 1;
-  solver->Solve(systemmatrix->EpetraOperator(), increment, residual, solver_params);
+  solver->solve(systemmatrix->epetra_operator(), increment, residual, solver_params);
 }
 
 

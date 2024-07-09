@@ -109,10 +109,10 @@ namespace PoroMultiPhaseScaTra
 
     //! flag if diameter function is active, i.e., varying diameter linearization need to be
     //! calculated
-    virtual bool DiamFunctionActive() = 0;
+    virtual bool diam_function_active() = 0;
 
     //! reset state
-    virtual void ResetState(Teuchos::RCP<Core::FE::Discretization> contdis,
+    virtual void reset_state(Teuchos::RCP<Core::FE::Discretization> contdis,
         Teuchos::RCP<Core::FE::Discretization> artdis) = 0;
 
     /**
@@ -126,26 +126,26 @@ namespace PoroMultiPhaseScaTra
         const std::string disname, const double& timefacrhs_art, const double& timefacrhs_cont) = 0;
 
     //! beginning of integration segment
-    virtual double Etadata() const = 0;
+    virtual double etadata() const = 0;
     //! end of integration segment
-    virtual double EtaB() const = 0;
+    virtual double eta_b() const = 0;
 
     //! element 1 (= artery) GID
-    virtual int Ele1GID() const = 0;
+    virtual int ele1_gid() const = 0;
     //! element 2 (= cont) GID
-    virtual int Ele2GID() const = 0;
+    virtual int ele2_gid() const = 0;
 
     //! apply mesh movement on artery element
-    virtual double ApplyMeshMovement(
+    virtual double apply_mesh_movement(
         const bool firstcall, Teuchos::RCP<Core::FE::Discretization> contdis) = 0;
 
     //! set segment id
-    virtual void SetSegmentID(const int& segmentid) = 0;
+    virtual void set_segment_id(const int& segmentid) = 0;
     //! get segment id
-    virtual int GetSegmentID() const = 0;
+    virtual int get_segment_id() const = 0;
 
     //! get the volume of the 2D/3D element
-    virtual double CalculateVol2D3D() const = 0;
+    virtual double calculate_vol2_d3_d() const = 0;
 
     //! get number of Gauss points
     virtual int num_gp() const = 0;
@@ -188,10 +188,10 @@ namespace PoroMultiPhaseScaTra
 
     //! flag if diameter function is active, i.e., varying diameter linearization need to be
     //! calculated
-    bool DiamFunctionActive() override { return diam_funct_active_; }
+    bool diam_function_active() override { return diam_funct_active_; }
 
     //! reset state
-    void ResetState(Teuchos::RCP<Core::FE::Discretization> contdis,
+    void reset_state(Teuchos::RCP<Core::FE::Discretization> contdis,
         Teuchos::RCP<Core::FE::Discretization> artdis) override;
 
     /**
@@ -223,28 +223,28 @@ namespace PoroMultiPhaseScaTra
         Core::LinAlg::SerialDenseMatrix* stiffmat12) override;
 
     //! beginning and end of integration segment
-    double Etadata() const override { return eta_a_; }
-    double EtaB() const override { return eta_b_; }
+    double etadata() const override { return eta_a_; }
+    double eta_b() const override { return eta_b_; }
 
     //! element 1 (= artery) GID
-    int Ele1GID() const override;
+    int ele1_gid() const override;
     //! element 2 (= cont) GID
-    int Ele2GID() const override;
+    int ele2_gid() const override;
 
     //! number of GP
     int num_gp() const override { return n_gp_; };
 
     //! apply mesh movement on artery element
-    double ApplyMeshMovement(
+    double apply_mesh_movement(
         const bool firstcall, Teuchos::RCP<Core::FE::Discretization> contdis) override;
 
     //! set segment id
-    void SetSegmentID(const int& segmentid) override;
+    void set_segment_id(const int& segmentid) override;
     //! get segment id
-    int GetSegmentID() const override;
+    int get_segment_id() const override;
 
     //! get the volume of the 2D/3D element
-    double CalculateVol2D3D() const override;
+    double calculate_vol2_d3_d() const override;
 
    private:
     // static variables

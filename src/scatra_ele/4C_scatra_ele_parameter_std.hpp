@@ -40,66 +40,66 @@ namespace Discret
     {
      public:
       //! singleton access method
-      static ScaTraEleParameterStd* Instance(const std::string& disname);
+      static ScaTraEleParameterStd* instance(const std::string& disname);
 
       //! set parameters
-      void SetParameters(Teuchos::ParameterList& parameters) override;
+      void set_parameters(Teuchos::ParameterList& parameters) override;
 
       //! set the nodeset parameters
       void set_nodeset_parameters(Teuchos::ParameterList& parameters);
 
       //! @name return general parameters
       //! @{
-      bool IsAle() const { return is_ale_; };
-      bool IsConservative() const { return is_conservative_; };
-      bool SphericalCoords() const { return sphericalcoords_; };
-      Inpar::ScaTra::FluxType CalcFluxDomain() const { return calcflux_domain_; };
-      Teuchos::RCP<std::vector<int>> WriteFluxIds() const { return writefluxids_; };
+      bool is_ale() const { return is_ale_; };
+      bool is_conservative() const { return is_conservative_; };
+      bool spherical_coords() const { return sphericalcoords_; };
+      Inpar::ScaTra::FluxType calc_flux_domain() const { return calcflux_domain_; };
+      Teuchos::RCP<std::vector<int>> write_flux_ids() const { return writefluxids_; };
       Inpar::ScaTra::FdCheck fd_check() const { return fdcheck_; };
-      double FDCheckEps() const { return fdcheckeps_; };
-      double FDCheckTol() const { return fdchecktol_; };
-      int ProbNum() const { return probnum_; };
-      bool SemiImplicit() const { return semiimplicit_; };
+      double fd_check_eps() const { return fdcheckeps_; };
+      double fd_check_tol() const { return fdchecktol_; };
+      int prob_num() const { return probnum_; };
+      bool semi_implicit() const { return semiimplicit_; };
       double int_layer_growth_conv_tol() const { return intlayergrowth_convtol_; };
       unsigned int_layer_growth_ite_max() const { return intlayergrowth_itemax_; };
       bool partitioned_multi_scale() const { return partitioned_multiscale_; };
-      bool IsEMD() const { return is_emd_; };
-      int EMDSource() const { return emd_source_; };
+      bool is_emd() const { return is_emd_; };
+      int emd_source() const { return emd_source_; };
       //! return true if external force is applied
-      [[nodiscard]] bool HasExternalForce() const { return has_external_force_; };
+      [[nodiscard]] bool has_external_force() const { return has_external_force_; };
       //! number of dofset associated with displacement dofs
-      int NdsDisp() const;
+      int nds_disp() const;
       //! number of dofset associated with interface growth dofs
-      int NdsGrowth() const;
+      int nds_growth() const;
       //! number of dofset to write micro scale values on
-      int NdsMicro() const;
+      int nds_micro() const;
       //! number of dofset associated with pressure dofs
-      int NdsPres() const;
+      int nds_pres() const;
       //! number of dofset associated with scalar transport dofs
-      int NdsScaTra() const;
+      int nds_sca_tra() const;
       //! number of dofset associated with temperature dofs
-      int NdsThermo() const;
+      int nds_thermo() const;
       //! number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains
       int nds_two_tensor_quantity() const;
       //! number of dofset associated with velocity related dofs
-      int NdsVel() const;
+      int nds_vel() const;
       //! number of dofset associated with wall shear stress dofs
-      int NdsWss() const;
+      int nds_wss() const;
 
       //! @}
 
       //! @name return stabilization parameters
       //! @{
-      Inpar::ScaTra::StabType StabType() const { return stabtype_; };
-      Inpar::ScaTra::TauType TauDef() const { return whichtau_; };
-      Inpar::ScaTra::CharEleLength CharEleLength() const { return charelelength_; };
-      double USFEMGLSFac() const { return diffreastafac_; };
-      bool RBSubGrVel() const { return sgvel_; };
-      bool ASSGD() const { return assgd_; };
-      Inpar::ScaTra::AssgdType ASSGDType() const { return whichassgd_; };
-      bool TauGP() const { return tau_gp_; };
-      bool MatGP() const { return mat_gp_; };
-      double TauValue() const { return tau_value_; };
+      Inpar::ScaTra::StabType stab_type() const { return stabtype_; };
+      Inpar::ScaTra::TauType tau_def() const { return whichtau_; };
+      Inpar::ScaTra::CharEleLength char_ele_length() const { return charelelength_; };
+      double usfemgls_fac() const { return diffreastafac_; };
+      bool rb_sub_gr_vel() const { return sgvel_; };
+      bool assgd() const { return assgd_; };
+      Inpar::ScaTra::AssgdType assgd_type() const { return whichassgd_; };
+      bool tau_gp() const { return tau_gp_; };
+      bool mat_gp() const { return mat_gp_; };
+      double tau_value() const { return tau_value_; };
       //! @}
 
      private:

@@ -23,7 +23,7 @@ Arteries::ArteryResultTest::ArteryResultTest(ArtNetExplicitTimeInt& art_net)
     : Core::UTILS::ResultTest("ARTNET")
 {
   dis_ = art_net.discretization();
-  mysol_ = art_net.QAnp();
+  mysol_ = art_net.q_anp();
 }
 
 /*----------------------------------------------------------------------*/
@@ -32,9 +32,9 @@ Arteries::ArteryResultTest::ArteryResultTest(ArtNetImplStationary& art_net)
     : Core::UTILS::ResultTest("ARTNET")
 {
   dis_ = art_net.discretization();
-  mysol_ = art_net.Pressurenp();
-  myelevolflow_ = art_net.EleVolflow();
-  myeleradius_ = art_net.EleRadius();
+  mysol_ = art_net.pressurenp();
+  myelevolflow_ = art_net.ele_volflow();
+  myeleradius_ = art_net.ele_radius();
 }
 
 /*----------------------------------------------------------------------*/
@@ -44,30 +44,30 @@ void Arteries::ArteryResultTest::test_node(Input::LineDefinition& res, int& nerr
   // care for the case of multiple discretizations of the same field type
   std::string dis;
   res.extract_string("DIS", dis);
-  if (dis != dis_->Name()) return;
+  if (dis != dis_->name()) return;
 
   int node;
   res.extract_int("NODE", node);
   node -= 1;
 
-  int havenode(dis_->HaveGlobalNode(node));
+  int havenode(dis_->have_global_node(node));
   int isnodeofanybody(0);
-  dis_->Comm().SumAll(&havenode, &isnodeofanybody, 1);
+  dis_->get_comm().SumAll(&havenode, &isnodeofanybody, 1);
 
   if (isnodeofanybody == 0)
   {
-    FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1, dis_->Name().c_str());
+    FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1, dis_->name().c_str());
   }
   else
   {
-    if (dis_->HaveGlobalNode(node))
+    if (dis_->have_global_node(node))
     {
-      Core::Nodes::Node* actnode = dis_->gNode(node);
+      Core::Nodes::Node* actnode = dis_->g_node(node);
 
       // Strange! It seems we might actually have a global node around
       // even if it does not belong to us. But here we are just
       // interested in our nodes!
-      if (actnode->Owner() != dis_->Comm().MyPID()) return;
+      if (actnode->owner() != dis_->get_comm().MyPID()) return;
 
       double result = 0.;
       const Epetra_BlockMap& pnpmap = mysol_->Map();
@@ -76,11 +76,11 @@ void Arteries::ArteryResultTest::test_node(Input::LineDefinition& res, int& nerr
 
       // test result value of single scalar field
       if (position == "area")
-        result = (*mysol_)[pnpmap.LID(dis_->Dof(actnode, 0))];
+        result = (*mysol_)[pnpmap.LID(dis_->dof(actnode, 0))];
       else if (position == "pressure")
-        result = (*mysol_)[pnpmap.LID(dis_->Dof(0, actnode, 0))];
+        result = (*mysol_)[pnpmap.LID(dis_->dof(0, actnode, 0))];
       else if (position == "flowrate")
-        result = (*mysol_)[pnpmap.LID(dis_->Dof(actnode, 1))];
+        result = (*mysol_)[pnpmap.LID(dis_->dof(actnode, 1))];
       else
       {
         FOUR_C_THROW("Quantity '%s' not supported in result-test of artery transport problems",
@@ -95,35 +95,36 @@ void Arteries::ArteryResultTest::test_node(Input::LineDefinition& res, int& nerr
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Arteries::ArteryResultTest::TestElement(Input::LineDefinition& res, int& nerr, int& test_count)
+void Arteries::ArteryResultTest::test_element(
+    Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
   res.extract_string("DIS", dis);
 
-  if (dis != dis_->Name()) return;
+  if (dis != dis_->name()) return;
 
   int element;
   res.extract_int("ELEMENT", element);
   element -= 1;
 
-  int haveelement(dis_->HaveGlobalElement(element));
+  int haveelement(dis_->have_global_element(element));
   int iselementofanybody(0);
-  dis_->Comm().SumAll(&haveelement, &iselementofanybody, 1);
+  dis_->get_comm().SumAll(&haveelement, &iselementofanybody, 1);
 
   if (iselementofanybody == 0)
   {
     FOUR_C_THROW(
-        "Element %d does not belong to discretization %s", element + 1, dis_->Name().c_str());
+        "Element %d does not belong to discretization %s", element + 1, dis_->name().c_str());
   }
   else
   {
-    if (dis_->HaveGlobalElement(element))
+    if (dis_->have_global_element(element))
     {
-      const Core::Elements::Element* actelement = dis_->gElement(element);
+      const Core::Elements::Element* actelement = dis_->g_element(element);
 
       // Here we are just interested in the elements that we own (i.e. a row element)!
-      if (actelement->Owner() != dis_->Comm().MyPID()) return;
+      if (actelement->owner() != dis_->get_comm().MyPID()) return;
 
       // extract name of quantity to be tested
       std::string quantity;
@@ -134,12 +135,12 @@ void Arteries::ArteryResultTest::TestElement(Input::LineDefinition& res, int& ne
       if (quantity == "volflow")
       {
         if (myelevolflow_ == Teuchos::null) FOUR_C_THROW("Element volume flow not available");
-        result = (*myelevolflow_)[dis_->ElementRowMap()->LID(actelement->Id())];
+        result = (*myelevolflow_)[dis_->element_row_map()->LID(actelement->id())];
       }
       else if (quantity == "radius")
       {
         if (myeleradius_ == Teuchos::null) FOUR_C_THROW("Element radius not available");
-        result = (*myeleradius_)[dis_->ElementRowMap()->LID(actelement->Id())];
+        result = (*myeleradius_)[dis_->element_row_map()->LID(actelement->id())];
       }
       else
       {

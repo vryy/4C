@@ -32,16 +32,16 @@ namespace Discret
     class SoHex8PoroP1ScatraType : public SoHex8PoroP1Type
     {
      public:
-      std::string Name() const override { return "So_hex8PoroP1ScatraType"; }
+      std::string name() const override { return "So_hex8PoroP1ScatraType"; }
 
-      static SoHex8PoroP1ScatraType& Instance();
+      static SoHex8PoroP1ScatraType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -59,16 +59,16 @@ namespace Discret
     class SoTet4PoroP1ScatraType : public SoTet4PoroP1Type
     {
      public:
-      std::string Name() const override { return "So_tet4PoroP1ScatraType"; }
+      std::string name() const override { return "So_tet4PoroP1ScatraType"; }
 
-      static SoTet4PoroP1ScatraType& Instance();
+      static SoTet4PoroP1ScatraType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)

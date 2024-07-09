@@ -72,12 +72,12 @@ void ParticleInteraction::SPHVirtualWallParticle::setup(
   // update with actual fluid particle types
   const auto allfluidtypes = allfluidtypes_;
   for (const auto& type_i : allfluidtypes)
-    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+    if (not particlecontainerbundle_->get_particle_types().count(type_i))
       allfluidtypes_.erase(type_i);
 
   const auto intfluidtypes = intfluidtypes_;
   for (const auto& type_i : intfluidtypes)
-    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+    if (not particlecontainerbundle_->get_particle_types().count(type_i))
       intfluidtypes_.erase(type_i);
 }
 
@@ -128,7 +128,7 @@ void ParticleInteraction::SPHVirtualWallParticle::init_states_at_wall_contact_po
 
   // get wall data state container
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
-      particlewallinterface_->GetWallDataState();
+      particlewallinterface_->get_wall_data_state();
 
   // get reference to particle-wall pair data
   const SPHParticleWallPairData& particlewallpairdata =
@@ -163,10 +163,10 @@ void ParticleInteraction::SPHVirtualWallParticle::init_states_at_wall_contact_po
         particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get pointer to particle states
-    const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
+    const double* pos_i = container_i->get_ptr_to_state(PARTICLEENGINE::Position, particle_i);
 
     // get pointer to wall contact point states
-    const double* rad_j = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
+    const double* rad_j = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
 
     // get pointer to column wall element
     Core::Elements::Element* ele = particlewallpair.ele_;
@@ -178,28 +178,29 @@ void ParticleInteraction::SPHVirtualWallParticle::init_states_at_wall_contact_po
     Core::LinAlg::SerialDenseVector funct(numnodes);
     std::vector<int> lmele;
 
-    if (walldatastate->GetVelCol() != Teuchos::null or walldatastate->GetAccCol() != Teuchos::null)
+    if (walldatastate->get_vel_col() != Teuchos::null or
+        walldatastate->get_acc_col() != Teuchos::null)
     {
       // evaluate shape functions of element at wall contact point
       Core::FE::shape_function_2D(
-          funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->Shape());
+          funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->shape());
 
       // get location vector of wall element
       lmele.reserve(numnodes * 3);
       std::vector<int> lmowner;
       std::vector<int> lmstride;
-      ele->LocationVector(
+      ele->location_vector(
           *particlewallinterface_->get_wall_discretization(), lmele, lmowner, lmstride);
     }
 
     // acceleration of wall contact point j
     double acc_j[3] = {0.0, 0.0, 0.0};
 
-    if (walldatastate->GetAccCol() != Teuchos::null)
+    if (walldatastate->get_acc_col() != Teuchos::null)
     {
       // get nodal accelerations
       std::vector<double> nodal_acc(numnodes * 3);
-      Core::FE::ExtractMyValues(*walldatastate->GetAccCol(), nodal_acc, lmele);
+      Core::FE::ExtractMyValues(*walldatastate->get_acc_col(), nodal_acc, lmele);
 
       // determine acceleration of wall contact point j
       for (int node = 0; node < numnodes; ++node)
@@ -247,10 +248,10 @@ void ParticleInteraction::SPHVirtualWallParticle::init_states_at_wall_contact_po
           particlecontainerbundle_->get_specific_container(type_k, status_k);
 
       // get pointer to particle states
-      const double* pos_k = container_k->GetPtrToState(PARTICLEENGINE::Position, particle_k);
-      const double* vel_k = container_k->GetPtrToState(PARTICLEENGINE::Velocity, particle_k);
-      const double* dens_k = container_k->GetPtrToState(PARTICLEENGINE::Density, particle_k);
-      const double* press_k = container_k->GetPtrToState(PARTICLEENGINE::Pressure, particle_k);
+      const double* pos_k = container_k->get_ptr_to_state(PARTICLEENGINE::Position, particle_k);
+      const double* vel_k = container_k->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_k);
+      const double* dens_k = container_k->get_ptr_to_state(PARTICLEENGINE::Density, particle_k);
+      const double* press_k = container_k->get_ptr_to_state(PARTICLEENGINE::Pressure, particle_k);
 
       // vector from particle k to wall contact point j
       double r_jk[3];
@@ -262,7 +263,7 @@ void ParticleInteraction::SPHVirtualWallParticle::init_states_at_wall_contact_po
       const double absdist = UTILS::VecNormTwo(r_jk);
 
       // evaluate kernel
-      const double Wjk = kernel_->W(absdist, rad_j[0]);
+      const double Wjk = kernel_->w(absdist, rad_j[0]);
 
       // sum contribution of neighboring particle k
       sumk_Wjk += Wjk;

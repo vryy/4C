@@ -44,29 +44,29 @@ namespace CONTACT
        * \param[in] id ID od the contact constitutive law in the input file
        * \law[in] container holding the law parameter read from the input file
        */
-      void Insert(int id, Teuchos::RCP<Container> mat);
+      void insert(int id, Teuchos::RCP<Container> mat);
 
       /** \brief check if a contact constitutive law exists for provided ID
        *
        *\param[in] id ID of the contact constitutive law in the input file
        * \return Upon failure -1 is returned, otherwise >=0
        */
-      int Find(const int id) const;
+      int find(const int id) const;
 
       /// make quick access parameters
-      void MakeParameters();
+      void make_parameters();
 
       /// return number of defined materials
-      int Num() const { return map_.size(); }
+      int num() const { return map_.size(); }
 
       /** return contact constitutive law by ID
        *
        * \param[in] id ID of the contact constitutive law given in the input file
        */
-      Teuchos::RCP<Container> ById(const int id) const;
+      Teuchos::RCP<Container> by_id(const int id) const;
 
       /// return problem index to read from
-      int GetReadFromProblem() const { return readfromproblem_; }
+      int get_read_from_problem() const { return readfromproblem_; }
 
      private:
       /// the map linking contact constitutive law IDs to input constitutive laws

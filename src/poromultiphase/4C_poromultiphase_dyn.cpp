@@ -29,17 +29,17 @@ void poromultiphase_dyn(int restart)
   const std::string fluid_disname = "porofluid";
 
   // access the problem
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
   // access the communicator
-  const Epetra_Comm& comm = problem->GetDis(struct_disname)->Comm();
+  const Epetra_Comm& comm = problem->get_dis(struct_disname)->get_comm();
 
   // print problem type
   if (comm.MyPID() == 0)
   {
     POROMULTIPHASE::PrintLogo();
     std::cout << "###################################################" << std::endl;
-    std::cout << "# YOUR PROBLEM TYPE: " << problem->ProblemName() << std::endl;
+    std::cout << "# YOUR PROBLEM TYPE: " << problem->problem_name() << std::endl;
     std::cout << "###################################################" << std::endl;
   }
 
@@ -86,22 +86,22 @@ void poromultiphase_dyn(int restart)
   POROMULTIPHASE::UTILS::assign_material_pointers(struct_disname, fluid_disname);
 
   // Setup the solver (only for the monolithic problem)
-  algo->SetupSolver();
+  algo->setup_solver();
 
   // Run of the actual problem.
 
   // Some setup needed for the subproblems.
-  algo->SetupSystem();
+  algo->setup_system();
 
   // Solve the whole problem
-  algo->Timeloop();
+  algo->timeloop();
 
   // Summarize the performance measurements
   Teuchos::TimeMonitor::summarize();
 
   // perform the result test if required
-  algo->CreateFieldTest();
-  problem->TestAll(comm);
+  algo->create_field_test();
+  problem->test_all(comm);
 
   return;
 

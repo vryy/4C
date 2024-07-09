@@ -43,11 +43,11 @@ Core::Conditions::PeriodicBoundaryConditions::PeriodicBoundaryConditions(
     : discret_(actdis), verbose_(verbose), pbcdofset_(Teuchos::null)
 {
   // get periodic surface boundary conditions
-  discret_->GetCondition("SurfacePeriodic", mysurfpbcs_);
+  discret_->get_condition("SurfacePeriodic", mysurfpbcs_);
 
   if (mysurfpbcs_.empty())
   {
-    discret_->GetCondition("LinePeriodic", mysurfpbcs_);
+    discret_->get_condition("LinePeriodic", mysurfpbcs_);
   }
 
   // set number of pairs of periodic boundary conditions
@@ -105,9 +105,9 @@ void Core::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
     // time measurement --- start TimeMonitor tm0
     tm0_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbctot_));
 
-    if (discret_->Comm().MyPID() == 0 && verbose_)
+    if (discret_->get_comm().MyPID() == 0 && verbose_)
     {
-      std::cout << "Generate new dofset for discretization " << discret_->Name();
+      std::cout << "Generate new dofset for discretization " << discret_->name();
       std::cout << std::endl << std::endl;
     }
 
@@ -115,7 +115,7 @@ void Core::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
     put_all_slaves_to_masters_proc();
 
 
-    if (discret_->Comm().NumProc() > 1)
+    if (discret_->get_comm().NumProc() > 1)
     {
       // eventually  optimally distribute the nodes --- up to
       // now, a periodic boundary condition might remove all nodes from a
@@ -126,7 +126,7 @@ void Core::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
     //                                              (call of destructor)
     tm0_ref_ = Teuchos::null;
 
-    if (discret_->Comm().MyPID() == 0 && verbose_)
+    if (discret_->get_comm().MyPID() == 0 && verbose_)
     {
       std::cout << std::endl << std::endl;
     }
@@ -134,21 +134,21 @@ void Core::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
     if (verbose_)
     {
       Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
-          Core::Communication::toTeuchosComm<int>(discret_->Comm());
+          Core::Communication::toTeuchosComm<int>(discret_->get_comm());
       Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
     }
 
-    if (discret_->Comm().MyPID() == 0 && verbose_)
+    if (discret_->get_comm().MyPID() == 0 && verbose_)
     {
       std::cout << std::endl << std::endl;
     }
 
     {
       const Epetra_Map* dofrowmap = discret_->dof_row_map();
-      const Epetra_Map* noderowmap = discret_->NodeRowMap();
+      const Epetra_Map* noderowmap = discret_->node_row_map();
 
-      int mypid = discret_->Comm().MyPID();
-      int numprocs = discret_->Comm().NumProc();
+      int mypid = discret_->get_comm().MyPID();
+      int numprocs = discret_->get_comm().NumProc();
 
       int countslave = 0;
       for (std::map<int, std::vector<int>>::iterator iter = allcoupledcolnodes_->begin();
@@ -177,18 +177,18 @@ void Core::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
       my_n_nodes[mypid] = noderowmap->NumMyElements();
       my_n_master[mypid] = allcoupledcolnodes_->size();
       my_n_slave[mypid] = countslave;
-      my_n_elements[mypid] = discret_->NumMyColElements();
-      my_n_ghostele[mypid] = discret_->NumMyColElements() - discret_->NumMyRowElements();
+      my_n_elements[mypid] = discret_->num_my_col_elements();
+      my_n_ghostele[mypid] = discret_->num_my_col_elements() - discret_->num_my_row_elements();
       my_n_dof[mypid] = dofrowmap->NumMyElements();
 
-      discret_->Comm().SumAll(my_n_nodes.data(), n_nodes.data(), numprocs);
-      discret_->Comm().SumAll(my_n_master.data(), n_master.data(), numprocs);
-      discret_->Comm().SumAll(my_n_slave.data(), n_slave.data(), numprocs);
-      discret_->Comm().SumAll(my_n_elements.data(), n_elements.data(), numprocs);
-      discret_->Comm().SumAll(my_n_ghostele.data(), n_ghostele.data(), numprocs);
-      discret_->Comm().SumAll(my_n_dof.data(), n_dof.data(), numprocs);
+      discret_->get_comm().SumAll(my_n_nodes.data(), n_nodes.data(), numprocs);
+      discret_->get_comm().SumAll(my_n_master.data(), n_master.data(), numprocs);
+      discret_->get_comm().SumAll(my_n_slave.data(), n_slave.data(), numprocs);
+      discret_->get_comm().SumAll(my_n_elements.data(), n_elements.data(), numprocs);
+      discret_->get_comm().SumAll(my_n_ghostele.data(), n_ghostele.data(), numprocs);
+      discret_->get_comm().SumAll(my_n_dof.data(), n_dof.data(), numprocs);
 
-      if (discret_->Comm().MyPID() == 0 && verbose_)
+      if (discret_->get_comm().MyPID() == 0 && verbose_)
       {
         printf(
             "   "
@@ -340,14 +340,14 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
                   // get global master node Ids
                   const std::vector<int>* masteridstoadd;
 
-                  masteridstoadd = mastercond->GetNodes();
+                  masteridstoadd = mastercond->get_nodes();
 
                   for (std::vector<int>::const_iterator idtoadd = (*masteridstoadd).begin();
                        idtoadd != (*masteridstoadd).end(); ++idtoadd)
                   {
                     // we only add row nodes to the set
-                    if (discret_->HaveGlobalNode(*idtoadd))
-                      if (discret_->gNode(*idtoadd)->Owner() == discret_->Comm().MyPID())
+                    if (discret_->have_global_node(*idtoadd))
+                      if (discret_->g_node(*idtoadd)->owner() == discret_->get_comm().MyPID())
                         masterset.insert(*idtoadd);
                   }
 
@@ -375,14 +375,14 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
                   // get global slave node Ids
                   const std::vector<int>* slaveidstoadd;
 
-                  slaveidstoadd = slavecond->GetNodes();
+                  slaveidstoadd = slavecond->get_nodes();
 
                   for (std::vector<int>::const_iterator idtoadd = (*slaveidstoadd).begin();
                        idtoadd != (*slaveidstoadd).end(); ++idtoadd)
                   {
                     // we only add row nodes to the set
-                    if (discret_->HaveGlobalNode(*idtoadd))
-                      if (discret_->gNode(*idtoadd)->Owner() == discret_->Comm().MyPID())
+                    if (discret_->have_global_node(*idtoadd))
+                      if (discret_->g_node(*idtoadd)->owner() == discret_->get_comm().MyPID())
                         slaveset.insert(*idtoadd);
                   }
 
@@ -502,7 +502,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
           // slavenodeids --- it belongs to this master slave pair!!!
           midtosid.clear();
 
-          if (discret_->Comm().MyPID() == 0 && verbose_ && pbcid == numpbcpairs_ - 1)
+          if (discret_->get_comm().MyPID() == 0 && verbose_ && pbcid == numpbcpairs_ - 1)
           {
             std::cout << " creating layer " << nlayer << " of midtosid-map in " << *thisplane
                       << " direction ... ";
@@ -515,7 +515,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
           // time measurement --- this causes the TimeMonitor tm1 to stop here
           tm1_ref_ = Teuchos::null;
 
-          if (discret_->Comm().NumProc() == 1)
+          if (discret_->get_comm().NumProc() == 1)
           {
             if (masternodeids.size() != midtosid.size())
             {
@@ -535,7 +535,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
                 }
                 if (not found)
                 {
-                  const auto& x = discret_->gNode(mid)->X();
+                  const auto& x = discret_->g_node(mid)->x();
                   std::cout << "\nmaster node not found in midtosid list: " << mid
                             << "  coord: x=" << x[0] << " y=" << x[1] << " z=" << x[2];
                 }
@@ -546,7 +546,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
             }
           }
 
-          if (discret_->Comm().MyPID() == 0 && verbose_ && pbcid == numpbcpairs_ - 1)
+          if (discret_->get_comm().MyPID() == 0 && verbose_ && pbcid == numpbcpairs_ - 1)
           {
             std::cout << "adding connectivity to previous pbcs ... ";
             fflush(stdout);
@@ -567,7 +567,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
           // time measurement --- this causes the TimeMonitor tm4 to stop here
           tm4_ref_ = Teuchos::null;
 
-          if (discret_->Comm().MyPID() == 0 && verbose_ && pbcid == numpbcpairs_ - 1)
+          if (discret_->get_comm().MyPID() == 0 && verbose_ && pbcid == numpbcpairs_ - 1)
           {
             std::cout << "done.\n";
             fflush(stdout);
@@ -585,7 +585,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
     tm5_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcreddis_));
 
 
-    if (discret_->Comm().MyPID() == 0 && verbose_)
+    if (discret_->get_comm().MyPID() == 0 && verbose_)
     {
       std::cout << "Redistributing: \n";
       fflush(stdout);
@@ -593,7 +593,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
 
     redistribute_and_create_dof_coupling();
 
-    if (discret_->Comm().MyPID() == 0 && verbose_)
+    if (discret_->get_comm().MyPID() == 0 && verbose_)
     {
       std::cout << "... done\n";
       fflush(stdout);
@@ -750,15 +750,15 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
         {
           // get id of masternode and the node itself
           masterid = iter->first;
-          Core::Nodes::Node* actnode = discret_->gNode(masterid);
+          Core::Nodes::Node* actnode = discret_->g_node(masterid);
 
           // get all periodic boundary conditions on this node
           std::vector<Core::Conditions::Condition*> thiscond;
-          actnode->GetCondition("SurfacePeriodic", thiscond);
+          actnode->get_condition("SurfacePeriodic", thiscond);
 
           if (thiscond.empty())
           {
-            actnode->GetCondition("LinePeriodic", thiscond);
+            actnode->get_condition("LinePeriodic", thiscond);
           }
 
           // loop them and check, whether this is a pbc pure master node
@@ -794,12 +794,12 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
         //--------------------------------------------------------------------
         // -> 2) round robin loop
 
-        const int numproc = discret_->Comm().NumProc();
-        const int myrank = discret_->Comm().MyPID();            // me
+        const int numproc = discret_->get_comm().NumProc();
+        const int myrank = discret_->get_comm().MyPID();        // me
         const int torank = (myrank + 1) % numproc;              // to
         const int fromrank = (myrank + numproc - 1) % numproc;  // from
 
-        Core::Communication::Exporter exporter(discret_->Comm());
+        Core::Communication::Exporter exporter(discret_->get_comm());
 
 
         for (int irobin = 0; irobin < numproc; ++irobin)
@@ -832,7 +832,7 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
           int length = rdata.size();
           int tag = -1;
           int from = -1;
-          exporter.ReceiveAny(from, tag, rdata, length);
+          exporter.receive_any(from, tag, rdata, length);
           if (tag != 1337 or from != fromrank)
             FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
                 myrank, from, myrank);
@@ -853,8 +853,8 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
           }
 
           // wait for all communication to finish
-          exporter.Wait(request);
-          discret_->Comm().Barrier();  // I feel better this way ;-)
+          exporter.wait(request);
+          discret_->get_comm().Barrier();  // I feel better this way ;-)
 
           //--------------------------------------------------
           // -> 3) Try to complete the matchings
@@ -940,16 +940,16 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
     // make sure we have a filled discretisation at this place
     // dofs are not required yet, they are assigned after redistribution
     // accessing the noderowmap requires a 'completed' discretization
-    if (!discret_->Filled())
+    if (!discret_->filled())
     {
       discret_->fill_complete(false, false, false);
     }
 
     // a list of all nodes on this proc
-    std::vector<int> nodesonthisproc(discret_->NodeRowMap()->NumMyElements());
+    std::vector<int> nodesonthisproc(discret_->node_row_map()->NumMyElements());
 
     // get all node gids of nodes on this proc
-    discret_->NodeRowMap()->MyGlobalElements(nodesonthisproc.data());
+    discret_->node_row_map()->MyGlobalElements(nodesonthisproc.data());
 
     std::set<int> nodeset;
 
@@ -966,7 +966,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
     std::vector<Core::Conditions::Condition*> thiscond;
 
     std::vector<Core::Conditions::Condition*> linecond;
-    discret_->GetCondition("LinePeriodic", linecond);
+    discret_->get_condition("LinePeriodic", linecond);
 
     for (std::vector<Core::Conditions::Condition*>::iterator cond = linecond.begin();
          cond != linecond.end(); ++cond)
@@ -974,7 +974,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       thiscond.push_back(*cond);
     }
     std::vector<Core::Conditions::Condition*> surfcond;
-    discret_->GetCondition("SurfacePeriodic", surfcond);
+    discret_->get_condition("SurfacePeriodic", surfcond);
     for (std::vector<Core::Conditions::Condition*>::iterator cond = surfcond.begin();
          cond != surfcond.end(); ++cond)
     {
@@ -996,20 +996,20 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       {
         const std::vector<int>* slaveidstodel;
 
-        slaveidstodel = thiscond[numcond]->GetNodes();
+        slaveidstodel = thiscond[numcond]->get_nodes();
 
         for (std::vector<int>::const_iterator idtodel = (*slaveidstodel).begin();
              idtodel != (*slaveidstodel).end(); ++idtodel)
         {
-          if (discret_->HaveGlobalNode(*idtodel))
+          if (discret_->have_global_node(*idtodel))
           {
             // erase the coupled nodes from the map --- they are redundant
             allcoupledrownodes_->erase(*idtodel);
 
-            Core::Nodes::Node* actnode = discret_->gNode(*idtodel);
+            Core::Nodes::Node* actnode = discret_->g_node(*idtodel);
 
             // check for row nodesactnodes ??????????????????
-            if (actnode->Owner() != discret_->Comm().MyPID())
+            if (actnode->owner() != discret_->get_comm().MyPID())
             {
               continue;
             }
@@ -1029,9 +1029,9 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       }
     }
 
-    discret_->Comm().SumAll(&myerase, &numerase, 1);
-    discret_->Comm().SumAll(&mycerase, &numcerase, 1);
-    if (discret_->Comm().MyPID() == 0 && verbose_)
+    discret_->get_comm().SumAll(&myerase, &numerase, 1);
+    discret_->get_comm().SumAll(&mycerase, &numcerase, 1);
+    if (discret_->get_comm().MyPID() == 0 && verbose_)
     {
       std::cout << " Erased " << numerase << " slaves from nodeset.\n";
       std::cout << " Erased " << numcerase << " from the map of all ";
@@ -1066,8 +1066,8 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       }
     }
 
-    discret_->Comm().SumAll(&mynumappend, &numappend, 1);
-    if (discret_->Comm().MyPID() == 0 && verbose_)
+    discret_->get_comm().SumAll(&mynumappend, &numappend, 1);
+    if (discret_->get_comm().MyPID() == 0 && verbose_)
     {
       std::cout << " Appended " << numappend << " ids which belong to slave ";
       std::cout << "nodes that are coupled to a master\n";
@@ -1101,11 +1101,11 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
         }
       }
 
-      discret_->Comm().SumAll(&myallcouplednodes, &allcouplednodes, 1);
-      discret_->Comm().MaxAll(&mymax, &max, 1);
-      discret_->Comm().MinAll(&mymin, &min, 1);
+      discret_->get_comm().SumAll(&myallcouplednodes, &allcouplednodes, 1);
+      discret_->get_comm().MaxAll(&mymax, &max, 1);
+      discret_->get_comm().MinAll(&mymin, &min, 1);
 
-      if (discret_->Comm().MyPID() == 0 && verbose_)
+      if (discret_->get_comm().MyPID() == 0 && verbose_)
       {
         std::cout << " The layout is generated: " << allcouplednodes
                   << " masters are coupled to at least " << min << " and up to " << max
@@ -1119,9 +1119,9 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       int myn = (int)nodesonthisproc.size();
       int gn = 0;
 
-      discret_->Comm().SumAll(&myn, &gn, 1);
+      discret_->get_comm().SumAll(&myn, &gn, 1);
 
-      if (gn != discret_->NumGlobalNodes())
+      if (gn != discret_->num_global_nodes())
       {
         FOUR_C_THROW(
             "Unmatching numbers of nodes before and after call Redistribution. Nodemap constructor "
@@ -1131,17 +1131,17 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
 
     //--------------------------------------------------
     // build noderowmap for new distribution of nodes
-    newrownodemap = Teuchos::rcp(new Epetra_Map(discret_->NumGlobalNodes(), nodesonthisproc.size(),
-        nodesonthisproc.data(), 0, discret_->Comm()));
+    newrownodemap = Teuchos::rcp(new Epetra_Map(discret_->num_global_nodes(),
+        nodesonthisproc.size(), nodesonthisproc.data(), 0, discret_->get_comm()));
 
     // create nodal graph of problem, according to old RowNodeMap
-    Teuchos::RCP<Epetra_CrsGraph> oldnodegraph = discret_->BuildNodeGraph();
+    Teuchos::RCP<Epetra_CrsGraph> oldnodegraph = discret_->build_node_graph();
 
     // export the graph to newrownodemap
     Epetra_CrsGraph nodegraph(Copy, *newrownodemap, 108, false);
 
     {
-      Epetra_Export exporter(*discret_->NodeRowMap(), *newrownodemap);
+      Epetra_Export exporter(*discret_->node_row_map(), *newrownodemap);
       int err = nodegraph.Export(*oldnodegraph, exporter, Add);
       if (err < 0) FOUR_C_THROW("Graph export returned err=%d", err);
     }
@@ -1153,8 +1153,8 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
 
     Teuchos::RCP<Epetra_Map> newcolnodemap;
 
-    newcolnodemap = Teuchos::rcp(
-        new Epetra_Map(-1, cntmp.NumMyElements(), cntmp.MyGlobalElements(), 0, discret_->Comm()));
+    newcolnodemap = Teuchos::rcp(new Epetra_Map(
+        -1, cntmp.NumMyElements(), cntmp.MyGlobalElements(), 0, discret_->get_comm()));
 
     // time measurement --- this causes the TimeMonitor tm6 to stop here
     tm6_ref_ = Teuchos::null;
@@ -1183,7 +1183,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
     {
       // create an exporter
       Core::Communication::Exporter exportconnectivity(
-          *newrownodemap, *newcolnodemap, discret_->Comm());
+          *newrownodemap, *newcolnodemap, discret_->get_comm());
 
       // export information on all master->slave couplings (with multiple
       // couplings)
@@ -1230,13 +1230,13 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       {
         // now reconstruct the extended colmap
         newcolnodemap = Teuchos::rcp(
-            new Epetra_Map(-1, mycolnodes.size(), mycolnodes.data(), 0, discret_->Comm()));
+            new Epetra_Map(-1, mycolnodes.size(), mycolnodes.data(), 0, discret_->get_comm()));
 
         *allcoupledcolnodes_ = (*allcoupledrownodes_);
 
         // create an exporter
         Core::Communication::Exporter exportconnectivity(
-            *newrownodemap, *newcolnodemap, discret_->Comm());
+            *newrownodemap, *newcolnodemap, discret_->get_comm());
 
         // export information on all master->slave couplings (with multiple
         // couplings)
@@ -1271,7 +1271,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
 
       // now reconstruct the extended colmap
       newcolnodemap = Teuchos::rcp(
-          new Epetra_Map(-1, mycolnodes.size(), mycolnodes.data(), 0, discret_->Comm()));
+          new Epetra_Map(-1, mycolnodes.size(), mycolnodes.data(), 0, discret_->get_comm()));
 
       *allcoupledcolnodes_ = (*allcoupledrownodes_);
 
@@ -1280,7 +1280,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       {
         // create an exporter
         Core::Communication::Exporter exportconnectivity(
-            *newrownodemap, *newcolnodemap, discret_->Comm());
+            *newrownodemap, *newcolnodemap, discret_->get_comm());
         // export information on all slave->master couplings (with multiple
         // couplings)
         exportconnectivity.Export(*allcoupledcolnodes_);
@@ -1306,13 +1306,13 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       // the 'true' flag makes sure that the pbc dofset replaces the old
       // dofset also in the static_dofsets_.
       pbcdofset_ = Teuchos::rcp(new Core::DOFSets::PBCDofSet(allcoupledcolnodes_));
-      discret_->ReplaceDofSet(0, pbcdofset_, true);
+      discret_->replace_dof_set(0, pbcdofset_, true);
     }
     else
     {
       // the discretization already has a pbc dofset, we merely need to update it
       // (a replace dofset is also not needed since we are working on pointer)
-      pbcdofset_->SetCoupledNodes(allcoupledcolnodes_);
+      pbcdofset_->set_coupled_nodes(allcoupledcolnodes_);
       pbcdofset_->reset();
     }
 
@@ -1322,7 +1322,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
     // this contains a call to fill_complete and assigns the same
     // degree of freedom to the matching nodes
 
-    discret_->Redistribute(*newrownodemap, *newcolnodemap);
+    discret_->redistribute(*newrownodemap, *newcolnodemap);
 
     // time measurement --- this causes the TimeMonitor tm8 to stop here
     tm8_ref_ = Teuchos::null;
@@ -1361,9 +1361,9 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void Core::Conditions::PeriodicBoundaryConditions::balance_load()
 {
-  if (discret_->Comm().NumProc() > 1)
+  if (discret_->get_comm().NumProc() > 1)
   {
-    const Epetra_Map* noderowmap = discret_->NodeRowMap();
+    const Epetra_Map* noderowmap = discret_->node_row_map();
 
     // weights for graph partition
     auto node_weights = Core::LinAlg::CreateVector(*noderowmap, true);
@@ -1373,14 +1373,14 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
     for (int node_lid = 0; node_lid < noderowmap->NumMyElements(); ++node_lid)
     {
       const int node_gid = noderowmap->GID(node_lid);
-      Core::Nodes::Node* node = discret_->gNode(node_gid);
+      Core::Nodes::Node* node = discret_->g_node(node_gid);
       if (!node) FOUR_C_THROW("cant find node");
       double weight = 0.0;
 
       // loop over adjacent elements of this node and find element with highest cost
-      Core::Elements::Element** surrele = node->Elements();
-      for (int k = 0; k < node->NumElement(); ++k)
-        weight = std::max(weight, surrele[k]->EvaluationCost());
+      Core::Elements::Element** surrele = node->elements();
+      for (int k = 0; k < node->num_element(); ++k)
+        weight = std::max(weight, surrele[k]->evaluation_cost());
 
       node_weights->ReplaceMyValue(node_lid, 0, weight);
     }
@@ -1392,9 +1392,9 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
     {
       const int master_gid = masterslavepair.first;
       // get masternode
-      Core::Nodes::Node* master = discret_->gNode(master_gid);
+      Core::Nodes::Node* master = discret_->g_node(master_gid);
 
-      if (master->Owner() != discret_->Comm().MyPID()) continue;
+      if (master->owner() != discret_->get_comm().MyPID()) continue;
 
       // loop slavenodes associated with master
       std::vector<int> slave_gids = masterslavepair.second;
@@ -1419,14 +1419,14 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
     // graph will be the correct and complete graph of the distributed
     // discretization even if nodes are not ghosted.
 
-    for (int ele_lid = 0; ele_lid < discret_->NumMyColElements(); ++ele_lid)
+    for (int ele_lid = 0; ele_lid < discret_->num_my_col_elements(); ++ele_lid)
     {
       // get the element
-      Core::Elements::Element* ele = discret_->lColElement(ele_lid);
+      Core::Elements::Element* ele = discret_->l_col_element(ele_lid);
 
       // get its nodes and nodeids
       const int num_nodes_per_ele = ele->num_node();
-      const int* node_gids_per_ele = ele->NodeIds();
+      const int* node_gids_per_ele = ele->node_ids();
 
       for (int row = 0; row < num_nodes_per_ele; ++row)
       {
@@ -1451,14 +1451,14 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
     // is connected to a master/slave, we connect the corresponding slaves/master
     // as well
 
-    for (int ele_lid = 0; ele_lid < discret_->NumMyColElements(); ++ele_lid)
+    for (int ele_lid = 0; ele_lid < discret_->num_my_col_elements(); ++ele_lid)
     {
       // get the element
-      Core::Elements::Element* ele = discret_->lColElement(ele_lid);
+      Core::Elements::Element* ele = discret_->l_col_element(ele_lid);
 
       // get its nodes and nodeids
       const int num_nodes_per_ele = ele->num_node();
-      const int* node_gids_per_ele = ele->NodeIds();
+      const int* node_gids_per_ele = ele->node_ids();
 
       for (int row = 0; row < num_nodes_per_ele; ++row)
       {
@@ -1536,28 +1536,28 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
       for (const auto& masterslavepair : *allcoupledcolnodes_)
       {
         // get masternode
-        Core::Nodes::Node* master = discret_->gNode(masterslavepair.first);
+        Core::Nodes::Node* master = discret_->g_node(masterslavepair.first);
 
-        if (master->Owner() != myrank) continue;
+        if (master->owner() != myrank) continue;
 
         // loop slavenodes
         for (int slave_gids : masterslavepair.second)
         {
-          Core::Nodes::Node* slave = discret_->gNode(slave_gids);
+          Core::Nodes::Node* slave = discret_->g_node(slave_gids);
 
           // -------------------------------------------------------------
           // connections between master and slavenodes are very strong
           // we do not want to partition between master and slave nodes
 
           // store gids and values as a vector with one entry
-          std::vector<int> master_gid(1, master->Id());
-          std::vector<int> slave_gid(1, slave->Id());
+          std::vector<int> master_gid(1, master->id());
+          std::vector<int> slave_gid(1, slave->id());
           // add 99 to the initial value of 1.0 to set costs to 100
           std::vector<double> value(1, 99.0);
 
-          err = edge_weights->InsertGlobalValues(master->Id(), 1, value.data(), slave_gid.data());
+          err = edge_weights->InsertGlobalValues(master->id(), 1, value.data(), slave_gid.data());
           if (err < 0) FOUR_C_THROW("InsertGlobalIndices returned err=%d", err);
-          err = edge_weights->InsertGlobalValues(slave->Id(), 1, value.data(), master_gid.data());
+          err = edge_weights->InsertGlobalValues(slave->id(), 1, value.data(), master_gid.data());
           if (err < 0) FOUR_C_THROW("InsertGlobalIndices returned err=%d", err);
         }
       }
@@ -1578,16 +1578,16 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
 
       // the rowmap will become the new distribution of nodes
       const Epetra_Map newnoderowmap(-1, newnodegraph->RowMap().NumMyElements(),
-          newnodegraph->RowMap().MyGlobalElements(), 0, discret_->Comm());
+          newnodegraph->RowMap().MyGlobalElements(), 0, discret_->get_comm());
 
       // the column map will become the new ghosted distribution of nodes
       const Epetra_Map newnodecolmap(-1, newnodegraph->ColMap().NumMyElements(),
-          newnodegraph->ColMap().MyGlobalElements(), 0, discret_->Comm());
+          newnodegraph->ColMap().MyGlobalElements(), 0, discret_->get_comm());
 
       // do the redistribution without assigning dofs
-      discret_->Redistribute(newnoderowmap, newnodecolmap, false, true, true);
+      discret_->redistribute(newnoderowmap, newnodecolmap, false, true, true);
 
-      if (discret_->Comm().MyPID() == 0 && verbose_)
+      if (discret_->get_comm().MyPID() == 0 && verbose_)
       {
         std::cout << "---------------------------------------------\n";
         std::cout << "Repair Master->Slave connection, generate final dofset";

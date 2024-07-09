@@ -32,7 +32,7 @@ Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::So3PoroP1(
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-Core::Elements::Element* Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::So3PoroP1<So3Ele, distype>(*this);
   return newelement;
@@ -45,7 +45,7 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::pack(
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   So3Ele::add_to_pack(data, type);
 
   data.add_to_pack<int>(is_init_porosity_);
@@ -62,7 +62,7 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::unpack(const std::vector<cha
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   is_init_porosity_ = Core::Communication::ParObject::extract_int(position, data);
 
@@ -85,7 +85,7 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::unpack(const std::vector<cha
 
 template <class So3Ele, Core::FE::CellType distype>
 std::vector<Teuchos::RCP<Core::Elements::Element>>
-Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::Surfaces()
+Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::surfaces()
 {
   return Core::Communication::ElementBoundaryFactory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -93,7 +93,7 @@ Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::Surfaces()
 
 template <class So3Ele, Core::FE::CellType distype>
 std::vector<Teuchos::RCP<Core::Elements::Element>>
-Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::Lines()
+Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::lines()
 {
   return Core::Communication::ElementBoundaryFactory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
@@ -108,15 +108,15 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::print(std::ostream& os) cons
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-int Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::UniqueParObjectId() const
+int Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::unique_par_object_id() const
 {
   switch (distype)
   {
     case Core::FE::CellType::hex8:
-      return SoHex8PoroP1Type::Instance().UniqueParObjectId();
+      return SoHex8PoroP1Type::instance().unique_par_object_id();
       break;
     case Core::FE::CellType::tet4:
-      return SoTet4PoroP1Type::Instance().UniqueParObjectId();
+      return SoTet4PoroP1Type::instance().unique_par_object_id();
       break;
     default:
       FOUR_C_THROW("unknown element type!");
@@ -126,19 +126,19 @@ int Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::UniqueParObjectId() const
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-Core::Elements::ElementType& Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::ElementType() const
+Core::Elements::ElementType& Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::element_type() const
 {
   switch (distype)
   {
     case Core::FE::CellType::tet4:
-      return SoTet4PoroP1Type::Instance();
+      return SoTet4PoroP1Type::instance();
     case Core::FE::CellType::hex8:
-      return SoHex8PoroP1Type::Instance();
+      return SoHex8PoroP1Type::instance();
     default:
       FOUR_C_THROW("unknown element type!");
       break;
   }
-  return SoHex8PoroP1Type::Instance();
+  return SoHex8PoroP1Type::instance();
 }
 
 FOUR_C_NAMESPACE_CLOSE

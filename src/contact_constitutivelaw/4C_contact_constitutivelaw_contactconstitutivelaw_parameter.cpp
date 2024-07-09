@@ -32,7 +32,7 @@ CONTACT::CONSTITUTIVELAW::Container::Container(
 /*----------------------------------------------------------------------*/
 void CONTACT::CONSTITUTIVELAW::Container::print(std::ostream& os) const
 {
-  os << "ContactConstitutiveLaw " << Id() << " " << Name() << " :: ";
+  os << "ContactConstitutiveLaw " << id() << " " << name() << " :: ";
 
   Core::IO::InputParameterContainer::print(os);
 }

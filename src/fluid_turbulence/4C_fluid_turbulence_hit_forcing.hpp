@@ -42,19 +42,19 @@ namespace FLD
 
     virtual ~ForcingInterface() = default;
     //! initialize with initial spectrum
-    virtual void SetInitialSpectrum(Inpar::FLUID::InitialField init_field_type) = 0;
+    virtual void set_initial_spectrum(Inpar::FLUID::InitialField init_field_type) = 0;
 
     //! turn on forcing
-    virtual void ActivateForcing(const bool activate) = 0;
+    virtual void activate_forcing(const bool activate) = 0;
 
     //! calculate power input
-    virtual void CalculateForcing(const int step) = 0;
+    virtual void calculate_forcing(const int step) = 0;
 
     //! get forcing
-    virtual void UpdateForcing(const int step) = 0;
+    virtual void update_forcing(const int step) = 0;
 
     //! time update of energy spectrum
-    virtual void TimeUpdateForcing() = 0;
+    virtual void time_update_forcing() = 0;
   };
 
   class HomIsoTurbForcing : public ForcingInterface
@@ -64,19 +64,19 @@ namespace FLD
     HomIsoTurbForcing(FluidImplicitTimeInt& timeint);
 
     //! initialize with initial spectrum
-    void SetInitialSpectrum(Inpar::FLUID::InitialField init_field_type) override;
+    void set_initial_spectrum(Inpar::FLUID::InitialField init_field_type) override;
 
     //! turn on forcing
-    void ActivateForcing(const bool activate) override;
+    void activate_forcing(const bool activate) override;
 
     //! calculate power input
-    void CalculateForcing(const int step) override;
+    void calculate_forcing(const int step) override;
 
     //! get forcing
-    void UpdateForcing(const int step) override;
+    void update_forcing(const int step) override;
 
     //! time update of energy spectrum
-    void TimeUpdateForcing() override;
+    void time_update_forcing() override;
 
    protected:
     //! sort criterium for double values up to a tolerance of 10-9
@@ -170,13 +170,13 @@ namespace FLD
     HomIsoTurbForcingHDG(FluidImplicitTimeInt& timeint);
 
     //! initialize with initial spectrum
-    void SetInitialSpectrum(Inpar::FLUID::InitialField init_field_type) override;
+    void set_initial_spectrum(Inpar::FLUID::InitialField init_field_type) override;
 
     //! calculate power input
-    void CalculateForcing(const int step) override;
+    void calculate_forcing(const int step) override;
 
     //! get forcing
-    void UpdateForcing(const int step) override;
+    void update_forcing(const int step) override;
   };
 
   // this is an adaptive body force for the periodic hill benchmark such
@@ -189,19 +189,19 @@ namespace FLD
     PeriodicHillForcing(FluidImplicitTimeInt& timeint);
 
     //! initialize with initial spectrum
-    void SetInitialSpectrum(Inpar::FLUID::InitialField init_field_type) override { return; }
+    void set_initial_spectrum(Inpar::FLUID::InitialField init_field_type) override { return; }
 
     //! turn on forcing
-    void ActivateForcing(const bool activate) override { return; }
+    void activate_forcing(const bool activate) override { return; }
 
     //! calculate power input
-    void CalculateForcing(const int step) override { return; }
+    void calculate_forcing(const int step) override { return; }
 
     //! get forcing
-    void UpdateForcing(const int step) override;
+    void update_forcing(const int step) override;
 
     //! time update of energy spectrum
-    void TimeUpdateForcing() override;
+    void time_update_forcing() override;
 
 
    private:

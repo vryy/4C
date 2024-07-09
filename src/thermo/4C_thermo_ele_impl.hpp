@@ -78,7 +78,7 @@ namespace Discret
           ) = 0;
 
       //! Internal implementation class for thermo elements
-      static TemperImplInterface* Impl(const Core::Elements::Element* ele);
+      static TemperImplInterface* impl(const Core::Elements::Element* ele);
 
     };  // class TemperImplInterface
 
@@ -119,7 +119,7 @@ namespace Discret
       TemperImpl();
 
       //! Singleton access method
-      static TemperImpl<distype>* Instance(
+      static TemperImpl<distype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       //! number of nodes

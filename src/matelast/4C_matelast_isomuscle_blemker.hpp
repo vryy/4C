@@ -85,14 +85,14 @@ namespace Mat
       IsoMuscleBlemker(Mat::Elastic::PAR::IsoMuscleBlemker* params);
 
       /// Pack anisotropy
-      void PackSummand(Core::Communication::PackBuffer& data) const override;
+      void pack_summand(Core::Communication::PackBuffer& data) const override;
 
       /// Unpack anisotropy
-      void UnpackSummand(
+      void unpack_summand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
 
       /// Provide the material type
-      [[nodiscard]] Core::Materials::MaterialType MaterialType() const override
+      [[nodiscard]] Core::Materials::MaterialType material_type() const override
       {
         return Core::Materials::mes_isomuscleblemker;
       }
@@ -118,7 +118,7 @@ namespace Mat
           ) override;
 
       /// Specify the formulation as anisomod
-      void SpecifyFormulation(bool& isoprinc, bool& isomod, bool& anisoprinc, bool& anisomod,
+      void specify_formulation(bool& isoprinc, bool& isomod, bool& anisoprinc, bool& anisomod,
           bool& viscogeneral) override
       {
         anisomod = true;

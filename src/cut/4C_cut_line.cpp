@@ -23,13 +23,13 @@ Core::Geo::Cut::Line::Line(
   if (cut_side2) add_side(cut_side2);
   if (cut_element) add_element(cut_element);
 
-  p1_->Register(this);
-  p2_->Register(this);
+  p1_->register_entity(this);
+  p2_->register_entity(this);
 
   // self-register at all sides
 
-  const plain_side_set& cut_sides1 = p1->CutSides();
-  const plain_side_set& cut_sides2 = p2->CutSides();
+  const plain_side_set& cut_sides1 = p1->cut_sides();
+  const plain_side_set& cut_sides2 = p2->cut_sides();
 
   plain_side_set sides;
 
@@ -44,8 +44,8 @@ Core::Geo::Cut::Line::Line(
 
   // self-register at all elements
 
-  const plain_element_set& cut_elements1 = p1->Elements();
-  const plain_element_set& cut_elements2 = p2->Elements();
+  const plain_element_set& cut_elements1 = p1->elements();
+  const plain_element_set& cut_elements2 = p2->elements();
 
   plain_element_set elements;
 
@@ -64,14 +64,14 @@ void Core::Geo::Cut::Line::add_side(Side* cut_side)
   p1_->add_side(cut_side);
   p2_->add_side(cut_side);
   cut_sides_.insert(cut_side);
-  cut_side->AddLine(this);
+  cut_side->add_line(this);
 }
 
 void Core::Geo::Cut::Line::add_element(Element* cut_element)
 {
   if (cut_element != nullptr)
   {
-    if (not p1_->IsCut(cut_element) or not p2_->IsCut(cut_element))
+    if (not p1_->is_cut(cut_element) or not p2_->is_cut(cut_element))
     {
       FOUR_C_THROW("cut line between non-cut points");
     }
@@ -83,9 +83,9 @@ void Core::Geo::Cut::Line::add_element(Element* cut_element)
   }
 }
 
-bool Core::Geo::Cut::Line::IsInternalCut(Side* side)
+bool Core::Geo::Cut::Line::is_internal_cut(Side* side)
 {
-  return cut_sides_.count(side) > 0 and not side->OnEdge(this);
+  return cut_sides_.count(side) > 0 and not side->on_edge(this);
 }
 
 FOUR_C_NAMESPACE_CLOSE

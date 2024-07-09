@@ -53,7 +53,7 @@ class PostVtkWriter : public PostWriterBase
   PostVtkWriter(PostField* field, const std::string& name);
 
   //! write the whole thing
-  void WriteFiles(PostFilterBase& filter) override;
+  void write_files(PostFilterBase& filter) override;
 
  protected:
   //! Return the opening xml tag for this writer type
@@ -107,8 +107,8 @@ class PostVtkWriter : public PostWriterBase
    pressure) and we want to write just one part of it. So we have to
    specify which part.
    */
-  void WriteResult(const std::string groupname,  ///< name of the result group in the control file
-      const std::string name,                    ///< name of the result to be written
+  void write_result(const std::string groupname,  ///< name of the result group in the control file
+      const std::string name,                     ///< name of the result to be written
       const ResultType restype,     ///< type of the result to be written (nodal-/element-based)
       const int numdf,              ///< number of dofs per node to this result
       const int from = 0,           ///< start position of values in nodes
@@ -140,7 +140,7 @@ class PostVtkWriter : public PostWriterBase
    \author kronbichler
    \date 04/14
    */
-  void WriteSpecialField(SpecialFieldInterface& special,
+  void write_special_field(SpecialFieldInterface& special,
       PostResult& result,  ///< result group in the control file
       const ResultType restype, const std::string& groupname,
       const std::vector<std::string>& fieldnames, const std::string& outinfo) override;

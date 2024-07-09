@@ -68,7 +68,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Check if a combination of beam and solid id is in this condition.
      */
-    bool IdsInCondition(const int id_line, const int id_other) const override;
+    bool ids_in_condition(const int id_line, const int id_other) const override;
 
     /**
      * \brief Clear not reusable data (derived).
@@ -78,14 +78,14 @@ namespace BEAMINTERACTION
     /**
      * \brief Create the beam to solid pairs needed for this condition (derived).
      */
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
+    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_contact_pair(
         const std::vector<Core::Elements::Element const*>& ele_ptrs) override;
 
     /**
      * \brief Return a pointer to the condition of the other geometry (volume or surface).
      * @return
      */
-    Teuchos::RCP<const Core::Conditions::Condition> GetOtherCondition() const
+    Teuchos::RCP<const Core::Conditions::Condition> get_other_condition() const
     {
       return condition_other_;
     }
@@ -159,7 +159,7 @@ namespace BEAMINTERACTION
      *
      * The BuildIdSets method from the base class is called to build the beam IDs.
      */
-    void BuildIdSets(const Teuchos::RCP<const Core::FE::Discretization>& discretization) override;
+    void build_id_sets(const Teuchos::RCP<const Core::FE::Discretization>& discretization) override;
 
    protected:
     /**
@@ -203,7 +203,7 @@ namespace BEAMINTERACTION
      * \brief Build the surface ID sets for this condition. The BuildIdSets method from the base
      * class is called to build the beam IDs.
      */
-    void BuildIdSets(const Teuchos::RCP<const Core::FE::Discretization>& discretization) override;
+    void build_id_sets(const Teuchos::RCP<const Core::FE::Discretization>& discretization) override;
 
     /**
      * \brief Here we get all face elements that are needed for the created pairs. This includes

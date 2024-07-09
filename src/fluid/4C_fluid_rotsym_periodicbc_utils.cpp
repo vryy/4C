@@ -56,8 +56,8 @@ bool FLD::IsSlaveNodeOfRotSymPBC(const Core::Nodes::Node* node, double& rotangle
 {
   // get periodic surface/line boundary conditions
   std::vector<Core::Conditions::Condition*> pbc;
-  node->GetCondition("SurfacePeriodic", pbc);
-  if (pbc.empty()) node->GetCondition("LinePeriodic", pbc);
+  node->get_condition("SurfacePeriodic", pbc);
+  if (pbc.empty()) node->get_condition("LinePeriodic", pbc);
 
   bool isrotsymslave(false);
   for (unsigned int j = 0; j < pbc.size(); ++j)
@@ -94,10 +94,10 @@ void FLD::GetRelevantSlaveNodesOfRotSymPBC(
 {
   // get all periodic boundary conditions
   std::vector<Core::Conditions::Condition*> mypbccond;
-  dis->GetCondition("SurfacePeriodic", mypbccond);
+  dis->get_condition("SurfacePeriodic", mypbccond);
   if (mypbccond.empty())
   {
-    dis->GetCondition("LinePeriodic", mypbccond);
+    dis->get_condition("LinePeriodic", mypbccond);
   }
 
   // loop the periodic boundary conditions
@@ -111,7 +111,7 @@ void FLD::GetRelevantSlaveNodesOfRotSymPBC(
     // of vector results!
     if ((mymasterslavetoggle == "Slave") && (abs(rotangle) > 1e-13))
     {
-      const std::vector<int>* nodes = mypbccond[numcond]->GetNodes();
+      const std::vector<int>* nodes = mypbccond[numcond]->get_nodes();
       for (unsigned int inode = 0; inode < nodes->size(); inode++)
       {
         const int nodegid = nodes->at(inode);

@@ -34,7 +34,7 @@ Mat::Elastic::CoupAnisoExpoBase::CoupAnisoExpoBase(Mat::Elastic::PAR::CoupAnisoE
 {
 }
 
-void Mat::Elastic::CoupAnisoExpoBase::AddStrainEnergy(double& psi,
+void Mat::Elastic::CoupAnisoExpoBase::add_strain_energy(double& psi,
     const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
     const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
@@ -45,16 +45,16 @@ void Mat::Elastic::CoupAnisoExpoBase::AddStrainEnergy(double& psi,
   C(1, 2) = C(2, 1) = glstrain(4);
   C(0, 2) = C(2, 0) = glstrain(5);
 
-  EvaluateFunc<double>(psi, C, gp, eleGID);
+  evaluate_func<double>(psi, C, gp, eleGID);
 }
 
 template <typename T>
-void Mat::Elastic::CoupAnisoExpoBase::EvaluateFunc(
+void Mat::Elastic::CoupAnisoExpoBase::evaluate_func(
     T& psi, Core::LinAlg::Matrix<3, 3, T> const& C, const int gp, int const eleGID) const
 {
   Core::LinAlg::Matrix<3, 3, T> A_T(
       get_coup_aniso_expo_base_interface().get_structural_tensor(gp).data());
-  const double scalarProduct = get_coup_aniso_expo_base_interface().GetScalarProduct(gp);
+  const double scalarProduct = get_coup_aniso_expo_base_interface().get_scalar_product(gp);
 
   T I4 = C.dot(A_T);
 
@@ -79,7 +79,7 @@ void Mat::Elastic::CoupAnisoExpoBase::evaluate_first_derivatives_aniso(
     int eleGID)
 {
   double I4 = get_coup_aniso_expo_base_interface().get_structural_tensor(gp).dot(rcg);
-  const double scalarProduct = get_coup_aniso_expo_base_interface().GetScalarProduct(gp);
+  const double scalarProduct = get_coup_aniso_expo_base_interface().get_scalar_product(gp);
 
   double k1 = params_->k1_;
   double k2 = params_->k2_;
@@ -99,7 +99,7 @@ void Mat::Elastic::CoupAnisoExpoBase::evaluate_second_derivatives_aniso(
     int eleGID)
 {
   double I4 = get_coup_aniso_expo_base_interface().get_structural_tensor(gp).dot(rcg);
-  const double scalarProduct = get_coup_aniso_expo_base_interface().GetScalarProduct(gp);
+  const double scalarProduct = get_coup_aniso_expo_base_interface().get_scalar_product(gp);
 
   double k1 = params_->k1_;
   double k2 = params_->k2_;
@@ -115,13 +115,14 @@ void Mat::Elastic::CoupAnisoExpoBase::evaluate_second_derivatives_aniso(
 }
 
 template <typename T>
-void Mat::Elastic::CoupAnisoExpoBase::GetDerivativesAniso(Core::LinAlg::Matrix<2, 1, T>& dPI_aniso,
-    Core::LinAlg::Matrix<3, 1, T>& ddPII_aniso, Core::LinAlg::Matrix<4, 1, T>& dddPIII_aniso,
-    Core::LinAlg::Matrix<3, 3, T> const& rcg, const int gp, const int eleGID) const
+void Mat::Elastic::CoupAnisoExpoBase::get_derivatives_aniso(
+    Core::LinAlg::Matrix<2, 1, T>& dPI_aniso, Core::LinAlg::Matrix<3, 1, T>& ddPII_aniso,
+    Core::LinAlg::Matrix<4, 1, T>& dddPIII_aniso, Core::LinAlg::Matrix<3, 3, T> const& rcg,
+    const int gp, const int eleGID) const
 {
   Core::LinAlg::Matrix<3, 3, T> AM(
       get_coup_aniso_expo_base_interface().get_structural_tensor(gp).data());
-  const double scalarProduct = get_coup_aniso_expo_base_interface().GetScalarProduct(gp);
+  const double scalarProduct = get_coup_aniso_expo_base_interface().get_scalar_product(gp);
 
   T I4 = AM.dot(rcg);
 
@@ -150,7 +151,7 @@ void Mat::Elastic::CoupAnisoExpoBase::add_stress_aniso_principal(
     const int eleGID)
 {
   double I4 = get_coup_aniso_expo_base_interface().get_structural_tensor_stress(gp).dot(rcg);
-  const double scalarProduct = get_coup_aniso_expo_base_interface().GetScalarProduct(gp);
+  const double scalarProduct = get_coup_aniso_expo_base_interface().get_scalar_product(gp);
 
   double k1;
   double k2;
@@ -175,34 +176,34 @@ void Mat::Elastic::CoupAnisoExpoBase::add_stress_aniso_principal(
       get_coup_aniso_expo_base_interface().get_structural_tensor_stress(gp), 1.0);
 }
 
-void Mat::Elastic::CoupAnisoExpoBase::GetFiberVecs(
+void Mat::Elastic::CoupAnisoExpoBase::get_fiber_vecs(
     std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs)
 {
   FOUR_C_THROW("Getting the fiber vectors is not implemented in the base version of CoupAnisoExpo");
 }
 
-void Mat::Elastic::CoupAnisoExpoBase::SetFiberVecs(const double newgamma,
+void Mat::Elastic::CoupAnisoExpoBase::set_fiber_vecs(const double newgamma,
     const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
   FOUR_C_THROW("Setting the fiber vectors is not implemented in the base version of CoupAnisoExpo");
 }
 
-void Mat::Elastic::CoupAnisoExpoBase::SetFiberVecs(const Core::LinAlg::Matrix<3, 1>& fibervec)
+void Mat::Elastic::CoupAnisoExpoBase::set_fiber_vecs(const Core::LinAlg::Matrix<3, 1>& fibervec)
 {
   FOUR_C_THROW("Setting the fiber vectors is not implemented in the base version of CoupAnisoExpo");
 }
 
 
 // explicit instantiation of template functions
-template void Mat::Elastic::CoupAnisoExpoBase::GetDerivativesAniso<double>(
+template void Mat::Elastic::CoupAnisoExpoBase::get_derivatives_aniso<double>(
     Core::LinAlg::Matrix<2, 1, double>&, Core::LinAlg::Matrix<3, 1, double>&,
     Core::LinAlg::Matrix<4, 1, double>&, Core::LinAlg::Matrix<3, 3, double> const&, int, int) const;
-template void Mat::Elastic::CoupAnisoExpoBase::GetDerivativesAniso<FAD>(
+template void Mat::Elastic::CoupAnisoExpoBase::get_derivatives_aniso<FAD>(
     Core::LinAlg::Matrix<2, 1, FAD>&, Core::LinAlg::Matrix<3, 1, FAD>&,
     Core::LinAlg::Matrix<4, 1, FAD>&, Core::LinAlg::Matrix<3, 3, FAD> const&, int, int) const;
-template void Mat::Elastic::CoupAnisoExpoBase::EvaluateFunc<double>(
+template void Mat::Elastic::CoupAnisoExpoBase::evaluate_func<double>(
     double&, Core::LinAlg::Matrix<3, 3, double> const&, int, int) const;
-template void Mat::Elastic::CoupAnisoExpoBase::EvaluateFunc<FAD>(
+template void Mat::Elastic::CoupAnisoExpoBase::evaluate_func<FAD>(
     FAD&, Core::LinAlg::Matrix<3, 3, FAD> const&, int, int) const;
 
 FOUR_C_NAMESPACE_CLOSE

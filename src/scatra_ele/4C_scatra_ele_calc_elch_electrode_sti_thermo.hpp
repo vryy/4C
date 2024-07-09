@@ -36,7 +36,7 @@ namespace Discret
     {
      public:
       //! singleton access method
-      static ScaTraEleCalcElchElectrodeSTIThermo<distype>* Instance(
+      static ScaTraEleCalcElchElectrodeSTIThermo<distype>* instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
      private:
@@ -54,7 +54,7 @@ namespace Discret
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action for off-diagonal system matrix block
-      int EvaluateActionOD(Core::Elements::Element* ele,    //!< current element
+      int evaluate_action_od(Core::Elements::Element* ele,  //!< current element
           Teuchos::ParameterList& params,                   //!< parameter list
           Core::FE::Discretization& discretization,         //!< discretization
           const ScaTra::Action& action,                     //!< action parameter
@@ -167,18 +167,18 @@ namespace Discret
       }
 
       //! set factor F/RT
-      void SetFRT() override
+      void set_frt() override
       {
         const double faraday =
-            Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+            Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
         const double gasconstant =
-            Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
+            Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->gas_constant();
 
-        vmelch::frt_ = faraday / (gasconstant * vmthermo::Temp());
+        vmelch::frt_ = faraday / (gasconstant * vmthermo::temp());
       }
 
       //! get GP temperature
-      double Temp() { return vmthermo::Temp(); }
+      double temp() { return vmthermo::temp(); }
     };  // class ScaTraEleInternalVariableManagerElchElectrodeSTIThermo
   }     // namespace ELEMENTS
 }  // namespace Discret

@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>*
-Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(
+Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -30,7 +30,7 @@ Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(
             new ScaTraEleUtilsElchElectrode<distype>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -54,7 +54,7 @@ void Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::mat_electrode(
   const auto* matelectrode = static_cast<const Mat::Electrode*>(material.get());
 
   // diffusion coefficient
-  diffmanager->SetIsotropicDiff(
+  diffmanager->set_isotropic_diff(
       matelectrode->compute_diffusion_coefficient(concentration, temperature), 0);
 
   // derivative of diffusion coefficient with respect to concentration
@@ -70,15 +70,15 @@ void Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::mat_electrode(
       0, 0);
 
   // electronic conductivity
-  diffmanager->SetCond(matelectrode->compute_conductivity(concentration, temperature));
+  diffmanager->set_cond(matelectrode->compute_conductivity(concentration, temperature));
 
   // derivative of electronic conductivity w.r.t. concentration
-  diffmanager->SetConcDerivCond(
+  diffmanager->set_conc_deriv_cond(
       matelectrode->compute_concentration_derivative_of_conductivity(concentration, temperature),
       0);
 
   // derivative of electronic conductivity w.r.t. temperature
-  diffmanager->SetTempDerivCond(
+  diffmanager->set_temp_deriv_cond(
       matelectrode->compute_temperature_derivative_of_conductivity(concentration, temperature), 0);
 }
 

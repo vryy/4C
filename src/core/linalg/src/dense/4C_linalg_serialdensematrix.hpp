@@ -42,6 +42,12 @@ namespace Core::LinAlg
         : Base(Source, trans)
     {
     }
+
+    //! Return number of rows.
+    int num_rows() const { return this->numRows(); }
+
+    //! Return number of columns.
+    int num_cols() const { return this->numCols(); }
   };
 
   /*!
@@ -74,6 +80,7 @@ namespace Core::LinAlg
     mat.print(out);
     return out;
   }
+
 }  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE

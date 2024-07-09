@@ -54,7 +54,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::Maxwell0dAcinusOgden::create_materia
 Mat::Maxwell0dAcinusOgdenType Mat::Maxwell0dAcinusOgdenType::instance_;
 
 
-Core::Communication::ParObject* Mat::Maxwell0dAcinusOgdenType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::Maxwell0dAcinusOgdenType::create(const std::vector<char>& data)
 {
   Mat::Maxwell0dAcinusOgden* mxwll_0d_acin = new Mat::Maxwell0dAcinusOgden();
   mxwll_0d_acin->unpack(data);
@@ -82,7 +82,7 @@ void Mat::Maxwell0dAcinusOgden::pack(Core::Communication::PackBuffer& data) cons
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // Pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
 
   add_to_pack(data, type);
   add_to_pack(data, kappa_);
@@ -90,7 +90,7 @@ void Mat::Maxwell0dAcinusOgden::pack(Core::Communication::PackBuffer& data) cons
 
   // Pack matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 }
 
@@ -101,7 +101,7 @@ void Mat::Maxwell0dAcinusOgden::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // Extract kappa and beta
   extract_from_pack(position, data, kappa_);
@@ -111,17 +111,17 @@ void Mat::Maxwell0dAcinusOgden::unpack(const std::vector<char>& data)
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::Maxwell0dAcinusOgden*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   if (position != data.size())
@@ -181,10 +181,10 @@ void Mat::Maxwell0dAcinusOgden::evaluate(Core::LinAlg::SerialDenseVector& epnp,
 
   // Linear branches of the Maxwell model (Stiffness2(), B=R_t, B_a=R_a), notation according to
   // interacinar dependency paper
-  double Kp_np = Viscosity1() / (Stiffness2() * dt) + 1.0;
-  double Kp_n = -Viscosity1() / (Stiffness2() * dt);
-  double Kq_np = Viscosity1() * Viscosity2() / (Stiffness2() * dt) + Viscosity1() + Viscosity2();
-  double Kq_n = -Viscosity1() * Viscosity2() / (Stiffness2() * dt);
+  double Kp_np = viscosity1() / (stiffness2() * dt) + 1.0;
+  double Kp_n = -viscosity1() / (stiffness2() * dt);
+  double Kq_np = viscosity1() * viscosity2() / (stiffness2() * dt) + viscosity1() + viscosity2();
+  double Kq_n = -viscosity1() * viscosity2() / (stiffness2() * dt);
   double rhsLin = -Kp_n * (p1n - p2n) + Kq_n * qi_n;
 
   // Branch E_1 of the Maxwell model: Hydrostatic pressure (=Cauchy stress) for Ogden material
@@ -193,7 +193,7 @@ void Mat::Maxwell0dAcinusOgden::evaluate(Core::LinAlg::SerialDenseVector& epnp,
   //       P_d =-(kappa/beta_)*(lambda^(-3-3*beta_))
   //       \lambda is the volumetric strain ratio, \lambda = (V/Vo)^(1/3)
   double vi_np = qi_np * dt + vi_n;
-  double Kq_npNL = (Viscosity1() / Stiffness2()) *
+  double Kq_npNL = (viscosity1() / stiffness2()) *
                    (-kappa_ * Vo / (pow(vi_np, 2.0) * beta_) +
                        (beta_ + 1.0) * kappa_ * (pow(Vo / (vi_np), beta_ + 1.0)) / ((vi_np)*beta_));
   double rhsNL = (Vo / vi_n) * (kappa_ / beta_) * (1 - pow((Vo / vi_n), beta_));
@@ -214,7 +214,7 @@ void Mat::Maxwell0dAcinusOgden::evaluate(Core::LinAlg::SerialDenseVector& epnp,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double Mat::Maxwell0dAcinusOgden::GetParams(std::string parametername)
+double Mat::Maxwell0dAcinusOgden::get_params(std::string parametername)
 {
   if (parametername == "kappa")
     return kappa_;
@@ -229,7 +229,7 @@ double Mat::Maxwell0dAcinusOgden::GetParams(std::string parametername)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusOgden::SetParams(std::string parametername, double new_value)
+void Mat::Maxwell0dAcinusOgden::set_params(std::string parametername, double new_value)
 {
   if (parametername == "kappa")
     kappa_ = new_value;
@@ -239,7 +239,7 @@ void Mat::Maxwell0dAcinusOgden::SetParams(std::string parametername, double new_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusOgden::VisNames(std::map<std::string, int>& names)
+void Mat::Maxwell0dAcinusOgden::vis_names(std::map<std::string, int>& names)
 {
   std::string fiber = "kappa";
   names[fiber] = 1;  // scalar
@@ -247,14 +247,14 @@ void Mat::Maxwell0dAcinusOgden::VisNames(std::map<std::string, int>& names)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Mat::Maxwell0dAcinusOgden::VisData(
+bool Mat::Maxwell0dAcinusOgden::vis_data(
     const std::string& name, std::vector<double>& data, int eleGID)
 {
   if (name == "kappa")
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
 
-    data[0] = GetParams("kappa");
+    data[0] = get_params("kappa");
   }
   else
   {

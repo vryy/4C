@@ -539,7 +539,7 @@ namespace Core::FE
     }
 
     //! return string representation of this class
-    std::string toString() const
+    std::string to_string() const
     {
       std::stringstream s;
       s << "IntPoint, Position: " << position_ << ", weight: " << weight_;
@@ -547,10 +547,10 @@ namespace Core::FE
     }
 
     //! get integration point position
-    Vec Position() const { return position_; }
+    Vec position() const { return position_; }
 
     //! get integration point weight
-    double Weight() const { return weight_; }
+    double weight() const { return weight_; }
 
    private:
     //! 1d, 2d or 3d position of integration point in element coordinates
@@ -589,16 +589,16 @@ namespace Core::FE
     double qwgt[max_nquad];    ///< weights
 
     /// gauss point coordinates
-    const double* Point(int point) const
+    const double* point(int point) const
     {
       FOUR_C_ASSERT(point < max_nquad, "Index out of range");
       return qxg[point];
     };
 
-    [[nodiscard]] int NumPoints() const { return nquad; }
+    [[nodiscard]] int num_points() const { return nquad; }
 
     /// get used integration rule
-    Core::FE::GaussRule3D GetIntRule() const { return intrule_; };
+    Core::FE::GaussRule3D get_int_rule() const { return intrule_; };
   };
 
   /*!
@@ -626,16 +626,16 @@ namespace Core::FE
     double qwgt[max_nquad];    ///< weights
 
     /// gauss point coordinates
-    const double* Point(int point) const
+    const double* point(int point) const
     {
       FOUR_C_ASSERT(point < max_nquad, "Index out of range");
       return qxg[point];
     };
 
-    [[nodiscard]] int NumPoints() const { return nquad; }
+    [[nodiscard]] int num_points() const { return nquad; }
 
     /// get used integration rule
-    Core::FE::GaussRule2D GetIntRule() const { return intrule_; };
+    Core::FE::GaussRule2D get_int_rule() const { return intrule_; };
   };
 
   /*!
@@ -662,16 +662,16 @@ namespace Core::FE
     double qwgt[max_nquad];    ///< weights
 
     /// gauss point coordinates
-    const double* Point(int point) const
+    const double* point(int point) const
     {
       FOUR_C_ASSERT(point < max_nquad, "Index out of range");
       return qxg[point];
     };
 
-    [[nodiscard]] int NumPoints() const { return nquad; }
+    [[nodiscard]] int num_points() const { return nquad; }
 
     /// get used integration rule
-    Core::FE::GaussRule1D GetIntRule() const { return intrule_; };
+    Core::FE::GaussRule1D get_int_rule() const { return intrule_; };
   };
 
 
@@ -743,12 +743,12 @@ namespace Core::FE
     };
 
     //! get reference to the integration points and weights
-    const IntegrationPoints3D& IP() const { return intpoints_; };
+    const IntegrationPoints3D& ip() const { return intpoints_; };
 
-    inline unsigned NumPoints() const { return IP().nquad; };
-    inline unsigned NumDimension() const { return 3; }
-    inline const double* Point(int point) const { return IP().qxg[point]; };
-    inline double Weight(int point) const { return IP().qwgt[point]; };
+    inline unsigned num_points() const { return ip().nquad; };
+    inline unsigned num_dimension() const { return 3; }
+    inline const double* point(int point) const { return ip().qxg[point]; };
+    inline double weight(int point) const { return ip().qwgt[point]; };
 
    private:
     //! integration points and weights for 3D
@@ -769,12 +769,12 @@ namespace Core::FE
     };
 
     //! get reference to the integration points and weights
-    const IntegrationPoints2D& IP() const { return intpoints_; };
+    const IntegrationPoints2D& ip() const { return intpoints_; };
 
-    inline unsigned NumPoints() const { return IP().nquad; };
-    inline unsigned NumDimension() const { return 2; }
-    inline const double* Point(int point) const { return IP().qxg[point]; };
-    inline double Weight(int point) const { return IP().qwgt[point]; };
+    inline unsigned num_points() const { return ip().nquad; };
+    inline unsigned num_dimension() const { return 2; }
+    inline const double* point(int point) const { return ip().qxg[point]; };
+    inline double weight(int point) const { return ip().qwgt[point]; };
 
    private:
     //! integration points and weights for 3D
@@ -795,12 +795,12 @@ namespace Core::FE
     };
 
     //! get reference to the integration points and weights
-    const IntegrationPoints1D& IP() const { return intpoints_; };
+    const IntegrationPoints1D& ip() const { return intpoints_; };
 
-    inline unsigned NumPoints() const { return IP().nquad; };
-    inline unsigned NumDimension() const { return 1; }
-    inline const double* Point(int point) const { return IP().qxg[point]; };
-    inline double Weight(int point) const { return IP().qwgt[point]; };
+    inline unsigned num_points() const { return ip().nquad; };
+    inline unsigned num_dimension() const { return 1; }
+    inline const double* point(int point) const { return ip().qxg[point]; };
+    inline double weight(int point) const { return ip().qwgt[point]; };
 
    private:
     //! integration points and weights for 3D

@@ -51,12 +51,12 @@ void MultiScale::np_support_drt()
   // this call is needed in order to increment the unique ids that are distributed
   // by HDF5; the macro procs call output->write_mesh(0, 0.0) in Adapter::Structure
   const int someUniqueNumber =
-      Global::Problem::Instance(0)->GetCommunicators()->GlobalComm()->MyPID();
+      Global::Problem::instance(0)->get_communicators()->global_comm()->MyPID();
   std::string uniqueDummyName = &"dummyHDF5file_p"[someUniqueNumber];
   H5Fcreate(uniqueDummyName.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
   // get sub communicator including the master proc
-  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
 
   // bool for checking whether restart has already been called
   bool restart = false;

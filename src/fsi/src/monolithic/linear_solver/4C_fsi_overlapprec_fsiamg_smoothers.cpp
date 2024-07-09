@@ -96,10 +96,10 @@ double FSI::OverlappingBlockMatrixFSIAMG::richardson_bgs_mixed(const int myrank,
       sz = 0.0;
 
       if (sisamg)
-        richardson_v("(s)", myrank, blocksweeps[0], blockdamps[0], sbest.Sweeps(), sbest.Damp(),
-            Ass, sbest.S(), Pss, Rss, 0, sbest.Nlevel(), sz, stmpf, true, false, true);
+        richardson_v("(s)", myrank, blocksweeps[0], blockdamps[0], sbest.sweeps(), sbest.damp(),
+            Ass, sbest.s(), Pss, Rss, 0, sbest.nlevel(), sz, stmpf, true, false, true);
       else
-        richardson_mixed("(s)", myrank, 0, blocksweeps[0], blockdamps[0], Ass[0], Matrix(0, 0),
+        richardson_mixed("(s)", myrank, 0, blocksweeps[0], blockdamps[0], Ass[0], matrix(0, 0),
             structuresolver_, sz, stmpf, const_cast<int&>(srun_), true, false, true);
 
       sy.Update(damp, sz, 1.0);
@@ -117,10 +117,10 @@ double FSI::OverlappingBlockMatrixFSIAMG::richardson_bgs_mixed(const int myrank,
       az = 0.0;
 
       if (aisamg)
-        richardson_v("(a)", myrank, blocksweeps[2], blockdamps[2], abest.Sweeps(), abest.Damp(),
-            Aaa, abest.S(), Paa, Raa, 0, abest.Nlevel(), az, atmpf, true, false, true);
+        richardson_v("(a)", myrank, blocksweeps[2], blockdamps[2], abest.sweeps(), abest.damp(),
+            Aaa, abest.s(), Paa, Raa, 0, abest.nlevel(), az, atmpf, true, false, true);
       else
-        richardson_mixed("(a)", myrank, 0, blocksweeps[2], blockdamps[2], Aaa[0], Matrix(2, 2),
+        richardson_mixed("(a)", myrank, 0, blocksweeps[2], blockdamps[2], Aaa[0], matrix(2, 2),
             alesolver_, az, atmpf, const_cast<int&>(arun_), true, false, true);
 
       ay.Update(damp, az, 1.0);
@@ -136,10 +136,10 @@ double FSI::OverlappingBlockMatrixFSIAMG::richardson_bgs_mixed(const int myrank,
       fz = 0.0;
 
       if (fisamg)
-        richardson_v("(f)", myrank, blocksweeps[1], blockdamps[1], fbest.Sweeps(), fbest.Damp(),
-            Aff, fbest.S(), Pff, Rff, 0, fbest.Nlevel(), fz, ftmpf, true, false, true);
+        richardson_v("(f)", myrank, blocksweeps[1], blockdamps[1], fbest.sweeps(), fbest.damp(),
+            Aff, fbest.s(), Pff, Rff, 0, fbest.nlevel(), fz, ftmpf, true, false, true);
       else
-        richardson_mixed("(f)", myrank, 0, blocksweeps[1], blockdamps[1], Aff[0], Matrix(1, 1),
+        richardson_mixed("(f)", myrank, 0, blocksweeps[1], blockdamps[1], Aff[0], matrix(1, 1),
             fluidsolver_, fz, ftmpf, const_cast<int&>(frun_), true, false, true);
 
       fy.Update(damp, fz, 1.0);
@@ -219,9 +219,9 @@ double FSI::OverlappingBlockMatrixFSIAMG::richardson_mixed(const std::string fie
 
   // a view to these vectors (MUST be AFTER the above statement!)
   Teuchos::RCP<Epetra_Vector> er =
-      Teuchos::rcp(new Epetra_Vector(View, matrix.RangeMap(), r.GetValues(0)));
+      Teuchos::rcp(new Epetra_Vector(View, matrix.range_map(), r.GetValues(0)));
   Teuchos::RCP<Epetra_Vector> etmpx =
-      Teuchos::rcp(new Epetra_Vector(View, matrix.DomainMap(), tmpx.GetValues(0)));
+      Teuchos::rcp(new Epetra_Vector(View, matrix.domain_map(), tmpx.GetValues(0)));
 
   double initrinf = 0.0;
   double initrl2 = 0.0;
@@ -240,13 +240,13 @@ double FSI::OverlappingBlockMatrixFSIAMG::richardson_mixed(const std::string fie
     bool refactor = false;
     if (!run) refactor = true;
     tmpx = 0.0;
-    solver->Solve(matrix.EpetraMatrix(), etmpx, er, refactor, false);
+    solver->solve(matrix.epetra_matrix(), etmpx, er, refactor, false);
     x = x + damp * tmpx;
     if (i < sweeps || analysis)
     {
       r = f - A * x;
       // r is recreated here, so we need a fresh view (took me a while to find this one :-( )
-      er = Teuchos::rcp(new Epetra_Vector(View, matrix.RangeMap(), r.GetValues(0)));
+      er = Teuchos::rcp(new Epetra_Vector(View, matrix.range_map(), r.GetValues(0)));
     }
     run++;
   }

@@ -29,57 +29,57 @@ namespace Discret
     {
      public:
       //! singleton access method
-      static ScaTraEleParameterBoundary* Instance(const std::string& disname);
+      static ScaTraEleParameterBoundary* instance(const std::string& disname);
 
       //! set parameters for specific kintetic model
-      void SetParameters(Teuchos::ParameterList& parameters) override;
+      void set_parameters(Teuchos::ParameterList& parameters) override;
 
       /// Set actual parameters
       ///@{
-      void SetAlpha(Teuchos::ParameterList& parameters);
-      void SetCapacitance(Teuchos::ParameterList& parameters);
+      void set_alpha(Teuchos::ParameterList& parameters);
+      void set_capacitance(Teuchos::ParameterList& parameters);
       void set_charge_transfer_constant(Teuchos::ParameterList& parameters);
-      void SetConvTolIterNum(Teuchos::ParameterList& parameters);
-      void SetDensityMolarMass(Teuchos::ParameterList& parameters);
+      void set_conv_tol_iter_num(Teuchos::ParameterList& parameters);
+      void set_density_molar_mass(Teuchos::ParameterList& parameters);
       void set_energy_substance_ratio(Teuchos::ParameterList& parameters);
-      void SetIsPseudoContact(Teuchos::ParameterList& parameters);
-      void SetNumElectrons(Teuchos::ParameterList& parameters);
-      void SetNumScal(Teuchos::ParameterList& parameters);
-      void SetOnOff(Teuchos::ParameterList& parameters);
-      void SetPeltier(Teuchos::ParameterList& parameters);
-      void SetPermeabilities(Teuchos::ParameterList& parameters);
-      void SetRegularization(Teuchos::ParameterList& parameters);
-      void SetResistance(Teuchos::ParameterList& parameters);
-      void SetResistivity(Teuchos::ParameterList& parameters);
-      void SetStoichiometries(Teuchos::ParameterList& parameters);
-      void SetThermoPerm(Teuchos::ParameterList& parameters);
+      void set_is_pseudo_contact(Teuchos::ParameterList& parameters);
+      void set_num_electrons(Teuchos::ParameterList& parameters);
+      void set_num_scal(Teuchos::ParameterList& parameters);
+      void set_on_off(Teuchos::ParameterList& parameters);
+      void set_peltier(Teuchos::ParameterList& parameters);
+      void set_permeabilities(Teuchos::ParameterList& parameters);
+      void set_regularization(Teuchos::ParameterList& parameters);
+      void set_resistance(Teuchos::ParameterList& parameters);
+      void set_resistivity(Teuchos::ParameterList& parameters);
+      void set_stoichiometries(Teuchos::ParameterList& parameters);
+      void set_thermo_perm(Teuchos::ParameterList& parameters);
       ///@}
 
       /// Return parameters
       ///@{
-      double Alphadata() const { return alphaa_; }
-      double AlphaC() const { return alphac_; }
-      double Capacitance() const { return capacitance_; }
+      double alphadata() const { return alphaa_; }
+      double alpha_c() const { return alphac_; }
+      double capacitance() const { return capacitance_; }
       double charge_transfer_constant() const { return kr_; }
-      Core::Conditions::ConditionType ConditionType() const { return conditiontype_; }
-      double ConvtolimplicitBV() const { return convtolimplicit_bv_; }
-      double Density() const { return density_; }
-      bool IsPseudoContact() const { return is_pseudo_contact_; }
-      int ItemaximplicitBV() const { return itemaxmimplicit_bv_; }
-      int KineticModel() const { return kineticmodel_; }
-      double MolarHeatCapacity() const { return molar_heat_capacity_; }
-      double MolarMass() const { return molarmass_; }
-      int NumElectrons() const { return numelectrons_; }
-      int NumScal() const { return numscal_; }
-      const std::vector<int>* OnOff() const { return onoff_; }
-      double Peltier() const { return peltier_; }
-      const std::vector<double>* Permeabilities() const { return permeabilities_; }
+      Core::Conditions::ConditionType condition_type() const { return conditiontype_; }
+      double convtolimplicit_bv() const { return convtolimplicit_bv_; }
+      double density() const { return density_; }
+      bool is_pseudo_contact() const { return is_pseudo_contact_; }
+      int itemaximplicit_bv() const { return itemaxmimplicit_bv_; }
+      int kinetic_model() const { return kineticmodel_; }
+      double molar_heat_capacity() const { return molar_heat_capacity_; }
+      double molar_mass() const { return molarmass_; }
+      int num_electrons() const { return numelectrons_; }
+      int num_scal() const { return numscal_; }
+      const std::vector<int>* on_off() const { return onoff_; }
+      double peltier() const { return peltier_; }
+      const std::vector<double>* permeabilities() const { return permeabilities_; }
       double regularization_parameter() const { return regularizationparameter_; }
-      Inpar::S2I::RegularizationType RegularizationType() const { return regularizationtype_; }
-      double Resistance() const { return resistance_; }
-      double Resistivity() const { return resistivity_; }
-      const std::vector<int>* Stoichiometries() const { return stoichiometries_; }
-      double ThermoPerm() const { return thermoperm_; }
+      Inpar::S2I::RegularizationType regularization_type() const { return regularizationtype_; }
+      double resistance() const { return resistance_; }
+      double resistivity() const { return resistivity_; }
+      const std::vector<int>* stoichiometries() const { return stoichiometries_; }
+      double thermo_perm() const { return thermoperm_; }
 
       ///@}
 

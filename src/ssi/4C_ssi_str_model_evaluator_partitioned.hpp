@@ -44,7 +44,7 @@ namespace Solid
 
       //! @name Functions which are derived from the base generic class
       //! @{
-      [[nodiscard]] Inpar::Solid::ModelType Type() const override
+      [[nodiscard]] Inpar::Solid::ModelType type() const override
       {
         return Inpar::Solid::model_partitioned_coupling;
       }

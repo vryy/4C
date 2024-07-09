@@ -26,7 +26,7 @@ Core::Geo::Cut::Tri6SideHandle::Tri6SideHandle(
   nodes_.reserve(4);
   for (int i = 0; i < 4; ++i)
   {
-    Node* n = mesh.GetNode(node_ids[i], static_cast<double*>(nullptr));
+    Node* n = mesh.get_node(node_ids[i], static_cast<double*>(nullptr));
     nodes_.push_back(n);
   }
 
@@ -66,9 +66,9 @@ Core::Geo::Cut::Quad4SideHandle::Quad4SideHandle(
   nodes_.reserve(4);
   for (int i = 0; i < 4; ++i)
   {
-    Node* n = mesh.GetNode(node_ids[i], static_cast<double*>(nullptr));
+    Node* n = mesh.get_node(node_ids[i], static_cast<double*>(nullptr));
     nodes_.push_back(n);
-    n->Coordinates(&xyze(0, i));
+    n->coordinates(&xyze(0, i));
   }
 
   const CellTopologyData* top_data = shards::getCellTopologyData<shards::Triangle<3>>();
@@ -83,8 +83,8 @@ Core::Geo::Cut::Quad4SideHandle::Quad4SideHandle(
 
   plain_int_set node_nids;
   node_nids.insert(node_ids.begin(), node_ids.end());
-  Node* middle = mesh.GetNode(node_nids, xyz.data());
-  int middle_id = middle->Id();
+  Node* middle = mesh.get_node(node_nids, xyz.data());
+  int middle_id = middle->id();
 
   std::vector<int> nids(3);
 
@@ -120,7 +120,7 @@ Core::Geo::Cut::Quad8SideHandle::Quad8SideHandle(
     nodes_.reserve(8);
     for (int i = 0; i < 8; ++i)
     {
-      Node* n = mesh.GetNode(node_ids[i], static_cast<double*>(nullptr));
+      Node* n = mesh.get_node(node_ids[i], static_cast<double*>(nullptr));
       nodes_.push_back(n);
     }
     const CellTopologyData* top_data = shards::getCellTopologyData<shards::Triangle<3>>();
@@ -163,9 +163,9 @@ Core::Geo::Cut::Quad8SideHandle::Quad8SideHandle(
     nodes_.reserve(8);
     for (int i = 0; i < 8; ++i)
     {
-      Node* n = mesh.GetNode(node_ids[i], static_cast<double*>(nullptr));
+      Node* n = mesh.get_node(node_ids[i], static_cast<double*>(nullptr));
       nodes_.push_back(n);
-      n->Coordinates(&xyze(0, i));
+      n->coordinates(&xyze(0, i));
     }
 
     const CellTopologyData* top_data = shards::getCellTopologyData<shards::Quadrilateral<4>>();
@@ -180,8 +180,8 @@ Core::Geo::Cut::Quad8SideHandle::Quad8SideHandle(
 
     plain_int_set node_nids;
     std::copy(node_ids.begin(), node_ids.end(), std::inserter(node_nids, node_nids.begin()));
-    Node* middle = mesh.GetNode(node_nids, xyz.data());
-    int middle_id = middle->Id();
+    Node* middle = mesh.get_node(node_nids, xyz.data());
+    int middle_id = middle->id();
 
     std::vector<int> nids(4);
 
@@ -222,7 +222,7 @@ Core::Geo::Cut::Quad9SideHandle::Quad9SideHandle(
     nodes_.reserve(9);
     for (int i = 0; i < 9; ++i)
     {
-      Node* n = mesh.GetNode(node_ids[i], static_cast<double*>(nullptr));
+      Node* n = mesh.get_node(node_ids[i], static_cast<double*>(nullptr));
       nodes_.push_back(n);
     }
     const CellTopologyData* top_data = shards::getCellTopologyData<shards::Triangle<3>>();
@@ -267,7 +267,7 @@ Core::Geo::Cut::Quad9SideHandle::Quad9SideHandle(
     nodes_.reserve(9);
     for (int i = 0; i < 9; ++i)
     {
-      Node* n = mesh.GetNode(node_ids[i], static_cast<double*>(nullptr));
+      Node* n = mesh.get_node(node_ids[i], static_cast<double*>(nullptr));
       nodes_.push_back(n);
     }
 
@@ -311,12 +311,12 @@ void Core::Geo::Cut::Tri6SideHandle::local_coordinates(
   for (int i = 0; i < 6; ++i)
   {
     Node* n = nodes_[i];
-    n->Coordinates(&xyze(0, i));
+    n->coordinates(&xyze(0, i));
   }
 
   Teuchos::RCP<Position> pos =
       PositionFactory::build_position<3, Core::FE::CellType::tri6>(xyze, xyz);
-  bool success = pos->Compute();
+  bool success = pos->compute();
   if (not success)
   {
   }
@@ -333,12 +333,12 @@ void Core::Geo::Cut::Quad4SideHandle::local_coordinates(
   for (int i = 0; i < 4; ++i)
   {
     Node* n = nodes_[i];
-    n->Coordinates(&xyze(0, i));
+    n->coordinates(&xyze(0, i));
   }
 
   Teuchos::RCP<Position> pos =
       PositionFactory::build_position<3, Core::FE::CellType::quad4>(xyze, xyz);
-  bool success = pos->Compute();
+  bool success = pos->compute();
   if (not success)
   {
   }
@@ -355,12 +355,12 @@ void Core::Geo::Cut::Quad8SideHandle::local_coordinates(
   for (int i = 0; i < 8; ++i)
   {
     Node* n = nodes_[i];
-    n->Coordinates(&xyze(0, i));
+    n->coordinates(&xyze(0, i));
   }
 
   Teuchos::RCP<Position> pos =
       PositionFactory::build_position<3, Core::FE::CellType::quad8>(xyze, xyz);
-  bool success = pos->Compute();
+  bool success = pos->compute();
   if (not success)
   {
   }
@@ -377,12 +377,12 @@ void Core::Geo::Cut::Quad9SideHandle::local_coordinates(
   for (int i = 0; i < 9; ++i)
   {
     Node* n = nodes_[i];
-    n->Coordinates(&xyze(0, i));
+    n->coordinates(&xyze(0, i));
   }
 
   Teuchos::RCP<Position> pos =
       PositionFactory::build_position<3, Core::FE::CellType::quad9>(xyze, xyz);
-  bool success = pos->Compute();
+  bool success = pos->compute();
   if (not success)
   {
   }

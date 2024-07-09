@@ -80,9 +80,9 @@ void FLD::TimIntRedModels::init()
     if (ART_timeInt_ != Teuchos::null)
     {
       Core::IO::DiscretizationWriter output_redD(ART_timeInt_->discretization(),
-          Global::Problem::Instance()->OutputControlFile(),
-          Global::Problem::Instance()->spatial_approximation_type());
-      discret_->ClearState();
+          Global::Problem::instance()->output_control_file(),
+          Global::Problem::instance()->spatial_approximation_type());
+      discret_->clear_state();
       discret_->set_state("velaf", zeros_);
       if (alefluid_)
       {
@@ -90,7 +90,7 @@ void FLD::TimIntRedModels::init()
       }
       coupled3D_redDbc_art_ =
           Teuchos::rcp(new UTILS::FluidCouplingWrapper<Adapter::ArtNet>(discret_,
-              ART_timeInt_->discretization(), ART_timeInt_, output_redD, dta_, ART_timeInt_->Dt()));
+              ART_timeInt_->discretization(), ART_timeInt_, output_redD, dta_, ART_timeInt_->dt()));
     }
 
 
@@ -99,9 +99,9 @@ void FLD::TimIntRedModels::init()
     if (airway_imp_timeInt_ != Teuchos::null)
     {
       Core::IO::DiscretizationWriter output_redD(airway_imp_timeInt_->discretization(),
-          Global::Problem::Instance()->OutputControlFile(),
-          Global::Problem::Instance()->spatial_approximation_type());
-      discret_->ClearState();
+          Global::Problem::instance()->output_control_file(),
+          Global::Problem::instance()->spatial_approximation_type());
+      discret_->clear_state();
       discret_->set_state("velaf", zeros_);
       if (alefluid_)
       {
@@ -110,7 +110,7 @@ void FLD::TimIntRedModels::init()
       coupled3D_redDbc_airways_ =
           Teuchos::rcp(new UTILS::FluidCouplingWrapper<Airway::RedAirwayImplicitTimeInt>(discret_,
               airway_imp_timeInt_->discretization(), airway_imp_timeInt_, output_redD, dta_,
-              airway_imp_timeInt_->Dt()));
+              airway_imp_timeInt_->dt()));
     }
 
 
@@ -160,7 +160,7 @@ void FLD::TimIntRedModels::do_problem_specific_boundary_conditions()
   }
 
   // Evaluate the womersley velocities
-  vol_surf_flow_bc_->EvaluateVelocities(velnp_, time_);
+  vol_surf_flow_bc_->evaluate_velocities(velnp_, time_);
 }
 
 /*----------------------------------------------------------------------*
@@ -168,7 +168,7 @@ void FLD::TimIntRedModels::do_problem_specific_boundary_conditions()
 *----------------------------------------------------------------------*/
 void FLD::TimIntRedModels::update3_d_to_reduced_mat_and_rhs()
 {
-  discret_->ClearState();
+  discret_->clear_state();
 
   discret_->set_state("velaf", velnp_);
   discret_->set_state("hist", hist_);
@@ -183,7 +183,7 @@ void FLD::TimIntRedModels::update3_d_to_reduced_mat_and_rhs()
   {
     if (strong_redD_3d_coupling_)
     {
-      coupled3D_redDbc_art_->LoadState();
+      coupled3D_redDbc_art_->load_state();
       coupled3D_redDbc_art_->flow_rate_calculation(time_, dta_);
       coupled3D_redDbc_art_->apply_boundary_conditions(time_, dta_, theta_);
     }
@@ -195,7 +195,7 @@ void FLD::TimIntRedModels::update3_d_to_reduced_mat_and_rhs()
   {
     if (strong_redD_3d_coupling_)
     {
-      coupled3D_redDbc_airways_->LoadState();
+      coupled3D_redDbc_airways_->load_state();
       coupled3D_redDbc_airways_->flow_rate_calculation(time_, dta_);
       coupled3D_redDbc_airways_->apply_boundary_conditions(time_, dta_, theta_);
     }
@@ -206,10 +206,10 @@ void FLD::TimIntRedModels::update3_d_to_reduced_mat_and_rhs()
   // add the traction velocity component
   //----------------------------------------------------------------------
 
-  traction_vel_comp_adder_bc_->EvaluateVelocities(velnp_, time_, theta_, dta_);
+  traction_vel_comp_adder_bc_->evaluate_velocities(velnp_, time_, theta_, dta_);
   traction_vel_comp_adder_bc_->update_residual(residual_);
 
-  discret_->ClearState();
+  discret_->clear_state();
 }
 
 /*----------------------------------------------------------------------*
@@ -226,7 +226,7 @@ void FLD::TimIntRedModels::set_custom_ele_params_assemble_mat_and_rhs(
 /*----------------------------------------------------------------------*
  | output of solution vector of ReducedD problem to binio   ismail 01/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::OutputReducedD()
+void FLD::TimIntRedModels::output_reduced_d()
 {
   // output of solution
   if (step_ % upres_ == 0)
@@ -268,7 +268,7 @@ void FLD::TimIntRedModels::OutputReducedD()
 void FLD::TimIntRedModels::read_restart(int step)
 {
   Core::IO::DiscretizationReader reader(
-      discret_, Global::Problem::Instance()->InputControlFile(), step);
+      discret_, Global::Problem::instance()->input_control_file(), step);
 
   vol_surf_flow_bc_->read_restart(reader);
 
@@ -285,13 +285,13 @@ void FLD::TimIntRedModels::read_restart(int step)
     coupled3D_redDbc_airways_->read_restart(reader);
   }
 
-  ReadRestartReducedD(step);
+  read_restart_reduced_d(step);
 }
 
 /*----------------------------------------------------------------------*
  |                                                          ismail 01/13|
  -----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::ReadRestartReducedD(int step)
+void FLD::TimIntRedModels::read_restart_reduced_d(int step)
 {
   // Check if one-dimensional artery network problem exist
   if (ART_timeInt_ != Teuchos::null)
@@ -322,8 +322,8 @@ void FLD::TimIntRedModels::setup_meshtying()
 
   if (vol_surf_flow_bc_maps_->NumGlobalElements() != 0)
   {
-    meshtying_->CheckOverlappingBC(vol_surf_flow_bc_maps_);
-    meshtying_->DirichletOnMaster(vol_surf_flow_bc_maps_);
+    meshtying_->check_overlapping_bc(vol_surf_flow_bc_maps_);
+    meshtying_->dirichlet_on_master(vol_surf_flow_bc_maps_);
   }
 }
 
@@ -370,7 +370,7 @@ void FLD::TimIntRedModels::output()
     }
   }
 
-  OutputReducedD();
+  output_reduced_d();
 }  // TimIntRedModels::Output
 
 /*----------------------------------------------------------------------*
@@ -425,13 +425,13 @@ void FLD::TimIntRedModels::av_m3_preparation()
 /*----------------------------------------------------------------------*
  | RedModels - specific BC in linear_relaxation_solve            bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::CustomSolve(Teuchos::RCP<Epetra_Vector> relax)
+void FLD::TimIntRedModels::custom_solve(Teuchos::RCP<Epetra_Vector> relax)
 {
   // apply Womersley as a Dirichlet BC
   Core::LinAlg::apply_dirichlet_to_system(*incvel_, *residual_, *relax, *(vol_surf_flow_bc_maps_));
 
   // apply Womersley as a Dirichlet BC
-  sysmat_->ApplyDirichlet(*(vol_surf_flow_bc_maps_));
+  sysmat_->apply_dirichlet(*(vol_surf_flow_bc_maps_));
 }
 
 /*----------------------------------------------------------------------*
@@ -441,7 +441,7 @@ void FLD::TimIntRedModels::prepare_time_step()
 {
   FluidImplicitTimeInt::prepare_time_step();
 
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("velaf", velnp_);
   discret_->set_state("hist", hist_);
 
@@ -450,7 +450,7 @@ void FLD::TimIntRedModels::prepare_time_step()
   // Check if one-dimensional artery network problem exist
   if (ART_timeInt_ != Teuchos::null)
   {
-    coupled3D_redDbc_art_->SaveState();
+    coupled3D_redDbc_art_->save_state();
     coupled3D_redDbc_art_->flow_rate_calculation(time_, dta_);
     coupled3D_redDbc_art_->apply_boundary_conditions(time_, dta_, theta_);
   }
@@ -459,12 +459,12 @@ void FLD::TimIntRedModels::prepare_time_step()
   // Check if one-dimensional artery network problem exist
   if (airway_imp_timeInt_ != Teuchos::null)
   {
-    coupled3D_redDbc_airways_->SaveState();
+    coupled3D_redDbc_airways_->save_state();
     coupled3D_redDbc_airways_->flow_rate_calculation(time_, dta_);
     coupled3D_redDbc_airways_->apply_boundary_conditions(time_, dta_, theta_);
   }
 
-  discret_->ClearState();
+  discret_->clear_state();
 }
 
 
@@ -478,7 +478,7 @@ void FLD::TimIntRedModels::assemble_mat_and_rhs()
   if (shapederivatives_ != Teuchos::null)
   {
     // apply the womersley bc as a dirichlet bc
-    shapederivatives_->ApplyDirichlet(*(vol_surf_flow_bc_maps_), false);
+    shapederivatives_->apply_dirichlet(*(vol_surf_flow_bc_maps_), false);
   }
 }
 
@@ -489,12 +489,12 @@ void FLD::TimIntRedModels::apply_dirichlet_to_system()
 {
   FluidImplicitTimeInt::apply_dirichlet_to_system();
 
-  if (LocsysManager() != Teuchos::null)
+  if (locsys_manager() != Teuchos::null)
   {
     // apply Womersley as a Dirichlet BC
     Core::LinAlg::apply_dirichlet_to_system(
         *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(sysmat_), *incvel_, *residual_,
-        *locsysman_->Trafo(), *zeros_, *(vol_surf_flow_bc_maps_));
+        *locsysman_->trafo(), *zeros_, *(vol_surf_flow_bc_maps_));
   }
   else
   {

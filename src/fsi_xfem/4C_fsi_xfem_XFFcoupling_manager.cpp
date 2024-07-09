@@ -33,34 +33,34 @@ XFEM::XffCouplingManager::XffCouplingManager(Teuchos::RCP<ConditionManager> cond
   // Coupling_Comm_Manager create all Coupling Objects now with Fluid has idx = 0, Fluid has idx =
   // 1!
   mcffi_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(
-      condmanager->GetMeshCoupling(cond_name_));
+      condmanager->get_mesh_coupling(cond_name_));
   if (mcffi_ == Teuchos::null) FOUR_C_THROW(" Failed to get MeshCouplingFFI for embedded fluid!");
 }
 
 /*-----------------------------------------------------------------------------------------*
 | Set required displacement & velocity states in the coupling object          ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-void XFEM::XffCouplingManager::InitCouplingStates() {}
+void XFEM::XffCouplingManager::init_coupling_states() {}
 
 
 /*-----------------------------------------------------------------------------------------*
 | Set required displacement & velocity states in the coupling object          ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-void XFEM::XffCouplingManager::SetCouplingStates()
+void XFEM::XffCouplingManager::set_coupling_states()
 {
   std::cout << "SetCouplingStates in XFFCoupling_Manager" << std::endl;
 
   /// free the fluid-fluid interface
-  mcffi_->SetInterfaceFree();
+  mcffi_->set_interface_free();
 
   mcffi_->update_displacement_iteration_vectors();  // update last iteration interface displacements
-  Core::LinAlg::Export(*fluid_->Dispnp(), *mcffi_->IDispnp());
-  Core::LinAlg::Export(*fluid_->Velnp(), *mcffi_->IVelnp());
-  Core::LinAlg::Export(*fluid_->Veln(), *mcffi_->IVeln());
+  Core::LinAlg::Export(*fluid_->dispnp(), *mcffi_->i_dispnp());
+  Core::LinAlg::Export(*fluid_->velnp(), *mcffi_->i_velnp());
+  Core::LinAlg::Export(*fluid_->veln(), *mcffi_->i_veln());
 
   Teuchos::RCP<Epetra_Vector> tmp_diff =
-      Teuchos::rcp(new Epetra_Vector((*mcffi_->IDispnp()).Map()));
-  tmp_diff->Update(1.0, *mcffi_->IDispnp(), -1.0, *mcffi_->IDispnpi(), 0.0);
+      Teuchos::rcp(new Epetra_Vector((*mcffi_->i_dispnp()).Map()));
+  tmp_diff->Update(1.0, *mcffi_->i_dispnp(), -1.0, *mcffi_->i_dispnpi(), 0.0);
 
   double norm = 0.0;
   tmp_diff->NormInf(&norm);
@@ -92,7 +92,7 @@ void XFEM::XffCouplingManager::SetCouplingStates()
 /*-----------------------------------------------------------------------------------------*
 | Add the coupling matrixes to the global systemmatrix                        ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-void XFEM::XffCouplingManager::AddCouplingMatrix(
+void XFEM::XffCouplingManager::add_coupling_matrix(
     Core::LinAlg::BlockSparseMatrixBase& systemmatrix, double scaling)
 {
   /*----------------------------------------------------------------------*/
@@ -102,24 +102,24 @@ void XFEM::XffCouplingManager::AddCouplingMatrix(
   /*----------------------------------------------------------------------*/
 
   // add the coupling block C_ss on the already existing diagonal block
-  C_ff_block.Add(*xfluid_->C_ss_Matrix(cond_name_), false, scaling, 1.0);
+  C_ff_block.add(*xfluid_->c_ss_matrix(cond_name_), false, scaling, 1.0);
 
   Core::LinAlg::SparseMatrix& C_xff_block = (systemmatrix)(idx_[1], idx_[0]);
   Core::LinAlg::SparseMatrix& C_fxf_block = (systemmatrix)(idx_[0], idx_[1]);
 
-  C_fxf_block.Add(*xfluid_->C_sx_Matrix(cond_name_), false, scaling, 1.0);
-  C_xff_block.Add(*xfluid_->C_xs_Matrix(cond_name_), false, scaling, 1.0);
+  C_fxf_block.add(*xfluid_->c_sx_matrix(cond_name_), false, scaling, 1.0);
+  C_xff_block.add(*xfluid_->c_xs_matrix(cond_name_), false, scaling, 1.0);
 }
 
 /*-----------------------------------------------------------------------------------------*
 | Add the coupling rhs                                                        ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-void XFEM::XffCouplingManager::AddCouplingRHS(
+void XFEM::XffCouplingManager::add_coupling_rhs(
     Teuchos::RCP<Epetra_Vector> rhs, const Core::LinAlg::MultiMapExtractor& me, double scaling)
 {
   // REMARK: Copy this vector to store the correct lambda_ in update!
   Teuchos::RCP<Epetra_Vector> coup_rhs_sum =
-      Teuchos::rcp(new Epetra_Vector(*xfluid_->RHS_s_Vec(cond_name_)));
+      Teuchos::rcp(new Epetra_Vector(*xfluid_->rhs_s_vec(cond_name_)));
 
   coup_rhs_sum->Scale(scaling);
 

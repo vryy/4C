@@ -25,11 +25,11 @@ namespace
   void CreateMaterialInGlobalProblem()
   {
     Core::IO::InputParameterContainer mat_stvenant;
-    mat_stvenant.Add("YOUNG", 1.0);
-    mat_stvenant.Add("NUE", 0.1);
-    mat_stvenant.Add("DENS", 2.0);
+    mat_stvenant.add("YOUNG", 1.0);
+    mat_stvenant.add("NUE", 0.1);
+    mat_stvenant.add("DENS", 2.0);
 
-    Global::Problem::Instance()->Materials()->insert(
+    Global::Problem::instance()->materials()->insert(
         1, Mat::make_parameter(1, Core::Materials::MaterialType::m_stvenant, mat_stvenant));
   }
 
@@ -71,15 +71,15 @@ namespace
 
     testdis_->fill_complete(false, false, false);
 
-    Core::Nodes::Node* lastNode = testdis_->lRowNode(testdis_->NumMyRowNodes() - 1);
-    const auto nodePosition = lastNode->X();
+    Core::Nodes::Node* lastNode = testdis_->l_row_node(testdis_->num_my_row_nodes() - 1);
+    const auto nodePosition = lastNode->x();
 
     EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
     EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);
     EXPECT_NEAR(nodePosition[2], 4.5, 1e-14);
-    EXPECT_EQ(testdis_->NumMyRowNodes(), 1056);
-    EXPECT_EQ(testdis_->NumMyRowElements(), 750);
-    EXPECT_EQ(lastNode->Id(), 7177);
+    EXPECT_EQ(testdis_->num_my_row_nodes(), 1056);
+    EXPECT_EQ(testdis_->num_my_row_elements(), 750);
+    EXPECT_EQ(lastNode->id(), 7177);
   }
 
   TEST_F(GridGeneratorTest, TestGridGeneratorWithRotatedHex8Elements)
@@ -93,15 +93,15 @@ namespace
 
     testdis_->fill_complete(false, false, false);
 
-    Core::Nodes::Node* lastNode = testdis_->lRowNode(testdis_->NumMyRowNodes() - 1);
-    const auto nodePosition = lastNode->X();
+    Core::Nodes::Node* lastNode = testdis_->l_row_node(testdis_->num_my_row_nodes() - 1);
+    const auto nodePosition = lastNode->x();
 
     EXPECT_NEAR(nodePosition[0], 2.6565639116964181, 1e-14);
     EXPECT_NEAR(nodePosition[1], 4.8044393443812901, 1e-14);
     EXPECT_NEAR(nodePosition[2], 2.8980306453470042, 1e-14);
-    EXPECT_EQ(testdis_->NumMyRowNodes(), 1056);
-    EXPECT_EQ(testdis_->NumMyRowElements(), 750);
-    EXPECT_EQ(lastNode->Id(), 7177);
+    EXPECT_EQ(testdis_->num_my_row_nodes(), 1056);
+    EXPECT_EQ(testdis_->num_my_row_elements(), 750);
+    EXPECT_EQ(lastNode->id(), 7177);
   }
 
   TEST_F(GridGeneratorTest, TestGridGeneratorWithHex27Elements)
@@ -114,15 +114,15 @@ namespace
 
     testdis_->fill_complete(false, false, false);
 
-    Core::Nodes::Node* lastNode = testdis_->lRowNode(testdis_->NumMyRowNodes() - 1);
-    const auto nodePosition = lastNode->X();
+    Core::Nodes::Node* lastNode = testdis_->l_row_node(testdis_->num_my_row_nodes() - 1);
+    const auto nodePosition = lastNode->x();
 
     EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
     EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);
     EXPECT_NEAR(nodePosition[2], 4.5, 1e-14);
-    EXPECT_EQ(testdis_->NumMyRowNodes(), 7161);
-    EXPECT_EQ(testdis_->NumMyRowElements(), 750);
-    EXPECT_EQ(lastNode->Id(), 7177);
+    EXPECT_EQ(testdis_->num_my_row_nodes(), 7161);
+    EXPECT_EQ(testdis_->num_my_row_elements(), 750);
+    EXPECT_EQ(lastNode->id(), 7177);
   }
 
   TEST_F(GridGeneratorTest, TestGridGeneratorWithWedge6Elements)
@@ -136,15 +136,15 @@ namespace
 
     testdis_->fill_complete(false, false, false);
 
-    Core::Nodes::Node* lastNode = testdis_->lRowNode(testdis_->NumMyRowNodes() - 1);
-    const auto nodePosition = lastNode->X();
+    Core::Nodes::Node* lastNode = testdis_->l_row_node(testdis_->num_my_row_nodes() - 1);
+    const auto nodePosition = lastNode->x();
 
     EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
     EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);
     EXPECT_NEAR(nodePosition[2], 4.5, 1e-14);
-    EXPECT_EQ(testdis_->NumMyRowNodes(), 1056);
-    EXPECT_EQ(testdis_->NumMyRowElements(), 1500);
-    EXPECT_EQ(lastNode->Id(), 7177);
+    EXPECT_EQ(testdis_->num_my_row_nodes(), 1056);
+    EXPECT_EQ(testdis_->num_my_row_elements(), 1500);
+    EXPECT_EQ(lastNode->id(), 7177);
   }
 
 }  // namespace

@@ -39,7 +39,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
       inflowmax_(params_.sublist("TURBULENT INFLOW").get<double>("INFLOW_CHA_SIDE", 0.0)),
       statistics_outfilename_(statistics_outfilename)
 {
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::cout << "This is the turbulence statistics manager of backward-facing step problems:"
               << std::endl;
@@ -103,62 +103,62 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
   // and assume no change in discretization behind the step
   // For x2-direction: consider vertical line at x1=0
   // and assume no change in discretization behind the step
-  for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
+  for (int i = 0; i < discret_->num_my_row_nodes(); ++i)
   {
-    Core::Nodes::Node* node = discret_->lRowNode(i);
+    Core::Nodes::Node* node = discret_->l_row_node(i);
 
     if (inflowchannel_ == true)
     {
       // store also x-coordinate of outflow of inflow channel
-      if ((node->X()[1] < 2e-9 && node->X()[1] > -2e-9) && (node->X()[0] > (inflowmax_ - 2e-9)))
-        x1avcoords.insert(node->X()[0]);
+      if ((node->x()[1] < 2e-9 && node->x()[1] > -2e-9) && (node->x()[0] > (inflowmax_ - 2e-9)))
+        x1avcoords.insert(node->x()[0]);
     }
     else
     {
-      if (node->X()[1] < 2e-9 && node->X()[1] > -2e-9) x1avcoords.insert(node->X()[0]);
+      if (node->x()[1] < 2e-9 && node->x()[1] > -2e-9) x1avcoords.insert(node->x()[0]);
     }
-    if (node->X()[0] < 2e-9 && node->X()[0] > -2e-9) x2avcoords.insert(node->X()[1]);
+    if (node->x()[0] < 2e-9 && node->x()[0] > -2e-9) x2avcoords.insert(node->x()[1]);
 
     // find mins and maxs
     // we do not look for x1min and x1max as they depend
     // on the inflow generation technique
-    if (x2min_ > node->X()[1]) x2min_ = node->X()[1];
-    if (x2max_ < node->X()[1]) x2max_ = node->X()[1];
+    if (x2min_ > node->x()[1]) x2min_ = node->x()[1];
+    if (x2max_ < node->x()[1]) x2max_ = node->x()[1];
 
-    if (x3min_ > node->X()[2]) x3min_ = node->X()[2];
-    if (x3max_ < node->X()[2]) x3max_ = node->X()[2];
+    if (x3min_ > node->x()[2]) x3min_ = node->x()[2];
+    if (x3max_ < node->x()[2]) x3max_ = node->x()[2];
   }
 
   // communicate x2mins and x2maxs
   double min2;
-  discret_->Comm().MinAll(&x2min_, &min2, 1);
+  discret_->get_comm().MinAll(&x2min_, &min2, 1);
   x2min_ = min2;
 
   double max2;
-  discret_->Comm().MaxAll(&x2max_, &max2, 1);
+  discret_->get_comm().MaxAll(&x2max_, &max2, 1);
   x2max_ = max2;
 
   // communicate x3mins and x3maxs
   double min3;
-  discret_->Comm().MinAll(&x3min_, &min3, 1);
+  discret_->get_comm().MinAll(&x3min_, &min3, 1);
   x3min_ = min3;
 
   double max3;
-  discret_->Comm().MaxAll(&x3max_, &max3, 1);
+  discret_->get_comm().MaxAll(&x3max_, &max3, 1);
   x3max_ = max3;
 
   //--------------------------------------------------------------------
   // round robin loop to communicate coordinates to all procs
   //--------------------------------------------------------------------
   {
-    int myrank = discret_->Comm().MyPID();
-    int numprocs = discret_->Comm().NumProc();
+    int myrank = discret_->get_comm().MyPID();
+    int numprocs = discret_->get_comm().NumProc();
 
     std::vector<char> sblock;
     std::vector<char> rblock;
 
     // create an exporter for point to point communication
-    Core::Communication::Exporter exporter(discret_->Comm());
+    Core::Communication::Exporter exporter(discret_->get_comm());
 
     // first, communicate coordinates in x1-direction
     for (int np = 0; np < numprocs; ++np)
@@ -186,18 +186,18 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
 
       // receive from predecessor
       frompid = (myrank + numprocs - 1) % numprocs;
-      exporter.ReceiveAny(frompid, tag, rblock, length);
+      exporter.receive_any(frompid, tag, rblock, length);
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
         FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
-      exporter.Wait(request);
+      exporter.wait(request);
 
       {
         // for safety
-        exporter.Comm().Barrier();
+        exporter.get_comm().Barrier();
       }
 
       //--------------------------------------------------
@@ -242,18 +242,18 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
 
       // receive from predecessor
       frompid = (myrank + numprocs - 1) % numprocs;
-      exporter.ReceiveAny(frompid, tag, rblock, length);
+      exporter.receive_any(frompid, tag, rblock, length);
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
         FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
-      exporter.Wait(request);
+      exporter.wait(request);
 
       {
         // for safety
-        exporter.Comm().Barrier();
+        exporter.get_comm().Barrier();
       }
 
       //--------------------------------------------------
@@ -547,7 +547,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
 
   Teuchos::RCP<std::ofstream> log;
 
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
 
@@ -578,7 +578,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
 //----------------------------------------------------------------------
 // sampling of velocity/pressure values
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsBfs::DoTimeSample(
+void FLD::TurbulenceStatisticsBfs::do_time_sample(
     Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> stresses)
 {
   // compute squared values of velocity
@@ -616,15 +616,15 @@ void FLD::TurbulenceStatisticsBfs::DoTimeSample(
       // count the number of nodes in x3-direction contributing to this nodal value
       int countnodes = 0;
 
-      for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+      for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
       {
-        Core::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->l_row_node(nn);
 
         // this is the wall node
-        if ((node->X()[0] < (*x1line + 2e-9) and node->X()[0] > (*x1line - 2e-9)) and
-            (node->X()[1] < (x2cwall + 2e-5) and node->X()[1] > (x2cwall - 2e-5)))
+        if ((node->x()[0] < (*x1line + 2e-9) and node->x()[0] > (*x1line - 2e-9)) and
+            (node->x()[1] < (x2cwall + 2e-5) and node->x()[1] > (x2cwall - 2e-5)))
         {
-          std::vector<int> dof = discret_->Dof(node);
+          std::vector<int> dof = discret_->dof(node);
           double one = 1.0;
 
           togglep_->ReplaceGlobalValues(1, &one, dof.data() + 3);
@@ -634,10 +634,10 @@ void FLD::TurbulenceStatisticsBfs::DoTimeSample(
           countnodes++;
         }
         // this is the supplementary node
-        else if ((node->X()[0] < (*x1line + 2e-9) and node->X()[0] > (*x1line - 2e-9)) and
-                 (node->X()[1] < (x2csupp + 2e-5) and node->X()[1] > (x2csupp - 2e-5)))
+        else if ((node->x()[0] < (*x1line + 2e-9) and node->x()[0] > (*x1line - 2e-9)) and
+                 (node->x()[1] < (x2csupp + 2e-5) and node->x()[1] > (x2csupp - 2e-5)))
         {
-          std::vector<int> dof = discret_->Dof(node);
+          std::vector<int> dof = discret_->dof(node);
           double one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1, &one, dof.data());
@@ -646,7 +646,7 @@ void FLD::TurbulenceStatisticsBfs::DoTimeSample(
 
       int countnodesonallprocs = 0;
 
-      discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -718,15 +718,15 @@ void FLD::TurbulenceStatisticsBfs::DoTimeSample(
       // count the number of nodes in x3-direction contributing to this nodal value
       int countnodes = 0;
 
-      for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+      for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
       {
-        Core::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->l_row_node(nn);
 
         // this is the node
-        if ((node->X()[0] < (x1c + 2e-5) and node->X()[0] > (x1c - 2e-5)) and
-            (node->X()[1] < (*x2line + 2e-9) and node->X()[1] > (*x2line - 2e-9)))
+        if ((node->x()[0] < (x1c + 2e-5) and node->x()[0] > (x1c - 2e-5)) and
+            (node->x()[1] < (*x2line + 2e-9) and node->x()[1] > (*x2line - 2e-9)))
         {
-          std::vector<int> dof = discret_->Dof(node);
+          std::vector<int> dof = discret_->dof(node);
           double one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
@@ -740,7 +740,7 @@ void FLD::TurbulenceStatisticsBfs::DoTimeSample(
 
       int countnodesonallprocs = 0;
 
-      discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -778,17 +778,17 @@ void FLD::TurbulenceStatisticsBfs::DoTimeSample(
         {
           locuv += ((*velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((*velnp)[rr] * (*togglev_)[rr]);
         }
-        discret_->Comm().SumAll(&locuv, &uv, 1);
+        discret_->get_comm().SumAll(&locuv, &uv, 1);
         for (int rr = 2; rr < velnp->MyLength(); ++rr)
         {
           locuw += ((*velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((*velnp)[rr] * (*togglew_)[rr]);
         }
-        discret_->Comm().SumAll(&locuw, &uw, 1);
+        discret_->get_comm().SumAll(&locuw, &uw, 1);
         for (int rr = 2; rr < velnp->MyLength(); ++rr)
         {
           locvw += ((*velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((*velnp)[rr] * (*togglew_)[rr]);
         }
-        discret_->Comm().SumAll(&locvw, &vw, 1);
+        discret_->get_comm().SumAll(&locvw, &vw, 1);
 
         //----------------------------------------------------------------------
         // calculate spatial means on this line
@@ -818,7 +818,7 @@ void FLD::TurbulenceStatisticsBfs::DoTimeSample(
 //----------------------------------------------------------------------
 // sampling of velocity, pressure and temperature values
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
+void FLD::TurbulenceStatisticsBfs::do_loma_time_sample(
     Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> scanp, const double eosfac)
 {
   // compute squared values of velocity
@@ -862,15 +862,15 @@ void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
       // count the number of nodes in x3-direction contributing to this nodal value
       int countnodes = 0;
 
-      for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+      for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
       {
-        Core::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->l_row_node(nn);
 
         // this is the wall node
-        if ((node->X()[0] < (*x1line + 2e-9) and node->X()[0] > (*x1line - 2e-9)) and
-            (node->X()[1] < (x2cwall + 2e-5) and node->X()[1] > (x2cwall - 2e-5)))
+        if ((node->x()[0] < (*x1line + 2e-9) and node->x()[0] > (*x1line - 2e-9)) and
+            (node->x()[1] < (x2cwall + 2e-5) and node->x()[1] > (x2cwall - 2e-5)))
         {
-          std::vector<int> dof = discret_->Dof(node);
+          std::vector<int> dof = discret_->dof(node);
           double one = 1.0;
 
           togglep_->ReplaceGlobalValues(1, &one, &(dof[3]));
@@ -878,10 +878,10 @@ void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
           countnodes++;
         }
         // this is the supplementary node
-        else if ((node->X()[0] < (*x1line + 2e-9) and node->X()[0] > (*x1line - 2e-9)) and
-                 (node->X()[1] < (x2csupp + 2e-5) and node->X()[1] > (x2csupp - 2e-5)))
+        else if ((node->x()[0] < (*x1line + 2e-9) and node->x()[0] > (*x1line - 2e-9)) and
+                 (node->x()[1] < (x2csupp + 2e-5) and node->x()[1] > (x2csupp - 2e-5)))
         {
-          std::vector<int> dof = discret_->Dof(node);
+          std::vector<int> dof = discret_->dof(node);
           double one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1, &one, dof.data());
@@ -890,7 +890,7 @@ void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
 
       int countnodesonallprocs = 0;
 
-      discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -968,15 +968,15 @@ void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
       // count the number of nodes in x3-direction contributing to this nodal value
       int countnodes = 0;
 
-      for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+      for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
       {
-        Core::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->l_row_node(nn);
 
         // this is the node
-        if ((node->X()[0] < (x1c + 2e-5) and node->X()[0] > (x1c - 2e-5)) and
-            (node->X()[1] < (*x2line + 2e-9) and node->X()[1] > (*x2line - 2e-9)))
+        if ((node->x()[0] < (x1c + 2e-5) and node->x()[0] > (x1c - 2e-5)) and
+            (node->x()[1] < (*x2line + 2e-9) and node->x()[1] > (*x2line - 2e-9)))
         {
-          std::vector<int> dof = discret_->Dof(node);
+          std::vector<int> dof = discret_->dof(node);
           double one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
@@ -990,7 +990,7 @@ void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
 
       int countnodesonallprocs = 0;
 
-      discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -1032,17 +1032,17 @@ void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
         {
           locuv += ((*velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((*velnp)[rr] * (*togglev_)[rr]);
         }
-        discret_->Comm().SumAll(&locuv, &uv, 1);
+        discret_->get_comm().SumAll(&locuv, &uv, 1);
         for (int rr = 2; rr < velnp->MyLength(); ++rr)
         {
           locuw += ((*velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((*velnp)[rr] * (*togglew_)[rr]);
         }
-        discret_->Comm().SumAll(&locuw, &uw, 1);
+        discret_->get_comm().SumAll(&locuw, &uw, 1);
         for (int rr = 2; rr < velnp->MyLength(); ++rr)
         {
           locvw += ((*velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((*velnp)[rr] * (*togglew_)[rr]);
         }
-        discret_->Comm().SumAll(&locvw, &vw, 1);
+        discret_->get_comm().SumAll(&locvw, &vw, 1);
 
         double TT;
         squaredscanp_->Dot(*togglep_, &TT);
@@ -1055,12 +1055,12 @@ void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
         {
           locuT += ((*velnp)[rr - 3] * (*toggleu_)[rr - 3]) * ((*scanp)[rr] * (*togglep_)[rr]);
         }
-        discret_->Comm().SumAll(&locuT, &uT, 1);
+        discret_->get_comm().SumAll(&locuT, &uT, 1);
         for (int rr = 3; rr < velnp->MyLength(); ++rr)
         {
           locvT += ((*velnp)[rr - 2] * (*togglev_)[rr - 2]) * ((*scanp)[rr] * (*togglep_)[rr]);
         }
-        discret_->Comm().SumAll(&locvT, &vT, 1);
+        discret_->get_comm().SumAll(&locvT, &vT, 1);
 
         double rho;
         invscanp_->Dot(*togglep_, &rho);
@@ -1079,13 +1079,13 @@ void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
           locrhou += (eosfac * ((*invscanp_)[rr] * (*togglep_)[rr])) *
                      ((*velnp)[rr - 3] * (*toggleu_)[rr - 3]);
         }
-        discret_->Comm().SumAll(&locrhou, &rhou, 1);
+        discret_->get_comm().SumAll(&locrhou, &rhou, 1);
         for (int rr = 3; rr < velnp->MyLength(); ++rr)
         {
           locrhov += (eosfac * ((*invscanp_)[rr] * (*togglep_)[rr])) *
                      ((*velnp)[rr - 2] * (*togglev_)[rr - 2]);
         }
-        discret_->Comm().SumAll(&locrhov, &rhov, 1);
+        discret_->get_comm().SumAll(&locrhov, &rhov, 1);
 
 
         //----------------------------------------------------------------------
@@ -1127,7 +1127,7 @@ void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
 //----------------------------------------------------------------------
 // sampling of velocity, pressure and scalar values
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsBfs::DoScatraTimeSample(
+void FLD::TurbulenceStatisticsBfs::do_scatra_time_sample(
     Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> scanp)
 {
   // compute squared values of velocity
@@ -1164,15 +1164,15 @@ void FLD::TurbulenceStatisticsBfs::DoScatraTimeSample(
       // count the number of nodes in x3-direction contributing to this nodal value
       int countnodes = 0;
 
-      for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+      for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
       {
-        Core::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->l_row_node(nn);
 
         // this is the wall node
-        if ((node->X()[0] < (*x1line + 2e-9) and node->X()[0] > (*x1line - 2e-9)) and
-            (node->X()[1] < (x2cwall + 2e-5) and node->X()[1] > (x2cwall - 2e-5)))
+        if ((node->x()[0] < (*x1line + 2e-9) and node->x()[0] > (*x1line - 2e-9)) and
+            (node->x()[1] < (x2cwall + 2e-5) and node->x()[1] > (x2cwall - 2e-5)))
         {
-          std::vector<int> dof = discret_->Dof(node);
+          std::vector<int> dof = discret_->dof(node);
           double one = 1.0;
 
           togglep_->ReplaceGlobalValues(1, &one, &(dof[3]));
@@ -1180,10 +1180,10 @@ void FLD::TurbulenceStatisticsBfs::DoScatraTimeSample(
           countnodes++;
         }
         // this is the supplementary node
-        else if ((node->X()[0] < (*x1line + 2e-9) and node->X()[0] > (*x1line - 2e-9)) and
-                 (node->X()[1] < (x2csupp + 2e-5) and node->X()[1] > (x2csupp - 2e-5)))
+        else if ((node->x()[0] < (*x1line + 2e-9) and node->x()[0] > (*x1line - 2e-9)) and
+                 (node->x()[1] < (x2csupp + 2e-5) and node->x()[1] > (x2csupp - 2e-5)))
         {
-          std::vector<int> dof = discret_->Dof(node);
+          std::vector<int> dof = discret_->dof(node);
           double one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1, &one, dof.data());
@@ -1192,7 +1192,7 @@ void FLD::TurbulenceStatisticsBfs::DoScatraTimeSample(
 
       int countnodesonallprocs = 0;
 
-      discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -1263,15 +1263,15 @@ void FLD::TurbulenceStatisticsBfs::DoScatraTimeSample(
       // count the number of nodes in x3-direction contributing to this nodal value
       int countnodes = 0;
 
-      for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+      for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
       {
-        Core::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->l_row_node(nn);
 
         // this is the node
-        if ((node->X()[0] < (x1c + 2e-5) and node->X()[0] > (x1c - 2e-5)) and
-            (node->X()[1] < (*x2line + 2e-9) and node->X()[1] > (*x2line - 2e-9)))
+        if ((node->x()[0] < (x1c + 2e-5) and node->x()[0] > (x1c - 2e-5)) and
+            (node->x()[1] < (*x2line + 2e-9) and node->x()[1] > (*x2line - 2e-9)))
         {
-          std::vector<int> dof = discret_->Dof(node);
+          std::vector<int> dof = discret_->dof(node);
           double one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
@@ -1285,7 +1285,7 @@ void FLD::TurbulenceStatisticsBfs::DoScatraTimeSample(
 
       int countnodesonallprocs = 0;
 
-      discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -1327,17 +1327,17 @@ void FLD::TurbulenceStatisticsBfs::DoScatraTimeSample(
         {
           locuv += ((*velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((*velnp)[rr] * (*togglev_)[rr]);
         }
-        discret_->Comm().SumAll(&locuv, &uv, 1);
+        discret_->get_comm().SumAll(&locuv, &uv, 1);
         for (int rr = 2; rr < velnp->MyLength(); ++rr)
         {
           locuw += ((*velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((*velnp)[rr] * (*togglew_)[rr]);
         }
-        discret_->Comm().SumAll(&locuw, &uw, 1);
+        discret_->get_comm().SumAll(&locuw, &uw, 1);
         for (int rr = 2; rr < velnp->MyLength(); ++rr)
         {
           locvw += ((*velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((*velnp)[rr] * (*togglew_)[rr]);
         }
-        discret_->Comm().SumAll(&locvw, &vw, 1);
+        discret_->get_comm().SumAll(&locvw, &vw, 1);
 
         double TT;
         squaredscanp_->Dot(*togglep_, &TT);
@@ -1350,12 +1350,12 @@ void FLD::TurbulenceStatisticsBfs::DoScatraTimeSample(
         {
           locuT += ((*velnp)[rr - 3] * (*toggleu_)[rr - 3]) * ((*scanp)[rr] * (*togglep_)[rr]);
         }
-        discret_->Comm().SumAll(&locuT, &uT, 1);
+        discret_->get_comm().SumAll(&locuT, &uT, 1);
         for (int rr = 3; rr < velnp->MyLength(); ++rr)
         {
           locvT += ((*velnp)[rr - 2] * (*togglev_)[rr - 2]) * ((*scanp)[rr] * (*togglep_)[rr]);
         }
-        discret_->Comm().SumAll(&locvT, &vT, 1);
+        discret_->get_comm().SumAll(&locvT, &vT, 1);
 
         //----------------------------------------------------------------------
         // calculate spatial means on this line
@@ -1392,12 +1392,12 @@ void FLD::TurbulenceStatisticsBfs::DoScatraTimeSample(
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
+void FLD::TurbulenceStatisticsBfs::dump_statistics(int step)
 {
   //----------------------------------------------------------------------
   // output to log-file
   Teuchos::RCP<std::ofstream> log;
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
@@ -1534,12 +1534,12 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int step)
+void FLD::TurbulenceStatisticsBfs::dump_loma_statistics(int step)
 {
   //----------------------------------------------------------------------
   // output to log-file
   Teuchos::RCP<std::ofstream> log;
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".loma_statistics");
@@ -1774,7 +1774,7 @@ void FLD::TurbulenceStatisticsBfs::dump_scatra_statistics(int step)
   //----------------------------------------------------------------------
   // output to log-file
   Teuchos::RCP<std::ofstream> log;
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");

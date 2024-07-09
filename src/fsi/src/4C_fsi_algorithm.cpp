@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 // turn defines the dof number ordering of the Discretizations.
 /*----------------------------------------------------------------------*/
 FSI::Algorithm::Algorithm(const Epetra_Comm& comm)
-    : AlgorithmBase(comm, Global::Problem::Instance()->FSIDynamicParams()),
+    : AlgorithmBase(comm, Global::Problem::instance()->fsi_dynamic_params()),
       adapterbase_ptr_(Teuchos::null),
       use_old_structure_(false)
 {
@@ -47,15 +47,15 @@ void FSI::Algorithm::setup()
 {
   // access the structural discretization
   Teuchos::RCP<Core::FE::Discretization> structdis =
-      Global::Problem::Instance()->GetDis("structure");
+      Global::Problem::instance()->get_dis("structure");
 
   // access structural dynamic params list which will be possibly modified while creating the time
   // integrator
-  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
 
   // access the fsi dynamic params
   Teuchos::ParameterList& fsidyn =
-      const_cast<Teuchos::ParameterList&>(Global::Problem::Instance()->FSIDynamicParams());
+      const_cast<Teuchos::ParameterList&>(Global::Problem::instance()->fsi_dynamic_params());
 
   // build and register fsi model evaluator
   Teuchos::RCP<Solid::MODELEVALUATOR::Generic> fsi_model_ptr =
@@ -89,7 +89,7 @@ void FSI::Algorithm::setup()
   else if (sdyn.get<std::string>("INT_STRATEGY") ==
            "Old")  // todo this is the part that should be removed !
   {
-    if (Comm().MyPID() == 0)
+    if (get_comm().MyPID() == 0)
       std::cout << "\n"
                 << " USING OLD STRUCTURAL TIME INEGRATION! FIX THIS! THIS IS ONLY SUPPOSED TO BE "
                    "TEMPORARY!"
@@ -97,7 +97,7 @@ void FSI::Algorithm::setup()
                 << std::endl;
 
     Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure = Teuchos::rcp(
-        new Adapter::StructureBaseAlgorithm(Global::Problem::Instance()->FSIDynamicParams(),
+        new Adapter::StructureBaseAlgorithm(Global::Problem::instance()->fsi_dynamic_params(),
             const_cast<Teuchos::ParameterList&>(sdyn), structdis));
     structure_ =
         Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapper>(structure->structure_field());
@@ -117,8 +117,8 @@ void FSI::Algorithm::setup()
 
   Teuchos::RCP<Adapter::FluidMovingBoundaryBaseAlgorithm> MBFluidbase =
       Teuchos::rcp(new Adapter::FluidMovingBoundaryBaseAlgorithm(
-          Global::Problem::Instance()->FSIDynamicParams(), "FSICoupling"));
-  fluid_ = MBFluidbase->MBFluidField();
+          Global::Problem::instance()->fsi_dynamic_params(), "FSICoupling"));
+  fluid_ = MBFluidbase->mb_fluid_field();
 
   coupsf_ = Teuchos::rcp(new Core::Adapter::Coupling());
 }
@@ -129,8 +129,8 @@ void FSI::Algorithm::setup()
 void FSI::Algorithm::read_restart(int step)
 {
   structure_field()->read_restart(step);
-  double time = MBFluidField()->read_restart(step);
-  SetTimeStep(time, step);
+  double time = mb_fluid_field()->read_restart(step);
+  set_time_step(time, step);
 }
 
 
@@ -143,7 +143,7 @@ void FSI::Algorithm::prepare_time_step()
   print_header();
 
   structure_field()->prepare_time_step();
-  MBFluidField()->prepare_time_step();
+  mb_fluid_field()->prepare_time_step();
 }
 
 
@@ -152,7 +152,7 @@ void FSI::Algorithm::prepare_time_step()
 void FSI::Algorithm::update()
 {
   structure_field()->update();
-  MBFluidField()->update();
+  mb_fluid_field()->update();
 }
 
 
@@ -173,7 +173,7 @@ void FSI::Algorithm::output()
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
   structure_field()->output();
-  MBFluidField()->output();
+  mb_fluid_field()->output();
 }
 
 
@@ -181,7 +181,7 @@ void FSI::Algorithm::output()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::Algorithm::struct_to_fluid(Teuchos::RCP<Epetra_Vector> iv)
 {
-  return coupsf_->MasterToSlave(iv);
+  return coupsf_->master_to_slave(iv);
 }
 
 
@@ -189,7 +189,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Algorithm::struct_to_fluid(Teuchos::RCP<Epetra_
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::Algorithm::fluid_to_struct(Teuchos::RCP<Epetra_Vector> iv)
 {
-  return coupsf_->SlaveToMaster(iv);
+  return coupsf_->slave_to_master(iv);
 }
 
 
@@ -208,7 +208,7 @@ const Core::Adapter::Coupling& FSI::Algorithm::structure_fluid_coupling() const 
 Teuchos::RCP<Epetra_Vector> FSI::Algorithm::struct_to_fluid(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
-  return coupsf_->MasterToSlave(iv);
+  return coupsf_->master_to_slave(iv);
 }
 
 
@@ -217,7 +217,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Algorithm::struct_to_fluid(
 Teuchos::RCP<Epetra_Vector> FSI::Algorithm::fluid_to_struct(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
-  return coupsf_->SlaveToMaster(iv);
+  return coupsf_->slave_to_master(iv);
 }
 
 FOUR_C_NAMESPACE_CLOSE

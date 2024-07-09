@@ -44,9 +44,9 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
 {
   // access structural dynamic params list which will be possibly modified while creating the time
   // integrator
-  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
-  const Teuchos::ParameterList& fdyn = Global::Problem::Instance()->FluidDynamicParams();
-  const Teuchos::ParameterList& xfdyn = Global::Problem::Instance()->XFluidDynamicParams();
+  const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& fdyn = Global::Problem::instance()->fluid_dynamic_params();
+  const Teuchos::ParameterList& xfdyn = Global::Problem::instance()->x_fluid_dynamic_params();
   bool ale = Core::UTILS::IntegralValue<bool>((xfdyn.sublist("GENERAL")), "ALE_XFluid");
 
   num_fields_ += 2;
@@ -58,7 +58,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
     // ask base algorithm for the structural time integrator
     // access the structural discretization
     Teuchos::RCP<Core::FE::Discretization> structdis =
-        Global::Problem::Instance()->GetDis("structure");
+        Global::Problem::instance()->get_dis("structure");
     Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure =
         Teuchos::rcp(new Adapter::StructureBaseAlgorithm(
             timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
@@ -70,7 +70,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
     num_fields_ += 1;
     fluidp_block_ = 2;
 
-    Global::Problem* problem = Global::Problem::Instance();
+    Global::Problem* problem = Global::Problem::instance();
     const Teuchos::ParameterList& poroelastdyn =
         problem->poroelast_dynamic_params();  // access the problem-specific parameter list
     Teuchos::RCP<PoroElast::Monolithic> poro = Teuchos::rcp_dynamic_cast<PoroElast::Monolithic>(
@@ -94,11 +94,11 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
   {
     num_fields_ += 1;
     ale_i_block_ = num_fields_ - 1;
-    Global::Problem* problem = Global::Problem::Instance();
-    const Teuchos::ParameterList& fsidynparams = problem->FSIDynamicParams();
+    Global::Problem* problem = Global::Problem::instance();
+    const Teuchos::ParameterList& fsidynparams = problem->fsi_dynamic_params();
     // ask base algorithm for the ale time integrator
     Teuchos::RCP<Adapter::AleBaseAlgorithm> ale = Teuchos::rcp(
-        new Adapter::AleBaseAlgorithm(fsidynparams, Global::Problem::Instance()->GetDis("ale")));
+        new Adapter::AleBaseAlgorithm(fsidynparams, Global::Problem::instance()->get_dis("ale")));
     ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleFpsiWrapper>(ale->ale_field());
     if (ale_ == Teuchos::null)
       FOUR_C_THROW("Cast from Adapter::Ale to Adapter::AleFpsiWrapper failed");
@@ -142,9 +142,9 @@ void FSI::AlgorithmXFEM::update()
 {
   FOUR_C_THROW("currently unused");
 
-  StructurePoro()->update();
+  structure_poro()->update();
   fluid_field()->update();
-  if (HaveAle()) ale_field()->update();
+  if (have_ale()) ale_field()->update();
 
   return;
 }
@@ -156,7 +156,7 @@ void FSI::AlgorithmXFEM::update()
  *----------------------------------------------------------------------*/
 void FSI::AlgorithmXFEM::prepare_output(bool force_prepare)
 {
-  StructurePoro()->prepare_output(force_prepare);
+  structure_poro()->prepare_output(force_prepare);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -29,7 +29,7 @@ Discret::ELEMENTS::Wall1PoroP1<distype>::Wall1PoroP1(
 }
 
 template <Core::FE::CellType distype>
-Core::Elements::Element* Discret::ELEMENTS::Wall1PoroP1<distype>::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Wall1PoroP1<distype>::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::Wall1PoroP1<distype>(*this);
   return newelement;
@@ -41,7 +41,7 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::pack(Core::Communication::PackBuff
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   Base::add_to_pack(data, type);
 
   // add base class Element
@@ -53,7 +53,7 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::unpack(const std::vector<char>& da
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -65,7 +65,7 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::unpack(const std::vector<char>& da
 }
 
 template <Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1PoroP1<distype>::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1PoroP1<distype>::lines()
 {
   return Core::Communication::ElementBoundaryFactory<Wall1Line, Wall1PoroP1>(
       Core::Communication::buildLines, *this);
@@ -73,7 +73,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1PoroP
 
 template <Core::FE::CellType distype>
 std::vector<Teuchos::RCP<Core::Elements::Element>>
-Discret::ELEMENTS::Wall1PoroP1<distype>::Surfaces()
+Discret::ELEMENTS::Wall1PoroP1<distype>::surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -87,16 +87,16 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::print(std::ostream& os) const
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::Wall1PoroP1<distype>::UniqueParObjectId() const
+int Discret::ELEMENTS::Wall1PoroP1<distype>::unique_par_object_id() const
 {
   switch (distype)
   {
     case Core::FE::CellType::tri3:
-      return Discret::ELEMENTS::WallTri3PoroP1Type::Instance().UniqueParObjectId();
+      return Discret::ELEMENTS::WallTri3PoroP1Type::instance().unique_par_object_id();
     case Core::FE::CellType::quad4:
-      return Discret::ELEMENTS::WallQuad4PoroP1Type::Instance().UniqueParObjectId();
+      return Discret::ELEMENTS::WallQuad4PoroP1Type::instance().unique_par_object_id();
     case Core::FE::CellType::quad9:
-      return Discret::ELEMENTS::WallQuad9PoroP1Type::Instance().UniqueParObjectId();
+      return Discret::ELEMENTS::WallQuad9PoroP1Type::instance().unique_par_object_id();
     default:
       FOUR_C_THROW("unknown element type");
   }
@@ -104,21 +104,21 @@ int Discret::ELEMENTS::Wall1PoroP1<distype>::UniqueParObjectId() const
 }
 
 template <Core::FE::CellType distype>
-Core::Elements::ElementType& Discret::ELEMENTS::Wall1PoroP1<distype>::ElementType() const
+Core::Elements::ElementType& Discret::ELEMENTS::Wall1PoroP1<distype>::element_type() const
 {
   {
     switch (distype)
     {
       case Core::FE::CellType::tri3:
-        return Discret::ELEMENTS::WallTri3PoroP1Type::Instance();
+        return Discret::ELEMENTS::WallTri3PoroP1Type::instance();
       case Core::FE::CellType::quad4:
-        return Discret::ELEMENTS::WallQuad4PoroP1Type::Instance();
+        return Discret::ELEMENTS::WallQuad4PoroP1Type::instance();
       case Core::FE::CellType::quad9:
-        return Discret::ELEMENTS::WallQuad9PoroP1Type::Instance();
+        return Discret::ELEMENTS::WallQuad9PoroP1Type::instance();
       default:
         FOUR_C_THROW("unknown element type");
     }
-    return Discret::ELEMENTS::WallQuad4PoroP1Type::Instance();
+    return Discret::ELEMENTS::WallQuad4PoroP1Type::instance();
   }
 }
 

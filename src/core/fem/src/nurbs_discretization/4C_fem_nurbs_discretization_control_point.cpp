@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 Core::FE::Nurbs::ControlPointType Core::FE::Nurbs::ControlPointType::instance_;
 
 
-Core::Communication::ParObject* Core::FE::Nurbs::ControlPointType::Create(
+Core::Communication::ParObject* Core::FE::Nurbs::ControlPointType::create(
     const std::vector<char>& data)
 {
   std::vector<double> dummycoord(3, 999.0);
@@ -48,7 +48,7 @@ Core::FE::Nurbs::ControlPoint::ControlPoint(
 
 */
 Core::FE::Nurbs::ControlPoint::ControlPoint(const Core::FE::Nurbs::ControlPoint& old)
-    : Core::Nodes::Node(old), w_(old.W())
+    : Core::Nodes::Node(old), w_(old.w())
 {
   return;
 }
@@ -57,7 +57,7 @@ Core::FE::Nurbs::ControlPoint::ControlPoint(const Core::FE::Nurbs::ControlPoint&
   Deep copy the derived class and return pointer to it
 
 */
-Core::FE::Nurbs::ControlPoint* Core::FE::Nurbs::ControlPoint::Clone() const
+Core::FE::Nurbs::ControlPoint* Core::FE::Nurbs::ControlPoint::clone() const
 {
   Core::FE::Nurbs::ControlPoint* newcp = new Core::FE::Nurbs::ControlPoint(*this);
 
@@ -76,7 +76,7 @@ void Core::FE::Nurbs::ControlPoint::pack(Core::Communication::PackBuffer& data) 
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   Core::Nodes::Node::add_to_pack(data, type);
   // add base class of control point
   Core::Nodes::Node::pack(data);
@@ -95,7 +95,7 @@ void Core::FE::Nurbs::ControlPoint::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Node
   std::vector<char> basedata(0);

@@ -32,15 +32,15 @@ namespace Core::LinAlg
 
       \note This method is here for performance reasons.
      */
-    Teuchos::RCP<Epetra_Operator> EpetraOperator() override { return sysmat_; }
+    Teuchos::RCP<Epetra_Operator> epetra_operator() override { return sysmat_; }
 
     /// return the internal Epetra_CrsMatrix or Epetra_FECrsMatrix
     /// (down-cast from Epetra_CrsMatrix !) (you should not need this!)
-    Teuchos::RCP<Epetra_CrsMatrix> EpetraMatrix() { return sysmat_; }
+    Teuchos::RCP<Epetra_CrsMatrix> epetra_matrix() { return sysmat_; }
 
     /// return the internal Epetra_CrsMatrix or Epetra_FECrsMatrix
     /// (down-cast from Epetra_CrsMatrix !) (you should not need this!)
-    Teuchos::RCP<Epetra_CrsMatrix> EpetraMatrix() const { return sysmat_; }
+    Teuchos::RCP<Epetra_CrsMatrix> epetra_matrix() const { return sysmat_; }
 
     /** \name Attribute set methods */
     //@{
@@ -54,7 +54,7 @@ namespace Core::LinAlg
     //@{
 
     /// If Complete() has been called, this query returns true, otherwise it returns false.
-    bool Filled() const override { return sysmat_->Filled(); }
+    bool filled() const override { return sysmat_->Filled(); }
 
     /** \brief Return TRUE if all Dirichlet boundary conditions have been applied
      *  to this matrix */
@@ -69,7 +69,7 @@ namespace Core::LinAlg
      *  rows.
      *
      *  \author hiermeier \date 01/2018 */
-    bool IsDbcApplied(const Epetra_Map& dbcmap, bool diagonalblock = true,
+    bool is_dbc_applied(const Epetra_Map& dbcmap, bool diagonalblock = true,
         const Core::LinAlg::SparseMatrix* trafo = nullptr) const override;
 
     //@}
@@ -87,10 +87,10 @@ namespace Core::LinAlg
     double NormInf() const override;
 
     /// Returns the one norm of the global matrix.
-    double NormOne() const;
+    double norm_one() const;
 
     /// Returns the frobenius norm of the global matrix.
-    double NormFrobenius() const;
+    double norm_frobenius() const;
 
     //@}
 
@@ -98,20 +98,20 @@ namespace Core::LinAlg
     //@{
 
     /// Returns the maximum number of nonzero entries across all rows on this processor.
-    int MaxNumEntries() const;
+    int max_num_entries() const;
 
     /// Returns the Epetra_Map object associated with the rows of this matrix.
-    const Epetra_Map& RowMap() const { return sysmat_->RowMap(); }
+    const Epetra_Map& row_map() const { return sysmat_->RowMap(); }
 
     /// Returns the Epetra_Map object that describes the set of column-indices that appear in each
     /// processor's locally owned matrix rows.
-    const Epetra_Map& ColMap() const { return sysmat_->ColMap(); }
+    const Epetra_Map& col_map() const { return sysmat_->ColMap(); }
 
     /// Returns the Epetra_Map object associated with the domain of this matrix operator.
-    const Epetra_Map& DomainMap() const override { return sysmat_->DomainMap(); }
+    const Epetra_Map& domain_map() const override { return sysmat_->DomainMap(); }
 
     /// Returns the Epetra_Map object associated with the range of this matrix operator.
-    const Epetra_Map& RangeMap() const { return sysmat_->RangeMap(); }
+    const Epetra_Map& range_map() const { return sysmat_->RangeMap(); }
 
     /// Returns the current UseTranspose setting.
     bool UseTranspose() const override;
@@ -134,16 +134,16 @@ namespace Core::LinAlg
     //@{
 
     /// Returns the result of a matrix multiplied by a Epetra_Vector x in y.
-    int Multiply(bool TransA, const Epetra_Vector& x, Epetra_Vector& y) const;
+    int multiply(bool TransA, const Epetra_Vector& x, Epetra_Vector& y) const;
 
     /// Returns the result of a Epetra_CrsMatrix multiplied by a Epetra_MultiVector X in Y.
-    int Multiply(bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
+    int multiply(bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /// Scales the Epetra_CrsMatrix on the left with a Epetra_Vector x.
-    int LeftScale(const Epetra_Vector& x);
+    int left_scale(const Epetra_Vector& x);
 
     /// Scales the Epetra_CrsMatrix on the right with a Epetra_Vector x.
-    int RightScale(const Epetra_Vector& x);
+    int right_scale(const Epetra_Vector& x);
 
     //@}
 
@@ -151,10 +151,10 @@ namespace Core::LinAlg
     //@{
 
     /// Initialize all values in the matrix with constant value.
-    int PutScalar(double ScalarConstant);
+    int put_scalar(double ScalarConstant);
 
     /// Multiply all values in the matrix by a constant value (in place: A <- ScalarConstant * A).
-    int Scale(double ScalarConstant) override;
+    int scale(double ScalarConstant) override;
 
     /// Replaces diagonal values of the matrix with those in the user-provided vector.
     int replace_diagonal_values(const Epetra_Vector& Diagonal);
@@ -167,7 +167,7 @@ namespace Core::LinAlg
      *  \param newmap (in) : new row map
      *
      *  \pre RowMap().PointSameAs(newmap)==true */
-    virtual int ReplaceRowMap(const Epetra_BlockMap& newmap);
+    virtual int replace_row_map(const Epetra_BlockMap& newmap);
 
     //@}
 
@@ -175,20 +175,20 @@ namespace Core::LinAlg
     //@{
 
     /// Returns a copy of the main diagonal in a user-provided vector.
-    int ExtractDiagonalCopy(Epetra_Vector& Diagonal) const;
+    int extract_diagonal_copy(Epetra_Vector& Diagonal) const;
 
     //@}
 
     /// Add one operator to another
-    void Add(const Core::LinAlg::SparseOperator& A, const bool transposeA, const double scalarA,
+    void add(const Core::LinAlg::SparseOperator& A, const bool transposeA, const double scalarA,
         const double scalarB) override;
 
     /// Add one SparseMatrixBase to another
-    void AddOther(Core::LinAlg::SparseMatrixBase& B, const bool transposeA, const double scalarA,
+    void add_other(Core::LinAlg::SparseMatrixBase& B, const bool transposeA, const double scalarA,
         const double scalarB) const override;
 
     /// Add one BlockSparseMatrix to another
-    void AddOther(Core::LinAlg::BlockSparseMatrixBase& B, const bool transposeA,
+    void add_other(Core::LinAlg::BlockSparseMatrixBase& B, const bool transposeA,
         const double scalarA, const double scalarB) const override;
 
    protected:

@@ -54,7 +54,7 @@ int Discret::ELEMENTS::FluidPoroBoundary::evaluate(Teuchos::ParameterList& param
     case FLD::poro_splitnopenetration_ODpres:
     case FLD::fpsi_coupling:
     {
-      Discret::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(), impltype)
+      Discret::ELEMENTS::FluidBoundaryFactory::provide_impl(shape(), impltype)
           ->evaluate_action(
               this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
@@ -70,7 +70,7 @@ int Discret::ELEMENTS::FluidPoroBoundary::evaluate(Teuchos::ParameterList& param
   return 0;
 }
 
-void Discret::ELEMENTS::FluidPoroBoundary::LocationVector(const Core::FE::Discretization& dis,
+void Discret::ELEMENTS::FluidPoroBoundary::location_vector(const Core::FE::Discretization& dis,
     LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {
@@ -85,7 +85,7 @@ void Discret::ELEMENTS::FluidPoroBoundary::LocationVector(const Core::FE::Discre
       // special cases: the boundary element assembles also into
       // the inner dofs of its parent element
       // note: using these actions, the element will get the parent location vector
-      parent_element()->LocationVector(dis, la, doDirichlet);
+      parent_element()->location_vector(dis, la, doDirichlet);
       break;
     case FLD::poro_splitnopenetration:
     case FLD::poro_splitnopenetration_OD:
@@ -93,7 +93,7 @@ void Discret::ELEMENTS::FluidPoroBoundary::LocationVector(const Core::FE::Discre
       // This is a hack ...
       // Remove pressure dofs from location vector!!!
       // call standard fluid boundary element
-      FluidBoundary::LocationVector(dis, la, doDirichlet, condstring, params);
+      FluidBoundary::location_vector(dis, la, doDirichlet, condstring, params);
       int dim = la[0].stride_[0] - 1;
       // extract velocity dofs from first dofset
       for (int i = num_node(); i > 0; --i)
@@ -109,7 +109,7 @@ void Discret::ELEMENTS::FluidPoroBoundary::LocationVector(const Core::FE::Discre
       break;
     default:
       // call standard fluid boundary element
-      FluidBoundary::LocationVector(dis, la, doDirichlet, condstring, params);
+      FluidBoundary::location_vector(dis, la, doDirichlet, condstring, params);
       break;
   }
 }

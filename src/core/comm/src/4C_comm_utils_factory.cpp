@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Core::Communication::Factory(const std::vector<char>& data)
 {
-  return ParObjectFactory::Instance().Create(data);
+  return ParObjectFactory::instance().create(data);
 }
 
 /*----------------------------------------------------------------------*
@@ -29,7 +29,7 @@ Core::Communication::ParObject* Core::Communication::Factory(const std::vector<c
 Teuchos::RCP<Core::Elements::Element> Core::Communication::Factory(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  return ParObjectFactory::Instance().Create(eletype, eledistype, id, owner);
+  return ParObjectFactory::instance().create(eletype, eledistype, id, owner);
 }
 
 FOUR_C_NAMESPACE_CLOSE

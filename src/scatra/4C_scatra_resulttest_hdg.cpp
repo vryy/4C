@@ -39,11 +39,11 @@ double ScaTra::HDGResultTest::result_node(
   double result(0.);
 
   // extract row map from solution vector
-  const Epetra_BlockMap& phinpmap = scatratiminthdg_->InterpolatedPhinp()->Map();
+  const Epetra_BlockMap& phinpmap = scatratiminthdg_->interpolated_phinp()->Map();
 
   // test result value of single scalar field (averaged value on element node is tested)
   if (quantity == "phi")
-    result = (*scatratiminthdg_->InterpolatedPhinp())[phinpmap.LID(node->Id())];
+    result = (*scatratiminthdg_->interpolated_phinp())[phinpmap.LID(node->id())];
   else if (quantity == "abs_L2error_phi")
     result = std::sqrt((*errors_)[0]);
   else if (quantity == "rel_L2error_phi")

@@ -70,7 +70,7 @@ namespace NOX
             const NOX::Nln::StatusTest::QuantityType& qType) const;
 
         //! Returns the initial tolerance of the corresponding quantity.
-        virtual double GetInitialTolerance(const NOX::Nln::StatusTest::QuantityType& qType) const;
+        virtual double get_initial_tolerance(const NOX::Nln::StatusTest::QuantityType& qType) const;
 
         /*! \brief Returns the norm type as <int> of the desired quantity
          *

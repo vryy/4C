@@ -23,9 +23,9 @@ Mat::Elastic::PAR::IsoExpoPow::IsoExpoPow(const Core::Mat::PAR::Parameter::Data&
 
 Mat::Elastic::IsoExpoPow::IsoExpoPow(Mat::Elastic::PAR::IsoExpoPow* params) : params_(params) {}
 
-void Mat::Elastic::IsoExpoPow::AddStrainEnergy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
-    const Core::LinAlg::Matrix<3, 1>& modinv, const Core::LinAlg::Matrix<6, 1>& glstrain,
-    const int gp, const int eleGID)
+void Mat::Elastic::IsoExpoPow::add_strain_energy(double& psi,
+    const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
+    const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
   const double k1 = params_->k1_;
   const double k2 = params_->k2_;

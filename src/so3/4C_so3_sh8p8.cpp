@@ -23,9 +23,9 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::SoSh8p8Type Discret::ELEMENTS::SoSh8p8Type::instance_;
 
-Discret::ELEMENTS::SoSh8p8Type& Discret::ELEMENTS::SoSh8p8Type::Instance() { return instance_; }
+Discret::ELEMENTS::SoSh8p8Type& Discret::ELEMENTS::SoSh8p8Type::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoSh8p8Type::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::SoSh8p8Type::create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoSh8p8(-1, -1);
@@ -34,7 +34,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoSh8p8Type::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8p8Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8p8Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -47,7 +47,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8p8Type::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8p8Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8p8Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -65,7 +65,7 @@ void Discret::ELEMENTS::SoSh8p8Type::nodal_block_information(
   np = 1;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoSh8p8Type::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoSh8p8Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   Core::LinAlg::SerialDenseMatrix nullspace;
@@ -127,11 +127,11 @@ const int Discret::ELEMENTS::SoSh8p8::PRESTODISPPRES_[NUMPRES_] = {3, 7, 11, 15,
 Discret::ELEMENTS::SoSh8p8::SoSh8p8(int id, int owner) : Discret::ELEMENTS::SoSh8(id, owner)
 {
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      Global::Problem::Instance()->getParameterList();
+      Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
     Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+        Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
   return;
 }
@@ -150,7 +150,7 @@ Discret::ELEMENTS::SoSh8p8::SoSh8p8(const Discret::ELEMENTS::SoSh8p8& old)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                          bborn 03/09 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoSh8p8::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SoSh8p8::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::SoSh8p8(*this);
   return newelement;
@@ -165,7 +165,7 @@ void Discret::ELEMENTS::SoSh8p8::pack(Core::Communication::PackBuffer& data) con
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class So_sh8 Element
   Discret::ELEMENTS::SoSh8::pack(data);
@@ -186,7 +186,7 @@ void Discret::ELEMENTS::SoSh8p8::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class So_sh8 Element
   std::vector<char> basedata(0);
@@ -284,10 +284,10 @@ void Discret::ELEMENTS::SoSh8p8::sosh8p8_expol(
   // "assembly" of extrapolated nodal stresses
   for (int i = 0; i < NUMNOD_; ++i)
   {
-    const int lid = expolstresses.Map().LID(NodeIds()[i]);
+    const int lid = expolstresses.Map().LID(node_ids()[i]);
     if (lid >= 0)  // rownode
     {
-      const double invmyadjele = 1.0 / Nodes()[i]->NumElement();
+      const double invmyadjele = 1.0 / nodes()[i]->num_element();
       for (int j = 0; j < Mat::NUM_STRESS_3D; ++j)
         (*(expolstresses(j)))[lid] += nodalstresses(i, j) * invmyadjele;
     }

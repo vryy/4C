@@ -61,20 +61,20 @@ namespace Adapter
         Core::FE::ShapeFunctionType shape_function_type);
 
 
-    virtual void EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fvel, Teuchos::RCP<Epetra_Vector> svel,
-        Teuchos::RCP<Epetra_Vector> fpres, Teuchos::RCP<Epetra_Vector> sdisp,
-        const Teuchos::RCP<Core::FE::Discretization> sdis,
+    virtual void evaluate_poro_mt(Teuchos::RCP<Epetra_Vector> fvel,
+        Teuchos::RCP<Epetra_Vector> svel, Teuchos::RCP<Epetra_Vector> fpres,
+        Teuchos::RCP<Epetra_Vector> sdisp, const Teuchos::RCP<Core::FE::Discretization> sdis,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& f, Teuchos::RCP<Core::LinAlg::SparseMatrix>& k_fs,
         Teuchos::RCP<Epetra_Vector>& frhs, Core::Adapter::Coupling& coupfs,
         Teuchos::RCP<const Epetra_Map> fdofrowmap);
 
-    void UpdatePoroMt();
+    void update_poro_mt();
 
     void recover_fluid_lm_poro_mt(
         Teuchos::RCP<Epetra_Vector> disi, Teuchos::RCP<Epetra_Vector> veli);  // h.Willmann
 
     // return the used poro lagrange strategy
-    Teuchos::RCP<CONTACT::LagrangeStrategyPoro> GetPoroStrategy()
+    Teuchos::RCP<CONTACT::LagrangeStrategyPoro> get_poro_strategy()
     {
       if (porolagstrategy_ == Teuchos::null) FOUR_C_THROW("GetPoroStrategy(): No strategy set!");
       return porolagstrategy_;

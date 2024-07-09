@@ -67,7 +67,7 @@ namespace FLD
     // number of modes equal to number of elements in one spatial direction
     // this does not yield the correct value
     // nummodes_ = (int) pow((double) discret_->NumGlobalElements(),1.0/3.0);
-    switch (discret_->NumGlobalElements())
+    switch (discret_->num_global_elements())
     {
       case 512:
       {
@@ -106,7 +106,7 @@ namespace FLD
       }
       default:
       {
-        FOUR_C_THROW("Set problem size! %i", discret_->NumGlobalElements());
+        FOUR_C_THROW("Set problem size! %i", discret_->num_global_elements());
         break;
       }
     }
@@ -118,23 +118,23 @@ namespace FLD
     // the criterion allows differences in coordinates by 1e-9
     std::set<double, LineSortCriterion> coords;
     // loop all nodes and store x1-coordinate
-    for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+    for (int inode = 0; inode < discret_->num_my_row_nodes(); inode++)
     {
-      Core::Nodes::Node* node = discret_->lRowNode(inode);
-      if ((node->X()[1] < 2e-9 && node->X()[1] > -2e-9) and
-          (node->X()[2] < 2e-9 && node->X()[2] > -2e-9))
-        coords.insert(node->X()[0]);
+      Core::Nodes::Node* node = discret_->l_row_node(inode);
+      if ((node->x()[1] < 2e-9 && node->x()[1] > -2e-9) and
+          (node->x()[2] < 2e-9 && node->x()[2] > -2e-9))
+        coords.insert(node->x()[0]);
     }
     // communicate coordinates to all procs via round Robin loop
     {
-      int myrank = discret_->Comm().MyPID();
-      int numprocs = discret_->Comm().NumProc();
+      int myrank = discret_->get_comm().MyPID();
+      int numprocs = discret_->get_comm().NumProc();
 
       std::vector<char> sblock;
       std::vector<char> rblock;
 
       // create an exporter for point to point communication
-      Core::Communication::Exporter exporter(discret_->Comm());
+      Core::Communication::Exporter exporter(discret_->get_comm());
 
       // communicate coordinates
       for (int np = 0; np < numprocs; ++np)
@@ -162,18 +162,18 @@ namespace FLD
 
         // receive from predecessor
         frompid = (myrank + numprocs - 1) % numprocs;
-        exporter.ReceiveAny(frompid, tag, rblock, length);
+        exporter.receive_any(frompid, tag, rblock, length);
 
         if (tag != (myrank + numprocs - 1) % numprocs)
         {
           FOUR_C_THROW("received wrong message (ReceiveAny)");
         }
 
-        exporter.Wait(request);
+        exporter.wait(request);
 
         {
           // for safety
-          exporter.Comm().Barrier();
+          exporter.get_comm().Barrier();
         }
 
         // unpack received block into set of all coordinates
@@ -238,7 +238,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | initialize energy spectrum by initial field  rasthofer 05/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbForcing::SetInitialSpectrum(Inpar::FLUID::InitialField init_field_type)
+  void HomIsoTurbForcing::set_initial_spectrum(Inpar::FLUID::InitialField init_field_type)
   {
     if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
     {
@@ -397,7 +397,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | activate calculation of forcing              rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbForcing::ActivateForcing(const bool activate)
+  void HomIsoTurbForcing::activate_forcing(const bool activate)
   {
     activate_ = activate;
     return;
@@ -407,7 +407,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | calculate volume force                       rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbForcing::CalculateForcing(const int step)
+  void HomIsoTurbForcing::calculate_forcing(const int step)
   {
 #ifdef FOUR_C_WITH_FFTW
     // check if forcing is selected
@@ -446,17 +446,17 @@ namespace FLD
 
       // set solution in local vectors for velocity
 
-      for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+      for (int inode = 0; inode < discret_->num_my_row_nodes(); inode++)
       {
         // get node
-        Core::Nodes::Node* node = discret_->lRowNode(inode);
+        Core::Nodes::Node* node = discret_->l_row_node(inode);
 
         // get coordinates
         Core::LinAlg::Matrix<3, 1> xyz(true);
-        for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
+        for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->x()[idim];
 
         // get global ids of all dofs of the node
-        std::vector<int> dofs = discret_->Dof(node);
+        std::vector<int> dofs = discret_->dof(node);
 
         // determine position
         std::vector<int> loc(3);
@@ -510,11 +510,11 @@ namespace FLD
       // get values form all processors
       // number of nodes without slave nodes
       const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-      discret_->Comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
+      discret_->get_comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
 
-      discret_->Comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
+      discret_->get_comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
 
-      discret_->Comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
+      discret_->get_comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
 
       //----------------------------------------
       // fast Fourier transformation using FFTW
@@ -841,7 +841,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | get forcing                                   rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbForcing::UpdateForcing(const int step)
+  void HomIsoTurbForcing::update_forcing(const int step)
   {
 #ifdef FOUR_C_WITH_FFTW
     // check if forcing is selected
@@ -881,17 +881,17 @@ namespace FLD
 
       // set solution in local vectors for velocity
 
-      for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+      for (int inode = 0; inode < discret_->num_my_row_nodes(); inode++)
       {
         // get node
-        Core::Nodes::Node* node = discret_->lRowNode(inode);
+        Core::Nodes::Node* node = discret_->l_row_node(inode);
 
         // get coordinates
         Core::LinAlg::Matrix<3, 1> xyz(true);
-        for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
+        for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->x()[idim];
 
         // get global ids of all dofs of the node
-        std::vector<int> dofs = discret_->Dof(node);
+        std::vector<int> dofs = discret_->dof(node);
 
         // determine position
         std::vector<int> loc(3);
@@ -944,11 +944,11 @@ namespace FLD
       // get values form all processors
       // number of nodes without slave nodes
       const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-      discret_->Comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
+      discret_->get_comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
 
-      discret_->Comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
+      discret_->get_comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
 
-      discret_->Comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
+      discret_->get_comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
 
       //----------------------------------------
       // fast Fourier transformation using FFTW
@@ -1052,17 +1052,17 @@ namespace FLD
       // set force vector
       //----------------------------------------
 
-      for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+      for (int inode = 0; inode < discret_->num_my_row_nodes(); inode++)
       {
         // get node
-        Core::Nodes::Node* node = discret_->lRowNode(inode);
+        Core::Nodes::Node* node = discret_->l_row_node(inode);
 
         // get coordinates
         Core::LinAlg::Matrix<3, 1> xyz(true);
-        for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
+        for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->x()[idim];
 
         // get global ids of all dofs of the node
-        std::vector<int> dofs = discret_->Dof(node);
+        std::vector<int> dofs = discret_->dof(node);
 
         // determine position
         std::vector<int> loc(3);
@@ -1115,7 +1115,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | time update of energy spectrum               rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbForcing::TimeUpdateForcing()
+  void HomIsoTurbForcing::time_update_forcing()
   {
 #ifdef TIME_UPDATE_FORCING_SPECTRUM
     if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
@@ -1154,7 +1154,7 @@ namespace FLD
     if (hdgfluid == nullptr) FOUR_C_THROW("this should be a hdg time integer");
 
     // we want to use the interior velocity here
-    velnp_ = hdgfluid->ReturnIntVelnp();
+    velnp_ = hdgfluid->return_int_velnp();
 
     //-----------------------------------
     // determine number of modes
@@ -1223,10 +1223,10 @@ namespace FLD
   /*--------------------------------------------------------------*
    | initialize energy spectrum by initial field         bk 04/15 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbForcingHDG::SetInitialSpectrum(Inpar::FLUID::InitialField init_field_type)
+  void HomIsoTurbForcingHDG::set_initial_spectrum(Inpar::FLUID::InitialField init_field_type)
   {
 #ifdef USE_TRAGET_SPECTRUM
-    HomIsoTurbForcing::SetInitialSpectrum(init_field_type);
+    HomIsoTurbForcing::set_initial_spectrum(init_field_type);
 #else
     FOUR_C_THROW("only USE_TARGET_SPECTRUM implemented for HDG");
 #endif
@@ -1236,7 +1236,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | calculate volume force                              bk 03/15 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbForcingHDG::CalculateForcing(const int step)
+  void HomIsoTurbForcingHDG::calculate_forcing(const int step)
   {
 #ifdef FOUR_C_WITH_FFTW
     // check if forcing is selected
@@ -1300,10 +1300,10 @@ namespace FLD
       Core::LinAlg::SerialDenseMatrix dummyMat;
       Core::LinAlg::SerialDenseVector dummyVec;
 
-      for (int el = 0; el < discret_->NumMyRowElements(); ++el)
+      for (int el = 0; el < discret_->num_my_row_elements(); ++el)
       {
         Core::LinAlg::SerialDenseVector interpolVec;
-        Core::Elements::Element* ele = discret_->lRowElement(el);
+        Core::Elements::Element* ele = discret_->l_row_element(el);
 
         interpolVec.resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
@@ -1352,11 +1352,11 @@ namespace FLD
       // get values form all processors
       // number of nodes without slave nodes
       const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-      discret_->Comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
+      discret_->get_comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
 
-      discret_->Comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
+      discret_->get_comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
 
-      discret_->Comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
+      discret_->get_comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
 
       //----------------------------------------
       // fast Fourier transformation using FFTW
@@ -1674,7 +1674,7 @@ namespace FLD
       // reset E_kf_
       E_kf_ = 0.0;
     }
-    discret_->ClearState(true);
+    discret_->clear_state(true);
     return;
 #else
     FOUR_C_THROW("FFTW required");
@@ -1684,7 +1684,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | get forcing                                         bk 03/15 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbForcingHDG::UpdateForcing(const int step)
+  void HomIsoTurbForcingHDG::update_forcing(const int step)
   {
 #ifdef FOUR_C_WITH_FFTW
     // check if forcing is selected
@@ -1743,10 +1743,10 @@ namespace FLD
       Core::LinAlg::SerialDenseVector dummyVec;
 
 
-      for (int el = 0; el < discret_->NumMyRowElements(); ++el)
+      for (int el = 0; el < discret_->num_my_row_elements(); ++el)
       {
         Core::LinAlg::SerialDenseVector interpolVec;
-        Core::Elements::Element* ele = discret_->lRowElement(el);
+        Core::Elements::Element* ele = discret_->l_row_element(el);
 
         interpolVec.resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
@@ -1795,11 +1795,11 @@ namespace FLD
       // get values form all processors
       // number of nodes without slave nodes
       const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-      discret_->Comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
+      discret_->get_comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
 
-      discret_->Comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
+      discret_->get_comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
 
-      discret_->Comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
+      discret_->get_comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
 
       //----------------------------------------
       // fast Fourier transformation using FFTW
@@ -1907,7 +1907,7 @@ namespace FLD
       // for 1st evaluate
       // use same params as above
       // this is a dummy, forcing_ should be zero is written in the first components of interpolVec
-      discret_->ClearState(true);
+      discret_->clear_state(true);
 
       discret_->set_state(1, "intvelnp", velnp_);
 
@@ -1923,10 +1923,10 @@ namespace FLD
 
       // loop over all elements on the processor
       Core::Elements::Element::LocationArray la(2);
-      for (int el = 0; el < discret_->NumMyRowElements(); ++el)
+      for (int el = 0; el < discret_->num_my_row_elements(); ++el)
       {
         // 1st evaluate
-        Core::Elements::Element* ele = discret_->lRowElement(el);
+        Core::Elements::Element* ele = discret_->l_row_element(el);
 
         std::vector<int> dummy;
         Core::LinAlg::SerialDenseMatrix dummyMat;
@@ -1976,15 +1976,15 @@ namespace FLD
         }
 
         // 2nd evaluate
-        ele->LocationVector(*discret_, la, false);
-        if (elevec1.numRows() != discret_->NumDof(1, ele)) elevec1.size(discret_->NumDof(1, ele));
+        ele->location_vector(*discret_, la, false);
+        if (elevec1.numRows() != discret_->num_dof(1, ele)) elevec1.size(discret_->num_dof(1, ele));
 
         ele->evaluate(
             initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, interpolVec, elevec3);
 
-        if (ele->Owner() == discret_->Comm().MyPID())
+        if (ele->owner() == discret_->get_comm().MyPID())
         {
-          std::vector<int> localDofs = discret_->Dof(1, ele);
+          std::vector<int> localDofs = discret_->dof(1, ele);
           FOUR_C_ASSERT(
               localDofs.size() == static_cast<std::size_t>(elevec1.numRows()), "Internal error");
           for (unsigned int i = 0; i < localDofs.size(); ++i)
@@ -1996,7 +1996,7 @@ namespace FLD
     else
       // set force to zero
       forcing_->PutScalar(0.0);
-    discret_->ClearState(true);
+    discret_->clear_state(true);
 
     return;
 #else
@@ -2023,11 +2023,11 @@ namespace FLD
         count_(0),
         sum_(0.0)
   {
-    if (discret_->Comm().MyPID() == 0)
+    if (discret_->get_comm().MyPID() == 0)
       std::cout << "\nforcing for periodic hill such that a mass flow of " << idealmassflow_
                 << " is achieved" << std::endl;
     std::vector<Core::Conditions::Condition*> bodycond;
-    discret_->GetCondition("VolumeNeumann", bodycond);
+    discret_->get_condition("VolumeNeumann", bodycond);
     const auto& val = bodycond[0]->parameters().get<std::vector<double>>("val");
     oldforce_ = val.at(0);
   }
@@ -2035,7 +2035,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | time update of periodic hill forcing                bk 12/14 |
    *--------------------------------------------------------------*/
-  void PeriodicHillForcing::UpdateForcing(const int step)
+  void PeriodicHillForcing::update_forcing(const int step)
   {
     step_ = step;
     return;
@@ -2044,7 +2044,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | time update of periodic hill forcing                bk 12/14 |
    *--------------------------------------------------------------*/
-  void PeriodicHillForcing::TimeUpdateForcing()
+  void PeriodicHillForcing::time_update_forcing()
   {
     // create the parameters for the discretization
     Teuchos::ParameterList eleparams;
@@ -2052,27 +2052,27 @@ namespace FLD
     // action for elements
     eleparams.set<int>("action", FLD::calc_mass_flow_periodic_hill);
 
-    if (myxwall_ != Teuchos::null) myxwall_->SetXWallParams(eleparams);
+    if (myxwall_ != Teuchos::null) myxwall_->set_x_wall_params(eleparams);
 
     eleparams.set<double>("length", length_);
 
     discret_->set_state("velnp", velnp_);
 
-    const Epetra_Map* elementrowmap = discret_->ElementRowMap();
+    const Epetra_Map* elementrowmap = discret_->element_row_map();
     Teuchos::RCP<Epetra_MultiVector> massflvec =
         Teuchos::rcp(new Epetra_MultiVector(*elementrowmap, 1, true));
 
     // optional: elementwise defined div u may be written to standard output file (not implemented
     // yet)
-    discret_->EvaluateScalars(eleparams, massflvec);
+    discret_->evaluate_scalars(eleparams, massflvec);
 
-    discret_->ClearState();
+    discret_->clear_state();
 
     Teuchos::RCP<Epetra_MultiVector> massflvecneg =
         Teuchos::rcp(new Epetra_MultiVector(*elementrowmap, 1, true));
 
     // take into account negative mass flux at the inflow
-    for (int i = 0; i < discret_->ElementRowMap()->NumMyElements(); ++i)
+    for (int i = 0; i < discret_->element_row_map()->NumMyElements(); ++i)
     {
       double locflow = (*((*massflvec)(0)))[i];
       if (locflow < -1.0e-9)
@@ -2105,13 +2105,13 @@ namespace FLD
     // now insert values in vector
     forcing_->PutScalar(0.0);
 
-    for (int i = 0; i < discret_->NodeRowMap()->NumMyElements(); ++i)
+    for (int i = 0; i < discret_->node_row_map()->NumMyElements(); ++i)
     {
-      int gid = discret_->NodeRowMap()->GID(i);
-      Core::Nodes::Node* node = discret_->gNode(gid);
+      int gid = discret_->node_row_map()->GID(i);
+      Core::Nodes::Node* node = discret_->g_node(gid);
       if (!node) FOUR_C_THROW("Cannot find node");
 
-      int firstgdofid = discret_->Dof(0, node, 0);
+      int firstgdofid = discret_->dof(0, node, 0);
 
       int firstldofid = forcing_->Map().LID(firstgdofid);
 
@@ -2127,7 +2127,7 @@ namespace FLD
     sum_ += newforce;
 
     // provide some information about the current condition
-    if (discret_->Comm().MyPID() == 0)
+    if (discret_->get_comm().MyPID() == 0)
       std::cout << "current mass flux:  " << oldflow_ << "/" << 49.46 << "  force:  " << oldforce_
                 << "/" << sum_ / (double)count_ << std::endl;
     return;

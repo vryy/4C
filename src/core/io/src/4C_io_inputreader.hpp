@@ -88,10 +88,10 @@ namespace Core::IO
     DatFileReader(std::string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag = 0);
 
     /// return my inputfile name
-    std::string MyInputfileName() const;
+    std::string my_inputfile_name() const;
 
     /// return my output flag
-    int MyOutputFlag() const;
+    int my_output_flag() const;
 
     /// get file position of excluded section
     /*!
@@ -105,20 +105,20 @@ namespace Core::IO
     unsigned int excluded_section_length(const std::string& section) const;
 
     /// return my communicator
-    Teuchos::RCP<Epetra_Comm> Comm() const { return comm_; }
+    Teuchos::RCP<Epetra_Comm> get_comm() const { return comm_; }
 
     /// convert a parameter section in extended format in a parameter list
-    bool ReadSection(std::string name, Teuchos::ParameterList& list);
+    bool read_section(std::string name, Teuchos::ParameterList& list);
 
     /// return the content of a section
-    std::vector<const char*> Section(const std::string& name);
+    std::vector<const char*> section(const std::string& name);
 
     /// Read a node-design topology section
     ///
     /// @param name Name of the topology to read
     /// @param dobj_fenode Resulting collection of all nodes that belong to a design.
     /// @param get_discretization Callback to return a discretization by name.
-    void ReadDesign(const std::string& name, std::vector<std::vector<int>>& dobj_fenode,
+    void read_design(const std::string& name, std::vector<std::vector<int>>& dobj_fenode,
         const std::function<const Core::FE::Discretization&(const std::string& name)>&
             get_discretization);
 
@@ -129,7 +129,7 @@ namespace Core::IO
       \param  disknots       (out): node vector coordinates
 
     */
-    void ReadKnots(const std::string& name, Teuchos::RCP<Core::FE::Nurbs::Knotvector>& disknots);
+    void read_knots(const std::string& name, Teuchos::RCP<Core::FE::Nurbs::Knotvector>& disknots);
 
 
     /// print unknown section names found in the input file

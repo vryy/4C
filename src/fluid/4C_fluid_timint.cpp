@@ -46,7 +46,7 @@ FLD::TimInt::TimInt(const Teuchos::RCP<Core::FE::Discretization>& discret,
       timealgo_(
           Core::UTILS::GetAsEnum<Inpar::FLUID::TimeIntegrationScheme>(*params_, "time int algo")),
       physicaltype_(Core::UTILS::GetAsEnum<Inpar::FLUID::PhysicalType>(*params_, "Physical Type")),
-      myrank_(discret_->Comm().MyPID()),
+      myrank_(discret_->get_comm().MyPID()),
       updateprojection_(false),
       projector_(Teuchos::null),
       kspsplitter_(Teuchos::null)
@@ -54,7 +54,7 @@ FLD::TimInt::TimInt(const Teuchos::RCP<Core::FE::Discretization>& discret,
   // check for special fluid output which is to be handled by an own writer object
   Teuchos::RCP<const Teuchos::ParameterList> fluid_runtime_output_list =
       Teuchos::rcp(new Teuchos::ParameterList(
-          Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT").sublist("FLUID")));
+          Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT").sublist("FLUID")));
 
   bool output_fluid =
       (bool)Core::UTILS::IntegralValue<int>(*fluid_runtime_output_list, "OUTPUT_FLUID");
@@ -71,8 +71,8 @@ FLD::TimInt::TimInt(const Teuchos::RCP<Core::FE::Discretization>& discret,
     // does not contain the steps of the simulation that is restarted from
     runtime_output_writer_ = Teuchos::rcp(new Core::IO::DiscretizationVisualizationWriterMesh(
         discret_, Core::IO::VisualizationParametersFactory(
-                      Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-                      *Global::Problem::Instance()->OutputControlFile(), time_)));
+                      Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
+                      *Global::Problem::instance()->output_control_file(), time_)));
   }
 }
 

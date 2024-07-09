@@ -32,7 +32,7 @@ int Discret::ELEMENTS::Truss3::evaluate(Teuchos::ParameterList& params,
 
   Core::Elements::ActionType act = Core::Elements::none;
 
-  if (IsParamsInterface())
+  if (is_params_interface())
   {
     act = params_interface().get_action_type();
   }
@@ -125,7 +125,7 @@ int Discret::ELEMENTS::Truss3::evaluate(Teuchos::ParameterList& params,
       std::map<std::string, std::vector<double>> ele_state;
       extract_elemental_variables(la, discretization, params, ele_state);
 
-      CalcGPStresses(params, ele_state);
+      calc_gp_stresses(params, ele_state);
       break;
     }
     case Core::Elements::struct_calc_update_istep:
@@ -166,7 +166,7 @@ int Discret::ELEMENTS::Truss3::evaluate_neumann(Teuchos::ParameterList& params,
 void Discret::ELEMENTS::Truss3::energy(const std::map<std::string, std::vector<double>>& ele_state,
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& intenergy)
 {
-  if (Material()->MaterialType() != Core::Materials::m_linelast1D)
+  if (material()->material_type() != Core::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic material supported for truss element");
 
   const std::vector<double>& disp_ele = ele_state.at("disp");
@@ -197,10 +197,10 @@ void Discret::ELEMENTS::Truss3::energy(const std::map<std::string, std::vector<d
                                                                : (lcurr - lrefe_) / lrefe_;
 
   // W_int = 1/2*PK2*A*lrefe*\epsilon
-  const auto* mat = static_cast<const Mat::LinElast1D*>(Material().get());
+  const auto* mat = static_cast<const Mat::LinElast1D*>(material().get());
   const double intenergy_calc = mat->evaluate_elastic_energy(epsilon) * crosssec_ * lrefe_;
 
-  if (IsParamsInterface())  // new structural time integration
+  if (is_params_interface())  // new structural time integration
     params_interface().add_contribution_to_energy_type(intenergy_calc, Solid::internal_energy);
   else  // old structural time integration
   {
@@ -308,7 +308,7 @@ void Discret::ELEMENTS::Truss3::nln_stiff_mass_tot_lag(
   const int ndof = 6;
   const int ndof_per_node = ndof / 2;
 
-  const double density = Material()->Density();
+  const double density = material()->density();
 
   // calculating mass matrix
   if (massmatrix != nullptr)
@@ -332,7 +332,7 @@ void Discret::ELEMENTS::Truss3::nln_stiff_mass_eng_str(
     Core::LinAlg::SerialDenseMatrix& DummyStiffMatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
     Core::LinAlg::SerialDenseVector& DummyForce)
 {
-  if (Material()->MaterialType() != Core::Materials::m_linelast1D)
+  if (material()->material_type() != Core::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic material supported for truss element");
 
   const std::vector<double>& disp_ele = ele_state.at("disp");
@@ -352,7 +352,7 @@ void Discret::ELEMENTS::Truss3::nln_stiff_mass_eng_str(
   aux(5) = x_(5) - x_(2);
 
   // resulting force scaled by current length
-  const auto* mat = static_cast<const Mat::LinElast1D*>(Material().get());
+  const auto* mat = static_cast<const Mat::LinElast1D*>(material().get());
 
   // displacement vector
   Core::LinAlg::SerialDenseVector disp(ndof);
@@ -363,7 +363,7 @@ void Discret::ELEMENTS::Truss3::nln_stiff_mass_eng_str(
     disp(i) = disp_ele[i];
     for (int j = 0; j < ndof; ++j)
       DummyStiffMatrix(i, j) =
-          (mat->EvaluateStiffness() * crosssec_ / (lrefe_ * lrefe_ * lrefe_)) * aux(i) * aux(j);
+          (mat->evaluate_stiffness() * crosssec_ / (lrefe_ * lrefe_ * lrefe_)) * aux(i) * aux(j);
   }
 
   // computing internal forces
@@ -372,7 +372,7 @@ void Discret::ELEMENTS::Truss3::nln_stiff_mass_eng_str(
   // calculating mass matrix.
   if (massmatrix != nullptr)
   {
-    const double density = Material()->Density();
+    const double density = material()->density();
     for (int i = 0; i < ndof_per_node; ++i)
     {
       (*massmatrix)(i, i) = density * lrefe_ * crosssec_ / 3.0;
@@ -432,7 +432,7 @@ void Discret::ELEMENTS::Truss3::calc_internal_force_stiff_tot_lag(
     Core::LinAlg::SerialDenseVector& forcevec, Core::LinAlg::SerialDenseMatrix& stiffmat)
 {
   // safety check
-  if (Material()->MaterialType() != Core::Materials::m_linelast1D)
+  if (material()->material_type() != Core::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic material supported for truss element");
 
   static Core::LinAlg::Matrix<6, 1> truss_disp;
@@ -444,13 +444,13 @@ void Discret::ELEMENTS::Truss3::calc_internal_force_stiff_tot_lag(
   const int ndof = 6;
 
   // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l^2 - L^2)/L^2)
-  const double epsilon_GL = 0.5 * (CurrLength2(truss_disp) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
+  const double epsilon_GL = 0.5 * (curr_length2(truss_disp) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
 
   // 2nd Piola-Kirchhoff stress
 
-  const auto* mat = static_cast<const Mat::LinElast1D*>(Material().get());
-  const double PK2 = mat->EvaluatePK2(epsilon_GL);
-  double stiffness = mat->EvaluateStiffness();
+  const auto* mat = static_cast<const Mat::LinElast1D*>(material().get());
+  const double PK2 = mat->evaluate_p_k2(epsilon_GL);
+  double stiffness = mat->evaluate_stiffness();
   // domain integration factor for linear shape functions -> constant strains and stresses ->
   // constant factor
   const double int_fac = crosssec_ * lrefe_;
@@ -480,16 +480,16 @@ void Discret::ELEMENTS::Truss3::calc_internal_force_stiff_tot_lag(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::CalcGPStresses(
+void Discret::ELEMENTS::Truss3::calc_gp_stresses(
     Teuchos::ParameterList& params, const std::map<std::string, std::vector<double>>& ele_state)
 {
   // safety check
-  if (Material()->MaterialType() != Core::Materials::m_linelast1D)
+  if (material()->material_type() != Core::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic material supported for truss element");
 
   Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
   Inpar::Solid::StressType iostress;
-  if (IsParamsInterface())
+  if (is_params_interface())
   {
     stressdata = params_interface().stress_data_ptr();
     iostress = params_interface().get_stress_output_type();
@@ -513,11 +513,11 @@ void Discret::ELEMENTS::Truss3::CalcGPStresses(
 
   // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l^2 - L^2)/L^2)
   const double epsilon_GL =
-      0.5 * (CurrLength2(curr_nodal_coords) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
+      0.5 * (curr_length2(curr_nodal_coords) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
 
   // 2nd Piola-Kirchhoff stress
-  const auto* mat = static_cast<const Mat::LinElast1D*>(Material().get());
-  const double PK2 = mat->EvaluatePK2(epsilon_GL);
+  const auto* mat = static_cast<const Mat::LinElast1D*>(material().get());
+  const double PK2 = mat->evaluate_p_k2(epsilon_GL);
 
   for (int gp = 0; gp < intpoints.nquad; ++gp)
   {
@@ -530,7 +530,7 @@ void Discret::ELEMENTS::Truss3::CalcGPStresses(
       }
       case Inpar::Solid::stress_cauchy:
       {
-        const double def_grad = CurrLength(curr_nodal_coords) / lrefe_;
+        const double def_grad = curr_length(curr_nodal_coords) / lrefe_;
         stress(gp, 0) = PK2 * def_grad;
         break;
       }
@@ -579,7 +579,7 @@ void Discret::ELEMENTS::Truss3::extract_elemental_variables(LocationArray& la,
 {
   std::vector<double> disp_ele(la[0].lm_.size());
 
-  auto disp = discretization.GetState("displacement");
+  auto disp = discretization.get_state("displacement");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
   Core::FE::ExtractMyValues(*disp, disp_ele, la[0].lm_);
 

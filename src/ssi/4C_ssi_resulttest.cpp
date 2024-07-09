@@ -36,20 +36,20 @@ double SSI::SSIResultTest::result_special(const std::string& quantity) const
   // SSI) in last time step
   if (quantity == "numiterlastnonlinearsolve")
   {
-    result = static_cast<double>(ssi_base_->IterationCount());
+    result = static_cast<double>(ssi_base_->iteration_count());
   }
 
   // number of iterations performed by linear solver during last Newton-Raphson iteration
   // (monolithic SSI only)
   else if (quantity == "numiterlastlinearsolve")
   {
-    result = static_cast<double>(ssi_mono().Solver().getNumIters());
+    result = static_cast<double>(ssi_mono().solver().get_num_iters());
   }
 
   // test total number of time steps
   else if (!quantity.compare(0, 7, "numstep"))
   {
-    result = static_cast<double>(ssi_base_->Step());
+    result = static_cast<double>(ssi_base_->step());
   }
   // catch unknown quantity strings
   else
@@ -75,10 +75,10 @@ const SSI::SsiMono& SSI::SSIResultTest::ssi_mono() const
 
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
-void SSI::SSIResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count)
+void SSI::SSIResultTest::test_special(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only by one processor
-  if (ssi_base_->Comm().MyPID() == 0)
+  if (ssi_base_->get_comm().MyPID() == 0)
   {
     // extract name of quantity to be tested
     std::string quantity;

@@ -89,8 +89,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
 
     if (pair_is_active)
     {
-      elegids[0] = elepairptr->Element1()->Id();
-      elegids[1] = elepairptr->Element2()->Id();
+      elegids[0] = elepairptr->element1()->id();
+      elegids[1] = elepairptr->element2()->id();
 
       // assemble force vector and stiffness matrix affecting the centerline DoFs only
       // into element force vector and stiffness matrix ('all DoFs' format, as usual)
@@ -99,7 +99,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
           &elestiff);
 
       // assemble the contributions into force and stiffness matrices
-      assemblystrategy_->Assemble(discretization1, discretization2, elegids, eleforce, elestiff, fb,
+      assemblystrategy_->assemble(discretization1, discretization2, elegids, eleforce, elestiff, fb,
           ff, cbb, cff, cbf, cfb);
     }
   }

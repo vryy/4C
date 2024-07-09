@@ -46,16 +46,17 @@ FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-Discret::ELEMENTS::ScaTraEleInterface* Discret::ELEMENTS::ScaTraFactory::ProvideImpl(
+Discret::ELEMENTS::ScaTraEleInterface* Discret::ELEMENTS::ScaTraFactory::provide_impl(
     Core::FE::CellType distype, Inpar::ScaTra::ImplType problem, const int numdofpernode,
     const int numscal, const std::string& disname)
 {
   // number of space dimensions
-  const int ndim = disname != "scatra_micro"
-                       ? Global::Problem::Instance(
-                             Discret::ELEMENTS::ScaTraEleParameterStd::Instance(disname)->ProbNum())
-                             ->NDim()
-                       : 1;
+  const int ndim =
+      disname != "scatra_micro"
+          ? Global::Problem::instance(
+                Discret::ELEMENTS::ScaTraEleParameterStd::instance(disname)->prob_num())
+                ->n_dim()
+          : 1;
 
   switch (distype)
   {
@@ -208,13 +209,13 @@ Discret::ELEMENTS::ScaTraEleInterface* Discret::ELEMENTS::ScaTraFactory::Provide
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-Discret::ELEMENTS::ScaTraEleInterface* Discret::ELEMENTS::ScaTraFactory::ProvideImplHDG(
+Discret::ELEMENTS::ScaTraEleInterface* Discret::ELEMENTS::ScaTraFactory::provide_impl_hdg(
     Core::FE::CellType distype, Inpar::ScaTra::ImplType problem, const int numdofpernode,
     const int numscal, const std::string& disname)
 {
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
-  static const int ndim = Global::Problem::Instance()->NDim();
+  static const int ndim = Global::Problem::instance()->n_dim();
 
   switch (distype)
   {
@@ -316,126 +317,126 @@ Discret::ELEMENTS::ScaTraEleInterface* Discret::ELEMENTS::ScaTraFactory::define_
   {
     case Inpar::ScaTra::impltype_std:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcStd<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcStd<distype, probdim>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_thermo_elch_electrode:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_thermo_elch_diffcond:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_levelset:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcLS<distype>::Instance(numdofpernode, numscal, disname);
+      return Discret::ELEMENTS::ScaTraEleCalcLS<distype>::instance(numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_lsreinit:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probdim>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_loma:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_elch_NP:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_elch_electrode:
     case Inpar::ScaTra::impltype_elch_electrode_growth:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_elch_electrode_thermo:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_elch_diffcond:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_elch_diffcond_multiscale:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_elch_diffcond_thermo:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_elch_scl:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_poro:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_advreac:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_refconcreac:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_chemo:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcChemo<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcChemo<distype>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_chemoreac:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcChemoReac<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcChemoReac<distype>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_multipororeac:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_pororeac:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_pororeacECM:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_aniso:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_cardiac_monodomain:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_one_d_artery:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_no_physics:
-      return Discret::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::instance(
           numdofpernode, numscal, disname);
 
     default:
@@ -467,12 +468,12 @@ Discret::ELEMENTS::ScaTraEleInterface* Discret::ELEMENTS::ScaTraFactory::define_
   {
     case Inpar::ScaTra::impltype_std_hdg:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_cardiac_monodomain_hdg:
     {
-      return Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::instance(
           numdofpernode, numscal, disname);
     }
     default:

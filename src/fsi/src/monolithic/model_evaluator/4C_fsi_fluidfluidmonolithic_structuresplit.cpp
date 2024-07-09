@@ -50,12 +50,12 @@ FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(
 void FSI::FluidFluidMonolithicStructureSplit::update()
 {
   // time to relax the ALE-mesh?
-  if (fluid_field()->IsAleRelaxationStep(Step()))
+  if (fluid_field()->is_ale_relaxation_step(step()))
   {
-    if (Comm().MyPID() == 0) Core::IO::cout << "Relaxing Ale" << Core::IO::endl;
+    if (get_comm().MyPID() == 0) Core::IO::cout << "Relaxing Ale" << Core::IO::endl;
 
-    ale_field()->Solve();
-    fluid_field()->apply_mesh_displacement(ale_to_fluid(ale_field()->Dispnp()));
+    ale_field()->solve();
+    fluid_field()->apply_mesh_displacement(ale_to_fluid(ale_field()->dispnp()));
   }
 
   // update fields
@@ -72,7 +72,7 @@ void FSI::FluidFluidMonolithicStructureSplit::prepare_time_step()
   // when this is the first call or we haven't relaxed the ALE-mesh
   // previously, the DOF-maps have not
   // changed since system setup
-  if (Step() == 0 || !fluid_field()->IsAleRelaxationStep(Step() - 1)) return;
+  if (step() == 0 || !fluid_field()->is_ale_relaxation_step(step() - 1)) return;
 
   // REMARK:
   // as the new xfem-cut may lead to a change in the fluid dof-map,
@@ -98,7 +98,7 @@ void FSI::FluidFluidMonolithicStructureSplit::setup_dbc_map_extractor()
   // ALE-DBC-maps, free of FSI DOF
   std::vector<Teuchos::RCP<const Epetra_Map>> aleintersectionmaps;
   aleintersectionmaps.push_back(ale_field()->get_dbc_map_extractor()->cond_map());
-  aleintersectionmaps.push_back(ale_field()->Interface()->other_map());
+  aleintersectionmaps.push_back(ale_field()->interface()->other_map());
   Teuchos::RCP<Epetra_Map> aleintersectionmap =
       Core::LinAlg::MultiMapExtractor::intersect_maps(aleintersectionmaps);
   dbcmaps.push_back(aleintersectionmap);

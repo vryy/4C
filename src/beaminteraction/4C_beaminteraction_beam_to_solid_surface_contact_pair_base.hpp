@@ -83,7 +83,7 @@ namespace BEAMINTERACTION
      * @param beam_centerline_dofvec
      * @param solid_nodal_dofvec
      */
-    void ResetState(const std::vector<double>& beam_centerline_dofvec,
+    void reset_state(const std::vector<double>& beam_centerline_dofvec,
         const std::vector<double>& solid_nodal_dofvec) override;
 
     /**
@@ -98,7 +98,7 @@ namespace BEAMINTERACTION
      * @param element2 Pointer to the second element
      * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
      */
-    void CreateGeometryPair(const Core::Elements::Element* element1,
+    void create_geometry_pair(const Core::Elements::Element* element1,
         const Core::Elements::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
         override;
@@ -107,7 +107,7 @@ namespace BEAMINTERACTION
      * \brief Link the contact pair with the face element storing information on the averaged nodal
      * normals (derived).
      */
-    void SetFaceElement(Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element) override;
+    void set_face_element(Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element) override;
 
    protected:
     /**

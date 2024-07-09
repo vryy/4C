@@ -37,29 +37,29 @@ void POROFLUIDMULTIPHASE::ResultTest::test_node(
   // care for the case of multiple discretizations of the same field type
   std::string dis;
   res.extract_string("DIS", dis);
-  if (dis != porotimint_.discretization()->Name()) return;
+  if (dis != porotimint_.discretization()->name()) return;
 
   int node;
   res.extract_int("NODE", node);
   node -= 1;
 
-  int havenode(porotimint_.discretization()->HaveGlobalNode(node));
+  int havenode(porotimint_.discretization()->have_global_node(node));
   int isnodeofanybody(0);
-  porotimint_.discretization()->Comm().SumAll(&havenode, &isnodeofanybody, 1);
+  porotimint_.discretization()->get_comm().SumAll(&havenode, &isnodeofanybody, 1);
 
   if (isnodeofanybody == 0)
   {
     FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1,
-        porotimint_.discretization()->Name().c_str());
+        porotimint_.discretization()->name().c_str());
   }
   else
   {
-    if (porotimint_.discretization()->HaveGlobalNode(node))
+    if (porotimint_.discretization()->have_global_node(node))
     {
-      Core::Nodes::Node* actnode = porotimint_.discretization()->gNode(node);
+      Core::Nodes::Node* actnode = porotimint_.discretization()->g_node(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->Owner() != porotimint_.discretization()->Comm().MyPID()) return;
+      if (actnode->owner() != porotimint_.discretization()->get_comm().MyPID()) return;
 
       // extract name of quantity to be tested
       std::string quantity;
@@ -79,36 +79,36 @@ void POROFLUIDMULTIPHASE::ResultTest::test_node(
 /*----------------------------------------------------------------------*
  | test element                                        kremheller 10/19 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::ResultTest::TestElement(
+void POROFLUIDMULTIPHASE::ResultTest::test_element(
     Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
   res.extract_string("DIS", dis);
 
-  if (dis != porotimint_.discretization()->Name()) return;
+  if (dis != porotimint_.discretization()->name()) return;
 
   int element;
   res.extract_int("ELEMENT", element);
   element -= 1;
 
-  int haveelement(porotimint_.discretization()->HaveGlobalElement(element));
+  int haveelement(porotimint_.discretization()->have_global_element(element));
   int iselementofanybody(0);
-  porotimint_.discretization()->Comm().SumAll(&haveelement, &iselementofanybody, 1);
+  porotimint_.discretization()->get_comm().SumAll(&haveelement, &iselementofanybody, 1);
 
   if (iselementofanybody == 0)
   {
     FOUR_C_THROW("Element %d does not belong to discretization %s", element + 1,
-        porotimint_.discretization()->Name().c_str());
+        porotimint_.discretization()->name().c_str());
   }
   else
   {
-    if (porotimint_.discretization()->HaveGlobalElement(element))
+    if (porotimint_.discretization()->have_global_element(element))
     {
-      const Core::Elements::Element* actelement = porotimint_.discretization()->gElement(element);
+      const Core::Elements::Element* actelement = porotimint_.discretization()->g_element(element);
 
       // Here we are just interested in the elements that we own (i.e. a row element)!
-      if (actelement->Owner() != porotimint_.discretization()->Comm().MyPID()) return;
+      if (actelement->owner() != porotimint_.discretization()->get_comm().MyPID()) return;
 
       // extract name of quantity to be tested
       std::string quantity;
@@ -136,11 +136,11 @@ double POROFLUIDMULTIPHASE::ResultTest::result_node(
   double result(0.);
 
   // extract row map from solution vector
-  const Epetra_BlockMap& phinpmap = porotimint_.Phinp()->Map();
+  const Epetra_BlockMap& phinpmap = porotimint_.phinp()->Map();
 
   // test result value of phi field
   if (quantity == "phi")
-    result = (*porotimint_.Phinp())[phinpmap.LID(porotimint_.discretization()->Dof(0, node, 0))];
+    result = (*porotimint_.phinp())[phinpmap.LID(porotimint_.discretization()->dof(0, node, 0))];
 
   // test result value for a system of scalars
   else if (!quantity.compare(0, 3, "phi"))
@@ -151,16 +151,16 @@ double POROFLUIDMULTIPHASE::ResultTest::result_node(
     int k = strtol(k_string.c_str(), &locator, 10) - 1;
     if (locator == k_string.c_str()) FOUR_C_THROW("Couldn't read species ID!");
 
-    if (porotimint_.discretization()->NumDof(0, node) <= k)
+    if (porotimint_.discretization()->num_dof(0, node) <= k)
       FOUR_C_THROW("Species ID is larger than number of DOFs of node!");
 
     // extract result
-    result = (*porotimint_.Phinp())[phinpmap.LID(porotimint_.discretization()->Dof(0, node, k))];
+    result = (*porotimint_.phinp())[phinpmap.LID(porotimint_.discretization()->dof(0, node, k))];
   }
 
   // test result value of phi field
   else if (quantity == "pressure")
-    result = (*porotimint_.Pressure())[phinpmap.LID(porotimint_.discretization()->Dof(0, node, 0))];
+    result = (*porotimint_.pressure())[phinpmap.LID(porotimint_.discretization()->dof(0, node, 0))];
 
   // test result value for a system of scalars
   else if (!quantity.compare(0, 8, "pressure"))
@@ -171,17 +171,17 @@ double POROFLUIDMULTIPHASE::ResultTest::result_node(
     int k = strtol(k_string.c_str(), &locator, 10) - 1;
     if (locator == k_string.c_str()) FOUR_C_THROW("Couldn't read pressure ID!");
 
-    if (porotimint_.discretization()->NumDof(0, node) <= k)
+    if (porotimint_.discretization()->num_dof(0, node) <= k)
       FOUR_C_THROW("Pressure ID is larger than number of DOFs of node!");
 
     // extract result
-    result = (*porotimint_.Pressure())[phinpmap.LID(porotimint_.discretization()->Dof(0, node, k))];
+    result = (*porotimint_.pressure())[phinpmap.LID(porotimint_.discretization()->dof(0, node, k))];
   }
 
   // test result value of phi field
   else if (quantity == "saturation")
     result =
-        (*porotimint_.Saturation())[phinpmap.LID(porotimint_.discretization()->Dof(0, node, 0))];
+        (*porotimint_.saturation())[phinpmap.LID(porotimint_.discretization()->dof(0, node, 0))];
 
   // test result value for a system of scalars
   else if (!quantity.compare(0, 10, "saturation"))
@@ -192,12 +192,12 @@ double POROFLUIDMULTIPHASE::ResultTest::result_node(
     int k = strtol(k_string.c_str(), &locator, 10) - 1;
     if (locator == k_string.c_str()) FOUR_C_THROW("Couldn't read saturation ID!");
 
-    if (porotimint_.discretization()->NumDof(0, node) <= k)
+    if (porotimint_.discretization()->num_dof(0, node) <= k)
       FOUR_C_THROW("Saturation ID is larger than number of DOFs of node!");
 
     // extract result
     result =
-        (*porotimint_.Saturation())[phinpmap.LID(porotimint_.discretization()->Dof(0, node, k))];
+        (*porotimint_.saturation())[phinpmap.LID(porotimint_.discretization()->dof(0, node, k))];
   }
 
   // catch unknown quantity strings
@@ -218,12 +218,12 @@ double POROFLUIDMULTIPHASE::ResultTest::result_element(
 
   if (quantity == "bloodvesselvolfrac")
   {
-    result = (*porotimint_.MeshTyingStrategy()->blood_vessel_volume_fraction())
-        [porotimint_.discretization()->ElementRowMap()->LID(element->Id())];
+    result = (*porotimint_.mesh_tying_strategy()->blood_vessel_volume_fraction())
+        [porotimint_.discretization()->element_row_map()->LID(element->id())];
   }
   else if (!quantity.compare(0, 13, "phasevelocity"))
   {
-    const int num_dim = Global::Problem::Instance()->NDim();
+    const int num_dim = Global::Problem::instance()->n_dim();
     // get phase ID
     // example: "phasevelocity3x" -> k = 2 (phase IDs start at index 0)
     std::string k_string = quantity.substr(13);
@@ -240,8 +240,8 @@ double POROFLUIDMULTIPHASE::ResultTest::result_element(
     else if (!quantity.compare(14, 15, "z"))
       idx_dim = 2;
 
-    result = ((*porotimint_.PhaseVelocity())[idx_poro_dof * num_dim + idx_dim])
-        [porotimint_.discretization()->ElementRowMap()->LID(element->Id())];
+    result = ((*porotimint_.phase_velocity())[idx_poro_dof * num_dim + idx_dim])
+        [porotimint_.discretization()->element_row_map()->LID(element->id())];
   }
   // catch unknown quantity strings
   else
@@ -253,11 +253,11 @@ double POROFLUIDMULTIPHASE::ResultTest::result_element(
 /*-------------------------------------------------------------------------------------*
  | test special quantity not associated with a particular element or node  vuong 08/16 |
  *-------------------------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::ResultTest::TestSpecial(
+void POROFLUIDMULTIPHASE::ResultTest::test_special(
     Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only once
-  if (porotimint_.discretization()->Comm().MyPID() == 0)
+  if (porotimint_.discretization()->get_comm().MyPID() == 0)
   {
     // extract name of quantity to be tested
     std::string quantity;
@@ -286,7 +286,7 @@ double POROFLUIDMULTIPHASE::ResultTest::result_special(
   // initialize variable for result
   double result(0.);
 
-  if (quantity == "numiterlastnewton") result = (double)porotimint_.IterNum();
+  if (quantity == "numiterlastnewton") result = (double)porotimint_.iter_num();
   // result test of domain integrals
   else if (!quantity.compare(0, 22, "domain_integral_value_"))
   {
@@ -311,7 +311,7 @@ double POROFLUIDMULTIPHASE::ResultTest::result_special(
           porotimint_.num_domain_int_functions() - 1);
 
     // return the result
-    result = (*porotimint_.DomainIntValues())[idx];
+    result = (*porotimint_.domain_int_values())[idx];
   }
   // catch unknown quantity strings
   else

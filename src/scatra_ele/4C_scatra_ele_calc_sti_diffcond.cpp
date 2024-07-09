@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>*
-Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Instance(
+Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -34,7 +34,7 @@ Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Instance(
             new ScaTraEleCalcSTIDiffCond<distype>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -65,15 +65,15 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::sysmat(
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     // evaluate shape functions, their derivatives, and domain integration factor at current
     // integration point
     const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // evaluate overall integration factors
-    double timefacfac = my::scatraparatimint_->TimeFac() * fac;
-    double rhsfac = my::scatraparatimint_->TimeFacRhs() * fac;
+    double timefacfac = my::scatraparatimint_->time_fac() * fac;
+    double rhsfac = my::scatraparatimint_->time_fac_rhs() * fac;
 
     // evaluate internal variables at current integration point
     set_internal_variables_for_mat_and_rhs();
@@ -82,7 +82,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::sysmat(
     get_material_params(ele, densn, densnp, densam, dummy, iquad);
 
     // matrix and vector contributions arising from mass term
-    if (not my::scatraparatimint_->IsStationary())
+    if (not my::scatraparatimint_->is_stationary())
     {
       my::calc_mat_mass(emat, 0, fac, densam[0]);
       my::calc_rhs_lin_mass(erhs, 0, rhsfac, fac, densam[0], densnp[0]);
@@ -91,7 +91,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::sysmat(
     // vector contributions arising from history value
     // need to adapt history value to time integration scheme first
     double rhsint(0.0);
-    my::compute_rhs_int(rhsint, densam[0], densnp[0], my::scatravarmanager_->Hist(0));
+    my::compute_rhs_int(rhsint, densam[0], densnp[0], my::scatravarmanager_->hist(0));
     my::calc_rhs_hist_and_source(erhs, 0, fac, rhsint);
 
     // matrix and vector contributions arising from diffusion term
@@ -100,20 +100,20 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::sysmat(
 
     // matrix and vector contributions arising from conservative part of convective term (deforming
     // meshes)
-    if (my::scatrapara_->IsConservative())
+    if (my::scatrapara_->is_conservative())
     {
       double vdiv(0.0);
       my::get_divergence(vdiv, my::evelnp_);
       my::calc_mat_conv_add_cons(emat, 0, timefacfac, vdiv, densnp[0]);
 
-      double vrhs = rhsfac * my::scatravarmanager_->Phinp(0) * vdiv * densnp[0];
+      double vrhs = rhsfac * my::scatravarmanager_->phinp(0) * vdiv * densnp[0];
       for (unsigned vi = 0; vi < nen_; ++vi) erhs[vi * my::numdofpernode_] -= vrhs * my::funct_(vi);
     }
 
     // matrix and vector contributions arising from source terms
-    if (ele->Material()->MaterialType() == Core::Materials::m_soret)
+    if (ele->material()->material_type() == Core::Materials::m_soret)
       mystielch::calc_mat_and_rhs_source(emat, erhs, timefacfac, rhsfac);
-    else if (ele->Material()->MaterialType() == Core::Materials::m_th_fourier_iso)
+    else if (ele->material()->material_type() == Core::Materials::m_th_fourier_iso)
       calc_mat_and_rhs_joule_solid(emat, erhs, timefacfac, rhsfac);
   }  // loop over integration points
 }
@@ -132,23 +132,23 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_and_rhs_joul
 )
 {
   // extract variables and parameters
-  const double& concentration = var_manager()->Conc();
+  const double& concentration = var_manager()->conc();
   const double& invfval =
-      1. / (diffmanagerdiffcond_->GetValence(0) *
-               Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday());
-  const double& kappa = diffmanagerdiffcond_->GetCond();
-  const double& R = Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
-  const double& t = diffmanagerdiffcond_->GetTransNum(0);
+      1. / (diffmanagerdiffcond_->get_valence(0) *
+               Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday());
+  const double& kappa = diffmanagerdiffcond_->get_cond();
+  const double& R = Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->gas_constant();
+  const double& t = diffmanagerdiffcond_->get_trans_num(0);
 
   // current density
-  Core::LinAlg::Matrix<nsd_, 1> i = var_manager()->GradPot();
-  i.update((1 - t) * invfval * 2. * R * my::scatravarmanager_->Phinp(0) / concentration,
-      var_manager()->GradConc(), invfval * R * log(concentration),
-      my::scatravarmanager_->GradPhi(0), -1.);
+  Core::LinAlg::Matrix<nsd_, 1> i = var_manager()->grad_pot();
+  i.update((1 - t) * invfval * 2. * R * my::scatravarmanager_->phinp(0) / concentration,
+      var_manager()->grad_conc(), invfval * R * log(concentration),
+      my::scatravarmanager_->grad_phi(0), -1.);
   i.scale(kappa);
 
   // derivative of current density w.r.t. temperature
-  Core::LinAlg::Matrix<nsd_, 1> di_dT = var_manager()->GradConc();
+  Core::LinAlg::Matrix<nsd_, 1> di_dT = var_manager()->grad_conc();
   di_dT.scale(kappa * (1 - t) * invfval * 2. * R / concentration);
 
   // formal, symbolic derivative of current density w.r.t. temperature gradient
@@ -187,12 +187,12 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_and_rhs_joul
   // no contributions to matrix
 
   // square of gradient of electric potential
-  const double gradpot2 = var_manager()->GradPot().dot(var_manager()->GradPot());
+  const double gradpot2 = var_manager()->grad_pot().dot(var_manager()->grad_pot());
 
   // linearizations of Joule's heat term in thermo residuals w.r.t. thermo dofs are zero
   // contributions of Joule's heat term to thermo residuals
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
-    erhs[vi] += rhsfac * my::funct_(vi) * gradpot2 * diffmanagerdiffcond_->GetCond();
+    erhs[vi] += rhsfac * my::funct_(vi) * gradpot2 * diffmanagerdiffcond_->get_cond();
 }
 
 
@@ -210,16 +210,16 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_and_rhs_mixi
 )
 {
   // extract variables and parameters
-  const double& concentration = var_manager()->Conc();
-  const double& diffcoeff = diffmanagerdiffcond_->GetIsotropicDiff(0);
-  const Core::LinAlg::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
-  const double& soret = diff_manager()->GetSoret();
-  const double& temperature = my::scatravarmanager_->Phinp(0);
+  const double& concentration = var_manager()->conc();
+  const double& diffcoeff = diffmanagerdiffcond_->get_isotropic_diff(0);
+  const Core::LinAlg::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->grad_phi(0);
+  const double& soret = diff_manager()->get_soret();
+  const double& temperature = my::scatravarmanager_->phinp(0);
   const double gasconstant =
-      Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
+      Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->gas_constant();
 
   // gradient of concentration plus scaled gradient of temperature
-  Core::LinAlg::Matrix<nsd_, 1> a = var_manager()->GradConc();
+  Core::LinAlg::Matrix<nsd_, 1> a = var_manager()->grad_conc();
   a.update(concentration * soret / temperature, gradtemp, 1.);
 
   // square of abovementioned gradient
@@ -264,15 +264,15 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_and_rhs_sore
 )
 {
   // extract variables and parameters
-  const double& concentration = var_manager()->Conc();
-  const double& diffcoeff = diffmanagerdiffcond_->GetIsotropicDiff(0);
-  const Core::LinAlg::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
-  const double& R = Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
-  const double& soret = diff_manager()->GetSoret();
-  const double& temperature = my::scatravarmanager_->Phinp(0);
+  const double& concentration = var_manager()->conc();
+  const double& diffcoeff = diffmanagerdiffcond_->get_isotropic_diff(0);
+  const Core::LinAlg::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->grad_phi(0);
+  const double& R = Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->gas_constant();
+  const double& soret = diff_manager()->get_soret();
+  const double& temperature = my::scatravarmanager_->phinp(0);
 
   // gradient of concentration plus scaled gradient of temperature
-  Core::LinAlg::Matrix<nsd_, 1> a = var_manager()->GradConc();
+  Core::LinAlg::Matrix<nsd_, 1> a = var_manager()->grad_conc();
   a.update(concentration * soret / temperature, gradtemp, 1.);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
@@ -323,7 +323,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_and_rhs_sore
  | evaluate action for off-diagonal system matrix block      fang 11/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::EvaluateActionOD(
+int Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::evaluate_action_od(
     Core::Elements::Element* ele,                     //!< current element
     Teuchos::ParameterList& params,                   //!< parameter list
     Core::FE::Discretization& discretization,         //!< discretization
@@ -349,8 +349,8 @@ int Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::EvaluateActionOD(
     default:
     {
       // call base class routine
-      my::EvaluateActionOD(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
-          elevec1_epetra, elevec2_epetra, elevec3_epetra);
+      my::evaluate_action_od(ele, params, discretization, action, la, elemat1_epetra,
+          elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
       break;
     }
@@ -374,7 +374,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::sysmat_od_thermo_scat
   Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     // evaluate shape functions, their derivatives, and domain integration factor at current
     // integration point
@@ -390,10 +390,10 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::sysmat_od_thermo_scat
 
     // provide element matrix with linearizations of source terms in discrete thermo residuals
     // w.r.t. scatra dofs
-    if (ele->Material()->MaterialType() == Core::Materials::m_soret)
-      mystielch::calc_mat_source_od(emat, my::scatraparatimint_->TimeFac() * fac);
-    else if (ele->Material()->MaterialType() == Core::Materials::m_th_fourier_iso)
-      calc_mat_joule_solid_od(emat, my::scatraparatimint_->TimeFac() * fac);
+    if (ele->material()->material_type() == Core::Materials::m_soret)
+      mystielch::calc_mat_source_od(emat, my::scatraparatimint_->time_fac() * fac);
+    else if (ele->material()->material_type() == Core::Materials::m_th_fourier_iso)
+      calc_mat_joule_solid_od(emat, my::scatraparatimint_->time_fac() * fac);
   }
 }
 
@@ -409,18 +409,18 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_joule_od(
 )
 {
   // extract variables and parameters
-  const double& concentration = var_manager()->Conc();
-  const Core::LinAlg::Matrix<nsd_, 1>& gradconc = var_manager()->GradConc();
-  const Core::LinAlg::Matrix<nsd_, 1>& gradpot = var_manager()->GradPot();
-  const Core::LinAlg::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
+  const double& concentration = var_manager()->conc();
+  const Core::LinAlg::Matrix<nsd_, 1>& gradconc = var_manager()->grad_conc();
+  const Core::LinAlg::Matrix<nsd_, 1>& gradpot = var_manager()->grad_pot();
+  const Core::LinAlg::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->grad_phi(0);
   const double invfval =
-      1. / (diffmanagerdiffcond_->GetValence(0) *
-               Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday());
-  const double& kappa = diffmanagerdiffcond_->GetCond();
-  const double& kappaderiv = diffmanagerdiffcond_->GetConcDerivCond(0);
-  const double& R = Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
-  const double& t = diffmanagerdiffcond_->GetTransNum(0);
-  const double& temperature = my::scatravarmanager_->Phinp(0);
+      1. / (diffmanagerdiffcond_->get_valence(0) *
+               Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday());
+  const double& kappa = diffmanagerdiffcond_->get_cond();
+  const double& kappaderiv = diffmanagerdiffcond_->get_conc_deriv_cond(0);
+  const double& R = Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->gas_constant();
+  const double& t = diffmanagerdiffcond_->get_trans_num(0);
+  const double& temperature = my::scatravarmanager_->phinp(0);
 
   // current density
   Core::LinAlg::Matrix<nsd_, 1> i = gradpot;
@@ -431,7 +431,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_joule_od(
   // derivative of current density w.r.t. concentration
   Core::LinAlg::Matrix<nsd_, 1> di_dc = gradpot;
   di_dc.update(kappaderiv * (1 - t) * invfval * 2. * R * temperature / concentration -
-                   kappa * diffmanagerdiffcond_->GetDerivTransNum(0, 0) * invfval * 2. * R *
+                   kappa * diffmanagerdiffcond_->get_deriv_trans_num(0, 0) * invfval * 2. * R *
                        temperature / concentration -
                    kappa * (1 - t) * invfval * 2. * R * temperature / pow(concentration, 2),
       gradconc, kappaderiv * invfval * R * log(concentration) + kappa * invfval * R / concentration,
@@ -489,7 +489,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_joule_solid_
     Core::LinAlg::SerialDenseMatrix& emat, const double& timefacfac)
 {
   // extract variables and parameters
-  const Core::LinAlg::Matrix<nsd_, 1>& gradpot = var_manager()->GradPot();
+  const Core::LinAlg::Matrix<nsd_, 1>& gradpot = var_manager()->grad_pot();
   const double gradpot2 = gradpot.dot(gradpot);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
@@ -502,12 +502,12 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_joule_solid_
 
       // linearizations of Joule's heat term in thermo residuals w.r.t. concentration dofs (in case
       // conductivity is a function of the concentration)
-      emat(vi, ui * 2) -= timefacfac * my::funct_(vi) * diffmanagerdiffcond_->GetConcDerivCond(0) *
-                          gradpot2 * my::funct_(ui);
+      emat(vi, ui * 2) -= timefacfac * my::funct_(vi) *
+                          diffmanagerdiffcond_->get_conc_deriv_cond(0) * gradpot2 * my::funct_(ui);
 
       // linearizations of Joule's heat term in thermo residuals w.r.t. electric potential dofs
       emat(vi, ui * 2 + 1) -=
-          timefacfac * my::funct_(vi) * 2.0 * diffmanagerdiffcond_->GetCond() * laplawfrhs_gradpot;
+          timefacfac * my::funct_(vi) * 2.0 * diffmanagerdiffcond_->get_cond() * laplawfrhs_gradpot;
     }
   }
 }
@@ -524,16 +524,16 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_mixing_od(
 )
 {
   // extract variables and parameters
-  const double& concentration = var_manager()->Conc();
-  const double& diffcoeff = diffmanagerdiffcond_->GetIsotropicDiff(0);
-  const Core::LinAlg::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
-  const double& soret = diff_manager()->GetSoret();
-  const double& temperature = my::scatravarmanager_->Phinp(0);
+  const double& concentration = var_manager()->conc();
+  const double& diffcoeff = diffmanagerdiffcond_->get_isotropic_diff(0);
+  const Core::LinAlg::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->grad_phi(0);
+  const double& soret = diff_manager()->get_soret();
+  const double& temperature = my::scatravarmanager_->phinp(0);
   const double gasconstant =
-      Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
+      Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->gas_constant();
 
   // gradient of concentration plus scaled gradient of temperature
-  Core::LinAlg::Matrix<nsd_, 1> a = var_manager()->GradConc();
+  Core::LinAlg::Matrix<nsd_, 1> a = var_manager()->grad_conc();
   a.update(concentration * soret / temperature, gradtemp, 1.);
 
   // square of abovementioned gradient
@@ -578,20 +578,20 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_soret_od(
 )
 {
   // extract variables and parameters
-  const double& concentration = var_manager()->Conc();
-  const double& diffcoeff = diffmanagerdiffcond_->GetIsotropicDiff(0);
+  const double& concentration = var_manager()->conc();
+  const double& diffcoeff = diffmanagerdiffcond_->get_isotropic_diff(0);
   const double& diffcoeffderiv = diffmanagerdiffcond_->get_conc_deriv_iso_diff_coef(0, 0);
-  const Core::LinAlg::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
-  const double& soret = diff_manager()->GetSoret();
-  const double& temperature = my::scatravarmanager_->Phinp(0);
+  const Core::LinAlg::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->grad_phi(0);
+  const double& soret = diff_manager()->get_soret();
+  const double& temperature = my::scatravarmanager_->phinp(0);
   const double gasconstant =
-      Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
+      Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->gas_constant();
 
   // square of temperature gradient
   const double gradtemp2 = gradtemp.dot(gradtemp);
 
   // gradient of concentration plus scaled gradient of temperature
-  Core::LinAlg::Matrix<nsd_, 1> a = var_manager()->GradConc();
+  Core::LinAlg::Matrix<nsd_, 1> a = var_manager()->grad_conc();
   a.update(concentration * soret / temperature, gradtemp, 1.);
 
   // abovementioned gradient times temperature gradient
@@ -660,27 +660,28 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::get_material_params(
     std::vector<double>& densam, double& visc, const int iquad)
 {
   // get parameters of primary, thermal material
-  Teuchos::RCP<const Core::Mat::Material> material = ele->Material();
-  if (material->MaterialType() == Core::Materials::m_soret)
+  Teuchos::RCP<const Core::Mat::Material> material = ele->material();
+  if (material->material_type() == Core::Materials::m_soret)
     mat_soret(material, densn[0], densnp[0], densam[0]);
-  else if (material->MaterialType() == Core::Materials::m_th_fourier_iso)
+  else if (material->material_type() == Core::Materials::m_th_fourier_iso)
     mat_fourier(material, densn[0], densnp[0], densam[0]);
   else
     FOUR_C_THROW("Invalid thermal material!");
 
   // get parameters of secondary, scatra material
-  material = ele->Material(1);
-  if (material->MaterialType() == Core::Materials::m_elchmat)
+  material = ele->material(1);
+  if (material->material_type() == Core::Materials::m_elchmat)
   {
     // pre calculate RT and F^2/(RT)
-    const double rt = Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant() *
-                      var_manager()->Phinp(0);
+    const double rt =
+        Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->gas_constant() *
+        var_manager()->phinp(0);
     const double ffrt =
-        std::pow(Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday(), 2) / rt;
+        std::pow(Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday(), 2) / rt;
 
-    std::vector<double> concentrations(1, var_manager()->Conc());
+    std::vector<double> concentrations(1, var_manager()->conc());
     Inpar::ElCh::DiffCondMat dummy(Inpar::ElCh::diffcondmat_undefined);
-    utils_->MatElchMat(material, concentrations, var_manager()->Phinp(0),
+    utils_->mat_elch_mat(material, concentrations, var_manager()->phinp(0),
         Inpar::ElCh::equpot_undefined, ffrt, diffmanagerdiffcond_, dummy);
   }
   else
@@ -701,9 +702,9 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::mat_soret(
   // extract material parameters from Soret material
   const Teuchos::RCP<const Mat::Soret> matsoret =
       Teuchos::rcp_static_cast<const Mat::Soret>(material);
-  densn = densnp = densam = matsoret->Capacity();
-  diff_manager()->SetIsotropicDiff(matsoret->Conductivity(), 0);
-  diff_manager()->SetSoret(matsoret->SoretCoefficient());
+  densn = densnp = densam = matsoret->capacity();
+  diff_manager()->set_isotropic_diff(matsoret->conductivity(), 0);
+  diff_manager()->set_soret(matsoret->soret_coefficient());
 }  // Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::mat_soret
 
 /*----------------------------------------------------------------------*
@@ -719,8 +720,8 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::mat_fourier(
   // extract material parameters from Soret material
   const Teuchos::RCP<const Mat::FourierIso> matfourier =
       Teuchos::rcp_static_cast<const Mat::FourierIso>(material);
-  densn = densnp = densam = matfourier->Capacity();
-  diff_manager()->SetIsotropicDiff(matfourier->Conductivity(), 0);
+  densn = densnp = densam = matfourier->capacity();
+  diff_manager()->set_isotropic_diff(matfourier->conductivity(), 0);
 }  // Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::mat_soret
 
 
@@ -750,7 +751,7 @@ Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::ScaTraEleCalcSTIDiffCond(
       diffmanagerdiffcond_(Teuchos::rcp(new ScaTraEleDiffManagerElchDiffCond(my::numscal_))),
 
       // utility class supporting element evaluation for diffusion-conduction formulation
-      utils_(Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::Instance(
+      utils_(Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::instance(
           numdofpernode, numscal, disname))
 {
   // safety check

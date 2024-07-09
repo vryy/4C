@@ -163,47 +163,47 @@ namespace Core::LinAlg
       \param access how to treat this assignment: Copy or View
       \param mat matrix to assign from
      */
-    void Assign(DataAccess access, const SparseMatrix& mat);
+    void assign(DataAccess access, const SparseMatrix& mat);
 
     /** \name FE methods */
     //@{
 
     /// set all matrix entries to zero
-    void Zero() override;
+    void zero() override;
 
     /// throw away the matrix and its graph and start anew
     void reset() override;
 
     /// destroy the underlying Epetra objects
-    virtual bool Destroy(bool throw_exception = true);
+    virtual bool destroy(bool throw_exception = true);
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
-    void Assemble(int eid, const std::vector<int>& lmstride,
+    void assemble(int eid, const std::vector<int>& lmstride,
         const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lm,
         const std::vector<int>& lmowner) override
     {
-      Assemble(eid, lmstride, Aele, lm, lmowner, lm);
+      assemble(eid, lmstride, Aele, lm, lmowner, lm);
     }
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
-    virtual void Assemble(int eid, const Core::LinAlg::SerialDenseMatrix& Aele,
+    virtual void assemble(int eid, const Core::LinAlg::SerialDenseMatrix& Aele,
         const std::vector<int>& lm, const std::vector<int>& lmowner)
     {
-      Assemble(eid, Aele, lm, lmowner, lm);
+      assemble(eid, Aele, lm, lmowner, lm);
     }
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
-    void Assemble(int eid, const std::vector<int>& lmstride,
+    void assemble(int eid, const std::vector<int>& lmstride,
         const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol) override;
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
-    void Assemble(int eid, const Core::LinAlg::SerialDenseMatrix& Aele,
+    void assemble(int eid, const Core::LinAlg::SerialDenseMatrix& Aele,
         const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
         const std::vector<int>& lmcol);
 
     /// single value assemble used by BlockSparseMatrix
-    void Assemble(double val, int rgid, int cgid) override;
+    void assemble(double val, int rgid, int cgid) override;
 
 
     /*
@@ -216,7 +216,7 @@ namespace Core::LinAlg
      * \params[in] rgid row position
      * \params[in] cgid column position
      */
-    void SetValue(double val, int rgid, int cgid);
+    void set_value(double val, int rgid, int cgid);
 
     /*!
       Assemble method for an Epetra_FECrsMatrix.
@@ -230,7 +230,7 @@ namespace Core::LinAlg
       values are set. This is needed if the method is called in a loop over
       column elements (which is the standard in 4C) to avoid multiple same entries.
      */
-    void FEAssemble(const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+    void fe_assemble(const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol);
 
     /*!
@@ -241,7 +241,7 @@ namespace Core::LinAlg
       values to their owning procs, such that fill_complete can be safely
       called on this matrix.
      */
-    void FEAssemble(const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+    void fe_assemble(const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmcol);
 
     /*!
@@ -253,7 +253,7 @@ namespace Core::LinAlg
       values to their owning procs, such that fill_complete can be savely
       called on this matrix.
      */
-    void FEAssemble(double val, int rgid, int cgid);
+    void fe_assemble(double val, int rgid, int cgid);
 
 
     /*!
@@ -263,7 +263,7 @@ namespace Core::LinAlg
 
       @param enforce_complete Enforce fill_complete() even though the matrix might already be filled
      */
-    void Complete(bool enforce_complete = false) override;
+    void complete(bool enforce_complete = false) override;
 
     /*!
       The GlobalAssembleMethod() distributes nonlocal values to their owning procs
@@ -272,12 +272,12 @@ namespace Core::LinAlg
 
       @param enforce_complete Enforce fill_complete() even though the matrix might already be filled
      */
-    void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap,
+    void complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap,
         bool enforce_complete = false) override;
 
-    void UnComplete() override;
+    void un_complete() override;
 
-    void ApplyDirichlet(const Epetra_Vector& dbctoggle, bool diagonalblock = true) override;
+    void apply_dirichlet(const Epetra_Vector& dbctoggle, bool diagonalblock = true) override;
 
     /// Apply dirichlet boundary condition to a matrix.
     ///
@@ -288,7 +288,7 @@ namespace Core::LinAlg
     ///  matrix was symmetric. However, the blanking of columns is computationally
     ///  quite expensive, because the matrix is stored in a sparse and distributed
     ///  manner.
-    void ApplyDirichlet(const Epetra_Map& dbctoggle, bool diagonalblock = true) override;
+    void apply_dirichlet(const Epetra_Map& dbctoggle, bool diagonalblock = true) override;
 
     /// Apply dirichlet boundary condition to a matrix using a #trafo matrix
     ///
@@ -316,7 +316,7 @@ namespace Core::LinAlg
       ML requires rows of length 1 to recognize Dirichlet lines. However it is
       an expensive operation to apply Dirichlet conditions in this case.
      */
-    bool ExplicitDirichlet() const { return explicitdirichlet_; }
+    bool explicit_dirichlet() const { return explicitdirichlet_; }
 
     /// Whether the matrix graph should be saved when the matrix is zeroed
     /*!
@@ -324,10 +324,10 @@ namespace Core::LinAlg
       state. This speeds up assembling but limits assembling to the current
       graph.
      */
-    bool SaveGraph() const { return savegraph_; }
+    bool save_graph() const { return savegraph_; }
 
     /// Return matrix type
-    MatrixType GetMatrixtype() const { return matrixtype_; }
+    MatrixType get_matrixtype() const { return matrixtype_; }
 
     //@}
 
@@ -346,12 +346,12 @@ namespace Core::LinAlg
     /*!
       \note This is an expensive operation!
      */
-    Teuchos::RCP<SparseMatrix> Transpose();
+    Teuchos::RCP<SparseMatrix> transpose();
 
     /// derived
-    int ReplaceRowMap(const Epetra_BlockMap& newmap) override;
+    int replace_row_map(const Epetra_BlockMap& newmap) override;
 
-    using SparseMatrixBase::Add;
+    using SparseMatrixBase::add;
 
     /// Add a (transposed) Epetra_CrsMatrix to another: (*this) = (*this)*scalarB + A(^T)*scalarA
     /*!
@@ -368,11 +368,11 @@ namespace Core::LinAlg
     \param scalarA    (in)     : scaling factor for A
     \param scalarB    (in)     : scaling factor for B
     */
-    void Add(const SparseMatrixBase& A, const bool transposeA, const double scalarA,
+    void add(const SparseMatrixBase& A, const bool transposeA, const double scalarA,
         const double scalarB);
 
     /// Add a (transposed) Epetra_CrsMatrix to another: (*this) = (*this)*scalarB + A(^T)*scalarA
-    void Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
+    void add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
         const double scalarB);
 
     /// Put a Epetra_CrsMatrix (partially) onto another: (*this) = B*scalarB
@@ -387,7 +387,7 @@ namespace Core::LinAlg
     \param scalarA    (in)     : scaling factor for #A
     \param rowmap     (in)     : to put selectively on rows in #rowmap (inactive if ==Teuchos::null)
     */
-    void Put(const Core::LinAlg::SparseMatrix& A, const double scalarA,
+    void put(const Core::LinAlg::SparseMatrix& A, const double scalarA,
         Teuchos::RCP<const Epetra_Map> rowmap);
 
     /// Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
@@ -498,14 +498,14 @@ namespace Core::LinAlg
             BlockSparseMatrix.
      */
     template <class Strategy>
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Strategy>> Split(
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Strategy>> split(
         const MultiMapExtractor& domainmaps, const MultiMapExtractor& rangemaps) const;
 
     /// binary dump of matrix for debugging
-    void Dump(const std::string& filename);
+    void dump(const std::string& filename);
 
     /// load a dump
-    void Load(const Epetra_Comm& comm, std::string& filename);
+    void load(const Epetra_Comm& comm, std::string& filename);
 
     //@}
 
@@ -586,7 +586,7 @@ namespace Core::LinAlg
         BlockSparseMatrix.
  */
 template <class Strategy>
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Strategy>> Core::LinAlg::SparseMatrix::Split(
+Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Strategy>> Core::LinAlg::SparseMatrix::split(
     const MultiMapExtractor& domainmaps, const MultiMapExtractor& rangemaps) const
 {
   // initialize resulting BlockSparseMatrix. no need to provide estimates of nonzeros because

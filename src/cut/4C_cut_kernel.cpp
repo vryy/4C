@@ -39,8 +39,8 @@ unsigned Core::Geo::Cut::Kernel::FindNextCornerPoint(const std::vector<Point*>& 
     return j;
   }
 
-  points[i]->Coordinates(x1.data());
-  points[j]->Coordinates(x2.data());
+  points[i]->coordinates(x1.data());
+  points[j]->coordinates(x2.data());
 
   b1.update(1, x2, -1, x1, 0);
 
@@ -57,7 +57,7 @@ unsigned Core::Geo::Cut::Kernel::FindNextCornerPoint(const std::vector<Point*>& 
   {
     i = (i + 1) % pointsize;
     Point* p = points[i];
-    p->Coordinates(x3.data());
+    p->coordinates(x3.data());
 
     b2.update(1, x3, -1, x1, 0);
 
@@ -114,13 +114,13 @@ bool Core::Geo::Cut::Kernel::IsValidQuad4(const std::vector<Point*>& points)
     Core::LinAlg::Matrix<3, 1> xyz;
     for (int i = 0; i < 4; ++i)
     {
-      points[(i + 0) % 4]->Coordinates(&xyze(0, 0));
-      points[(i + 1) % 4]->Coordinates(&xyze(0, 1));
-      points[(i + 2) % 4]->Coordinates(&xyze(0, 2));
-      points[(i + 3) % 4]->Coordinates(&xyz(0, 0));
+      points[(i + 0) % 4]->coordinates(&xyze(0, 0));
+      points[(i + 1) % 4]->coordinates(&xyze(0, 1));
+      points[(i + 2) % 4]->coordinates(&xyze(0, 2));
+      points[(i + 3) % 4]->coordinates(&xyz(0, 0));
 
-      Teuchos::RCP<Position> pos = Position::Create(xyze, xyz, Core::FE::CellType::tri3);
-      if (pos->Compute())
+      Teuchos::RCP<Position> pos = Position::create(xyze, xyz, Core::FE::CellType::tri3);
+      if (pos->compute())
       {
         return false;
       }
@@ -136,9 +136,9 @@ bool Core::Geo::Cut::Kernel::IsOnLine(Point*& pt1, Point*& pt2, Point*& pt3, boo
 {
   Core::LinAlg::Matrix<3, 1> x1, x2, x3;
   Core::LinAlg::Matrix<3, 1> pt1pt2, pt1pt3, cross;
-  pt1->Coordinates(x1.data());
-  pt2->Coordinates(x2.data());
-  pt3->Coordinates(x3.data());
+  pt1->coordinates(x1.data());
+  pt2->coordinates(x2.data());
+  pt3->coordinates(x3.data());
 
   pt1pt2.update(1, x2, -1, x1, 0);
   pt1pt3.update(1, x3, -1, x1, 0);
@@ -198,7 +198,7 @@ std::vector<int> Core::Geo::Cut::Kernel::CheckConvexity(const std::vector<Point*
         {
           Point* ptx = ptlist[i];
           double coox[3];
-          ptx->Coordinates(coox);
+          ptx->coordinates(coox);
           Core::IO::cout << coox[0] << "\t" << coox[1] << "\t" << coox[2] << "\n";
         }
         FOUR_C_THROW("Inline checking for facets not done before calling this");
@@ -238,9 +238,9 @@ std::vector<int> Core::Geo::Cut::Kernel::CheckConvexity(const std::vector<Point*
     if (i == 0) ind = ptlist.size() - 1;
     Point* pt1 = ptlist[ind];
 
-    pt1->Coordinates(x1.data());
-    pt2->Coordinates(x2.data());
-    pt3->Coordinates(x3.data());
+    pt1->coordinates(x1.data());
+    pt2->coordinates(x2.data());
+    pt3->coordinates(x3.data());
 
     xtemp.update(1.0, x2, -1.0, x1);
 
@@ -398,9 +398,9 @@ std::vector<double> Core::Geo::Cut::Kernel::EqnPlane(Point*& pt1, Point*& pt2, P
   std::vector<double> eqn_plane(4);
   double x1[3], x2[3], x3[3];
 
-  pt1->Coordinates(x1);
-  pt2->Coordinates(x2);
-  pt3->Coordinates(x3);
+  pt1->coordinates(x1);
+  pt2->coordinates(x2);
+  pt3->coordinates(x3);
 
   eqn_plane[0] = x1[1] * (x2[2] - x3[2]) + x2[1] * (x3[2] - x1[2]) + x3[1] * (x1[2] - x2[2]);
   eqn_plane[1] = x1[2] * (x2[0] - x3[0]) + x2[2] * (x3[0] - x1[0]) + x3[2] * (x1[0] - x2[0]);
@@ -424,7 +424,7 @@ std::vector<double> Core::Geo::Cut::Kernel::EqnPlaneOfPolygon(const std::vector<
   {
     Point* pt = ptlist[i];
     std::vector<double> coo(3);
-    pt->Coordinates(coo.data());
+    pt->coordinates(coo.data());
     vertices[i] = coo;
   }
 
@@ -478,10 +478,10 @@ bool Core::Geo::Cut::Kernel::PtInsideTriangle(
   if (tri.size() != 3) FOUR_C_THROW("expecting a triangle");
 
   Core::LinAlg::Matrix<3, 1> t1, t2, t3, pt, v0(0.0), v1(0.0), v2(0.0);
-  tri[0]->Coordinates(t1.data());
-  tri[1]->Coordinates(t2.data());
-  tri[2]->Coordinates(t3.data());
-  check->Coordinates(pt.data());
+  tri[0]->coordinates(t1.data());
+  tri[1]->coordinates(t2.data());
+  tri[2]->coordinates(t3.data());
+  check->coordinates(pt.data());
 
   v0.update(1.0, t3, -1.0, t1);
   v1.update(1.0, t2, -1.0, t1);
@@ -549,7 +549,7 @@ bool Core::Geo::Cut::Kernel::PtInsideQuad(std::vector<Point*> quad, Point* check
     {
       Point* pt = quad[i];
       double x[3];
-      pt->Coordinates(x);
+      pt->coordinates(x);
       Core::IO::cout << x[0] << "\t" << x[1] << "\t" << x[2] << "\n";
     }
     FOUR_C_THROW("Quad has more than 1 concave pt --> Selfcut");
@@ -615,8 +615,8 @@ bool Core::Geo::Cut::Kernel::IsClockwiseOrderedPolygon(
   {
     double pt1[3], pt2[3];
 
-    polyPoints[i]->Coordinates(pt1);
-    polyPoints[(i + 1) % numpts]->Coordinates(pt2);
+    polyPoints[i]->coordinates(pt1);
+    polyPoints[(i + 1) % numpts]->coordinates(pt2);
 
     crossProd += (pt2[ind1] - pt1[ind1]) * (pt2[ind2] + pt1[ind2]);
   }
@@ -754,9 +754,9 @@ double Core::Geo::Cut::Kernel::getAreaTri(
   if (poly.size() != 3) FOUR_C_THROW("expecting a triangle");
 
   double p0[3] = {0.0, 0.0, 0.0}, p1[3] = {0.0, 0.0, 0.0}, p2[3] = {0.0, 0.0, 0.0};
-  poly[0]->Coordinates(p0);
-  poly[1]->Coordinates(p1);
-  poly[2]->Coordinates(p2);
+  poly[0]->coordinates(p0);
+  poly[1]->coordinates(p1);
+  poly[2]->coordinates(p2);
 
   return getAreaTri(p0, p1, p2, normalvec);
 }

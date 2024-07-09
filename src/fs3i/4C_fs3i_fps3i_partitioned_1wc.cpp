@@ -71,17 +71,17 @@ void FS3I::PartFpS3I1Wc::setup()
   FS3I::PartFPS3I::setup();
 
   // add proxy of fluid degrees of freedom to scatra discretization
-  if (scatravec_[0]->ScaTraField()->discretization()->AddDofSet(
-          fpsi_->fluid_field()->discretization()->GetDofSetProxy()) != 1)
+  if (scatravec_[0]->sca_tra_field()->discretization()->add_dof_set(
+          fpsi_->fluid_field()->discretization()->get_dof_set_proxy()) != 1)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
 
   // check if scatra field has 2 discretizations, so that coupling is possible
-  if (scatravec_[1]->ScaTraField()->discretization()->AddDofSet(
-          fpsi_->poro_field()->structure_field()->discretization()->GetDofSetProxy()) != 1)
+  if (scatravec_[1]->sca_tra_field()->discretization()->add_dof_set(
+          fpsi_->poro_field()->structure_field()->discretization()->get_dof_set_proxy()) != 1)
     FOUR_C_THROW("unexpected dof sets in structure field");
   // check if scatra field has 3 discretizations, so that coupling is possible
-  if (scatravec_[1]->ScaTraField()->discretization()->AddDofSet(
-          fpsi_->poro_field()->fluid_field()->discretization()->GetDofSetProxy()) != 2)
+  if (scatravec_[1]->sca_tra_field()->discretization()->add_dof_set(
+          fpsi_->poro_field()->fluid_field()->discretization()->get_dof_set_proxy()) != 2)
     FOUR_C_THROW("unexpected dof sets in structure field");
 
   // Note: in the scatra fields we have now the following dof-sets:
@@ -98,26 +98,26 @@ void FS3I::PartFpS3I1Wc::setup()
 /*----------------------------------------------------------------------*
  |  Timeloop                                              hemmler 07/14 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFpS3I1Wc::Timeloop()
+void FS3I::PartFpS3I1Wc::timeloop()
 {
   check_is_init();
   check_is_setup();
 
   // write FPSI solution into scatra field
-  SetFPSISolution();
+  set_fpsi_solution();
 
   // output of initial state
-  ScatraOutput();
+  scatra_output();
 
-  fpsi_->PrepareTimeloop();
+  fpsi_->prepare_timeloop();
 
-  while (NotFinished())
+  while (not_finished())
   {
     increment_time_and_step();
 
-    DoFPSIStep();  // TODO: One could think about skipping the very costly FSI/FPSI calculation for
-                   // the case that it is stationary at some point (Thon)
-    SetFPSISolution();  // write FPSI solution into scatra field
+    do_fpsi_step();  // TODO: One could think about skipping the very costly FSI/FPSI calculation
+                     // for the case that it is stationary at some point (Thon)
+    set_fpsi_solution();  // write FPSI solution into scatra field
     do_scatra_step();
   }
 }
@@ -126,11 +126,11 @@ void FS3I::PartFpS3I1Wc::Timeloop()
 /*----------------------------------------------------------------------*
  |  FPSI step                                             hemmler 07/14 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFpS3I1Wc::DoFPSIStep()
+void FS3I::PartFpS3I1Wc::do_fpsi_step()
 {
   fpsi_->prepare_time_step();
-  fpsi_->SetupNewton();
-  fpsi_->TimeStep();
+  fpsi_->setup_newton();
+  fpsi_->time_step();
 
   constexpr bool force_prepare = false;
   fpsi_->prepare_output(force_prepare);
@@ -144,7 +144,7 @@ void FS3I::PartFpS3I1Wc::DoFPSIStep()
  *----------------------------------------------------------------------*/
 void FS3I::PartFpS3I1Wc::do_scatra_step()
 {
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n***********************\n SCALAR TRANSPORT SOLVER \n***********************\n";
   }
@@ -164,8 +164,8 @@ void FS3I::PartFpS3I1Wc::do_scatra_step()
     if (scatra_convergence_check(itnum)) break;
   }
 
-  UpdateScatraFields();
-  ScatraOutput();
+  update_scatra_fields();
+  scatra_output();
 }
 
 
@@ -181,7 +181,7 @@ void FS3I::PartFpS3I1Wc::prepare_time_step()
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->prepare_time_step();
+    scatra->sca_tra_field()->prepare_time_step();
   }
 }
 
@@ -191,7 +191,7 @@ void FS3I::PartFpS3I1Wc::prepare_time_step()
  *----------------------------------------------------------------------*/
 bool FS3I::PartFpS3I1Wc::scatra_convergence_check(const int itnum)
 {
-  const Teuchos::ParameterList& fs3idyn = Global::Problem::Instance()->FS3IDynamicParams();
+  const Teuchos::ParameterList& fs3idyn = Global::Problem::instance()->f_s3_i_dynamic_params();
   Inpar::ScaTra::SolverType scatra_solvtype =
       Core::UTILS::IntegralValue<Inpar::ScaTra::SolverType>(fs3idyn, "SCATRA_SOLVERTYPE");
 
@@ -205,7 +205,7 @@ bool FS3I::PartFpS3I1Wc::scatra_convergence_check(const int itnum)
     case Inpar::ScaTra::solvertype_linear_incremental:
     {
       // print the screen info
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
       {
         printf("\n+-------------------+-------------------+\n");
         printf("| norm of residual  | norm of increment |\n");
@@ -220,7 +220,7 @@ bool FS3I::PartFpS3I1Wc::scatra_convergence_check(const int itnum)
     {
       // some input parameters for the scatra fields
       const Teuchos::ParameterList& scatradyn =
-          Global::Problem::Instance()->scalar_transport_dynamic_params();
+          Global::Problem::instance()->scalar_transport_dynamic_params();
       const int itemax = scatradyn.sublist("NONLINEAR").get<int>("ITEMAX");
       const double ittol = scatradyn.sublist("NONLINEAR").get<double>("CONVTOL");
       const double abstolres = scatradyn.sublist("NONLINEAR").get<double>("ABSTOLRES");
@@ -228,8 +228,8 @@ bool FS3I::PartFpS3I1Wc::scatra_convergence_check(const int itnum)
       double connorm(0.0);
       // set up vector of absolute concentrations
       Teuchos::RCP<Epetra_Vector> con = Teuchos::rcp(new Epetra_Vector(scatraincrement_->Map()));
-      Teuchos::RCP<const Epetra_Vector> scatra1 = scatravec_[0]->ScaTraField()->Phinp();
-      Teuchos::RCP<const Epetra_Vector> scatra2 = scatravec_[1]->ScaTraField()->Phinp();
+      Teuchos::RCP<const Epetra_Vector> scatra1 = scatravec_[0]->sca_tra_field()->phinp();
+      Teuchos::RCP<const Epetra_Vector> scatra2 = scatravec_[1]->sca_tra_field()->phinp();
       setup_coupled_scatra_vector(con, scatra1, scatra2);
       con->Norm2(&connorm);
 
@@ -237,7 +237,7 @@ bool FS3I::PartFpS3I1Wc::scatra_convergence_check(const int itnum)
       if (connorm < 1e-5) connorm = 1.0;
 
       // print the screen info
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
       {
         printf("|  %3d/%3d   |   %10.3E [L_2 ]  | %10.3E   |   %10.3E [L_2 ]  | %10.3E   |\n",
             itnum, itemax, abstolres, conresnorm, ittol, incconnorm / connorm);
@@ -248,7 +248,7 @@ bool FS3I::PartFpS3I1Wc::scatra_convergence_check(const int itnum)
       // current residual. Norm of residual is just printed for information
       if (conresnorm <= abstolres and incconnorm / connorm <= ittol)
       {
-        if (Comm().MyPID() == 0)
+        if (get_comm().MyPID() == 0)
         {
           // print 'finish line'
           printf(
@@ -261,7 +261,7 @@ bool FS3I::PartFpS3I1Wc::scatra_convergence_check(const int itnum)
       // next timestep...
       else if (itnum == itemax)
       {
-        if (Comm().MyPID() == 0)
+        if (get_comm().MyPID() == 0)
         {
           printf("+---------------------------------------------------------------+\n");
           printf("|            >>>>>> not converged in itemax steps!              |\n");

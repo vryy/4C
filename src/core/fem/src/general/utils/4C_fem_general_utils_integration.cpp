@@ -113,13 +113,13 @@ Core::FE::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D intrule) : 
       // director
       Core::FE::IntPointsAndWeights<1> ip_d(Core::FE::GaussRule1D::line_2point);
 
-      for (int d = 0; d < ip_d.IP().nquad; ++d)
-        for (int p = 0; p < ip_p.IP().nquad; ++p)
+      for (int d = 0; d < ip_d.ip().nquad; ++d)
+        for (int p = 0; p < ip_p.ip().nquad; ++p)
         {
-          qwgt[p + d * ip_p.IP().nquad] = ip_d.IP().qwgt[d] * ip_p.IP().qwgt[p];
-          qxg[p + d * ip_p.IP().nquad][0] = ip_p.IP().qxg[p][0];
-          qxg[p + d * ip_p.IP().nquad][1] = ip_p.IP().qxg[p][1];
-          qxg[p + d * ip_p.IP().nquad][2] = ip_d.IP().qxg[d][0];
+          qwgt[p + d * ip_p.ip().nquad] = ip_d.ip().qwgt[d] * ip_p.ip().qwgt[p];
+          qxg[p + d * ip_p.ip().nquad][0] = ip_p.ip().qxg[p][0];
+          qxg[p + d * ip_p.ip().nquad][1] = ip_p.ip().qxg[p][1];
+          qxg[p + d * ip_p.ip().nquad][2] = ip_d.ip().qxg[d][0];
         }
       break;
     }

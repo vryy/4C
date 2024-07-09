@@ -26,11 +26,11 @@ namespace Core::FE
     class KnotvectorObjectType : public Core::Communication::ParObjectType
     {
      public:
-      std::string Name() const override { return "KnotvectorObjectType"; }
+      std::string name() const override { return "KnotvectorObjectType"; }
 
-      static KnotvectorObjectType& Instance() { return instance_; };
+      static KnotvectorObjectType& instance() { return instance_; };
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
      private:
       static KnotvectorObjectType instance_;
@@ -230,7 +230,7 @@ namespace Core::FE
         \endverbatim
 
       */
-      bool GetEleKnots(std::vector<Core::LinAlg::SerialDenseVector>& eleknots, int gid) const;
+      bool get_ele_knots(std::vector<Core::LinAlg::SerialDenseVector>& eleknots, int gid) const;
 
 
 
@@ -272,8 +272,9 @@ namespace Core::FE
       \param knotvectortype (in) specifies whether we add a periodic or interpolating knot vector
       \param directions_knots (in) the knotvector to be inserted
       */
-      void SetKnots(const int& direction, const int& npatch, const int& degree, const int& numknots,
-          const std::string& knotvectortype, Teuchos::RCP<std::vector<double>> directions_knots);
+      void set_knots(const int& direction, const int& npatch, const int& degree,
+          const int& numknots, const std::string& knotvectortype,
+          Teuchos::RCP<std::vector<double>> directions_knots);
 
       //! @}
 
@@ -290,7 +291,7 @@ namespace Core::FE
 
       \param smallest_gid_in_dis (i) Global ID of the first element to be stored in the offset array
       */
-      void FinishKnots(const int smallest_gid_in_dis);
+      void finish_knots(const int smallest_gid_in_dis);
 
       //! @}
 
@@ -303,9 +304,9 @@ namespace Core::FE
       every class implementing ParObject needs a unique id defined in the
       ParObject header file
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return KnotvectorObjectType::Instance().UniqueParObjectId();
+        return KnotvectorObjectType::instance().unique_par_object_id();
       }
 
       /*!
@@ -333,7 +334,7 @@ namespace Core::FE
 
       \param npatch (in) The number of the patch
       */
-      virtual std::vector<int> ReturnDegree(const int npatch)
+      virtual std::vector<int> return_degree(const int npatch)
       {
         if (!filled_)
         {
@@ -347,7 +348,7 @@ namespace Core::FE
 
       \param npatch (i) The number of the patch
       */
-      virtual std::vector<int> Return_n_x_m_x_l(const int npatch)
+      virtual std::vector<int> return_n_x_m_x_l(const int npatch)
       {
         if (!filled_)
         {
@@ -398,7 +399,7 @@ namespace Core::FE
 
       \return offsets array
       */
-      virtual std::vector<int> ReturnOffsets()
+      virtual std::vector<int> return_offsets()
       {
         if (!filled_)
         {
@@ -414,7 +415,7 @@ namespace Core::FE
 
       \return npatch  --- The number of the patch
       */
-      int ReturnPatchId(const int gid) const
+      int return_patch_id(const int gid) const
       {
         // gid is at least in patch 0 (or higher)
         int npatch = 0;
@@ -439,7 +440,7 @@ namespace Core::FE
 
       \return number of patches
       */
-      virtual int ReturnNP()
+      virtual int return_np()
       {
         if (!filled_)
         {

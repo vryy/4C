@@ -571,7 +571,7 @@ MyocardInada::MyocardInada(const double eps0_deriv_myocard, const std::string ti
  |  Compute Reaction Coefficient for Material and new State Variables   |
  |                                                (public)  ljag  09/13 |
  *----------------------------------------------------------------------*/
-double MyocardInada::ReaCoeff(const double phi, const double dt)
+double MyocardInada::rea_coeff(const double phi, const double dt)
 {
   s0_[0] = phi;
   s_[0] = phi;
@@ -582,17 +582,17 @@ double MyocardInada::ReaCoeff(const double phi, const double dt)
   // s_[17] is achf in component acetylcholine_sensitive_current_achf_gate (dimensionless).
   a_[15] = 120.0 / (1.0 + (exp((-(s0_[0] + 50.0) / 15.0))));
   // r_[17] =  c_[47]*(1.0 - s0_[17]) -  a_[15]*s0_[17];
-  s_[17] = tools_.GatingVarCalc(dt, s0_[17], c_[47] / (a_[15] + c_[47]), 1 / (c_[47] + a_[15]));
+  s_[17] = tools_.gating_var_calc(dt, s0_[17], c_[47] / (a_[15] + c_[47]), 1 / (c_[47] + a_[15]));
 
   // s_[18] is achs in component acetylcholine_sensitive_current_achs_gate (dimensionless).
   a_[16] = 5.82 / (1.0 + (exp((-(s0_[0] + 50.0) / 15.0))));
   // r_[18] =  c_[48]*(1.0 - s0_[18]) -  a_[16]*s0_[18];
-  s_[18] = tools_.GatingVarCalc(dt, s0_[18], c_[48] / (a_[16] + c_[48]), 1 / (c_[48] + a_[16]));
+  s_[18] = tools_.gating_var_calc(dt, s0_[18], c_[48] / (a_[16] + c_[48]), 1 / (c_[48] + a_[16]));
 
   // r_[24] is d/dt f_TMM in component intracellular_calcium_concentration (dimensionless).
   a_[18] = 2277.0 * 2.5 * ((1.0 - s0_[23]) - s0_[24]) - 751.0 * s0_[24];
   // r_[24] = a_[18];
-  s_[24] = tools_.GatingVarCalc(dt, s0_[24],
+  s_[24] = tools_.gating_var_calc(dt, s0_[24],
       2277.0 * 2.5 * (1.0 - s0_[23]) / (2277.0 * 2.5 * (1.0 - s0_[23]) + 751.0),
       1.0 / (2277.0 * 2.5 * (1.0 - s0_[23]) + 751.0));
 
@@ -603,50 +603,50 @@ double MyocardInada::ReaCoeff(const double phi, const double dt)
                          13.56))));
   a_[19] = 0.25 + 2.0 * (exp((-(pow((s0_[0] + 70.0), 2.0)) / 500.0)));
   // r_[1] = (a_[0] - s0_[1])/a_[19];
-  s_[1] = tools_.GatingVarCalc(dt, s0_[1], a_[0], a_[19]);
+  s_[1] = tools_.gating_var_calc(dt, s0_[1], a_[0], a_[19]);
 
   // s_[2] is paf in component rapid_delayed_rectifier_potassium_current_paf_gate (dimensionless).
   a_[1] = 1.0 / (1.0 + (exp(((s0_[0] + 10.22) / -8.5))));
   a_[20] = 1.0 / (17.0 * (exp((0.0398 * s0_[0]))) + 0.211 * (exp((-0.051 * s0_[0]))));
   // r_[2] = (a_[1] - s0_[2])/a_[20];
-  s_[2] = tools_.GatingVarCalc(dt, s0_[2], a_[1], a_[20]);
+  s_[2] = tools_.gating_var_calc(dt, s0_[2], a_[1], a_[20]);
 
   // s_[3] is pas in component rapid_delayed_rectifier_potassium_current_pas_gate (dimensionless).
   a_[2] = 1.0 / (1.0 + (exp(((s0_[0] + 10.22) / -8.5))));
   a_[21] = 0.33581 + 0.90673 * (exp((-(pow((s0_[0] + 10.0), 2.0)) / 988.05)));
   // r_[3] = (a_[2] - s0_[3])/a_[21];
-  s_[3] = tools_.GatingVarCalc(dt, s0_[3], a_[2], a_[21]);
+  s_[3] = tools_.gating_var_calc(dt, s0_[3], a_[2], a_[21]);
 
   // s_[10] is f in component L_type_calcium_current_f_gate (dimensionless).
   a_[8] = 1.0 / (1.0 + (exp(((s0_[0] - (-24.0 + c_[40])) / 6.31))));
   a_[27] = 0.01 + 0.1539 * (exp((-(pow((s0_[0] + 40.0), 2.0)) / 185.670)));
   // r_[10] = (a_[8] - s0_[10])/a_[27];
-  s_[10] = tools_.GatingVarCalc(dt, s0_[10], a_[8], a_[27]);
+  s_[10] = tools_.gating_var_calc(dt, s0_[10], a_[8], a_[27]);
 
   // s_[11] is f2 in component L_type_calcium_current_f2_gate (dimensionless).
   a_[9] = 1.0 / (1.0 + (exp(((s0_[0] - (-24.0 + c_[41])) / 6.31))));
   a_[28] = 0.06 + 0.48076 * 2.25 * (exp((-(pow((s0_[0] - -40.0), 2.0)) / 138.04)));
   // r_[11] = (a_[9] - s0_[11])/a_[28];
-  s_[11] = tools_.GatingVarCalc(dt, s0_[11], a_[9], a_[28]);
+  s_[11] = tools_.gating_var_calc(dt, s0_[11], a_[9], a_[28]);
 
   // s_[12] is r in component transient_outward_potassium_current_r_gate (dimensionless).
   a_[29] = 0.000596 + 0.003118 / (1.037 * (exp((0.09 * (s0_[0] + 30.61)))) +
                                      0.396 * (exp((-0.12 * (s0_[0] + 23.84)))));
   a_[10] = 1.0 / (1.0 + (exp(((s0_[0] - 7.44) / -16.4))));
   // r_[12] = (a_[10] - s0_[12])/a_[29];
-  s_[12] = tools_.GatingVarCalc(dt, s0_[12], a_[10], a_[29]);
+  s_[12] = tools_.gating_var_calc(dt, s0_[12], a_[10], a_[29]);
 
   // s_[13] is q_fast in component transient_outward_potassium_current_qfast_gate (dimensionless).
   a_[30] = 0.01266 + 4.72716 / (1.0 + (exp(((s0_[0] + 154.500) / 23.96))));
   a_[11] = 1.0 / (1.0 + (exp(((s0_[0] + 33.8) / 6.12))));
   // r_[13] = (a_[11] - s0_[13])/a_[30];
-  s_[13] = tools_.GatingVarCalc(dt, s0_[13], a_[11], a_[30]);
+  s_[13] = tools_.gating_var_calc(dt, s0_[13], a_[11], a_[30]);
 
   // s_[14] is q_slow in component transient_outward_potassium_current_qslow_gate (dimensionless).
   a_[31] = 0.100000 + 4.0 * (exp((-(pow((s0_[0] + 65.0), 2.0)) / 500.0)));
   a_[12] = 1.0 / (1.0 + (exp(((s0_[0] + 33.8) / 6.12))));
   // r_[14] = (a_[12] - s0_[14])/a_[31];
-  s_[14] = tools_.GatingVarCalc(dt, s0_[14], a_[12], a_[31]);
+  s_[14] = tools_.gating_var_calc(dt, s0_[14], a_[12], a_[31]);
 
   //
   a_[4] = s0_[0] + 44.4000;
@@ -654,7 +654,7 @@ double MyocardInada::ReaCoeff(const double phi, const double dt)
                                    : (-460.0 * a_[4]) / ((exp((a_[4] / -12.6730))) - 1.0));
   a_[36] = 18400.0 * (exp((a_[4] / -12.6730)));
   // r_[6] =  a_[23]*(1.0 - s0_[6]) -  a_[36]*s0_[6];
-  s_[6] = tools_.GatingVarCalc(dt, s0_[6], a_[23] / (a_[23] + a_[36]), 1 / (a_[23] + a_[36]));
+  s_[6] = tools_.gating_var_calc(dt, s0_[6], a_[23] / (a_[23] + a_[36]), 1 / (a_[23] + a_[36]));
 
   // s_[6] is m in component fast_sodium_current_m_gate (dimensionless).
   a_[3] = (1.0 / (1.0 + (exp(((s0_[0] + 4.90000) / 15.1400))))) *
@@ -663,7 +663,7 @@ double MyocardInada::ReaCoeff(const double phi, const double dt)
   a_[35] = 603.600 * (exp((0.00942000 * s0_[0])));
   a_[43] = 1.0 / (a_[22] + a_[35]);
   // r_[4] = (a_[3] - s0_[4])/a_[43];
-  s_[4] = tools_.GatingVarCalc(dt, s0_[4], a_[3], a_[43]);
+  s_[4] = tools_.gating_var_calc(dt, s0_[4], a_[3], a_[43]);
 
   // s_[5] is Casub in component intracellular_calcium_concentration (millimolar).
   a_[5] = 44.9000 * (exp(((s0_[0] + 66.9000) / -5.57000)));
@@ -671,7 +671,7 @@ double MyocardInada::ReaCoeff(const double phi, const double dt)
   a_[37] = a_[5] / (a_[5] + a_[24]);
   a_[44] = 0.0300000 / (1.0 + (exp(((s0_[0] + 40.0) / 6.0)))) + 0.000350000;
   // r_[7] = (a_[37] - s0_[7])/a_[44];
-  s_[7] = tools_.GatingVarCalc(dt, s0_[7], a_[37], a_[44]);
+  s_[7] = tools_.gating_var_calc(dt, s0_[7], a_[37], a_[44]);
 
   // s_[8] is h2 in component fast_sodium_current_h2_gate (dimensionless).
   a_[6] = 44.9000 * (exp(((s0_[0] + 66.9000) / -5.57000)));
@@ -679,7 +679,7 @@ double MyocardInada::ReaCoeff(const double phi, const double dt)
   a_[38] = a_[6] / (a_[6] + a_[25]);
   a_[45] = 0.120000 / (1.0 + (exp(((s0_[0] + 60.0) / 2.0)))) + 0.00295000;
   // r_[8] = (a_[38] - s0_[8])/a_[45];
-  s_[8] = tools_.GatingVarCalc(dt, s0_[8], a_[38], a_[45]);
+  s_[8] = tools_.gating_var_calc(dt, s0_[8], a_[38], a_[45]);
 
   // s_[9] is d in component L_type_calcium_current_d_gate (dimensionless).
   a_[39] = 1.0 / (1.0 + (exp(((s0_[0] - (-3.20000 + c_[38])) / c_[39]))));
@@ -688,7 +688,7 @@ double MyocardInada::ReaCoeff(const double phi, const double dt)
   a_[26] = (10.5200 * (s0_[0] - 5.0)) / ((exp((0.400000 * (s0_[0] - 5.0)))) - 1.0);
   a_[46] = 1.0 / (a_[7] + a_[26]);
   // r_[9] = (a_[39] - s0_[9])/a_[46];
-  s_[9] = tools_.GatingVarCalc(dt, s0_[9], a_[39], a_[46]);
+  s_[9] = tools_.gating_var_calc(dt, s0_[9], a_[39], a_[46]);
 
   // s_[15] is qa in component sustained_outward_potassium_current_qa_gate (dimensionless).
   a_[32] = 1.0 / (0.150000 * (exp((-s0_[0] / 11.0))) + 0.200000 * (exp((-s0_[0] / 700.0))));
@@ -696,7 +696,7 @@ double MyocardInada::ReaCoeff(const double phi, const double dt)
   a_[47] = 0.00100000 / (a_[32] + a_[40]);
   a_[13] = 1.0 / (1.0 + (exp(((s0_[0] - -49.1000) / -8.98000))));
   // r_[15] = (a_[13] - s0_[15])/a_[47];
-  s_[15] = tools_.GatingVarCalc(dt, s0_[15], a_[13], a_[47]);
+  s_[15] = tools_.gating_var_calc(dt, s0_[15], a_[13], a_[47]);
 
   // s_[16] is qi in component sustained_outward_potassium_current_qi_gate (dimensionless).
   a_[14] = 0.150400 / (3100.0 * (exp((s0_[0] / 13.0))) + 700.0 * (exp((s0_[0] / 70.0))));
@@ -705,7 +705,7 @@ double MyocardInada::ReaCoeff(const double phi, const double dt)
   a_[48] = 0.00100000 / (a_[14] + a_[33]);
   a_[41] = a_[14] / (a_[14] + a_[33]);
   // r_[16] = (a_[41] - s0_[16])/a_[48];
-  s_[16] = tools_.GatingVarCalc(dt, s0_[16], a_[41], a_[48]);
+  s_[16] = tools_.gating_var_calc(dt, s0_[16], a_[41], a_[48]);
 
   // Compute membrane currents
   // -------------------------
@@ -772,18 +772,18 @@ double MyocardInada::ReaCoeff(const double phi, const double dt)
   a_[74] = (s0_[20] - s0_[21]) / c_[52];
   // r_[20] = a_[73] - ( a_[74]*c_[56])/c_[55];
   double up_inf = (s0_[21] + a_[73] * c_[52] * c_[55] / c_[56]);
-  s_[20] = tools_.GatingVarCalc(dt, s0_[20], up_inf, c_[52] * c_[55] / c_[56]);
+  s_[20] = tools_.gating_var_calc(dt, s0_[20], up_inf, c_[52] * c_[55] / c_[56]);
 
   // s_[22] is f_TC in component intracellular_calcium_concentration (dimensionless).
   a_[75] = 88800.0 * s0_[19] * (1.0 - s0_[22]) - 446.0 * s0_[22];
   // r_[22] = a_[75];
-  s_[22] = tools_.GatingVarCalc(dt, s0_[22], 88800.0 * s0_[19] / (88800.0 * s0_[19] + 446.0),
+  s_[22] = tools_.gating_var_calc(dt, s0_[22], 88800.0 * s0_[19] / (88800.0 * s0_[19] + 446.0),
       1.0 / (88800.0 * s0_[19] + 446.0));
 
   // s_[23] is f_TMC in component intracellular_calcium_concentration (dimensionless).
   a_[77] = 227700.0 * s0_[19] * ((1.0 - s0_[23]) - s0_[24]) - 7.51 * s0_[23];
   r_[23] = a_[77];
-  s_[23] = tools_.GatingVarCalc(dt, s0_[23],
+  s_[23] = tools_.gating_var_calc(dt, s0_[23],
       227700.0 * s0_[19] * (1 - s0_[24]) / (227700.0 * s0_[19] * (1 - s0_[24]) + 7.51),
       1.0 / (227700.0 * s0_[19] * (1 - s0_[24]) + 7.51));
 
@@ -794,29 +794,29 @@ double MyocardInada::ReaCoeff(const double phi, const double dt)
   double tau_Carel = 1.0 / c_[52] + c_[50] / (1.0 + (pow((0.0012 / s0_[5]), 2.0)));
   double Carel_inf =
       s0_[20] / c_[52] + c_[50] * s0_[5] / (1.0 + (pow((0.0012 / s0_[5]), 2.0))) - 10.0 * a_[80];
-  s_[21] = tools_.GatingVarCalc(dt, s0_[21], Carel_inf, tau_Carel);
+  s_[21] = tools_.gating_var_calc(dt, s0_[21], Carel_inf, tau_Carel);
 
   // s_[19] is Cai in component intracellular_calcium_concentration (millimolar).
   a_[72] = (s0_[5] - s0_[19]) / 4.0e-05;
   a_[78] = 227700.0 * s0_[19] * (1.0 - s0_[25]) - 542.0 * s0_[25];
   r_[19] = (a_[72] * c_[57] - a_[73] * c_[55]) / c_[62] -
            (0.045 * a_[78] + 0.031 * a_[75] + 0.062 * a_[77]);
-  s_[19] = tools_.GatingVarCalc(dt, s0_[19], 0, -s0_[19] / r_[19]);
+  s_[19] = tools_.gating_var_calc(dt, s0_[19], 0, -s0_[19] / r_[19]);
 
   // s_[25] is f_CMi in component intracellular_calcium_concentration (dimensionless).
   // r_[25] = a_[78];
-  s_[25] = tools_.GatingVarCalc(dt, s0_[25], 227700.0 * s0_[19] / (227700.0 * s0_[19] + 542.0),
+  s_[25] = tools_.gating_var_calc(dt, s0_[25], 227700.0 * s0_[19] / (227700.0 * s0_[19] + 542.0),
       1.0 / (227700.0 * s0_[19] + 542.0));
 
   // s_[26] is f_CMs in component intracellular_calcium_concentration (dimensionless).
   a_[79] = 227700.0 * s0_[5] * (1.0 - s0_[26]) - 542.0 * s0_[26];
   // r_[26] = a_[79];
-  s_[26] = tools_.GatingVarCalc(dt, s0_[26], 227700.0 * s0_[5] / (227700.0 * s0_[5] + 542.0),
+  s_[26] = tools_.gating_var_calc(dt, s0_[26], 227700.0 * s0_[5] / (227700.0 * s0_[5] + 542.0),
       1.0 / (227700.0 * s0_[5] + 542.0));
 
   // s_[27] is f_CQ in component intracellular_calcium_concentration (dimensionless).
   r_[27] = a_[80];
-  s_[27] = tools_.GatingVarCalc(
+  s_[27] = tools_.gating_var_calc(
       dt, s0_[27], 534.0 * s0_[21] / (534.0 * s0_[21] + 445.0), 1.0 / (534.0 * s0_[21] + 445.0));
 
   // s_[5] is Casub in component intracellular_calcium_concentration (millimolar).
@@ -824,11 +824,11 @@ double MyocardInada::ReaCoeff(const double phi, const double dt)
   r_[5] = (((-(a_[71] - 2.0 * a_[65]) / (2.0 * c_[2]) + a_[76] * c_[56]) / c_[57] - a_[72]) -
               0.045 * a_[79]) -
           (0.031 / 1.2) * a_[81];
-  s_[5] = tools_.GatingVarCalc(dt, s0_[5], 0, -s0_[5] / r_[5]);
+  s_[5] = tools_.gating_var_calc(dt, s0_[5], 0, -s0_[5] / r_[5]);
 
   // s_[28] is f_CSL in component intracellular_calcium_concentration (dimensionless).
   // r_[28] = a_[81];
-  s_[28] = tools_.GatingVarCalc(
+  s_[28] = tools_.gating_var_calc(
       dt, s0_[28], s0_[5] / (s0_[5] + 1.0 / 0.115), 1.0 / (0.115 * s0_[5] + 1.0));
 
   // Update rest of state variables
@@ -855,7 +855,7 @@ int MyocardInada::get_number_of_internal_state_variables() const { return 29; }
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material          cbert 08/13 |
  *----------------------------------------------------------------------*/
-double MyocardInada::GetInternalState(const int k) const
+double MyocardInada::get_internal_state(const int k) const
 {
   double val = 0.0;
   if (k == -1)
@@ -873,7 +873,7 @@ double MyocardInada::GetInternalState(const int k) const
 /*----------------------------------------------------------------------*
  |  set  internal state of the material                     cbert 08/13 |
  *----------------------------------------------------------------------*/
-void MyocardInada::SetInternalState(const int k, const double val)
+void MyocardInada::set_internal_state(const int k, const double val)
 {
   if (k == -1)
   {
@@ -896,7 +896,7 @@ int MyocardInada::get_number_of_ionic_currents() const { return 11; }
 /*----------------------------------------------------------------------*
  |  returns current internal currents          cbert 08/13 |
  *----------------------------------------------------------------------*/
-double MyocardInada::GetIonicCurrents(const int k) const
+double MyocardInada::get_ionic_currents(const int k) const
 {
   double val = 0.0;
   switch (k)

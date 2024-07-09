@@ -72,7 +72,7 @@ namespace Core::UTILS
      * @param argument point to evaluate
      * @return value of @deriv_order derivative of polynomial at @argument
      */
-    [[nodiscard]] double EvaluateDerivative(double argument, int deriv_order) const override;
+    [[nodiscard]] double evaluate_derivative(double argument, int deriv_order) const override;
 
    private:
     //! internal polynomial representation
@@ -106,7 +106,7 @@ namespace Core::UTILS
 
     [[nodiscard]] double evaluate(double scalar) const override;
 
-    [[nodiscard]] double EvaluateDerivative(double scalar, int deriv_order) const override;
+    [[nodiscard]] double evaluate_derivative(double scalar, int deriv_order) const override;
 
    private:
     std::unique_ptr<Core::UTILS::CubicSplineInterpolation> cubic_spline_;

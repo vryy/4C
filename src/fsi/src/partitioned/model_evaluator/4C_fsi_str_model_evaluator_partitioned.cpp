@@ -123,7 +123,7 @@ Teuchos::RCP<const Epetra_Vector> Solid::MODELEVALUATOR::PartitionedFSI::solve_r
       const_cast<Solid::Nln::SOLVER::Generic&>(*(ti_impl->get_nln_solver_ptr()));
 
   // get the solution group
-  ::NOX::Abstract::Group& grp = nlnsolver.SolutionGroup();
+  ::NOX::Abstract::Group& grp = nlnsolver.solution_group();
   NOX::Nln::Group* grp_ptr = dynamic_cast<NOX::Nln::Group*>(&grp);
   if (grp_ptr == nullptr) FOUR_C_THROW("Dynamic cast failed!");
 
@@ -144,8 +144,8 @@ Teuchos::RCP<const Epetra_Vector> Solid::MODELEVALUATOR::PartitionedFSI::solve_r
   grp_ptr->computeJacobian();
 
   // overwrite F with boundary force
-  interface_force_np_ptr_->Scale(-(ti_impl->TimIntParam()));
-  ti_impl->dbc_ptr()->ApplyDirichletToRhs(interface_force_np_ptr_);
+  interface_force_np_ptr_->Scale(-(ti_impl->tim_int_param()));
+  ti_impl->dbc_ptr()->apply_dirichlet_to_rhs(interface_force_np_ptr_);
   Teuchos::RCP<::NOX::Epetra::Vector> nox_force =
       Teuchos::rcp(new ::NOX::Epetra::Vector(interface_force_np_ptr_));
   grp_ptr->set_f(nox_force);
@@ -183,7 +183,7 @@ Teuchos::RCP<const Epetra_Vector> Solid::MODELEVALUATOR::PartitionedFSI::solve_r
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Solid::TimeInt::BaseDataIO& Solid::MODELEVALUATOR::PartitionedFSI::GetInOutput() const
+const Solid::TimeInt::BaseDataIO& Solid::MODELEVALUATOR::PartitionedFSI::get_in_output() const
 {
   check_init();
   return global_in_output();

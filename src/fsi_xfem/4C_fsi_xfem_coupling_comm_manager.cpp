@@ -77,7 +77,7 @@ void XFEM::CouplingCommManager::insert_vector(const int idxA,
   {
     case CouplingCommManager::full_to_full:
     {
-      Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mmeb = GetMapExtractor(idxB);
+      Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mmeb = get_map_extractor(idxB);
       Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::rcp(new Epetra_Vector(*mmeb->Map(1), true));
       insert_vector(idxA, vecA, idxB, tmpvec, CouplingCommManager::full_to_partial, false, scale);
       if (!add)
@@ -88,13 +88,13 @@ void XFEM::CouplingCommManager::insert_vector(const int idxA,
     }
     case CouplingCommManager::full_to_partial:
     {
-      insert_vector(idxA, GetMapExtractor(idxA)->extract_vector(vecA, 1), idxB, vecB,
+      insert_vector(idxA, get_map_extractor(idxA)->extract_vector(vecA, 1), idxB, vecB,
           CouplingCommManager::partial_to_partial, add, scale);
       break;
     }
     case CouplingCommManager::partial_to_full:
     {
-      Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mmeb = GetMapExtractor(idxB);
+      Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mmeb = get_map_extractor(idxB);
       Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::rcp(new Epetra_Vector(*mmeb->Map(1), true));
       insert_vector(
           idxA, vecA, idxB, tmpvec, CouplingCommManager::partial_to_partial, false, scale);
@@ -111,16 +111,16 @@ void XFEM::CouplingCommManager::insert_vector(const int idxA,
       if (idxA < idxB)  // this Coupling Object is directly stored
       {
         if (!add)
-          *vecB = *get_coupling(idxA, idxB)->MasterToSlave(vecA);
+          *vecB = *get_coupling(idxA, idxB)->master_to_slave(vecA);
         else
-          vecB->Update(scale, *get_coupling(idxA, idxB)->MasterToSlave(vecA), 1.0);
+          vecB->Update(scale, *get_coupling(idxA, idxB)->master_to_slave(vecA), 1.0);
       }
       else if (idxA > idxB)  // just the inverse Coupling Object is stored
       {
         if (!add)
-          *vecB = *get_coupling(idxB, idxA)->SlaveToMaster(vecA);
+          *vecB = *get_coupling(idxB, idxA)->slave_to_master(vecA);
         else
-          vecB->Update(scale, *get_coupling(idxB, idxA)->SlaveToMaster(vecA), 1.0);
+          vecB->Update(scale, *get_coupling(idxB, idxA)->slave_to_master(vecA), 1.0);
       }
       else
       {
@@ -166,7 +166,7 @@ void XFEM::CouplingCommManager::insert_vector(const int idxA,
 /*----------------------------------------------------------------------------------------------*
 | //! Insert a Matrix A into Matrix B (choose type of transfer, add or scaling)     ager 03/2016|
 *----------------------------------------------------------------------------------------------*/
-bool XFEM::CouplingCommManager::InsertMatrix(int transform_id, int idxA,
+bool XFEM::CouplingCommManager::insert_matrix(int transform_id, int idxA,
     const Core::LinAlg::SparseMatrix& matA, int idxB, Core::LinAlg::SparseMatrix& matB,
     const CouplingCommManager::MatrixTransferType mttype, double scale, bool exactmatch,
     bool addmatrix)
@@ -177,7 +177,7 @@ bool XFEM::CouplingCommManager::InsertMatrix(int transform_id, int idxA,
     {
       return get_transform(transform_id)
           ->
-          operator()(matA, matA.RangeMap(), matA.DomainMap(), scale, nullptr,
+          operator()(matA, matA.range_map(), matA.domain_map(), scale, nullptr,
               get_coupling_converter(idxA, idxB).getRawPtr(), matB, exactmatch, addmatrix);
       break;
     }
@@ -185,7 +185,7 @@ bool XFEM::CouplingCommManager::InsertMatrix(int transform_id, int idxA,
     {
       return get_transform(transform_id)
           ->
-          operator()(matA, matA.RangeMap(), matA.DomainMap(), scale,
+          operator()(matA, matA.range_map(), matA.domain_map(), scale,
               get_coupling_converter(idxA, idxB).getRawPtr(), nullptr, matB, true, addmatrix);
       break;
     }
@@ -193,7 +193,7 @@ bool XFEM::CouplingCommManager::InsertMatrix(int transform_id, int idxA,
     {
       return get_transform(transform_id)
           ->
-          operator()(matA, matA.RangeMap(), matA.DomainMap(), scale,
+          operator()(matA, matA.range_map(), matA.domain_map(), scale,
               get_coupling_converter(idxA, idxB).getRawPtr(),
               get_coupling_converter(idxA, idxB).getRawPtr(), matB, exactmatch, addmatrix);
       break;
@@ -237,9 +237,9 @@ void XFEM::CouplingCommManager::setup_multi_map_extractors(
     Teuchos::RCP<Core::Conditions::MultiConditionSelector> mcs =
         Teuchos::rcp(new Core::Conditions::MultiConditionSelector());
     mme_[dit->first] = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
-    mcs->AddSelector(Teuchos::rcp(
+    mcs->add_selector(Teuchos::rcp(
         new Core::Conditions::NDimConditionSelector(*dit->second, cond_name_, startdim_, enddim_)));
-    mcs->SetupExtractor(*dit->second, *dit->second->dof_row_map(), *mme_[dit->first]);
+    mcs->setup_extractor(*dit->second, *dit->second->dof_row_map(), *mme_[dit->first]);
   }
 }
 
@@ -262,14 +262,14 @@ void XFEM::CouplingCommManager::setup_full_map_extractors(
     if (static_cast<std::size_t>(dit->first) < dis.size() - 1)
     {
       Teuchos::RCP<Core::Adapter::Coupling> coup = get_coupling(dit->first, dit->first + 1);
-      me->setup(*dit->second->dof_row_map(), coup->MasterDofMap(),
-          Core::LinAlg::SplitMap(*dit->second->dof_row_map(), *coup->MasterDofMap()));
+      me->setup(*dit->second->dof_row_map(), coup->master_dof_map(),
+          Core::LinAlg::SplitMap(*dit->second->dof_row_map(), *coup->master_dof_map()));
     }
     else
     {
       Teuchos::RCP<Core::Adapter::Coupling> coup = get_coupling(dit->first - 1, dit->first);
-      me->setup(*dit->second->dof_row_map(), coup->SlaveDofMap(),
-          Core::LinAlg::SplitMap(*dit->second->dof_row_map(), *coup->SlaveDofMap()));
+      me->setup(*dit->second->dof_row_map(), coup->slave_dof_map(),
+          Core::LinAlg::SplitMap(*dit->second->dof_row_map(), *coup->slave_dof_map()));
     }
     mme_[dit->first] = me;
   }
@@ -341,8 +341,8 @@ void XFEM::CouplingCommManager::setup_full_couplings(
       if (betadis == dis.end()) FOUR_C_THROW("Couldn't find discretization for key %d", idx_b);
 
       coup_[key]->setup_coupling(*(*alphadis).second, *(*betadis).second,
-          *(*alphadis).second->NodeRowMap(), *(*betadis).second->NodeRowMap(), enddim_ - startdim_,
-          false);
+          *(*alphadis).second->node_row_map(), *(*betadis).second->node_row_map(),
+          enddim_ - startdim_, false);
     }
   }
   return;
@@ -442,7 +442,7 @@ Teuchos::RCP<Core::LinAlg::MatrixLogicalSplitAndTransform> XFEM::CouplingCommMan
 /*------------------------------------------------------------------------------------------------*
 | Get Map Extractor Object for idx                                                    ager 03/2016|
 *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MultiMapExtractor> XFEM::CouplingCommManager::GetMapExtractor(int idx)
+Teuchos::RCP<Core::LinAlg::MultiMapExtractor> XFEM::CouplingCommManager::get_map_extractor(int idx)
 {
   std::map<int, Teuchos::RCP<Core::LinAlg::MultiMapExtractor>>::iterator mit = mme_.find(idx);
   if (mit != mme_.end())

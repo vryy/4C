@@ -71,12 +71,12 @@ Core::Geo::Cut::Side* create_quad4(
 void test_hex8_simple()
 {
   Core::Geo::Cut::Options options;
-  options.Init_for_Cuttests();
+  options.init_for_cuttests();
   Core::Geo::Cut::Mesh mesh(options);
   Core::Geo::Cut::Element* e = create_hex8(mesh);
   Core::Geo::Cut::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
 
-  e->Cut(mesh, *(s));
+  e->cut(mesh, *(s));
 
   cutmesh(mesh);
 }
@@ -84,7 +84,7 @@ void test_hex8_simple()
 void test_tet4_simple()
 {
   Core::Geo::Cut::Options options;
-  options.Init_for_Cuttests();
+  options.init_for_cuttests();
   Core::Geo::Cut::Mesh mesh(options);
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
@@ -108,7 +108,7 @@ void test_tet4_simple()
   Core::Geo::Cut::Element* e = create_tet4(mesh, xyze);
   Core::Geo::Cut::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
 
-  e->Cut(mesh, *(s));
+  e->cut(mesh, *(s));
 
   cutmesh(mesh);
 }
@@ -116,7 +116,7 @@ void test_tet4_simple()
 void test_pyramid5_simple()
 {
   Core::Geo::Cut::Options options;
-  options.Init_for_Cuttests();
+  options.init_for_cuttests();
   Core::Geo::Cut::Mesh mesh(options);
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 5);
@@ -144,7 +144,7 @@ void test_pyramid5_simple()
   Core::Geo::Cut::Element* e = create_pyramid5(mesh, xyze);
   Core::Geo::Cut::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
 
-  e->Cut(mesh, *(s));
+  e->cut(mesh, *(s));
 
   cutmesh(mesh);
 }
@@ -152,7 +152,7 @@ void test_pyramid5_simple()
 void test_wedge6_simple()
 {
   Core::Geo::Cut::Options options;
-  options.Init_for_Cuttests();
+  options.init_for_cuttests();
   Core::Geo::Cut::Mesh mesh(options);
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 6);
@@ -184,7 +184,7 @@ void test_wedge6_simple()
   Core::Geo::Cut::Element* e = create_wedge6(mesh, xyze);
   Core::Geo::Cut::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
 
-  e->Cut(mesh, *(s));
+  e->cut(mesh, *(s));
 
   cutmesh(mesh);
 }
@@ -193,12 +193,12 @@ void test_wedge6_simple()
 void test_hex8_fullside()
 {
   Core::Geo::Cut::Options options;
-  options.Init_for_Cuttests();
+  options.init_for_cuttests();
   Core::Geo::Cut::Mesh mesh(options);
   Core::Geo::Cut::Element* e = create_hex8(mesh);
   Core::Geo::Cut::Side* s = create_quad4(mesh, 1, 0, 0);
 
-  e->Cut(mesh, *(s));
+  e->cut(mesh, *(s));
 
   cutmesh(mesh);
 }
@@ -206,12 +206,12 @@ void test_hex8_fullside()
 void test_hex8_diagonal()
 {
   Core::Geo::Cut::Options options;
-  options.Init_for_Cuttests();
+  options.init_for_cuttests();
   Core::Geo::Cut::Mesh mesh(options);
   Core::Geo::Cut::Element* e = create_hex8(mesh);
   Core::Geo::Cut::Side* s = create_quad4(mesh, 0.5, 1, 0);
 
-  e->Cut(mesh, *(s));
+  e->cut(mesh, *(s));
 
   cutmesh(mesh);
 }
@@ -221,8 +221,8 @@ void test_hex8_tet4()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
-  w.CreateTet4Sides();
+  w.create_hex8();
+  w.create_tet4_sides();
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
@@ -244,26 +244,26 @@ void test_hex8_tet4()
   xyze(1, 3) = -0.1;
   xyze(2, 3) = 0.1;
 
-  w.CreateQuad4(xyze);
+  w.create_quad4(xyze);
 
-  w.CutTest_Cut();
+  w.cut_test_cut();
 }
 
 void test_hex8_hex8()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
-  w.CreateHex8Sides(0.5, 0.5, 0.5);
-  w.CutTest_Cut();
+  w.create_hex8();
+  w.create_hex8_sides(0.5, 0.5, 0.5);
+  w.cut_test_cut();
 }
 
 void test_hex8_touch()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
-  w.CreateHex8Sides(1, 0, 0);
+  w.create_hex8();
+  w.create_hex8_sides(1, 0, 0);
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
@@ -285,25 +285,25 @@ void test_hex8_touch()
   xyze(1, 3) = -0.1;
   xyze(2, 3) = 0.1;
 
-  w.CreateQuad4(xyze);
+  w.create_quad4(xyze);
 
-  w.CutTest_Cut();
+  w.cut_test_cut();
 }
 
 void test_hex8_touch2()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
-  w.CreateHex8Sides(1, 0.5, 0.5);
-  w.CutTest_Cut();
+  w.create_hex8();
+  w.create_hex8_sides(1, 0.5, 0.5);
+  w.cut_test_cut();
 }
 
 void test_hex8_schraeg()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
+  w.create_hex8();
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
@@ -323,16 +323,16 @@ void test_hex8_schraeg()
   xyze(1, 3) = 0;
   xyze(2, 3) = 1;
 
-  w.CreateQuad4(xyze);
+  w.create_quad4(xyze);
 
-  w.CutTest_Cut();
+  w.cut_test_cut();
 }
 
 void test_hex8_quad4_woelbung()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
+  w.create_hex8();
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
@@ -352,17 +352,17 @@ void test_hex8_quad4_woelbung()
   xyze(1, 3) = 1.5;
   xyze(2, 3) = 1.5;
 
-  w.CreateQuad4(xyze);
+  w.create_quad4(xyze);
 
-  w.CutTest_Cut();
-  w.AssumeVolumeCells(2);
+  w.cut_test_cut();
+  w.assume_volume_cells(2);
 }
 
 void test_hex8_tet4_touch()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
+  w.create_hex8();
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
@@ -382,7 +382,7 @@ void test_hex8_tet4_touch()
   xyze(1, 3) = 0.5;
   xyze(2, 3) = 0.5;
 
-  w.CreateTet4Sides(xyze);
+  w.create_tet4_sides(xyze);
 
   // add second cut to be able to find nodal positions
 
@@ -402,16 +402,16 @@ void test_hex8_tet4_touch()
   xyze(1, 3) = -0.1;
   xyze(2, 3) = 0.1;
 
-  w.CreateQuad4(xyze);
+  w.create_quad4(xyze);
 
-  w.CutTest_Cut(true, true);  // as cut_sides are just touching!!
+  w.cut_test_cut(true, true);  // as cut_sides are just touching!!
 }
 
 void test_hex8_tet4_touch2()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
+  w.create_hex8();
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
@@ -431,15 +431,15 @@ void test_hex8_tet4_touch2()
   xyze(1, 3) = 0.5;
   xyze(2, 3) = 1.5;
 
-  w.CreateTet4Sides(xyze);
+  w.create_tet4_sides(xyze);
 
-  w.CutTest_Cut(true, true);
+  w.cut_test_cut(true, true);
 }
 
 void test_hex8_mesh()
 {
   Core::Geo::Cut::Options options;
-  options.Init_for_Cuttests();
+  options.init_for_cuttests();
   Core::Geo::Cut::Mesh mesh(options);
 
   create_hex8_mesh(mesh, 10, 10, 10);
@@ -448,7 +448,7 @@ void test_hex8_mesh()
 
   Core::Geo::Cut::plain_element_set done;
   Core::Geo::Cut::plain_element_set elements_done;
-  mesh.Cut(*(s), done, elements_done);
+  mesh.cut(*(s), done, elements_done);
 
   cutmesh(mesh);
 }
@@ -456,14 +456,14 @@ void test_hex8_mesh()
 void test_hex8_double()
 {
   Core::Geo::Cut::Options options;
-  options.Init_for_Cuttests();
+  options.init_for_cuttests();
   Core::Geo::Cut::Mesh mesh(options);
   Core::Geo::Cut::Element* e = create_hex8(mesh);
   Core::Geo::Cut::Side* s1 = create_quad4(mesh, 0.4, 0.1, 0);
   Core::Geo::Cut::Side* s2 = create_quad4(mesh, 0.6, 0.1, 0);
 
-  e->Cut(mesh, *(s1));
-  e->Cut(mesh, *(s2));
+  e->cut(mesh, *(s1));
+  e->cut(mesh, *(s2));
 
   cutmesh(mesh);
 }
@@ -471,7 +471,7 @@ void test_hex8_double()
 void test_hex8_bad1()
 {
   Core::Geo::Cut::Options options;
-  options.Init_for_Cuttests();
+  options.init_for_cuttests();
   Core::Geo::Cut::Mesh mesh(options);
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 8);
@@ -528,7 +528,7 @@ void test_hex8_bad1()
 
   Core::Geo::Cut::Side* quad4 = create_quad4(mesh, xyze);
 
-  e->Cut(mesh, *(quad4));
+  e->cut(mesh, *(quad4));
 
   cutmesh(mesh);
 }
@@ -536,7 +536,7 @@ void test_hex8_bad1()
 void test_hex8_bad2()
 {
   Core::Geo::Cut::Options options;
-  options.Init_for_Cuttests();
+  options.init_for_cuttests();
   Core::Geo::Cut::Mesh mesh(options);
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 8);
@@ -593,7 +593,7 @@ void test_hex8_bad2()
 
   Core::Geo::Cut::Side* quad4 = create_quad4(mesh, xyze);
 
-  e->Cut(mesh, *(quad4));
+  e->cut(mesh, *(quad4));
 
   cutmesh(mesh);
 }
@@ -601,7 +601,7 @@ void test_hex8_bad2()
 void test_hex8_bad3()
 {
   Core::Geo::Cut::Options options;
-  options.Init_for_Cuttests();
+  options.init_for_cuttests();
   Core::Geo::Cut::Mesh mesh(options);
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 8);
@@ -658,7 +658,7 @@ void test_hex8_bad3()
 
   Core::Geo::Cut::Side* quad4 = create_quad4(mesh, xyze);
 
-  e->Cut(mesh, *(quad4));
+  e->cut(mesh, *(quad4));
 
   cutmesh(mesh);
 }
@@ -674,7 +674,7 @@ void test_hex8_bad3()
 void test_hex8_bad4()
 {
   Core::Geo::Cut::Options options;
-  options.Init_for_Cuttests();
+  options.init_for_cuttests();
   Core::Geo::Cut::Mesh mesh(options);
 
   double hex8_xyz[24] = {0.944444, 0, 0.05, 0.944444, 0, 6.55604e-19, 0.944444, 0.0555556,
@@ -693,7 +693,7 @@ void test_hex8_bad4()
 
   Core::Geo::Cut::Side* quad4 = create_quad4(mesh, xyze);
 
-  e->Cut(mesh, *(quad4));
+  e->cut(mesh, *(quad4));
 
   cutmesh(mesh);
 }
@@ -702,7 +702,7 @@ void test_hex8_wedge6()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
+  w.create_hex8();
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 6);
 
@@ -730,16 +730,16 @@ void test_hex8_wedge6()
   xyze(1, 5) = 0.5;
   xyze(2, 5) = 1.5;
 
-  w.CreateWedge6Sides(xyze);
+  w.create_wedge6_sides(xyze);
 
-  w.CutTest_Cut();
+  w.cut_test_cut();
 }
 
 void test_hex8_quad4_touch()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
+  w.create_hex8();
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
@@ -759,16 +759,16 @@ void test_hex8_quad4_touch()
   xyze(1, 3) = 0;
   xyze(2, 3) = 1.5;
 
-  w.CreateQuad4(xyze);
+  w.create_quad4(xyze);
 
-  w.CutTest_Cut(true, true);
+  w.cut_test_cut(true, true);
 }
 
 void test_hex8_quad4_touch2()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
+  w.create_hex8();
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
@@ -788,16 +788,16 @@ void test_hex8_quad4_touch2()
   xyze(1, 3) = 0.5;
   xyze(2, 3) = 1.5;
 
-  w.CreateQuad4(xyze);
+  w.create_quad4(xyze);
 
-  w.CutTest_Cut(true, true);
+  w.cut_test_cut(true, true);
 }
 
 void test_hex8_quad4_touch3()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
+  w.create_hex8();
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
@@ -817,16 +817,16 @@ void test_hex8_quad4_touch3()
   xyze(1, 3) = 0.5;
   xyze(2, 3) = 1.5;
 
-  w.CreateQuad4(xyze);
+  w.create_quad4(xyze);
 
-  w.CutTest_Cut(true, true);
+  w.cut_test_cut(true, true);
 }
 
 void test_hex8_quad4_cut()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
+  w.create_hex8();
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
@@ -846,27 +846,27 @@ void test_hex8_quad4_cut()
   xyze(1, 3) = 0;
   xyze(2, 3) = 1;
 
-  w.CreateQuad4(xyze);
+  w.create_quad4(xyze);
 
-  w.CutTest_Cut();
+  w.cut_test_cut();
 }
 
 void test_hex8_quad4_gedreht()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
+  w.create_hex8();
 
-  w.CreateQuad4Mesh(2, 2);
+  w.create_quad4_mesh(2, 2);
 
-  w.CutTest_Cut();
+  w.cut_test_cut();
 }
 
 void test_hex8_hex8_durchstoss()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
+  w.create_hex8();
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
@@ -902,7 +902,7 @@ void test_hex8_hex8_durchstoss()
   xyze(1, 7) = 0.2;
   xyze(2, 7) = 0.8;
 
-  w.CreateHex8Sides(xyze);
+  w.create_hex8_sides(xyze);
 
   // add second cut to be able to find nodal positions
 
@@ -922,16 +922,16 @@ void test_hex8_hex8_durchstoss()
   xyze(1, 3) = -0.1;
   xyze(2, 3) = 0.1;
 
-  w.CreateQuad4(xyze);
+  w.create_quad4(xyze);
 
-  w.CutTest_Cut();
+  w.cut_test_cut();
 }
 
 void test_hex8_hex8_onside()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
+  w.create_hex8();
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
@@ -967,7 +967,7 @@ void test_hex8_hex8_onside()
   xyze(1, 7) = 0.9;
   xyze(2, 7) = 0.8;
 
-  w.CreateHex8Sides(xyze);
+  w.create_hex8_sides(xyze);
 
   // add second cut to be able to find nodal positions
 
@@ -988,8 +988,8 @@ void test_hex8_hex8_onside()
   xyze(2, 3) = 0.1;
 
 
-  w.CreateQuad4(xyze);
-  w.CutTest_Cut();
+  w.create_quad4(xyze);
+  w.cut_test_cut();
 }
 
 void test_hex8_hex8_internal()
@@ -1030,7 +1030,7 @@ void test_hex8_hex8_internal()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  w.CreateHex8(xyze);
+  w.create_hex8(xyze);
 
   xyze(0, 0) = -1.5;
   xyze(1, 0) = -0.5;
@@ -1064,9 +1064,9 @@ void test_hex8_hex8_internal()
   xyze(1, 7) = 1.5;
   xyze(2, 7) = 0.707107;
 
-  w.CreateHex8Sides(xyze);
+  w.create_hex8_sides(xyze);
 
-  w.CutTest_Cut();
+  w.cut_test_cut();
 }
 
 void test_hex8_hex8_sideintersection()
@@ -1107,7 +1107,7 @@ void test_hex8_hex8_sideintersection()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  w.CreateHex8(xyze);
+  w.create_hex8(xyze);
 
   xyze(0, 0) = 0.5;
   xyze(1, 0) = -0.5;
@@ -1141,7 +1141,7 @@ void test_hex8_hex8_sideintersection()
   xyze(1, 7) = 0.5;
   xyze(2, 7) = 0.5;
 
-  w.CreateHex8Sides(xyze);
+  w.create_hex8_sides(xyze);
 
   // add second cut to be able to find nodal positions
 
@@ -1161,9 +1161,9 @@ void test_hex8_hex8_sideintersection()
   xyze(1, 3) = -1.1;
   xyze(2, 3) = -0.9;
 
-  w.CreateQuad4(xyze);
+  w.create_quad4(xyze);
 
-  w.CutTest_Cut();
+  w.cut_test_cut();
 }
 
 void test_hex8_hex8_inside()
@@ -1204,7 +1204,7 @@ void test_hex8_hex8_inside()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  w.CreateHex8(xyze);
+  w.create_hex8(xyze);
 
   xyze(0, 0) = -0.5;
   xyze(1, 0) = -0.5;
@@ -1238,16 +1238,16 @@ void test_hex8_hex8_inside()
   xyze(1, 7) = 0.5;
   xyze(2, 7) = 0.5;
 
-  w.CreateHex8Sides(xyze);
+  w.create_hex8_sides(xyze);
 
-  w.CutTest_Cut();
+  w.cut_test_cut();
 }
 
 void test_hex8_quad4_schnitt()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
+  w.create_hex8();
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
@@ -1267,16 +1267,16 @@ void test_hex8_quad4_schnitt()
   xyze(1, 3) = 0.5;
   xyze(2, 3) = 1.2;
 
-  w.CreateQuad4(xyze);
+  w.create_quad4(xyze);
 
-  w.CutTest_Cut();
+  w.cut_test_cut();
 }
 
 void test_hex8_quad4_touch4()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
+  w.create_hex8();
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
@@ -1296,16 +1296,16 @@ void test_hex8_quad4_touch4()
   xyze(1, 3) = 0;
   xyze(2, 3) = 1.2;
 
-  w.CreateQuad4(xyze);
+  w.create_quad4(xyze);
 
-  w.CutTest_Cut();
+  w.cut_test_cut();
 }
 
 void test_hex8_quad4_touch5()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
+  w.create_hex8();
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
@@ -1325,16 +1325,16 @@ void test_hex8_quad4_touch5()
   xyze(1, 3) = 0;
   xyze(2, 3) = 1.2;
 
-  w.CreateQuad4(xyze);
+  w.create_quad4(xyze);
 
-  w.CutTest_Cut();
+  w.cut_test_cut();
 }
 
 void test_hex8_quad4_touch6()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
+  w.create_hex8();
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
@@ -1354,7 +1354,7 @@ void test_hex8_quad4_touch6()
   xyze(1, 3) = 0;
   xyze(2, 3) = 0.5;
 
-  w.CreateQuad4(xyze);
+  w.create_quad4(xyze);
 
   // add second cut to be able to find nodal positions
 
@@ -1374,16 +1374,16 @@ void test_hex8_quad4_touch6()
   xyze(1, 3) = -0.1;
   xyze(2, 3) = 0.1;
 
-  w.CreateQuad4(xyze);
+  w.create_quad4(xyze);
 
-  w.CutTest_Cut();
+  w.cut_test_cut();
 }
 
 void test_hex8_quad4_touch7()
 {
   SimpleWrapper w;
 
-  w.CreateHex8();
+  w.create_hex8();
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
@@ -1403,15 +1403,15 @@ void test_hex8_quad4_touch7()
   xyze(1, 3) = 0.2;
   xyze(2, 3) = 0.5;
 
-  w.CreateQuad4(xyze);
+  w.create_quad4(xyze);
 
-  w.CutTest_Cut();
+  w.cut_test_cut();
 }
 
 void test_hex8_quad4_mesh()
 {
   Core::Geo::Cut::Options options;
-  options.Init_for_Cuttests();
+  options.init_for_cuttests();
   Core::Geo::Cut::Mesh mesh(options);
 
   create_hex8_mesh(mesh, 2, 2, 2);
@@ -1424,7 +1424,7 @@ void test_hex8_quad4_mesh()
     Core::Geo::Cut::Side* quad4 = *i;
     Core::Geo::Cut::plain_element_set done;
     Core::Geo::Cut::plain_element_set elements_done;
-    mesh.Cut(*(quad4), done, elements_done);
+    mesh.cut(*(quad4), done, elements_done);
   }
 
   cutmesh(mesh);
@@ -1472,6 +1472,6 @@ void test_position2d()
       Core::Geo::Cut::floattype_double);  // use
                                           // double
   Teuchos::RCP<Core::Geo::Cut::Position> pos =
-      Core::Geo::Cut::Position::Create(side_xyze, xyz, Core::FE::CellType::tri3);
-  pos->Compute();
+      Core::Geo::Cut::Position::create(side_xyze, xyz, Core::FE::CellType::tri3);
+  pos->compute();
 }

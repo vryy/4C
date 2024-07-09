@@ -91,7 +91,7 @@ namespace Core::Geo
     class IntersectionBase
     {
      public:
-      static Teuchos::RCP<IntersectionBase> Create(
+      static Teuchos::RCP<IntersectionBase> create(
           const Core::FE::CellType& edge_type, const Core::FE::CellType& side_type);
 
      public:
@@ -137,23 +137,23 @@ namespace Core::Geo
         side_ptr_ = nullptr;
         options_ptr_ = options;
 
-        if (static_cast<unsigned>(xyze_lineElement.numRows()) != prob_dim() or
-            static_cast<unsigned>(xyze_lineElement.numCols()) != get_num_nodes_edge())
+        if (static_cast<unsigned>(xyze_lineElement.num_rows()) != n_prob_dim() or
+            static_cast<unsigned>(xyze_lineElement.num_cols()) != get_num_nodes_edge())
           FOUR_C_THROW(
               "Dimension mismatch of xyze_lineElement! \n"
               "expected input: %d x %d (rows x cols)\n"
               "current input : %d x %d (rows x cols)",
-              prob_dim(), get_num_nodes_edge(), xyze_lineElement.numRows(),
-              xyze_lineElement.numCols());
+              n_prob_dim(), get_num_nodes_edge(), xyze_lineElement.num_rows(),
+              xyze_lineElement.num_cols());
 
-        if (static_cast<unsigned>(xyze_surfaceElement.numRows()) != prob_dim() or
-            static_cast<unsigned>(xyze_surfaceElement.numCols()) != get_num_nodes_side())
+        if (static_cast<unsigned>(xyze_surfaceElement.num_rows()) != n_prob_dim() or
+            static_cast<unsigned>(xyze_surfaceElement.num_cols()) != get_num_nodes_side())
           FOUR_C_THROW(
               "Dimension mismatch of xyze_surfaceElement! \n"
               "expected input: %d x %d (rows x cols)\n"
               "current input : %d x %d (rows x cols)",
-              prob_dim(), get_num_nodes_side(), xyze_surfaceElement.numRows(),
-              xyze_surfaceElement.numCols());
+              n_prob_dim(), get_num_nodes_side(), xyze_surfaceElement.num_rows(),
+              xyze_surfaceElement.num_cols());
 
         set_coordinates(xyze_surfaceElement.values(), xyze_lineElement.values());
         scale_and_shift();
@@ -181,7 +181,7 @@ namespace Core::Geo
         mesh_ptr_ = mesh_ptr;
         edge_ptr_ = edge_ptr;
         side_ptr_ = side_ptr;
-        options_ptr_ = &(mesh_ptr->CreateOptions());
+        options_ptr_ = &(mesh_ptr->create_options());
 
         set_coordinates();
         scale_and_shift();
@@ -206,26 +206,26 @@ namespace Core::Geo
        *  See derived class for more information.
        *
        *  \author hiermeier \date 08/16 */
-      virtual bool Intersect(PointSet& cuts) = 0;
+      virtual bool intersect(PointSet& cuts) = 0;
 
       virtual ParallelIntersectionStatus handle_parallel_intersection(
           PointSet& cuts, int id = -1, bool output = false) = 0;
 
       virtual bool triangulated_intersection(PointSet& cuts) = 0;
 
-      virtual bool HandleSpecialCases() = 0;
+      virtual bool handle_special_cases() = 0;
 
       /** \brief Get the final cut point global coordinates
        *
        *  Only allowed if there was only one cut point!
        *
        *  \author hiermeier \date 08/16 */
-      virtual double* FinalPoint() = 0;
+      virtual double* final_point() = 0;
 
-      virtual double* FinalPoint(unsigned cp_id) = 0;
+      virtual double* final_point(unsigned cp_id) = 0;
 
       /// Get the coordinates of the computed point from Edge-Edge intersection
-      virtual double* FinalPointEdgeEdge() = 0;
+      virtual double* final_point_edge_edge() = 0;
 
       /** Access the cut point local coordinates on the side element
        * ( also working for multiple cut points )
@@ -250,7 +250,7 @@ namespace Core::Geo
        *
        *  \author hiermeier \date 01/17 */
       template <unsigned probdim>
-      void FinalPoints(std::vector<Core::LinAlg::Matrix<probdim, 1>>& xyz_cuts)
+      void final_points(std::vector<Core::LinAlg::Matrix<probdim, 1>>& xyz_cuts)
       {
         if (get_intersection_status() < intersect_single_cut_point)
           FOUR_C_THROW("INVALID IntersectionStatus! ( istatus = \"%s\" )",
@@ -260,16 +260,16 @@ namespace Core::Geo
         xyz_cuts.reserve(num_cut_points());
 
         for (unsigned i = 0; i < num_cut_points(); ++i)
-          xyz_cuts.push_back(Core::LinAlg::Matrix<probdim, 1>(FinalPoint(i), false));
+          xyz_cuts.push_back(Core::LinAlg::Matrix<probdim, 1>(final_point(i), false));
       }
 
       virtual double* local_coordinates() = 0;
 
       virtual double* local_side_coordinates(unsigned cp_id) = 0;
 
-      virtual bool SurfaceWithinLimits(double tol = REFERENCETOL) const = 0;
+      virtual bool surface_within_limits(double tol = REFERENCETOL) const = 0;
 
-      virtual bool LineWithinLimits(double tol = REFERENCETOL) const = 0;
+      virtual bool line_within_limits(double tol = REFERENCETOL) const = 0;
 
      protected:
       virtual unsigned num_cut_points() const = 0;
@@ -282,7 +282,7 @@ namespace Core::Geo
           FOUR_C_THROW("The intersection object is not initialized! Call init() first.");
       }
 
-      virtual unsigned prob_dim() const = 0;
+      virtual unsigned n_prob_dim() const = 0;
       virtual unsigned get_num_nodes_side() const = 0;
       virtual unsigned get_num_nodes_edge() const = 0;
 
@@ -462,7 +462,7 @@ namespace Core::Geo
       /// We need choose the edge, based on which we compute the global coordinates in a smart
       /// way -> If we choose so that the cut point will be close to endpoint, we essentially
       /// extend its tolerance and it therefore would lead to problems in the cut
-      double* FinalPointEdgeEdge() override
+      double* final_point_edge_edge() override
       {
         check_init();
         if (dimedge != dimside) FOUR_C_THROW("This method only works for edge-edge intersection!");
@@ -529,7 +529,7 @@ namespace Core::Geo
       }
 
       /// get the final cut point global coordinates
-      void FinalPoint(
+      void final_point(
           const Core::LinAlg::Matrix<dimedge, 1>& xsi_edge, Core::LinAlg::Matrix<probdim, 1>& x)
       {
         check_init();
@@ -547,7 +547,7 @@ namespace Core::Geo
         // second un-do the scaling
         x.scale(scale_);
       }
-      double* FinalPoint() override
+      double* final_point() override
       {
         if (istatus_ != intersect_single_cut_point)
           FOUR_C_THROW(
@@ -555,12 +555,12 @@ namespace Core::Geo
               "cut point only! ( istatus_ = \"%s\" )",
               IntersectionStatus2String(istatus_).c_str());
 
-        FinalPoint(xsi_edge_, x_);
+        final_point(xsi_edge_, x_);
         return x_.data();
       }
-      double* FinalPoint(unsigned cp_id) override
+      double* final_point(unsigned cp_id) override
       {
-        FinalPoint(local_edge_coordinates(cp_id), x_);
+        final_point(local_edge_coordinates(cp_id), x_);
         return x_.data();
       }
 
@@ -574,19 +574,19 @@ namespace Core::Geo
         double distance = 0;
         Core::LinAlg::Matrix<dim, 1> xsi;
         Core::LinAlg::Matrix<dim, num_nodes_edge> xyze_edge;
-        const std::vector<Edge*>& side_edges = get_side().Edges();
+        const std::vector<Edge*>& side_edges = get_side().edges();
 
         for (std::vector<int>::iterator it = touching_edges.begin(); it != touching_edges.end();)
         {
-          side_edges[*it]->Coordinates(xyze_edge.data());
+          side_edges[*it]->coordinates(xyze_edge.data());
 
           Kernel::ComputeDistance<dim, edgetype, floattype> cd(xsi);
           bool conv = cd(xyze_edge, p_coord, distance, signeddistance);
-          Kernel::PointOnSurfaceLoc loc = cd.GetSideLocation();
+          Kernel::PointOnSurfaceLoc loc = cd.get_side_location();
 
           if (conv)
           {
-            if (not loc.OnSide())
+            if (not loc.on_side())
             {
               // safety check if it is larger then some (rather arbitrary distance)
               if (distance > 1e-10)
@@ -675,16 +675,16 @@ namespace Core::Geo
         // floattype_cln)> ci( xsi_ );
 
         bool conv = ci(xyze_surfaceElement_, xyze_lineElement_);
-        tolerance = ci.GetTolerance();
+        tolerance = ci.get_tolerance();
 
 
         if (probdim > dimside + dimedge)
         {
           // edge-edge intersection, we might create point even if newton did not converge
           //
-          double line_distance = ci.DistanceBetween();
-          if ((line_distance < SIDE_DETECTION_TOLERANCE) and (ci.GetEdgeLocation().WithinSide()) and
-              (ci.GetSideLocation().WithinSide()))
+          double line_distance = ci.distance_between();
+          if ((line_distance < SIDE_DETECTION_TOLERANCE) and
+              (ci.get_edge_location().within_side()) and (ci.get_side_location().within_side()))
           {
             istatus_ = intersect_single_cut_point;
           }
@@ -704,7 +704,7 @@ namespace Core::Geo
           {
             if (conv)
             {
-              if ((ci.GetEdgeLocation().WithinSide()) and (ci.GetSideLocation().WithinSide()))
+              if ((ci.get_edge_location().within_side()) and (ci.get_side_location().within_side()))
                 istatus_ = intersect_single_cut_point;
               // converged but is outside
               else
@@ -722,7 +722,7 @@ namespace Core::Geo
           if (touched_edges)
           {
             std::vector<int>& touched = *touched_edges;
-            ci.GetTouchedSideEdges(touched);
+            ci.get_touched_side_edges(touched);
 
             // this should not happen, as all the touching edges must be identified by edge-edge
             // intersections
@@ -778,7 +778,7 @@ namespace Core::Geo
        *  mean that there is no intersection point.
        *
        *  \author ager */
-      bool Intersect(PointSet& cuts) override;
+      bool intersect(PointSet& cuts) override;
 
       // Try to find possible intersection points, if this intersection is between parallell size
       // and edge without using real ComputeIntersection
@@ -788,14 +788,14 @@ namespace Core::Geo
       virtual void generate_gmsh_dump();
 
       // Handle cases for which normal intersection procedure did not work
-      bool HandleSpecialCases() override;
+      bool handle_special_cases() override;
 
       // compute intersection by splitting quad4 into two triangles
       bool triangulated_intersection(PointSet& cuts) override;
 
       /** \brief Will return TRUE, if local side coordinates are within the side
        *  element parameter space bounds */
-      bool SurfaceWithinLimits(double tol = REFERENCETOL) const override
+      bool surface_within_limits(double tol = REFERENCETOL) const override
       {
         return Core::Geo::Cut::Kernel::within_limits<sidetype>(xsi_side_, tol);
       }
@@ -809,13 +809,13 @@ namespace Core::Geo
 
       /** \brief Will return TRUE, if local edge coordinate is within the line
        *  element parameter space bounds */
-      bool LineWithinLimits(double tol = REFERENCETOL) const override
+      bool line_within_limits(double tol = REFERENCETOL) const override
       {
         return Core::Geo::Cut::Kernel::within_limits<edgetype>(xsi_edge_, tol);
       }
 
       /// access the problem dimension
-      unsigned prob_dim() const override { return probdim; }
+      unsigned n_prob_dim() const override { return probdim; }
 
       /// access the number of nodes of the side ( or 2-nd edge ) element
       unsigned get_num_nodes_side() const override { return num_nodes_side; }
@@ -984,7 +984,7 @@ namespace Core::Geo
         Core::LinAlg::Matrix<3, num_nodes_edge> xyze_lineElement(xyze_lineElement_.data(), true);
 
         bool conv = ci(xyze_triElement, xyze_lineElement);
-        location = ci.GetSideLocation();
+        location = ci.get_side_location();
 
         return conv;
       }
@@ -1036,7 +1036,7 @@ namespace Core::Geo
 
         if (conv)
         {
-          if (ci.GetEdgeLocation().WithinSide() and ci.GetSideLocation().WithinSide())
+          if (ci.get_edge_location().within_side() and ci.get_side_location().within_side())
             istatus_ = intersect_single_cut_point;
           else
             istatus_ = intersect_no_cut_point;
@@ -1045,7 +1045,7 @@ namespace Core::Geo
           istatus_ = intersect_newton_failed;
         // if is done during triangulation
         if (close_to_shared_edge)
-          *close_to_shared_edge = (ci.get_side_location_triangle_split().WithinSide());
+          *close_to_shared_edge = (ci.get_side_location_triangle_split().within_side());
 
         return istatus_;
       }
@@ -1108,11 +1108,11 @@ namespace Core::Geo
         Kernel::ComputeDistance<probdim, sidetype, floattype> cd(xsi);
 
         bool conv = cd(xyze_surfaceElement_, point, distance, signeddistance);
-        tolerance = cd.GetTolerance();
-        zeroarea = cd.ZeroArea();
-        loc = cd.GetSideLocation();
-        cd.GetTouchedSideEdges(touched_edges);
-        if (not(loc.WithinSide()))
+        tolerance = cd.get_tolerance();
+        zeroarea = cd.zero_area();
+        loc = cd.get_side_location();
+        cd.get_touched_side_edges(touched_edges);
+        if (not(loc.within_side()))
         {
           touched_edges.clear();
         }
@@ -1125,7 +1125,7 @@ namespace Core::Geo
           Kernel::PointOnSurfaceLoc& loc, std::vector<int>& touched_edges,
           bool signeddistance = false)
       {
-        Core::LinAlg::Matrix<probdim, 1> point(p->X());
+        Core::LinAlg::Matrix<probdim, 1> point(p->x());
         return compute_distance(
             point, distance, tolerance, zeroarea, loc, touched_edges, signeddistance);
       }
@@ -1228,15 +1228,15 @@ namespace Core::Geo
         get_triangle(xyze_triElement, tri3_id);
 
         bool conv = cd(xyze_triElement, point, distance, signeddistance);
-        tolerance = cd.GetTolerance();
-        loc = cd.GetSideLocation();
-        zeroarea = cd.ZeroArea();
+        tolerance = cd.get_tolerance();
+        loc = cd.get_side_location();
+        zeroarea = cd.zero_area();
         std::vector<int> tri_touched_edges;
-        cd.GetTouchedSideEdges(tri_touched_edges);
+        cd.get_touched_side_edges(tri_touched_edges);
 
         get_quad_edge_ids_from_tri(touched_edges, tri_touched_edges, tri3_id);
         extended_tri_tolerance_loc_triangle_split =
-            (cd.get_side_location_triangle_split().WithinSide());
+            (cd.get_side_location_triangle_split().within_side());
         fix_distant_touching_edges<3, floattype>(point, touched_edges);
 
         return conv;
@@ -1247,7 +1247,7 @@ namespace Core::Geo
           Kernel::PointOnSurfaceLoc& loc, std::vector<int>& touched_edges, bool signeddistance,
           int tri3_id, bool& extended_tri_tolerance_loc_triangle_split)
       {
-        Core::LinAlg::Matrix<3, 1> point(p->X());
+        Core::LinAlg::Matrix<3, 1> point(p->x());
         return compute_distance(point, distance, tolerance, zeroarea, loc, touched_edges,
             signeddistance, tri3_id, extended_tri_tolerance_loc_triangle_split);
       }

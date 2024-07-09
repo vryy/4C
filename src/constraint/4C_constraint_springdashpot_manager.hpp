@@ -52,7 +52,7 @@ namespace CONSTRAINTS
     /*!
      \brief Return if there are spring dashpots
     */
-    bool HaveSpringDashpot() const { return havespringdashpot_; };
+    bool have_spring_dashpot() const { return havespringdashpot_; };
 
     //! add contribution of spring dashpot BC to residual vector and stiffness matrix
     void stiffness_and_internal_forces(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
@@ -76,7 +76,7 @@ namespace CONSTRAINTS
     void read_restart(Core::IO::DiscretizationReader& reader, const double& time);
 
     //! reset spring after having done a MULF prestressing update (mhv 12/2015)
-    void ResetPrestress(Teuchos::RCP<Epetra_Vector> disold);
+    void reset_prestress(Teuchos::RCP<Epetra_Vector> disold);
 
    private:
     Teuchos::RCP<Core::FE::Discretization> actdisc_;    ///< standard discretization

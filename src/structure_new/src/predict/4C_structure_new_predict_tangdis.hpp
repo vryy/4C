@@ -42,7 +42,7 @@ namespace Solid
       void setup() override;
 
       //! do the class specific predictor step
-      void Compute(::NOX::Abstract::Group& grp) override;
+      void compute(::NOX::Abstract::Group& grp) override;
 
       //! return the dbc increment
       const Epetra_Vector& get_dbc_incr() const;

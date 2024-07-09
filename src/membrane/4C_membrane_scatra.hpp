@@ -53,11 +53,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Membrane and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-constructor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -65,25 +65,25 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
         switch (distype)
         {
           case Core::FE::CellType::tri3:
           {
-            return MembraneScatraTri3Type::Instance().UniqueParObjectId();
+            return MembraneScatraTri3Type::instance().unique_par_object_id();
           }
           case Core::FE::CellType::tri6:
           {
-            return MembraneScatraTri6Type::Instance().UniqueParObjectId();
+            return MembraneScatraTri6Type::instance().unique_par_object_id();
           }
           case Core::FE::CellType::quad4:
           {
-            return MembraneScatraQuad4Type::Instance().UniqueParObjectId();
+            return MembraneScatraQuad4Type::instance().unique_par_object_id();
           }
           case Core::FE::CellType::quad9:
           {
-            return MembraneScatraQuad9Type::Instance().UniqueParObjectId();
+            return MembraneScatraQuad9Type::instance().unique_par_object_id();
           }
           default:
             FOUR_C_THROW("unknown element type!");
@@ -119,28 +119,28 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
         switch (distype)
         {
           case Core::FE::CellType::tri3:
           {
-            return MembraneScatraTri3Type::Instance();
+            return MembraneScatraTri3Type::instance();
           }
           break;
           case Core::FE::CellType::tri6:
           {
-            return MembraneScatraTri6Type::Instance();
+            return MembraneScatraTri6Type::instance();
           }
           break;
           case Core::FE::CellType::quad4:
           {
-            return MembraneScatraQuad4Type::Instance();
+            return MembraneScatraQuad4Type::instance();
           }
           break;
           case Core::FE::CellType::quad9:
           {
-            return MembraneScatraQuad9Type::Instance();
+            return MembraneScatraQuad9Type::instance();
           }
           break;
           default:
@@ -148,7 +148,7 @@ namespace Discret
             break;
         }
         // Intel compiler needs a return so
-        return MembraneQuad4Type::Instance();
+        return MembraneQuad4Type::instance();
       };
 
       //@}
@@ -158,7 +158,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& eledistype,
+      bool read_element(const std::string& eletype, const std::string& eledistype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -216,7 +216,7 @@ namespace Discret
       /*!
       \brief return ScaTra::ImplType
       */
-      const Inpar::ScaTra::ImplType& ImplType() const { return impltype_; };
+      const Inpar::ScaTra::ImplType& impl_type() const { return impltype_; };
 
       //@}
 
@@ -224,12 +224,12 @@ namespace Discret
       /*!
       \brief Get vector of ptrs to nodes
       */
-      Core::Nodes::Node** Nodes() override;
+      Core::Nodes::Node** nodes() override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       //! @{
       //! scalar transport implementation type (physics)

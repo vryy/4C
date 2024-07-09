@@ -43,7 +43,7 @@ namespace ParticleInteraction
     virtual void setup(const double& k_normal);
 
     //! calculate adhesion force
-    virtual void AdhesionForce(const double& gap, const double& surfaceenergy, const double& r_eff,
+    virtual void adhesion_force(const double& gap, const double& surfaceenergy, const double& r_eff,
         const double& v_rel_normal, const double& m_eff, double& adhesionforce) const = 0;
 
    protected:
@@ -82,7 +82,7 @@ namespace ParticleInteraction
     void init() override;
 
     //! calculate adhesion force
-    void AdhesionForce(const double& gap, const double& surfaceenergy, const double& r_eff,
+    void adhesion_force(const double& gap, const double& surfaceenergy, const double& r_eff,
         const double& v_rel_normal, const double& m_eff, double& adhesionforce) const override;
 
    private:
@@ -101,7 +101,7 @@ namespace ParticleInteraction
     explicit DEMAdhesionLawRegDMT(const Teuchos::ParameterList& params);
 
     //! calculate adhesion force
-    void AdhesionForce(const double& gap, const double& surfaceenergy, const double& r_eff,
+    void adhesion_force(const double& gap, const double& surfaceenergy, const double& r_eff,
         const double& v_rel_normal, const double& m_eff, double& adhesionforce) const override;
 
    private:

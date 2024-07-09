@@ -37,7 +37,7 @@ namespace CONTACT
        *
        * \date 04/16
        * \author hiermeier */
-      Teuchos::RCP<CONTACT::Integrator> BuildIntegrator(
+      Teuchos::RCP<CONTACT::Integrator> build_integrator(
           const Inpar::CONTACT::SolvingStrategy& sol_type, Teuchos::ParameterList& mortar_params,
           const Core::FE::CellType& slave_type, const Epetra_Comm& comm) const;
     };  // class Factory

@@ -49,7 +49,7 @@ namespace FSI
      *
      * \return Coupling algorithm based on Dirichlet-Neumann partitioning
      */
-    static Teuchos::RCP<DirichletNeumann> CreateAlgorithm(
+    static Teuchos::RCP<DirichletNeumann> create_algorithm(
         const Epetra_Comm &comm, const Teuchos::ParameterList &fsidyn);
   };
 }  // namespace FSI

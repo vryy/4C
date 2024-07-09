@@ -38,10 +38,10 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// provide ids of the individual mat
-      const std::vector<int>& MatIds() const { return matids_; }
+      const std::vector<int>& mat_ids() const { return matids_; }
 
       /// provide access to phases by its ID
-      Teuchos::RCP<Core::Mat::Material> MatById(const int id) const
+      Teuchos::RCP<Core::Mat::Material> mat_by_id(const int id) const
       {
         if (not local_)
         {
@@ -92,11 +92,11 @@ namespace Mat
   class ElchPhaseType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "ElchPhaseType"; }
+    std::string name() const override { return "ElchPhaseType"; }
 
-    static ElchPhaseType& Instance() { return instance_; };
+    static ElchPhaseType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static ElchPhaseType instance_;
@@ -121,14 +121,17 @@ namespace Mat
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const override { return ElchPhaseType::Instance().UniqueParObjectId(); }
+    int unique_par_object_id() const override
+    {
+      return ElchPhaseType::instance().unique_par_object_id();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
 
       Resizes the vector data and stores all information of a class in it.
       The first information to be stored in data has to be the
-      unique parobject id delivered by UniqueParObjectId() which will then
+      unique parobject id delivered by unique_par_object_id() which will then
       identify the exact class on the receiving processor.
 
       \param data (in/out): char vector to store class information
@@ -142,7 +145,7 @@ namespace Mat
       exact copy of an instance of a class on a different processor.
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
-      UniqueParObjectId().
+      unique_par_object_id().
 
       \param data (in) : vector storing all data to be unpacked into this
       instance.
@@ -152,26 +155,26 @@ namespace Mat
     //@}
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_elchphase;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new ElchPhase(*this));
     }
 
     /// return constant porosity
-    double Epsilon() const { return params_->epsilon_; }
+    double epsilon() const { return params_->epsilon_; }
     /// return constant tortuosity
-    double Tortuosity() const { return params_->tortuosity_; }
+    double tortuosity() const { return params_->tortuosity_; }
 
-    int NumMat() const { return params_->nummat_; }
+    int num_mat() const { return params_->nummat_; }
 
     /// material ID by Index
-    int MatID(const unsigned index) const
+    int mat_id(const unsigned index) const
     {
       if ((int)index < params_->nummat_)
         return params_->matids_.at(index);
@@ -183,7 +186,7 @@ namespace Mat
     }
 
     /// provide access to material by its ID
-    Teuchos::RCP<Core::Mat::Material> MatById(const int id) const
+    Teuchos::RCP<Core::Mat::Material> mat_by_id(const int id) const
     {
       if (params_->local_)
       {
@@ -197,11 +200,11 @@ namespace Mat
           return m->second;
       }
       else  // material is global (stored in material parameters)
-        return params_->MatById(id);
+        return params_->mat_by_id(id);
     }
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
    private:
     /// setup of material map

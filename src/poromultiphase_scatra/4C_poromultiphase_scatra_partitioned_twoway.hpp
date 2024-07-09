@@ -36,13 +36,13 @@ namespace PoroMultiPhaseScaTra
         const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     /// setup
-    void SetupSystem() override;
+    void setup_system() override;
 
     /// setup solver (only needed for poromultiphase monolithic coupling)
-    void SetupSolver() override;
+    void setup_solver() override;
 
     /// time step of coupled problem
-    void TimeStep() override { return Solve(); };
+    void time_step() override { return solve(); };
 
     /// print header
     void print_header_partitioned();
@@ -51,7 +51,7 @@ namespace PoroMultiPhaseScaTra
     void iter_update_states();
 
     //! perform iteration loop between fields
-    virtual void Solve() = 0;
+    virtual void solve() = 0;
 
 
    protected:
@@ -109,7 +109,7 @@ namespace PoroMultiPhaseScaTra
         const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     //! perform iteration loop between fields
-    void Solve() override;
+    void solve() override;
 
   };  // PoroMultiPhaseScatraPartitionedTwoWayNested
 
@@ -140,7 +140,7 @@ namespace PoroMultiPhaseScaTra
         const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     //! perform iteration loop between fields
-    void Solve() override;
+    void solve() override;
 
   };  // PoroMultiPhaseScatraPartitionedTwoWayNested
 

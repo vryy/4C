@@ -44,7 +44,7 @@ NOX::FSI::LinearSystemGCR::LinearSystemGCR(Teuchos::ParameterList& printParams,
   tmpVectorPtr = Teuchos::rcp(new ::NOX::Epetra::Vector(cloneVector));
 
   // Jacobian operator is supplied
-  jacType = getOperatorType(*jacPtr);
+  jacType = get_operator_type(*jacPtr);
 
   reset(linearSolverParams);
 }
@@ -467,7 +467,7 @@ void NOX::FSI::LinearSystemGCR::setJacobianOperatorForSolve(
     const Teuchos::RCP<const Epetra_Operator>& solveJacOp)
 {
   jacPtr = Teuchos::rcp_const_cast<Epetra_Operator>(solveJacOp);
-  jacType = getOperatorType(*solveJacOp);
+  jacType = get_operator_type(*solveJacOp);
 }
 
 
@@ -489,7 +489,7 @@ void NOX::FSI::LinearSystemGCR::throw_error(
 }
 
 
-NOX::FSI::LinearSystemGCR::OperatorType NOX::FSI::LinearSystemGCR::getOperatorType(
+NOX::FSI::LinearSystemGCR::OperatorType NOX::FSI::LinearSystemGCR::get_operator_type(
     const Epetra_Operator& Op)
 {
   //***************

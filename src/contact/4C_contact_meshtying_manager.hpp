@@ -71,7 +71,7 @@ namespace CONTACT
     \brief Read and check input parameters
 
     All specified meshtying-related input parameters are read from the
-    Global::Problem::Instance() and stored into a local variable of
+    Global::Problem::instance() and stored into a local variable of
     type Teuchos::ParameterList. Invalid parameter combinations are
     sorted out and throw a FOUR_C_THROW.
 
@@ -129,7 +129,7 @@ namespace CONTACT
     \param[in] writeRestart Flag to control writing of restart data
     \param[in] writeState Flag to control writing of regular result data
     */
-    void OutputStep(Teuchos::RCP<Teuchos::ParameterList> outParams, const bool writeRestart,
+    void output_step(Teuchos::RCP<Teuchos::ParameterList> outParams, const bool writeRestart,
         const bool writeState);
 
     //@}

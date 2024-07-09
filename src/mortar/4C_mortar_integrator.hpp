@@ -50,20 +50,20 @@ namespace Mortar
     virtual ~Integrator() = default;
     //! @name Access methods
     /// Internal implementation class
-    static Integrator* Impl(
+    static Integrator* impl(
         Mortar::Element& sele, Mortar::Element& mele, Teuchos::ParameterList& params);
 
     //! @ pure virtual functions --> access per Mortar::IntegratorCalc
-    virtual void IntegrateEleBased2D(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
+    virtual void integrate_ele_based2_d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, const Epetra_Comm& comm) = 0;
 
-    virtual void IntegrateSegment2D(Mortar::Element& sele, double& sxia, double& sxib,
+    virtual void integrate_segment2_d(Mortar::Element& sele, double& sxia, double& sxib,
         Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm) = 0;
 
-    virtual Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> IntegrateMmod2D(Mortar::Element& sele,
+    virtual Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> integrate_mmod2_d(Mortar::Element& sele,
         double& sxia, double& sxib, Mortar::Element& mele, double& mxia, double& mxib) = 0;
 
-    virtual void IntegrateEleBased3D(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
+    virtual void integrate_ele_based3_d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, const Epetra_Comm& comm) = 0;
 
     virtual void integrate_cell3_d_aux_plane(Mortar::Element& sele, Mortar::Element& mele,
@@ -73,11 +73,11 @@ namespace Mortar
         Mortar::IntElement& sintele, Mortar::IntElement& mintele,
         Teuchos::RCP<Mortar::IntCell> cell, double* auxn) = 0;
 
-    virtual int nGP() = 0;
+    virtual int n_gp() = 0;
 
-    virtual double Coordinate(int& gp, int dir) = 0;
+    virtual double coordinate(int& gp, int dir) = 0;
 
-    virtual double Weight(int& gp) = 0;
+    virtual double weight(int& gp) = 0;
   };
 
 
@@ -107,7 +107,7 @@ namespace Mortar
 
 
     /// Singleton access method
-    static IntegratorCalc<distype_s, distype_m>* Instance(
+    static IntegratorCalc<distype_s, distype_m>* instance(
         Core::UTILS::SingletonAction action, const Teuchos::ParameterList& params);
 
     //! ns_: number of slave element nodes
@@ -125,7 +125,7 @@ namespace Mortar
     \brief Perform mortar-integration without previous segmentation -- 2D
 
     */
-    void IntegrateEleBased2D(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
+    void integrate_ele_based2_d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, const Epetra_Comm& comm) override;
 
     /*!
@@ -133,7 +133,7 @@ namespace Mortar
            master overlap (i.e. D, M, g, LindD, LinM, Ling)
 
     */
-    void IntegrateSegment2D(Mortar::Element& sele, double& sxia, double& sxib,
+    void integrate_segment2_d(Mortar::Element& sele, double& sxia, double& sxib,
         Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm) override;
 
     /*!
@@ -145,7 +145,7 @@ namespace Mortar
     the interface is curved (but only for mesh tying)!
 
     */
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> IntegrateMmod2D(Mortar::Element& sele,
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> integrate_mmod2_d(Mortar::Element& sele,
         double& sxia, double& sxib, Mortar::Element& mele, double& mxia, double& mxib) override;
 
     /*!
@@ -153,7 +153,7 @@ namespace Mortar
            (i.e. M, g, LinM, Ling and possibly D, LinD)
 
     */
-    void IntegrateEleBased3D(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
+    void integrate_ele_based3_d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, const Epetra_Comm& comm) override;
 
     /*!
@@ -187,19 +187,19 @@ namespace Mortar
     \brief Return number of Gauss points for this instance
 
     */
-    int nGP() override { return ngp_; }
+    int n_gp() override { return ngp_; }
 
     /*!
     \brief Return coordinates of a specific GP in 1D/2D CElement
 
     */
-    double Coordinate(int& gp, int dir) override { return coords_(gp, dir); }
+    double coordinate(int& gp, int dir) override { return coords_(gp, dir); }
 
     /*!
     \brief Return weight of a specific GP in 1D/2D CElement
 
     */
-    double Weight(int& gp) override { return weights_[gp]; }
+    double weight(int& gp) override { return weights_[gp]; }
 
    private:
     //----------------- GP EVALUATIONS ---------------

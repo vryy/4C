@@ -97,16 +97,16 @@ namespace FLD
       void read_restart(Core::IO::DiscretizationReader& reader);
 
 
-      virtual void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList>&) = 0;
+      virtual void integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList>&) = 0;
 
-      virtual void SaveState() = 0;
+      virtual void save_state() = 0;
 
-      virtual void LoadState() = 0;
+      virtual void load_state() = 0;
 
       /*!
       \brief compute TimeUpdate
       */
-      virtual void TimeUpdate() = 0;
+      virtual void time_update() = 0;
 
      private:
       /*!
@@ -160,16 +160,16 @@ namespace FLD
       {
       }
 
-      void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList>& params) override
+      void integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList>& params) override
       {
-        reduced_d_time_integ_->Integrate(true, params);
+        reduced_d_time_integ_->integrate(true, params);
       }
 
-      void SaveState() override { reduced_d_time_integ_->SaveState(); }
+      void save_state() override { reduced_d_time_integ_->save_state(); }
 
-      void LoadState() override { reduced_d_time_integ_->LoadState(); }
+      void load_state() override { reduced_d_time_integ_->load_state(); }
 
-      void TimeUpdate() override { reduced_d_time_integ_->TimeUpdate(); }
+      void time_update() override { reduced_d_time_integ_->time_update(); }
 
      private:
       //! Reduced-D artery network time integration

@@ -32,14 +32,14 @@ Discret::ELEMENTS::RigidsphereType Discret::ELEMENTS::RigidsphereType::instance_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::RigidsphereType& Discret::ELEMENTS::RigidsphereType::Instance()
+Discret::ELEMENTS::RigidsphereType& Discret::ELEMENTS::RigidsphereType::instance()
 {
   return instance_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::RigidsphereType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::RigidsphereType::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Rigidsphere* object = new Discret::ELEMENTS::Rigidsphere(-1, -1);
@@ -49,7 +49,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::RigidsphereType::Create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RigidsphereType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RigidsphereType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "RIGIDSPHERE")
@@ -63,7 +63,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RigidsphereType::Create
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RigidsphereType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RigidsphereType::create(
     const int id, const int owner)
 {
   return (Teuchos::rcp(new Rigidsphere(id, owner)));
@@ -81,7 +81,7 @@ void Discret::ELEMENTS::RigidsphereType::nodal_block_information(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::RigidsphereType::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::RigidsphereType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   Core::LinAlg::SerialDenseMatrix nullspace;
@@ -124,7 +124,7 @@ Discret::ELEMENTS::Rigidsphere::Rigidsphere(const Discret::ELEMENTS::Rigidsphere
     {
       if (iter.second != Teuchos::null)
         mybondstobeams_[iter.first] =
-            Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLinkPinJointed>(iter.second->Clone());
+            Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLinkPinJointed>(iter.second->clone());
       else
         FOUR_C_THROW("something went wrong, I am sorry. Please go debugging.");
     }
@@ -136,7 +136,7 @@ Discret::ELEMENTS::Rigidsphere::Rigidsphere(const Discret::ELEMENTS::Rigidsphere
  |  Deep copy this instance of Rigidsphere and return pointer to it (public) |
  |                                                            meier 05/12 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Rigidsphere::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Rigidsphere::clone() const
 {
   Discret::ELEMENTS::Rigidsphere* newelement = new Discret::ELEMENTS::Rigidsphere(*this);
   return (newelement);
@@ -154,7 +154,7 @@ void Discret::ELEMENTS::Rigidsphere::print(std::ostream& os) const { return; }
  |                                                             (public) |
  |                                                          meier 05/12 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Rigidsphere::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Rigidsphere::shape() const
 {
   return (Core::FE::CellType::point1);
 }
@@ -168,7 +168,7 @@ void Discret::ELEMENTS::Rigidsphere::pack(Core::Communication::PackBuffer& data)
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   Element::pack(data);
@@ -191,7 +191,7 @@ void Discret::ELEMENTS::Rigidsphere::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -213,7 +213,7 @@ void Discret::ELEMENTS::Rigidsphere::unpack(const std::vector<char>& data)
     Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> link =
         Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLinkPinJointed>(object);
     if (link == Teuchos::null) FOUR_C_THROW("Received object is not a beam to beam linkage");
-    mybondstobeams_[link->Id()] = link;
+    mybondstobeams_[link->id()] = link;
   }
 
   if (position != data.size())
@@ -224,7 +224,7 @@ void Discret::ELEMENTS::Rigidsphere::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             meier 02/14|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Rigidsphere::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Rigidsphere::lines()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -248,7 +248,7 @@ void Discret::ELEMENTS::Rigidsphere::set_params_interface_ptr(const Teuchos::Par
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::ParamsInterface> Discret::ELEMENTS::Rigidsphere::ParamsInterfacePtr()
+Teuchos::RCP<Core::Elements::ParamsInterface> Discret::ELEMENTS::Rigidsphere::params_interface_ptr()
 {
   return interface_ptr_;
 }

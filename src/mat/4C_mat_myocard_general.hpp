@@ -30,7 +30,7 @@ class MyocardGeneral
   /// destructor
   virtual ~MyocardGeneral() = default;
   /// compute reaction coefficient for multiple Gauss points
-  virtual double ReaCoeff(const double phi, const double dt, int gp)
+  virtual double rea_coeff(const double phi, const double dt, int gp)
   {
     if (gp > 0)
     {
@@ -39,17 +39,17 @@ class MyocardGeneral
     }
 
     else
-      return ReaCoeff(phi, dt);
+      return rea_coeff(phi, dt);
   };
 
   /// compute reaction coefficient
-  virtual double ReaCoeff(const double phi, const double dt) = 0;
+  virtual double rea_coeff(const double phi, const double dt) = 0;
 
   /// compute reaction coefficient at timestep n
-  virtual double ReaCoeffN(const double phi, const double dt) { return 0; };
+  virtual double rea_coeff_n(const double phi, const double dt) { return 0; };
 
   /// compute reaction coefficient for multiple Gauss points at timestep n
-  virtual double ReaCoeffN(const double phi, const double dt, int gp)
+  virtual double rea_coeff_n(const double phi, const double dt, int gp)
   {
     if (gp > 0)
     {
@@ -58,17 +58,17 @@ class MyocardGeneral
     }
 
     else
-      return ReaCoeffN(phi, dt);
+      return rea_coeff_n(phi, dt);
   };
 
   ///  returns number of internal state variables of the material
   virtual int get_number_of_internal_state_variables() const = 0;
 
   ///  returns current internal state of the material
-  virtual double GetInternalState(const int k) const = 0;
+  virtual double get_internal_state(const int k) const = 0;
 
   ///  returns current internal state of the material
-  virtual double GetInternalState(const int k, int gp) const
+  virtual double get_internal_state(const int k, int gp) const
   {
     if (gp > 0)
     {
@@ -76,19 +76,19 @@ class MyocardGeneral
       return 0.;
     }
     else
-      return GetInternalState(k);
+      return get_internal_state(k);
   };
 
   ///  set internal state of the material
-  virtual void SetInternalState(const int k, const double val) = 0;
+  virtual void set_internal_state(const int k, const double val) = 0;
 
   ///  set internal state of the material for multiple Gauss points
-  virtual void SetInternalState(const int k, const double val, int gp)
+  virtual void set_internal_state(const int k, const double val, int gp)
   {
     if (gp > 0)
       FOUR_C_THROW("Multiple Gauss points only implemented for MV and FHN model");
     else
-      SetInternalState(k, val);
+      set_internal_state(k, val);
 
     return;
   };
@@ -97,10 +97,10 @@ class MyocardGeneral
   virtual int get_number_of_ionic_currents() const = 0;
 
   ///  return ionic currents
-  virtual double GetIonicCurrents(const int k) const = 0;
+  virtual double get_ionic_currents(const int k) const = 0;
 
   ///  return ionic currents
-  virtual double GetIonicCurrents(const int k, int gp) const
+  virtual double get_ionic_currents(const int k, int gp) const
   {
     FOUR_C_THROW("Multiple Gauss Points only implemented for MV and FHN model");
     return 0.;
@@ -114,7 +114,7 @@ class MyocardGeneral
   };
 
   /// get number of Gauss points
-  virtual int GetNumberOfGP() const { return 1; };
+  virtual int get_number_of_gp() const { return 1; };
 
   /// time update for this material
   virtual void update(const double phi, const double dt) = 0;

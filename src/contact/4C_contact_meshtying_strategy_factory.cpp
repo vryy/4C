@@ -49,21 +49,21 @@ void Mortar::STRATEGY::FactoryMT::setup()
 void Mortar::STRATEGY::FactoryMT::read_and_check_input(Teuchos::ParameterList& params) const
 {
   // read parameter lists from Global::Problem
-  const Teuchos::ParameterList& mortar = Global::Problem::Instance()->mortar_coupling_params();
-  const Teuchos::ParameterList& meshtying = Global::Problem::Instance()->contact_dynamic_params();
-  const Teuchos::ParameterList& wearlist = Global::Problem::Instance()->WearParams();
+  const Teuchos::ParameterList& mortar = Global::Problem::instance()->mortar_coupling_params();
+  const Teuchos::ParameterList& meshtying = Global::Problem::instance()->contact_dynamic_params();
+  const Teuchos::ParameterList& wearlist = Global::Problem::instance()->wear_params();
 
   // read Problem Type and Problem Dimension from Global::Problem
-  const Core::ProblemType problemtype = Global::Problem::Instance()->GetProblemType();
-  int dim = Global::Problem::Instance()->NDim();
-  Core::FE::ShapeFunctionType distype = Global::Problem::Instance()->spatial_approximation_type();
+  const Core::ProblemType problemtype = Global::Problem::instance()->get_problem_type();
+  int dim = Global::Problem::instance()->n_dim();
+  Core::FE::ShapeFunctionType distype = Global::Problem::instance()->spatial_approximation_type();
 
   // get mortar information
   std::vector<Core::Conditions::Condition*> mtcond(0);
   std::vector<Core::Conditions::Condition*> ccond(0);
 
-  discret().GetCondition("Mortar", mtcond);
-  discret().GetCondition("Contact", ccond);
+  discret().get_condition("Mortar", mtcond);
+  discret().get_condition("Contact", ccond);
 
   bool onlymeshtying = false;
   bool meshtyingandcontact = false;
@@ -209,7 +209,7 @@ void Mortar::STRATEGY::FactoryMT::read_and_check_input(Teuchos::ParameterList& p
   // *********************************************************************
   // warnings
   // *********************************************************************
-  if (mortar.get<double>("SEARCH_PARAM") == 0.0 && comm().MyPID() == 0)
+  if (mortar.get<double>("SEARCH_PARAM") == 0.0 && get_comm().MyPID() == 0)
     std::cout << ("Warning: Meshtying search called without inflation of bounding volumes\n")
               << std::endl;
 
@@ -290,7 +290,7 @@ void Mortar::STRATEGY::FactoryMT::read_and_check_input(Teuchos::ParameterList& p
           problemtype == Core::ProblemType::fpsi_xfem) &&
       (dim != 3) && (dim != 2))
   {
-    const Teuchos::ParameterList& porodyn = Global::Problem::Instance()->poroelast_dynamic_params();
+    const Teuchos::ParameterList& porodyn = Global::Problem::instance()->poroelast_dynamic_params();
     if (Core::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
       FOUR_C_THROW("POROCONTACT: PoroMeshtying with no penetration just tested for 3d (and 2d)!");
   }
@@ -298,7 +298,7 @@ void Mortar::STRATEGY::FactoryMT::read_and_check_input(Teuchos::ParameterList& p
   params.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 
   // no parallel redistribution in the serial case
-  if (comm().NumProc() == 1)
+  if (get_comm().NumProc() == 1)
     params.sublist("PARALLEL REDISTRIBUTION").set<std::string>("PARALLEL_REDIST", "None");
 
   return;
@@ -306,21 +306,21 @@ void Mortar::STRATEGY::FactoryMT::read_and_check_input(Teuchos::ParameterList& p
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Mortar::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& mtparams,
+void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList& mtparams,
     std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces, bool& poroslave,
     bool& poromaster) const
 {
-  int dim = Global::Problem::Instance()->NDim();
+  int dim = Global::Problem::instance()->n_dim();
 
   // start building interfaces
-  if (comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "Building contact interface(s)...............";
     fflush(stdout);
   }
 
   std::vector<Core::Conditions::Condition*> contactconditions(0);
-  discret().GetCondition("Mortar", contactconditions);
+  discret().get_condition("Mortar", contactconditions);
 
   // there must be more than one meshtying condition
   if ((int)contactconditions.size() < 2)
@@ -443,7 +443,7 @@ void Mortar::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
 
     // create an empty meshtying interface and store it in this Manager
     // (for structural meshtying we currently choose redundant master storage)
-    interfaces.push_back(Mortar::Interface::Create(groupid1, comm(), dim, mtparams));
+    interfaces.push_back(Mortar::Interface::create(groupid1, get_comm(), dim, mtparams));
 
     // get it again
     Teuchos::RCP<Mortar::Interface> interface = interfaces[(int)interfaces.size() - 1];
@@ -458,19 +458,19 @@ void Mortar::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
     for (int j = 0; j < (int)currentgroup.size(); ++j)
     {
       // get all nodes and add them
-      const std::vector<int>* nodeids = currentgroup[j]->GetNodes();
+      const std::vector<int>* nodeids = currentgroup[j]->get_nodes();
       if (!nodeids) FOUR_C_THROW("Condition does not have Node Ids");
       for (int k = 0; k < (int)(*nodeids).size(); ++k)
       {
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
-        if (!discret_ptr_->NodeColMap()->MyGID(gid)) continue;
-        Core::Nodes::Node* node = discret().gNode(gid);
+        if (!discret_ptr_->node_col_map()->MyGID(gid)) continue;
+        Core::Nodes::Node* node = discret().g_node(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         // create Node object
         Teuchos::RCP<Mortar::Node> mtnode = Teuchos::rcp(new Mortar::Node(
-            node->Id(), node->X(), node->Owner(), discret().Dof(0, node), isslave[j]));
+            node->id(), node->x(), node->owner(), discret().dof(0, node), isslave[j]));
         //-------------------
         // get nurbs weight!
         if (nurbs)
@@ -480,40 +480,40 @@ void Mortar::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
 
         // get edge and corner information:
         std::vector<Core::Conditions::Condition*> contactcornercond(0);
-        discret().GetCondition("mrtrcorner", contactcornercond);
+        discret().get_condition("mrtrcorner", contactcornercond);
         for (unsigned j = 0; j < contactcornercond.size(); j++)
         {
-          if (contactcornercond.at(j)->ContainsNode(node->Id()))
+          if (contactcornercond.at(j)->contains_node(node->id()))
           {
-            mtnode->SetOnCorner() = true;
+            mtnode->set_on_corner() = true;
           }
         }
         std::vector<Core::Conditions::Condition*> contactedgecond(0);
-        discret().GetCondition("mrtredge", contactedgecond);
+        discret().get_condition("mrtredge", contactedgecond);
         for (unsigned j = 0; j < contactedgecond.size(); j++)
         {
-          if (contactedgecond.at(j)->ContainsNode(node->Id()))
+          if (contactedgecond.at(j)->contains_node(node->id()))
           {
-            mtnode->SetOnEdge() = true;
+            mtnode->set_on_edge() = true;
           }
         }
 
         // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
         std::vector<Core::Conditions::Condition*> contactSymconditions(0);
-        discret().GetCondition("mrtrsym", contactSymconditions);
+        discret().get_condition("mrtrsym", contactSymconditions);
 
         for (unsigned j = 0; j < contactSymconditions.size(); j++)
-          if (contactSymconditions.at(j)->ContainsNode(node->Id()))
+          if (contactSymconditions.at(j)->contains_node(node->id()))
           {
             const auto& onoff =
                 contactSymconditions.at(j)->parameters().get<std::vector<int>>("onoff");
             for (unsigned k = 0; k < onoff.size(); k++)
-              if (onoff.at(k) == 1) mtnode->DbcDofs()[k] = true;
+              if (onoff.at(k) == 1) mtnode->dbc_dofs()[k] = true;
           }
 
         // note that we do not have to worry about double entries
         // as the AddNode function can deal with this case!
-        interface->AddMortarNode(mtnode);
+        interface->add_mortar_node(mtnode);
       }
     }
 
@@ -522,7 +522,7 @@ void Mortar::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
     for (int j = 0; j < (int)currentgroup.size(); ++j)
     {
       // get elements from condition j of current group
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>& currele = currentgroup[j]->Geometry();
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>& currele = currentgroup[j]->geometry();
 
       // elements in a boundary condition have a unique id
       // but ids are not unique among 2 distinct conditions
@@ -534,15 +534,15 @@ void Mortar::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
       // note that elements in ele1/ele2 already are in column (overlapping) map
       int lsize = (int)currele.size();
       int gsize = 0;
-      comm().SumAll(&lsize, &gsize, 1);
+      get_comm().SumAll(&lsize, &gsize, 1);
 
 
       std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator fool;
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
         Teuchos::RCP<Core::Elements::Element> ele = fool->second;
-        Teuchos::RCP<Mortar::Element> mtele = Teuchos::rcp(new Mortar::Element(ele->Id() + ggsize,
-            ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), isslave[j], nurbs));
+        Teuchos::RCP<Mortar::Element> mtele = Teuchos::rcp(new Mortar::Element(ele->id() + ggsize,
+            ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), isslave[j], nurbs));
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
@@ -550,7 +550,7 @@ void Mortar::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
           Mortar::UTILS::prepare_nurbs_element(*discret_ptr_, ele, mtele, dim);
         }
 
-        interface->AddMortarElement(mtele);
+        interface->add_mortar_element(mtele);
       }  // for (fool=ele1.start(); fool != ele1.end(); ++fool)
 
       ggsize += gsize;  // update global element counter
@@ -560,12 +560,12 @@ void Mortar::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
     interface->fill_complete(true, maxdof);
 
   }  // for (int i=0; i<(int)contactconditions.size(); ++i)
-  if (comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::BuildStrategy(
+Teuchos::RCP<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_strategy(
     const Teuchos::ParameterList& params, const bool& poroslave, const bool& poromaster,
     const int& dof_offset, std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces) const
 {
@@ -573,13 +573,13 @@ Teuchos::RCP<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::BuildStra
       Core::UTILS::IntegralValue<enum Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY");
   Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr = Teuchos::null;
 
-  return BuildStrategy(stype, params, poroslave, poromaster, dof_offset, interfaces,
-      discret().dof_row_map(), discret().NodeRowMap(), dim(), comm_ptr(), data_ptr);
+  return build_strategy(stype, params, poroslave, poromaster, dof_offset, interfaces,
+      discret().dof_row_map(), discret().node_row_map(), n_dim(), comm_ptr(), data_ptr);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::BuildStrategy(
+Teuchos::RCP<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_strategy(
     const Inpar::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
     const bool& poroslave, const bool& poromaster, const int& dof_offset,
     std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces, const Epetra_Map* dof_row_map,

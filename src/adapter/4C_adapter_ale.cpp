@@ -57,12 +57,12 @@ void Adapter::AleBaseAlgorithm::setup_ale(
   Teuchos::TimeMonitor monitor(*t);
 
   // what's the current problem type?
-  const Core::ProblemType probtype = Global::Problem::Instance()->GetProblemType();
+  const Core::ProblemType probtype = Global::Problem::instance()->get_problem_type();
 
   // ---------------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // ---------------------------------------------------------------------------
-  if (!actdis->Filled()) actdis->fill_complete();
+  if (!actdis->filled()) actdis->fill_complete();
 
   // ---------------------------------------------------------------------------
   // connect degrees of freedom for coupled nodes
@@ -73,7 +73,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
   // ---------------------------------------------------------------------------
   // context for output and restart
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->writer();
 
   // Output for these problems are not necessary because we write
   // restart data at each time step for visualization
@@ -83,7 +83,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
   // set some pointers and variables
   // ---------------------------------------------------------------------------
   Teuchos::RCP<Teuchos::ParameterList> adyn =
-      Teuchos::rcp(new Teuchos::ParameterList(Global::Problem::Instance()->AleDynamicParams()));
+      Teuchos::rcp(new Teuchos::ParameterList(Global::Problem::instance()->ale_dynamic_params()));
 
   // ---------------------------------------------------------------------------
   // create a linear solver
@@ -96,11 +96,11 @@ void Adapter::AleBaseAlgorithm::setup_ale(
         "LINEAR_SOLVER in ALE DYNAMIC to a valid number!");
 
   Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(
-      new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(linsolvernumber),
-          actdis->Comm(), Global::Problem::Instance()->solver_params_callback(),
+      new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
+          actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
           Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::Instance()->IOParams(), "VERBOSITY")));
-  actdis->compute_null_space_if_necessary(solver->Params());
+              Global::Problem::instance()->io_params(), "VERBOSITY")));
+  actdis->compute_null_space_if_necessary(solver->params());
 
   // ---------------------------------------------------------------------------
   // overwrite certain parameters when ALE is part of a multi-field problem
@@ -114,7 +114,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
   if (probtype == Core::ProblemType::fpsi)
   {
     // FPSI input parameters
-    const Teuchos::ParameterList& fpsidyn = Global::Problem::Instance()->FPSIDynamicParams();
+    const Teuchos::ParameterList& fpsidyn = Global::Problem::instance()->fpsi_dynamic_params();
     int coupling = Core::UTILS::IntegralValue<int>(fpsidyn, "COUPALGO");
     if (coupling == partitioned)
     {
@@ -170,7 +170,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
     case Core::ProblemType::ac_fsi:
     case Core::ProblemType::biofilm_fsi:
     {
-      const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+      const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
       int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithicstructuresplit or
@@ -217,7 +217,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
     }
     case Core::ProblemType::fsi_lung:
     {
-      const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+      const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
       int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_lung_monolithicfluidsplit or
           coupling == fsi_iter_lung_monolithicstructuresplit)
@@ -234,7 +234,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
     }
     case Core::ProblemType::fsi_redmodels:
     {
-      const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+      const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
       int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithicstructuresplit or

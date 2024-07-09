@@ -140,7 +140,7 @@ namespace Immersed
     \author rauch
     \date 02/17
     */
-    void DoDirichletCond(const Teuchos::RCP<Epetra_Vector>& statevector,
+    void do_dirichlet_cond(const Teuchos::RCP<Epetra_Vector>& statevector,
         const Teuchos::RCP<const Epetra_Vector>& dirichvals,
         const Teuchos::RCP<const Epetra_Map>& dbcmap_new,
         const Teuchos::RCP<const Epetra_Map>& dbcmap_orig);
@@ -154,7 +154,7 @@ namespace Immersed
     \author rauch
     \date 02/17
     */
-    void DoDirichletCond(const Teuchos::RCP<Epetra_Vector>& statevector,
+    void do_dirichlet_cond(const Teuchos::RCP<Epetra_Vector>& statevector,
         const Teuchos::RCP<const Epetra_Vector>& dirichvals,
         const Teuchos::RCP<const Epetra_Map>& dbcmap_new);
 
@@ -165,7 +165,7 @@ namespace Immersed
     \author rauch
     \date 02/17
     */
-    virtual void ApplyDirichlet(const Teuchos::RCP<Adapter::StructureWrapper>& field_wrapper,
+    virtual void apply_dirichlet(const Teuchos::RCP<Adapter::StructureWrapper>& field_wrapper,
         const Teuchos::RCP<Core::FE::Discretization>& dis, const std::string condname,
         Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
         const Teuchos::RCP<const Epetra_Vector>& dirichvals);
@@ -189,7 +189,7 @@ namespace Immersed
     \author rauch
     \date 02/17
     */
-    void RemoveDirichlet(const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
+    void remove_dirichlet(const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
         const Teuchos::RCP<Adapter::StructureWrapper>& field_wrapper);
 
 
@@ -209,7 +209,7 @@ namespace Immersed
     \author rauch
     \date 05/14
     */
-    void EvaluateImmersed(Teuchos::ParameterList& params,
+    void evaluate_immersed(Teuchos::ParameterList& params,
         Teuchos::RCP<Core::FE::Discretization> dis, Core::FE::AssembleStrategy* strategy,
         std::map<int, std::set<int>>* elementstoeval,
         Teuchos::RCP<Core::Geo::SearchTree> structsearchtree,
@@ -301,7 +301,7 @@ namespace Immersed
     \param valuetowrite2  (in) : second set of values to wrtie to row
     \param valuetowrite3  (in) : third set of values to write to row
     */
-    void WriteExtraOutput(const Epetra_Comm& comm, const double time,
+    void write_extra_output(const Epetra_Comm& comm, const double time,
         const std::string filenameending, const std::vector<double> valuetowrite,
         const std::vector<double> valuetowrite2, const std::vector<double> valuetowrite3);
 
@@ -390,17 +390,17 @@ namespace Immersed
     int err = 0;
 
     // get communicator
-    const Epetra_Comm& comm = sourcedis->Comm();
+    const Epetra_Comm& comm = sourcedis->get_comm();
 
     // get the global problem
-    Global::Problem* problem = Global::Problem::Instance();
+    Global::Problem* problem = Global::Problem::instance();
 
     // true in case we have to deal wit ha deformable background mesh
     static int isALE =
         (problem->immersed_method_params().get<std::string>("DEFORM_BACKGROUND_MESH") == "yes");
 
     // dimension of global problem
-    const int globdim = problem->NDim();
+    const int globdim = problem->n_dim();
 
     // pointer to background element
     Core::Elements::Element* sourceele;
@@ -456,7 +456,7 @@ namespace Immersed
     for (int i = 0; i < target_dim; ++i) (*targetxi_dense)(i) = targetxi[i];
 
     Core::Elements::Element::LocationArray targetla(1);
-    targetele.LocationVector(*targetdis, targetla, false);
+    targetele.location_vector(*targetdis, targetla, false);
 
     targetele.evaluate(params, *targetdis, targetla, dummy1, dummy2, *normal_at_targetpoint,
         *targetxi_dense, dummy3);
@@ -493,8 +493,8 @@ namespace Immersed
     int datalength = (int)vectofill->length();
 
     // get possible elements being intersected by immersed structure
-    Core::Conditions::Condition* searchbox = sourcedis->GetCondition("ImmersedSearchbox");
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& searchboxgeom = searchbox->Geometry();
+    Core::Conditions::Condition* searchbox = sourcedis->get_condition("ImmersedSearchbox");
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& searchboxgeom = searchbox->geometry();
     int mysearchboxgeomsize = searchboxgeom.size();
 
     // round robin loop
@@ -520,17 +520,17 @@ namespace Immersed
         {
           // only proc who owns background searchbox ele is supposed to interpolate and is set
           // BoundaryIsImmersed(true)
-          if (curr->second->Owner() == myrank)
+          if (curr->second->owner() == myrank)
           {
             bool converged = false;
             double residual = -1234.0;
 
             if (isALE)
             {
-              Teuchos::RCP<const Epetra_Vector> state = sourcedis->GetState("dispnp");
+              Teuchos::RCP<const Epetra_Vector> state = sourcedis->get_state("dispnp");
 
               Core::Elements::Element::LocationArray la(1);
-              curr->second->LocationVector(*sourcedis, la, false);
+              curr->second->location_vector(*sourcedis, la, false);
               // extract local values of the global vectors
               myvalues.resize(la[0].lm_.size());
               Core::FE::ExtractMyValues(*state, myvalues, la[0].lm_);
@@ -540,12 +540,12 @@ namespace Immersed
                   sourceeledisp[node * 3 + dof] = myvalues[node * 4 + dof];
 
               // node 1  and node 7 coords of current source element (diagonal points)
-              const auto& X1 = curr->second->Nodes()[1]->X();
+              const auto& X1 = curr->second->nodes()[1]->x();
               double x1[3];
               x1[0] = X1[0] + sourceeledisp[1 * 3 + 0];
               x1[1] = X1[1] + sourceeledisp[1 * 3 + 1];
               x1[2] = X1[2] + sourceeledisp[1 * 3 + 2];
-              const auto& X7 = curr->second->Nodes()[7]->X();
+              const auto& X7 = curr->second->nodes()[7]->x();
               double diagonal =
                   sqrt(pow(X1[0] - X7[0], 2) + pow(X1[1] - X7[1], 2) + pow(X1[2] - X7[2], 2));
 
@@ -588,8 +588,8 @@ namespace Immersed
             else
             {
               // node 1  and node 7 coords of current source element (diagonal points)
-              const auto& X1 = curr->second->Nodes()[1]->X();
-              const auto& X7 = curr->second->Nodes()[7]->X();
+              const auto& X1 = curr->second->nodes()[1]->x();
+              const auto& X7 = curr->second->nodes()[7]->x();
               double diagonal =
                   sqrt(pow(X1[0] - X7[0], 2) + pow(X1[1] - X7[1], 2) + pow(X1[2] - X7[2], 2));
 
@@ -656,7 +656,7 @@ namespace Immersed
               {
                 if (isALE)
                 {
-                  const auto& X = sourceele->Nodes()[sourcenode]->X();
+                  const auto& X = sourceele->nodes()[sourcenode]->x();
 
                   distances[sourcenode] =
                       sqrt(pow(xvec[0] - (X[0] + myvalues[sourcenode * 4 + 0]), 2) +
@@ -665,7 +665,7 @@ namespace Immersed
                 }
                 else
                 {
-                  const auto& X = sourceele->Nodes()[sourcenode]->X();
+                  const auto& X = sourceele->nodes()[sourcenode]->x();
 
                   distances[sourcenode] = sqrt(
                       pow(xvec[0] - X[0], 2) + pow(xvec[1] - X[1], 2) + pow(xvec[2] - X[2], 2));
@@ -687,16 +687,16 @@ namespace Immersed
               double x[3];
               if (isALE)
               {
-                const auto& X = sourceele->Nodes()[maxdistanceindex]->X();
+                const auto& X = sourceele->nodes()[maxdistanceindex]->x();
                 x[0] = X[0] + myvalues[maxdistanceindex * 4 + 0];
                 x[1] = X[1] + myvalues[maxdistanceindex * 4 + 1];
                 x[2] = X[2] + myvalues[maxdistanceindex * 4 + 2];
               }
               else
               {
-                x[0] = sourceele->Nodes()[maxdistanceindex]->X()[0];
-                x[1] = sourceele->Nodes()[maxdistanceindex]->X()[1];
-                x[2] = sourceele->Nodes()[maxdistanceindex]->X()[2];
+                x[0] = sourceele->nodes()[maxdistanceindex]->x()[0];
+                x[1] = sourceele->nodes()[maxdistanceindex]->x()[1];
+                x[2] = sourceele->nodes()[maxdistanceindex]->x()[2];
               }
 
               // build vector directed from targetele point (xvec) to sourceele node (X)
@@ -716,7 +716,7 @@ namespace Immersed
                 validsource = false;
 
               std::cout << "WARNING !! Immersed point is lying on element edge! validsource="
-                        << validsource << "for eleid=" << sourceele->Id() << std::endl;
+                        << validsource << "for eleid=" << sourceele->id() << std::endl;
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
               if (abs(scalarproduct) < 1e-13 and validsource)
@@ -759,7 +759,7 @@ namespace Immersed
 
               // fill locationarray
               Core::Elements::Element::LocationArray sourcela(1);
-              sourceele->LocationVector(*sourcedis, sourcela, false);
+              sourceele->location_vector(*sourcedis, sourcela, false);
               sourceele->evaluate(
                   params, *sourcedis, sourcela, dummy1, dummy2, *vectofill, *xi_dense, dummy3);
               matched = 1;
@@ -773,7 +773,7 @@ namespace Immersed
                 // std::cout<<"ID="<<immersedele->Id()<<"
                 // scalarprod="<<std::setprecision(10)<<scalarproduct<<std::endl;
                 immersedele->set_boundary_is_immersed(2);
-                immersedele->ConstructElementRCP(
+                immersedele->construct_element_rcp(
                     problem->immersed_method_params().get<int>("NUM_GP_FLUID_BOUND"));
               }
 
@@ -836,7 +836,7 @@ namespace Immersed
         int length = rdata.size();
         int tag = -1;
         int from = -1;
-        exporter.ReceiveAny(from, tag, rdata, length);
+        exporter.receive_any(from, tag, rdata, length);
         if (tag != 1234 or from != fromrank)
           FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
               myrank, from, myrank);
@@ -860,7 +860,7 @@ namespace Immersed
           normal_vec[i] = Core::Communication::ParObject::extract_double(position, rdata);
 
         // wait for all communication to finish
-        exporter.Wait(request);
+        exporter.wait(request);
         comm.Barrier();
       }  // only if num procs > 1
 
@@ -918,11 +918,11 @@ namespace Immersed
     // error flag
     int err = 0;
     // get communicator
-    const Epetra_Comm& comm = sourcedis->Comm();
+    const Epetra_Comm& comm = sourcedis->get_comm();
     // get the global problem
-    Global::Problem* problem = Global::Problem::Instance();
+    Global::Problem* problem = Global::Problem::instance();
     // dimension of global problem
-    const int globdim = problem->NDim();
+    const int globdim = problem->n_dim();
     // pointer to background element
     Core::Elements::Element* sourceele;
     // declare vector of global current coordinates
@@ -938,7 +938,7 @@ namespace Immersed
     if (numproc == 1) doCommunication = false;
     if (doCommunication == false) numproc = 1;
 
-    Teuchos::RCP<const Epetra_Vector> dispnp = sourcedis->GetState("displacement");
+    Teuchos::RCP<const Epetra_Vector> dispnp = sourcedis->get_state("displacement");
     Core::Elements::Element::LocationArray la(1);
 
     // get current global coordinates of the given point xi of the target dis
@@ -1019,27 +1019,27 @@ namespace Immersed
           {
             bool converged = false;
             double residual = -1234.0;
-            sourceele = sourcedis->gElement(*eleIter);
+            sourceele = sourcedis->g_element(*eleIter);
 
             // get parameter space coords xi in source element
-            sourceele->LocationVector(*sourcedis, la, false);
+            sourceele->location_vector(*sourcedis, la, false);
             std::vector<double> mysourcedispnp(la[0].lm_.size());
             Core::FE::ExtractMyValues(*dispnp, mysourcedispnp, la[0].lm_);
 
             // construct bounding box around current source element
             Teuchos::RCP<Core::Geo::Cut::BoundingBox> bbside =
-                Teuchos::rcp(Core::Geo::Cut::BoundingBox::Create());
+                Teuchos::rcp(Core::Geo::Cut::BoundingBox::create());
             Core::LinAlg::Matrix<3, 1> nodalpos;
             for (int i = 0; i < (int)(sourceele->num_node()); ++i)
             {
-              nodalpos(0, 0) = (sourceele->Nodes())[i]->X()[0] + mysourcedispnp[i * 3 + 0];
-              nodalpos(1, 0) = (sourceele->Nodes())[i]->X()[1] + mysourcedispnp[i * 3 + 1];
-              nodalpos(2, 0) = (sourceele->Nodes())[i]->X()[2] + mysourcedispnp[i * 3 + 2];
-              bbside->AddPoint(nodalpos);
+              nodalpos(0, 0) = (sourceele->nodes())[i]->x()[0] + mysourcedispnp[i * 3 + 0];
+              nodalpos(1, 0) = (sourceele->nodes())[i]->x()[1] + mysourcedispnp[i * 3 + 1];
+              nodalpos(2, 0) = (sourceele->nodes())[i]->x()[2] + mysourcedispnp[i * 3 + 2];
+              bbside->add_point(nodalpos);
             }
 
             // check if given point lies within bounding box
-            bool within = bbside->Within(1.0, xvec.data());
+            bool within = bbside->within(1.0, xvec.data());
 
             // only try to match given target point and sourceele if within bounding box
             if (within)
@@ -1054,7 +1054,7 @@ namespace Immersed
                           << " " << xvec[2]
                           << "\n"
                              " is lying within bounding box of immersed element "
-                          << sourceele->Id() << "." << std::endl;
+                          << sourceele->id() << "." << std::endl;
                 bbside->print();
                 // we assume not in bounding box. point is lying outside sourcele.
                 xi(0) = 2.0;
@@ -1087,7 +1087,7 @@ namespace Immersed
               params.set<std::string>("action", action);
               // fill locationarray
               Core::Elements::Element::LocationArray la(1);
-              sourceele->LocationVector(*sourcedis, la, false);
+              sourceele->location_vector(*sourcedis, la, false);
 
               (*xi_dense)(0) = xi(0);
               (*xi_dense)(1) = xi(1);
@@ -1163,7 +1163,7 @@ namespace Immersed
         int length = rdata.size();
         int tag = -1;
         int from = -1;
-        exporter.ReceiveAny(from, tag, rdata, length);
+        exporter.receive_any(from, tag, rdata, length);
         if (tag != 1234 or from != fromrank)
           FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
               myrank, from, myrank);
@@ -1184,7 +1184,7 @@ namespace Immersed
         }
 
         // wait for all communication to finish
-        exporter.Wait(request);
+        exporter.wait(request);
         comm.Barrier();
       }  // only if numproc > 1
 
@@ -1236,17 +1236,17 @@ namespace Immersed
     int err = 0;
 
     // get communicator
-    const Epetra_Comm& comm = structdis->Comm();
+    const Epetra_Comm& comm = structdis->get_comm();
 
     // get the global problem
-    Global::Problem* problem = Global::Problem::Instance();
+    Global::Problem* problem = Global::Problem::instance();
 
     // true in case we have to deal wit ha deformable background mesh
     static int isALE =
         (problem->immersed_method_params().get<std::string>("DEFORM_BACKGROUND_MESH") == "yes");
 
     // dimension of global problem
-    const int globdim = problem->NDim();
+    const int globdim = problem->n_dim();
 
     // declare vector of global current coordinates of fluid node
     std::vector<double> x_fluid_node(globdim);
@@ -1271,15 +1271,15 @@ namespace Immersed
 
     if (doCommunication == false) numproc = 1;
 
-    Core::Nodes::Node** fluidnode = fluidele.Nodes();
-    double char_fld_ele_length = sqrt(pow(fluidnode[1]->X()[0] - fluidnode[7]->X()[0], 2) +
-                                      pow(fluidnode[1]->X()[1] - fluidnode[7]->X()[1], 2) +
-                                      pow(fluidnode[1]->X()[2] - fluidnode[7]->X()[2], 2));
+    Core::Nodes::Node** fluidnode = fluidele.nodes();
+    double char_fld_ele_length = sqrt(pow(fluidnode[1]->x()[0] - fluidnode[7]->x()[0], 2) +
+                                      pow(fluidnode[1]->x()[1] - fluidnode[7]->x()[1], 2) +
+                                      pow(fluidnode[1]->x()[2] - fluidnode[7]->x()[2], 2));
 
     // get current displacements and velocities of structure discretization
-    Teuchos::RCP<const Epetra_Vector> dispnp = structdis->GetState("displacement");
-    Teuchos::RCP<const Epetra_Vector> velnp = structdis->GetState("velocity");
-    Core::Elements::Element::LocationArray la(structdis->NumDofSets());
+    Teuchos::RCP<const Epetra_Vector> dispnp = structdis->get_state("displacement");
+    Teuchos::RCP<const Epetra_Vector> velnp = structdis->get_state("velocity");
+    Core::Elements::Element::LocationArray la(structdis->num_dof_sets());
 
     // get current global coordinates of the given fluid node fluid_xi
     Mortar::UTILS::LocalToCurrentGlobal<fluiddistype>(
@@ -1361,7 +1361,7 @@ namespace Immersed
             // only surface elements (with immersed coupling condition) are relevant to find closest
             // structure point
             std::vector<Teuchos::RCP<Core::Elements::Element>> surface_eles =
-                structdis->gElement(*eleIter)->Surfaces();
+                structdis->g_element(*eleIter)->surfaces();
 
             // loop over surface element, find the elements with IMMERSEDCoupling condition
             for (std::vector<Teuchos::RCP<Core::Elements::Element>>::iterator surfIter =
@@ -1372,7 +1372,7 @@ namespace Immersed
               Core::Elements::Element* structele = surfIter->getRawPtr();
 
               // pointer to nodes of current surface element
-              Core::Nodes::Node** NodesPtr = surfIter->getRawPtr()->Nodes();
+              Core::Nodes::Node** NodesPtr = surfIter->getRawPtr()->nodes();
 
               int numfsinodes = 0;
 
@@ -1381,7 +1381,7 @@ namespace Immersed
               {
                 Core::Nodes::Node* checkNode = NodesPtr[surfnode];
                 // check whether a IMMERSEDCoupling condition is active on this node
-                if (checkNode->GetCondition("IMMERSEDCoupling") != nullptr) ++numfsinodes;
+                if (checkNode->get_condition("IMMERSEDCoupling") != nullptr) ++numfsinodes;
               }
 
               // only surface elements with IMMERSEDCoupling condition are relevant (all nodes of
@@ -1389,7 +1389,7 @@ namespace Immersed
               if (numfsinodes == structele->num_node())
               {
                 // get displacements and velocities of structure dis
-                structele->LocationVector(*structdis, la, false);
+                structele->location_vector(*structdis, la, false);
                 std::vector<double> mydispnp(la[0].lm_.size());
                 Core::FE::ExtractMyValues(*dispnp, mydispnp, la[0].lm_);
                 std::vector<double> myvelnp(la[0].lm_.size());
@@ -1403,7 +1403,7 @@ namespace Immersed
                   std::vector<double> struct_node_postion(3);
                   for (int idim = 0; idim < 3; ++idim)
                     struct_node_postion[idim] =
-                        (structele->Nodes())[inode]->X()[idim] + mydispnp[inode * 3 + idim];
+                        (structele->nodes())[inode]->x()[idim] + mydispnp[inode * 3 + idim];
 
                   // distance between fluid node and given structure node
                   double dist = sqrt(pow(fluid_node_glob_coord[0] - struct_node_postion[0], 2) +
@@ -1425,12 +1425,12 @@ namespace Immersed
 
                 // 2.) check if closest point is an integration point of the structural surface
                 // element loop over all int points of structural surface element
-                for (int igp = 0; igp < intpoints.IP().nquad; ++igp)
+                for (int igp = 0; igp < intpoints.ip().nquad; ++igp)
                 {
                   // get local coordinates of gp
                   std::vector<double> struct_xsi(struct_dim);
-                  struct_xsi[0] = intpoints.IP().qxg[igp][0];
-                  struct_xsi[1] = intpoints.IP().qxg[igp][1];
+                  struct_xsi[0] = intpoints.ip().qxg[igp][0];
+                  struct_xsi[1] = intpoints.ip().qxg[igp][1];
 
                   // get local coordinates of gp as matrix
                   Core::LinAlg::Matrix<struct_dim, 1> struct_xi(true);
@@ -1569,7 +1569,7 @@ namespace Immersed
         int length = rdata.size();
         int tag = -1;
         int from = -1;
-        exporter.ReceiveAny(from, tag, rdata, length);
+        exporter.receive_any(from, tag, rdata, length);
         if (tag != 1234 or from != fromrank)
           FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
               myrank, from, myrank);
@@ -1592,7 +1592,7 @@ namespace Immersed
         }
 
         // wait for all communication to finish
-        exporter.Wait(request);
+        exporter.wait(request);
         comm.Barrier();
       }  // only if numproc > 1
 

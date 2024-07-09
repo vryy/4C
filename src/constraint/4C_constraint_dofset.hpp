@@ -54,7 +54,7 @@ namespace CONSTRAINTS
 
     //! @name Access methods
 
-    virtual int FirstGID()
+    virtual int first_gid()
     {
       int lmin = dofrowmap_->MinMyGID();
       if (dofrowmap_->NumMyElements() == 0) lmin = INT_MAX;

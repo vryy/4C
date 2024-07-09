@@ -136,7 +136,7 @@ namespace Core::VolMortar
      \brief Evaluate volmortar coupling (basic routine)
 
      */
-    virtual void EvaluateVolmortar();
+    virtual void evaluate_volmortar();
 
     /*!
      \brief Evaluate consistent interpolation (NO Core::VOLMORTAR)
@@ -148,19 +148,19 @@ namespace Core::VolMortar
      \brief get projection matrix 2 --> 1
 
      */
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetPMatrix12() { return p12_; };
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_p_matrix12() { return p12_; };
 
     /*!
      \brief get projection matrix 1 --> 2
 
      */
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetPMatrix21() { return p21_; };
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_p_matrix21() { return p21_; };
 
     /*!
      \brief assign materials
 
      */
-    virtual void AssignMaterials();
+    virtual void assign_materials();
 
    private:
     /*!

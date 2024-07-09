@@ -50,9 +50,9 @@ Discret::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
       densaf_(1.0)
 {
   // pointer to class FluidImplParameterTimInt for time integration
-  fldparatimint_ = Discret::ELEMENTS::FluidEleParameterTimInt::Instance();
+  fldparatimint_ = Discret::ELEMENTS::FluidEleParameterTimInt::instance();
   // initialize also general parameter list, also it will be overwritten in derived subclasses
-  fldpara_ = Discret::ELEMENTS::FluidEleParameterStd::Instance();
+  fldpara_ = Discret::ELEMENTS::FluidEleParameterStd::instance();
 
   return;
 }
@@ -71,7 +71,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
   const FLD::BoundaryAction act = Core::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
 
   // get status of Ale
-  const bool isale = ele1->parent_element()->IsAle();
+  const bool isale = ele1->parent_element()->is_ale();
 
   switch (act)
   {
@@ -82,7 +82,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
 
       if (isale)
       {
-        dispnp = discretization.GetState("dispnp");
+        dispnp = discretization.get_state("dispnp");
         if (dispnp != Teuchos::null)
         {
           mydispnp.resize(lm.size());
@@ -95,13 +95,13 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
     }
     case FLD::calc_area:
     {
-      if (ele1->Owner() == discretization.Comm().MyPID())
+      if (ele1->owner() == discretization.get_comm().MyPID())
         area_calculation(ele1, params, discretization, lm);
       break;
     }
     case FLD::calc_pressure_bou_int:
     {
-      if (ele1->Owner() == discretization.Comm().MyPID())
+      if (ele1->owner() == discretization.get_comm().MyPID())
         pressure_boundary_integral(ele1, params, discretization, lm);
       break;
     }
@@ -135,7 +135,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
 
       if (isale)
       {
-        dispnp = discretization.GetState("dispnp");
+        dispnp = discretization.get_state("dispnp");
         if (dispnp != Teuchos::null)
         {
           mydispnp.resize(lm.size());
@@ -145,7 +145,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
 
       Core::FE::ElementNodeNormal<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_, xyze_,
           ele1, discretization, elevec1, mydispnp, IsNurbs<distype>::isnurbs,
-          ele1->parent_element()->IsAle());
+          ele1->parent_element()->is_ale());
       break;
     }
     case FLD::calc_node_curvature:
@@ -155,7 +155,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
 
       if (isale)
       {
-        dispnp = discretization.GetState("dispnp");
+        dispnp = discretization.get_state("dispnp");
         if (dispnp != Teuchos::null)
         {
           mydispnp.resize(lm.size());
@@ -166,7 +166,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
       Teuchos::RCP<const Epetra_Vector> normals;
       std::vector<double> mynormals;
 
-      normals = discretization.GetState("normals");
+      normals = discretization.get_state("normals");
       if (normals != Teuchos::null)
       {
         mynormals.resize(lm.size());
@@ -194,7 +194,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
       Teuchos::RCP<const Epetra_Vector> dispnp;
       std::vector<double> mydispnp;
 
-      dispnp = discretization.GetState("dispnp");
+      dispnp = discretization.get_state("dispnp");
       if (dispnp != Teuchos::null)
       {
         mydispnp.resize(lm.size());
@@ -212,7 +212,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
     case FLD::center_of_mass_calc:
     {
       // evaluate center of mass
-      if (ele1->Owner() == discretization.Comm().MyPID())
+      if (ele1->owner() == discretization.get_comm().MyPID())
         center_of_mass_calculation(ele1, params, discretization, lm);
       break;
     }
@@ -245,7 +245,7 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
     Core::LinAlg::SerialDenseMatrix* elemat1_epetra)
 {
   // find out whether we will use a time curve
-  const double time = fldparatimint_->Time();
+  const double time = fldparatimint_->time();
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
@@ -255,8 +255,8 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
   const std::string* type = &condition.parameters().get<std::string>("type");
 
   // get time factor for Neumann term
-  const double timefac = fldparatimint_->TimeFacRhs();
-  const double timefacn = (1.0 - fldparatimint_->Theta()) * fldparatimint_->Dt();
+  const double timefac = fldparatimint_->time_fac_rhs();
+  const double timefacn = (1.0 - fldparatimint_->theta()) * fldparatimint_->dt();
 
   // get Gaussrule
   const Core::FE::IntPointsAndWeights<bdrynsd_> intpoints(
@@ -272,7 +272,7 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
   // THESE ARE NEEDED IF DENSITY OR A SCALAR IS USED in the BC (which normally is NOT the case)
   //========================================================
   // get scalar vector
-  Teuchos::RCP<const Epetra_Vector> scaaf = discretization.GetState("scaaf");
+  Teuchos::RCP<const Epetra_Vector> scaaf = discretization.get_state("scaaf");
   if (scaaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'scaaf'");
 
   // extract local values from global vector
@@ -295,11 +295,11 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
   // (needed for weakly_compressible fluids)
   Core::LinAlg::Matrix<bdrynen_, 1> epreaf(true);
   Discret::ELEMENTS::FluidEleParameter* fldpara =
-      Discret::ELEMENTS::FluidEleParameterStd::Instance();
-  if (fldpara->PhysicalType() == Inpar::FLUID::weakly_compressible or
-      fldpara->PhysicalType() == Inpar::FLUID::weakly_compressible_stokes)
+      Discret::ELEMENTS::FluidEleParameterStd::instance();
+  if (fldpara->physical_type() == Inpar::FLUID::weakly_compressible or
+      fldpara->physical_type() == Inpar::FLUID::weakly_compressible_stokes)
   {
-    Teuchos::RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
+    Teuchos::RCP<const Epetra_Vector> velaf = discretization.get_state("velaf");
     if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
     // extract local values from global vector
@@ -324,11 +324,11 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
 
 
   // add potential ALE displacements
-  if (ele->parent_element()->IsAle())
+  if (ele->parent_element()->is_ale())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp;
     std::vector<double> mydispnp;
-    dispnp = discretization.GetState("dispnp");
+    dispnp = discretization.get_state("dispnp");
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
@@ -360,8 +360,8 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
     std::vector<Core::LinAlg::SerialDenseVector> mypknots(nsd_);
 
     bool zero_size =
-        Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(ele, ele->SurfaceNumber(),
-            ele->parent_element()->Id(), discretization, mypknots, myknots, weights, normalfac);
+        Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(ele, ele->surface_number(),
+            ele->parent_element()->id(), discretization, mypknots, myknots, weights, normalfac);
     if (zero_size)
     {
       return 0;
@@ -370,7 +370,7 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
-  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; ++gpid)
   {
     // evaluate shape functions and their derivatives,
     // compute unit normal vector and infinitesimal area element drs
@@ -379,7 +379,7 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
         xyze_, intpoints, gpid, &myknots, &weights, IsNurbs<distype>::isnurbs);
 
     // get the required material information
-    Teuchos::RCP<Core::Mat::Material> material = ele->parent_element()->Material();
+    Teuchos::RCP<Core::Mat::Material> material = ele->parent_element()->material();
 
     // get density
     // (evaluation always at integration point, in contrast to parent element)
@@ -447,13 +447,13 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
           if (functnum > 0)
           {
             // evaluate function at current gauss point
-            functfac = Global::Problem::Instance()
-                           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+            functfac = Global::Problem::instance()
+                           ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                            .evaluate(coordgpref, time, idim);
             if (fldparatimint_->is_new_ost_implementation())
-              functfacn = Global::Problem::Instance()
-                              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .evaluate(coordgpref, time - fldparatimint_->Dt(), idim);
+              functfacn = Global::Problem::instance()
+                              ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              .evaluate(coordgpref, time - fldparatimint_->dt(), idim);
           }
           else
           {
@@ -486,13 +486,13 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
           if (functnum > 0)
           {
             // evaluate function at current gauss point
-            functfac = Global::Problem::Instance()
-                           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+            functfac = Global::Problem::instance()
+                           ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                            .evaluate(coordgpref, time, idim);
             if (fldparatimint_->is_new_ost_implementation())
-              functfacn = Global::Problem::Instance()
-                              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .evaluate(coordgpref, time - fldparatimint_->Dt(), idim);
+              functfacn = Global::Problem::instance()
+                              ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              .evaluate(coordgpref, time - fldparatimint_->dt(), idim);
           }
           else
           {
@@ -550,7 +550,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
   // af-genalpha: timefac = (alpha_F/alpha_M) * gamma * dt
   // np-genalpha: timefac = (alpha_F/alpha_M) * gamma * dt
   // genalpha:    timefac =  alpha_F * gamma * dt
-  const double timefac = fldparatimint_->TimeFac();
+  const double timefac = fldparatimint_->time_fac();
 
   // get timefactor for right-hand side
   // One-step-Theta:            timefacrhs = theta*dt
@@ -558,13 +558,13 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
   // af-genalpha:               timefacrhs = (1/alpha_M) * gamma * dt
   // np-genalpha:               timefacrhs = (1/alpha_M) * gamma * dt
   // genalpha:                  timefacrhs = 1.0
-  double timefacrhs = fldparatimint_->TimeFacRhs();
+  double timefacrhs = fldparatimint_->time_fac_rhs();
 
   // check ALE status
-  const bool isale = ele->parent_element()->IsAle();
+  const bool isale = ele->parent_element()->is_ale();
 
   // set flag for type of linearization to default value (fixed-point-like)
-  bool is_newton = fldpara_->IsNewton();
+  bool is_newton = fldpara_->is_newton();
 
   const Core::FE::IntPointsAndWeights<bdrynsd_> intpoints(
       Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
@@ -579,7 +579,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
   std::vector<double> mydispnp;
   if (isale)
   {
-    dispnp = discretization.GetState("dispnp");
+    dispnp = discretization.get_state("dispnp");
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
@@ -596,8 +596,8 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
   }
 
   // get velocity and scalar vector at time n+alpha_F/n+1
-  Teuchos::RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
-  Teuchos::RCP<const Epetra_Vector> scaaf = discretization.GetState("scaaf");
+  Teuchos::RCP<const Epetra_Vector> velaf = discretization.get_state("velaf");
+  Teuchos::RCP<const Epetra_Vector> scaaf = discretization.get_state("scaaf");
   if (velaf == Teuchos::null or scaaf == Teuchos::null)
     FOUR_C_THROW("Cannot get state vector 'velaf' and/or 'scaaf'");
 
@@ -640,8 +640,8 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
   if (IsNurbs<distype>::isnurbs)
   {
     bool zero_size =
-        Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(ele, ele->SurfaceNumber(),
-            ele->parent_element()->Id(), discretization, mypknots, myknots, weights, normalfac);
+        Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(ele, ele->surface_number(),
+            ele->parent_element()->id(), discretization, mypknots, myknots, weights, normalfac);
     if (zero_size)
     {
       return;
@@ -651,7 +651,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
   /*----------------------------------------------------------------------*
    |               start loop over integration points                     |
    *----------------------------------------------------------------------*/
-  for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
   {
     // evaluate shape functions and their derivatives,
     // compute unit normal vector and infinitesimal area element drs
@@ -673,7 +673,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
     if (normvel < -0.0001)
     {
       // get the required material information
-      Teuchos::RCP<Core::Mat::Material> material = ele->parent_element()->Material();
+      Teuchos::RCP<Core::Mat::Material> material = ele->parent_element()->material();
 
       // get density
       // (evaluation always at integration point, in contrast to parent element)
@@ -781,7 +781,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::integrate_shape_function(
     Core::LinAlg::SerialDenseVector& elevec1, const std::vector<double>& edispnp)
 {
   // get status of Ale
-  const bool isale = ele->parent_element()->IsAle();
+  const bool isale = ele->parent_element()->is_ale();
 
   // get Gaussrule
   const Core::FE::IntPointsAndWeights<bdrynsd_> intpoints(
@@ -809,7 +809,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::integrate_shape_function(
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
-  for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
   {
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
@@ -842,7 +842,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_mean_curvature(
     std::vector<double>& enormals)
 {
   // get status of Ale
-  const bool isale = ele->parent_element()->IsAle();
+  const bool isale = ele->parent_element()->is_ale();
 
   // get Gauss rule
   const Core::FE::IntPointsAndWeights<bdrynsd_> intpoints(
@@ -944,12 +944,12 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_mean_curvature(
     // get the number of elements adjacent to this node. Find out how many
     // will contribute to the interpolated mean curvature value.
     int contr_elements = 0;
-    Core::Nodes::Node* thisNode = (ele->Nodes())[inode];
+    Core::Nodes::Node* thisNode = (ele->nodes())[inode];
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (thisNode == nullptr) FOUR_C_THROW("No node!\n");
 #endif
-    int NumElement = thisNode->NumElement();
-    Core::Elements::Element** ElementsPtr = thisNode->Elements();
+    int NumElement = thisNode->num_element();
+    Core::Elements::Element** ElementsPtr = thisNode->elements();
 
     // loop over adjacent Fluid elements
     for (int ele = 0; ele < NumElement; ele++)
@@ -957,13 +957,13 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_mean_curvature(
       Core::Elements::Element* Element = ElementsPtr[ele];
 
       // get surfaces
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces = Element->Surfaces();
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces = Element->surfaces();
 
       // loop over surfaces: how many free surfaces with this node on it?
       for (unsigned int surf = 0; surf < surfaces.size(); ++surf)
       {
         Teuchos::RCP<Core::Elements::Element> surface = surfaces[surf];
-        Core::Nodes::Node** NodesPtr = surface->Nodes();
+        Core::Nodes::Node** NodesPtr = surface->nodes();
         int numfsnodes = 0;
         bool hasthisnode = false;
 
@@ -971,11 +971,11 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_mean_curvature(
         {
           Core::Nodes::Node* checkNode = NodesPtr[surfnode];
           // check whether a free surface condition is active on this node
-          if (checkNode->GetCondition("FREESURFCoupling") != nullptr)
+          if (checkNode->get_condition("FREESURFCoupling") != nullptr)
           {
             numfsnodes++;
           }
-          if (checkNode->Id() == thisNode->Id())
+          if (checkNode->id() == thisNode->id())
           {
             hasthisnode = true;
           }
@@ -1014,7 +1014,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_surface_tension(
 // Attention: mynormals and mycurvature are not used in the function
 {
   // get status of Ale
-  const bool isale = ele->parent_element()->IsAle();
+  const bool isale = ele->parent_element()->is_ale();
 
   // get timefactor for left-hand side
   // One-step-Theta:    timefac = theta*dt
@@ -1022,21 +1022,21 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_surface_tension(
   // af-genalpha: timefac = (alpha_F/alpha_M) * gamma * dt
   // np-genalpha: timefac = (alpha_F/alpha_M) * gamma * dt
   // genalpha:    timefac =  alpha_F * gamma * dt
-  const double timefac = fldparatimint_->TimeFac();
+  const double timefac = fldparatimint_->time_fac();
 
   // isotropic and isothermal surface tension coefficient
   double SFgamma = 0.0;
   // get material data
-  Teuchos::RCP<Core::Mat::Material> mat = ele->parent_element()->Material();
+  Teuchos::RCP<Core::Mat::Material> mat = ele->parent_element()->material();
   if (mat == Teuchos::null)
     FOUR_C_THROW("no mat from parent!");
-  else if (mat->MaterialType() == Core::Materials::m_fluid)
+  else if (mat->material_type() == Core::Materials::m_fluid)
   {
     const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(mat.get());
-    SFgamma = actmat->Gamma();
+    SFgamma = actmat->gamma();
   }
   else
-    FOUR_C_THROW("Newtonian fluid material expected but got type %d", mat->MaterialType());
+    FOUR_C_THROW("Newtonian fluid material expected but got type %d", mat->material_type());
 
   // get Gauss rule
   const Core::FE::IntPointsAndWeights<bdrynsd_> intpoints(
@@ -1065,7 +1065,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_surface_tension(
    |               start loop over integration points                     |
    *----------------------------------------------------------------------*/
 
-  for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
   {
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of nurb specific stuff is not activated here
@@ -1156,19 +1156,19 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::area_calculation(
   // get and set density and viscosity (still required for following routines:
   // FluidImpedanceBc/FluidVolumetricSurfaceFlowBc/FluidCouplingBc::Area)
   //------------------------------------------------------------------
-  Teuchos::RCP<Core::Mat::Material> mat = ele->parent_element()->Material();
-  if (mat->MaterialType() == Core::Materials::m_fluid)
+  Teuchos::RCP<Core::Mat::Material> mat = ele->parent_element()->material();
+  if (mat->material_type() == Core::Materials::m_fluid)
   {
     const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(mat.get());
-    densaf_ = actmat->Density();
-    visc_ = actmat->Viscosity();
+    densaf_ = actmat->density();
+    visc_ = actmat->viscosity();
   }
-  else if (mat->MaterialType() == Core::Materials::m_carreauyasuda)
+  else if (mat->material_type() == Core::Materials::m_carreauyasuda)
   {
     const Mat::CarreauYasuda* actmat = static_cast<const Mat::CarreauYasuda*>(mat.get());
-    densaf_ = actmat->Density();
+    densaf_ = actmat->density();
 
-    const double nu_inf = actmat->NuInf();  // parameter for infinite-shear viscosity
+    const double nu_inf = actmat->nu_inf();  // parameter for infinite-shear viscosity
 
     // dynamic viscosity = kinematic viscosity * density
     visc_ = nu_inf * densaf_;
@@ -1190,9 +1190,9 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::area_calculation(
   // add potential ALE displacements
   Teuchos::RCP<const Epetra_Vector> dispnp;
   std::vector<double> mydispnp;
-  if (ele->parent_element()->IsAle())
+  if (ele->parent_element()->is_ale())
   {
-    dispnp = discretization.GetState("dispnp");
+    dispnp = discretization.get_state("dispnp");
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
@@ -1216,7 +1216,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::area_calculation(
       Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
   {
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
         xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
@@ -1245,7 +1245,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::pressure_boundary_integral(
 {
   // extract pressure values from global velocity/pressure vector
   // renamed to "velaf" to be consistent in fluidimplicitintegration.cpp (krank 12/13)
-  Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velaf");
+  Teuchos::RCP<const Epetra_Vector> velnp = discretization.get_state("velaf");
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   std::vector<double> myvelnp(lm.size());
@@ -1264,9 +1264,9 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::pressure_boundary_integral(
   // add potential ALE displacements
   Teuchos::RCP<const Epetra_Vector> dispnp;
   std::vector<double> mydispnp;
-  if (ele->parent_element()->IsAle())
+  if (ele->parent_element()->is_ale())
   {
-    dispnp = discretization.GetState("dispnp");
+    dispnp = discretization.get_state("dispnp");
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
@@ -1290,7 +1290,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::pressure_boundary_integral(
       Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
   {
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
         xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
@@ -1337,9 +1337,9 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::center_of_mass_calculation(
   Teuchos::RCP<const Epetra_Vector> dispnp;
   std::vector<double> mydispnp;
 
-  if (ele->parent_element()->IsAle())
+  if (ele->parent_element()->is_ale())
   {
-    dispnp = discretization.GetState("dispnp");
+    dispnp = discretization.get_state("dispnp");
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
@@ -1367,7 +1367,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::center_of_mass_calculation(
   for (int i = 0; i < nsd_; i++)
   {
     // const IntegrationPoints2D  intpoints(gaussrule);
-    for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+    for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
     {
       // Computation of the integration factor & shape function at the Gauss point & derivative of
       // the shape function at the Gauss point Computation of the unit normal vector at the Gauss
@@ -1382,7 +1382,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::center_of_mass_calculation(
       coordgp.multiply(xyze_, funct_);
 
       // Compute elment center of gravity
-      xyzGe(i) += intpoints.IP().qwgt[gpid] * coordgp(i) * drs_;
+      xyzGe(i) += intpoints.ip().qwgt[gpid] * coordgp(i) * drs_;
 
     }  // end Gauss loop
     xyzGe(i) /= elem_area;
@@ -1425,7 +1425,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::compute_flow_rate(
 
   // extract local values from the global vectors
   // renamed to "velaf" to be consistent in fluidimplicitintegration.cpp (krank 12/13)
-  Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velaf");
+  Teuchos::RCP<const Epetra_Vector> velnp = discretization.get_state("velaf");
 
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
@@ -1456,9 +1456,9 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::compute_flow_rate(
   Teuchos::RCP<const Epetra_Vector> dispnp;
   std::vector<double> mydispnp;
 
-  if (ele->parent_element()->IsAle())
+  if (ele->parent_element()->is_ale())
   {
-    dispnp = discretization.GetState("dispnp");
+    dispnp = discretization.get_state("dispnp");
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
@@ -1475,7 +1475,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::compute_flow_rate(
   }
 
   // const IntegrationPoints2D  intpoints(gaussrule);
-  for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
   {
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
@@ -1546,14 +1546,14 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::flow_rate_deriv(
   if (bdrynsd_ != 2) FOUR_C_THROW("flow_rate_deriv is only implemented for 3D!");
 
   // get status of Ale
-  const bool isale = ele->parent_element()->IsAle();
+  const bool isale = ele->parent_element()->is_ale();
 
   Teuchos::RCP<const Epetra_Vector> dispnp;
   std::vector<double> edispnp;
 
   if (isale)
   {
-    dispnp = discretization.GetState("dispnp");
+    dispnp = discretization.get_state("dispnp");
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'dispnp'");
     edispnp.resize(lm.size());
     Core::FE::ExtractMyValues(*dispnp, edispnp, lm);
@@ -1564,7 +1564,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::flow_rate_deriv(
       Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // order of accuracy of grid velocity determination
-  const Teuchos::ParameterList& fdyn = Global::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fdyn = Global::Problem::instance()->fluid_dynamic_params();
   const int gridvel = Core::UTILS::IntegralValue<Inpar::FLUID::Gridvel>(fdyn, "GRIDVEL");
 
   // normal vector
@@ -1590,7 +1590,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::flow_rate_deriv(
   }
 
   // get nodal velocities and pressures
-  Teuchos::RCP<const Epetra_Vector> convelnp = discretization.GetState("convectivevel");
+  Teuchos::RCP<const Epetra_Vector> convelnp = discretization.get_state("convectivevel");
 
   if (convelnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'convectivevel'");
 
@@ -1613,7 +1613,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::flow_rate_deriv(
   /*----------------------------------------------------------------------*
     |               start loop over integration points                     |
     *----------------------------------------------------------------------*/
-  for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
   {
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
@@ -1624,7 +1624,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::flow_rate_deriv(
     // The integration factor is not multiplied with drs
     // since it is the same as the scaling factor for the unit normal
     // Therefore it cancels out!!
-    const double fac = intpoints.IP().qwgt[gpid];
+    const double fac = intpoints.ip().qwgt[gpid];
 
     // dxyzdrs vector -> normal which is not normalized
     Core::LinAlg::Matrix<bdrynsd_, nsd_> dxyzdrs(0.0);
@@ -1820,7 +1820,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::impedance_integration(
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
-  const double tfacrhs = fldparatimint_->TimeFacRhs();
+  const double tfacrhs = fldparatimint_->time_fac_rhs();
 
   const double pressure = params.get<double>("WindkesselPressure");
 
@@ -1836,12 +1836,12 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::impedance_integration(
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
-  if (ele->parent_element()->IsAle())
+  if (ele->parent_element()->is_ale())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp;
     std::vector<double> mydispnp;
 
-    dispnp = discretization.GetState("dispnp");
+    dispnp = discretization.get_state("dispnp");
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
@@ -1858,7 +1858,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::impedance_integration(
   }
 
   // add traction in the inward normal direction with norm 'pressure'
-  for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
   {
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
@@ -1897,12 +1897,12 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::d_qdu(Discret::ELEMENTS::Flu
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
-  if (ele->parent_element()->IsAle())
+  if (ele->parent_element()->is_ale())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp;
     std::vector<double> mydispnp;
 
-    dispnp = discretization.GetState("dispnp");
+    dispnp = discretization.get_state("dispnp");
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
@@ -1919,7 +1919,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::d_qdu(Discret::ELEMENTS::Flu
   }
 
   // compute dQ/du were (dQ/du)_i= (\phi_i \dot n)_Gamma
-  for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
   {
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
@@ -1937,7 +1937,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::d_qdu(Discret::ELEMENTS::Flu
     }
   }
 
-  params.set<double>("tfaclhs", fldparatimint_->TimeFac());
+  params.set<double>("tfaclhs", fldparatimint_->time_fac());
 }
 
 
@@ -1961,37 +1961,37 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::get_density(
   densaf_ = 1.0;
   densfac_ = 1.0;
 
-  if (material->MaterialType() == Core::Materials::m_fluid)
+  if (material->material_type() == Core::Materials::m_fluid)
   {
     const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(material.get());
 
     // varying density
-    if (fldpara_->PhysicalType() == Inpar::FLUID::varying_density) densaf_ = funct_.dot(escaaf);
+    if (fldpara_->physical_type() == Inpar::FLUID::varying_density) densaf_ = funct_.dot(escaaf);
     // Boussinesq approximation: Calculation of delta rho
-    else if (fldpara_->PhysicalType() == Inpar::FLUID::boussinesq)
+    else if (fldpara_->physical_type() == Inpar::FLUID::boussinesq)
       FOUR_C_THROW("Boussinesq approximation not yet supported for boundary terms!");
     else
-      densaf_ = actmat->Density();
+      densaf_ = actmat->density();
   }
-  else if (material->MaterialType() == Core::Materials::m_carreauyasuda)
+  else if (material->material_type() == Core::Materials::m_carreauyasuda)
   {
     const Mat::CarreauYasuda* actmat = static_cast<const Mat::CarreauYasuda*>(material.get());
 
-    densaf_ = actmat->Density();
+    densaf_ = actmat->density();
   }
-  else if (material->MaterialType() == Core::Materials::m_modpowerlaw)
+  else if (material->material_type() == Core::Materials::m_modpowerlaw)
   {
     const Mat::ModPowerLaw* actmat = static_cast<const Mat::ModPowerLaw*>(material.get());
 
-    densaf_ = actmat->Density();
+    densaf_ = actmat->density();
   }
-  else if (material->MaterialType() == Core::Materials::m_herschelbulkley)
+  else if (material->material_type() == Core::Materials::m_herschelbulkley)
   {
     const Mat::HerschelBulkley* actmat = static_cast<const Mat::HerschelBulkley*>(material.get());
 
-    densaf_ = actmat->Density();
+    densaf_ = actmat->density();
   }
-  else if (material->MaterialType() == Core::Materials::m_sutherland)
+  else if (material->material_type() == Core::Materials::m_sutherland)
   {
     const Mat::Sutherland* actmat = static_cast<const Mat::Sutherland*>(material.get());
 
@@ -2000,12 +2000,12 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::get_density(
 
     // compute density at n+alpha_F or n+1 based on temperature
     // and thermodynamic pressure
-    densaf_ = actmat->ComputeDensity(tempaf, thermpressaf);
+    densaf_ = actmat->compute_density(tempaf, thermpressaf);
 
     // set density factor for Neumann boundary conditions to density for present material
     densfac_ = densaf_;
   }
-  else if (material->MaterialType() == Core::Materials::m_fluid_linear_density_viscosity)
+  else if (material->material_type() == Core::Materials::m_fluid_linear_density_viscosity)
   {
     const Mat::LinearDensityViscosity* actmat =
         static_cast<const Mat::LinearDensityViscosity*>(material.get());
@@ -2014,12 +2014,12 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::get_density(
     const double preaf = funct_.dot(epreaf);
 
     // compute density at n+alpha_F or n+1 based on pressure
-    densaf_ = actmat->ComputeDensity(preaf);
+    densaf_ = actmat->compute_density(preaf);
 
     // set density factor for Neumann boundary conditions to density for present material
     densfac_ = densaf_;
   }
-  else if (material->MaterialType() == Core::Materials::m_fluid_murnaghantait)
+  else if (material->material_type() == Core::Materials::m_fluid_murnaghantait)
   {
     const Mat::MurnaghanTaitFluid* actmat =
         static_cast<const Mat::MurnaghanTaitFluid*>(material.get());
@@ -2028,18 +2028,18 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::get_density(
     const double preaf = funct_.dot(epreaf);
 
     // compute density at n+alpha_F or n+1 based on pressure
-    densaf_ = actmat->ComputeDensity(preaf);
+    densaf_ = actmat->compute_density(preaf);
 
     // set density factor for Neumann boundary conditions to density for present material
     densfac_ = densaf_;
   }
-  else if (material->MaterialType() == Core::Materials::m_fluidporo)
+  else if (material->material_type() == Core::Materials::m_fluidporo)
   {
     const Mat::FluidPoro* actmat = static_cast<const Mat::FluidPoro*>(material.get());
 
-    densaf_ = actmat->Density();
+    densaf_ = actmat->density();
   }
-  else if (material->MaterialType() == Core::Materials::m_matlist)
+  else if (material->material_type() == Core::Materials::m_matlist)
   {
     densaf_ = 1.0;
     densfac_ = 1.0;
@@ -2068,7 +2068,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::calc_traction_velocity_compo
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velaf");
+  Teuchos::RCP<const Epetra_Vector> velnp = discretization.get_state("velaf");
 
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
@@ -2096,36 +2096,36 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::calc_traction_velocity_compo
   double density = 0.0;  // inverse density of my parent element
 
   // get material of volume element this surface belongs to
-  Teuchos::RCP<Core::Mat::Material> mat = ele->parent_element()->Material();
+  Teuchos::RCP<Core::Mat::Material> mat = ele->parent_element()->material();
 
-  if (mat->MaterialType() != Core::Materials::m_carreauyasuda &&
-      mat->MaterialType() != Core::Materials::m_modpowerlaw &&
-      mat->MaterialType() != Core::Materials::m_herschelbulkley &&
-      mat->MaterialType() != Core::Materials::m_fluid)
+  if (mat->material_type() != Core::Materials::m_carreauyasuda &&
+      mat->material_type() != Core::Materials::m_modpowerlaw &&
+      mat->material_type() != Core::Materials::m_herschelbulkley &&
+      mat->material_type() != Core::Materials::m_fluid)
     FOUR_C_THROW("Material law is not a fluid");
 
-  if (mat->MaterialType() == Core::Materials::m_fluid)
+  if (mat->material_type() == Core::Materials::m_fluid)
   {
     const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(mat.get());
-    density = actmat->Density();
+    density = actmat->density();
   }
-  else if (mat->MaterialType() == Core::Materials::m_carreauyasuda)
+  else if (mat->material_type() == Core::Materials::m_carreauyasuda)
   {
     const Mat::CarreauYasuda* actmat = static_cast<const Mat::CarreauYasuda*>(mat.get());
-    density = actmat->Density();
+    density = actmat->density();
   }
-  else if (mat->MaterialType() == Core::Materials::m_modpowerlaw)
+  else if (mat->material_type() == Core::Materials::m_modpowerlaw)
   {
     const Mat::ModPowerLaw* actmat = static_cast<const Mat::ModPowerLaw*>(mat.get());
-    density = actmat->Density();
+    density = actmat->density();
   }
-  else if (mat->MaterialType() == Core::Materials::m_herschelbulkley)
+  else if (mat->material_type() == Core::Materials::m_herschelbulkley)
   {
     const Mat::HerschelBulkley* actmat = static_cast<const Mat::HerschelBulkley*>(mat.get());
-    density = actmat->Density();
+    density = actmat->density();
   }
   else
-    FOUR_C_THROW("Fluid material expected but got type %d", mat->MaterialType());
+    FOUR_C_THROW("Fluid material expected but got type %d", mat->material_type());
 
   //-------------------------------------------------------------------
   // get the tractions velocity component
@@ -2148,9 +2148,9 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::calc_traction_velocity_compo
   Teuchos::RCP<const Epetra_Vector> dispnp;
   std::vector<double> mydispnp;
 
-  if (ele->parent_element()->IsAle())
+  if (ele->parent_element()->is_ale())
   {
-    dispnp = discretization.GetState("dispnp");
+    dispnp = discretization.get_state("dispnp");
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
@@ -2166,9 +2166,9 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::calc_traction_velocity_compo
     }
   }
 
-  const double timefac = fldparatimint_->TimeFacRhs();
+  const double timefac = fldparatimint_->time_fac_rhs();
 
-  for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
   {
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points

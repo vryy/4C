@@ -50,7 +50,7 @@ class VtuWriter : public VtkWriterBase
       unsigned int num_components_per_point, const std::string& name);
 
   //! write a data vector with num_component values of type T per cell
-  void WriteCellDataVector(const Core::IO::visualization_vector_type_variant& data,
+  void write_cell_data_vector(const Core::IO::visualization_vector_type_variant& data,
       unsigned int num_components_per_cell, const std::string& name);
 
 

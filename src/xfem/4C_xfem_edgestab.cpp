@@ -99,18 +99,18 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
 
 
   // get the parent fluid elements
-  Discret::ELEMENTS::Fluid* p_master = faceele->ParentMasterElement();
-  Discret::ELEMENTS::Fluid* p_slave = faceele->ParentSlaveElement();
+  Discret::ELEMENTS::Fluid* p_master = faceele->parent_master_element();
+  Discret::ELEMENTS::Fluid* p_slave = faceele->parent_slave_element();
 
   // get corresponding element handles if available
-  Core::Geo::Cut::ElementHandle* p_master_handle = wizard->GetElement(p_master);
-  Core::Geo::Cut::ElementHandle* p_slave_handle = wizard->GetElement(p_slave);
+  Core::Geo::Cut::ElementHandle* p_master_handle = wizard->get_element(p_master);
+  Core::Geo::Cut::ElementHandle* p_slave_handle = wizard->get_element(p_slave);
 
   size_t p_master_numnode = p_master->num_node();
   size_t p_slave_numnode = p_slave->num_node();
 
   // get the parent element
-  int p_master_id = p_master->Id();
+  int p_master_id = p_master->id();
 
   std::vector<int> nds_master;
   nds_master.reserve(p_master_numnode);
@@ -127,8 +127,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
   // Provide material at both sides:
   Teuchos::RCP<Core::Mat::Material> matptr_m;
   Teuchos::RCP<Core::Mat::Material> matptr_s;
-  matptr_m = p_master->Material();
-  matptr_s = p_slave->Material();
+  matptr_m = p_master->material();
+  matptr_s = p_slave->material();
 
   //------------------------------------------------------------------------------
   // simplest case: no element handles for both parent elements
@@ -139,7 +139,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
   {
     num_edgestab++;
 
-    if (matptr_m->MaterialType() == Core::Materials::m_matlist)
+    if (matptr_m->material_type() == Core::Materials::m_matlist)
       FOUR_C_THROW("The edgebased algo can not handle matlist at the moment, for this entry!");
 
     face_type = Inpar::XFEM::face_type_std;
@@ -167,17 +167,17 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
   else if (p_master_handle != nullptr and p_slave_handle != nullptr)
   {
     // linear elements
-    if (p_master->Shape() == Core::FE::CellType::hex8 or
-        p_master->Shape() == Core::FE::CellType::tet4 or
-        p_master->Shape() == Core::FE::CellType::wedge6 or
-        p_master->Shape() == Core::FE::CellType::pyramid5)
+    if (p_master->shape() == Core::FE::CellType::hex8 or
+        p_master->shape() == Core::FE::CellType::tet4 or
+        p_master->shape() == Core::FE::CellType::wedge6 or
+        p_master->shape() == Core::FE::CellType::pyramid5)
     {
       Core::Geo::Cut::SideHandle* side = get_face(faceele, wizard);
 
       //-------------------------------- loop facets of this side -----------------------------
       // facet of current side
       std::vector<Core::Geo::Cut::Facet*> facets;
-      side->Facets(facets);
+      side->facets(facets);
 
       if (facets.size() == 0)
         FOUR_C_THROW("there is no facet between two elements with elementhandle!");
@@ -186,11 +186,11 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
       for (std::vector<Core::Geo::Cut::Facet*>::const_iterator f = facets.begin();
            f != facets.end(); f++)
       {
-        if ((*f)->Position() == Core::Geo::Cut::Point::outside or
-            ((*f)->Position() == Core::Geo::Cut::Point::inside and
+        if ((*f)->position() == Core::Geo::Cut::Point::outside or
+            ((*f)->position() == Core::Geo::Cut::Point::inside and
                 (include_inner || include_inner_faces)))
         {
-          Core::Geo::Cut::plain_volumecell_set vcs = (*f)->Cells();
+          Core::Geo::Cut::plain_volumecell_set vcs = (*f)->cells();
 
           // how many volumecells found?
           if (vcs.size() ==
@@ -204,42 +204,42 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
 
 
             // get the parent element
-            int vc_ele1_id = vc1->parent_element()->Id();
-            int vc_ele2_id = vc2->parent_element()->Id();
+            int vc_ele1_id = vc1->parent_element()->id();
+            int vc_ele2_id = vc2->parent_element()->id();
 
             bool all_dofs = (facets.size() == 1 && include_inner_faces);
-            if ((*f)->Position() == Core::Geo::Cut::Point::outside || include_inner)
+            if ((*f)->position() == Core::Geo::Cut::Point::outside || include_inner)
             {
               //------------------------ create nodal dof sets
               TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: create nds");
               // which element is the parent element
               if (vc_ele1_id == p_master_id)
               {
-                nds_master = vc1->NodalDofSet();
-                nds_slave = vc2->NodalDofSet();
+                nds_master = vc1->nodal_dof_set();
+                nds_slave = vc2->nodal_dof_set();
               }
               else if (vc_ele2_id == p_master_id)
               {  // switch ele 1 <-> ele 2
-                nds_master = vc2->NodalDofSet();
-                nds_slave = vc1->NodalDofSet();
+                nds_master = vc2->nodal_dof_set();
+                nds_slave = vc1->nodal_dof_set();
               }
               else
                 FOUR_C_THROW("no element (ele1 and ele2) is the parent element!!! WHY?");
             }
-            else if ((*f)->Position() == Core::Geo::Cut::Point::inside && all_dofs)
+            else if ((*f)->position() == Core::Geo::Cut::Point::inside && all_dofs)
             {
-              for (std::size_t n = 0; n < vc1->parent_element()->Nodes().size(); ++n)
+              for (std::size_t n = 0; n < vc1->parent_element()->nodes().size(); ++n)
               {
-                if (!vc1->parent_element()->Nodes()[n]->NodalDofSets().size())
+                if (!vc1->parent_element()->nodes()[n]->nodal_dof_sets().size())
                 {
                   all_dofs = false;
                   break;
                 }
               }
               if (all_dofs)
-                for (std::size_t n = 0; n < vc2->parent_element()->Nodes().size(); ++n)
+                for (std::size_t n = 0; n < vc2->parent_element()->nodes().size(); ++n)
                 {
-                  if (!vc2->parent_element()->Nodes()[n]->NodalDofSets().size())
+                  if (!vc2->parent_element()->nodes()[n]->nodal_dof_sets().size())
                   {
                     all_dofs = false;
                     break;
@@ -249,11 +249,11 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
               {
                 nds_master.clear();
                 nds_slave.clear();
-                if (vc1->parent_element()->NumNodes() == vc2->parent_element()->NumNodes())
+                if (vc1->parent_element()->num_nodes() == vc2->parent_element()->num_nodes())
                 {
                   //------------------------ create nodal dof sets
                   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: create nds");
-                  for (std::size_t n = 0; n < vc2->parent_element()->Nodes().size(); ++n)
+                  for (std::size_t n = 0; n < vc2->parent_element()->nodes().size(); ++n)
                   {
                     nds_master.push_back(0);
                     nds_slave.push_back(0);
@@ -264,14 +264,14 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
               }
             }
 
-            if ((*f)->Position() == Core::Geo::Cut::Point::inside && !include_inner && !all_dofs)
+            if ((*f)->position() == Core::Geo::Cut::Point::inside && !include_inner && !all_dofs)
               continue;
             //------------------------
 
             num_edgestab++;
 
             // at least one element has to be cut
-            if (p_master_handle->IsIntersected() or p_slave_handle->IsIntersected())
+            if (p_master_handle->is_intersected() or p_slave_handle->is_intersected())
             {
               num_ghostpenalty++;
 
@@ -280,8 +280,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
             else
               face_type = Inpar::XFEM::face_type_std;
 
-            XFEM::UTILS::get_volume_cell_material(p_master, matptr_m, (*f)->Position());
-            XFEM::UTILS::get_volume_cell_material(p_slave, matptr_s, (*f)->Position());
+            XFEM::UTILS::get_volume_cell_material(p_master, matptr_m, (*f)->position());
+            XFEM::UTILS::get_volume_cell_material(p_slave, matptr_s, (*f)->position());
 
             //--------------------------------------------------------------------------------------------
 
@@ -293,17 +293,17 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
           }
           else if (vcs.size() == 1)
           {
-            FOUR_C_THROW("just one vcs reasonable?! face %d", faceele->Id());
+            FOUR_C_THROW("just one vcs reasonable?! face %d", faceele->id());
           }
         }  // facet outside or (inside and include_inner)
-        else if ((*f)->Position() == Core::Geo::Cut::Point::undecided)
+        else if ((*f)->position() == Core::Geo::Cut::Point::undecided)
         {
           FOUR_C_THROW("the position of this facet is undecided, how to stabilize???");
         }
-        else if ((*f)->Position() == Core::Geo::Cut::Point::oncutsurface)
+        else if ((*f)->position() == Core::Geo::Cut::Point::oncutsurface)
         {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-          std::cout << "the position of this facet of face " << faceele->Id()
+          std::cout << "the position of this facet of face " << faceele->id()
                     << " is oncutsurface, we do not stabilize it!!! " << std::endl;
 #endif
           // if a facet lies oncutsurface, then there is only one neighbor, we do not stabilize this
@@ -320,10 +320,10 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
 
       }  // loop facets
     }    // if linear elements
-    else if (p_master->Shape() == Core::FE::CellType::hex20 or
-             p_master->Shape() == Core::FE::CellType::hex27 or
-             p_master->Shape() == Core::FE::CellType::tet10 or
-             p_master->Shape() == Core::FE::CellType::wedge15)
+    else if (p_master->shape() == Core::FE::CellType::hex20 or
+             p_master->shape() == Core::FE::CellType::hex27 or
+             p_master->shape() == Core::FE::CellType::tet10 or
+             p_master->shape() == Core::FE::CellType::wedge15)
     {
       Core::Geo::Cut::SideHandle* side =
           get_face(faceele, wizard);  // the side of the quadratic element
@@ -331,7 +331,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
       // facet of current side
       std::vector<Core::Geo::Cut::Facet*> facets;
 
-      side->Facets(facets);  // all facets of this quadratic element side
+      side->facets(facets);  // all facets of this quadratic element side
       if (facets.size() == 0)
         FOUR_C_THROW("there is no facet between two elements with elementhandle!");
       // each facet should have 2 volumecells
@@ -340,10 +340,10 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
       for (std::vector<Core::Geo::Cut::Facet*>::const_iterator f = facets.begin();
            f != facets.end(); f++)
       {
-        if ((*f)->Position() == Core::Geo::Cut::Point::outside or
-            ((*f)->Position() == Core::Geo::Cut::Point::inside and include_inner))
+        if ((*f)->position() == Core::Geo::Cut::Point::outside or
+            ((*f)->position() == Core::Geo::Cut::Point::inside and include_inner))
         {
-          Core::Geo::Cut::plain_volumecell_set vcs = (*f)->Cells();
+          Core::Geo::Cut::plain_volumecell_set vcs = (*f)->cells();
           // how many volumecells found?
           if (vcs.size() ==
               2)  // standard XFEM case (facet between two vcs of two neighbouring cut elements
@@ -359,19 +359,19 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
               Core::Geo::Cut::VolumeCell* vc2 = *(vc_it);
 
               // get the parent element
-              int vc_ele1_id = vc1->parent_element()->GetParentId();
-              int vc_ele2_id = vc2->parent_element()->GetParentId();
+              int vc_ele1_id = vc1->parent_element()->get_parent_id();
+              int vc_ele2_id = vc2->parent_element()->get_parent_id();
 
               // which element is the parent element
               if (vc_ele1_id == p_master_id)
               {
-                nds_master = vc1->NodalDofSet();
-                nds_slave = vc2->NodalDofSet();
+                nds_master = vc1->nodal_dof_set();
+                nds_slave = vc2->nodal_dof_set();
               }
               else if (vc_ele2_id == p_master_id)
               {  // switch ele 1 <-> ele 2
-                nds_master = vc2->NodalDofSet();
-                nds_slave = vc1->NodalDofSet();
+                nds_master = vc2->nodal_dof_set();
+                nds_slave = vc1->nodal_dof_set();
               }
               else
               {
@@ -413,7 +413,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
             //------------------------
             num_edgestab++;
             // at least one element has to be cut
-            if (p_master_handle->IsIntersected() or p_slave_handle->IsIntersected())
+            if (p_master_handle->is_intersected() or p_slave_handle->is_intersected())
             {
               num_ghostpenalty++;
 
@@ -422,8 +422,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
             else
               face_type = Inpar::XFEM::face_type_std;
 
-            XFEM::UTILS::get_volume_cell_material(p_master, matptr_m, (*f)->Position());
-            XFEM::UTILS::get_volume_cell_material(p_slave, matptr_s, (*f)->Position());
+            XFEM::UTILS::get_volume_cell_material(p_master, matptr_m, (*f)->position());
+            XFEM::UTILS::get_volume_cell_material(p_slave, matptr_s, (*f)->position());
 
             //--------------------------------------------------------------------------------------------
             // call evaluate and assemble routine
@@ -433,17 +433,17 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
           }
           else if (vcs.size() == 1)
           {
-            FOUR_C_THROW("just one vcs reasonable?! face %d", faceele->Id());
+            FOUR_C_THROW("just one vcs reasonable?! face %d", faceele->id());
           }
         }  // facet outside or (inside and include_inner)
-        else if ((*f)->Position() == Core::Geo::Cut::Point::undecided)
+        else if ((*f)->position() == Core::Geo::Cut::Point::undecided)
         {
           FOUR_C_THROW("the position of this facet is undecided, how to stabilize???");
         }
-        else if ((*f)->Position() == Core::Geo::Cut::Point::oncutsurface)
+        else if ((*f)->position() == Core::Geo::Cut::Point::oncutsurface)
         {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-          std::cout << "the position of this facet of face " << faceele->Id()
+          std::cout << "the position of this facet of face " << faceele->id()
                     << " is oncutsurface, we do not stabilize it!!! " << std::endl;
 #endif
           // if a facet lies oncutsurface, then there is only one neighbor, we do not stabilize this
@@ -470,35 +470,35 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
            (p_master_handle == nullptr and p_slave_handle != nullptr))
   {
     // linear elements
-    if (p_master->Shape() == Core::FE::CellType::hex8 or
-        p_master->Shape() == Core::FE::CellType::tet4 or
-        p_master->Shape() == Core::FE::CellType::wedge6 or
-        p_master->Shape() == Core::FE::CellType::pyramid5 or
-        p_master->Shape() == Core::FE::CellType::hex20 or
-        p_master->Shape() == Core::FE::CellType::hex27 or
-        p_master->Shape() == Core::FE::CellType::tet10 or
-        p_master->Shape() == Core::FE::CellType::wedge15)
+    if (p_master->shape() == Core::FE::CellType::hex8 or
+        p_master->shape() == Core::FE::CellType::tet4 or
+        p_master->shape() == Core::FE::CellType::wedge6 or
+        p_master->shape() == Core::FE::CellType::pyramid5 or
+        p_master->shape() == Core::FE::CellType::hex20 or
+        p_master->shape() == Core::FE::CellType::hex27 or
+        p_master->shape() == Core::FE::CellType::tet10 or
+        p_master->shape() == Core::FE::CellType::wedge15)
     {
       Core::Geo::Cut::SideHandle* side = get_face(faceele, wizard);
 
       // facet of current side
       std::vector<Core::Geo::Cut::Facet*> facets;
-      side->Facets(facets);
+      side->facets(facets);
 
-      if (p_master->Shape() == Core::FE::CellType::hex8 or
-          p_master->Shape() == Core::FE::CellType::tet4 or
-          p_master->Shape() == Core::FE::CellType::wedge6 or
-          p_master->Shape() == Core::FE::CellType::pyramid5)
+      if (p_master->shape() == Core::FE::CellType::hex8 or
+          p_master->shape() == Core::FE::CellType::tet4 or
+          p_master->shape() == Core::FE::CellType::wedge6 or
+          p_master->shape() == Core::FE::CellType::pyramid5)
       {
         if (facets.size() != 1) FOUR_C_THROW("there has to be 1 facet equal to the side");
       }
 
       // get the unique single facet
       Core::Geo::Cut::Facet* f = facets[0];
-      if (f->Position() == Core::Geo::Cut::Point::outside or
-          (f->Position() == Core::Geo::Cut::Point::inside and include_inner))
+      if (f->position() == Core::Geo::Cut::Point::outside or
+          (f->position() == Core::Geo::Cut::Point::inside and include_inner))
       {
-        Core::Geo::Cut::plain_volumecell_set vcs = f->Cells();
+        Core::Geo::Cut::plain_volumecell_set vcs = f->cells();
 
         if (vcs.size() != 1)
           FOUR_C_THROW("there has to be 1 volumecell equal to the side");
@@ -511,17 +511,17 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
             Core::Geo::Cut::VolumeCell* vc = *(vcs.begin());
 
             // get the parent element
-            int vc_ele_id = vc->parent_element()->Id();
+            int vc_ele_id = vc->parent_element()->id();
             if (vc_ele_id == -1)
             {
-              vc_ele_id = vc->parent_element()->GetParentId();
+              vc_ele_id = vc->parent_element()->get_parent_id();
             }
 
 
             // which element is the parent element
             if (p_master_handle != nullptr)
             {
-              nds_master = vc->NodalDofSet();
+              nds_master = vc->nodal_dof_set();
 
               for (size_t i = 0; i < p_slave_numnode; i++) nds_slave.push_back(0);
             }
@@ -529,7 +529,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
             {
               for (size_t i = 0; i < p_master_numnode; i++) nds_master.push_back(0);
 
-              nds_slave = vc->NodalDofSet();
+              nds_slave = vc->nodal_dof_set();
             }
             else
               FOUR_C_THROW("no element (ele1 and ele2) is the parent element!!! WHY?");
@@ -541,7 +541,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
           // at most one element can be a cut one
           if (p_master_handle != nullptr)
           {
-            if (p_master_handle->IsIntersected())
+            if (p_master_handle->is_intersected())
             {
               num_ghostpenalty++;
               face_type = Inpar::XFEM::face_type_ghost_penalty;
@@ -551,7 +551,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
           }
           else if (p_slave_handle != nullptr)
           {
-            if (p_slave_handle->IsIntersected())
+            if (p_slave_handle->is_intersected())
             {
               num_ghostpenalty++;
               face_type = Inpar::XFEM::face_type_ghost_penalty;
@@ -564,8 +564,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
 
 
           // Get materials:
-          XFEM::UTILS::get_volume_cell_material(p_master, matptr_m, f->Position());
-          XFEM::UTILS::get_volume_cell_material(p_slave, matptr_s, f->Position());
+          XFEM::UTILS::get_volume_cell_material(p_master, matptr_m, f->position());
+          XFEM::UTILS::get_volume_cell_material(p_slave, matptr_s, f->position());
 
           //--------------------------------------------------------------------------------------------
 
@@ -584,8 +584,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
 
   if (gmsh_eos_out)
   {
-    ghost_penalty_stab_.insert(std::pair<int, int>(faceele->Id(), num_ghostpenalty));
-    edge_based_stab_.insert(std::pair<int, int>(faceele->Id(), num_edgestab));
+    ghost_penalty_stab_.insert(std::pair<int, int>(faceele->id(), num_ghostpenalty));
+    edge_based_stab_.insert(std::pair<int, int>(faceele->id(), num_edgestab));
   }
 
   //--------------------------------------------------------------------------------------------
@@ -625,7 +625,7 @@ void XFEM::XfemEdgeStab::assemble_edge_stab_ghost_penalty(
 
 
   // call the egde-based assemble and evaluate routine
-  Discret::ELEMENTS::FluidIntFaceImplInterface::Impl(intface)
+  Discret::ELEMENTS::FluidIntFaceImplInterface::impl(intface)
       ->assemble_internal_faces_using_neighbor_data(intface, material_m, nds_master, nds_slave,
           face_type, eleparams, xdiscret, systemmatrix, systemvector);
 
@@ -649,7 +649,7 @@ Core::Geo::Cut::SideHandle* XFEM::XfemEdgeStab::get_face(
 
   for (int inode = 0; inode < numnode; inode++)
   {
-    nodeids[inode] = faceele->NodeIds()[inode];
+    nodeids[inode] = faceele->node_ids()[inode];
   }
 
   std::sort(nodeids.begin(), nodeids.end());
@@ -671,7 +671,7 @@ void XFEM::XfemEdgeStab::reset()
 /*----------------------------------------------------------------------*
  |  prepares edge based stabilization for standard fluid   schott 05/12 |
  *----------------------------------------------------------------------*/
-void XFEM::XfemEdgeStab::EvaluateEdgeStabStd(
+void XFEM::XfemEdgeStab::evaluate_edge_stab_std(
     Teuchos::ParameterList& eleparams,                      ///< element parameter list
     Teuchos::RCP<Core::FE::Discretization> discret,         ///< discretization
     Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
@@ -688,8 +688,8 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabStd(
 
 
   // get the parent fluid elements
-  Discret::ELEMENTS::Fluid* p_master = faceele->ParentMasterElement();
-  Discret::ELEMENTS::Fluid* p_slave = faceele->ParentSlaveElement();
+  Discret::ELEMENTS::Fluid* p_master = faceele->parent_master_element();
+  Discret::ELEMENTS::Fluid* p_slave = faceele->parent_slave_element();
 
   size_t p_master_numnode = p_master->num_node();
   size_t p_slave_numnode = p_slave->num_node();
@@ -705,8 +705,8 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabStd(
   // Provide material at both sides:
   Teuchos::RCP<Core::Mat::Material> matptr_m;
   Teuchos::RCP<Core::Mat::Material> matptr_s;
-  matptr_m = p_master->Material();
-  matptr_s = p_slave->Material();
+  matptr_m = p_master->material();
+  matptr_s = p_slave->material();
 
   //--------------------------------------------------------------------------------------------
 
@@ -743,8 +743,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_boundary_gp(
 
 
   // get the parent fluid elements
-  Discret::ELEMENTS::Fluid* p_master = faceele->ParentMasterElement();
-  Discret::ELEMENTS::Fluid* p_slave = faceele->ParentSlaveElement();
+  Discret::ELEMENTS::Fluid* p_master = faceele->parent_master_element();
+  Discret::ELEMENTS::Fluid* p_slave = faceele->parent_slave_element();
 
   size_t p_master_numnode = p_master->num_node();
   size_t p_slave_numnode = p_slave->num_node();
@@ -772,15 +772,15 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_boundary_gp(
   //--------------------------------------------------------------------------------------------
   // leave, if neither slave nor master element of this face contributes to the fluid-fluid
   // interface
-  if (!(boundarydiscret->HaveGlobalElement(p_master->Id()) ||
-          boundarydiscret->HaveGlobalElement(p_slave->Id())))
+  if (!(boundarydiscret->have_global_element(p_master->id()) ||
+          boundarydiscret->have_global_element(p_slave->id())))
     return;
 
   // Provide material at both sides:
   Teuchos::RCP<Core::Mat::Material> matptr_m;
   Teuchos::RCP<Core::Mat::Material> matptr_s;
-  matptr_m = p_master->Material();
-  matptr_s = p_slave->Material();
+  matptr_m = p_master->material();
+  matptr_s = p_slave->material();
 
 
   // call evaluate and assemble routine

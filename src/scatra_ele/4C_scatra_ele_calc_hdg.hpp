@@ -48,11 +48,11 @@ namespace Discret
        */
 
       //! Singleton access method
-      static ScaTraEleCalcHDG<distype, probdim>* Instance(const int numdofpernode,
+      static ScaTraEleCalcHDG<distype, probdim>* instance(const int numdofpernode,
           const int numscal, const std::string& disname, bool create = true);
 
       //! evaluate service routine
-      int EvaluateService(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_service(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -61,12 +61,12 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
       //! interpolates an HDG solution to the element nodes for output
-      virtual int NodeBasedValues(Core::Elements::Element* ele,
+      virtual int node_based_values(Core::Elements::Element* ele,
           Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1);
 
       //! initialize the shape functions and solver to the given element (degree is runtime
       //! parameter)
-      void InitializeShapes(const Core::Elements::Element* ele, const std::string& disname);
+      void initialize_shapes(const Core::Elements::Element* ele, const std::string& disname);
 
       //! Evaluate the element (Generic virtual interface function. Called via base pointer.)
       int evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
@@ -87,13 +87,14 @@ namespace Discret
       }
 
       //! Setup element evaluation
-      int SetupCalc(Core::Elements::Element* ele, Core::FE::Discretization& discretization) override
+      int setup_calc(
+          Core::Elements::Element* ele, Core::FE::Discretization& discretization) override
       {
         return 0;
       }
 
       //! projection of Dirichlet function field
-      int ProjectDirichField(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+      int project_dirich_field(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseVector& elevec1);
 
@@ -102,23 +103,24 @@ namespace Discret
           Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& elevec);
 
       //! set initial field
-      int SetInitialField(const Core::Elements::Element* ele, Teuchos::ParameterList& params,
+      int set_initial_field(const Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2);
 
       //! project field
-      int ProjectField(const Core::Elements::Element* ele, Core::FE::Discretization& discretization,
-          Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& elevec1,
-          Core::LinAlg::SerialDenseVector& elevec2, Core::Elements::Element::LocationArray& la);
+      int project_field(const Core::Elements::Element* ele,
+          Core::FE::Discretization& discretization, Teuchos::ParameterList& params,
+          Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+          Core::Elements::Element::LocationArray& la);
 
       //! project material field
       virtual int project_material_field(const Core::Elements::Element* ele) { return 0; };
 
       //! calc p-adaptivity
-      int CalcPAdaptivity(const Core::Elements::Element* ele,
+      int calc_p_adaptivity(const Core::Elements::Element* ele,
           Core::FE::Discretization& discretization, Teuchos::ParameterList& params);
 
       //! calc error
-      int CalcError(const Core::Elements::Element* ele, Teuchos::ParameterList& params,
+      int calc_error(const Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::LinAlg::SerialDenseVector& elevec);
 
      protected:
@@ -183,7 +185,7 @@ namespace Discret
       Core::LinAlg::SerialDenseVector interiorPhinp_;
 
       //! get time step
-      double dt() { return local_solver_->scatraparatimint_->Dt(); }
+      double dt() { return local_solver_->scatraparatimint_->dt(); }
 
 
 
@@ -227,13 +229,13 @@ namespace Discret
             const std::string& disname, int numscal);
 
         //! compute the residual
-        void ComputeResidual(Teuchos::ParameterList& params,
+        void compute_residual(Teuchos::ParameterList& params,
             Core::LinAlg::SerialDenseVector& elevec, Core::LinAlg::SerialDenseMatrix& elemat1,
             Core::LinAlg::SerialDenseVector& interiorPhin, Core::LinAlg::SerialDenseVector& tracen,
             Core::LinAlg::SerialDenseVector& tracenp, const Discret::ELEMENTS::ScaTraHDG* hdgele);
 
         //! compute Neumann boundary conditions
-        void ComputeNeumannBC(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+        void compute_neumann_bc(Core::Elements::Element* ele, Teuchos::ParameterList& params,
             int face, Core::LinAlg::SerialDenseVector& elevec, int indexstart);
 
         //! compute interior matrices
@@ -246,26 +248,26 @@ namespace Discret
         void compute_interior_matrices_all(Discret::ELEMENTS::ScaTraHDG* hdgele);
 
         //! calls local solver to compute matrices: internal and face
-        void ComputeMatrices(Core::Elements::Element* ele);
+        void compute_matrices(Core::Elements::Element* ele);
 
         //! compute face matrices
-        void ComputeFaceMatrices(
+        void compute_face_matrices(
             const int face, int indexstart, Discret::ELEMENTS::ScaTraHDG* hdgele);
 
         //! condense the local matrix (involving interior concentration gradients and
         //! concentrations) into the element matrix for the trace and similarly for the residuals
-        void CondenseLocalPart(Discret::ELEMENTS::ScaTraHDG* hdgele);
+        void condense_local_part(Discret::ELEMENTS::ScaTraHDG* hdgele);
 
         //! Compute divergence of current source (ELEMAG)
-        void ComputeSource(const Core::Elements::Element* ele,
+        void compute_source(const Core::Elements::Element* ele,
             Core::LinAlg::SerialDenseVector& elevec1, const double time);
 
         //! add diffusive term to element matrix
-        void AddDiffMat(
+        void add_diff_mat(
             Core::LinAlg::SerialDenseMatrix& elemat, const Discret::ELEMENTS::ScaTraHDG* hdgele);
 
         //! add reaction term to element matrix
-        void AddReacMat(
+        void add_reac_mat(
             Core::LinAlg::SerialDenseMatrix& elemat, const Discret::ELEMENTS::ScaTraHDG* hdgele);
 
         //! set material parameter

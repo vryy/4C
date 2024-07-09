@@ -36,7 +36,7 @@ void Mat::add_holzapfel_product(
     Core::LinAlg::Matrix<6, 6, T>& cmat, const Core::LinAlg::Matrix<6, 1, T>& invc, const T scalar)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (cmat.numRows() != 6 or cmat.numCols() != 6 or invc.numRows() != 6)
+  if (cmat.num_rows() != 6 or cmat.num_cols() != 6 or invc.num_rows() != 6)
     FOUR_C_THROW("Wrong dimensions in function add_holzapfel_product");
 #endif
 
@@ -131,12 +131,12 @@ void Mat::add_symmetric_elasticity_tensor_product(Core::LinAlg::Matrix<6, 6>& C,
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // check sizes
-  if (A.numRows() != A.numCols() || B.numRows() != B.numCols() || A.numRows() != 3 ||
-      B.numRows() != 3)
+  if (A.num_rows() != A.num_cols() || B.num_rows() != B.num_cols() || A.num_rows() != 3 ||
+      B.num_rows() != 3)
   {
     FOUR_C_THROW("2nd order tensors must be 3 by 3");
   }
-  if (C.numRows() != C.numCols() || C.numRows() != 6)
+  if (C.num_rows() != C.num_cols() || C.num_rows() != 6)
     FOUR_C_THROW("4th order tensor must be 6 by 6");
 #endif
 

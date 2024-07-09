@@ -30,7 +30,7 @@ CONTACT::IntegratorNitscheFpi::IntegratorNitscheFpi(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitscheFpi::IntegrateDerivEle3D(Mortar::Element& sele,
+void CONTACT::IntegratorNitscheFpi::integrate_deriv_ele3_d(Mortar::Element& sele,
     std::vector<Mortar::Element*> meles, bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
@@ -53,11 +53,11 @@ void CONTACT::IntegratorNitscheFpi::IntegrateDerivEle3D(Mortar::Element& sele,
 
   if (!meles.size()) return;
 
-  if (xf_c_comm_->higher_integrationfor_contact_element(sele.Id()))
-    xf_c_comm_->get_cut_side_integration_points(sele.Id(), coords_, weights_, ngp_);
+  if (xf_c_comm_->higher_integrationfor_contact_element(sele.id()))
+    xf_c_comm_->get_cut_side_integration_points(sele.id(), coords_, weights_, ngp_);
 
   // Call Base Contact Integratederiv with potentially increased number of GPs!
-  CONTACT::Integrator::IntegrateDerivEle3D(sele, meles, boundary_ele, proj_, comm, cparams_ptr);
+  CONTACT::Integrator::integrate_deriv_ele3_d(sele, meles, boundary_ele, proj_, comm, cparams_ptr);
 }
 
 /*----------------------------------------------------------------------*
@@ -78,7 +78,7 @@ void CONTACT::IntegratorNitscheFpi::integrate_gp_3_d(Mortar::Element& sele, Mort
   double n[3];
   sele.compute_unit_normal_at_xi(sxi, n);
   std::vector<Core::Gen::Pairedvector<int, double>> dn(3, sele.num_node() * 3);
-  dynamic_cast<CONTACT::Element&>(sele).DerivUnitNormalAtXi(sxi, dn);
+  dynamic_cast<CONTACT::Element&>(sele).deriv_unit_normal_at_xi(sxi, dn);
 
   gpts_forces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt,
       gap, deriv_gap, n, dn, sxi, mxi);
@@ -97,11 +97,11 @@ void CONTACT::IntegratorNitscheFpi::gpts_forces(Mortar::Element& sele, Mortar::E
     std::vector<Core::Gen::Pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi)
 {
   // first rough check
-  if (gap > 10 * std::max(sele.MaxEdgeSize(), mele.MaxEdgeSize())) return;
+  if (gap > 10 * std::max(sele.max_edge_size(), mele.max_edge_size())) return;
 
   const Core::LinAlg::Matrix<dim, 1> normal(gpn, true);
 
-  if (dim != Dim()) FOUR_C_THROW("dimension inconsistency");
+  if (dim != n_dim()) FOUR_C_THROW("dimension inconsistency");
 
 
   double pen = ppn_;
@@ -224,18 +224,18 @@ void CONTACT::IntegratorNitscheFpi::gpts_forces(Mortar::Element& sele, Mortar::E
   {
     update_ele_contact_state(sele, -1);
     if (!FSI_integrated)
-      xf_c_comm_->Inc_GP(1);
+      xf_c_comm_->inc_gp(1);
     else
-      xf_c_comm_->Inc_GP(2);
+      xf_c_comm_->inc_gp(2);
     return;
   }
 
   double cauchy_nn_weighted_average = 0.;
   Core::Gen::Pairedvector<int, double> cauchy_nn_weighted_average_deriv_d(
-      sele.num_node() * 3 * 12 + sele.MoData().ParentDisp().size() +
-      mele.MoData().ParentDisp().size());
+      sele.num_node() * 3 * 12 + sele.mo_data().parent_disp().size() +
+      mele.mo_data().parent_disp().size());
   Core::Gen::Pairedvector<int, double> cauchy_nn_weighted_average_deriv_p(
-      sele.MoData().ParentPFPres().size() + mele.MoData().ParentPFPres().size());
+      sele.mo_data().parent_pf_pres().size() + mele.mo_data().parent_pf_pres().size());
 
   so_ele_cauchy<dim>(sele, sxi, dsxi, wgt, normal, dnmap_unit, normal, dnmap_unit, ws,
       cauchy_nn_weighted_average, cauchy_nn_weighted_average_deriv_d,
@@ -266,7 +266,7 @@ void CONTACT::IntegratorNitscheFpi::gpts_forces(Mortar::Element& sele, Mortar::E
     xf_c_comm_->Gmsh_Write(sgp_x, 1.0, 2);
   }
 #endif
-  xf_c_comm_->Inc_GP(0);
+  xf_c_comm_->inc_gp(0);
 }
 
 void CONTACT::IntegratorNitscheFpi::update_ele_contact_state(Mortar::Element& sele, int state)
@@ -274,14 +274,14 @@ void CONTACT::IntegratorNitscheFpi::update_ele_contact_state(Mortar::Element& se
   if (!state && ele_contact_state_)
   {
     ele_contact_state_ = state;
-    xf_c_comm_->register_contact_elementfor_higher_integration(sele.Id());
+    xf_c_comm_->register_contact_elementfor_higher_integration(sele.id());
   }
   else if (ele_contact_state_ == -2)
     ele_contact_state_ = state;
   else if (ele_contact_state_ == -state)  // switch between contact and no contact
   {
     ele_contact_state_ = 0;
-    xf_c_comm_->register_contact_elementfor_higher_integration(sele.Id());
+    xf_c_comm_->register_contact_elementfor_higher_integration(sele.id());
   }
 }
 
@@ -297,11 +297,11 @@ double CONTACT::IntegratorNitscheFpi::get_normal_contact_transition(Mortar::Elem
   double poropressure(0.0);
   if (get_poro_pressure(sele, sval, mele, mval, poropressure))
   {
-    return xf_c_comm_->Get_FSI_Traction(&sele, pxsi, Core::LinAlg::Matrix<dim - 1, 1>(sxi, false),
+    return xf_c_comm_->get_fsi_traction(&sele, pxsi, Core::LinAlg::Matrix<dim - 1, 1>(sxi, false),
         normal, FSI_integrated, gp_on_this_proc, &poropressure);
   }
   else
-    return xf_c_comm_->Get_FSI_Traction(&sele, pxsi, Core::LinAlg::Matrix<dim - 1, 1>(sxi, false),
+    return xf_c_comm_->get_fsi_traction(&sele, pxsi, Core::LinAlg::Matrix<dim - 1, 1>(sxi, false),
         normal, FSI_integrated, gp_on_this_proc);
 }
 

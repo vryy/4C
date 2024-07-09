@@ -63,7 +63,7 @@ namespace Adapter
     //! @name Vector access
 
     /// Return the already evaluated RHS of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> rhs() = 0;
 
     //@}
 

@@ -17,9 +17,9 @@
 FOUR_C_NAMESPACE_OPEN
 CONTACT::ElementType CONTACT::ElementType::instance_;
 
-CONTACT::ElementType& CONTACT::ElementType::Instance() { return instance_; }
+CONTACT::ElementType& CONTACT::ElementType::instance() { return instance_; }
 
-Core::Communication::ParObject* CONTACT::ElementType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* CONTACT::ElementType::create(const std::vector<char>& data)
 {
   CONTACT::Element* ele =
       new CONTACT::Element(0, 0, Core::FE::CellType::dis_none, 0, nullptr, false);
@@ -27,7 +27,7 @@ Core::Communication::ParObject* CONTACT::ElementType::Create(const std::vector<c
   return ele;
 }
 
-Teuchos::RCP<Core::Elements::Element> CONTACT::ElementType::Create(const int id, const int owner)
+Teuchos::RCP<Core::Elements::Element> CONTACT::ElementType::create(const int id, const int owner)
 {
   // return Teuchos::rcp( new Element( id, owner ) );
   return Teuchos::null;
@@ -38,7 +38,7 @@ void CONTACT::ElementType::nodal_block_information(
 {
 }
 
-Core::LinAlg::SerialDenseMatrix CONTACT::ElementType::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix CONTACT::ElementType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   Core::LinAlg::SerialDenseMatrix nullspace;
@@ -71,7 +71,7 @@ CONTACT::Element::Element(const CONTACT::Element& old) : Mortar::Element(old)
 /*----------------------------------------------------------------------*
  |  clone-ctor (public)                                      mwgee 10/07|
  *----------------------------------------------------------------------*/
-Core::Elements::Element* CONTACT::Element::Clone() const
+Core::Elements::Element* CONTACT::Element::clone() const
 {
   CONTACT::Element* newele = new CONTACT::Element(*this);
   return newele;
@@ -106,7 +106,7 @@ void CONTACT::Element::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // add base class Mortar::Element
@@ -123,7 +123,7 @@ void CONTACT::Element::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Mortar::Element
   std::vector<char> basedata(0);
@@ -138,11 +138,11 @@ void CONTACT::Element::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  number of dofs per node (public)                         mwgee 10/07|
  *----------------------------------------------------------------------*/
-int CONTACT::Element::NumDofPerNode(const Core::Nodes::Node& node) const
+int CONTACT::Element::num_dof_per_node(const Core::Nodes::Node& node) const
 {
   const CONTACT::Node* cnode = dynamic_cast<const CONTACT::Node*>(&node);
   if (!cnode) FOUR_C_THROW("Node is not a Node");
-  return cnode->NumDof();
+  return cnode->num_dof();
 }
 
 /*----------------------------------------------------------------------*
@@ -161,11 +161,11 @@ int CONTACT::Element::evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Build element normal derivative at node                   popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Element::DerivNormalAtNode(int nid, int& i, Core::LinAlg::SerialDenseMatrix& elens,
+void CONTACT::Element::deriv_normal_at_node(int nid, int& i, Core::LinAlg::SerialDenseMatrix& elens,
     std::vector<Core::Gen::Pairedvector<int, double>>& derivn)
 {
   // find this node in my list of nodes and get local numbering
-  int lid = GetLocalNodeId(nid);
+  int lid = get_local_node_id(nid);
 
   // get local coordinates for this node
   double xi[2];
@@ -186,7 +186,7 @@ void CONTACT::Element::deriv_normal_at_xi(double* xi, int& i,
 {
   // initialize variables
   const int nnodes = num_node();
-  Core::Nodes::Node** mynodes = Nodes();
+  Core::Nodes::Node** mynodes = nodes();
   if (!mynodes) FOUR_C_THROW("deriv_normal_at_xi: Null pointer!");
   Core::LinAlg::SerialDenseVector val(nnodes);
   Core::LinAlg::SerialDenseMatrix deriv(nnodes, 2, true);
@@ -198,7 +198,7 @@ void CONTACT::Element::deriv_normal_at_xi(double* xi, int& i,
   evaluate_shape(xi, val, deriv, nnodes);
 
   // get local element basis vectors
-  Metrics(xi, gxi, geta);
+  metrics(xi, gxi, geta);
 
   // derivative weighting matrix for current element
   Core::LinAlg::Matrix<3, 3> W;
@@ -218,7 +218,7 @@ void CONTACT::Element::deriv_normal_at_xi(double* xi, int& i,
   {
     Node* mycnode = dynamic_cast<Node*>(mynodes[n]);
     if (!mycnode) FOUR_C_THROW("deriv_normal_at_xi: Null pointer!");
-    int ndof = mycnode->NumDof();
+    int ndof = mycnode->num_dof();
 
     // derivative weighting matrix for current node
     static Core::LinAlg::Matrix<3, 3> F;
@@ -238,7 +238,7 @@ void CONTACT::Element::deriv_normal_at_xi(double* xi, int& i,
 
     // create directional derivatives
     for (int j = 0; j < 3; ++j)
-      for (int k = 0; k < ndof; ++k) (derivn[j])[mycnode->Dofs()[k]] += WF(j, k) * NormalFac();
+      for (int k = 0; k < ndof; ++k) (derivn[j])[mycnode->dofs()[k]] += WF(j, k) * normal_fac();
   }
 
   return;
@@ -247,7 +247,7 @@ void CONTACT::Element::deriv_normal_at_xi(double* xi, int& i,
 /*----------------------------------------------------------------------*
  |  Compute element normal of last time step at xi          seitz 05/17 |
  *----------------------------------------------------------------------*/
-void CONTACT::Element::OldUnitNormalAtXi(
+void CONTACT::Element::old_unit_normal_at_xi(
     const double* xi, Core::LinAlg::Matrix<3, 1>& n_old, Core::LinAlg::Matrix<3, 2>& d_n_old_dxi)
 {
   const int nnodes = num_node();
@@ -264,16 +264,16 @@ void CONTACT::Element::OldUnitNormalAtXi(
   Core::LinAlg::Matrix<3, 2> tmp_n_deriv;
   for (int i = 0; i < nnodes; ++i)
   {
-    Node* cnode = dynamic_cast<CONTACT::Node*>(Nodes()[i]);
+    Node* cnode = dynamic_cast<CONTACT::Node*>(nodes()[i]);
     if (!cnode) FOUR_C_THROW("this is not a FriNode!");
 
-    for (int d = 0; d < Dim(); ++d)
+    for (int d = 0; d < n_dim(); ++d)
     {
-      if (Core::LinAlg::Matrix<3, 1>(cnode->Data().Normal_old(), true).norm2() < 0.9)
+      if (Core::LinAlg::Matrix<3, 1>(cnode->data().normal_old(), true).norm2() < 0.9)
         FOUR_C_THROW("where's my old normal");
-      tmp_n(d) += val(i) * cnode->Data().Normal_old()[d];
-      for (int x = 0; x < Dim() - 1; ++x)
-        tmp_n_deriv(d, x) += deriv(i, x) * cnode->Data().Normal_old()[d];
+      tmp_n(d) += val(i) * cnode->data().normal_old()[d];
+      for (int x = 0; x < n_dim() - 1; ++x)
+        tmp_n_deriv(d, x) += deriv(i, x) * cnode->data().normal_old()[d];
     }
   }
   const double l = tmp_n.norm2();
@@ -288,13 +288,13 @@ void CONTACT::Element::OldUnitNormalAtXi(
 /*----------------------------------------------------------------------*
  |  Evaluate derivative J,xi of Jacobian determinant          popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Element::DJacDXi(
+void CONTACT::Element::d_jac_d_xi(
     double* djacdxi, double* xi, const Core::LinAlg::SerialDenseMatrix& secderiv)
 {
   // the derivative dJacdXi
   djacdxi[0] = 0.0;
   djacdxi[1] = 0.0;
-  Core::FE::CellType dt = Shape();
+  Core::FE::CellType dt = shape();
 
   // 2D linear case (2noded line element)
   // 3D linear case (3noded triangular element)
@@ -309,12 +309,12 @@ void CONTACT::Element::DJacDXi(
   {
     // get nodal coords for 2nd deriv. evaluation
     Core::LinAlg::SerialDenseMatrix coord(3, num_node());
-    GetNodalCoords(coord);
+    get_nodal_coords(coord);
 
     // metrics routine gives local basis vectors
     double gxi[3];
     double geta[3];
-    Metrics(xi, gxi, geta);
+    metrics(xi, gxi, geta);
 
     std::array<double, 3> gsec = {0.0, 0.0, 0.0};
     for (int i = 0; i < num_node(); ++i)
@@ -338,12 +338,12 @@ void CONTACT::Element::DJacDXi(
   {
     // get nodal coords for 2nd deriv. evaluation
     Core::LinAlg::SerialDenseMatrix coord(3, num_node());
-    GetNodalCoords(coord);
+    get_nodal_coords(coord);
 
     // metrics routine gives local basis vectors
     double gxi[3];
     double geta[3];
-    Metrics(xi, gxi, geta);
+    metrics(xi, gxi, geta);
 
     // cross product of gxi and geta
     std::array<double, 3> cross = {0.0, 0.0, 0.0};
@@ -384,7 +384,7 @@ void CONTACT::Element::DJacDXi(
 }
 
 
-void CONTACT::Element::PrepareDderiv(const std::vector<Mortar::Element*>& meles)
+void CONTACT::Element::prepare_dderiv(const std::vector<Mortar::Element*>& meles)
 {
   // number of dofs that may appear in the linearization
   int numderiv = 0;
@@ -394,7 +394,7 @@ void CONTACT::Element::PrepareDderiv(const std::vector<Mortar::Element*>& meles)
       numderiv, 0, Core::LinAlg::SerialDenseMatrix(num_node(), num_node())));
 }
 
-void CONTACT::Element::PrepareMderiv(const std::vector<Mortar::Element*>& meles, const int m)
+void CONTACT::Element::prepare_mderiv(const std::vector<Mortar::Element*>& meles, const int m)
 {
   // number of dofs that may appear in the linearization
   int numderiv = 0;
@@ -414,14 +414,14 @@ void CONTACT::Element::assemble_dderiv_to_nodes(bool dual)
 
   for (int j = 0; j < num_node(); ++j)
   {
-    CONTACT::Node* cnode_j = dynamic_cast<CONTACT::Node*>(Nodes()[j]);
+    CONTACT::Node* cnode_j = dynamic_cast<CONTACT::Node*>(nodes()[j]);
 
     if (!dual)
     {
       for (int k = 0; k < num_node(); ++k)
       {
-        CONTACT::Node* cnode_k = dynamic_cast<CONTACT::Node*>(Nodes()[k]);
-        std::map<int, double>& ddmap_jk = cnode_j->Data().GetDerivD()[cnode_k->Id()];
+        CONTACT::Node* cnode_k = dynamic_cast<CONTACT::Node*>(nodes()[k]);
+        std::map<int, double>& ddmap_jk = cnode_j->data().get_deriv_d()[cnode_k->id()];
 
         for (Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>::const_iterator p =
                  d_matrix_deriv_->begin();
@@ -431,7 +431,7 @@ void CONTACT::Element::assemble_dderiv_to_nodes(bool dual)
     }
     else
     {
-      std::map<int, double>& ddmap_jj = cnode_j->Data().GetDerivD()[cnode_j->Id()];
+      std::map<int, double>& ddmap_jj = cnode_j->data().get_deriv_d()[cnode_j->id()];
 
       for (Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>::const_iterator p =
                d_matrix_deriv_->begin();
@@ -450,12 +450,12 @@ void CONTACT::Element::assemble_mderiv_to_nodes(Mortar::Element& mele)
 
   for (int j = 0; j < num_node(); ++j)
   {
-    CONTACT::Node* cnode_j = dynamic_cast<CONTACT::Node*>(Nodes()[j]);
+    CONTACT::Node* cnode_j = dynamic_cast<CONTACT::Node*>(nodes()[j]);
 
     for (int k = 0; k < mele.num_node(); ++k)
     {
-      CONTACT::Node* cnode_k = dynamic_cast<CONTACT::Node*>(mele.Nodes()[k]);
-      std::map<int, double>& dmmap_jk = cnode_j->Data().GetDerivM()[cnode_k->Id()];
+      CONTACT::Node* cnode_k = dynamic_cast<CONTACT::Node*>(mele.nodes()[k]);
+      std::map<int, double>& dmmap_jk = cnode_j->data().get_deriv_m()[cnode_k->id()];
 
       for (Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>::const_iterator p =
                m_matrix_deriv_->begin();

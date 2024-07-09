@@ -20,14 +20,14 @@ Mat::Elastic::PAR::IsoNeoHooke::IsoNeoHooke(const Core::Mat::PAR::Parameter::Dat
 
 Mat::Elastic::IsoNeoHooke::IsoNeoHooke(Mat::Elastic::PAR::IsoNeoHooke* params) : params_(params) {}
 
-void Mat::Elastic::IsoNeoHooke::AddShearMod(bool& haveshearmod, double& shearmod) const
+void Mat::Elastic::IsoNeoHooke::add_shear_mod(bool& haveshearmod, double& shearmod) const
 {
   haveshearmod = haveshearmod or true;
 
   shearmod += params_->mue_;
 }
 
-void Mat::Elastic::IsoNeoHooke::AddStrainEnergy(double& psi,
+void Mat::Elastic::IsoNeoHooke::add_strain_energy(double& psi,
     const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
     const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {

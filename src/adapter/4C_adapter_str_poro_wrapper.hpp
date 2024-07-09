@@ -47,9 +47,9 @@ namespace Adapter
     void setup();
 
     /// communication object at the interface
-    virtual Teuchos::RCP<const Solid::MapExtractor> Interface() const
+    virtual Teuchos::RCP<const Solid::MapExtractor> interface() const
     {
-      return structure_->Interface();
+      return structure_->interface();
     }
 
     /// direct access to discretization
@@ -59,21 +59,21 @@ namespace Adapter
     }
 
     /// return time integration factor
-    virtual double TimIntParam() const { return structure_->TimIntParam(); }
+    virtual double tim_int_param() const { return structure_->tim_int_param(); }
 
     /// Access to output object
-    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter()
+    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer()
     {
       return structure_->disc_writer();
     }
 
     /// unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const { return structure_->Dispnp(); }
+    virtual Teuchos::RCP<const Epetra_Vector> dispnp() const { return structure_->dispnp(); }
 
     /// unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() const
+    virtual Teuchos::RCP<Epetra_Vector> write_access_dispnp() const
     {
-      return structure_->WriteAccessDispnp();
+      return structure_->write_access_dispnp();
     }
 
     /// get constraint manager defined in the structure
@@ -103,20 +103,20 @@ namespace Adapter
     /// extract interface displacements at \f$t_{n}\f$
     virtual Teuchos::RCP<Epetra_Vector> extract_fpsi_interface_dispn()
     {
-      return structure_->Interface()->extract_fpsi_cond_vector(structure_->Dispn());
+      return structure_->interface()->extract_fpsi_cond_vector(structure_->dispn());
     }
 
     /// extract interface displacements at \f$t_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> extract_fpsi_interface_dispnp()
     {
-      return structure_->Interface()->extract_fpsi_cond_vector(structure_->Dispnp());
+      return structure_->interface()->extract_fpsi_cond_vector(structure_->dispnp());
     }
 
     //! unique map of all dofs that should be constrained with DBC
     virtual Teuchos::RCP<const Epetra_Map> combined_dbc_map();
 
     //! perform result test
-    void TestResults(Global::Problem* problem);
+    void test_results(Global::Problem* problem);
 
     //! return poro poro_field
     const Teuchos::RCP<PoroElast::Monolithic>& poro_field();
@@ -133,7 +133,7 @@ namespace Adapter
     //! Recover Lagrange Multiplier during iteration (does nothing for structure)
     void recover_lagrange_multiplier_after_newton_step(Teuchos::RCP<Epetra_Vector> iterinc);
 
-    bool isPoro() { return (type_ == FieldWrapper::type_PoroField); }
+    bool is_poro() { return (type_ == FieldWrapper::type_PoroField); }
 
    protected:
     Teuchos::RCP<PoroElast::Monolithic> poro_;     ///< underlying poro time integration

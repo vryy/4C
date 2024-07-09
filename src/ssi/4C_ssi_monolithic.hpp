@@ -81,28 +81,28 @@ namespace SSI
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
     //! return global map extractor (0: scalar transport, 1: structure, [2: scatra manifold])
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> MapsSubProblems() const;
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> maps_sub_problems() const;
 
     //! return map extractor associated with all degrees of freedom inside scatra field
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> BlockMapScaTra() const;
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_sca_tra() const;
 
     //! return map extractor associated with all degrees of freedom inside scatra manifold field
     Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_sca_tra_manifold() const;
 
     //! return map extractor associated with all degrees of freedom inside structural field
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> BlockMapStructure() const;
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_structure() const;
 
     //! return map extractor associated with blocks of global system matrix
     Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_system_matrix() const;
 
     //! Return matrix type of global system matrix
-    Core::LinAlg::MatrixType MatrixType() const { return matrixtype_; };
+    Core::LinAlg::MatrixType matrix_type() const { return matrixtype_; };
 
     void read_restart(int restart) override;
 
     void setup() override;
 
-    void SetupSystem() override;
+    void setup_system() override;
 
     /*!
      * @brief solves the linear system
@@ -113,12 +113,12 @@ namespace SSI
     void solve_linear_system();
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
-    Teuchos::RCP<SSI::UTILS::SSIMaps> SSIMaps() const { return ssi_maps_; }
+    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps() const { return ssi_maps_; }
 
     //! return algebraic solver for global system of equations
-    const Core::LinAlg::Solver& Solver() const { return *solver_; };
+    const Core::LinAlg::Solver& solver() const { return *solver_; };
 
-    void Timeloop() override;
+    void timeloop() override;
 
    private:
     //! strategies for Newton-Raphson convergence check

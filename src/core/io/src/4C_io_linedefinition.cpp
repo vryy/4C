@@ -186,17 +186,17 @@ namespace Input::INTERNAL
      public:
       virtual ~LineDefinitionComponentConcept() = default;
 
-      [[nodiscard]] virtual std::unique_ptr<LineDefinitionComponentConcept> Clone() const = 0;
+      [[nodiscard]] virtual std::unique_ptr<LineDefinitionComponentConcept> clone() const = 0;
 
       virtual void print(std::ostream& stream) const = 0;
 
-      virtual bool ReadRequired(
+      virtual bool read_required(
           Core::IO::InputParameterContainer& container, std::istream& stream) = 0;
 
-      virtual bool ReadOptional(Core::IO::InputParameterContainer& container, std::string& name,
+      virtual bool read_optional(Core::IO::InputParameterContainer& container, std::string& name,
           std::istream& stream) = 0;
 
-      [[nodiscard]] virtual bool IsNamed(const std::string& name) const = 0;
+      [[nodiscard]] virtual bool is_named(const std::string& name) const = 0;
     };
 
     //! The wrapper for a concrete type T compatible with the interface.
@@ -213,27 +213,28 @@ namespace Input::INTERNAL
       {
       }
 
-      [[nodiscard]] std::unique_ptr<LineDefinitionComponentConcept> Clone() const override
+      [[nodiscard]] std::unique_ptr<LineDefinitionComponentConcept> clone() const override
       {
         return std::make_unique<LineDefinitionComponentModel<T>>(*this);
       }
 
       void print(std::ostream& stream) const override { component_.print(stream); }
 
-      bool ReadRequired(Core::IO::InputParameterContainer& container, std::istream& stream) override
+      bool read_required(
+          Core::IO::InputParameterContainer& container, std::istream& stream) override
       {
-        return component_.ReadRequired(container, stream);
+        return component_.read_required(container, stream);
       }
 
-      bool ReadOptional(Core::IO::InputParameterContainer& container, std::string& name,
+      bool read_optional(Core::IO::InputParameterContainer& container, std::string& name,
           std::istream& stream) override
       {
-        return component_.ReadOptional(container, name, stream);
+        return component_.read_optional(container, name, stream);
       }
 
-      [[nodiscard]] bool IsNamed(const std::string& name) const override
+      [[nodiscard]] bool is_named(const std::string& name) const override
       {
-        return component_.IsNamed(name);
+        return component_.is_named(name);
       }
 
      private:
@@ -255,12 +256,12 @@ namespace Input::INTERNAL
     }
 
     //! Copy constructor.
-    LineDefinitionComponent(const LineDefinitionComponent& other) : pimpl_(other.pimpl_->Clone()) {}
+    LineDefinitionComponent(const LineDefinitionComponent& other) : pimpl_(other.pimpl_->clone()) {}
 
     //! Copy assignment.
     LineDefinitionComponent& operator=(const LineDefinitionComponent& other)
     {
-      this->pimpl_ = other.pimpl_->Clone();
+      this->pimpl_ = other.pimpl_->clone();
       return *this;
     }
 
@@ -275,21 +276,21 @@ namespace Input::INTERNAL
 
     /// Try to read component from input line
     /// This function is called for required components.
-    bool ReadRequired(Core::IO::InputParameterContainer& container, std::istream& stream)
+    bool read_required(Core::IO::InputParameterContainer& container, std::istream& stream)
     {
-      return pimpl_->ReadRequired(container, stream);
+      return pimpl_->read_required(container, stream);
     }
 
     /// Try to read component from input line
     /// This function is called for optional components.
-    bool ReadOptional(
+    bool read_optional(
         Core::IO::InputParameterContainer& container, std::string& name, std::istream& stream)
     {
-      return pimpl_->ReadOptional(container, name, stream);
+      return pimpl_->read_optional(container, name, stream);
     }
 
     /// tell if the component has the specified name tag
-    [[nodiscard]] bool IsNamed(const std::string& name) const { return pimpl_->IsNamed(name); }
+    [[nodiscard]] bool is_named(const std::string& name) const { return pimpl_->is_named(name); }
 
    private:
     std::unique_ptr<LineDefinitionComponentConcept> pimpl_;
@@ -324,7 +325,7 @@ namespace Input::INTERNAL
         PrintComponent{stream, behavior_, name_}(default_value_);
     }
 
-    bool ReadOptional(
+    bool read_optional(
         Core::IO::InputParameterContainer& container, std::string& name, std::istream& stream)
     {
       if (name != name_) return false;
@@ -335,12 +336,12 @@ namespace Input::INTERNAL
 
       bool read_succeeded = ReadValue{stream, name_}(value);
 
-      if (read_succeeded) container.Add(name, value);
+      if (read_succeeded) container.add(name, value);
 
       return read_succeeded;
     }
 
-    bool ReadRequired(Core::IO::InputParameterContainer& container, std::istream& stream)
+    bool read_required(Core::IO::InputParameterContainer& container, std::istream& stream)
     {
       if (behavior_ == Behavior::read_print_name)
       {
@@ -348,10 +349,10 @@ namespace Input::INTERNAL
         stream >> name;
         if (name != name_) return false;
       }
-      return ReadOptional(container, name_, stream);
+      return read_optional(container, name_, stream);
     }
 
-    [[nodiscard]] bool IsNamed(const std::string& name) const { return name == name_; }
+    [[nodiscard]] bool is_named(const std::string& name) const { return name == name_; }
 
    private:
     //! Name of the component.
@@ -379,7 +380,7 @@ namespace Input
     class LineDefinitionImplementation
     {
      public:
-      [[nodiscard]] const LineDefinitionComponent* FindNamed(const std::string& name) const
+      [[nodiscard]] const LineDefinitionComponent* find_named(const std::string& name) const
       {
         if (readtailcomponents_.find(name) != readtailcomponents_.end())
         {
@@ -390,7 +391,7 @@ namespace Input
         {
           for (const auto& component : components_)
           {
-            if (component.IsNamed(name))
+            if (component.is_named(name))
             {
               return &component;
             }
@@ -401,13 +402,13 @@ namespace Input
 
       //! Return if a component of given name and type T exists.
       template <typename T>
-      bool HasNamed(const std::string& name)
+      bool has_named(const std::string& name)
       {
-        return container_.GetIf<T>(name) != nullptr;
+        return container_.get_if<T>(name) != nullptr;
       }
 
       template <typename T>
-      void TryExtract(const std::string& name, T& dst)
+      void try_extract(const std::string& name, T& dst)
       {
         dst = container_.get<T>(name);
       }
@@ -775,7 +776,7 @@ namespace Input
     pimpl_->readtailcomponents_.clear();
     for (auto& component : pimpl_->components_)
     {
-      if (not component.ReadRequired(pimpl_->container_, stream))
+      if (not component.read_required(pimpl_->container_, stream))
       {
         return std::nullopt;
       }
@@ -794,7 +795,7 @@ namespace Input
       }
       auto i = pimpl_->optionaltail_.find(name);
       if (i == pimpl_->optionaltail_.end()) return std::nullopt;
-      if (not i->second.ReadOptional(pimpl_->container_, name, stream)) return std::nullopt;
+      if (not i->second.read_optional(pimpl_->container_, name, stream)) return std::nullopt;
       pimpl_->readtailcomponents_.insert(name);
     }
 
@@ -814,49 +815,49 @@ namespace Input
 
   bool LineDefinition::has_named(const std::string& name) const
   {
-    return pimpl_->FindNamed(name) != nullptr;
+    return pimpl_->find_named(name) != nullptr;
   }
 
 
 
   void LineDefinition::extract_string(const std::string& name, std::string& value) const
   {
-    pimpl_->TryExtract(name, value);
+    pimpl_->try_extract(name, value);
   }
 
 
 
   bool LineDefinition::has_string(const std::string& name) const
   {
-    return pimpl_->HasNamed<std::string>(name);
+    return pimpl_->has_named<std::string>(name);
   }
 
 
 
   void LineDefinition::extract_int(const std::string& name, int& value) const
   {
-    pimpl_->TryExtract(name, value);
+    pimpl_->try_extract(name, value);
   }
 
 
 
   void LineDefinition::extract_int_vector(const std::string& name, std::vector<int>& v) const
   {
-    pimpl_->TryExtract(name, v);
+    pimpl_->try_extract(name, v);
   }
 
 
 
   void LineDefinition::extract_double(const std::string& name, double& value) const
   {
-    pimpl_->TryExtract(name, value);
+    pimpl_->try_extract(name, value);
   }
 
 
 
   void LineDefinition::extract_double_vector(const std::string& name, std::vector<double>& v) const
   {
-    pimpl_->TryExtract(name, v);
+    pimpl_->try_extract(name, v);
   }
 
 
@@ -865,7 +866,7 @@ namespace Input
       const std::string& name, std::vector<std::string>& v) const
   {
     // special case: search for a string vector first but fall back to a string value
-    pimpl_->TryExtract(name, v);
+    pimpl_->try_extract(name, v);
   }
 
 
@@ -873,7 +874,7 @@ namespace Input
   void LineDefinition::extract_pair_of_string_and_double_vector(
       const std::string& name, std::vector<std::pair<std::string, double>>& v) const
   {
-    pimpl_->TryExtract(name, v);
+    pimpl_->try_extract(name, v);
   }
 
 

@@ -41,18 +41,18 @@ namespace Mortar
   class ElementType : public Core::Elements::ElementType
   {
    public:
-    std::string Name() const override { return "Mortar::ElementType"; }
+    std::string name() const override { return "Mortar::ElementType"; }
 
-    static ElementType& Instance();
+    static ElementType& instance();
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-    Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+    Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
     void nodal_block_information(
         Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-    Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+    Core::LinAlg::SerialDenseMatrix compute_null_space(
         Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
    private:
@@ -111,38 +111,38 @@ namespace Mortar
     \brief Return current area
 
     */
-    virtual double& Area() { return area_; }
+    virtual double& area() { return area_; }
 
     /*!
     \brief Return number of potentially contacting elements
 
     */
-    virtual int NumSearchElements() const { return (int)searchelements_.size(); }
+    virtual int num_search_elements() const { return (int)searchelements_.size(); }
 
     /*!
     \brief Return global ids of potentially contacting elements
 
     */
-    virtual std::vector<int>& SearchElements() { return searchelements_; }
+    virtual std::vector<int>& search_elements() { return searchelements_; }
 
     /*!
     \brief Return matrix of dual shape function coefficients
 
     */
-    virtual Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& DualShape() { return dualshapecoeff_; }
+    virtual Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& dual_shape() { return dualshapecoeff_; }
 
     /*!
     \brief Return trafo matrix for boundary modification
 
     */
-    virtual Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& Trafo() { return trafocoeff_; }
+    virtual Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& trafo() { return trafocoeff_; }
 
     /*!
     \brief Return directional derivative of matrix of dual shape function coefficients
 
     */
     virtual Teuchos::RCP<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>&
-    DerivDualShape()
+    deriv_dual_shape()
     {
       return derivdualshapecoeff_;
     }
@@ -151,7 +151,7 @@ namespace Mortar
     \brief Reset matrix of dual shape function coefficients and free memory
 
     */
-    virtual void ResetDualShape()
+    virtual void reset_dual_shape()
     {
       dualshapecoeff_ = Teuchos::null;
       return;
@@ -162,7 +162,7 @@ namespace Mortar
     memory
 
     */
-    virtual void ResetDerivDualShape()
+    virtual void reset_deriv_dual_shape()
     {
       derivdualshapecoeff_ = Teuchos::null;
       return;
@@ -172,37 +172,37 @@ namespace Mortar
     \brief Return Parent displacement vector
 
     */
-    virtual std::vector<double>& ParentDisp() { return parentdisp_; }
+    virtual std::vector<double>& parent_disp() { return parentdisp_; }
 
     /*!
     \brief Return Parent velocity vector
 
     */
-    virtual std::vector<double>& ParentVel() { return parentvel_; }
+    virtual std::vector<double>& parent_vel() { return parentvel_; }
 
     /*!
     \brief Return Parent element degrees of freedom
 
     */
-    virtual std::vector<int>& ParentDof() { return parentdofs_; }
+    virtual std::vector<int>& parent_dof() { return parentdofs_; }
 
     /*!
     \brief Return Parent scalar vector
 
     */
-    virtual std::vector<double>& ParentScalar() { return parentscalar_; }
+    virtual std::vector<double>& parent_scalar() { return parentscalar_; }
 
     /*!
     \brief Return Parent Scalar element degrees of freedom
 
     */
-    virtual std::vector<int>& ParentScalarDof() { return parentscalardofs_; }
+    virtual std::vector<int>& parent_scalar_dof() { return parentscalardofs_; }
 
     /*!
     \brief Return Parent temperature vector
 
     */
-    virtual std::vector<double>& ParentTemp() { return parenttemp_; }
+    virtual std::vector<double>& parent_temp() { return parenttemp_; }
 
     /*!
     \brief Return Parent element temperature degrees of freedom
@@ -210,25 +210,25 @@ namespace Mortar
             we use the first displacement dof)
 
     */
-    virtual std::vector<int>& ParentTempDof() { return parenttempdofs_; }
+    virtual std::vector<int>& parent_temp_dof() { return parenttempdofs_; }
 
     /*!
     \brief Return Parent poro pressure vector
 
     */
-    virtual std::vector<double>& ParentPFPres() { return parentpfpres_; }
+    virtual std::vector<double>& parent_pf_pres() { return parentpfpres_; }
 
     /*!
     \brief Return Parent poro velocity vector
 
     */
-    virtual std::vector<double>& ParentPFVel() { return parentpfvel_; }
+    virtual std::vector<double>& parent_pf_vel() { return parentpfvel_; }
 
     /*!
     \brief Return Parent Poro Fluid element degrees of freedom
 
     */
-    virtual std::vector<int>& ParentPFDof() { return parentpfdofs_; }
+    virtual std::vector<int>& parent_pf_dof() { return parentpfdofs_; }
 
     //@}
 
@@ -393,7 +393,7 @@ namespace Mortar
     \brief Deep copy the derived class and return pointer to it
 
     */
-    Core::Elements::Element* Clone() const override;
+    Core::Elements::Element* clone() const override;
 
     /*!
     \brief Return unique ParObject id
@@ -402,7 +402,10 @@ namespace Mortar
     top of parobject.H
 
     */
-    int UniqueParObjectId() const override { return ElementType::Instance().UniqueParObjectId(); }
+    int unique_par_object_id() const override
+    {
+      return ElementType::instance().unique_par_object_id();
+    }
 
     /*!
     \brief Pack this class so it can be communicated
@@ -420,7 +423,7 @@ namespace Mortar
     */
     void unpack(const std::vector<char>& data) override;
 
-    Core::Elements::ElementType& ElementType() const override { return ElementType::Instance(); }
+    Core::Elements::ElementType& element_type() const override { return ElementType::instance(); }
 
     //@}
 
@@ -430,25 +433,25 @@ namespace Mortar
     \brief Get shape type of element
 
     */
-    Core::FE::CellType Shape() const override { return shape_; }
+    Core::FE::CellType shape() const override { return shape_; }
 
     /*!
     \brief Return number of lines to this element
 
     */
-    int NumLine() const override { return 0; }
+    int num_line() const override { return 0; }
 
     /*!
     \brief Return number of surfaces to this element
 
     */
-    int NumSurface() const override { return 0; }
+    int num_surface() const override { return 0; }
 
     /*!
     \brief Get vector of Teuchos::RCPs to the lines of this element
 
     */
-    std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override
+    std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override
     {
       std::vector<Teuchos::RCP<Core::Elements::Element>> lines(0);
       return lines;
@@ -458,7 +461,7 @@ namespace Mortar
     \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
     */
-    std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override
+    std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override
     {
       std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces(0);
       return surfaces;
@@ -471,7 +474,7 @@ namespace Mortar
     not with standard Node objects!
 
     */
-    int NumDofPerNode(const Core::Nodes::Node& node) const override;
+    int num_dof_per_node(const Core::Nodes::Node& node) const override;
 
     /*!
     \brief Get number of degrees of freedom per element
@@ -492,13 +495,13 @@ namespace Mortar
     \brief Return slave (true) or master status
 
     */
-    virtual bool IsSlave() { return isslave_; }
+    virtual bool is_slave() { return isslave_; }
 
     /*!
     \brief Return attached status
 
     */
-    virtual bool IsAttached() { return attached_; }
+    virtual bool is_attached() { return attached_; }
     /*!
     \brief Change slave (true) or master status
 
@@ -506,22 +509,22 @@ namespace Mortar
     simulations, where slave and master status are assigned dynamically
 
     */
-    virtual bool& SetSlave() { return isslave_; }
+    virtual bool& set_slave() { return isslave_; }
 
     /*!
     \brief Return attached status
 
     */
-    virtual bool& SetAttached() { return attached_; }
+    virtual bool& set_attached() { return attached_; }
 
     /*!
     \brief Return ansatz type (true = quadratic) of element
 
     */
-    virtual bool IsQuad()
+    virtual bool is_quad()
     {
       bool isquad = false;
-      switch (Shape())
+      switch (shape())
       {
         case Core::FE::CellType::line2:
         case Core::FE::CellType::nurbs2:
@@ -551,9 +554,9 @@ namespace Mortar
     \brief Return spatial dimension
 
     */
-    virtual int Dim()
+    virtual int n_dim()
     {
-      switch (Shape())
+      switch (shape())
       {
         case Core::FE::CellType::line2:
         case Core::FE::CellType::nurbs2:
@@ -587,7 +590,7 @@ namespace Mortar
     \brief Return nurbs (true) or not-nurbs (false) status
 
     */
-    virtual bool IsNurbs() { return nurbs_; }
+    virtual bool is_nurbs() { return nurbs_; }
 
     /*!
     \brief Return data container of this element
@@ -596,7 +599,7 @@ namespace Mortar
     mortar specific quantities/information are stored.
 
     */
-    inline Mortar::MortarEleDataContainer& MoData()
+    inline Mortar::MortarEleDataContainer& mo_data()
     {
       FOUR_C_ASSERT(modata_ != Teuchos::null, "Mortar data container not set");
       return *modata_;
@@ -673,19 +676,19 @@ namespace Mortar
     /*!
     \brief Get local numbering for global node id
     */
-    int GetLocalNodeId(int nid) const;
+    int get_local_node_id(int nid) const;
 
     /*!
     \brief Build element normal at node passed in
     */
-    virtual void BuildNormalAtNode(int nid, int& i, Core::LinAlg::SerialDenseMatrix& elens);
+    virtual void build_normal_at_node(int nid, int& i, Core::LinAlg::SerialDenseMatrix& elens);
 
     /*!
     \brief Compute element normal at local coordinate xi
            Caution: This function cannot be called stand-alone! It is
            integrated into the whole nodal normal calculation process.
     */
-    virtual void ComputeNormalAtXi(
+    virtual void compute_normal_at_xi(
         const double* xi, int& i, Core::LinAlg::SerialDenseMatrix& elens);
 
     /*!
@@ -706,33 +709,33 @@ namespace Mortar
            This function is a real stand-alone function to be called
            for a Element in order to compute a unit normal derivative at any point.
     */
-    virtual void DerivUnitNormalAtXi(
+    virtual void deriv_unit_normal_at_xi(
         const double* xi, std::vector<Core::Gen::Pairedvector<int, double>>& derivn);
 
     /*!
     \brief Get nodal reference / spatial coords of current element
 
     */
-    virtual void GetNodalCoords(Core::LinAlg::SerialDenseMatrix& coord);
+    virtual void get_nodal_coords(Core::LinAlg::SerialDenseMatrix& coord);
 
     /*! \brief Get nodal reference / spatial coords of current element
      *
      *  \author hiermeier \date 03/17 */
     template <unsigned elenumnode>
-    inline void GetNodalCoords(Core::LinAlg::Matrix<3, elenumnode>& coord)
+    inline void get_nodal_coords(Core::LinAlg::Matrix<3, elenumnode>& coord)
     {
       Core::LinAlg::SerialDenseMatrix sdm_coord(Teuchos::View, coord.data(), 3, 3, elenumnode);
-      GetNodalCoords(sdm_coord);
+      get_nodal_coords(sdm_coord);
     }
 
-    double inline GetNodalCoords(const int direction, const int node)
+    double inline get_nodal_coords(const int direction, const int node)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      Node* mymrtrnode = dynamic_cast<Node*>(Points()[node]);
+      Node* mymrtrnode = dynamic_cast<Node*>(points()[node]);
       if (!mymrtrnode) FOUR_C_THROW("GetNodalCoords: Null pointer!");
       return mymrtrnode->xspatial()[direction];
 #else
-      return static_cast<Node*>(Points()[node])->xspatial()[direction];
+      return static_cast<Node*>(points()[node])->xspatial()[direction];
 #endif
     }
 
@@ -741,17 +744,17 @@ namespace Mortar
 
     \param isinit (in): true if called for reference coords
     */
-    virtual void GetNodalCoordsOld(Core::LinAlg::SerialDenseMatrix& coord, bool isinit = false);
+    virtual void get_nodal_coords_old(Core::LinAlg::SerialDenseMatrix& coord, bool isinit = false);
 
-    double inline GetNodalCoordsOld(const int direction, const int node)
+    double inline get_nodal_coords_old(const int direction, const int node)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      Node* mymrtrnode = dynamic_cast<Node*>(Points()[node]);
+      Node* mymrtrnode = dynamic_cast<Node*>(points()[node]);
       if (!mymrtrnode) FOUR_C_THROW("GetNodalCoords: Null pointer!");
-      return mymrtrnode->X()[direction] + mymrtrnode->uold()[direction];
+      return mymrtrnode->x()[direction] + mymrtrnode->uold()[direction];
 #else
-      return (static_cast<Node*>(Points()[node])->X()[direction] +
-              static_cast<Node*>(Points()[node])->uold()[direction]);
+      return (static_cast<Node*>(points()[node])->x()[direction] +
+              static_cast<Node*>(points()[node])->uold()[direction]);
 #endif
     }
 
@@ -760,27 +763,27 @@ namespace Mortar
 
     \param isinit (in): true if called for reference coords
     */
-    virtual void GetNodalLagMult(Core::LinAlg::SerialDenseMatrix& lagmult, bool isinit = false);
+    virtual void get_nodal_lag_mult(Core::LinAlg::SerialDenseMatrix& lagmult, bool isinit = false);
 
     /*!
     \brief Evaluate element metrics (local basis vectors)
     */
-    virtual void Metrics(const double* xi, double* gxi, double* geta);
+    virtual void metrics(const double* xi, double* gxi, double* geta);
 
     /*!
     \brief Evaluate Jacobian determinant for parameter space integration
     */
-    virtual double Jacobian(const double* xi);
+    virtual double jacobian(const double* xi);
 
     /*!
     \brief Compute Jacobian determinant derivative
     */
-    virtual void DerivJacobian(const double* xi, Core::Gen::Pairedvector<int, double>& derivjac);
+    virtual void deriv_jacobian(const double* xi, Core::Gen::Pairedvector<int, double>& derivjac);
 
     /*!
     \brief Compute length/area of the element
     */
-    virtual double ComputeArea();
+    virtual double compute_area();
 
     /*!
     \brief Compute length/area of the element and its derivative
@@ -790,7 +793,7 @@ namespace Mortar
     /*!
     \brief A repository for all kinds of 1D/2D shape functions
     */
-    virtual void ShapeFunctions(Element::ShapeType shape, const double* xi,
+    virtual void shape_functions(Element::ShapeType shape, const double* xi,
         Core::LinAlg::SerialDenseVector& val, Core::LinAlg::SerialDenseMatrix& deriv);
 
     /*!
@@ -895,7 +898,7 @@ namespace Mortar
     \param derivdual (in): derivative maps to be filled
                            (= derivatives of the dual coefficient matrix Ae)
     */
-    virtual bool DerivShapeDual(
+    virtual bool deriv_shape_dual(
         Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& derivdual);
 
     /*!
@@ -911,7 +914,7 @@ namespace Mortar
                             set to 2 for derivative eta usage (3D only)
     \param globccord (out): interpolated global coordinates
     */
-    virtual bool LocalToGlobal(const double* xi, double* globcoord, int inttype);
+    virtual bool local_to_global(const double* xi, double* globcoord, int inttype);
 
     /*!
     \brief Evaluate minimal edge size of this element
@@ -919,7 +922,7 @@ namespace Mortar
 
     \return Approximation of minimum geometric dimension of this element
     */
-    virtual double MinEdgeSize();
+    virtual double min_edge_size();
 
     /*!
     \brief Evaluate maximal edge size of this element
@@ -929,7 +932,7 @@ namespace Mortar
 
     \return Approximation of maximum geometric dimension of this element
     */
-    virtual double MaxEdgeSize();
+    virtual double max_edge_size();
 
     /*!
     \brief Add one Mortar::Element to this Mortar::Element's potential contact partners
@@ -940,7 +943,7 @@ namespace Mortar
     potential contact partners before. This cannot happen by construction!
 
     */
-    virtual bool AddSearchElements(const int& gid);
+    virtual bool add_search_elements(const int& gid);
 
     /*!
     \brief Initializes the data container of the element
@@ -964,7 +967,7 @@ namespace Mortar
     is deleted / reset to Teuchos::null pointer
 
     */
-    virtual void ResetDataContainer();
+    virtual void reset_data_container();
 
     // nurbs specific:
 
@@ -974,20 +977,20 @@ namespace Mortar
     this is only the case if there are more than polynom degree + 1 multiple knot entries
 
     */
-    virtual bool& ZeroSized() { return zero_sized_; };
+    virtual bool& zero_sized() { return zero_sized_; };
 
     /*!
     \brief factor for normal calculation (default 1.0)
 
     */
-    double& NormalFac() { return normalfac_; };
-    double NormalFac() const { return normalfac_; };
+    double& normal_fac() { return normalfac_; };
+    double normal_fac() const { return normalfac_; };
 
     /*!
     \brief get knot vectors for this mortar element
 
     */
-    virtual std::vector<Core::LinAlg::SerialDenseVector>& Knots() { return mortarknots_; };
+    virtual std::vector<Core::LinAlg::SerialDenseVector>& knots() { return mortarknots_; };
 
     /*!
     \brief Get the linearization of the spatial position of the Nodes for this Ele.
@@ -997,11 +1000,11 @@ namespace Mortar
 
            Needed to be overloaded by IntElement
     */
-    virtual void NodeLinearization(
+    virtual void node_linearization(
         std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& nodelin);
 
     // h.Willmann return physical type of the mortar element
-    PhysicalType& PhysType() { return physicaltype_; };
+    PhysicalType& phys_type() { return physicaltype_; };
 
     /*!
     \brief Estimate mesh size and stiffness parameter h/E via Eigenvalues of the trace inequality.
@@ -1017,18 +1020,18 @@ namespace Mortar
     \brief Estimated mesh size and stiffness parameter h/E via Eigenvalues of the trace inequality.
            For Nitsche contact formulations
       */
-    virtual double& TraceHE() { return traceHE_; }
+    virtual double& trace_he() { return traceHE_; }
 
     /*!
     \brief Estimated mesh size and thermal conductivity h/K via Eigenvalues of the trace inequality.
            For Nitsche contact formulations
       */
-    virtual double& TraceHCond() { return traceHCond_; }
+    virtual double& trace_h_cond() { return traceHCond_; }
 
     /*!
     \brief Get Nitsche data container
       */
-    virtual Mortar::ElementNitscheContainer& GetNitscheContainer();
+    virtual Mortar::ElementNitscheContainer& get_nitsche_container();
     //@}
 
    protected:
@@ -1091,19 +1094,19 @@ namespace Mortar
     \brief Return number of Gauss points
 
     */
-    int& nGP() { return ngp_; }
+    int& n_gp() { return ngp_; }
 
     /*!
     \brief Return coordinates of a specific GP
 
     */
-    double& Coordinate(int& gp, int dir) { return coords_(gp, dir); }
+    double& coordinate(int& gp, int dir) { return coords_(gp, dir); }
 
     /*!
     \brief Return weight of a specific GP in 1D/2D CElement
 
     */
-    double& Weight(int& gp) { return weights_[gp]; }
+    double& weight(int& gp) { return weights_[gp]; }
 
     //@}
 

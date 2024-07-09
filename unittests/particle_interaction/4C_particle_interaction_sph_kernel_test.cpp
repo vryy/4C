@@ -82,9 +82,9 @@ namespace
     const double support = 0.8;
     const double h = 0.4;
 
-    EXPECT_NEAR(kernel_1D_->SmoothingLength(support), h, 1.0e-10);
-    EXPECT_NEAR(kernel_2D_->SmoothingLength(support), h, 1.0e-10);
-    EXPECT_NEAR(kernel_3D_->SmoothingLength(support), h, 1.0e-10);
+    EXPECT_NEAR(kernel_1D_->smoothing_length(support), h, 1.0e-10);
+    EXPECT_NEAR(kernel_2D_->smoothing_length(support), h, 1.0e-10);
+    EXPECT_NEAR(kernel_3D_->smoothing_length(support), h, 1.0e-10);
   }
 
   TEST_F(SPHKernelCubicSplineTest, normalization_constant)
@@ -113,9 +113,9 @@ namespace
     const double normalizationconstant_3D = M_1_PI / ParticleInteraction::UTILS::Pow<3>(h);
 
     double w_unnormalized = 1.0;
-    EXPECT_NEAR(kernel_1D_->W0(support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
-    EXPECT_NEAR(kernel_2D_->W0(support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
-    EXPECT_NEAR(kernel_3D_->W0(support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+    EXPECT_NEAR(kernel_1D_->w0(support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+    EXPECT_NEAR(kernel_2D_->w0(support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+    EXPECT_NEAR(kernel_3D_->w0(support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
   }
 
   TEST_F(SPHKernelCubicSplineTest, W)
@@ -131,31 +131,31 @@ namespace
     double rij = 0.0;
     double q = rij / h;
     double w_unnormalized = 1.0;
-    EXPECT_NEAR(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
-    EXPECT_NEAR(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
-    EXPECT_NEAR(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+    EXPECT_NEAR(kernel_1D_->w(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+    EXPECT_NEAR(kernel_2D_->w(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+    EXPECT_NEAR(kernel_3D_->w(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.2;
     q = rij / h;
     w_unnormalized = 1.0 - 1.5 * ParticleInteraction::UTILS::Pow<2>(q) +
                      0.75 * ParticleInteraction::UTILS::Pow<3>(q);
-    EXPECT_NEAR(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
-    EXPECT_NEAR(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
-    EXPECT_NEAR(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+    EXPECT_NEAR(kernel_1D_->w(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+    EXPECT_NEAR(kernel_2D_->w(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+    EXPECT_NEAR(kernel_3D_->w(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.6;
     q = rij / h;
     w_unnormalized = ParticleInteraction::UTILS::Pow<3>(2.0 - q) / 4.0;
-    EXPECT_NEAR(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
-    EXPECT_NEAR(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
-    EXPECT_NEAR(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+    EXPECT_NEAR(kernel_1D_->w(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+    EXPECT_NEAR(kernel_2D_->w(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+    EXPECT_NEAR(kernel_3D_->w(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.8;
     q = rij / h;
     w_unnormalized = 0.0;
-    EXPECT_NEAR(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
-    EXPECT_NEAR(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
-    EXPECT_NEAR(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+    EXPECT_NEAR(kernel_1D_->w(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+    EXPECT_NEAR(kernel_2D_->w(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+    EXPECT_NEAR(kernel_3D_->w(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
   }
 
   TEST_F(SPHKernelCubicSplineTest, dWdrij)
@@ -172,41 +172,41 @@ namespace
     double q = rij / h;
     double w_unnormalized = 0.0;
     EXPECT_NEAR(
-        kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+        kernel_1D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_2D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+        kernel_2D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_3D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+        kernel_3D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.2;
     q = rij / h;
     w_unnormalized = (-3.0 * q + 2.25 * ParticleInteraction::UTILS::Pow<2>(q)) * (1.0 / h);
     EXPECT_NEAR(
-        kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+        kernel_1D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_2D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+        kernel_2D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_3D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+        kernel_3D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.6;
     q = rij / h;
     w_unnormalized = (-0.75 * ParticleInteraction::UTILS::Pow<2>(2.0 - q)) * (1.0 / h);
     EXPECT_NEAR(
-        kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+        kernel_1D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_2D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+        kernel_2D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_3D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+        kernel_3D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.8;
     q = rij / h;
     w_unnormalized = 0.0;
     EXPECT_NEAR(
-        kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+        kernel_1D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_2D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+        kernel_2D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_3D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+        kernel_3D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
   }
 
   TEST_F(SPHKernelCubicSplineTest, d2Wdrij2)
@@ -223,41 +223,41 @@ namespace
     double q = rij / h;
     double w_unnormalized = -3.0 * (1.0 / ParticleInteraction::UTILS::Pow<2>(h));
     EXPECT_NEAR(
-        kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+        kernel_1D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_2D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+        kernel_2D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_3D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+        kernel_3D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.2;
     q = rij / h;
     w_unnormalized = (-3.0 + 4.5 * q) * (1.0 / ParticleInteraction::UTILS::Pow<2>(h));
     EXPECT_NEAR(
-        kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+        kernel_1D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_2D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+        kernel_2D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_3D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+        kernel_3D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.6;
     q = rij / h;
     w_unnormalized = (1.5 * (2.0 - q)) * (1.0 / ParticleInteraction::UTILS::Pow<2>(h));
     EXPECT_NEAR(
-        kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+        kernel_1D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_2D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+        kernel_2D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_3D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+        kernel_3D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.8;
     q = rij / h;
     w_unnormalized = 0.0;
     EXPECT_NEAR(
-        kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+        kernel_1D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_2D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+        kernel_2D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_3D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+        kernel_3D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
   }
 
   TEST_F(SPHKernelCubicSplineTest, GradWij)
@@ -281,7 +281,7 @@ namespace
 
 
     double gradWij[3];
-    kernel_3D_->GradWij(rij, support, eij, gradWij);
+    kernel_3D_->grad_wij(rij, support, eij, gradWij);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(gradWij, gradWij_reference, 3, 1.0e-10);
   }
@@ -350,9 +350,9 @@ namespace
     const double support = 0.9;
     const double h = 0.3;
 
-    EXPECT_NEAR(kernel_1D_->SmoothingLength(support), h, 1.0e-10);
-    EXPECT_NEAR(kernel_2D_->SmoothingLength(support), h, 1.0e-10);
-    EXPECT_NEAR(kernel_3D_->SmoothingLength(support), h, 1.0e-10);
+    EXPECT_NEAR(kernel_1D_->smoothing_length(support), h, 1.0e-10);
+    EXPECT_NEAR(kernel_2D_->smoothing_length(support), h, 1.0e-10);
+    EXPECT_NEAR(kernel_3D_->smoothing_length(support), h, 1.0e-10);
   }
 
   TEST_F(SPHKernelQuinticSplineTest, normalization_constant)
@@ -383,9 +383,9 @@ namespace
         3.0 * M_1_PI / (359.0 * ParticleInteraction::UTILS::Pow<3>(h));
 
     double w_unnormalized = 66.0;
-    EXPECT_NEAR(kernel_1D_->W0(support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
-    EXPECT_NEAR(kernel_2D_->W0(support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
-    EXPECT_NEAR(kernel_3D_->W0(support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+    EXPECT_NEAR(kernel_1D_->w0(support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+    EXPECT_NEAR(kernel_2D_->w0(support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+    EXPECT_NEAR(kernel_3D_->w0(support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
   }
 
   TEST_F(SPHKernelQuinticSplineTest, W)
@@ -402,40 +402,40 @@ namespace
     double rij = 0.0;
     double q = rij / h;
     double w_unnormalized = 66.0;
-    EXPECT_NEAR(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
-    EXPECT_NEAR(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
-    EXPECT_NEAR(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+    EXPECT_NEAR(kernel_1D_->w(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+    EXPECT_NEAR(kernel_2D_->w(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+    EXPECT_NEAR(kernel_3D_->w(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.2;
     q = rij / h;
     w_unnormalized = ParticleInteraction::UTILS::Pow<5>(3.0 - q) -
                      6.0 * ParticleInteraction::UTILS::Pow<5>(2.0 - q) +
                      15.0 * ParticleInteraction::UTILS::Pow<5>(1.0 - q);
-    EXPECT_NEAR(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
-    EXPECT_NEAR(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
-    EXPECT_NEAR(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+    EXPECT_NEAR(kernel_1D_->w(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+    EXPECT_NEAR(kernel_2D_->w(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+    EXPECT_NEAR(kernel_3D_->w(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.5;
     q = rij / h;
     w_unnormalized = ParticleInteraction::UTILS::Pow<5>(3.0 - q) -
                      6.0 * ParticleInteraction::UTILS::Pow<5>(2.0 - q);
-    EXPECT_NEAR(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
-    EXPECT_NEAR(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
-    EXPECT_NEAR(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+    EXPECT_NEAR(kernel_1D_->w(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+    EXPECT_NEAR(kernel_2D_->w(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+    EXPECT_NEAR(kernel_3D_->w(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.8;
     q = rij / h;
     w_unnormalized = ParticleInteraction::UTILS::Pow<5>(3.0 - q);
-    EXPECT_NEAR(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
-    EXPECT_NEAR(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
-    EXPECT_NEAR(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+    EXPECT_NEAR(kernel_1D_->w(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+    EXPECT_NEAR(kernel_2D_->w(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+    EXPECT_NEAR(kernel_3D_->w(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.9;
     q = rij / h;
     w_unnormalized = 0.0;
-    EXPECT_NEAR(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
-    EXPECT_NEAR(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
-    EXPECT_NEAR(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+    EXPECT_NEAR(kernel_1D_->w(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+    EXPECT_NEAR(kernel_2D_->w(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+    EXPECT_NEAR(kernel_3D_->w(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
   }
 
   TEST_F(SPHKernelQuinticSplineTest, dWdrij)
@@ -453,11 +453,11 @@ namespace
     double q = rij / h;
     double w_unnormalized = 0.0;
     EXPECT_NEAR(
-        kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+        kernel_1D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_2D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+        kernel_2D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_3D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+        kernel_3D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.2;
     q = rij / h;
@@ -466,11 +466,11 @@ namespace
                          75.0 * ParticleInteraction::UTILS::Pow<4>(1.0 - q)) *
                      (1.0 / h);
     EXPECT_NEAR(
-        kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+        kernel_1D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_2D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+        kernel_2D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_3D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+        kernel_3D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.5;
     q = rij / h;
@@ -478,31 +478,31 @@ namespace
                          30.0 * ParticleInteraction::UTILS::Pow<4>(2.0 - q)) *
                      (1.0 / h);
     EXPECT_NEAR(
-        kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+        kernel_1D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_2D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+        kernel_2D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_3D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+        kernel_3D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.8;
     q = rij / h;
     w_unnormalized = (-5.0 * ParticleInteraction::UTILS::Pow<4>(3.0 - q)) * (1.0 / h);
     EXPECT_NEAR(
-        kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+        kernel_1D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_2D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+        kernel_2D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_3D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+        kernel_3D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.9;
     q = rij / h;
     w_unnormalized = 0.0;
     EXPECT_NEAR(
-        kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+        kernel_1D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_2D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+        kernel_2D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_3D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+        kernel_3D_->d_wdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
   }
 
   TEST_F(SPHKernelQuinticSplineTest, d2Wdrij2)
@@ -520,11 +520,11 @@ namespace
     double q = rij / h;
     double w_unnormalized = -4000.0 / 3.0;
     EXPECT_NEAR(
-        kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+        kernel_1D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_2D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+        kernel_2D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_3D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+        kernel_3D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.2;
     q = rij / h;
@@ -533,11 +533,11 @@ namespace
                          300.0 * ParticleInteraction::UTILS::Pow<3>(1.0 - q)) *
                      (1.0 / ParticleInteraction::UTILS::Pow<2>(h));
     EXPECT_NEAR(
-        kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+        kernel_1D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_2D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+        kernel_2D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_3D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+        kernel_3D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.5;
     q = rij / h;
@@ -545,32 +545,32 @@ namespace
                          120.0 * ParticleInteraction::UTILS::Pow<3>(2.0 - q)) *
                      (1.0 / ParticleInteraction::UTILS::Pow<2>(h));
     EXPECT_NEAR(
-        kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+        kernel_1D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_2D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+        kernel_2D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_3D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+        kernel_3D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.8;
     q = rij / h;
     w_unnormalized = (20.0 * ParticleInteraction::UTILS::Pow<3>(3.0 - q)) *
                      (1.0 / ParticleInteraction::UTILS::Pow<2>(h));
     EXPECT_NEAR(
-        kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+        kernel_1D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_2D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+        kernel_2D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_3D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+        kernel_3D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.9;
     q = rij / h;
     w_unnormalized = 0.0;
     EXPECT_NEAR(
-        kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
+        kernel_1D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_2D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
+        kernel_2D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(
-        kernel_3D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
+        kernel_3D_->d2_wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
   }
 
   TEST_F(SPHKernelQuinticSplineTest, GradWij)
@@ -597,7 +597,7 @@ namespace
 
 
     double gradWij[3];
-    kernel_3D_->GradWij(rij, support, eij, gradWij);
+    kernel_3D_->grad_wij(rij, support, eij, gradWij);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(gradWij, gradWij_reference, 3, 1.0e-10);
   }

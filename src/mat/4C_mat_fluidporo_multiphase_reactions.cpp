@@ -44,10 +44,10 @@ Mat::PAR::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
       Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(reacid);
 
       // safety check and cast
-      if (mat->MaterialType() != Core::Materials::m_fluidporo_singlereaction)
+      if (mat->material_type() != Core::Materials::m_fluidporo_singlereaction)
         FOUR_C_THROW("only MAT_FluidPoroSingleReaction material valid");
       Mat::FluidPoroSingleReaction singlereacmat = static_cast<Mat::FluidPoroSingleReaction&>(*mat);
-      if (singlereacmat.TotalNumDof() != this->nummat_)
+      if (singlereacmat.total_num_dof() != this->nummat_)
         FOUR_C_THROW(
             "TOTALNUMDOF in MAT_FluidPoroSingleReaction does not correspond to NUMMAT in "
             "MAT_FluidPoroMultiPhaseReactions");
@@ -66,7 +66,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroMultiPhaseReactions::create
 Mat::FluidPoroMultiPhaseReactionsType Mat::FluidPoroMultiPhaseReactionsType::instance_;
 
 
-Core::Communication::ParObject* Mat::FluidPoroMultiPhaseReactionsType::Create(
+Core::Communication::ParObject* Mat::FluidPoroMultiPhaseReactionsType::create(
     const std::vector<char>& data)
 {
   Mat::FluidPoroMultiPhaseReactions* FluidPoroMultiPhaseReactions =
@@ -108,7 +108,7 @@ void Mat::FluidPoroMultiPhaseReactions::setup_mat_map()
 
   // here's the recursive creation of materials
   std::vector<int>::const_iterator m;
-  for (m = paramsreac_->ReacIds()->begin(); m != paramsreac_->ReacIds()->end(); ++m)
+  for (m = paramsreac_->reac_ids()->begin(); m != paramsreac_->reac_ids()->end(); ++m)
   {
     const int reacid = *m;
     Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(reacid);
@@ -135,12 +135,12 @@ void Mat::FluidPoroMultiPhaseReactions::pack(Core::Communication::PackBuffer& da
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (paramsreac_ != nullptr) matid = paramsreac_->Id();  // in case we are in post-process mode
+  if (paramsreac_ != nullptr) matid = paramsreac_->id();  // in case we are in post-process mode
 
   add_to_pack(data, matid);
 
@@ -158,27 +158,27 @@ void Mat::FluidPoroMultiPhaseReactions::unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover paramsreac_
   int matid(-1);
   extract_from_pack(position, data, matid);
   paramsreac_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
       {
         // Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction
         // are in a diamond inheritance structure
         paramsreac_ = dynamic_cast<Mat::PAR::FluidPoroMultiPhaseReactions*>(mat);
       }
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   // extract base class material
@@ -195,7 +195,7 @@ void Mat::FluidPoroMultiPhaseReactions::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  | reaction ID by Index                                      vuong 08/16 |
  *----------------------------------------------------------------------*/
-int Mat::FluidPoroMultiPhaseReactions::ReacID(const unsigned index) const
+int Mat::FluidPoroMultiPhaseReactions::reac_id(const unsigned index) const
 {
   if ((int)index < paramsreac_->numreac_)
     return paramsreac_->reacids_.at(index);

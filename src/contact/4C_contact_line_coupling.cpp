@@ -160,16 +160,16 @@ bool CONTACT::LineToSurfaceCoupling3d::check_orientation()
   // check if surface normal and line ele are parallel!
 
   // tolerance for line clipping
-  const double sminedge = parent_element().MinEdgeSize();
-  const double mminedge = surface_element().MinEdgeSize();
+  const double sminedge = parent_element().min_edge_size();
+  const double mminedge = surface_element().min_edge_size();
   const double tol = 0.001 * std::min(sminedge, mminedge);
 
   // -------------------------------------------
   // CHECK LINE TO SURFACE ORIENTATION!
   // calculate line ele vector
   std::array<double, 3> lvec = {0.0, 0.0, 0.0};
-  Node* ns1 = dynamic_cast<Node*>(line_element()()->Nodes()[0]);
-  Node* ns2 = dynamic_cast<Node*>(line_element()()->Nodes()[1]);
+  Node* ns1 = dynamic_cast<Node*>(line_element()()->nodes()[0]);
+  Node* ns2 = dynamic_cast<Node*>(line_element()()->nodes()[1]);
   lvec[0] = ns1->xspatial()[0] - ns2->xspatial()[0];
   lvec[1] = ns1->xspatial()[1] - ns2->xspatial()[1];
   lvec[2] = ns1->xspatial()[2] - ns2->xspatial()[2];
@@ -224,11 +224,11 @@ void CONTACT::LineToSurfaceCoupling3d::consist_dual_shape()
 
   // Dual shape functions coefficient matrix and linearization
   Core::LinAlg::SerialDenseMatrix ae(nnodes, nnodes, true);
-  surface_element().MoData().DerivDualShape() =
+  surface_element().mo_data().deriv_dual_shape() =
       Teuchos::rcp(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
           (nnodes + mnodes) * ndof, 0, Core::LinAlg::SerialDenseMatrix(nnodes, nnodes)));
   Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& derivae =
-      *(surface_element().MoData().DerivDualShape());
+      *(surface_element().mo_data().deriv_dual_shape());
 
   // various variables
   double detg = 0.0;
@@ -254,37 +254,37 @@ void CONTACT::LineToSurfaceCoupling3d::consist_dual_shape()
 
   Teuchos::RCP<Mortar::IntCell> currcell = int_line();
 
-  A_tot += currcell->Area();
+  A_tot += currcell->area();
 
   // create an integrator for this cell
-  CONTACT::Integrator integrator(imortar_, currcell->Shape(), comm());
+  CONTACT::Integrator integrator(imortar_, currcell->shape(), get_comm());
 
   // check if the cells are tri3
   // there's nothing wrong about other shapes, but as long as they are all
   // tri3 we can perform the jacobian calculation ( and its deriv) outside
   // the Gauss point loop
-  if (currcell->Shape() != Core::FE::CellType::line2)
+  if (currcell->shape() != Core::FE::CellType::line2)
     FOUR_C_THROW("only line2 integration cells at the moment. See comment in the code");
 
-  detg = currcell->Jacobian();
+  detg = currcell->jacobian();
   // directional derivative of cell Jacobian
   Core::Gen::Pairedvector<int, double> derivjaccell((nnodes + ncol) * ndof);
-  currcell->DerivJacobian(derivjaccell);
+  currcell->deriv_jacobian(derivjaccell);
 
-  for (int gp = 0; gp < integrator.nGP(); ++gp)
+  for (int gp = 0; gp < integrator.n_gp(); ++gp)
   {
     // coordinates and weight
-    double eta[2] = {integrator.Coordinate(gp, 0), integrator.Coordinate(gp, 1)};
-    const double wgt = integrator.Weight(gp);
+    double eta[2] = {integrator.coordinate(gp, 0), integrator.coordinate(gp, 1)};
+    const double wgt = integrator.weight(gp);
 
     // get global Gauss point coordinates
     double globgp[3] = {0.0, 0.0, 0.0};
-    currcell->LocalToGlobal(eta, globgp, 0);
+    currcell->local_to_global(eta, globgp, 0);
 
     // project Gauss point onto slave integration element
     double sxi[2] = {0.0, 0.0};
     double sprojalpha = 0.0;
-    Mortar::Projector::Impl(surface_element())
+    Mortar::Projector::impl(surface_element())
         ->project_gauss_point_auxn3_d(globgp, auxn(), surface_element(), sxi, sprojalpha);
 
     // project Gauss point onto slave (parent) element
@@ -313,13 +313,13 @@ void CONTACT::LineToSurfaceCoupling3d::consist_dual_shape()
 
     for (int v = 0; v < 2; ++v)
       for (int d = 0; d < 3; ++d)
-        for (_CI p = (currcell->GetDerivVertex(v))[d].begin();
-             p != (currcell->GetDerivVertex(v))[d].end(); ++p)
+        for (_CI p = (currcell->get_deriv_vertex(v))[d].begin();
+             p != (currcell->get_deriv_vertex(v))[d].end(); ++p)
           lingp[p->first](d) += svalcell(v) * (p->second);
 
     // compute GP slave coordinate derivatives
-    integrator.DerivXiGP3DAuxPlane(surface_element(), sxi, currcell->Auxn(), dsxigp, sprojalpha,
-        currcell->get_deriv_auxn(), lingp);
+    integrator.deriv_xi_g_p3_d_aux_plane(surface_element(), sxi, currcell->auxn(), dsxigp,
+        sprojalpha, currcell->get_deriv_auxn(), lingp);
 
     // compute GP slave coordinate derivatives (parent element)
     dpsxigp = dsxigp;
@@ -404,7 +404,7 @@ void CONTACT::LineToSurfaceCoupling3d::consist_dual_shape()
   }
 
   // store ae matrix in slave element data container
-  surface_element().MoData().DualShape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+  surface_element().mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
 
   return;
 }
@@ -420,18 +420,18 @@ void CONTACT::LineToSurfaceCoupling3d::integrate_line()
 
   // create integrator object
   Teuchos::RCP<CONTACT::Integrator> integrator =
-      CONTACT::INTEGRATOR::BuildIntegrator(sol, imortar_, int_line()->Shape(), comm());
+      CONTACT::INTEGRATOR::BuildIntegrator(sol, imortar_, int_line()->shape(), get_comm());
 
   // perform integration
   if (i_type() == LineToSurfaceCoupling3d::lts)
   {
     integrator->integrate_deriv_cell3_d_aux_plane_lts(
-        parent_element(), *line_element(), surface_element(), int_line(), auxn(), comm());
+        parent_element(), *line_element(), surface_element(), int_line(), auxn(), get_comm());
   }
   else if (i_type() == LineToSurfaceCoupling3d::stl)
   {
     integrator->integrate_deriv_cell3_d_aux_plane_stl(
-        parent_element(), *line_element(), surface_element(), int_line(), auxn(), comm());
+        parent_element(), *line_element(), surface_element(), int_line(), auxn(), get_comm());
   }
   else
     FOUR_C_THROW("wrong integration type for line coupling!");
@@ -446,8 +446,8 @@ bool CONTACT::LineToSurfaceCoupling3d::check_line_on_line(Mortar::Vertex& edgeVe
     Mortar::Vertex& edgeVertex0, Mortar::Vertex& lineVertex1, Mortar::Vertex& lineVertex0)
 {
   // tolerance for line clipping
-  const double sminedge = parent_element().MinEdgeSize();
-  const double mminedge = surface_element().MinEdgeSize();
+  const double sminedge = parent_element().min_edge_size();
+  const double mminedge = surface_element().min_edge_size();
   const double tol = MORTARCLIPTOL * std::min(sminedge, mminedge);
 
   // check if point of edge is on line
@@ -457,8 +457,8 @@ bool CONTACT::LineToSurfaceCoupling3d::check_line_on_line(Mortar::Vertex& edgeVe
 
   for (int k = 0; k < 3; ++k)
   {
-    line[k] = lineVertex1.Coord()[k] - lineVertex0.Coord()[k];
-    edgeLine[k] = edgeVertex1.Coord()[k] - lineVertex0.Coord()[k];
+    line[k] = lineVertex1.coord()[k] - lineVertex0.coord()[k];
+    edgeLine[k] = edgeVertex1.coord()[k] - lineVertex0.coord()[k];
   }
 
   double lengthLine = sqrt(line[0] * line[0] + line[1] * line[1] + line[2] * line[2]);
@@ -495,8 +495,8 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   const bool out = false;
 
   // tolerance for line clipping
-  const double sminedge = parent_element().MinEdgeSize();
-  const double mminedge = surface_element().MinEdgeSize();
+  const double sminedge = parent_element().min_edge_size();
+  const double mminedge = surface_element().min_edge_size();
   const double tol = MORTARCLIPTOL * std::min(sminedge, mminedge);
 
   bool lineOnLine = check_line_on_line(edgeVertex1, edgeVertex0, lineVertex1, lineVertex0);
@@ -504,7 +504,7 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   if (!lineOnLine) FOUR_C_THROW("vertices not along a line, but already checked!");
 
   std::array<double, 3> line = {0.0, 0.0, 0.0};
-  for (int k = 0; k < 3; ++k) line[k] = lineVertex1.Coord()[k] - lineVertex0.Coord()[k];
+  for (int k = 0; k < 3; ++k) line[k] = lineVertex1.coord()[k] - lineVertex0.coord()[k];
 
   // LINE ON LINE!!! go on with real line to line clipping
   bool e0v0 = false;
@@ -520,8 +520,8 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   std::array<double, 3> lineEdge1Vert0 = {0.0, 0.0, 0.0};
   for (int k = 0; k < 3; ++k)
   {
-    lineEdge0Vert0[k] = edgeVertex0.Coord()[k] - lineVertex0.Coord()[k];
-    lineEdge1Vert0[k] = edgeVertex1.Coord()[k] - lineVertex0.Coord()[k];
+    lineEdge0Vert0[k] = edgeVertex0.coord()[k] - lineVertex0.coord()[k];
+    lineEdge1Vert0[k] = edgeVertex1.coord()[k] - lineVertex0.coord()[k];
   }
 
   for (int k = 0; k < 3; ++k)
@@ -545,8 +545,8 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   std::array<double, 3> lineEdge1Vert1 = {0.0, 0.0, 0.0};
   for (int k = 0; k < 3; ++k)
   {
-    lineEdge0Vert1[k] = edgeVertex0.Coord()[k] - lineVertex1.Coord()[k];
-    lineEdge1Vert1[k] = edgeVertex1.Coord()[k] - lineVertex1.Coord()[k];
+    lineEdge0Vert1[k] = edgeVertex0.coord()[k] - lineVertex1.coord()[k];
+    lineEdge1Vert1[k] = edgeVertex1.coord()[k] - lineVertex1.coord()[k];
   }
 
   for (int k = 0; k < 3; ++k)
@@ -577,10 +577,10 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
 
   for (int k = 0; k < 3; ++k)
   {
-    test0[k] = edgeVertex0.Coord()[k] - lineVertex0.Coord()[k];
-    test1[k] = edgeVertex0.Coord()[k] - lineVertex1.Coord()[k];
-    test2[k] = edgeVertex1.Coord()[k] - lineVertex0.Coord()[k];
-    test3[k] = edgeVertex1.Coord()[k] - lineVertex1.Coord()[k];
+    test0[k] = edgeVertex0.coord()[k] - lineVertex0.coord()[k];
+    test1[k] = edgeVertex0.coord()[k] - lineVertex1.coord()[k];
+    test2[k] = edgeVertex1.coord()[k] - lineVertex0.coord()[k];
+    test3[k] = edgeVertex1.coord()[k] - lineVertex1.coord()[k];
   }
 
   double l0 = sqrt(test0[0] * test0[0] + test0[1] * test0[1] + test0[2] * test0[2]);
@@ -598,11 +598,11 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   if (e0isV0 and e1isV1)
   {
     if (out) std::cout << "CASE 1" << std::endl;
-    inter_sections().push_back(Mortar::Vertex(edgeVertex0.Coord(), Mortar::Vertex::master,
-        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex0.coord(), Mortar::Vertex::master,
+        edgeVertex0.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex1.Coord(), Mortar::Vertex::master,
-        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex1.coord(), Mortar::Vertex::master,
+        edgeVertex1.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 2.: nodes on each other
@@ -610,11 +610,11 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   {
     if (out) std::cout << "CASE 2" << std::endl;
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex0.Coord(), Mortar::Vertex::master,
-        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex0.coord(), Mortar::Vertex::master,
+        edgeVertex0.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex1.Coord(), Mortar::Vertex::master,
-        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex1.coord(), Mortar::Vertex::master,
+        edgeVertex1.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 3.: e0 on v0 and e1 valid
@@ -622,11 +622,11 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   {
     if (out) std::cout << "CASE 3" << std::endl;
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex0.Coord(), Mortar::Vertex::master,
-        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex0.coord(), Mortar::Vertex::master,
+        edgeVertex0.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex1.Coord(), Mortar::Vertex::master,
-        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex1.coord(), Mortar::Vertex::master,
+        edgeVertex1.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 4.: e1 on v0 and e0 valid
@@ -634,11 +634,11 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   {
     if (out) std::cout << "CASE 4" << std::endl;
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex0.Coord(), Mortar::Vertex::master,
-        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex0.coord(), Mortar::Vertex::master,
+        edgeVertex0.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex1.Coord(), Mortar::Vertex::master,
-        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex1.coord(), Mortar::Vertex::master,
+        edgeVertex1.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 5.: e0 on v1 and e1 valid
@@ -646,11 +646,11 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   {
     if (out) std::cout << "CASE 5" << std::endl;
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex0.Coord(), Mortar::Vertex::master,
-        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex0.coord(), Mortar::Vertex::master,
+        edgeVertex0.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex1.Coord(), Mortar::Vertex::master,
-        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex1.coord(), Mortar::Vertex::master,
+        edgeVertex1.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 6.: e1 on v1 and e0 valid
@@ -658,11 +658,11 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   {
     if (out) std::cout << "CASE 6" << std::endl;
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex0.Coord(), Mortar::Vertex::master,
-        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex0.coord(), Mortar::Vertex::master,
+        edgeVertex0.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex1.Coord(), Mortar::Vertex::master,
-        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex1.coord(), Mortar::Vertex::master,
+        edgeVertex1.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 7.: e0 on v0 and e1 out of v1 but in v0
@@ -670,11 +670,11 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   {
     if (out) std::cout << "CASE 7" << std::endl;
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex0.Coord(), Mortar::Vertex::master,
-        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex0.coord(), Mortar::Vertex::master,
+        edgeVertex0.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
-    inter_sections().push_back(Mortar::Vertex(lineVertex1.Coord(), Mortar::Vertex::projslave,
-        lineVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(lineVertex1.coord(), Mortar::Vertex::projslave,
+        lineVertex1.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 8.: e1 on v0 and e0 out of v1 but in v0
@@ -682,11 +682,11 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   {
     if (out) std::cout << "CASE 8" << std::endl;
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex1.Coord(), Mortar::Vertex::master,
-        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex1.coord(), Mortar::Vertex::master,
+        edgeVertex1.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
-    inter_sections().push_back(Mortar::Vertex(lineVertex1.Coord(), Mortar::Vertex::projslave,
-        lineVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(lineVertex1.coord(), Mortar::Vertex::projslave,
+        lineVertex1.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 9.: e1 on v1 and e0 out of v0 but in v1
@@ -694,11 +694,11 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   {
     if (out) std::cout << "CASE 9" << std::endl;
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex1.Coord(), Mortar::Vertex::master,
-        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex1.coord(), Mortar::Vertex::master,
+        edgeVertex1.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
-    inter_sections().push_back(Mortar::Vertex(lineVertex0.Coord(), Mortar::Vertex::projslave,
-        lineVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(lineVertex0.coord(), Mortar::Vertex::projslave,
+        lineVertex0.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 10.: e0 on v1 and e1 out of v0 but in v1
@@ -706,11 +706,11 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   {
     if (out) std::cout << "CASE 10" << std::endl;
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex0.Coord(), Mortar::Vertex::master,
-        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex0.coord(), Mortar::Vertex::master,
+        edgeVertex0.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
-    inter_sections().push_back(Mortar::Vertex(lineVertex0.Coord(), Mortar::Vertex::projslave,
-        lineVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(lineVertex0.coord(), Mortar::Vertex::projslave,
+        lineVertex0.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 11.: e0 on v0 and e1 out of v0 but in v1
@@ -754,11 +754,11 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   {
     if (out) std::cout << "CASE 15" << std::endl;
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex0.Coord(), Mortar::Vertex::master,
-        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex0.coord(), Mortar::Vertex::master,
+        edgeVertex0.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex1.Coord(), Mortar::Vertex::master,
-        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex1.coord(), Mortar::Vertex::master,
+        edgeVertex1.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 16.: all slave nodes are projected: E0 out of V0  and E1 out of V1
@@ -766,11 +766,11 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   {
     if (out) std::cout << "CASE 16" << std::endl;
 
-    inter_sections().push_back(Mortar::Vertex(lineVertex0.Coord(), Mortar::Vertex::projslave,
-        lineVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(lineVertex0.coord(), Mortar::Vertex::projslave,
+        lineVertex0.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
-    inter_sections().push_back(Mortar::Vertex(lineVertex1.Coord(), Mortar::Vertex::projslave,
-        lineVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(lineVertex1.coord(), Mortar::Vertex::projslave,
+        lineVertex1.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 17.: all slave nodes are projected: E1 out of V0  and E0 out of V1
@@ -778,11 +778,11 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   {
     if (out) std::cout << "CASE 17" << std::endl;
 
-    inter_sections().push_back(Mortar::Vertex(lineVertex0.Coord(), Mortar::Vertex::projslave,
-        lineVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(lineVertex0.coord(), Mortar::Vertex::projslave,
+        lineVertex0.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
-    inter_sections().push_back(Mortar::Vertex(lineVertex1.Coord(), Mortar::Vertex::projslave,
-        lineVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(lineVertex1.coord(), Mortar::Vertex::projslave,
+        lineVertex1.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 18.: mixed: E0 and E1 pos to V0 and E0 pos to V1
@@ -790,11 +790,11 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   {
     if (out) std::cout << "CASE 18" << std::endl;
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex0.Coord(), Mortar::Vertex::master,
-        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex0.coord(), Mortar::Vertex::master,
+        edgeVertex0.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
-    inter_sections().push_back(Mortar::Vertex(lineVertex1.Coord(), Mortar::Vertex::projslave,
-        lineVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(lineVertex1.coord(), Mortar::Vertex::projslave,
+        lineVertex1.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 19.: mixed: E0 and E1 pos to V0 and E1 pos to V1
@@ -802,11 +802,11 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   {
     if (out) std::cout << "CASE 19" << std::endl;
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex1.Coord(), Mortar::Vertex::master,
-        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex1.coord(), Mortar::Vertex::master,
+        edgeVertex1.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
-    inter_sections().push_back(Mortar::Vertex(lineVertex1.Coord(), Mortar::Vertex::projslave,
-        lineVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(lineVertex1.coord(), Mortar::Vertex::projslave,
+        lineVertex1.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 20.: mixed: E0 neg and E1 pos to V0 and E0 and E1 pos to V1
@@ -814,11 +814,11 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   {
     if (out) std::cout << "CASE 20" << std::endl;
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex1.Coord(), Mortar::Vertex::master,
-        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex1.coord(), Mortar::Vertex::master,
+        edgeVertex1.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
-    inter_sections().push_back(Mortar::Vertex(lineVertex0.Coord(), Mortar::Vertex::projslave,
-        lineVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(lineVertex0.coord(), Mortar::Vertex::projslave,
+        lineVertex0.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 21.: mixed: E1 neg and E0 pos to V0 and E0 and E1 pos to V1
@@ -826,11 +826,11 @@ bool CONTACT::LineToSurfaceCoupling3d::line_to_line_clipping(Mortar::Vertex& edg
   {
     if (out) std::cout << "CASE 21" << std::endl;
 
-    inter_sections().push_back(Mortar::Vertex(edgeVertex0.Coord(), Mortar::Vertex::master,
-        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(edgeVertex0.coord(), Mortar::Vertex::master,
+        edgeVertex0.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
-    inter_sections().push_back(Mortar::Vertex(lineVertex0.Coord(), Mortar::Vertex::projslave,
-        lineVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+    inter_sections().push_back(Mortar::Vertex(lineVertex0.coord(), Mortar::Vertex::projslave,
+        lineVertex0.nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 22.: out: E0 and E1 in V0 and out of V1
@@ -880,8 +880,8 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
   const bool out = false;
 
   // tolerance for line clipping
-  const double sminedge = parent_element().MinEdgeSize();
-  const double mminedge = surface_element().MinEdgeSize();
+  const double sminedge = parent_element().min_edge_size();
+  const double mminedge = surface_element().min_edge_size();
   const double tol = MORTARCLIPTOL * std::min(sminedge, mminedge);
 
   // vector with vertices
@@ -898,20 +898,20 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
     // standard case
     if (i != 0 && i != (int)master_vertices().size() - 1)
     {
-      master_vertices()[i].AssignNext(&master_vertices()[i + 1]);
-      master_vertices()[i].AssignPrev(&master_vertices()[i - 1]);
+      master_vertices()[i].assign_next(&master_vertices()[i + 1]);
+      master_vertices()[i].assign_prev(&master_vertices()[i - 1]);
     }
     // first element in list
     else if (i == 0)
     {
-      master_vertices()[i].AssignNext(&master_vertices()[i + 1]);
-      master_vertices()[i].AssignPrev(&master_vertices()[(int)master_vertices().size() - 1]);
+      master_vertices()[i].assign_next(&master_vertices()[i + 1]);
+      master_vertices()[i].assign_prev(&master_vertices()[(int)master_vertices().size() - 1]);
     }
     // last element in list
     else
     {
-      master_vertices()[i].AssignNext(master_vertices().data());
-      master_vertices()[i].AssignPrev(&master_vertices()[i - 1]);
+      master_vertices()[i].assign_next(master_vertices().data());
+      master_vertices()[i].assign_prev(&master_vertices()[i - 1]);
     }
   }
 
@@ -921,7 +921,7 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
   // create line from slave vertices
   std::array<double, 3> slaveLine = {0.0, 0.0, 0.0};
   for (int k = 0; k < 3; ++k)
-    slaveLine[k] = slave_vertices()[1].Coord()[k] - slave_vertices()[0].Coord()[k];
+    slaveLine[k] = slave_vertices()[1].coord()[k] - slave_vertices()[0].coord()[k];
 
 
   // check for parallelity of line and edges and perform line to line clipping
@@ -933,7 +933,7 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
     // we need one edge first
     std::array<double, 3> edge = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
-      edge[k] = (master_vertices()[j].Next())->Coord()[k] - master_vertices()[j].Coord()[k];
+      edge[k] = (master_vertices()[j].next())->coord()[k] - master_vertices()[j].coord()[k];
 
     // outward edge normals of polygon and slave line
     std::array<double, 3> np = {0.0, 0.0, 0.0};
@@ -950,22 +950,22 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
       std::cout << "==============================================" << std::endl;
       std::cout << "SLine= " << slaveLine[0] << "  " << slaveLine[1] << "  " << slaveLine[2]
                 << std::endl;
-      std::cout << "Pos1= " << slave_vertices()[0].Coord()[0] << "  "
-                << slave_vertices()[0].Coord()[1] << "  " << slave_vertices()[0].Coord()[2]
+      std::cout << "Pos1= " << slave_vertices()[0].coord()[0] << "  "
+                << slave_vertices()[0].coord()[1] << "  " << slave_vertices()[0].coord()[2]
                 << std::endl;
-      std::cout << "Pos2= " << slave_vertices()[1].Coord()[0] << "  "
-                << slave_vertices()[1].Coord()[1] << "  " << slave_vertices()[1].Coord()[2]
+      std::cout << "Pos2= " << slave_vertices()[1].coord()[0] << "  "
+                << slave_vertices()[1].coord()[1] << "  " << slave_vertices()[1].coord()[2]
                 << std::endl;
       std::cout << "N slave= " << nl[0] << "  " << nl[1] << "  " << nl[2] << std::endl;
 
 
       std::cout << "==============================================" << std::endl;
       std::cout << "MEdge= " << edge[0] << "  " << edge[1] << "  " << edge[2] << std::endl;
-      std::cout << "Pos1= " << (master_vertices()[j].Next())->Coord()[0] << "  "
-                << (master_vertices()[j].Next())->Coord()[1] << "  "
-                << (master_vertices()[j].Next())->Coord()[2] << std::endl;
-      std::cout << "Pos2= " << master_vertices()[j].Coord()[0] << "  "
-                << master_vertices()[j].Coord()[1] << "  " << master_vertices()[j].Coord()[2]
+      std::cout << "Pos1= " << (master_vertices()[j].next())->coord()[0] << "  "
+                << (master_vertices()[j].next())->coord()[1] << "  "
+                << (master_vertices()[j].next())->coord()[2] << std::endl;
+      std::cout << "Pos2= " << master_vertices()[j].coord()[0] << "  "
+                << master_vertices()[j].coord()[1] << "  " << master_vertices()[j].coord()[2]
                 << std::endl;
       std::cout << "N master= " << np[0] << "  " << np[1] << "  " << np[2] << std::endl;
     }
@@ -975,19 +975,19 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
     if (abs(parallel) < tol)
     {
       // safety checks
-      if (master_vertices()[j].Next()->Nodeids().size() > 1)
+      if (master_vertices()[j].next()->nodeids().size() > 1)
         FOUR_C_THROW("Only one node id per master vertex allowed!");
-      if (master_vertices()[j].Nodeids().size() > 1)
+      if (master_vertices()[j].nodeids().size() > 1)
         FOUR_C_THROW("Only one node id per master vertex allowed!");
 
       // store master node ids in set to guarantee uniquness
       std::pair<int, int> actIDs = std::pair<int, int>(
-          master_vertices()[j].Next()->Nodeids()[0], master_vertices()[j].Nodeids()[0]);
+          master_vertices()[j].next()->nodeids()[0], master_vertices()[j].nodeids()[0]);
       std::pair<int, int> actIDsTw = std::pair<int, int>(
-          master_vertices()[j].Nodeids()[0], master_vertices()[j].Next()->Nodeids()[0]);
+          master_vertices()[j].nodeids()[0], master_vertices()[j].next()->nodeids()[0]);
 
       // check if edge on line element
-      foundValidParallelity = check_line_on_line(*master_vertices()[j].Next(), master_vertices()[j],
+      foundValidParallelity = check_line_on_line(*master_vertices()[j].next(), master_vertices()[j],
           slave_vertices()[1], slave_vertices()[0]);
 
       // check if processed before
@@ -1004,12 +1004,12 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
         if (foundValidParallelity)
         {
           // perform line-line clipping
-          line_to_line_clipping(*master_vertices()[j].Next(), master_vertices()[j],
+          line_to_line_clipping(*master_vertices()[j].next(), master_vertices()[j],
               slave_vertices()[1], slave_vertices()[0]);
 
           if (out)
-            std::cout << "MASTER IDS = " << master_vertices()[j].Next()->Nodeids()[0] << "  "
-                      << master_vertices()[j].Nodeids()[0] << std::endl;
+            std::cout << "MASTER IDS = " << master_vertices()[j].next()->nodeids()[0] << "  "
+                      << master_vertices()[j].nodeids()[0] << std::endl;
           break;
         }
         else
@@ -1027,7 +1027,7 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
       // we need two edges first
       std::array<double, 3> edge = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
-        edge[k] = (master_vertices()[j].Next())->Coord()[k] - master_vertices()[j].Coord()[k];
+        edge[k] = (master_vertices()[j].next())->coord()[k] - master_vertices()[j].coord()[k];
 
       // outward edge normals of polygon and slave line
       std::array<double, 3> np = {0.0, 0.0, 0.0};
@@ -1044,22 +1044,22 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
         std::cout << "==============================================" << std::endl;
         std::cout << "SLine= " << slaveLine[0] << "  " << slaveLine[1] << "  " << slaveLine[2]
                   << std::endl;
-        std::cout << "Pos1= " << slave_vertices()[0].Coord()[0] << "  "
-                  << slave_vertices()[0].Coord()[1] << "  " << slave_vertices()[0].Coord()[2]
+        std::cout << "Pos1= " << slave_vertices()[0].coord()[0] << "  "
+                  << slave_vertices()[0].coord()[1] << "  " << slave_vertices()[0].coord()[2]
                   << std::endl;
-        std::cout << "Pos2= " << slave_vertices()[1].Coord()[0] << "  "
-                  << slave_vertices()[1].Coord()[1] << "  " << slave_vertices()[1].Coord()[2]
+        std::cout << "Pos2= " << slave_vertices()[1].coord()[0] << "  "
+                  << slave_vertices()[1].coord()[1] << "  " << slave_vertices()[1].coord()[2]
                   << std::endl;
         std::cout << "N slave= " << nl[0] << "  " << nl[1] << "  " << nl[2] << std::endl;
 
 
         std::cout << "==============================================" << std::endl;
         std::cout << "MEdge= " << edge[0] << "  " << edge[1] << "  " << edge[2] << std::endl;
-        std::cout << "Pos1= " << (master_vertices()[j].Next())->Coord()[0] << "  "
-                  << (master_vertices()[j].Next())->Coord()[1] << "  "
-                  << (master_vertices()[j].Next())->Coord()[2] << std::endl;
-        std::cout << "Pos2= " << master_vertices()[j].Coord()[0] << "  "
-                  << master_vertices()[j].Coord()[1] << "  " << master_vertices()[j].Coord()[2]
+        std::cout << "Pos1= " << (master_vertices()[j].next())->coord()[0] << "  "
+                  << (master_vertices()[j].next())->coord()[1] << "  "
+                  << (master_vertices()[j].next())->coord()[2] << std::endl;
+        std::cout << "Pos2= " << master_vertices()[j].coord()[0] << "  "
+                  << master_vertices()[j].coord()[1] << "  " << master_vertices()[j].coord()[2]
                   << std::endl;
         std::cout << "N master= " << np[0] << "  " << np[1] << "  " << np[2] << std::endl;
       }
@@ -1076,8 +1076,8 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
       double wec_p2 = 0.0;
       for (int k = 0; k < 3; ++k)
       {
-        wec_p1 += (slave_vertices()[0].Coord()[k] - master_vertices()[j].Coord()[k]) * np[k];
-        wec_p2 += (slave_vertices()[1].Coord()[k] - master_vertices()[j].Coord()[k]) * np[k];
+        wec_p1 += (slave_vertices()[0].coord()[k] - master_vertices()[j].coord()[k]) * np[k];
+        wec_p2 += (slave_vertices()[1].coord()[k] - master_vertices()[j].coord()[k]) * np[k];
       }
 
       if (out)
@@ -1094,9 +1094,9 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
         double wec_q2 = 0.0;
         for (int k = 0; k < 3; ++k)
         {
-          wec_q1 += (master_vertices()[j].Coord()[k] - slave_vertices()[0].Coord()[k]) * nl[k];
+          wec_q1 += (master_vertices()[j].coord()[k] - slave_vertices()[0].coord()[k]) * nl[k];
           wec_q2 +=
-              ((master_vertices()[j].Next())->Coord()[k] - slave_vertices()[0].Coord()[k]) * nl[k];
+              ((master_vertices()[j].next())->coord()[k] - slave_vertices()[0].coord()[k]) * nl[k];
         }
 
         if (out)
@@ -1116,8 +1116,8 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
           std::vector<double> coords(3);
           for (int k = 0; k < 3; ++k)
           {
-            coords[k] = (1 - alpha) * slave_vertices()[0].Coord()[k] +
-                        alpha * slave_vertices()[1].Coord()[k];
+            coords[k] = (1 - alpha) * slave_vertices()[0].coord()[k] +
+                        alpha * slave_vertices()[1].coord()[k];
             if (abs(coords[k]) < tol) coords[k] = 0.0;
           }
 
@@ -1130,10 +1130,10 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
 
           // generate vectors of underlying node ids for lineclip (2x slave, 2x master)
           std::vector<int> lcids(4);
-          lcids[0] = (int)(slave_vertices()[0].Nodeids()[0]);
-          lcids[1] = (int)(slave_vertices()[1].Nodeids()[0]);
-          lcids[2] = (int)(master_vertices()[j].Nodeids()[0]);
-          lcids[3] = (int)((master_vertices()[j].Next())->Nodeids()[0]);
+          lcids[0] = (int)(slave_vertices()[0].nodeids()[0]);
+          lcids[1] = (int)(slave_vertices()[1].nodeids()[0]);
+          lcids[2] = (int)(master_vertices()[j].nodeids()[0]);
+          lcids[3] = (int)((master_vertices()[j].next())->nodeids()[0]);
 
           // store intersection points
           temp_inter_sections().push_back(Mortar::Vertex(coords, Mortar::Vertex::lineclip, lcids,
@@ -1159,8 +1159,8 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
           std::array<double, 3> edge = {0.0, 0.0, 0.0};
           for (int k = 0; k < 3; ++k)
           {
-            diff[k] = slave_vertices()[i].Coord()[k] - master_vertices()[j].Coord()[k];
-            edge[k] = (master_vertices()[j].Next())->Coord()[k] - master_vertices()[j].Coord()[k];
+            diff[k] = slave_vertices()[i].coord()[k] - master_vertices()[j].coord()[k];
+            edge[k] = (master_vertices()[j].next())->coord()[k] - master_vertices()[j].coord()[k];
           }
 
           // compute distance from point on poly1 to edge
@@ -1189,8 +1189,8 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
         else
         {
           temp_inter_sections().push_back(
-              Mortar::Vertex(slave_vertices()[i].Coord(), Mortar::Vertex::projslave,
-                  slave_vertices()[i].Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+              Mortar::Vertex(slave_vertices()[i].coord(), Mortar::Vertex::projslave,
+                  slave_vertices()[i].nodeids(), nullptr, nullptr, false, false, nullptr, -1));
         }
       }
     }  // if intersections != 2
@@ -1207,7 +1207,7 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
         // distance vector
         std::array<double, 3> diff = {0.0, 0.0, 0.0};
         for (int k = 0; k < 3; ++k)
-          diff[k] = temp_inter_sections()[i].Coord()[k] - temp_inter_sections()[j].Coord()[k];
+          diff[k] = temp_inter_sections()[i].coord()[k] - temp_inter_sections()[j].coord()[k];
         double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
         if (dist < tol)
         {
@@ -1246,7 +1246,7 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
         // distance vector
         std::array<double, 3> diff = {0.0, 0.0, 0.0};
         for (int k = 0; k < 3; ++k)
-          diff[k] = temp_inter_sections()[i].Coord()[k] - slave_vertices()[j].Coord()[k];
+          diff[k] = temp_inter_sections()[i].coord()[k] - slave_vertices()[j].coord()[k];
         double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
         // only keep intersection point if not close
@@ -1257,8 +1257,8 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
 
           // store slave vertex as intersection point
           inter_sections().push_back(
-              Mortar::Vertex(slave_vertices()[j].Coord(), Mortar::Vertex::projslave,
-                  slave_vertices()[j].Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+              Mortar::Vertex(slave_vertices()[j].coord(), Mortar::Vertex::projslave,
+                  slave_vertices()[j].nodeids(), nullptr, nullptr, false, false, nullptr, -1));
           break;
         }
       }
@@ -1272,7 +1272,7 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
           // distance vector
           std::array<double, 3> diff = {0.0, 0.0, 0.0};
           for (int k = 0; k < 3; ++k)
-            diff[k] = temp_inter_sections()[i].Coord()[k] - master_vertices()[j].Coord()[k];
+            diff[k] = temp_inter_sections()[i].coord()[k] - master_vertices()[j].coord()[k];
           double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
           // only keep intersection point if not close
@@ -1282,8 +1282,8 @@ void CONTACT::LineToSurfaceCoupling3d::line_clipping()
             close = true;
 
             inter_sections().push_back(
-                Mortar::Vertex(master_vertices()[j].Coord(), Mortar::Vertex::master,
-                    master_vertices()[j].Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
+                Mortar::Vertex(master_vertices()[j].coord(), Mortar::Vertex::master,
+                    master_vertices()[j].nodeids(), nullptr, nullptr, false, false, nullptr, -1));
             break;
           }
         }
@@ -1315,13 +1315,13 @@ void CONTACT::LineToSurfaceCoupling3d::create_integration_lines(
 
   for (int i = 0; i < 3; ++i)
   {
-    coords(i, 0) = inter_sections()[0].Coord()[i];
-    coords(i, 1) = inter_sections()[1].Coord()[i];
+    coords(i, 0) = inter_sections()[0].coord()[i];
+    coords(i, 1) = inter_sections()[1].coord()[i];
     coords(i, 2) = -1;  // dummy;
   }
 
   // create Integration Line
-  int_line() = Teuchos::rcp(new Mortar::IntCell(parent_element().Id(), 2, coords, auxn(),
+  int_line() = Teuchos::rcp(new Mortar::IntCell(parent_element().id(), 2, coords, auxn(),
       Core::FE::CellType::line2, linvertex[0], linvertex[1],
       linvertex[1],  // dummy
       get_deriv_auxn()));
@@ -1372,13 +1372,13 @@ void CONTACT::LineToSurfaceCoupling3d::linearize_vertices(
     if (currv.v_type() == Mortar::Vertex::projslave)
     {
       // get corresponding slave id
-      int sid = currv.Nodeids()[0];
+      int sid = currv.nodeids()[0];
 
       // find corresponding slave node linearization
       int k = 0;
       while (k < nsrows)
       {
-        if (line_element()->NodeIds()[k] == sid) break;
+        if (line_element()->node_ids()[k] == sid) break;
         ++k;
       }
 
@@ -1391,13 +1391,13 @@ void CONTACT::LineToSurfaceCoupling3d::linearize_vertices(
     else if (currv.v_type() == Mortar::Vertex::master)
     {
       // get corresponding master id
-      int mid = currv.Nodeids()[0];
+      int mid = currv.nodeids()[0];
 
       // find corresponding master node linearization
       int k = 0;
       while (k < nmrows)
       {
-        if (surface_element().NodeIds()[k] == mid) break;
+        if (surface_element().node_ids()[k] == mid) break;
         ++k;
       }
 
@@ -1414,8 +1414,8 @@ void CONTACT::LineToSurfaceCoupling3d::linearize_vertices(
       int sindex2 = -1;
       for (int j = 0; j < (int)slave_vertices().size(); ++j)
       {
-        if (slave_vertices()[j].Nodeids()[0] == currv.Nodeids()[0]) sindex1 = j;
-        if (slave_vertices()[j].Nodeids()[0] == currv.Nodeids()[1]) sindex2 = j;
+        if (slave_vertices()[j].nodeids()[0] == currv.nodeids()[0]) sindex1 = j;
+        if (slave_vertices()[j].nodeids()[0] == currv.nodeids()[1]) sindex2 = j;
       }
       if (sindex1 < 0 || sindex2 < 0 || sindex1 == sindex2)
         FOUR_C_THROW("Lineclip linearization: (S) Something went wrong!");
@@ -1428,8 +1428,8 @@ void CONTACT::LineToSurfaceCoupling3d::linearize_vertices(
       int mindex2 = -1;
       for (int j = 0; j < (int)master_vertices().size(); ++j)
       {
-        if (master_vertices()[j].Nodeids()[0] == currv.Nodeids()[2]) mindex1 = j;
-        if (master_vertices()[j].Nodeids()[0] == currv.Nodeids()[3]) mindex2 = j;
+        if (master_vertices()[j].nodeids()[0] == currv.nodeids()[2]) mindex1 = j;
+        if (master_vertices()[j].nodeids()[0] == currv.nodeids()[3]) mindex2 = j;
       }
       if (mindex1 < 0 || mindex2 < 0 || mindex1 == mindex2)
         FOUR_C_THROW("Lineclip linearization: (M) Something went wrong!");
@@ -1466,83 +1466,83 @@ void CONTACT::LineToSurfaceCoupling3d::lineclip_vertex_linearization(Mortar::Ver
 
   // compute factor Z
   std::array<double, 3> crossZ = {0.0, 0.0, 0.0};
-  crossZ[0] = (sv1->Coord()[1] - mv1->Coord()[1]) * (mv2->Coord()[2] - mv1->Coord()[2]) -
-              (sv1->Coord()[2] - mv1->Coord()[2]) * (mv2->Coord()[1] - mv1->Coord()[1]);
-  crossZ[1] = (sv1->Coord()[2] - mv1->Coord()[2]) * (mv2->Coord()[0] - mv1->Coord()[0]) -
-              (sv1->Coord()[0] - mv1->Coord()[0]) * (mv2->Coord()[2] - mv1->Coord()[2]);
-  crossZ[2] = (sv1->Coord()[0] - mv1->Coord()[0]) * (mv2->Coord()[1] - mv1->Coord()[1]) -
-              (sv1->Coord()[1] - mv1->Coord()[1]) * (mv2->Coord()[0] - mv1->Coord()[0]);
+  crossZ[0] = (sv1->coord()[1] - mv1->coord()[1]) * (mv2->coord()[2] - mv1->coord()[2]) -
+              (sv1->coord()[2] - mv1->coord()[2]) * (mv2->coord()[1] - mv1->coord()[1]);
+  crossZ[1] = (sv1->coord()[2] - mv1->coord()[2]) * (mv2->coord()[0] - mv1->coord()[0]) -
+              (sv1->coord()[0] - mv1->coord()[0]) * (mv2->coord()[2] - mv1->coord()[2]);
+  crossZ[2] = (sv1->coord()[0] - mv1->coord()[0]) * (mv2->coord()[1] - mv1->coord()[1]) -
+              (sv1->coord()[1] - mv1->coord()[1]) * (mv2->coord()[0] - mv1->coord()[0]);
   double Zfac = crossZ[0] * auxn()[0] + crossZ[1] * auxn()[1] + crossZ[2] * auxn()[2];
 
   // compute factor N
   std::array<double, 3> crossN = {0.0, 0.0, 0.0};
-  crossN[0] = (sv2->Coord()[1] - sv1->Coord()[1]) * (mv2->Coord()[2] - mv1->Coord()[2]) -
-              (sv2->Coord()[2] - sv1->Coord()[2]) * (mv2->Coord()[1] - mv1->Coord()[1]);
-  crossN[1] = (sv2->Coord()[2] - sv1->Coord()[2]) * (mv2->Coord()[0] - mv1->Coord()[0]) -
-              (sv2->Coord()[0] - sv1->Coord()[0]) * (mv2->Coord()[2] - mv1->Coord()[2]);
-  crossN[2] = (sv2->Coord()[0] - sv1->Coord()[0]) * (mv2->Coord()[1] - mv1->Coord()[1]) -
-              (sv2->Coord()[1] - sv1->Coord()[1]) * (mv2->Coord()[0] - mv1->Coord()[0]);
+  crossN[0] = (sv2->coord()[1] - sv1->coord()[1]) * (mv2->coord()[2] - mv1->coord()[2]) -
+              (sv2->coord()[2] - sv1->coord()[2]) * (mv2->coord()[1] - mv1->coord()[1]);
+  crossN[1] = (sv2->coord()[2] - sv1->coord()[2]) * (mv2->coord()[0] - mv1->coord()[0]) -
+              (sv2->coord()[0] - sv1->coord()[0]) * (mv2->coord()[2] - mv1->coord()[2]);
+  crossN[2] = (sv2->coord()[0] - sv1->coord()[0]) * (mv2->coord()[1] - mv1->coord()[1]) -
+              (sv2->coord()[1] - sv1->coord()[1]) * (mv2->coord()[0] - mv1->coord()[0]);
   double Nfac = crossN[0] * auxn()[0] + crossN[1] * auxn()[1] + crossN[2] * auxn()[2];
 
   // slave edge vector
   std::array<double, 3> sedge = {0.0, 0.0, 0.0};
-  for (int k = 0; k < 3; ++k) sedge[k] = sv2->Coord()[k] - sv1->Coord()[k];
+  for (int k = 0; k < 3; ++k) sedge[k] = sv2->coord()[k] - sv1->coord()[k];
 
   // prepare linearization derivZ
   std::array<double, 3> crossdZ1 = {0.0, 0.0, 0.0};
   std::array<double, 3> crossdZ2 = {0.0, 0.0, 0.0};
   std::array<double, 3> crossdZ3 = {0.0, 0.0, 0.0};
-  crossdZ1[0] = (mv2->Coord()[1] - mv1->Coord()[1]) * auxn()[2] -
-                (mv2->Coord()[2] - mv1->Coord()[2]) * auxn()[1];
-  crossdZ1[1] = (mv2->Coord()[2] - mv1->Coord()[2]) * auxn()[0] -
-                (mv2->Coord()[0] - mv1->Coord()[0]) * auxn()[2];
-  crossdZ1[2] = (mv2->Coord()[0] - mv1->Coord()[0]) * auxn()[1] -
-                (mv2->Coord()[1] - mv1->Coord()[1]) * auxn()[0];
-  crossdZ2[0] = auxn()[1] * (sv1->Coord()[2] - mv1->Coord()[2]) -
-                auxn()[2] * (sv1->Coord()[1] - mv1->Coord()[1]);
-  crossdZ2[1] = auxn()[2] * (sv1->Coord()[0] - mv1->Coord()[0]) -
-                auxn()[0] * (sv1->Coord()[2] - mv1->Coord()[2]);
-  crossdZ2[2] = auxn()[0] * (sv1->Coord()[1] - mv1->Coord()[1]) -
-                auxn()[1] * (sv1->Coord()[0] - mv1->Coord()[0]);
-  crossdZ3[0] = (sv1->Coord()[1] - mv1->Coord()[1]) * (mv2->Coord()[2] - mv1->Coord()[2]) -
-                (sv1->Coord()[2] - mv1->Coord()[2]) * (mv2->Coord()[1] - mv1->Coord()[1]);
-  crossdZ3[1] = (sv1->Coord()[2] - mv1->Coord()[2]) * (mv2->Coord()[0] - mv1->Coord()[0]) -
-                (sv1->Coord()[0] - mv1->Coord()[0]) * (mv2->Coord()[2] - mv1->Coord()[2]);
-  crossdZ3[2] = (sv1->Coord()[0] - mv1->Coord()[0]) * (mv2->Coord()[1] - mv1->Coord()[1]) -
-                (sv1->Coord()[1] - mv1->Coord()[1]) * (mv2->Coord()[0] - mv1->Coord()[0]);
+  crossdZ1[0] = (mv2->coord()[1] - mv1->coord()[1]) * auxn()[2] -
+                (mv2->coord()[2] - mv1->coord()[2]) * auxn()[1];
+  crossdZ1[1] = (mv2->coord()[2] - mv1->coord()[2]) * auxn()[0] -
+                (mv2->coord()[0] - mv1->coord()[0]) * auxn()[2];
+  crossdZ1[2] = (mv2->coord()[0] - mv1->coord()[0]) * auxn()[1] -
+                (mv2->coord()[1] - mv1->coord()[1]) * auxn()[0];
+  crossdZ2[0] = auxn()[1] * (sv1->coord()[2] - mv1->coord()[2]) -
+                auxn()[2] * (sv1->coord()[1] - mv1->coord()[1]);
+  crossdZ2[1] = auxn()[2] * (sv1->coord()[0] - mv1->coord()[0]) -
+                auxn()[0] * (sv1->coord()[2] - mv1->coord()[2]);
+  crossdZ2[2] = auxn()[0] * (sv1->coord()[1] - mv1->coord()[1]) -
+                auxn()[1] * (sv1->coord()[0] - mv1->coord()[0]);
+  crossdZ3[0] = (sv1->coord()[1] - mv1->coord()[1]) * (mv2->coord()[2] - mv1->coord()[2]) -
+                (sv1->coord()[2] - mv1->coord()[2]) * (mv2->coord()[1] - mv1->coord()[1]);
+  crossdZ3[1] = (sv1->coord()[2] - mv1->coord()[2]) * (mv2->coord()[0] - mv1->coord()[0]) -
+                (sv1->coord()[0] - mv1->coord()[0]) * (mv2->coord()[2] - mv1->coord()[2]);
+  crossdZ3[2] = (sv1->coord()[0] - mv1->coord()[0]) * (mv2->coord()[1] - mv1->coord()[1]) -
+                (sv1->coord()[1] - mv1->coord()[1]) * (mv2->coord()[0] - mv1->coord()[0]);
 
   // prepare linearization derivN
   std::array<double, 3> crossdN1 = {0.0, 0.0, 0.0};
   std::array<double, 3> crossdN2 = {0.0, 0.0, 0.0};
   std::array<double, 3> crossdN3 = {0.0, 0.0, 0.0};
-  crossdN1[0] = (mv2->Coord()[1] - mv1->Coord()[1]) * auxn()[2] -
-                (mv2->Coord()[2] - mv1->Coord()[2]) * auxn()[1];
-  crossdN1[1] = (mv2->Coord()[2] - mv1->Coord()[2]) * auxn()[0] -
-                (mv2->Coord()[0] - mv1->Coord()[0]) * auxn()[2];
-  crossdN1[2] = (mv2->Coord()[0] - mv1->Coord()[0]) * auxn()[1] -
-                (mv2->Coord()[1] - mv1->Coord()[1]) * auxn()[0];
-  crossdN2[0] = auxn()[1] * (sv2->Coord()[2] - sv1->Coord()[2]) -
-                auxn()[2] * (sv2->Coord()[1] - sv1->Coord()[1]);
-  crossdN2[1] = auxn()[2] * (sv2->Coord()[0] - sv1->Coord()[0]) -
-                auxn()[0] * (sv2->Coord()[2] - sv1->Coord()[2]);
-  crossdN2[2] = auxn()[0] * (sv2->Coord()[1] - sv1->Coord()[1]) -
-                auxn()[1] * (sv2->Coord()[0] - sv1->Coord()[0]);
-  crossdN3[0] = (sv2->Coord()[1] - sv1->Coord()[1]) * (mv2->Coord()[2] - mv1->Coord()[2]) -
-                (sv2->Coord()[2] - sv1->Coord()[2]) * (mv2->Coord()[1] - mv1->Coord()[1]);
-  crossdN3[1] = (sv2->Coord()[2] - sv1->Coord()[2]) * (mv2->Coord()[0] - mv1->Coord()[0]) -
-                (sv2->Coord()[0] - sv1->Coord()[0]) * (mv2->Coord()[2] - mv1->Coord()[2]);
-  crossdN3[2] = (sv2->Coord()[0] - sv1->Coord()[0]) * (mv2->Coord()[1] - mv1->Coord()[1]) -
-                (sv2->Coord()[1] - sv1->Coord()[1]) * (mv2->Coord()[0] - mv1->Coord()[0]);
+  crossdN1[0] = (mv2->coord()[1] - mv1->coord()[1]) * auxn()[2] -
+                (mv2->coord()[2] - mv1->coord()[2]) * auxn()[1];
+  crossdN1[1] = (mv2->coord()[2] - mv1->coord()[2]) * auxn()[0] -
+                (mv2->coord()[0] - mv1->coord()[0]) * auxn()[2];
+  crossdN1[2] = (mv2->coord()[0] - mv1->coord()[0]) * auxn()[1] -
+                (mv2->coord()[1] - mv1->coord()[1]) * auxn()[0];
+  crossdN2[0] = auxn()[1] * (sv2->coord()[2] - sv1->coord()[2]) -
+                auxn()[2] * (sv2->coord()[1] - sv1->coord()[1]);
+  crossdN2[1] = auxn()[2] * (sv2->coord()[0] - sv1->coord()[0]) -
+                auxn()[0] * (sv2->coord()[2] - sv1->coord()[2]);
+  crossdN2[2] = auxn()[0] * (sv2->coord()[1] - sv1->coord()[1]) -
+                auxn()[1] * (sv2->coord()[0] - sv1->coord()[0]);
+  crossdN3[0] = (sv2->coord()[1] - sv1->coord()[1]) * (mv2->coord()[2] - mv1->coord()[2]) -
+                (sv2->coord()[2] - sv1->coord()[2]) * (mv2->coord()[1] - mv1->coord()[1]);
+  crossdN3[1] = (sv2->coord()[2] - sv1->coord()[2]) * (mv2->coord()[0] - mv1->coord()[0]) -
+                (sv2->coord()[0] - sv1->coord()[0]) * (mv2->coord()[2] - mv1->coord()[2]);
+  crossdN3[2] = (sv2->coord()[0] - sv1->coord()[0]) * (mv2->coord()[1] - mv1->coord()[1]) -
+                (sv2->coord()[1] - sv1->coord()[1]) * (mv2->coord()[0] - mv1->coord()[0]);
 
   // slave vertex linearization (2x)
-  int sid1 = currv.Nodeids()[0];
-  int sid2 = currv.Nodeids()[1];
+  int sid1 = currv.nodeids()[0];
+  int sid2 = currv.nodeids()[1];
 
   // find corresponding slave node linearizations
   int k = 0;
   while (k < nsrows)
   {
-    if (line_element()->NodeIds()[k] == sid1) break;
+    if (line_element()->node_ids()[k] == sid1) break;
     ++k;
   }
 
@@ -1555,7 +1555,7 @@ void CONTACT::LineToSurfaceCoupling3d::lineclip_vertex_linearization(Mortar::Ver
   k = 0;
   while (k < nsrows)
   {
-    if (line_element()->NodeIds()[k] == sid2) break;
+    if (line_element()->node_ids()[k] == sid2) break;
     ++k;
   }
 
@@ -1566,14 +1566,14 @@ void CONTACT::LineToSurfaceCoupling3d::lineclip_vertex_linearization(Mortar::Ver
   std::vector<Core::Gen::Pairedvector<int, double>>& slavelin1 = linsnodes[k];
 
   // master vertex linearization (2x)
-  int mid1 = currv.Nodeids()[2];
-  int mid2 = currv.Nodeids()[3];
+  int mid1 = currv.nodeids()[2];
+  int mid2 = currv.nodeids()[3];
 
   // find corresponding master node linearizations
   k = 0;
   while (k < nmrows)
   {
-    if (surface_element().NodeIds()[k] == mid1) break;
+    if (surface_element().node_ids()[k] == mid1) break;
     ++k;
   }
 
@@ -1586,7 +1586,7 @@ void CONTACT::LineToSurfaceCoupling3d::lineclip_vertex_linearization(Mortar::Ver
   k = 0;
   while (k < nmrows)
   {
-    if (surface_element().NodeIds()[k] == mid2) break;
+    if (surface_element().node_ids()[k] == mid2) break;
     ++k;
   }
 
@@ -1660,14 +1660,14 @@ void CONTACT::LineToSurfaceCoupling3d::lineclip_vertex_linearization(Mortar::Ver
 bool CONTACT::LineToSurfaceCoupling3d::check_length()
 {
   // tolerance
-  const double sminedge = parent_element().MinEdgeSize();
-  const double mminedge = surface_element().MinEdgeSize();
+  const double sminedge = parent_element().min_edge_size();
+  const double mminedge = surface_element().min_edge_size();
   const double tol = MORTARCLIPTOL * std::min(sminedge, mminedge);
 
   // compute distance vector
   std::array<double, 3> v = {0.0, 0.0, 0.0};
   for (int i = 0; i < 3; ++i)
-    v[i] = inter_sections()[0].Coord()[i] - inter_sections()[1].Coord()[i];
+    v[i] = inter_sections()[0].coord()[i] - inter_sections()[1].coord()[i];
 
   // compute length
   double length = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
@@ -1688,7 +1688,7 @@ bool CONTACT::LineToSurfaceCoupling3d::auxiliary_plane()
   // for tri3, tri6 elements: xi = eta = 1/3
   double loccenter[2] = {0.0, 0.0};
 
-  Core::FE::CellType dt = surface_element().Shape();
+  Core::FE::CellType dt = surface_element().shape();
   if (dt == Core::FE::CellType::tri3 || dt == Core::FE::CellType::tri6)
   {
     loccenter[0] = 1.0 / 3.0;
@@ -1704,7 +1704,7 @@ bool CONTACT::LineToSurfaceCoupling3d::auxiliary_plane()
     FOUR_C_THROW("auxiliary_plane called for unknown element type");
 
   // compute element center via shape fct. interpolation
-  surface_element().LocalToGlobal(loccenter, auxc(), 0);
+  surface_element().local_to_global(loccenter, auxc(), 0);
 
   // we then compute the unit normal vector at the element center
   lauxn() = surface_element().compute_unit_normal_at_xi(loccenter, auxn_surf());
@@ -1730,12 +1730,12 @@ bool CONTACT::LineToSurfaceCoupling3d::auxiliary_line()
   linsize_ = 0;
   for (int i = 0; i < nnodes; ++i)
   {
-    Core::Nodes::Node* node = idiscret_.gNode(line_element()->NodeIds()[i]);
-    if (!node) FOUR_C_THROW("Cannot find slave element with gid %", line_element()->NodeIds()[i]);
+    Core::Nodes::Node* node = idiscret_.g_node(line_element()->node_ids()[i]);
+    if (!node) FOUR_C_THROW("Cannot find slave element with gid %", line_element()->node_ids()[i]);
     Node* mycnode = dynamic_cast<Node*>(node);
     if (!mycnode) FOUR_C_THROW("project_slave: Null pointer!");
 
-    linsize_ += mycnode->GetLinsize();
+    linsize_ += mycnode->get_linsize();
   }
 
   // TODO: this is a safety scaling. Correct linsize
@@ -1757,37 +1757,37 @@ bool CONTACT::LineToSurfaceCoupling3d::auxiliary_line()
   // average nodal normals of line element
   for (int i = 0; i < nnodes; ++i)
   {
-    Core::Nodes::Node* node = idiscret_.gNode(line_element()->NodeIds()[i]);
-    if (!node) FOUR_C_THROW("Cannot find slave element with gid %", line_element()->NodeIds()[i]);
+    Core::Nodes::Node* node = idiscret_.g_node(line_element()->node_ids()[i]);
+    if (!node) FOUR_C_THROW("Cannot find slave element with gid %", line_element()->node_ids()[i]);
     Node* mycnode = dynamic_cast<Node*>(node);
     if (!mycnode) FOUR_C_THROW("project_slave: Null pointer!");
 
-    auxn()[0] += 0.5 * mycnode->MoData().n()[0];
-    auxn()[1] += 0.5 * mycnode->MoData().n()[1];
-    auxn()[2] += 0.5 * mycnode->MoData().n()[2];
+    auxn()[0] += 0.5 * mycnode->mo_data().n()[0];
+    auxn()[1] += 0.5 * mycnode->mo_data().n()[1];
+    auxn()[2] += 0.5 * mycnode->mo_data().n()[2];
 
-    for (_CI p = mycnode->Data().GetDerivN()[0].begin(); p != mycnode->Data().GetDerivN()[0].end();
-         ++p)
+    for (_CI p = mycnode->data().get_deriv_n()[0].begin();
+         p != mycnode->data().get_deriv_n()[0].end(); ++p)
       (dauxn[0])[p->first] += 0.5 * (p->second);
-    for (_CI p = mycnode->Data().GetDerivN()[1].begin(); p != mycnode->Data().GetDerivN()[1].end();
-         ++p)
+    for (_CI p = mycnode->data().get_deriv_n()[1].begin();
+         p != mycnode->data().get_deriv_n()[1].end(); ++p)
       (dauxn[1])[p->first] += 0.5 * (p->second);
-    for (_CI p = mycnode->Data().GetDerivN()[2].begin(); p != mycnode->Data().GetDerivN()[2].end();
-         ++p)
+    for (_CI p = mycnode->data().get_deriv_n()[2].begin();
+         p != mycnode->data().get_deriv_n()[2].end(); ++p)
       (dauxn[2])[p->first] += 0.5 * (p->second);
 
     // new aux center
-    for (int d = 0; d < dim(); ++d) auxc()[d] += 0.5 * mycnode->xspatial()[d];
+    for (int d = 0; d < n_dim(); ++d) auxc()[d] += 0.5 * mycnode->xspatial()[d];
 
-    (get_deriv_auxc()[0])[mycnode->Dofs()[0]] += 0.5;
-    (get_deriv_auxc()[1])[mycnode->Dofs()[1]] += 0.5;
-    (get_deriv_auxc()[2])[mycnode->Dofs()[2]] += 0.5;
+    (get_deriv_auxc()[0])[mycnode->dofs()[0]] += 0.5;
+    (get_deriv_auxc()[1])[mycnode->dofs()[1]] += 0.5;
+    (get_deriv_auxc()[2])[mycnode->dofs()[2]] += 0.5;
   }
 
   // create tangent of line element
   std::array<double, 3> tangent = {0.0, 0.0, 0.0};
-  Core::Nodes::Node* node = idiscret_.gNode(line_element()->NodeIds()[0]);
-  if (!node) FOUR_C_THROW("Cannot find slave element with gid %", line_element()->NodeIds()[0]);
+  Core::Nodes::Node* node = idiscret_.g_node(line_element()->node_ids()[0]);
+  if (!node) FOUR_C_THROW("Cannot find slave element with gid %", line_element()->node_ids()[0]);
   Node* mycnode = dynamic_cast<Node*>(node);
   if (!mycnode) FOUR_C_THROW("project_slave: Null pointer!");
 
@@ -1795,8 +1795,8 @@ bool CONTACT::LineToSurfaceCoupling3d::auxiliary_line()
   tangent[1] += mycnode->xspatial()[1];
   tangent[2] += mycnode->xspatial()[2];
 
-  Core::Nodes::Node* node2 = idiscret_.gNode(line_element()->NodeIds()[1]);
-  if (!node2) FOUR_C_THROW("Cannot find slave element with gid %", line_element()->NodeIds()[1]);
+  Core::Nodes::Node* node2 = idiscret_.g_node(line_element()->node_ids()[1]);
+  if (!node2) FOUR_C_THROW("Cannot find slave element with gid %", line_element()->node_ids()[1]);
   Node* mycnode2 = dynamic_cast<Node*>(node2);
   if (!mycnode2) FOUR_C_THROW("project_slave: Null pointer!");
 
@@ -1825,10 +1825,10 @@ bool CONTACT::LineToSurfaceCoupling3d::auxiliary_line()
 
   // lin tangent
   std::vector<Core::Gen::Pairedvector<int, double>> dnmap_unit(3, linsize_ * 10);
-  for (int i = 0; i < dim(); ++i)
+  for (int i = 0; i < n_dim(); ++i)
   {
-    dnmap_unit[i][mycnode->Dofs()[i]] += 1;
-    dnmap_unit[i][mycnode2->Dofs()[i]] -= 1;
+    dnmap_unit[i][mycnode->dofs()[i]] += 1;
+    dnmap_unit[i][mycnode2->dofs()[i]] -= 1;
   }
 
 
@@ -1956,8 +1956,8 @@ bool CONTACT::LineToSurfaceCoupling3d::project_slave()
 
   for (int i = 0; i < nnodes; ++i)
   {
-    Core::Nodes::Node* node = idiscret_.gNode(line_element()->NodeIds()[i]);
-    if (!node) FOUR_C_THROW("Cannot find slave element with gid %", line_element()->NodeIds()[i]);
+    Core::Nodes::Node* node = idiscret_.g_node(line_element()->node_ids()[i]);
+    if (!node) FOUR_C_THROW("Cannot find slave element with gid %", line_element()->node_ids()[i]);
     Node* mycnode = dynamic_cast<Node*>(node);
     if (!mycnode) FOUR_C_THROW("project_slave: Null pointer!");
 
@@ -1971,7 +1971,7 @@ bool CONTACT::LineToSurfaceCoupling3d::project_slave()
     for (int k = 0; k < 3; ++k) vertices[k] = mycnode->xspatial()[k] - dist * auxn()[k];
 
     // get node id, too
-    snodeids[0] = mycnode->Id();
+    snodeids[0] = mycnode->id();
 
     // store into vertex data structure
     slave_vertices().push_back(Mortar::Vertex(vertices, Mortar::Vertex::projslave, snodeids,
@@ -1991,7 +1991,7 @@ void CONTACT::LineToSurfaceCoupling3d::slave_vertex_linearization(
   // for tri3, tri6 elements: xi = eta = 1/3
   double scxi[2];
 
-  Core::FE::CellType dt = surface_element().Shape();
+  Core::FE::CellType dt = surface_element().shape();
   if (dt == Core::FE::CellType::tri3 || dt == Core::FE::CellType::tri6)
   {
     scxi[0] = 1.0 / 3.0;
@@ -2013,7 +2013,7 @@ void CONTACT::LineToSurfaceCoupling3d::slave_vertex_linearization(
   surface_element().evaluate_shape(scxi, sval, sderiv, nrow);
 
   // we need all participating slave nodes
-  Core::Nodes::Node** snodes = surface_element().Nodes();
+  Core::Nodes::Node** snodes = surface_element().nodes();
   std::vector<Mortar::Node*> smrtrnodes(nrow);
 
   for (int i = 0; i < nrow; ++i)
@@ -2030,7 +2030,7 @@ void CONTACT::LineToSurfaceCoupling3d::slave_vertex_linearization(
 
   // loop over all intEle nodes
   for (int in = 0; in < nrow; ++in)
-    for (int dim = 0; dim < 3; ++dim) snodelin[in][dim][smrtrnodes[in]->Dofs()[dim]] += 1.;
+    for (int dim = 0; dim < 3; ++dim) snodelin[in][dim][smrtrnodes[in]->dofs()[dim]] += 1.;
 
   // map iterator
   typedef Core::Gen::Pairedvector<int, double>::const_iterator
@@ -2058,10 +2058,10 @@ void CONTACT::LineToSurfaceCoupling3d::slave_vertex_linearization(
   for (int in = 0; in < line_element()->num_node(); ++in)
   {
     Mortar::Node* mrtrmnode =
-        dynamic_cast<Mortar::Node*>(idiscret_.gNode(line_element()->NodeIds()[in]));
+        dynamic_cast<Mortar::Node*>(idiscret_.g_node(line_element()->node_ids()[in]));
     if (mrtrmnode == nullptr) FOUR_C_THROW("dynamic cast to mortar node went wrong");
 
-    for (int dim = 0; dim < 3; ++dim) mnodelin[in][dim][mrtrmnode->Dofs()[dim]] += 1.;
+    for (int dim = 0; dim < 3; ++dim) mnodelin[in][dim][mrtrmnode->dofs()[dim]] += 1.;
   }
 
   // put everything together for slave vertex linearization
@@ -2069,7 +2069,7 @@ void CONTACT::LineToSurfaceCoupling3d::slave_vertex_linearization(
   for (int i = 0; i < line_element()->num_node(); ++i)
   {
     Mortar::Node* mrtrmnode =
-        dynamic_cast<Mortar::Node*>(idiscret_.gNode(line_element()->NodeIds()[i]));
+        dynamic_cast<Mortar::Node*>(idiscret_.g_node(line_element()->node_ids()[i]));
     if (!mrtrmnode) FOUR_C_THROW("cast to mortar node failed");
 
     // (1) slave node coordinates part
@@ -2140,7 +2140,7 @@ bool CONTACT::LineToSurfaceCoupling3d::project_master()
 {
   // project master nodes onto auxiliary plane
   int nnodes = surface_element().num_node();
-  Core::Nodes::Node** mynodes = surface_element().Nodes();
+  Core::Nodes::Node** mynodes = surface_element().nodes();
   if (!mynodes) FOUR_C_THROW("project_master: Null pointer!");
 
   // initialize storage for master coords + their ids
@@ -2162,7 +2162,7 @@ bool CONTACT::LineToSurfaceCoupling3d::project_master()
     for (int k = 0; k < 3; ++k) vertices[k] = mycnode->xspatial()[k] - dist * auxn()[k];
 
     // get node id, too
-    mnodeids[0] = mycnode->Id();
+    mnodeids[0] = mycnode->id();
 
     // store into vertex data structure
     master_vertices().push_back(Mortar::Vertex(
@@ -2187,7 +2187,7 @@ void CONTACT::LineToSurfaceCoupling3d::master_vertex_linearization(
   // for tri3, tri6 elements: xi = eta = 1/3
   double scxi[2];
 
-  Core::FE::CellType dt = surface_element().Shape();
+  Core::FE::CellType dt = surface_element().shape();
   if (dt == Core::FE::CellType::tri3 || dt == Core::FE::CellType::tri6)
   {
     scxi[0] = 1.0 / 3.0;
@@ -2209,7 +2209,7 @@ void CONTACT::LineToSurfaceCoupling3d::master_vertex_linearization(
   surface_element().evaluate_shape(scxi, sval, sderiv, nrow);
 
   // we need all participating slave nodes
-  Core::Nodes::Node** snodes = surface_element().Nodes();
+  Core::Nodes::Node** snodes = surface_element().nodes();
   std::vector<Mortar::Node*> smrtrnodes(nrow);
 
   for (int i = 0; i < nrow; ++i)
@@ -2226,7 +2226,7 @@ void CONTACT::LineToSurfaceCoupling3d::master_vertex_linearization(
 
   // loop over all intEle nodes
   for (int in = 0; in < nrow; ++in)
-    for (int dim = 0; dim < 3; ++dim) nodelin[in][dim][smrtrnodes[in]->Dofs()[dim]] += 1.;
+    for (int dim = 0; dim < 3; ++dim) nodelin[in][dim][smrtrnodes[in]->dofs()[dim]] += 1.;
 
   // map iterator
   typedef Core::Gen::Pairedvector<int, double>::const_iterator
@@ -2246,7 +2246,7 @@ void CONTACT::LineToSurfaceCoupling3d::master_vertex_linearization(
   // loop over all vertices
   for (int i = 0; i < surface_element().num_node(); ++i)
   {
-    Mortar::Node* mrtrsnode = dynamic_cast<Mortar::Node*>(surface_element().Nodes()[i]);
+    Mortar::Node* mrtrsnode = dynamic_cast<Mortar::Node*>(surface_element().nodes()[i]);
     if (!mrtrsnode) FOUR_C_THROW("cast to mortar node failed");
 
     // (1) slave node coordinates part
@@ -2312,7 +2312,10 @@ void CONTACT::LineToSurfaceCoupling3d::master_vertex_linearization(
 /*----------------------------------------------------------------------*
  |  get communicator                                         farah 07/16|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::LineToSurfaceCoupling3d::comm() const { return idiscret_.Comm(); }
+const Epetra_Comm& CONTACT::LineToSurfaceCoupling3d::get_comm() const
+{
+  return idiscret_.get_comm();
+}
 
 
 /*----------------------------------------------------------------------*
@@ -2330,7 +2333,10 @@ CONTACT::LineToLineCouplingPoint3d::LineToLineCouplingPoint3d(Core::FE::Discreti
 /*----------------------------------------------------------------------*
  |  get communicator                                         farah 07/16|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::LineToLineCouplingPoint3d::comm() const { return idiscret_.Comm(); }
+const Epetra_Comm& CONTACT::LineToLineCouplingPoint3d::get_comm() const
+{
+  return idiscret_.get_comm();
+}
 
 /*----------------------------------------------------------------------*
  |  eval                                                     farah 07/16|
@@ -2338,7 +2344,7 @@ const Epetra_Comm& CONTACT::LineToLineCouplingPoint3d::comm() const { return idi
 void CONTACT::LineToLineCouplingPoint3d::evaluate_coupling()
 {
   // 1. check parallelity
-  bool parallel = CheckParallelity();
+  bool parallel = check_parallelity();
   if (parallel) return;
 
   // 2. calc intersection
@@ -2351,16 +2357,16 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_coupling()
       100 + 3 * line_master_element()->num_node() + 3 * line_slave_element()->num_node());
   Core::Gen::Pairedvector<int, double> dmxi(
       100 + 3 * line_master_element()->num_node() + 3 * line_slave_element()->num_node());
-  LineIntersection(&sxi, &mxi, dsxi, dmxi);
+  line_intersection(&sxi, &mxi, dsxi, dmxi);
 
   // 3. check solution
-  bool valid = CheckIntersection(&sxi, &mxi);
+  bool valid = check_intersection(&sxi, &mxi);
   if (!valid) return;
 
   // 4. check if intersection was already done!
   for (int i = 0; i < line_slave_element()->num_node(); ++i)
   {
-    if (dynamic_cast<Node*>(line_slave_element()->Nodes()[i])->MoData().GetDltl().size() > 0)
+    if (dynamic_cast<Node*>(line_slave_element()->nodes()[i])->mo_data().get_dltl().size() > 0)
       return;
   }
 
@@ -2383,9 +2389,9 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
   if (ftype != Inpar::CONTACT::friction_none) friction = true;
 
   // get slave element nodes themselves for normal evaluation
-  Core::Nodes::Node** mynodes = line_slave_element()->Nodes();
+  Core::Nodes::Node** mynodes = line_slave_element()->nodes();
   if (!mynodes) FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane_lts: Null pointer!");
-  Core::Nodes::Node** mnodes = line_master_element()->Nodes();
+  Core::Nodes::Node** mnodes = line_master_element()->nodes();
   if (!mnodes) FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane_lts: Null pointer!");
 
   int nnodes = 2;
@@ -2411,7 +2417,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
   for (int i = 0; i < nrow; ++i)
   {
     Node* cnode = dynamic_cast<Node*>(mynodes[i]);
-    linsize += cnode->GetLinsize();
+    linsize += cnode->get_linsize();
   }
 
   // TODO: this is for safety. Correct linsize
@@ -2437,21 +2443,21 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
   for (int i = 0; i < nrow; ++i)
   {
     Mortar::Node* mymrtrnode = dynamic_cast<Mortar::Node*>(mynodes[i]);
-    gpn[0] += sval[i] * mymrtrnode->MoData().n()[0];
-    gpn[1] += sval[i] * mymrtrnode->MoData().n()[1];
-    gpn[2] += sval[i] * mymrtrnode->MoData().n()[2];
+    gpn[0] += sval[i] * mymrtrnode->mo_data().n()[0];
+    gpn[1] += sval[i] * mymrtrnode->mo_data().n()[1];
+    gpn[2] += sval[i] * mymrtrnode->mo_data().n()[2];
 
-    sgpx[0] += sval[i] * line_slave_element()->GetNodalCoords(0, i);
-    sgpx[1] += sval[i] * line_slave_element()->GetNodalCoords(1, i);
-    sgpx[2] += sval[i] * line_slave_element()->GetNodalCoords(2, i);
+    sgpx[0] += sval[i] * line_slave_element()->get_nodal_coords(0, i);
+    sgpx[1] += sval[i] * line_slave_element()->get_nodal_coords(1, i);
+    sgpx[2] += sval[i] * line_slave_element()->get_nodal_coords(2, i);
   }
 
   // build interpolation of master GP coordinates
   for (int i = 0; i < ncol; ++i)
   {
-    mgpx[0] += mval[i] * line_master_element()->GetNodalCoords(0, i);
-    mgpx[1] += mval[i] * line_master_element()->GetNodalCoords(1, i);
-    mgpx[2] += mval[i] * line_master_element()->GetNodalCoords(2, i);
+    mgpx[0] += mval[i] * line_master_element()->get_nodal_coords(0, i);
+    mgpx[1] += mval[i] * line_master_element()->get_nodal_coords(1, i);
+    mgpx[2] += mval[i] * line_master_element()->get_nodal_coords(2, i);
   }
 
   // normalize interpolated GP normal back to length 1.0 !!!
@@ -2461,7 +2467,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
   for (int i = 0; i < 3; ++i) gpn[i] /= lengthn;
 
   // build gap function at current GP
-  for (int i = 0; i < dim(); ++i) gap += (mgpx[i] - sgpx[i]) * gpn[i];
+  for (int i = 0; i < n_dim(); ++i) gap += (mgpx[i] - sgpx[i]) * gpn[i];
 
   // build directional derivative of slave GP normal (non-unit)
   Core::Gen::Pairedvector<int, double> dmap_nxsl_gp(linsize);
@@ -2472,9 +2478,9 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
   {
     Node* cnode = dynamic_cast<Node*>(mynodes[i]);
 
-    Core::Gen::Pairedvector<int, double>& dmap_nxsl_i = cnode->Data().GetDerivN()[0];
-    Core::Gen::Pairedvector<int, double>& dmap_nysl_i = cnode->Data().GetDerivN()[1];
-    Core::Gen::Pairedvector<int, double>& dmap_nzsl_i = cnode->Data().GetDerivN()[2];
+    Core::Gen::Pairedvector<int, double>& dmap_nxsl_i = cnode->data().get_deriv_n()[0];
+    Core::Gen::Pairedvector<int, double>& dmap_nysl_i = cnode->data().get_deriv_n()[1];
+    Core::Gen::Pairedvector<int, double>& dmap_nzsl_i = cnode->data().get_deriv_n()[2];
 
     for (_CI p = dmap_nxsl_i.begin(); p != dmap_nxsl_i.end(); ++p)
       dmap_nxsl_gp[p->first] += sval[i] * (p->second);
@@ -2485,11 +2491,11 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
 
     for (_CI p = dsxi.begin(); p != dsxi.end(); ++p)
     {
-      double valx = sderiv(i, 0) * cnode->MoData().n()[0];
+      double valx = sderiv(i, 0) * cnode->mo_data().n()[0];
       dmap_nxsl_gp[p->first] += valx * (p->second);
-      double valy = sderiv(i, 0) * cnode->MoData().n()[1];
+      double valy = sderiv(i, 0) * cnode->mo_data().n()[1];
       dmap_nysl_gp[p->first] += valy * (p->second);
-      double valz = sderiv(i, 0) * cnode->MoData().n()[2];
+      double valz = sderiv(i, 0) * cnode->mo_data().n()[2];
       dmap_nzsl_gp[p->first] += valz * (p->second);
     }
   }
@@ -2542,7 +2548,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
   for (int z = 0; z < nrow; ++z)
   {
     Node* cnode = dynamic_cast<Node*>(mynodes[z]);
-    for (int k = 0; k < 3; ++k) dgapgp[cnode->Dofs()[k]] -= sval[z] * gpn[k];
+    for (int k = 0; k < 3; ++k) dgapgp[cnode->dofs()[k]] -= sval[z] * gpn[k];
   }
 
   for (_CI p = dsxi.begin(); p != dsxi.end(); ++p)
@@ -2561,7 +2567,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
   for (int z = 0; z < ncol; ++z)
   {
     Node* cnode = dynamic_cast<Node*>(mnodes[z]);
-    for (int k = 0; k < 3; ++k) dgapgp[cnode->Dofs()[k]] += mval[z] * gpn[k];
+    for (int k = 0; k < 3; ++k) dgapgp[cnode->dofs()[k]] += mval[z] * gpn[k];
   }
 
   for (_CI p = dmxi.begin(); p != dmxi.end(); ++p)
@@ -2580,7 +2586,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
 
   // do not process slave side boundary nodes
   // (their row entries would be zero anyway!)
-  if (cnode->IsOnBound()) return;
+  if (cnode->is_on_bound()) return;
 
   if (gap >= 0.0) return;
 
@@ -2590,7 +2596,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
   value[2] = (mgpx[2] - sgpx[2]);  // gap*gpn[2];
 
   // add current Gauss point's contribution to gseg
-  cnode->AddltlGapValue(value);
+  cnode->addltl_gap_value(value);
 
   double lengthv = 0.0;
   lengthv = sqrt(value[0] * value[0] + value[1] * value[1] + value[2] * value[2]);
@@ -2599,7 +2605,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
   value[1] /= lengthv;
   value[2] /= lengthv;
 
-  std::vector<std::map<int, double>>& dgmap = cnode->Data().GetDerivGltl();
+  std::vector<std::map<int, double>>& dgmap = cnode->data().get_deriv_gltl();
 
   for (_CI p = dgapgp.begin(); p != dgapgp.end(); ++p)
   {
@@ -2625,7 +2631,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
     // multiply the two shape functions
     double prod = sval[k];  // this reduces to sval[k]
 
-    if (abs(prod) > MORTARINTTOL) cnode->AddDltlValue(mnode->Id(), prod);
+    if (abs(prod) > MORTARINTTOL) cnode->add_dltl_value(mnode->id(), prod);
     //    if(abs(prod)>MORTARINTTOL) cnode->AddSNode(mnode->Id()); // only for friction!
   }
 
@@ -2637,7 +2643,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
     // multiply the two shape functions
     double prod = mval[k];  // this reduces to mval[k]
 
-    if (abs(prod) > MORTARINTTOL) cnode->AddMltlValue(mnode->Id(), prod);
+    if (abs(prod) > MORTARINTTOL) cnode->add_mltl_value(mnode->id(), prod);
     //    if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());  // only for friction!
   }
 
@@ -2645,11 +2651,11 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
   for (int k = 0; k < nrow; ++k)
   {
     // global master node ID
-    int mgid = line_slave_element()->Nodes()[k]->Id();
+    int mgid = line_slave_element()->nodes()[k]->id();
     static double fac = 0.0;
 
     // get the correct map as a reference
-    std::map<int, double>& ddmap_jk = cnode->Data().GetDerivDltl()[mgid];
+    std::map<int, double>& ddmap_jk = cnode->data().get_deriv_dltl()[mgid];
 
     // (3) Lin(NMaster) - master GP coordinates
     fac = sderiv(k, 0);
@@ -2663,11 +2669,11 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
   for (int k = 0; k < ncol; ++k)
   {
     // global master node ID
-    int mgid = line_master_element()->Nodes()[k]->Id();
+    int mgid = line_master_element()->nodes()[k]->id();
     static double fac = 0.0;
 
     // get the correct map as a reference
-    std::map<int, double>& dmmap_jk = cnode->Data().GetDerivMltl()[mgid];
+    std::map<int, double>& dmmap_jk = cnode->data().get_deriv_mltl()[mgid];
 
     // (1) Lin(Phi) - dual shape functions
     // this vanishes here since there are no deformation-dependent dual functions
@@ -2695,18 +2701,18 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
     int oldID = -1;
 
     // loop over all slave nodes
-    for (int i = 0; i < idiscret_.NodeColMap()->NumMyElements(); ++i)
+    for (int i = 0; i < idiscret_.node_col_map()->NumMyElements(); ++i)
     {
-      int gid1 = idiscret_.NodeColMap()->GID(i);
-      Core::Nodes::Node* node1 = idiscret_.gNode(gid1);
+      int gid1 = idiscret_.node_col_map()->GID(i);
+      Core::Nodes::Node* node1 = idiscret_.g_node(gid1);
       if (!node1) FOUR_C_THROW("Cannot find node with gid %", gid1);
       Node* contactnode = dynamic_cast<Node*>(node1);
 
       // here only slave nodes
-      if (!contactnode->IsSlave()) continue;
+      if (!contactnode->is_slave()) continue;
 
       // check if dold is present
-      if (dynamic_cast<FriNode*>(contactnode)->FriData().GetDOldLTL().size() < 1) continue;
+      if (dynamic_cast<FriNode*>(contactnode)->fri_data().get_d_old_ltl().size() < 1) continue;
 
       // store id
       oldID = gid1;
@@ -2726,57 +2732,57 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
 
     if (oldID > -1)
     {
-      Core::Nodes::Node* node1 = idiscret_.gNode(oldID);
+      Core::Nodes::Node* node1 = idiscret_.g_node(oldID);
       if (!node1) FOUR_C_THROW("Cannot find node with gid %", oldID);
       Node* contactnode = dynamic_cast<Node*>(node1);
 
       // check if we have dold
-      if (dynamic_cast<FriNode*>(contactnode)->FriData().GetDOldLTL().size() > 0)
+      if (dynamic_cast<FriNode*>(contactnode)->fri_data().get_d_old_ltl().size() > 0)
       {
-        for (_CI p = dynamic_cast<FriNode*>(contactnode)->FriData().GetDOldLTL().begin();
-             p != dynamic_cast<FriNode*>(contactnode)->FriData().GetDOldLTL().end(); ++p)
+        for (_CI p = dynamic_cast<FriNode*>(contactnode)->fri_data().get_d_old_ltl().begin();
+             p != dynamic_cast<FriNode*>(contactnode)->fri_data().get_d_old_ltl().end(); ++p)
         {
           // node id
           int gid3 = p->first;
-          Core::Nodes::Node* snode = idiscret_.gNode(gid3);
+          Core::Nodes::Node* snode = idiscret_.g_node(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
-          for (int d = 0; d < dim(); ++d)
+          for (int d = 0; d < n_dim(); ++d)
           {
             sgpxold[d] += p->second * csnode->xspatial()[d];
           }
-          sgpxoldlinx[csnode->Dofs()[0]] += p->second;
-          sgpxoldliny[csnode->Dofs()[1]] += p->second;
-          sgpxoldlinz[csnode->Dofs()[2]] += p->second;
+          sgpxoldlinx[csnode->dofs()[0]] += p->second;
+          sgpxoldliny[csnode->dofs()[1]] += p->second;
+          sgpxoldlinz[csnode->dofs()[2]] += p->second;
         }
 
         // safety
-        if (dynamic_cast<FriNode*>(contactnode)->FriData().GetMOldLTL().size() < 1)
+        if (dynamic_cast<FriNode*>(contactnode)->fri_data().get_m_old_ltl().size() < 1)
           FOUR_C_THROW("something went wrong!");
 
-        for (CI p = dynamic_cast<FriNode*>(contactnode)->FriData().GetMOldLTL().begin();
-             p != dynamic_cast<FriNode*>(contactnode)->FriData().GetMOldLTL().end(); ++p)
+        for (CI p = dynamic_cast<FriNode*>(contactnode)->fri_data().get_m_old_ltl().begin();
+             p != dynamic_cast<FriNode*>(contactnode)->fri_data().get_m_old_ltl().end(); ++p)
         {
           // node id
           int gid3 = p->first;
-          Core::Nodes::Node* mnode = idiscret_.gNode(gid3);
+          Core::Nodes::Node* mnode = idiscret_.g_node(gid3);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid");
           Node* cmnode = dynamic_cast<Node*>(mnode);
 
-          for (int d = 0; d < dim(); ++d)
+          for (int d = 0; d < n_dim(); ++d)
           {
             mgpxold[d] += p->second * cmnode->xspatial()[d];
           }
-          mgpxoldlinx[cmnode->Dofs()[0]] += p->second;
-          mgpxoldliny[cmnode->Dofs()[1]] += p->second;
-          mgpxoldlinz[cmnode->Dofs()[2]] += p->second;
+          mgpxoldlinx[cmnode->dofs()[0]] += p->second;
+          mgpxoldliny[cmnode->dofs()[1]] += p->second;
+          mgpxoldlinz[cmnode->dofs()[2]] += p->second;
         }
       }
     }
 
     // create slip
-    for (int d = 0; d < dim(); ++d) jump[d] = mgpx[d] - mgpxold[d] - (sgpx[d] - sgpxold[d]);
+    for (int d = 0; d < n_dim(); ++d) jump[d] = mgpx[d] - mgpxold[d] - (sgpx[d] - sgpxold[d]);
 
     Core::LinAlg::SerialDenseMatrix tanplane(3, 3);
     tanplane(0, 0) = 1 - (value[0] * value[0]);
@@ -2794,11 +2800,11 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
     finaljump[1] = tanplane(1, 0) * jump[0] + tanplane(1, 1) * jump[1] + tanplane(1, 2) * jump[2];
     finaljump[2] = tanplane(2, 0) * jump[0] + tanplane(2, 1) * jump[1] + tanplane(2, 2) * jump[2];
 
-    cnode->AddltlJumpValue(finaljump);
+    cnode->addltl_jump_value(finaljump);
     //    std::cout << "jump = " << sqrt(finaljump[0]*finaljump[0] + finaljump[1]*finaljump[1]
     //    +finaljump[2]*finaljump[2]) << std::endl;
 
-    std::vector<std::map<int, double>>& djmapfinal = cnode->Data().GetDerivJumpltl();
+    std::vector<std::map<int, double>>& djmapfinal = cnode->data().get_deriv_jumpltl();
 
     std::vector<Core::Gen::Pairedvector<int, double>> djmap(3, 100);
 
@@ -2806,7 +2812,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
     for (int z = 0; z < nrow; ++z)
     {
       Node* node = dynamic_cast<Node*>(mynodes[z]);
-      for (int k = 0; k < 3; ++k) djmap[k][node->Dofs()[k]] -= sval[z];
+      for (int k = 0; k < 3; ++k) djmap[k][node->dofs()[k]] -= sval[z];
     }
 
 
@@ -2825,7 +2831,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
     for (int z = 0; z < ncol; ++z)
     {
       Node* node = dynamic_cast<Node*>(mnodes[z]);
-      for (int k = 0; k < 3; ++k) djmap[k][node->Dofs()[k]] += mval[z];
+      for (int k = 0; k < 3; ++k) djmap[k][node->dofs()[k]] += mval[z];
     }
 
     for (int k = 0; k < ncol; ++k)
@@ -2949,7 +2955,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
 /*----------------------------------------------------------------------*
  |  line-line intersection                                   farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* mxi,
+void CONTACT::LineToLineCouplingPoint3d::line_intersection(double* sxi, double* mxi,
     Core::Gen::Pairedvector<int, double>& dsxi, Core::Gen::Pairedvector<int, double>& dmxi)
 {
   // flag for debug output
@@ -2962,29 +2968,29 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
   typedef Core::Gen::Pairedvector<int, double>::const_iterator _CI;
 
   // calculate slave vector
-  Node* ns1 = dynamic_cast<Node*>(line_slave_element()->Nodes()[0]);
-  Node* ns2 = dynamic_cast<Node*>(line_slave_element()->Nodes()[1]);
+  Node* ns1 = dynamic_cast<Node*>(line_slave_element()->nodes()[0]);
+  Node* ns2 = dynamic_cast<Node*>(line_slave_element()->nodes()[1]);
   ns1->build_averaged_edge_tangent();
   ns2->build_averaged_edge_tangent();
 
   // calculate slave vector
-  Node* nm1 = dynamic_cast<Node*>(line_master_element()->Nodes()[0]);
-  Node* nm2 = dynamic_cast<Node*>(line_master_element()->Nodes()[1]);
+  Node* nm1 = dynamic_cast<Node*>(line_master_element()->nodes()[0]);
+  Node* nm2 = dynamic_cast<Node*>(line_master_element()->nodes()[1]);
   nm1->build_averaged_edge_tangent();
   nm2->build_averaged_edge_tangent();
 
-  double lengths1 = sqrt(ns1->MoData().EdgeTangent()[0] * ns1->MoData().EdgeTangent()[0] +
-                         ns1->MoData().EdgeTangent()[1] * ns1->MoData().EdgeTangent()[1] +
-                         ns1->MoData().EdgeTangent()[2] * ns1->MoData().EdgeTangent()[2]);
-  double lengths2 = sqrt(ns2->MoData().EdgeTangent()[0] * ns2->MoData().EdgeTangent()[0] +
-                         ns2->MoData().EdgeTangent()[1] * ns2->MoData().EdgeTangent()[1] +
-                         ns2->MoData().EdgeTangent()[2] * ns2->MoData().EdgeTangent()[2]);
-  double lengthm1 = sqrt(nm1->MoData().EdgeTangent()[0] * nm1->MoData().EdgeTangent()[0] +
-                         nm1->MoData().EdgeTangent()[1] * nm1->MoData().EdgeTangent()[1] +
-                         nm1->MoData().EdgeTangent()[2] * nm1->MoData().EdgeTangent()[2]);
-  double lengthm2 = sqrt(nm2->MoData().EdgeTangent()[0] * nm2->MoData().EdgeTangent()[0] +
-                         nm2->MoData().EdgeTangent()[1] * nm2->MoData().EdgeTangent()[1] +
-                         nm2->MoData().EdgeTangent()[2] * nm2->MoData().EdgeTangent()[2]);
+  double lengths1 = sqrt(ns1->mo_data().edge_tangent()[0] * ns1->mo_data().edge_tangent()[0] +
+                         ns1->mo_data().edge_tangent()[1] * ns1->mo_data().edge_tangent()[1] +
+                         ns1->mo_data().edge_tangent()[2] * ns1->mo_data().edge_tangent()[2]);
+  double lengths2 = sqrt(ns2->mo_data().edge_tangent()[0] * ns2->mo_data().edge_tangent()[0] +
+                         ns2->mo_data().edge_tangent()[1] * ns2->mo_data().edge_tangent()[1] +
+                         ns2->mo_data().edge_tangent()[2] * ns2->mo_data().edge_tangent()[2]);
+  double lengthm1 = sqrt(nm1->mo_data().edge_tangent()[0] * nm1->mo_data().edge_tangent()[0] +
+                         nm1->mo_data().edge_tangent()[1] * nm1->mo_data().edge_tangent()[1] +
+                         nm1->mo_data().edge_tangent()[2] * nm1->mo_data().edge_tangent()[2]);
+  double lengthm2 = sqrt(nm2->mo_data().edge_tangent()[0] * nm2->mo_data().edge_tangent()[0] +
+                         nm2->mo_data().edge_tangent()[1] * nm2->mo_data().edge_tangent()[1] +
+                         nm2->mo_data().edge_tangent()[2] * nm2->mo_data().edge_tangent()[2]);
   if (lengths1 < 1e-12 or lengths2 < 1e-12 or lengthm1 < 1e-12 or lengthm2 < 1e-12)
     FOUR_C_THROW("tangents zero length");
 
@@ -2994,21 +3000,21 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
   std::array<double, 3> tm1 = {0.0, 0.0, 0.0};
   std::array<double, 3> tm2 = {0.0, 0.0, 0.0};
 
-  ts1[0] = ns1->MoData().EdgeTangent()[0];
-  ts1[1] = ns1->MoData().EdgeTangent()[1];
-  ts1[2] = ns1->MoData().EdgeTangent()[2];
+  ts1[0] = ns1->mo_data().edge_tangent()[0];
+  ts1[1] = ns1->mo_data().edge_tangent()[1];
+  ts1[2] = ns1->mo_data().edge_tangent()[2];
 
-  ts2[0] = ns2->MoData().EdgeTangent()[0];
-  ts2[1] = ns2->MoData().EdgeTangent()[1];
-  ts2[2] = ns2->MoData().EdgeTangent()[2];
+  ts2[0] = ns2->mo_data().edge_tangent()[0];
+  ts2[1] = ns2->mo_data().edge_tangent()[1];
+  ts2[2] = ns2->mo_data().edge_tangent()[2];
 
-  tm1[0] = nm1->MoData().EdgeTangent()[0];
-  tm1[1] = nm1->MoData().EdgeTangent()[1];
-  tm1[2] = nm1->MoData().EdgeTangent()[2];
+  tm1[0] = nm1->mo_data().edge_tangent()[0];
+  tm1[1] = nm1->mo_data().edge_tangent()[1];
+  tm1[2] = nm1->mo_data().edge_tangent()[2];
 
-  tm2[0] = nm2->MoData().EdgeTangent()[0];
-  tm2[1] = nm2->MoData().EdgeTangent()[1];
-  tm2[2] = nm2->MoData().EdgeTangent()[2];
+  tm2[0] = nm2->mo_data().edge_tangent()[0];
+  tm2[1] = nm2->mo_data().edge_tangent()[1];
+  tm2[2] = nm2->mo_data().edge_tangent()[2];
 
   if (out)
   {
@@ -3019,23 +3025,23 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
   double test = ts1[0] * ts2[0] + ts1[1] * ts2[1] + ts1[2] * ts2[2];
   if (test < 1e-8)
   {
-    ns2->MoData().EdgeTangent()[0] *= -1.0;
-    ns2->MoData().EdgeTangent()[1] *= -1.0;
-    ns2->MoData().EdgeTangent()[2] *= -1.0;
+    ns2->mo_data().edge_tangent()[0] *= -1.0;
+    ns2->mo_data().edge_tangent()[1] *= -1.0;
+    ns2->mo_data().edge_tangent()[2] *= -1.0;
 
     ts2[0] *= -1.0;
     ts2[1] *= -1.0;
     ts2[2] *= -1.0;
 
-    for (_CI p = ns2->Data().GetDerivTangent()[0].begin();
-         p != ns2->Data().GetDerivTangent()[0].end(); ++p)
-      ns2->Data().GetDerivTangent()[0][p->first] *= -1.0;
-    for (_CI p = ns2->Data().GetDerivTangent()[1].begin();
-         p != ns2->Data().GetDerivTangent()[1].end(); ++p)
-      ns2->Data().GetDerivTangent()[1][p->first] *= -1.0;
-    for (_CI p = ns2->Data().GetDerivTangent()[2].begin();
-         p != ns2->Data().GetDerivTangent()[2].end(); ++p)
-      ns2->Data().GetDerivTangent()[2][p->first] *= -1.0;
+    for (_CI p = ns2->data().get_deriv_tangent()[0].begin();
+         p != ns2->data().get_deriv_tangent()[0].end(); ++p)
+      ns2->data().get_deriv_tangent()[0][p->first] *= -1.0;
+    for (_CI p = ns2->data().get_deriv_tangent()[1].begin();
+         p != ns2->data().get_deriv_tangent()[1].end(); ++p)
+      ns2->data().get_deriv_tangent()[1][p->first] *= -1.0;
+    for (_CI p = ns2->data().get_deriv_tangent()[2].begin();
+         p != ns2->data().get_deriv_tangent()[2].end(); ++p)
+      ns2->data().get_deriv_tangent()[2][p->first] *= -1.0;
   }
   if (out)
   {
@@ -3050,23 +3056,23 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
   test = tm1[0] * tm2[0] + tm1[1] * tm2[1] + tm1[2] * tm2[2];
   if (test < 1e-8)
   {
-    nm2->MoData().EdgeTangent()[0] *= -1.0;
-    nm2->MoData().EdgeTangent()[1] *= -1.0;
-    nm2->MoData().EdgeTangent()[2] *= -1.0;
+    nm2->mo_data().edge_tangent()[0] *= -1.0;
+    nm2->mo_data().edge_tangent()[1] *= -1.0;
+    nm2->mo_data().edge_tangent()[2] *= -1.0;
 
     tm2[0] *= -1.0;
     tm2[1] *= -1.0;
     tm2[2] *= -1.0;
 
-    for (_CI p = nm2->Data().GetDerivTangent()[0].begin();
-         p != nm2->Data().GetDerivTangent()[0].end(); ++p)
-      nm2->Data().GetDerivTangent()[0][p->first] *= -1.0;
-    for (_CI p = nm2->Data().GetDerivTangent()[1].begin();
-         p != nm2->Data().GetDerivTangent()[1].end(); ++p)
-      nm2->Data().GetDerivTangent()[1][p->first] *= -1.0;
-    for (_CI p = nm2->Data().GetDerivTangent()[2].begin();
-         p != nm2->Data().GetDerivTangent()[2].end(); ++p)
-      nm2->Data().GetDerivTangent()[2][p->first] *= -1.0;
+    for (_CI p = nm2->data().get_deriv_tangent()[0].begin();
+         p != nm2->data().get_deriv_tangent()[0].end(); ++p)
+      nm2->data().get_deriv_tangent()[0][p->first] *= -1.0;
+    for (_CI p = nm2->data().get_deriv_tangent()[1].begin();
+         p != nm2->data().get_deriv_tangent()[1].end(); ++p)
+      nm2->data().get_deriv_tangent()[1][p->first] *= -1.0;
+    for (_CI p = nm2->data().get_deriv_tangent()[2].begin();
+         p != nm2->data().get_deriv_tangent()[2].end(); ++p)
+      nm2->data().get_deriv_tangent()[2][p->first] *= -1.0;
   }
   if (out)
   {
@@ -3209,34 +3215,34 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
   std::vector<Core::Gen::Pairedvector<int, double>> vmLin(3, 1000);
 
   // global position difference
-  for (int i = 0; i < 3; ++i) (xLin[i])[ns1->Dofs()[i]] += sval(0);
-  for (int i = 0; i < 3; ++i) (xLin[i])[ns2->Dofs()[i]] += sval(1);
+  for (int i = 0; i < 3; ++i) (xLin[i])[ns1->dofs()[i]] += sval(0);
+  for (int i = 0; i < 3; ++i) (xLin[i])[ns2->dofs()[i]] += sval(1);
 
-  for (int i = 0; i < 3; ++i) (xLin[i])[nm1->Dofs()[i]] -= mval(0);
-  for (int i = 0; i < 3; ++i) (xLin[i])[nm2->Dofs()[i]] -= mval(1);
+  for (int i = 0; i < 3; ++i) (xLin[i])[nm1->dofs()[i]] -= mval(0);
+  for (int i = 0; i < 3; ++i) (xLin[i])[nm2->dofs()[i]] -= mval(1);
 
   // TODO: this would be the correct linearization! however, the old one works better. no idea
   // why!?!?!? tangent vector slave
   for (int i = 0; i < 3; ++i)
   {
-    for (_CI p = ns1->Data().GetDerivTangent()[i].begin();
-         p != ns1->Data().GetDerivTangent()[i].end(); ++p)
+    for (_CI p = ns1->data().get_deriv_tangent()[i].begin();
+         p != ns1->data().get_deriv_tangent()[i].end(); ++p)
       (vsLin[i])[p->first] += sval[0] * p->second;
 
-    for (_CI p = ns2->Data().GetDerivTangent()[i].begin();
-         p != ns2->Data().GetDerivTangent()[i].end(); ++p)
+    for (_CI p = ns2->data().get_deriv_tangent()[i].begin();
+         p != ns2->data().get_deriv_tangent()[i].end(); ++p)
       (vsLin[i])[p->first] += sval[1] * p->second;
   }
 
   // tangent vector master
   for (int i = 0; i < 3; ++i)
   {
-    for (_CI p = nm1->Data().GetDerivTangent()[i].begin();
-         p != nm1->Data().GetDerivTangent()[i].end(); ++p)
+    for (_CI p = nm1->data().get_deriv_tangent()[i].begin();
+         p != nm1->data().get_deriv_tangent()[i].end(); ++p)
       (vmLin[i])[p->first] += mval[0] * p->second;
 
-    for (_CI p = nm2->Data().GetDerivTangent()[i].begin();
-         p != nm2->Data().GetDerivTangent()[i].end(); ++p)
+    for (_CI p = nm2->data().get_deriv_tangent()[i].begin();
+         p != nm2->data().get_deriv_tangent()[i].end(); ++p)
       (vmLin[i])[p->first] += mval[1] * p->second;
   }
 
@@ -3290,7 +3296,7 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
 /*----------------------------------------------------------------------*
  |  check if intersection is in para space interval          farah 07/16|
  *----------------------------------------------------------------------*/
-bool CONTACT::LineToLineCouplingPoint3d::CheckIntersection(double* sxi, double* mxi)
+bool CONTACT::LineToLineCouplingPoint3d::check_intersection(double* sxi, double* mxi)
 {
   if (sxi[0] >= -1.0 - 1e-12 and sxi[0] <= 1.0 + 1e-12 and mxi[0] >= -1.0 - 1e-12 and
       mxi[0] <= 1.0 + 1e-12)
@@ -3302,27 +3308,27 @@ bool CONTACT::LineToLineCouplingPoint3d::CheckIntersection(double* sxi, double* 
 /*----------------------------------------------------------------------*
  |  check if line eles parallel                              farah 07/16|
  *----------------------------------------------------------------------*/
-bool CONTACT::LineToLineCouplingPoint3d::CheckParallelity()
+bool CONTACT::LineToLineCouplingPoint3d::check_parallelity()
 {
   // tolerance for line clipping
-  const double sminedge = line_slave_element()->MinEdgeSize();
-  const double mminedge = line_master_element()->MinEdgeSize();
+  const double sminedge = line_slave_element()->min_edge_size();
+  const double mminedge = line_master_element()->min_edge_size();
   const double tol = MORTARCLIPTOL * std::min(sminedge, mminedge);
 
   std::array<double, 3> vs = {0.0, 0.0, 0.0};
   std::array<double, 3> vm = {0.0, 0.0, 0.0};
 
   // calculate slave vector
-  Node* ns1 = dynamic_cast<Node*>(line_slave_element()->Nodes()[0]);
-  Node* ns2 = dynamic_cast<Node*>(line_slave_element()->Nodes()[1]);
+  Node* ns1 = dynamic_cast<Node*>(line_slave_element()->nodes()[0]);
+  Node* ns2 = dynamic_cast<Node*>(line_slave_element()->nodes()[1]);
 
   vs[0] = ns1->xspatial()[0] - ns2->xspatial()[0];
   vs[1] = ns1->xspatial()[1] - ns2->xspatial()[1];
   vs[2] = ns1->xspatial()[2] - ns2->xspatial()[2];
 
   // calculate slave vector
-  Node* nm1 = dynamic_cast<Node*>(line_master_element()->Nodes()[0]);
-  Node* nm2 = dynamic_cast<Node*>(line_master_element()->Nodes()[1]);
+  Node* nm1 = dynamic_cast<Node*>(line_master_element()->nodes()[0]);
+  Node* nm2 = dynamic_cast<Node*>(line_master_element()->nodes()[1]);
 
   vm[0] = nm1->xspatial()[0] - nm2->xspatial()[0];
   vm[1] = nm1->xspatial()[1] - nm2->xspatial()[1];
@@ -3348,7 +3354,7 @@ bool CONTACT::LineToLineCouplingPoint3d::CheckParallelity()
 /*----------------------------------------------------------------------*
  |  calc current angle (rad) between edges                   farah 09/16|
  *----------------------------------------------------------------------*/
-double CONTACT::LineToLineCouplingPoint3d::CalcCurrentAngle(
+double CONTACT::LineToLineCouplingPoint3d::calc_current_angle(
     Core::Gen::Pairedvector<int, double>& lineAngle)
 {
   // define iterator for linerization
@@ -3359,16 +3365,16 @@ double CONTACT::LineToLineCouplingPoint3d::CalcCurrentAngle(
   std::array<double, 3> vm = {0.0, 0.0, 0.0};
 
   // calculate slave vector
-  Node* ns1 = dynamic_cast<Node*>(line_slave_element()->Nodes()[0]);
-  Node* ns2 = dynamic_cast<Node*>(line_slave_element()->Nodes()[1]);
+  Node* ns1 = dynamic_cast<Node*>(line_slave_element()->nodes()[0]);
+  Node* ns2 = dynamic_cast<Node*>(line_slave_element()->nodes()[1]);
 
   vs[0] = ns1->xspatial()[0] - ns2->xspatial()[0];
   vs[1] = ns1->xspatial()[1] - ns2->xspatial()[1];
   vs[2] = ns1->xspatial()[2] - ns2->xspatial()[2];
 
   // calculate slave vector
-  Node* nm1 = dynamic_cast<Node*>(line_master_element()->Nodes()[0]);
-  Node* nm2 = dynamic_cast<Node*>(line_master_element()->Nodes()[1]);
+  Node* nm1 = dynamic_cast<Node*>(line_master_element()->nodes()[0]);
+  Node* nm2 = dynamic_cast<Node*>(line_master_element()->nodes()[1]);
 
   vm[0] = nm1->xspatial()[0] - nm2->xspatial()[0];
   vm[1] = nm1->xspatial()[1] - nm2->xspatial()[1];
@@ -3412,21 +3418,21 @@ double CONTACT::LineToLineCouplingPoint3d::CalcCurrentAngle(
   // change sign of master vectors linearization
   if (switchSign)
   {
-    DlM[0][nm1->Dofs()[0]] -= 1;
-    DlM[0][nm2->Dofs()[0]] += 1;
-    DlM[1][nm1->Dofs()[1]] -= 1;
-    DlM[1][nm2->Dofs()[1]] += 1;
-    DlM[2][nm1->Dofs()[2]] -= 1;
-    DlM[2][nm2->Dofs()[2]] += 1;
+    DlM[0][nm1->dofs()[0]] -= 1;
+    DlM[0][nm2->dofs()[0]] += 1;
+    DlM[1][nm1->dofs()[1]] -= 1;
+    DlM[1][nm2->dofs()[1]] += 1;
+    DlM[2][nm1->dofs()[2]] -= 1;
+    DlM[2][nm2->dofs()[2]] += 1;
   }
   else
   {
-    DlM[0][nm1->Dofs()[0]] += 1;
-    DlM[0][nm2->Dofs()[0]] -= 1;
-    DlM[1][nm1->Dofs()[1]] += 1;
-    DlM[1][nm2->Dofs()[1]] -= 1;
-    DlM[2][nm1->Dofs()[2]] += 1;
-    DlM[2][nm2->Dofs()[2]] -= 1;
+    DlM[0][nm1->dofs()[0]] += 1;
+    DlM[0][nm2->dofs()[0]] -= 1;
+    DlM[1][nm1->dofs()[1]] += 1;
+    DlM[1][nm2->dofs()[1]] -= 1;
+    DlM[2][nm1->dofs()[2]] += 1;
+    DlM[2][nm2->dofs()[2]] -= 1;
   }
 
 
@@ -3441,12 +3447,12 @@ double CONTACT::LineToLineCouplingPoint3d::CalcCurrentAngle(
   std::vector<Core::Gen::Pairedvector<int, double>> DlS(3, 1000);
   Core::Gen::Pairedvector<int, double> DlengthS(1000);
 
-  DlS[0][ns1->Dofs()[0]] += 1;
-  DlS[0][ns2->Dofs()[0]] -= 1;
-  DlS[1][ns1->Dofs()[1]] += 1;
-  DlS[1][ns2->Dofs()[1]] -= 1;
-  DlS[2][ns1->Dofs()[2]] += 1;
-  DlS[2][ns2->Dofs()[2]] -= 1;
+  DlS[0][ns1->dofs()[0]] += 1;
+  DlS[0][ns2->dofs()[0]] -= 1;
+  DlS[1][ns1->dofs()[1]] += 1;
+  DlS[1][ns2->dofs()[1]] -= 1;
+  DlS[2][ns1->dofs()[2]] += 1;
+  DlS[2][ns2->dofs()[2]] -= 1;
 
   for (CI p = DlS[0].begin(); p != DlS[0].end(); ++p)
     (DlengthS)[p->first] += (p->second) * vs[0] * 1.0 / (lengthS);

@@ -30,7 +30,7 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static FluidEleCalcStd<distype>* Instance(
+      static FluidEleCalcStd<distype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
      private:

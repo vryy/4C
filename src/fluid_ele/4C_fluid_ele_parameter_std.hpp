@@ -27,7 +27,7 @@ namespace Discret
     {
      public:
       /// Singleton access method
-      static FluidEleParameterStd* Instance(
+      static FluidEleParameterStd* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
      private:

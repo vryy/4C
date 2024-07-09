@@ -122,8 +122,8 @@ namespace CONTACT
     */
     void recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
 
-    virtual void RecoverCoupled(Teuchos::RCP<Epetra_Vector> sinc,  /// displacement  increment
-        Teuchos::RCP<Epetra_Vector> tinc,                          /// thermal  increment
+    virtual void recover_coupled(Teuchos::RCP<Epetra_Vector> sinc,  /// displacement  increment
+        Teuchos::RCP<Epetra_Vector> tinc,                           /// thermal  increment
         Teuchos::RCP<Core::Adapter::Coupling> coupST);
 
     void store_nodal_quantities(
@@ -135,13 +135,13 @@ namespace CONTACT
      \param dis (in):  current displacements (-> old displacements)
 
      */
-    void Update(Teuchos::RCP<const Epetra_Vector> dis) override;
+    void update(Teuchos::RCP<const Epetra_Vector> dis) override;
 
     /*!
      \brief Set time integration parameter from Thermo time integration
 
      */
-    void SetAlphafThermo(const Teuchos::ParameterList& tdyn);
+    void set_alphaf_thermo(const Teuchos::ParameterList& tdyn);
 
 
     /*!
@@ -152,7 +152,7 @@ namespace CONTACT
     performed on the level of the contact algorithm, for short: here's the right place.
 
     */
-    void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
+    void do_write_restart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
         bool forcedrestart = false) const override;
 
     /*!
@@ -163,11 +163,11 @@ namespace CONTACT
     performed on the level of the contact algorithm, for short: here's the right place.
 
     */
-    void DoReadRestart(Core::IO::DiscretizationReader& reader,
+    void do_read_restart(Core::IO::DiscretizationReader& reader,
         Teuchos::RCP<const Epetra_Vector> dis,
         Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
-    void SetCoupling(Teuchos::RCP<Core::Adapter::Coupling> coupST) { coupST_ = coupST; };
+    void set_coupling(Teuchos::RCP<Core::Adapter::Coupling> coupST) { coupST_ = coupST; };
 
     //@}
 

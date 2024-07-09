@@ -19,10 +19,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 FSI::FluidXFEMAlgorithm::FluidXFEMAlgorithm(const Epetra_Comm& comm)
     : FluidMovingBoundaryBaseAlgorithm(
-          Global::Problem::Instance()->FluidDynamicParams(), "FSICoupling"),
+          Global::Problem::instance()->fluid_dynamic_params(), "FSICoupling"),
       comm_(comm)
 {
-  const Teuchos::ParameterList& fluiddyn = Global::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fluiddyn = Global::Problem::instance()->fluid_dynamic_params();
 
   if (comm_.MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, fluiddyn);
 
@@ -37,11 +37,11 @@ FSI::FluidXFEMAlgorithm::FluidXFEMAlgorithm(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidXFEMAlgorithm::Timeloop()
+void FSI::FluidXFEMAlgorithm::timeloop()
 {
-  if (Global::Problem::Instance()->GetProblemType() == Core::ProblemType::fluid_xfem)
+  if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::fluid_xfem)
   {
-    if (Comm().MyPID() == 0)
+    if (get_comm().MyPID() == 0)
       std::cout << "Integrate routine for MOVING INTERFACES"
                 << "\n"
                 << std::endl;
@@ -61,7 +61,7 @@ void FSI::FluidXFEMAlgorithm::Timeloop()
 /*----------------------------------------------------------------------*/
 void FSI::FluidXFEMAlgorithm::read_restart(int step)
 {
-  time_ = MBFluidField()->read_restart(step);
+  time_ = mb_fluid_field()->read_restart(step);
   step_ = step;
 }
 
@@ -73,22 +73,22 @@ void FSI::FluidXFEMAlgorithm::prepare_time_step()
   time_ += dt_;
 
 
-  MBFluidField()->prepare_time_step();
+  mb_fluid_field()->prepare_time_step();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidXFEMAlgorithm::solve() { MBFluidField()->nonlinear_solve(); }
+void FSI::FluidXFEMAlgorithm::solve() { mb_fluid_field()->nonlinear_solve(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidXFEMAlgorithm::update() { MBFluidField()->update(); }
+void FSI::FluidXFEMAlgorithm::update() { mb_fluid_field()->update(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidXFEMAlgorithm::output() { MBFluidField()->output(); }
+void FSI::FluidXFEMAlgorithm::output() { mb_fluid_field()->output(); }
 
 FOUR_C_NAMESPACE_CLOSE

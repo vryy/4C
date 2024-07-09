@@ -37,13 +37,13 @@ namespace Core::LinearSolver::AMGNxN
    public:
     Vcycle(int NumLevels, int NumSweeps, int FirstLevel);
 
-    void SetOperators(std::vector<Teuchos::RCP<BlockedMatrix>> Avec);
-    void SetProjectors(std::vector<Teuchos::RCP<BlockedMatrix>> Pvec);
-    void SetRestrictors(std::vector<Teuchos::RCP<BlockedMatrix>> Rvec);
-    void SetPreSmoothers(std::vector<Teuchos::RCP<GenericSmoother>> SvecPre);
-    void SetPosSmoothers(std::vector<Teuchos::RCP<GenericSmoother>> SvecPos);
+    void set_operators(std::vector<Teuchos::RCP<BlockedMatrix>> Avec);
+    void set_projectors(std::vector<Teuchos::RCP<BlockedMatrix>> Pvec);
+    void set_restrictors(std::vector<Teuchos::RCP<BlockedMatrix>> Rvec);
+    void set_pre_smoothers(std::vector<Teuchos::RCP<GenericSmoother>> SvecPre);
+    void set_pos_smoothers(std::vector<Teuchos::RCP<GenericSmoother>> SvecPos);
 
-    void Solve(
+    void solve(
         const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const override;
 
    private:
@@ -73,13 +73,13 @@ namespace Core::LinearSolver::AMGNxN
    public:
     VcycleSingle(int NumLevels, int NumSweeps, int FirstLevel);
 
-    void SetOperators(std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> Avec);
-    void SetProjectors(std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> Pvec);
-    void SetRestrictors(std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> Rvec);
-    void SetPreSmoothers(std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPre);
-    void SetPosSmoothers(std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPos);
+    void set_operators(std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> Avec);
+    void set_projectors(std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> Pvec);
+    void set_restrictors(std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> Rvec);
+    void set_pre_smoothers(std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPre);
+    void set_pos_smoothers(std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPos);
 
-    void Apply(
+    void apply(
         const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const override;
 
    private:

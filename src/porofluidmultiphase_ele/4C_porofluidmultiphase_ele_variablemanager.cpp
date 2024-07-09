@@ -54,9 +54,9 @@ Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
       varmanager = Teuchos::rcp(new VariableManagerPhi<nsd, nen>(numdofpernode));
 
       // add manager for displacements and solid velocities in case of ALE
-      if (para.IsAle())
+      if (para.is_ale())
         varmanager = Teuchos::rcp(
-            new VariableManagerStruct<nsd, nen>(para.NdsVel(), para.NdsDisp(), varmanager));
+            new VariableManagerStruct<nsd, nen>(para.nds_vel(), para.nds_disp(), varmanager));
 
       break;
     }
@@ -79,9 +79,9 @@ Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
       varmanager = Teuchos::rcp(new VariableManagerPhiGradPhi<nsd, nen>(numdofpernode));
 
       // add manager for displacements and solid velocities in case of ALE
-      if (para.IsAle())
+      if (para.is_ale())
         varmanager = Teuchos::rcp(
-            new VariableManagerStruct<nsd, nen>(para.NdsVel(), para.NdsDisp(), varmanager));
+            new VariableManagerStruct<nsd, nen>(para.nds_vel(), para.nds_disp(), varmanager));
       break;
     }
     // read data from scatra
@@ -106,12 +106,12 @@ Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
       // default: potentially read everything
       varmanager = Teuchos::rcp(new VariableManagerPhiGradPhi<nsd, nen>(numdofpernode));
 
-      if (not para.IsStationary())
+      if (not para.is_stationary())
         varmanager = Teuchos::rcp(new VariableManagerInstat<nsd, nen>(varmanager));
 
-      if (para.IsAle())
+      if (para.is_ale())
         varmanager = Teuchos::rcp(
-            new VariableManagerStruct<nsd, nen>(para.NdsVel(), para.NdsDisp(), varmanager));
+            new VariableManagerStruct<nsd, nen>(para.nds_vel(), para.nds_disp(), varmanager));
 
       if (numvolfrac > 0)
         varmanager = Teuchos::rcp(
@@ -122,8 +122,8 @@ Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
   }  // switch(action)
 
   // if there are other scalar values (from ScaTra coupling) add another manager
-  if (para.HasScalar())
-    varmanager = Teuchos::rcp(new VariableManagerScalar<nsd, nen>(para.NdsScalar(), varmanager));
+  if (para.has_scalar())
+    varmanager = Teuchos::rcp(new VariableManagerScalar<nsd, nen>(para.nds_scalar(), varmanager));
 
   // done
   return varmanager;
@@ -142,7 +142,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhi<nsd,
     Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState(dofsetnum, "phinp_fluid");
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state(dofsetnum, "phinp_fluid");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
   // values of fluid are in 'dofsetnum' --> 0 if called with porofluid-element
@@ -162,7 +162,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhi<nsd,
  | evaluate state vector at gauss point                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhi<nsd, nen>::EvaluateGPVariables(
+void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhi<nsd, nen>::evaluate_gp_variables(
     const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
     const Core::LinAlg::Matrix<nsd, nen>&
         derxy  //! array for shape function derivatives w.r.t x,y,z
@@ -192,8 +192,9 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhi<nsd, nen>::Evaluate
  | evaluate state vector at gauss point                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhiGradPhi<nsd, nen>::EvaluateGPVariables(
-    const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
+void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhiGradPhi<nsd,
+    nen>::evaluate_gp_variables(const Core::LinAlg::Matrix<nen, 1>&
+                                    funct,  //! array for shape functions
     const Core::LinAlg::Matrix<nsd, nen>&
         derxy  //! array for shape function derivatives w.r.t x,y,z
 )
@@ -206,7 +207,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhiGradPhi<nsd, nen>::E
   }
 
   // call base class
-  VariableManagerPhi<nsd, nen>::EvaluateGPVariables(funct, derxy);
+  VariableManagerPhi<nsd, nen>::evaluate_gp_variables(funct, derxy);
 
   return;
 }
@@ -224,8 +225,8 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerInstat<nsd,
     Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
-  Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
+  Teuchos::RCP<const Epetra_Vector> hist = discretization.get_state("hist");
+  Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.get_state("phidtnp");
   if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phidtnp'");
 
 
@@ -248,14 +249,14 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerInstat<nsd,
  | evaluate state vector at gauss point                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidManager::VariableManagerInstat<nsd, nen>::EvaluateGPVariables(
+void Discret::ELEMENTS::PoroFluidManager::VariableManagerInstat<nsd, nen>::evaluate_gp_variables(
     const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
     const Core::LinAlg::Matrix<nsd, nen>&
         derxy  //! array for shape function derivatives w.r.t x,y,z
 )
 {
   // loop over DOFs
-  for (int k = 0; k < this->varmanager_->NumDofPerNode(); ++k)
+  for (int k = 0; k < this->varmanager_->num_dof_per_node(); ++k)
   {
     // history data (or acceleration)
     hist_[k] = funct.dot(ehist_[k]);
@@ -264,7 +265,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerInstat<nsd, nen>::Evalu
   }
 
   // call wrapped class
-  this->varmanager_->EvaluateGPVariables(funct, derxy);
+  this->varmanager_->evaluate_gp_variables(funct, derxy);
 
   return;
 }
@@ -299,14 +300,14 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerStruct<nsd,
       lmvel[inode * nsd + idim] = la[ndsvel_].lm_[inode * numveldofpernode + idim];
 
   // get velocity at nodes
-  Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(ndsvel_, "velocity field");
+  Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state(ndsvel_, "velocity field");
   if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector velocity");
 
   // extract local values of velocity field from global state vector
   Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd, nen>>(*vel, econvelnp_, lmvel);
 
   // safety check
-  Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp_, "dispnp");
+  Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state(ndsdisp_, "dispnp");
   if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
   // determine number of displacement related dofs per node
@@ -331,7 +332,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerStruct<nsd,
  | evaluate state vector at gauss point                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidManager::VariableManagerStruct<nsd, nen>::EvaluateGPVariables(
+void Discret::ELEMENTS::PoroFluidManager::VariableManagerStruct<nsd, nen>::evaluate_gp_variables(
     const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
     const Core::LinAlg::Matrix<nsd, nen>&
         derxy  //! array for shape function derivatives w.r.t x,y,z
@@ -351,7 +352,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerStruct<nsd, nen>::Evalu
   dispint_.multiply(edispnp_, funct);
 
   // call wrapped class
-  this->varmanager_->EvaluateGPVariables(funct, derxy);
+  this->varmanager_->evaluate_gp_variables(funct, derxy);
 
   return;
 }
@@ -372,7 +373,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerScalar<nsd,
   this->varmanager_->extract_element_and_node_values(ele, discretization, la, xyze, dofsetnum);
 
   // get state vector from discretization
-  Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.GetState(ndsscalar_, "scalars");
+  Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.get_state(ndsscalar_, "scalars");
   if (scalarnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'scalars'");
 
   // determine number of scalars related dofs per node
@@ -392,14 +393,14 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerScalar<nsd,
  | evaluate state vector at gauss point                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidManager::VariableManagerScalar<nsd, nen>::EvaluateGPVariables(
+void Discret::ELEMENTS::PoroFluidManager::VariableManagerScalar<nsd, nen>::evaluate_gp_variables(
     const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
     const Core::LinAlg::Matrix<nsd, nen>&
         derxy  //! array for shape function derivatives w.r.t x,y,z
 )
 {
   // call wrapped class
-  this->varmanager_->EvaluateGPVariables(funct, derxy);
+  this->varmanager_->evaluate_gp_variables(funct, derxy);
 
   // evaluate scalar values
   if (not escalarnp_.empty())
@@ -431,7 +432,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerMaximumNodalVolFracValu
   // call internal class
   this->varmanager_->extract_element_and_node_values(ele, discretization, la, xyze, dofsetnum);
 
-  Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState(dofsetnum, "phin_fluid");
+  Teuchos::RCP<const Epetra_Vector> phin = discretization.get_state(dofsetnum, "phin_fluid");
   if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin_fluid'");
 
   // values of fluid are in 'dofsetnum' --> 0 if called with porofluid-element
@@ -440,10 +441,10 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerMaximumNodalVolFracValu
   const std::vector<int>& lm = la[dofsetnum].lm_;
 
   // extract values from global vector
-  std::vector<Core::LinAlg::Matrix<nen, 1>> ephin(this->NumDofPerNode());
+  std::vector<Core::LinAlg::Matrix<nen, 1>> ephin(this->num_dof_per_node());
   Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen, 1>>(*phin, ephin, lm);
 
-  const int numfluidphases = (int)(this->NumDofPerNode() - 2 * numvolfrac_);
+  const int numfluidphases = (int)(this->num_dof_per_node() - 2 * numvolfrac_);
 
   // loop over DOFs
   for (int k = 0; k < numvolfrac_; ++k)
@@ -457,12 +458,12 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerMaximumNodalVolFracValu
     // we evaluate the volume fraction pressure if at least one volfrac value is bigger than
     // minvolfrac
     ele_has_valid_volfrac_press_[k] =
-        ephin[k + numfluidphases].max_value() > volfracpressmat.MinVolFrac();
+        ephin[k + numfluidphases].max_value() > volfracpressmat.min_vol_frac();
 
     // and we evaluate the volume fraction species if all volfrac values are bigger than
     // minvolfrac
     ele_has_valid_volfrac_spec_[k] =
-        ephin[k + numfluidphases].min_value() > volfracpressmat.MinVolFrac();
+        ephin[k + numfluidphases].min_value() > volfracpressmat.min_vol_frac();
   }
 
   return;
@@ -473,14 +474,14 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerMaximumNodalVolFracValu
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 void Discret::ELEMENTS::PoroFluidManager::VariableManagerMaximumNodalVolFracValue<nsd,
-    nen>::EvaluateGPVariables(const Core::LinAlg::Matrix<nen, 1>&
-                                  funct,  //! array for shape functions
+    nen>::evaluate_gp_variables(const Core::LinAlg::Matrix<nen, 1>&
+                                    funct,  //! array for shape functions
     const Core::LinAlg::Matrix<nsd, nen>&
         derxy  //! array for shape function derivatives w.r.t x,y,z
 )
 {
   // call wrapped class
-  this->varmanager_->EvaluateGPVariables(funct, derxy);
+  this->varmanager_->evaluate_gp_variables(funct, derxy);
 
   return;
 }

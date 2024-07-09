@@ -111,30 +111,30 @@ namespace Adapter
      * Here, the current values of the single fields lie positions and velocities are handed
      * to/updated in the pair
      */
-    virtual void ResetPair(const std::vector<double> beam_centerline_dofvec,
+    virtual void reset_pair(const std::vector<double> beam_centerline_dofvec,
         const std::vector<double> fluid_nodal_dofvec,
         Teuchos::RCP<BEAMINTERACTION::BeamContactPair> interactionpair);
 
     /// Creates a fluid_beam_meshtying pair
-    virtual void CreatePair(std::vector<Core::Elements::Element const*> elements,
+    virtual void create_pair(std::vector<Core::Elements::Element const*> elements,
         std::vector<double> beam_centerline_dofvec, std::vector<double> fluid_nodal_dofvec);
 
     // Get function for the meshtying pairs meshtying_pairs_
-    virtual Teuchos::RCP<std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>> GetPairs()
+    virtual Teuchos::RCP<std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>> get_pairs()
         const final
     {
       return meshtying_pairs_;
     };
 
     /// returns data container holding all beam interaction related parameters
-    virtual Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> GetParams() const final
+    virtual Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> get_params() const final
     {
       return beam_interaction_params_;
     };
 
     /// returns data container geometry_evaluation-data_ holding all geometry related evaluation
     /// data
-    virtual Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> GetGeometryData() const final
+    virtual Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> get_geometry_data() const final
     {
       return geometry_evaluation_data_;
     };
@@ -143,22 +143,22 @@ namespace Adapter
     virtual void clear();
 
     /// Resets class members of the bridge
-    virtual void ResetBridge() = 0;
+    virtual void reset_bridge() = 0;
 
     /// Sets the fluid solve flag
-    virtual void PrepareFluidSolve() = 0;
+    virtual void prepare_fluid_solve() = 0;
 
     /// Matrix containing only structure side contributions \f$C_{ss}\f$
-    virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetCss() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_css() const = 0;
 
     /// Matrix containing only fluid side contributions \f$C_{ff}\f$
-    virtual Teuchos::RCP<const Core::LinAlg::SparseOperator> GetCff() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::SparseOperator> get_cff() const = 0;
 
     /// Matrix containing mixed fluid side contributions \f$C_{fs}\f$
-    virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetCfs() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_cfs() const = 0;
 
     /// Matrix containing mixed structure side contributions \f$C_{sf}\f$
-    virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetCsf() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_csf() const = 0;
 
     /// Force vector acting on the fluid side \f$f_f\f$
     virtual Teuchos::RCP<const Epetra_FEVector> get_fluid_coupling_residual() const = 0;

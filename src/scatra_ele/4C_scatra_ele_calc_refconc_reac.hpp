@@ -37,7 +37,7 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static ScaTraEleCalcRefConcReac<distype>* Instance(
+      static ScaTraEleCalcRefConcReac<distype>* instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
      protected:

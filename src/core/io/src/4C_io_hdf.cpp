@@ -35,7 +35,7 @@ Core::IO::HDFReader::HDFReader(std::string dir)
  *----------------------------------------------------------------------*/
 Core::IO::HDFReader::~HDFReader()
 {
-  Close();
+  close();
   herr_t status = H5Pclose(h5_plist_);
   if (status < 0) FOUR_C_THROW("Failed to close file access list");
 }
@@ -45,14 +45,14 @@ Core::IO::HDFReader::~HDFReader()
  * with name basename. When num_output_proc_ > 1 it opens the result
  * files of all processors, by appending .p<proc_num> to the basename.
  *----------------------------------------------------------------------*/
-void Core::IO::HDFReader::Open(
+void Core::IO::HDFReader::open(
     std::string basename, int num_output_procs, int new_proc_num, int my_id)
 {
   int start;
   int end;
   num_output_proc_ = num_output_procs;
   calculate_range(new_proc_num, my_id, start, end);
-  Close();
+  close();
   for (int i = 0; i < num_output_proc_; ++i)
   {
     std::ostringstream buf;
@@ -79,7 +79,7 @@ void Core::IO::HDFReader::Open(
  * Note: this function should only be called when the HDFReader opened
  * the mesh files
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::ReadElementData(
+Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_element_data(
     int step, int new_proc_num, int my_id) const
 {
   if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
@@ -104,7 +104,7 @@ Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::ReadElementData(
  * Note: this function should only be called when the HDFReader opened
  * the mesh files                                          gammi 05/07
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::ReadCondition(
+Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_condition(
     const int step, const int new_proc_num, const int my_id, const std::string condname) const
 {
   if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
@@ -128,7 +128,7 @@ Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::ReadCondition(
  * Note: this function should only be called when the HDFReader opened
  * the mesh files                                          gammi 05/08
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::ReadKnotvector(const int step) const
+Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_knotvector(const int step) const
 {
   if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
 
@@ -152,7 +152,7 @@ Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::ReadKnotvector(const int st
  * Note: this function should only be called when the HDFReader opened
  * the mesh files
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::ReadNodeData(
+Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_node_data(
     int step, int new_proc_num, int my_id) const
 {
   if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
@@ -348,7 +348,7 @@ Teuchos::RCP<std::vector<double>> Core::IO::HDFReader::read_double_data(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Core::IO::HDFReader::ReadResultData(
+Teuchos::RCP<Epetra_MultiVector> Core::IO::HDFReader::read_result_data(
     std::string id_path, std::string value_path, int columns, const Epetra_Comm& Comm) const
 {
   int new_proc_num = Comm.NumProc();
@@ -435,7 +435,7 @@ Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_char_vector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::HDFReader::Close()
+void Core::IO::HDFReader::close()
 {
   for (int i = 0; i < num_output_proc_ and i < static_cast<int>(files_.size()); ++i)
   {

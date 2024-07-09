@@ -51,23 +51,23 @@ namespace Discret
       class SoNurbs27Type : public Core::Elements::ElementType
       {
        public:
-        std::string Name() const override { return "So_nurbs27Type"; }
+        std::string name() const override { return "So_nurbs27Type"; }
 
-        static SoNurbs27Type& Instance();
+        static SoNurbs27Type& instance();
 
-        Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+        Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-        Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+        Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
             const std::string eledistype, const int id, const int owner) override;
 
-        Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+        Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
         int initialize(Core::FE::Discretization& dis) override;
 
         void nodal_block_information(
             Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-        Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+        Core::LinAlg::SerialDenseMatrix compute_null_space(
             Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
         void setup_element_definition(
@@ -118,43 +118,43 @@ namespace Discret
         /*!
         \brief Deep copy this instance of Solid3 and return pointer to the copy
 
-        The Clone() method is used from the virtual base class Element in cases
+        The clone() method is used from the virtual base class Element in cases
         where the type of the derived class is unknown and a copy-ctor is needed
 
         */
-        Core::Elements::Element* Clone() const override;
+        Core::Elements::Element* clone() const override;
 
         /*!
         \brief Get shape type of element
         */
-        Core::FE::CellType Shape() const override;
+        Core::FE::CellType shape() const override;
 
         /*!
         \brief Return number of volumes of this element
         */
-        int NumVolume() const override { return 1; }
+        int num_volume() const override { return 1; }
 
         /*!
         \brief Return number of surfaces of this element
         */
-        int NumSurface() const override { return 6; }
+        int num_surface() const override { return 6; }
 
         /*!
         \brief Return number of lines of this element
         */
-        int NumLine() const override { return 12; }
+        int num_line() const override { return 12; }
 
         /*!
         \brief Get vector of Teuchos::RCPs to the lines of this element
 
         */
-        std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+        std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
         /*!
         \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
         */
-        std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+        std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
         /*!
         \brief Return unique ParObject id
@@ -162,9 +162,9 @@ namespace Discret
         every class implementing ParObject needs a unique id defined at the
         top of this file.
         */
-        int UniqueParObjectId() const override
+        int unique_par_object_id() const override
         {
-          return SoNurbs27Type::Instance().UniqueParObjectId();
+          return SoNurbs27Type::instance().unique_par_object_id();
         }
 
         /*!
@@ -198,7 +198,7 @@ namespace Discret
         number of degrees of freedom per node along the way for each of it's nodes
         separately.
         */
-        int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
+        int num_dof_per_node(const Core::Nodes::Node& node) const override { return 3; }
 
         /*!
         \brief Get number of degrees of freedom per element
@@ -218,9 +218,9 @@ namespace Discret
         */
         void print(std::ostream& os) const override;
 
-        Core::Elements::ElementType& ElementType() const override
+        Core::Elements::ElementType& element_type() const override
         {
-          return SoNurbs27Type::Instance();
+          return SoNurbs27Type::instance();
         }
 
         //! @name Input and Creation
@@ -228,7 +228,7 @@ namespace Discret
         /*!
         \brief Read input for this element
         */
-        bool ReadElement(const std::string& eletype, const std::string& distype,
+        bool read_element(const std::string& eletype, const std::string& distype,
             Input::LineDefinition* linedef) override;
 
         //@}

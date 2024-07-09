@@ -62,14 +62,14 @@ Arteries::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
   // Get all gnuplot export conditions
   // -------------------------------------------------------------------
   std::vector<Core::Conditions::Condition*> myConditions;
-  discret_->GetCondition("ArtWriteGnuplotCond", myConditions);
+  discret_->get_condition("ArtWriteGnuplotCond", myConditions);
   int numofcond = myConditions.size();
 
   // -------------------------------------------------------------------
   // if gnuplot export conditions exist then create the classes
   // which will export the files
   // -------------------------------------------------------------------
-  if (numofcond > 0 && discret_->Comm().MyPID() == 0)
+  if (numofcond > 0 && discret_->get_comm().MyPID() == 0)
   {
     // Start by creating a map of classes that will export the wanted arteries
     for (unsigned int i = 0; i < myConditions.size(); i++)
@@ -79,7 +79,7 @@ Arteries::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
       // condition
       // ---------------------------------------------------------------
       const int Artery_Number = myConditions[i]->parameters().get<int>("ArteryNumber");
-      const std::vector<int>* nodes = myConditions[i]->GetNodes();
+      const std::vector<int>* nodes = myConditions[i]->get_nodes();
 
       // ---------------------------------------------------------------
       // Sort all nodes so such that inlet node is the first and outlet
@@ -92,11 +92,11 @@ Arteries::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
 
       for (unsigned int n = 0; n < nodes->size(); n++)
       {
-        Core::Nodes::Node* nd = actdis->gNode((*nodes)[n]);
-        if (nd->GetCondition("ArtInOutCond"))
+        Core::Nodes::Node* nd = actdis->g_node((*nodes)[n]);
+        if (nd->get_condition("ArtInOutCond"))
         {
           std::string TerminalType =
-              (nd->GetCondition("ArtInOutCond")->parameters().get<std::string>("terminaltype"));
+              (nd->get_condition("ArtInOutCond")->parameters().get<std::string>("terminaltype"));
           if (TerminalType == "inlet")
             ndi = nd;
           else
@@ -110,38 +110,38 @@ Arteries::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
 
       // loop over all nodes
       std::vector<int>* sorted_nodes = new std::vector<int>;
-      Core::Elements::Element** Elements = ndi->Elements();
+      Core::Elements::Element** Elements = ndi->elements();
 
       Core::Elements::Element* Elem_i;
-      if (ndi->NumElement() != 1)
+      if (ndi->num_element() != 1)
         FOUR_C_THROW("artery %d must have one element connected to the inlet node!", Artery_Number);
 
       Elem_i = Elements[0];
 
-      sorted_nodes->push_back(ndi->Id());
+      sorted_nodes->push_back(ndi->id());
 
       for (unsigned int n = 0; n < nodes->size() - 2; n++)
       {
         // find the next node!
-        if (Elem_i->Nodes()[0]->Id() != ndi->Id())
-          ndi = Elem_i->Nodes()[0];
+        if (Elem_i->nodes()[0]->id() != ndi->id())
+          ndi = Elem_i->nodes()[0];
         else
-          ndi = Elem_i->Nodes()[1];
-        if (ndi->NumElement() != 2)
+          ndi = Elem_i->nodes()[1];
+        if (ndi->num_element() != 2)
           FOUR_C_THROW(
               "artery %d must have two elements connected to any internal node!", Artery_Number);
 
         // find the next element
-        Elements = ndi->Elements();
+        Elements = ndi->elements();
 
-        if (Elements[0][0].Id() != Elem_i->Id())
+        if (Elements[0][0].id() != Elem_i->id())
           Elem_i = Elements[0];
         else
           Elem_i = Elements[1];
-        sorted_nodes->push_back(ndi->Id());
+        sorted_nodes->push_back(ndi->id());
       }
 
-      sorted_nodes->push_back(ndl->Id());
+      sorted_nodes->push_back(ndl->id());
 
       // ---------------------------------------------------------------
       // Allocate the gnuplot export condition
@@ -184,12 +184,12 @@ Arteries::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-void Arteries::UTILS::ArtWriteGnuplotWrapper::Write(Teuchos::ParameterList& params)
+void Arteries::UTILS::ArtWriteGnuplotWrapper::write(Teuchos::ParameterList& params)
 {
   //----------------------------------------------------------------------
   // Exit if the function accessed by a non-master processor
   //----------------------------------------------------------------------
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     // -------------------------------------------------------------------
     // loop over all conditions and export the arteries values
@@ -273,35 +273,35 @@ void Arteries::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<Core::FE::Discretizati
   for (unsigned int i = 0; i < nodes->size() - 1; i++)
   {
     // get the elements connected to the node
-    if (!discret->HaveGlobalNode((*nodes)[i]))
+    if (!discret->have_global_node((*nodes)[i]))
     {
-      int proc = discret->Comm().MyPID();
+      int proc = discret->get_comm().MyPID();
       FOUR_C_THROW("Global Node (%d) doesn't exist on processor (%d)\n", (*nodes)[i], proc);
       exit(1);
     }
 
     //    Core::Nodes::Node * nd = discret->lColNode((*nodes)[i]);
-    Core::Nodes::Node* nd = discret->gNode((*nodes)[i]);
-    Core::Elements::Element** ele = nd->Elements();
+    Core::Nodes::Node* nd = discret->g_node((*nodes)[i]);
+    Core::Elements::Element** ele = nd->elements();
 
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;
     std::vector<int> lmstride;
     Teuchos::RCP<std::vector<int>> lmowner = Teuchos::rcp(new std::vector<int>);
-    const int* ele_nodes = ele[0][0].NodeIds();
+    const int* ele_nodes = ele[0][0].node_ids();
 
     if (ele_nodes[0] == (*nodes)[i])
       ElemNum = 0;
     else
       ElemNum = 1;
 
-    ele[ElemNum][0].LocationVector(*discret, lm, *lmowner, lmstride);
+    ele[ElemNum][0].location_vector(*discret, lm, *lmowner, lmstride);
 
     // get node coordinates and number of elements per node
     Core::LinAlg::Matrix<3, 2> xyze;
     for (int inode = 0; inode < 2; inode++)
     {
-      const auto& x = discret->gNode((*nodes)[i + inode])->X();
+      const auto& x = discret->g_node((*nodes)[i + inode])->x();
       xyze(0, inode) = x[0];
       xyze(1, inode) = x[1];
       xyze(2, inode) = x[2];
@@ -311,7 +311,7 @@ void Arteries::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<Core::FE::Discretizati
               pow(xyze(2, 0) - xyze(2, 1), 2));
 
     // get the degrees of freedom
-    Teuchos::RCP<const Epetra_Vector> qanp = discret->GetState("qanp");
+    Teuchos::RCP<const Epetra_Vector> qanp = discret->get_state("qanp");
     std::vector<double> myqanp(lm.size());
     Core::FE::ExtractMyValues(*qanp, myqanp, lm);
 
@@ -324,7 +324,7 @@ void Arteries::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<Core::FE::Discretizati
     {
       (*fout_) << myqanp[j] << "\t";
     }
-    (*fout_) << nd->Id() << std::endl;
+    (*fout_) << nd->id() << std::endl;
     // Update L
     L += dL;
     // export the dof of the final node
@@ -335,7 +335,7 @@ void Arteries::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<Core::FE::Discretizati
       {
         (*fout_) << myqanp[j] << "\t";
       }
-      (*fout_) << nd->Id() << std::endl;
+      (*fout_) << nd->id() << std::endl;
     }
   }
   (*fout_) << std::endl;

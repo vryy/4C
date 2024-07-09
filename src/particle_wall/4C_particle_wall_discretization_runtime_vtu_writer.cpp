@@ -32,10 +32,11 @@ PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WallDiscretizationRuntimeVtuWr
     : walldiscretization_(walldiscretization), walldatastate_(walldatastate)
 {
   // construct the writer object
-  runtime_vtuwriter_ = std::make_unique<Core::IO::DiscretizationVisualizationWriterMesh>(
-      walldiscretization, Core::IO::VisualizationParametersFactory(
-                              Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-                              *Global::Problem::Instance()->OutputControlFile(), restart_time));
+  runtime_vtuwriter_ =
+      std::make_unique<Core::IO::DiscretizationVisualizationWriterMesh>(walldiscretization,
+          Core::IO::VisualizationParametersFactory(
+              Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
+              *Global::Problem::instance()->output_control_file(), restart_time));
 }
 
 void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::write_wall_discretization_runtime_output(
@@ -46,42 +47,42 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::write_wall_discretization
 
   // node displacements
   {
-    if (walldatastate_->GetDispCol() != Teuchos::null)
+    if (walldatastate_->get_disp_col() != Teuchos::null)
       runtime_vtuwriter_->append_dof_based_result_data_vector(
-          walldatastate_->GetRefDispCol(), 3, 0, "disp");
+          walldatastate_->get_ref_disp_col(), 3, 0, "disp");
   }
 
   // node owner
   {
     Teuchos::RCP<Epetra_Vector> nodeowner =
-        Teuchos::rcp(new Epetra_Vector(*walldiscretization_->NodeColMap(), true));
-    for (int inode = 0; inode < walldiscretization_->NumMyColNodes(); ++inode)
+        Teuchos::rcp(new Epetra_Vector(*walldiscretization_->node_col_map(), true));
+    for (int inode = 0; inode < walldiscretization_->num_my_col_nodes(); ++inode)
     {
-      const Core::Nodes::Node* node = walldiscretization_->lColNode(inode);
-      (*nodeowner)[inode] = node->Owner();
+      const Core::Nodes::Node* node = walldiscretization_->l_col_node(inode);
+      (*nodeowner)[inode] = node->owner();
     }
     runtime_vtuwriter_->append_node_based_result_data_vector(nodeowner, 1, "owner");
   }
 
   // element owner
   {
-    runtime_vtuwriter_->AppendElementOwner("owner");
+    runtime_vtuwriter_->append_element_owner("owner");
   }
 
   // element id
   {
     Teuchos::RCP<Epetra_Vector> eleid =
-        Teuchos::rcp(new Epetra_Vector(*walldiscretization_->ElementRowMap(), true));
-    for (int iele = 0; iele < walldiscretization_->NumMyRowElements(); ++iele)
+        Teuchos::rcp(new Epetra_Vector(*walldiscretization_->element_row_map(), true));
+    for (int iele = 0; iele < walldiscretization_->num_my_row_elements(); ++iele)
     {
-      const Core::Elements::Element* ele = walldiscretization_->lRowElement(iele);
-      (*eleid)[iele] = ele->Id();
+      const Core::Elements::Element* ele = walldiscretization_->l_row_element(iele);
+      (*eleid)[iele] = ele->id();
     }
     runtime_vtuwriter_->append_element_based_result_data_vector(eleid, 1, "id");
   }
 
   // finalize everything and write all required files to filesystem
-  runtime_vtuwriter_->WriteToDisk(time, step);
+  runtime_vtuwriter_->write_to_disk(time, step);
 }
 
 FOUR_C_NAMESPACE_CLOSE

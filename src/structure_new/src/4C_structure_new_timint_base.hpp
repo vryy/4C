@@ -83,16 +83,16 @@ namespace Solid
       void reset_step() override;
 
       /// wrapper for things that should be done before prepare_time_step is called
-      void PrePredict() override {}
+      void pre_predict() override {}
 
       /// wrapper for things that should be done before solving the nonlinear iterations
-      void PreSolve() override {}
+      void pre_solve() override {}
 
       /// wrapper for things that should be done after convergence of Newton scheme
-      void PostOutput() override {}
+      void post_output() override {}
 
       /// things that should be done after the actual time loop is finished
-      void PostTimeLoop() override;
+      void post_time_loop() override;
 
       /// @name General access methods
       ///@{
@@ -125,7 +125,7 @@ namespace Solid
       Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override
       {
         check_init();
-        return datasdyn_->GetLinSolvers()[Inpar::Solid::model_structure];
+        return datasdyn_->get_lin_solvers()[Inpar::Solid::model_structure];
       }
 
       /// Return MapExtractor for Dirichlet boundary conditions
@@ -133,30 +133,30 @@ namespace Solid
       [[nodiscard]] Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const;
 
       //! Return locsys manager
-      Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() override;
+      Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() override;
 
       //! Return the desired model evaluator (read-only)
-      [[nodiscard]] const Solid::MODELEVALUATOR::Generic& ModelEvaluator(
+      [[nodiscard]] const Solid::MODELEVALUATOR::Generic& model_evaluator(
           Inpar::Solid::ModelType mtype) const override;
 
       //! Return the desired model evaluator (read and write)
-      Solid::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::Solid::ModelType mtype) override;
+      Solid::MODELEVALUATOR::Generic& model_evaluator(Inpar::Solid::ModelType mtype) override;
 
       ///@}
 
       /// Return domain map of the mass matrix (implicit and explicit)
-      [[nodiscard]] const Epetra_Map& GetMassDomainMap() const override;
+      [[nodiscard]] const Epetra_Map& get_mass_domain_map() const override;
 
       /// @name Coupled problem routines
       /// @{
       /// wrapper for things that should be done before updating
-      void PreUpdate() override {}
+      void pre_update() override {}
 
       /// Update routine for coupled problems with monolithic approach
       void update() override;
 
       /// Update routine for coupled problems with monolithic approach with time adaptivity
-      void Update(double endtime) override = 0;
+      void update(double endtime) override = 0;
 
       /// Update time and step counter
       virtual void update_step_time();
@@ -168,7 +168,7 @@ namespace Solid
       /// @name Access global state from outside via adapter (needed for coupled problems)
       ///@{
       /// unknown displacements at \f$t_{n+1}\f$
-      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> DispNp() const override
+      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> disp_np() const override
       {
         check_init();
         return dataglobalstate_->get_dis_np();
@@ -187,7 +187,7 @@ namespace Solid
        *
        * See also \ref Adapter::StructureNew::set_state
        */
-      Teuchos::RCP<Epetra_Vector> WriteAccessDispNp() override
+      Teuchos::RCP<Epetra_Vector> write_access_disp_np() override
       {
         check_init();
         set_state_in_sync_with_nox_group(false);
@@ -195,63 +195,63 @@ namespace Solid
       }
 
       /// known displacements at \f$t_{n}\f$
-      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> DispN() const override
+      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> disp_n() const override
       {
         check_init();
         return dataglobalstate_->get_dis_n();
       }
 
       /// write access to displacements at \f$t^{n}\f$
-      Teuchos::RCP<Epetra_Vector> WriteAccessDispN() override
+      Teuchos::RCP<Epetra_Vector> write_access_disp_n() override
       {
         check_init();
         return dataglobalstate_->get_dis_n();
       }
 
       /// unknown velocities at \f$t_{n+1}\f$
-      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> VelNp() const override
+      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> vel_np() const override
       {
         check_init();
         return dataglobalstate_->get_vel_np();
       }
 
       /// write access to velocities at \f$t^{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> WriteAccessVelNp() override
+      Teuchos::RCP<Epetra_Vector> write_access_vel_np() override
       {
         check_init();
         return dataglobalstate_->get_vel_np();
       }
 
       /// unknown velocities at \f$t_{n}\f$
-      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> VelN() const override
+      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> vel_n() const override
       {
         check_init();
         return dataglobalstate_->get_vel_n();
       }
 
       /// write access to velocities at \f$t^{n}\f$
-      Teuchos::RCP<Epetra_Vector> WriteAccessVelN() override
+      Teuchos::RCP<Epetra_Vector> write_access_vel_n() override
       {
         check_init();
         return dataglobalstate_->get_vel_n();
       }
 
       /// known velocities at \f$t_{n-1}\f$
-      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> VelNm() const override
+      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> vel_nm() const override
       {
         check_init();
         return dataglobalstate_->get_vel_nm();
       }
 
       /// unknown accelerations at \f$t_{n+1}\f$
-      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> AccNp() const override
+      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> acc_np() const override
       {
         check_init();
         return dataglobalstate_->get_acc_np();
       }
 
       //! known accelerations at \f$t_{n}\f$
-      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> AccN() const override
+      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> acc_n() const override
       {
         check_init();
         return dataglobalstate_->get_acc_n();
@@ -261,17 +261,17 @@ namespace Solid
       /// @name access and modify model evaluator stuff via adapter
       /// @{
       /// are there any algebraic constraints?
-      bool HaveConstraint() override
+      bool have_constraint() override
       {
         check_init_setup();
-        return datasdyn_->HaveModelType(Inpar::Solid::model_lag_pen_constraint);
+        return datasdyn_->have_model_type(Inpar::Solid::model_lag_pen_constraint);
       }
 
       /// do we need a semi-smooth Newton-type plasticity algorithm
       virtual bool have_semi_smooth_plasticity()
       {
         check_init_setup();
-        return datasdyn_->HaveEleTech(Inpar::Solid::EleTech::plasticity);
+        return datasdyn_->have_ele_tech(Inpar::Solid::EleTech::plasticity);
       }
 
       /// FixMe get constraint manager defined in the structure
@@ -289,9 +289,9 @@ namespace Solid
       }
 
       /// do we have this model
-      bool HaveModel(Inpar::Solid::ModelType model) override
+      bool have_model(Inpar::Solid::ModelType model) override
       {
-        return datasdyn_->HaveModelType(model);
+        return datasdyn_->have_model_type(model);
       }
 
       /// Add residual increment to Lagrange multipliers stored in Constraint manager (derived)
@@ -312,108 +312,108 @@ namespace Solid
       /// @name Time step helpers
       ///@{
       /// Return current time \f$t_{n}\f$ (derived)
-      [[nodiscard]] double GetTimeN() const override
+      [[nodiscard]] double get_time_n() const override
       {
         check_init();
         return dataglobalstate_->get_time_n();
       }
 
       /// Sets the current time \f$t_{n}\f$ (derived)
-      void SetTimeN(const double time_n) override
+      void set_time_n(const double time_n) override
       {
         check_init();
         dataglobalstate_->get_time_n() = time_n;
       }
 
       /// Return target time \f$t_{n+1}\f$ (derived)
-      [[nodiscard]] double GetTimeNp() const override
+      [[nodiscard]] double get_time_np() const override
       {
         check_init();
         return dataglobalstate_->get_time_np();
       }
 
       /// Sets the target time \f$t_{n+1}\f$ of this time step (derived)
-      void SetTimeNp(const double time_np) override
+      void set_time_np(const double time_np) override
       {
         check_init();
         dataglobalstate_->get_time_np() = time_np;
       }
 
       /// Get upper limit of time range of interest (derived)
-      [[nodiscard]] double GetTimeEnd() const override
+      [[nodiscard]] double get_time_end() const override
       {
         check_init();
-        return datasdyn_->GetTimeMax();
+        return datasdyn_->get_time_max();
       }
 
       /// Get upper limit of time range of interest (derived)
-      void SetTimeEnd(double timemax) override
+      void set_time_end(double timemax) override
       {
         check_init();
-        datasdyn_->GetTimeMax() = timemax;
+        datasdyn_->get_time_max() = timemax;
       }
 
       /// Get time step size \f$\Delta t_n\f$
-      [[nodiscard]] double GetDeltaTime() const override
+      [[nodiscard]] double get_delta_time() const override
       {
         check_init();
         return (*dataglobalstate_->get_delta_time())[0];
       }
 
       /// Set time step size \f$\Delta t_n\f$
-      void SetDeltaTime(const double dt) override
+      void set_delta_time(const double dt) override
       {
         check_init();
         (*dataglobalstate_->get_delta_time())[0] = dt;
       }
 
       /// Return time integration factor
-      [[nodiscard]] double TimIntParam() const override;
+      [[nodiscard]] double tim_int_param() const override;
 
       /// Return current step number \f$n\f$
-      [[nodiscard]] int GetStepN() const override
+      [[nodiscard]] int get_step_n() const override
       {
         check_init();
         return dataglobalstate_->get_step_n();
       }
 
       /// Sets the current step \f$n\f$
-      void SetStepN(int step_n) override
+      void set_step_n(int step_n) override
       {
         check_init();
         dataglobalstate_->get_step_n() = step_n;
       }
 
       /// Return current step number $n+1$
-      [[nodiscard]] int GetStepNp() const override
+      [[nodiscard]] int get_step_np() const override
       {
         check_init();
         return dataglobalstate_->get_step_np();
       }
 
       /// Sets the current step number \f$n+1\f$
-      void SetStepNp(int step_np) override
+      void set_step_np(int step_np) override
       {
         check_init_setup();
         dataglobalstate_->get_step_np() = step_np;
       }
 
       //! Get number of time steps
-      [[nodiscard]] int GetStepEnd() const override
+      [[nodiscard]] int get_step_end() const override
       {
         check_init();
-        return datasdyn_->GetStepMax();
+        return datasdyn_->get_step_max();
       }
 
       /// Sets number of time steps
-      void SetStepEnd(int step_end) override
+      void set_step_end(int step_end) override
       {
         check_init_setup();
-        datasdyn_->GetStepMax() = step_end;
+        datasdyn_->get_step_max() = step_end;
       }
 
       //! Get divcont type
-      [[nodiscard]] virtual enum Inpar::Solid::DivContAct GetDivergenceAction() const
+      [[nodiscard]] virtual enum Inpar::Solid::DivContAct get_divergence_action() const
       {
         check_init_setup();
         return datasdyn_->get_divergence_action();
@@ -469,16 +469,16 @@ namespace Solid
       }
 
       /// set evaluation action
-      void SetActionType(const Core::Elements::ActionType& action) override;
+      void set_action_type(const Core::Elements::ActionType& action) override;
 
       // group id in nested parallelity
-      [[nodiscard]] int GroupId() const;
+      [[nodiscard]] int group_id() const;
       ///@}
 
       /// @name Structure with ale specific methods
       ///@{
       /// FixMe set/apply material displacements to structure field (structure with ale)
-      void SetDispMatNp(Teuchos::RCP<Epetra_Vector> dispmatnp) override
+      void set_disp_mat_np(Teuchos::RCP<Epetra_Vector> dispmatnp) override
       {
         FOUR_C_THROW("Not supported at the moment!");
       }
@@ -522,14 +522,14 @@ namespace Solid
       /// FixMe Check if there are any elements with the micro material definition.
       /// Maybe the detection can be moved to the element loop in the ad_str_structure_new.cpp.
       /// There is already one.
-      bool HaveMicroMat() override
+      bool have_micro_mat() override
       {
         FOUR_C_THROW("Not yet considered!");
         return false;
       }
 
       /// create result test for encapsulated structure algorithm
-      Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
+      Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
 
       /** \brief Get data that is written during restart
        *
@@ -561,7 +561,7 @@ namespace Solid
       /// Biofilm related stuff
       /// @{
       /// FixMe set structure displacement vector due to biofilm growth
-      void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) override
+      void set_str_gr_disp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) override
       {
         FOUR_C_THROW("Currently unsupported!");
       }
@@ -570,9 +570,9 @@ namespace Solid
       /// @name Pure virtual adapter functions (have to be implemented in the derived classes)
       /// @{
       /// integrate the current step (implicit and explicit)
-      virtual int IntegrateStep() = 0;
+      virtual int integrate_step() = 0;
       /// right-hand-side of Newton's method (implicit only)
-      Teuchos::RCP<const Epetra_Vector> RHS() override { return get_f(); };
+      Teuchos::RCP<const Epetra_Vector> rhs() override { return get_f(); };
       [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> get_f() const = 0;
       /// @}
 
@@ -824,7 +824,7 @@ namespace Solid
       void output_state(Core::IO::DiscretizationWriter& iowriter, bool write_owner) const;
 
       /** \brief output of the debug state */
-      void OutputDebugState(
+      void output_debug_state(
           Core::IO::DiscretizationWriter& iowriter, bool write_owner) const override;
 
       /// output during runtime

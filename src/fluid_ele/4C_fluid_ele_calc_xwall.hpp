@@ -37,10 +37,10 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static FluidEleCalcXWall<distype, enrtype>* Instance(
+      static FluidEleCalcXWall<distype, enrtype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
-      int EvaluateService(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int evaluate_service(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,

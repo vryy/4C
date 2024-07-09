@@ -111,7 +111,7 @@ namespace FSI
      *
      * @param interface Our interface to NOX
      */
-    virtual void Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
+    virtual void timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
 
     /// compute FSI interface residual S^{-1}(F(d)) - d
     bool computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag) override;
@@ -120,7 +120,7 @@ namespace FSI
     bool matchingnodes() { return matchingnodes_; }
 
     /// open door in the time loop for sliding ale algo to do remeshing
-    virtual void Remeshing();
+    virtual void remeshing();
 
     /// setup of coupling at fsi interface
     virtual void setup_coupling(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm);

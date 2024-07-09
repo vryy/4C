@@ -90,9 +90,9 @@ namespace Discret
 
       //! Deep copy this instance of Solid3 and return pointer to the copy
       //!
-      //! The Clone() method is used from the virtual base class Element in cases
+      //! The clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-ctor is needed
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       //@}
 
@@ -119,9 +119,9 @@ namespace Discret
       //!
       //! every class implementing ParObject needs a unique id defined at the top of
       //! this file.
-      int UniqueParObjectId() const override;
+      int unique_par_object_id() const override;
 
-      bool HaveEAS() const override { return (eastype_ != soh8p_easnone); };
+      bool have_eas() const override { return (eastype_ != soh8p_easnone); };
 
       //! Pack this class so it can be communicated
       //! Pack and \ref unpack are used to communicate this element
@@ -135,7 +135,7 @@ namespace Discret
       //! dofsets (implements pure virtual Core::Elements::Element)
       //!
       //! The element decides how many degrees of freedom its nodes must have.
-      int NumDofPerNode(const Core::Nodes::Node& node) const override { return nsd_; };
+      int num_dof_per_node(const Core::Nodes::Node& node) const override { return nsd_; };
 
       //! Get number of degrees of freedom of this element
       int num_dof_per_element() const override { return 0; };
@@ -148,37 +148,37 @@ namespace Discret
       void print(std::ostream& os) const override;
 
       //! return elementtype
-      Core::Elements::ElementType& ElementType() const override;
+      Core::Elements::ElementType& element_type() const override;
 
       //! return element shape
-      Core::FE::CellType Shape() const override { return distype; };
+      Core::FE::CellType shape() const override { return distype; };
 
       /*!
       \brief Return number of volumes of this element
       */
-      int NumVolume() const override;
+      int num_volume() const override;
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override;
+      int num_surface() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override;
+      int num_line() const override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       //@}
 
@@ -203,7 +203,7 @@ namespace Discret
       //!  names (out): On return, the derived class has filled names with key
       //!               names of data it wants to visualize and with int dimensions
       //!               of that data.
-      void VisNames(std::map<std::string, int>& names) override;
+      void vis_names(std::map<std::string, int>& names) override;
 
       //!  Query data to be visualized using BINIO of a given name
       //!
@@ -217,12 +217,12 @@ namespace Discret
       //!
       //!  name (in):   Name of data that is currently processed for visualization
       //! \param data (out):  data to be filled by element if element recognizes the name
-      bool VisData(const std::string& name, std::vector<double>& data) override;
+      bool vis_data(const std::string& name, std::vector<double>& data) override;
 
       //! read input for this element
-      bool ReadElement(const std::string& eletype,  //!< so3plast(fbar)
-          const std::string& eledistype,            //!< hex8,tet4,...
-          Input::LineDefinition* linedef            //!< what parameters have to be read
+      bool read_element(const std::string& eletype,  //!< so3plast(fbar)
+          const std::string& eledistype,             //!< hex8,tet4,...
+          Input::LineDefinition* linedef             //!< what parameters have to be read
           ) override;
 
       //@}
@@ -277,7 +277,7 @@ namespace Discret
       virtual void init_jacobian_mapping();
 
       // get parameter list from ssn_plast_manager
-      virtual void ReadParameterList(Teuchos::RCP<Teuchos::ParameterList> plparams);
+      virtual void read_parameter_list(Teuchos::RCP<Teuchos::ParameterList> plparams);
 
       void get_cauchy_n_dir_and_derivatives_at_xi(const Core::LinAlg::Matrix<3, 1>& xi,
           const std::vector<double>& disp, const Core::LinAlg::Matrix<3, 1>& n,
@@ -294,14 +294,14 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
           double* d_cauchyndir_dc) override;
 
-      void HeatFlux(const std::vector<double>& temperature, const std::vector<double>& disp,
+      void heat_flux(const std::vector<double>& temperature, const std::vector<double>& disp,
           const Core::LinAlg::Matrix<nsd_, 1>& xi, const Core::LinAlg::Matrix<nsd_, 1>& n,
           double& q, Core::LinAlg::SerialDenseMatrix* dq_dT, Core::LinAlg::SerialDenseMatrix* dq_dd,
           Core::LinAlg::Matrix<nsd_, 1>* dq_dn, Core::LinAlg::Matrix<nsd_, 1>* dq_dpxi,
           Core::LinAlg::SerialDenseMatrix* d2q_dT_dd, Core::LinAlg::SerialDenseMatrix* d2q_dT_dn,
           Core::LinAlg::SerialDenseMatrix* d2q_dT_dpxi);
 
-      void HeatFlux(const std::vector<double>& temp, const std::vector<double>& disp,
+      void heat_flux(const std::vector<double>& temp, const std::vector<double>& disp,
           const Core::LinAlg::Matrix<2, 1>& xi, const Core::LinAlg::Matrix<2, 1>& n, double& q,
           Core::LinAlg::SerialDenseMatrix* dq_dT, Core::LinAlg::SerialDenseMatrix* dq_dd,
           Core::LinAlg::Matrix<2, 1>* dq_dn, Core::LinAlg::Matrix<2, 1>* dq_dpxi,
@@ -791,8 +791,8 @@ namespace Discret
         {
           for (int d = 0; d < nsd_; ++d)
           {
-            xrefe_.second(i, d) = Nodes()[i]->X()[d];
-            xcurr_.second(i, d) = Nodes()[i]->X()[d] + disp[i * numdofpernode_ + d];
+            xrefe_.second(i, d) = nodes()[i]->x()[d];
+            xcurr_.second(i, d) = nodes()[i]->x()[d] + disp[i * numdofpernode_ + d];
             if (!vel.empty()) xcurr_rate_.second(i, d) = vel[i * numdofpernode_ + d];
           }
           if (!temp.empty()) etemp_.second(i) = temp[i];

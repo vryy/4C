@@ -93,9 +93,9 @@ namespace Mat
       ///@name Packing and Unpacking
       //@{
 
-      void PackSummand(Core::Communication::PackBuffer& data) const override;
+      void pack_summand(Core::Communication::PackBuffer& data) const override;
 
-      void UnpackSummand(
+      void unpack_summand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
 
       //@}
@@ -104,7 +104,7 @@ namespace Mat
       //@{
 
       /// material type
-      Core::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType material_type() const override
       {
         return Core::Materials::mes_coupanisoneohooke;
       }
@@ -126,18 +126,18 @@ namespace Mat
           ) override;
 
       /// Set fiber directions
-      void SetFiberVecs(const double newgamma,       ///< new angle
+      void set_fiber_vecs(const double newgamma,     ///< new angle
           const Core::LinAlg::Matrix<3, 3>& locsys,  ///< local coordinate system
           const Core::LinAlg::Matrix<3, 3>& defgrd   ///< deformation gradient
           ) override;
 
       /// Get fiber directions
-      void GetFiberVecs(
+      void get_fiber_vecs(
           std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 
       /// Indicator for formulation
-      void SpecifyFormulation(
+      void specify_formulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation

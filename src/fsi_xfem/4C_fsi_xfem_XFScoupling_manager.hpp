@@ -49,25 +49,25 @@ namespace XFEM
     void predict_coupling_states() override{};
 
     //! init...
-    void InitCouplingStates() override;
+    void init_coupling_states() override;
 
     //! Set required displacement & velocity states in the coupling object
-    void SetCouplingStates() override;
+    void set_coupling_states() override;
 
     //! Add the coupling matrixes to the global systemmatrix
     // in ... scaling between xfluid evaluated coupling matrixes and coupled systemmatrix
-    void AddCouplingMatrix(
+    void add_coupling_matrix(
         Core::LinAlg::BlockSparseMatrixBase& systemmatrix, double scaling) override;
 
     //! Add the coupling rhs
 
     // in scaling ... scaling between xfluid evaluated coupling rhs and coupled rhs
     // in me ... global map extractor of coupled problem (same index used as for idx)
-    void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs, const Core::LinAlg::MultiMapExtractor& me,
-        double scaling) override;
+    void add_coupling_rhs(Teuchos::RCP<Epetra_Vector> rhs,
+        const Core::LinAlg::MultiMapExtractor& me, double scaling) override;
 
     //! Update (Perform after Each Timestep)
-    void Update(double scaling) override;
+    void update(double scaling) override;
 
     //! Write Output (For restart or write results on the interface)
     void output(Core::IO::DiscretizationWriter& writer) override;

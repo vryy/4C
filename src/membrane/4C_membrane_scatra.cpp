@@ -40,7 +40,7 @@ Discret::ELEMENTS::MembraneScatra<distype>::MembraneScatra(
  |  and return pointer to it (public)                                   |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Core::Elements::Element* Discret::ELEMENTS::MembraneScatra<distype>::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::MembraneScatra<distype>::clone() const
 {
   Discret::ELEMENTS::MembraneScatra<distype>* newelement =
       new Discret::ELEMENTS::MembraneScatra<distype>(*this);
@@ -57,7 +57,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::pack(Core::Communication::PackB
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   Core::Communication::ParObject::add_to_pack(data, type);
 
   // pack scalar transport impltype_
@@ -78,7 +78,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::unpack(const std::vector<char>&
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract scalar transport impltype
   impltype_ = static_cast<Inpar::ScaTra::ImplType>(
@@ -111,11 +111,11 @@ void Discret::ELEMENTS::MembraneScatra<distype>::print(std::ostream& os) const
  |  read this element (public)                             sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::MembraneScatra<distype>::ReadElement(
+bool Discret::ELEMENTS::MembraneScatra<distype>::read_element(
     const std::string& eletype, const std::string& eledistype, Input::LineDefinition* linedef)
 {
   // read base element
-  Membrane<distype>::ReadElement(eletype, eledistype, linedef);
+  Membrane<distype>::read_element(eletype, eledistype, linedef);
 
   // read scalar transport implementation type
   std::string impltype;
@@ -147,18 +147,18 @@ bool Discret::ELEMENTS::MembraneScatra<distype>::ReadElement(
  |  Get vector of ptrs to nodes (private)                  sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-inline Core::Nodes::Node** Discret::ELEMENTS::MembraneScatra<distype>::Nodes()
+inline Core::Nodes::Node** Discret::ELEMENTS::MembraneScatra<distype>::nodes()
 {
-  return Membrane<distype>::Nodes();
+  return Membrane<distype>::nodes();
 }
 
 /*----------------------------------------------------------------------*
  |  Get shape type of element (private)                    sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Core::FE::CellType Discret::ELEMENTS::MembraneScatra<distype>::Shape() const
+Core::FE::CellType Discret::ELEMENTS::MembraneScatra<distype>::shape() const
 {
-  return Membrane<distype>::Shape();
+  return Membrane<distype>::shape();
 }
 
 template class Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri3>;

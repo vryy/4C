@@ -88,7 +88,7 @@ namespace Solid
       ///@{
 
       /// ID of actual processor in parallel
-      int const& GetMyRank() const
+      int const& get_my_rank() const
       {
         check_init_setup();
         return myrank_;
@@ -99,14 +99,14 @@ namespace Solid
       ///@{
 
       /// get extended bin to ele map
-      std::map<int, std::set<int>> const& GetBinToRowEleMap() const
+      std::map<int, std::set<int>> const& get_bin_to_row_ele_map() const
       {
         check_init_setup();
         return bintorowelemap_;
       };
 
       /// get mutable extended bin to ele map
-      std::map<int, std::set<int>>& GetBinToRowEleMap()
+      std::map<int, std::set<int>>& get_bin_to_row_ele_map()
       {
         check_init_setup();
         return bintorowelemap_;
@@ -127,21 +127,21 @@ namespace Solid
       };
 
       /// get extended ele to bin map
-      std::map<int, std::set<int>> const& GetRowEleToBinMap() const
+      std::map<int, std::set<int>> const& get_row_ele_to_bin_map() const
       {
         check_init_setup();
         return roweletobinmap_;
       };
 
       /// get extended ele to bin map
-      std::set<int> const& GetRowEleToBinSet(int const i)
+      std::set<int> const& get_row_ele_to_bin_set(int const i)
       {
         check_init_setup();
         return roweletobinmap_[i];
       };
 
       /// get mutable extended ele to bin map
-      std::map<int, std::set<int>>& GetRowEleToBinMap()
+      std::map<int, std::set<int>>& get_row_ele_to_bin_map()
       {
         check_init_setup();
         return roweletobinmap_;
@@ -152,49 +152,49 @@ namespace Solid
       ///@{
 
       /// Return displacements at the restart step \f$D_{restart}\f$
-      Teuchos::RCP<const Epetra_Vector> GetDisRestart() const
+      Teuchos::RCP<const Epetra_Vector> get_dis_restart() const
       {
         check_init_setup();
         return dis_restart_;
       }
 
       /// Return displacements at the restart step \f$D_{restart}\f$
-      Teuchos::RCP<const Epetra_Vector> GetDisRestartCol() const
+      Teuchos::RCP<const Epetra_Vector> get_dis_restart_col() const
       {
         check_init_setup();
         return dis_restart_col_;
       }
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> GetDisNp() const
+      Teuchos::RCP<const Epetra_Vector> get_dis_np() const
       {
         check_init_setup();
         return disnp_;
       }
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> GetDisColNp() const
+      Teuchos::RCP<const Epetra_Vector> get_dis_col_np() const
       {
         check_init_setup();
         return discolnp_;
       }
 
       /// Return displacements \f$D_{n}\f$
-      Teuchos::RCP<const Epetra_Vector> GetDisN() const
+      Teuchos::RCP<const Epetra_Vector> get_dis_n() const
       {
         check_init_setup();
         return (*dis_)(0);
       }
 
       /// Return internal force \f$fint_{n}\f$
-      Teuchos::RCP<const Epetra_FEVector> GetForceN() const
+      Teuchos::RCP<const Epetra_FEVector> get_force_n() const
       {
         check_init_setup();
         return forcen_;
       }
 
       /// Return internal force \f$fint_{n+1}\f$
-      Teuchos::RCP<const Epetra_FEVector> GetForceNp() const
+      Teuchos::RCP<const Epetra_FEVector> get_force_np() const
       {
         check_init_setup();
         return forcenp_;
@@ -203,7 +203,7 @@ namespace Solid
       /// @name Get system matrices (read only access)
       ///@{
       /// returns the entire structural jacobian
-      Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetStiff() const
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_stiff() const
       {
         check_init_setup();
         return stiff_;
@@ -214,56 +214,56 @@ namespace Solid
       ///@{
 
       /// Return displacements at the restart step \f$D_{restart}\f$
-      Teuchos::RCP<Epetra_Vector>& GetDisRestart()
+      Teuchos::RCP<Epetra_Vector>& get_dis_restart()
       {
         check_init_setup();
         return dis_restart_;
       }
 
       /// Return displacements at the restart step \f$D_{restart}\f$
-      Teuchos::RCP<Epetra_Vector>& GetDisRestartCol()
+      Teuchos::RCP<Epetra_Vector>& get_dis_restart_col()
       {
         check_init_setup();
         return dis_restart_col_;
       }
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& GetDisNp()
+      Teuchos::RCP<Epetra_Vector>& get_dis_np()
       {
         check_init_setup();
         return disnp_;
       }
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& GetDisColNp()
+      Teuchos::RCP<Epetra_Vector>& get_dis_col_np()
       {
         check_init_setup();
         return discolnp_;
       }
 
       /// Return displacements \f$D_{n}\f$
-      Teuchos::RCP<Epetra_Vector> GetDisN()
+      Teuchos::RCP<Epetra_Vector> get_dis_n()
       {
         check_init_setup();
         return (*dis_)(0);
       }
 
       /// Return multi-displacement vector \f$D_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> GetMultiDis()
+      Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> get_multi_dis()
       {
         check_init_setup();
         return dis_;
       }
 
       /// Return internal force \f$fint_{n}\f$
-      Teuchos::RCP<Epetra_FEVector>& GetForceN()
+      Teuchos::RCP<Epetra_FEVector>& get_force_n()
       {
         check_init_setup();
         return forcen_;
       }
 
       /// Return internal force \f$fint_{n+1}\f$
-      Teuchos::RCP<Epetra_FEVector>& GetForceNp()
+      Teuchos::RCP<Epetra_FEVector>& get_force_np()
       {
         check_init_setup();
         return forcenp_;
@@ -274,7 +274,7 @@ namespace Solid
       /// @name Get mutable system matrices
       ///@{
       /// returns the entire structural jacobian
-      Teuchos::RCP<Core::LinAlg::SparseMatrix>& GetStiff()
+      Teuchos::RCP<Core::LinAlg::SparseMatrix>& get_stiff()
       {
         check_init_setup();
         return stiff_;

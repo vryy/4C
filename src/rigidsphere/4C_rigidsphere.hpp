@@ -48,23 +48,23 @@ namespace Discret
     class RigidsphereType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return ("RigidsphereType"); }
+      std::string name() const override { return ("RigidsphereType"); }
 
-      static RigidsphereType& Instance();
+      static RigidsphereType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
@@ -109,16 +109,16 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Beam3eb and return pointer to the copy
 
-      The Clone() method is used by the virtual base class Element in cases
+      The clone() method is used by the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
     .
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
      \brief Get shape type of element
      */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
 
       /*!
@@ -127,9 +127,9 @@ namespace Discret
       Every class implementing ParObject needs a unique id defined at the
       top of parobject.H
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return (RigidsphereType::Instance().UniqueParObjectId());
+        return (RigidsphereType::instance().unique_par_object_id());
       }
 
       /*!
@@ -148,9 +148,9 @@ namespace Discret
       */
       void unpack(const std::vector<char>& data) override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return (RigidsphereType::Instance());
+        return (RigidsphereType::instance());
       }
 
       //@}
@@ -158,18 +158,18 @@ namespace Discret
       /*!
       \brief Return number of lines to this element
       */
-      int NumLine() const override { return (1); }
+      int num_line() const override { return (1); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
 
       /*!
       \brief Get number of degrees of freedom of a single node
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override
+      int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
         /*note: this is not necessarily the number of DOF assigned to this node by the
          *discretization finally, but only the number of DOF requested for this node by this
@@ -191,7 +191,7 @@ namespace Discret
       /*!
       \brief Return radius of sphere
       */
-      const double& Radius() const { return (radius_); };
+      const double& radius() const { return (radius_); };
 
       //! @name Construction
 
@@ -203,12 +203,12 @@ namespace Discret
       store all necessary information.
 
       */
-      // virtual bool ReadElement();
+      // virtual bool read_element();
 
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -296,13 +296,13 @@ namespace Discret
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline bool IsParamsInterface() const override { return (not interface_ptr_.is_null()); }
+      inline bool is_params_interface() const override { return (not interface_ptr_.is_null()); }
 
       /*! \brief get access to the parameter interface pointer
        *
        *  \author hiermeier
        *  \date 04/16 */
-      Teuchos::RCP<Core::Elements::ParamsInterface> ParamsInterfacePtr() override;
+      Teuchos::RCP<Core::Elements::ParamsInterface> params_interface_ptr() override;
       //@}
 
       //! @name methods for biopolymer network simulations
@@ -338,15 +338,15 @@ namespace Discret
       /*!
       \brief set radius of sphere
       */
-      void SetRadius(double radius) { radius_ = radius; };
+      void set_radius(double radius) { radius_ = radius; };
 
       /*!
       \brief set radius of sphere
       */
-      void ScaleRadius(double scalefac) { radius_ *= scalefac; };
+      void scale_radius(double scalefac) { radius_ *= scalefac; };
 
       /// return binding spot xi function dummy
-      double GetBindingSpotXi(Inpar::BEAMINTERACTION::CrosslinkerType dummy1, int dummy2) const
+      double get_binding_spot_xi(Inpar::BEAMINTERACTION::CrosslinkerType dummy1, int dummy2) const
       {
         return 0.0;
       }
@@ -355,13 +355,13 @@ namespace Discret
        *
        *  \author eichinger
        *  \date 06/17 */
-      int GetNumberOfBonds() const { return static_cast<int>(mybondstobeams_.size()); }
+      int get_number_of_bonds() const { return static_cast<int>(mybondstobeams_.size()); }
 
       /** \brief check if bond exists
        *
        *  \author eichinger
        *  \date 06/17 */
-      bool DoesBondExist(int bond) const
+      bool does_bond_exist(int bond) const
       {
         return (mybondstobeams_.find(bond) != mybondstobeams_.end()) ? true : false;
       }
@@ -370,7 +370,7 @@ namespace Discret
        *
        *  \author eichinger
        *  \date 06/17 */
-      Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> GetBond(int bond_id)
+      Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> get_bond(int bond_id)
       {
         return mybondstobeams_[bond_id];
       }
@@ -379,7 +379,7 @@ namespace Discret
        *
        *  \author eichinger
        *  \date 06/17 */
-      std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed>> const& GetBondMap() const
+      std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed>> const& get_bond_map() const
       {
         return mybondstobeams_;
       }
@@ -388,7 +388,7 @@ namespace Discret
        *
        *  \author eichinger
        *  \date 06/17 */
-      void AddBond(int id, Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> newbondpartner)
+      void add_bond(int id, Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> newbondpartner)
       {
         mybondstobeams_[id] = newbondpartner;
       };
@@ -414,7 +414,7 @@ namespace Discret
        * @param result_data_dofbased Result data vector used for extracting positions
        * @return bounding volume of the respective element
        */
-      Core::GeometricSearch::BoundingVolume GetBoundingVolume(
+      Core::GeometricSearch::BoundingVolume get_bounding_volume(
           const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
           const Core::GeometricSearch::GeometricSearchParams& params) const override;
 
@@ -427,7 +427,7 @@ namespace Discret
        *  \date 04/16 */
       inline Solid::ELEMENTS::ParamsInterface& params_interface()
       {
-        if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
+        if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
       }
 

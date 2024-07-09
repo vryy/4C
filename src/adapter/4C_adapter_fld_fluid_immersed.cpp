@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 Adapter::FluidImmersed::FluidImmersed(const Teuchos::ParameterList& prbdyn, std::string condname)
 {
   fluid_ = Teuchos::rcp(new FluidBaseAlgorithm(
-      prbdyn, Global::Problem::Instance()->FluidDynamicParams(), "fluid", false));
+      prbdyn, Global::Problem::instance()->fluid_dynamic_params(), "fluid", false));
   fluidadapter_ = fluid_->fluid_field();
 
   return;
@@ -38,9 +38,9 @@ Teuchos::RCP<Core::FE::Discretization> Adapter::FluidImmersed::discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::UTILS::MapExtractor> const& Adapter::FluidImmersed::Interface() const
+Teuchos::RCP<FLD::UTILS::MapExtractor> const& Adapter::FluidImmersed::interface() const
 {
-  return fluidadapter_->Interface();
+  return fluidadapter_->interface();
 }
 
 
@@ -56,7 +56,7 @@ void Adapter::FluidImmersed::update() { fluid_field()->update(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidImmersed::output() { fluid_field()->StatisticsAndOutput(); }
+void Adapter::FluidImmersed::output() { fluid_field()->statistics_and_output(); }
 
 
 /*----------------------------------------------------------------------*/
@@ -64,7 +64,7 @@ void Adapter::FluidImmersed::output() { fluid_field()->StatisticsAndOutput(); }
 double Adapter::FluidImmersed::read_restart(int step)
 {
   fluid_field()->read_restart(step);
-  return fluid_field()->Time();
+  return fluid_field()->time();
 }
 
 
@@ -73,19 +73,19 @@ double Adapter::FluidImmersed::read_restart(int step)
 void Adapter::FluidImmersed::nonlinear_solve(
     Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel)
 {
-  fluid_field()->Solve();
+  fluid_field()->solve();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidImmersed::RelaxationSolve(
+Teuchos::RCP<Epetra_Vector> Adapter::FluidImmersed::relaxation_solve(
     Teuchos::RCP<Epetra_Vector> idisp, double dt)
 {
   // the displacement -> velocity conversion at the interface
   idisp->Scale(1. / dt);
 
-  return fluid_field()->RelaxationSolve(idisp);
+  return fluid_field()->relaxation_solve(idisp);
 }
 
 
@@ -124,9 +124,9 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidImmersed::integrate_interface_shape()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> Adapter::FluidImmersed::CreateFieldTest()
+Teuchos::RCP<Core::UTILS::ResultTest> Adapter::FluidImmersed::create_field_test()
 {
-  return fluid_field()->CreateFieldTest();
+  return fluid_field()->create_field_test();
 }
 
 

@@ -44,16 +44,16 @@ CONTACT::SelfBinaryTreeNode::SelfBinaryTreeNode(SelfBinaryTreeNodeType type,
 /*----------------------------------------------------------------------*
  |  get communicator (public)                                 popp 11/09|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::SelfBinaryTreeNode::Comm() const { return discret().Comm(); }
+const Epetra_Comm& CONTACT::SelfBinaryTreeNode::get_comm() const { return discret().get_comm(); }
 
 /*----------------------------------------------------------------------*
  | complete the tree storage in a top down way (public)       popp 11/09|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTreeNode::CompleteTree(int layer, double& enlarge)
+void CONTACT::SelfBinaryTreeNode::complete_tree(int layer, double& enlarge)
 {
   // calculate bounding volume
-  CalculateSlabsDop();
-  EnlargeGeometry(enlarge);
+  calculate_slabs_dop();
+  enlarge_geometry(enlarge);
 
   // check root node (layer 0) for sanity
   if (layer == 0)
@@ -78,8 +78,8 @@ void CONTACT::SelfBinaryTreeNode::CompleteTree(int layer, double& enlarge)
     treenodes_[(get_layer() + 1)].push_back(leftchild_);
     treenodes_[(get_layer() + 1)].push_back(rightchild_);
 
-    rightchild_->CompleteTree(get_layer() + 1, enlarge);
-    leftchild_->CompleteTree(get_layer() + 1, enlarge);
+    rightchild_->complete_tree(get_layer() + 1, enlarge);
+    leftchild_->complete_tree(get_layer() + 1, enlarge);
   }
 
   // do nothing if arrived at leaf level
@@ -100,10 +100,10 @@ void CONTACT::SelfBinaryTreeNode::calculate_qualified_vectors()
   // we first need the element center:
   // for line2, line3, quad4, quad8, quad9 elements: xi = eta = 0.0
   // for tri3, tri6 elements: xi = eta = 1/3
-  Element* celement = dynamic_cast<Element*>(discret().gElement(elelist()[0]));
+  Element* celement = dynamic_cast<Element*>(discret().g_element(elelist()[0]));
   double loccenter[2];
 
-  Core::FE::CellType dt = celement->Shape();
+  Core::FE::CellType dt = celement->shape();
   if (dt == Core::FE::CellType::tri3 || dt == Core::FE::CellType::tri6)
   {
     loccenter[0] = 1.0 / 3.0;
@@ -158,7 +158,7 @@ void CONTACT::SelfBinaryTreeNode::update_qualified_vectors_bottom_up()
 
   for (int i = 0; i < (int)qualifiedvectors_.size(); ++i)
     qualifiedvectors_.at(i) =
-        ((rightchild_->QualifiedVectors()).at(i) && (leftchild_->QualifiedVectors()).at(i));
+        ((rightchild_->qualified_vectors()).at(i) && (leftchild_->qualified_vectors()).at(i));
 
   return;
 }
@@ -166,7 +166,7 @@ void CONTACT::SelfBinaryTreeNode::update_qualified_vectors_bottom_up()
 /*----------------------------------------------------------------------*
  | Update endnodes of one tree node (only 2D) (public)        popp 11/09|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTreeNode::UpdateEndnodes()
+void CONTACT::SelfBinaryTreeNode::update_endnodes()
 {
   if (type_ == SELFCO_LEAF) FOUR_C_THROW("Update endnodes. called for leaf node!");
 
@@ -214,7 +214,7 @@ void CONTACT::SelfBinaryTreeNode::UpdateEndnodes()
 /*----------------------------------------------------------------------*
  | Update slabs bottom-up (public)                            popp 10/08|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTreeNode::UpdateSlabsBottomUp(double& enlarge)
+void CONTACT::SelfBinaryTreeNode::update_slabs_bottom_up(double& enlarge)
 {
   // if current treenode is inner node
   if (type_ == SELFCO_INNER)
@@ -238,9 +238,9 @@ void CONTACT::SelfBinaryTreeNode::UpdateSlabsBottomUp(double& enlarge)
   // if current treenode is leaf node
   if (type_ == SELFCO_LEAF)
   {
-    CalculateSlabsDop();
+    calculate_slabs_dop();
 
-    EnlargeGeometry(enlarge);
+    enlarge_geometry(enlarge);
 
     // Prints slabs to std::cout
     // PrintSlabs();
@@ -252,7 +252,7 @@ void CONTACT::SelfBinaryTreeNode::UpdateSlabsBottomUp(double& enlarge)
 /*----------------------------------------------------------------------*
  | Print type of treenode to std::cout (public)               popp 10/08|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTreeNode::PrintType()
+void CONTACT::SelfBinaryTreeNode::print_type()
 {
   if (type_ == SELFCO_INNER)
     std::cout << std::endl << "SELFCO_INNER ";
@@ -269,7 +269,7 @@ void CONTACT::SelfBinaryTreeNode::PrintType()
 /*----------------------------------------------------------------------*
  | Set children of current treenode (public)                  popp 11/09|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTreeNode::SetChildren(
+void CONTACT::SelfBinaryTreeNode::set_children(
     Teuchos::RCP<SelfBinaryTreeNode> leftchild, Teuchos::RCP<SelfBinaryTreeNode> rightchild)
 {
   leftchild_ = leftchild;
@@ -281,7 +281,7 @@ void CONTACT::SelfBinaryTreeNode::SetChildren(
 /*----------------------------------------------------------------------*
  | Set owner of parent tree node (public)                  schmidt 01/19|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTreeNode::SetParentOwner(int leftchildowner, int rightchildowner)
+void CONTACT::SelfBinaryTreeNode::set_parent_owner(int leftchildowner, int rightchildowner)
 {
   // safety checks
   if (leftchildowner != rightchildowner)
@@ -315,8 +315,8 @@ void CONTACT::SelfDualEdge::calculate_costs()
 {
   // update slabs of both dual edge nodes
   double enlarge = 0.0;
-  node1_->UpdateSlabsBottomUp(enlarge);
-  node2_->UpdateSlabsBottomUp(enlarge);
+  node1_->update_slabs_bottom_up(enlarge);
+  node2_->update_slabs_bottom_up(enlarge);
 
   // build parent slab for dual edge
   Core::LinAlg::SerialDenseMatrix parentslabs;
@@ -360,15 +360,15 @@ void CONTACT::SelfDualEdge::calculate_costs()
     for (int l = 0; l < (int)(node1_->elelist().size()); ++l)
     {
       int gid = (node1_->elelist()).at(l);
-      Element* celement = dynamic_cast<Element*>(node1_->discret().gElement(gid));
-      lele = lele + celement->MaxEdgeSize();
+      Element* celement = dynamic_cast<Element*>(node1_->discret().g_element(gid));
+      lele = lele + celement->max_edge_size();
     }
 
     for (int l = 0; l < (int)(node2_->elelist().size()); ++l)
     {
       int gid = node2_->elelist()[l];
-      Element* celement = dynamic_cast<Element*>(node2_->discret().gElement(gid));
-      lele = lele + celement->MaxEdgeSize();
+      Element* celement = dynamic_cast<Element*>(node2_->discret().g_element(gid));
+      lele = lele + celement->max_edge_size();
     }
 
     // cost function = nele * ( L / L_max )
@@ -385,15 +385,15 @@ void CONTACT::SelfDualEdge::calculate_costs()
     for (int l = 0; l < (int)(node1_->elelist().size()); ++l)
     {
       int gid = (node1_->elelist()).at(l);
-      Element* celement = dynamic_cast<Element*>(node1_->discret().gElement(gid));
-      area = area + celement->MoData().Area();
+      Element* celement = dynamic_cast<Element*>(node1_->discret().g_element(gid));
+      area = area + celement->mo_data().area();
     }
 
     for (int l = 0; l < (int)(node2_->elelist().size()); ++l)
     {
       int gid = node2_->elelist()[l];
-      Element* celement = dynamic_cast<Element*>(node2_->discret().gElement(gid));
-      area = area + celement->MoData().Area();
+      Element* celement = dynamic_cast<Element*>(node2_->discret().g_element(gid));
+      area = area + celement->mo_data().area();
     }
 
     // compute maximal k-DOP area for dual edge
@@ -479,7 +479,7 @@ void CONTACT::SelfBinaryTree::init_internal_variables()
   treenodes_.resize(1);
   leafsmap_.clear();
 
-  switch (dim())
+  switch (n_dim())
   {
     // two-dimensional case
     case 2:
@@ -596,8 +596,8 @@ void CONTACT::SelfBinaryTree::init_leaf_nodes_and_map(std::vector<int>& elelist)
     localelelist.push_back(elelist[i]);
     Teuchos::RCP<SelfBinaryTreeNode> leaf = Teuchos::rcp(
         new SelfBinaryTreeNode(SELFCO_LEAF, discret(), Teuchos::null, localelelist, dop_normals(),
-            sample_vectors(), kdop(), dim(), nvectors(), -1, nonsmoothsurface, treenodes_));
-    leaf->SetOwner((discret().gElement(elelist[i]))->Owner());
+            sample_vectors(), kdop(), n_dim(), nvectors(), -1, nonsmoothsurface, treenodes_));
+    leaf->set_owner((discret().g_element(elelist[i]))->owner());
     leafsmap_[elelist[i]] = leaf;
   }
 
@@ -618,7 +618,7 @@ int CONTACT::SelfBinaryTree::get_ele_specific_num_nodes(Core::Elements::Element*
   int numnode = 0;
   Mortar::Element* mele = dynamic_cast<Mortar::Element*>(element);
 
-  switch (mele->Shape())
+  switch (mele->shape())
   {
     case Core::FE::CellType::line2:
     case Core::FE::CellType::line3:
@@ -655,8 +655,8 @@ int CONTACT::SelfBinaryTree::get_ele_specific_num_nodes(Core::Elements::Element*
 void CONTACT::SelfBinaryTree::get_contracted_node(
     Teuchos::RCP<SelfDualEdge>& contractedEdge, Teuchos::RCP<SelfBinaryTreeNode>& contractedNode)
 {
-  Teuchos::RCP<SelfBinaryTreeNode> node1 = contractedEdge->GetNode1();
-  Teuchos::RCP<SelfBinaryTreeNode> node2 = contractedEdge->GetNode2();
+  Teuchos::RCP<SelfBinaryTreeNode> node1 = contractedEdge->get_node1();
+  Teuchos::RCP<SelfBinaryTreeNode> node2 = contractedEdge->get_node2();
 
   // combine list of elements of both tree nodes to get new list
   std::vector<int> list = node1->elelist();
@@ -665,13 +665,13 @@ void CONTACT::SelfBinaryTree::get_contracted_node(
 
   // define new (contracted) tree node
   contractedNode = Teuchos::rcp(new SelfBinaryTreeNode(SELFCO_INNER, discret(), Teuchos::null, list,
-      dop_normals(), sample_vectors(), kdop(), dim(), nvectors(), -1, false, treenodes_));
-  contractedNode->SetChildren(node1, node2);
-  node1->SetParent(contractedNode);
-  node2->SetParent(contractedNode);
+      dop_normals(), sample_vectors(), kdop(), n_dim(), nvectors(), -1, false, treenodes_));
+  contractedNode->set_children(node1, node2);
+  node1->set_parent(contractedNode);
+  node2->set_parent(contractedNode);
 
   // in 2D we simply save the end nodes as adjacency criterion
-  if (dim() == 2) contractedNode->UpdateEndnodes();
+  if (n_dim() == 2) contractedNode->update_endnodes();
 
   return;
 }
@@ -685,7 +685,7 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tree_nodes_and_dual_edges(
     std::vector<Teuchos::RCP<SelfBinaryTreeNode>>& adjtreenodes,
     std::vector<Teuchos::RCP<SelfDualEdge>>& adjdualedges)
 {
-  const int eleID = adjElementk->Id();
+  const int eleID = adjElementk->id();
 
   // if eleID isn't the currently considered element, it could be a neighbor
   if (eleID != gid)
@@ -694,7 +694,7 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tree_nodes_and_dual_edges(
     if (possadjids.size() == 0)
     {
       // in 2D one common node implies adjacency
-      if (dim() == 2)
+      if (n_dim() == 2)
       {
         // get second node from leafs map
         Teuchos::RCP<SelfBinaryTreeNode> node2 = leafsmap_[eleID];
@@ -705,15 +705,15 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tree_nodes_and_dual_edges(
         // nodes of the tree node
         std::vector<int> nodeIds;
         nodeIds.clear();
-        nodeIds.push_back(adjElementk->NodeIds()[0]);
-        nodeIds.push_back(adjElementk->NodeIds()[1]);
-        node2->SetEndnodes(nodeIds);
+        nodeIds.push_back(adjElementk->node_ids()[0]);
+        nodeIds.push_back(adjElementk->node_ids()[1]);
+        node2->set_endnodes(nodeIds);
 
         // add tree node to list of adjacent tree nodes of current tree node
         adjtreenodes.push_back(node2);
 
         // create edge and add it to the list
-        Teuchos::RCP<SelfDualEdge> edge = Teuchos::rcp(new SelfDualEdge(node1, node2, dim()));
+        Teuchos::RCP<SelfDualEdge> edge = Teuchos::rcp(new SelfDualEdge(node1, node2, n_dim()));
         adjdualedges.push_back(edge);
       }
       // in 3D adjacency is more complicated
@@ -731,7 +731,7 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tree_nodes_and_dual_edges(
       bool saved = false;
 
       // in 2D one common node implies adjacency
-      if (dim() == 2)
+      if (n_dim() == 2)
       {
         // get second node from leafs map
         Teuchos::RCP<SelfBinaryTreeNode> node2 = leafsmap_[eleID];
@@ -740,15 +740,15 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tree_nodes_and_dual_edges(
         // get the finite element nodes of the element equal to tree node 2 and save them as end
         // nodes of the tree node
         std::vector<int> nodeIds;
-        nodeIds.push_back(adjElementk->NodeIds()[0]);
-        nodeIds.push_back(adjElementk->NodeIds()[1]);
-        node2->SetEndnodes(nodeIds);
+        nodeIds.push_back(adjElementk->node_ids()[0]);
+        nodeIds.push_back(adjElementk->node_ids()[1]);
+        node2->set_endnodes(nodeIds);
 
         // add tree node in list of adjacent tree nodes of current tree node
         adjtreenodes.push_back(node2);
 
         // create edge and add it to the list
-        Teuchos::RCP<SelfDualEdge> edge = Teuchos::rcp(new SelfDualEdge(node1, node2, dim()));
+        Teuchos::RCP<SelfDualEdge> edge = Teuchos::rcp(new SelfDualEdge(node1, node2, n_dim()));
         adjdualedges.push_back(edge);
       }
       // in 3D adjacency is more complicated (adjacent elements have at least 2 common nodes)
@@ -767,7 +767,7 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tree_nodes_and_dual_edges(
             if (node2 == Teuchos::null) FOUR_C_THROW("adjacent tree node not found in leafs map!!");
 
             // create edge and add it to the list
-            Teuchos::RCP<SelfDualEdge> edge = Teuchos::rcp(new SelfDualEdge(node1, node2, dim()));
+            Teuchos::RCP<SelfDualEdge> edge = Teuchos::rcp(new SelfDualEdge(node1, node2, n_dim()));
             adjdualedges.push_back(edge);
             break;
           }
@@ -807,9 +807,9 @@ void CONTACT::SelfBinaryTree::calculate_dual_graph(
     std::vector<int> possadjids;
 
     // get current elements and its nodes
-    Core::Elements::Element* element = discret().gElement(gid);
+    Core::Elements::Element* element = discret().g_element(gid);
     if (!element) FOUR_C_THROW("Cannot find element with gid %\n", gid);
-    Core::Nodes::Node** nodes = element->Nodes();
+    Core::Nodes::Node** nodes = element->nodes();
     if (!nodes) FOUR_C_THROW("Null pointer!");
 
     // first tree node of one dual edge which includes current element is the element itself saved
@@ -818,12 +818,12 @@ void CONTACT::SelfBinaryTree::calculate_dual_graph(
 
     // for 2D only: get the finite element nodes of the element and save them as end nodes of the
     // tree node
-    if (dim() == 2)
+    if (n_dim() == 2)
     {
       std::vector<int> nodeIds;
-      nodeIds.push_back(element->NodeIds()[0]);
-      nodeIds.push_back(element->NodeIds()[1]);
-      node1->SetEndnodes(nodeIds);
+      nodeIds.push_back(element->node_ids()[0]);
+      nodeIds.push_back(element->node_ids()[1]);
+      node1->set_endnodes(nodeIds);
     }
 
     // get element specific first order nodes
@@ -837,8 +837,8 @@ void CONTACT::SelfBinaryTree::calculate_dual_graph(
       if (!node) FOUR_C_THROW("Null pointer!");
 
       // adjacent elements of current node
-      int numE = node->NumElement();
-      Core::Elements::Element** adjElements = node->Elements();
+      int numE = node->num_element();
+      Core::Elements::Element** adjElements = node->elements();
       if (!adjElements) FOUR_C_THROW("Null pointer!");
 
       // loop over all adjacent elements of current node
@@ -853,7 +853,7 @@ void CONTACT::SelfBinaryTree::calculate_dual_graph(
 
     // add the vector of adjacent tree nodes to the adjacency matrix. We only need the matrix in 3D,
     // because in 2D the adjacency test works by comparing end nodes only
-    if (dim() == 3) adjacencymatrix_[gid] = adjtreenodes;
+    if (n_dim() == 3) adjacencymatrix_[gid] = adjtreenodes;
 
     // get adjacent dual edges
     for (unsigned k = 0; k < adjdualedges.size(); ++k)
@@ -915,7 +915,7 @@ void CONTACT::SelfBinaryTree::evaluate_search()
 /*----------------------------------------------------------------------*
  |  get communicator (protected)                              popp 11/09|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::SelfBinaryTree::comm() const { return discret().Comm(); }
+const Epetra_Comm& CONTACT::SelfBinaryTree::get_comm() const { return discret().get_comm(); }
 
 /*----------------------------------------------------------------------*
  | Find minimal length of contact elements (protected)        popp 11/09|
@@ -929,10 +929,10 @@ void CONTACT::SelfBinaryTree::set_enlarge()
   for (int i = 0; i < elements_->NumMyElements(); ++i)
   {
     int gid = elements_->GID(i);
-    Core::Elements::Element* element = discret().gElement(gid);
+    Core::Elements::Element* element = discret().g_element(gid);
     if (!element) FOUR_C_THROW("Cannot find element with gid %\n", gid);
     CONTACT::Element* celement = dynamic_cast<Element*>(element);
-    double mincurrent = celement->MinEdgeSize();
+    double mincurrent = celement->min_edge_size();
     if (mincurrent < lmin) lmin = mincurrent;
   }
 
@@ -990,14 +990,14 @@ void CONTACT::SelfBinaryTree::initialize_tree_bottom_up(
 
   // complete the tree starting from its roots (top-down)
   if (roots_.size() == 0) FOUR_C_THROW("No root tree node found!");
-  for (unsigned k = 0; k < roots_.size(); ++k) roots_[k]->CompleteTree(0, enlarge());
+  for (unsigned k = 0; k < roots_.size(); ++k) roots_[k]->complete_tree(0, enlarge());
 
   // output to screen
-  if (comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
     std::cout << "\nFound " << roots_.size() << " root node(s) for self binary tree." << std::endl;
 
   // in 3D we have to calculate adjacent tree nodes
-  if (dim() == 3)
+  if (n_dim() == 3)
   {
     calculate_adjacent_leaves();
     calculate_adjacent_tnodes();
@@ -1014,8 +1014,8 @@ void CONTACT::SelfBinaryTree::add_tree_nodes_to_contact_pairs(
 {
   bool isadjacent(true);
 
-  if (dim() == 2) isadjacent = test_adjacent2_d(treenode1, treenode2);
-  if (dim() == 3) isadjacent = test_adjacent3_d(treenode1, treenode2);
+  if (n_dim() == 2) isadjacent = test_adjacent2_d(treenode1, treenode2);
+  if (n_dim() == 3) isadjacent = test_adjacent3_d(treenode1, treenode2);
   if (!isadjacent)
   {
     contactpairs_[treenode1->elelist()[0]].push_back(treenode2->elelist()[0]);
@@ -1051,7 +1051,7 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_leaves()
       }
 
       // store in current treenode
-      leafiter->second->SetAdjacentTnodes(adjtnodessamelayer);
+      leafiter->second->set_adjacent_tnodes(adjtnodessamelayer);
     }
 
     // increment iterator
@@ -1083,32 +1083,32 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tnodes()
       //******************************************************************
       // CASE 1: treenode is an inner node
       //******************************************************************
-      if (treenodes_[i][j]->Type() != SELFCO_LEAF)
+      if (treenodes_[i][j]->type() != SELFCO_LEAF)
       {
         // get the adjacent treenodes of the children
         std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjofleftchild =
-            treenodes_[i][j]->Leftchild()->AdjacentTreenodes();
+            treenodes_[i][j]->leftchild()->adjacent_treenodes();
         std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjofrightchild =
-            treenodes_[i][j]->Rightchild()->AdjacentTreenodes();
+            treenodes_[i][j]->rightchild()->adjacent_treenodes();
 
         // check the adjacent treenodes of the left child
         for (int k = 0; k < (int)adjofleftchild.size(); ++k)
         {
           // check if the parent of the adjacent node of the child has already been saved
-          if (adjofleftchild[k] != treenodes_[i][j]->Rightchild())
+          if (adjofleftchild[k] != treenodes_[i][j]->rightchild())
           {
             bool issaved = false;
             for (int l = 0; l < (int)adjtnodes.size(); ++l)
             {
               if (adjtnodes[l] == Teuchos::null) FOUR_C_THROW("Teuchos::null pointer");
-              if (adjofleftchild[k]->Parent() == adjtnodes[l])
+              if (adjofleftchild[k]->parent() == adjtnodes[l])
               {
                 issaved = true;
                 break;
               }
             }
 
-            if (!issaved) adjtnodes.push_back(adjofleftchild[k]->Parent());
+            if (!issaved) adjtnodes.push_back(adjofleftchild[k]->parent());
           }
         }
 
@@ -1116,25 +1116,25 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tnodes()
         for (int k = 0; k < (int)adjofrightchild.size(); ++k)
         {
           // check if the parent of the adjacent node of the child has already been saved
-          if (adjofrightchild[k] != treenodes_[i][j]->Leftchild())
+          if (adjofrightchild[k] != treenodes_[i][j]->leftchild())
           {
             bool issaved = false;
             for (int m = 0; m < (int)adjtnodes.size(); ++m)
             {
               if (adjtnodes[m] == Teuchos::null) FOUR_C_THROW("Teuchos::null pointer");
-              if (adjofrightchild[k]->Parent() == adjtnodes[m])
+              if (adjofrightchild[k]->parent() == adjtnodes[m])
               {
                 issaved = true;
                 break;
               }
             }
 
-            if (!issaved) adjtnodes.push_back(adjofrightchild[k]->Parent());
+            if (!issaved) adjtnodes.push_back(adjofrightchild[k]->parent());
           }
         }
 
         // finally set adjacent treenodes of current treenode
-        treenodes_[i][j]->SetAdjacentTnodes(adjtnodes);
+        treenodes_[i][j]->set_adjacent_tnodes(adjtnodes);
       }
 
       //******************************************************************
@@ -1161,7 +1161,7 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tnodes()
           {
             while (diff > 0)
             {
-              adjtnode = adjtnode->Parent();
+              adjtnode = adjtnode->parent();
               --diff;
             }
 
@@ -1182,7 +1182,7 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tnodes()
         }
 
         // finally set adjacent treenodes of current treenode
-        treenodes_[i][j]->SetAdjacentTnodes(adjtnodes);
+        treenodes_[i][j]->set_adjacent_tnodes(adjtnodes);
       }
     }  // all treenodes of current layer
   }    // all tree layers
@@ -1195,20 +1195,20 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tnodes()
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTree::search_self_contact(Teuchos::RCP<SelfBinaryTreeNode> treenode)
 {
-  if (treenode->QualifiedVectors().size() == 0) FOUR_C_THROW("no test vectors defined!");
+  if (treenode->qualified_vectors().size() == 0) FOUR_C_THROW("no test vectors defined!");
 
   // if there is a qualified sample vector, there is no self contact
-  for (int i = 0; i < (int)treenode->QualifiedVectors().size(); i++)
-    if (treenode->QualifiedVectors()[i] == true)
+  for (int i = 0; i < (int)treenode->qualified_vectors().size(); i++)
+    if (treenode->qualified_vectors()[i] == true)
     {
       return;
     }
 
-  if (treenode->Type() != SELFCO_LEAF)
+  if (treenode->type() != SELFCO_LEAF)
   {
-    search_self_contact(treenode->Leftchild());
-    search_self_contact(treenode->Rightchild());
-    evaluate_contact_and_adjacency(treenode->Leftchild(), treenode->Rightchild(), true);
+    search_self_contact(treenode->leftchild());
+    search_self_contact(treenode->rightchild());
+    evaluate_contact_and_adjacency(treenode->leftchild(), treenode->rightchild(), true);
   }
 
   return;
@@ -1229,30 +1229,30 @@ void CONTACT::SelfBinaryTree::search_root_contact(
   if (nintercepts == kdop() / 2)
   {
     // both tree nodes are inner nodes
-    if (treenode1->Type() != SELFCO_LEAF && treenode2->Type() != SELFCO_LEAF)
+    if (treenode1->type() != SELFCO_LEAF && treenode2->type() != SELFCO_LEAF)
     {
-      search_root_contact(treenode1->Leftchild(), treenode2->Leftchild());
-      search_root_contact(treenode1->Leftchild(), treenode2->Rightchild());
-      search_root_contact(treenode1->Rightchild(), treenode2->Leftchild());
-      search_root_contact(treenode1->Rightchild(), treenode2->Rightchild());
+      search_root_contact(treenode1->leftchild(), treenode2->leftchild());
+      search_root_contact(treenode1->leftchild(), treenode2->rightchild());
+      search_root_contact(treenode1->rightchild(), treenode2->leftchild());
+      search_root_contact(treenode1->rightchild(), treenode2->rightchild());
     }
 
     // tree node 1 is inner, tree node 2 is leaf
-    if (treenode1->Type() != SELFCO_LEAF && treenode2->Type() == SELFCO_LEAF)
+    if (treenode1->type() != SELFCO_LEAF && treenode2->type() == SELFCO_LEAF)
     {
-      search_root_contact(treenode1->Leftchild(), treenode2);
-      search_root_contact(treenode1->Rightchild(), treenode2);
+      search_root_contact(treenode1->leftchild(), treenode2);
+      search_root_contact(treenode1->rightchild(), treenode2);
     }
 
     // tree node 1 is leaf, tree node 2 is inner
-    if (treenode1->Type() == SELFCO_LEAF && treenode2->Type() != SELFCO_LEAF)
+    if (treenode1->type() == SELFCO_LEAF && treenode2->type() != SELFCO_LEAF)
     {
-      search_root_contact(treenode1, treenode2->Leftchild());
-      search_root_contact(treenode1, treenode2->Rightchild());
+      search_root_contact(treenode1, treenode2->leftchild());
+      search_root_contact(treenode1, treenode2->rightchild());
     }
 
     // both tree nodes are leaf --> feasible pair
-    if (treenode1->Type() == SELFCO_LEAF && treenode2->Type() == SELFCO_LEAF)
+    if (treenode1->type() == SELFCO_LEAF && treenode2->type() == SELFCO_LEAF)
     {
       int gid1 = (int)treenode1->elelist()[0];  // global id of first element
       int gid2 = (int)treenode2->elelist()[0];  // global id of second element
@@ -1282,7 +1282,7 @@ void CONTACT::SelfBinaryTree::evaluate_contact_and_adjacency(
     // teenodes intersect
     if (isadjacent)
     {
-      if (dim() == 2)
+      if (n_dim() == 2)
         isadjacent = test_adjacent2_d(treenode1, treenode2);
       else
       {
@@ -1291,8 +1291,8 @@ void CONTACT::SelfBinaryTree::evaluate_contact_and_adjacency(
 
       if (isadjacent)
       {
-        std::vector<bool> qualifiedvectors1 = treenode1->QualifiedVectors();
-        std::vector<bool> qualifiedvectors2 = treenode2->QualifiedVectors();
+        std::vector<bool> qualifiedvectors1 = treenode1->qualified_vectors();
+        std::vector<bool> qualifiedvectors2 = treenode2->qualified_vectors();
 
         if ((int)qualifiedvectors1.size() == 0 or (int) qualifiedvectors2.size() == 0)
           FOUR_C_THROW("no test vectors defined!");
@@ -1312,27 +1312,27 @@ void CONTACT::SelfBinaryTree::evaluate_contact_and_adjacency(
 
     if ((int)treenode1->elelist().size() > (int)treenode2->elelist().size())
     {
-      if (treenode1->Type() != SELFCO_LEAF)
+      if (treenode1->type() != SELFCO_LEAF)
       {
-        treenode1->Leftchild()->CalculateSlabsDop();
-        treenode1->Leftchild()->EnlargeGeometry(enlarge());
-        treenode1->Rightchild()->CalculateSlabsDop();
-        treenode1->Rightchild()->EnlargeGeometry(enlarge());
-        evaluate_contact_and_adjacency(treenode1->Leftchild(), treenode2, isadjacent);
-        evaluate_contact_and_adjacency(treenode1->Rightchild(), treenode2, isadjacent);
+        treenode1->leftchild()->calculate_slabs_dop();
+        treenode1->leftchild()->enlarge_geometry(enlarge());
+        treenode1->rightchild()->calculate_slabs_dop();
+        treenode1->rightchild()->enlarge_geometry(enlarge());
+        evaluate_contact_and_adjacency(treenode1->leftchild(), treenode2, isadjacent);
+        evaluate_contact_and_adjacency(treenode1->rightchild(), treenode2, isadjacent);
       }
     }
 
     else
     {
-      if (treenode2->Type() != SELFCO_LEAF)
+      if (treenode2->type() != SELFCO_LEAF)
       {
-        treenode2->Leftchild()->CalculateSlabsDop();
-        treenode2->Leftchild()->EnlargeGeometry(enlarge());
-        treenode2->Rightchild()->CalculateSlabsDop();
-        treenode2->Rightchild()->EnlargeGeometry(enlarge());
-        evaluate_contact_and_adjacency(treenode2->Leftchild(), treenode1, isadjacent);
-        evaluate_contact_and_adjacency(treenode2->Rightchild(), treenode1, isadjacent);
+        treenode2->leftchild()->calculate_slabs_dop();
+        treenode2->leftchild()->enlarge_geometry(enlarge());
+        treenode2->rightchild()->calculate_slabs_dop();
+        treenode2->rightchild()->enlarge_geometry(enlarge());
+        evaluate_contact_and_adjacency(treenode2->leftchild(), treenode1, isadjacent);
+        evaluate_contact_and_adjacency(treenode2->rightchild(), treenode1, isadjacent);
       }
       else  // both tree nodes are leaves
         add_tree_nodes_to_contact_pairs(treenode1, treenode2);
@@ -1348,10 +1348,10 @@ void CONTACT::SelfBinaryTree::evaluate_contact_and_adjacency(
 bool CONTACT::SelfBinaryTree::test_adjacent2_d(
     Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2)
 {
-  if (dim() != 2) FOUR_C_THROW("test_adjacent2_d: problem must be 2D!!\n");
+  if (n_dim() != 2) FOUR_C_THROW("test_adjacent2_d: problem must be 2D!!\n");
 
-  std::vector<int> endnodes1 = treenode1->Endnodes();
-  std::vector<int> endnodes2 = treenode2->Endnodes();
+  std::vector<int> endnodes1 = treenode1->endnodes();
+  std::vector<int> endnodes2 = treenode2->endnodes();
 
   if (endnodes1.size() != 2 or endnodes2.size() != 2)
     FOUR_C_THROW("treenode has not 2 endnodes!!\n");
@@ -1389,12 +1389,12 @@ bool CONTACT::SelfBinaryTree::test_adjacent2_d(
 bool CONTACT::SelfBinaryTree::test_adjacent3_d(
     Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2)
 {
-  if (dim() != 3) FOUR_C_THROW("test_adjacent3_d: problem must be 3D!!\n");
+  if (n_dim() != 3) FOUR_C_THROW("test_adjacent3_d: problem must be 3D!!\n");
 
   // if the treenodes are in the same layer check the vector of adjacent treenodes
   if (treenode1->get_layer() == treenode2->get_layer())
   {
-    std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjtnodes = treenode1->AdjacentTreenodes();
+    std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjtnodes = treenode1->adjacent_treenodes();
     for (int i = 0; i < (int)adjtnodes.size(); i++)
     {
       if (adjtnodes[i] == treenode2)
@@ -1416,7 +1416,7 @@ bool CONTACT::SelfBinaryTree::test_adjacent3_d(
     // if the bounding voumes overlap
     if (nintercepts == kdop() / 2)
     {
-      if (treenode1->Type() == SELFCO_LEAF and treenode2->Type() == SELFCO_LEAF)
+      if (treenode1->type() == SELFCO_LEAF and treenode2->type() == SELFCO_LEAF)
       {
         // two leaves
         std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjleafs =
@@ -1432,21 +1432,21 @@ bool CONTACT::SelfBinaryTree::test_adjacent3_d(
       }
 
       // one leaf and one inner treenode
-      else if (treenode1->Type() == SELFCO_LEAF and treenode2->Type() != SELFCO_LEAF)
-        return (test_adjacent3_d(treenode1, treenode2->Leftchild()) or
-                test_adjacent3_d(treenode1, treenode2->Rightchild()));
+      else if (treenode1->type() == SELFCO_LEAF and treenode2->type() != SELFCO_LEAF)
+        return (test_adjacent3_d(treenode1, treenode2->leftchild()) or
+                test_adjacent3_d(treenode1, treenode2->rightchild()));
 
-      else if (treenode1->Type() != SELFCO_LEAF and treenode2->Type() == SELFCO_LEAF)
-        return (test_adjacent3_d(treenode1->Leftchild(), treenode2) or
-                test_adjacent3_d(treenode1->Rightchild(), treenode2));
+      else if (treenode1->type() != SELFCO_LEAF and treenode2->type() == SELFCO_LEAF)
+        return (test_adjacent3_d(treenode1->leftchild(), treenode2) or
+                test_adjacent3_d(treenode1->rightchild(), treenode2));
 
       else if ((treenode1->get_layer()) > treenode2->get_layer())
-        return (test_adjacent3_d(treenode1, treenode2->Leftchild()) or
-                test_adjacent3_d(treenode1, treenode2->Rightchild()));
+        return (test_adjacent3_d(treenode1, treenode2->leftchild()) or
+                test_adjacent3_d(treenode1, treenode2->rightchild()));
 
       else if ((treenode1->get_layer()) < treenode2->get_layer())
-        return (test_adjacent3_d(treenode1->Leftchild(), treenode2) or
-                test_adjacent3_d(treenode1->Rightchild(), treenode2));
+        return (test_adjacent3_d(treenode1->leftchild(), treenode2) or
+                test_adjacent3_d(treenode1->rightchild(), treenode2));
     }
   }
   // treenodes do not overlap;
@@ -1462,19 +1462,19 @@ void CONTACT::SelfBinaryTree::master_slave_sorting(int eleID, bool isslave)
   if (contactpairs_.find(eleID) != contactpairs_.end() && !contactpairs_.empty())
   {
     // set the current element to content of "isslave"
-    Core::Elements::Element* element = discret().gElement(eleID);
+    Core::Elements::Element* element = discret().g_element(eleID);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
-    celement->SetSlave() = isslave;
+    celement->set_slave() = isslave;
 
     // if the element is a slave, set its node to slave (otherwise the nodes
     // are master-nodes already and nodes between a master and a slave element
     // should be slave nodes)
-    if (celement->IsSlave())
+    if (celement->is_slave())
       for (int i = 0; i < (int)element->num_node(); i++)
       {
-        Core::Nodes::Node* node = element->Nodes()[i];
+        Core::Nodes::Node* node = element->nodes()[i];
         CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
-        cnode->SetSlave() = isslave;
+        cnode->set_slave() = isslave;
       }
 
     // get the ID of elements in contact with current one
@@ -1487,7 +1487,7 @@ void CONTACT::SelfBinaryTree::master_slave_sorting(int eleID, bool isslave)
     for (int i = 0; i < (int)contacteleID.size(); i++)
     {
       // add to list of search candidates if current element is slave
-      if (celement->IsSlave()) celement->AddSearchElements(contacteleID[i]);
+      if (celement->is_slave()) celement->add_search_elements(contacteleID[i]);
 
       // recursively call this function again
       if (contactpairs_.find(contacteleID[i]) != contactpairs_.end())
@@ -1517,7 +1517,7 @@ void CONTACT::SelfBinaryTree::search_contact()
   for (int i = ((int)(treenodes_.size() - 1)); i >= 0; --i)
   {
     for (int j = 0; j < (int)(treenodes_[i].size()); j++)
-      treenodes_[i][j]->UpdateSlabsBottomUp(enlarge());
+      treenodes_[i][j]->update_slabs_bottom_up(enlarge());
   }
   update_normals();
 
@@ -1526,19 +1526,19 @@ void CONTACT::SelfBinaryTree::search_contact()
   //**********************************************************************
   // introduce some parallelization for multibody contact
   std::vector<int> myroots(0);
-  int nproc = comm().NumProc();
+  int nproc = get_comm().NumProc();
   int nroot = (int)roots_.size();
   int ratio = nroot / nproc;
   int rest = nroot % nproc;
 
   // give 'ratio+1' roots to the first 'rest' procs
-  if (comm().MyPID() < rest)
-    for (int k = 0; k < ratio + 1; ++k) myroots.push_back(comm().MyPID() * (ratio + 1) + k);
+  if (get_comm().MyPID() < rest)
+    for (int k = 0; k < ratio + 1; ++k) myroots.push_back(get_comm().MyPID() * (ratio + 1) + k);
 
   // give 'ratio' roots to the remaining procs
   else
     for (int k = 0; k < ratio; ++k)
-      myroots.push_back(rest * (ratio + 1) + (comm().MyPID() - rest) * ratio + k);
+      myroots.push_back(rest * (ratio + 1) + (get_comm().MyPID() - rest) * ratio + k);
 
   //**********************************************************************
   // STEP 3: search for self contact starting at root nodes
@@ -1563,20 +1563,20 @@ void CONTACT::SelfBinaryTree::search_contact()
   while (leafiter != leafiter_end)
   {
     int gid = leafiter->first;
-    Core::Elements::Element* element = discret().gElement(gid);
+    Core::Elements::Element* element = discret().g_element(gid);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
 
-    if (celement->IsSlave() == true)
+    if (celement->is_slave() == true)
     {
       // reset element to master
-      celement->SetSlave() = false;
+      celement->set_slave() = false;
 
       // reset nodes to master
       for (int i = 0; i < (int)element->num_node(); ++i)
       {
-        Core::Nodes::Node* node = element->Nodes()[i];
+        Core::Nodes::Node* node = element->nodes()[i];
         CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
-        cnode->SetSlave() = false;
+        cnode->set_slave() = false;
       }
     }
 
@@ -1588,18 +1588,18 @@ void CONTACT::SelfBinaryTree::search_contact()
   while (leafiterNew != leafiter_end)
   {
     int gid = leafiterNew->first;
-    Core::Elements::Element* element = discret().gElement(gid);
+    Core::Elements::Element* element = discret().g_element(gid);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
 
     // reset nodes to master
     for (int i = 0; i < (int)element->num_node(); ++i)
     {
-      Core::Nodes::Node* node = element->Nodes()[i];
+      Core::Nodes::Node* node = element->nodes()[i];
       CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
-      if (cnode->IsOnCornerEdge())
+      if (cnode->is_on_corner_edge())
       {
-        cnode->SetSlave() = true;
-        celement->SetSlave() = true;
+        cnode->set_slave() = true;
+        celement->set_slave() = true;
       }
     }
 
@@ -1615,17 +1615,17 @@ void CONTACT::SelfBinaryTree::search_contact()
     if (contactpairs_.find(gid) != contactpairs_.end()) locdata.push_back(gid);
   }
   Teuchos::RCP<Epetra_Map> mymap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)locdata.size(), locdata.data(), 0, comm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)locdata.size(), locdata.data(), 0, get_comm()));
   Teuchos::RCP<Epetra_Map> redmap = Core::LinAlg::AllreduceEMap(*mymap);
-  Core::Communication::Exporter ex(*mymap, *redmap, comm());
+  Core::Communication::Exporter ex(*mymap, *redmap, get_comm());
   ex.Export(contactpairs_);
 
   // now do new slave and master sorting
   while (!contactpairs_.empty())
   {
-    Core::Elements::Element* element = discret().gElement(contactpairs_.begin()->first);
+    Core::Elements::Element* element = discret().g_element(contactpairs_.begin()->first);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
-    master_slave_sorting(contactpairs_.begin()->first, celement->IsSlave());
+    master_slave_sorting(contactpairs_.begin()->first, celement->is_slave());
   }
 
   //**********************************************************************
@@ -1634,24 +1634,24 @@ void CONTACT::SelfBinaryTree::search_contact()
   for (int i = 0; i < elements_->NumMyElements(); ++i)
   {
     int gid1 = elements_->GID(i);
-    Core::Elements::Element* ele1 = discret().gElement(gid1);
+    Core::Elements::Element* ele1 = discret().g_element(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find element with gid %", gid1);
     Mortar::Element* element1 = dynamic_cast<Mortar::Element*>(ele1);
 
     // only slave elements store search candidates
-    if (!element1->IsSlave()) continue;
+    if (!element1->is_slave()) continue;
 
     // loop over the search candidates of elements1
-    for (int j = 0; j < element1->MoData().NumSearchElements(); ++j)
+    for (int j = 0; j < element1->mo_data().num_search_elements(); ++j)
     {
-      int gid2 = element1->MoData().SearchElements()[j];
-      Core::Elements::Element* ele2 = discret().gElement(gid2);
+      int gid2 = element1->mo_data().search_elements()[j];
+      Core::Elements::Element* ele2 = discret().g_element(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find element with gid %", gid2);
       Mortar::Element* element2 = dynamic_cast<Mortar::Element*>(ele2);
 
       // error if this is a slave element (this happens if individual self contact patches are
       // connected, because our sorting algorithm still fails in that case)
-      if (element2->IsSlave()) FOUR_C_THROW("Slave / master inconsistency in self contact");
+      if (element2->is_slave()) FOUR_C_THROW("Slave / master inconsistency in self contact");
     }
   }
 
@@ -1677,7 +1677,7 @@ void CONTACT::SelfBinaryTree::update_normals()
   for (int i = (int)treenodes_.size() - 1; i >= 0; --i)
   {
     for (int j = 0; j < (int)treenodes_[i].size(); ++j)
-      if (treenodes_[i][j]->Type() != SELFCO_LEAF)
+      if (treenodes_[i][j]->type() != SELFCO_LEAF)
         treenodes_[i][j]->update_qualified_vectors_bottom_up();
   }
 
@@ -1692,8 +1692,8 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
     std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>* dualgraph)
 {
   // get nodes of contracted edge
-  Teuchos::RCP<SelfBinaryTreeNode> node1 = contractedEdge->GetNode1();
-  Teuchos::RCP<SelfBinaryTreeNode> node2 = contractedEdge->GetNode2();
+  Teuchos::RCP<SelfBinaryTreeNode> node1 = contractedEdge->get_node1();
+  Teuchos::RCP<SelfBinaryTreeNode> node2 = contractedEdge->get_node2();
 
   // vector of all new edges
   std::vector<Teuchos::RCP<SelfDualEdge>> newAdjEdges;
@@ -1704,11 +1704,11 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
     // define new edge
     Teuchos::RCP<SelfDualEdge> newEdge(Teuchos::null);
 
-    if (adjEdges[j]->GetNode1() != node1 && adjEdges[j]->GetNode1() != node2)
-      newEdge = Teuchos::rcp(new SelfDualEdge(newNode, adjEdges[j]->GetNode1(), dim()));
+    if (adjEdges[j]->get_node1() != node1 && adjEdges[j]->get_node1() != node2)
+      newEdge = Teuchos::rcp(new SelfDualEdge(newNode, adjEdges[j]->get_node1(), n_dim()));
 
-    else if (adjEdges[j]->GetNode2() != node1 && adjEdges[j]->GetNode2() != node2)
-      newEdge = Teuchos::rcp(new SelfDualEdge(newNode, adjEdges[j]->GetNode2(), dim()));
+    else if (adjEdges[j]->get_node2() != node1 && adjEdges[j]->get_node2() != node2)
+      newEdge = Teuchos::rcp(new SelfDualEdge(newNode, adjEdges[j]->get_node2(), n_dim()));
 
     else
       FOUR_C_THROW("Tried to contract identical tree nodes!!");
@@ -1726,7 +1726,7 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
     // the old adjacent edge
     else
     {
-      if (dim() == 2)
+      if (n_dim() == 2)
       {
         // in 2D every edge has 2 neighbors at the most
         newAdjEdges.push_back(newEdge);
@@ -1774,7 +1774,7 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
         // aren't adjacent edges of the contracted edge, as we have to update those separately
 
         // get the common (tree)node of the contracted edge and the old edge
-        Teuchos::RCP<SelfBinaryTreeNode> commonnode = contractedEdge->CommonNode(adjEdges[j]);
+        Teuchos::RCP<SelfBinaryTreeNode> commonnode = contractedEdge->common_node(adjEdges[j]);
 
         // loop over all neighbors of old edge
         for (unsigned k = 0; k < adjEdgesOfNeighbor.size(); ++k)
@@ -1782,12 +1782,12 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
           // check if the current edge is not the contracted edge or a neighbor of the contracted
           // edge (we do not need to update these edges now)
           if (adjEdgesOfNeighbor[k] != contractedEdge &&
-              adjEdges[j]->CommonNode(adjEdgesOfNeighbor[k]) != commonnode)
+              adjEdges[j]->common_node(adjEdgesOfNeighbor[k]) != commonnode)
           {
             // if the current edge (=neighbor of the new and old edge) is not a neighbor of the
             // contracted edge, they do not have a common node
             Teuchos::RCP<SelfBinaryTreeNode> commonnode2 =
-                contractedEdge->CommonNode(adjEdgesOfNeighbor[k]);
+                contractedEdge->common_node(adjEdgesOfNeighbor[k]);
 
             // now we want to save the current edge as neighbor of the new edge
             if (commonnode2 == Teuchos::null)
@@ -1854,13 +1854,13 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
 
   // check for a ring of three dual edges in 3D (i.e. the edge to be contracted and two adjacent
   // edges) (in 2D there is no need to treat this case separately)
-  if (adjEdges.size() == 2 && dim() == 3)
+  if (adjEdges.size() == 2 && n_dim() == 3)
   {
     // pointers to adjacent edge nodes
-    Teuchos::RCP<SelfBinaryTreeNode> anode1 = adjEdges[0]->GetNode1();
-    Teuchos::RCP<SelfBinaryTreeNode> anode2 = adjEdges[0]->GetNode2();
-    Teuchos::RCP<SelfBinaryTreeNode> bnode1 = adjEdges[1]->GetNode1();
-    Teuchos::RCP<SelfBinaryTreeNode> bnode2 = adjEdges[1]->GetNode2();
+    Teuchos::RCP<SelfBinaryTreeNode> anode1 = adjEdges[0]->get_node1();
+    Teuchos::RCP<SelfBinaryTreeNode> anode2 = adjEdges[0]->get_node2();
+    Teuchos::RCP<SelfBinaryTreeNode> bnode1 = adjEdges[1]->get_node1();
+    Teuchos::RCP<SelfBinaryTreeNode> bnode2 = adjEdges[1]->get_node2();
 
     // check for ring (eight possible combinations)
     if ((node1 == anode1 && node2 == bnode1 && anode2 == bnode2) ||
@@ -1947,17 +1947,17 @@ void CONTACT::SelfBinaryTree::plot_dual_graph(
 
   while (iter3 != iter3_end)
   {
-    std::cout << "\n Kante " << cnt << ": " << ((*iter3).first)->GetNode1()->elelist()[0] << " "
-              << ((*iter3).first)->GetNode2()->elelist()[0] << "\n";
-    std::cout << "Kosten: " << ((*iter3).first)->Costs() << "\n";
+    std::cout << "\n Kante " << cnt << ": " << ((*iter3).first)->get_node1()->elelist()[0] << " "
+              << ((*iter3).first)->get_node2()->elelist()[0] << "\n";
+    std::cout << "Kosten: " << ((*iter3).first)->costs() << "\n";
 
     std::vector<Teuchos::RCP<SelfDualEdge>> edges = (*iter3).second;
     std::cout << edges.size() << " NachbarKanten:\n ";
     for (unsigned i = 0; i < edges.size(); ++i)
     {
-      std::cout << edges[i]->GetNode1()->elelist()[0] << " ";
-      std::cout << edges[i]->GetNode2()->elelist()[0] << " ";
-      std::cout << "Kosten: " << edges[i]->Costs() << " \n";
+      std::cout << edges[i]->get_node1()->elelist()[0] << " ";
+      std::cout << edges[i]->get_node2()->elelist()[0] << " ";
+      std::cout << "Kosten: " << edges[i]->costs() << " \n";
     }
 
     std::cout << "\n";
@@ -1974,7 +1974,7 @@ void CONTACT::SelfBinaryTree::plot_dual_graph(
 void CONTACT::SelfBinaryTree::plot_roots_and_tree()
 {
   // debug output
-  if (comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     // print roots
     for (unsigned k = 0; k < roots_.size(); ++k)
@@ -1996,7 +1996,7 @@ void CONTACT::SelfBinaryTree::plot_roots_and_tree()
         for (unsigned l = 0; l < currentnode->elelist().size(); ++l)
         {
           std::cout << currentnode->elelist().at(l) << " ";
-          if (currentnode->Type() == SELFCO_LEAF) std::cout << "(Leaf) ";
+          if (currentnode->type() == SELFCO_LEAF) std::cout << "(Leaf) ";
         }
         std::cout << ") ";
       }

@@ -55,7 +55,7 @@ namespace CONTACT
       FOUR_C_THROW("Segment based integration is currently unsupported!");
     }
 
-    void IntegrateDerivEle2D(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
+    void integrate_deriv_ele2_d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override
     {
       FOUR_C_THROW("Element based integration in 2D is currently unsupported!");
@@ -74,7 +74,7 @@ namespace CONTACT
      Second, Build all integrals and linearizations without segmentation -- 3D
      (i.e. M, g, LinM, Ling and possibly D, LinD)
      */
-    void IntegrateDerivEle3D(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
+    void integrate_deriv_ele3_d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
         const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override;
 

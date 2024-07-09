@@ -41,7 +41,7 @@ namespace ParticleInteraction
     virtual void setup();
 
     //! density boundary condition is needed
-    virtual bool ComputeDensityBC() const = 0;
+    virtual bool compute_density_bc() const = 0;
 
     //! set corrected density of interior particles
     virtual void corrected_density_interior(const double* denssum, double* dens) const;
@@ -58,7 +58,7 @@ namespace ParticleInteraction
     explicit SPHDensityCorrectionInterior();
 
     //! density boundary condition is needed
-    bool ComputeDensityBC() const override;
+    bool compute_density_bc() const override;
 
     //! set corrected density of free surface particles
     void corrected_density_free_surface(const double* denssum, const double* colorfield,
@@ -72,7 +72,7 @@ namespace ParticleInteraction
     explicit SPHDensityCorrectionNormalized();
 
     //! density boundary condition is needed
-    bool ComputeDensityBC() const override;
+    bool compute_density_bc() const override;
 
     //! set corrected density of free surface particles
     void corrected_density_free_surface(const double* denssum, const double* colorfield,
@@ -86,7 +86,7 @@ namespace ParticleInteraction
     explicit SPHDensityCorrectionRandles();
 
     //! density boundary condition is needed
-    bool ComputeDensityBC() const override;
+    bool compute_density_bc() const override;
 
     //! set corrected density of free surface particles
     void corrected_density_free_surface(const double* denssum, const double* colorfield,

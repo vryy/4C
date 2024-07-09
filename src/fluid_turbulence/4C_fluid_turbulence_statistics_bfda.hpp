@@ -58,7 +58,7 @@ namespace FLD
     //! @name functions for averaging
 
 
-    void DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp);
+    void do_time_sample(Teuchos::RCP<Epetra_Vector> velnp);
 
     /*!
     \brief Dump the result to file.
@@ -67,7 +67,7 @@ namespace FLD
     statistic to the file
     */
 
-    void DumpStatistics(int step);
+    void dump_statistics(int step);
 
 
    protected:

@@ -38,7 +38,7 @@ namespace FSI
     LungSchurComplement(){};
 
     /// determination of the Schur complement
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> CalculateSchur(const Core::LinAlg::SparseMatrix& A,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> calculate_schur(const Core::LinAlg::SparseMatrix& A,
         const Core::LinAlg::SparseMatrix& B, const Core::LinAlg::SparseMatrix& C);
 
    private:
@@ -69,7 +69,7 @@ namespace FSI
     //@}
 
     /// setup of block preconditioners
-    void SetupPreconditioner() override;
+    void setup_preconditioner() override;
 
    protected:
     /// symmetric Gauss-Seidel block preconditioner

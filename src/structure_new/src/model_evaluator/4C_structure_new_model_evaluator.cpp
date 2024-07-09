@@ -106,7 +106,7 @@ void Solid::ModelEvaluator::setup_multi_map_extractor()
 {
   // setup the block information for saddle point problems
   for (Vector::iterator me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    gstate_ptr_->setup_block_information(**me_iter, (**me_iter).Type());
+    gstate_ptr_->setup_block_information(**me_iter, (**me_iter).type());
 
   gstate_ptr_->setup_multi_map_extractor();
 }
@@ -119,7 +119,7 @@ bool Solid::ModelEvaluator::initialize_inertia_and_damping(
   check_init_setup();
 
   // initialize stiffness matrix to zero
-  jac.Zero();
+  jac.zero();
   // get structural model evaluator
   Solid::MODELEVALUATOR::Structure& str_model =
       dynamic_cast<Solid::MODELEVALUATOR::Structure&>(evaluator(Inpar::Solid::model_structure));
@@ -356,7 +356,7 @@ bool Solid::ModelEvaluator::apply_stiff(
   Vector::iterator me_iter;
   bool ok = true;
   // initialize stiffness matrix to zero
-  jac.Zero();
+  jac.zero();
 
   // ---------------------------------------------------------------------------
   // update the state variables of the current time integrator
@@ -388,7 +388,7 @@ bool Solid::ModelEvaluator::apply_stiff(const Inpar::Solid::ModelType& mt, const
   const Vector me_vec(1, model_ptr);
 
   // initialize stiffness matrix to zero
-  jac.Zero();
+  jac.zero();
 
   // update the state variables of the current time integrator
   int_ptr_->set_state(x);
@@ -418,7 +418,7 @@ bool Solid::ModelEvaluator::apply_force_stiff(const Epetra_Vector& x, Epetra_Vec
   bool ok = true;
   // initialize stiffness matrix and right hand side to zero
   f.PutScalar(0.0);
-  jac.Zero();
+  jac.zero();
 
   // ---------------------------------------------------------------------------
   // update the state variables of the current time integrator
@@ -517,7 +517,7 @@ void Solid::ModelEvaluator::predict(const Inpar::Solid::PredEnum& pred_type) con
 {
   check_init_setup();
   for (Vector::iterator me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->Predict(pred_type);
+    (*me_iter)->predict(pred_type);
 }
 
 /*----------------------------------------------------------------------------*
@@ -860,7 +860,7 @@ void Solid::ModelEvaluator::split_model_vector(Solid::ModelEvaluator::Vector& pa
 
     while (citer != without_these_models.cend())
     {
-      if (*citer == model.Type()) break;
+      if (*citer == model.type()) break;
 
       ++citer;
     }
@@ -880,7 +880,7 @@ void Solid::ModelEvaluator::extract_model_vector(Solid::ModelEvaluator::Vector& 
     auto cit = me_vec_ptr_->cbegin();
     while (cit != me_vec_ptr_->cend())
     {
-      if ((*cit)->Type() == mtype) break;
+      if ((*cit)->type() == mtype) break;
 
       ++cit;
     }

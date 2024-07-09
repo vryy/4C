@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleCalcImmersed<distype>*
-Discret::ELEMENTS::FluidEleCalcImmersed<distype>::Instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::FluidEleCalcImmersed<distype>::instance(Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
@@ -29,7 +29,7 @@ Discret::ELEMENTS::FluidEleCalcImmersed<distype>::Instance(Core::UTILS::Singleto
             new Discret::ELEMENTS::FluidEleCalcImmersed<distype>());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 /*----------------------------------------------------------------------*
@@ -38,7 +38,7 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleCalcImmersed<distype>::FluidEleCalcImmersed()
     : Discret::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(), immersedele_(nullptr), gp_iquad_(0)
 {
-  my::fldpara_ = Discret::ELEMENTS::FluidEleParameterStd::Instance();
+  my::fldpara_ = Discret::ELEMENTS::FluidEleParameterStd::instance();
 }
 
 /*----------------------------------------------------------------------*
@@ -56,7 +56,7 @@ int Discret::ELEMENTS::FluidEleCalcImmersed<distype>::evaluate(Discret::ELEMENTS
 {
   // get integration rule for fluid elements cut by structural boundary
   int num_gp_fluid_bound =
-      Global::Problem::Instance()->immersed_method_params().get<int>("NUM_GP_FLUID_BOUND");
+      Global::Problem::instance()->immersed_method_params().get<int>("NUM_GP_FLUID_BOUND");
   int degree_gp_fluid_bound = 3;
   if (num_gp_fluid_bound == 8)
     degree_gp_fluid_bound = 3;
@@ -83,7 +83,7 @@ int Discret::ELEMENTS::FluidEleCalcImmersed<distype>::evaluate(Discret::ELEMENTS
   immersedele_ = dynamic_cast<Discret::ELEMENTS::FluidImmersedBase*>(ele);
 
   // use different integration rule for fluid elements that are cut by the structural boundary
-  if (immersedele_->IsBoundaryImmersed())
+  if (immersedele_->is_boundary_immersed())
   {
     return my::evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
         elevec1_epetra, elevec2_epetra, elevec3_epetra, intpoints_fluid_bound, offdiag);
@@ -110,13 +110,13 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
   // compute residual of momentum equation
   // -> different for generalized-alpha and other time-integration schemes
   //----------------------------------------------------------------------
-  if (my::fldparatimint_->IsGenalpha())
+  if (my::fldparatimint_->is_genalpha())
   {
     // rhs of momentum equation: density*bodyforce at n+alpha_F
-    if (my::fldpara_->PhysicalType() == Inpar::FLUID::boussinesq)
+    if (my::fldpara_->physical_type() == Inpar::FLUID::boussinesq)
     {
       // safety check
-      if (my::fldparatimint_->AlphaF() != 1.0 or my::fldparatimint_->Gamma() != 1.0)
+      if (my::fldparatimint_->alpha_f() != 1.0 or my::fldparatimint_->gamma() != 1.0)
         FOUR_C_THROW(
             "Boussinesq approximation in combination with generalized-alpha time integration "
             "has only been tested for BDF2-equivalent time integration parameters! "
@@ -152,18 +152,18 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
   }
   else
   {
-    if (not my::fldparatimint_->IsStationary())
+    if (not my::fldparatimint_->is_stationary())
     {
       // rhs of instationary momentum equation:
       // density*theta*bodyforce at n+1 + density*(histmom/dt)
       // in the case of a Boussinesq approximation: f = rho_0*[(rho - rho_0)/rho_0]*g = (rho -
       // rho_0)*g else:                                      f = rho * g Changed density from densn_
       // to densaf_. Makes the OST consistent with the gen-alpha.
-      if (my::fldpara_->PhysicalType() == Inpar::FLUID::boussinesq)
-        my::rhsmom_.update((my::densaf_ / my::fldparatimint_->Dt() / my::fldparatimint_->Theta()),
+      if (my::fldpara_->physical_type() == Inpar::FLUID::boussinesq)
+        my::rhsmom_.update((my::densaf_ / my::fldparatimint_->dt() / my::fldparatimint_->theta()),
             my::histmom_, my::deltadens_, my::bodyforce_);
       else
-        my::rhsmom_.update((my::densaf_ / my::fldparatimint_->Dt() / my::fldparatimint_->Theta()),
+        my::rhsmom_.update((my::densaf_ / my::fldparatimint_->dt() / my::fldparatimint_->theta()),
             my::histmom_, my::densaf_, my::bodyforce_);
 
       // add pressure gradient prescribed as body force (caution: not density weighted)
@@ -174,20 +174,20 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
       for (int rr = 0; rr < nsd_; ++rr)
       {
         if (immersedele_->has_projected_dirichlet())
-          my::momres_old_(rr) = ((my::densaf_ * my::velint_(rr) / my::fldparatimint_->Dt() +
-                                     my::fldparatimint_->Theta() *
+          my::momres_old_(rr) = ((my::densaf_ * my::velint_(rr) / my::fldparatimint_->dt() +
+                                     my::fldparatimint_->theta() *
                                          (my::densaf_ * (my::conv_old_(rr) + conv_old_cons(rr)) +
                                              my::gradp_(rr) - 2 * my::visceff_ * my::visc_old_(rr) +
                                              my::reacoeff_ * my::velint_(rr))) /
-                                    my::fldparatimint_->Theta()) -
+                                    my::fldparatimint_->theta()) -
                                 my::rhsmom_(rr);
         else
           my::momres_old_(rr) =
-              ((my::densaf_ * my::velint_(rr) / my::fldparatimint_->Dt() +
-                   my::fldparatimint_->Theta() * (my::densaf_ * my::conv_old_(rr) + my::gradp_(rr) -
+              ((my::densaf_ * my::velint_(rr) / my::fldparatimint_->dt() +
+                   my::fldparatimint_->theta() * (my::densaf_ * my::conv_old_(rr) + my::gradp_(rr) -
                                                      2 * my::visceff_ * my::visc_old_(rr) +
                                                      my::reacoeff_ * my::velint_(rr))) /
-                  my::fldparatimint_->Theta()) -
+                  my::fldparatimint_->theta()) -
               my::rhsmom_(rr);
       }
     }
@@ -197,7 +197,7 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
       // in the case of a Boussinesq approximation: f = rho_0*[(rho - rho_0)/rho_0]*g = (rho -
       // rho_0)*g else:                                      f = rho * g and pressure gradient
       // prescribed as body force (not density weighted)
-      if (my::fldpara_->PhysicalType() == Inpar::FLUID::boussinesq)
+      if (my::fldpara_->physical_type() == Inpar::FLUID::boussinesq)
         my::rhsmom_.update(my::deltadens_, my::bodyforce_, 1.0, my::generalbodyforce_);
       else
         my::rhsmom_.update(my::densaf_, my::bodyforce_, 1.0, my::generalbodyforce_);
@@ -226,7 +226,7 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
   // 1) quasi-static subgrid scales
   // Definition of subgrid-scale velocity is not consistent for the SUPG term and Franca, Valentin,
   // ... Definition of subgrid velocity used by Hughes
-  if (my::fldpara_->Tds() == Inpar::FLUID::subscales_quasistatic)
+  if (my::fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
   {
     my::sgvelint_.update(-my::tau_(1), my::momres_old_, 0.0);
   }
@@ -234,16 +234,16 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
   else
   {
     // some checking
-    if (my::fldparatimint_->IsStationary())
+    if (my::fldparatimint_->is_stationary())
       FOUR_C_THROW("there is no time dependent subgrid scale closure for stationary problems\n");
     if (saccn == nullptr or sveln == nullptr or svelnp == nullptr)
       FOUR_C_THROW("no subscale array provided");
 
     // parameter definitions
-    double alphaF = my::fldparatimint_->AlphaF();
-    double alphaM = my::fldparatimint_->AlphaM();
-    double gamma = my::fldparatimint_->Gamma();
-    double dt = my::fldparatimint_->Dt();
+    double alphaF = my::fldparatimint_->alpha_f();
+    double alphaM = my::fldparatimint_->alpha_m();
+    double gamma = my::fldparatimint_->gamma();
+    double dt = my::fldparatimint_->dt();
 
     /*
                                             1.0
@@ -252,7 +252,7 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
                   rho     * alphaM * tauM + rho     * alphaF * gamma * dt
     */
     facMtau =
-        1.0 / (my::densam_ * alphaM * my::tau_(1) + my::densaf_ * my::fldparatimint_->Afgdt());
+        1.0 / (my::densam_ * alphaM * my::tau_(1) + my::densaf_ * my::fldparatimint_->afgdt());
 
     /*
        factor for old subgrid velocities:
@@ -278,7 +278,7 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
 
     // warning: time-dependent subgrid closure requires generalized-alpha time
     // integration
-    if (!my::fldparatimint_->IsGenalpha())
+    if (!my::fldparatimint_->is_genalpha())
     {
       FOUR_C_THROW("the time-dependent subgrid closure requires a genalpha time integration\n");
     }
@@ -303,7 +303,7 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
     for (int rr = 0; rr < nsd_; ++rr)
     {
       my::tds_->update_svelnp_in_one_direction(fac1, fac2, fac3, my::momres_old_(rr),
-          my::fldparatimint_->AlphaF(), rr, iquad,
+          my::fldparatimint_->alpha_f(), rr, iquad,
           my::sgvelint_(
               rr),  // sgvelint_ is set to sgvelintnp, but is then overwritten below anyway!
           sgvelintaf(rr));
@@ -334,10 +334,10 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
   // include computed subgrid-scale velocity in convective term
   // -> only required for cross- and Reynolds-stress terms
   //----------------------------------------------------------------------
-  if (my::fldpara_->Cross() != Inpar::FLUID::cross_stress_stab_none or
-      my::fldpara_->Reynolds() != Inpar::FLUID::reynolds_stress_stab_none or
-      my::fldpara_->ContiCross() != Inpar::FLUID::cross_stress_stab_none or
-      my::fldpara_->ContiReynolds() != Inpar::FLUID::reynolds_stress_stab_none)
+  if (my::fldpara_->cross() != Inpar::FLUID::cross_stress_stab_none or
+      my::fldpara_->reynolds() != Inpar::FLUID::reynolds_stress_stab_none or
+      my::fldpara_->conti_cross() != Inpar::FLUID::cross_stress_stab_none or
+      my::fldpara_->conti_reynolds() != Inpar::FLUID::reynolds_stress_stab_none)
     my::sgconv_c_.multiply_tn(my::derxy_, my::sgvelint_);
   else
     my::sgconv_c_.clear();
@@ -394,7 +394,7 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::lin_gal_mom_res_u(
     }
 
     //  convection, reactive part (conservative addition) (only for Newton)
-    if (my::fldpara_->IsNewton())
+    if (my::fldpara_->is_newton())
     {
       for (int ui = 0; ui < nen_; ++ui)
       {
@@ -431,9 +431,9 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::inertia_convection_reacti
       /* convection (conservative addition) on right-hand side */
       double v = -rhsfac * my::densaf_ * my::velint_(idim) * my::vdiv_;
 
-      if (my::fldpara_->PhysicalType() == Inpar::FLUID::loma)
+      if (my::fldpara_->physical_type() == Inpar::FLUID::loma)
         v += rhsfac * my::velint_(idim) * my::densaf_ * my::scaconvfacaf_ * my::conv_scaaf_;
-      else if (my::fldpara_->PhysicalType() == Inpar::FLUID::varying_density)
+      else if (my::fldpara_->physical_type() == Inpar::FLUID::varying_density)
         v -= rhsfac * my::velint_(idim) * my::conv_scaaf_;
 
       for (int vi = 0; vi < nen_; ++vi) velforce(idim, vi) += v * my::funct_(vi);
@@ -471,9 +471,9 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::continuity_gal_part(
   }  // end for(idim)
 
   // continuity term on right-hand side
-  if (not immersedele_->IsImmersed()) preforce.update(-rhsfac * my::vdiv_, my::funct_, 1.0);
+  if (not immersedele_->is_immersed()) preforce.update(-rhsfac * my::vdiv_, my::funct_, 1.0);
 
-  if (immersedele_->IsBoundaryImmersed())
+  if (immersedele_->is_boundary_immersed())
     preforce.update(
         rhsfac * immersedele_->projected_int_point_divergence(gp_iquad_), my::funct_, 1.0);
 

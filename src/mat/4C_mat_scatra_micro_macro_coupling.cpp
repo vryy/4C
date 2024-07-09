@@ -43,7 +43,7 @@ void Mat::ScatraMicroMacroCoupling::initialize(const int ele_id, const int gp_id
   {
     // instantiate and initialize multi-scale scalar transport submaterial at macro-scale Gauss
     // point
-    matgp_[gp_id] = Teuchos::rcp(new ScatraMultiScaleGP(ele_id, gp_id, MicroDisNum(), is_ale));
+    matgp_[gp_id] = Teuchos::rcp(new ScatraMultiScaleGP(ele_id, gp_id, micro_dis_num(), is_ale));
     matgp_[gp_id]->init();
   }
 }
@@ -139,10 +139,10 @@ void Mat::ScatraMicroMacroCoupling::read_restart(const int gp_id) const
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::ScatraMicroMacroCoupling::SetTimeStepping(
+void Mat::ScatraMicroMacroCoupling::set_time_stepping(
     const int gp_id, const double dt, const double time, const int step)
 {
-  matgp_.at(gp_id)->SetTimeStepping(dt, time, step);
+  matgp_.at(gp_id)->set_time_stepping(dt, time, step);
 }
 
 FOUR_C_NAMESPACE_CLOSE

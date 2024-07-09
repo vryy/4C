@@ -39,20 +39,20 @@ namespace Mortar
     //! @name Access methods
 
     /// 1. Internal implementation class
-    static Projector* Impl(Mortar::Element& ele);
+    static Projector* impl(Mortar::Element& ele);
 
     /// 2. Internal implementation class
-    static Projector* Impl(Mortar::Element& sele, Mortar::Element& mele);
+    static Projector* impl(Mortar::Element& sele, Mortar::Element& mele);
 
     //! @name virtual functions
-    virtual bool ProjectNodalNormal(Mortar::Node& node, Mortar::Element& ele, double* xi) = 0;
+    virtual bool project_nodal_normal(Mortar::Node& node, Mortar::Element& ele, double* xi) = 0;
 
     virtual bool project_element_normal(Mortar::Node& node, Mortar::Element& ele, double* xi) = 0;
 
-    virtual bool ProjectGaussPoint2D(
+    virtual bool project_gauss_point2_d(
         Mortar::Element& gpele, const double* gpeta, Mortar::Element& ele, double* xi) = 0;
 
-    virtual bool ProjectGaussPoint3D(Mortar::Element& gpele, const double* gpeta,
+    virtual bool project_gauss_point3_d(Mortar::Element& gpele, const double* gpeta,
         Mortar::Element& ele, double* xi, double& par) = 0;
 
     virtual bool project_gauss_point_auxn3_d(const double* globgp, const double* auxn,
@@ -83,7 +83,7 @@ namespace Mortar
     ProjectorCalc();
 
     /// Singleton access method
-    static ProjectorCalc<distype>* Instance(
+    static ProjectorCalc<distype>* instance(
         Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
     //! n_: number of element nodes
@@ -111,7 +111,7 @@ namespace Mortar
     \param xi (out) : Local coordinates of projection on element
 
     */
-    bool ProjectNodalNormal(Mortar::Node& node, Mortar::Element& ele, double* xi) override;
+    bool project_nodal_normal(Mortar::Node& node, Mortar::Element& ele, double* xi) override;
 
     /*!
     \brief Project a node onto an element along the interpolated
@@ -147,7 +147,7 @@ namespace Mortar
     \param xi (out)  : Local coordinates of projection on master element
 
     */
-    bool ProjectGaussPoint2D(
+    bool project_gauss_point2_d(
         Mortar::Element& gpele, const double* gpeta, Mortar::Element& ele, double* xi) override
     {
       FOUR_C_THROW("Called ele-based projection for segment-based integration!!!");
@@ -169,7 +169,7 @@ namespace Mortar
     \param par (out ): Projection parameter alpha
 
     */
-    bool ProjectGaussPoint3D(Mortar::Element& gpele, const double* gpeta, Mortar::Element& ele,
+    bool project_gauss_point3_d(Mortar::Element& gpele, const double* gpeta, Mortar::Element& ele,
         double* xi, double& par) override
     {
       FOUR_C_THROW("Called ele-based projection for segment-based integration!!!");
@@ -285,7 +285,7 @@ namespace Mortar
     ProjectorCalcEleBased();
 
     /// Singleton access method
-    static ProjectorCalcEleBased<distype_s, distype_m>* Instance(
+    static ProjectorCalcEleBased<distype_s, distype_m>* instance(
         Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
     //! ns_: number of slave element nodes
@@ -316,7 +316,7 @@ namespace Mortar
     \param xi (out) : Local coordinates of projection on element
 
     */
-    bool ProjectNodalNormal(Mortar::Node& node, Mortar::Element& ele, double* xi) override
+    bool project_nodal_normal(Mortar::Node& node, Mortar::Element& ele, double* xi) override
     {
       FOUR_C_THROW("Called segment-based projection for element-based integration!!!");
       return false;
@@ -360,7 +360,7 @@ namespace Mortar
     \param xi (out)  : Local coordinates of projection on master element
 
     */
-    bool ProjectGaussPoint2D(
+    bool project_gauss_point2_d(
         Mortar::Element& gpele, const double* gpeta, Mortar::Element& ele, double* xi) override;
 
     /*!
@@ -378,7 +378,7 @@ namespace Mortar
     \param par (out ): Projection parameter alpha
 
     */
-    bool ProjectGaussPoint3D(Mortar::Element& gpele, const double* gpeta, Mortar::Element& ele,
+    bool project_gauss_point3_d(Mortar::Element& gpele, const double* gpeta, Mortar::Element& ele,
         double* xi, double& par) override;
 
     /*!

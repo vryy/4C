@@ -72,7 +72,7 @@ namespace Core::Geo
       boundary of this volumecell. The output std::string will be either "outside", "inside" or
       "onBoundary"
       */
-      std::string IsPointInside(Core::LinAlg::Matrix<3, 1>& rst);
+      std::string is_point_inside(Core::LinAlg::Matrix<3, 1>& rst);
 
      private:
       /*!

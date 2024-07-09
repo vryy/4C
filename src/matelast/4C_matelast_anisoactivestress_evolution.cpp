@@ -49,14 +49,14 @@ Mat::Elastic::AnisoActiveStressEvolution::AnisoActiveStressEvolution(
       FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS);
 }
 
-void Mat::Elastic::AnisoActiveStressEvolution::PackSummand(
+void Mat::Elastic::AnisoActiveStressEvolution::pack_summand(
     Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, tauc_n_);
   anisotropy_extension_.pack_anisotropy(data);
 }
 
-void Mat::Elastic::AnisoActiveStressEvolution::UnpackSummand(
+void Mat::Elastic::AnisoActiveStressEvolution::unpack_summand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   extract_from_pack(position, data, tauc_n_);
@@ -145,8 +145,8 @@ void Mat::Elastic::AnisoActiveStressEvolution::add_stress_aniso_principal(
     const auto& element_center_coordinates_ref =
         params.get<Core::LinAlg::Matrix<3, 1>>("elecenter_coords_ref");
     activationFunction =
-        Global::Problem::Instance()
-            ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
+        Global::Problem::instance()
+            ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
             .evaluate(element_center_coordinates_ref.data(), totaltime, 0);
   }
 
@@ -199,7 +199,7 @@ void Mat::Elastic::AnisoActiveStressEvolution::add_stress_aniso_principal(
   }
 }
 
-void Mat::Elastic::AnisoActiveStressEvolution::GetFiberVecs(
+void Mat::Elastic::AnisoActiveStressEvolution::get_fiber_vecs(
     std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
@@ -219,7 +219,7 @@ void Mat::Elastic::AnisoActiveStressEvolution::GetFiberVecs(
 // Update internal stress variables
 void Mat::Elastic::AnisoActiveStressEvolution::update() { tauc_n_ = tauc_np_; }
 
-void Mat::Elastic::AnisoActiveStressEvolution::SetFiberVecs(const double newgamma,
+void Mat::Elastic::AnisoActiveStressEvolution::set_fiber_vecs(const double newgamma,
     const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
   anisotropy_extension_.set_fiber_vecs(newgamma, locsys, defgrd);

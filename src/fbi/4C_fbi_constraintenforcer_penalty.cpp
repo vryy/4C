@@ -35,13 +35,13 @@ void Adapter::FBIPenaltyConstraintenforcer::setup(
 {
   Adapter::FBIConstraintenforcer::setup(structure, fluid);
   std::ofstream log;
-  if ((get_discretizations()[1]->Comm().MyPID() == 0) &&
+  if ((get_discretizations()[1]->get_comm().MyPID() == 0) &&
       (bridge()
-              ->GetParams()
+              ->get_params()
               ->get_visualization_ouput_params_ptr()
               ->get_constraint_violation_output_flag()))
   {
-    std::string s = Global::Problem::Instance()->OutputControlFile()->file_name();
+    std::string s = Global::Problem::instance()->output_control_file()->file_name();
     s.append(".penalty");
     log.open(s.c_str(), std::ofstream::out);
     log << "Time \t Step \t ViolationNorm \t FluidViolationNorm \t StructureViolationNorm"
@@ -56,7 +56,7 @@ Adapter::FBIPenaltyConstraintenforcer::assemble_fluid_coupling_matrix() const
 {
   // Get coupling contributions to the fluid stiffness matrix
 
-  return bridge()->GetCff();
+  return bridge()->get_cff();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -98,7 +98,10 @@ Adapter::FBIPenaltyConstraintenforcer::assemble_structure_coupling_residual() co
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FBIPenaltyConstraintenforcer::PrepareFluidSolve() { bridge()->PrepareFluidSolve(); }
+void Adapter::FBIPenaltyConstraintenforcer::prepare_fluid_solve()
+{
+  bridge()->prepare_fluid_solve();
+}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FBIPenaltyConstraintenforcer::output(double time, int step)
@@ -110,20 +113,20 @@ void Adapter::FBIPenaltyConstraintenforcer::output(double time, int step)
 void Adapter::FBIPenaltyConstraintenforcer::print_violation(double time, int step)
 {
   if (bridge()
-          ->GetParams()
+          ->get_params()
           ->get_visualization_ouput_params_ptr()
           ->get_constraint_violation_output_flag())
   {
-    double penalty_parameter = bridge()->GetParams()->GetPenaltyParameter();
+    double penalty_parameter = bridge()->get_params()->get_penalty_parameter();
 
     Teuchos::RCP<Epetra_Vector> violation = Core::LinAlg::CreateVector(
-        Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(get_fluid(), true)->Velnp()->Map());
+        Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(get_fluid(), true)->velnp()->Map());
 
     int err =
-        Teuchos::rcp_dynamic_cast<const Adapter::FBIConstraintBridgePenalty>(GetBridge(), true)
-            ->GetCff()
-            ->Multiply(false,
-                *(Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(get_fluid(), true)->Velnp()),
+        Teuchos::rcp_dynamic_cast<const Adapter::FBIConstraintBridgePenalty>(get_bridge(), true)
+            ->get_cff()
+            ->multiply(false,
+                *(Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(get_fluid(), true)->velnp()),
                 *violation);
 
     if (err != 0) FOUR_C_THROW(" Matrix vector product threw error code %i ", err);
@@ -135,21 +138,21 @@ void Adapter::FBIPenaltyConstraintenforcer::print_violation(double time, int ste
 
     get_velocity_pressure_splitter()
         ->extract_other_vector(
-            Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(get_fluid(), true)->Velnp())
+            Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(get_fluid(), true)->velnp())
         ->MaxValue(&norm_vel);
 
     violation->MaxValue(&norm);
     if (norm_vel > 1e-15) normf = norm / norm_vel;
 
-    Teuchos::rcp_dynamic_cast<const Adapter::FBIStructureWrapper>(GetStructure(), true)
-        ->Velnp()
+    Teuchos::rcp_dynamic_cast<const Adapter::FBIStructureWrapper>(get_structure(), true)
+        ->velnp()
         ->MaxValue(&norm_vel);
     if (norm_vel > 1e-15) norms = norm / norm_vel;
 
     std::ofstream log;
-    if (get_discretizations()[1]->Comm().MyPID() == 0)
+    if (get_discretizations()[1]->get_comm().MyPID() == 0)
     {
-      std::string s = Global::Problem::Instance()->OutputControlFile()->file_name();
+      std::string s = Global::Problem::instance()->output_control_file()->file_name();
       s.append(".penalty");
       log.open(s.c_str(), std::ofstream::app);
       log << time << "\t" << step << "\t" << norm / penalty_parameter << "\t"

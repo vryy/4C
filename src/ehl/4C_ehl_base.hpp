@@ -49,13 +49,13 @@ namespace EHL
         const std::string lubrication_disname);  // Problem builder
 
     /// setup
-    virtual void SetupSystem() = 0;
+    virtual void setup_system() = 0;
 
     /// timeloop of coupled problem
-    virtual void Timeloop() = 0;
+    virtual void timeloop() = 0;
 
     /// test results (if necessary)
-    void TestResults(const Epetra_Comm& comm);
+    void test_results(const Epetra_Comm& comm);
 
     /// read restart
     void read_restart(int restart) override;
@@ -70,7 +70,7 @@ namespace EHL
     void set_lubrication_solution(Teuchos::RCP<const Epetra_Vector> pressure);
 
     /// evaluate fluid forces on structure
-    Teuchos::RCP<Epetra_Vector> EvaluateFluidForce(Teuchos::RCP<const Epetra_Vector> pressure);
+    Teuchos::RCP<Epetra_Vector> evaluate_fluid_force(Teuchos::RCP<const Epetra_Vector> pressure);
 
    protected:
     void add_pressure_force(

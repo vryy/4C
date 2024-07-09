@@ -75,7 +75,7 @@ void Solid::TimeInt::Explicit::prepare_time_step()
 {
   check_init_setup();
   // things that need to be done before predict
-  PrePredict();
+  pre_predict();
 
   // ToDo prepare contact for new time step
   // PrepareStepContact();
@@ -114,7 +114,7 @@ void Solid::TimeInt::Explicit::evaluate()
 {
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
-  ::NOX::Abstract::Group& grp = nln_solver().SolutionGroup();
+  ::NOX::Abstract::Group& grp = nln_solver().solution_group();
 
   auto* grp_ptr = dynamic_cast<NOX::Nln::Group*>(&grp);
   if (grp_ptr == nullptr) FOUR_C_THROW("Dynamic cast failed!");
@@ -149,10 +149,10 @@ void Solid::TimeInt::Explicit::reset_step()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::ConvergenceStatus Solid::TimeInt::Explicit::Solve()
+Inpar::Solid::ConvergenceStatus Solid::TimeInt::Explicit::solve()
 {
   check_init_setup();
-  IntegrateStep();
+  integrate_step();
   return Inpar::Solid::conv_success;
 }
 
@@ -165,7 +165,7 @@ void Solid::TimeInt::Explicit::prepare_partition_step()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::Explicit::Update(double endtime)
+void Solid::TimeInt::Explicit::update(double endtime)
 {
   check_init_setup();
   FOUR_C_THROW("Not implemented. No time adaptivity available for explicit time integration.");
@@ -178,9 +178,9 @@ void Solid::TimeInt::Explicit::print_step()
 {
   check_init_setup();
 
-  if (data_global_state().get_my_rank() != 0 or GroupId() != 0) return;
+  if (data_global_state().get_my_rank() != 0 or group_id() != 0) return;
 
-  const int stepmax = data_sdyn().GetStepMax();
+  const int stepmax = data_sdyn().get_step_max();
   const int stepn = data_global_state().get_step_n();
   const double timen = data_global_state().get_time_n();
   const double dt = (*data_global_state().get_delta_time())[0];
@@ -230,7 +230,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::Explicit::get_stc_mat()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Solid::TimeInt::Explicit::Integrate()
+int Solid::TimeInt::Explicit::integrate()
 {
   FOUR_C_THROW(
       "The function is unused since the Adapter::StructureTimeLoop "
@@ -241,14 +241,14 @@ int Solid::TimeInt::Explicit::Integrate()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Solid::TimeInt::Explicit::IntegrateStep()
+int Solid::TimeInt::Explicit::integrate_step()
 {
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
   // reset the non-linear solver
   nln_solver().reset();
   // solve the non-linear problem
-  nln_solver().Solve();
+  nln_solver().solve();
   return 0;
 }
 

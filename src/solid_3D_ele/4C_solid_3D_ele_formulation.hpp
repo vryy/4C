@@ -302,10 +302,10 @@ namespace Discret::ELEMENTS
     if constexpr (has_preparation_data<SolidFormulation>)
     {
       if constexpr (has_global_history<SolidFormulation>)
-        return SolidFormulation::Prepare(ele, nodal_coordinates, history_data.global_history);
+        return SolidFormulation::prepare(ele, nodal_coordinates, history_data.global_history);
       else
       {
-        return SolidFormulation::Prepare(ele, nodal_coordinates);
+        return SolidFormulation::prepare(ele, nodal_coordinates);
       }
     }
     else

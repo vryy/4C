@@ -43,16 +43,16 @@ namespace ScaTra
     Inpar::ElCh::CCCVHalfCyclePhase get_cccv_half_cycle_phase() const { return phase_cccv_; };
 
     //! Get ID of this half cycle condition
-    int GetConditionID() const { return halfcyclecondition_id_; };
+    int get_condition_id() const { return halfcyclecondition_id_; };
 
     //! get cut off c-rate during constant voltage
-    double GetCutOffCRate() const { return cutoffcrate_; };
+    double get_cut_off_c_rate() const { return cutoffcrate_; };
 
     //! get cut off voltage during constant current
-    double GetCutOffVoltage() const { return cutoffvoltage_; };
+    double get_cut_off_voltage() const { return cutoffvoltage_; };
 
     //! get end time of current relaxation phase
-    double GetRelaxEndTime() const { return relaxendtime_; };
+    double get_relax_end_time() const { return relaxendtime_; };
 
     //! does this phase have adaptive time stepping?
     bool is_adaptive_time_stepping_phase() const;
@@ -61,7 +61,7 @@ namespace ScaTra
     bool is_end_of_half_cycle_next_phase(double time, bool print);
 
     //! reset phase of this half cycle to constant current
-    void ResetPhase();
+    void reset_phase();
 
     //! read restart
     void read_restart(Core::IO::DiscretizationReader& reader);
@@ -108,7 +108,7 @@ namespace ScaTra
         bool adaptivetimestepping, int num_dofs);
 
     //! true, when all half cylces are completed
-    bool NotFinished() const { return nhalfcycles_ >= ihalfcycle_; };
+    bool not_finished() const { return nhalfcycles_ >= ihalfcycle_; };
 
     //! phase of active half cycle
     Inpar::ElCh::CCCVHalfCyclePhase get_cccv_half_cycle_phase() const;
@@ -116,7 +116,7 @@ namespace ScaTra
     //! ID of current half cycle
     int get_half_cycle_condition_id() const;
 
-    double GetInitialRelaxTime() const { return initrelaxtime_; };
+    double get_initial_relax_time() const { return initrelaxtime_; };
 
     //! number of current half cycle
     int get_num_current_half_cycle() const { return ihalfcycle_; };
@@ -125,7 +125,7 @@ namespace ScaTra
     int get_step_last_phase_change() const { return steplastphasechange_; };
 
     //! get end time of current relaxation phase
-    double GetRelaxEndTime() const;
+    double get_relax_end_time() const;
 
     //! does this phase have adaptive time stepping?
     bool is_adaptive_time_stepping_phase() const;
@@ -134,19 +134,19 @@ namespace ScaTra
     bool is_end_of_half_cycle_phase(double cellvoltage, double cellcrate, double time) const;
 
     //! is cut off c rate exceeded?
-    bool ExceedCellCRate(double expected_cellcrate) const;
+    bool exceed_cell_c_rate(double expected_cellcrate) const;
 
     //! does cell voltage exceed bounds of current half cycle
-    bool ExceedCellVoltage(double expected_cellvoltage) const;
+    bool exceed_cell_voltage(double expected_cellvoltage) const;
 
     //! is this condition in initial relaxation?
-    bool IsInitialRelaxation(const double time, const double dt) const
+    bool is_initial_relaxation(const double time, const double dt) const
     {
       return time <= initrelaxtime_ - dt;
     }
 
     //! was phase changed since last adaption of time step?
-    bool IsPhaseChanged() const { return phasechanged_; };
+    bool is_phase_changed() const { return phasechanged_; };
 
     //! are we in initial relaxation phase?
     bool is_phase_initial_relaxation() const { return phaseinitialrelaxation_; };
@@ -161,10 +161,10 @@ namespace ScaTra
 
     //! go to next phase. If half cycle is finished switch to other half cycle and start with
     //! constant current
-    void NextPhase(int step, double time, bool print);
+    void next_phase(int step, double time, bool print);
 
     //! number of dofs of this cccv condition
-    int NumDofs() const { return num_dofs_; }
+    int num_dofs() const { return num_dofs_; }
 
     //! read restart
     void read_restart(Core::IO::DiscretizationReader& reader);

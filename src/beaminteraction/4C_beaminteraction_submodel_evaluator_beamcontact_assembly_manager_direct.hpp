@@ -59,7 +59,7 @@ namespace BEAMINTERACTION
        * \brief Return a const reference to the contact pairs in this assembly manager.
        * @return Reference to the pair vector.
        */
-      const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& GetContactPairs() const
+      const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& get_contact_pairs() const
       {
         return assembly_contact_elepairs_;
       }

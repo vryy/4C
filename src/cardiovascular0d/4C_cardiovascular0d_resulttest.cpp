@@ -26,7 +26,7 @@ Cardiovascular0DResultTest::Cardiovascular0DResultTest(
       actdisc_(discr),
       cardvasc0d_dof_(
           cardvasc0dman
-              .Get0D_dof_m()),  // cardiovascular 0D dofs at generalized mid-point t_{n+\theta}
+              .get0_d_dof_m()),  // cardiovascular 0D dofs at generalized mid-point t_{n+\theta}
       havecardio_4elementwindkessel_(
           cardvasc0dman.get_cardvasc0_d4_element_windkessel()->have_cardiovascular0_d()),
       havecardio_arterialproxdist_(
@@ -43,7 +43,8 @@ Cardiovascular0DResultTest::Cardiovascular0DResultTest(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Cardiovascular0DResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count)
+void Cardiovascular0DResultTest::test_special(
+    Input::LineDefinition& res, int& nerr, int& test_count)
 {
   std::string quantity;
   res.extract_string("QUANTITY", quantity);

@@ -87,7 +87,7 @@ namespace Core::IO
      * If a record with name name already exists, it will be overwritten.
      */
     template <typename T>
-    void Add(const std::string& name, const T& data)
+    void add(const std::string& name, const T& data)
     {
       if constexpr (std::is_same_v<T, int>)
         intdata_[name] = data;
@@ -117,7 +117,7 @@ namespace Core::IO
     template <typename T>
     const T& get(const std::string& name) const
     {
-      if (const T* p = GetIf<T>(name))
+      if (const T* p = get_if<T>(name))
         return *p;
       else
         FOUR_C_THROW("Key %s cannot be found in the container's map!", name.c_str());
@@ -130,9 +130,9 @@ namespace Core::IO
      * @note This function returns the value as a copy.
      */
     template <typename T>
-    T GetOr(const std::string& name, T default_value) const
+    T get_or(const std::string& name, T default_value) const
     {
-      if (const T* p = GetIf<T>(name))
+      if (const T* p = get_if<T>(name))
         return *p;
       else
         return default_value;
@@ -143,7 +143,7 @@ namespace Core::IO
      * `nullptr` if no value of specified type is stored under @p name in the container.
      */
     template <typename T>
-    const T* GetIf(const std::string& name) const
+    const T* get_if(const std::string& name) const
     {
       // access function for known types
       [[maybe_unused]] const auto access = [](const auto& map, const std::string& name) -> const T*

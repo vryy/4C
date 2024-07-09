@@ -59,7 +59,7 @@ namespace BEAMINTERACTION
      * @param element2 Pointer to the second element
      * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
      */
-    void CreateGeometryPair(const Core::Elements::Element* element1,
+    void create_geometry_pair(const Core::Elements::Element* element1,
         const Core::Elements::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
         override;

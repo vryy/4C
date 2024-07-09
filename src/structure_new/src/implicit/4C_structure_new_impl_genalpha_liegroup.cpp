@@ -55,7 +55,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::post_setup()
 {
   check_init_setup();
 
-  if (sdyn().get_mass_lin_type() != Inpar::Solid::ml_rotations and !sdyn().NeglectInertia())
+  if (sdyn().get_mass_lin_type() != Inpar::Solid::ml_rotations and !sdyn().neglect_inertia())
   {
     /* we can use this method for all elements with additive DoFs,
      * but it won't work like this for non-additive rotation vector DoFs */
@@ -223,11 +223,11 @@ void Solid::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
   const double& dt = (*global_state().get_delta_time())[0];
   // add inertial contributions to structural stiffness block
-  stiff_ptr->Add(*global_state().get_mass_matrix(), false,
+  stiff_ptr->add(*global_state().get_mass_matrix(), false,
       (1.0 - alpham_) / (beta_ * dt * dt * (1.0 - alphaf_)), 1.0);
   // add Rayleigh damping contributions
   if (tim_int().get_data_sdyn().get_damping_type() == Inpar::Solid::damp_rayleigh)
-    stiff_ptr->Add(*global_state().get_damp_matrix(), false, gamma_ / (beta_ * dt), 1.0);
+    stiff_ptr->add(*global_state().get_damp_matrix(), false, gamma_ / (beta_ * dt), 1.0);
 }
 
 /*----------------------------------------------------------------------------*
@@ -295,12 +295,12 @@ void Solid::IMPLICIT::GenAlphaLieGroup::reset_eval_params()
 
   /* in case we have non-additive rotation (pseudo-)vector DOFs, we need to pass
    * the GenAlpha parameters to the beam elements via beam parameter interface */
-  if (tim_int().get_data_sdyn().GetMassLinType() == Inpar::Solid::ml_rotations)
+  if (tim_int().get_data_sdyn().get_mass_lin_type() == Inpar::Solid::ml_rotations)
   {
-    eval_data().GetBeamData().set_beta(beta_);
-    eval_data().GetBeamData().set_gamma(gamma_);
-    eval_data().GetBeamData().set_alphaf(alphaf_);
-    eval_data().GetBeamData().set_alpham(alpham_);
+    eval_data().get_beam_data().set_beta(beta_);
+    eval_data().get_beam_data().set_gamma(gamma_);
+    eval_data().get_beam_data().set_alphaf(alphaf_);
+    eval_data().get_beam_data().set_alpham(alpham_);
   }
 }
 

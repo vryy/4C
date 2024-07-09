@@ -44,7 +44,7 @@ Mat::PAR::FluidPoroSingleReaction::FluidPoroSingleReaction(
  *----------------------------------------------------------------------*/
 void Mat::PAR::FluidPoroSingleReaction::initialize()
 {
-  switch (Global::Problem::Instance()->NDim())
+  switch (Global::Problem::instance()->n_dim())
   {
     case 1:
       return initialize_internal<1>();
@@ -53,7 +53,7 @@ void Mat::PAR::FluidPoroSingleReaction::initialize()
     case 3:
       return initialize_internal<3>();
     default:
-      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::instance()->n_dim());
   }
 }
 
@@ -63,9 +63,9 @@ template <int dim>
 void Mat::PAR::FluidPoroSingleReaction::initialize_internal()
 {
   // safety check
-  if (Global::Problem::Instance()
-          ->FunctionById<Core::UTILS::FunctionOfAnything>(functID_ - 1)
-          .NumberComponents() != 1)
+  if (Global::Problem::instance()
+          ->function_by_id<Core::UTILS::FunctionOfAnything>(functID_ - 1)
+          .number_components() != 1)
     FOUR_C_THROW("expected only one component for single phase reaction!");
 
   for (int k = 0; k < numscal_; k++)
@@ -128,7 +128,7 @@ void Mat::PAR::FluidPoroSingleReaction::evaluate_function(std::vector<double>& r
     const std::vector<double>& volfracs, const std::vector<double>& volfracpressures,
     const std::vector<double>& scalar)
 {
-  switch (Global::Problem::Instance()->NDim())
+  switch (Global::Problem::instance()->n_dim())
   {
     case 1:
       return evaluate_function_internal<1>(reacval, reacderivspressure, reacderivssaturation,
@@ -143,7 +143,7 @@ void Mat::PAR::FluidPoroSingleReaction::evaluate_function(std::vector<double>& r
           reacderivsporosity, reacderivsvolfrac, reacderivsvolfracpressure, reacderivsscalar,
           pressure, saturation, porosity, volfracs, volfracpressures, scalar);
     default:
-      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::instance()->n_dim());
   }
 }
 
@@ -162,7 +162,7 @@ void Mat::PAR::FluidPoroSingleReaction::evaluate_function_internal(std::vector<d
     const std::vector<double>& scalar)
 {
   // safety check if sizes fit
-  CheckSizes(reacval, reacderivspressure, reacderivssaturation, reacderivsporosity,
+  check_sizes(reacval, reacderivspressure, reacderivssaturation, reacderivsporosity,
       reacderivsvolfrac, reacderivsvolfracpressure, reacderivsscalar, pressure, saturation,
       porosity, volfracs, volfracpressures, scalar);
 
@@ -197,13 +197,13 @@ void Mat::PAR::FluidPoroSingleReaction::evaluate_function_internal(std::vector<d
         std::pair<std::string, double>(volfracpressurenames_[k], volfracpressures[k]));
 
   // evaluate the reaction term
-  double curval = Global::Problem::Instance()
-                      ->FunctionById<Core::UTILS::FunctionOfAnything>(functID_ - 1)
+  double curval = Global::Problem::instance()
+                      ->function_by_id<Core::UTILS::FunctionOfAnything>(functID_ - 1)
                       .evaluate(variables, constants, 0);
   // evaluate derivatives
-  std::vector<double> curderivs(Global::Problem::Instance()
-                                    ->FunctionById<Core::UTILS::FunctionOfAnything>(functID_ - 1)
-                                    .EvaluateDerivative(variables, constants, 0));
+  std::vector<double> curderivs(Global::Problem::instance()
+                                    ->function_by_id<Core::UTILS::FunctionOfAnything>(functID_ - 1)
+                                    .evaluate_derivative(variables, constants, 0));
 
   // fill the output vector
   for (int k = 0; k < totalnummultiphasedof_; k++)
@@ -245,7 +245,7 @@ void Mat::PAR::FluidPoroSingleReaction::evaluate_function_internal(std::vector<d
 /*----------------------------------------------------------------------*
  *  check sizes of vectors                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::PAR::FluidPoroSingleReaction::CheckSizes(std::vector<double>& reacval,
+void Mat::PAR::FluidPoroSingleReaction::check_sizes(std::vector<double>& reacval,
     std::vector<std::vector<double>>& reacderivspressure,
     std::vector<std::vector<double>>& reacderivssaturation, std::vector<double>& reacderivsporosity,
     std::vector<std::vector<double>>& reacderivsvolfrac,
@@ -365,7 +365,7 @@ Mat::FluidPoroSingleReactionType Mat::FluidPoroSingleReactionType::instance_;
  *  Create material from given data                          vuong 08/16 |
  *----------------------------------------------------------------------*/
 
-Core::Communication::ParObject* Mat::FluidPoroSingleReactionType::Create(
+Core::Communication::ParObject* Mat::FluidPoroSingleReactionType::create(
     const std::vector<char>& data)
 {
   Mat::FluidPoroSingleReaction* fluid_poro = new Mat::FluidPoroSingleReaction();
@@ -394,12 +394,12 @@ void Mat::FluidPoroSingleReaction::pack(Core::Communication::PackBuffer& data) c
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 }
 
@@ -410,23 +410,23 @@ void Mat::FluidPoroSingleReaction::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::FluidPoroSingleReaction*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   if (position != data.size())
@@ -445,7 +445,7 @@ void Mat::FluidPoroSingleReaction::initialize()
 /*----------------------------------------------------------------------*
  *  set values in function                                 vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroSingleReaction::EvaluateReaction(std::vector<double>& reacval,
+void Mat::FluidPoroSingleReaction::evaluate_reaction(std::vector<double>& reacval,
     std::vector<std::vector<double>>& reacderivspressure,
     std::vector<std::vector<double>>& reacderivssaturation, std::vector<double>& reacderivsporosity,
     std::vector<std::vector<double>>& reacderivsvolfrac,

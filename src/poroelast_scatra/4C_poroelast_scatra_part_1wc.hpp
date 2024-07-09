@@ -26,7 +26,7 @@ namespace PoroElastScaTra
         : PoroScatraPart(comm, timeparams){};
 
     //! solve one time step of porous media problem
-    void DoPoroStep() override;
+    void do_poro_step() override;
     //! solve one time step of scalar transport problem
     void do_scatra_step() override;
 
@@ -48,13 +48,13 @@ namespace PoroElastScaTra
         const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     //! actual time loop
-    void Timeloop() override;
+    void timeloop() override;
 
     //! increment time and step and print header
     void prepare_time_step(bool printheader = true) override;
 
     //! perform iteration loop between fields
-    void Solve() override;
+    void solve() override;
 
     //! read and set fields needed for restart
     void read_restart(int restart) override;
@@ -68,13 +68,13 @@ namespace PoroElastScaTra
         const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     //! actual time loop
-    void Timeloop() override;
+    void timeloop() override;
 
     //! increment time and step and print header
     void prepare_time_step(bool printheader = true) override;
 
     //! perform iteration loop between fields
-    void Solve() override;
+    void solve() override;
 
     //! read and set fields needed for restart
     void read_restart(int restart) override;

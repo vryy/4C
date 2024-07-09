@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Adapter::StructureTimeLoop::Integrate()
+int Adapter::StructureTimeLoop::integrate()
 {
   // error checking variables
   Inpar::Solid::ConvergenceStatus convergencestatus = Inpar::Solid::conv_success;
@@ -31,13 +31,13 @@ int Adapter::StructureTimeLoop::Integrate()
                                 convergencestatus == Inpar::Solid::conv_fail_repeat))
   {
     // call the predictor
-    PrePredict();
+    pre_predict();
     prepare_time_step();
 
     // integrate time step, i.e. do corrector steps
     // after this step we hold disn_, etc
-    PreSolve();
-    convergencestatus = Solve();
+    pre_solve();
+    convergencestatus = solve();
 
     // if everything is fine
     if (convergencestatus == Inpar::Solid::conv_success)
@@ -52,29 +52,29 @@ int Adapter::StructureTimeLoop::Integrate()
       // after this call we will have disn_==dis_, etc
       // update time and step
       // update everything on the element level
-      PreUpdate();
+      pre_update();
       update();
       post_update();
 
       // write output
       output();
-      PostOutput();
+      post_output();
 
       // print info about finished time step
       print_step();
     }
     // todo: remove this as soon as old structure time integration is gone
     else if (Core::UTILS::IntegralValue<Inpar::Solid::IntegrationStrategy>(
-                 Global::Problem::Instance()->structural_dynamic_params(), "INT_STRATEGY") ==
+                 Global::Problem::instance()->structural_dynamic_params(), "INT_STRATEGY") ==
              Inpar::Solid::int_old)
     {
       convergencestatus =
-          PerformErrorAction(convergencestatus);  // something went wrong update error code
-                                                  // according to chosen divcont action
+          perform_error_action(convergencestatus);  // something went wrong update error code
+                                                    // according to chosen divcont action
     }
   }
 
-  PostTimeLoop();
+  post_time_loop();
 
   // that's it say what went wrong
   return convergencestatus;

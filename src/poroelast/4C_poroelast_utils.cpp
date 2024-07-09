@@ -36,35 +36,35 @@ FOUR_C_NAMESPACE_OPEN
 bool PoroElast::UTILS::IsPoroElement(const Core::Elements::Element* actele)
 {
   // all poro elements need to be listed here
-  return actele->ElementType() == Discret::ELEMENTS::SoHex8PoroType::Instance() or
-         actele->ElementType() == Discret::ELEMENTS::SolidPoroType::Instance() or
-         actele->ElementType() == Discret::ELEMENTS::SoTet4PoroType::Instance() or
-         actele->ElementType() == Discret::ELEMENTS::SoTet10PoroType::Instance() or
-         actele->ElementType() == Discret::ELEMENTS::SoHex27PoroType::Instance() or
-         actele->ElementType() == Discret::ELEMENTS::SoNurbs27PoroType::Instance() or
-         actele->ElementType() == Discret::ELEMENTS::WallTri3PoroType::Instance() or
-         actele->ElementType() == Discret::ELEMENTS::WallQuad4PoroType::Instance() or
-         actele->ElementType() == Discret::ELEMENTS::WallQuad9PoroType::Instance() or
-         actele->ElementType() == Discret::ELEMENTS::WallNurbs4PoroType::Instance() or
-         actele->ElementType() == Discret::ELEMENTS::WallNurbs9PoroType::Instance() or
+  return actele->element_type() == Discret::ELEMENTS::SoHex8PoroType::instance() or
+         actele->element_type() == Discret::ELEMENTS::SolidPoroType::instance() or
+         actele->element_type() == Discret::ELEMENTS::SoTet4PoroType::instance() or
+         actele->element_type() == Discret::ELEMENTS::SoTet10PoroType::instance() or
+         actele->element_type() == Discret::ELEMENTS::SoHex27PoroType::instance() or
+         actele->element_type() == Discret::ELEMENTS::SoNurbs27PoroType::instance() or
+         actele->element_type() == Discret::ELEMENTS::WallTri3PoroType::instance() or
+         actele->element_type() == Discret::ELEMENTS::WallQuad4PoroType::instance() or
+         actele->element_type() == Discret::ELEMENTS::WallQuad9PoroType::instance() or
+         actele->element_type() == Discret::ELEMENTS::WallNurbs4PoroType::instance() or
+         actele->element_type() == Discret::ELEMENTS::WallNurbs9PoroType::instance() or
          IsPoroP1Element(actele);
 }
 
 bool PoroElast::UTILS::IsPoroP1Element(const Core::Elements::Element* actele)
 {
   // all poro-p1 elements need to be listed here
-  return actele->ElementType() == Discret::ELEMENTS::SoHex8PoroP1Type::Instance() or
-         actele->ElementType() == Discret::ELEMENTS::SoTet4PoroP1Type::Instance() or
-         actele->ElementType() == Discret::ELEMENTS::WallQuad4PoroP1Type::Instance() or
-         actele->ElementType() == Discret::ELEMENTS::WallTri3PoroP1Type::Instance() or
-         actele->ElementType() == Discret::ELEMENTS::WallQuad9PoroP1Type::Instance();
+  return actele->element_type() == Discret::ELEMENTS::SoHex8PoroP1Type::instance() or
+         actele->element_type() == Discret::ELEMENTS::SoTet4PoroP1Type::instance() or
+         actele->element_type() == Discret::ELEMENTS::WallQuad4PoroP1Type::instance() or
+         actele->element_type() == Discret::ELEMENTS::WallTri3PoroP1Type::instance() or
+         actele->element_type() == Discret::ELEMENTS::WallQuad9PoroP1Type::instance();
 }
 
 Teuchos::RCP<PoroElast::PoroBase> PoroElast::UTILS::CreatePoroAlgorithm(
     const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm, bool setup_solver,
     Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter)
 {
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& poroelastdyn = problem->poroelast_dynamic_params();
@@ -124,7 +124,7 @@ Teuchos::RCP<PoroElast::PoroBase> PoroElast::UTILS::CreatePoroAlgorithm(
   }
 
   // setup solver (if needed)
-  if (setup_solver) poroalgo->SetupSolver();
+  if (setup_solver) poroalgo->setup_solver();
 
   return poroalgo;
 }
@@ -137,16 +137,16 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElast::UTILS::BuildPoroSplitter(
 
   // Loop through all elements on processor
   int locporop1 = std::count_if(
-      dis->MyColElementRange().begin(), dis->MyColElementRange().end(), IsPoroP1Element);
+      dis->my_col_element_range().begin(), dis->my_col_element_range().end(), IsPoroP1Element);
 
   // Was at least one PoroP1 found on one processor?
   int glonumporop1 = 0;
-  dis->Comm().MaxAll(&locporop1, &glonumporop1, 1);
+  dis->get_comm().MaxAll(&locporop1, &glonumporop1, 1);
   // Yes, it was. Go ahead for all processors (even if they do not carry any PoroP1 elements)
   if (glonumporop1 > 0)
   {
     porositysplitter = Teuchos::rcp(new Core::LinAlg::MapExtractor());
-    const int ndim = Global::Problem::Instance()->NDim();
+    const int ndim = Global::Problem::instance()->n_dim();
     Core::LinAlg::CreateMapExtractorFromDiscretization(*dis, ndim, *porositysplitter);
   }
 
@@ -157,18 +157,18 @@ void PoroElast::UTILS::SetMaterialPointersMatchingGrid(
     Teuchos::RCP<const Core::FE::Discretization> sourcedis,
     Teuchos::RCP<const Core::FE::Discretization> targetdis)
 {
-  const int numelements = targetdis->NumMyColElements();
+  const int numelements = targetdis->num_my_col_elements();
 
   for (int i = 0; i < numelements; ++i)
   {
-    Core::Elements::Element* targetele = targetdis->lColElement(i);
-    const int gid = targetele->Id();
+    Core::Elements::Element* targetele = targetdis->l_col_element(i);
+    const int gid = targetele->id();
 
-    Core::Elements::Element* sourceele = sourcedis->gElement(gid);
+    Core::Elements::Element* sourceele = sourcedis->g_element(gid);
 
     // for coupling we add the source material to the target element and vice versa
-    targetele->AddMaterial(sourceele->Material());
-    sourceele->AddMaterial(targetele->Material());
+    targetele->add_material(sourceele->material());
+    sourceele->add_material(targetele->material());
   }
 }
 
@@ -185,13 +185,13 @@ void PoroElast::UTILS::create_volume_ghosting(Core::FE::Discretization& idiscret
   // We get the discretizations from the global problem, as the contact does not have
   // both structural and porofluid discretization, but we should guarantee consistent ghosting!
 
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
   std::vector<Teuchos::RCP<Core::FE::Discretization>> voldis;
-  voldis.push_back(problem->GetDis("structure"));
-  voldis.push_back(problem->GetDis("porofluid"));
+  voldis.push_back(problem->get_dis("structure"));
+  voldis.push_back(problem->get_dis("porofluid"));
 
-  const Epetra_Map* ielecolmap = idiscret.ElementColMap();
+  const Epetra_Map* ielecolmap = idiscret.element_col_map();
 
   for (auto& voldi : voldis)
   {
@@ -200,9 +200,9 @@ void PoroElast::UTILS::create_volume_ghosting(Core::FE::Discretization& idiscret
 
     // Fill rdata with existing colmap
 
-    const Epetra_Map* elecolmap = voldi->ElementColMap();
+    const Epetra_Map* elecolmap = voldi->element_col_map();
     const Teuchos::RCP<Epetra_Map> allredelecolmap =
-        Core::LinAlg::AllreduceEMap(*voldi->ElementRowMap());
+        Core::LinAlg::AllreduceEMap(*voldi->element_row_map());
 
     for (int i = 0; i < elecolmap->NumMyElements(); ++i)
     {
@@ -215,7 +215,7 @@ void PoroElast::UTILS::create_volume_ghosting(Core::FE::Discretization& idiscret
     {
       int gid = ielecolmap->GID(i);
 
-      Core::Elements::Element* ele = idiscret.gElement(gid);
+      Core::Elements::Element* ele = idiscret.g_element(gid);
       if (!ele) FOUR_C_THROW("ERROR: Cannot find element with gid %", gid);
       auto* faceele = dynamic_cast<Core::Elements::FaceElement*>(ele);
 
@@ -223,7 +223,7 @@ void PoroElast::UTILS::create_volume_ghosting(Core::FE::Discretization& idiscret
       if (!faceele)
         FOUR_C_THROW("Cast to FaceElement failed!");
       else
-        volgid = faceele->ParentElementId();
+        volgid = faceele->parent_element_id();
 
       // Ghost the parent element additionally
       if (elecolmap->LID(volgid) == -1 &&
@@ -234,12 +234,12 @@ void PoroElast::UTILS::create_volume_ghosting(Core::FE::Discretization& idiscret
 
     // re-build element column map
     Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
-        new Epetra_Map(-1, static_cast<int>(rdata.size()), rdata.data(), 0, voldi->Comm()));
+        new Epetra_Map(-1, static_cast<int>(rdata.size()), rdata.data(), 0, voldi->get_comm()));
     rdata.clear();
 
     // redistribute the volume discretization according to the
     // new (=old) element column layout & and ghost also nodes!
-    voldi->ExtendedGhosting(*newelecolmap, true, true, true, false);  // no check!!!
+    voldi->extended_ghosting(*newelecolmap, true, true, true, false);  // no check!!!
   }
 
   // 2 Material pointers need to be reset after redistribution.
@@ -251,20 +251,20 @@ void PoroElast::UTILS::create_volume_ghosting(Core::FE::Discretization& idiscret
   // 4 In case we use
   Teuchos::RCP<Core::FE::DiscretizationFaces> facediscret =
       Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(voldis[1]);
-  if (facediscret != Teuchos::null) facediscret->FillCompleteFaces(true, true, true, true);
+  if (facediscret != Teuchos::null) facediscret->fill_complete_faces(true, true, true, true);
 }
 
 void PoroElast::UTILS::reconnect_parent_pointers(Core::FE::Discretization& idiscret,
     Core::FE::Discretization& voldiscret, Core::FE::Discretization* voldiscret2)
 {
-  const Epetra_Map* ielecolmap = idiscret.ElementColMap();
-  const Epetra_Map* elecolmap = voldiscret.ElementColMap();
+  const Epetra_Map* ielecolmap = idiscret.element_col_map();
+  const Epetra_Map* elecolmap = voldiscret.element_col_map();
 
   for (int i = 0; i < ielecolmap->NumMyElements(); ++i)
   {
     int gid = ielecolmap->GID(i);
 
-    Core::Elements::Element* ele = idiscret.gElement(gid);
+    Core::Elements::Element* ele = idiscret.g_element(gid);
     if (!ele) FOUR_C_THROW("ERROR: Cannot find element with gid %", gid);
 
     auto* faceele = dynamic_cast<Core::Elements::FaceElement*>(ele);
@@ -278,25 +278,25 @@ void PoroElast::UTILS::SetSlaveAndMaster(const Core::FE::Discretization& voldisc
     const Core::FE::Discretization* voldiscret2, const Epetra_Map* elecolmap,
     Core::Elements::FaceElement* faceele)
 {
-  int volgid = faceele->ParentElementId();
+  int volgid = faceele->parent_element_id();
 
   if (elecolmap->LID(volgid) == -1)  // Volume discretization has not Element
     FOUR_C_THROW("create_volume_ghosting: Element %d does not exist on this Proc!", volgid);
 
-  Core::Elements::Element* vele = voldiscret.gElement(volgid);
+  Core::Elements::Element* vele = voldiscret.g_element(volgid);
   if (!vele) FOUR_C_THROW("ERROR: Cannot find element with gid %", volgid);
-  faceele->set_parent_master_element(vele, faceele->FaceParentNumber());
+  faceele->set_parent_master_element(vele, faceele->face_parent_number());
 
   if (voldiscret2)
   {
-    const Epetra_Map* elecolmap2 = voldiscret2->ElementColMap();
+    const Epetra_Map* elecolmap2 = voldiscret2->element_col_map();
     if (elecolmap2->LID(volgid) == -1)  // Volume discretization has not Element
       faceele->set_parent_slave_element(nullptr, -1);
     else
     {
-      vele = voldiscret2->gElement(volgid);
+      vele = voldiscret2->g_element(volgid);
       if (!vele) FOUR_C_THROW("ERROR: Cannot find element with gid %", volgid);
-      faceele->set_parent_slave_element(vele, faceele->FaceParentNumber());
+      faceele->set_parent_slave_element(vele, faceele->face_parent_number());
     }
   }
 }
@@ -376,13 +376,13 @@ double PoroElast::UTILS::calculate_vector_norm(
   }
 }
 
-void PoroElast::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
+void PoroElast::UTILS::PoroMaterialStrategy::assign_material2_to1(
     const Core::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele1,
     const std::vector<int>& ids_2, Teuchos::RCP<Core::FE::Discretization> dis1,
     Teuchos::RCP<Core::FE::Discretization> dis2)
 {
   // call default assignment
-  Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
+  Core::VolMortar::UTILS::DefaultMaterialStrategy::assign_material2_to1(
       volmortar, ele1, ids_2, dis1, dis2);
 
   // default strategy: take material of element with closest center in reference coordinates
@@ -393,7 +393,7 @@ void PoroElast::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
 
     for (int id_2 : ids_2)
     {
-      Core::Elements::Element* actele2 = dis2->gElement(id_2);
+      Core::Elements::Element* actele2 = dis2->g_element(id_2);
       std::vector<double> centercoords2 = Core::FE::element_center_refe_coords(*actele2);
 
       Core::LinAlg::Matrix<3, 1> diffcoords(true);
@@ -413,9 +413,9 @@ void PoroElast::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
   if (fluid != nullptr)
   {
     // Copy Initial Porosity from StructPoro Material to FluidPoro Material
-    static_cast<Mat::PAR::FluidPoro*>(fluid->Material()->Parameter())
-        ->SetInitialPorosity(
-            Teuchos::rcp_static_cast<Mat::StructPoro>(ele1->Material())->InitPorosity());
+    static_cast<Mat::PAR::FluidPoro*>(fluid->material()->parameter())
+        ->set_initial_porosity(
+            Teuchos::rcp_static_cast<Mat::StructPoro>(ele1->material())->init_porosity());
   }
   else
   {
@@ -423,13 +423,13 @@ void PoroElast::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
   }
 }
 
-void PoroElast::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
+void PoroElast::UTILS::PoroMaterialStrategy::assign_material1_to2(
     const Core::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele2,
     const std::vector<int>& ids_1, Teuchos::RCP<Core::FE::Discretization> dis1,
     Teuchos::RCP<Core::FE::Discretization> dis2)
 {
   // call default assignment
-  Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
+  Core::VolMortar::UTILS::DefaultMaterialStrategy::assign_material1_to2(
       volmortar, ele2, ids_1, dis1, dis2);
 
   // if no corresponding element found -> leave
@@ -443,7 +443,7 @@ void PoroElast::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
 
     for (int id_1 : ids_1)
     {
-      Core::Elements::Element* actele1 = dis1->gElement(id_1);
+      Core::Elements::Element* actele1 = dis1->g_element(id_1);
       std::vector<double> centercoords1 = Core::FE::element_center_refe_coords(*actele1);
 
       Core::LinAlg::Matrix<3, 1> diffcoords(true);
@@ -467,7 +467,7 @@ void PoroElast::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
   {
     if (so_base)
     {
-      fluid->SetKinematicType(so_base->KinematicType());
+      fluid->set_kinematic_type(so_base->kinematic_type());
     }
     else
       FOUR_C_THROW("ERROR: ele1 is not a solid element");

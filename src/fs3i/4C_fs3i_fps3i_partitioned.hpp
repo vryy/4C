@@ -73,10 +73,10 @@ namespace FS3I
 
     //! time loop to be defined in inherited classes (structure depends on
     //! considered coupling, i.e. one-way or two-way)
-    void Timeloop() override = 0;
+    void timeloop() override = 0;
 
     //! flag whether time loop should be finished
-    bool NotFinished() { return step_ < numstep_ and time_ <= timemax_; };
+    bool not_finished() { return step_ < numstep_ and time_ <= timemax_; };
 
     //! read and set fields needed for restart
     void read_restart() override;
@@ -85,33 +85,33 @@ namespace FS3I
     void redistribute_interface() override;
 
     //! set-up of FPSI and ScaTra systems
-    void SetupSystem() override;
+    void setup_system() override;
 
     //! test results for individual fields
-    void TestResults(const Epetra_Comm& comm) override;
+    void test_results(const Epetra_Comm& comm) override;
 
     //! evaluate ScaTra fields
     void evaluate_scatra_fields() override;
 
     //! information transfer FPSI -> ScaTra
-    void SetFPSISolution();
+    void set_fpsi_solution();
 
     /// set scatra solution on structure field
     void set_struct_scatra_solution();
 
     //! return communicator
-    const Epetra_Comm& Comm() const { return comm_; }
+    const Epetra_Comm& get_comm() const { return comm_; }
 
 
     /// extract fluid convective and structure convective velocities
-    void ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector>>& vel,
+    void extract_vel(std::vector<Teuchos::RCP<const Epetra_Vector>>& vel,
         std::vector<Teuchos::RCP<const Epetra_Vector>>& convel);
 
     /// extract Wall Shear Stresses at the interface
-    void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& wss);
+    void extract_wss(std::vector<Teuchos::RCP<const Epetra_Vector>>& wss);
 
     /// extracts pressures at the interface
-    void ExtractPressure(std::vector<Teuchos::RCP<const Epetra_Vector>>& pressure);
+    void extract_pressure(std::vector<Teuchos::RCP<const Epetra_Vector>>& pressure);
 
     /// provide velocities from FPSI subproblem for scatra subproblem
     void set_velocity_fields();
@@ -120,7 +120,7 @@ namespace FS3I
     void set_wall_shear_stresses();
 
     /// provide pressures from FPSI subproblem for scatra subproblem
-    void SetPressureFields();
+    void set_pressure_fields();
 
     /// provide displacements from FPSI subproblem for scatra subproblem
     void set_mesh_disp();

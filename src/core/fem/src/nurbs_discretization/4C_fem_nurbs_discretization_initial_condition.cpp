@@ -87,16 +87,16 @@ namespace
     }
 
     // get the knotvector from nurbs discretisation
-    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
+    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
 
     // get the processor ID from the communicator
-    const int myrank = dis.Comm().MyPID();
+    const int myrank = dis.get_comm().MyPID();
 
     if (myrank == 0)
     {
       printf("\n");
       printf("Setting up least-squares Nurbs approximation of initial field (discretization %s)\n",
-          dis.Name().c_str());
+          dis.name().c_str());
     }
 
     // -------------------------------------------------------------------
@@ -122,8 +122,8 @@ namespace
     // -------------------------------------------------------------------
     {
       // call elements and assemble
-      if (!nurbsdis->Filled()) FOUR_C_THROW("fill_complete() was not called");
-      if (!nurbsdis->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
+      if (!nurbsdis->filled()) FOUR_C_THROW("fill_complete() was not called");
+      if (!nurbsdis->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
       // see what we have for input
       bool assemblemat = massmatrix != Teuchos::null;
@@ -138,7 +138,7 @@ namespace
       std::vector<int> lmstride;
 
       // loop over column elements
-      const int numcolele = nurbsdis->NumMyColElements();
+      const int numcolele = nurbsdis->num_my_col_elements();
 
       int every = numcolele / 58;
       // prevent division by zero when dividing by every later on
@@ -153,12 +153,12 @@ namespace
           fflush(nullptr);
         }
 
-        Core::Elements::Element* actele = nurbsdis->lColElement(i);
+        Core::Elements::Element* actele = nurbsdis->l_col_element(i);
 
         // get element location vector, dirichlet flags and ownerships
         lm.clear();
         lmowner.clear();
-        actele->LocationVector(*nurbsdis, lm, lmowner, lmstride);
+        actele->location_vector(*nurbsdis, lm, lmowner, lmstride);
 
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero
@@ -182,7 +182,7 @@ namespace
         {
           int spacedim = -1;
 
-          const Core::FE::CellType distype = actele->Shape();
+          const Core::FE::CellType distype = actele->shape();
           switch (distype)
           {
             case Core::FE::CellType::nurbs4:
@@ -210,10 +210,10 @@ namespace
 
           // get node coordinates of element
           Core::LinAlg::SerialDenseMatrix xyze(spacedim, iel);
-          Core::Nodes::Node** nodes = actele->Nodes();
+          Core::Nodes::Node** nodes = actele->nodes();
           for (int inode = 0; inode < iel; inode++)
           {
-            const auto& x = nodes[inode]->X();
+            const auto& x = nodes[inode]->x();
             for (int dim = 0; dim < spacedim; ++dim)
             {
               xyze(dim, inode) = x[dim];
@@ -228,14 +228,14 @@ namespace
             Core::FE::Nurbs::ControlPoint* cp =
                 dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
-            weights(inode) = cp->W();
+            weights(inode) = cp->w();
           }
 
           // access elements knot span
           std::vector<Core::LinAlg::SerialDenseVector> eleknots(spacedim);
 
           bool zero_size = false;
-          zero_size = knots->GetEleKnots(eleknots, actele->Id());
+          zero_size = knots->get_ele_knots(eleknots, actele->id());
 
           // nothing to be done for a zero sized element
           if (zero_size)
@@ -347,7 +347,7 @@ namespace
                 if (det < 1E-16)
                 {
                   FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f",
-                      actele->Id(), det);
+                      actele->id(), det);
                 }
 
                 // set total integration factor
@@ -471,7 +471,7 @@ namespace
                 if (det < 0.0)
                 {
                   FOUR_C_THROW(
-                      "GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", actele->Id(), det);
+                      "GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", actele->id(), det);
                 }
 
                 // set total integration factor
@@ -507,8 +507,8 @@ namespace
           }
         }
 
-        int eid = actele->Id();
-        if (assemblemat) massmatrix->Assemble(eid, elemass, lm, lmowner);
+        int eid = actele->id();
+        if (assemblemat) massmatrix->assemble(eid, elemass, lm, lmowner);
         if (assemblevec) Core::LinAlg::Assemble(*rhs, elerhs, lm, lmowner);
       }  // for (int i=0; i<numcolele; ++i)
     }
@@ -523,7 +523,7 @@ namespace
     // -------------------------------------------------------------------
     // finalize the system matrix
     // -------------------------------------------------------------------
-    massmatrix->Complete();
+    massmatrix->complete();
 
     // -------------------------------------------------------------------
     // solve system
@@ -535,7 +535,7 @@ namespace
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = true;
-    solver.Solve(massmatrix->EpetraOperator(), initialvals, rhs, solver_params);
+    solver.solve(massmatrix->epetra_operator(), initialvals, rhs, solver_params);
 
     // perform resets for solver and matrix
     solver.reset();
@@ -579,11 +579,11 @@ void Core::FE::Nurbs::apply_nurbs_initial_condition(Core::FE::Discretization& di
   p.set("AZTOL", newtol);
 
   Teuchos::RCP<Core::LinAlg::Solver> lssolver = Teuchos::rcp(
-      new Core::LinAlg::Solver(p, dis.Comm(), nullptr, Core::IO::Verbositylevel::standard));
-  dis.compute_null_space_if_necessary(lssolver->Params());
+      new Core::LinAlg::Solver(p, dis.get_comm(), nullptr, Core::IO::Verbositylevel::standard));
+  dis.compute_null_space_if_necessary(lssolver->params());
 
   // get the processor ID from the communicator
-  const int myrank = dis.Comm().MyPID();
+  const int myrank = dis.get_comm().MyPID();
 
   if (myrank == 0)
     std::cout << "\nSolver tolerance for least squares problem set to " << newtol

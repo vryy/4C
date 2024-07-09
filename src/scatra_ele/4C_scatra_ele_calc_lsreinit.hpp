@@ -44,7 +44,7 @@ namespace Discret
 
      public:
       //! Singleton access method
-      static ScaTraEleCalcLsReinit<distype, prob_dim>* Instance(
+      static ScaTraEleCalcLsReinit<distype, prob_dim>* instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
       /*========================================================================*/
@@ -52,7 +52,7 @@ namespace Discret
       /*========================================================================*/
 
       //! setup element evaluation
-      int SetupCalc(
+      int setup_calc(
           Core::Elements::Element* ele, Core::FE::Discretization& discretization) override;
 
       //! evaluate the element
@@ -264,7 +264,7 @@ namespace Discret
 
       //! set the isotropic diffusion coefficient, which may be negative for elliptic
       //! reinitialization
-      void SetIsotropicDiff(const double diff, const int k)
+      void set_isotropic_diff(const double diff, const int k)
       {
         diff_[k] = diff;
         return;
@@ -315,9 +315,9 @@ namespace Discret
         return;
       }
 
-      Core::LinAlg::Matrix<nsd, nsd> GetCrosswindTensor() { return diffdirectiontensor_; }
+      Core::LinAlg::Matrix<nsd, nsd> get_crosswind_tensor() { return diffdirectiontensor_; }
 
-      bool HaveCrossWindDiff() { return have_cross_wind_diff_; }
+      bool have_cross_wind_diff() { return have_cross_wind_diff_; }
 
      private:
       //! velocity for crosswind diffusion
@@ -375,42 +375,42 @@ namespace Discret
        * equation according to Sussman requires special care. */
 
       //! set current scalar value
-      void SetPhinp(const int k, double phinp)
+      void set_phinp(const int k, double phinp)
       {
         my::phinp_[k] = phinp;
         return;
       };
       //! set previous scalar value
-      void SetPhin(const int k, double phin)
+      void set_phin(const int k, double phin)
       {
         my::phin_[k] = phin;
         return;
       };
       //! set spatial gradient of current scalar value
-      void SetGradPhi(const int k, Core::LinAlg::Matrix<nsd, 1>& gradphi) override
+      void set_grad_phi(const int k, Core::LinAlg::Matrix<nsd, 1>& gradphi) override
       {
         my::gradphi_[k] = gradphi;
         return;
       };
       //! set convective term of current scalar value
-      void SetConvPhi(const int k, double conv_phi) override
+      void set_conv_phi(const int k, double conv_phi) override
       {
         my::conv_phi_[k] = conv_phi;
         return;
       };
       //! set convective velocity
-      void SetConVel(const int k, Core::LinAlg::Matrix<nsd, 1>& convel)
+      void set_con_vel(const int k, Core::LinAlg::Matrix<nsd, 1>& convel)
       {
         my::convelint_[k] = convel;
       };
       //! set history term of current scalar value
-      void SetHist(const int k, double hist)
+      void set_hist(const int k, double hist)
       {
         my::hist_[k] = hist;
         return;
       };
       //! set convective part in convective form
-      virtual void SetConv(const int k, Core::LinAlg::Matrix<nen, 1>& conv)
+      virtual void set_conv(const int k, Core::LinAlg::Matrix<nen, 1>& conv)
       {
         my::conv_[k] = conv;
       };
@@ -420,14 +420,14 @@ namespace Discret
       /*========================================================================*/
 
       //! set convective term of current scalar value
-      void AddToConvPhi(const int k, double conv_phi) override
+      void add_to_conv_phi(const int k, double conv_phi) override
       {
         FOUR_C_THROW("Currently unused!");
         return;
       };
       //{my::conv_phi_[k] += conv_phi;};
       //! set convective term of current scalar value
-      void ScaleConvPhi(const int k, double scale) override
+      void scale_conv_phi(const int k, double scale) override
       {
         FOUR_C_THROW("Currently unused!");
         return;

@@ -49,7 +49,7 @@ namespace BEAMINTERACTION
      * @param beam_to_solid_params_list (in) parameter list with the common beam-to-solid
      * parameters.
      */
-    virtual void SetBaseParams(const Teuchos::ParameterList& beam_to_solid_params_list);
+    virtual void set_base_params(const Teuchos::ParameterList& beam_to_solid_params_list);
 
     /**
      * \brief Setup member variables.
@@ -111,7 +111,7 @@ namespace BEAMINTERACTION
      * \brief Returns the penalty parameter.
      * @return penalty parameter.
      */
-    inline double GetPenaltyParameter() const { return penalty_parameter_; }
+    inline double get_penalty_parameter() const { return penalty_parameter_; }
 
     /**
      * \brief Returns the Gauss rule.
@@ -122,12 +122,12 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns true if the coupling should be evaluated with FAD.
      */
-    virtual inline bool GetIsFAD() const { return false; }
+    virtual inline bool get_is_fad() const { return false; }
 
     /**
      * \brief Returns the order for the FAD type.
      */
-    virtual inline int GetFADOrder() const { return 0; }
+    virtual inline int get_fad_order() const { return 0; }
 
     /**
      * \brief Returns the order for the FAD type.

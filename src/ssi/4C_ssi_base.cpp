@@ -48,26 +48,26 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       diff_time_step_size_(
           static_cast<int>(Core::UTILS::IntegralValue<int>(globaltimeparams, "DIFFTIMESTEPSIZE"))),
       fieldcoupling_(Teuchos::getIntegralValue<Inpar::SSI::FieldCoupling>(
-          Global::Problem::Instance()->SSIControlParams(), "FIELDCOUPLING")),
+          Global::Problem::instance()->ssi_control_params(), "FIELDCOUPLING")),
       is_scatra_manifold_(
           Core::UTILS::IntegralValue<bool>(globaltimeparams.sublist("MANIFOLD"), "ADD_MANIFOLD")),
       is_manifold_meshtying_(Core::UTILS::IntegralValue<bool>(
           globaltimeparams.sublist("MANIFOLD"), "MESHTYING_MANIFOLD")),
       is_s2i_kinetic_with_pseudo_contact_(
           check_s2_i_kinetics_condition_for_pseudo_contact("structure")),
-      macro_scale_(Global::Problem::Instance()->Materials()->FirstIdByType(
+      macro_scale_(Global::Problem::instance()->materials()->first_id_by_type(
                        Core::Materials::m_scatra_multiscale) != -1 or
-                   Global::Problem::Instance()->Materials()->FirstIdByType(
+                   Global::Problem::instance()->materials()->first_id_by_type(
                        Core::Materials::m_newman_multiscale) != -1),
       ssiinterfacecontact_(
-          Global::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceContact") !=
+          Global::Problem::instance()->get_dis("structure")->get_condition("SSIInterfaceContact") !=
           nullptr),
-      ssiinterfacemeshtying_(Global::Problem::Instance()
-                                 ->GetDis("structure")
-                                 ->GetCondition("ssi_interface_meshtying") != nullptr),
+      ssiinterfacemeshtying_(Global::Problem::instance()
+                                 ->get_dis("structure")
+                                 ->get_condition("ssi_interface_meshtying") != nullptr),
       temperature_funct_num_(
-          Global::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT")),
-      use_old_structure_(Global::Problem::Instance()->structural_dynamic_params().get<std::string>(
+          Global::Problem::instance()->elch_control_params().get<int>("TEMPERATURE_FROM_FUNCT")),
+      use_old_structure_(Global::Problem::instance()->structural_dynamic_params().get<std::string>(
                              "INT_STRATEGY") == "Old")
 {
   // Keep this constructor empty!
@@ -88,15 +88,15 @@ void SSI::SSIBase::init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
   set_is_setup(false);
 
   // do discretization specific setup (e.g. clone discr. scatra from structure)
-  InitDiscretizations(comm, struct_disname, scatra_disname,
+  init_discretizations(comm, struct_disname, scatra_disname,
       Core::UTILS::IntegralValue<bool>(globaltimeparams, "REDISTRIBUTE_SOLID"));
 
   init_time_integrators(
       globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
-  const RedistributionType redistribution_type = InitFieldCoupling(struct_disname);
+  const RedistributionType redistribution_type = init_field_coupling(struct_disname);
 
-  if (redistribution_type != SSI::RedistributionType::none) Redistribute(redistribution_type);
+  if (redistribution_type != SSI::RedistributionType::none) redistribute(redistribution_type);
 
   check_ssi_flags();
 
@@ -119,12 +119,12 @@ void SSI::SSIBase::setup()
 
   // in case of an ssi  multi scale formulation we need to set the displacement here
   auto dummy_vec = Teuchos::rcp(
-      new Epetra_Vector(*Global::Problem::Instance()->GetDis("structure")->dof_row_map(), true));
-  ssicoupling_->set_mesh_disp(ScaTraBaseAlgorithm(), dummy_vec);
+      new Epetra_Vector(*Global::Problem::instance()->get_dis("structure")->dof_row_map(), true));
+  ssicoupling_->set_mesh_disp(sca_tra_base_algorithm(), dummy_vec);
 
   // set up scalar transport field
-  ScaTraField()->setup();
-  if (is_sca_tra_manifold()) ScaTraManifold()->setup();
+  sca_tra_field()->setup();
+  if (is_sca_tra_manifold()) sca_tra_manifold()->setup();
 
   // only relevant for new structural time integration
   // only if adapter base has not already been set up outside
@@ -136,31 +136,31 @@ void SSI::SSIBase::setup()
     // pass initial scalar field to structural discretization to correctly compute initial
     // accelerations
     if (Teuchos::getIntegralValue<Inpar::SSI::SolutionSchemeOverFields>(
-            Global::Problem::Instance()->SSIControlParams(), "COUPALGO") !=
+            Global::Problem::instance()->ssi_control_params(), "COUPALGO") !=
         Inpar::SSI::SolutionSchemeOverFields::ssi_OneWay_SolidToScatra)
-      ssicoupling_->SetScalarField(
-          *Global::Problem::Instance()->GetDis("structure"), ScaTraField()->Phinp(), 1);
+      ssicoupling_->set_scalar_field(
+          *Global::Problem::instance()->get_dis("structure"), sca_tra_field()->phinp(), 1);
 
     if (macro_scale_)
     {
-      ScaTraField()->calc_mean_micro_concentration();
-      ssicoupling_->SetScalarFieldMicro(
-          *Global::Problem::Instance()->GetDis("structure"), ScaTraField()->PhinpMicro(), 2);
+      sca_tra_field()->calc_mean_micro_concentration();
+      ssicoupling_->set_scalar_field_micro(
+          *Global::Problem::instance()->get_dis("structure"), sca_tra_field()->phinp_micro(), 2);
     }
 
     //   temperature is non primary variable. Only set, if function for temperature is given
     if (temperature_funct_num_ != -1)
     {
       temperature_vector_ = Teuchos::rcp(new Epetra_Vector(
-          *Global::Problem::Instance()->GetDis("structure")->dof_row_map(2), true));
+          *Global::Problem::instance()->get_dis("structure")->dof_row_map(2), true));
 
       temperature_vector_->PutScalar(
-          Global::Problem::Instance()
-              ->FunctionById<Core::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
-              .evaluate(Time()));
+          Global::Problem::instance()
+              ->function_by_id<Core::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
+              .evaluate(time()));
 
-      ssicoupling_->SetTemperatureField(
-          *Global::Problem::Instance()->GetDis("structure"), temperature_vector_);
+      ssicoupling_->set_temperature_field(
+          *Global::Problem::instance()->get_dis("structure"), temperature_vector_);
     }
 
     // set up structural base algorithm
@@ -188,19 +188,19 @@ void SSI::SSIBase::setup()
   {
     auto dummy_stress_state =
         Teuchos::rcp(new Epetra_Vector(*structure_field()->discretization()->dof_row_map(2), true));
-    ssicoupling_->set_mechanical_stress_state(*ScaTraField()->discretization(), dummy_stress_state,
-        ScaTraField()->nds_two_tensor_quantity());
+    ssicoupling_->set_mechanical_stress_state(*sca_tra_field()->discretization(),
+        dummy_stress_state, sca_tra_field()->nds_two_tensor_quantity());
   }
 
   // check maps from scalar transport and structure discretizations
-  if (ScaTraField()->dof_row_map()->NumGlobalElements() == 0)
+  if (sca_tra_field()->dof_row_map()->NumGlobalElements() == 0)
     FOUR_C_THROW("Scalar transport discretization does not have any degrees of freedom!");
   if (structure_->dof_row_map()->NumGlobalElements() == 0)
     FOUR_C_THROW("Structure discretization does not have any degrees of freedom!");
 
   // set up materials
   ssicoupling_->assign_material_pointers(
-      structure_->discretization(), ScaTraField()->discretization());
+      structure_->discretization(), sca_tra_field()->discretization());
 
   // set up scatra-scatra interface coupling
   if (ssi_interface_meshtying())
@@ -210,7 +210,7 @@ void SSI::SSIBase::setup()
 
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
     meshtying_strategy_s2i_ =
-        Teuchos::rcp_dynamic_cast<const ScaTra::MeshtyingStrategyS2I>(ScaTraField()->Strategy());
+        Teuchos::rcp_dynamic_cast<const ScaTra::MeshtyingStrategyS2I>(sca_tra_field()->strategy());
 
     // safety checks
     if (meshtying_strategy_s2i_ == Teuchos::null)
@@ -227,30 +227,30 @@ void SSI::SSIBase::setup()
 /*----------------------------------------------------------------------*
  | Setup the discretizations                                rauch 08/16 |
  *----------------------------------------------------------------------*/
-void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::string& struct_disname,
+void SSI::SSIBase::init_discretizations(const Epetra_Comm& comm, const std::string& struct_disname,
     const std::string& scatra_disname, bool redistribute_struct_dis)
 {
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
-  auto structdis = problem->GetDis(struct_disname);
-  auto scatradis = problem->GetDis(scatra_disname);
+  auto structdis = problem->get_dis(struct_disname);
+  auto scatradis = problem->get_dis(scatra_disname);
 
   if (redistribute_struct_dis)
   {
-    Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+    Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
     Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
-        "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+        "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
         binning_params);
     auto element_filter = [](const Core::Elements::Element* element)
     { return Core::Binstrategy::Utils::SpecialElement::none; };
     auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
     auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
     Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
-        Global::Problem::Instance()->OutputControlFile(), {structdis}, element_filter,
+        Global::Problem::instance()->output_control_file(), {structdis}, element_filter,
         rigid_sphere_radius, correct_beam_center_node, false);
   }
 
-  if (scatradis->NumGlobalNodes() == 0)
+  if (scatradis->num_global_nodes() == 0)
   {
     if (fieldcoupling_ != Inpar::SSI::FieldCoupling::volume_match and
         fieldcoupling_ != Inpar::SSI::FieldCoupling::volumeboundary_match)
@@ -263,16 +263,16 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
 
     // fill scatra discretization by cloning structure discretization
     Core::FE::CloneDiscretization<SSI::ScatraStructureCloneStrategy>(
-        structdis, scatradis, Global::Problem::Instance()->CloningMaterialMap());
+        structdis, scatradis, Global::Problem::instance()->cloning_material_map());
     scatradis->fill_complete();
 
     // create discretization for scatra manifold based on SSISurfaceManifold condition
     if (is_sca_tra_manifold())
     {
-      auto scatra_manifold_dis = problem->GetDis("scatra_manifold");
+      auto scatra_manifold_dis = problem->get_dis("scatra_manifold");
       Core::FE::CloneDiscretizationFromCondition<SSI::ScatraStructureCloneStrategyManifold>(
           *structdis, *scatra_manifold_dis, "SSISurfaceManifold",
-          Global::Problem::Instance()->CloningMaterialMap());
+          Global::Problem::instance()->cloning_material_map());
 
       // clone conditions. Needed this way, as many conditions are cloned from SSISurfaceManifold.
       std::vector<std::map<std::string, std::string>> conditions_to_copy = {
@@ -301,7 +301,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
 
       Core::FE::DiscretizationCreatorBase creator;
       for (const auto& condition_to_copy : conditions_to_copy)
-        creator.CopyConditions(*structdis, *scatra_manifold_dis, condition_to_copy);
+        creator.copy_conditions(*structdis, *scatra_manifold_dis, condition_to_copy);
 
       scatra_manifold_dis->fill_complete();
 
@@ -310,19 +310,19 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
       if (is_manifold_meshtying_)
       {
         // create vector of all node GIDs (all procs) of manifold dis
-        int num_my_nodes = scatra_manifold_dis->NodeRowMap()->NumMyElements();
+        int num_my_nodes = scatra_manifold_dis->node_row_map()->NumMyElements();
         std::vector<int> my_node_ids(num_my_nodes);
         for (int lid = 0; lid < num_my_nodes; ++lid)
-          my_node_ids[lid] = scatra_manifold_dis->NodeRowMap()->GID(lid);
+          my_node_ids[lid] = scatra_manifold_dis->node_row_map()->GID(lid);
 
         int max_num_nodes = 0;
-        Comm().MaxAll(&num_my_nodes, &max_num_nodes, 1);
+        get_comm().MaxAll(&num_my_nodes, &max_num_nodes, 1);
 
         // resize vector and fill with place holders (-1)
         my_node_ids.resize(max_num_nodes, -1);
 
-        std::vector<int> glob_node_ids(max_num_nodes * Comm().NumProc(), -1);
-        Comm().GatherAll(
+        std::vector<int> glob_node_ids(max_num_nodes * get_comm().NumProc(), -1);
+        get_comm().GatherAll(
             my_node_ids.data(), glob_node_ids.data(), static_cast<int>(my_node_ids.size()));
 
         // remove place holders (-1)
@@ -330,13 +330,14 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
             std::remove(glob_node_ids.begin(), glob_node_ids.end(), -1), glob_node_ids.end());
 
         // create new condition
-        const int num_conditions = static_cast<int>(scatra_manifold_dis->GetAllConditions().size());
+        const int num_conditions =
+            static_cast<int>(scatra_manifold_dis->get_all_conditions().size());
         auto cond = Teuchos::rcp(new Core::Conditions::Condition(num_conditions + 1,
             Core::Conditions::ScatraPartitioning, true, Core::Conditions::geometry_type_surface));
-        cond->parameters().Add("ConditionID", 0);
-        cond->SetNodes(glob_node_ids);
+        cond->parameters().add("ConditionID", 0);
+        cond->set_nodes(glob_node_ids);
 
-        scatra_manifold_dis->SetCondition("ScatraPartitioning", cond);
+        scatra_manifold_dis->set_condition("ScatraPartitioning", cond);
 
         scatra_manifold_dis->fill_complete();
       }
@@ -360,14 +361,15 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
     SSI::ScatraStructureCloneStrategy clonestrategy;
     const auto conditions_to_copy = clonestrategy.conditions_to_copy();
     Core::FE::DiscretizationCreatorBase creator;
-    creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
+    creator.copy_conditions(*scatradis, *scatradis, conditions_to_copy);
 
     // safety check, since it is not reasonable to have SOLIDSCATRA or SOLIDPOROP1 Elements with a
     // ScaTra::ImplType != 'impltype_undefined' if they are not cloned! Therefore loop over all
     // structure elements and check the impltype
-    for (int i = 0; i < structdis->NumMyColElements(); ++i)
+    for (int i = 0; i < structdis->num_my_col_elements(); ++i)
     {
-      if (clonestrategy.GetImplType(structdis->lColElement(i)) != Inpar::ScaTra::impltype_undefined)
+      if (clonestrategy.get_impl_type(structdis->l_col_element(i)) !=
+          Inpar::ScaTra::impltype_undefined)
       {
         FOUR_C_THROW(
             "A TRANSPORT discretization is read from the .dat file, which is fine since the scatra "
@@ -380,7 +382,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
     }
   }
   // read in the micro field, has to be done after cloning of the scatra discretization
-  auto input_file_name = problem->OutputControlFile()->input_file_name();
+  auto input_file_name = problem->output_control_file()->input_file_name();
   Core::IO::DatFileReader local_reader(input_file_name);
   Global::ReadMicroFields(*problem, local_reader);
 }
@@ -388,18 +390,18 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
 /*----------------------------------------------------------------------*
  | Setup ssi coupling object                                rauch 08/16 |
  *----------------------------------------------------------------------*/
-SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struct_disname)
+SSI::RedistributionType SSI::SSIBase::init_field_coupling(const std::string& struct_disname)
 {
   // initialize return variable
   RedistributionType redistribution_required = SSI::RedistributionType::none;
 
-  auto scatra_integrator = ScaTraBaseAlgorithm()->ScaTraField();
+  auto scatra_integrator = sca_tra_base_algorithm()->sca_tra_field();
 
   // safety check
   {
     // check for ssi coupling condition
     std::vector<Core::Conditions::Condition*> ssicoupling;
-    scatra_integrator->discretization()->GetCondition("SSICoupling", ssicoupling);
+    scatra_integrator->discretization()->get_condition("SSICoupling", ssicoupling);
     const bool havessicoupling = (ssicoupling.size() > 0);
 
     if (havessicoupling and (fieldcoupling_ != Inpar::SSI::FieldCoupling::boundary_nonmatch and
@@ -413,7 +415,7 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
     if (fieldcoupling_ == Inpar::SSI::FieldCoupling::volume_nonmatch)
     {
       const Teuchos::ParameterList& volmortarparams =
-          Global::Problem::Instance()->VolmortarParams();
+          Global::Problem::instance()->volmortar_params();
       if (Core::UTILS::IntegralValue<Core::VolMortar::CouplingType>(
               volmortarparams, "COUPLINGTYPE") != Core::VolMortar::couplingtype_coninter)
       {
@@ -452,8 +454,8 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
   }
 
   // initialize coupling objects including dof sets
-  Global::Problem* problem = Global::Problem::Instance();
-  ssicoupling_->init(problem->NDim(), problem->GetDis(struct_disname), Teuchos::rcp(this, false));
+  Global::Problem* problem = Global::Problem::instance();
+  ssicoupling_->init(problem->n_dim(), problem->get_dis(struct_disname), Teuchos::rcp(this, false));
 
   return redistribution_required;
 }
@@ -467,44 +469,44 @@ void SSI::SSIBase::read_restart(int restart)
   {
     structure_->read_restart(restart);
 
-    const Teuchos::ParameterList& ssidyn = Global::Problem::Instance()->SSIControlParams();
+    const Teuchos::ParameterList& ssidyn = Global::Problem::instance()->ssi_control_params();
     const bool restartfromstructure =
         Core::UTILS::IntegralValue<int>(ssidyn, "RESTART_FROM_STRUCTURE");
 
     if (not restartfromstructure)  // standard restart
     {
-      ScaTraField()->read_restart(restart);
-      if (is_sca_tra_manifold()) ScaTraManifold()->read_restart(restart);
+      sca_tra_field()->read_restart(restart);
+      if (is_sca_tra_manifold()) sca_tra_manifold()->read_restart(restart);
     }
     else  // restart from structure simulation
     {
       // Since there is no restart output for the scatra field available, we only have to fix the
       // time and step counter
-      ScaTraField()->SetTimeStep(structure_->TimeOld(), restart);
-      if (is_sca_tra_manifold()) ScaTraManifold()->SetTimeStep(structure_->TimeOld(), restart);
+      sca_tra_field()->set_time_step(structure_->time_old(), restart);
+      if (is_sca_tra_manifold()) sca_tra_manifold()->set_time_step(structure_->time_old(), restart);
     }
 
-    SetTimeStep(structure_->TimeOld(), restart);
+    set_time_step(structure_->time_old(), restart);
   }
 
   // Material pointers to other field were deleted during read_restart().
   // They need to be reset.
   ssicoupling_->assign_material_pointers(
-      structure_->discretization(), ScaTraField()->discretization());
+      structure_->discretization(), sca_tra_field()->discretization());
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::TestResults(const Epetra_Comm& comm) const
+void SSI::SSIBase::test_results(const Epetra_Comm& comm) const
 {
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
-  problem->AddFieldTest(structure_->CreateFieldTest());
-  problem->AddFieldTest(ScaTraBaseAlgorithm()->create_sca_tra_field_test());
+  problem->add_field_test(structure_->create_field_test());
+  problem->add_field_test(sca_tra_base_algorithm()->create_sca_tra_field_test());
   if (is_sca_tra_manifold())
-    problem->AddFieldTest(sca_tra_manifold_base_algorithm()->create_sca_tra_field_test());
-  problem->AddFieldTest(Teuchos::rcp(new SSI::SSIResultTest(Teuchos::rcp(this, false))));
-  problem->TestAll(comm);
+    problem->add_field_test(sca_tra_manifold_base_algorithm()->create_sca_tra_field_test());
+  problem->add_field_test(Teuchos::rcp(new SSI::SSIResultTest(Teuchos::rcp(this, false))));
+  problem->test_all(comm);
 }
 
 /*----------------------------------------------------------------------*/
@@ -525,13 +527,13 @@ void SSI::SSIBase::set_struct_solution(Teuchos::RCP<const Epetra_Vector> disp,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const
+void SSI::SSIBase::set_scatra_solution(Teuchos::RCP<const Epetra_Vector> phi) const
 {
   // safety checks
   check_is_init();
   check_is_setup();
 
-  ssicoupling_->SetScalarField(*structure_field()->discretization(), phi, 1);
+  ssicoupling_->set_scalar_field(*structure_field()->discretization(), phi, 1);
 
   // set state for contact evaluation
   if (contact_strategy_nitsche_ != Teuchos::null) set_ssi_contact_states(phi);
@@ -552,7 +554,7 @@ void SSI::SSIBase::set_micro_scatra_solution(Teuchos::RCP<const Epetra_Vector> p
   check_is_init();
   check_is_setup();
 
-  ssicoupling_->SetScalarFieldMicro(*structure_field()->discretization(), phi, 2);
+  ssicoupling_->set_scalar_field_micro(*structure_field()->discretization(), phi, 2);
 }
 
 /*----------------------------------------------------------------------*/
@@ -564,13 +566,13 @@ void SSI::SSIBase::evaluate_and_set_temperature_field()
   {
     // evaluate temperature at current time and put to scalar
     const double temperature =
-        Global::Problem::Instance()
-            ->FunctionById<Core::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
-            .evaluate(Time());
+        Global::Problem::instance()
+            ->function_by_id<Core::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
+            .evaluate(time());
     temperature_vector_->PutScalar(temperature);
 
     // set temperature vector to structure discretization
-    ssicoupling_->SetTemperatureField(*structure_->discretization(), temperature_vector_);
+    ssicoupling_->set_temperature_field(*structure_->discretization(), temperature_vector_);
   }
 }
 
@@ -582,7 +584,7 @@ void SSI::SSIBase::set_velocity_fields(Teuchos::RCP<const Epetra_Vector> vel)
   check_is_init();
   check_is_setup();
 
-  ssicoupling_->set_velocity_fields(ScaTraBaseAlgorithm(), zeros_structure_, vel);
+  ssicoupling_->set_velocity_fields(sca_tra_base_algorithm(), zeros_structure_, vel);
   if (is_sca_tra_manifold())
     ssicoupling_->set_velocity_fields(sca_tra_manifold_base_algorithm(), zeros_structure_, vel);
 }
@@ -595,8 +597,8 @@ void SSI::SSIBase::set_mechanical_stress_state(
   check_is_init();
   check_is_setup();
 
-  ssicoupling_->set_mechanical_stress_state(*ScaTraField()->discretization(),
-      mechanical_stress_state, ScaTraField()->nds_two_tensor_quantity());
+  ssicoupling_->set_mechanical_stress_state(*sca_tra_field()->discretization(),
+      mechanical_stress_state, sca_tra_field()->nds_two_tensor_quantity());
 }
 
 /*----------------------------------------------------------------------*/
@@ -607,7 +609,7 @@ void SSI::SSIBase::set_mesh_disp(Teuchos::RCP<const Epetra_Vector> disp)
   check_is_init();
   check_is_setup();
 
-  ssicoupling_->set_mesh_disp(ScaTraBaseAlgorithm(), disp);
+  ssicoupling_->set_mesh_disp(sca_tra_base_algorithm(), disp);
   if (is_sca_tra_manifold()) ssicoupling_->set_mesh_disp(sca_tra_manifold_base_algorithm(), disp);
 }
 
@@ -615,9 +617,9 @@ void SSI::SSIBase::set_mesh_disp(Teuchos::RCP<const Epetra_Vector> disp)
 /*----------------------------------------------------------------------*/
 void SSI::SSIBase::check_ssi_flags() const
 {
-  if (ScaTraField()->S2IKinetics())
+  if (sca_tra_field()->s2_i_kinetics())
   {
-    if (!(SSIInterfaceContact() or ssi_interface_meshtying()))
+    if (!(ssi_interface_contact() or ssi_interface_meshtying()))
     {
       FOUR_C_THROW(
           "You defined an 'S2IKinetics' condition in the input-file. However, neither an "
@@ -628,9 +630,9 @@ void SSI::SSIBase::check_ssi_flags() const
   }
 
   const bool is_nitsche_penalty_adaptive(Core::UTILS::IntegralValue<int>(
-      Global::Problem::Instance()->contact_dynamic_params(), "NITSCHE_PENALTY_ADAPTIVE"));
+      Global::Problem::instance()->contact_dynamic_params(), "NITSCHE_PENALTY_ADAPTIVE"));
 
-  if (SSIInterfaceContact() and is_nitsche_penalty_adaptive)
+  if (ssi_interface_contact() and is_nitsche_penalty_adaptive)
     FOUR_C_THROW("Adaptive nitsche penalty parameter currently not supported!");
 }
 
@@ -638,8 +640,8 @@ void SSI::SSIBase::check_ssi_flags() const
 /*----------------------------------------------------------------------*/
 void SSI::SSIBase::set_dt_from_sca_tra_to_structure()
 {
-  structure_field()->set_dt(ScaTraField()->Dt());
-  structure_field()->SetTimen(ScaTraField()->Time());
+  structure_field()->set_dt(sca_tra_field()->dt());
+  structure_field()->set_timen(sca_tra_field()->time());
   structure_field()->post_update();
 }
 
@@ -647,8 +649,8 @@ void SSI::SSIBase::set_dt_from_sca_tra_to_structure()
 /*----------------------------------------------------------------------*/
 void SSI::SSIBase::set_dt_from_sca_tra_to_manifold()
 {
-  ScaTraManifold()->set_dt(ScaTraField()->Dt());
-  ScaTraManifold()->SetTimeStep(ScaTraField()->Time(), ScaTraField()->Step());
+  sca_tra_manifold()->set_dt(sca_tra_field()->dt());
+  sca_tra_manifold()->set_time_step(sca_tra_field()->time(), sca_tra_field()->step());
 }
 
 /*----------------------------------------------------------------------*/
@@ -656,8 +658,8 @@ void SSI::SSIBase::set_dt_from_sca_tra_to_manifold()
 void SSI::SSIBase::set_dt_from_sca_tra_to_ssi()
 {
   // set values for this SSI algorithm
-  SetTimeStep(ScaTraField()->Time(), Step());
-  set_dt(ScaTraField()->Dt());
+  set_time_step(sca_tra_field()->time(), step());
+  set_dt(sca_tra_field()->dt());
 
   // set values for other fields
   set_dt_from_sca_tra_to_structure();
@@ -666,28 +668,28 @@ void SSI::SSIBase::set_dt_from_sca_tra_to_ssi()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
+void SSI::SSIBase::redistribute(const RedistributionType redistribution_type)
 {
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
-  auto structdis = problem->GetDis("structure");
-  auto scatradis = problem->GetDis("scatra");
+  auto structdis = problem->get_dis("structure");
+  auto scatradis = problem->get_dis("scatra");
   if (redistribution_type == SSI::RedistributionType::match and !is_sca_tra_manifold())
   {
     // first we bin the scatra discretization
     std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
     dis.push_back(scatradis);
-    Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+    Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
     Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
-        "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+        "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
         binning_params);
     auto element_filter = [](const Core::Elements::Element* element)
     { return Core::Binstrategy::Utils::SpecialElement::none; };
     auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
     auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
     Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
-        Global::Problem::Instance()->OutputControlFile(), dis, element_filter, rigid_sphere_radius,
-        correct_beam_center_node, false);
+        Global::Problem::instance()->output_control_file(), dis, element_filter,
+        rigid_sphere_radius, correct_beam_center_node, false);
 
     Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
         *scatradis, *scatradis, "ScatraHeteroReactionMaster", "ScatraHeteroReactionSlave");
@@ -702,32 +704,32 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
     dis.push_back(structdis);
     dis.push_back(scatradis);
 
-    Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+    Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
     Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
-        "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+        "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
         binning_params);
     auto element_filter = [](const Core::Elements::Element* element)
     { return Core::Binstrategy::Utils::SpecialElement::none; };
     auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
     auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
     Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
-        Global::Problem::Instance()->OutputControlFile(), dis, element_filter, rigid_sphere_radius,
-        correct_beam_center_node, false);
+        Global::Problem::instance()->output_control_file(), dis, element_filter,
+        rigid_sphere_radius, correct_beam_center_node, false);
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<ScaTra::ScaTraTimIntImpl> SSI::SSIBase::ScaTraField() const
+Teuchos::RCP<ScaTra::ScaTraTimIntImpl> SSI::SSIBase::sca_tra_field() const
 {
-  return scatra_base_algorithm_->ScaTraField();
+  return scatra_base_algorithm_->sca_tra_field();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<ScaTra::ScaTraTimIntImpl> SSI::SSIBase::ScaTraManifold() const
+Teuchos::RCP<ScaTra::ScaTraTimIntImpl> SSI::SSIBase::sca_tra_manifold() const
 {
-  return scatra_manifold_base_algorithm_->ScaTraField();
+  return scatra_manifold_base_algorithm_->sca_tra_field();
 }
 
 /*----------------------------------------------------------------------*/
@@ -737,7 +739,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
     const std::string& struct_disname, const std::string& scatra_disname, const bool isAle)
 {
   // get the global problem
-  auto* problem = Global::Problem::Instance();
+  auto* problem = Global::Problem::instance();
 
   // time parameter handling
   // In case of different time stepping, time params have to be read from single field sections.
@@ -755,7 +757,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
   if (struct_adapterbase_ptr_ == Teuchos::null)
   {
     // access the structural discretization
-    auto structdis = problem->GetDis(struct_disname);
+    auto structdis = problem->get_dis(struct_disname);
 
     // build structure based on new structural time integration
     if (structparams.get<std::string>("INT_STRATEGY") == "Standard")
@@ -791,9 +793,9 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
   // mesh is written inside. cloning must happen before!
   scatra_base_algorithm_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(*scatratimeparams,
       SSI::UTILS::ModifyScaTraParams(scatraparams),
-      problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle));
+      problem->solver_params(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle));
 
-  ScaTraBaseAlgorithm()->init();
+  sca_tra_base_algorithm()->init();
 
   // create and initialize scatra base algorithm for manifolds
   if (is_sca_tra_manifold())
@@ -801,7 +803,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
     scatra_manifold_base_algorithm_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
         *scatratimeparams,
         SSI::UTILS::CloneScaTraManifoldParams(scatraparams, globaltimeparams.sublist("MANIFOLD")),
-        problem->SolverParams(globaltimeparams.sublist("MANIFOLD").get<int>("LINEAR_SOLVER")),
+        problem->solver_params(globaltimeparams.sublist("MANIFOLD").get<int>("LINEAR_SOLVER")),
         "scatra_manifold", isAle));
 
     sca_tra_manifold_base_algorithm()->init();
@@ -816,7 +818,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
 /*----------------------------------------------------------------------*/
 bool SSI::SSIBase::do_calculate_initial_potential_field() const
 {
-  const auto ssi_params = Global::Problem::Instance()->SSIControlParams();
+  const auto ssi_params = Global::Problem::instance()->ssi_control_params();
   const bool init_pot_calc =
       Core::UTILS::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
 
@@ -827,7 +829,7 @@ bool SSI::SSIBase::do_calculate_initial_potential_field() const
 /*----------------------------------------------------------------------*/
 bool SSI::SSIBase::is_elch_sca_tra_tim_int_type() const
 {
-  const auto ssi_params = Global::Problem::Instance()->SSIControlParams();
+  const auto ssi_params = Global::Problem::instance()->ssi_control_params();
   const auto scatra_type =
       Teuchos::getIntegralValue<Inpar::SSI::ScaTraTimIntType>(ssi_params, "SCATRATIMINTTYPE");
 
@@ -836,10 +838,10 @@ bool SSI::SSIBase::is_elch_sca_tra_tim_int_type() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool SSI::SSIBase::IsRestart() const
+bool SSI::SSIBase::is_restart() const
 {
   // get the global problem
-  const auto* problem = Global::Problem::Instance();
+  const auto* problem = Global::Problem::instance();
 
   const int restartstep = problem->restart();
 
@@ -872,13 +874,13 @@ bool SSI::SSIBase::check_s2_i_kinetics_condition_for_pseudo_contact(
 {
   bool is_s2i_kinetic_with_pseudo_contact = false;
 
-  auto structdis = Global::Problem::Instance()->GetDis(struct_disname);
+  auto structdis = Global::Problem::instance()->get_dis(struct_disname);
   // get all s2i kinetics conditions
   std::vector<Core::Conditions::Condition*> s2ikinetics_conditons(0, nullptr);
-  structdis->GetCondition("S2IKinetics", s2ikinetics_conditons);
+  structdis->get_condition("S2IKinetics", s2ikinetics_conditons);
   // get all ssi contact conditions
   std::vector<Core::Conditions::Condition*> ssi_contact_conditions;
-  structdis->GetCondition("SSIInterfaceContact", ssi_contact_conditions);
+  structdis->get_condition("SSIInterfaceContact", ssi_contact_conditions);
   for (auto* s2ikinetics_cond : s2ikinetics_conditons)
   {
     if ((s2ikinetics_cond->parameters().get<int>("interface side") == Inpar::S2I::side_slave) and
@@ -904,7 +906,7 @@ bool SSI::SSIBase::check_s2_i_kinetics_condition_for_pseudo_contact(
 
   const bool do_output_cauchy_stress =
       Core::UTILS::IntegralValue<Inpar::Solid::StressType>(
-          Global::Problem::Instance()->IOParams(), "STRUCT_STRESS") == Inpar::Solid::stress_cauchy;
+          Global::Problem::instance()->io_params(), "STRUCT_STRESS") == Inpar::Solid::stress_cauchy;
 
   if (is_s2i_kinetic_with_pseudo_contact and !do_output_cauchy_stress)
   {
@@ -921,25 +923,25 @@ bool SSI::SSIBase::check_s2_i_kinetics_condition_for_pseudo_contact(
 void SSI::SSIBase::check_ssi_interface_conditions(const std::string& struct_disname) const
 {
   // access the structural discretization
-  auto structdis = Global::Problem::Instance()->GetDis(struct_disname);
+  auto structdis = Global::Problem::instance()->get_dis(struct_disname);
 
   if (ssi_interface_meshtying())
     ScaTra::ScaTraUtils::CheckConsistencyWithS2IKineticsCondition(
         "ssi_interface_meshtying", structdis);
 
   // check scatra-structure-interaction contact condition
-  if (SSIInterfaceContact())
+  if (ssi_interface_contact())
   {
     // get ssi condition to be tested
     std::vector<Core::Conditions::Condition*> ssiconditions;
-    structdis->GetCondition("SSIInterfaceContact", ssiconditions);
+    structdis->get_condition("SSIInterfaceContact", ssiconditions);
     SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(ssiconditions, structdis);
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::SetupSystem()
+void SSI::SSIBase::setup_system()
 {
   if (ssiinterfacemeshtying_)
     ssi_structure_mesh_tying()->check_slave_side_has_dirichlet_conditions(
@@ -965,18 +967,18 @@ void SSI::SSIBase::setup_contact_strategy()
 {
   // get the contact solution strategy
   auto contact_solution_type = Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
-      Global::Problem::Instance()->contact_dynamic_params(), "STRATEGY");
+      Global::Problem::instance()->contact_dynamic_params(), "STRATEGY");
 
   if (contact_solution_type == Inpar::CONTACT::solution_nitsche)
   {
     if (Core::UTILS::IntegralValue<Inpar::Solid::IntegrationStrategy>(
-            Global::Problem::Instance()->structural_dynamic_params(), "INT_STRATEGY") !=
+            Global::Problem::instance()->structural_dynamic_params(), "INT_STRATEGY") !=
         Inpar::Solid::int_standard)
       FOUR_C_THROW("ssi contact only with new structural time integration");
 
     // get the contact model evaluator and store a pointer to the strategy
     auto& model_evaluator_contact = dynamic_cast<Solid::MODELEVALUATOR::Contact&>(
-        structure_field()->ModelEvaluator(Inpar::Solid::model_contact));
+        structure_field()->model_evaluator(Inpar::Solid::model_contact));
     contact_strategy_nitsche_ = Teuchos::rcp_dynamic_cast<CONTACT::NitscheStrategySsi>(
         model_evaluator_contact.strategy_ptr(), true);
   }

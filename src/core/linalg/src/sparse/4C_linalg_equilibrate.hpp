@@ -93,7 +93,7 @@ namespace Core::LinAlg
      * @param[in,out] residual      residual vector
      * @param[in]     blockmaps     (block) map(s) of system matrix
      */
-    void EquilibrateSystem(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    void equilibrate_system(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<Epetra_Vector> residual,
         Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmaps) const;
 
@@ -167,7 +167,7 @@ namespace Core::LinAlg
    public:
     EquilibrationUniversal(EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap);
     //! return equilibration method
-    EquilibrationMethod Method() const { return method_; }
+    EquilibrationMethod method() const { return method_; }
 
     void equilibrate_rhs(Teuchos::RCP<Epetra_Vector> residual) const override;
 

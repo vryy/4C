@@ -45,28 +45,28 @@ namespace XFEM
     virtual void predict_coupling_states() = 0;
 
     //! Set required states in the coupling object
-    virtual void SetCouplingStates() = 0;
+    virtual void set_coupling_states() = 0;
 
     //! Initializes the couplings (done at the beginning of the algorithm after fields have their
     //! state for timestep n)
-    virtual void InitCouplingStates() = 0;
+    virtual void init_coupling_states() = 0;
 
     //! Add the coupling matrixes to the global systemmatrix
     // in ... idx[0] first discretization index , idx[1] second discretization index, ... in the
     // blockmatrix in ... scaling between xfluid evaluated coupling matrixes and coupled
     // systemmatrix
-    virtual void AddCouplingMatrix(
+    virtual void add_coupling_matrix(
         Core::LinAlg::BlockSparseMatrixBase& systemmatrix, double scaling) = 0;
 
     //! Add the coupling rhs
     // in ... idx[0] first discretization index , idx[1] second discretization index, ... in the
     // blockmatrix in ... scaling between xfluid evaluated coupling matrixes and coupled
     // systemmatrix
-    virtual void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs,
+    virtual void add_coupling_rhs(Teuchos::RCP<Epetra_Vector> rhs,
         const Core::LinAlg::MultiMapExtractor& me, double scaling) = 0;
 
     //! Update (Perform after Each Timestep)
-    virtual void Update(double scaling) = 0;
+    virtual void update(double scaling) = 0;
 
     //! Write Output (For restart or write results on the interface)
     virtual void output(Core::IO::DiscretizationWriter& writer) = 0;

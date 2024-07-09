@@ -45,23 +45,23 @@ namespace Discret
     class RedAirwayType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "RedAirwayType"; }
+      std::string name() const override { return "RedAirwayType"; }
 
-      static RedAirwayType& Instance();
+      static RedAirwayType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -109,21 +109,21 @@ namespace Discret
       /*!
       \brief Deep copy this instance of RedAirway and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override
+      int num_line() const override
       {
         if (num_node() == 2)
           return 1;
@@ -137,17 +137,17 @@ namespace Discret
       /*!
       \brief Return number of surfaces of this element (always 1)
       */
-      int NumSurface() const override { return -1; }
+      int num_surface() const override { return -1; }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      int NumVolume() const override { return -1; }
+      int num_volume() const override { return -1; }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
 
       /*!
@@ -156,9 +156,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return RedAirwayType::Instance().UniqueParObjectId();
+        return RedAirwayType::instance().unique_par_object_id();
       }
 
       /*!
@@ -192,7 +192,7 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 1; }
+      int num_dof_per_node(const Core::Nodes::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -212,7 +212,7 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      RedAirwayType& ElementType() const override { return RedAirwayType::Instance(); }
+      RedAirwayType& element_type() const override { return RedAirwayType::instance(); }
 
       //@}
 
@@ -237,7 +237,7 @@ namespace Discret
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      void VisNames(std::map<std::string, int>& names) override{};
+      void vis_names(std::map<std::string, int>& names) override{};
 
       /*!
       \brief Query data to be visualized using BINIO of a given name
@@ -253,7 +253,7 @@ namespace Discret
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if element recognizes the name
       */
-      bool VisData(const std::string& name, std::vector<double>& data) override;
+      bool vis_data(const std::string& name, std::vector<double>& data) override;
 
 
       //! @name Input and Creation
@@ -261,7 +261,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -337,13 +337,13 @@ namespace Discret
       //@}
 
       //! @name Other
-      std::string Type() { return elem_type_; }
+      std::string type() { return elem_type_; }
 
       //! @name Other
-      std::string Resistance() { return resistance_; }
+      std::string resistance() { return resistance_; }
 
       //! @name Other
-      std::string ElemSolvingType() { return elemsolving_type_; }
+      std::string elem_solving_type() { return elemsolving_type_; }
 
       //@}
 
@@ -368,7 +368,7 @@ namespace Discret
       /*!
        * \brief Get fixed airway parameters of the RedAirway element
        */
-      [[nodiscard]] const ReducedLung::AirwayParams& GetAirwayParams() const;
+      [[nodiscard]] const ReducedLung::AirwayParams& get_airway_params() const;
 
      private:
       //! action parameters recognized by airway
@@ -431,23 +431,23 @@ namespace Discret
     class RedAcinusType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "RedAcinusType"; }
+      std::string name() const override { return "RedAcinusType"; }
 
-      static RedAcinusType& Instance();
+      static RedAcinusType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -495,21 +495,21 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Redacinus and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override
+      int num_line() const override
       {
         if (num_node() == 2)
           return 1;
@@ -523,17 +523,17 @@ namespace Discret
       /*!
       \brief Return number of surfaces of this element (always 1)
       */
-      int NumSurface() const override { return -1; }
+      int num_surface() const override { return -1; }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      int NumVolume() const override { return -1; }
+      int num_volume() const override { return -1; }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Return center coordinates of element
@@ -546,9 +546,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return RedAcinusType::Instance().UniqueParObjectId();
+        return RedAcinusType::instance().unique_par_object_id();
       }
 
       /*!
@@ -582,7 +582,7 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 1; }
+      int num_dof_per_node(const Core::Nodes::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -602,7 +602,7 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      RedAcinusType& ElementType() const override { return RedAcinusType::Instance(); }
+      RedAcinusType& element_type() const override { return RedAcinusType::instance(); }
 
       //@}
 
@@ -627,7 +627,7 @@ namespace Discret
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      void VisNames(std::map<std::string, int>& names) override;
+      void vis_names(std::map<std::string, int>& names) override;
 
       /*!
       \brief Query data to be visualized using BINIO of a given name
@@ -643,7 +643,7 @@ namespace Discret
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if element recognizes the name
       */
-      bool VisData(const std::string& name, std::vector<double>& data) override;
+      bool vis_data(const std::string& name, std::vector<double>& data) override;
 
 
       //! @name Input and Creation
@@ -651,7 +651,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -728,10 +728,10 @@ namespace Discret
 
 
       //! @name Other
-      std::string Type() { return elem_type_; }
+      std::string type() { return elem_type_; }
 
       //! @name Other
-      std::string Resistance() { return resistance_; }
+      std::string resistance() { return resistance_; }
 
       //@}
 
@@ -759,12 +759,12 @@ namespace Discret
        * Prestressed volume states in the input file may differ from the actual V0 used in many
        * formulas.
        */
-      void UpdateRelaxedVolume(double newVol);
+      void update_relaxed_volume(double newVol);
 
       /*!
        * \brief Get fixed acinus parameters of the RedAcinus element
        */
-      [[nodiscard]] const ReducedLung::AcinusParams& GetAcinusParams() const;
+      [[nodiscard]] const ReducedLung::AcinusParams& get_acinus_params() const;
 
      private:
       //! action parameters recognized by acinus
@@ -827,23 +827,23 @@ namespace Discret
     class RedInterAcinarDepType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "RedInterAcinarDepType"; }
+      std::string name() const override { return "RedInterAcinarDepType"; }
 
-      static RedInterAcinarDepType& Instance();
+      static RedInterAcinarDepType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -891,21 +891,21 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Redacinus and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override
+      int num_line() const override
       {
         if (num_node() == 2)
           return 1;
@@ -919,17 +919,17 @@ namespace Discret
       /*!
       \brief Return number of surfaces of this element (always 1)
       */
-      int NumSurface() const override { return -1; }
+      int num_surface() const override { return -1; }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      int NumVolume() const override { return -1; }
+      int num_volume() const override { return -1; }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Return unique ParObject id
@@ -937,9 +937,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return RedInterAcinarDepType::Instance().UniqueParObjectId();
+        return RedInterAcinarDepType::instance().unique_par_object_id();
       }
 
       /*!
@@ -973,7 +973,7 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 1; }
+      int num_dof_per_node(const Core::Nodes::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -993,9 +993,9 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      RedInterAcinarDepType& ElementType() const override
+      RedInterAcinarDepType& element_type() const override
       {
-        return RedInterAcinarDepType::Instance();
+        return RedInterAcinarDepType::instance();
       }
 
       //@}
@@ -1021,7 +1021,7 @@ namespace Discret
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      void VisNames(std::map<std::string, int>& names) override;
+      void vis_names(std::map<std::string, int>& names) override;
 
       /*!
       \brief Query data to be visualized using BINIO of a given name
@@ -1037,7 +1037,7 @@ namespace Discret
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if element recognizes the name
       */
-      bool VisData(const std::string& name, std::vector<double>& data) override;
+      bool vis_data(const std::string& name, std::vector<double>& data) override;
 
 
       //! @name Input and Creation
@@ -1045,7 +1045,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -1140,10 +1140,10 @@ namespace Discret
       //  void           setqout(double Qout){ qout_ = Qout;}
 
       //! get element parameters
-      void getParams(std::string name, double& var);
+      void get_params(std::string name, double& var);
 
       //! get element parameters
-      void getParams(std::string name, int& var);
+      void get_params(std::string name, int& var);
 
      private:
       //! action parameters recognized by inter acinar dependency
@@ -1200,23 +1200,23 @@ namespace Discret
     class RedAirBloodScatraType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "RedAirBloodScatraType"; }
+      std::string name() const override { return "RedAirBloodScatraType"; }
 
-      static RedAirBloodScatraType& Instance();
+      static RedAirBloodScatraType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -1260,21 +1260,21 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Redacinus and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override
+      int num_line() const override
       {
         if (num_node() == 2)
           return 1;
@@ -1288,17 +1288,17 @@ namespace Discret
       /*!
       \brief Return number of surfaces of this element (always 1)
       */
-      int NumSurface() const override { return -1; }
+      int num_surface() const override { return -1; }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      int NumVolume() const override { return -1; }
+      int num_volume() const override { return -1; }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Return unique ParObject id
@@ -1306,9 +1306,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return RedAirBloodScatraType::Instance().UniqueParObjectId();
+        return RedAirBloodScatraType::instance().unique_par_object_id();
       }
 
       /*!
@@ -1342,7 +1342,7 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 1; }
+      int num_dof_per_node(const Core::Nodes::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -1362,9 +1362,9 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      RedAirBloodScatraType& ElementType() const override
+      RedAirBloodScatraType& element_type() const override
       {
-        return RedAirBloodScatraType::Instance();
+        return RedAirBloodScatraType::instance();
       }
 
       //@}
@@ -1390,7 +1390,7 @@ namespace Discret
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      void VisNames(std::map<std::string, int>& names) override;
+      void vis_names(std::map<std::string, int>& names) override;
 
       /*!
       \brief Query data to be visualized using BINIO of a given name
@@ -1406,7 +1406,7 @@ namespace Discret
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if element recognizes the name
       */
-      bool VisData(const std::string& name, std::vector<double>& data) override;
+      bool vis_data(const std::string& name, std::vector<double>& data) override;
 
 
       //! @name Input and Creation
@@ -1414,7 +1414,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -1441,10 +1441,10 @@ namespace Discret
       //  void           setqout(double Qout){ qout_ = Qout;}
 
       //! get element parameters
-      void getParams(std::string name, double& var);
+      void get_params(std::string name, double& var);
 
       //! get element parameters
-      void getParams(std::string name, int& var);
+      void get_params(std::string name, int& var);
 
      private:
       //! action parameters recognized by inter acinar dependency
@@ -1489,23 +1489,23 @@ namespace Discret
     class RedAirBloodScatraLine3Type : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "RedAirBloodScatraLine3Type"; }
+      std::string name() const override { return "RedAirBloodScatraLine3Type"; }
 
-      static RedAirBloodScatraLine3Type& Instance();
+      static RedAirBloodScatraLine3Type& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -1554,21 +1554,21 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Redacinus and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override
+      int num_line() const override
       {
         if (num_node() == 3)
         {
@@ -1584,17 +1584,17 @@ namespace Discret
       /*!
       \brief Return number of surfaces of this element (always 1)
       */
-      int NumSurface() const override { return 1; }
+      int num_surface() const override { return 1; }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      int NumVolume() const override { return -1; }
+      int num_volume() const override { return -1; }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Return unique ParObject id
@@ -1602,9 +1602,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return RedAirBloodScatraLine3Type::Instance().UniqueParObjectId();
+        return RedAirBloodScatraLine3Type::instance().unique_par_object_id();
       }
 
       /*!
@@ -1638,7 +1638,7 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 1; }
+      int num_dof_per_node(const Core::Nodes::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -1658,9 +1658,9 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      RedAirBloodScatraLine3Type& ElementType() const override
+      RedAirBloodScatraLine3Type& element_type() const override
       {
-        return RedAirBloodScatraLine3Type::Instance();
+        return RedAirBloodScatraLine3Type::instance();
       }
 
       //@}
@@ -1686,7 +1686,7 @@ namespace Discret
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      void VisNames(std::map<std::string, int>& names) override;
+      void vis_names(std::map<std::string, int>& names) override;
 
       /*!
       \brief Query data to be visualized using BINIO of a given name
@@ -1702,7 +1702,7 @@ namespace Discret
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if element recognizes the name
       */
-      bool VisData(const std::string& name, std::vector<double>& data) override;
+      bool vis_data(const std::string& name, std::vector<double>& data) override;
 
 
       //! @name Input and Creation
@@ -1710,7 +1710,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -1805,10 +1805,10 @@ namespace Discret
       //  void           setqout(double Qout){ qout_ = Qout;}
 
       //! get element parameters
-      void getParams(std::string name, double& var);
+      void get_params(std::string name, double& var);
 
       //! get element parameters
-      void getParams(std::string name, int& var);
+      void get_params(std::string name, int& var);
 
      private:
       //! action parameters recognized by inter acinar dependency

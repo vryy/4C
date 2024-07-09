@@ -63,10 +63,10 @@ namespace Core::DOFSets
 
 
     /// create a copy of this object
-    Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new IndependentDofSet(*this)); }
+    Teuchos::RCP<DofSet> clone() override { return Teuchos::rcp(new IndependentDofSet(*this)); }
 
     /// Add Dof Set to list #static_dofsets_
-    void AddDofSettoList() override;
+    void add_dof_setto_list() override;
 
    protected:
     /// get first number to be used as Dof GID in assign_degrees_of_freedom

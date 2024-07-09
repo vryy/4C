@@ -50,7 +50,7 @@ namespace Discret
 
      public:
       //! Singleton access method
-      static ArteryEleCalcLinExp<distype>* Instance(
+      static ArteryEleCalcLinExp<distype>* instance(
           const int numdofpernode, const std::string& disname);
 
       int evaluate(Artery* ele, Teuchos::ParameterList& params,
@@ -62,7 +62,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
           Teuchos::RCP<Core::Mat::Material> mat) override;
 
-      int ScatraEvaluate(Artery* ele, Teuchos::ParameterList& params,
+      int scatra_evaluate(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -71,7 +71,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
           Teuchos::RCP<Core::Mat::Material> mat) override;
 
-      int EvaluateService(Artery* ele, const Arteries::Action action,
+      int evaluate_service(Artery* ele, const Arteries::Action action,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -101,7 +101,7 @@ namespace Discret
           Core::LinAlg::Matrix<2 * my::iel_, 1>& rhs,
           Teuchos::RCP<const Core::Mat::Material> material, double dt);
 
-      void ScatraSysmat(Artery* ele, const Core::LinAlg::Matrix<2 * my::iel_, 1>& escatran,
+      void scatra_sysmat(Artery* ele, const Core::LinAlg::Matrix<2 * my::iel_, 1>& escatran,
           const Core::LinAlg::Matrix<my::iel_, 1>& ewfnp,
           const Core::LinAlg::Matrix<my::iel_, 1>& ewbnp,
           const Core::LinAlg::Matrix<my::iel_, 1>& eareanp,
@@ -110,15 +110,15 @@ namespace Discret
           Core::LinAlg::Matrix<2 * my::iel_, 1>& rhs,
           Teuchos::RCP<const Core::Mat::Material> material, double dt);
 
-      virtual bool SolveRiemann(Artery* ele, Teuchos::ParameterList& params,
+      virtual bool solve_riemann(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<const Core::Mat::Material> mat);
 
-      virtual void EvaluateTerminalBC(Artery* ele, Teuchos::ParameterList& params,
+      virtual void evaluate_terminal_bc(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> mat);
 
-      virtual void EvaluateScatraBC(Artery* ele, Teuchos::ParameterList& params,
+      virtual void evaluate_scatra_bc(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& disctretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material);
 
@@ -130,7 +130,7 @@ namespace Discret
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material);
 
-      virtual void EvaluateWfAndWb(Artery* ele, Teuchos::ParameterList& params,
+      virtual void evaluate_wf_and_wb(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material);
 
@@ -152,7 +152,7 @@ namespace Discret
         \param time             (i) current simulation time
         \param dt               (i) timestep
         */
-      virtual void Initial(Artery* ele, Teuchos::ParameterList& params,
+      virtual void initial(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<const Core::Mat::Material> material);
 

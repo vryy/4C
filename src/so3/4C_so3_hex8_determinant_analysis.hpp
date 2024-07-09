@@ -51,7 +51,7 @@ namespace Discret
        *  \param rc      recursion counter pointer (optional)
        *
        *  \return TRUE if the element is valid, otherwise return FALSE. */
-      bool isValid(const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
+      bool is_valid(const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
           unsigned* rc = nullptr) const;
 
      private:

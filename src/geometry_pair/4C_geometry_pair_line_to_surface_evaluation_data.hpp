@@ -65,7 +65,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Get a reference to the face element map.
      */
-    const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& GetFaceElements() const
+    const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& get_face_elements()
+        const
     {
       return face_elements_;
     }

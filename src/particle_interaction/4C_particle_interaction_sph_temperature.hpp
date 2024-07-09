@@ -89,7 +89,7 @@ namespace ParticleInteraction
             particlestatestotypes) const;
 
     //! compute temperature field using energy equation
-    void ComputeTemperature() const;
+    void compute_temperature() const;
 
    private:
     //! init heat source handler

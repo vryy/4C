@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Instance(
+Discret::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -42,7 +42,7 @@ Discret::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Instance(
             new ScaTraEleCalcAniso<distype, probdim>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -66,14 +66,14 @@ template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::calc_rhs_diff(
     Core::LinAlg::SerialDenseVector& erhs, const int k, const double rhsfac)
 {
-  const Core::LinAlg::Matrix<nsd_, 1>& gradphi = my::scatravarmanager_->GradPhi(k);
+  const Core::LinAlg::Matrix<nsd_, 1>& gradphi = my::scatravarmanager_->grad_phi(k);
 
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const int fvi = vi * my::numdofpernode_ + k;
 
     double laplawf(0.0);
-    get_laplacian_weak_form_rhs(laplawf, diff_manager()->GetAnisotropicDiff(k), gradphi, vi);
+    get_laplacian_weak_form_rhs(laplawf, diff_manager()->get_anisotropic_diff(k), gradphi, vi);
     erhs[fvi] -= rhsfac * laplawf;
   }
 
@@ -95,7 +95,7 @@ void Discret::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::calc_mat_diff(
     {
       const int fui = ui * my::numdofpernode_ + k;
       double laplawf(0.0);
-      get_laplacian_weak_form(laplawf, diff_manager()->GetAnisotropicDiff(k), ui, vi);
+      get_laplacian_weak_form(laplawf, diff_manager()->get_anisotropic_diff(k), ui, vi);
       emat(fvi, fui) += timefacfac * laplawf;
     }
   }

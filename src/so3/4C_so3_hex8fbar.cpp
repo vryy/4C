@@ -23,12 +23,12 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::SoHex8fbarType Discret::ELEMENTS::SoHex8fbarType::instance_;
 
-Discret::ELEMENTS::SoHex8fbarType& Discret::ELEMENTS::SoHex8fbarType::Instance()
+Discret::ELEMENTS::SoHex8fbarType& Discret::ELEMENTS::SoHex8fbarType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoHex8fbarType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::SoHex8fbarType::create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoHex8fbar(-1, -1);
@@ -37,7 +37,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex8fbarType::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -50,7 +50,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarType::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -68,7 +68,7 @@ void Discret::ELEMENTS::SoHex8fbarType::nodal_block_information(
   np = 0;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoHex8fbarType::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoHex8fbarType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
@@ -104,11 +104,11 @@ Discret::ELEMENTS::SoHex8fbar::SoHex8fbar(int id, int owner) : Discret::ELEMENTS
     prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8 + 1));
 
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      Global::Problem::Instance()->getParameterList();
+      Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
     Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+        Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
   return;
@@ -128,7 +128,7 @@ Discret::ELEMENTS::SoHex8fbar::SoHex8fbar(const Discret::ELEMENTS::SoHex8fbar& o
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            popp 07/10|
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoHex8fbar::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SoHex8fbar::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::SoHex8fbar(*this);
   return newelement;
@@ -143,7 +143,7 @@ void Discret::ELEMENTS::SoHex8fbar::pack(Core::Communication::PackBuffer& data) 
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class So_hex8 Element
   Discret::ELEMENTS::SoHex8::pack(data);
@@ -159,7 +159,7 @@ void Discret::ELEMENTS::SoHex8fbar::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);

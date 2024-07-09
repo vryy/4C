@@ -47,35 +47,35 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
       params, discret, cond, time, info, dbcgids, hierarchical_order);
 
   // say good bye if there are no face elements
-  if (discret.FaceRowMap() == nullptr) return;
+  if (discret.face_row_map() == nullptr) return;
 
   // get onoff toggles
   const auto& onoff = cond.parameters().get<std::vector<int>>("onoff");
 
-  if (discret.NumMyRowFaces() > 0)
+  if (discret.num_my_row_faces() > 0)
   {
     // initialize with true on each proc except proc 0
-    bool pressureDone = discret.Comm().MyPID() != 0;
+    bool pressureDone = discret.get_comm().MyPID() != 0;
 
     // loop over all faces
-    for (int i = 0; i < discret.NumMyRowFaces(); ++i)
+    for (int i = 0; i < discret.num_my_row_faces(); ++i)
     {
       const Core::Elements::FaceElement* faceele =
-          dynamic_cast<const Core::Elements::FaceElement*>(discret.lRowFace(i));
+          dynamic_cast<const Core::Elements::FaceElement*>(discret.l_row_face(i));
       const unsigned int dofperface =
-          faceele->ParentMasterElement()->num_dof_per_face(faceele->FaceMasterNumber());
+          faceele->parent_master_element()->num_dof_per_face(faceele->face_master_number());
       const unsigned int dofpercomponent =
-          faceele->ParentMasterElement()->NumDofPerComponent(faceele->FaceMasterNumber());
+          faceele->parent_master_element()->num_dof_per_component(faceele->face_master_number());
       const unsigned int component = dofperface / dofpercomponent;
 
       if (onoff.size() <= component || onoff[component] == 0 ||
-          Global::Problem::Instance(0)->GetProblemType() != Core::ProblemType::fluid)
+          Global::Problem::instance(0)->get_problem_type() != Core::ProblemType::fluid)
         pressureDone = true;
       if (!pressureDone)
       {
-        if (discret.NumMyRowElements() > 0 && discret.Comm().MyPID() == 0)
+        if (discret.num_my_row_elements() > 0 && discret.get_comm().MyPID() == 0)
         {
-          std::vector<int> predof = discret.Dof(0, discret.lRowElement(0));
+          std::vector<int> predof = discret.dof(0, discret.l_row_element(0));
           const int gid = predof[0];
           const int lid = discret.dof_row_map(0)->LID(gid);
 
@@ -89,10 +89,10 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
 
       // do only faces where all nodes are present in the node list
       bool faceRelevant = true;
-      int nummynodes = discret.lRowFace(i)->num_node();
-      const int* mynodes = discret.lRowFace(i)->NodeIds();
+      int nummynodes = discret.l_row_face(i)->num_node();
+      const int* mynodes = discret.l_row_face(i)->node_ids();
       for (int j = 0; j < nummynodes; ++j)
-        if (!cond.ContainsNode(mynodes[j]))
+        if (!cond.contains_node(mynodes[j]))
         {
           faceRelevant = false;
           break;
@@ -100,7 +100,7 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
       if (!faceRelevant) continue;
 
       // get dofs of current face element
-      std::vector<int> dofs = discret.Dof(0, discret.lRowFace(i));
+      std::vector<int> dofs = discret.dof(0, discret.l_row_face(i));
 
       // loop over dofs
       for (unsigned int j = 0; j < dofperface; ++j)
@@ -110,8 +110,8 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
         // get corresponding local id
         const int lid = info.toggle.Map().LID(gid);
         if (lid < 0)
-          FOUR_C_THROW(
-              "Global id %d not on this proc %d in system vector", dofs[j], discret.Comm().MyPID());
+          FOUR_C_THROW("Global id %d not on this proc %d in system vector", dofs[j],
+              discret.get_comm().MyPID());
         // get position of label for this dof in condition line
         int onesetj = j / dofpercomponent;
 
@@ -165,10 +165,10 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
       params, discret, cond, time, systemvectors, toggle, nullptr);
 
   // say good bye if there are no face elements
-  if (discret.FaceRowMap() == nullptr) return;
+  if (discret.face_row_map() == nullptr) return;
 
   // get ids of conditioned nodes
-  const std::vector<int>* nodeids = cond.GetNodes();
+  const std::vector<int>* nodeids = cond.get_nodes();
   if (!nodeids) FOUR_C_THROW("Dirichlet condition does not have nodal cloud");
 
   // get curves, functs, vals, and onoff toggles from the condition
@@ -197,14 +197,14 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
   }
 
   // do we have faces?
-  if (discret.NumMyRowFaces() > 0)
+  if (discret.num_my_row_faces() > 0)
   {
     Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
     Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
     Core::Elements::Element::LocationArray dummy(1);
     Teuchos::ParameterList initParams;
-    if (Global::Problem::Instance(0)->GetProblemType() == Core::ProblemType::elemag or
-        Global::Problem::Instance(0)->GetProblemType() == Core::ProblemType::scatra)
+    if (Global::Problem::instance(0)->get_problem_type() == Core::ProblemType::elemag or
+        Global::Problem::instance(0)->get_problem_type() == Core::ProblemType::scatra)
       Core::UTILS::AddEnumClassToParameterList<Core::FE::HDGAction>(
           "action", Core::FE::HDGAction::project_dirich_field, initParams);
     else
@@ -221,27 +221,27 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
     initParams.set("time", time);
 
     // initialize with true if proc is not proc 0
-    bool pressureDone = discret.Comm().MyPID() != 0;
+    bool pressureDone = discret.get_comm().MyPID() != 0;
 
     // loop over all faces
-    for (int i = 0; i < discret.NumMyRowFaces(); ++i)
+    for (int i = 0; i < discret.num_my_row_faces(); ++i)
     {
       const Core::Elements::FaceElement* faceele =
-          dynamic_cast<const Core::Elements::FaceElement*>(discret.lRowFace(i));
+          dynamic_cast<const Core::Elements::FaceElement*>(discret.l_row_face(i));
       const unsigned int dofperface =
-          faceele->ParentMasterElement()->num_dof_per_face(faceele->FaceMasterNumber());
+          faceele->parent_master_element()->num_dof_per_face(faceele->face_master_number());
       const unsigned int dofpercomponent =
-          faceele->ParentMasterElement()->NumDofPerComponent(faceele->FaceMasterNumber());
+          faceele->parent_master_element()->num_dof_per_component(faceele->face_master_number());
       const unsigned int component = dofperface / dofpercomponent;
 
       if (onoff->size() <= component || (*onoff)[component] == 0 ||
-          Global::Problem::Instance(0)->GetProblemType() != Core::ProblemType::fluid)
+          Global::Problem::instance(0)->get_problem_type() != Core::ProblemType::fluid)
         pressureDone = true;
       if (!pressureDone)
       {
-        if (discret.NumMyRowElements() > 0 && discret.Comm().MyPID() == 0)
+        if (discret.num_my_row_elements() > 0 && discret.get_comm().MyPID() == 0)
         {
-          std::vector<int> predof = discret.Dof(0, discret.lRowElement(0));
+          std::vector<int> predof = discret.dof(0, discret.l_row_element(0));
           const int gid = predof[0];
           const int lid = discret.dof_row_map(0)->LID(gid);
 
@@ -252,7 +252,7 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
 
           // --------------------------------------------------------------------------------------
           // get parameters
-          Teuchos::ParameterList params = Global::Problem::Instance()->FluidDynamicParams();
+          Teuchos::ParameterList params = Global::Problem::instance()->fluid_dynamic_params();
 
           // check whether the imposition of the average pressure is requested
           const int dopressavgbc =
@@ -263,31 +263,31 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
             double pressureavgBC = 0.0;
 
             // get 1st element
-            Core::Elements::Element* ele = discret.lRowElement(0);
+            Core::Elements::Element* ele = discret.l_row_element(0);
             Discret::ELEMENTS::Fluid* fluidele = dynamic_cast<Discret::ELEMENTS::Fluid*>(ele);
 
             // get material
-            Teuchos::RCP<Core::Mat::Material> mat = ele->Material();
+            Teuchos::RCP<Core::Mat::Material> mat = ele->material();
 
             // get discretization type
-            const Core::FE::CellType distype = ele->Shape();
+            const Core::FE::CellType distype = ele->shape();
 
             // evaluate pressure average     //TODO als make it valid for every discretization type
             Core::LinAlg::SerialDenseVector elevec = Core::LinAlg::SerialDenseVector(1);
             if (distype == Core::FE::CellType::quad4)
-              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::quad4>::Instance()
+              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::quad4>::instance()
                   ->evaluate_pressure_average(fluidele, params, mat, elevec);
             else if (distype == Core::FE::CellType::quad8)
-              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::quad8>::Instance()
+              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::quad8>::instance()
                   ->evaluate_pressure_average(fluidele, params, mat, elevec);
             else if (distype == Core::FE::CellType::quad9)
-              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::quad9>::Instance()
+              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::quad9>::instance()
                   ->evaluate_pressure_average(fluidele, params, mat, elevec);
             else if (distype == Core::FE::CellType::tri3)
-              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::tri3>::Instance()
+              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::tri3>::instance()
                   ->evaluate_pressure_average(fluidele, params, mat, elevec);
             else if (distype == Core::FE::CellType::tri6)
-              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::tri6>::Instance()
+              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::tri6>::instance()
                   ->evaluate_pressure_average(fluidele, params, mat, elevec);
             else
               FOUR_C_THROW("Given distype currently not implemented.");
@@ -309,13 +309,13 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
           pressureDone = true;
         }
       }
-      int nummynodes = discret.lRowFace(i)->num_node();
-      const int* mynodes = discret.lRowFace(i)->NodeIds();
+      int nummynodes = discret.l_row_face(i)->num_node();
+      const int* mynodes = discret.l_row_face(i)->node_ids();
 
       // do only faces where all nodes are present in the node list
       bool faceRelevant = true;
       for (int j = 0; j < nummynodes; ++j)
-        if (!cond.ContainsNode(mynodes[j]))
+        if (!cond.contains_node(mynodes[j]))
         {
           faceRelevant = false;
           break;
@@ -323,9 +323,9 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
       if (!faceRelevant) continue;
 
       initParams.set<unsigned int>(
-          "faceconsider", static_cast<unsigned int>(faceele->FaceMasterNumber()));
+          "faceconsider", static_cast<unsigned int>(faceele->face_master_number()));
       if (static_cast<unsigned int>(elevec1.numRows()) != dofperface) elevec1.shape(dofperface, 1);
-      std::vector<int> dofs = discret.Dof(0, discret.lRowFace(i));
+      std::vector<int> dofs = discret.dof(0, discret.l_row_face(i));
 
       bool do_evaluate = false;
       if (funct != nullptr)
@@ -337,7 +337,7 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
         // cast the const qualifier away, thus the Evaluate routine can be called.
         Core::FE::DiscretizationFaces& non_const_dis =
             const_cast<Core::FE::DiscretizationFaces&>(discret);
-        faceele->ParentMasterElement()->evaluate(
+        faceele->parent_master_element()->evaluate(
             initParams, non_const_dis, dummy, elemat1, elemat2, elevec1, elevec2, elevec3);
       }
       else
@@ -351,8 +351,8 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
         // get corresponding local id
         const int lid = toggle.Map().LID(gid);
         if (lid < 0)
-          FOUR_C_THROW(
-              "Global id %d not on this proc %d in system vector", dofs[j], discret.Comm().MyPID());
+          FOUR_C_THROW("Global id %d not on this proc %d in system vector", dofs[j],
+              discret.get_comm().MyPID());
         // get position of label for this dof in condition line
         int onesetj = j / dofpercomponent;
 

@@ -135,7 +135,7 @@ void ScaTra::TimIntLomaGenAlpha::compute_therm_pressure()
   add_flux_approx_to_parameter_list(eleparams);
 
   // set scalar values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("phinp", phiaf_);
 
   // set action for elements
@@ -148,7 +148,7 @@ void ScaTra::TimIntLomaGenAlpha::compute_therm_pressure()
       Teuchos::rcp(new Core::LinAlg::SerialDenseVector(2));
 
   // evaluate domain and bodyforce integral
-  discret_->EvaluateScalars(eleparams, scalars);
+  discret_->evaluate_scalars(eleparams, scalars);
 
   // get global integral values
   double pardomint = (*scalars)[0];
@@ -182,11 +182,11 @@ void ScaTra::TimIntLomaGenAlpha::compute_therm_pressure()
   // get integral values in parallel case
   double parnormvelint = 0.0;
   double parnormdifffluxint = 0.0;
-  discret_->Comm().SumAll(&normvelint, &parnormvelint, 1);
-  discret_->Comm().SumAll(&normdifffluxint, &parnormdifffluxint, 1);
+  discret_->get_comm().SumAll(&normvelint, &parnormvelint, 1);
+  discret_->get_comm().SumAll(&normdifffluxint, &parnormdifffluxint, 1);
 
   // clean up
-  discret_->ClearState();
+  discret_->clear_state();
 
   // compute thermodynamic pressure (with specific heat ratio fixed to be 1.4)
   const double shr = 1.4;
@@ -242,7 +242,7 @@ void ScaTra::TimIntLomaGenAlpha::compute_therm_pressure_time_derivative()
 /*----------------------------------------------------------------------*
  | update thermodynamic pressure at n for low-Mach-number flow vg 12/08 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntLomaGenAlpha::UpdateThermPressure()
+void ScaTra::TimIntLomaGenAlpha::update_therm_pressure()
 {
   thermpressn_ = thermpressnp_;
   thermpressdtn_ = thermpressdtnp_;
@@ -299,7 +299,7 @@ void ScaTra::TimIntLomaGenAlpha::read_restart(
   Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
-        discret_, Global::Problem::Instance()->InputControlFile(), step));
+        discret_, Global::Problem::instance()->input_control_file(), step));
   else
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
 
@@ -337,7 +337,7 @@ void ScaTra::TimIntLomaGenAlpha::dynamic_computation_of_cs()
     // compute averaged values for LkMk and MkMk
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = dirichlet_toggle();
     DynSmag_->apply_filter_for_dynamic_computation_of_prt(
-        phiaf_, thermpressaf_, dirichtoggle, *extraparams_, NdsVel());
+        phiaf_, thermpressaf_, dirichtoggle, *extraparams_, nds_vel());
   }
 
   return;
@@ -353,7 +353,7 @@ void ScaTra::TimIntLomaGenAlpha::dynamic_computation_of_cv()
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = dirichlet_toggle();
     Vrem_->apply_filter_for_dynamic_computation_of_dt(
-        phiaf_, thermpressaf_, dirichtoggle, *extraparams_, NdsVel());
+        phiaf_, thermpressaf_, dirichtoggle, *extraparams_, nds_vel());
   }
 
   return;

@@ -43,13 +43,13 @@ namespace GEOMETRYPAIR
     /**
      * \brief Reset the evaluation data tracker objects.
      */
-    void ResetTracker();
+    void reset_tracker();
 
     /**
      * \brief Get the segmentation strategy.
      * @return flag for segmentation strategy.
      */
-    inline Inpar::GEOMETRYPAIR::LineTo3DStrategy GetStrategy() const { return strategy_; }
+    inline Inpar::GEOMETRYPAIR::LineTo3DStrategy get_strategy() const { return strategy_; }
 
     /**
      * \brief Get the number of search points for segmentation search.
@@ -76,7 +76,7 @@ namespace GEOMETRYPAIR
      * \brief Get the Gauss rule to be used for Gauss point projection method.
      * @return Gauss rule
      */
-    inline Core::FE::IntegrationPoints1D GetGaussPoints() const
+    inline Core::FE::IntegrationPoints1D get_gauss_points() const
     {
       return Core::FE::IntegrationPoints1D(gauss_rule_);
     };
@@ -85,7 +85,7 @@ namespace GEOMETRYPAIR
      * \brief Get the number of Gauss points.
      * @return Gauss rule
      */
-    inline int get_number_of_gauss_points() const { return GetGaussPoints().nquad; };
+    inline int get_number_of_gauss_points() const { return get_gauss_points().nquad; };
 
     /**
      * \brief Returns the number of integration points along the circumference of the line cross
@@ -110,7 +110,10 @@ namespace GEOMETRYPAIR
      * \brief Return a reference to the segment tracker.
      * @return Segment tracker.
      */
-    std::map<int, std::set<LineSegment<double>>>& GetSegmentTracker() { return segment_tracker_; };
+    std::map<int, std::set<LineSegment<double>>>& get_segment_tracker()
+    {
+      return segment_tracker_;
+    };
 
    private:
     //! Strategy to be used for contact search.

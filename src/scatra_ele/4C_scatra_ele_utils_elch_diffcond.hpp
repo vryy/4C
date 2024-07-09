@@ -36,14 +36,14 @@ namespace Discret
 
      public:
       //! singleton access method
-      static ScaTraEleUtilsElchDiffCond<distype>* Instance(
+      static ScaTraEleUtilsElchDiffCond<distype>* instance(
           const int numdofpernode,    ///< number of degrees of freedom per node
           const int numscal,          ///< number of transported scalars per node
           const std::string& disname  ///< name of discretization
       );
 
       //! evaluate electrolyte material
-      void MatElchMat(Teuchos::RCP<const Core::Mat::Material> material,  //!< electrolyte material
+      void mat_elch_mat(Teuchos::RCP<const Core::Mat::Material> material,  //!< electrolyte material
           const std::vector<double>& concentrations,  //!< local concentration values
           double temperature,                         //!< temperature
           Inpar::ElCh::EquPot equpot,  //!< type of closing equation for electric potential
@@ -53,7 +53,7 @@ namespace Discret
       );
 
       //! evaluate electrolyte phase
-      void MatElchPhase(Teuchos::RCP<const Core::Mat::Material> material,  //!< electrolyte phase
+      void mat_elch_phase(Teuchos::RCP<const Core::Mat::Material> material,  //!< electrolyte phase
           const std::vector<double>& concentrations,  //!< local concentration values
           double temperature,                         //!< temperature
           const Inpar::ElCh::EquPot& equpot,  //!< type of closing equation for electric potential
@@ -63,7 +63,7 @@ namespace Discret
       );
 
       //! evaluate standard Newman material
-      void MatNewman(Teuchos::RCP<const Core::Mat::Material> material,  //!< Newman material
+      void mat_newman(Teuchos::RCP<const Core::Mat::Material> material,  //!< Newman material
           double concentration,                                       //!< local concentration value
           double temperature,                                         //!< temperature
           Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager  //!< diffusion manager

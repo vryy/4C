@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 void ThermoFilter::post_heatflux(const std::string groupname, const std::string heatfluxtype)
 {
-  PostField* field = writer_->GetField();
+  PostField* field = writer_->get_field();
   PostResult result = PostResult(field);
   result.next_result();
 
@@ -82,22 +82,22 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
 {
   WriteNodalHeatfluxStep(ThermoFilter& filter) : filter_(filter) {}
 
-  int Numdf()
+  int numdf()
   {
     int numdf = -1;
-    if (filter_.GetWriter().GetField()->problem()->num_dim() == 3)
+    if (filter_.get_writer().get_field()->problem()->num_dim() == 3)
       numdf = 3;
-    else if (filter_.GetWriter().GetField()->problem()->num_dim() == 2)
+    else if (filter_.get_writer().get_field()->problem()->num_dim() == 2)
       numdf = 2;
-    else if (filter_.GetWriter().GetField()->problem()->num_dim() == 1)
+    else if (filter_.get_writer().get_field()->problem()->num_dim() == 1)
       numdf = 1;
     else
       FOUR_C_THROW(
-          "Cannot handle dimension %g", filter_.GetWriter().GetField()->problem()->num_dim());
+          "Cannot handle dimension %g", filter_.get_writer().get_field()->problem()->num_dim());
     return numdf;
   }
 
-  std::vector<int> NumDfMap() override { return std::vector<int>(1, Numdf()); }
+  std::vector<int> num_df_map() override { return std::vector<int>(1, numdf()); }
 
   void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
@@ -107,7 +107,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
 
     FOUR_C_ASSERT(name.size() == 1, "Unexpected number of names");
 
-    int numdf = Numdf();
+    int numdf = WriteNodalHeatfluxStep::numdf();
 
     //--------------------------------------------------------------------
     // calculate nodal heatfluxes from gauss point heatfluxes
@@ -133,22 +133,22 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
 
     // change the dis from a dof_row_map to a NodeRowMap, because Paraview can only visualize
     // nodebased date
-    const Epetra_Map* nodemap = dis->NodeRowMap();
+    const Epetra_Map* nodemap = dis->node_row_map();
     Teuchos::RCP<Epetra_MultiVector> nodal_heatfluxes =
         Teuchos::rcp(new Epetra_MultiVector(*nodemap, numdf));
 
-    const int numnodes = dis->NumMyRowNodes();
+    const int numnodes = dis->num_my_row_nodes();
     const unsigned numdofpernode = 1;
 
     if (numdf == 3)  // 3 heatflux terms per node in 3D
     {
       for (int i = 0; i < numnodes; ++i)
       {
-        const Core::Nodes::Node* lnode = dis->lRowNode(i);
-        const std::vector<int> lnodedofs = dis->Dof(lnode);
+        const Core::Nodes::Node* lnode = dis->l_row_node(i);
+        const std::vector<int> lnodedofs = dis->dof(lnode);
 
         if (lnodedofs.size() < numdofpernode) FOUR_C_THROW("Too few DOFs at node of interest");
-        const int adjele = lnode->NumElement();
+        const int adjele = lnode->num_element();
         // build three scalar valued vectors for the heatflux output
         (*((*nodal_heatfluxes)(0)))[i] =
             (*heatfluxx)[dis->dof_row_map()->LID(lnodedofs[0])] / adjele;
@@ -162,11 +162,11 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     {
       for (int i = 0; i < numnodes; ++i)
       {
-        const Core::Nodes::Node* lnode = dis->lRowNode(i);
-        const std::vector<int> lnodedofs = dis->Dof(lnode);
+        const Core::Nodes::Node* lnode = dis->l_row_node(i);
+        const std::vector<int> lnodedofs = dis->dof(lnode);
 
         if (lnodedofs.size() < numdofpernode) FOUR_C_THROW("Too few DOFs at node of interest");
-        const int adjele = lnode->NumElement();
+        const int adjele = lnode->num_element();
         // build two scalar valued vectors for the heatflux output
         (*((*nodal_heatfluxes)(0)))[i] =
             (*heatfluxx)[dis->dof_row_map()->LID(lnodedofs[0])] / adjele;
@@ -178,11 +178,11 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     {
       for (int i = 0; i < numnodes; ++i)
       {
-        const Core::Nodes::Node* lnode = dis->lRowNode(i);
-        const std::vector<int> lnodedofs = dis->Dof(lnode);
+        const Core::Nodes::Node* lnode = dis->l_row_node(i);
+        const std::vector<int> lnodedofs = dis->dof(lnode);
 
         if (lnodedofs.size() < numdofpernode) FOUR_C_THROW("Too few DOFs at node of interest");
-        const int adjele = lnode->NumElement();
+        const int adjele = lnode->num_element();
         // build one scalar valued vectors for the heatflux output
         (*((*nodal_heatfluxes)(0)))[i] =
             (*heatfluxx)[dis->dof_row_map()->LID(lnodedofs[0])] / adjele;
@@ -193,7 +193,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
       FOUR_C_THROW("Cannot handle numdf=%g", numdf);
     }
 
-    filter_.GetWriter().write_nodal_result_step(
+    filter_.get_writer().write_nodal_result_step(
         *files[0], nodal_heatfluxes, resultfilepos, groupname, name[0], numdf);
   }
 
@@ -209,22 +209,22 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
 {
   WriteElementCenterHeatfluxStep(ThermoFilter& filter) : filter_(filter) {}
 
-  int Numdf()
+  int numdf()
   {
     int numdf = -1;
-    if (filter_.GetWriter().GetField()->problem()->num_dim() == 3)
+    if (filter_.get_writer().get_field()->problem()->num_dim() == 3)
       numdf = 3;
-    else if (filter_.GetWriter().GetField()->problem()->num_dim() == 2)
+    else if (filter_.get_writer().get_field()->problem()->num_dim() == 2)
       numdf = 2;
-    else if (filter_.GetWriter().GetField()->problem()->num_dim() == 1)
+    else if (filter_.get_writer().get_field()->problem()->num_dim() == 1)
       numdf = 1;
     else
       FOUR_C_THROW(
-          "Cannot handle dimension %g", filter_.GetWriter().GetField()->problem()->num_dim());
+          "Cannot handle dimension %g", filter_.get_writer().get_field()->problem()->num_dim());
     return numdf;
   }
 
-  std::vector<int> NumDfMap() override { return std::vector<int>(1, Numdf()); }
+  std::vector<int> num_df_map() override { return std::vector<int>(1, numdf()); }
 
   void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
@@ -234,7 +234,7 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
 
     FOUR_C_ASSERT(name.size() == 1, "Unexpected number of names");
 
-    int numdf = Numdf();
+    int numdf = WriteElementCenterHeatfluxStep::numdf();
 
     //--------------------------------------------------------------------
     // calculate element center heatfluxes from gauss point heatfluxes
@@ -250,7 +250,7 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
     p.set("gpheatfluxmap", data);
     p.set("total time", -1.0);
     Teuchos::RCP<Epetra_MultiVector> eleheatflux =
-        Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementRowMap()), numdf));
+        Teuchos::rcp(new Epetra_MultiVector(*(dis->element_row_map()), numdf));
     p.set("eleheatflux", eleheatflux);
     dis->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     if (eleheatflux == Teuchos::null)
@@ -258,7 +258,7 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
       FOUR_C_THROW("vector containing element center heatfluxes/tempgradients not available");
     }
 
-    filter_.GetWriter().write_element_result_step(
+    filter_.get_writer().write_element_result_step(
         *files[0], eleheatflux, resultfilepos, groupname, name[0], numdf, 0);
   }
 
@@ -306,14 +306,14 @@ void ThermoFilter::write_heatflux(
   {
     name = "nodal_" + name;
     WriteNodalHeatfluxStep heatflux(*this);
-    writer_->WriteSpecialField(
+    writer_->write_special_field(
         heatflux, result, nodebased, groupname, std::vector<std::string>(1, name), out);
   }
   else if (kind == elementbased)
   {
     name = "element_" + name;
     WriteElementCenterHeatfluxStep heatflux(*this);
-    writer_->WriteSpecialField(
+    writer_->write_special_field(
         heatflux, result, elementbased, groupname, std::vector<std::string>(1, name), out);
   }
   else

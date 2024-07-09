@@ -55,7 +55,7 @@ namespace Adapter
     //@}
 
     //! communicate object at the interface
-    Teuchos::RCP<const ALE::UTILS::FsiMapExtractor> FsiInterface() const;
+    Teuchos::RCP<const ALE::UTILS::FsiMapExtractor> fsi_interface() const;
 
    private:
     Teuchos::RCP<ALE::UTILS::FsiMapExtractor> fsiinterface_;

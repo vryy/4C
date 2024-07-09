@@ -44,11 +44,11 @@ void THR::TimIntExpl::update()
 {
   // update temperature and temperature rate
   // after this call we will have tempn_ == temp_ (temp_{n+1} == temp_n), etc.
-  UpdateStepState();
+  update_step_state();
   // update time and step
-  UpdateStepTime();
+  update_step_time();
   // currently nothing, can include history dependency of materials
-  UpdateStepElement();
+  update_step_element();
   return;
 
 }  // update()
@@ -57,10 +57,10 @@ void THR::TimIntExpl::update()
 /*----------------------------------------------------------------------*
  | print step summary                                        dano 01/12 |
  *----------------------------------------------------------------------*/
-void THR::TimIntExpl::PrintStep()
+void THR::TimIntExpl::print_step()
 {
   // print out
-  if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
+  if ((myrank_ == 0) and printscreen_ and (step_old() % printscreen_ == 0))
   {
     print_step_text(stdout);
   }

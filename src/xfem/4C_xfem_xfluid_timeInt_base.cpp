@@ -65,8 +65,8 @@ XFEM::XfluidTimeintBase::XfluidTimeintBase(
       dispnp_(dispnp),
       timeIntData_(Teuchos::null),
       pbcmap_(pbcmap),
-      myrank_(discret_->Comm().MyPID()),
-      numproc_(discret_->Comm().NumProc()),
+      myrank_(discret_->get_comm().MyPID()),
+      numproc_(discret_->get_comm().NumProc()),
       newton_max_iter_(10),  /// maximal number of newton iterations for Semi-Lagrangean algorithm
       limits_tol_(1.0e-10),  /// newton tolerance for Semi-Lagrangean algorithm
       TOL_dist_(1.0e-12)  /// tolerance to find the shortest distance of point to its projection on
@@ -172,9 +172,9 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
   }
   else
   {
-    if (ele1->Id() == ele2->Id())  // line within one element
+    if (ele1->id() == ele2->id())  // line within one element
     {
-      eids.insert(ele1->Id());  // just one element to check
+      eids.insert(ele1->id());  // just one element to check
 
 #ifdef DEBUG_TIMINT_STD
       Core::IO::cout << "\n\t\t\t\t\t check changing side just for the unique element" << ele1->Id()
@@ -196,24 +196,24 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
 
       for (std::set<int>::iterator it = common_nodes.begin(); it != common_nodes.end(); it++)
       {
-        Core::Nodes::Node* n = discret_->gNode(*it);
+        Core::Nodes::Node* n = discret_->g_node(*it);
 
-        if (n->Owner() != myrank_)
+        if (n->owner() != myrank_)
         {
           check_allsides =
               true;  // flag to check all sides in case of one common node is a non-row node
           break;
         }
 
-        const int numele = n->NumElement();
+        const int numele = n->num_element();
 
-        Core::Elements::Element** elements = n->Elements();
+        Core::Elements::Element** elements = n->elements();
 
         for (int e_it = 0; e_it < numele; e_it++)
         {
           Core::Elements::Element* ele = elements[e_it];
 
-          eids.insert(ele->Id());
+          eids.insert(ele->id());
 
 #ifdef DEBUG_TIMINT_STD
           Core::IO::cout << "\n\t\t\t\t\t add element " << ele->Id() << Core::IO::endl;
@@ -249,9 +249,9 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
   if (check_allsides)
   {
     // add all sides of cut_discret to check
-    for (int i = 0; i < boundarydis_->NumMyColElements(); i++)
+    for (int i = 0; i < boundarydis_->num_my_col_elements(); i++)
     {
-      cut_sides.insert(boundarydis_->ElementColMap()->GID(i));
+      cut_sides.insert(boundarydis_->element_col_map()->GID(i));
     }
   }
   else
@@ -259,9 +259,9 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
     // loop all found element
     for (std::set<int>::iterator e_it = eids.begin(); e_it != eids.end(); e_it++)
     {
-      Core::Elements::Element* ele = discret_->gElement(*e_it);
+      Core::Elements::Element* ele = discret_->g_element(*e_it);
 
-      Core::Geo::Cut::ElementHandle* eh = wizard->GetElement(ele);
+      Core::Geo::Cut::ElementHandle* eh = wizard->get_element(ele);
 
       // no cutsides within this element, then no side changing possible
       if (eh == nullptr)
@@ -272,7 +272,7 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
       //--------------------------------------------------------
       // get involved side ids
       Core::Geo::Cut::plain_element_set elements;
-      eh->CollectElements(elements);
+      eh->collect_elements(elements);
 
       // get all side-ids
       for (Core::Geo::Cut::plain_element_set::iterator eles = elements.begin();
@@ -280,20 +280,20 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
       {
         Core::Geo::Cut::Element* sub_ele = *eles;
 
-        Core::Geo::Cut::plain_facet_set facets = sub_ele->Facets();
+        Core::Geo::Cut::plain_facet_set facets = sub_ele->facets();
 
         for (Core::Geo::Cut::plain_facet_set::const_iterator facet_it = facets.begin();
              facet_it != facets.end(); facet_it++)
         {
           Core::Geo::Cut::Facet* facet = *facet_it;
 
-          Core::Geo::Cut::Side* parent_side = facet->ParentSide();
+          Core::Geo::Cut::Side* parent_side = facet->parent_side();
 
-          bool is_elements_side = sub_ele->OwnedSide(parent_side);
+          bool is_elements_side = sub_ele->owned_side(parent_side);
 
           if (!is_elements_side)  // is a cutting side
           {
-            cut_sides.insert(parent_side->Id());
+            cut_sides.insert(parent_side->id());
 
 #ifdef DEBUG_TIMINT_STD
             Core::IO::cout << "\n\t\t\t\t\t add side with Id=" << parent_side->Id()
@@ -312,7 +312,7 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
   for (std::set<int>::iterator side_it = cut_sides.begin(); side_it != cut_sides.end(); side_it++)
   {
     // get the side via sidehandle
-    Core::Geo::Cut::SideHandle* sh = wizard->GetMeshCuttingSide(*side_it, mi);
+    Core::Geo::Cut::SideHandle* sh = wizard->get_mesh_cutting_side(*side_it, mi);
 
 #ifdef DEBUG_TIMINT_STD
     Core::IO::cout << "\n\t\t\t\t\t SIDE-CHECK with side=" << *side_it << Core::IO::endl;
@@ -343,8 +343,8 @@ bool XFEM::XfluidTimeintBase::neighbors(
   const int numnode1 = ele1->num_node();
   const int numnode2 = ele2->num_node();
 
-  const int* nodeids1 = ele1->NodeIds();
-  const int* nodeids2 = ele2->NodeIds();
+  const int* nodeids1 = ele1->node_ids();
+  const int* nodeids2 = ele2->node_ids();
 
   std::vector<int> nodeids1_vec;
   std::vector<int> nodeids2_vec;
@@ -394,7 +394,7 @@ bool XFEM::XfluidTimeintBase::call_side_edge_intersection(
     Core::LinAlg::Matrix<3, 1>& x2   /// coordinates of edge's end point
 ) const
 {
-  switch (sh->Shape())
+  switch (sh->shape())
   {
     case Core::FE::CellType::tri3:
     {
@@ -445,7 +445,7 @@ bool XFEM::XfluidTimeintBase::call_side_edge_intersection_t(
   }
 
   Core::LinAlg::SerialDenseMatrix xyze_side;
-  sh->Coordinates(xyze_side);
+  sh->coordinates(xyze_side);
 
   Core::LinAlg::Matrix<nsd, numNodesSurface> xyze_surfaceElement(xyze_side);
 
@@ -453,7 +453,7 @@ bool XFEM::XfluidTimeintBase::call_side_edge_intersection_t(
 
 
   Teuchos::RCP<Core::Geo::Cut::IntersectionBase> intersect =
-      Core::Geo::Cut::IntersectionBase::Create(Core::FE::CellType::line2, sidetype);
+      Core::Geo::Cut::IntersectionBase::create(Core::FE::CellType::line2, sidetype);
   Teuchos::RCP<Core::Geo::Cut::Options> options =
       Teuchos::rcp(new Core::Geo::Cut::Options());  // Create cut options for intersection
                                                     // (specify to use double prec.)
@@ -484,12 +484,12 @@ void XFEM::XfluidTimeintBase::call_x_to_xi_coords(
       dispn_ != Teuchos::null)  // add no displacements in case of state == "reference" or //is ale?
   {
     int nen = ele->num_node();
-    int numdof = ele->NumDofPerNode(*(ele->Nodes()[0]));
+    int numdof = ele->num_dof_per_node(*(ele->nodes()[0]));
 
     std::vector<int> nds(nen, 0);
 
     Core::Elements::Element::LocationArray la(1);
-    ele->LocationVector(*discret_, nds, la, false);
+    ele->location_vector(*discret_, nds, la, false);
 
     // extract local values of the global vectors
     std::vector<double> mydispnp(la[0].lm_.size());
@@ -512,7 +512,7 @@ void XFEM::XfluidTimeintBase::call_x_to_xi_coords(
     }
   }
 
-  call_x_to_xi_coords(xyz, ele->Shape(), x, xi, pointInDomain);
+  call_x_to_xi_coords(xyz, ele->shape(), x, xi, pointInDomain);
 }  // end function call_x_to_xi_coords
 
 
@@ -566,10 +566,10 @@ void XFEM::XfluidTimeintBase::x_to_xi_coords(
 
   Teuchos::RCP<Core::Geo::Cut::Position> pos =
       Core::Geo::Cut::PositionFactory::build_position<3, distype>(xyze, x);
-  pos->Compute();
+  pos->compute();
   pos->local_coordinates(xi);  // local coordinates
 
-  pointInCell = pos->WithinLimitsTol(limits_tol_);  // check if point is in element
+  pointInCell = pos->within_limits_tol(limits_tol_);  // check if point is in element
 };
 
 
@@ -585,8 +585,8 @@ void XFEM::XfluidTimeintBase::eval_shape_and_deriv(
     bool compute_deriv    /// shall derivatives and jacobian be computed
 ) const
 {
-  const int* elenodeids = element->NodeIds();  // nodeids of element
-  const int nsd = 3;                           // dimension
+  const int* elenodeids = element->node_ids();  // nodeids of element
+  const int nsd = 3;                            // dimension
 
   // clear data that shall be filled
   shapeFcn.clear();
@@ -601,19 +601,19 @@ void XFEM::XfluidTimeintBase::eval_shape_and_deriv(
     Core::LinAlg::Matrix<nsd, numnode> nodecoords(true);  // node coordinates of the element
     for (size_t nodeid = 0; nodeid < numnode; nodeid++)   // fill node coordinates
     {
-      Core::Nodes::Node* currnode = discret_->gNode(elenodeids[nodeid]);
-      for (int i = 0; i < nsd; i++) nodecoords(i, nodeid) = currnode->X()[i];
+      Core::Nodes::Node* currnode = discret_->g_node(elenodeids[nodeid]);
+      for (int i = 0; i < nsd; i++) nodecoords(i, nodeid) = currnode->x()[i];
     }
 
     // add ale displacements to initial position for state np
     if (dispnp_ != Teuchos::null)  // is ale?
     {
       int nen = element->num_node();
-      int numdof = element->NumDofPerNode(*(element->Nodes()[0]));
+      int numdof = element->num_dof_per_node(*(element->nodes()[0]));
 
       std::vector<int> nds(nen, 0);
       Core::Elements::Element::LocationArray la(1);
-      element->LocationVector(*discret_, nds, la, false);
+      element->location_vector(*discret_, nds, la, false);
 
       // extract local values of the global vectors
       std::vector<double> mydispnp(la[0].lm_.size());
@@ -668,9 +668,9 @@ void XFEM::XfluidTimeintBase::add_pb_celements(
 {
   FOUR_C_THROW("what to do in add_pb_celements?");
 
-  const Core::Elements::Element* const* elements = node->Elements();  // element around current node
+  const Core::Elements::Element* const* elements = node->elements();  // element around current node
 
-  for (int iele = 0; iele < node->NumElement(); iele++) eles.push_back(elements[iele]);
+  for (int iele = 0; iele < node->num_element(); iele++) eles.push_back(elements[iele]);
 
   // get pbcnode
   bool pbcnodefound = false;  // boolean indicating whether this node is a pbc node
@@ -681,9 +681,9 @@ void XFEM::XfluidTimeintBase::add_pb_celements(
   if (pbcnodefound)
   {
     // get adjacent elements of this node
-    const Core::Elements::Element* const* pbcelements = pbcnode->Elements();
+    const Core::Elements::Element* const* pbcelements = pbcnode->elements();
     // add elements to list
-    for (int iele = 0; iele < pbcnode->NumElement(); iele++)  // = ptToNode->Elements();
+    for (int iele = 0; iele < pbcnode->num_element(); iele++)  // = ptToNode->Elements();
     {
       eles.push_back(pbcelements[iele]);
     }
@@ -697,7 +697,7 @@ void XFEM::XfluidTimeintBase::add_pb_celements(
 void XFEM::XfluidTimeintBase::find_pbc_node(
     const Core::Nodes::Node* node, Core::Nodes::Node*& pbcnode, bool& pbcnodefound) const
 {
-  const int nodegid = node->Id();  // global node id
+  const int nodegid = node->id();  // global node id
   pbcnodefound = false;            // boolean indicating whether this node is a pbc node
   int coupnodegid = -1;
   // loop all nodes with periodic boundary conditions (master nodes)
@@ -727,7 +727,7 @@ void XFEM::XfluidTimeintBase::find_pbc_node(
   }      // end loop over pbc map
 
   // get pbcnode
-  if (pbcnodefound) pbcnode = discret_->gNode(coupnodegid);
+  if (pbcnodefound) pbcnode = discret_->g_node(coupnodegid);
 }  // end if pbcnode true}
 
 
@@ -791,7 +791,7 @@ void XFEM::XfluidTimeintBase::send_data(Core::Communication::PackBuffer& dataSen
 #endif
 
   // exporter for sending
-  Core::Communication::Exporter exporter(discret_->Comm());
+  Core::Communication::Exporter exporter(discret_->get_comm());
 
   // send length of the data to be received ...
   MPI_Request req_length_data;
@@ -799,8 +799,8 @@ void XFEM::XfluidTimeintBase::send_data(Core::Communication::PackBuffer& dataSen
   exporter.i_send(myrank_, dest, lengthSend.data(), size_one, length_tag, req_length_data);
   // ... and receive length
   std::vector<int> lengthRecv(1, 0);
-  exporter.Receive(source, length_tag, lengthRecv, size_one);
-  exporter.Wait(req_length_data);
+  exporter.receive(source, length_tag, lengthRecv, size_one);
+  exporter.wait(req_length_data);
 
   // send actual data ...
   int data_tag = 4;
@@ -810,8 +810,8 @@ void XFEM::XfluidTimeintBase::send_data(Core::Communication::PackBuffer& dataSen
   // ... and receive data
   dataRecv.clear();
   dataRecv.resize(lengthRecv[0]);
-  exporter.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
-  exporter.Wait(req_data);
+  exporter.receive_any(source, data_tag, dataRecv, lengthRecv[0]);
+  exporter.wait(req_data);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   std::cout << "--- receiving " << lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc "
@@ -829,10 +829,10 @@ void XFEM::XfluidTimeintBase::pack_node(
     Core::Communication::PackBuffer& dataSend, Core::Nodes::Node& node) const
 {
   const int nsd = 3;
-  Core::Communication::ParObject::add_to_pack(dataSend, node.Id());
+  Core::Communication::ParObject::add_to_pack(dataSend, node.id());
   Core::Communication::ParObject::add_to_pack(
-      dataSend, Core::LinAlg::Matrix<nsd, 1>(node.X().data()));
-  Core::Communication::ParObject::add_to_pack(dataSend, node.Owner());
+      dataSend, Core::LinAlg::Matrix<nsd, 1>(node.x().data()));
+  Core::Communication::ParObject::add_to_pack(dataSend, node.owner());
 }  // end packNode
 
 
@@ -855,7 +855,7 @@ void XFEM::XfluidTimeintBase::unpack_node(std::vector<char>::size_type& posinDat
 
   if (owner == myrank_)  // real node with all data
   {
-    node = *discret_->gNode(id);
+    node = *discret_->g_node(id);
   }
   else  // just id, coords and owner
   {
@@ -908,12 +908,12 @@ XFEM::XfluidStd::XfluidStd(
 #endif
 
     // loop over processor nodes
-    for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+    for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
     {
-      Core::Nodes::Node* node = discret_->lRowNode(lnodeid);
+      Core::Nodes::Node* node = discret_->l_row_node(lnodeid);
 
       std::map<int, std::vector<Inpar::XFEM::XFluidTimeInt>>::const_iterator it =
-          reconstr_method.find(node->Id());
+          reconstr_method.find(node->id());
       if (it != reconstr_method.end())
       {
         // reconstruction methods just for marked dofsets
@@ -934,7 +934,7 @@ XFEM::XfluidStd::XfluidStd(
               // doDirichlet)
               std::vector<int> lm;
               std::vector<int> dofs;
-              dofset_new_->Dof(dofs, node, 0);  // dofs for standard dofset
+              dofset_new_->dof(dofs, node, 0);  // dofs for standard dofset
               for (int j = 0; j < 4; ++j) lm.push_back(dofs[j]);
 
               Core::LinAlg::Matrix<1, 1> nodepredummy(true);
@@ -1023,7 +1023,7 @@ void XFEM::XfluidStd::compute(std::vector<Teuchos::RCP<Epetra_Vector>>& newRowVe
 /*------------------------------------------------------------------------------------------------*
  * identify an element containing a point and additional data                        schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidStd::elementSearch(
+void XFEM::XfluidStd::element_search(
     Core::Elements::Element*& ele,   /// pointer to element if point lies in a found element
     Core::LinAlg::Matrix<3, 1>& x,   /// global coordiantes of point
     Core::LinAlg::Matrix<3, 1>& xi,  /// determined local coordinates w.r.t ele
@@ -1042,7 +1042,7 @@ void XFEM::XfluidStd::elementSearch(
   Core::Elements::Element* currele = nullptr;  // current element
 
   // loop over elements
-  for (int ieleid = startid; ieleid < discret_->NumMyRowElements(); ieleid++)
+  for (int ieleid = startid; ieleid < discret_->num_my_row_elements(); ieleid++)
   {
     // if ele != nullptr additional check
     // first it should be checked if it is fitting
@@ -1052,7 +1052,7 @@ void XFEM::XfluidStd::elementSearch(
       ele = nullptr;  // reset ele, ele will be set if an element is found finally
     }
     else
-      currele = discret_->lRowElement(ieleid);
+      currele = discret_->l_row_element(ieleid);
 
     call_x_to_xi_coords(currele, x, xi, "dispn", found);
 
@@ -1071,7 +1071,7 @@ void XFEM::XfluidStd::elementSearch(
 /*------------------------------------------------------------------------------------------------*
  * interpolate velocity and derivatives for a point in an element                    schott 06/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidStd::getGPValues(Core::Elements::Element* ele,  ///< pointer to element
+void XFEM::XfluidStd::get_gp_values(Core::Elements::Element* ele,  ///< pointer to element
     Core::LinAlg::Matrix<3, 1>& xi,             ///< local coordinates of point w.r.t element
     std::vector<int>& nds,                      ///< nodal dofset of point for elemental nodes
     XFEM::XFEMDofSet& dofset,                   ///< XFEM dofset
@@ -1083,18 +1083,18 @@ void XFEM::XfluidStd::getGPValues(Core::Elements::Element* ele,  ///< pointer to
     bool compute_deriv                          ///< shall derivatives be computed?
 ) const
 {
-  switch (ele->Shape())
+  switch (ele->shape())
   {
     case Core::FE::CellType::hex8:
-      getGPValuesT<Core::FE::CellType::hex8>(
+      get_gp_values_t<Core::FE::CellType::hex8>(
           ele, xi, nds, dofset, vel, vel_deriv, pres, pres_deriv, vel_vec, compute_deriv);
       break;
     case Core::FE::CellType::hex20:
-      getGPValuesT<Core::FE::CellType::hex20>(
+      get_gp_values_t<Core::FE::CellType::hex20>(
           ele, xi, nds, dofset, vel, vel_deriv, pres, pres_deriv, vel_vec, compute_deriv);
       break;
     case Core::FE::CellType::tet4:
-      getGPValuesT<Core::FE::CellType::tet4>(
+      get_gp_values_t<Core::FE::CellType::tet4>(
           ele, xi, nds, dofset, vel, vel_deriv, pres, pres_deriv, vel_vec, compute_deriv);
       break;
     default:
@@ -1108,7 +1108,7 @@ void XFEM::XfluidStd::getGPValues(Core::Elements::Element* ele,  ///< pointer to
 
 //! interpolate velocity and derivatives for a point in an element
 template <Core::FE::CellType distype>
-void XFEM::XfluidStd::getGPValuesT(Core::Elements::Element* ele,  ///< pointer to element
+void XFEM::XfluidStd::get_gp_values_t(Core::Elements::Element* ele,  ///< pointer to element
     Core::LinAlg::Matrix<3, 1>& xi,             ///< local coordinates of point w.r.t element
     std::vector<int>& nds,                      ///< nodal dofset of point for elemental nodes
     XFEM::XFEMDofSet& dofset,                   ///< XFEM dofset
@@ -1143,9 +1143,9 @@ void XFEM::XfluidStd::getGPValuesT(Core::Elements::Element* ele,  ///< pointer t
 
   for (int inode = 0; inode < numnode; inode++)
   {
-    Core::Nodes::Node* node = ele->Nodes()[inode];
+    Core::Nodes::Node* node = ele->nodes()[inode];
     std::vector<int> dofs;
-    dofset.Dof(dofs, node, nds[inode]);
+    dofset.dof(dofs, node, nds[inode]);
 
     for (int j = 0; j < 4; ++j)
     {
@@ -1243,12 +1243,12 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
 
   const int nsd = 3;
   Core::LinAlg::Matrix<nsd, 1> newNodeCoords(
-      data.node_.X().data());  // coords of endpoint of Lagrangian characteristics
+      data.node_.x().data());  // coords of endpoint of Lagrangian characteristics
   for (int i = 0; i < nsd; ++i) newNodeCoords(i) += data.dispnp_(i);
 
   // determine the smallest distance of node at t^(n+1) to the current side elements
 
-  Core::Geo::Cut::Node* n_new = wizard_new_->GetNode(data.node_.Id());
+  Core::Geo::Cut::Node* n_new = wizard_new_->get_node(data.node_.id());
 
   //------------------------------------
   // find all involved nodes and sides (edges) for computing distance to node
@@ -1269,7 +1269,8 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
     // the std-set
     const std::set<Core::Geo::Cut::plain_volumecell_set,
         Core::Geo::Cut::Cmp>& cell_set_new =
-        n_new->GetNodalDofSet(data.nds_np_)->VolumeCellComposite();  // always the standard dofset
+        n_new->get_nodal_dof_set(data.nds_np_)
+            ->volume_cell_composite();  // always the standard dofset
 
     // get all side-ids w.r.t to all volumecells contained in current new set around the current
     // node
@@ -1285,7 +1286,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
         Core::Geo::Cut::VolumeCell* vc = *vcs;
 
         // get sides involved in creation boundary cells (std::map<sideId,bcells>)
-        vc->GetBoundaryCells(bcells_new);
+        vc->get_boundary_cells(bcells_new);
       }
     }
 
@@ -1303,9 +1304,9 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
       sides.insert(sid);
 
       // get the side
-      Core::Elements::Element* side = boundarydis_->gElement(sid);
+      Core::Elements::Element* side = boundarydis_->g_element(sid);
       int numnode = side->num_node();
-      const int* side_nodes = side->NodeIds();
+      const int* side_nodes = side->node_ids();
 
       // get the nodes
       for (int i = 0; i < numnode; i++)
@@ -1323,14 +1324,14 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
     // -> compute projection for all sides and nodes, that's really expensive!
 
     // loop all column sides and extract sides and nodes
-    for (int i = 0; i < boundarydis_->NumMyColElements(); i++)
+    for (int i = 0; i < boundarydis_->num_my_col_elements(); i++)
     {
       // get the side
-      Core::Elements::Element* side = boundarydis_->lColElement(i);
+      Core::Elements::Element* side = boundarydis_->l_col_element(i);
       int numnode = side->num_node();
-      const int* side_nodes = side->NodeIds();
+      const int* side_nodes = side->node_ids();
 
-      sides.insert(side->Id());
+      sides.insert(side->id());
 
       // get the nodes
       for (int i = 0; i < numnode; i++)
@@ -1341,7 +1342,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
   }
 
   if (points.size() == 0 and sides.size() == 0)
-    FOUR_C_THROW("there are no cutting sides for node %d, that cannot be anymore", data.node_.Id());
+    FOUR_C_THROW("there are no cutting sides for node %d, that cannot be anymore", data.node_.id());
 
   //-------------------------------------
   // initialize data holding information about minimal distance
@@ -1376,7 +1377,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
   {
     //-------------------------------------------------
 
-    Core::Elements::Element* side = boundarydis_->gElement(*it);
+    Core::Elements::Element* side = boundarydis_->g_element(*it);
 
     call_project_on_side(
         side, state, newNodeCoords, proj_sid, min_dist, proj_x_np, proj_xi_side, data.proj_);
@@ -1386,7 +1387,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
     //------------------------------------
 
     // loop all edges of current side
-    std::vector<Teuchos::RCP<Core::Elements::Element>> lines = side->Lines();
+    std::vector<Teuchos::RCP<Core::Elements::Element>> lines = side->lines();
 
     int line_count = 0;
 
@@ -1419,7 +1420,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
   for (std::set<int>::iterator it = points.begin(); it != points.end(); it++)
   {
     // compute distance to following point
-    Core::Nodes::Node* node = boundarydis_->gNode(*it);
+    Core::Nodes::Node* node = boundarydis_->g_node(*it);
 
     call_project_on_point(node,  ///< pointer to node
         state,
@@ -1440,7 +1441,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
 
 
   if (data.proj_ == TimeIntData::failed_)
-    FOUR_C_THROW("projection of node %d not successful!", n_new->Id());
+    FOUR_C_THROW("projection of node %d not successful!", n_new->id());
 
 #ifdef DEBUG_TIMINT_STD
   Core::IO::cout << "\n\t => Projection of node lies on (side=0, line=1, point=2, failed=3): "
@@ -1451,22 +1452,22 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
   // track back the projected points on structural surface from t^(n+1)->t^n
   if (data.proj_ == TimeIntData::onSide_)
   {
-    Core::Elements::Element* side = boundarydis_->gElement(proj_sid);
+    Core::Elements::Element* side = boundarydis_->g_element(proj_sid);
 
     if (side == nullptr) FOUR_C_THROW("side with id %d not found ", proj_sid);
 
     // side geometry at initial state t^0
     const int numnodes = side->num_node();
-    Core::Nodes::Node** nodes = side->Nodes();
+    Core::Nodes::Node** nodes = side->nodes();
     Core::LinAlg::SerialDenseMatrix side_xyze(3, numnodes);
     for (int i = 0; i < numnodes; ++i)
     {
-      const double* x = nodes[i]->X().data();
+      const double* x = nodes[i]->x().data();
       std::copy(x, x + 3, &side_xyze(0, i));
     }
 
     Core::Elements::Element::LocationArray cutla(1);
-    side->LocationVector(*boundarydis_, cutla, false);
+    side->location_vector(*boundarydis_, cutla, false);
 
     compute_start_point_side(
         side, side_xyze, cutla[0].lm_, proj_xi_side, min_dist, proj_x_n, start_point);
@@ -1497,37 +1498,37 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
         sid_1 = sides[0];
 
         // find the second neighboring side
-        Core::Elements::Element* side_1 = boundarydis_->gElement(sid_1);
+        Core::Elements::Element* side_1 = boundarydis_->g_element(sid_1);
 
-        Core::Nodes::Node** nodes = side_1->Nodes();
+        Core::Nodes::Node** nodes = side_1->nodes();
 
         std::set<int> neighbor_sides;
 
         for (int i = 0; i < side_1->num_node(); i++)
         {
-          Core::Elements::Element** surr_sides = nodes[i]->Elements();
-          for (int s = 0; s < nodes[i]->NumElement(); s++)
+          Core::Elements::Element** surr_sides = nodes[i]->elements();
+          for (int s = 0; s < nodes[i]->num_element(); s++)
           {
-            neighbor_sides.insert(surr_sides[s]->Id());
+            neighbor_sides.insert(surr_sides[s]->id());
           }
         }
 
         // check which neighbor side is the right one
         for (std::set<int>::iterator s = neighbor_sides.begin(); s != neighbor_sides.end(); s++)
         {
-          Core::Elements::Element* side_tmp = boundarydis_->gElement(*s);
+          Core::Elements::Element* side_tmp = boundarydis_->g_element(*s);
 
-          std::vector<Teuchos::RCP<Core::Elements::Element>> lines_tmp = side_tmp->Lines();
+          std::vector<Teuchos::RCP<Core::Elements::Element>> lines_tmp = side_tmp->lines();
 
           for (std::vector<Teuchos::RCP<Core::Elements::Element>>::iterator line_it =
                    lines_tmp.begin();
                line_it != lines_tmp.end(); line_it++)
           {
-            Core::Nodes::Node** line_nodes = (*line_it)->Nodes();
+            Core::Nodes::Node** line_nodes = (*line_it)->nodes();
             std::vector<int> line_nids;
             for (int i = 0; i < (*line_it)->num_node(); ++i)
             {
-              line_nids.push_back(line_nodes[i]->Id());
+              line_nids.push_back(line_nodes[i]->id());
             }
 
             sort(line_nids.begin(), line_nids.end());
@@ -1535,7 +1536,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
             if (line_nids == line->first)
             {
               // side found
-              if (sid_2 == -1 and side_tmp->Id() != sid_1) sid_2 = side_tmp->Id();
+              if (sid_2 == -1 and side_tmp->id() != sid_1) sid_2 = side_tmp->id();
               break;
             }
           }
@@ -1568,20 +1569,20 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
 
       //---------------------------------------------------------
       // side 1
-      Core::Elements::Element* side_1 = boundarydis_->gElement(sid_1);
+      Core::Elements::Element* side_1 = boundarydis_->g_element(sid_1);
 
       // side geometry at initial state t^0
       const int numnodes_1 = side_1->num_node();
-      Core::Nodes::Node** nodes_1 = side_1->Nodes();
+      Core::Nodes::Node** nodes_1 = side_1->nodes();
       Core::LinAlg::SerialDenseMatrix side_xyze_1(3, numnodes_1);
       for (int i = 0; i < numnodes_1; ++i)
       {
-        const double* x = nodes_1[i]->X().data();
+        const double* x = nodes_1[i]->x().data();
         std::copy(x, x + 3, &side_xyze_1(0, i));
       }
 
       Core::Elements::Element::LocationArray cutla_1(1);
-      side_1->LocationVector(*boundarydis_, cutla_1, false);
+      side_1->location_vector(*boundarydis_, cutla_1, false);
 
       //---------------------------------------------------------
       // side 2
@@ -1590,17 +1591,17 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
       Core::Elements::Element::LocationArray cutla_2(1);
       if (sid_2 != -1)
       {
-        side_2 = boundarydis_->gElement(sid_2);
+        side_2 = boundarydis_->g_element(sid_2);
         // side geometry at initial state t^0
         const int numnodes_2 = side_2->num_node();
-        Core::Nodes::Node** nodes_2 = side_2->Nodes();
+        Core::Nodes::Node** nodes_2 = side_2->nodes();
         side_xyze_2.shape(3, numnodes_2);
         for (int i = 0; i < numnodes_2; ++i)
         {
-          const double* x = nodes_2[i]->X().data();
+          const double* x = nodes_2[i]->x().data();
           std::copy(x, x + 3, &side_xyze_2(0, i));
         }
-        side_2->LocationVector(*boundarydis_, cutla_2, false);
+        side_2->location_vector(*boundarydis_, cutla_2, false);
       }
       else
       {
@@ -1608,7 +1609,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
       }
       //---------------------------------------------------------
       // line geometry at initial state t^0
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines = side_1->Lines();
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines = side_1->lines();
 
       Teuchos::RCP<Core::Elements::Element> line_ele = lines[local_lineIds[0]];
 
@@ -1635,26 +1636,26 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
 
 
     // get the node
-    Core::Nodes::Node* node = boundarydis_->gNode(proj_nid_np);
+    Core::Nodes::Node* node = boundarydis_->g_node(proj_nid_np);
 
     // get all surrounding sides
-    Core::Elements::Element** node_sides = node->Elements();
+    Core::Elements::Element** node_sides = node->elements();
 
-    for (int s = 0; s < node->NumElement(); s++)
+    for (int s = 0; s < node->num_element(); s++)
     {
       // side geometry at initial state t^0
       Core::Elements::Element* side = node_sides[s];
       const int numnodes = side->num_node();
-      Core::Nodes::Node** nodes = side->Nodes();
+      Core::Nodes::Node** nodes = side->nodes();
       Core::LinAlg::SerialDenseMatrix side_xyze(3, numnodes);
       for (int i = 0; i < numnodes; ++i)
       {
-        const double* x = nodes[i]->X().data();
+        const double* x = nodes[i]->x().data();
         std::copy(x, x + 3, &side_xyze(0, i));
       }
 
       Core::Elements::Element::LocationArray cutla(1);
-      side->LocationVector(*boundarydis_, cutla, false);
+      side->location_vector(*boundarydis_, cutla, false);
 
       surr_sides.push_back(side);
       surr_sides_xyze.push_back(side_xyze);
@@ -1666,15 +1667,15 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
     // its point geometry
     Core::LinAlg::SerialDenseMatrix point_xyze(3, 1);
 
-    const double* x = node->X().data();
+    const double* x = node->x().data();
     std::copy(x, x + 3, &point_xyze(0, 0));
 
-    std::vector<int> lm = boundarydis_->Dof(0, node);
+    std::vector<int> lm = boundarydis_->dof(0, node);
 
     // get the coordinates of the projection point at time tn
     const std::string state = "idispn";
 
-    Teuchos::RCP<const Epetra_Vector> matrix_state = boundarydis_->GetState(state);
+    Teuchos::RCP<const Epetra_Vector> matrix_state = boundarydis_->get_state(state);
     if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
     // extract local values of the global vectors
@@ -1741,7 +1742,7 @@ bool XFEM::XfluidStd::find_nearest_surf_point(
   std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>> bcells_new;
 
   // get sides involved in creation boundary cells (std::map<sideId,bcells>)
-  vc->GetBoundaryCells(bcells_new);
+  vc->get_boundary_cells(bcells_new);
 
 
 
@@ -1757,9 +1758,9 @@ bool XFEM::XfluidStd::find_nearest_surf_point(
     sides.insert(sid);
 
     // get the side
-    Core::Elements::Element* side = boundarydis_->gElement(sid);
+    Core::Elements::Element* side = boundarydis_->g_element(sid);
     int numnode = side->num_node();
-    const int* side_nodes = side->NodeIds();
+    const int* side_nodes = side->node_ids();
 
     // get the nodes
     for (int i = 0; i < numnode; i++)
@@ -1826,7 +1827,7 @@ bool XFEM::XfluidStd::project_to_surface(
   {
     //-------------------------------------------------
 
-    Core::Elements::Element* side = boundarydis_->gElement(*it);
+    Core::Elements::Element* side = boundarydis_->g_element(*it);
 
     call_project_on_side(side, state, x, proj_sid, min_dist, proj_x, proj_xi_side, proj);
 
@@ -1835,7 +1836,7 @@ bool XFEM::XfluidStd::project_to_surface(
     //------------------------------------
 
     // loop all edges of current side
-    std::vector<Teuchos::RCP<Core::Elements::Element>> lines = side->Lines();
+    std::vector<Teuchos::RCP<Core::Elements::Element>> lines = side->lines();
 
     int line_count = 0;
 
@@ -1868,7 +1869,7 @@ bool XFEM::XfluidStd::project_to_surface(
   for (std::set<int>::iterator it = points.begin(); it != points.end(); it++)
   {
     // compute distance to following point
-    Core::Nodes::Node* node = boundarydis_->gNode(*it);
+    Core::Nodes::Node* node = boundarydis_->g_node(*it);
 
     call_project_on_point(node,  ///< pointer to node on which we want to project
         state,
@@ -1949,7 +1950,7 @@ void XFEM::XfluidStd::compute_start_point_line(
 
 
   for (int i = 0; i < side1->num_node(); i++)
-    xi_1_avg.update(1.0, Core::FE::GetNodeCoordinates(i, side1->Shape()), 1.0);
+    xi_1_avg.update(1.0, Core::FE::GetNodeCoordinates(i, side1->shape()), 1.0);
 
   xi_1_avg.scale(1.0 / side1->num_node());
 
@@ -1963,7 +1964,7 @@ void XFEM::XfluidStd::compute_start_point_line(
   if (side2 != nullptr)  // in case we have side2, use averaged normal
   {
     for (int i = 0; i < side2->num_node(); i++)
-      xi_2_avg.update(1.0, Core::FE::GetNodeCoordinates(i, side2->Shape()), 1.0);
+      xi_2_avg.update(1.0, Core::FE::GetNodeCoordinates(i, side2->shape()), 1.0);
 
     xi_2_avg.scale(1.0 / side2->num_node());
 
@@ -2011,7 +2012,7 @@ void XFEM::XfluidStd::compute_start_point_avg(
     // get the side-center
     for (int i = 0; i < side->num_node(); i++)
     {
-      local_node_coord = Core::FE::GetNodeCoordinates(i, side->Shape());
+      local_node_coord = Core::FE::GetNodeCoordinates(i, side->shape());
       side_center(0) += local_node_coord(0);
       side_center(1) += local_node_coord(1);
     }
@@ -2048,11 +2049,11 @@ void XFEM::XfluidStd::callget_normal_side_tn(
 )
 {
   // get number of dofs for this side element
-  const int numdofpernode = side->NumDofPerNode(*side->Nodes()[0]);
+  const int numdofpernode = side->num_dof_per_node(*side->nodes()[0]);
 
   if (numdofpernode == 3)  // three dofs per node, for standard Dirichlet coupling
   {
-    switch (side->Shape())
+    switch (side->shape())
     {
         //      case Core::FE::CellType::tri3:
         //      {
@@ -2080,13 +2081,13 @@ void XFEM::XfluidStd::callget_normal_side_tn(
         //        lm, proj_x_n, xi_side); break;
         //      }
       default:
-        FOUR_C_THROW("unsupported side shape %d", side->Shape());
+        FOUR_C_THROW("unsupported side shape %d", side->shape());
         break;
     }
   }
   else if (numdofpernode == 4)  // four dofs per node, for standard Dirichlet coupling
   {
-    switch (side->Shape())
+    switch (side->shape())
     {
         //      case Core::FE::CellType::tri3:
         //      {
@@ -2114,7 +2115,7 @@ void XFEM::XfluidStd::callget_normal_side_tn(
         //        lm, proj_x_n, xi_side); break;
         //      }
       default:
-        FOUR_C_THROW("unsupported side shape %d", side->Shape());
+        FOUR_C_THROW("unsupported side shape %d", side->shape());
         break;
     }
   }
@@ -2192,24 +2193,24 @@ void XFEM::XfluidStd::call_get_projxn_line(
 
   // line geometry
   const int numnodes = line->num_node();
-  Core::Nodes::Node** nodes = line->Nodes();
+  Core::Nodes::Node** nodes = line->nodes();
   Core::LinAlg::SerialDenseMatrix line_xyze(3, numnodes);
   for (int i = 0; i < numnodes; ++i)
   {
-    const double* x = nodes[i]->X().data();
+    const double* x = nodes[i]->x().data();
     std::copy(x, x + 3, &line_xyze(0, i));
   }
 
 
   Core::Elements::Element::LocationArray cutla(1);
-  line->LocationVector(*boundarydis_, cutla, false);
+  line->location_vector(*boundarydis_, cutla, false);
 
   // get number of dofs for this side element
-  const int numdofpernode = side->NumDofPerNode(*side->Nodes()[0]);
+  const int numdofpernode = side->num_dof_per_node(*side->nodes()[0]);
 
   if (numdofpernode == 3)
   {
-    switch (line->Shape())
+    switch (line->shape())
     {
       case Core::FE::CellType::line2:
       {
@@ -2217,13 +2218,13 @@ void XFEM::XfluidStd::call_get_projxn_line(
         break;
       }
       default:
-        FOUR_C_THROW("unsupported line shape %d", line->Shape());
+        FOUR_C_THROW("unsupported line shape %d", line->shape());
         break;
     }
   }
   else if (numdofpernode == 4)  // four dofs per node, for standard Dirichlet coupling
   {
-    switch (line->Shape())
+    switch (line->shape())
     {
       case Core::FE::CellType::line2:
       {
@@ -2231,7 +2232,7 @@ void XFEM::XfluidStd::call_get_projxn_line(
         break;
       }
       default:
-        FOUR_C_THROW("unsupported line shape %d", line->Shape());
+        FOUR_C_THROW("unsupported line shape %d", line->shape());
         break;
     }
   }
@@ -2290,7 +2291,7 @@ void XFEM::XfluidStd::addeidisp(
 
 
   // get state of the global vector
-  Teuchos::RCP<const Epetra_Vector> matrix_state = cutdis.GetState(state);
+  Teuchos::RCP<const Epetra_Vector> matrix_state = cutdis.get_state(state);
   if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vectors
@@ -2344,24 +2345,24 @@ void XFEM::XfluidStd::call_project_on_side(
 
   // side geometry at initial state t^0
   const int numnodes = side->num_node();
-  Core::Nodes::Node** nodes = side->Nodes();
+  Core::Nodes::Node** nodes = side->nodes();
   Core::LinAlg::SerialDenseMatrix side_xyze(3, numnodes);
   for (int i = 0; i < numnodes; ++i)
   {
-    const double* x = nodes[i]->X().data();
+    const double* x = nodes[i]->x().data();
     std::copy(x, x + 3, &side_xyze(0, i));
   }
 
 
   Core::Elements::Element::LocationArray cutla(1);
-  side->LocationVector(*boundarydis_, cutla, false);
+  side->location_vector(*boundarydis_, cutla, false);
 
   // get number of dofs for this side element
-  const int numdofpernode = side->NumDofPerNode(*side->Nodes()[0]);
+  const int numdofpernode = side->num_dof_per_node(*side->nodes()[0]);
 
   if (numdofpernode == 3)  // three dofs per node, for standard Dirichlet coupling
   {
-    switch (side->Shape())
+    switch (side->shape())
     {
         //      case Core::FE::CellType::tri3:
         //      {
@@ -2392,13 +2393,13 @@ void XFEM::XfluidStd::call_project_on_side(
         break;
       }
       default:
-        FOUR_C_THROW("unsupported side shape %d", side->Shape());
+        FOUR_C_THROW("unsupported side shape %d", side->shape());
         break;
     }
   }
   else if (numdofpernode == 4)  // four dofs per node, for standard Dirichlet coupling
   {
-    switch (side->Shape())
+    switch (side->shape())
     {
         //      case Core::FE::CellType::tri3:
         //      {
@@ -2429,7 +2430,7 @@ void XFEM::XfluidStd::call_project_on_side(
         //        cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist); break;
         //      }
       default:
-        FOUR_C_THROW("unsupported side shape %d", side->Shape());
+        FOUR_C_THROW("unsupported side shape %d", side->shape());
         break;
     }
   }
@@ -2453,7 +2454,7 @@ void XFEM::XfluidStd::call_project_on_side(
       // set current minimal distance w.r.t side
       proj = TimeIntData::onSide_;
       // set side that contains the projected point
-      proj_sid = side->Id();
+      proj_sid = side->id();
       // update minimal distance
       min_dist = curr_dist;
       // update projection point
@@ -2510,24 +2511,24 @@ void XFEM::XfluidStd::call_project_on_line(
 
   // line geometry
   const int numnodes = line->num_node();
-  Core::Nodes::Node** nodes = line->Nodes();
+  Core::Nodes::Node** nodes = line->nodes();
   Core::LinAlg::SerialDenseMatrix line_xyze(3, numnodes);
   for (int i = 0; i < numnodes; ++i)
   {
-    const double* x = nodes[i]->X().data();
+    const double* x = nodes[i]->x().data();
     std::copy(x, x + 3, &line_xyze(0, i));
   }
 
 
   Core::Elements::Element::LocationArray cutla(1);
-  line->LocationVector(*boundarydis_, cutla, false);
+  line->location_vector(*boundarydis_, cutla, false);
 
   // get number of dofs for this side element
-  const int numdofpernode = side->NumDofPerNode(*side->Nodes()[0]);
+  const int numdofpernode = side->num_dof_per_node(*side->nodes()[0]);
 
   if (numdofpernode == 3)
   {
-    switch (line->Shape())
+    switch (line->shape())
     {
       case Core::FE::CellType::line2:
       {
@@ -2536,13 +2537,13 @@ void XFEM::XfluidStd::call_project_on_line(
         break;
       }
       default:
-        FOUR_C_THROW("unsupported line shape %d", line->Shape());
+        FOUR_C_THROW("unsupported line shape %d", line->shape());
         break;
     }
   }
   else if (numdofpernode == 4)  // four dofs per node, for standard Dirichlet coupling
   {
-    switch (line->Shape())
+    switch (line->shape())
     {
       case Core::FE::CellType::line2:
       {
@@ -2557,7 +2558,7 @@ void XFEM::XfluidStd::call_project_on_line(
         break;
       }
       default:
-        FOUR_C_THROW("unsupported line shape %d", line->Shape());
+        FOUR_C_THROW("unsupported line shape %d", line->shape());
         break;
     }
   }
@@ -2593,7 +2594,7 @@ void XFEM::XfluidStd::call_project_on_line(
       std::vector<int> line_nids;
       for (int i = 0; i < numnodes; ++i)
       {
-        line_nids.push_back(nodes[i]->Id());
+        line_nids.push_back(nodes[i]->id());
       }
 
       sort(line_nids.begin(), line_nids.end());
@@ -2617,7 +2618,7 @@ void XFEM::XfluidStd::call_project_on_line(
       if (lines != proj_nid_line.end())
       {
         // set line id w.r.t side->Id() that contains the projected point
-        (lines->second).push_back(side->Id());
+        (lines->second).push_back(side->id());
         // update local line id w.r.t side
         (proj_lineid.find(line_nids))->second.push_back(line_count);
         // update local coordinates w.r.t line
@@ -2626,7 +2627,7 @@ void XFEM::XfluidStd::call_project_on_line(
       else
       {
         std::vector<int> sideids;
-        sideids.push_back(side->Id());
+        sideids.push_back(side->id());
         std::vector<int> locallineids;
         locallineids.push_back(line_count);
         std::vector<double> locallineXiCoords;
@@ -2680,10 +2681,10 @@ void XFEM::XfluidStd::call_project_on_point(Core::Nodes::Node* node,  ///< point
   // its point geometry
   Core::LinAlg::SerialDenseMatrix point_xyze(3, 1);
 
-  const double* x = node->X().data();
+  const double* x = node->x().data();
   std::copy(x, x + 3, &point_xyze(0, 0));
 
-  std::vector<int> lm = boundarydis_->Dof(0, node);
+  std::vector<int> lm = boundarydis_->dof(0, node);
 
 
   // compute distance between two points
@@ -2710,7 +2711,7 @@ void XFEM::XfluidStd::call_project_on_point(Core::Nodes::Node* node,  ///< point
     // update point with minimal distance
     proj_x_np.update(1.0, x_point, 0.0);
     // update node id of point with minimal distance
-    proj_nid_np = node->Id();
+    proj_nid_np = node->id();
     //--------------------
   }
 
@@ -3080,7 +3081,7 @@ void XFEM::XfluidStd::project_on_point(
     double& dist                          ///< distance from point to its projection
 )
 {
-  Teuchos::RCP<const Epetra_Vector> matrix_state = boundarydis_->GetState(state);
+  Teuchos::RCP<const Epetra_Vector> matrix_state = boundarydis_->get_state(state);
   if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vectors
@@ -3173,10 +3174,10 @@ void XFEM::XfluidStd::set_final_data()
         data->velValues_);                               // velocities of the node
     std::vector<double>& presValues(data->presValues_);  // pressures of the node
 
-    const int gnodeid = data->node_.Id();  // global node id
+    const int gnodeid = data->node_.id();  // global node id
 
     //-------------------------------------------------------
-    Core::Nodes::Node* node = discret_->gNode(gnodeid);
+    Core::Nodes::Node* node = discret_->g_node(gnodeid);
 
 #ifdef DEBUG_TIMINT_STD
     Core::IO::cout << "dofset at new timestep " << data->nds_np_ << Core::IO::endl;
@@ -3186,7 +3187,7 @@ void XFEM::XfluidStd::set_final_data()
       FOUR_C_THROW("cannot get dofs for dofset with number %d", data->nds_np_);
 
     std::vector<int> dofs;
-    dofset_new_->Dof(dofs, node, data->nds_np_);
+    dofset_new_->dof(dofs, node, data->nds_np_);
 
     if (dofs.size() != (nsd + 1))
       FOUR_C_THROW("not the right number of dofs %d for this node ", dofs.size());
@@ -3212,7 +3213,7 @@ void XFEM::XfluidStd::set_final_data()
  * export start data to neighbour proc                                           winklmaier 06/10
  **
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidStd::exportStartData()
+void XFEM::XfluidStd::export_start_data()
 {
   FOUR_C_THROW("this function has still to be adapted for XFSI");
 
@@ -3284,7 +3285,7 @@ void XFEM::XfluidStd::exportStartData()
         searchedProcs, counter, dMin, (TimeIntData::Type)newtype));
   }
 
-  discret_->Comm().Barrier();  // processors wait for each other
+  discret_->get_comm().Barrier();  // processors wait for each other
 }  // end exportStartData
 
 
@@ -3293,7 +3294,7 @@ void XFEM::XfluidStd::exportStartData()
  * export final data to node's proc                                                  schott 07/12
  **
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidStd::exportFinalData()
+void XFEM::XfluidStd::export_final_data()
 {
 #ifdef DEBUG_TIMINT_STD
   Core::IO::cout << "\n\t=============================";
@@ -3316,7 +3317,7 @@ void XFEM::XfluidStd::exportFinalData()
   {
     if (data->state_ != TimeIntData::doneStd_)
       FOUR_C_THROW("All data should be set here, having status 'done'. Thus something is wrong!");
-    dataVec[data->node_.Owner()].push_back(*data);
+    dataVec[data->node_.owner()].push_back(*data);
   }
 
   timeIntData_->clear();
@@ -3341,7 +3342,7 @@ void XFEM::XfluidStd::exportFinalData()
     for (std::vector<TimeIntData>::iterator data = dataVec[dest].begin();
          data != dataVec[dest].end(); data++)
     {
-      Core::Communication::ParObject::add_to_pack(dataSend, data->node_.Id());
+      Core::Communication::ParObject::add_to_pack(dataSend, data->node_.id());
       Core::Communication::ParObject::add_to_pack(dataSend, data->nds_np_);
       Core::Communication::ParObject::add_to_pack(dataSend, data->startpoint_);
       Core::Communication::ParObject::add_to_pack(dataSend, data->velValues_);
@@ -3383,19 +3384,19 @@ void XFEM::XfluidStd::exportFinalData()
         // doDirichlet)
         std::vector<int> lm;
         std::vector<int> dofs;
-        dofset_new_->Dof(dofs, discret_->gNode(gid), 0);  // dofs for standard dofset
+        dofset_new_->dof(dofs, discret_->g_node(gid), 0);  // dofs for standard dofset
         for (int j = 0; j < 4; ++j) lm.push_back(dofs[j]);
 
         Core::LinAlg::Matrix<1, 1> nodepredummy(true);
         extract_nodal_values_from_vector<1>(nodedispnp, nodepredummy, dispnp_, lm);
       }
 
-      timeIntData_->push_back(TimeIntData(*discret_->gNode(gid), nds_np, nodedispnp, startpoint,
+      timeIntData_->push_back(TimeIntData(*discret_->g_node(gid), nds_np, nodedispnp, startpoint,
           velValues, presValues, (TimeIntData::Type)newtype));
     }  // end loop over number of nodes to get
 
     // processors wait for each other
-    discret_->Comm().Barrier();
+    discret_->get_comm().Barrier();
   }  // end loop over processors
 }  // end exportfinalData
 

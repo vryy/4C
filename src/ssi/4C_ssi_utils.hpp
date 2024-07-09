@@ -109,14 +109,14 @@ namespace SSI
       void complete_structure_sca_tra_matrix();
 
       //! method that clears all ssi matrices
-      void ClearMatrices();
+      void clear_matrices();
 
       //! return the system matrix
-      Teuchos::RCP<Core::LinAlg::SparseOperator> SystemMatrix() { return system_matrix_; }
+      Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix() { return system_matrix_; }
 
       //! return sub blocks of system matrix
       //@{
-      Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTraMatrix() { return scatra_matrix_; }
+      Teuchos::RCP<Core::LinAlg::SparseOperator> sca_tra_matrix() { return scatra_matrix_; }
       Teuchos::RCP<Core::LinAlg::SparseOperator> sca_tra_manifold_structure_matrix()
       {
         return scatramanifold_structure_matrix_;
@@ -129,8 +129,8 @@ namespace SSI
       {
         return structure_scatra_matrix_;
       }
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> StructureMatrix() { return structure_matrix_; }
-      Teuchos::RCP<Core::LinAlg::SparseOperator> ManifoldMatrix() { return manifold_matrix_; }
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> structure_matrix() { return structure_matrix_; }
+      Teuchos::RCP<Core::LinAlg::SparseOperator> manifold_matrix() { return manifold_matrix_; }
       Teuchos::RCP<Core::LinAlg::SparseOperator> sca_tra_sca_tra_manifold_matrix()
       {
         return scatra_scatramanifold_matrix_;
@@ -231,24 +231,24 @@ namespace SSI
           Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, bool is_scatra_manifold);
 
       //! clear the increment vector
-      void ClearIncrement();
+      void clear_increment();
 
       //! clear all residual vectors
-      void ClearResiduals();
+      void clear_residuals();
 
       //! global increment vector for Newton-Raphson iteration
-      Teuchos::RCP<Epetra_Vector> Increment() { return increment_; }
+      Teuchos::RCP<Epetra_Vector> increment() { return increment_; }
 
       //! residual vector on right-hand side of global system of equations
-      Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
+      Teuchos::RCP<Epetra_Vector> residual() { return residual_; }
 
       //! residual vector on right-hand side of scalar transport system
-      Teuchos::RCP<Epetra_Vector> ScatraResidual() { return scatra_residual_; }
+      Teuchos::RCP<Epetra_Vector> scatra_residual() { return scatra_residual_; }
 
       //! residual vector on right-hand side of structure system
-      Teuchos::RCP<Epetra_Vector> StructureResidual() { return structure_residual_; }
+      Teuchos::RCP<Epetra_Vector> structure_residual() { return structure_residual_; }
 
-      Teuchos::RCP<Epetra_Vector> ManifoldResidual() { return manifold_residual_; }
+      Teuchos::RCP<Epetra_Vector> manifold_residual() { return manifold_residual_; }
 
      private:
       //! global increment vector for Newton-Raphson iteration
@@ -279,19 +279,19 @@ namespace SSI
       explicit SSIMaps(const SSI::SsiMono& ssi_mono_algorithm);
 
       //! get vector containing positions within system matrix for specific subproblem
-      std::vector<int> GetBlockPositions(Subproblem subproblem) const;
+      std::vector<int> get_block_positions(Subproblem subproblem) const;
 
       //! get position within global dof map for specific sub problem
-      static int GetProblemPosition(Subproblem subproblem);
+      static int get_problem_position(Subproblem subproblem);
 
       //! the multi map extractor of the scalar transport field
-      Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> BlockMapScaTra() const;
+      Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_sca_tra() const;
 
       //! the multi map extractor of the scalar transport on manifold field
       Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_sca_tra_manifold() const;
 
       //! the multi map extractor of the structure field
-      Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> BlockMapStructure() const;
+      Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_structure() const;
 
       //! map extractor associated with blocks of global system matrix
       Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_system_matrix() const
@@ -300,25 +300,25 @@ namespace SSI
       }
 
       //! all dofs of the SSI algorithm
-      Teuchos::RCP<const Epetra_Map> MapSystemMatrix() const { return map_system_matrix_; }
+      Teuchos::RCP<const Epetra_Map> map_system_matrix() const { return map_system_matrix_; }
 
       /*!
        * @brief global map extractor
        * @note only access with GetProblemPosition method
        */
-      Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> MapsSubProblems() const
+      Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> maps_sub_problems() const
       {
         return maps_sub_problems_;
       }
 
       //! the scalar transport dof row map
-      Teuchos::RCP<const Epetra_Map> ScaTraDofRowMap() const;
+      Teuchos::RCP<const Epetra_Map> sca_tra_dof_row_map() const;
 
       //! the scalar transport on manifolds dof row map
       Teuchos::RCP<const Epetra_Map> sca_tra_manifold_dof_row_map() const;
 
       //! the structure dof row map
-      Teuchos::RCP<const Epetra_Map> StructureDofRowMap() const;
+      Teuchos::RCP<const Epetra_Map> structure_dof_row_map() const;
 
      private:
       //! create and check the block maps of all sub problems
@@ -358,7 +358,7 @@ namespace SSI
           Teuchos::RCP<Core::Adapter::Coupling> slave_slave_transformation);
 
       //! coupling adapter between master and slave coupling
-      Teuchos::RCP<Core::Adapter::Coupling> SlaveMasterCoupling() const
+      Teuchos::RCP<Core::Adapter::Coupling> slave_master_coupling() const
       {
         return slave_master_coupling_;
       }
@@ -370,7 +370,7 @@ namespace SSI
       }
 
       //! converter to convert slave dofs to master side
-      Teuchos::RCP<Core::Adapter::CouplingSlaveConverter> SlaveSideConverter() const
+      Teuchos::RCP<Core::Adapter::CouplingSlaveConverter> slave_side_converter() const
       {
         return slave_side_converter_;
       }
@@ -407,16 +407,16 @@ namespace SSI
           Teuchos::RCP<const Epetra_Map> struct_dbc_map) const;
 
       //! all master side dofs
-      Teuchos::RCP<const Epetra_Map> FullMasterSideMap() const { return full_master_side_map_; }
+      Teuchos::RCP<const Epetra_Map> full_master_side_map() const { return full_master_side_map_; }
 
       //! all slave side dofs
-      Teuchos::RCP<const Epetra_Map> FullSlaveSideMap() const { return full_slave_side_map_; }
+      Teuchos::RCP<const Epetra_Map> full_slave_side_map() const { return full_slave_side_map_; }
 
       //! all interior dofs
-      Teuchos::RCP<const Epetra_Map> InteriorMap() const { return interior_map_; }
+      Teuchos::RCP<const Epetra_Map> interior_map() const { return interior_map_; }
 
       //! vector of all mesh tying handlers
-      std::vector<Teuchos::RCP<SSIMeshTyingHandler>> MeshTyingHandlers() const
+      std::vector<Teuchos::RCP<SSIMeshTyingHandler>> mesh_tying_handlers() const
       {
         return meshtying_handlers_;
       }

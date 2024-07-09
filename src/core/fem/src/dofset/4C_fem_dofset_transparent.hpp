@@ -45,7 +45,7 @@ namespace Core::DOFSets
 
 
     /// create a copy of this object
-    Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new TransparentDofSet(*this)); }
+    Teuchos::RCP<DofSet> clone() override { return Teuchos::rcp(new TransparentDofSet(*this)); }
 
     /// Assign dof numbers to all elements and nodes of the discretization.
     int assign_degrees_of_freedom(
@@ -76,7 +76,7 @@ namespace Core::DOFSets
 
     /// helper for parallel_transfer_degrees_of_freedom; pack the current map
     /// node gid -> its dofs into a send block
-    void PackLocalSourceDofs(
+    void pack_local_source_dofs(
         std::map<int, std::vector<int>>& gid_to_dofs, Core::Communication::PackBuffer& sblock);
 
     /// helper for parallel_transfer_degrees_of_freedom; add processor local information

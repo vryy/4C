@@ -35,10 +35,10 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       //! return porosity
-      double Porosity() const { return porosity_; };
+      double porosity() const { return porosity_; };
 
       //! return tortuosity
-      double Tortuosity() const { return tortuosity_; };
+      double tortuosity() const { return tortuosity_; };
 
      private:
       //! @name material parameters
@@ -57,11 +57,11 @@ namespace Mat
   class ScatraMultiScaleType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "ScatraMultiScaleType"; };
+    std::string name() const override { return "ScatraMultiScaleType"; };
 
-    static ScatraMultiScaleType& Instance() { return instance_; };
+    static ScatraMultiScaleType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static ScatraMultiScaleType instance_;
@@ -86,9 +86,9 @@ namespace Mat
       Every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ScatraMultiScaleType::Instance().UniqueParObjectId();
+      return ScatraMultiScaleType::instance().unique_par_object_id();
     };
 
     /*!
@@ -96,7 +96,7 @@ namespace Mat
 
       Resizes the vector data and stores all information of a class in it.
       The first information to be stored in data has to be the
-      unique ParObject ID delivered by UniqueParObjectId() which will then
+      unique ParObject ID delivered by unique_par_object_id() which will then
       identify the exact class on the receiving processor.
 
       \param data (in/out): char vector to store class information
@@ -110,7 +110,7 @@ namespace Mat
       exact copy of an instance of a class on a different processor.
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
-      UniqueParObjectId().
+      unique_par_object_id().
 
       \param data (in) : vector storing all data to be unpacked into this instance.
     */
@@ -118,22 +118,22 @@ namespace Mat
     //@}
 
     //! return material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_scatra_multiscale;
     };
 
     //! clone material
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new ScatraMultiScale(*this));
     };
 
     //! return porosity
-    double Porosity() const { return params_->Porosity(); };
+    double porosity() const { return params_->porosity(); };
 
     //! return tortuosity
-    double Tortuosity() const { return params_->Tortuosity(); };
+    double tortuosity() const { return params_->tortuosity(); };
 
    private:
     //! return material parameters

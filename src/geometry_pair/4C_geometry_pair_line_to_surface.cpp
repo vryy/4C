@@ -38,18 +38,18 @@ GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line, Surface>::GeometryPair
   // need this vector for segmentation e.t.c.
   int myrank = -1;
   MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-  if (element1->Owner() != myrank)
+  if (element1->owner() != myrank)
     FOUR_C_THROW(
         "The GeometryPairLineToSurface pair has to be on the same processor as the line element! "
         "Currently the pair is on rank %d, the line element on %d!",
-        myrank, element1->Owner());
+        myrank, element1->owner());
 }
 
 /**
  *
  */
 template <typename ScalarType, typename Line, typename Surface>
-void GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line, Surface>::ProjectPointToOther(
+void GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line, Surface>::project_point_to_other(
     const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
     const ElementData<Surface, ScalarType>& element_data_surface,
     Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result,
@@ -99,7 +99,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line, Surface>::interse
     if (intersection_found == ProjectionResult::projection_found_valid)
     {
       intersection_points.push_back(ProjectionPoint1DTo3D<ScalarType>(eta, xi));
-      intersection_points.back().SetIntersectionFace(i);
+      intersection_points.back().set_intersection_face(i);
     }
   }
 }
@@ -246,7 +246,7 @@ double GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line,
   else
   {
     double surface_size = get_surface_size(element_data_surface);
-    double line_tube_size_radius = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(Element1()))
+    double line_tube_size_radius = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element1()))
                                        ->get_circular_cross_section_radius_for_interactions();
     return std::max(surface_size, 3.0 * line_tube_size_radius);
   }
@@ -265,7 +265,7 @@ double GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line, Surface>::get_s
   Core::LinAlg::SerialDenseMatrix nodal_coordinates =
       Core::FE::getEleNodeNumbering_nodes_paramspace(Surface::discretization_);
   const auto element_data_surface_double =
-      ElementDataToDouble<Surface>::ToDouble(element_data_surface);
+      ElementDataToDouble<Surface>::to_double(element_data_surface);
   for (unsigned int i_node = 0; i_node < 3; i_node++)
   {
     for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
@@ -331,8 +331,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<ScalarType, Line, Surface
 {
   // Call pre_evaluate on the double pair.
   std::vector<LineSegment<double>> segments_double;
-  geometry_pair_double_->pre_evaluate(ElementDataToDouble<Line>::ToDouble(element_data_line),
-      ElementDataToDouble<Surface>::ToDouble(element_data_surface), segments_double);
+  geometry_pair_double_->pre_evaluate(ElementDataToDouble<Line>::to_double(element_data_line),
+      ElementDataToDouble<Surface>::to_double(element_data_surface), segments_double);
 
   // Convert the created double segments to a segment of scalar type.
   segments.clear();
@@ -363,8 +363,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<ScalarType, Line, Surface
   }
 
   // Call Evaluate on the double pair.
-  geometry_pair_double_->evaluate(ElementDataToDouble<Line>::ToDouble(element_data_line),
-      ElementDataToDouble<Surface>::ToDouble(element_data_surface), segments_double);
+  geometry_pair_double_->evaluate(ElementDataToDouble<Line>::to_double(element_data_line),
+      ElementDataToDouble<Surface>::to_double(element_data_surface), segments_double);
 
   // Get the face parameters.
   unsigned int n_faces;
@@ -386,44 +386,45 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<ScalarType, Line, Surface
 
     // Add the projection point to an array.
     std::array<std::reference_wrapper<ProjectionPoint1DTo3D<ScalarType>>, 2>
-        segment_start_end_points = {new_segment.GetStartPoint(), new_segment.GetEndPoint()};
-    segment_start_end_points[0].get().set_from_other_point_double(segment_double.GetStartPoint());
-    segment_start_end_points[1].get().set_from_other_point_double(segment_double.GetEndPoint());
+        segment_start_end_points = {new_segment.get_start_point(), new_segment.get_end_point()};
+    segment_start_end_points[0].get().set_from_other_point_double(segment_double.get_start_point());
+    segment_start_end_points[1].get().set_from_other_point_double(segment_double.get_end_point());
 
     // If the start or end points are intersection points, the intersections have to be reevaluated.
     for (auto& point : segment_start_end_points)
     {
-      const int intersection_face = point.get().GetIntersectionFace();
+      const int intersection_face = point.get().get_intersection_face();
       if (intersection_face >= 0)
       {
         this->intersect_line_with_surface_edge(element_data_line, element_data_surface,
             face_fixed_parameters[intersection_face], face_fixed_values[intersection_face],
-            point.get().GetEta(), point.get().GetXi(), projection_result, true);
+            point.get().get_eta(), point.get().get_xi(), projection_result, true);
       }
     }
 
     // Reevaluate the integration points along the segment.
     std::vector<ProjectionPoint1DTo3D<ScalarType>>& projection_points =
-        new_segment.GetProjectionPoints();
+        new_segment.get_projection_points();
     projection_points.resize(segment_double.get_number_of_projection_points());
     for (unsigned int i_point = 0; i_point < segment_double.get_number_of_projection_points();
          i_point++)
     {
       // Position of the projection point within the segment.
-      auto& projection_point_double = segment_double.GetProjectionPoints()[i_point];
-      const double factor = (projection_point_double.GetEta() - segment_double.GetEtadata()) /
-                            segment_double.GetSegmentLength();
+      auto& projection_point_double = segment_double.get_projection_points()[i_point];
+      const double factor = (projection_point_double.get_eta() - segment_double.get_etadata()) /
+                            segment_double.get_segment_length();
 
       // Calculate spatial point.
       auto& projection_point = projection_points[i_point];
       projection_point.set_from_other_point_double(projection_point_double);
-      projection_point.SetEta(new_segment.GetEtadata() + new_segment.GetSegmentLength() * factor);
+      projection_point.set_eta(
+          new_segment.get_etadata() + new_segment.get_segment_length() * factor);
 
-      EvaluatePosition<Line>(projection_point.GetEta(), element_data_line, point_in_space);
+      EvaluatePosition<Line>(projection_point.get_eta(), element_data_line, point_in_space);
 
       // Calculate the projection.
-      this->ProjectPointToOther(
-          point_in_space, element_data_surface, projection_point.GetXi(), projection_result, true);
+      this->project_point_to_other(
+          point_in_space, element_data_surface, projection_point.get_xi(), projection_result, true);
     }
   }
 }

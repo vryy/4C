@@ -23,7 +23,7 @@ int Discret::ELEMENTS::SolidScatra::evaluate(Teuchos::ParameterList& params,
 {
   if (!material_post_setup_)
   {
-    std::visit([&](auto& interface) { interface->material_post_setup(*this, SolidMaterial()); },
+    std::visit([&](auto& interface) { interface->material_post_setup(*this, solid_material()); },
         solid_scatra_calc_variant_);
     material_post_setup_ = true;
   }
@@ -34,7 +34,7 @@ int Discret::ELEMENTS::SolidScatra::evaluate(Teuchos::ParameterList& params,
   const Core::Elements::ActionType action = std::invoke(
       [&]()
       {
-        if (IsParamsInterface())
+        if (is_params_interface())
           return params_interface().get_action_type();
         else
           return Core::Elements::String2ActionType(params.get<std::string>("action", "none"));
@@ -48,7 +48,7 @@ int Discret::ELEMENTS::SolidScatra::evaluate(Teuchos::ParameterList& params,
           [&](auto& interface)
           {
             interface->evaluate_d_stress_d_scalar(
-                *this, SolidMaterial(), discretization, la, params, elemat1);
+                *this, solid_material(), discretization, la, params, elemat1);
           },
           solid_scatra_calc_variant_);
       return 0;
@@ -58,7 +58,7 @@ int Discret::ELEMENTS::SolidScatra::evaluate(Teuchos::ParameterList& params,
           [&](auto& interface)
           {
             interface->evaluate_nonlinear_force_stiffness_mass(
-                *this, SolidMaterial(), discretization, la, params, &elevec1, &elemat1, nullptr);
+                *this, solid_material(), discretization, la, params, &elevec1, &elemat1, nullptr);
           },
           solid_scatra_calc_variant_);
       return 0;
@@ -69,7 +69,7 @@ int Discret::ELEMENTS::SolidScatra::evaluate(Teuchos::ParameterList& params,
           [&](auto& interface)
           {
             interface->evaluate_nonlinear_force_stiffness_mass(
-                *this, SolidMaterial(), discretization, la, params, &elevec1, &elemat1, &elemat2);
+                *this, solid_material(), discretization, la, params, &elevec1, &elemat1, &elemat2);
           },
           solid_scatra_calc_variant_);
 
@@ -81,7 +81,7 @@ int Discret::ELEMENTS::SolidScatra::evaluate(Teuchos::ParameterList& params,
           [&](auto& interface)
           {
             interface->evaluate_nonlinear_force_stiffness_mass(
-                *this, SolidMaterial(), discretization, la, params, &elevec1, nullptr, nullptr);
+                *this, solid_material(), discretization, la, params, &elevec1, nullptr, nullptr);
           },
           solid_scatra_calc_variant_);
 
@@ -90,14 +90,14 @@ int Discret::ELEMENTS::SolidScatra::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_update_istep:
     {
       std::visit([&](auto& interface)
-          { interface->Update(*this, SolidMaterial(), discretization, la, params); },
+          { interface->update(*this, solid_material(), discretization, la, params); },
           solid_scatra_calc_variant_);
 
       return 0;
     }
     case Core::Elements::struct_calc_recover:
     {
-      std::visit([&](auto& interface) { interface->Recover(*this, discretization, la, params); },
+      std::visit([&](auto& interface) { interface->recover(*this, discretization, la, params); },
           solid_scatra_calc_variant_);
 
       return 0;
@@ -107,7 +107,7 @@ int Discret::ELEMENTS::SolidScatra::evaluate(Teuchos::ParameterList& params,
       std::visit(
           [&](auto& interface)
           {
-            interface->calculate_stress(*this, SolidMaterial(),
+            interface->calculate_stress(*this, solid_material(),
                 StressIO{get_io_stress_type(*this, params), get_stress_data(*this, params)},
                 StrainIO{get_io_strain_type(*this, params), get_strain_data(*this, params)},
                 discretization, la, params);
@@ -137,7 +137,7 @@ int Discret::ELEMENTS::SolidScatra::evaluate_neumann(Teuchos::ParameterList& par
   const double time = std::invoke(
       [&]()
       {
-        if (IsParamsInterface())
+        if (is_params_interface())
           return params_interface().get_total_time();
         else
           return params.get("total time", -1.0);
@@ -155,7 +155,7 @@ double Discret::ELEMENTS::SolidScatra::get_normal_cauchy_stress_at_xi(
     Discret::ELEMENTS::SolidScatraCauchyNDirLinearizations<3>& linearizations)
 {
   return Discret::ELEMENTS::get_normal_cauchy_stress_at_xi(solid_scatra_calc_variant_, *this,
-      SolidMaterial(), disp, scalars, xi, n, dir, linearizations);
+      solid_material(), disp, scalars, xi, n, dir, linearizations);
 }
 
 FOUR_C_NAMESPACE_CLOSE

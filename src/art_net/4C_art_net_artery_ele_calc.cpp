@@ -27,12 +27,12 @@ template <Core::FE::CellType distype>
 double Discret::ELEMENTS::ArteryEleCalc<distype>::calculate_ele_length(Artery* ele)
 {
   // get node coordinates and number of elements per node
-  Core::Nodes::Node** nodes = ele->Nodes();
+  Core::Nodes::Node** nodes = ele->nodes();
   Core::LinAlg::Matrix<3, iel_> xyze;
   // TODO: does this work for line3?
   for (int inode = 0; inode < iel_; inode++)
   {
-    const auto& x = nodes[inode]->X();
+    const auto& x = nodes[inode]->x();
     xyze(0, inode) = x[0];
     xyze(1, inode) = x[1];
     xyze(2, inode) = x[2];

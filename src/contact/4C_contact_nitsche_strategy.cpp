@@ -38,7 +38,7 @@ void CONTACT::NitscheStrategy::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector>
   // just a Nitsche-version
   Teuchos::RCP<Epetra_FEVector> fc = Teuchos::rcp(new Epetra_FEVector(f->Map()));
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kc = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      (dynamic_cast<Epetra_CrsMatrix*>(&(*kt->EpetraOperator())))->RowMap(), 100, true, false,
+      (dynamic_cast<Epetra_CrsMatrix*>(&(*kt->epetra_operator())))->RowMap(), 100, true, false,
       Core::LinAlg::SparseMatrix::FE_MATRIX));
 
   // Evaluation for all interfaces
@@ -46,12 +46,12 @@ void CONTACT::NitscheStrategy::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector>
   {
     interface->initialize();
     interface->evaluate(0, step_, iter_);
-    for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
+    for (int e = 0; e < interface->discret().element_col_map()->NumMyElements(); ++e)
     {
       auto* mele = dynamic_cast<Mortar::Element*>(
-          interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
-      mele->GetNitscheContainer().AssembleRHS(mele, CONTACT::VecBlockType::displ, fc);
-      mele->GetNitscheContainer().AssembleMatrix(mele, CONTACT::MatBlockType::displ_displ, kc);
+          interface->discret().g_element(interface->discret().element_col_map()->GID(e)));
+      mele->get_nitsche_container().assemble_rhs(mele, CONTACT::VecBlockType::displ, fc);
+      mele->get_nitsche_container().assemble_matrix(mele, CONTACT::MatBlockType::displ_displ, kc);
     }
   }
 
@@ -61,17 +61,17 @@ void CONTACT::NitscheStrategy::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector>
   if (fc->GlobalAssemble(Add, false) != 0) FOUR_C_THROW("GlobalAssemble failed");
   // add negative contact force here since the time integrator handed me a rhs!
   if (f->Update(-1., *fc, 1.)) FOUR_C_THROW("update went wrong");
-  dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add);
-  kt->UnComplete();
-  kt->Add(*kc, false, 1., 1.);
-  kt->Complete();
+  dynamic_cast<Epetra_FECrsMatrix&>(*kc->epetra_matrix()).GlobalAssemble(true, Add);
+  kt->un_complete();
+  kt->add(*kc, false, 1., 1.);
+  kt->complete();
 }
 
 
 /*----------------------------------------------------------------------*
  |  read restart information for contact                     seitz 10/16|
  *----------------------------------------------------------------------*/
-void CONTACT::NitscheStrategy::DoReadRestart(Core::IO::DiscretizationReader& reader,
+void CONTACT::NitscheStrategy::do_read_restart(Core::IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
   // check whether this is a restart with contact of a previously
@@ -79,7 +79,7 @@ void CONTACT::NitscheStrategy::DoReadRestart(Core::IO::DiscretizationReader& rea
   // to try to read certain, in this case non-existing, vectors
   // such as the activetoggle or sliptoggle vectors, but rather
   // initialize the restart active and slip sets as being empty)
-  bool restartwithcontact = Core::UTILS::IntegralValue<int>(Params(), "RESTART_WITH_CONTACT");
+  bool restartwithcontact = Core::UTILS::IntegralValue<int>(params(), "RESTART_WITH_CONTACT");
   if (restartwithcontact) FOUR_C_THROW("not supported for nitsche contact");
 
   // set restart displacement state
@@ -99,7 +99,7 @@ void CONTACT::NitscheStrategy::DoReadRestart(Core::IO::DiscretizationReader& rea
     store_to_old(Mortar::StrategyBase::n_old);
   }
 
-  if (Core::UTILS::IntegralValue<int>(Params(), "NITSCHE_PENALTY_ADAPTIVE"))
+  if (Core::UTILS::IntegralValue<int>(params(), "NITSCHE_PENALTY_ADAPTIVE"))
     update_trace_ineq_etimates();
 }
 
@@ -127,7 +127,7 @@ void CONTACT::NitscheStrategy::set_state(
       curr_state_eval_ = false;
       (*curr_state_) = vec;
       AbstractStrategy::set_state(statename, vec);
-      SetParentState(statename, vec);
+      set_parent_state(statename, vec);
     }
   }
   else
@@ -140,33 +140,33 @@ void CONTACT::NitscheStrategy::set_state(
 /*------------------------------------------------------------------------*
  |                                                             seitz 10/16|
  *------------------------------------------------------------------------*/
-void CONTACT::NitscheStrategy::SetParentState(
+void CONTACT::NitscheStrategy::set_parent_state(
     const enum Mortar::StateType& statename, const Epetra_Vector& vec)
 {
-  Teuchos::RCP<Core::FE::Discretization> dis = Global::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> dis = Global::Problem::instance()->get_dis("structure");
   if (dis == Teuchos::null) FOUR_C_THROW("didn't get my discretization");
   if (statename == Mortar::state_new_displacement || statename == Mortar::state_svelocity)
   {
-    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->DofColMap(), true));
+    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->dof_col_map(), true));
     Core::LinAlg::Export(vec, *global);
 
     // set state on interfaces
     for (const auto& interface : interface_)
     {
-      Core::FE::Discretization& idiscret = interface->Discret();
+      Core::FE::Discretization& idiscret = interface->discret();
 
-      for (int j = 0; j < interface->Discret().ElementColMap()->NumMyElements(); ++j)
+      for (int j = 0; j < interface->discret().element_col_map()->NumMyElements(); ++j)
       {
-        const int gid = interface->Discret().ElementColMap()->GID(j);
+        const int gid = interface->discret().element_col_map()->GID(j);
 
-        auto* ele = dynamic_cast<Mortar::Element*>(idiscret.gElement(gid));
+        auto* ele = dynamic_cast<Mortar::Element*>(idiscret.g_element(gid));
 
         std::vector<int> lm;
         std::vector<int> lmowner;
         std::vector<int> lmstride;
 
         // this gets values in local order
-        ele->parent_element()->LocationVector(*dis, lm, lmowner, lmstride);
+        ele->parent_element()->location_vector(*dis, lm, lmowner, lmstride);
 
         std::vector<double> myval;
         Core::FE::ExtractMyValues(*global, myval, lm);
@@ -175,13 +175,13 @@ void CONTACT::NitscheStrategy::SetParentState(
         {
           case Mortar::state_new_displacement:
           {
-            ele->MoData().ParentDisp() = myval;
-            ele->MoData().ParentDof() = lm;
+            ele->mo_data().parent_disp() = myval;
+            ele->mo_data().parent_dof() = lm;
             break;
           }
           case Mortar::state_svelocity:
           {
-            ele->MoData().ParentVel() = myval;
+            ele->mo_data().parent_vel() = myval;
             break;
           }
           default:
@@ -194,12 +194,12 @@ void CONTACT::NitscheStrategy::SetParentState(
 
 void CONTACT::NitscheStrategy::evaluate_force(CONTACT::ParamsInterface& cparams)
 {
-  Integrate(cparams);
+  integrate(cparams);
 }
 
 void CONTACT::NitscheStrategy::evaluate_force_stiff(CONTACT::ParamsInterface& cparams)
 {
-  Integrate(cparams);
+  integrate(cparams);
 }
 
 void CONTACT::NitscheStrategy::reset(
@@ -214,7 +214,7 @@ void CONTACT::NitscheStrategy::run_post_compute_x(const CONTACT::ParamsInterface
   // do nothing
 }
 
-void CONTACT::NitscheStrategy::Integrate(const CONTACT::ParamsInterface& cparams)
+void CONTACT::NitscheStrategy::integrate(const CONTACT::ParamsInterface& cparams)
 {
   // we already did this displacement state
   if (curr_state_eval_) return;
@@ -230,7 +230,7 @@ void CONTACT::NitscheStrategy::Integrate(const CONTACT::ParamsInterface& cparams
     interface->evaluate(0, step_, iter_);
 
     // store required integration time
-    inttime_ += interface->Inttime();
+    inttime_ += interface->inttime();
   }
 
   // check the parallel distribution
@@ -251,7 +251,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::setup_rhs_block_vec(
   {
     case CONTACT::VecBlockType::displ:
       return Teuchos::rcp(
-          new Epetra_FEVector(*Global::Problem::Instance()->GetDis("structure")->dof_row_map()));
+          new Epetra_FEVector(*Global::Problem::instance()->get_dis("structure")->dof_row_map()));
     default:
       FOUR_C_THROW("you should not be here");
       break;
@@ -268,12 +268,12 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::create_rhs_block_ptr(
 
   for (const auto& interface : interface_)
   {
-    for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
+    for (int e = 0; e < interface->discret().element_col_map()->NumMyElements(); ++e)
     {
       auto* mele = dynamic_cast<Mortar::Element*>(
-          interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
-      auto& nitsche_container = mele->GetNitscheContainer();
-      nitsche_container.AssembleRHS(mele, bt, fc);
+          interface->discret().g_element(interface->discret().element_col_map()->GID(e)));
+      auto& nitsche_container = mele->get_nitsche_container();
+      nitsche_container.assemble_rhs(mele, bt, fc);
     }
   }
   if (fc->GlobalAssemble(Add, false) != 0) FOUR_C_THROW("GlobalAssemble failed");
@@ -310,7 +310,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategy::setup_matrix_
     case CONTACT::MatBlockType::displ_displ:
       return Teuchos::rcp(new Core::LinAlg::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
-              *Global::Problem::Instance()->GetDis("structure")->dof_row_map()),
+              *Global::Problem::instance()->get_dis("structure")->dof_row_map()),
           100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
     default:
       FOUR_C_THROW("you should not be here");
@@ -325,7 +325,7 @@ void CONTACT::NitscheStrategy::complete_matrix_block_ptr(
   switch (bt)
   {
     case CONTACT::MatBlockType::displ_displ:
-      kc->Complete();
+      kc->complete();
       break;
     default:
       FOUR_C_THROW("you should not be here");
@@ -342,11 +342,11 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategy::create_matrix
 
   for (const auto& interface : interface_)
   {
-    for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
+    for (int e = 0; e < interface->discret().element_col_map()->NumMyElements(); ++e)
     {
       auto* mele = dynamic_cast<Mortar::Element*>(
-          interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
-      mele->GetNitscheContainer().AssembleMatrix(mele, bt, kc);
+          interface->discret().g_element(interface->discret().element_col_map()->GID(e)));
+      mele->get_nitsche_container().assemble_matrix(mele, bt, kc);
     }
   }
 
@@ -377,7 +377,7 @@ void CONTACT::NitscheStrategy::setup(bool redistributed, bool init)
     // (this is TRUE if at least one contact interface is a self contact interface)
     bool selfcontact = false;
     for (const auto& interface : interfaces())
-      if (interface->SelfContact()) selfcontact = true;
+      if (interface->self_contact()) selfcontact = true;
 
     if (selfcontact) isselfcontact_ = true;
   }
@@ -389,23 +389,23 @@ void CONTACT::NitscheStrategy::setup(bool redistributed, bool init)
 void CONTACT::NitscheStrategy::update_trace_ineq_etimates()
 {
   auto NitWgt =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::NitscheWeighting>(Params(), "NITSCHE_WEIGHTING");
+      Core::UTILS::IntegralValue<Inpar::CONTACT::NitscheWeighting>(params(), "NITSCHE_WEIGHTING");
   for (const auto& interface : interface_)
   {
-    for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
+    for (int e = 0; e < interface->discret().element_col_map()->NumMyElements(); ++e)
     {
       auto* mele = dynamic_cast<Mortar::Element*>(
-          interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
-      if (NitWgt == Inpar::CONTACT::NitWgt_slave && !mele->IsSlave()) continue;
-      if (NitWgt == Inpar::CONTACT::NitWgt_master && mele->IsSlave()) continue;
+          interface->discret().g_element(interface->discret().element_col_map()->GID(e)));
+      if (NitWgt == Inpar::CONTACT::NitWgt_slave && !mele->is_slave()) continue;
+      if (NitWgt == Inpar::CONTACT::NitWgt_master && mele->is_slave()) continue;
       mele->estimate_nitsche_trace_max_eigenvalue_combined();
     }
   }
 }
 
-void CONTACT::NitscheStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
+void CONTACT::NitscheStrategy::update(Teuchos::RCP<const Epetra_Vector> dis)
 {
-  if (Core::UTILS::IntegralValue<int>(Params(), "NITSCHE_PENALTY_ADAPTIVE"))
+  if (Core::UTILS::IntegralValue<int>(params(), "NITSCHE_PENALTY_ADAPTIVE"))
     update_trace_ineq_etimates();
   if (friction_)
   {
@@ -435,31 +435,31 @@ void CONTACT::NitscheStrategy::evaluate_reference_state()
  *---------------------------------------------------------------------------------------------*/
 void CONTACT::NitscheStrategy::reconnect_parent_elements()
 {
-  Teuchos::RCP<Core::FE::Discretization> voldis = Global::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> voldis = Global::Problem::instance()->get_dis("structure");
 
   for (const auto& contact_interface : contact_interfaces())
   {
-    const Epetra_Map* elecolmap = voldis->ElementColMap();
+    const Epetra_Map* elecolmap = voldis->element_col_map();
 
-    const Epetra_Map* ielecolmap = contact_interface->Discret().ElementColMap();
+    const Epetra_Map* ielecolmap = contact_interface->discret().element_col_map();
 
     for (int i = 0; i < ielecolmap->NumMyElements(); ++i)
     {
       const int gid = ielecolmap->GID(i);
 
-      Core::Elements::Element* ele = contact_interface->Discret().gElement(gid);
+      Core::Elements::Element* ele = contact_interface->discret().g_element(gid);
       if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
       auto* faceele = dynamic_cast<Core::Elements::FaceElement*>(ele);
 
-      const int volgid = faceele->ParentElementId();
+      const int volgid = faceele->parent_element_id();
       if (elecolmap->LID(volgid) == -1)  // Volume discretization has not Element
         FOUR_C_THROW(
             "Manager::reconnect_parent_elements: Element %d does not exist on this Proc!", volgid);
 
-      Core::Elements::Element* vele = voldis->gElement(volgid);
+      Core::Elements::Element* vele = voldis->g_element(volgid);
       if (!vele) FOUR_C_THROW("Cannot find element with gid %", volgid);
 
-      faceele->set_parent_master_element(vele, faceele->FaceParentNumber());
+      faceele->set_parent_master_element(vele, faceele->face_parent_number());
 
       auto* vele_plast = dynamic_cast<Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>*>(vele);
       if (vele_plast) vele_plast->set_is_nitsche_contact_ele(true);

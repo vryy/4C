@@ -55,9 +55,9 @@ void Mat::CylinderCoordinateSystemManager::evaluate_local_coordinate_system(
 {
   for (int i = 0; i < 3; ++i)
   {
-    cosy(i, 0) = GetRad()(i);
-    cosy(i, 1) = GetAxi()(i);
-    cosy(i, 2) = GetCir()(i);
+    cosy(i, 0) = get_rad()(i);
+    cosy(i, 1) = get_axi()(i);
+    cosy(i, 2) = get_cir()(i);
   }
 }
 

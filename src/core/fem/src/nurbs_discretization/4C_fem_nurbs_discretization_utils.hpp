@@ -45,7 +45,7 @@ namespace Core::FE
       if (nurbsdis == nullptr) FOUR_C_THROW("Received discretization which is not Nurbs!");
 
       // get local knot vector entries and check for zero sized elements
-      const bool zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, ele->Id());
+      const bool zero_size = (*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, ele->id());
 
       // if we have a zero sized element due to a interpolated
       // point --- exit here and tell the outside world about that
@@ -54,13 +54,13 @@ namespace Core::FE
         return (zero_size);
       }
       // you are still here? So get the node weights for the nurbs element as well
-      const Core::Nodes::Node* const* nodes = ele->Nodes();
+      const Core::Nodes::Node* const* nodes = ele->nodes();
       const int nen = ele->num_node();
       for (int inode = 0; inode < nen; inode++)
       {
         const Core::FE::Nurbs::ControlPoint* cp =
             dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
-        weights(inode) = cp->W();
+        weights(inode) = cp->w();
       }
 
       // goodbye
@@ -116,7 +116,7 @@ namespace Core::FE
       const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
           dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
-      Teuchos::RCP<const Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+      Teuchos::RCP<const Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
 
       bool zero_size = knots->get_boundary_ele_and_parent_knots(
           mypknots, myknots, normalfac, parenteleid, localsurfaceid);
@@ -128,13 +128,13 @@ namespace Core::FE
         return (zero_size);
       }
       // you are still here? So get the node weights as well
-      const Core::Nodes::Node* const* nodes = boundaryele->Nodes();
+      const Core::Nodes::Node* const* nodes = boundaryele->nodes();
       const int boundarynen = boundaryele->num_node();
       for (int inode = 0; inode < boundarynen; inode++)
       {
         const Core::FE::Nurbs::ControlPoint* cp =
             dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
-        weights(inode) = cp->W();
+        weights(inode) = cp->w();
       }
 
       // goodbye
@@ -170,10 +170,10 @@ namespace Core::FE
       const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
           dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
-      Teuchos::RCP<const Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+      Teuchos::RCP<const Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
 
       bool zero_size = knots->get_boundary_ele_and_parent_knots(
-          mypknots, myknots, normalfac, parentele->Id(), localsurfaceid);
+          mypknots, myknots, normalfac, parentele->id(), localsurfaceid);
 
       // if we have a zero sized element due to a interpolated
       // point --- exit here and tell the outside world about that
@@ -182,22 +182,22 @@ namespace Core::FE
         return (zero_size);
       }
       // you are still here? So get the node weights as well
-      Core::Nodes::Node** nodes = boundaryele->Nodes();
+      Core::Nodes::Node** nodes = boundaryele->nodes();
       const int boundarynen = boundaryele->num_node();
       for (int inode = 0; inode < boundarynen; inode++)
       {
         Core::FE::Nurbs::ControlPoint* cp =
             dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
-        weights(inode) = cp->W();
+        weights(inode) = cp->w();
       }
 
-      Core::Nodes::Node** pnodes = parentele->Nodes();
+      Core::Nodes::Node** pnodes = parentele->nodes();
       const int pnen = parentele->num_node();
       for (int inode = 0; inode < pnen; inode++)
       {
         Core::FE::Nurbs::ControlPoint* cp =
             dynamic_cast<Core::FE::Nurbs::ControlPoint*>(pnodes[inode]);
-        pweights(inode) = cp->W();
+        pweights(inode) = cp->w();
       }
 
       // goodbye

@@ -31,13 +31,13 @@ Mat::Elastic::CoupAnisoPow::CoupAnisoPow(Mat::Elastic::PAR::CoupAnisoPow* params
 {
 }
 
-void Mat::Elastic::CoupAnisoPow::PackSummand(Core::Communication::PackBuffer& data) const
+void Mat::Elastic::CoupAnisoPow::pack_summand(Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, a_);
   add_to_pack(data, structural_tensor_);
 }
 
-void Mat::Elastic::CoupAnisoPow::UnpackSummand(
+void Mat::Elastic::CoupAnisoPow::unpack_summand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   extract_from_pack(position, data, a_);
@@ -52,7 +52,7 @@ void Mat::Elastic::CoupAnisoPow::setup(int numgp, Input::LineDefinition* linedef
     // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
     Core::LinAlg::Matrix<3, 3> Id(true);
     for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
-    SetFiberVecs(-1.0, Id, Id);
+    set_fiber_vecs(-1.0, Id, Id);
   }
 
   // path if fibers are given in .dat file
@@ -66,17 +66,17 @@ void Mat::Elastic::CoupAnisoPow::setup(int numgp, Input::LineDefinition* linedef
     {
       // Read in of data
       Core::LinAlg::Matrix<3, 3> locsys(true);
-      ReadRadAxiCir(linedef, locsys);
+      read_rad_axi_cir(linedef, locsys);
       Core::LinAlg::Matrix<3, 3> Id(true);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
       // final setup of fiber data
-      SetFiberVecs(0.0, locsys, Id);
+      set_fiber_vecs(0.0, locsys, Id);
     }
     // FIBERi nomenclature
     else if (linedef->has_named(fibername))
     {
       // Read in of data
-      ReadFiber(linedef, fibername, a_);
+      read_fiber(linedef, fibername, a_);
       params_->structural_tensor_strategy()->setup_structural_tensor(a_, structural_tensor_);
     }
 
@@ -149,14 +149,14 @@ void Mat::Elastic::CoupAnisoPow::add_stress_aniso_principal(const Core::LinAlg::
   cmat.multiply_nt(delta, structural_tensor_, structural_tensor_, 1.0);
 }
 
-void Mat::Elastic::CoupAnisoPow::GetFiberVecs(
+void Mat::Elastic::CoupAnisoPow::get_fiber_vecs(
     std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
   fibervecs.push_back(a_);
 }
 
-void Mat::Elastic::CoupAnisoPow::SetFiberVecs(const double newgamma,
+void Mat::Elastic::CoupAnisoPow::set_fiber_vecs(const double newgamma,
     const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
   if ((params_->gamma_ < -90) || (params_->gamma_ > 90))

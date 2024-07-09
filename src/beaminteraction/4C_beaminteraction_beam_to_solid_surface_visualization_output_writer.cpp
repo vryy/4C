@@ -88,14 +88,14 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer("nodal-forces", "btssc-nodal-forces");
       auto& visualization_data = visualization_writer->get_visualization_data();
-      visualization_data.RegisterPointData<double>("displacement", 3);
-      visualization_data.RegisterPointData<double>("force_beam", 3);
-      visualization_data.RegisterPointData<double>("force_solid", 3);
-      visualization_data.RegisterFieldData<double>("sum_coupling_force_beam");
-      visualization_data.RegisterFieldData<double>("sum_coupling_moment_beam");
-      visualization_data.RegisterFieldData<double>("sum_coupling_force_solid");
-      visualization_data.RegisterFieldData<double>("sum_coupling_moment_solid");
-      if (write_unique_ids) visualization_data.RegisterPointData<double>("uid_0_node_id", 1);
+      visualization_data.register_point_data<double>("displacement", 3);
+      visualization_data.register_point_data<double>("force_beam", 3);
+      visualization_data.register_point_data<double>("force_solid", 3);
+      visualization_data.register_field_data<double>("sum_coupling_force_beam");
+      visualization_data.register_field_data<double>("sum_coupling_moment_beam");
+      visualization_data.register_field_data<double>("sum_coupling_force_solid");
+      visualization_data.register_field_data<double>("sum_coupling_moment_solid");
+      if (write_unique_ids) visualization_data.register_point_data<double>("uid_0_node_id", 1);
     }
 
     if (output_params_ptr_->get_averaged_normals_output_flag())
@@ -104,11 +104,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
           output_writer_base_ptr_->add_visualization_writer(
               "averaged-normals", "btssc-averaged-normals");
       auto& visualization_data = visualization_writer->get_visualization_data();
-      visualization_data.RegisterPointData<double>("displacement", 3);
-      visualization_data.RegisterPointData<double>("normal_averaged", 3);
-      visualization_data.RegisterPointData<double>("normal_element", 3);
-      visualization_data.RegisterPointData<double>("coupling_id", 1);
-      if (write_unique_ids) visualization_data.RegisterPointData<double>("uid_0_face_id", 1);
+      visualization_data.register_point_data<double>("displacement", 3);
+      visualization_data.register_point_data<double>("normal_averaged", 3);
+      visualization_data.register_point_data<double>("normal_element", 3);
+      visualization_data.register_point_data<double>("coupling_id", 1);
+      if (write_unique_ids) visualization_data.register_point_data<double>("uid_0_face_id", 1);
     }
 
     if (output_params_ptr_->get_mortar_lambda_discret_output_flag())
@@ -116,12 +116,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer("mortar", "btssc-mortar");
       auto& visualization_data = visualization_writer->get_visualization_data();
-      visualization_data.RegisterPointData<double>("displacement", 3);
-      visualization_data.RegisterPointData<double>("lambda", 3);
+      visualization_data.register_point_data<double>("displacement", 3);
+      visualization_data.register_point_data<double>("lambda", 3);
       if (write_unique_ids)
       {
-        visualization_data.RegisterPointData<double>("uid_0_pair_beam_id", 1);
-        visualization_data.RegisterPointData<double>("uid_1_pair_solid_id", 1);
+        visualization_data.register_point_data<double>("uid_0_pair_beam_id", 1);
+        visualization_data.register_point_data<double>("uid_1_pair_solid_id", 1);
       }
     }
 
@@ -131,14 +131,14 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
           output_writer_base_ptr_->add_visualization_writer(
               "mortar-continuous", "btssc-mortar-continuous");
       auto& visualization_data = visualization_writer->get_visualization_data();
-      visualization_data.RegisterPointData<double>("displacement", 3);
-      visualization_data.RegisterPointData<double>("lambda", 3);
+      visualization_data.register_point_data<double>("displacement", 3);
+      visualization_data.register_point_data<double>("lambda", 3);
       if (write_unique_ids)
       {
-        visualization_data.RegisterPointData<double>("uid_0_pair_beam_id", 1);
-        visualization_data.RegisterPointData<double>("uid_1_pair_solid_id", 1);
-        visualization_data.RegisterCellData<double>("uid_0_pair_beam_id", 1);
-        visualization_data.RegisterCellData<double>("uid_1_pair_solid_id", 1);
+        visualization_data.register_point_data<double>("uid_0_pair_beam_id", 1);
+        visualization_data.register_point_data<double>("uid_1_pair_solid_id", 1);
+        visualization_data.register_cell_data<double>("uid_0_pair_beam_id", 1);
+        visualization_data.register_cell_data<double>("uid_1_pair_solid_id", 1);
       }
     }
 
@@ -148,12 +148,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
           output_writer_base_ptr_->add_visualization_writer(
               "integration-points", "btssc-integration-points");
       auto& visualization_data = visualization_writer->get_visualization_data();
-      visualization_data.RegisterPointData<double>("displacement", 3);
-      visualization_data.RegisterPointData<double>("projection_direction", 3);
+      visualization_data.register_point_data<double>("displacement", 3);
+      visualization_data.register_point_data<double>("projection_direction", 3);
       if (write_unique_ids)
       {
-        visualization_data.RegisterPointData<double>("uid_0_pair_beam_id", 1);
-        visualization_data.RegisterPointData<double>("uid_1_pair_solid_id", 1);
+        visualization_data.register_point_data<double>("uid_0_pair_beam_id", 1);
+        visualization_data.register_point_data<double>("uid_1_pair_solid_id", 1);
       }
     }
 
@@ -162,12 +162,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer("segmentation", "btssc-segmentation");
       auto& visualization_data = visualization_writer->get_visualization_data();
-      visualization_data.RegisterPointData<double>("displacement", 3);
-      visualization_data.RegisterPointData<double>("projection_direction", 3);
+      visualization_data.register_point_data<double>("displacement", 3);
+      visualization_data.register_point_data<double>("projection_direction", 3);
       if (write_unique_ids)
       {
-        visualization_data.RegisterPointData<double>("uid_0_pair_beam_id", 1);
-        visualization_data.RegisterPointData<double>("uid_1_pair_solid_id", 1);
+        visualization_data.register_point_data<double>("uid_0_pair_beam_id", 1);
+        visualization_data.register_point_data<double>("uid_1_pair_solid_id", 1);
       }
     }
   }
@@ -188,7 +188,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::write_output_
   // step.
   auto [output_time, output_step] =
       Core::IO::GetTimeAndTimeStepIndexForOutput(visualization_params_,
-          beam_contact->GState().get_time_n(), beam_contact->GState().get_step_n());
+          beam_contact->g_state().get_time_n(), beam_contact->g_state().get_step_n());
   write_output_beam_to_solid_surface(beam_contact, output_step, output_time);
 }
 
@@ -202,9 +202,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::write_output_
 
   if (output_params_ptr_->get_output_every_iteration())
   {
-    auto [output_time, output_step] =
-        Core::IO::GetTimeAndTimeStepIndexForOutput(visualization_params_,
-            beam_contact->GState().get_time_n(), beam_contact->GState().get_step_n(), i_iteration);
+    auto [output_time, output_step] = Core::IO::GetTimeAndTimeStepIndexForOutput(
+        visualization_params_, beam_contact->g_state().get_time_n(),
+        beam_contact->g_state().get_step_n(), i_iteration);
     write_output_beam_to_solid_surface(beam_contact, output_step, output_time);
   }
 }
@@ -230,7 +230,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
   if (visualization_averaged_normals != Teuchos::null)
   {
     const std::vector<Teuchos::RCP<BeamInteractionConditionBase>>& surface_condition_vector =
-        beam_contact->GetConditions()->GetConditionMap().at(
+        beam_contact->get_conditions()->get_condition_map().at(
             Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_meshtying);
     for (const auto& condition : surface_condition_vector)
     {
@@ -243,11 +243,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
 
       // Get the coupling ID for the current condition.
       const int coupling_id =
-          beam_to_surface_condition->GetOtherCondition()->parameters().get<int>("COUPLING_ID");
+          beam_to_surface_condition->get_other_condition()->parameters().get<int>("COUPLING_ID");
 
       // Create the output for the averaged normal field.
       AddAveragedNodalNormals(visualization_averaged_normals,
-          surface_evaluation_data->GetFaceElements(), coupling_id,
+          surface_evaluation_data->get_face_elements(), coupling_id,
           output_params_ptr_->get_write_unique_i_ds_flag());
     }
   }
@@ -258,22 +258,22 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> nodal_force_visualization =
       output_writer_base_ptr_->get_visualization_writer("btssc-nodal-forces");
   if (nodal_force_visualization != Teuchos::null)
-    AddBeamInteractionNodalForces(nodal_force_visualization, beam_contact->DiscretPtr(),
-        beam_contact->beam_interaction_data_state().GetDisNp(),
-        beam_contact->beam_interaction_data_state().GetForceNp(),
+    AddBeamInteractionNodalForces(nodal_force_visualization, beam_contact->discret_ptr(),
+        beam_contact->beam_interaction_data_state().get_dis_np(),
+        beam_contact->beam_interaction_data_state().get_force_np(),
         output_params_ptr_->get_write_unique_i_ds_flag());
 
 
   // Loop over the assembly managers and add the visualization for the pairs contained in the
   // assembly managers.
-  for (auto& assembly_manager : beam_contact->GetAssemblyManagers())
+  for (auto& assembly_manager : beam_contact->get_assembly_managers())
   {
     // Add pair specific output for direct assembly managers.
     auto direct_assembly_manager = Teuchos::rcp_dynamic_cast<
         BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect>(assembly_manager);
     if (not(direct_assembly_manager == Teuchos::null))
     {
-      for (const auto& pair : direct_assembly_manager->GetContactPairs())
+      for (const auto& pair : direct_assembly_manager->get_contact_pairs())
         pair->get_pair_visualization(output_writer_base_ptr_, visualization_params);
     }
 
@@ -294,12 +294,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
       // Get the global vector with the Lagrange Multiplier values and add it to the parameter list
       // that will be passed to the pairs.
       Teuchos::RCP<Epetra_Vector> lambda =
-          indirect_assembly_manager->GetMortarManager()->GetGlobalLambdaCol();
+          indirect_assembly_manager->get_mortar_manager()->get_global_lambda_col();
       visualization_params.set<Teuchos::RCP<Epetra_Vector>>("lambda", lambda);
 
       // The pairs will need the mortar manager to extract their Lambda DOFs.
       visualization_params.set<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(
-          "mortar_manager", indirect_assembly_manager->GetMortarManager());
+          "mortar_manager", indirect_assembly_manager->get_mortar_manager());
 
       // This map is used to ensure, that each discrete Lagrange multiplier is only written once per
       // beam element.
@@ -308,7 +308,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
       visualization_params.set<Teuchos::RCP<std::unordered_set<int>>>("beam_tracker", beam_tracker);
 
       // Add the pair specific output.
-      for (const auto& pair : indirect_assembly_manager->GetMortarManager()->GetContactPairs())
+      for (const auto& pair : indirect_assembly_manager->get_mortar_manager()->get_contact_pairs())
         pair->get_pair_visualization(output_writer_base_ptr_, visualization_params);
 
       if (nodal_force_visualization != Teuchos::null)
@@ -317,9 +317,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
         // represents the forces, the second one the moments.
         Core::LinAlg::Matrix<3, 2, double> beam_resultant(true);
         Core::LinAlg::Matrix<3, 2, double> solid_resultant(true);
-        GetGlobalCouplingForceResultants(beam_contact->Discret(),
-            *(beam_contact->beam_interaction_data_state().GetForceNp()),
-            *(beam_contact->beam_interaction_data_state().GetDisNp()), beam_resultant,
+        GetGlobalCouplingForceResultants(beam_contact->discret(),
+            *(beam_contact->beam_interaction_data_state().get_force_np()),
+            *(beam_contact->beam_interaction_data_state().get_dis_np()), beam_resultant,
             solid_resultant);
 
         // The beam coupling moments are calculated in each pair and replace the ones evaluated in
@@ -334,18 +334,18 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
         Core::LinAlg::Matrix<3, 2, double> beam_resultant_global(true);
         Core::LinAlg::Matrix<3, 2, double> solid_resultant_global(true);
         MPI_Allreduce(beam_resultant.data(), beam_resultant_global.data(),
-            beam_resultant.numRows() * beam_resultant.numCols(), MPI_DOUBLE, MPI_SUM,
-            dynamic_cast<const Epetra_MpiComm*>(&(beam_contact->Discret().Comm()))->Comm());
+            beam_resultant.num_rows() * beam_resultant.num_cols(), MPI_DOUBLE, MPI_SUM,
+            dynamic_cast<const Epetra_MpiComm*>(&(beam_contact->discret().get_comm()))->Comm());
         MPI_Allreduce(solid_resultant.data(), solid_resultant_global.data(),
-            solid_resultant.numRows() * solid_resultant.numCols(), MPI_DOUBLE, MPI_SUM,
-            dynamic_cast<const Epetra_MpiComm*>(&(beam_contact->Discret().Comm()))->Comm());
+            solid_resultant.num_rows() * solid_resultant.num_cols(), MPI_DOUBLE, MPI_SUM,
+            dynamic_cast<const Epetra_MpiComm*>(&(beam_contact->discret().get_comm()))->Comm());
 
         // Add to the visualization output writer.
         auto& visualization_data = nodal_force_visualization->get_visualization_data();
         std::vector<double>& field_data_beam_force =
-            visualization_data.GetFieldData<double>("sum_coupling_force_beam");
+            visualization_data.get_field_data<double>("sum_coupling_force_beam");
         std::vector<double>& field_data_beam_moment =
-            visualization_data.GetFieldData<double>("sum_coupling_moment_beam");
+            visualization_data.get_field_data<double>("sum_coupling_moment_beam");
         field_data_beam_force.clear();
         field_data_beam_force.resize(3);
         field_data_beam_moment.clear();
@@ -356,9 +356,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
           field_data_beam_moment[i_dim] = beam_resultant_global(i_dim, 1);
         }
         std::vector<double>& field_data_solid_force =
-            visualization_data.GetFieldData<double>("sum_coupling_force_solid");
+            visualization_data.get_field_data<double>("sum_coupling_force_solid");
         std::vector<double>& field_data_solid_moment =
-            visualization_data.GetFieldData<double>("sum_coupling_moment_solid");
+            visualization_data.get_field_data<double>("sum_coupling_moment_solid");
         field_data_solid_force.clear();
         field_data_solid_force.resize(3);
         field_data_solid_moment.clear();
@@ -382,7 +382,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
 
 
   // Write the data to disc. The data will be cleared in this method.
-  output_writer_base_ptr_->Write(i_step, time);
+  output_writer_base_ptr_->write(i_step, time);
 }
 
 

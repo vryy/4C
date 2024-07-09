@@ -29,7 +29,7 @@ class PostField;
 struct SpecialFieldInterface
 {
   virtual ~SpecialFieldInterface() = default;
-  virtual std::vector<int> NumDfMap() = 0;
+  virtual std::vector<int> num_df_map() = 0;
 
   virtual void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
@@ -47,19 +47,19 @@ class PostWriterBase
   //! destructor
   virtual ~PostWriterBase() = default;
   //! return the field specified at construction
-  PostField* GetField()
+  PostField* get_field()
   {
     FOUR_C_ASSERT(field_ != nullptr, "No field has been set");
     return field_;
   }
 
-  const PostField* GetField() const
+  const PostField* get_field() const
   {
     FOUR_C_ASSERT(field_ != nullptr, "No field has been set");
     return field_;
   }
 
-  virtual void WriteFiles(PostFilterBase& filter) = 0;
+  virtual void write_files(PostFilterBase& filter) = 0;
 
   /*!
    \brief write all time steps of a result
@@ -71,7 +71,7 @@ class PostWriterBase
    pressure) and we want to write just one part of it. So we have to
    specify which part.
    */
-  virtual void WriteResult(
+  virtual void write_result(
       const std::string groupname,  ///< name of the result group in the control file
       const std::string name,       ///< name of the result to be written
       const ResultType restype,     ///< type of the result to be written (nodal-/element-based)
@@ -110,7 +110,7 @@ class PostWriterBase
    To allow for a generic interface, the calling site needs to supply a
    class derived from SpecialFieldInterface that knows which function to call.
    */
-  virtual void WriteSpecialField(SpecialFieldInterface& special,
+  virtual void write_special_field(SpecialFieldInterface& special,
       PostResult& result,  ///< result group in the control file
       const ResultType restype, const std::string& groupname,
       const std::vector<std::string>& fieldnames, const std::string& outinfo) = 0;

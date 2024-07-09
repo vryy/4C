@@ -51,7 +51,7 @@ Wear::LagrangeStrategyWear::LagrangeStrategyWear(
       wearprimvar_(false),
       wearbothpv_(false),
       weartimescales_(false),
-      sswear_(Core::UTILS::IntegralValue<int>(Params(), "SSWEAR"))
+      sswear_(Core::UTILS::IntegralValue<int>(LagrangeStrategyWear::params(), "SSWEAR"))
 {
   // cast to  wearinterfaces
   for (int z = 0; z < (int)interfaces.size(); ++z)
@@ -63,14 +63,15 @@ Wear::LagrangeStrategyWear::LagrangeStrategyWear(
 
   // set wear contact status
   Inpar::Wear::WearType wtype =
-      Core::UTILS::IntegralValue<Inpar::Wear::WearType>(Params(), "WEARTYPE");
-  Inpar::Wear::WearSide wside =
-      Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(Params(), "WEAR_SIDE");
-  Inpar::Wear::WearTimeScale wtime =
-      Core::UTILS::IntegralValue<Inpar::Wear::WearTimeScale>(Params(), "WEAR_TIMESCALE");
-  Inpar::Wear::WearTimInt wtimint =
-      Core::UTILS::IntegralValue<Inpar::Wear::WearTimInt>(Params(), "WEARTIMINT");
-  Inpar::Wear::WearLaw wlaw = Core::UTILS::IntegralValue<Inpar::Wear::WearLaw>(Params(), "WEARLAW");
+      Core::UTILS::IntegralValue<Inpar::Wear::WearType>(LagrangeStrategyWear::params(), "WEARTYPE");
+  Inpar::Wear::WearSide wside = Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(
+      LagrangeStrategyWear::params(), "WEAR_SIDE");
+  Inpar::Wear::WearTimeScale wtime = Core::UTILS::IntegralValue<Inpar::Wear::WearTimeScale>(
+      LagrangeStrategyWear::params(), "WEAR_TIMESCALE");
+  Inpar::Wear::WearTimInt wtimint = Core::UTILS::IntegralValue<Inpar::Wear::WearTimInt>(
+      LagrangeStrategyWear::params(), "WEARTIMINT");
+  Inpar::Wear::WearLaw wlaw =
+      Core::UTILS::IntegralValue<Inpar::Wear::WearLaw>(LagrangeStrategyWear::params(), "WEARLAW");
 
   // set wear contact status
   if (wlaw != Inpar::Wear::wear_none and wtype == Inpar::Wear::wear_intstate) weightedwear_ = true;
@@ -146,70 +147,70 @@ void Wear::LagrangeStrategyWear::setup_wear(bool redistributed, bool init)
     if (wearprimvar_)
     {
       // build wear dof map
-      interface_[i]->UpdateWSets(offset_if, maxdofwear_, wearbothpv_);
+      interface_[i]->update_w_sets(offset_if, maxdofwear_, wearbothpv_);
 
       // merge interface slave wear dof maps to global slave wear dof map
-      gwdofrowmap_ = Core::LinAlg::MergeMap(gwdofrowmap_, interface_[i]->WDofs());
+      gwdofrowmap_ = Core::LinAlg::MergeMap(gwdofrowmap_, interface_[i]->w_dofs());
       offset_if = gwdofrowmap_->NumGlobalElements();
       if (offset_if < 0) offset_if = 0;
 
       // merge interface master wear dof maps to global slave wear dof map
       if (wearbothpv_)
       {
-        gwmdofrowmap_ = Core::LinAlg::MergeMap(gwmdofrowmap_, interface_[i]->WMDofs());
+        gwmdofrowmap_ = Core::LinAlg::MergeMap(gwmdofrowmap_, interface_[i]->wm_dofs());
         offset_if = gwmdofrowmap_->NumGlobalElements();
         if (offset_if < 0) offset_if = 0;
       }
 
       // slavenode normal part (first entry)
-      interface_[i]->SplitSlaveDofs();
-      gsdofnrowmap_ = Core::LinAlg::MergeMap(gsdofnrowmap_, interface_[i]->SNDofs());
+      interface_[i]->split_slave_dofs();
+      gsdofnrowmap_ = Core::LinAlg::MergeMap(gsdofnrowmap_, interface_[i]->sn_dofs());
 
       // masternode normal part (first entry)
       if (wearbothpv_)
       {
-        interface_[i]->SplitMasterDofs();
-        gmdofnrowmap_ = Core::LinAlg::MergeMap(gmdofnrowmap_, interface_[i]->MNDofs());
+        interface_[i]->split_master_dofs();
+        gmdofnrowmap_ = Core::LinAlg::MergeMap(gmdofnrowmap_, interface_[i]->mn_dofs());
 
         interface_[i]->build_active_set_master();
-        gmslipn_ = Core::LinAlg::MergeMap(gmslipn_, interface_[i]->SlipMasterNDofs(), false);
+        gmslipn_ = Core::LinAlg::MergeMap(gmslipn_, interface_[i]->slip_master_n_dofs(), false);
       }
 
       // initialize nodal wcurr for integrator (mod. gap)
-      for (int j = 0; j < (int)interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
+      for (int j = 0; j < (int)interface_[i]->slave_row_nodes()->NumMyElements(); ++j)
       {
-        int gid = interface_[i]->SlaveRowNodes()->GID(j);
-        Core::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
+        int gid = interface_[i]->slave_row_nodes()->GID(j);
+        Core::Nodes::Node* node = interface_[i]->discret().g_node(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-        cnode->WearData().wcurr()[0] = 0.0;
+        cnode->wear_data().wcurr()[0] = 0.0;
       }
 
       if (wearbothpv_)
       {
-        for (int j = 0; j < (int)interface_[i]->MasterColNodes()->NumMyElements(); ++j)
+        for (int j = 0; j < (int)interface_[i]->master_col_nodes()->NumMyElements(); ++j)
         {
-          int gid = interface_[i]->MasterColNodes()->GID(j);
-          Core::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
+          int gid = interface_[i]->master_col_nodes()->GID(j);
+          Core::Nodes::Node* node = interface_[i]->discret().g_node(gid);
           if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
           CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-          cnode->WearData().wcurr()[0] = 0.0;
+          cnode->wear_data().wcurr()[0] = 0.0;
         }
       }
     }
     // ****************************************************
     // both-sided wear specific
     // ****************************************************
-    if (Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(Params(), "WEAR_SIDE") ==
+    if (Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(params(), "WEAR_SIDE") ==
             Inpar::Wear::wear_both and
         wearprimvar_ == false)
     {
       gminvolvednodes_ =
-          Core::LinAlg::MergeMap(gminvolvednodes_, interface_[i]->InvolvedNodes(), false);
+          Core::LinAlg::MergeMap(gminvolvednodes_, interface_[i]->involved_nodes(), false);
       gminvolveddofs_ =
-          Core::LinAlg::MergeMap(gminvolveddofs_, interface_[i]->InvolvedDofs(), false);
+          Core::LinAlg::MergeMap(gminvolveddofs_, interface_[i]->involved_dofs(), false);
     }
   }
 
@@ -341,14 +342,14 @@ void Wear::LagrangeStrategyWear::initialize_mortar()
   if (dold_ == Teuchos::null)
   {
     dold_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 10));
-    dold_->Zero();
-    dold_->Complete();
+    dold_->zero();
+    dold_->complete();
   }
   if (mold_ == Teuchos::null)
   {
     mold_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100));
-    mold_->Zero();
-    mold_->Complete(*gmdofrowmap_, *gsdofrowmap_);
+    mold_->zero();
+    mold_->complete(*gmdofrowmap_, *gsdofrowmap_);
   }
 
   /**********************************************************************/
@@ -376,8 +377,8 @@ void Wear::LagrangeStrategyWear::initialize_mortar()
     if (doldmod_ == Teuchos::null)
     {
       doldmod_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 10));
-      doldmod_->Zero();
-      doldmod_->Complete();
+      doldmod_->zero();
+      doldmod_->complete();
     }
     // setup of dmatrixmod_
     dmatrixmod_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 10));
@@ -401,14 +402,14 @@ void Wear::LagrangeStrategyWear::assemble_mortar()
     // only assemble D2 for both-sided wear --> unweights the
     // weighted wear increment in master side
     // --> based on weak dirichlet bc!
-    if (Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(Params(), "WEAR_SIDE") ==
+    if (Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(params(), "WEAR_SIDE") ==
             Inpar::Wear::wear_both and
         !wearprimvar_)
-      interface_[i]->AssembleD2(*d2matrix_);
+      interface_[i]->assemble_d2(*d2matrix_);
 
     //************************************************************
     // assemble wear vector
-    if (!wearprimvar_) interface_[i]->AssembleWear(*wearvector_);
+    if (!wearprimvar_) interface_[i]->assemble_wear(*wearvector_);
   }  // end interface loop
 
   // *********************************************************************************
@@ -419,7 +420,7 @@ void Wear::LagrangeStrategyWear::assemble_mortar()
   // update is not elegant!
   // *********************************************************************************
   if (!wearimpl_ and !wearprimvar_ and
-      Params().get<int>("PROBTYPE") != Inpar::CONTACT::structalewear)
+      params().get<int>("PROBTYPE") != Inpar::CONTACT::structalewear)
   {
     wgap_->Update(1.0, *wearvector_, 1.0);
   }
@@ -433,21 +434,21 @@ void Wear::LagrangeStrategyWear::assemble_mortar()
       // we have to update the wear-increment in every newton-step and not just
       // after a time step!
       store_nodal_quantities(Mortar::StrategyBase::weightedwear);
-      interface_[0]->AssembleWear(*wearvector_);
+      interface_[0]->assemble_wear(*wearvector_);
       wgap_->Update(1.0, *wearvector_, 1.0);
 
       // update alle gap function entries for slave nodes!
       for (int i = 0; i < (int)interface_.size(); ++i)
       {
-        for (int j = 0; j < (int)interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
+        for (int j = 0; j < (int)interface_[i]->slave_row_nodes()->NumMyElements(); ++j)
         {
-          int gid = interface_[i]->SlaveRowNodes()->GID(j);
-          Core::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
+          int gid = interface_[i]->slave_row_nodes()->GID(j);
+          Core::Nodes::Node* node = interface_[i]->discret().g_node(gid);
           if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
           CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-          if (cnode->FriData().Slip() == true)
-            cnode->Data().Getg() += cnode->WearData().WeightedWear();
+          if (cnode->fri_data().slip() == true)
+            cnode->data().getg() += cnode->wear_data().weighted_wear();
         }
       }
     }
@@ -456,7 +457,7 @@ void Wear::LagrangeStrategyWear::assemble_mortar()
   //********************************************
   // fill_complete() matrix for both-sided wear *
   //********************************************
-  d2matrix_->Complete(*gmdofrowmap_, *gmdofrowmap_);
+  d2matrix_->complete(*gmdofrowmap_, *gmdofrowmap_);
 
   return;
 }
@@ -565,7 +566,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
     Teuchos::RCP<Epetra_Vector>& gact)
 {
   Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
 
   // double-check if this is a dual LM system
   if (shapefcn != Inpar::Mortar::shape_dual && shapefcn != Inpar::Mortar::shape_petrovgalerkin)
@@ -583,7 +584,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   int err = 0;
 
   // extract diagonal of invd into diag
-  invd->ExtractDiagonalCopy(*diag);
+  invd->extract_diagonal_copy(*diag);
 
   // set zero diagonal values to dummy 1.0
   for (int i = 0; i < diag->MyLength(); ++i)
@@ -611,10 +612,10 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
     linmmatrix_ = Mortar::MatrixRowTransform(linmmatrix_, pgmdofrowmap_);
   }
 
-  kteff->UnComplete();
-  kteff->Add(*lindmatrix_, false, 1.0 - alphaf_, 1.0);
-  kteff->Add(*linmmatrix_, false, 1.0 - alphaf_, 1.0);
-  kteff->Complete();
+  kteff->un_complete();
+  kteff->add(*lindmatrix_, false, 1.0 - alphaf_, 1.0);
+  kteff->add(*linmmatrix_, false, 1.0 - alphaf_, 1.0);
+  kteff->complete();
 
   /********************************************************************/
   /* (3) Split kteff into 3x3 matrix blocks                           */
@@ -674,7 +675,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   if (parallel_redistribution_status())
   {
     // split and transform to redistributed maps
-    Core::LinAlg::split_vector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
+    Core::LinAlg::split_vector(*problem_dofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
     Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
     Core::LinAlg::Export(*fsm, *fsmtemp);
     fsm = fsmtemp;
@@ -682,7 +683,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   else
   {
     // only split, no need to transform
-    Core::LinAlg::split_vector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
+    Core::LinAlg::split_vector(*problem_dofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
   }
 
   // abbreviations for slave and master set
@@ -819,11 +820,11 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
 
     // WEAR LIN. W.R.T. Z *****************************************************
     // for normal contact
-    if (aset) wa->Multiply(false, *za, *fw);
+    if (aset) wa->multiply(false, *za, *fw);
 
     // WEAR LIN. W.R.T. Z *****************************************************
     // for slip contact
-    if (slipset) wsla->Multiply(false, *za, *fwsl);
+    if (slipset) wsla->multiply(false, *za, *fwsl);
   }
 
   // coupling part of dmatrix (only nonzero for 3D quadratic case!)
@@ -835,7 +836,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
   if (aset && iset) dhat = Core::LinAlg::MLMultiply(*invda, false, *dai, false, false, false, true);
-  dhat->Complete(*gidofs, *gactivedofs_);
+  dhat->complete(*gidofs, *gactivedofs_);
 
   // active part of mmatrix
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrixa;
@@ -847,7 +848,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
   if (aset) mhataam = Core::LinAlg::MLMultiply(*invda, false, *mmatrixa, false, false, false, true);
-  mhataam->Complete(*gmdofrowmap_, *gactivedofs_);
+  mhataam->complete(*gmdofrowmap_, *gactivedofs_);
 
   // for the case without full linearization, we still need the
   // "classical" active part of mhat, which is isolated here
@@ -856,10 +857,10 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
       tempmtx1, tempmtx2, tempmtx3);
 
   // scaling of invd and dai
-  invda->Scale(1 / (1 - alphaf_));
-  invdsl->Scale(1 / (1 - alphaf_));
-  invdst->Scale(1 / (1 - alphaf_));
-  dai->Scale(1 - alphaf_);
+  invda->scale(1 / (1 - alphaf_));
+  invdsl->scale(1 / (1 - alphaf_));
+  invdst->scale(1 / (1 - alphaf_));
+  dai->scale(1 - alphaf_);
 
   /********************************************************************/
   /* (7) Build the final K blocks                                     */
@@ -876,31 +877,31 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   // kmn: add T(mhataam)*kan
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnmod =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
-  kmnmod->Add(*kmn, false, 1.0, 1.0);
+  kmnmod->add(*kmn, false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnadd =
       Core::LinAlg::MLMultiply(*mhataam, true, *kan, false, false, false, true);
-  kmnmod->Add(*kmnadd, false, 1.0, 1.0);
-  kmnmod->Complete(kmn->DomainMap(), kmn->RowMap());
+  kmnmod->add(*kmnadd, false, 1.0, 1.0);
+  kmnmod->complete(kmn->domain_map(), kmn->row_map());
 
   // kmm: add T(mhataam)*kam
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmmod =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
-  kmmmod->Add(*kmm, false, 1.0, 1.0);
+  kmmmod->add(*kmm, false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd =
       Core::LinAlg::MLMultiply(*mhataam, true, *kam, false, false, false, true);
-  kmmmod->Add(*kmmadd, false, 1.0, 1.0);
-  kmmmod->Complete(kmm->DomainMap(), kmm->RowMap());
+  kmmmod->add(*kmmadd, false, 1.0, 1.0);
+  kmmmod->complete(kmm->domain_map(), kmm->row_map());
 
   // kmi: add T(mhataam)*kai
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmimod;
   if (iset)
   {
     kmimod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
-    kmimod->Add(*kmi, false, 1.0, 1.0);
+    kmimod->add(*kmi, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmiadd =
         Core::LinAlg::MLMultiply(*mhataam, true, *kai, false, false, false, true);
-    kmimod->Add(*kmiadd, false, 1.0, 1.0);
-    kmimod->Complete(kmi->DomainMap(), kmi->RowMap());
+    kmimod->add(*kmiadd, false, 1.0, 1.0);
+    kmimod->complete(kmi->domain_map(), kmi->row_map());
   }
 
   // kma: add T(mhataam)*kaa
@@ -908,51 +909,51 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   if (aset)
   {
     kmamod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
-    kmamod->Add(*kma, false, 1.0, 1.0);
+    kmamod->add(*kma, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmaadd =
         Core::LinAlg::MLMultiply(*mhataam, true, *kaa, false, false, false, true);
-    kmamod->Add(*kmaadd, false, 1.0, 1.0);
-    kmamod->Complete(kma->DomainMap(), kma->RowMap());
+    kmamod->add(*kmaadd, false, 1.0, 1.0);
+    kmamod->complete(kma->domain_map(), kma->row_map());
   }
 
   //--------------------------------------------------------- THIRD LINE
   // kin: subtract T(dhat)*kan
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kinmod =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gidofs, 100));
-  kinmod->Add(*kin, false, 1.0, 1.0);
+  kinmod->add(*kin, false, 1.0, 1.0);
   if (aset && iset)
   {
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kinadd =
         Core::LinAlg::MLMultiply(*dhat, true, *kan, false, false, false, true);
-    kinmod->Add(*kinadd, false, -1.0, 1.0);
+    kinmod->add(*kinadd, false, -1.0, 1.0);
   }
-  kinmod->Complete(kin->DomainMap(), kin->RowMap());
+  kinmod->complete(kin->domain_map(), kin->row_map());
 
   // kim: subtract T(dhat)*kam
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kimmod =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gidofs, 100));
-  kimmod->Add(*kim, false, 1.0, 1.0);
+  kimmod->add(*kim, false, 1.0, 1.0);
   if (aset && iset)
   {
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kimadd =
         Core::LinAlg::MLMultiply(*dhat, true, *kam, false, false, false, true);
-    kimmod->Add(*kimadd, false, -1.0, 1.0);
+    kimmod->add(*kimadd, false, -1.0, 1.0);
   }
-  kimmod->Complete(kim->DomainMap(), kim->RowMap());
+  kimmod->complete(kim->domain_map(), kim->row_map());
 
   // kii: subtract T(dhat)*kai
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kiimod;
   if (iset)
   {
     kiimod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gidofs, 100));
-    kiimod->Add(*kii, false, 1.0, 1.0);
+    kiimod->add(*kii, false, 1.0, 1.0);
     if (aset)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kiiadd =
           Core::LinAlg::MLMultiply(*dhat, true, *kai, false, false, false, true);
-      kiimod->Add(*kiiadd, false, -1.0, 1.0);
+      kiimod->add(*kiiadd, false, -1.0, 1.0);
     }
-    kiimod->Complete(kii->DomainMap(), kii->RowMap());
+    kiimod->complete(kii->domain_map(), kii->row_map());
   }
 
   // kia: subtract T(dhat)*kaa
@@ -960,11 +961,11 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   if (iset && aset)
   {
     kiamod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gidofs, 100));
-    kiamod->Add(*kia, false, 1.0, 1.0);
+    kiamod->add(*kia, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kiaadd =
         Core::LinAlg::MLMultiply(*dhat, true, *kaa, false, false, false, true);
-    kiamod->Add(*kiaadd, false, -1.0, 1.0);
-    kiamod->Complete(kia->DomainMap(), kia->RowMap());
+    kiamod->add(*kiaadd, false, -1.0, 1.0);
+    kiamod->complete(kia->domain_map(), kia->row_map());
   }
 
   //-------------------------------------------------------- FOURTH LINE
@@ -1136,10 +1137,10 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   if (is_self_contact())
   {
     Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-    Teuchos::RCP<Epetra_Vector> tempvecm2 = Teuchos::rcp(new Epetra_Vector(mold_->DomainMap()));
-    Teuchos::RCP<Epetra_Vector> zoldexp = Teuchos::rcp(new Epetra_Vector(mold_->RowMap()));
-    if (mold_->RowMap().NumGlobalElements()) Core::LinAlg::Export(*zold_, *zoldexp);
-    mold_->Multiply(true, *zoldexp, *tempvecm2);
+    Teuchos::RCP<Epetra_Vector> tempvecm2 = Teuchos::rcp(new Epetra_Vector(mold_->domain_map()));
+    Teuchos::RCP<Epetra_Vector> zoldexp = Teuchos::rcp(new Epetra_Vector(mold_->row_map()));
+    if (mold_->row_map().NumGlobalElements()) Core::LinAlg::Export(*zold_, *zoldexp);
+    mold_->multiply(true, *zoldexp, *tempvecm2);
     if (mset) Core::LinAlg::Export(*tempvecm2, *tempvecm);
     fm->Update(alphaf_, *tempvecm, 1.0);
   }
@@ -1147,7 +1148,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   else
   {
     Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-    mold_->Multiply(true, *zold_, *tempvecm);
+    mold_->multiply(true, *zold_, *tempvecm);
     fm->Update(alphaf_, *tempvecm, 1.0);
   }
 
@@ -1158,16 +1159,16 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   // thus we have to export the product Dold^T * zold to fit
   if (is_self_contact())
   {
-    Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(dold_->DomainMap()));
-    Teuchos::RCP<Epetra_Vector> zoldexp = Teuchos::rcp(new Epetra_Vector(dold_->RowMap()));
-    if (dold_->RowMap().NumGlobalElements()) Core::LinAlg::Export(*zold_, *zoldexp);
-    dold_->Multiply(true, *zoldexp, *tempvec);
+    Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(dold_->domain_map()));
+    Teuchos::RCP<Epetra_Vector> zoldexp = Teuchos::rcp(new Epetra_Vector(dold_->row_map()));
+    if (dold_->row_map().NumGlobalElements()) Core::LinAlg::Export(*zold_, *zoldexp);
+    dold_->multiply(true, *zoldexp, *tempvec);
     if (sset) Core::LinAlg::Export(*tempvec, *fsadd);
   }
   // if there is no self contact everything is ok
   else
   {
-    dold_->Multiply(true, *zold_, *fsadd);
+    dold_->multiply(true, *zold_, *fsadd);
   }
 
   // fa: subtract alphaf * old contact forces (t_n)
@@ -1180,7 +1181,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
 
   // fm: add T(mhat)*fa
   Teuchos::RCP<Epetra_Vector> fmmod = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-  if (aset) mhataam->Multiply(true, *fa, *fmmod);
+  if (aset) mhataam->multiply(true, *fa, *fmmod);
   fmmod->Update(1.0, *fm, 1.0);
 
   //--------------------------------------------------------- THIRD LINE
@@ -1194,7 +1195,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
 
   // fi: add T(dhat)*fa
   Teuchos::RCP<Epetra_Vector> fimod = Teuchos::rcp(new Epetra_Vector(*gidofs));
-  if (aset && iset) dhat->Multiply(true, *fa, *fimod);
+  if (aset && iset) dhat->multiply(true, *fa, *fimod);
   fimod->Update(1.0, *fi, -1.0);
 
   //-------------------------------------------------------- FOURTH LINE
@@ -1207,7 +1208,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
       fgmod = Teuchos::rcp(new Epetra_Vector(*gactiven_));
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
           Core::LinAlg::MLMultiply(*wa, false, *invda, true, false, false, true);
-      temp1->Multiply(false, *fa, *fgmod);
+      temp1->multiply(false, *fa, *fgmod);
     }
   }
   //--------------------------------------------------------- FIFTH LINE
@@ -1231,11 +1232,11 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
     fstmod = Teuchos::rcp(new Epetra_Vector(*gstickt));
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
         Core::LinAlg::MLMultiply(*linstickLM_, false, *invdst, true, false, false, true);
-    temp1->Multiply(false, *fa, *fstmod);
+    temp1->multiply(false, *fa, *fstmod);
 
     tempvec1 = Teuchos::rcp(new Epetra_Vector(*gstickt));
 
-    linstickLM_->Multiply(false, *zst, *tempvec1);
+    linstickLM_->multiply(false, *zst, *tempvec1);
     fstmod->Update(-1.0, *tempvec1, 1.0);
   }
 
@@ -1249,11 +1250,11 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
     fslmod = Teuchos::rcp(new Epetra_Vector(*gslipt_));
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
         Core::LinAlg::MLMultiply(*linslipLM_, false, *invdsl, true, false, false, true);
-    temp->Multiply(false, *fa, *fslmod);
+    temp->multiply(false, *fa, *fslmod);
 
     tempvec1 = Teuchos::rcp(new Epetra_Vector(*gslipt_));
 
-    linslipLM_->Multiply(false, *zsl, *tempvec1);
+    linslipLM_->multiply(false, *zsl, *tempvec1);
 
     fslmod->Update(-1.0, *tempvec1, 1.0);
 
@@ -1263,7 +1264,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
       fslwmod = Teuchos::rcp(new Epetra_Vector(*gslipt_));
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
           Core::LinAlg::MLMultiply(*wsla, false, *invda, true, false, false, true);
-      temp2->Multiply(false, *fa, *fslwmod);
+      temp2->multiply(false, *fa, *fslwmod);
     }
   }
 
@@ -1348,80 +1349,80 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   /********************************************************************/
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      *ProblemDofs(), 81, true, false, kteffmatrix->GetMatrixtype()));
-  Teuchos::RCP<Epetra_Vector> feffnew = Core::LinAlg::CreateVector(*ProblemDofs());
+      *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype()));
+  Teuchos::RCP<Epetra_Vector> feffnew = Core::LinAlg::CreateVector(*problem_dofs());
 
   //--------------------------------------------------------- FIRST LINE
   // add n submatrices to kteffnew
-  kteffnew->Add(*knn, false, 1.0, 1.0);
-  kteffnew->Add(*knm, false, 1.0, 1.0);
-  if (sset) kteffnew->Add(*kns, false, 1.0, 1.0);
+  kteffnew->add(*knn, false, 1.0, 1.0);
+  kteffnew->add(*knm, false, 1.0, 1.0);
+  if (sset) kteffnew->add(*kns, false, 1.0, 1.0);
 
   //-------------------------------------------------------- SECOND LINE
   // add m submatrices to kteffnew
-  kteffnew->Add(*kmnmod, false, 1.0, 1.0);
-  kteffnew->Add(*kmmmod, false, 1.0, 1.0);
-  if (iset) kteffnew->Add(*kmimod, false, 1.0, 1.0);
-  if (aset) kteffnew->Add(*kmamod, false, 1.0, 1.0);
+  kteffnew->add(*kmnmod, false, 1.0, 1.0);
+  kteffnew->add(*kmmmod, false, 1.0, 1.0);
+  if (iset) kteffnew->add(*kmimod, false, 1.0, 1.0);
+  if (aset) kteffnew->add(*kmamod, false, 1.0, 1.0);
 
   //--------------------------------------------------------- THIRD LINE
   // add i submatrices to kteffnew
-  if (iset) kteffnew->Add(*kinmod, false, 1.0, 1.0);
-  if (iset) kteffnew->Add(*kimmod, false, 1.0, 1.0);
-  if (iset) kteffnew->Add(*kiimod, false, 1.0, 1.0);
-  if (iset && aset) kteffnew->Add(*kiamod, false, 1.0, 1.0);
+  if (iset) kteffnew->add(*kinmod, false, 1.0, 1.0);
+  if (iset) kteffnew->add(*kimmod, false, 1.0, 1.0);
+  if (iset) kteffnew->add(*kiimod, false, 1.0, 1.0);
+  if (iset && aset) kteffnew->add(*kiamod, false, 1.0, 1.0);
 
   //-------------------------------------------------------- FOURTH LINE
 
   // add a submatrices to kteffnew
-  if (aset) kteffnew->Add(*smatrix_, false, 1.0, 1.0);
+  if (aset) kteffnew->add(*smatrix_, false, 1.0, 1.0);
 
   // implicit wear
   if (wearimpl_)
   {
     // if (aset) kteffnew->Add(*wlinmatrix_,false,1.0,1.0);
-    if (aset) kteffnew->Add(*kgnmod, false, -1.0, 1.0);
-    if (aset) kteffnew->Add(*kgmmod, false, -1.0, 1.0);
-    if (aset and iset) kteffnew->Add(*kgimod, false, -1.0, 1.0);
-    if (aset) kteffnew->Add(*kgaamod, false, -1.0, 1.0);
+    if (aset) kteffnew->add(*kgnmod, false, -1.0, 1.0);
+    if (aset) kteffnew->add(*kgmmod, false, -1.0, 1.0);
+    if (aset and iset) kteffnew->add(*kgimod, false, -1.0, 1.0);
+    if (aset) kteffnew->add(*kgaamod, false, -1.0, 1.0);
     // if (aset and stickset) kteffnew->Add(*kgstmod,false,1.0,1.0);
   }
 
   //--------------------------------------------------------- FIFTH LINE
   // add st submatrices to kteffnew
-  if (stickset) kteffnew->Add(*kstnmod, false, 1.0, 1.0);
-  if (stickset) kteffnew->Add(*kstmmod, false, 1.0, 1.0);
-  if (stickset && iset) kteffnew->Add(*kstimod, false, 1.0, 1.0);
-  if (stickset && slipset) kteffnew->Add(*kstslmod, false, 1.0, 1.0);
-  if (stickset) kteffnew->Add(*kststmod, false, 1.0, 1.0);
+  if (stickset) kteffnew->add(*kstnmod, false, 1.0, 1.0);
+  if (stickset) kteffnew->add(*kstmmod, false, 1.0, 1.0);
+  if (stickset && iset) kteffnew->add(*kstimod, false, 1.0, 1.0);
+  if (stickset && slipset) kteffnew->add(*kstslmod, false, 1.0, 1.0);
+  if (stickset) kteffnew->add(*kststmod, false, 1.0, 1.0);
 
   // add terms of linearization of sick condition to kteffnew
-  if (stickset) kteffnew->Add(*linstickDIS_, false, -1.0, 1.0);
+  if (stickset) kteffnew->add(*linstickDIS_, false, -1.0, 1.0);
 
   //--------------------------------------------------------- SIXTH LINE
   // add sl submatrices to kteffnew
-  if (slipset) kteffnew->Add(*kslnmod, false, 1.0, 1.0);
-  if (slipset) kteffnew->Add(*kslmmod, false, 1.0, 1.0);
-  if (slipset && iset) kteffnew->Add(*kslimod, false, 1.0, 1.0);
-  if (slipset) kteffnew->Add(*kslslmod, false, 1.0, 1.0);
-  if (slipset && stickset) kteffnew->Add(*kslstmod, false, 1.0, 1.0);
+  if (slipset) kteffnew->add(*kslnmod, false, 1.0, 1.0);
+  if (slipset) kteffnew->add(*kslmmod, false, 1.0, 1.0);
+  if (slipset && iset) kteffnew->add(*kslimod, false, 1.0, 1.0);
+  if (slipset) kteffnew->add(*kslslmod, false, 1.0, 1.0);
+  if (slipset && stickset) kteffnew->add(*kslstmod, false, 1.0, 1.0);
 
   // add terms of linearization of slip condition to kteffnew and feffnew
-  if (slipset) kteffnew->Add(*linslipDIS_, false, -1.0, +1.0);
+  if (slipset) kteffnew->add(*linslipDIS_, false, -1.0, +1.0);
 
   // implicit wear
   if (wearimpl_)
   {
     // if (slipset) kteffnew->Add(*wlinmatrixsl_,false,1.0,1.0);
-    if (slipset) kteffnew->Add(*kslwnmod, false, 1.0, 1.0);
-    if (slipset) kteffnew->Add(*kslwmmod, false, 1.0, 1.0);
-    if (slipset and iset) kteffnew->Add(*kslwimod, false, 1.0, 1.0);
-    if (slipset) kteffnew->Add(*kslwaamod, false, 1.0, 1.0);
+    if (slipset) kteffnew->add(*kslwnmod, false, 1.0, 1.0);
+    if (slipset) kteffnew->add(*kslwmmod, false, 1.0, 1.0);
+    if (slipset and iset) kteffnew->add(*kslwimod, false, 1.0, 1.0);
+    if (slipset) kteffnew->add(*kslwaamod, false, 1.0, 1.0);
     // if (slipset and stickset) kteffnew->Add(*kslwstmod,false,1.0,1.0);
   }
 
   // fill_complete kteffnew (square)
-  kteffnew->Complete();
+  kteffnew->complete();
 
   /********************************************************************/
   /* (11) Global setup of feffnew (including contact)                 */
@@ -1429,13 +1430,13 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
 
   //--------------------------------------------------------- FIRST LINE
   // add n subvector to feffnew
-  Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+  Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
   Core::LinAlg::Export(*fn, *fnexp);
   feffnew->Update(1.0, *fnexp, 1.0);
 
   //-------------------------------------------------------- SECOND LINE
   // add m subvector to feffnew
-  Teuchos::RCP<Epetra_Vector> fmmodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+  Teuchos::RCP<Epetra_Vector> fmmodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
   Core::LinAlg::Export(*fmmod, *fmmodexp);
   feffnew->Update(1.0, *fmmodexp, 1.0);
 
@@ -1444,7 +1445,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   Teuchos::RCP<Epetra_Vector> fimodexp;
   if (iset)
   {
-    fimodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    fimodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*fimod, *fimodexp);
     feffnew->Update(1.0, *fimodexp, 1.0);
   }
@@ -1457,7 +1458,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
 
   if (aset)
   {
-    gexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    gexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*gact, *gexp);
     feffnew->Update(-1.0, *gexp, 1.0);
 
@@ -1465,11 +1466,11 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
     if (wearimpl_)
     {
       // commented due to incremental solution algorithm.
-      fwexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+      fwexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
       Core::LinAlg::Export(*fw, *fwexp);
       feffnew->Update(+1.0, *fwexp, 1.0);
 
-      fgmodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+      fgmodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
       Core::LinAlg::Export(*fgmod, *fgmodexp);
       feffnew->Update(-1.0, *fgmodexp, +1.0);
     }
@@ -1480,7 +1481,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   Teuchos::RCP<Epetra_Vector> fstmodexp;
   if (stickset)
   {
-    fstmodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    fstmodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*fstmod, *fstmodexp);
     feffnew->Update(1.0, *fstmodexp, +1.0);
   }
@@ -1488,7 +1489,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   // add terms of linearization feffnew
   if (stickset)
   {
-    Teuchos::RCP<Epetra_Vector> linstickRHSexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    Teuchos::RCP<Epetra_Vector> linstickRHSexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*linstickRHS_, *linstickRHSexp);
     feffnew->Update(-1.0, *linstickRHSexp, 1.0);
   }
@@ -1503,7 +1504,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
 
   if (slipset)
   {
-    fslmodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    fslmodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*fslmod, *fslmodexp);
     feffnew->Update(1.0, *fslmodexp, 1.0);
   }
@@ -1513,14 +1514,14 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   {
     if (slipset)
     {
-      fslwmodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+      fslwmodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
       Core::LinAlg::Export(*fslwmod, *fslwmodexp);
       feffnew->Update(+1.0, *fslwmodexp, 1.0);
     }
     // commented due to incremental solution algorithm
     if (slipset)
     {
-      fwslexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+      fwslexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
       Core::LinAlg::Export(*fwsl, *fwslexp);
       feffnew->Update(-1.0, *fwslexp, 1.0);
     }
@@ -1528,7 +1529,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
 
   if (slipset)
   {
-    Teuchos::RCP<Epetra_Vector> linslipRHSexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    Teuchos::RCP<Epetra_Vector> linslipRHSexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*linslipRHS_, *linslipRHSexp);
     feffnew->Update(-1.0, *linslipRHSexp, 1.0);
   }
@@ -1543,14 +1544,14 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
 /*----------------------------------------------------------------------*
  | condense wear and lm. for discr. wear algorithm           farah 10/13|
  *----------------------------------------------------------------------*/
-void Wear::LagrangeStrategyWear::CondenseWearDiscr(
+void Wear::LagrangeStrategyWear::condense_wear_discr(
     Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
     Teuchos::RCP<Epetra_Vector>& gact)
 {
   Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
   Inpar::Wear::WearShape wearshapefcn =
-      Core::UTILS::IntegralValue<Inpar::Wear::WearShape>(Params(), "WEAR_SHAPEFCN");
+      Core::UTILS::IntegralValue<Inpar::Wear::WearShape>(params(), "WEAR_SHAPEFCN");
 
   // double-check if this is a dual LM system
   if (shapefcn != Inpar::Mortar::shape_dual && shapefcn != Inpar::Mortar::shape_petrovgalerkin)
@@ -1569,7 +1570,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   int err = 0;
 
   // extract diagonal of invd into diag
-  invd->ExtractDiagonalCopy(*diag);
+  invd->extract_diagonal_copy(*diag);
 
   // set zero diagonal values to dummy 1.0
   for (int i = 0; i < diag->MyLength(); ++i)
@@ -1596,10 +1597,10 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
     linmmatrix_ = Mortar::MatrixRowTransform(linmmatrix_, pgmdofrowmap_);
   }
 
-  kteff->UnComplete();
-  kteff->Add(*lindmatrix_, false, 1.0 - alphaf_, 1.0);
-  kteff->Add(*linmmatrix_, false, 1.0 - alphaf_, 1.0);
-  kteff->Complete();
+  kteff->un_complete();
+  kteff->add(*lindmatrix_, false, 1.0 - alphaf_, 1.0);
+  kteff->add(*linmmatrix_, false, 1.0 - alphaf_, 1.0);
+  kteff->complete();
 
   /********************************************************************/
   /* (3a) Split kteff into 3x3 matrix blocks                          */
@@ -1659,7 +1660,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   if (parallel_redistribution_status())
   {
     // split and transform to redistributed maps
-    Core::LinAlg::split_vector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
+    Core::LinAlg::split_vector(*problem_dofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
     Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
     Core::LinAlg::Export(*fsm, *fsmtemp);
     fsm = fsmtemp;
@@ -1667,7 +1668,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   else
   {
     // only split, no need to transform
-    Core::LinAlg::split_vector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
+    Core::LinAlg::split_vector(*problem_dofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
   }
 
   // abbreviations for slave and master set
@@ -1794,7 +1795,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
   if (aset && iset) dhat = Core::LinAlg::MLMultiply(*invda, false, *dai, false, false, false, true);
-  dhat->Complete(*gidofs, *gactivedofs_);
+  dhat->complete(*gidofs, *gactivedofs_);
 
   // active part of mmatrix
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrixa;
@@ -1806,7 +1807,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
   if (aset) mhataam = Core::LinAlg::MLMultiply(*invda, false, *mmatrixa, false, false, false, true);
-  mhataam->Complete(*gmdofrowmap_, *gactivedofs_);
+  mhataam->complete(*gmdofrowmap_, *gactivedofs_);
 
   // for the case without full linearization, we still need the
   // "classical" active part of mhat, which is isolated here
@@ -1815,17 +1816,17 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
       tempmtx1, tempmtx2, tempmtx3);
 
   // scaling of invd and dai
-  invda->Scale(1 / (1 - alphaf_));
-  invdsl->Scale(1 / (1 - alphaf_));
-  invdst->Scale(1 / (1 - alphaf_));
-  dai->Scale(1 - alphaf_);
+  invda->scale(1 / (1 - alphaf_));
+  invdsl->scale(1 / (1 - alphaf_));
+  invdst->scale(1 / (1 - alphaf_));
+  dai->scale(1 - alphaf_);
 
   /********************************************************************/
   //                       WEARBLOCKS - BASIC
   /********************************************************************/
   // wcoeff: all blocks based on T-matrix have to be scaled with this
   // coefficent...
-  double wcoeff = Params().get<double>("WEARCOEFF");
+  double wcoeff = params().get<double>("WEARCOEFF");
 
   /********************************************************************/
   /* (a) create inv E                                                */
@@ -1836,7 +1837,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   int erre = 0;
 
   // extract diagonal of inve into diage
-  inve->ExtractDiagonalCopy(*diage);
+  inve->extract_diagonal_copy(*diage);
 
   // set zero diagonal values to dummy 1.0
   for (int i = 0; i < diage->MyLength(); ++i)
@@ -1856,14 +1857,14 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*lintdis_));
 
   // scale T-part with wear coeff.
-  linetdis->Scale(-wcoeff);
-  linetdis->UnComplete();
+  linetdis->scale(-wcoeff);
+  linetdis->un_complete();
 
   // add E-part
-  linetdis->Add(*linedis_, false, 1.0, 1.0);
+  linetdis->add(*linedis_, false, 1.0, 1.0);
 
   // complete
-  linetdis->Complete(*gsmdofrowmap_, *gslipn_);
+  linetdis->complete(*gsmdofrowmap_, *gslipn_);
 
   /********************************************************************/
   /* (c) Split linetdis into 4 matrix blocks                         */
@@ -1889,7 +1890,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> lintlm_st, lintlm_sl, lintlm_i, lintlm_a;
 
   // split active inactive
-  lintlm_->Scale(wcoeff);
+  lintlm_->scale(wcoeff);
   Core::LinAlg::SplitMatrix2x2(
       lintlm_, gslipn_, gslipn_, gactivedofs_, gidofs, lintlm_a, lintlm_i, dummy1, dummy2);
 
@@ -1918,7 +1919,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
       wear_dn = Core::LinAlg::MLMultiply(*inve, false, *tndt_a, false, false, false, true);
       wear_dn = Core::LinAlg::MLMultiply(*wear_dn, false, *kan, false, false, false, true);
 
-      wear_dn->Scale(-1.0);
+      wear_dn->scale(-1.0);
     }
     // dm
     if (aset)
@@ -1926,7 +1927,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
       wear_dm = Core::LinAlg::MLMultiply(*inve, false, *tndt_a, false, false, false, true);
       wear_dm = Core::LinAlg::MLMultiply(*wear_dm, false, *kam, false, false, false, true);
 
-      wear_dm->Scale(-1.0);
+      wear_dm->scale(-1.0);
     }
     // da
     if (aset)
@@ -1937,9 +1938,9 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
       Teuchos::RCP<Core::LinAlg::SparseMatrix> inve_te;
       inve_te = Core::LinAlg::MLMultiply(*inve, false, *linte_a, false, false, false, true);
 
-      wear_da->Add(*inve_te, false, 1.0, 1.0);
-      wear_da->Complete(*gactivedofs_, *gslipn_);
-      wear_da->Scale(-1.0);
+      wear_da->add(*inve_te, false, 1.0, 1.0);
+      wear_da->complete(*gactivedofs_, *gslipn_);
+      wear_da->scale(-1.0);
     }
     // di
     if (aset && iset)
@@ -1950,9 +1951,9 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
       Teuchos::RCP<Core::LinAlg::SparseMatrix> inve_te;
       inve_te = Core::LinAlg::MLMultiply(*inve, false, *linte_i, false, false, false, true);
 
-      wear_di->Add(*inve_te, false, 1.0, 1.0);
-      wear_di->Complete(*gidofs, *gslipn_);
-      wear_di->Scale(-1.0);
+      wear_di->add(*inve_te, false, 1.0, 1.0);
+      wear_di->complete(*gidofs, *gslipn_);
+      wear_di->scale(-1.0);
     }
   }
 
@@ -1971,15 +1972,15 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
 
   if (slipset)
   {
-    tndt_a->Multiply(false, *fa, *dvec);
-    inve->Multiply(false, *dvec, *fw_z);
+    tndt_a->multiply(false, *fa, *dvec);
+    inve->multiply(false, *dvec, *fw_z);
 
     // fa = -ra
     fw_z->Scale(-1.0);
 
     // this wear condrhs excludes the lm-part of the rhs
     wear_cond_rhs_->Scale(-1.0);
-    inve->Multiply(false, *wear_cond_rhs_, *fw_wrhs);
+    inve->multiply(false, *wear_cond_rhs_, *fw_wrhs);
     fw_z->Update(1.0, *fw_wrhs, 1.0);
 
     fw_z->Scale(-1.0);
@@ -2014,31 +2015,31 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   // kmn: add T(mhataam)*kan
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnmod =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
-  kmnmod->Add(*kmn, false, 1.0, 1.0);
+  kmnmod->add(*kmn, false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnadd =
       Core::LinAlg::MLMultiply(*mhataam, true, *kan, false, false, false, true);
-  kmnmod->Add(*kmnadd, false, 1.0, 1.0);
-  kmnmod->Complete(kmn->DomainMap(), kmn->RowMap());
+  kmnmod->add(*kmnadd, false, 1.0, 1.0);
+  kmnmod->complete(kmn->domain_map(), kmn->row_map());
 
   // kmm: add T(mhataam)*kam
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmmod =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
-  kmmmod->Add(*kmm, false, 1.0, 1.0);
+  kmmmod->add(*kmm, false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd =
       Core::LinAlg::MLMultiply(*mhataam, true, *kam, false, false, false, true);
-  kmmmod->Add(*kmmadd, false, 1.0, 1.0);
-  kmmmod->Complete(kmm->DomainMap(), kmm->RowMap());
+  kmmmod->add(*kmmadd, false, 1.0, 1.0);
+  kmmmod->complete(kmm->domain_map(), kmm->row_map());
 
   // kmi: add T(mhataam)*kai
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmimod;
   if (iset)
   {
     kmimod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
-    kmimod->Add(*kmi, false, 1.0, 1.0);
+    kmimod->add(*kmi, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmiadd =
         Core::LinAlg::MLMultiply(*mhataam, true, *kai, false, false, false, true);
-    kmimod->Add(*kmiadd, false, 1.0, 1.0);
-    kmimod->Complete(kmi->DomainMap(), kmi->RowMap());
+    kmimod->add(*kmiadd, false, 1.0, 1.0);
+    kmimod->complete(kmi->domain_map(), kmi->row_map());
   }
 
   // kma: add T(mhataam)*kaa
@@ -2046,11 +2047,11 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   if (aset)
   {
     kmamod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
-    kmamod->Add(*kma, false, 1.0, 1.0);
+    kmamod->add(*kma, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmaadd =
         Core::LinAlg::MLMultiply(*mhataam, true, *kaa, false, false, false, true);
-    kmamod->Add(*kmaadd, false, 1.0, 1.0);
-    kmamod->Complete(kma->DomainMap(), kma->RowMap());
+    kmamod->add(*kmaadd, false, 1.0, 1.0);
+    kmamod->complete(kma->domain_map(), kma->row_map());
   }
 
   //--------------------------------------------------------- THIRD LINE
@@ -2058,40 +2059,40 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   // kin: subtract T(dhat)*kan
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kinmod =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gidofs, 100));
-  kinmod->Add(*kin, false, 1.0, 1.0);
+  kinmod->add(*kin, false, 1.0, 1.0);
   if (aset && iset)
   {
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kinadd =
         Core::LinAlg::MLMultiply(*dhat, true, *kan, false, false, false, true);
-    kinmod->Add(*kinadd, false, -1.0, 1.0);
+    kinmod->add(*kinadd, false, -1.0, 1.0);
   }
-  kinmod->Complete(kin->DomainMap(), kin->RowMap());
+  kinmod->complete(kin->domain_map(), kin->row_map());
 
   // kim: subtract T(dhat)*kam
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kimmod =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gidofs, 100));
-  kimmod->Add(*kim, false, 1.0, 1.0);
+  kimmod->add(*kim, false, 1.0, 1.0);
   if (aset && iset)
   {
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kimadd =
         Core::LinAlg::MLMultiply(*dhat, true, *kam, false, false, false, true);
-    kimmod->Add(*kimadd, false, -1.0, 1.0);
+    kimmod->add(*kimadd, false, -1.0, 1.0);
   }
-  kimmod->Complete(kim->DomainMap(), kim->RowMap());
+  kimmod->complete(kim->domain_map(), kim->row_map());
 
   // kii: subtract T(dhat)*kai
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kiimod;
   if (iset)
   {
     kiimod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gidofs, 100));
-    kiimod->Add(*kii, false, 1.0, 1.0);
+    kiimod->add(*kii, false, 1.0, 1.0);
     if (aset)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kiiadd =
           Core::LinAlg::MLMultiply(*dhat, true, *kai, false, false, false, true);
-      kiimod->Add(*kiiadd, false, -1.0, 1.0);
+      kiimod->add(*kiiadd, false, -1.0, 1.0);
     }
-    kiimod->Complete(kii->DomainMap(), kii->RowMap());
+    kiimod->complete(kii->domain_map(), kii->row_map());
   }
 
   // kia: subtract T(dhat)*kaa
@@ -2099,11 +2100,11 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   if (iset && aset)
   {
     kiamod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gidofs, 100));
-    kiamod->Add(*kia, false, 1.0, 1.0);
+    kiamod->add(*kia, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kiaadd =
         Core::LinAlg::MLMultiply(*dhat, true, *kaa, false, false, false, true);
-    kiamod->Add(*kiaadd, false, -1.0, 1.0);
-    kiamod->Complete(kia->DomainMap(), kia->RowMap());
+    kiamod->add(*kiaadd, false, -1.0, 1.0);
+    kiamod->complete(kia->domain_map(), kia->row_map());
   }
 
   //--------------------------------------------------------- FOURTH LINE
@@ -2237,10 +2238,10 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   if (is_self_contact())
   {
     Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-    Teuchos::RCP<Epetra_Vector> tempvecm2 = Teuchos::rcp(new Epetra_Vector(mold_->DomainMap()));
-    Teuchos::RCP<Epetra_Vector> zoldexp = Teuchos::rcp(new Epetra_Vector(mold_->RowMap()));
-    if (mold_->RowMap().NumGlobalElements()) Core::LinAlg::Export(*zold_, *zoldexp);
-    mold_->Multiply(true, *zoldexp, *tempvecm2);
+    Teuchos::RCP<Epetra_Vector> tempvecm2 = Teuchos::rcp(new Epetra_Vector(mold_->domain_map()));
+    Teuchos::RCP<Epetra_Vector> zoldexp = Teuchos::rcp(new Epetra_Vector(mold_->row_map()));
+    if (mold_->row_map().NumGlobalElements()) Core::LinAlg::Export(*zold_, *zoldexp);
+    mold_->multiply(true, *zoldexp, *tempvecm2);
     if (mset) Core::LinAlg::Export(*tempvecm2, *tempvecm);
     fm->Update(alphaf_, *tempvecm, 1.0);
   }
@@ -2248,7 +2249,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   else
   {
     Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-    mold_->Multiply(true, *zold_, *tempvecm);
+    mold_->multiply(true, *zold_, *tempvecm);
     fm->Update(alphaf_, *tempvecm, 1.0);
   }
 
@@ -2259,16 +2260,16 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   // thus we have to export the product Dold^T * zold to fit
   if (is_self_contact())
   {
-    Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(dold_->DomainMap()));
-    Teuchos::RCP<Epetra_Vector> zoldexp = Teuchos::rcp(new Epetra_Vector(dold_->RowMap()));
-    if (dold_->RowMap().NumGlobalElements()) Core::LinAlg::Export(*zold_, *zoldexp);
-    dold_->Multiply(true, *zoldexp, *tempvec);
+    Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(dold_->domain_map()));
+    Teuchos::RCP<Epetra_Vector> zoldexp = Teuchos::rcp(new Epetra_Vector(dold_->row_map()));
+    if (dold_->row_map().NumGlobalElements()) Core::LinAlg::Export(*zold_, *zoldexp);
+    dold_->multiply(true, *zoldexp, *tempvec);
     if (sset) Core::LinAlg::Export(*tempvec, *fsadd);
   }
   // if there is no self contact everything is ok
   else
   {
-    dold_->Multiply(true, *zold_, *fsadd);
+    dold_->multiply(true, *zold_, *fsadd);
   }
 
   // fa: subtract alphaf * old contact forces (t_n)
@@ -2281,7 +2282,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
 
   // fm: add T(mhat)*fa
   Teuchos::RCP<Epetra_Vector> fmmod = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-  if (aset) mhataam->Multiply(true, *fa, *fmmod);
+  if (aset) mhataam->multiply(true, *fa, *fmmod);
   fmmod->Update(1.0, *fm, 1.0);
 
   //--------------------------------------------------------- THIRD LINE
@@ -2295,7 +2296,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
 
   // fi: add T(dhat)*fa
   Teuchos::RCP<Epetra_Vector> fimod = Teuchos::rcp(new Epetra_Vector(*gidofs));
-  if (aset && iset) dhat->Multiply(true, *fa, *fimod);
+  if (aset && iset) dhat->multiply(true, *fa, *fimod);
   fimod->Update(1.0, *fi, -1.0);
 
   //--------------------------------------------------------- FOURTH LINE
@@ -2303,9 +2304,9 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   Teuchos::RCP<Epetra_Vector> fw_g = Teuchos::rcp(new Epetra_Vector(*gactiven_));
   Teuchos::RCP<Epetra_Vector> fwi_g = Teuchos::rcp(new Epetra_Vector(*gactiven_));
 
-  if (aset && slipset) smatrixW_sl->Multiply(false, *fw_z, *fw_g);
+  if (aset && slipset) smatrixW_sl->multiply(false, *fw_z, *fw_g);
 
-  if (aset && (iset || stickset)) smatrixW_i->Multiply(false, *inactive_wear_rhs_, *fwi_g);
+  if (aset && (iset || stickset)) smatrixW_i->multiply(false, *inactive_wear_rhs_, *fwi_g);
 
   //--------------------------------------------------------- FIFTH LINE
   Teuchos::RCP<Epetra_Map> gstickdofs =
@@ -2328,11 +2329,11 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
     fstmod = Teuchos::rcp(new Epetra_Vector(*gstickt));
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
         Core::LinAlg::MLMultiply(*linstickLM_, false, *invdst, true, false, false, true);
-    temp1->Multiply(false, *fa, *fstmod);
+    temp1->multiply(false, *fa, *fstmod);
 
     tempvec1 = Teuchos::rcp(new Epetra_Vector(*gstickt));
 
-    linstickLM_->Multiply(false, *zst, *tempvec1);
+    linstickLM_->multiply(false, *zst, *tempvec1);
     fstmod->Update(-1.0, *tempvec1, 1.0);
   }
 
@@ -2345,21 +2346,21 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
     fslmod = Teuchos::rcp(new Epetra_Vector(*gslipt_));
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
         Core::LinAlg::MLMultiply(*linslipLM_, false, *invdsl, true, false, false, true);
-    temp->Multiply(false, *fa, *fslmod);
+    temp->multiply(false, *fa, *fslmod);
 
     tempvec1 = Teuchos::rcp(new Epetra_Vector(*gslipt_));
 
-    linslipLM_->Multiply(false, *zsl, *tempvec1);
+    linslipLM_->multiply(false, *zsl, *tempvec1);
 
     fslmod->Update(-1.0, *tempvec1, 1.0);
   }
 
   // WEAR
   Teuchos::RCP<Epetra_Vector> fw_sl = Teuchos::rcp(new Epetra_Vector(*gslipt_));
-  if (slipset) linslipW_sl->Multiply(false, *fw_z, *fw_sl);
+  if (slipset) linslipW_sl->multiply(false, *fw_z, *fw_sl);
 
   Teuchos::RCP<Epetra_Vector> fwi_sl = Teuchos::rcp(new Epetra_Vector(*gslipt_));
-  if (slipset && (iset || stickset)) linslipW_i->Multiply(false, *inactive_wear_rhs_, *fwi_sl);
+  if (slipset && (iset || stickset)) linslipW_i->multiply(false, *inactive_wear_rhs_, *fwi_sl);
 
   /********************************************************************/
   /* (9) Transform the final K blocks                                 */
@@ -2436,68 +2437,68 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   /********************************************************************/
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      *ProblemDofs(), 81, true, false, kteffmatrix->GetMatrixtype()));
-  Teuchos::RCP<Epetra_Vector> feffnew = Core::LinAlg::CreateVector(*ProblemDofs());
+      *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype()));
+  Teuchos::RCP<Epetra_Vector> feffnew = Core::LinAlg::CreateVector(*problem_dofs());
 
   //--------------------------------------------------------- FIRST LINE
   // add n submatrices to kteffnew
-  kteffnew->Add(*knn, false, 1.0, 1.0);
-  kteffnew->Add(*knm, false, 1.0, 1.0);
-  if (sset) kteffnew->Add(*kns, false, 1.0, 1.0);
+  kteffnew->add(*knn, false, 1.0, 1.0);
+  kteffnew->add(*knm, false, 1.0, 1.0);
+  if (sset) kteffnew->add(*kns, false, 1.0, 1.0);
 
   //-------------------------------------------------------- SECOND LINE
   // add m submatrices to kteffnew
-  kteffnew->Add(*kmnmod, false, 1.0, 1.0);
-  kteffnew->Add(*kmmmod, false, 1.0, 1.0);
-  if (iset) kteffnew->Add(*kmimod, false, 1.0, 1.0);
-  if (aset) kteffnew->Add(*kmamod, false, 1.0, 1.0);
+  kteffnew->add(*kmnmod, false, 1.0, 1.0);
+  kteffnew->add(*kmmmod, false, 1.0, 1.0);
+  if (iset) kteffnew->add(*kmimod, false, 1.0, 1.0);
+  if (aset) kteffnew->add(*kmamod, false, 1.0, 1.0);
 
   //--------------------------------------------------------- THIRD LINE
   // add i submatrices to kteffnew
-  if (iset) kteffnew->Add(*kinmod, false, 1.0, 1.0);
-  if (iset) kteffnew->Add(*kimmod, false, 1.0, 1.0);
-  if (iset) kteffnew->Add(*kiimod, false, 1.0, 1.0);
-  if (iset && aset) kteffnew->Add(*kiamod, false, 1.0, 1.0);
+  if (iset) kteffnew->add(*kinmod, false, 1.0, 1.0);
+  if (iset) kteffnew->add(*kimmod, false, 1.0, 1.0);
+  if (iset) kteffnew->add(*kiimod, false, 1.0, 1.0);
+  if (iset && aset) kteffnew->add(*kiamod, false, 1.0, 1.0);
 
   //-------------------------------------------------------- FOURTH LINE
   // WEAR - STUFF
   // add a submatrices to kteffnew
-  if (aset) kteffnew->Add(*smatrix_, false, 1.0, 1.0);
-  if (aset && slipset) kteffnew->Add(*kgnw, false, 1.0, 1.0);
-  if (aset && slipset) kteffnew->Add(*kgmw, false, 1.0, 1.0);
-  if (aset && slipset && iset) kteffnew->Add(*kgiw, false, 1.0, 1.0);
-  if (aset && slipset) kteffnew->Add(*kgaw, false, 1.0, 1.0);
+  if (aset) kteffnew->add(*smatrix_, false, 1.0, 1.0);
+  if (aset && slipset) kteffnew->add(*kgnw, false, 1.0, 1.0);
+  if (aset && slipset) kteffnew->add(*kgmw, false, 1.0, 1.0);
+  if (aset && slipset && iset) kteffnew->add(*kgiw, false, 1.0, 1.0);
+  if (aset && slipset) kteffnew->add(*kgaw, false, 1.0, 1.0);
 
   //--------------------------------------------------------- FIFTH LINE
   // add st submatrices to kteffnew
-  if (stickset) kteffnew->Add(*kstnmod, false, 1.0, 1.0);
-  if (stickset) kteffnew->Add(*kstmmod, false, 1.0, 1.0);
-  if (stickset && iset) kteffnew->Add(*kstimod, false, 1.0, 1.0);
-  if (stickset && slipset) kteffnew->Add(*kstslmod, false, 1.0, 1.0);
-  if (stickset) kteffnew->Add(*kststmod, false, 1.0, 1.0);
+  if (stickset) kteffnew->add(*kstnmod, false, 1.0, 1.0);
+  if (stickset) kteffnew->add(*kstmmod, false, 1.0, 1.0);
+  if (stickset && iset) kteffnew->add(*kstimod, false, 1.0, 1.0);
+  if (stickset && slipset) kteffnew->add(*kstslmod, false, 1.0, 1.0);
+  if (stickset) kteffnew->add(*kststmod, false, 1.0, 1.0);
 
   // add terms of linearization of sick condition to kteffnew
-  if (stickset) kteffnew->Add(*linstickDIS_, false, -1.0, 1.0);
+  if (stickset) kteffnew->add(*linstickDIS_, false, -1.0, 1.0);
 
   //--------------------------------------------------------- SIXTH LINE
   // add sl submatrices to kteffnew
-  if (slipset) kteffnew->Add(*kslnmod, false, 1.0, 1.0);
-  if (slipset) kteffnew->Add(*kslmmod, false, 1.0, 1.0);
-  if (slipset && iset) kteffnew->Add(*kslimod, false, 1.0, 1.0);
-  if (slipset) kteffnew->Add(*kslslmod, false, 1.0, 1.0);
-  if (slipset && stickset) kteffnew->Add(*kslstmod, false, 1.0, 1.0);
+  if (slipset) kteffnew->add(*kslnmod, false, 1.0, 1.0);
+  if (slipset) kteffnew->add(*kslmmod, false, 1.0, 1.0);
+  if (slipset && iset) kteffnew->add(*kslimod, false, 1.0, 1.0);
+  if (slipset) kteffnew->add(*kslslmod, false, 1.0, 1.0);
+  if (slipset && stickset) kteffnew->add(*kslstmod, false, 1.0, 1.0);
 
   // add terms of linearization of slip condition to kteffnew and feffnew
-  if (slipset) kteffnew->Add(*linslipDIS_, false, -1.0, +1.0);
+  if (slipset) kteffnew->add(*linslipDIS_, false, -1.0, +1.0);
 
   // WEAR - STUFF
-  if (slipset) kteffnew->Add(*kslnw, false, -1.0, 1.0);
-  if (slipset) kteffnew->Add(*kslmw, false, -1.0, 1.0);
-  if (slipset && (iset)) kteffnew->Add(*ksliw, false, -1.0, 1.0);
-  if (slipset) kteffnew->Add(*kslaw, false, -1.0, 1.0);
+  if (slipset) kteffnew->add(*kslnw, false, -1.0, 1.0);
+  if (slipset) kteffnew->add(*kslmw, false, -1.0, 1.0);
+  if (slipset && (iset)) kteffnew->add(*ksliw, false, -1.0, 1.0);
+  if (slipset) kteffnew->add(*kslaw, false, -1.0, 1.0);
 
   // fill_complete kteffnew (square)
-  kteffnew->Complete();
+  kteffnew->complete();
 
   /********************************************************************/
   /* (11) Global setup of feffnew (including contact)                 */
@@ -2505,13 +2506,13 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
 
   //--------------------------------------------------------- FIRST LINE
   // add n subvector to feffnew
-  Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+  Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
   Core::LinAlg::Export(*fn, *fnexp);
   feffnew->Update(1.0, *fnexp, 1.0);
 
   //-------------------------------------------------------- SECOND LINE
   // add m subvector to feffnew
-  Teuchos::RCP<Epetra_Vector> fmmodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+  Teuchos::RCP<Epetra_Vector> fmmodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
   Core::LinAlg::Export(*fmmod, *fmmodexp);
   feffnew->Update(1.0, *fmmodexp, 1.0);
 
@@ -2520,7 +2521,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   Teuchos::RCP<Epetra_Vector> fimodexp;
   if (iset)
   {
-    fimodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    fimodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*fimod, *fimodexp);
     feffnew->Update(1.0, *fimodexp, 1.0);
   }
@@ -2534,19 +2535,19 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
 
   if (aset)
   {
-    gexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    gexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*gact, *gexp);
     feffnew->Update(-1.0, *gexp, 1.0);
 
     // DUE TO WEAR
-    fwexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    fwexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*fw_g, *fwexp);
     feffnew->Update(-1.0, *fwexp, 1.0);
 
     // DUE TO WEAR
     if (iset || stickset)
     {
-      fwiexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+      fwiexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
       Core::LinAlg::Export(*fwi_g, *fwiexp);
       feffnew->Update(+1.0, *fwiexp, 1.0);
     }
@@ -2557,7 +2558,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   Teuchos::RCP<Epetra_Vector> fstmodexp;
   if (stickset)
   {
-    fstmodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    fstmodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*fstmod, *fstmodexp);
     feffnew->Update(1.0, *fstmodexp, +1.0);
   }
@@ -2565,7 +2566,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   // add terms of linearization feffnew
   if (stickset)
   {
-    Teuchos::RCP<Epetra_Vector> linstickRHSexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    Teuchos::RCP<Epetra_Vector> linstickRHSexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*linstickRHS_, *linstickRHSexp);
     feffnew->Update(-1.0, *linstickRHSexp, 1.0);
   }
@@ -2580,14 +2581,14 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
 
   if (slipset)
   {
-    fslmodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    fslmodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*fslmod, *fslmodexp);
     feffnew->Update(1.0, *fslmodexp, 1.0);
   }
 
   if (slipset)
   {
-    Teuchos::RCP<Epetra_Vector> linslipRHSexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    Teuchos::RCP<Epetra_Vector> linslipRHSexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*linslipRHS_, *linslipRHSexp);
     feffnew->Update(-1.0, *linslipRHSexp, 1.0);
   }
@@ -2595,13 +2596,13 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   // DUE TO WEAR
   if (slipset)
   {
-    fwslexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    fwslexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*fw_sl, *fwslexp);
     feffnew->Update(+1.0, *fwslexp, 1.0);
   }
   if (slipset && (iset || stickset))
   {
-    fwsliexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    fwsliexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*fwi_sl, *fwsliexp);
     feffnew->Update(-1.0, *fwsliexp, 1.0);
   }
@@ -2626,15 +2627,15 @@ void Wear::LagrangeStrategyWear::evaluate_friction(
 
   // complete stiffness matrix
   // (this is a prerequisite for the Split2x2 methods to be called later)
-  kteff->Complete();
+  kteff->complete();
 
   // systemtype
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(Params(), "SYSTEM");
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
 
   // get wear shapefunction type
   Inpar::Wear::WearShape wearshapefcn =
-      Core::UTILS::IntegralValue<Inpar::Wear::WearShape>(Params(), "WEAR_SHAPEFCN");
+      Core::UTILS::IntegralValue<Inpar::Wear::WearShape>(params(), "WEAR_SHAPEFCN");
 
   /**********************************************************************/
   /* export weighted gap vector to gactiveN-map                         */
@@ -2656,20 +2657,20 @@ void Wear::LagrangeStrategyWear::evaluate_friction(
   /**********************************************************************/
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->AssembleTN(tmatrix_, Teuchos::null);
-    interface_[i]->AssembleS(*smatrix_);
-    interface_[i]->AssembleLinDM(*lindmatrix_, *linmmatrix_);
-    interface_[i]->AssembleLinStick(*linstickLM_, *linstickDIS_, *linstickRHS_);
-    interface_[i]->AssembleLinSlip(*linslipLM_, *linslipDIS_, *linslipRHS_);
+    interface_[i]->assemble_tn(tmatrix_, Teuchos::null);
+    interface_[i]->assemble_s(*smatrix_);
+    interface_[i]->assemble_lin_dm(*lindmatrix_, *linmmatrix_);
+    interface_[i]->assemble_lin_stick(*linstickLM_, *linstickDIS_, *linstickRHS_);
+    interface_[i]->assemble_lin_slip(*linslipLM_, *linslipDIS_, *linslipRHS_);
     if (systype != Inpar::CONTACT::system_condensed)
-      interface_[i]->AssembleInactiverhs(*inactiverhs_);
+      interface_[i]->assemble_inactiverhs(*inactiverhs_);
 
     //***************************************************
     // Assemble lin. for implicit internal state wear algorithm
     if (wearimpl_ and !wearprimvar_)
     {  // assemble wear-specific matrices
-      interface_[i]->AssembleLinWLm(*wlinmatrix_);
-      interface_[i]->AssembleLinWLmSl(*wlinmatrixsl_);
+      interface_[i]->assemble_lin_w_lm(*wlinmatrix_);
+      interface_[i]->assemble_lin_w_lm_sl(*wlinmatrixsl_);
 
 #ifdef CONSISTENTSTICK
       interface_[i]->AssembleLinWLmSt(*wlinmatrixst_);
@@ -2681,24 +2682,24 @@ void Wear::LagrangeStrategyWear::evaluate_friction(
     if (wearimpl_ and wearprimvar_)
     {
       // blocks for w-lines
-      interface_[i]->AssembleTE(*twmatrix_, *ematrix_);
-      interface_[i]->AssembleLinT_D(*lintdis_);
-      interface_[i]->AssembleLinT_LM(*lintlm_);
-      interface_[i]->AssembleLinE_D(*linedis_);
+      interface_[i]->assemble_te(*twmatrix_, *ematrix_);
+      interface_[i]->assemble_lin_t_d(*lintdis_);
+      interface_[i]->assemble_lin_t_lm(*lintlm_);
+      interface_[i]->assemble_lin_e_d(*linedis_);
 
       // blocks for z-lines
-      interface_[i]->AssembleLinG_W(*smatrixW_);
-      interface_[i]->AssembleLinSlip_W(*linslip_w_);
+      interface_[i]->assemble_lin_g_w(*smatrixW_);
+      interface_[i]->assemble_lin_slip_w(*linslip_w_);
 
       // w-line rhs
       interface_[i]->assemble_inactive_wear_rhs(*inactive_wear_rhs_);
-      interface_[i]->AssembleWearCondRhs(*wear_cond_rhs_);
+      interface_[i]->assemble_wear_cond_rhs(*wear_cond_rhs_);
 
       // for both-sided discrete wear
       if (wearbothpv_)
       {
         // blocks for w-lines
-        interface_[i]->AssembleTE_Master(*twmatrix_m_, *ematrix_m_);
+        interface_[i]->assemble_te_master(*twmatrix_m_, *ematrix_m_);
         interface_[i]->assemble_lin_t_d_master(*lintdis_m_);
         interface_[i]->assemble_lin_t_lm_master(*lintlm_m_);
         interface_[i]->assemble_lin_e_d_master(*linedis_m_);
@@ -2714,26 +2715,26 @@ void Wear::LagrangeStrategyWear::evaluate_friction(
   /* Complete matrices                                                  */
   /**********************************************************************/
   // fill_complete() global matrix T
-  tmatrix_->Complete(*gactivedofs_, *gactivet_);
+  tmatrix_->complete(*gactivedofs_, *gactivet_);
 
   // fill_complete() global matrix S
-  smatrix_->Complete(*gsmdofrowmap_, *gactiven_);
+  smatrix_->complete(*gsmdofrowmap_, *gactiven_);
 
   // fill_complete() global matrices LinD, LinM
   // (again for linD gsdofrowmap_ is sufficient as domain map,
   // but in the edge node modification case, master entries occur!)
-  lindmatrix_->Complete(*gsmdofrowmap_, *gsdofrowmap_);
-  linmmatrix_->Complete(*gsmdofrowmap_, *gmdofrowmap_);
+  lindmatrix_->complete(*gsmdofrowmap_, *gsdofrowmap_);
+  linmmatrix_->complete(*gsmdofrowmap_, *gmdofrowmap_);
 
   // fill_complete global Matrix linstickLM_, linstickDIS_
   Teuchos::RCP<Epetra_Map> gstickt = Core::LinAlg::SplitMap(*gactivet_, *gslipt_);
   Teuchos::RCP<Epetra_Map> gstickdofs = Core::LinAlg::SplitMap(*gactivedofs_, *gslipdofs_);
-  linstickLM_->Complete(*gstickdofs, *gstickt);
-  linstickDIS_->Complete(*gsmdofrowmap_, *gstickt);
+  linstickLM_->complete(*gstickdofs, *gstickt);
+  linstickDIS_->complete(*gsmdofrowmap_, *gstickt);
 
   // fill_complete global Matrix linslipLM_ and linslipDIS_
-  linslipLM_->Complete(*gslipdofs_, *gslipt_);
-  linslipDIS_->Complete(*gsmdofrowmap_, *gslipt_);
+  linslipLM_->complete(*gslipdofs_, *gslipt_);
+  linslipDIS_->complete(*gsmdofrowmap_, *gslipt_);
 
   /**********************************************************************/
   /* Complete impl internal state wear-specific matrices                */
@@ -2741,8 +2742,8 @@ void Wear::LagrangeStrategyWear::evaluate_friction(
   if (wearimpl_ and !wearprimvar_)
   {
     // complete wear-specific matrices
-    wlinmatrix_->Complete(*gsdofrowmap_, *gactiven_);
-    wlinmatrixsl_->Complete(*gsdofrowmap_, *gslipt_);
+    wlinmatrix_->complete(*gsdofrowmap_, *gactiven_);
+    wlinmatrixsl_->complete(*gsdofrowmap_, *gslipt_);
 
 #ifdef CONSISTENTSTICK
     wlinmatrixst_->Complete(*gsdofrowmap_, *gstickt);
@@ -2758,57 +2759,57 @@ void Wear::LagrangeStrategyWear::evaluate_friction(
     if (sswear_)
     {
       if (wearshapefcn == Inpar::Wear::wear_shape_dual)
-        ematrix_->Complete(*gactiven_, *gactiven_);  // quadr. matrix --> for dual shapes --> diag.
+        ematrix_->complete(*gactiven_, *gactiven_);  // quadr. matrix --> for dual shapes --> diag.
       else if (wearshapefcn == Inpar::Wear::wear_shape_standard)
-        ematrix_->Complete(
+        ematrix_->complete(
             *gsdofnrowmap_, *gactiven_);  // quadr. matrix --> for dual shapes --> diag.
       else
         FOUR_C_THROW("chosen shape fnc for wear not supported!");
 
-      twmatrix_->Complete(*gsdofnrowmap_, *gactiven_);
+      twmatrix_->complete(*gsdofnrowmap_, *gactiven_);
 
-      lintdis_->Complete(*gsmdofrowmap_, *gactiven_);
-      lintlm_->Complete(*gsdofrowmap_, *gactiven_);
-      linedis_->Complete(*gsmdofrowmap_, *gactiven_);
+      lintdis_->complete(*gsmdofrowmap_, *gactiven_);
+      lintlm_->complete(*gsdofrowmap_, *gactiven_);
+      linedis_->complete(*gsmdofrowmap_, *gactiven_);
     }
     // general scenario
     else
     {
       if (wearshapefcn == Inpar::Wear::wear_shape_dual)
-        ematrix_->Complete(*gslipn_, *gslipn_);  // quadr. matrix --> for dual shapes --> diag.
+        ematrix_->complete(*gslipn_, *gslipn_);  // quadr. matrix --> for dual shapes --> diag.
       else if (wearshapefcn == Inpar::Wear::wear_shape_standard)
-        ematrix_->Complete(
+        ematrix_->complete(
             *gsdofnrowmap_, *gslipn_);  // quadr. matrix --> for dual shapes --> diag.
       else
         FOUR_C_THROW("chosen shape fnc for wear not supported!");
 
-      twmatrix_->Complete(*gsdofnrowmap_, *gslipn_);
+      twmatrix_->complete(*gsdofnrowmap_, *gslipn_);
 
-      lintdis_->Complete(*gsmdofrowmap_, *gslipn_);
-      lintlm_->Complete(*gsdofrowmap_, *gslipn_);
-      linedis_->Complete(*gsmdofrowmap_, *gslipn_);
+      lintdis_->complete(*gsmdofrowmap_, *gslipn_);
+      lintlm_->complete(*gsdofrowmap_, *gslipn_);
+      linedis_->complete(*gsmdofrowmap_, *gslipn_);
     }
 
     // if both-sided complete with all wear dofs!
     if (wearbothpv_)
     {
-      smatrixW_->Complete(*galldofnrowmap_, *gactiven_);
-      linslip_w_->Complete(*galldofnrowmap_, *gslipt_);
+      smatrixW_->complete(*galldofnrowmap_, *gactiven_);
+      linslip_w_->complete(*galldofnrowmap_, *gslipt_);
     }
     else
     {
-      smatrixW_->Complete(*gsdofnrowmap_, *gactiven_);
-      linslip_w_->Complete(*gsdofnrowmap_, *gslipt_);
+      smatrixW_->complete(*gsdofnrowmap_, *gactiven_);
+      linslip_w_->complete(*gsdofnrowmap_, *gslipt_);
     }
 
     if (wearbothpv_)
     {
-      ematrix_m_->Complete(*gmdofnrowmap_, *gmslipn_);
-      twmatrix_m_->Complete(*gsdofnrowmap_, *gmslipn_);
+      ematrix_m_->complete(*gmdofnrowmap_, *gmslipn_);
+      twmatrix_m_->complete(*gsdofnrowmap_, *gmslipn_);
 
-      lintdis_m_->Complete(*gsmdofrowmap_, *gmslipn_);
-      lintlm_m_->Complete(*gsdofrowmap_, *gmslipn_);
-      linedis_m_->Complete(*gsmdofrowmap_, *gmslipn_);
+      lintdis_m_->complete(*gsmdofrowmap_, *gmslipn_);
+      lintlm_m_->complete(*gsdofrowmap_, *gmslipn_);
+      linedis_m_->complete(*gsmdofrowmap_, *gmslipn_);
     }
   }
 
@@ -2834,7 +2835,7 @@ void Wear::LagrangeStrategyWear::evaluate_friction(
   //**********************************************************************
   if ((systype == Inpar::CONTACT::system_condensed) && wearprimvar_)
   {
-    CondenseWearDiscr(kteff, feff, gact);
+    condense_wear_discr(kteff, feff, gact);
   }
   //**********************************************************************
   //**********************************************************************
@@ -3047,10 +3048,10 @@ void Wear::LagrangeStrategyWear::prepare_saddle_point_system(
   }
 
   // add contact stiffness
-  kteff->UnComplete();
-  kteff->Add(*lindmatrix_, false, 1.0 - alphaf_, 1.0);
-  kteff->Add(*linmmatrix_, false, 1.0 - alphaf_, 1.0);
-  kteff->Complete();
+  kteff->un_complete();
+  kteff->add(*lindmatrix_, false, 1.0 - alphaf_, 1.0);
+  kteff->add(*linmmatrix_, false, 1.0 - alphaf_, 1.0);
+  kteff->complete();
 
   // for self contact, slave and master sets may have changed,
   // thus we have to export the products Dold^T * zold / D^T * z to fit
@@ -3058,32 +3059,32 @@ void Wear::LagrangeStrategyWear::prepare_saddle_point_system(
   if (is_self_contact())
   {
     // add contact force terms
-    Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    Teuchos::RCP<Epetra_Vector> tempvecd = Teuchos::rcp(new Epetra_Vector(dmatrix_->DomainMap()));
-    Teuchos::RCP<Epetra_Vector> zexp = Teuchos::rcp(new Epetra_Vector(dmatrix_->RowMap()));
-    if (dmatrix_->RowMap().NumGlobalElements()) Core::LinAlg::Export(*z_, *zexp);
-    dmatrix_->Multiply(true, *zexp, *tempvecd);
+    Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
+    Teuchos::RCP<Epetra_Vector> tempvecd = Teuchos::rcp(new Epetra_Vector(dmatrix_->domain_map()));
+    Teuchos::RCP<Epetra_Vector> zexp = Teuchos::rcp(new Epetra_Vector(dmatrix_->row_map()));
+    if (dmatrix_->row_map().NumGlobalElements()) Core::LinAlg::Export(*z_, *zexp);
+    dmatrix_->multiply(true, *zexp, *tempvecd);
     Core::LinAlg::Export(*tempvecd, *fsexp);
     feff->Update(-(1.0 - alphaf_), *fsexp, 1.0);
 
-    Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(mmatrix_->DomainMap()));
-    mmatrix_->Multiply(true, *zexp, *tempvecm);
+    Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
+    Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(mmatrix_->domain_map()));
+    mmatrix_->multiply(true, *zexp, *tempvecm);
     Core::LinAlg::Export(*tempvecm, *fmexp);
     feff->Update(1.0 - alphaf_, *fmexp, 1.0);
 
     // add old contact forces (t_n)
-    Teuchos::RCP<Epetra_Vector> fsoldexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    Teuchos::RCP<Epetra_Vector> tempvecdold = Teuchos::rcp(new Epetra_Vector(dold_->DomainMap()));
-    Teuchos::RCP<Epetra_Vector> zoldexp = Teuchos::rcp(new Epetra_Vector(dold_->RowMap()));
-    if (dold_->RowMap().NumGlobalElements()) Core::LinAlg::Export(*zold_, *zoldexp);
-    dold_->Multiply(true, *zoldexp, *tempvecdold);
+    Teuchos::RCP<Epetra_Vector> fsoldexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
+    Teuchos::RCP<Epetra_Vector> tempvecdold = Teuchos::rcp(new Epetra_Vector(dold_->domain_map()));
+    Teuchos::RCP<Epetra_Vector> zoldexp = Teuchos::rcp(new Epetra_Vector(dold_->row_map()));
+    if (dold_->row_map().NumGlobalElements()) Core::LinAlg::Export(*zold_, *zoldexp);
+    dold_->multiply(true, *zoldexp, *tempvecdold);
     Core::LinAlg::Export(*tempvecdold, *fsoldexp);
     feff->Update(-alphaf_, *fsoldexp, 1.0);
 
-    Teuchos::RCP<Epetra_Vector> fmoldexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    Teuchos::RCP<Epetra_Vector> tempvecmold = Teuchos::rcp(new Epetra_Vector(mold_->DomainMap()));
-    mold_->Multiply(true, *zoldexp, *tempvecmold);
+    Teuchos::RCP<Epetra_Vector> fmoldexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
+    Teuchos::RCP<Epetra_Vector> tempvecmold = Teuchos::rcp(new Epetra_Vector(mold_->domain_map()));
+    mold_->multiply(true, *zoldexp, *tempvecmold);
     Core::LinAlg::Export(*tempvecmold, *fmoldexp);
     feff->Update(alphaf_, *fmoldexp, 1.0);
   }
@@ -3092,14 +3093,14 @@ void Wear::LagrangeStrategyWear::prepare_saddle_point_system(
   {
     // add contact force terms
     Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    dmatrix_->Multiply(true, *z_, *fs);
-    Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    dmatrix_->multiply(true, *z_, *fs);
+    Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*fs, *fsexp);
     feff->Update(-(1.0 - alphaf_), *fsexp, 1.0);
 
     Teuchos::RCP<Epetra_Vector> fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-    mmatrix_->Multiply(true, *z_, *fm);
-    Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    mmatrix_->multiply(true, *z_, *fm);
+    Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*fm, *fmexp);
     feff->Update(1.0 - alphaf_, *fmexp, 1.0);
 
@@ -3107,14 +3108,14 @@ void Wear::LagrangeStrategyWear::prepare_saddle_point_system(
     //// FOR STATIC PROBLEMS --> alphaf_=0 !!! --> this is not needed!
     // add old contact forces (t_n)
     Teuchos::RCP<Epetra_Vector> fsold = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    dold_->Multiply(true, *zold_, *fsold);
-    Teuchos::RCP<Epetra_Vector> fsoldexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    dold_->multiply(true, *zold_, *fsold);
+    Teuchos::RCP<Epetra_Vector> fsoldexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*fsold, *fsoldexp);
     feff->Update(-alphaf_, *fsoldexp, 1.0);
 
     Teuchos::RCP<Epetra_Vector> fmold = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-    mold_->Multiply(true, *zold_, *fmold);
-    Teuchos::RCP<Epetra_Vector> fmoldexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    mold_->multiply(true, *zold_, *fmold);
+    Teuchos::RCP<Epetra_Vector> fmoldexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::Export(*fmold, *fmoldexp);
     feff->Update(alphaf_, *fmoldexp, 1.0);
   }
@@ -3134,14 +3135,15 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
   // create old style dirichtoggle vector (supposed to go away)
   // the use of a toggle vector is more flexible here. It allows to apply dirichlet
   // conditions on different matrix blocks separately.
-  Teuchos::RCP<Epetra_Vector> dirichtoggle = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->FullMap())));
+  Teuchos::RCP<Epetra_Vector> dirichtoggle =
+      Teuchos::rcp(new Epetra_Vector(*(dbcmaps->full_map())));
   Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->cond_map())));
   temp->PutScalar(1.0);
   Core::LinAlg::Export(*temp, *dirichtoggle);
 
   // get system type
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(Params(), "SYSTEM");
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
 
   //**********************************************************************
   // prepare saddle point system
@@ -3153,17 +3155,17 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
   // initialize merged system (matrix, rhs, sol);
   Teuchos::RCP<Epetra_Map> mergedmap = Teuchos::null;
   if (!wearprimvar_)
-    mergedmap = Core::LinAlg::MergeMap(ProblemDofs(), glmdofrowmap_, false);
+    mergedmap = Core::LinAlg::MergeMap(problem_dofs(), glmdofrowmap_, false);
   else if (wearprimvar_ and !wearbothpv_)
   {
     Teuchos::RCP<Epetra_Map> map_dummy =
-        Core::LinAlg::MergeMap(ProblemDofs(), glmdofrowmap_, false);
+        Core::LinAlg::MergeMap(problem_dofs(), glmdofrowmap_, false);
     mergedmap = Core::LinAlg::MergeMap(map_dummy, gwdofrowmap_, false);
   }
   else
   {
     Teuchos::RCP<Epetra_Map> map_dummy =
-        Core::LinAlg::MergeMap(ProblemDofs(), glmdofrowmap_, false);
+        Core::LinAlg::MergeMap(problem_dofs(), glmdofrowmap_, false);
     mergedmap = Core::LinAlg::MergeMap(map_dummy, gwdofrowmap_, false);
     mergedmap = Core::LinAlg::MergeMap(mergedmap, gwmdofrowmap_, false);  // slave + master wear
   }
@@ -3190,8 +3192,8 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> trkwd, trkwz, trkww, trkzw, trkdw;        // slave
   Teuchos::RCP<Core::LinAlg::SparseMatrix> trkwmd, trkwmz, trkwmwm, trkzwm, trkdwm;  // master
   // currently slave + master coeff
-  double wcoeff = Params().get<double>("WEARCOEFF");
-  double wcoeffM = Params().get<double>("WEARCOEFF_MASTER");
+  double wcoeff = params().get<double>("WEARCOEFF");
+  double wcoeffM = params().get<double>("WEARCOEFF_MASTER");
 
   //**********************************************************************
   // build matrix and vector blocks
@@ -3214,31 +3216,31 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     // build constraint matrix kdz
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kdz =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gdisprowmap_, 100, false, true));
-    kdz->Add(*dmatrix_, true, 1.0 - alphaf_, 1.0);
-    kdz->Add(*mmatrix_, true, -(1.0 - alphaf_), 1.0);
-    kdz->Complete(*gsdofrowmap_, *gdisprowmap_);
+    kdz->add(*dmatrix_, true, 1.0 - alphaf_, 1.0);
+    kdz->add(*mmatrix_, true, -(1.0 - alphaf_), 1.0);
+    kdz->complete(*gsdofrowmap_, *gdisprowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
     trkdz = Mortar::MatrixColTransformGIDs(kdz, glmdofrowmap_);
 
     // transform parallel row distribution of constraint matrix kdz
     // (only necessary in the parallel redistribution case)
-    if (parallel_redistribution_status()) trkdz = Mortar::MatrixRowTransform(trkdz, ProblemDofs());
+    if (parallel_redistribution_status()) trkdz = Mortar::MatrixRowTransform(trkdz, problem_dofs());
 
     // build constraint matrix kzd
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kzd =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100, false, true));
-    if (gactiven_->NumGlobalElements()) kzd->Add(*smatrix_, false, 1.0, 1.0);
-    if (gstickt->NumGlobalElements()) kzd->Add(*linstickDIS_, false, 1.0, 1.0);
-    if (gslipt_->NumGlobalElements()) kzd->Add(*linslipDIS_, false, 1.0, 1.0);
-    kzd->Complete(*gdisprowmap_, *gsdofrowmap_);
+    if (gactiven_->NumGlobalElements()) kzd->add(*smatrix_, false, 1.0, 1.0);
+    if (gstickt->NumGlobalElements()) kzd->add(*linstickDIS_, false, 1.0, 1.0);
+    if (gslipt_->NumGlobalElements()) kzd->add(*linslipDIS_, false, 1.0, 1.0);
+    kzd->complete(*gdisprowmap_, *gsdofrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
     trkzd = Mortar::MatrixRowTransformGIDs(kzd, glmdofrowmap_);
 
     // transform parallel column distribution of constraint matrix kzd
     // (only necessary in the parallel redistribution case)
-    if (parallel_redistribution_status()) trkzd = Mortar::MatrixColTransform(trkzd, ProblemDofs());
+    if (parallel_redistribution_status()) trkzd = Mortar::MatrixColTransform(trkzd, problem_dofs());
 
     // build unity matrix for inactive dofs
     Teuchos::RCP<Epetra_Map> gidofs = Core::LinAlg::SplitMap(*gsdofrowmap_, *gactivedofs_);
@@ -3246,26 +3248,26 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     ones->PutScalar(1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiag =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*ones));
-    onesdiag->Complete();
+    onesdiag->complete();
 
     // build constraint matrix kzz
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kzz =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100, false, true));
-    if (gidofs->NumGlobalElements()) kzz->Add(*onesdiag, false, 1.0, 1.0);
-    if (gstickt->NumGlobalElements()) kzz->Add(*linstickLM_, false, 1.0, 1.0);
-    if (gslipt_->NumGlobalElements()) kzz->Add(*linslipLM_, false, 1.0, 1.0);
+    if (gidofs->NumGlobalElements()) kzz->add(*onesdiag, false, 1.0, 1.0);
+    if (gstickt->NumGlobalElements()) kzz->add(*linstickLM_, false, 1.0, 1.0);
+    if (gslipt_->NumGlobalElements()) kzz->add(*linslipLM_, false, 1.0, 1.0);
 
     if (wearimpl_)
     {
       // add C-fnc. derivatives w.r.t. lm-values to kzz
-      if (gactiven_->NumGlobalElements()) kzz->Add(*wlinmatrix_, false, 1.0, 1.0);
-      if (gslipt_->NumGlobalElements()) kzz->Add(*wlinmatrixsl_, false, 1.0, 1.0);
+      if (gactiven_->NumGlobalElements()) kzz->add(*wlinmatrix_, false, 1.0, 1.0);
+      if (gslipt_->NumGlobalElements()) kzz->add(*wlinmatrixsl_, false, 1.0, 1.0);
 
 #ifdef CONSISTENTSTICK
       if (gstickt->NumGlobalElements()) kzz->Add(*wlinmatrixst_, false, 1.0, 1.0);
 #endif
     }
-    kzz->Complete(*gsdofrowmap_, *gsdofrowmap_);
+    kzz->complete(*gsdofrowmap_, *gsdofrowmap_);
 
     // transform constraint matrix kzz to lmdofmap (matrix_row_col_transform)
     trkzz = Mortar::MatrixRowColTransformGIDs(kzz, glmdofrowmap_, glmdofrowmap_);
@@ -3324,31 +3326,31 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     // build constraint matrix kdz
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kdz =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gdisprowmap_, 100, false, true));
-    kdz->Add(*dmatrix_, true, 1.0 - alphaf_, 1.0);
-    kdz->Add(*mmatrix_, true, -(1.0 - alphaf_), 1.0);
-    kdz->Complete(*gsdofrowmap_, *gdisprowmap_);
+    kdz->add(*dmatrix_, true, 1.0 - alphaf_, 1.0);
+    kdz->add(*mmatrix_, true, -(1.0 - alphaf_), 1.0);
+    kdz->complete(*gsdofrowmap_, *gdisprowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
     trkdz = Mortar::MatrixColTransformGIDs(kdz, glmdofrowmap_);
 
     // transform parallel row distribution of constraint matrix kdz
     // (only necessary in the parallel redistribution case)
-    if (parallel_redistribution_status()) trkdz = Mortar::MatrixRowTransform(trkdz, ProblemDofs());
+    if (parallel_redistribution_status()) trkdz = Mortar::MatrixRowTransform(trkdz, problem_dofs());
 
     // build constraint matrix kzd
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kzd =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100, false, true));
-    if (gactiven_->NumGlobalElements()) kzd->Add(*smatrix_, false, 1.0, 1.0);
-    if (gstickt->NumGlobalElements()) kzd->Add(*linstickDIS_, false, 1.0, 1.0);
-    if (gslipt_->NumGlobalElements()) kzd->Add(*linslipDIS_, false, 1.0, 1.0);
-    kzd->Complete(*gdisprowmap_, *gsdofrowmap_);
+    if (gactiven_->NumGlobalElements()) kzd->add(*smatrix_, false, 1.0, 1.0);
+    if (gstickt->NumGlobalElements()) kzd->add(*linstickDIS_, false, 1.0, 1.0);
+    if (gslipt_->NumGlobalElements()) kzd->add(*linslipDIS_, false, 1.0, 1.0);
+    kzd->complete(*gdisprowmap_, *gsdofrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
     trkzd = Mortar::MatrixRowTransformGIDs(kzd, glmdofrowmap_);
 
     // transform parallel column distribution of constraint matrix kzd
     // (only necessary in the parallel redistribution case)
-    if (parallel_redistribution_status()) trkzd = Mortar::MatrixColTransform(trkzd, ProblemDofs());
+    if (parallel_redistribution_status()) trkzd = Mortar::MatrixColTransform(trkzd, problem_dofs());
 
     // build unity matrix for inactive dofs
     Teuchos::RCP<Epetra_Map> gidofs = Core::LinAlg::SplitMap(*gsdofrowmap_, *gactivedofs_);
@@ -3356,16 +3358,16 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     ones->PutScalar(1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiag =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*ones));
-    onesdiag->Complete();
+    onesdiag->complete();
 
     // build constraint matrix kzz
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kzz =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100, false, true));
-    if (gidofs->NumGlobalElements()) kzz->Add(*onesdiag, false, 1.0, 1.0);
-    if (gstickt->NumGlobalElements()) kzz->Add(*linstickLM_, false, 1.0, 1.0);
-    if (gslipt_->NumGlobalElements()) kzz->Add(*linslipLM_, false, 1.0, 1.0);
+    if (gidofs->NumGlobalElements()) kzz->add(*onesdiag, false, 1.0, 1.0);
+    if (gstickt->NumGlobalElements()) kzz->add(*linstickLM_, false, 1.0, 1.0);
+    if (gslipt_->NumGlobalElements()) kzz->add(*linslipLM_, false, 1.0, 1.0);
 
-    kzz->Complete(*gsdofrowmap_, *gsdofrowmap_);
+    kzz->complete(*gsdofrowmap_, *gsdofrowmap_);
 
     // transform constraint matrix kzz to lmdofmap (matrix_row_col_transform)
     trkzz = Mortar::MatrixRowColTransformGIDs(kzz, glmdofrowmap_, glmdofrowmap_);
@@ -3379,15 +3381,15 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofnrowmap_, 100, false, true));
     if (sswear_)
     {
-      if (gactiven_->NumGlobalElements()) kwd->Add(*lintdis_, false, -wcoeff, 1.0);
-      if (gactiven_->NumGlobalElements()) kwd->Add(*linedis_, false, 1.0, 1.0);
-      if (gactiven_->NumGlobalElements()) kwd->Complete(*gdisprowmap_, *gsdofnrowmap_);
+      if (gactiven_->NumGlobalElements()) kwd->add(*lintdis_, false, -wcoeff, 1.0);
+      if (gactiven_->NumGlobalElements()) kwd->add(*linedis_, false, 1.0, 1.0);
+      if (gactiven_->NumGlobalElements()) kwd->complete(*gdisprowmap_, *gsdofnrowmap_);
     }
     else
     {
-      if (gslipn_->NumGlobalElements()) kwd->Add(*lintdis_, false, -wcoeff, 1.0);
-      if (gslipn_->NumGlobalElements()) kwd->Add(*linedis_, false, 1.0, 1.0);
-      if (gslipn_->NumGlobalElements()) kwd->Complete(*gdisprowmap_, *gsdofnrowmap_);
+      if (gslipn_->NumGlobalElements()) kwd->add(*lintdis_, false, -wcoeff, 1.0);
+      if (gslipn_->NumGlobalElements()) kwd->add(*linedis_, false, 1.0, 1.0);
+      if (gslipn_->NumGlobalElements()) kwd->complete(*gdisprowmap_, *gsdofnrowmap_);
     }
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
@@ -3395,7 +3397,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
 
     // transform parallel column distribution of constraint matrix kzd
     // (only necessary in the parallel redistribution case)
-    if (parallel_redistribution_status()) trkwd = Mortar::MatrixColTransform(trkwd, ProblemDofs());
+    if (parallel_redistribution_status()) trkwd = Mortar::MatrixColTransform(trkwd, problem_dofs());
 
     // *********************************
     // build wear matrix kwz
@@ -3403,14 +3405,14 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofnrowmap_, 100, false, true));
     if (sswear_)
     {
-      if (gactiven_->NumGlobalElements()) kwz->Add(*lintlm_, false, -wcoeff, 1.0);
+      if (gactiven_->NumGlobalElements()) kwz->add(*lintlm_, false, -wcoeff, 1.0);
     }
     else
     {
-      if (gslipn_->NumGlobalElements()) kwz->Add(*lintlm_, false, -wcoeff, 1.0);
+      if (gslipn_->NumGlobalElements()) kwz->add(*lintlm_, false, -wcoeff, 1.0);
     }
 
-    kwz->Complete(*gsdofrowmap_, *gsdofnrowmap_);
+    kwz->complete(*gsdofrowmap_, *gsdofnrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
     trkwz = Mortar::MatrixRowColTransformGIDs(kwz, gwdofrowmap_, glmdofrowmap_);
@@ -3421,11 +3423,11 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofnrowmap_, 100, false, true));
     if (sswear_)
     {
-      if (gactiven_->NumGlobalElements()) kww->Add(*ematrix_, false, 1.0, 1.0);
+      if (gactiven_->NumGlobalElements()) kww->add(*ematrix_, false, 1.0, 1.0);
     }
     else
     {
-      if (gslipn_->NumGlobalElements()) kww->Add(*ematrix_, false, 1.0, 1.0);
+      if (gslipn_->NumGlobalElements()) kww->add(*ematrix_, false, 1.0, 1.0);
     }
 
     // build unity matrix for inactive dofs
@@ -3433,11 +3435,11 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     onesw->PutScalar(1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiagw =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*onesw));
-    onesdiagw->Complete();
+    onesdiagw->complete();
     // build constraint matrix kzz
-    if (gwinact_->NumGlobalElements()) kww->Add(*onesdiagw, false, 1.0, 1.0);
+    if (gwinact_->NumGlobalElements()) kww->add(*onesdiagw, false, 1.0, 1.0);
 
-    kww->Complete(*gsdofnrowmap_, *gsdofnrowmap_);
+    kww->complete(*gsdofnrowmap_, *gsdofnrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
     trkww = Mortar::MatrixRowColTransformGIDs(kww, gwdofrowmap_, gwdofrowmap_);
@@ -3446,9 +3448,9 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     // build wear matrix kzw
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kzw =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100, false, true));
-    if (gactiven_->NumGlobalElements()) kzw->Add(*smatrixW_, false, 1.0, 1.0);
-    if (gslipt_->NumGlobalElements()) kzw->Add(*linslip_w_, false, 1.0, 1.0);
-    kzw->Complete(*gsdofnrowmap_, *gsdofrowmap_);
+    if (gactiven_->NumGlobalElements()) kzw->add(*smatrixW_, false, 1.0, 1.0);
+    if (gslipt_->NumGlobalElements()) kzw->add(*linslip_w_, false, 1.0, 1.0);
+    kzw->complete(*gsdofnrowmap_, *gsdofrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
     trkzw = Mortar::MatrixRowColTransformGIDs(kzw, glmdofrowmap_, gwdofrowmap_);
@@ -3526,31 +3528,31 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     // build constraint matrix kdz
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kdz =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gdisprowmap_, 100, false, true));
-    kdz->Add(*dmatrix_, true, 1.0 - alphaf_, 1.0);
-    kdz->Add(*mmatrix_, true, -(1.0 - alphaf_), 1.0);
-    kdz->Complete(*gsdofrowmap_, *gdisprowmap_);
+    kdz->add(*dmatrix_, true, 1.0 - alphaf_, 1.0);
+    kdz->add(*mmatrix_, true, -(1.0 - alphaf_), 1.0);
+    kdz->complete(*gsdofrowmap_, *gdisprowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
     trkdz = Mortar::MatrixColTransformGIDs(kdz, glmdofrowmap_);
 
     // transform parallel row distribution of constraint matrix kdz
     // (only necessary in the parallel redistribution case)
-    if (parallel_redistribution_status()) trkdz = Mortar::MatrixRowTransform(trkdz, ProblemDofs());
+    if (parallel_redistribution_status()) trkdz = Mortar::MatrixRowTransform(trkdz, problem_dofs());
 
     // build constraint matrix kzd
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kzd =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100, false, true));
-    if (gactiven_->NumGlobalElements()) kzd->Add(*smatrix_, false, 1.0, 1.0);
-    if (gstickt->NumGlobalElements()) kzd->Add(*linstickDIS_, false, 1.0, 1.0);
-    if (gslipt_->NumGlobalElements()) kzd->Add(*linslipDIS_, false, 1.0, 1.0);
-    kzd->Complete(*gdisprowmap_, *gsdofrowmap_);
+    if (gactiven_->NumGlobalElements()) kzd->add(*smatrix_, false, 1.0, 1.0);
+    if (gstickt->NumGlobalElements()) kzd->add(*linstickDIS_, false, 1.0, 1.0);
+    if (gslipt_->NumGlobalElements()) kzd->add(*linslipDIS_, false, 1.0, 1.0);
+    kzd->complete(*gdisprowmap_, *gsdofrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
     trkzd = Mortar::MatrixRowTransformGIDs(kzd, glmdofrowmap_);
 
     // transform parallel column distribution of constraint matrix kzd
     // (only necessary in the parallel redistribution case)
-    if (parallel_redistribution_status()) trkzd = Mortar::MatrixColTransform(trkzd, ProblemDofs());
+    if (parallel_redistribution_status()) trkzd = Mortar::MatrixColTransform(trkzd, problem_dofs());
 
     // build unity matrix for inactive dofs
     Teuchos::RCP<Epetra_Map> gidofs = Core::LinAlg::SplitMap(*gsdofrowmap_, *gactivedofs_);
@@ -3558,16 +3560,16 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     ones->PutScalar(1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiag =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*ones));
-    onesdiag->Complete();
+    onesdiag->complete();
 
     // build constraint matrix kzz
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kzz =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100, false, true));
-    if (gidofs->NumGlobalElements()) kzz->Add(*onesdiag, false, 1.0, 1.0);
-    if (gstickt->NumGlobalElements()) kzz->Add(*linstickLM_, false, 1.0, 1.0);
-    if (gslipt_->NumGlobalElements()) kzz->Add(*linslipLM_, false, 1.0, 1.0);
+    if (gidofs->NumGlobalElements()) kzz->add(*onesdiag, false, 1.0, 1.0);
+    if (gstickt->NumGlobalElements()) kzz->add(*linstickLM_, false, 1.0, 1.0);
+    if (gslipt_->NumGlobalElements()) kzz->add(*linslipLM_, false, 1.0, 1.0);
 
-    kzz->Complete(*gsdofrowmap_, *gsdofrowmap_);
+    kzz->complete(*gsdofrowmap_, *gsdofrowmap_);
 
     // transform constraint matrix kzz to lmdofmap (matrix_row_col_transform)
     trkzz = Mortar::MatrixRowColTransformGIDs(kzz, glmdofrowmap_, glmdofrowmap_);
@@ -3579,23 +3581,23 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     // build wear matrix kwd
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kwd =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofnrowmap_, 100, false, true));
-    if (gslipn_->NumGlobalElements()) kwd->Add(*lintdis_, false, -wcoeff, 1.0);
-    if (gslipn_->NumGlobalElements()) kwd->Add(*linedis_, false, 1.0, 1.0);
-    if (gslipn_->NumGlobalElements()) kwd->Complete(*gdisprowmap_, *gsdofnrowmap_);
+    if (gslipn_->NumGlobalElements()) kwd->add(*lintdis_, false, -wcoeff, 1.0);
+    if (gslipn_->NumGlobalElements()) kwd->add(*linedis_, false, 1.0, 1.0);
+    if (gslipn_->NumGlobalElements()) kwd->complete(*gdisprowmap_, *gsdofnrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
     trkwd = Mortar::MatrixRowTransformGIDs(kwd, gwdofrowmap_);
 
     // transform parallel column distribution of constraint matrix kzd
     // (only necessary in the parallel redistribution case)
-    if (parallel_redistribution_status()) trkwd = Mortar::MatrixColTransform(trkwd, ProblemDofs());
+    if (parallel_redistribution_status()) trkwd = Mortar::MatrixColTransform(trkwd, problem_dofs());
 
     // *********************************
     // build wear matrix kwz
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kwz =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofnrowmap_, 100, false, true));
-    if (gslipn_->NumGlobalElements()) kwz->Add(*lintlm_, false, -wcoeff, 1.0);
-    kwz->Complete(*gsdofrowmap_, *gsdofnrowmap_);
+    if (gslipn_->NumGlobalElements()) kwz->add(*lintlm_, false, -wcoeff, 1.0);
+    kwz->complete(*gsdofrowmap_, *gsdofnrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
     trkwz = Mortar::MatrixRowColTransformGIDs(kwz, gwdofrowmap_, glmdofrowmap_);
@@ -3604,18 +3606,18 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     // build wear matrix kww
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kww =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofnrowmap_, 100, false, true));
-    if (gslipn_->NumGlobalElements()) kww->Add(*ematrix_, false, 1.0, 1.0);
+    if (gslipn_->NumGlobalElements()) kww->add(*ematrix_, false, 1.0, 1.0);
 
     // build unity matrix for inactive dofs
     Teuchos::RCP<Epetra_Vector> onesw = Teuchos::rcp(new Epetra_Vector(*gwinact_));
     onesw->PutScalar(1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiagw =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*onesw));
-    onesdiagw->Complete();
+    onesdiagw->complete();
     // build constraint matrix kzz
-    if (gwinact_->NumGlobalElements()) kww->Add(*onesdiagw, false, 1.0, 1.0);
+    if (gwinact_->NumGlobalElements()) kww->add(*onesdiagw, false, 1.0, 1.0);
 
-    kww->Complete(*gsdofnrowmap_, *gsdofnrowmap_);
+    kww->complete(*gsdofnrowmap_, *gsdofnrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
     trkww = Mortar::MatrixRowColTransformGIDs(kww, gwdofrowmap_, gwdofrowmap_);
@@ -3625,9 +3627,9 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     // build wear matrix kzw
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kzw =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100, false, true));
-    if (gactiven_->NumGlobalElements()) kzw->Add(*smatrixW_, false, 1.0, 1.0);
-    if (gslipt_->NumGlobalElements()) kzw->Add(*linslip_w_, false, 1.0, 1.0);
-    kzw->Complete(*galldofnrowmap_, *gsdofrowmap_);
+    if (gactiven_->NumGlobalElements()) kzw->add(*smatrixW_, false, 1.0, 1.0);
+    if (gslipt_->NumGlobalElements()) kzw->add(*linslip_w_, false, 1.0, 1.0);
+    kzw->complete(*galldofnrowmap_, *gsdofrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
     trkzw = Mortar::MatrixRowColTransformGIDs(kzw, glmdofrowmap_, gwalldofrowmap_);
@@ -3638,9 +3640,9 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     // build wear matrix kwmd
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kwmd =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofnrowmap_, 100, false, true));
-    if (gmslipn_->NumGlobalElements()) kwmd->Add(*lintdis_m_, false, -wcoeffM, 1.0);
-    if (gmslipn_->NumGlobalElements()) kwmd->Add(*linedis_m_, false, 1.0, 1.0);
-    if (gmslipn_->NumGlobalElements()) kwmd->Complete(*gdisprowmap_, *gmdofnrowmap_);
+    if (gmslipn_->NumGlobalElements()) kwmd->add(*lintdis_m_, false, -wcoeffM, 1.0);
+    if (gmslipn_->NumGlobalElements()) kwmd->add(*linedis_m_, false, 1.0, 1.0);
+    if (gmslipn_->NumGlobalElements()) kwmd->complete(*gdisprowmap_, *gmdofnrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
     trkwmd = Mortar::MatrixRowTransformGIDs(kwmd, gwmdofrowmap_);
@@ -3648,14 +3650,14 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     // transform parallel column distribution of constraint matrix kzd
     // (only necessary in the parallel redistribution case)
     if (parallel_redistribution_status())
-      trkwmd = Mortar::MatrixColTransform(trkwmd, ProblemDofs());
+      trkwmd = Mortar::MatrixColTransform(trkwmd, problem_dofs());
 
     // *********************************
     // build wear matrix kwmz
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kwmz =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofnrowmap_, 100, false, true));
-    if (gmslipn_->NumGlobalElements()) kwmz->Add(*lintlm_m_, false, -wcoeffM, 1.0);
-    kwmz->Complete(*gsdofrowmap_, *gmdofnrowmap_);
+    if (gmslipn_->NumGlobalElements()) kwmz->add(*lintlm_m_, false, -wcoeffM, 1.0);
+    kwmz->complete(*gsdofrowmap_, *gmdofnrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
     trkwmz = Mortar::MatrixRowColTransformGIDs(kwmz, gwmdofrowmap_, glmdofrowmap_);
@@ -3664,18 +3666,18 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     // build wear matrix kwmwm
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kwmwm =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofnrowmap_, 100, false, true));
-    if (gmslipn_->NumGlobalElements()) kwmwm->Add(*ematrix_m_, false, 1.0, 1.0);
+    if (gmslipn_->NumGlobalElements()) kwmwm->add(*ematrix_m_, false, 1.0, 1.0);
 
     // build unity matrix for inactive dofs
     Teuchos::RCP<Epetra_Vector> oneswm = Teuchos::rcp(new Epetra_Vector(*gwminact_));
     oneswm->PutScalar(1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiagwm =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*oneswm));
-    onesdiagwm->Complete();
+    onesdiagwm->complete();
     // build constraint matrix kzz
-    if (gwminact_->NumGlobalElements()) kwmwm->Add(*onesdiagwm, false, 1.0, 1.0);
+    if (gwminact_->NumGlobalElements()) kwmwm->add(*onesdiagwm, false, 1.0, 1.0);
 
-    kwmwm->Complete(*gmdofnrowmap_, *gmdofnrowmap_);
+    kwmwm->complete(*gmdofnrowmap_, *gmdofnrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
     trkwmwm = Mortar::MatrixRowColTransformGIDs(kwmwm, gwmdofrowmap_, gwmdofrowmap_);
@@ -3767,14 +3769,14 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
   if (systype == Inpar::CONTACT::system_saddlepoint)
   {
     // apply Dirichlet conditions to (0,0) and (0,1) blocks
-    Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
+    Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*problem_dofs(), true));
     Teuchos::RCP<Epetra_Vector> rhscopy = Teuchos::rcp(new Epetra_Vector(*fd));
     Core::LinAlg::apply_dirichlet_to_system(*stiffmt, *sold, *rhscopy, *zeros, *dirichtoggle);
-    trkdz->ApplyDirichlet(*dirichtoggle, false);
+    trkdz->apply_dirichlet(*dirichtoggle, false);
 
     // row map (equals domain map) extractor
     std::vector<Teuchos::RCP<const Epetra_Map>> mapvec;
-    mapvec.push_back(ProblemDofs());
+    mapvec.push_back(problem_dofs());
     mapvec.push_back(glmdofrowmap_);
     if (wearprimvar_)
     {
@@ -3799,8 +3801,8 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
         gmap = Core::LinAlg::MergeMap(gwdofrowmap_, glmdofrowmap_, false);
 
         // row map (equals domain map) extractor
-        Core::LinAlg::MapExtractor rowmapext(*mergedmap, gmap, ProblemDofs());
-        Core::LinAlg::MapExtractor dommapext(*mergedmap, gmap, ProblemDofs());
+        Core::LinAlg::MapExtractor rowmapext(*mergedmap, gmap, problem_dofs());
+        Core::LinAlg::MapExtractor dommapext(*mergedmap, gmap, problem_dofs());
 
         blockMat = Teuchos::rcp(
             new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
@@ -3813,25 +3815,25 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
         trkgd = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmap, 100, false, true));
         trkgg = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmap, 100, false, true));
 
-        trkgd->Add(*trkzd, false, 1.0, 1.0);
-        trkgd->Add(*trkwd, false, 1.0, 1.0);
+        trkgd->add(*trkzd, false, 1.0, 1.0);
+        trkgd->add(*trkwd, false, 1.0, 1.0);
 
-        trkgg->Add(*trkzz, false, 1.0, 1.0);
-        trkgg->Add(*trkwz, false, 1.0, 1.0);
-        trkgg->Add(*trkww, false, 1.0, 1.0);
-        trkgg->Add(*trkzw, false, 1.0, 1.0);
+        trkgg->add(*trkzz, false, 1.0, 1.0);
+        trkgg->add(*trkwz, false, 1.0, 1.0);
+        trkgg->add(*trkww, false, 1.0, 1.0);
+        trkgg->add(*trkzw, false, 1.0, 1.0);
 
-        trkgd->Complete(*ProblemDofs(), *gmap);
-        trkgg->Complete(*gmap, *gmap);
+        trkgd->complete(*problem_dofs(), *gmap);
+        trkgg->complete(*gmap, *gmap);
 
-        trkdz->UnComplete();
-        trkdz->Complete(*gmap, *ProblemDofs());
+        trkdz->un_complete();
+        trkdz->complete(*gmap, *problem_dofs());
 
-        mat->Assign(0, 0, Core::LinAlg::View, *stiffmt);
-        mat->Assign(0, 1, Core::LinAlg::View, *trkdz);
-        mat->Assign(1, 0, Core::LinAlg::View, *trkgd);
-        mat->Assign(1, 1, Core::LinAlg::View, *trkgg);
-        mat->Complete();
+        mat->assign(0, 0, Core::LinAlg::View, *stiffmt);
+        mat->assign(0, 1, Core::LinAlg::View, *trkdz);
+        mat->assign(1, 0, Core::LinAlg::View, *trkgd);
+        mat->assign(1, 1, Core::LinAlg::View, *trkgg);
+        mat->complete();
       }
       // BOTH_SIDED DISCRETE WEAR
       else
@@ -3843,8 +3845,8 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
         gmap = Core::LinAlg::MergeMap(map_dummyg, glmdofrowmap_, false);
 
         // row map (equals domain map) extractor
-        Core::LinAlg::MapExtractor rowmapext(*mergedmap, gmap, ProblemDofs());
-        Core::LinAlg::MapExtractor dommapext(*mergedmap, gmap, ProblemDofs());
+        Core::LinAlg::MapExtractor rowmapext(*mergedmap, gmap, problem_dofs());
+        Core::LinAlg::MapExtractor dommapext(*mergedmap, gmap, problem_dofs());
 
         blockMat = Teuchos::rcp(
             new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
@@ -3857,28 +3859,28 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
         trkgd = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmap, 100, false, true));
         trkgg = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmap, 100, false, true));
 
-        trkgd->Add(*trkzd, false, 1.0, 1.0);
-        trkgd->Add(*trkwd, false, 1.0, 1.0);
-        trkgd->Add(*trkwmd, false, 1.0, 1.0);
+        trkgd->add(*trkzd, false, 1.0, 1.0);
+        trkgd->add(*trkwd, false, 1.0, 1.0);
+        trkgd->add(*trkwmd, false, 1.0, 1.0);
 
-        trkgg->Add(*trkzz, false, 1.0, 1.0);
-        trkgg->Add(*trkwz, false, 1.0, 1.0);
-        trkgg->Add(*trkww, false, 1.0, 1.0);
-        trkgg->Add(*trkzw, false, 1.0, 1.0);
-        trkgg->Add(*trkwmz, false, 1.0, 1.0);
-        trkgg->Add(*trkwmwm, false, 1.0, 1.0);
+        trkgg->add(*trkzz, false, 1.0, 1.0);
+        trkgg->add(*trkwz, false, 1.0, 1.0);
+        trkgg->add(*trkww, false, 1.0, 1.0);
+        trkgg->add(*trkzw, false, 1.0, 1.0);
+        trkgg->add(*trkwmz, false, 1.0, 1.0);
+        trkgg->add(*trkwmwm, false, 1.0, 1.0);
 
-        trkgd->Complete(*ProblemDofs(), *gmap);
-        trkgg->Complete(*gmap, *gmap);
+        trkgd->complete(*problem_dofs(), *gmap);
+        trkgg->complete(*gmap, *gmap);
 
-        trkdz->UnComplete();
-        trkdz->Complete(*gmap, *ProblemDofs());
+        trkdz->un_complete();
+        trkdz->complete(*gmap, *problem_dofs());
 
-        mat->Assign(0, 0, Core::LinAlg::View, *stiffmt);
-        mat->Assign(0, 1, Core::LinAlg::View, *trkdz);
-        mat->Assign(1, 0, Core::LinAlg::View, *trkgd);
-        mat->Assign(1, 1, Core::LinAlg::View, *trkgg);
-        mat->Complete();
+        mat->assign(0, 0, Core::LinAlg::View, *stiffmt);
+        mat->assign(0, 1, Core::LinAlg::View, *trkdz);
+        mat->assign(1, 0, Core::LinAlg::View, *trkgd);
+        mat->assign(1, 1, Core::LinAlg::View, *trkgg);
+        mat->complete();
       }
     }
     // without wear unknowns...
@@ -3894,11 +3896,11 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
       Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>> mat =
           Teuchos::rcp_dynamic_cast<
               Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(blockMat);
-      mat->Assign(0, 0, Core::LinAlg::View, *stiffmt);
-      mat->Assign(0, 1, Core::LinAlg::View, *trkdz);
-      mat->Assign(1, 0, Core::LinAlg::View, *trkzd);
-      mat->Assign(1, 1, Core::LinAlg::View, *trkzz);
-      mat->Complete();
+      mat->assign(0, 0, Core::LinAlg::View, *stiffmt);
+      mat->assign(0, 1, Core::LinAlg::View, *trkdz);
+      mat->assign(1, 0, Core::LinAlg::View, *trkzd);
+      mat->assign(1, 1, Core::LinAlg::View, *trkzz);
+      mat->complete();
     }
 
     // we also need merged rhs here
@@ -3964,23 +3966,23 @@ void Wear::LagrangeStrategyWear::update_displacements_and_l_mincrements(
   Teuchos::RCP<Epetra_Map> mergedmap = Teuchos::null;
   if (!wearprimvar_)
   {
-    mergedmap = Core::LinAlg::MergeMap(ProblemDofs(), glmdofrowmap_, false);
+    mergedmap = Core::LinAlg::MergeMap(problem_dofs(), glmdofrowmap_, false);
   }
   else if (wearprimvar_ and !wearbothpv_)
   {
     Teuchos::RCP<Epetra_Map> map_dummy =
-        Core::LinAlg::MergeMap(ProblemDofs(), glmdofrowmap_, false);
+        Core::LinAlg::MergeMap(problem_dofs(), glmdofrowmap_, false);
     mergedmap = Core::LinAlg::MergeMap(map_dummy, gwdofrowmap_, false);
   }
   else
   {
     Teuchos::RCP<Epetra_Map> map_dummy =
-        Core::LinAlg::MergeMap(ProblemDofs(), glmdofrowmap_, false);
+        Core::LinAlg::MergeMap(problem_dofs(), glmdofrowmap_, false);
     mergedmap = Core::LinAlg::MergeMap(map_dummy, gwdofrowmap_, false);
     mergedmap = Core::LinAlg::MergeMap(mergedmap, gwmdofrowmap_, false);  // slave + master wear
   }
 
-  Core::LinAlg::MapExtractor mapextd(*mergedmap, ProblemDofs(), glmdofrowmap_);
+  Core::LinAlg::MapExtractor mapextd(*mergedmap, problem_dofs(), glmdofrowmap_);
   Core::LinAlg::MapExtractor mapextlm(*mergedmap, glmdofrowmap_, glmdofrowmap_);
   mapextd.extract_cond_vector(blocksol, sold);
   mapextlm.extract_cond_vector(blocksol, sollm);
@@ -4032,7 +4034,7 @@ void Wear::LagrangeStrategyWear::update_displacements_and_l_mincrements(
 /*-----------------------------------------------------------------------*
 |  Output de-weighted wear vector                             farah 09/14|
 *-----------------------------------------------------------------------*/
-void Wear::LagrangeStrategyWear::OutputWear()
+void Wear::LagrangeStrategyWear::output_wear()
 {
   //***********************************************
   //                 primvar wear
@@ -4050,7 +4052,7 @@ void Wear::LagrangeStrategyWear::OutputWear()
     // only for dual/pg Lagrange multiplier so far
     // diagonality of mortar matrix D is assumed
     Inpar::Mortar::ShapeFcn shapefcn =
-        Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(Params(), "LM_SHAPEFCN");
+        Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
     if (shapefcn == Inpar::Mortar::shape_standard)
       FOUR_C_THROW("Evaluation of wear only for dual shape functions so far.");
 
@@ -4065,24 +4067,24 @@ void Wear::LagrangeStrategyWear::OutputWear()
     {
       // FIRST: get the wear values and the normal directions for the interface
       // loop over all slave row nodes on the current interface
-      for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
+      for (int j = 0; j < interface_[i]->slave_row_nodes()->NumMyElements(); ++j)
       {
-        int gid = interface_[i]->SlaveRowNodes()->GID(j);
-        Core::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
+        int gid = interface_[i]->slave_row_nodes()->GID(j);
+        Core::Nodes::Node* node = interface_[i]->discret().g_node(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
         // be aware of problem dimension
-        int dim = Dim();
-        int numdof = frinode->NumDof();
+        int dim = n_dim();
+        int numdof = frinode->num_dof();
         if (dim != numdof) FOUR_C_THROW("Inconsisteny Dim <-> NumDof");
 
         // nodal normal vector and wear
         double nn[3];
         double wear = 0.0;
 
-        for (int j = 0; j < 3; ++j) nn[j] = frinode->MoData().n()[j];
-        wear = frinode->WearData().WeightedWear();
+        for (int j = 0; j < 3; ++j) nn[j] = frinode->mo_data().n()[j];
+        wear = frinode->wear_data().weighted_wear();
 
         // find indices for DOFs of current node in Epetra_Vector
         // and put node values (normal and tangential stress components) at these DOFs
@@ -4090,7 +4092,7 @@ void Wear::LagrangeStrategyWear::OutputWear()
 
         for (int dof = 0; dof < dim; ++dof)
         {
-          locindex[dof] = (wear_vector->Map()).LID(frinode->Dofs()[dof]);
+          locindex[dof] = (wear_vector->Map()).LID(frinode->dofs()[dof]);
           (*wear_vector)[locindex[dof]] = wear * nn[dof];
         }
       }
@@ -4129,7 +4131,7 @@ void Wear::LagrangeStrategyWear::OutputWear()
 
       // extract diagonal of daa
       Teuchos::RCP<Epetra_Vector> diagD = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
-      daa->EpetraMatrix()->ExtractDiagonalCopy(*diagD);
+      daa->epetra_matrix()->ExtractDiagonalCopy(*diagD);
 
       // solve by dividing through diagonal elements of daa. Do not divide by 0.
       for (int i = 0; i < lNumActiveDOFs; ++i)
@@ -4141,8 +4143,8 @@ void Wear::LagrangeStrategyWear::OutputWear()
     real_wear->Update(1.0, *real_wearexp, 0.0);
 
     // different wear coefficients on both sides...
-    const double wearcoeff_s = Params().get<double>("WEARCOEFF", 0.0);
-    const double wearcoeff_m = Params().get<double>("WEARCOEFF_MASTER", 0.0);
+    const double wearcoeff_s = params().get<double>("WEARCOEFF", 0.0);
+    const double wearcoeff_m = params().get<double>("WEARCOEFF_MASTER", 0.0);
     if (wearcoeff_s < 1e-12) FOUR_C_THROW("wcoeff negative!!!");
 
     const double fac = wearcoeff_s / (wearcoeff_s + wearcoeff_m);
@@ -4162,12 +4164,12 @@ void Wear::LagrangeStrategyWear::OutputWear()
      * unweight the resulting vector by D_2^-1*w_2~ and get the final
      * unweighted wear vector.
      **********************************************************************/
-    if (Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(Params(), "WEAR_SIDE") ==
+    if (Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(params(), "WEAR_SIDE") ==
         Inpar::Wear::wear_both)
     {
       // different wear coefficients on both sides...
-      double wearcoeff_s = Params().get<double>("WEARCOEFF", 0.0);
-      double wearcoeff_m = Params().get<double>("WEARCOEFF_MASTER", 0.0);
+      double wearcoeff_s = params().get<double>("WEARCOEFF", 0.0);
+      double wearcoeff_m = params().get<double>("WEARCOEFF_MASTER", 0.0);
       if (wearcoeff_s < 1e-12) FOUR_C_THROW("wcoeff negative!!!");
 
       double fac = wearcoeff_m / (wearcoeff_s + wearcoeff_m);
@@ -4184,7 +4186,7 @@ void Wear::LagrangeStrategyWear::OutputWear()
       Teuchos::RCP<Epetra_Vector> real_wear2 = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
 
       // now we calc the weighted wear on the master surface
-      mmatrix_->Multiply(true, *real_wear, *wear_master);
+      mmatrix_->multiply(true, *real_wear, *wear_master);
 
       // extract involved parts of wear vector
       Teuchos::RCP<Epetra_Vector> wear2_real =
@@ -4207,7 +4209,7 @@ void Wear::LagrangeStrategyWear::OutputWear()
 
         // extract diagonal of d2ii
         Teuchos::RCP<Epetra_Vector> diagD = Teuchos::rcp(new Epetra_Vector(*wear2_vectori));
-        d2ii->EpetraMatrix()->ExtractDiagonalCopy(*diagD);
+        d2ii->epetra_matrix()->ExtractDiagonalCopy(*diagD);
 
         // solve by dividing through diagonal elements of daa. Do not divide by 0.
         for (int i = 0; i < lNumActiveDOFs; ++i)
@@ -4236,7 +4238,7 @@ void Wear::LagrangeStrategyWear::OutputWear()
 /*----------------------------------------------------------------------*
  |  write restart information for contact                     popp 03/08|
  *----------------------------------------------------------------------*/
-void Wear::LagrangeStrategyWear::DoWriteRestart(
+void Wear::LagrangeStrategyWear::do_write_restart(
     std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors, bool forcedrestart) const
 {
   // TODO: extend this function to forcedrestart -- write output for
@@ -4266,25 +4268,25 @@ void Wear::LagrangeStrategyWear::DoWriteRestart(
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     // loop over all slave nodes on the current interface
-    for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
+    for (int j = 0; j < interface_[i]->slave_row_nodes()->NumMyElements(); ++j)
     {
-      int gid = interface_[i]->SlaveRowNodes()->GID(j);
-      Core::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
+      int gid = interface_[i]->slave_row_nodes()->GID(j);
+      Core::Nodes::Node* node = interface_[i]->discret().g_node(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
       int dof = (activetoggle->Map()).LID(gid);
 
       // set value active / inactive in toggle vector
-      if (cnode->Active()) (*activetoggle)[dof] = 1;
+      if (cnode->active()) (*activetoggle)[dof] = 1;
 
       // set value slip / stick in the toggle vector
       if (friction_)
       {
         CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(cnode);
-        if (frinode->FriData().Slip()) (*sliptoggle)[dof] = 1;
+        if (frinode->fri_data().slip()) (*sliptoggle)[dof] = 1;
         if (weightedwear_)
         {
-          (*weightedwear)[dof] = frinode->WearData().WeightedWear();
+          (*weightedwear)[dof] = frinode->wear_data().weighted_wear();
         }
       }
     }
@@ -4306,9 +4308,9 @@ void Wear::LagrangeStrategyWear::recover(Teuchos::RCP<Epetra_Vector> disi)
 
   // shape function and system types
   Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(Params(), "SYSTEM");
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
 
   //**********************************************************************
   //**********************************************************************
@@ -4346,8 +4348,8 @@ void Wear::LagrangeStrategyWear::recover(Teuchos::RCP<Epetra_Vector> disi)
         invd_, gactivedofs_, tempmap, gactivedofs_, tempmap, invda, tempmtx1, tempmtx2, tempmtx3);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> invdmod =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 10));
-    invdmod->Add(*invda, false, 1.0, 1.0);
-    invdmod->Complete();
+    invdmod->add(*invda, false, 1.0, 1.0);
+    invdmod->complete();
 
     // approximate update
     // invdmod->Multiply(false,*fs_,*z_);
@@ -4357,16 +4359,16 @@ void Wear::LagrangeStrategyWear::recover(Teuchos::RCP<Epetra_Vector> disi)
 
     z_->Update(1.0, *fs_, 0.0);
     Teuchos::RCP<Epetra_Vector> mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    kss_->Multiply(false, *disis, *mod);
+    kss_->multiply(false, *disis, *mod);
     z_->Update(-1.0, *mod, 1.0);
-    ksm_->Multiply(false, *disim, *mod);
+    ksm_->multiply(false, *disim, *mod);
     z_->Update(-1.0, *mod, 1.0);
-    ksn_->Multiply(false, *disin, *mod);
+    ksn_->multiply(false, *disin, *mod);
     z_->Update(-1.0, *mod, 1.0);
-    dold_->Multiply(true, *zold_, *mod);
+    dold_->multiply(true, *zold_, *mod);
     z_->Update(-alphaf_, *mod, 1.0);
     Teuchos::RCP<Epetra_Vector> zcopy = Teuchos::rcp(new Epetra_Vector(*z_));
-    invdmod->Multiply(true, *zcopy, *z_);
+    invdmod->multiply(true, *zcopy, *z_);
     z_->Scale(1 / (1 - alphaf_));
 
     // zincr_->Update(-1.0,*z_,1.0); // zi-zi+1
@@ -4394,24 +4396,24 @@ void Wear::LagrangeStrategyWear::recover(Teuchos::RCP<Epetra_Vector> disi)
 
       // neutral part
       dnblock_ = Mortar::MatrixRowTransformGIDs(dnblock_, gsdofnrowmap_);
-      dnblock_->Multiply(false, *disin, *modw);
+      dnblock_->multiply(false, *disin, *modw);
       wincr_->Update(1.0, *modw, 1.0);
 
       // master part
       dmblock_ = Mortar::MatrixRowTransformGIDs(dmblock_, gsdofnrowmap_);
-      dmblock_->Multiply(false, *disim, *modw);
+      dmblock_->multiply(false, *disim, *modw);
       wincr_->Update(1.0, *modw, 1.0);
 
       // active part (stick and slip)
       dablock_ = Mortar::MatrixRowTransformGIDs(dablock_, gsdofnrowmap_);
-      dablock_->Multiply(false, *disia, *modw);
+      dablock_->multiply(false, *disia, *modw);
       wincr_->Update(1.0, *modw, 1.0);
 
       // inactive part
       if (gidofs_->NumGlobalElements() > 0)
       {
         diblock_ = Mortar::MatrixRowTransformGIDs(diblock_, gsdofnrowmap_);
-        diblock_->Multiply(false, *disii, *modw);
+        diblock_->multiply(false, *disii, *modw);
         wincr_->Update(1.0, *modw, 1.0);
       }
     }
@@ -4459,8 +4461,8 @@ void Wear::LagrangeStrategyWear::recover(Teuchos::RCP<Epetra_Vector> disi)
         invd_, gactivedofs_, tempmap, gactivedofs_, tempmap, invda, tempmtx1, tempmtx2, tempmtx3);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> invdmod =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 10));
-    invdmod->Add(*invda, false, 1.0, 1.0);
-    invdmod->Complete();
+    invdmod->add(*invda, false, 1.0, 1.0);
+    invdmod->complete();
 
     /**********************************************************************/
     /* Update Lagrange multipliers z_n+1                                  */
@@ -4478,21 +4480,21 @@ void Wear::LagrangeStrategyWear::recover(Teuchos::RCP<Epetra_Vector> disi)
       z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
       z_->Update(1.0, *fs_, 0.0);
       Teuchos::RCP<Epetra_Vector> mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-      kss_->Multiply(false, *disis, *mod);
+      kss_->multiply(false, *disis, *mod);
       z_->Update(-1.0, *mod, 1.0);
-      ksm_->Multiply(false, *disim, *mod);
+      ksm_->multiply(false, *disim, *mod);
       z_->Update(-1.0, *mod, 1.0);
-      ksn_->Multiply(false, *disin, *mod);
+      ksn_->multiply(false, *disin, *mod);
       z_->Update(-1.0, *mod, 1.0);
-      Teuchos::RCP<Epetra_Vector> mod2 = Teuchos::rcp(new Epetra_Vector((dold_->RowMap())));
-      if (dold_->RowMap().NumGlobalElements()) Core::LinAlg::Export(*zold_, *mod2);
-      Teuchos::RCP<Epetra_Vector> mod3 = Teuchos::rcp(new Epetra_Vector((dold_->RowMap())));
-      dold_->Multiply(true, *mod2, *mod3);
+      Teuchos::RCP<Epetra_Vector> mod2 = Teuchos::rcp(new Epetra_Vector((dold_->row_map())));
+      if (dold_->row_map().NumGlobalElements()) Core::LinAlg::Export(*zold_, *mod2);
+      Teuchos::RCP<Epetra_Vector> mod3 = Teuchos::rcp(new Epetra_Vector((dold_->row_map())));
+      dold_->multiply(true, *mod2, *mod3);
       Teuchos::RCP<Epetra_Vector> mod4 = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
       if (gsdofrowmap_->NumGlobalElements()) Core::LinAlg::Export(*mod3, *mod4);
       z_->Update(-alphaf_, *mod4, 1.0);
       Teuchos::RCP<Epetra_Vector> zcopy = Teuchos::rcp(new Epetra_Vector(*z_));
-      invdmod->Multiply(true, *zcopy, *z_);
+      invdmod->multiply(true, *zcopy, *z_);
       z_->Scale(1 / (1 - alphaf_));
     }
     else
@@ -4503,16 +4505,16 @@ void Wear::LagrangeStrategyWear::recover(Teuchos::RCP<Epetra_Vector> disi)
       // full update
       z_->Update(1.0, *fs_, 0.0);
       Teuchos::RCP<Epetra_Vector> mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-      kss_->Multiply(false, *disis, *mod);
+      kss_->multiply(false, *disis, *mod);
       z_->Update(-1.0, *mod, 1.0);
-      ksm_->Multiply(false, *disim, *mod);
+      ksm_->multiply(false, *disim, *mod);
       z_->Update(-1.0, *mod, 1.0);
-      ksn_->Multiply(false, *disin, *mod);
+      ksn_->multiply(false, *disin, *mod);
       z_->Update(-1.0, *mod, 1.0);
-      dold_->Multiply(true, *zold_, *mod);
+      dold_->multiply(true, *zold_, *mod);
       z_->Update(-alphaf_, *mod, 1.0);
       Teuchos::RCP<Epetra_Vector> zcopy = Teuchos::rcp(new Epetra_Vector(*z_));
-      invdmod->Multiply(true, *zcopy, *z_);
+      invdmod->multiply(true, *zcopy, *z_);
       z_->Scale(1 / (1 - alphaf_));
     }
   }
@@ -4550,11 +4552,11 @@ bool Wear::LagrangeStrategyWear::redistribute_contact(
 {
   // get out of here if parallel redistribution is switched off
   // or if this is a single processor (serial) job
-  if (!parallel_redistribution_status() || Comm().NumProc() == 1) return false;
+  if (!parallel_redistribution_status() || get_comm().NumProc() == 1) return false;
 
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->IsRedistributed() = false;
+    interface_[i]->is_redistributed() = false;
   }
 
   // decide whether redistribution should be applied or not
@@ -4562,9 +4564,9 @@ bool Wear::LagrangeStrategyWear::redistribute_contact(
   double eaverage = 0;
   bool doredist = false;
   const double max_balance =
-      Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE_EVAL_TIME");
+      params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE_EVAL_TIME");
   const double max_ele_unbalance =
-      Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE_SLAVE_ELES");
+      params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE_SLAVE_ELES");
 
   //**********************************************************************
   // (1) static redistribution: ONLY at time t=0 or after restart
@@ -4641,7 +4643,7 @@ bool Wear::LagrangeStrategyWear::redistribute_contact(
   }
 
   // print balance information to screen
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "**********************************************************" << std::endl;
     if (taverage > 0)
@@ -4658,7 +4660,7 @@ bool Wear::LagrangeStrategyWear::redistribute_contact(
   if (!doredist) return false;
 
   // time measurement
-  Comm().Barrier();
+  get_comm().Barrier();
   const double t_start = Teuchos::Time::wallTime();
 
   // set old and current displacement state
@@ -4670,7 +4672,7 @@ bool Wear::LagrangeStrategyWear::redistribute_contact(
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     // redistribute optimally among procs
-    interface_[i]->Redistribute();
+    interface_[i]->redistribute();
 
     // call fill complete again
     interface_[i]->fill_complete(true, maxdof_);
@@ -4679,10 +4681,10 @@ bool Wear::LagrangeStrategyWear::redistribute_contact(
     interface_[i]->print_parallel_distribution();
 
     // re-create binary search tree
-    interface_[i]->CreateSearchTree();
+    interface_[i]->create_search_tree();
 
     // set bool for redistribution
-    interface_[i]->IsRedistributed() = true;
+    interface_[i]->is_redistributed() = true;
   }
 
   // re-setup strategy with redistributed=TRUE, init=FALSE
@@ -4690,9 +4692,9 @@ bool Wear::LagrangeStrategyWear::redistribute_contact(
   setup_wear(true, false);
 
   // time measurement
-  Comm().Barrier();
+  get_comm().Barrier();
   double t_end = Teuchos::Time::wallTime() - t_start;
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
     std::cout << "\nTime for parallel redistribution..............." << std::scientific
               << std::setprecision(6) << t_end << " secs\n"
               << std::endl;
@@ -4703,7 +4705,7 @@ bool Wear::LagrangeStrategyWear::redistribute_contact(
 /*----------------------------------------------------------------------*
  |  read restart information for contact                      popp 03/08|
  *----------------------------------------------------------------------*/
-void Wear::LagrangeStrategyWear::DoReadRestart(
+void Wear::LagrangeStrategyWear::do_read_restart(
     Core::IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis)
 {
   // check whether this is a restart with contact of a previously
@@ -4711,7 +4713,7 @@ void Wear::LagrangeStrategyWear::DoReadRestart(
   // to try to read certain, in this case non-existing, vectors
   // such as the activetoggle or sliptoggle vectors, but rather
   // initialize the restart active and slip sets as being empty)
-  bool restartwithcontact = Core::UTILS::IntegralValue<int>(Params(), "RESTART_WITH_CONTACT");
+  bool restartwithcontact = Core::UTILS::IntegralValue<int>(params(), "RESTART_WITH_CONTACT");
 
   // set restart displacement state
   set_state(Mortar::state_new_displacement, *dis);
@@ -4768,28 +4770,28 @@ void Wear::LagrangeStrategyWear::DoReadRestart(
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     // loop over all slave nodes on the current interface
-    for (int j = 0; j < (interface_[i]->SlaveRowNodes())->NumMyElements(); ++j)
+    for (int j = 0; j < (interface_[i]->slave_row_nodes())->NumMyElements(); ++j)
     {
-      int gid = (interface_[i]->SlaveRowNodes())->GID(j);
+      int gid = (interface_[i]->slave_row_nodes())->GID(j);
       int dof = (activetoggle->Map()).LID(gid);
 
       if ((*activetoggle)[dof] == 1)
       {
-        Core::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
+        Core::Nodes::Node* node = interface_[i]->discret().g_node(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
         // set value active / inactive in cnode
-        cnode->Active() = true;
+        cnode->active() = true;
 
         if (friction_)
         {
           // set value stick / slip in cnode
           // set wear value
           if ((*sliptoggle)[dof] == 1)
-            dynamic_cast<CONTACT::FriNode*>(cnode)->FriData().Slip() = true;
+            dynamic_cast<CONTACT::FriNode*>(cnode)->fri_data().slip() = true;
           if (weightedwear_)
-            dynamic_cast<CONTACT::FriNode*>(cnode)->WearData().WeightedWear() =
+            dynamic_cast<CONTACT::FriNode*>(cnode)->wear_data().weighted_wear() =
                 (*weightedwear)[dof];
         }
       }
@@ -4817,7 +4819,7 @@ void Wear::LagrangeStrategyWear::DoReadRestart(
   // only for Uzawa Augmented strategy
   // TODO: this should be moved to contact_penalty_strategy
   Inpar::CONTACT::SolvingStrategy st =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
   if (st == Inpar::CONTACT::solution_uzawa)
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -4847,16 +4849,16 @@ void Wear::LagrangeStrategyWear::DoReadRestart(
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->BuildActiveSet();
-    gactivenodes_ = Core::LinAlg::MergeMap(gactivenodes_, interface_[i]->ActiveNodes(), false);
-    gactivedofs_ = Core::LinAlg::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(), false);
-    gactiven_ = Core::LinAlg::MergeMap(gactiven_, interface_[i]->ActiveNDofs(), false);
-    gactivet_ = Core::LinAlg::MergeMap(gactivet_, interface_[i]->ActiveTDofs(), false);
+    interface_[i]->build_active_set();
+    gactivenodes_ = Core::LinAlg::MergeMap(gactivenodes_, interface_[i]->active_nodes(), false);
+    gactivedofs_ = Core::LinAlg::MergeMap(gactivedofs_, interface_[i]->active_dofs(), false);
+    gactiven_ = Core::LinAlg::MergeMap(gactiven_, interface_[i]->active_n_dofs(), false);
+    gactivet_ = Core::LinAlg::MergeMap(gactivet_, interface_[i]->active_t_dofs(), false);
     if (friction_)
     {
-      gslipnodes_ = Core::LinAlg::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
-      gslipdofs_ = Core::LinAlg::MergeMap(gslipdofs_, interface_[i]->SlipDofs(), false);
-      gslipt_ = Core::LinAlg::MergeMap(gslipt_, interface_[i]->SlipTDofs(), false);
+      gslipnodes_ = Core::LinAlg::MergeMap(gslipnodes_, interface_[i]->slip_nodes(), false);
+      gslipdofs_ = Core::LinAlg::MergeMap(gslipdofs_, interface_[i]->slip_dofs(), false);
+      gslipt_ = Core::LinAlg::MergeMap(gslipt_, interface_[i]->slip_t_dofs(), false);
     }
   }
 
@@ -4911,18 +4913,19 @@ void Wear::LagrangeStrategyWear::update_active_set_semi_smooth(const bool firstS
         wearprimvar_ == false)
     {
       gminvolvednodes_ =
-          Core::LinAlg::MergeMap(gminvolvednodes_, interface_[i]->InvolvedNodes(), false);
+          Core::LinAlg::MergeMap(gminvolvednodes_, interface_[i]->involved_nodes(), false);
       gminvolveddofs_ =
-          Core::LinAlg::MergeMap(gminvolveddofs_, interface_[i]->InvolvedDofs(), false);
+          Core::LinAlg::MergeMap(gminvolveddofs_, interface_[i]->involved_dofs(), false);
     }
 
     if (wearprimvar_ and wearbothpv_)
     {
       interface_[i]->build_active_set_master();
-      gmslipn_ = Core::LinAlg::MergeMap(gmslipn_, interface_[i]->SlipMasterNDofs(), false);
-      gmslipnodes_ = Core::LinAlg::MergeMap(gmslipnodes_, interface_[i]->SlipMasterNodes(), false);
+      gmslipn_ = Core::LinAlg::MergeMap(gmslipn_, interface_[i]->slip_master_n_dofs(), false);
+      gmslipnodes_ =
+          Core::LinAlg::MergeMap(gmslipnodes_, interface_[i]->slip_master_nodes(), false);
       gmactivenodes_ =
-          Core::LinAlg::MergeMap(gmactivenodes_, interface_[i]->ActiveMasterNodes(), false);
+          Core::LinAlg::MergeMap(gmactivenodes_, interface_[i]->active_master_nodes(), false);
     }
   }  // end interface loop
 
@@ -4955,34 +4958,34 @@ void Wear::LagrangeStrategyWear::update_wear_discret_iterate(bool store)
     // loop over all interfaces
     for (int i = 0; i < (int)interface_.size(); ++i)
     {
-      for (int j = 0; j < (int)interface_[i]->SlaveColNodes()->NumMyElements(); ++j)
+      for (int j = 0; j < (int)interface_[i]->slave_col_nodes()->NumMyElements(); ++j)
       {
-        int gid = interface_[i]->SlaveColNodes()->GID(j);
-        Core::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
+        int gid = interface_[i]->slave_col_nodes()->GID(j);
+        Core::Nodes::Node* node = interface_[i]->discret().g_node(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
         // reset
-        cnode->WearData().wcurr()[0] = 0.0;
-        cnode->WearData().wold()[0] = 0.0;
-        cnode->WearData().waccu()[0] = 0.0;
+        cnode->wear_data().wcurr()[0] = 0.0;
+        cnode->wear_data().wold()[0] = 0.0;
+        cnode->wear_data().waccu()[0] = 0.0;
       }
       if (wearbothpv_)
       {
         const Teuchos::RCP<Epetra_Map> masternodes =
-            Core::LinAlg::AllreduceEMap(*(interface_[i]->MasterRowNodes()));
+            Core::LinAlg::AllreduceEMap(*(interface_[i]->master_row_nodes()));
 
         for (int j = 0; j < (int)masternodes->NumMyElements(); ++j)
         {
           int gid = masternodes->GID(j);
-          Core::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
+          Core::Nodes::Node* node = interface_[i]->discret().g_node(gid);
           if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
           CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
           // reset
-          cnode->WearData().wcurr()[0] = 0.0;
-          cnode->WearData().wold()[0] = 0.0;
-          cnode->WearData().waccu()[0] = 0.0;
+          cnode->wear_data().wcurr()[0] = 0.0;
+          cnode->wear_data().wold()[0] = 0.0;
+          cnode->wear_data().waccu()[0] = 0.0;
         }
       }
     }
@@ -5004,10 +5007,10 @@ void Wear::LagrangeStrategyWear::update_wear_discret_accumulation()
 /*----------------------------------------------------------------------*
  |  Update and output contact at end of time step            farah 02/16|
  *----------------------------------------------------------------------*/
-void Wear::LagrangeStrategyWear::Update(Teuchos::RCP<const Epetra_Vector> dis)
+void Wear::LagrangeStrategyWear::update(Teuchos::RCP<const Epetra_Vector> dis)
 {
   // call base routine
-  CONTACT::AbstractStrategy::Update(dis);
+  CONTACT::AbstractStrategy::update(dis);
 
   // wear: store history values
   if (weightedwear_) store_nodal_quantities(Mortar::StrategyBase::weightedwear);
@@ -5033,14 +5036,14 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
       case Mortar::StrategyBase::wmupdate:
       case Mortar::StrategyBase::wmold:
       {
-        vectorglobal = WearVarM();
+        vectorglobal = wear_var_m();
         break;
       }
       case Mortar::StrategyBase::wupdate:
       case Mortar::StrategyBase::wold:
       case Mortar::StrategyBase::wupdateT:
       {
-        vectorglobal = WearVar();
+        vectorglobal = wear_var();
         break;
       }
       case Mortar::StrategyBase::weightedwear:
@@ -5059,13 +5062,13 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
     if (type == Mortar::StrategyBase::wupdate or type == Mortar::StrategyBase::wold or
         type == Mortar::StrategyBase::wupdateT)
     {
-      sdofmap = interface_[i]->SlaveColDofs();
-      snodemap = interface_[i]->SlaveColNodes();
+      sdofmap = interface_[i]->slave_col_dofs();
+      snodemap = interface_[i]->slave_col_nodes();
     }
     else
     {
-      sdofmap = interface_[i]->SlaveRowDofs();
-      snodemap = interface_[i]->SlaveRowNodes();
+      sdofmap = interface_[i]->slave_row_dofs();
+      snodemap = interface_[i]->slave_row_nodes();
     }
 
     // master side wear
@@ -5074,7 +5077,7 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
     {
       // export global quantity to current interface slave dof map (column or row)
       const Teuchos::RCP<Epetra_Map> masterdofs =
-          Core::LinAlg::AllreduceEMap(*(interface_[i]->MasterRowDofs()));
+          Core::LinAlg::AllreduceEMap(*(interface_[i]->master_row_dofs()));
       vectorinterface = Teuchos::rcp(new Epetra_Vector(*masterdofs));
 
       if (vectorglobal != Teuchos::null)  // necessary for case "activeold" and wear
@@ -5091,19 +5094,19 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
 
     // master specific
     const Teuchos::RCP<Epetra_Map> masternodes =
-        Core::LinAlg::AllreduceEMap(*(interface_[i]->MasterRowNodes()));
+        Core::LinAlg::AllreduceEMap(*(interface_[i]->master_row_nodes()));
     if (type == Mortar::StrategyBase::wmupdate)
     {
       for (int j = 0; j < masternodes->NumMyElements(); ++j)
       {
         int gid = masternodes->GID(j);
-        Core::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
+        Core::Nodes::Node* node = interface_[i]->discret().g_node(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
         // store updated wcurr into node
-        fnode->WearData().wcurr()[0] =
-            (*vectorinterface)[vectorinterface->Map().LID(fnode->Dofs()[0])];
+        fnode->wear_data().wcurr()[0] =
+            (*vectorinterface)[vectorinterface->Map().LID(fnode->dofs()[0])];
       }
     }
     else if (type == Mortar::StrategyBase::wmold)
@@ -5111,13 +5114,13 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
       for (int j = 0; j < masternodes->NumMyElements(); ++j)
       {
         int gid = masternodes->GID(j);
-        Core::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
+        Core::Nodes::Node* node = interface_[i]->discret().g_node(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
         // store updated wcurr into node
-        fnode->WearData().wold()[0] +=
-            (*vectorinterface)[vectorinterface->Map().LID(fnode->Dofs()[0])];
+        fnode->wear_data().wold()[0] +=
+            (*vectorinterface)[vectorinterface->Map().LID(fnode->dofs()[0])];
       }
     }
     else
@@ -5126,13 +5129,13 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
       for (int j = 0; j < snodemap->NumMyElements(); ++j)
       {
         int gid = snodemap->GID(j);
-        Core::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
+        Core::Nodes::Node* node = interface_[i]->discret().g_node(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
         // be aware of problem dimension
-        const int dim = Dim();
-        const int numdof = cnode->NumDof();
+        const int dim = n_dim();
+        const int numdof = cnode->num_dof();
         if (dim != numdof) FOUR_C_THROW("Inconsisteny Dim <-> NumDof");
 
         // find indices for DOFs of current node in Epetra_Vector
@@ -5141,7 +5144,7 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
 
         for (int dof = 0; dof < dim; ++dof)
         {
-          locindex[dof] = (vectorinterface->Map()).LID(cnode->Dofs()[dof]);
+          locindex[dof] = (vectorinterface->Map()).LID(cnode->dofs()[dof]);
           if (locindex[dof] < 0) FOUR_C_THROW("StoreNodalQuantites: Did not find dof in map");
 
           switch (type)
@@ -5149,47 +5152,47 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
             case Mortar::StrategyBase::wupdate:
             {
               // throw a FOUR_C_THROW if node is Active and DBC
-              if (cnode->IsDbc() && cnode->Active())
-                FOUR_C_THROW("Slave node %i is active AND carries D.B.C.s!", cnode->Id());
+              if (cnode->is_dbc() && cnode->active())
+                FOUR_C_THROW("Slave node %i is active AND carries D.B.C.s!", cnode->id());
 
               // explicity set global Lag. Mult. to zero for D.B.C nodes
-              if (cnode->IsDbc()) (*vectorinterface)[locindex[dof]] = 0.0;
+              if (cnode->is_dbc()) (*vectorinterface)[locindex[dof]] = 0.0;
 
               // store updated wcurr into node
               CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(cnode);
-              fnode->WearData().wcurr()[0] = (*vectorinterface)[locindex[(int)(dof / Dim())]];
-              dof = dof + Dim() - 1;
+              fnode->wear_data().wcurr()[0] = (*vectorinterface)[locindex[(int)(dof / n_dim())]];
+              dof = dof + n_dim() - 1;
               break;
             }
             case Mortar::StrategyBase::wupdateT:
             {
               // throw a FOUR_C_THROW if node is Active and DBC
-              if (cnode->IsDbc() && cnode->Active())
-                FOUR_C_THROW("Slave node %i is active AND carries D.B.C.s!", cnode->Id());
+              if (cnode->is_dbc() && cnode->active())
+                FOUR_C_THROW("Slave node %i is active AND carries D.B.C.s!", cnode->id());
 
               // explicity set global Lag. Mult. to zero for D.B.C nodes
-              if (cnode->IsDbc()) (*vectorinterface)[locindex[dof]] = 0.0;
+              if (cnode->is_dbc()) (*vectorinterface)[locindex[dof]] = 0.0;
 
               // store updated wcurr into node
               CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(cnode);
-              fnode->WearData().waccu()[0] += (*vectorinterface)[locindex[(int)(dof / Dim())]];
-              dof = dof + Dim() - 1;
+              fnode->wear_data().waccu()[0] += (*vectorinterface)[locindex[(int)(dof / n_dim())]];
+              dof = dof + n_dim() - 1;
               break;
             }
             case Mortar::StrategyBase::wold:
             {
               // throw a FOUR_C_THROW if node is Active and DBC
-              if (cnode->IsDbc() && cnode->Active())
-                FOUR_C_THROW("Slave node %i is active AND carries D.B.C.s!", cnode->Id());
+              if (cnode->is_dbc() && cnode->active())
+                FOUR_C_THROW("Slave node %i is active AND carries D.B.C.s!", cnode->id());
 
               // explicity set global Lag. Mult. to zero for D.B.C nodes
-              if (cnode->IsDbc()) (*vectorinterface)[locindex[dof]] = 0.0;
+              if (cnode->is_dbc()) (*vectorinterface)[locindex[dof]] = 0.0;
 
               // store updated wcurr into node
               CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(cnode);
-              fnode->WearData().wold()[0] +=
-                  (*vectorinterface)[vectorinterface->Map().LID(fnode->Dofs()[0])];
-              dof = dof + Dim() - 1;
+              fnode->wear_data().wold()[0] +=
+                  (*vectorinterface)[vectorinterface->Map().LID(fnode->dofs()[0])];
+              dof = dof + n_dim() - 1;
 
               break;
             }
@@ -5203,19 +5206,19 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
               if (dof == 0)
               {
                 CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(cnode);
-                const double wearcoeffs = Params().get<double>("WEARCOEFF", 0.0);
-                const double wearcoeffm = Params().get<double>("WEARCOEFF_MASTER", 0.0);
+                const double wearcoeffs = params().get<double>("WEARCOEFF", 0.0);
+                const double wearcoeffm = params().get<double>("WEARCOEFF_MASTER", 0.0);
                 const double wearcoeff = wearcoeffs + wearcoeffm;
 
                 // amount of wear
-                if (Params().get<int>("PROBTYPE") != Inpar::CONTACT::structalewear)
-                  frinode->WearData().WeightedWear() +=
-                      wearcoeff * frinode->WearData().DeltaWeightedWear();
+                if (params().get<int>("PROBTYPE") != Inpar::CONTACT::structalewear)
+                  frinode->wear_data().weighted_wear() +=
+                      wearcoeff * frinode->wear_data().delta_weighted_wear();
 
                 // wear for each ale step
                 else
-                  frinode->WearData().WeightedWear() =
-                      wearcoeff * frinode->WearData().DeltaWeightedWear();
+                  frinode->wear_data().weighted_wear() =
+                      wearcoeff * frinode->wear_data().delta_weighted_wear();
               }
               break;
             }

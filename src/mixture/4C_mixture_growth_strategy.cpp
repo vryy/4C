@@ -25,23 +25,23 @@ MIXTURE::PAR::MixtureGrowthStrategy::MixtureGrowthStrategy(
 MIXTURE::PAR::MixtureGrowthStrategy* MIXTURE::PAR::MixtureGrowthStrategy::factory(const int matid)
 {
   // for the sake of safety
-  if (Global::Problem::Instance()->Materials() == Teuchos::null)
+  if (Global::Problem::instance()->materials() == Teuchos::null)
   {
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   }
 
   // yet another safety check
-  if (Global::Problem::Instance()->Materials()->Num() == 0)
+  if (Global::Problem::instance()->materials()->num() == 0)
   {
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
   }
 
   // retrieve problem instance to read from
-  const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
   // retrieve validated input line of material ID in question
-  auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  auto* curmat = Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
 
-  switch (curmat->Type())
+  switch (curmat->type())
   {
     case Core::Materials::mix_growth_strategy_isotropic:
     {

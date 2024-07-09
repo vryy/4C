@@ -132,7 +132,7 @@ class VtkWriterBase
   void initialize_vtk_file_streams_for_new_geometry_and_or_time_step();
 
   //! write prologue of all required vtk files
-  void WriteVtkHeaders();
+  void write_vtk_headers();
 
   //! write given field data, including time and cycle for vtk file.
   void write_vtk_field_data_and_or_time_and_or_cycle(
@@ -142,7 +142,7 @@ class VtkWriterBase
   void write_vtk_time_and_or_cycle();
 
   //! write epilogue of all required vtk files
-  void WriteVtkFooters();
+  void write_vtk_footers();
 
   //! write a VTK collection file that summarizes paths to all written files (e.g. for all time
   //! steps) note: this only includes files written during the 'lifetime' of this writer object

@@ -18,7 +18,7 @@ Core::Nodes::ImmersedNodeType Core::Nodes::ImmersedNodeType::instance_;
 /*----------------------------------------------------------------------*
  |  kind of ctor (public)                                   rauch 11/14 |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Core::Nodes::ImmersedNodeType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Core::Nodes::ImmersedNodeType::create(const std::vector<char>& data)
 {
   std::vector<double> dummycoord(3, 999.0);
   Node* object = new Core::Nodes::ImmersedNode(-1, dummycoord, -1);
@@ -58,7 +58,7 @@ Core::Nodes::ImmersedNode::ImmersedNode(const Core::Nodes::ImmersedNode& old)
  |  Deep copy this instance of Node and return pointer to it (public)   |
  |                                                          rauch 11/14 |
  *----------------------------------------------------------------------*/
-Core::Nodes::ImmersedNode* Core::Nodes::ImmersedNode::Clone() const
+Core::Nodes::ImmersedNode* Core::Nodes::ImmersedNode::clone() const
 {
   Core::Nodes::ImmersedNode* newnode = new Core::Nodes::ImmersedNode(*this);
   return newnode;
@@ -82,12 +82,12 @@ void Core::Nodes::ImmersedNode::print(std::ostream& os) const
   os << "Immersed ";
   Node::print(os);
 
-  if (IsBoundaryImmersed())
+  if (is_boundary_immersed())
     os << " Immersed Boundary  ";
   else
     os << " NOT Immersed Boundary ";
 
-  if (IsMatched())
+  if (is_matched())
     os << " Matched ";
   else
     os << " NOT Matched ";
@@ -104,7 +104,7 @@ void Core::Nodes::ImmersedNode::pack(Core::Communication::PackBuffer& data) cons
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // add base class Core::Nodes::Node
@@ -127,7 +127,7 @@ void Core::Nodes::ImmersedNode::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Core::Nodes::Node
   std::vector<char> basedata(0);
@@ -149,7 +149,7 @@ void Core::Nodes::ImmersedNode::unpack(const std::vector<char>& data)
  |  Visualization Data                                         (public) |
  |                                                          rauch 03/17 |
  *----------------------------------------------------------------------*/
-void Core::Nodes::ImmersedNode::VisNames(std::map<std::string, int>& names)
+void Core::Nodes::ImmersedNode::vis_names(std::map<std::string, int>& names)
 {
   names.insert(std::pair<std::string, int>("IsBoundaryImmersedNode", 1));
   return;
@@ -160,12 +160,12 @@ void Core::Nodes::ImmersedNode::VisNames(std::map<std::string, int>& names)
  |  Query data to be visualized by BINIO                       (public) |
  |                                                          rauch 03/17 |
  *----------------------------------------------------------------------*/
-bool Core::Nodes::ImmersedNode::VisData(const std::string& name, std::vector<double>& data)
+bool Core::Nodes::ImmersedNode::vis_data(const std::string& name, std::vector<double>& data)
 {
   if (name == "IsBoundaryImmersedNode")
   {
     if ((int)data.size() < 1) FOUR_C_THROW("Size mismatch");
-    data[0] = IsBoundaryImmersed();
+    data[0] = is_boundary_immersed();
     return true;
   }
   return false;

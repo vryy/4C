@@ -35,7 +35,7 @@ namespace ScaTra
     void setup() override;
 
     //! set theta_ to its value, dependent on integration method for GenAlpha and BDF2
-    virtual void SetTheta();
+    virtual void set_theta();
 
     //! set states in the time integration schemes: additional vectors for HDG
     void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
@@ -60,16 +60,16 @@ namespace ScaTra
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
     //! set the initial scalar field phi
-    void SetInitialField(const Inpar::ScaTra::InitialField init,  //!< type of initial field
-        const int startfuncno                                     //!< number of spatial function
+    void set_initial_field(const Inpar::ScaTra::InitialField init,  //!< type of initial field
+        const int startfuncno                                       //!< number of spatial function
         ) override;
 
     //! accessor to interior concentrations
-    virtual Teuchos::RCP<Epetra_Vector> ReturnIntPhinp() { return intphinp_; }
-    virtual Teuchos::RCP<Epetra_Vector> ReturnIntPhin() { return intphin_; }
+    virtual Teuchos::RCP<Epetra_Vector> return_int_phinp() { return intphinp_; }
+    virtual Teuchos::RCP<Epetra_Vector> return_int_phin() { return intphin_; }
     //  virtual Teuchos::RCP<Epetra_Vector>  ReturnIntPhinm(){return intphinm_;}
 
-    virtual Teuchos::RCP<Epetra_Vector> InterpolatedPhinp() const { return interpolatedPhinp_; }
+    virtual Teuchos::RCP<Epetra_Vector> interpolated_phinp() const { return interpolatedPhinp_; }
 
     //! prepare time loop
     void prepare_time_loop() override;

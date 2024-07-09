@@ -49,32 +49,32 @@ namespace Mat
       //! @{
 
       //! @brief Derivative of conductivity tensor wrt to temperature
-      virtual void ConductivityDerivT(Core::LinAlg::Matrix<3, 3>& dCondDT) const = 0;
+      virtual void conductivity_deriv_t(Core::LinAlg::Matrix<3, 3>& dCondDT) const = 0;
 
-      virtual void ConductivityDerivT(Core::LinAlg::Matrix<2, 2>& dCondDT) const = 0;
+      virtual void conductivity_deriv_t(Core::LinAlg::Matrix<2, 2>& dCondDT) const = 0;
 
-      virtual void ConductivityDerivT(Core::LinAlg::Matrix<1, 1>& dCondDT) const = 0;
+      virtual void conductivity_deriv_t(Core::LinAlg::Matrix<1, 1>& dCondDT) const = 0;
 
       //! @}
 
       //! @brief get volumetric heat capacity
       //!
       //! @pre the state must be set by Reinit() if necessary
-      virtual double Capacity() const = 0;
+      virtual double capacity() const = 0;
 
       //! @brief get derivative of volumetric heat capacity wrt temperature
       //!
       //! @pre state must be set by Reinit() if necessary.
-      virtual double CapacityDerivT() const = 0;
+      virtual double capacity_deriv_t() const = 0;
 
       //! Set necessary variables for Evaluation
-      virtual void Reinit(double temperature, unsigned gp) = 0;
+      virtual void reinit(double temperature, unsigned gp) = 0;
 
       //! reset current state e.g. due to Newton failed
-      virtual void ResetCurrentState() = 0;
+      virtual void reset_current_state() = 0;
 
       //! persist currently set state to history
-      virtual void CommitCurrentState() = 0;
+      virtual void commit_current_state() = 0;
     };
   }  // namespace Trait
 }  // namespace Mat

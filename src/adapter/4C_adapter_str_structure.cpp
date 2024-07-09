@@ -93,15 +93,15 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   Teuchos::TimeMonitor monitor(*t);
 
   // get the problem instance
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
   // what's the current problem type?
-  Core::ProblemType probtype = problem->GetProblemType();
+  Core::ProblemType probtype = problem->get_problem_type();
 
   // get mortar information
   std::vector<Core::Conditions::Condition*> mtcond(0);
   std::vector<Core::Conditions::Condition*> ccond(0);
-  actdis->GetCondition("Mortar", mtcond);
-  actdis->GetCondition("Contact", ccond);
+  actdis->get_condition("Mortar", mtcond);
+  actdis->get_condition("Contact", ccond);
   bool onlymeshtying = false;
   bool onlycontact = false;
   bool meshtyingandcontact = false;
@@ -114,20 +114,20 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   // This is because the discretization read from the input file
   // do not match with the discr. at the current time step.
   // Here we read the discretization at the current time step from restart files
-  if (not actdis->Filled() || not actdis->HaveDofs()) actdis->fill_complete();
+  if (not actdis->filled() || not actdis->have_dofs()) actdis->fill_complete();
 
   // get input parameter lists and copy them, because a few parameters are overwritten
   // const Teuchos::ParameterList& probtype
   //  = problem->ProblemTypeParams();
   Teuchos::RCP<Teuchos::ParameterList> ioflags =
-      Teuchos::rcp(new Teuchos::ParameterList(problem->IOParams()));
+      Teuchos::rcp(new Teuchos::ParameterList(problem->io_params()));
   Teuchos::RCP<Teuchos::ParameterList> tap =
       Teuchos::rcp(new Teuchos::ParameterList(sdyn.sublist("TIMEADAPTIVITY")));
   Teuchos::RCP<Teuchos::ParameterList> snox =
-      Teuchos::rcp(new Teuchos::ParameterList(problem->StructuralNoxParams()));
+      Teuchos::rcp(new Teuchos::ParameterList(problem->structural_nox_params()));
 
   // show default parameters
-  if ((actdis->Comm()).MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, sdyn);
+  if ((actdis->get_comm()).MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, sdyn);
 
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
@@ -158,12 +158,12 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   if (onlymeshtying or onlycontact or meshtyingandcontact)
     contactsolver = create_contact_meshtying_solver(actdis, sdyn);
 
-  if (solver != Teuchos::null && (solver->Params().isSublist("Belos Parameters")) &&
-      solver->Params().isSublist("ML Parameters")  // TODO what about MueLu?
+  if (solver != Teuchos::null && (solver->params().isSublist("Belos Parameters")) &&
+      solver->params().isSublist("ML Parameters")  // TODO what about MueLu?
       && Core::UTILS::IntegralValue<Inpar::Solid::StcScale>(sdyn, "STC_SCALING") !=
              Inpar::Solid::stc_none)
   {
-    Teuchos::ParameterList& mllist = solver->Params().sublist("ML Parameters");
+    Teuchos::ParameterList& mllist = solver->params().sublist("ML Parameters");
     Teuchos::RCP<std::vector<double>> ns =
         mllist.get<Teuchos::RCP<std::vector<double>>>("nullspace");
 
@@ -191,7 +191,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
     Teuchos::RCP<Core::LinAlg::SparseMatrix> stcinv =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*actdis->dof_row_map(), 81, true, true));
 
-    stcinv->Zero();
+    stcinv->zero();
     // create the parameters for the discretization
     Teuchos::ParameterList p;
     // action for elements
@@ -203,7 +203,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
 
     actdis->evaluate(p, stcinv, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-    stcinv->Complete();
+    stcinv->complete();
 
     for (int lay = 2; lay <= sdyn.get<int>("STC_LAYER"); ++lay)
     {
@@ -213,27 +213,27 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
 
       Teuchos::RCP<Core::LinAlg::SparseMatrix> tmpstcmat =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*actdis->dof_row_map(), 81, true, true));
-      tmpstcmat->Zero();
+      tmpstcmat->zero();
 
       actdis->evaluate(p, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-      tmpstcmat->Complete();
+      tmpstcmat->complete();
 
       stcinv = MLMultiply(*stcinv, *tmpstcmat, false, false, true);
     }
 
     Teuchos::RCP<Epetra_Vector> temp = Core::LinAlg::CreateVector(*(actdis->dof_row_map()), false);
 
-    stcinv->Multiply(false, *nsv1, *temp);
+    stcinv->multiply(false, *nsv1, *temp);
     nsv1->Update(1.0, *temp, 0.0);
-    stcinv->Multiply(false, *nsv2, *temp);
+    stcinv->multiply(false, *nsv2, *temp);
     nsv2->Update(1.0, *temp, 0.0);
-    stcinv->Multiply(false, *nsv3, *temp);
+    stcinv->multiply(false, *nsv3, *temp);
     nsv3->Update(1.0, *temp, 0.0);
-    stcinv->Multiply(false, *nsv4, *temp);
+    stcinv->multiply(false, *nsv4, *temp);
     nsv4->Update(1.0, *temp, 0.0);
-    stcinv->Multiply(false, *nsv5, *temp);
+    stcinv->multiply(false, *nsv5, *temp);
     nsv5->Update(1.0, *temp, 0.0);
-    stcinv->Multiply(false, *nsv6, *temp);
+    stcinv->multiply(false, *nsv6, *temp);
     nsv6->Update(1.0, *temp, 0.0);
   }
 
@@ -241,10 +241,10 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   {
     // make sure we IMR-like generalised-alpha requested for multi-scale
     // simulations
-    Teuchos::RCP<Mat::PAR::Bundle> materials = problem->Materials();
-    for (const auto& [_, par] : materials->Map())
+    Teuchos::RCP<Mat::PAR::Bundle> materials = problem->materials();
+    for (const auto& [_, par] : materials->map())
     {
-      if (par->Type() == Core::Materials::m_struct_multiscale)
+      if (par->type() == Core::Materials::m_struct_multiscale)
       {
         if (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") !=
             Inpar::Solid::dyna_genalpha)
@@ -259,7 +259,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   }
 
   // context for output and restart
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->writer();
   if (Core::UTILS::IntegralValue<int>(*ioflags, "OUTPUT_BIN"))
   {
     output->write_mesh(0, 0.0);
@@ -302,7 +302,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   // ---------------------------------------------------------------------------
   if (probtype == Core::ProblemType::fsi or probtype == Core::ProblemType::fsi_redmodels)
   {
-    const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
     const Teuchos::ParameterList& fsiada = fsidyn.sublist("TIMEADAPTIVITY");
     if (Core::UTILS::IntegralValue<bool>(fsiada, "TIMEADAPTON"))
     {
@@ -316,7 +316,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
         tap->set<double>("SIZERATIOMIN", fsiada.get<double>("SIZERATIOMIN"));
         tap->set<double>("SIZERATIOSCALE", fsiada.get<double>("SAFETYFACTOR"));
 
-        if (actdis->Comm().MyPID() == 0)
+        if (actdis->get_comm().MyPID() == 0)
         {
           Core::IO::cout
               << "*** Due to FSI time step size adaptivity with structure based error estimation,\n"
@@ -347,7 +347,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
       case Core::ProblemType::fsi:  // structure based time adaptivity within an FSI simulation
       case Core::ProblemType::fsi_redmodels:
       {
-        if ((actdis->Comm()).MyPID() == 0)
+        if ((actdis->get_comm()).MyPID() == 0)
           Core::IO::cout << "Using StructureNOXCorrectionWrapper()..." << Core::IO::endl;
 
         Teuchos::RCP<FSIStructureWrapper> fsiwrapperwithadaptivity =
@@ -379,13 +379,13 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
       case Core::ProblemType::biofilm_fsi:
       case Core::ProblemType::thermo_fsi:
       {
-        const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
+        const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
         const int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
 
-        if ((actdis->Comm()).MyPID() == 0)
+        if ((actdis->get_comm()).MyPID() == 0)
           Core::IO::cout << "Using StructureNOXCorrectionWrapper()..." << Core::IO::endl;
 
-        if (tmpstr->HaveConstraint())
+        if (tmpstr->have_constraint())
         {
           if (coupling == fsi_iter_constr_monolithicstructuresplit or
               coupling == fsi_iter_constr_monolithicfluidsplit)
@@ -434,7 +434,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
         const Inpar::PoroElast::SolutionSchemeOverFields coupling =
             Core::UTILS::IntegralValue<Inpar::PoroElast::SolutionSchemeOverFields>(
                 porodyn, "COUPALGO");
-        if (tmpstr->HaveConstraint())
+        if (tmpstr->have_constraint())
         {
           if (coupling == Inpar::PoroElast::Monolithic_structuresplit or
               coupling == Inpar::PoroElast::Monolithic_fluidsplit or
@@ -487,12 +487,12 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_linea
         "DYNAMIC to a valid number!");
 
   solver = Teuchos::rcp(
-      new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(linsolvernumber),
-          actdis->Comm(), Global::Problem::Instance()->solver_params_callback(),
+      new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
+          actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
           Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::Instance()->IOParams(), "VERBOSITY")));
+              Global::Problem::instance()->io_params(), "VERBOSITY")));
 
-  actdis->compute_null_space_if_necessary(solver->Params());
+  actdis->compute_null_space_if_necessary(solver->params());
 
   return solver;
 }
@@ -511,13 +511,13 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
   {
     std::vector<Core::Conditions::Condition*> mtcond(0);
     std::vector<Core::Conditions::Condition*> ccond(0);
-    actdis->GetCondition("Mortar", mtcond);
-    actdis->GetCondition("Contact", ccond);
+    actdis->get_condition("Mortar", mtcond);
+    actdis->get_condition("Contact", ccond);
     if (mtcond.size() != 0 and ccond.size() != 0) meshtyingandcontact = true;
     if (mtcond.size() != 0 and ccond.size() == 0) onlymeshtying = true;
     if (mtcond.size() == 0 and ccond.size() != 0) onlycontact = true;
   }
-  const Teuchos::ParameterList& mcparams = Global::Problem::Instance()->contact_dynamic_params();
+  const Teuchos::ParameterList& mcparams = Global::Problem::instance()->contact_dynamic_params();
 
   // Get the solver number used for meshtying/contact problems
   const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
@@ -537,9 +537,9 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
        * Solver can be either a direct solver (UMFPACK, Superlu) or an iterative solver (Belos).
        */
       const auto sol = Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(
-          Global::Problem::Instance()->SolverParams(linsolvernumber), "SOLVER");
+          Global::Problem::instance()->solver_params(linsolvernumber), "SOLVER");
       const auto prec = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
-          Global::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
+          Global::Problem::instance()->solver_params(linsolvernumber), "AZPREC");
       if (sol != Core::LinearSolver::SolverType::umfpack &&
           sol != Core::LinearSolver::SolverType::superlu)
       {
@@ -556,18 +556,18 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
 
       // build meshtying/contact solver
       solver = Teuchos::rcp(
-          new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(linsolvernumber),
-              actdis->Comm(), Global::Problem::Instance()->solver_params_callback(),
+          new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
+              actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
               Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-                  Global::Problem::Instance()->IOParams(), "VERBOSITY")));
+                  Global::Problem::instance()->io_params(), "VERBOSITY")));
 
-      actdis->compute_null_space_if_necessary(solver->Params());
+      actdis->compute_null_space_if_necessary(solver->params());
 
       // feed the solver object with additional information
       if (onlycontact or meshtyingandcontact)
-        solver->Params().set<bool>("CONTACT", true);
+        solver->params().set<bool>("CONTACT", true);
       else if (onlymeshtying)
-        solver->Params().set<bool>("MESHTYING", true);
+        solver->params().set<bool>("MESHTYING", true);
       else
         FOUR_C_THROW(
             "Saddle-point formulations are only supported for solid CONTACT or MESHTYING problems. "
@@ -590,7 +590,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
         if (prec == Core::LinearSolver::PreconditionerType::cheap_simple)
         {
           actdis->compute_null_space_if_necessary(
-              solver->Params()
+              solver->params()
                   .sublist("CheapSIMPLE Parameters")
                   .sublist("Inverse1"));  // Inverse2 is created within blockpreconditioners.cpp
         }
@@ -604,11 +604,11 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
     {
       // build meshtying solver
       solver = Teuchos::rcp(
-          new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(linsolvernumber),
-              actdis->Comm(), Global::Problem::Instance()->solver_params_callback(),
+          new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
+              actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
               Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-                  Global::Problem::Instance()->IOParams(), "VERBOSITY")));
-      actdis->compute_null_space_if_necessary(solver->Params());
+                  Global::Problem::instance()->io_params(), "VERBOSITY")));
+      actdis->compute_null_space_if_necessary(solver->params());
     }
     break;
   }

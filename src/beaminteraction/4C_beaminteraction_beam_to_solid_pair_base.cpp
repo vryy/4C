@@ -46,44 +46,44 @@ void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, 
   BeamContactPair::setup();
 
   // Get the beam element data container
-  ele1posref_ = GEOMETRYPAIR::InitializeElementData<Beam, double>::initialize(Element1());
-  ele1pos_ = GEOMETRYPAIR::InitializeElementData<Beam, ScalarType>::initialize(Element1());
+  ele1posref_ = GEOMETRYPAIR::InitializeElementData<Beam, double>::initialize(element1());
+  ele1pos_ = GEOMETRYPAIR::InitializeElementData<Beam, ScalarType>::initialize(element1());
 
   // Set reference nodal positions (and tangents) for beam element
   for (unsigned int n = 0; n < Beam::n_nodes_; ++n)
   {
-    const Core::Nodes::Node* node = Element1()->Nodes()[n];
+    const Core::Nodes::Node* node = element1()->nodes()[n];
     for (int d = 0; d < 3; ++d)
-      ele1posref_.element_position_(3 * Beam::n_val_ * n + d) = node->X()[d];
+      ele1posref_.element_position_(3 * Beam::n_val_ * n + d) = node->x()[d];
 
     // tangents
     if (Beam::n_val_ == 2)
     {
       Core::LinAlg::Matrix<3, 1> tan;
-      const Core::Elements::ElementType& eot = Element1()->ElementType();
+      const Core::Elements::ElementType& eot = element1()->element_type();
 
-      if (eot == Discret::ELEMENTS::Beam3rType::Instance())
+      if (eot == Discret::ELEMENTS::Beam3rType::instance())
       {
         const Discret::ELEMENTS::Beam3r* ele =
-            dynamic_cast<const Discret::ELEMENTS::Beam3r*>(Element1());
+            dynamic_cast<const Discret::ELEMENTS::Beam3r*>(element1());
         if (ele->hermite_centerline_interpolation())
-          tan = ele->Tref()[n];
+          tan = ele->tref()[n];
         else
           FOUR_C_THROW(
               "ERROR: Beam3tosolidmeshtying: beam::n_val_=2 detected for beam3r element w/o "
               "Hermite centerline");
       }
-      else if (eot == Discret::ELEMENTS::Beam3kType::Instance())
+      else if (eot == Discret::ELEMENTS::Beam3kType::instance())
       {
         const Discret::ELEMENTS::Beam3k* ele =
-            dynamic_cast<const Discret::ELEMENTS::Beam3k*>(Element1());
-        tan = ele->Tref()[n];
+            dynamic_cast<const Discret::ELEMENTS::Beam3k*>(element1());
+        tan = ele->tref()[n];
       }
-      else if (eot == Discret::ELEMENTS::Beam3ebType::Instance())
+      else if (eot == Discret::ELEMENTS::Beam3ebType::instance())
       {
         const Discret::ELEMENTS::Beam3eb* ele =
-            dynamic_cast<const Discret::ELEMENTS::Beam3eb*>(Element1());
-        tan = ele->Tref()[n];
+            dynamic_cast<const Discret::ELEMENTS::Beam3eb*>(element1());
+        tan = ele->tref()[n];
       }
       else
       {
@@ -105,12 +105,12 @@ void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, 
  *
  */
 template <typename ScalarType, typename SegmentsScalarType, typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, Solid>::ResetState(
+void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, Solid>::reset_state(
     const std::vector<double>& beam_centerline_dofvec,
     const std::vector<double>& solid_nodal_dofvec)
 {
   // Set the current configuration of the beam element
-  ele1pos_ = GEOMETRYPAIR::InitializeElementData<Beam, ScalarType>::initialize(Element1());
+  ele1pos_ = GEOMETRYPAIR::InitializeElementData<Beam, ScalarType>::initialize(element1());
   for (unsigned int i = 0; i < Beam::n_dof_; i++)
     ele1pos_.element_position_(i) = Core::FADUtils::HigherOrderFadValue<ScalarType>::apply(
         Beam::n_dof_ + Solid::n_dof_, i, beam_centerline_dofvec[i]);
@@ -139,7 +139,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, 
   // Print some general information: Element IDs and dofvecs.
   out << "\n------------------------------------------------------------------------";
   out << "\nInstance of BeamToSolidPairBase"
-      << "\nBeam EleGID:  " << Element1()->Id() << "\nSolid EleGID: " << Element2()->Id();
+      << "\nBeam EleGID:  " << element1()->id() << "\nSolid EleGID: " << element2()->id();
 
   out << "\n\nbeam dofvec: " << ele1pos_.element_position_;
   out << "\nn_segments: " << line_to_3D_segments_.size();
@@ -160,7 +160,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam,
   if (line_to_3D_segments_.size() == 0) return;
 
   // Display the number of segments and segment length.
-  out << "beam ID " << Element1()->Id() << ", solid ID " << Element2()->Id() << ":";
+  out << "beam ID " << element1()->id() << ", solid ID " << element2()->id() << ":";
   out << " n_segments = " << line_to_3D_segments_.size() << "\n";
 
   // Loop over segments and display information about them.
@@ -168,8 +168,8 @@ void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam,
   {
     out << "    segment " << index_segment << ": ";
     out << "eta in ["
-        << Core::FADUtils::CastToDouble(line_to_3D_segments_[index_segment].GetEtadata()) << ", "
-        << Core::FADUtils::CastToDouble(line_to_3D_segments_[index_segment].GetEtaB()) << "]";
+        << Core::FADUtils::CastToDouble(line_to_3D_segments_[index_segment].get_etadata()) << ", "
+        << Core::FADUtils::CastToDouble(line_to_3D_segments_[index_segment].get_eta_b()) << "]";
     out << ", Gauss points = "
         << line_to_3D_segments_[index_segment].get_number_of_projection_points();
     out << "\n";
@@ -186,10 +186,10 @@ void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam,
     Core::LinAlg::Matrix<3, 1, double>& r_beam, bool reference) const
 {
   if (reference)
-    GEOMETRYPAIR::EvaluatePosition<Beam>(integration_point.GetEta(), ele1posref_, r_beam);
+    GEOMETRYPAIR::EvaluatePosition<Beam>(integration_point.get_eta(), ele1posref_, r_beam);
   else
-    GEOMETRYPAIR::EvaluatePosition<Beam>(integration_point.GetEta(),
-        GEOMETRYPAIR::ElementDataToDouble<Beam>::ToDouble(ele1pos_), r_beam);
+    GEOMETRYPAIR::EvaluatePosition<Beam>(integration_point.get_eta(),
+        GEOMETRYPAIR::ElementDataToDouble<Beam>::to_double(ele1pos_), r_beam);
 }
 
 

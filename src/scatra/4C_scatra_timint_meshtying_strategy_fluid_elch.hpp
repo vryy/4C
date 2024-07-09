@@ -41,7 +41,7 @@ namespace ScaTra
 
 
     //! initialize meshtying objects
-    void InitMeshtying() override;
+    void init_meshtying() override;
 
     //! setup meshtying objects
     void setup_meshtying() override;

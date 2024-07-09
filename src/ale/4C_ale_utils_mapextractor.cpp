@@ -21,26 +21,26 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*/
 void ALE::UTILS::MapExtractor::setup(const Core::FE::Discretization& dis, bool overlapping)
 {
-  const int ndim = Global::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::instance()->n_dim();
   Core::Conditions::MultiConditionSelector mcs;
-  mcs.SetOverlapping(overlapping);
-  mcs.AddSelector(
+  mcs.set_overlapping(overlapping);
+  mcs.add_selector(
       Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
-  mcs.AddSelector(
+  mcs.add_selector(
       Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "FREESURFCoupling", 0, ndim)));
-  mcs.AddSelector(
+  mcs.add_selector(
       Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "StructAleCoupling", 0, ndim)));
-  mcs.AddSelector(
+  mcs.add_selector(
       Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "AleWear", 0, ndim)));
-  mcs.AddSelector(
+  mcs.add_selector(
       Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "BioGrCoupling", 0, ndim)));
-  mcs.AddSelector(
+  mcs.add_selector(
       Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "ALEUPDATECoupling", 0, ndim)));
-  mcs.AddSelector(
+  mcs.add_selector(
       Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "fpsi_coupling", 0, ndim)));
-  mcs.AddSelector(
+  mcs.add_selector(
       Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "Mortar", 0, ndim)));
-  mcs.SetupExtractor(dis, *dis.dof_row_map(), *this);
+  mcs.setup_extractor(dis, *dis.dof_row_map(), *this);
 }
 
 
@@ -86,22 +86,22 @@ Teuchos::RCP<std::set<int>> ALE::UTILS::MapExtractor::conditioned_element_map(
 /*----------------------------------------------------------------------*/
 void ALE::UTILS::FsiMapExtractor::setup(const Core::FE::Discretization& dis)
 {
-  const int ndim = Global::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::instance()->n_dim();
   Core::Conditions::MultiConditionSelector mcs;
-  mcs.AddSelector(
+  mcs.add_selector(
       Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
-  mcs.SetupExtractor(dis, *dis.dof_row_map(), *this);
+  mcs.setup_extractor(dis, *dis.dof_row_map(), *this);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void ALE::UTILS::XFluidFluidMapExtractor::setup(const Core::FE::Discretization& dis)
 {
-  const int ndim = Global::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::instance()->n_dim();
   Core::Conditions::MultiConditionSelector mcs;
-  mcs.AddSelector(Teuchos::rcp(
+  mcs.add_selector(Teuchos::rcp(
       new Core::Conditions::NDimConditionSelector(dis, "FluidFluidCoupling", 0, ndim)));
-  mcs.SetupExtractor(dis, *dis.dof_row_map(), *this);
+  mcs.setup_extractor(dis, *dis.dof_row_map(), *this);
 }
 
 FOUR_C_NAMESPACE_CLOSE

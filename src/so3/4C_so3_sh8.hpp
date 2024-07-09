@@ -31,23 +31,23 @@ namespace Discret
     class SoSh8Type : public SoHex8Type
     {
      public:
-      std::string Name() const override { return "SoSh8Type"; }
+      std::string name() const override { return "SoSh8Type"; }
 
-      static SoSh8Type& Instance();
+      static SoSh8Type& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
@@ -102,11 +102,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -114,7 +114,10 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override { return SoSh8Type::Instance().UniqueParObjectId(); }
+      int unique_par_object_id() const override
+      {
+        return SoSh8Type::instance().unique_par_object_id();
+      }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -137,7 +140,7 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      SoSh8Type& ElementType() const override { return SoSh8Type::Instance(); }
+      SoSh8Type& element_type() const override { return SoSh8Type::instance(); }
 
       //@}
 
@@ -146,7 +149,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
 

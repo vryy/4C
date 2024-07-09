@@ -21,17 +21,17 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
 | Read in the RED_AIRWAY elements                                       |
 *-----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedAirway::ReadElement(
+bool Discret::ELEMENTS::RedAirway::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
-  const int ndim = Global::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::instance()->n_dim();
   if (ndim != 3)
     FOUR_C_THROW("Problem defined as %dd, but found Reduced dimensional AIRWAY element.", ndim);
 
   // Read number of material model
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  SetMaterial(0, Mat::Factory(material));
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  set_material(0, Mat::Factory(material_id));
 
   // Read the element type, the element specific variables and store them to airwayParams_
   linedef->extract_string("TYPE", elem_type_);
@@ -105,17 +105,17 @@ bool Discret::ELEMENTS::RedAirway::ReadElement(
 /*----------------------------------------------------------------------*
 | Read in the RED_ACINUS elements                                       |
 *-----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedAcinus::ReadElement(
+bool Discret::ELEMENTS::RedAcinus::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
-  const int ndim = Global::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::instance()->n_dim();
   if (ndim != 3)
     FOUR_C_THROW("Problem defined as %dd, but found Reduced dimensional ACINUS element.", ndim);
 
   // Read number of material model
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  SetMaterial(0, Mat::Factory(material));
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  set_material(0, Mat::Factory(material_id));
 
   // Read the element type, the element specific variables and store them to acinusParams_
   linedef->extract_string("TYPE", elem_type_);
@@ -135,9 +135,9 @@ bool Discret::ELEMENTS::RedAcinus::ReadElement(
     acinus_params_.generation = generation;
 
     // Setup material, calls overloaded function setup(linedef) for each Maxwell_0d_acinus material
-    Teuchos::RCP<Core::Mat::Material> mat = Material();
+    Teuchos::RCP<Core::Mat::Material> mat = material();
     Teuchos::RCP<Mat::Maxwell0dAcinus> acinus_mat =
-        Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(Material());
+        Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(material());
     acinus_mat->setup(linedef);
   }
   else
@@ -155,10 +155,10 @@ bool Discret::ELEMENTS::RedAcinus::ReadElement(
 /*----------------------------------------------------------------------*
 | Read in the RED_ACINAR_INTER_DEP elements                             |
 *-----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedInterAcinarDep::ReadElement(
+bool Discret::ELEMENTS::RedInterAcinarDep::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
-  const int ndim = Global::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::instance()->n_dim();
   if (ndim != 3)
     FOUR_C_THROW(
         "Problem defined as %dd, but found Reduced dimensional INTER ACINAR DEPENDENCE element.",
@@ -169,9 +169,9 @@ bool Discret::ELEMENTS::RedInterAcinarDep::ReadElement(
   generation_ = generation;
 
   // Read number of material model
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  SetMaterial(0, Mat::Factory(material));
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  set_material(0, Mat::Factory(material_id));
 
 
   return true;
@@ -181,10 +181,10 @@ bool Discret::ELEMENTS::RedInterAcinarDep::ReadElement(
 /*----------------------------------------------------------------------*
 | Read in the Scatra elements                                           |
 *-----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedAirBloodScatra::ReadElement(
+bool Discret::ELEMENTS::RedAirBloodScatra::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
-  const int ndim = Global::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::instance()->n_dim();
   if (ndim != 3)
     FOUR_C_THROW("Problem defined as %dd, but found Reduced dimensional Scatra element.", ndim);
 
@@ -211,10 +211,10 @@ bool Discret::ELEMENTS::RedAirBloodScatra::ReadElement(
 /*----------------------------------------------------------------------*
 | Read in the Scatra elements                                           |
 *-----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedAirBloodScatraLine3::ReadElement(
+bool Discret::ELEMENTS::RedAirBloodScatraLine3::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
-  const int ndim = Global::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::instance()->n_dim();
   if (ndim != 3)
     FOUR_C_THROW("Problem defined as %dd, but found Reduced dimensional Scatra element.", ndim);
 

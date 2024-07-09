@@ -63,7 +63,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::setup(
   particleengineinterface_ = particleengineinterface;
 }
 
-void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
+void PARTICLEALGORITHM::InitialFieldHandler::set_initial_fields()
 {
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
@@ -85,30 +85,31 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
           particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
       // get number of particles stored in container
-      const int particlestored = container->ParticlesStored();
+      const int particlestored = container->particles_stored();
 
       // no owned particles of current particle type
       if (particlestored <= 0) continue;
 
-      if (not container->HaveStoredState(particleState)) continue;
+      if (not container->have_stored_state(particleState)) continue;
 
       // get id of function
       const int functid = initialFieldIt.second;
 
       // get reference to function
       const auto& function =
-          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functid - 1);
+          Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+              functid - 1);
 
       // get pointer to particle states
-      const double* pos = container->GetPtrToState(PARTICLEENGINE::Position, 0);
-      double* state = container->GetPtrToState(particleState, 0);
+      const double* pos = container->get_ptr_to_state(PARTICLEENGINE::Position, 0);
+      double* state = container->get_ptr_to_state(particleState, 0);
 
       // get particle state dimensions
-      int posstatedim = container->GetStateDim(PARTICLEENGINE::Position);
-      int statedim = container->GetStateDim(particleState);
+      int posstatedim = container->get_state_dim(PARTICLEENGINE::Position);
+      int statedim = container->get_state_dim(particleState);
 
       // safety check
-      if (static_cast<std::size_t>(statedim) != function.NumberComponents())
+      if (static_cast<std::size_t>(statedim) != function.number_components())
         FOUR_C_THROW(
             "dimensions of function defining initial field and of state '%s' not matching!",
             PARTICLEENGINE::EnumToStateName(particleState).c_str());

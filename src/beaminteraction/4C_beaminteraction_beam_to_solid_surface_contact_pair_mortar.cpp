@@ -63,19 +63,19 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
 {
   // Call Evaluate on the geometry Pair
   this->cast_geometry_pair()->evaluate(
-      this->ele1pos_, this->face_element_->GetFaceElementData(), this->line_to_3D_segments_);
+      this->ele1pos_, this->face_element_->get_face_element_data(), this->line_to_3D_segments_);
 
   // If there are no intersection segments, no contact terms will be assembled
   const unsigned int n_segments = this->line_to_3D_segments_.size();
   if (n_segments == 0) return;
 
   // Pointer to the contact parameters and input parameters
-  const auto contact_parameters = this->Params()->beam_to_solid_surface_contact_params();
+  const auto contact_parameters = this->params()->beam_to_solid_surface_contact_params();
   const auto contact_defined_on =
       contact_parameters->get_beam_to_solid_surface_contact_mortar_defined_in();
 
   // Get beam cross-section diameter
-  const auto beam_ptr = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->Element1());
+  const auto beam_ptr = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->element1());
   const double beam_cross_section_radius =
       beam_ptr->get_circular_cross_section_radius_for_interactions();
 
@@ -107,26 +107,26 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
   for (const auto& segment : this->line_to_3D_segments_)
   {
     // Gauss point loop
-    for (const auto& projected_gauss_point : segment.GetProjectionPoints())
+    for (const auto& projected_gauss_point : segment.get_projection_points())
     {
       // Get the projection coordinates
-      const auto& xi = projected_gauss_point.GetXi();
-      const auto& eta = projected_gauss_point.GetEta();
+      const auto& xi = projected_gauss_point.get_xi();
+      const auto& eta = projected_gauss_point.get_eta();
 
       // Get the current Gauss integration factor. This includes everything, e.g., Gauss weight,
       // segment Jacobian and beam Jacobian.
-      const ScalarType gauss_factor = projected_gauss_point.GetGaussWeight() *  //
-                                      0.5 * segment.GetSegmentLength() *
+      const ScalarType gauss_factor = projected_gauss_point.get_gauss_weight() *  //
+                                      0.5 * segment.get_segment_length() *
                                       get_jacobian_for_configuration(eta, contact_defined_on);
 
       // Get the surface normal vector
       GEOMETRYPAIR::EvaluateSurfaceNormal<Surface>(
-          xi, this->face_element_->GetFaceElementData(), surface_normal);
+          xi, this->face_element_->get_face_element_data(), surface_normal);
 
       // Evaluate the current position of beam and solid
       GEOMETRYPAIR::EvaluatePosition<Beam>(eta, this->ele1pos_, r_beam);
       GEOMETRYPAIR::EvaluatePosition<Surface>(
-          xi, this->face_element_->GetFaceElementData(), r_surface);
+          xi, this->face_element_->get_face_element_data(), r_surface);
 
       // Evaluate the gap function
       r_rel = r_beam;
@@ -139,7 +139,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
       GEOMETRYPAIR::EvaluateShapeFunctionMatrix<Beam>(
           N_beam, eta, this->ele1pos_.shape_function_data_);
       GEOMETRYPAIR::EvaluateShapeFunctionMatrix<Surface>(
-          N_surface, xi, this->face_element_->GetFaceElementData().shape_function_data_);
+          N_surface, xi, this->face_element_->get_face_element_data().shape_function_data_);
 
       // Weighted gap
       constraint_vector.update_t(gauss_factor * gap, N_lambda_trial, 1.0);
@@ -170,13 +170,13 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
   // Get the beam centerline GIDs.
   Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
   BEAMINTERACTION::UTILS::GetElementCenterlineGIDIndices(
-      discret, this->Element1(), beam_centerline_gid);
+      discret, this->element1(), beam_centerline_gid);
 
   // Get the patch GIDs.
-  const std::vector<int>& patch_gid = this->face_element_->GetPatchGID();
+  const std::vector<int>& patch_gid = this->face_element_->get_patch_gid();
 
   // Get the Lagrange multiplier GIDs.
-  const auto& [lambda_gid_pos, _] = mortar_manager->LocationVector(*this);
+  const auto& [lambda_gid_pos, _] = mortar_manager->location_vector(*this);
 
   // Assemble into the matrix in the beam row and lambda column
   for (unsigned int i_beam = 0; i_beam < Beam::n_dof_; i_beam++)
@@ -185,7 +185,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
     {
       const double value = Core::FADUtils::CastToDouble(
           beam_shape_times_normal_times_lambda_shape_(i_beam, i_lambda));
-      global_force_beam_lin_lambda.FEAssemble(
+      global_force_beam_lin_lambda.fe_assemble(
           value, beam_centerline_gid(i_beam), lambda_gid_pos[i_lambda]);
     }
   }
@@ -197,7 +197,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
     {
       const double value = Core::FADUtils::CastToDouble(
           surface_shape_times_normal_times_lambda_shape_(i_surface, i_lambda));
-      global_force_solid_lin_lambda.FEAssemble(
+      global_force_solid_lin_lambda.fe_assemble(
           value, patch_gid[i_surface], lambda_gid_pos[i_lambda]);
     }
   }
@@ -209,11 +209,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
     for (unsigned int i_beam = 0; i_beam < Beam::n_dof_; i_beam++)
     {
       const double value = constraint_vector(i_lambda).dx(i_beam);
-      global_constraint_lin_beam.FEAssemble(
+      global_constraint_lin_beam.fe_assemble(
           value, lambda_gid_pos[i_lambda], beam_centerline_gid(i_beam));
 
       const double value_kappa_linearization = kappa(i_lambda).dx(i_beam);
-      global_kappa_lin_beam.FEAssemble(
+      global_kappa_lin_beam.fe_assemble(
           value_kappa_linearization, lambda_gid_pos[i_lambda], beam_centerline_gid(i_beam));
     }
 
@@ -221,10 +221,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
     for (unsigned int i_patch = 0; i_patch < patch_gid.size(); i_patch++)
     {
       const double value = constraint_vector(i_lambda).dx(Beam::n_dof_ + i_patch);
-      global_constraint_lin_solid.FEAssemble(value, lambda_gid_pos[i_lambda], patch_gid[i_patch]);
+      global_constraint_lin_solid.fe_assemble(value, lambda_gid_pos[i_lambda], patch_gid[i_patch]);
 
       const double value_kappa_linearization = kappa(i_lambda).dx(Beam::n_dof_ + i_patch);
-      global_kappa_lin_solid.FEAssemble(
+      global_kappa_lin_solid.fe_assemble(
           value_kappa_linearization, lambda_gid_pos[i_lambda], patch_gid[i_patch]);
     }
   }
@@ -248,7 +248,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
-    Mortar>::EvaluateAndAssemble(const Core::FE::Discretization& discret,
+    Mortar>::evaluate_and_assemble(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -266,7 +266,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
   if (stiffness_matrix == Teuchos::null) return;
 
   // Get the Lagrange multipliers DOF vector for this pair
-  const auto& [lambda_gid_pos, _] = mortar_manager->LocationVector(*this);
+  const auto& [lambda_gid_pos, _] = mortar_manager->location_vector(*this);
   std::vector<double> lambda_pos_vector;
   Core::FE::ExtractMyValues(global_lambda, lambda_pos_vector, lambda_gid_pos);
   const auto lambda_pos = Core::LinAlg::Matrix<Mortar::n_dof_, 1, double>(lambda_pos_vector.data());
@@ -280,20 +280,21 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
   // Assemble the terms to the global stiffness matrix
   Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
   BEAMINTERACTION::UTILS::GetElementCenterlineGIDIndices(
-      discret, this->Element1(), beam_centerline_gid);
-  const std::vector<int>& patch_gid = this->face_element_->GetPatchGID();
+      discret, this->element1(), beam_centerline_gid);
+  const std::vector<int>& patch_gid = this->face_element_->get_patch_gid();
 
   for (unsigned int i_beam = 0; i_beam < Beam::n_dof_; i_beam++)
   {
     for (unsigned int j_beam = 0; j_beam < Beam::n_dof_; j_beam++)
     {
       const double value = force_beam(i_beam).dx(j_beam);
-      stiffness_matrix->FEAssemble(value, beam_centerline_gid(i_beam), beam_centerline_gid(j_beam));
+      stiffness_matrix->fe_assemble(
+          value, beam_centerline_gid(i_beam), beam_centerline_gid(j_beam));
     }
     for (unsigned int j_patch = 0; j_patch < patch_gid.size(); j_patch++)
     {
       const double value = force_beam(i_beam).dx(Beam::n_dof_ + j_patch);
-      stiffness_matrix->FEAssemble(value, beam_centerline_gid(i_beam), patch_gid[j_patch]);
+      stiffness_matrix->fe_assemble(value, beam_centerline_gid(i_beam), patch_gid[j_patch]);
     }
   }
   for (unsigned int i_surface = 0; i_surface < Surface::n_dof_; i_surface++)
@@ -301,12 +302,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
     for (unsigned int j_beam = 0; j_beam < Beam::n_dof_; j_beam++)
     {
       const double value = force_surface(i_surface).dx(j_beam);
-      stiffness_matrix->FEAssemble(value, patch_gid[i_surface], beam_centerline_gid(j_beam));
+      stiffness_matrix->fe_assemble(value, patch_gid[i_surface], beam_centerline_gid(j_beam));
     }
     for (unsigned int j_patch = 0; j_patch < patch_gid.size(); j_patch++)
     {
       const double value = force_surface(i_surface).dx(Beam::n_dof_ + j_patch);
-      stiffness_matrix->FEAssemble(value, patch_gid[i_surface], patch_gid[j_patch]);
+      stiffness_matrix->fe_assemble(value, patch_gid[i_surface], patch_gid[j_patch]);
     }
   }
 }

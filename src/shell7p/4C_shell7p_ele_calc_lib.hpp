@@ -82,7 +82,7 @@ namespace Discret::ELEMENTS::Shell
     {
       const double h2 = thickness * factor * 0.5;
 
-      const auto& x = nodes[i]->X();
+      const auto& x = nodes[i]->x();
       coordinates.x_refe_(i, 0) = x[0];
       coordinates.x_refe_(i, 1) = x[1];
       coordinates.x_refe_(i, 2) = x[2];
@@ -1598,7 +1598,7 @@ namespace Discret::ELEMENTS::Shell
       Discret::ELEMENTS::Shell::NodalCoordinates<distype>& nodal_coordinates,
       const Core::FE::IntegrationPoints2D& intpoints_, GaussPointEvaluator gp_evaluator)
   {
-    for (int gp = 0; gp < intpoints_.NumPoints(); ++gp)
+    for (int gp = 0; gp < intpoints_.num_points(); ++gp)
     {
       // get gauss points from integration rule
       std::array<double, 2> xi_gp;

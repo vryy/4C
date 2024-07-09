@@ -64,9 +64,9 @@ void ScaTra::TimIntCardiacMonodomain::setup()
   if (nb_max_mat_int_state_vars_)
   {
     material_internal_state_np_ = Teuchos::rcp(
-        new Epetra_MultiVector(*(discret_->ElementRowMap()), nb_max_mat_int_state_vars_, true));
+        new Epetra_MultiVector(*(discret_->element_row_map()), nb_max_mat_int_state_vars_, true));
     material_internal_state_np_component_ =
-        Core::LinAlg::CreateVector(*(discret_->ElementRowMap()), true);
+        Core::LinAlg::CreateVector(*(discret_->element_row_map()), true);
   }
   // Assumes that maximum nb_max_mat_ionic_currents_ ionic_currents variables will be written
   nb_max_mat_ionic_currents_ = ep_params_->get<int>(
@@ -74,9 +74,9 @@ void ScaTra::TimIntCardiacMonodomain::setup()
   if (nb_max_mat_ionic_currents_)
   {
     material_ionic_currents_np_ = Teuchos::rcp(
-        new Epetra_MultiVector(*(discret_->ElementRowMap()), nb_max_mat_ionic_currents_, true));
+        new Epetra_MultiVector(*(discret_->element_row_map()), nb_max_mat_ionic_currents_, true));
     material_ionic_currents_np_component_ =
-        Core::LinAlg::CreateVector(*(discret_->ElementRowMap()), true);
+        Core::LinAlg::CreateVector(*(discret_->element_row_map()), true);
   }
 }
 
@@ -160,12 +160,12 @@ void ScaTra::TimIntCardiacMonodomain::element_material_time_update()
   p.set<double>("time-step length", dta_);
 
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("phinp", phinp_);
 
   // go to elements
   discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-  discret_->ClearState();
+  discret_->clear_state();
 }
 
 /*----------------------------------------------------------------------*

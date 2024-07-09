@@ -27,7 +27,7 @@ Core::Geo::Cut::SideHandle* Core::Geo::Cut::MeshHandle::create_side(int sid,
   std::cout << distype << " );\n";
 #endif
   if (distype == Core::FE::CellType::tri3 ||
-      (distype == Core::FE::CellType::quad4 && !options.SplitCutSides()))
+      (distype == Core::FE::CellType::quad4 && !options.split_cut_sides()))
   {
     std::map<int, LinearSideHandle>::iterator i = linearsides_.find(sid);
     if (i != linearsides_.end())
@@ -96,18 +96,18 @@ Core::Geo::Cut::SideHandle* Core::Geo::Cut::MeshHandle::create_side(int sid,
  *-----------------------------------------------------------------------------------------*/
 void Core::Geo::Cut::MeshHandle::create_element_sides(Element& element)
 {
-  std::vector<Side*> elementsides = element.Sides();
+  std::vector<Side*> elementsides = element.sides();
   for (std::vector<Side*>::iterator i = elementsides.begin(); i != elementsides.end(); ++i)
   {
     Side* elementside = *i;
-    std::vector<Node*> elementsidenodes = elementside->Nodes();
+    std::vector<Node*> elementsidenodes = elementside->nodes();
     plain_int_set elementsidenodeids;
     std::vector<int> sidenodeids;
     for (std::vector<Node*>::iterator i = elementsidenodes.begin(); i != elementsidenodes.end();
          ++i)
     {
       Node* elementsidenode = *i;
-      int elementsidenodeid = elementsidenode->Id();
+      int elementsidenodeid = elementsidenode->id();
       elementsidenodeids.insert(elementsidenodeid);
       sidenodeids.push_back(elementsidenodeid);
     }
@@ -787,9 +787,9 @@ Core::Geo::Cut::ElementHandle* Core::Geo::Cut::MeshHandle::create_element(
 /*-----------------------------------------------------------------------------------------*
  * get the node based on node id
  *-----------------------------------------------------------------------------------------*/
-Core::Geo::Cut::Node* Core::Geo::Cut::MeshHandle::GetNode(int nid) const
+Core::Geo::Cut::Node* Core::Geo::Cut::MeshHandle::get_node(int nid) const
 {
-  return mesh_.GetNode(nid);
+  return mesh_.get_node(nid);
 }
 
 
@@ -819,7 +819,7 @@ Core::Geo::Cut::SideHandle* Core::Geo::Cut::MeshHandle::get_side(int sid) const
 /*-----------------------------------------------------------------------------------------*
  * get the mesh's element based on element id
  *-----------------------------------------------------------------------------------------*/
-Core::Geo::Cut::ElementHandle* Core::Geo::Cut::MeshHandle::GetElement(int eid) const
+Core::Geo::Cut::ElementHandle* Core::Geo::Cut::MeshHandle::get_element(int eid) const
 {
   // loop the linear elements
   std::map<int, LinearElementHandle>::const_iterator i = linearelements_.find(eid);
@@ -865,9 +865,9 @@ Core::Geo::Cut::SideHandle* Core::Geo::Cut::MeshHandle::get_side(std::vector<int
   return nullptr;
 }
 
-void Core::Geo::Cut::MeshHandle::RemoveSubSide(Core::Geo::Cut::Side* side)
+void Core::Geo::Cut::MeshHandle::remove_sub_side(Core::Geo::Cut::Side* side)
 {
-  std::map<int, LinearSideHandle>::iterator lit = linearsides_.find(side->Id());
+  std::map<int, LinearSideHandle>::iterator lit = linearsides_.find(side->id());
   if (lit != linearsides_.end())
   {
     std::cout << "==| WARNING: MeshHandle::RemoveSubSide: Your Subside belongs to a "
@@ -878,20 +878,20 @@ void Core::Geo::Cut::MeshHandle::RemoveSubSide(Core::Geo::Cut::Side* side)
   else
   {
     std::map<int, Teuchos::RCP<QuadraticSideHandle>>::iterator qit =
-        quadraticsides_.find(side->Id());
+        quadraticsides_.find(side->id());
     if (qit != quadraticsides_.end())
     {
       QuadraticSideHandle& qsh = *qit->second;
       qsh.remove_sub_side_pointer(side);
     }
     else
-      FOUR_C_THROW("Couldn't Identify side %d!", side->Id());
+      FOUR_C_THROW("Couldn't Identify side %d!", side->id());
   }
 }
 
-void Core::Geo::Cut::MeshHandle::AddSubSide(Core::Geo::Cut::Side* side)
+void Core::Geo::Cut::MeshHandle::add_sub_side(Core::Geo::Cut::Side* side)
 {
-  std::map<int, LinearSideHandle>::iterator lit = linearsides_.find(side->Id());
+  std::map<int, LinearSideHandle>::iterator lit = linearsides_.find(side->id());
   if (lit != linearsides_.end())
   {
     std::cout << "==| WARNING: MeshHandle::AddSubSide: Your Subside belongs to a "
@@ -902,16 +902,16 @@ void Core::Geo::Cut::MeshHandle::AddSubSide(Core::Geo::Cut::Side* side)
   else
   {
     std::map<int, Teuchos::RCP<QuadraticSideHandle>>::iterator qit =
-        quadraticsides_.find(side->Id());
+        quadraticsides_.find(side->id());
     if (qit != quadraticsides_.end())
     {
       QuadraticSideHandle& qsh = *qit->second;
-      qsh.AddSubSidePointer(side);
+      qsh.add_sub_side_pointer(side);
     }
     else
     {
       FOUR_C_THROW(
-          "MeshHandle::AddSubSide: The SideHandle for Side %d does not exist yet!", side->Id());
+          "MeshHandle::AddSubSide: The SideHandle for Side %d does not exist yet!", side->id());
       // One could create a new QuadraticSideHandle, if there is a reason to do so.
     }
   }
@@ -919,7 +919,7 @@ void Core::Geo::Cut::MeshHandle::AddSubSide(Core::Geo::Cut::Side* side)
 
 void Core::Geo::Cut::MeshHandle::mark_sub_sideas_unphysical(Core::Geo::Cut::Side* side)
 {
-  std::map<int, LinearSideHandle>::iterator lit = linearsides_.find(side->Id());
+  std::map<int, LinearSideHandle>::iterator lit = linearsides_.find(side->id());
   if (lit != linearsides_.end())
   {
     std::cout << "==| WARNING: MeshHandle::mark_sub_sideas_unphysical: Your Subside belongs to a "
@@ -930,7 +930,7 @@ void Core::Geo::Cut::MeshHandle::mark_sub_sideas_unphysical(Core::Geo::Cut::Side
   else
   {
     std::map<int, Teuchos::RCP<QuadraticSideHandle>>::iterator qit =
-        quadraticsides_.find(side->Id());
+        quadraticsides_.find(side->id());
     if (qit != quadraticsides_.end())
     {
       QuadraticSideHandle& qsh = *qit->second;
@@ -939,7 +939,7 @@ void Core::Geo::Cut::MeshHandle::mark_sub_sideas_unphysical(Core::Geo::Cut::Side
     else
       FOUR_C_THROW(
           "MeshHandle::mark_sub_sideas_unphysical: The SideHandle for Side %d does not exist yet!",
-          side->Id());
+          side->id());
   }
 }
 

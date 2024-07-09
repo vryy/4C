@@ -51,13 +51,13 @@ void Mat::Elastic::CoupAnisoExpoActive::register_anisotropy_extensions(Mat::Anis
   anisotropy.register_anisotropy_extension(anisotropy_extension_);
 }
 
-void Mat::Elastic::CoupAnisoExpoActive::PackSummand(Core::Communication::PackBuffer& data) const
+void Mat::Elastic::CoupAnisoExpoActive::pack_summand(Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, lambdaact_);
   anisotropy_extension_.pack_anisotropy(data);
 }
 
-void Mat::Elastic::CoupAnisoExpoActive::UnpackSummand(
+void Mat::Elastic::CoupAnisoExpoActive::unpack_summand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   extract_from_pack(position, data, lambdaact_);
@@ -75,7 +75,7 @@ void Mat::Elastic::CoupAnisoExpoActive::setup(int numgp, Input::LineDefinition* 
   d_p_iact_ = evaluated_psi_active();
 }
 
-void Mat::Elastic::CoupAnisoExpoActive::AddStrainEnergy(double& psi,
+void Mat::Elastic::CoupAnisoExpoActive::add_strain_energy(double& psi,
     const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
     const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
@@ -108,7 +108,7 @@ void Mat::Elastic::CoupAnisoExpoActive::AddStrainEnergy(double& psi,
 }
 
 template <typename T>
-void Mat::Elastic::CoupAnisoExpoActive::EvaluateFunc(
+void Mat::Elastic::CoupAnisoExpoActive::evaluate_func(
     T& psi, Core::LinAlg::Matrix<3, 3, T> const& rcg, const int gp, int const eleGID) const
 {
   T I4_fad;
@@ -203,7 +203,7 @@ void Mat::Elastic::CoupAnisoExpoActive::evaluate_second_derivatives_aniso(
 }
 
 template <typename T>
-void Mat::Elastic::CoupAnisoExpoActive::GetDerivativesAniso(
+void Mat::Elastic::CoupAnisoExpoActive::get_derivatives_aniso(
     Core::LinAlg::Matrix<2, 1, T>& dPI_aniso, Core::LinAlg::Matrix<3, 1, T>& ddPII_aniso,
     Core::LinAlg::Matrix<4, 1, T>& dddPIII_aniso, Core::LinAlg::Matrix<3, 3, T> const& rcg,
     const int gp, const int eleGID) const
@@ -262,14 +262,14 @@ void Mat::Elastic::CoupAnisoExpoActive::add_stress_aniso_principal(
       anisotropy_extension_.get_structural_tensor_stress(gp, 0), 1.0);
 }
 
-void Mat::Elastic::CoupAnisoExpoActive::GetFiberVecs(
+void Mat::Elastic::CoupAnisoExpoActive::get_fiber_vecs(
     std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs)
 {
   // this method does not support Gauss point fibers
   fibervecs.push_back(anisotropy_extension_.get_fiber(BaseAnisotropyExtension::GPDEFAULT, 0));
 }
 
-void Mat::Elastic::CoupAnisoExpoActive::SetFiberVecs(const double newgamma,
+void Mat::Elastic::CoupAnisoExpoActive::set_fiber_vecs(const double newgamma,
     const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
   anisotropy_extension_.set_fiber_vecs(newgamma, locsys, defgrd);
@@ -284,11 +284,11 @@ double Mat::Elastic::CoupAnisoExpoActive::evaluated_psi_active() const
 
 
 // explicit instantiation of template functions
-template void Mat::Elastic::CoupAnisoExpoActive::GetDerivativesAniso<double>(
+template void Mat::Elastic::CoupAnisoExpoActive::get_derivatives_aniso<double>(
     Core::LinAlg::Matrix<2, 1, double>&, Core::LinAlg::Matrix<3, 1, double>&,
     Core::LinAlg::Matrix<4, 1, double>&, Core::LinAlg::Matrix<3, 3, double> const&, int,
     const int) const;
-template void Mat::Elastic::CoupAnisoExpoActive::GetDerivativesAniso<FAD>(
+template void Mat::Elastic::CoupAnisoExpoActive::get_derivatives_aniso<FAD>(
     Core::LinAlg::Matrix<2, 1, FAD>&, Core::LinAlg::Matrix<3, 1, FAD>&,
     Core::LinAlg::Matrix<4, 1, FAD>&, Core::LinAlg::Matrix<3, 3, FAD> const&, int, const int) const;
 template void Mat::Elastic::CoupAnisoExpoActive::evaluate_active_stress_cmat_aniso<double>(
@@ -297,9 +297,9 @@ template void Mat::Elastic::CoupAnisoExpoActive::evaluate_active_stress_cmat_ani
 template void Mat::Elastic::CoupAnisoExpoActive::evaluate_active_stress_cmat_aniso<FAD>(
     Core::LinAlg::Matrix<3, 3, FAD> const&, Core::LinAlg::Matrix<6, 6, FAD>&,
     Core::LinAlg::Matrix<6, 1, FAD>&, int, const int) const;
-template void Mat::Elastic::CoupAnisoExpoActive::EvaluateFunc<double>(
+template void Mat::Elastic::CoupAnisoExpoActive::evaluate_func<double>(
     double&, Core::LinAlg::Matrix<3, 3, double> const&, int, const int) const;
-template void Mat::Elastic::CoupAnisoExpoActive::EvaluateFunc<FAD>(
+template void Mat::Elastic::CoupAnisoExpoActive::evaluate_func<FAD>(
     FAD&, Core::LinAlg::Matrix<3, 3, FAD> const&, int, const int) const;
 
 FOUR_C_NAMESPACE_CLOSE

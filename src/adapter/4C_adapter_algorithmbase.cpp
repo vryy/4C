@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Adapter::AlgorithmBase::AlgorithmBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
-    : comm_(comm), printscreen_(Global::Problem::Instance()->IOParams().get<int>("STDOUTEVRY"))
+    : comm_(comm), printscreen_(Global::Problem::instance()->io_params().get<int>("STDOUTEVRY"))
 {
   if (comm_.MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, timeparams);
 
@@ -37,7 +37,7 @@ Adapter::AlgorithmBase::AlgorithmBase(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::AlgorithmBase::SetTimeStep(const double time, const int step)
+void Adapter::AlgorithmBase::set_time_step(const double time, const int step)
 {
   step_ = step;
   time_ = time;
@@ -48,7 +48,7 @@ void Adapter::AlgorithmBase::SetTimeStep(const double time, const int step)
 /*----------------------------------------------------------------------*/
 void Adapter::AlgorithmBase::print_header()
 {
-  if (Comm().MyPID() == 0 and printscreen_ and (step_ % printscreen_ == 0))
+  if (get_comm().MyPID() == 0 and printscreen_ and (step_ % printscreen_ == 0))
   {
     Core::IO::cout << "\n"
                    << method_ << "\n"

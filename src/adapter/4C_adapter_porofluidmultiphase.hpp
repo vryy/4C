@@ -65,7 +65,7 @@ namespace Adapter
         ) = 0;
 
     /// create result test for multiphase porous fluid field
-    virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() = 0;
 
     /// read restart
     virtual void read_restart(int restart) = 0;
@@ -74,13 +74,13 @@ namespace Adapter
     virtual Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds = 0) const = 0;
 
     /// access dof row map of artery discretization
-    virtual Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const = 0;
+    virtual Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const = 0;
 
     /// direct access to discretization
     virtual Teuchos::RCP<Core::FE::Discretization> discretization() const = 0;
 
     //! apply moving mesh data
-    virtual void ApplyMeshMovement(
+    virtual void apply_mesh_movement(
         Teuchos::RCP<const Epetra_Vector> dispnp  //!< displacement vector
         ) = 0;
 
@@ -94,28 +94,28 @@ namespace Adapter
         unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state) = 0;
 
     //! return primary field at time n+1
-    virtual Teuchos::RCP<const Epetra_Vector> Phinp() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> phinp() const = 0;
 
     //! return primary field at time n
-    virtual Teuchos::RCP<const Epetra_Vector> Phin() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> phin() const = 0;
 
     //! return solid pressure field at time n+1
-    virtual Teuchos::RCP<const Epetra_Vector> SolidPressure() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> solid_pressure() const = 0;
 
     //! return pressure field at time n+1
-    virtual Teuchos::RCP<const Epetra_Vector> Pressure() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> pressure() const = 0;
 
     //! return saturation field at time n+1
-    virtual Teuchos::RCP<const Epetra_Vector> Saturation() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> saturation() const = 0;
 
     //! return valid volume fraction species dof vector
     virtual Teuchos::RCP<const Epetra_Vector> valid_vol_frac_spec_dofs() const = 0;
 
     //! return phase flux field at time n+1
-    virtual Teuchos::RCP<const Epetra_MultiVector> Flux() const = 0;
+    virtual Teuchos::RCP<const Epetra_MultiVector> flux() const = 0;
 
     //! do time integration (time loop)
-    virtual void TimeLoop() = 0;
+    virtual void time_loop() = 0;
 
     //! initialization procedure prior to evaluation of a time step
     virtual void prepare_time_step() = 0;
@@ -130,7 +130,7 @@ namespace Adapter
     virtual void evaluate_error_compared_to_analytical_sol() = 0;
 
     //! general solver call for coupled algorithms
-    virtual void Solve() = 0;
+    virtual void solve() = 0;
 
     /// prepare timeloop of coupled problem
     virtual void prepare_time_loop() = 0;
@@ -142,19 +142,19 @@ namespace Adapter
     virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const = 0;
 
     //! right-hand side alias the dynamic force residual
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> rhs() const = 0;
 
     //! right-hand side alias the dynamic force residual for coupled system
-    virtual Teuchos::RCP<const Epetra_Vector> ArteryPorofluidRHS() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> artery_porofluid_rhs() const = 0;
 
     //! iterative update of phinp
-    virtual void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc) = 0;
+    virtual void update_iter(const Teuchos::RCP<const Epetra_Vector> inc) = 0;
 
     //! reconstruct pressures and saturation from current solution
     virtual void reconstruct_pressures_and_saturations() = 0;
 
     //! reconstruct flux from current solution
-    virtual void ReconstructFlux() = 0;
+    virtual void reconstruct_flux() = 0;
 
     //! calculate phase velocities from current solution
     virtual void calculate_phase_velocities() = 0;
@@ -171,13 +171,13 @@ namespace Adapter
         Teuchos::RCP<Core::LinAlg::SparseOperator> k_pfs) = 0;
 
     //! direct access to system matrix
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() = 0;
 
     //! direct access to block system matrix of artery poro problem
     virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const = 0;
 
     // return arterial network time integrator
-    virtual Teuchos::RCP<Adapter::ArtNet> ArtNetTimInt() = 0;
+    virtual Teuchos::RCP<Adapter::ArtNet> art_net_tim_int() = 0;
 
 
   };  // class PoroFluidMultiphase

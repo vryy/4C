@@ -148,13 +148,13 @@ Core::Elements::Element::Element(const Element& old)
   // is only a reference in the elements anyway
   std::map<std::string, Teuchos::RCP<Core::Conditions::Condition>>::const_iterator fool;
   for (fool = old.condition_.begin(); fool != old.condition_.end(); ++fool)
-    SetCondition(fool->first, fool->second);
+    set_condition(fool->first, fool->second);
 
   if (!old.mat_.empty())
   {
     mat_.resize(old.mat_.size());
     for (unsigned iter = 0; iter < old.mat_.size(); ++iter)
-      if (old.mat_[iter] != Teuchos::null) mat_[iter] = (old.mat_[iter]->Clone());
+      if (old.mat_[iter] != Teuchos::null) mat_[iter] = (old.mat_[iter]->clone());
   }
   else
     mat_[0] = Teuchos::null;
@@ -177,9 +177,9 @@ std::ostream& operator<<(std::ostream& os, const Core::Elements::Element& elemen
  *----------------------------------------------------------------------*/
 void Core::Elements::Element::print(std::ostream& os) const
 {
-  os << std::setw(12) << Id() << " Owner " << std::setw(5) << Owner() << " ";
+  os << std::setw(12) << id() << " Owner " << std::setw(5) << owner() << " ";
   const int nnode = num_node();
-  const int* nodeids = NodeIds();
+  const int* nodeids = node_ids();
   if (nnode > 0)
   {
     os << " Nodes ";
@@ -191,7 +191,7 @@ void Core::Elements::Element::print(std::ostream& os) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Core::Elements::Element::ReadElement(
+bool Core::Elements::Element::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   FOUR_C_THROW("subclass implementations missing");
@@ -202,7 +202,7 @@ bool Core::Elements::Element::ReadElement(
 /*----------------------------------------------------------------------*
  |  set node numbers to element (public)                     mwgee 11/06|
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::SetNodeIds(const int nnode, const int* nodes)
+void Core::Elements::Element::set_node_ids(const int nnode, const int* nodes)
 {
   nodeid_.resize(nnode);
   for (int i = 0; i < nnode; ++i) nodeid_[i] = nodes[i];
@@ -213,7 +213,8 @@ void Core::Elements::Element::SetNodeIds(const int nnode, const int* nodes)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Elements::Element::SetNodeIds(const std::string& distype, Input::LineDefinition* linedef)
+void Core::Elements::Element::set_node_ids(
+    const std::string& distype, Input::LineDefinition* linedef)
 {
   linedef->extract_int_vector(distype, nodeid_);
   for (int& i : nodeid_) i -= 1;
@@ -222,7 +223,7 @@ void Core::Elements::Element::SetNodeIds(const std::string& distype, Input::Line
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Elements::Element::SetMaterial(const int index, Teuchos::RCP<Core::Mat::Material> mat)
+void Core::Elements::Element::set_material(const int index, Teuchos::RCP<Core::Mat::Material> mat)
 {
   FOUR_C_THROW_UNLESS(mat != Teuchos::null,
       "Invalid material given to the element. \n"
@@ -230,20 +231,20 @@ void Core::Elements::Element::SetMaterial(const int index, Teuchos::RCP<Core::Ma
       "If you like to use a Summand of the Elasthyper-Material define it via MAT_ElastHyper. \n"
       "If you like to use a Growth-Material define it via the according base material.");
 
-  if (NumMaterial() > index)
+  if (num_material() > index)
     mat_[index] = mat;
-  else if (NumMaterial() == index)
-    AddMaterial(mat);
+  else if (num_material() == index)
+    add_material(mat);
   else
     FOUR_C_THROW(
         "Setting material at index %d not possible (neither overwrite nor append) since currently  "
         "only %d materials are stored",
-        index, NumMaterial());
+        index, num_material());
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::Elements::Element::AddMaterial(Teuchos::RCP<Core::Mat::Material> mat)
+int Core::Elements::Element::add_material(Teuchos::RCP<Core::Mat::Material> mat)
 {
   mat_.push_back(mat);
 
@@ -260,7 +261,7 @@ void Core::Elements::Element::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add id
   add_to_pack(data, id_);
@@ -292,7 +293,7 @@ void Core::Elements::Element::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // id_
   extract_from_pack(position, data, id_);
@@ -334,18 +335,18 @@ void Core::Elements::Element::unpack(const std::vector<char>& data)
  |  Build nodal pointers                                    (protected) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-bool Core::Elements::Element::BuildNodalPointers(
+bool Core::Elements::Element::build_nodal_pointers(
     std::map<int, Teuchos::RCP<Core::Nodes::Node>>& nodes)
 {
   int nnode = num_node();
-  const int* nodeids = NodeIds();
+  const int* nodeids = node_ids();
   node_.resize(nnode);
   for (int i = 0; i < nnode; ++i)
   {
     std::map<int, Teuchos::RCP<Core::Nodes::Node>>::const_iterator curr = nodes.find(nodeids[i]);
     // this node is not on this proc
     if (curr == nodes.end())
-      FOUR_C_THROW("Element %d cannot find node %d", Id(), nodeids[i]);
+      FOUR_C_THROW("Element %d cannot find node %d", id(), nodeids[i]);
     else
       node_[i] = curr->second.get();
   }
@@ -356,7 +357,7 @@ bool Core::Elements::Element::BuildNodalPointers(
  |  Build nodal pointers                                    (protected) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-bool Core::Elements::Element::BuildNodalPointers(Core::Nodes::Node** nodes)
+bool Core::Elements::Element::build_nodal_pointers(Core::Nodes::Node** nodes)
 {
   node_.resize(num_node());
   for (int i = 0; i < num_node(); ++i) node_[i] = nodes[i];
@@ -367,11 +368,11 @@ bool Core::Elements::Element::BuildNodalPointers(Core::Nodes::Node** nodes)
  |  Build nodal connectivity and weight nodes and edges        (public) |
  |                                                          ghamm 09/13 |
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::NodalConnectivity(
+void Core::Elements::Element::nodal_connectivity(
     Core::LinAlg::SerialDenseMatrix& edgeweights, Core::LinAlg::SerialDenseVector& nodeweights)
 {
   // weight for this element
-  double weight = EvaluationCost();
+  double weight = evaluation_cost();
 
   int numnode = num_node();
   nodeweights.size(numnode);
@@ -390,7 +391,7 @@ void Core::Elements::Element::NodalConnectivity(
   // put squared weight on edges
   weight *= weight;
 
-  std::vector<std::vector<int>> lines = Core::FE::getEleNodeNumberingLines(Shape());
+  std::vector<std::vector<int>> lines = Core::FE::getEleNodeNumberingLines(shape());
   size_t nodesperline = lines[0].size();
   if (nodesperline == 2)
   {
@@ -413,7 +414,7 @@ void Core::Elements::Element::NodalConnectivity(
   }
   else
     FOUR_C_THROW("implementation is missing for this distype (%s)",
-        Core::FE::CellTypeToString(Shape()).c_str());
+        Core::FE::CellTypeToString(shape()).c_str());
 
   return;
 }
@@ -422,7 +423,7 @@ void Core::Elements::Element::NodalConnectivity(
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::GetCondition(
+void Core::Elements::Element::get_condition(
     const std::string& name, std::vector<Core::Conditions::Condition*>& out) const
 {
   const int num = condition_.count(name);
@@ -440,7 +441,7 @@ void Core::Elements::Element::GetCondition(
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-Core::Conditions::Condition* Core::Elements::Element::GetCondition(const std::string& name) const
+Core::Conditions::Condition* Core::Elements::Element::get_condition(const std::string& name) const
 {
   auto curr = condition_.find(name);
   if (curr == condition_.end()) return nullptr;
@@ -452,11 +453,11 @@ Core::Conditions::Condition* Core::Elements::Element::GetCondition(const std::st
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis,
+void Core::Elements::Element::location_vector(const Core::FE::Discretization& dis,
     const std::vector<int>& nds, Core::Elements::Element::LocationArray& la, bool doDirichlet) const
 {
   const int numnode = num_node();
-  const Core::Nodes::Node* const* nodes = Nodes();
+  const Core::Nodes::Node* const* nodes = Element::nodes();
 
   if (numnode != static_cast<int>(nds.size()))
   {
@@ -466,7 +467,7 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
   la.clear();
 
   // we need to look at all DofSets of our discretization
-  for (int dofset = 0; dofset < la.Size(); ++dofset)
+  for (int dofset = 0; dofset < la.size(); ++dofset)
   {
     std::vector<int>& lm = la[dofset].lm_;
     std::vector<int>& lmdirich = la[dofset].lmdirich_;
@@ -480,9 +481,9 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
       {
         const Core::Nodes::Node* node = nodes[i];
 
-        const int owner = node->Owner();
+        const int owner = node->owner();
         std::vector<int> dof;
-        dis.Dof(dof, node, dofset, nds[i]);
+        dis.dof(dof, node, dofset, nds[i]);
         const int size = dof.size();
         if (size) lmstride.push_back(size);
 
@@ -495,13 +496,13 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
         if (doDirichlet)
         {
           const std::vector<int>* flag = nullptr;
-          Core::Conditions::Condition* dirich = node->GetCondition("Dirichlet");
+          Core::Conditions::Condition* dirich = node->get_condition("Dirichlet");
           if (dirich)
           {
-            if (dirich->Type() != Core::Conditions::PointDirichlet &&
-                dirich->Type() != Core::Conditions::LineDirichlet &&
-                dirich->Type() != Core::Conditions::SurfaceDirichlet &&
-                dirich->Type() != Core::Conditions::VolumeDirichlet)
+            if (dirich->type() != Core::Conditions::PointDirichlet &&
+                dirich->type() != Core::Conditions::LineDirichlet &&
+                dirich->type() != Core::Conditions::SurfaceDirichlet &&
+                dirich->type() != Core::Conditions::VolumeDirichlet)
               FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
             flag = &dirich->parameters().get<std::vector<int>>("onoff");
           }
@@ -517,8 +518,8 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
     }
 
     // fill the vector with element dofs
-    const int owner = Owner();
-    std::vector<int> dof = dis.Dof(dofset, this);
+    const int owner = Element::owner();
+    std::vector<int> dof = dis.dof(dofset, this);
     if (!dof.empty()) lmstride.push_back(dof.size());
     for (int j : dof)
     {
@@ -529,10 +530,10 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
     // fill the vector with face dofs
     if (this->num_dof_per_face(0) > 0)
     {
-      for (int i = 0; i < NumFace(); ++i)
+      for (int i = 0; i < num_face(); ++i)
       {
-        const int owner = face_[i]->Owner();
-        std::vector<int> dof = dis.Dof(dofset, face_[i].getRawPtr());
+        const int owner = face_[i]->owner();
+        std::vector<int> dof = dis.dof(dofset, face_[i].getRawPtr());
         if (!dof.empty()) lmstride.push_back(dof.size());
         for (int j : dof)
         {
@@ -545,13 +546,13 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
     if (doDirichlet)
     {
       const std::vector<int>* flag = nullptr;
-      Core::Conditions::Condition* dirich = GetCondition("Dirichlet");
+      Core::Conditions::Condition* dirich = get_condition("Dirichlet");
       if (dirich)
       {
-        if (dirich->Type() != Core::Conditions::PointDirichlet &&
-            dirich->Type() != Core::Conditions::LineDirichlet &&
-            dirich->Type() != Core::Conditions::SurfaceDirichlet &&
-            dirich->Type() != Core::Conditions::VolumeDirichlet)
+        if (dirich->type() != Core::Conditions::PointDirichlet &&
+            dirich->type() != Core::Conditions::LineDirichlet &&
+            dirich->type() != Core::Conditions::SurfaceDirichlet &&
+            dirich->type() != Core::Conditions::VolumeDirichlet)
           FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
         flag = &dirich->parameters().get<std::vector<int>>("onoff");
       }
@@ -570,16 +571,16 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::LocationVector(
+void Core::Elements::Element::location_vector(
     const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet) const
 {
   const int numnode = num_node();
-  const Core::Nodes::Node* const* nodes = Nodes();
+  const Core::Nodes::Node* const* nodes = Element::nodes();
 
   la.clear();
 
   // we need to look at all DofSets of our discretization
-  for (int dofset = 0; dofset < la.Size(); ++dofset)
+  for (int dofset = 0; dofset < la.size(); ++dofset)
   {
     std::vector<int>& lm = la[dofset].lm_;
     std::vector<int>& lmdirich = la[dofset].lmdirich_;
@@ -593,16 +594,16 @@ void Core::Elements::Element::LocationVector(
       {
         const Core::Nodes::Node* node = nodes[i];
 
-        const int owner = node->Owner();
+        const int owner = node->owner();
         std::vector<int> dof;
-        dis.Dof(dof, node, dofset, 0, this);
+        dis.dof(dof, node, dofset, 0, this);
 
         // if there are more dofs on the node than the element can handle, this cannot work
-        FOUR_C_ASSERT(NumDofPerNode(*node) <= (int)dof.size() or dofset != 0,
+        FOUR_C_ASSERT(num_dof_per_node(*node) <= (int)dof.size() or dofset != 0,
             "More dofs on node than element can handle! Internal error!");
 
         // assume that the first dofs are the relevant ones
-        const int size = dofset == 0 ? NumDofPerNode(*node) : dof.size();
+        const int size = dofset == 0 ? num_dof_per_node(*node) : dof.size();
 
         if (size) lmstride.push_back(size);
         for (int j = 0; j < size; ++j)
@@ -614,13 +615,13 @@ void Core::Elements::Element::LocationVector(
         if (doDirichlet)
         {
           const std::vector<int>* flag = nullptr;
-          Core::Conditions::Condition* dirich = node->GetCondition("Dirichlet");
+          Core::Conditions::Condition* dirich = node->get_condition("Dirichlet");
           if (dirich)
           {
-            if (dirich->Type() != Core::Conditions::PointDirichlet &&
-                dirich->Type() != Core::Conditions::LineDirichlet &&
-                dirich->Type() != Core::Conditions::SurfaceDirichlet &&
-                dirich->Type() != Core::Conditions::VolumeDirichlet)
+            if (dirich->type() != Core::Conditions::PointDirichlet &&
+                dirich->type() != Core::Conditions::LineDirichlet &&
+                dirich->type() != Core::Conditions::SurfaceDirichlet &&
+                dirich->type() != Core::Conditions::VolumeDirichlet)
               FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
             flag = &dirich->parameters().get<std::vector<int>>("onoff");
           }
@@ -636,8 +637,8 @@ void Core::Elements::Element::LocationVector(
     }
 
     // fill the vector with element dofs
-    const int owner = Owner();
-    std::vector<int> dof = dis.Dof(dofset, this);
+    const int owner = Element::owner();
+    std::vector<int> dof = dis.dof(dofset, this);
     if (!dof.empty()) lmstride.push_back(dof.size());
     for (int j : dof)
     {
@@ -648,10 +649,10 @@ void Core::Elements::Element::LocationVector(
     // fill the vector with face dofs
     if (this->num_dof_per_face(0) > 0)
     {
-      for (int i = 0; i < NumFace(); ++i)
+      for (int i = 0; i < num_face(); ++i)
       {
-        const int owner = face_[i]->Owner();
-        std::vector<int> dof = dis.Dof(dofset, face_[i].getRawPtr());
+        const int owner = face_[i]->owner();
+        std::vector<int> dof = dis.dof(dofset, face_[i].getRawPtr());
         if (!dof.empty()) lmstride.push_back(dof.size());
         for (int j : dof)
         {
@@ -662,7 +663,7 @@ void Core::Elements::Element::LocationVector(
         if (doDirichlet)
         {
           std::vector<Core::Conditions::Condition*> dirich_vec;
-          dis.GetCondition("Dirichlet", dirich_vec);
+          dis.get_condition("Dirichlet", dirich_vec);
           Core::Conditions::Condition* dirich;
           bool dirichRelevant = false;
           // Check if there exist a dirichlet condition
@@ -670,7 +671,7 @@ void Core::Elements::Element::LocationVector(
           {
             // do only faces where all nodes are present in the node list
             const int nummynodes = face_[i]->num_node();
-            const int* mynodes = face_[i]->NodeIds();
+            const int* mynodes = face_[i]->node_ids();
             // Check if the face belongs to any condition
             for (auto& iter : dirich_vec)
             {
@@ -678,7 +679,7 @@ void Core::Elements::Element::LocationVector(
               dirich = iter;
               for (int j = 0; j < nummynodes; ++j)
               {
-                if (!dirich->ContainsNode(mynodes[j]))
+                if (!dirich->contains_node(mynodes[j]))
                 {
                   faceRelevant = false;
                   break;
@@ -703,16 +704,16 @@ void Core::Elements::Element::LocationVector(
             }
 
             const std::vector<int>* flag = nullptr;
-            if (dirich->Type() != Core::Conditions::PointDirichlet &&
-                dirich->Type() != Core::Conditions::LineDirichlet &&
-                dirich->Type() != Core::Conditions::SurfaceDirichlet &&
-                dirich->Type() != Core::Conditions::VolumeDirichlet)
+            if (dirich->type() != Core::Conditions::PointDirichlet &&
+                dirich->type() != Core::Conditions::LineDirichlet &&
+                dirich->type() != Core::Conditions::SurfaceDirichlet &&
+                dirich->type() != Core::Conditions::VolumeDirichlet)
               FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
             flag = &dirich->parameters().get<std::vector<int>>("onoff");
 
             // Every component gets NumDofPerComponent ones or zeros
             for (unsigned j = 0; j < flag->size(); ++j)
-              for (int k = 0; k < NumDofPerComponent(i); ++k)
+              for (int k = 0; k < num_dof_per_component(i); ++k)
               {
                 if (flag && (*flag)[j])
                   lmdirich.push_back(1);
@@ -727,13 +728,13 @@ void Core::Elements::Element::LocationVector(
     if (doDirichlet)
     {
       const std::vector<int>* flag = nullptr;
-      Core::Conditions::Condition* dirich = GetCondition("Dirichlet");
+      Core::Conditions::Condition* dirich = get_condition("Dirichlet");
       if (dirich)
       {
-        if (dirich->Type() != Core::Conditions::PointDirichlet &&
-            dirich->Type() != Core::Conditions::LineDirichlet &&
-            dirich->Type() != Core::Conditions::SurfaceDirichlet &&
-            dirich->Type() != Core::Conditions::VolumeDirichlet)
+        if (dirich->type() != Core::Conditions::PointDirichlet &&
+            dirich->type() != Core::Conditions::LineDirichlet &&
+            dirich->type() != Core::Conditions::SurfaceDirichlet &&
+            dirich->type() != Core::Conditions::VolumeDirichlet)
           FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
         flag = &dirich->parameters().get<std::vector<int>>("onoff");
       }
@@ -754,8 +755,9 @@ void Core::Elements::Element::LocationVector(
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element                (public) |
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis, LocationArray& la,
-    bool doDirichlet, const std::string& condstring, Teuchos::ParameterList& params) const
+void Core::Elements::Element::location_vector(const Core::FE::Discretization& dis,
+    LocationArray& la, bool doDirichlet, const std::string& condstring,
+    Teuchos::ParameterList& params) const
 {
   /* This method is intended to fill the LocationArray with the dofs
    * the element will assemble into. In the standard case implemented here
@@ -764,19 +766,19 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
    * into the dofs of a volume element. These elements need to overwrite this
    * method.
    */
-  LocationVector(dis, la, doDirichlet);
+  location_vector(dis, la, doDirichlet);
 }
 
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis,
+void Core::Elements::Element::location_vector(const Core::FE::Discretization& dis,
     std::vector<int>& lm, std::vector<int>& lmdirich, std::vector<int>& lmowner,
     std::vector<int>& lmstride) const
 {
   const int numnode = num_node();
-  const Core::Nodes::Node* const* nodes = Nodes();
+  const Core::Nodes::Node* const* nodes = Element::nodes();
 
   lm.clear();
   lmdirich.clear();
@@ -788,20 +790,20 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
   {
     for (int i = 0; i < numnode; ++i)
     {
-      Core::Conditions::Condition* dirich = nodes[i]->GetCondition("Dirichlet");
+      Core::Conditions::Condition* dirich = nodes[i]->get_condition("Dirichlet");
       const std::vector<int>* flag = nullptr;
       if (dirich)
       {
-        if (dirich->Type() != Core::Conditions::PointDirichlet &&
-            dirich->Type() != Core::Conditions::LineDirichlet &&
-            dirich->Type() != Core::Conditions::SurfaceDirichlet &&
-            dirich->Type() != Core::Conditions::VolumeDirichlet)
+        if (dirich->type() != Core::Conditions::PointDirichlet &&
+            dirich->type() != Core::Conditions::LineDirichlet &&
+            dirich->type() != Core::Conditions::SurfaceDirichlet &&
+            dirich->type() != Core::Conditions::VolumeDirichlet)
           FOUR_C_THROW("condition with name dirichlet is not of type Dirichlet");
         flag = &dirich->parameters().get<std::vector<int>>("onoff");
       }
-      const int owner = nodes[i]->Owner();
+      const int owner = nodes[i]->owner();
       std::vector<int> dof;
-      dis.Dof(dof, nodes[i], 0, 0);
+      dis.dof(dof, nodes[i], 0, 0);
       const int size = dof.size();
       lmstride.push_back(size);
       for (int j = 0; j < size; ++j)
@@ -818,18 +820,18 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
 
   // fill the vectors with element dofs
   unsigned bef = lm.size();
-  dis.Dof(0, this, lm);
+  dis.dof(0, this, lm);
   unsigned aft = lm.size();
   if (aft - bef) lmstride.push_back((int)(aft - bef));
-  lmowner.resize(lm.size(), Owner());
+  lmowner.resize(lm.size(), owner());
 
   // fill the vector with face dofs
   if (this->num_dof_per_face(0) > 0)
   {
-    for (int i = 0; i < NumFace(); ++i)
+    for (int i = 0; i < num_face(); ++i)
     {
-      const int owner = face_[i]->Owner();
-      std::vector<int> dof = dis.Dof(0, face_[i].getRawPtr());
+      const int owner = face_[i]->owner();
+      std::vector<int> dof = dis.dof(0, face_[i].getRawPtr());
       if (!dof.empty()) lmstride.push_back(dof.size());
       for (int j : dof)
       {
@@ -841,18 +843,18 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
 
   // do dirichlet BCs
   const std::vector<int>* flag = nullptr;
-  Core::Conditions::Condition* dirich = GetCondition("Dirichlet");
+  Core::Conditions::Condition* dirich = get_condition("Dirichlet");
   if (dirich)
   {
-    if (dirich->Type() != Core::Conditions::PointDirichlet &&
-        dirich->Type() != Core::Conditions::LineDirichlet &&
-        dirich->Type() != Core::Conditions::SurfaceDirichlet &&
-        dirich->Type() != Core::Conditions::VolumeDirichlet)
+    if (dirich->type() != Core::Conditions::PointDirichlet &&
+        dirich->type() != Core::Conditions::LineDirichlet &&
+        dirich->type() != Core::Conditions::SurfaceDirichlet &&
+        dirich->type() != Core::Conditions::VolumeDirichlet)
       FOUR_C_THROW("condition with name dirichlet is not of type Dirichlet");
     flag = &dirich->parameters().get<std::vector<int>>("onoff");
   }
-  const int owner = Owner();
-  std::vector<int> dof = dis.Dof(this);
+  const int owner = Element::owner();
+  std::vector<int> dof = dis.dof(this);
   if (!dof.empty()) lmstride.push_back((int)dof.size());
   for (unsigned j = 0; j < dof.size(); ++j)
   {
@@ -872,11 +874,11 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis,
+void Core::Elements::Element::location_vector(const Core::FE::Discretization& dis,
     std::vector<int>& lm, std::vector<int>& lmowner, std::vector<int>& lmstride) const
 {
   const int numnode = num_node();
-  const Core::Nodes::Node* const* nodes = Nodes();
+  const Core::Nodes::Node* const* nodes = Element::nodes();
 
   lm.clear();
   lmowner.clear();
@@ -889,27 +891,27 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
     {
       const Core::Nodes::Node* node = nodes[i];
       unsigned bef = lm.size();
-      dis.Dof(0, this, node, lm);
+      dis.dof(0, this, node, lm);
       unsigned aft = lm.size();
       if (aft - bef) lmstride.push_back((int)(aft - bef));
-      lmowner.resize(lm.size(), node->Owner());
+      lmowner.resize(lm.size(), node->owner());
     }
   }
 
   // fill the vector with element dofs
   unsigned bef = lm.size();
-  dis.Dof(0, this, lm);
+  dis.dof(0, this, lm);
   unsigned aft = lm.size();
   if (aft - bef) lmstride.push_back((int)(aft - bef));
-  lmowner.resize(lm.size(), Owner());
+  lmowner.resize(lm.size(), owner());
 
   // fill the vector with face dofs
   if (num_dof_per_face(0) > 0)
   {
-    for (int i = 0; i < NumFace(); ++i)
+    for (int i = 0; i < num_face(); ++i)
     {
-      const int owner = face_[i]->Owner();
-      std::vector<int> dof = dis.Dof(0, face_[i].getRawPtr());
+      const int owner = face_[i]->owner();
+      std::vector<int> dof = dis.dof(0, face_[i].getRawPtr());
       if (!dof.empty()) lmstride.push_back(dof.size());
       for (int j : dof)
       {
@@ -925,17 +927,17 @@ void Core::Elements::Element::LocationVector(const Core::FE::Discretization& dis
 /*----------------------------------------------------------------------*
  |  return number of faces (public)                    kronbichler 05/13|
  *----------------------------------------------------------------------*/
-int Core::Elements::Element::NumFace() const
+int Core::Elements::Element::num_face() const
 {
-  switch (Core::FE::getDimension(this->Shape()))
+  switch (Core::FE::getDimension(this->shape()))
   {
     case 2:
-      return NumLine();
+      return num_line();
     case 3:
-      return NumSurface();
+      return num_surface();
     default:
       FOUR_C_THROW("faces for discretization type %s not yet implemented",
-          (Core::FE::CellTypeToString(Shape())).c_str());
+          (Core::FE::CellTypeToString(shape())).c_str());
       return 0;
   }
 }
@@ -943,38 +945,39 @@ int Core::Elements::Element::NumFace() const
 /*----------------------------------------------------------------------*
  |  returns neighbor of element (public)               kronbichler 05/13|
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Core::Elements::Element::Neighbor(const int face) const
+Core::Elements::Element* Core::Elements::Element::neighbor(const int face) const
 {
   if (face_.empty()) return nullptr;
-  FOUR_C_ASSERT(face < NumFace(), "there is no face with the given index");
+  FOUR_C_ASSERT(face < num_face(), "there is no face with the given index");
   Core::Elements::FaceElement* faceelement = face_[face].getRawPtr();
-  if (faceelement->ParentMasterElement() == this)
-    return faceelement->ParentSlaveElement();
-  else if (faceelement->ParentSlaveElement() == this)
-    return faceelement->ParentMasterElement();
+  if (faceelement->parent_master_element() == this)
+    return faceelement->parent_slave_element();
+  else if (faceelement->parent_slave_element() == this)
+    return faceelement->parent_master_element();
   return nullptr;
 }
 
 /*----------------------------------------------------------------------*
  |  set faces (public)                                 kronbichler 05/13|
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::SetFace(const int faceindex, Core::Elements::FaceElement* faceelement)
+void Core::Elements::Element::set_face(
+    const int faceindex, Core::Elements::FaceElement* faceelement)
 {
-  const int nface = NumFace();
+  const int nface = num_face();
   if (face_.empty()) face_.resize(nface, Teuchos::null);
-  FOUR_C_ASSERT(faceindex < NumFace(), "there is no face with the given index");
+  FOUR_C_ASSERT(faceindex < num_face(), "there is no face with the given index");
   face_[faceindex] = Teuchos::rcpFromRef<Core::Elements::FaceElement>(*faceelement);
 }
 
 /*----------------------------------------------------------------------*
  |  set faces (public)                                       seitz 12/16|
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::SetFace(
+void Core::Elements::Element::set_face(
     const int faceindex, Teuchos::RCP<Core::Elements::FaceElement> faceelement)
 {
-  const int nface = NumFace();
+  const int nface = num_face();
   if (face_.empty()) face_.resize(nface, Teuchos::null);
-  FOUR_C_ASSERT(faceindex < NumFace(), "there is no face with the given index");
+  FOUR_C_ASSERT(faceindex < num_face(), "there is no face with the given index");
   face_[faceindex] = std::move(faceelement);
 }
 
@@ -1006,21 +1009,21 @@ int Core::Elements::Element::evaluate(Teuchos::ParameterList& params,
   return -1;
 }
 
-int Core::Elements::Element::Degree() const { return Core::FE::getDegree(Shape()); }
+int Core::Elements::Element::degree() const { return Core::FE::getDegree(shape()); }
 
 /*----------------------------------------------------------------------*
  |  check if the element has only ghost nodes (public)       vuong 09/14|
  *----------------------------------------------------------------------*/
-bool Core::Elements::Element::HasOnlyGhostNodes(const int mypid) const
+bool Core::Elements::Element::has_only_ghost_nodes(const int mypid) const
 {
   const int numnode = num_node();
-  const Core::Nodes::Node* const* nodes = Nodes();
+  const Core::Nodes::Node* const* nodes = Element::nodes();
 
   // check for 'purely ghosted' element, i.e. only ghost nodes
   bool allghostnodes = true;
   for (int i = 0; i < numnode; ++i)
   {
-    if (nodes[i]->Owner() == mypid)
+    if (nodes[i]->owner() == mypid)
     {
       // one node is not ghosted ->leave
       allghostnodes = false;
@@ -1036,7 +1039,7 @@ unsigned int Core::Elements::Element::append_visualization_geometry(
     const Core::FE::Discretization& discret, std::vector<uint8_t>& cell_types,
     std::vector<double>& point_coordinates) const
 {
-  if (IsNurbsElement())
+  if (is_nurbs_element())
     return IO::AppendVisualizationGeometryNURBSEle(*this, discret, cell_types, point_coordinates);
   else
     return IO::AppendVisualizationGeometryLagrangeEle(
@@ -1051,7 +1054,7 @@ unsigned int Core::Elements::Element::append_visualization_dof_based_result_data
     const unsigned int read_result_data_from_dofindex,
     std::vector<double>& vtu_point_result_data) const
 {
-  if (IsNurbsElement())
+  if (is_nurbs_element())
     return IO::AppendVisualizationDofBasedResultDataVectorNURBSEle(*this, discret,
         result_data_dofbased, result_num_dofs_per_node, read_result_data_from_dofindex,
         vtu_point_result_data);
@@ -1063,7 +1066,7 @@ unsigned int Core::Elements::Element::append_visualization_dof_based_result_data
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::GeometricSearch::BoundingVolume Core::Elements::Element::GetBoundingVolume(
+Core::GeometricSearch::BoundingVolume Core::Elements::Element::get_bounding_volume(
     const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
     const Core::GeometricSearch::GeometricSearchParams& params) const
 {
@@ -1077,19 +1080,19 @@ Core::GeometricSearch::BoundingVolume Core::Elements::Element::GetBoundingVolume
     nodedofs.clear();
 
     // local storage position of desired dof gid
-    const Core::Nodes::Node* node = this->Nodes()[i_node];
-    discret.Dof(node, nodedofs);
+    const Core::Nodes::Node* node = this->nodes()[i_node];
+    discret.dof(node, nodedofs);
 
     for (unsigned int i_dir = 0; i_dir < 3; ++i_dir)
     {
       const int lid = result_data_dofbased.Map().LID(nodedofs[i_dir]);
 
       if (lid > -1)
-        point(i_dir) = node->X()[i_dir] + result_data_dofbased[lid];
+        point(i_dir) = node->x()[i_dir] + result_data_dofbased[lid];
       else
         FOUR_C_THROW("received illegal dof local id: %d", lid);
     }
-    bounding_box.AddPoint(point);
+    bounding_box.add_point(point);
   }
 
   return bounding_box;
@@ -1132,7 +1135,7 @@ void Core::Elements::FaceElement::pack(Core::Communication::PackBuffer& data) co
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Discret::Elememt
   Core::Elements::Element::pack(data);
@@ -1153,7 +1156,7 @@ void Core::Elements::FaceElement::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);

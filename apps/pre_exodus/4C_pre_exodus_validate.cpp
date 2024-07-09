@@ -31,7 +31,7 @@ void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::
   using namespace FourC;
 
   // access our problem instance
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
   // create a DatFileReader
   Core::IO::DatFileReader reader(datfile, comm, 0);
@@ -55,7 +55,7 @@ void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::
   {
     Core::UTILS::FunctionManager function_manager;
     GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
-    function_manager.ReadInput(reader);
+    function_manager.read_input(reader);
   }
 
   Global::ReadResult(*problem, reader);
@@ -82,22 +82,22 @@ void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::
 /*----------------------------------------------------------------------*/
 void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
 {
-  if (mymesh.GetNumDim() != 3) FOUR_C_THROW("Element Validation only for 3 Dimensions");
+  if (mymesh.get_num_dim() != 3) FOUR_C_THROW("Element Validation only for 3 Dimensions");
 
-  std::map<int, Teuchos::RCP<ElementBlock>> myebs = mymesh.GetElementBlocks();
+  std::map<int, Teuchos::RCP<ElementBlock>> myebs = mymesh.get_element_blocks();
   std::map<int, Teuchos::RCP<ElementBlock>>::iterator i_eb;
 
   for (i_eb = myebs.begin(); i_eb != myebs.end(); ++i_eb)
   {
     Teuchos::RCP<ElementBlock> eb = i_eb->second;
-    const Core::FE::CellType distype = PreShapeToDrt(eb->GetShape());
+    const Core::FE::CellType distype = PreShapeToDrt(eb->get_shape());
     // check and rewind if necessary
     ValidateElementJacobian(mymesh, distype, eb);
     // full check at all gausspoints
     int invalid_dets = ValidateElementJacobian_fullgp(mymesh, distype, eb);
     if (invalid_dets > 0)
       std::cout << invalid_dets << " negative Jacobian determinants in EB of shape "
-                << ShapeToString(eb->GetShape()) << std::endl;
+                << ShapeToString(eb->get_shape()) << std::endl;
   }
   return;
 }
@@ -147,13 +147,13 @@ void EXODUS::ValidateElementJacobian(
       break;
   }
   const Core::FE::IntegrationPoints3D intpoints(integrationrule_1point);
-  const int iel = eb->GetEleNodes(0).size();
+  const int iel = eb->get_ele_nodes(0).size();
   // shape functions derivatives
   const int NSD = 3;
   Core::LinAlg::SerialDenseMatrix deriv(NSD, iel);
 
   // go through all elements
-  Teuchos::RCP<std::map<int, std::vector<int>>> eleconn = eb->GetEleConn();
+  Teuchos::RCP<std::map<int, std::vector<int>>> eleconn = eb->get_ele_conn();
   std::map<int, std::vector<int>>::iterator i_ele;
   int numrewindedeles = 0;
   for (i_ele = eleconn->begin(); i_ele != eleconn->end(); ++i_ele)
@@ -233,14 +233,14 @@ int EXODUS::ValidateElementJacobian_fullgp(
       break;
   }
   const Core::FE::IntegrationPoints3D intpoints(integrationrule);
-  const int iel = eb->GetEleNodes(0).size();
+  const int iel = eb->get_ele_nodes(0).size();
   // shape functions derivatives
   const int NSD = 3;
   Core::LinAlg::SerialDenseMatrix deriv(NSD, iel);
 
   // go through all elements
   int invalids = 0;
-  Teuchos::RCP<std::map<int, std::vector<int>>> eleconn = eb->GetEleConn();
+  Teuchos::RCP<std::map<int, std::vector<int>>> eleconn = eb->get_ele_conn();
   std::map<int, std::vector<int>>::iterator i_ele;
   for (i_ele = eleconn->begin(); i_ele != eleconn->end(); ++i_ele)
   {
@@ -270,7 +270,7 @@ bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const 
   Core::LinAlg::SerialDenseMatrix xyze(deriv.numRows(), iel);
   for (int inode = 0; inode < iel; inode++)
   {
-    const std::vector<double> x = mymesh.GetNode(nodes.at(inode));
+    const std::vector<double> x = mymesh.get_node(nodes.at(inode));
     xyze(0, inode) = x[0];
     xyze(1, inode) = x[1];
     xyze(2, inode) = x[2];

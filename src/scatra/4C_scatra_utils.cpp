@@ -28,10 +28,10 @@ void ScaTra::ScaTraUtils::CheckConsistencyOfS2IConditions(
   // check if the number of s2i condition definition is correct
   std::vector<Core::Conditions::Condition*> s2ikinetics_conditions, s2isclcoupling_condition,
       s2imeshtying_conditions, s2inoevaluation_conditions;
-  discretization->GetCondition("S2IKinetics", s2ikinetics_conditions);
-  discretization->GetCondition("S2ISCLCoupling", s2isclcoupling_condition);
-  discretization->GetCondition("S2IMeshtying", s2imeshtying_conditions);
-  discretization->GetCondition("S2INoEvaluation", s2inoevaluation_conditions);
+  discretization->get_condition("S2IKinetics", s2ikinetics_conditions);
+  discretization->get_condition("S2ISCLCoupling", s2isclcoupling_condition);
+  discretization->get_condition("S2IMeshtying", s2imeshtying_conditions);
+  discretization->get_condition("S2INoEvaluation", s2inoevaluation_conditions);
 
   if ((s2ikinetics_conditions.size() + s2isclcoupling_condition.size()) !=
       (s2imeshtying_conditions.size() + s2inoevaluation_conditions.size()))
@@ -73,15 +73,15 @@ void ScaTra::ScaTraUtils::CheckConsistencyWithS2IKineticsCondition(
     Teuchos::RCP<Core::FE::Discretization> discretization)
 {
   std::vector<Core::Conditions::Condition*> allConditionsToBeTested;
-  discretization->GetCondition(condition_to_be_tested, allConditionsToBeTested);
+  discretization->get_condition(condition_to_be_tested, allConditionsToBeTested);
   std::vector<Core::Conditions::Condition*> s2ikinetics_conditions;
-  discretization->GetCondition("S2IKinetics", s2ikinetics_conditions);
+  discretization->get_condition("S2IKinetics", s2ikinetics_conditions);
 
   // loop over all conditions to be tested and check for a consistent initialization of the s2i
   // conditions
   for (const auto& conditionToBeTested : allConditionsToBeTested)
   {
-    if (conditionToBeTested->GType() != Core::Conditions::geometry_type_surface) continue;
+    if (conditionToBeTested->g_type() != Core::Conditions::geometry_type_surface) continue;
     bool isslave(true);
     const int s2ikinetics_id = conditionToBeTested->parameters().get<int>("S2IKineticsID");
 
@@ -156,7 +156,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::ComputeGradientAtNodesMean
 
   // DOF-COL-MAP
   const Teuchos::RCP<Epetra_Vector> phinp_col =
-      Teuchos::rcp(new Epetra_Vector(*discret->DofColMap()));
+      Teuchos::rcp(new Epetra_Vector(*discret->dof_col_map()));
   // export dof_row_map to DofColMap phinp
   Core::LinAlg::Export(*state, *phinp_col);
 
@@ -175,26 +175,26 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::ComputeGradientAtNodesMean
   // PART I:  loop over all elements in column map to find all nodes which must be reconstructed
   // remark: intersected elements at processor boundary must be seen by all processors
   //--------------------------------------------------------------------------------------------
-  for (int iele = 0; iele < discret->NumMyColElements(); iele++)
+  for (int iele = 0; iele < discret->num_my_col_elements(); iele++)
   {
     // get element from fluid discretization
-    const Core::Elements::Element* actele = discret->lColElement(iele);
+    const Core::Elements::Element* actele = discret->l_col_element(iele);
 
     // get number of nodes of this element (number of vertices)
     const int numberOfNodes = actele->num_node();
     // get vector of pointers of node (for this element)
-    const Core::Nodes::Node* const* ele_vecOfPtsToNode = actele->Nodes();
+    const Core::Nodes::Node* const* ele_vecOfPtsToNode = actele->nodes();
 
     // loop nodes of this element
     for (int vec_it = 0; vec_it < numberOfNodes; vec_it++)
     {
       // get owner of the node to compare with my_rank
-      int node_owner = (ele_vecOfPtsToNode[vec_it])->Owner();
+      int node_owner = (ele_vecOfPtsToNode[vec_it])->owner();
       // check wheather this node is a row node, compare with actual processor id
-      if (node_owner == discret->Comm().MyPID())
+      if (node_owner == discret->get_comm().MyPID())
       {
         // insert in map (overwrite existing entry)
-        int lid = ele_vecOfPtsToNode[vec_it]->LID();
+        int lid = ele_vecOfPtsToNode[vec_it]->lid();
         nodesToReconstruct[lid] = ele_vecOfPtsToNode[vec_it];
       }
       // remark: all non-row nodes are reconstructed by another processor
@@ -215,19 +215,19 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::ComputeGradientAtNodesMean
     // get local processor id of current node and pointer to current node
     // int lid_node = it_node->first;
     const Core::Nodes::Node* ptToNode = it_node.second;
-    const int nodegid = ptToNode->Id();
+    const int nodegid = ptToNode->id();
 
     // vector of elements located around this node
     std::vector<const Core::Elements::Element*> elements;
 
     // get adjacent elements for this node
-    const Core::Elements::Element* const* adjelements = ptToNode->Elements();
+    const Core::Elements::Element* const* adjelements = ptToNode->elements();
 
-    const Core::FE::CellType DISTYPE = adjelements[0]->Shape();  // Core::FE::CellType::hex8;
+    const Core::FE::CellType DISTYPE = adjelements[0]->shape();  // Core::FE::CellType::hex8;
 
-    for (int iele = 0; iele < ptToNode->NumElement(); iele++)
+    for (int iele = 0; iele < ptToNode->num_element(); iele++)
     {
-      if (DISTYPE != adjelements[iele]->Shape())
+      if (DISTYPE != adjelements[iele]->shape())
         FOUR_C_THROW("discretization not with same elements!!!");
 
       elements.push_back(adjelements[iele]);
@@ -281,11 +281,11 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::ComputeGradientAtNodesMean
       for (int icoupnode : coupnodegid)
       {
         // get coupled pbc node (master or slave)
-        const Core::Nodes::Node* ptToCoupNode = discret->gNode(icoupnode);
+        const Core::Nodes::Node* ptToCoupNode = discret->g_node(icoupnode);
         // get adjacent elements of this node
-        const Core::Elements::Element* const* pbcelements = ptToCoupNode->Elements();
+        const Core::Elements::Element* const* pbcelements = ptToCoupNode->elements();
         // add elements to list
-        for (int iele = 0; iele < ptToCoupNode->NumElement(); iele++)  // = ptToNode->Elements();
+        for (int iele = 0; iele < ptToCoupNode->num_element(); iele++)  // = ptToNode->Elements();
         {
           elements.push_back(pbcelements[iele]);
         }
@@ -316,7 +316,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::ComputeGradientAtNodesMean
     // row map
     //----------------------------------------------------------------------------------------------------
 
-    const std::vector<int> lm = discret->Dof(scatra_dofid, (it_node.second));
+    const std::vector<int> lm = discret->dof(scatra_dofid, (it_node.second));
     if (lm.size() != 1) FOUR_C_THROW("assume a unique level-set dof in ScaTra DoFset");
 
     int GID = lm[0];  // Global ID of DoF Map
@@ -372,7 +372,7 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementG
       // get current element
       const Core::Elements::Element* ele_adj = elements[ele_current];
 
-      const int* ptToNodeIds_adj = ele_adj->NodeIds();
+      const int* ptToNodeIds_adj = ele_adj->node_ids();
 
       // get phi-values of current adjacent element ele_adj
       // create vector "ephinp" holding scalar phi values for this element
@@ -389,7 +389,7 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementG
       {
         nodeID_adj[inode] = ptToNodeIds_adj[inode];
 
-        const std::vector<int> lm = discret->Dof(scatra_dofid, (ele_adj->Nodes()[inode]));
+        const std::vector<int> lm = discret->dof(scatra_dofid, (ele_adj->nodes()[inode]));
         if (lm.size() != 1) FOUR_C_THROW("assume a unique level-set dof in cutterdis-Dofset");
         nodeDOFID_adj[inode] = lm[0];
 

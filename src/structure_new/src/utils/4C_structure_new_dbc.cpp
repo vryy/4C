@@ -72,7 +72,7 @@ void Solid::Dbc::setup()
   p.set<double>("total time", timint_ptr_->get_data_global_state().get_time_np());
   dbcmap_ptr_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
   p.set<const Core::UTILS::FunctionManager*>(
-      "function_manager", &Global::Problem::Instance()->FunctionManager());
+      "function_manager", &Global::Problem::instance()->function_manager());
   discret_ptr_->evaluate_dirichlet(
       p, zeros_ptr_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmap_ptr_);
   // clear the system vector of possibly inserted non-zero DBC values
@@ -82,14 +82,14 @@ void Solid::Dbc::setup()
   // Create local coordinate system manager
   // ---------------------------------------------------------------------------
   std::vector<Core::Conditions::Condition*> locsysconditions(0);
-  discret_ptr_->GetCondition("Locsys", locsysconditions);
+  discret_ptr_->get_condition("Locsys", locsysconditions);
   if (locsysconditions.size())
   {
     locsysman_ptr_ = Teuchos::rcp(
-        new Core::Conditions::LocsysManager(*discret_ptr_, Global::Problem::Instance()->NDim()));
+        new Core::Conditions::LocsysManager(*discret_ptr_, Global::Problem::instance()->n_dim()));
     // in case we have no time dependent locsys conditions in our problem,
     // this is the only time where the whole setup routine is conducted.
-    locsysman_ptr_->Update(-1.0, {}, Global::Problem::Instance()->FunctionManager());
+    locsysman_ptr_->update(-1.0, {}, Global::Problem::instance()->function_manager());
     islocsys_ = true;
   }
 
@@ -97,7 +97,7 @@ void Solid::Dbc::setup()
   // Set the new pre/post operator for the nox nln linearsystem in the parameter
   // list
   // ---------------------------------------------------------------------------
-  const Teuchos::ParameterList& pnox = timint_ptr_->get_data_sdyn().GetNoxParams();
+  const Teuchos::ParameterList& pnox = timint_ptr_->get_data_sdyn().get_nox_params();
   if (pnox.sublist("Direction").isSublist("Newton"))
   {
     if (pnox.sublist("Direction").sublist("Newton").isSublist("Linear Solver"))
@@ -153,14 +153,14 @@ Teuchos::RCP<const Core::FE::Discretization> Solid::Dbc::discret_ptr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::UpdateLocSysManager()
+void Solid::Dbc::update_loc_sys_manager()
 {
   if (!is_loc_sys()) return;
 
   discret_ptr()->set_state("dispnp", g_state().get_dis_np());
-  locsysman_ptr_->Update(
-      g_state().get_time_np(), {}, Global::Problem::Instance()->FunctionManager());
-  discret_ptr()->ClearState();
+  locsysman_ptr_->update(
+      g_state().get_time_np(), {}, Global::Problem::instance()->function_manager());
+  discret_ptr()->clear_state();
 }
 
 /*----------------------------------------------------------------------------*
@@ -190,32 +190,32 @@ void Solid::Dbc::apply_dirichlet_bc(const double& time, Teuchos::RCP<Epetra_Vect
   check_init_setup();
   // We have to rotate forward ...
   // ---------------------------------------------------------------------------
-  if (!dis.is_null()) RotateGlobalToLocal(dis, true);
-  if (!vel.is_null()) RotateGlobalToLocal(vel);
-  if (!acc.is_null()) RotateGlobalToLocal(acc);
+  if (!dis.is_null()) rotate_global_to_local(dis, true);
+  if (!vel.is_null()) rotate_global_to_local(vel);
+  if (!acc.is_null()) rotate_global_to_local(acc);
 
   // Apply DBCs
   // ---------------------------------------------------------------------------
   Teuchos::ParameterList p;
   p.set("total time", time);
   p.set<const Core::UTILS::FunctionManager*>(
-      "function_manager", &Global::Problem::Instance()->FunctionManager());
+      "function_manager", &Global::Problem::instance()->function_manager());
 
   // predicted Dirichlet values
   // \c dis then also holds prescribed new Dirichlet displacements
-  discret_ptr_->ClearState();
+  discret_ptr_->clear_state();
   if (recreatemap)
     discret_ptr_->evaluate_dirichlet(p, dis, vel, acc, Teuchos::null, dbcmap_ptr_);
   else
     discret_ptr_->evaluate_dirichlet(p, dis, vel, acc, Teuchos::null, Teuchos::null);
 
-  discret_ptr_->ClearState();
+  discret_ptr_->clear_state();
 
   // We have to rotate back into global Cartesian frame
   // ---------------------------------------------------------------------------
-  if (dis != Teuchos::null) RotateLocalToGlobal(dis, true);
-  if (vel != Teuchos::null) RotateLocalToGlobal(vel);
-  if (acc != Teuchos::null) RotateLocalToGlobal(acc);
+  if (dis != Teuchos::null) rotate_local_to_global(dis, true);
+  if (vel != Teuchos::null) rotate_local_to_global(vel);
+  if (acc != Teuchos::null) rotate_local_to_global(acc);
 
   return;
 }
@@ -238,11 +238,11 @@ void Solid::Dbc::apply_dirichlet_to_vector(Teuchos::RCP<Epetra_Vector>& vec) con
 {
   check_init_setup();
   // rotate the coordinate system if desired
-  RotateGlobalToLocal(vec);
+  rotate_global_to_local(vec);
   // apply the dbc
   Core::LinAlg::apply_dirichlet_to_system(*vec, *zeros_ptr_, *(dbcmap_ptr_->cond_map()));
   // rotate back
-  RotateLocalToGlobal(vec);
+  rotate_local_to_global(vec);
 }
 
 /*----------------------------------------------------------------------------*
@@ -252,7 +252,7 @@ void Solid::Dbc::apply_dirichlet_to_local_rhs(Teuchos::RCP<Epetra_Vector>& b) co
   check_init_setup();
 
   // rotate the coordinate system: global --> local
-  RotateGlobalToLocal(b);
+  rotate_global_to_local(b);
 
   extract_freact(b);
   Core::LinAlg::apply_dirichlet_to_system(*b, *zeros_ptr_, *(dbcmap_ptr_->cond_map()));
@@ -263,14 +263,14 @@ void Solid::Dbc::apply_dirichlet_to_local_rhs(Teuchos::RCP<Epetra_Vector>& b) co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::ApplyDirichletToRhs(Teuchos::RCP<Epetra_Vector>& b) const
+void Solid::Dbc::apply_dirichlet_to_rhs(Teuchos::RCP<Epetra_Vector>& b) const
 {
   check_init_setup();
 
   apply_dirichlet_to_local_rhs(b);
 
   // rotate back: local --> global
-  RotateLocalToGlobal(b);
+  rotate_local_to_global(b);
 
   return;
 }
@@ -286,9 +286,9 @@ void Solid::Dbc::apply_dirichlet_to_local_jacobian(
    * behavior during the usage of locsys. Furthermore, the consideration of
    * DBCs in an explicit way is a pretty expensive operation.
    *                                                          hiermeier 01/18 */
-  if (A->IsDbcApplied(*dbcmap_ptr_->cond_map(), true, get_loc_sys_trafo().get())) return;
+  if (A->is_dbc_applied(*dbcmap_ptr_->cond_map(), true, get_loc_sys_trafo().get())) return;
 
-  if (RotateGlobalToLocal(A))
+  if (rotate_global_to_local(A))
   {
     Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>> mats =
         g_state().extract_displ_row_of_blocks(*A);
@@ -301,25 +301,25 @@ void Solid::Dbc::apply_dirichlet_to_local_jacobian(
           *get_loc_sys_trafo(), *(dbcmap_ptr_->cond_map()), (i == 0), false);
     }
 
-    if (not A->Filled()) A->Complete();
+    if (not A->filled()) A->complete();
   }
   else
-    A->ApplyDirichlet(*(dbcmap_ptr_->cond_map()));
+    A->apply_dirichlet(*(dbcmap_ptr_->cond_map()));
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v) const
+bool Solid::Dbc::rotate_global_to_local(const Teuchos::RCP<Epetra_Vector>& v) const
 {
   check_init_setup();
-  return RotateGlobalToLocal(v, false);
+  return rotate_global_to_local(v, false);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const
+bool Solid::Dbc::rotate_global_to_local(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const
 {
   check_init_setup();
   if (not is_loc_sys()) return false;
@@ -329,19 +329,19 @@ bool Solid::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v, bool 
     Epetra_Vector v_displ(*g_state().dof_row_map_view());
     Core::LinAlg::ExtractMyVector(*v, v_displ);
 
-    locsysman_ptr_->RotateGlobalToLocal(Teuchos::rcpFromRef(v_displ), offset);
+    locsysman_ptr_->rotate_global_to_local(Teuchos::rcpFromRef(v_displ), offset);
 
     Core::LinAlg::AssembleMyVector(0.0, *v, 1.0, v_displ);
   }
   else
-    locsysman_ptr_->RotateGlobalToLocal(v, offset);
+    locsysman_ptr_->rotate_global_to_local(v, offset);
 
   return true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Core::LinAlg::SparseOperator>& A) const
+bool Solid::Dbc::rotate_global_to_local(const Teuchos::RCP<Core::LinAlg::SparseOperator>& A) const
 {
   check_init_setup();
   if (not is_loc_sys()) return false;
@@ -350,24 +350,24 @@ bool Solid::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Core::LinAlg::SparseOper
       g_state().extract_displ_row_of_blocks(*A);
 
   for (unsigned i = 0; i < mats->size(); ++i)
-    locsysman_ptr_->RotateGlobalToLocal(Teuchos::rcpFromRef(*(*mats)[i]));
+    locsysman_ptr_->rotate_global_to_local(Teuchos::rcpFromRef(*(*mats)[i]));
 
-  if (not A->Filled()) A->Complete();
+  if (not A->filled()) A->complete();
 
   return true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::Dbc::RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v) const
+bool Solid::Dbc::rotate_local_to_global(const Teuchos::RCP<Epetra_Vector>& v) const
 {
   check_init_setup();
-  return RotateLocalToGlobal(v, false);
+  return rotate_local_to_global(v, false);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::Dbc::RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const
+bool Solid::Dbc::rotate_local_to_global(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const
 {
   check_init_setup();
   if (not is_loc_sys()) return false;
@@ -377,12 +377,12 @@ bool Solid::Dbc::RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v, bool 
     Epetra_Vector v_displ(*g_state().dof_row_map_view());
     Core::LinAlg::ExtractMyVector(*v, v_displ);
 
-    locsysman_ptr_->RotateLocalToGlobal(Teuchos::rcpFromRef(v_displ), offset);
+    locsysman_ptr_->rotate_local_to_global(Teuchos::rcpFromRef(v_displ), offset);
 
     Core::LinAlg::AssembleMyVector(0.0, *v, 1.0, v_displ);
   }
   else
-    locsysman_ptr_->RotateLocalToGlobal(v, offset);
+    locsysman_ptr_->rotate_local_to_global(v, offset);
 
   // reset flag
   return false;
@@ -395,7 +395,7 @@ Teuchos::RCP<const Core::LinAlg::SparseMatrix> Solid::Dbc::get_loc_sys_trafo() c
   check_init_setup();
   if (not is_loc_sys()) return Teuchos::null;
 
-  return locsysman_ptr_->Trafo();
+  return locsysman_ptr_->trafo();
 }
 
 /*----------------------------------------------------------------------------*
@@ -411,7 +411,7 @@ void Solid::Dbc::extract_freact(Teuchos::RCP<Epetra_Vector>& b) const
   insert_vector_in_non_dbc_dofs(zeros_ptr_, Teuchos::rcpFromRef(freact()));
 
   // turn the reaction forces back to the global coordinate system if necessary
-  RotateLocalToGlobal(Teuchos::rcpFromRef(freact()));
+  rotate_local_to_global(Teuchos::rcpFromRef(freact()));
 }
 
 /*----------------------------------------------------------------------------*
@@ -433,7 +433,7 @@ Teuchos::RCP<const Core::LinAlg::MapExtractor> Solid::Dbc::get_dbc_map_extractor
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Conditions::LocsysManager> Solid::Dbc::LocSysManagerPtr()
+Teuchos::RCP<Core::Conditions::LocsysManager> Solid::Dbc::loc_sys_manager_ptr()
 {
   check_init_setup();
   return locsysman_ptr_;
@@ -441,7 +441,7 @@ Teuchos::RCP<Core::Conditions::LocsysManager> Solid::Dbc::LocSysManagerPtr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& Solid::Dbc::GetZeros() const
+const Epetra_Vector& Solid::Dbc::get_zeros() const
 {
   check_init_setup();
   return *zeros_ptr_;
@@ -449,7 +449,7 @@ const Epetra_Vector& Solid::Dbc::GetZeros() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> Solid::Dbc::GetZerosPtr() const
+Teuchos::RCP<const Epetra_Vector> Solid::Dbc::get_zeros_ptr() const
 {
   check_init_setup();
   return zeros_ptr_;
@@ -473,7 +473,7 @@ const Solid::TimeInt::BaseDataGlobalState& Solid::Dbc::g_state() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
+void Solid::Dbc::add_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
   condmaps.push_back(maptoadd);
@@ -485,7 +485,7 @@ void Solid::Dbc::AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove)
+void Solid::Dbc::remove_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoremove)
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
   othermaps.push_back(maptoremove);

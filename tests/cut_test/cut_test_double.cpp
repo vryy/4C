@@ -15,16 +15,16 @@
 void test_hex8_quad4_double_cut()
 {
   Core::Geo::Cut::MeshIntersection intersection(2);
-  intersection.GetOptions().Init_for_Cuttests();  // use full cln
+  intersection.get_options().init_for_cuttests();  // use full cln
 
-  Core::Geo::Cut::Mesh& mesh = intersection.NormalMesh();
+  Core::Geo::Cut::Mesh& mesh = intersection.normal_mesh();
 
   // Geo::Cut::Element * hex8 =
   create_hex8(mesh);
 
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
-  Core::Geo::Cut::Mesh& cut_mesh1 = intersection.CutMesh(0);
+  Core::Geo::Cut::Mesh& cut_mesh1 = intersection.cut_mesh(0);
 
   xyze(0, 0) = 0.25;
   xyze(1, 0) = -0.2;
@@ -45,7 +45,7 @@ void test_hex8_quad4_double_cut()
   // Geo::Cut::Side* quad4_1 =
   create_quad4(cut_mesh1, xyze);
 
-  Core::Geo::Cut::Mesh& cut_mesh2 = intersection.CutMesh(1);
+  Core::Geo::Cut::Mesh& cut_mesh2 = intersection.cut_mesh(1);
 
   xyze(0, 0) = 0.75;
   xyze(1, 0) = -0.2;
@@ -69,5 +69,5 @@ void test_hex8_quad4_double_cut()
   // intersection.SelfCutTest_Cut();
 
   // OutputGenerator generator;
-  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }

@@ -35,11 +35,11 @@ namespace
       std::vector<double> xrefe_full{-0.05, 0.05, 0.3, 0.45, -0.05, 0.1};
 
       for (int lid = 0; lid < 2; ++lid)
-        testdis_->AddNode(Teuchos::rcp(new Core::Nodes::Node(lid, xrefe[lid], 0)));
+        testdis_->add_node(Teuchos::rcp(new Core::Nodes::Node(lid, xrefe[lid], 0)));
 
       testele_ = Teuchos::rcp(new Discret::ELEMENTS::Beam3r(0, 0));
       std::array<int, 2> node_ids{0, 1};
-      testele_->SetNodeIds(2, node_ids.data());
+      testele_->set_node_ids(2, node_ids.data());
 
       // create 1 element discretization
       testdis_->add_element(testele_);
@@ -73,7 +73,7 @@ namespace
    */
   TEST_F(Beam3r, RefLength)
   {
-    EXPECT_NEAR(testele_->RefLength(), 0.61920435714496047, testTolerance);
+    EXPECT_NEAR(testele_->ref_length(), 0.61920435714496047, testTolerance);
   }
 
 }  // namespace

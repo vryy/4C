@@ -14,16 +14,16 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoHex8fbar::ReadElement(
+bool Discret::ELEMENTS::SoHex8fbar::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  SetMaterial(0, Mat::Factory(material));
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  set_material(0, Mat::Factory(material_id));
 
   // set up of materials with GP data (e.g., history variables)
-  SolidMaterial()->setup(NUMGPT_SOH8, linedef);
+  solid_material()->setup(NUMGPT_SOH8, linedef);
 
   // temporary variable for read-in
   std::string buffer;
@@ -42,7 +42,7 @@ bool Discret::ELEMENTS::SoHex8fbar::ReadElement(
     FOUR_C_THROW("Reading SO_HEX8FBAR element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
-  SolidMaterial()->ValidKinematics(kintype_);
+  solid_material()->valid_kinematics(kintype_);
 
   return true;
 }

@@ -30,14 +30,14 @@ EHL::Partitioned::Partitioned(const Epetra_Comm& comm,
     : Base(comm, globaltimeparams, lubricationparams, structparams, struct_disname,
           lubrication_disname),
       preincnp_(Core::LinAlg::CreateVector(
-          *lubrication_->LubricationField()->discretization()->dof_row_map(0), true)),
+          *lubrication_->lubrication_field()->discretization()->dof_row_map(0), true)),
       dispincnp_(Core::LinAlg::CreateVector(*structure_->dof_row_map(0), true))
 {
   // call the EHL parameter lists
   const Teuchos::ParameterList& ehlparams =
-      Global::Problem::Instance()->elasto_hydro_dynamic_params();
+      Global::Problem::instance()->elasto_hydro_dynamic_params();
   const Teuchos::ParameterList& ehlparamspart =
-      Global::Problem::Instance()->elasto_hydro_dynamic_params().sublist("PARTITIONED");
+      Global::Problem::instance()->elasto_hydro_dynamic_params().sublist("PARTITIONED");
 
   if (Core::UTILS::IntegralValue<int>(ehlparams, "DIFFTIMESTEPSIZE"))
   {
@@ -55,9 +55,9 @@ EHL::Partitioned::Partitioned(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*
  | Timeloop for EHL problems                                wirtz 12/15 |
  *----------------------------------------------------------------------*/
-void EHL::Partitioned::Timeloop()
+void EHL::Partitioned::timeloop()
 {
-  while (NotFinished())
+  while (not_finished())
   {
     prepare_time_step();
 
@@ -76,10 +76,10 @@ void EHL::Partitioned::prepare_time_step()
   increment_time_and_step();
   print_header();
 
-  set_struct_solution(structure_->Dispn());
+  set_struct_solution(structure_->dispn());
   structure_->prepare_time_step();
   //  set_lubrication_solution(lubrication_->LubricationField()->Quantity()); // todo: what quantity
-  lubrication_->LubricationField()->prepare_time_step();
+  lubrication_->lubrication_field()->prepare_time_step();
 }
 
 
@@ -91,7 +91,7 @@ void EHL::Partitioned::outer_loop()
   int itnum = 0;
   bool stopnonliniter = false;
 
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n****************************************\n          OUTER ITERATION "
                  "LOOP\n****************************************\n";
@@ -103,17 +103,17 @@ void EHL::Partitioned::outer_loop()
 
     // store pressure from first solution for convergence check (like in
     // elch_algorithm: use current values)
-    preincnp_->Update(1.0, *lubrication_->LubricationField()->Prenp(), 0.0);
-    dispincnp_->Update(1.0, *structure_->Dispnp(), 0.0);
+    preincnp_->Update(1.0, *lubrication_->lubrication_field()->prenp(), 0.0);
+    dispincnp_->Update(1.0, *structure_->dispnp(), 0.0);
 
     // set the external fluid force on the structure, which result from the fluid pressure
-    set_lubrication_solution(lubrication_->LubricationField()->Prenp());
+    set_lubrication_solution(lubrication_->lubrication_field()->prenp());
     if (itnum != 1) structure_->prepare_partition_step();
     // solve structural system
     do_struct_step();
 
     // set mesh displacement, velocity fields and film thickness
-    set_struct_solution(structure_->Dispnp());
+    set_struct_solution(structure_->dispnp());
 
     // solve lubrication equation and calculate the resulting traction, which will be applied on the
     // solids
@@ -138,12 +138,12 @@ void EHL::Partitioned::update_and_output()
   structure_->prepare_output(force_prepare);
 
   structure_->update();
-  lubrication_->LubricationField()->update();
+  lubrication_->lubrication_field()->update();
 
-  lubrication_->LubricationField()->evaluate_error_compared_to_analytical_sol();
+  lubrication_->lubrication_field()->evaluate_error_compared_to_analytical_sol();
 
   structure_->output();
-  lubrication_->LubricationField()->output();
+  lubrication_->lubrication_field()->output();
 }
 
 
@@ -152,13 +152,13 @@ void EHL::Partitioned::update_and_output()
  *----------------------------------------------------------------------*/
 void EHL::Partitioned::do_struct_step()
 {
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n***********************\n STRUCTURE SOLVER \n***********************\n";
   }
 
   // Newton-Raphson iteration
-  structure_->Solve();
+  structure_->solve();
 }
 
 
@@ -167,7 +167,7 @@ void EHL::Partitioned::do_struct_step()
  *----------------------------------------------------------------------*/
 void EHL::Partitioned::do_lubrication_step()
 {
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n***********************\n  LUBRICATION SOLVER \n***********************\n";
   }
@@ -175,7 +175,7 @@ void EHL::Partitioned::do_lubrication_step()
   // -------------------------------------------------------------------
   //                           solve nonlinear
   // -------------------------------------------------------------------
-  lubrication_->LubricationField()->Solve();
+  lubrication_->lubrication_field()->solve();
 }
 
 
@@ -207,21 +207,21 @@ bool EHL::Partitioned::convergence_check(int itnum)
 
   // build the current pressure increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
-  preincnp_->Update(1.0, *(lubrication_->LubricationField()->Prenp()), -1.0);
-  dispincnp_->Update(1.0, *(structure_->Dispnp()), -1.0);
+  preincnp_->Update(1.0, *(lubrication_->lubrication_field()->prenp()), -1.0);
+  dispincnp_->Update(1.0, *(structure_->dispnp()), -1.0);
 
   // build the L2-norm of the pressure increment and the pressure
   preincnp_->Norm2(&preincnorm_L2);
-  lubrication_->LubricationField()->Prenp()->Norm2(&prenorm_L2);
+  lubrication_->lubrication_field()->prenp()->Norm2(&prenorm_L2);
   dispincnp_->Norm2(&dispincnorm_L2);
-  structure_->Dispnp()->Norm2(&dispnorm_L2);
+  structure_->dispnp()->Norm2(&dispnorm_L2);
 
   // care for the case that there is (almost) zero pressure
   if (prenorm_L2 < 1e-6) prenorm_L2 = 1.0;
   if (dispnorm_L2 < 1e-6) dispnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n";
     std::cout
@@ -238,8 +238,8 @@ bool EHL::Partitioned::convergence_check(int itnum)
     printf(
         "|   %3d/%3d    |  %10.3E[L_2 ]   |  %10.3E      |  %10.3E     |  %10.3E          |  "
         "%10.3E      |",
-        itnum, itmax_, ittol_, preincnorm_L2 / Dt() / sqrt(preincnp_->GlobalLength()),
-        dispincnorm_L2 / Dt() / sqrt(dispincnp_->GlobalLength()), preincnorm_L2 / prenorm_L2,
+        itnum, itmax_, ittol_, preincnorm_L2 / dt() / sqrt(preincnp_->GlobalLength()),
+        dispincnorm_L2 / dt() / sqrt(dispincnp_->GlobalLength()), preincnorm_L2 / prenorm_L2,
         dispincnorm_L2 / dispnorm_L2);
     printf("\n");
     printf(
@@ -249,11 +249,11 @@ bool EHL::Partitioned::convergence_check(int itnum)
 
   // converged
   if (((preincnorm_L2 / prenorm_L2) <= ittol_) and ((dispincnorm_L2 / dispnorm_L2) <= ittol_) and
-      ((dispincnorm_L2 / Dt() / sqrt(dispincnp_->GlobalLength())) <= ittol_) and
-      ((preincnorm_L2 / Dt() / sqrt(preincnp_->GlobalLength())) <= ittol_))
+      ((dispincnorm_L2 / dt() / sqrt(dispincnp_->GlobalLength())) <= ittol_) and
+      ((preincnorm_L2 / dt() / sqrt(preincnp_->GlobalLength())) <= ittol_))
   {
     stopnonliniter = true;
-    if (Comm().MyPID() == 0)
+    if (get_comm().MyPID() == 0)
     {
       printf("\n");
       printf(
@@ -270,11 +270,11 @@ bool EHL::Partitioned::convergence_check(int itnum)
   // timestep
   if ((itnum == itmax_) and
       (((preincnorm_L2 / prenorm_L2) > ittol_) or ((dispincnorm_L2 / dispnorm_L2) > ittol_) or
-          ((dispincnorm_L2 / Dt() / sqrt(dispincnp_->GlobalLength())) > ittol_) or
-          (preincnorm_L2 / Dt() / sqrt(preincnp_->GlobalLength())) > ittol_))
+          ((dispincnorm_L2 / dt() / sqrt(dispincnp_->GlobalLength())) > ittol_) or
+          (preincnorm_L2 / dt() / sqrt(preincnp_->GlobalLength())) > ittol_))
   {
     stopnonliniter = true;
-    if ((Comm().MyPID() == 0))
+    if ((get_comm().MyPID() == 0))
     {
       printf(
           "|     >>>>>> not converged in itemax steps!                                             "

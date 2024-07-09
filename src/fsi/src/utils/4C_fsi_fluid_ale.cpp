@@ -20,10 +20,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 FSI::FluidAleAlgorithm::FluidAleAlgorithm(const Epetra_Comm& comm)
     : FluidMovingBoundaryBaseAlgorithm(
-          Global::Problem::Instance()->FSIDynamicParams(), "FSICoupling"),
+          Global::Problem::instance()->fsi_dynamic_params(), "FSICoupling"),
       comm_(comm)
 {
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
 
   if (comm_.MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, fsidyn);
 
@@ -38,7 +38,7 @@ FSI::FluidAleAlgorithm::FluidAleAlgorithm(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::Timeloop()
+void FSI::FluidAleAlgorithm::timeloop()
 {
   while (not_finished())
   {
@@ -53,7 +53,7 @@ void FSI::FluidAleAlgorithm::Timeloop()
 /*----------------------------------------------------------------------*/
 void FSI::FluidAleAlgorithm::read_restart(int step)
 {
-  time_ = MBFluidField()->read_restart(step);
+  time_ = mb_fluid_field()->read_restart(step);
   step_ = step;
 }
 
@@ -64,28 +64,28 @@ void FSI::FluidAleAlgorithm::prepare_time_step()
   step_ += 1;
   time_ += dt_;
 
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
     std::cout << "\n"
               << "TIME:  " << std::scientific << time_ << "/" << std::scientific << maxtime_
               << "     DT = " << std::scientific << dt_ << "     STEP = " << std::setw(4) << step_
               << "/" << std::setw(4) << nstep_ << "\n\n";
 
-  MBFluidField()->prepare_time_step();
+  mb_fluid_field()->prepare_time_step();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::solve() { MBFluidField()->nonlinear_solve(); }
+void FSI::FluidAleAlgorithm::solve() { mb_fluid_field()->nonlinear_solve(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::update() { MBFluidField()->update(); }
+void FSI::FluidAleAlgorithm::update() { mb_fluid_field()->update(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::output() { MBFluidField()->output(); }
+void FSI::FluidAleAlgorithm::output() { mb_fluid_field()->output(); }
 
 FOUR_C_NAMESPACE_CLOSE

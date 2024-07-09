@@ -82,20 +82,20 @@ namespace Mat
       //@{
 
       /// material type
-      Core::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType material_type() const override
       {
         return Core::Materials::mes_isoneohooke;
       }
 
       /// add shear modulus equivalent
-      void AddShearMod(bool& haveshearmod,  ///< non-zero shear modulus was added
-          double& shearmod                  ///< variable to add upon
+      void add_shear_mod(bool& haveshearmod,  ///< non-zero shear modulus was added
+          double& shearmod                    ///< variable to add upon
       ) const override;
 
       //@}
 
       // add strain energy
-      void AddStrainEnergy(double& psi,  ///< strain energy function
+      void add_strain_energy(double& psi,  ///< strain energy function
           const Core::LinAlg::Matrix<3, 1>&
               prinv,  ///< principal invariants of right Cauchy-Green tensor
           const Core::LinAlg::Matrix<3, 1>&
@@ -119,11 +119,11 @@ namespace Mat
 
       /// @name Access methods
       //@{
-      double Mue() const { return params_->mue_; }
+      double mue() const { return params_->mue_; }
       //@}
 
       /// Indicator for formulation
-      void SpecifyFormulation(
+      void specify_formulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation

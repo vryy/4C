@@ -146,39 +146,39 @@ namespace UTILS
         const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5) override;
 
     // cbO2 and its derivatives
-    double cbO2(double ppCO2, double ppO2);
+    double cb_o2(double ppCO2, double ppO2);
     // w.r.t. O2
-    double dcbO2_dppO2(double ppCO2, double ppO2);
-    double d2cbO2_dppO22(double ppCO2, double ppO2);
+    double dcb_o2_dpp_o2(double ppCO2, double ppO2);
+    double d2cb_o2_dpp_o22(double ppCO2, double ppO2);
     // w.r.t. CO2
-    double dcbO2_dppCO2(double ppCO2, double ppO2);
-    double d2cbO2_dppCO22(double ppCO2, double ppO2);
-    double d2cbO2_dppO2dppCO2(double ppCO2, double ppO2);
+    double dcb_o2_dpp_c_o2(double ppCO2, double ppO2);
+    double d2cb_o2_dpp_c_o22(double ppCO2, double ppO2);
+    double d2cb_o2_dpp_o2dpp_c_o2(double ppCO2, double ppO2);
 
     // cbCO2 and its derivatives
-    double cbCO2(double ppCO2, double ppO2);
+    double cb_c_o2(double ppCO2, double ppO2);
     // w.r.t. CO2
-    double dcbCO2_dppCO2(double ppCO2, double ppO2);
-    double d2cbCO2_dppCO22(double ppCO2, double ppO2);
+    double dcb_c_o2_dpp_c_o2(double ppCO2, double ppO2);
+    double d2cb_c_o2_dpp_c_o22(double ppCO2, double ppO2);
     // w.r.t. O2
-    double dcbCO2_dppO2(double ppCO2, double ppO2);
-    double d2cbCO2_dppO22(double ppCO2, double ppO2);
-    double d2cbCO2_dppCO2dppO2(double ppCO2, double ppO2);
+    double dcb_c_o2_dpp_o2(double ppCO2, double ppO2);
+    double d2cb_c_o2_dpp_o22(double ppCO2, double ppO2);
+    double d2cb_c_o2_dpp_c_o2dpp_o2(double ppCO2, double ppO2);
 
-    double ctO2(double ppO2);
-    double dctO2_dppO2(double ppO2);
-    double d2ctO2_dppO22(double ppO2);
+    double ct_o2(double ppO2);
+    double dct_o2_dpp_o2(double ppO2);
+    double d2ct_o2_dpp_o22(double ppO2);
 
-    double SO2(double ppCO2, double ppO2);
+    double s_o2(double ppCO2, double ppO2);
 
-    double ctCO2(double ppCO2);
-    double dctCO2_dppCO2(double ppCO2);
-    double d2ctCO2_dppCO22(double ppCO2);
+    double ct_c_o2(double ppCO2);
+    double dct_c_o2_dpp_c_o2(double ppCO2);
+    double d2ct_c_o2_dpp_c_o22(double ppCO2);
 
 
     //! Evaluate routine to call from outside. In here the right action is determined and the
     //! #EvaluateCardiovascular0D routine is called
-    virtual void EvaluateRespiratory(Teuchos::ParameterList& params, std::vector<double>& df_np,
+    virtual void evaluate_respiratory(Teuchos::ParameterList& params, std::vector<double>& df_np,
         std::vector<double>& f_np, Core::LinAlg::SerialDenseMatrix& wkstiff,
         Teuchos::RCP<Epetra_Vector> dofvec, Teuchos::RCP<Epetra_Vector> volvec, bool evalstiff);
 

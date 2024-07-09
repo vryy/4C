@@ -76,7 +76,7 @@ namespace CONTACT::CONSTITUTIVELAW
     virtual Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> create_constitutive_law() = 0;
 
     // Access offset of the function
-    double GetOffset() { return offset_; }
+    double get_offset() { return offset_; }
 
     /**
      * \brief Offset from the edge (gap==0) from where the constitutive law will be used
@@ -111,13 +111,13 @@ namespace CONTACT::CONSTITUTIVELAW
     //@{
 
     /// Return material id
-    [[nodiscard]] inline virtual int Id() const
+    [[nodiscard]] inline virtual int id() const
     {
       return id_;
     }  // todo does not override anything.. is it supposed to be this way?
 
     /// Return material name
-    [[nodiscard]] inline virtual std::string Name() const
+    [[nodiscard]] inline virtual std::string name() const
     {
       return name_;
     }  // todo does not override anything.. is it supposed to be this way?
@@ -126,7 +126,7 @@ namespace CONTACT::CONSTITUTIVELAW
     void print(std::ostream& os) const override;
 
     /// Return type of constitutivelaw
-    [[nodiscard]] inline virtual Inpar::CONTACT::ConstitutiveLawType Type() const { return type_; }
+    [[nodiscard]] inline virtual Inpar::CONTACT::ConstitutiveLawType type() const { return type_; }
 
     /**
      * \brief Return quickly accessible material parameter data
@@ -134,7 +134,7 @@ namespace CONTACT::CONSTITUTIVELAW
      * These quick access parameters are stored in separate member #params_;
      * whereas the originally read ones are stored in Core::IO::InputParameterContainer base
      */
-    [[nodiscard]] inline CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const
+    [[nodiscard]] inline CONTACT::CONSTITUTIVELAW::Parameter* parameter() const
     {
       return params_.get();
     }

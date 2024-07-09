@@ -32,13 +32,13 @@ FOUR_C_NAMESPACE_OPEN
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::TemperBoundaryImplInterface*
-Discret::ELEMENTS::TemperBoundaryImplInterface::Impl(const Core::Elements::Element* ele)
+Discret::ELEMENTS::TemperBoundaryImplInterface::impl(const Core::Elements::Element* ele)
 {
   // we assume here, that numdofpernode is equal for every node within
   // the discretization and does not change during the computations
-  const int numdofpernode = ele->NumDofPerNode(*(ele->Nodes()[0]));
+  const int numdofpernode = ele->num_dof_per_node(*(ele->nodes()[0]));
 
-  switch (ele->Shape())
+  switch (ele->shape())
   {
     case Core::FE::CellType::quad4:
     {
@@ -91,7 +91,7 @@ Discret::ELEMENTS::TemperBoundaryImplInterface::Impl(const Core::Elements::Eleme
        return cl3;
      }*/
     default:
-      FOUR_C_THROW("Shape %d (%d nodes) not supported", ele->Shape(), ele->num_node());
+      FOUR_C_THROW("Shape %d (%d nodes) not supported", ele->shape(), ele->num_node());
       break;
   }
   return nullptr;
@@ -147,7 +147,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
   FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::Thermo*>(genericparent) != nullptr,
       "Parent element is no fluid element");
   Discret::ELEMENTS::Thermo* parentele = static_cast<Discret::ELEMENTS::Thermo*>(genericparent);
-  Teuchos::RCP<Core::Mat::Material> mat = parentele->Material();
+  Teuchos::RCP<Core::Mat::Material> mat = parentele->material();
 
   // Now, check for the action parameter
   const THR::BoundaryAction action = Core::UTILS::GetAsEnum<THR::BoundaryAction>(params, "action");
@@ -168,7 +168,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
     // loop over the boundary element nodes
     for (int j = 0; j < nen_; j++)
     {
-      const int nodegid = (ele->Nodes()[j])->Id();
+      const int nodegid = (ele->nodes()[j])->id();
       if (normals->Map().MyGID(nodegid))
       {  // OK, the node belongs to this processor
 
@@ -188,7 +188,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
   else if (action == THR::ba_integrate_shape_functions)
   {
     // NOTE: add area value only for elements which are NOT ghosted!
-    const bool addarea = (ele->Owner() == discretization.Comm().MyPID());
+    const bool addarea = (ele->owner() == discretization.get_comm().MyPID());
     integrate_shape_functions(ele, params, elevec1_epetra, addarea);
   }
 
@@ -224,9 +224,9 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
     double curvefac = 1.0;
     if (curvenum >= 0)
     {
-      curvefac =
-          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).evaluate(
-              time);
+      curvefac = Global::Problem::instance()
+                     ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
+                     .evaluate(time);
     }
     // multiply heat convection coefficient with the timecurve factor
     coeff *= curvefac;
@@ -237,8 +237,8 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
     // find out whether we shall use a time curve for T_oo and get the factor
     if (surtempcurvenum >= 0)
     {
-      surtempcurvefac = Global::Problem::Instance()
-                            ->FunctionById<Core::UTILS::FunctionOfTime>(surtempcurvenum)
+      surtempcurvefac = Global::Problem::instance()
+                            ->function_by_id<Core::UTILS::FunctionOfTime>(surtempcurvenum)
                             .evaluate(time);
     }
     // complete surrounding temperatures T_oo: multiply with the timecurve factor
@@ -249,11 +249,11 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
     if (*tempstate == "Tempnp")
     {
       // disassemble temperature
-      if (discretization.HasState("temperature"))
+      if (discretization.has_state("temperature"))
       {
         // get actual values of temperature from global location vector
         std::vector<double> mytempnp((la[0].lm_).size());
-        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("temperature");
+        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state("temperature");
         if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         Core::FE::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
@@ -267,11 +267,11 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
     // use temperature T_n of last known time step t_n
     else if (*tempstate == "Tempn")
     {
-      if (discretization.HasState("old temperature"))
+      if (discretization.has_state("old temperature"))
       {
         // get actual values of temperature from global location vector
         std::vector<double> mytempn((la[0].lm_).size());
-        Teuchos::RCP<const Epetra_Vector> tempn = discretization.GetState("old temperature");
+        Teuchos::RCP<const Epetra_Vector> tempn = discretization.get_state("old temperature");
         if (tempn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempn'");
 
         Core::FE::ExtractMyValues(*tempn, mytempn, la[0].lm_);
@@ -321,17 +321,17 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
     // -------------------------- geometrically nonlinear TSI problem
 
     // if it's a TSI problem with displacementcoupling_ --> go on here!
-    if ((kintype == Inpar::Solid::KinemType::nonlinearTotLag) and (la.Size() > 1))  // geo_nonlinear
+    if ((kintype == Inpar::Solid::KinemType::nonlinearTotLag) and (la.size() > 1))  // geo_nonlinear
     {
       // set views, here we assemble on the boundary dofs only!
       Core::LinAlg::Matrix<nen_, (nsd_ + 1) * nen_> etangcoupl(
           elemat2_epetra.values(), true);  // view only!
 
       // and now get the current displacements/velocities
-      if (discretization.HasState(1, "displacement"))
+      if (discretization.has_state(1, "displacement"))
       {
         // get the displacements
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(1, "displacement");
+        Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(1, "displacement");
         if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
         // extract the displacements
         Core::FE::ExtractMyValues(*disp, mydisp, la[1].lm_);
@@ -406,10 +406,10 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
     // -------------------------- geometrically nonlinear TSI problem
 
     // if it's a TSI problem with displacementcoupling_ --> go on here!
-    if ((kintype == Inpar::Solid::KinemType::nonlinearTotLag) and (la.Size() > 1))  // geo_nonlinear
+    if ((kintype == Inpar::Solid::KinemType::nonlinearTotLag) and (la.size() > 1))  // geo_nonlinear
     {
       // and now get the current displacements/velocities
-      if (discretization.HasState(1, "displacement"))
+      if (discretization.has_state(1, "displacement"))
       {
         // get node coordinates (nsd_+1: domain, nsd_: boundary)
         Core::Geo::fillInitialPositionArray<distype, nsd_ + 1,
@@ -440,8 +440,8 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
         double curvefac = 1.0;
         if (curvenum >= 0)
         {
-          curvefac = Global::Problem::Instance()
-                         ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
+          curvefac = Global::Problem::instance()
+                         ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
                          .evaluate(time);
         }
         // multiply heat convection coefficient with the timecurve factor
@@ -453,8 +453,8 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
         // find out whether we shall use a time curve for T_oo and get the factor
         if (surtempcurvenum >= 0)
         {
-          surtempcurvefac = Global::Problem::Instance()
-                                ->FunctionById<Core::UTILS::FunctionOfTime>(surtempcurvenum)
+          surtempcurvefac = Global::Problem::instance()
+                                ->function_by_id<Core::UTILS::FunctionOfTime>(surtempcurvenum)
                                 .evaluate(time);
         }
         // complete surrounding temperatures T_oo: multiply with the timecurve factor
@@ -465,11 +465,11 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
         if (*tempstate == "Tempnp")
         {
           // disassemble temperature
-          if (discretization.HasState("temperature"))
+          if (discretization.has_state("temperature"))
           {
             // get actual values of temperature from global location vector
             std::vector<double> mytempnp((la[0].lm_).size());
-            Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("temperature");
+            Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state("temperature");
             if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
             Core::FE::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
@@ -483,11 +483,11 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
         // use temperature T_n of last known time step t_n
         else if (*tempstate == "Tempn")
         {
-          if (discretization.HasState("old temperature"))
+          if (discretization.has_state("old temperature"))
           {
             // get actual values of temperature from global location vector
             std::vector<double> mytempn((la[0].lm_).size());
-            Teuchos::RCP<const Epetra_Vector> tempn = discretization.GetState("old temperature");
+            Teuchos::RCP<const Epetra_Vector> tempn = discretization.get_state("old temperature");
             if (tempn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempn'");
 
             Core::FE::ExtractMyValues(*tempn, mytempn, la[0].lm_);
@@ -515,7 +515,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
 #endif  // THRASOUTPUT
 
         // get the displacements
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(1, "displacement");
+        Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(1, "displacement");
         if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
         // extract the displacements
         Core::FE::ExtractMyValues(*disp, mydisp, la[1].lm_);
@@ -613,10 +613,10 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate_neumann(
   const auto* func = &condition.parameters().get<std::vector<int>>("funct");
 
   // integration loop
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     // output of function: fac_ =  detJ * w(gp)
-    eval_shape_func_and_int_fac(intpoints, iquad, ele->Id());
+    eval_shape_func_and_int_fac(intpoints, iquad, ele->id());
 
     // factor given by spatial function
     double functfac = 1.0;
@@ -639,8 +639,8 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate_neumann(
           if (functnum > 0)
           {
             // evaluate function at current gauss point
-            functfac = Global::Problem::Instance()
-                           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+            functfac = Global::Problem::instance()
+                           ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                            .evaluate(coordgpref, time, dof);
           }
           else
@@ -678,13 +678,13 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_convection_fint_c
 
   // integrations points and weights
   Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
+  if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // ----------------------------------------- loop over Gauss Points
-  for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; iquad++)
   {
     // output of function: fac_ = detJ * w(gp)
-    eval_shape_func_and_int_fac(intpoints, iquad, ele->Id());
+    eval_shape_func_and_int_fac(intpoints, iquad, ele->id());
     // fac_ = Gauss weight * det(J) is calculated in eval_shape_func_and_int_fac()
 
     // ------------right-hand-side
@@ -778,7 +778,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_nln_convection_fi
 
   // integrations points and weights for 2D, i.e. dim of boundary element
   Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
+  if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // set up matrices and parameters needed for the evaluation of current
   // interfacial area and its derivatives w.r.t. the displacements
@@ -794,13 +794,13 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_nln_convection_fi
   Core::LinAlg::Matrix<(nsd_ + 1) * nen_, 1> Adiff(true);  // (12x1)
 
   // ----------------------------------------- loop over Gauss Points
-  // with ngp = intpoints.IP().nquad
-  for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
+  // with ngp = intpoints.ip().nquad
+  for (int iquad = 0; iquad < intpoints.ip().nquad; iquad++)
   {
     // output of function: fac_ = detJ * w(gp)
     // allocate vector for shape functions (funct_) and matrix for derivatives
     // (deriv_) for boundary element
-    eval_shape_func_and_int_fac(intpoints, iquad, ele->Id());
+    eval_shape_func_and_int_fac(intpoints, iquad, ele->id());
     // fac_ = Gauss weight * det(J) is calculated in eval_shape_func_and_int_fac()
 
     // calculate the current normal vector normal and the area
@@ -810,7 +810,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_nln_convection_fi
     // the total surface corresponds to the sum over all GPs.
     // fext and k_ii is calculated by assembling over all nodes
     // --> multiply the corresponding sub-area to the terms
-    A = detA * intpoints.IP().qwgt[iquad];  // here is the current area included
+    A = detA * intpoints.ip().qwgt[iquad];  // here is the current area included
 
     // initialise the matrices
     Core::LinAlg::Matrix<(nsd_ + 1), (nsd_ + 1) * nen_> ddet(true);  // (3x12)
@@ -858,7 +858,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_nln_convection_fi
     // ---------------------area with respect to the displacements
     for (int i = 0; i < numdofperelement; ++i)  // 3*4 = 12
     {
-      Adiff(i, 0) += jacobi_deriv(i) * intpoints.IP().qwgt[iquad];
+      Adiff(i, 0) += jacobi_deriv(i) * intpoints.ip().qwgt[iquad];
     }
 
     // ------------right-hand-side
@@ -956,7 +956,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::eval_shape_func_and_int_fac
 )
 {
   // coordinates of the current (Gauss) integration point (xsi_)
-  const double* gpcoord = (intpoints.IP().qxg)[iquad];
+  const double* gpcoord = (intpoints.ip().qxg)[iquad];
   for (int idim = 0; idim < nsd_; idim++)
   {
     xsi_(idim) = gpcoord[idim];
@@ -980,7 +980,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::eval_shape_func_and_int_fac
       drs);
 
   // set the integration factor = GP_weight * sqrt ( det(metrictensor_) )
-  fac_ = intpoints.IP().qwgt[iquad] * drs * normalfac_;
+  fac_ = intpoints.ip().qwgt[iquad] * drs * normalfac_;
 
   // say goodbye
   return;
@@ -1060,9 +1060,9 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::integrate_shape_functions(
   Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; iquad++)
   {
-    eval_shape_func_and_int_fac(intpoints, iquad, ele->Id());
+    eval_shape_func_and_int_fac(intpoints, iquad, ele->id());
 
     // compute integral of shape functions
     for (int node = 0; node < nen_; ++node)
@@ -1162,7 +1162,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::prepare_nurbs_eval(
     const Core::FE::Discretization& discretization  // current discretisation
 )
 {
-  if (ele->Shape() != Core::FE::CellType::nurbs9)
+  if (ele->shape() != Core::FE::CellType::nurbs9)
   {
     myknots_.resize(0);
     return;
@@ -1178,12 +1178,12 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::prepare_nurbs_eval(
   myknots_.resize(2);
 
   const auto* faceele = dynamic_cast<const Core::Elements::FaceElement*>(ele);
-  (*nurbsdis).GetKnotVector()->get_boundary_ele_and_parent_knots(parentknots, myknots_, normalfac_,
-      faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
+  (*nurbsdis).get_knot_vector()->get_boundary_ele_and_parent_knots(parentknots, myknots_,
+      normalfac_, faceele->parent_master_element()->id(), faceele->face_master_number());
 
   // get weights from cp's
   for (int inode = 0; inode < nen_; inode++)
-    weights_(inode) = dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(ele->Nodes()[inode])->W();
+    weights_(inode) = dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(ele->nodes()[inode])->w();
 }
 /*----------------------------------------------------------------------*/
 

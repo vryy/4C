@@ -65,7 +65,7 @@ namespace CONTACT
       FOUR_C_THROW("not implemented");
     }
 
-    void Integrate(const CONTACT::ParamsInterface& cparams) override;
+    void integrate(const CONTACT::ParamsInterface& cparams) override;
 
     /*! \brief Setup this strategy object (maps, vectors, etc.)
 
@@ -77,7 +77,8 @@ namespace CONTACT
     void update_trace_ineq_etimates() override;
     void set_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
 
-    void SetParentState(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
+    void set_parent_state(
+        const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
 
     Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const override;

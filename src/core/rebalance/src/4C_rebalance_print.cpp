@@ -17,8 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 
 void Core::Rebalance::UTILS::print_parallel_distribution(const Core::FE::Discretization& dis)
 {
-  const int numproc = dis.Comm().NumProc();
-  const int myrank = dis.Comm().MyPID();
+  const int numproc = dis.get_comm().NumProc();
+  const int myrank = dis.get_comm().MyPID();
 
   if (numproc > 1)
   {
@@ -31,19 +31,19 @@ void Core::Rebalance::UTILS::print_parallel_distribution(const Core::FE::Discret
     std::vector<int> my_n_ghostele(numproc, 0);
     std::vector<int> n_ghostele(numproc, 0);
 
-    my_n_nodes[myrank] = dis.NumMyRowNodes();
-    my_n_ghostnodes[myrank] = dis.NumMyColNodes() - my_n_nodes[myrank];
-    my_n_elements[myrank] = dis.NumMyRowElements();
-    my_n_ghostele[myrank] = dis.NumMyColElements() - my_n_elements[myrank];
+    my_n_nodes[myrank] = dis.num_my_row_nodes();
+    my_n_ghostnodes[myrank] = dis.num_my_col_nodes() - my_n_nodes[myrank];
+    my_n_elements[myrank] = dis.num_my_row_elements();
+    my_n_ghostele[myrank] = dis.num_my_col_elements() - my_n_elements[myrank];
 
-    dis.Comm().SumAll(&my_n_nodes[0], &n_nodes[0], numproc);
-    dis.Comm().SumAll(&my_n_ghostnodes[0], &n_ghostnodes[0], numproc);
-    dis.Comm().SumAll(&my_n_elements[0], &n_elements[0], numproc);
-    dis.Comm().SumAll(&my_n_ghostele[0], &n_ghostele[0], numproc);
+    dis.get_comm().SumAll(&my_n_nodes[0], &n_nodes[0], numproc);
+    dis.get_comm().SumAll(&my_n_ghostnodes[0], &n_ghostnodes[0], numproc);
+    dis.get_comm().SumAll(&my_n_elements[0], &n_elements[0], numproc);
+    dis.get_comm().SumAll(&my_n_ghostele[0], &n_ghostele[0], numproc);
 
     if (myrank == 0)
     {
-      Core::IO::cout(Core::IO::verbose) << "\n   discretization: " << dis.Name() << Core::IO::endl;
+      Core::IO::cout(Core::IO::verbose) << "\n   discretization: " << dis.name() << Core::IO::endl;
       Core::IO::cout(Core::IO::verbose)
           << "   +-----+---------------+--------------+-----------------+----------------+"
           << Core::IO::endl;

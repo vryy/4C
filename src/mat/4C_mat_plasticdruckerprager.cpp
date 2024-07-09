@@ -48,7 +48,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticDruckerPrager::create_materia
 }
 Mat::PlasticDruckerPragerType Mat::PlasticDruckerPragerType::instance_;
 
-Core::Communication::ParObject* Mat::PlasticDruckerPragerType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::PlasticDruckerPragerType::create(const std::vector<char>& data)
 {
   Mat::PlasticDruckerPrager* plastic = new Mat::PlasticDruckerPrager();
   plastic->unpack(data);
@@ -65,12 +65,12 @@ Mat::PlasticDruckerPrager::PlasticDruckerPrager(Mat::PAR::PlasticDruckerPrager* 
 void Mat::PlasticDruckerPrager::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();
+  if (params_ != nullptr) matid = params_->id();
   add_to_pack(data, matid);
-  int histsize = Initialized() ? strainpllast_.size() : 0;
+  int histsize = initialized() ? strainpllast_.size() : 0;
   add_to_pack(data, histsize);
   for (int var = 0; var < histsize; ++var)
   {
@@ -84,23 +84,23 @@ void Mat::PlasticDruckerPrager::unpack(const std::vector<char>& data)
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
   {
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::PlasticDruckerPrager*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
     int histsize;
@@ -156,7 +156,7 @@ void Mat::PlasticDruckerPrager::setup_cmat(Core::LinAlg::Matrix<NUM_STRESS_3D, N
 
   double nu = params_->poissonratio_;
 
-  Mat::StVenantKirchhoff::FillCmat(cmat, young, nu);
+  Mat::StVenantKirchhoff::fill_cmat(cmat, young, nu);
 }
 
 void Mat::PlasticDruckerPrager::setup_cmat_elasto_plastic_cone(
@@ -236,7 +236,7 @@ void Mat::PlasticDruckerPrager::setup_cmat_elasto_plastic_apex(
 }
 
 template <typename ScalarT>
-void Mat::PlasticDruckerPrager::EvaluateFAD(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::PlasticDruckerPrager::evaluate_fad(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1, ScalarT>* linstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1, ScalarT>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -329,7 +329,7 @@ void Mat::PlasticDruckerPrager::EvaluateFAD(const Core::LinAlg::Matrix<3, 3>* de
       p = p_trial - kappa * dstrainv;
       for (int i = 0; i < 6; i++) devstress(i) = 0.0;
     }
-    Stress(p, devstress, *stress);
+    PlasticDruckerPrager::stress(p, devstress, *stress);
     strain_e.update(1 / G / 2, devstress, p / kappa / 3, id2Scalar);
     for (int i = 3; i < 6; ++i) strain_e(i) *= 2.0;
     for (int i = 3; i < 6; ++i) strain(i) *= 2.0;
@@ -340,7 +340,7 @@ void Mat::PlasticDruckerPrager::EvaluateFAD(const Core::LinAlg::Matrix<3, 3>* de
   }
   else
   {
-    Stress(p, devstress, *stress);
+    PlasticDruckerPrager::stress(p, devstress, *stress);
     strain_e.update(trialstrain_e);
     for (int i = 3; i < 6; ++i) strain_e(i) *= 2.0;
     for (int i = 3; i < 6; ++i) strain(i) *= 2.0;
@@ -379,7 +379,7 @@ void Mat::PlasticDruckerPrager::register_output_data_names(
   names_and_size["plastic_strain"] = 6;
 }
 
-bool Mat::PlasticDruckerPrager::EvaluateOutputData(
+bool Mat::PlasticDruckerPrager::evaluate_output_data(
     const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
   if (name == "accumulated_plastic_strain")
@@ -406,7 +406,7 @@ bool Mat::PlasticDruckerPrager::EvaluateOutputData(
 }
 
 template <typename T>
-void Mat::PlasticDruckerPrager::Stress(const T p,
+void Mat::PlasticDruckerPrager::stress(const T p,
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1, T>& devstress,
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1, T>& stress)
 {
@@ -444,16 +444,16 @@ std::pair<T, T> Mat::PlasticDruckerPrager::return_to_apex_funct_and_deriv(
   return {Res, d};
 }
 
-template void Mat::PlasticDruckerPrager::EvaluateFAD<double>(const Core::LinAlg::Matrix<3, 3>*,
+template void Mat::PlasticDruckerPrager::evaluate_fad<double>(const Core::LinAlg::Matrix<3, 3>*,
     const Core::LinAlg::Matrix<6, 1, double>*, Teuchos::ParameterList&,
     Core::LinAlg::Matrix<6, 1, double>*, Core::LinAlg::Matrix<6, 6>*, int gp, int eleGID);
-template void Mat::PlasticDruckerPrager::EvaluateFAD<FAD>(const Core::LinAlg::Matrix<3, 3>*,
+template void Mat::PlasticDruckerPrager::evaluate_fad<FAD>(const Core::LinAlg::Matrix<3, 3>*,
     const Core::LinAlg::Matrix<6, 1, FAD>*, Teuchos::ParameterList&,
     Core::LinAlg::Matrix<6, 1, FAD>*, Core::LinAlg::Matrix<6, 6>*, int gp, int eleGID);
-template void Mat::PlasticDruckerPrager::Stress<double>(const double p,
+template void Mat::PlasticDruckerPrager::stress<double>(const double p,
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1, double>& devstress,
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1, double>& stress);
-template void Mat::PlasticDruckerPrager::Stress<FAD>(const FAD p,
+template void Mat::PlasticDruckerPrager::stress<FAD>(const FAD p,
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1, FAD>& devstress,
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1, FAD>& stress);
 template std::pair<double, double>

@@ -75,7 +75,7 @@ namespace Solid
         void reset() override;
 
         //! derived from the base class
-        Inpar::Solid::ConvergenceStatus Solve() override;
+        Inpar::Solid::ConvergenceStatus solve() override;
 
         //! returns the outer status test object pointer
         const ::NOX::StatusTest::Generic& get_outer_status_test() const

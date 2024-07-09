@@ -45,7 +45,7 @@ Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ScaTraEleCalcArtery(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Instance(
+Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -55,7 +55,7 @@ Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Instance(
             new ScaTraEleCalcArtery<distype, probdim>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -63,14 +63,14 @@ Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Instance(
  | setup element evaluation                            kremheller 03/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::SetupCalc(
+int Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::setup_calc(
     Core::Elements::Element* ele, Core::FE::Discretization& discretization)
 {
   // base class
-  my::SetupCalc(ele, discretization);
+  my::setup_calc(ele, discretization);
 
   // set the artery material in the variable manager
-  var_manager()->SetArteryMaterial(ele);
+  var_manager()->set_artery_material(ele);
 
   return 0;
 }
@@ -90,7 +90,7 @@ void Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::materials(
 
 )
 {
-  switch (material->MaterialType())
+  switch (material->material_type())
   {
     case Core::Materials::m_scatra:
     {
@@ -101,13 +101,13 @@ void Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::materials(
       densam = 1.0;
       densnp = 1.0;
 
-      my::diffmanager_->SetIsotropicDiff(actmat->Diffusivity(), k);
+      my::diffmanager_->set_isotropic_diff(actmat->diffusivity(), k);
 
       break;
     }
     default:
     {
-      FOUR_C_THROW("Material type %i is not supported!", material->MaterialType());
+      FOUR_C_THROW("Material type %i is not supported!", material->material_type());
       break;
     }
   }
@@ -141,8 +141,8 @@ void Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::extract_element_a
   //---------------------------------------------------------------------------------------------
 
   // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  Teuchos::RCP<const Epetra_Vector> hist = discretization.get_state("hist");
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
   if (hist == Teuchos::null || phinp == Teuchos::null)
     FOUR_C_THROW("Cannot get state vector 'hist' and/or 'phinp'");
 
@@ -151,10 +151,10 @@ void Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::extract_element_a
   Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*hist, my::ehist_, lm);
   Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
-  if (my::scatraparatimint_->IsGenAlpha() and not my::scatraparatimint_->IsIncremental())
+  if (my::scatraparatimint_->is_gen_alpha() and not my::scatraparatimint_->is_incremental())
   {
     // extract additional local values from global vector
-    Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
+    Teuchos::RCP<const Epetra_Vector> phin = discretization.get_state("phin");
     if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
     Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
   }
@@ -163,10 +163,10 @@ void Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::extract_element_a
   //                                 CURRENT LENGTH
   //---------------------------------------------------------------------------------------------
   // extract element and node values of the artery
-  if (discretization.HasState(1, "curr_seg_lengths"))
+  if (discretization.has_state(1, "curr_seg_lengths"))
   {
     Teuchos::RCP<const Epetra_Vector> curr_seg_lengths =
-        discretization.GetState(1, "curr_seg_lengths");
+        discretization.get_state(1, "curr_seg_lengths");
     std::vector<double> seglengths(la[1].lm_.size());
 
     Core::FE::ExtractMyValues(*curr_seg_lengths, seglengths, la[1].lm_);
@@ -195,16 +195,16 @@ void Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::extract_element_a
   }
 
   int ndsscatra_artery = 1;
-  if (discretization.NumDofSets() == 3) ndsscatra_artery = 2;
+  if (discretization.num_dof_sets() == 3) ndsscatra_artery = 2;
 
   //---------------------------------------------------------------------------------------------
   //                                 ARTERY
   //---------------------------------------------------------------------------------------------
   // extract element and node values of the artery
-  if (discretization.HasState(ndsscatra_artery, "one_d_artery_pressure"))
+  if (discretization.has_state(ndsscatra_artery, "one_d_artery_pressure"))
   {
     Teuchos::RCP<const Epetra_Vector> arterypn =
-        discretization.GetState(ndsscatra_artery, "one_d_artery_pressure");
+        discretization.get_state(ndsscatra_artery, "one_d_artery_pressure");
     // values of scatra field are always in first dofset
     const std::vector<int>& lm_artery = la[ndsscatra_artery].lm_;
     Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(
@@ -234,8 +234,8 @@ void Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::calc_mat_conv_od_
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodefluid,
     const double timefacfac, const double densnp, const Core::LinAlg::Matrix<nsd_, 1>& gradphi)
 {
-  const double prefac = timefacfac * var_manager()->Diam() * var_manager()->Diam() / 32.0 /
-                        var_manager()->Visc() * (-1.0);
+  const double prefac = timefacfac * var_manager()->diam() * var_manager()->diam() / 32.0 /
+                        var_manager()->visc() * (-1.0);
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const int fvi = vi * my::numdofpernode_ + k;

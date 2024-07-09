@@ -155,7 +155,7 @@ namespace Solid
       calc_jacobian_contributions_from_element_level_for_ptc() override;
 
       //! Access the implicit integrator
-      Solid::Integrator& ImplInt();
+      Solid::Integrator& impl_int();
 
      protected:
       //! Returns the init state

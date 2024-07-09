@@ -72,9 +72,9 @@ namespace CONTACT
     Integrator(const Integrator& old) = delete;
 
     //! get specified integration type
-    inline enum Inpar::Mortar::IntType IntegrationType() const { return integrationtype_; }
+    inline enum Inpar::Mortar::IntType integration_type() const { return integrationtype_; }
 
-    const Epetra_Comm& Comm() const { return Comm_; }
+    const Epetra_Comm& get_comm() const { return Comm_; }
 
     //! @name 2D and 3D integration methods
 
@@ -82,13 +82,13 @@ namespace CONTACT
      \brief check for boundary segmentation in 2D
 
      */
-    bool BoundarySegmCheck2D(Mortar::Element& sele, std::vector<Mortar::Element*> meles);
+    bool boundary_segm_check2_d(Mortar::Element& sele, std::vector<Mortar::Element*> meles);
 
     /*!
      \brief check for boundary segmentation in 2D
 
      */
-    bool BoundarySegmCheck3D(Mortar::Element& sele, std::vector<Mortar::Element*> meles);
+    bool boundary_segm_check3_d(Mortar::Element& sele, std::vector<Mortar::Element*> meles);
 
 
     /*!
@@ -96,16 +96,16 @@ namespace CONTACT
      (i.e. M, g, LinM, Ling and possibly D, LinD)
 
      */
-    virtual void IntegrateDerivEle2D(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
+    virtual void integrate_deriv_ele2_d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
-    virtual void IntegrateDerivEle2D(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
+    virtual void integrate_deriv_ele2_d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
 
     /*!
      \brief integrate D matrix without lin...
 
      */
-    void IntegrateD(Mortar::Element& sele, const Epetra_Comm& comm, bool lin = false);
+    void integrate_d(Mortar::Element& sele, const Epetra_Comm& comm, bool lin = false);
 
     /*!
      \brief Build all integrals and linearizations on a 1D slave /
@@ -125,10 +125,10 @@ namespace CONTACT
      (i.e. M, g, LinM, Ling and possibly D, LinD)
 
      */
-    virtual void IntegrateDerivEle3D(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
+    virtual void integrate_deriv_ele3_d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
         const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
-    virtual void IntegrateDerivEle3D(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
+    virtual void integrate_deriv_ele3_d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
         const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
 
@@ -203,7 +203,7 @@ namespace CONTACT
      Xi on a 1D slave / master overlap
 
      */
-    void DerivXiAB2D(Mortar::Element& sele, double& sxia, double& sxib, Mortar::Element& mele,
+    void deriv_xi_a_b2_d(Mortar::Element& sele, double& sxia, double& sxib, Mortar::Element& mele,
         double& mxia, double& mxib, std::vector<Core::Gen::Pairedvector<int, double>>& derivxi,
         bool& startslave, bool& endslave, int& linsize);
 
@@ -221,7 +221,7 @@ namespace CONTACT
      coordinates XiGP on a 2D slave / master integration cell
 
      */
-    void DerivXiGP3D(Mortar::Element& sele, Mortar::Element& mele, const double* sxigp,
+    void deriv_xi_g_p3_d(Mortar::Element& sele, Mortar::Element& mele, const double* sxigp,
         const double* mxigp, const std::vector<Core::Gen::Pairedvector<int, double>>& derivsxi,
         std::vector<Core::Gen::Pairedvector<int, double>>& derivmxi, double alpha);
 
@@ -231,7 +231,7 @@ namespace CONTACT
      (This is the AuxPlane version, thus master and slave are projected)
 
      */
-    void DerivXiGP3DAuxPlane(Mortar::Element& ele, double* xigp, double* auxn,
+    void deriv_xi_g_p3_d_aux_plane(Mortar::Element& ele, double* xigp, double* auxn,
         std::vector<Core::Gen::Pairedvector<int, double>>& derivxi, double& alpha,
         std::vector<Core::Gen::Pairedvector<int, double>>& derivauxn,
         Core::Gen::Pairedvector<int, Core::LinAlg::Matrix<3, 1>>& derivgp);
@@ -240,7 +240,7 @@ namespace CONTACT
      \brief Assemble g~ contribution of current overlap into slave nodes
 
      */
-    bool AssembleG(
+    bool assemble_g(
         const Epetra_Comm& comm, Mortar::Element& sele, Core::LinAlg::SerialDenseVector& gseg);
 
     /*!
@@ -248,7 +248,7 @@ namespace CONTACT
      (special version for 3D quadratic mortar with piecewise linear LM interpolation)
 
      */
-    bool AssembleG(const Epetra_Comm& comm, Mortar::IntElement& sintele,
+    bool assemble_g(const Epetra_Comm& comm, Mortar::IntElement& sintele,
         Core::LinAlg::SerialDenseVector& gseg);
 
     // GP calls
@@ -256,19 +256,19 @@ namespace CONTACT
      \brief Return number of Gauss points for this instance
 
      */
-    int& nGP() { return ngp_; }
+    int& n_gp() { return ngp_; }
 
     /*!
      \brief Return coordinates of a specific GP in 1D/2D CElement
 
      */
-    double& Coordinate(int gp, int dir) { return coords_(gp, dir); }
+    double& coordinate(int gp, int dir) { return coords_(gp, dir); }
 
     /*!
      \brief Return weight of a specific GP in 1D/2D CElement
 
      */
-    double& Weight(int gp) { return weights_[gp]; }
+    double& weight(int gp) { return weights_[gp]; }
 
     /*!
      \brief Get problem dimension
@@ -278,7 +278,7 @@ namespace CONTACT
      (dim_==2) and 2D integration (dim_==3) on the interface!
 
      */
-    int Dim() const { return dim_; };
+    int n_dim() const { return dim_; };
 
    protected:
     /*!

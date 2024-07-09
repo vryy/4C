@@ -35,7 +35,7 @@ namespace Solid::Nln::SOLVER
     void setup() override;
 
     //! derived from the base class
-    Inpar::Solid::ConvergenceStatus Solve() override;
+    Inpar::Solid::ConvergenceStatus solve() override;
 
    protected:
     //! Reset the non-linear solver parameters and variables

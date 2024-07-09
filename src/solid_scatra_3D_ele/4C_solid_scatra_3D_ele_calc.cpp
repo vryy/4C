@@ -117,7 +117,7 @@ namespace
       const Core::FE::GaussIntegration& gauss_integration, Teuchos::ParameterList& params,
       const std::string& target_name)
   {
-    FOUR_C_ASSERT(discretization.HasState(field_index, field_name),
+    FOUR_C_ASSERT(discretization.has_state(field_index, field_name),
         "Could not find the requested field in the discretization.");
 
     FOUR_C_ASSERT(
@@ -125,7 +125,7 @@ namespace
 
     // get quantitiy from discretization
     Teuchos::RCP<const Epetra_Vector> quantitites_np =
-        discretization.GetState(field_index, field_name);
+        discretization.get_state(field_index, field_name);
     if (quantitites_np == Teuchos::null)
       FOUR_C_THROW("Cannot get state vector '%s' ", field_name.c_str());
 
@@ -144,7 +144,7 @@ namespace
 
     // the material expects the gp-quantities at the Gauss points in a rcp-std::vector
     auto quantity_at_gp =
-        Teuchos::rcp(new std::vector<gp_quantity_type>(gauss_integration.NumPoints()));
+        Teuchos::rcp(new std::vector<gp_quantity_type>(gauss_integration.num_points()));
 
     Discret::ELEMENTS::ForEachGaussPoint(element_nodes, gauss_integration,
         [&](const Core::LinAlg::Matrix<Core::FE::dim<celltype>, 1>& xi,
@@ -166,19 +166,19 @@ namespace
       const Discret::ELEMENTS::ElementNodes<celltype>& element_nodes,
       const Core::FE::GaussIntegration& gauss_integration, Teuchos::ParameterList& params)
   {
-    if (la.Size() > 1)
+    if (la.size() > 1)
     {
       // prepare data from the scatra-field
-      if (discretization.HasState(1, "scalarfield"))
+      if (discretization.has_state(1, "scalarfield"))
       {
-        const int num_scalars = discretization.NumDof(1, element.Nodes()[0]);
+        const int num_scalars = discretization.num_dof(1, element.nodes()[0]);
         constexpr bool is_scalar = false;
         PrepareScatraQuantityInParameterList<is_scalar>(discretization, la, element_nodes,
             "scalarfield", 1, num_scalars, gauss_integration, params, "gp_conc");
       }
 
       // additionally prepare temperature-filed if available
-      if (discretization.NumDofSets() == 3 && discretization.HasState(2, "tempfield"))
+      if (discretization.num_dof_sets() == 3 && discretization.has_state(2, "tempfield"))
       {
         constexpr bool is_scalar = true;
         PrepareScatraQuantityInParameterList<is_scalar>(discretization, la, element_nodes,
@@ -308,7 +308,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype,
                 const Core::LinAlg::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
             {
               const Stress<celltype> stress = evaluate_material_stress<celltype>(
-                  solid_material, deformation_gradient, gl_strain, params, gp, ele.Id());
+                  solid_material, deformation_gradient, gl_strain, params, gp, ele.id());
 
               if (force.has_value())
               {
@@ -327,11 +327,11 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype,
                 if (equal_integration_mass_stiffness)
                 {
                   add_mass_matrix(
-                      shape_functions, integration_factor, solid_material.Density(gp), *mass);
+                      shape_functions, integration_factor, solid_material.density(gp), *mass);
                 }
                 else
                 {
-                  element_mass += solid_material.Density(gp) * integration_factor;
+                  element_mass += solid_material.density(gp) * integration_factor;
                   element_volume += integration_factor;
                 }
               }
@@ -399,7 +399,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate
                 const Core::LinAlg::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
             {
               Core::LinAlg::Matrix<6, 1> dSdc = EvaluateDMaterialStressDScalar<celltype>(
-                  solid_material, deformation_gradient, gl_strain, params, gp, ele.Id());
+                  solid_material, deformation_gradient, gl_strain, params, gp, ele.id());
 
               // linear B-opeartor
               const Core::LinAlg::Matrix<Details::num_str<celltype>,
@@ -430,7 +430,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate
 }
 
 template <Core::FE::CellType celltype, typename SolidFormulation>
-void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Recover(
+void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::recover(
     const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
     const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params)
 {
@@ -438,7 +438,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Recover(
 }
 
 template <Core::FE::CellType celltype, typename SolidFormulation>
-void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Update(
+void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::update(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material,
     const Core::FE::Discretization& discretization,
     const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params)
@@ -467,7 +467,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Update(
             [&](const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
                     deformation_gradient,
                 const Core::LinAlg::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
-            { solid_material.update(deformation_gradient, gp, params, ele.Id()); });
+            { solid_material.update(deformation_gradient, gp, params, ele.id()); });
       });
 
   solid_material.update();
@@ -506,7 +506,7 @@ double Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::calcul
                 const Core::LinAlg::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
             {
               double psi = 0.0;
-              solid_material.StrainEnergy(gl_strain, psi, gp, ele.Id());
+              solid_material.strain_energy(gl_strain, psi, gp, ele.id());
               intenergy += psi * integration_factor;
             });
       });
@@ -522,8 +522,8 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::calculat
 {
   std::vector<char>& serialized_stress_data = stressIO.mutable_data;
   std::vector<char>& serialized_strain_data = strainIO.mutable_data;
-  Core::LinAlg::SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), num_str_);
-  Core::LinAlg::SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), num_str_);
+  Core::LinAlg::SerialDenseMatrix stress_data(stiffness_matrix_integration_.num_points(), num_str_);
+  Core::LinAlg::SerialDenseMatrix strain_data(stiffness_matrix_integration_.num_points(), num_str_);
 
   const ElementNodes<celltype> nodal_coordinates =
       evaluate_element_nodes<celltype>(ele, discretization, la[0].lm_);
@@ -551,7 +551,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::calculat
                 const Core::LinAlg::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
             {
               const Stress<celltype> stress = evaluate_material_stress<celltype>(
-                  solid_material, deformation_gradient, gl_strain, params, gp, ele.Id());
+                  solid_material, deformation_gradient, gl_strain, params, gp, ele.id());
 
               assemble_strain_type_to_matrix_row<celltype>(
                   gl_strain, deformation_gradient, strainIO.type, strain_data, gp);
@@ -612,7 +612,7 @@ Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::get_normal_ca
               preparation_data, history_data_);
 
           return EvaluateCauchyNDirAtXi<celltype>(solid_material, shape_functions,
-              deformation_gradient, scalar_values_at_xi, n, dir, ele.Id(), evaluator,
+              deformation_gradient, scalar_values_at_xi, n, dir, ele.id(), evaluator,
               linearizations);
         });
   }
@@ -622,7 +622,7 @@ template <Core::FE::CellType celltype, typename SolidFormulation>
 void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::setup(
     Mat::So3Material& solid_material, Input::LineDefinition* linedef)
 {
-  solid_material.setup(stiffness_matrix_integration_.NumPoints(), linedef);
+  solid_material.setup(stiffness_matrix_integration_.num_points(), linedef);
 }
 
 template <Core::FE::CellType celltype, typename SolidFormulation>
@@ -636,7 +636,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::material
       stiffness_matrix_integration_, ele, params);
 
   // Call post_setup of material
-  solid_material.post_setup(params, ele.Id());
+  solid_material.post_setup(params, ele.id());
 }
 
 template <Core::FE::CellType celltype, typename SolidFormulation>
@@ -645,11 +645,11 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype,
     const Mat::So3Material& solid_material,
     Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
-  FOUR_C_ASSERT(ele.IsParamsInterface(),
+  FOUR_C_ASSERT(ele.is_params_interface(),
       "This action type should only be called from the new time integration framework!");
 
   ask_and_add_quantities_to_gauss_point_data_output(
-      stiffness_matrix_integration_.NumPoints(), solid_material, gp_data_output_manager);
+      stiffness_matrix_integration_.num_points(), solid_material, gp_data_output_manager);
 }
 
 template <Core::FE::CellType celltype, typename SolidFormulation>
@@ -658,7 +658,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype,
     const Mat::So3Material& solid_material,
     Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
-  FOUR_C_ASSERT(ele.IsParamsInterface(),
+  FOUR_C_ASSERT(ele.is_params_interface(),
       "This action type should only be called from the new time integration framework!");
 
   collect_and_assemble_gauss_point_data_output<celltype>(
@@ -685,7 +685,7 @@ struct VerifyPackable
               Discret::ELEMENTS::DisplacementBasedFormulation<celltypes>>*> &&
           ...);
 
-  void StaticAsserts() const
+  void static_asserts() const
   {
     static_assert(are_all_packable);
     static_assert(are_all_unpackable);

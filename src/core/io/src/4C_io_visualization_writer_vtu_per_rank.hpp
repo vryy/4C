@@ -37,7 +37,8 @@ namespace Core::IO
     /**
      * @brief Initialize the current time step (derived)
      */
-    void InitializeTimeStep(const double visualziation_time, const int visualization_step) override;
+    void initialize_time_step(
+        const double visualziation_time, const int visualization_step) override;
 
     /**
      * @brief Write all fields contained in the field data map to disk (derived)
@@ -49,7 +50,7 @@ namespace Core::IO
      * @brief Write the full geometry, i.e., points, cells, faces and the respective connectivity to
      * disk (derived)
      */
-    void WriteGeometryToDisk(const std::vector<double>& point_coordinates,
+    void write_geometry_to_disk(const std::vector<double>& point_coordinates,
         const std::vector<Core::IO::index_type>& point_cell_connectivity,
         const std::vector<Core::IO::index_type>& cell_offset,
         const std::vector<uint8_t>& cell_types,
@@ -71,7 +72,7 @@ namespace Core::IO
     /**
      * @brief Finalize the write operations for the current time step (derived)
      */
-    void FinalizeTimeStep() override;
+    void finalize_time_step() override;
 
     //! At the moment, simply point to the "old" vtu writer here, the functionality of this
     //! object will be implemented in this class in the future

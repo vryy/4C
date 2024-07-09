@@ -102,7 +102,7 @@ void test_geometry_parallel1()
 
   if (!conv)
   {
-    if ((ci.GetEdgeLocation().WithinSide()) and (ci.GetSideLocation().WithinSide()))
+    if ((ci.get_edge_location().within_side()) and (ci.get_side_location().within_side()))
       FOUR_C_THROW("intersected");
   }
   else
@@ -126,8 +126,8 @@ void test_geometry_distance()
       Core::Geo::Cut::floattype_double);  // use
                                           // double
   Teuchos::RCP<Core::Geo::Cut::Position> pos =
-      Core::Geo::Cut::Position::Create(xyze, xyz, Core::FE::CellType::tri3);
-  if (pos->Compute())
+      Core::Geo::Cut::Position::create(xyze, xyz, Core::FE::CellType::tri3);
+  if (pos->compute())
   {
   }
 }
@@ -155,8 +155,8 @@ void test_geometry_distance2()
       Core::Geo::Cut::floattype_double);  // use
                                           // double
   Teuchos::RCP<Core::Geo::Cut::Position> pos =
-      Core::Geo::Cut::Position::Create(xyze, xyz, Core::FE::CellType::quad4);
-  if (pos->Compute())
+      Core::Geo::Cut::Position::create(xyze, xyz, Core::FE::CellType::quad4);
+  if (pos->compute())
   {
   }
 }
@@ -185,8 +185,8 @@ void test_geometry_distance3()
       Core::Geo::Cut::floattype_double);  // use
                                           // double
   Teuchos::RCP<Core::Geo::Cut::Position> pos =
-      Core::Geo::Cut::Position::Create(xyze, xyz, Core::FE::CellType::quad4);
-  if (pos->Compute())
+      Core::Geo::Cut::Position::create(xyze, xyz, Core::FE::CellType::quad4);
+  if (pos->compute())
   {
   }
   else

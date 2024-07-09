@@ -60,29 +60,29 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::init(
 
   // initialize increment vectors
   scaincnp_ = Teuchos::rcp(
-      new Epetra_Vector(*(ScatraAlgo()->ScaTraField()->discretization()->dof_row_map())));
-  structincnp_ = Teuchos::rcp(new Epetra_Vector(*(poro_field()->StructDofRowMap())));
-  fluidincnp_ = (Teuchos::rcp(new Epetra_Vector(*(poro_field()->FluidDofRowMap()))));
+      new Epetra_Vector(*(scatra_algo()->sca_tra_field()->discretization()->dof_row_map())));
+  structincnp_ = Teuchos::rcp(new Epetra_Vector(*(poro_field()->struct_dof_row_map())));
+  fluidincnp_ = (Teuchos::rcp(new Epetra_Vector(*(poro_field()->fluid_dof_row_map()))));
   if (artery_coupling_active_)
   {
     arterypressincnp_ =
-        Teuchos::rcp(new Epetra_Vector(*(poro_field()->fluid_field()->ArteryDofRowMap())));
-    artscaincnp_ = Teuchos::rcp(new Epetra_Vector(*(scatramsht_->ArtScatraDofRowMap())));
+        Teuchos::rcp(new Epetra_Vector(*(poro_field()->fluid_field()->artery_dof_row_map())));
+    artscaincnp_ = Teuchos::rcp(new Epetra_Vector(*(scatramsht_->art_scatra_dof_row_map())));
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::SetupSystem()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::setup_system()
 {
-  poro_field()->SetupSystem();
+  poro_field()->setup_system();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::SetupSolver()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::setup_solver()
 {
-  poro_field()->SetupSolver();
+  poro_field()->setup_solver();
 }
 
 /*----------------------------------------------------------------------*
@@ -90,14 +90,14 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::SetupSolver()
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::do_poro_step()
 {
   // Newton-Raphson iteration
-  poro_field()->TimeStep();
+  poro_field()->time_step();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::do_scatra_step()
 {
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n";
     std::cout << "*********************************************************************************"
@@ -110,25 +110,25 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::do_scatra_step
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  ScatraAlgo()->ScaTraField()->Solve();
+  scatra_algo()->sca_tra_field()->solve();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::print_header_partitioned()
 {
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n";
     std::cout << "********************************************************************************"
               << "***************************************************************\n";
     std::cout << "* PARTITIONED OUTER ITERATION LOOP ----- MULTIPORO  <-------> SCATRA         "
               << "                                                                 *\n";
-    std::cout << "* STEP: " << std::setw(5) << std::setprecision(4) << std::scientific << Step()
+    std::cout << "* STEP: " << std::setw(5) << std::setprecision(4) << std::scientific << step()
               << "/" << std::setw(5) << std::setprecision(4) << std::scientific << n_step()
-              << ", Time: " << std::setw(11) << std::setprecision(4) << std::scientific << Time()
+              << ", Time: " << std::setw(11) << std::setprecision(4) << std::scientific << time()
               << "/" << std::setw(11) << std::setprecision(4) << std::scientific << max_time()
-              << ", Dt: " << std::setw(11) << std::setprecision(4) << std::scientific << Dt()
+              << ", Dt: " << std::setw(11) << std::setprecision(4) << std::scientific << dt()
               << "                                                                           *"
               << std::endl;
   }
@@ -140,14 +140,14 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::iter_update_st
 {
   // store scalar from first solution for convergence check (like in
   // elch_algorithm: use current values)
-  scaincnp_->Update(1.0, *ScatraAlgo()->ScaTraField()->Phinp(), 0.0);
-  structincnp_->Update(1.0, *poro_field()->StructDispnp(), 0.0);
-  fluidincnp_->Update(1.0, *poro_field()->FluidPhinp(), 0.0);
+  scaincnp_->Update(1.0, *scatra_algo()->sca_tra_field()->phinp(), 0.0);
+  structincnp_->Update(1.0, *poro_field()->struct_dispnp(), 0.0);
+  fluidincnp_->Update(1.0, *poro_field()->fluid_phinp(), 0.0);
   if (artery_coupling_active_)
   {
     arterypressincnp_->Update(
-        1.0, *(poro_field()->fluid_field()->ArtNetTimInt()->Pressurenp()), 0.0);
-    artscaincnp_->Update(1.0, *(scatramsht_->ArtScatraField()->Phinp()), 0.0);
+        1.0, *(poro_field()->fluid_field()->art_net_tim_int()->pressurenp()), 0.0);
+    artscaincnp_->Update(1.0, *(scatramsht_->art_scatra_field()->phinp()), 0.0);
   }
 
 }  // iter_update_states()
@@ -179,29 +179,29 @@ bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::convergence_ch
 
   // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
-  scaincnp_->Update(1.0, *(ScatraAlgo()->ScaTraField()->Phinp()), -1.0);
-  structincnp_->Update(1.0, *(poro_field()->StructDispnp()), -1.0);
-  fluidincnp_->Update(1.0, *(poro_field()->FluidPhinp()), -1.0);
+  scaincnp_->Update(1.0, *(scatra_algo()->sca_tra_field()->phinp()), -1.0);
+  structincnp_->Update(1.0, *(poro_field()->struct_dispnp()), -1.0);
+  fluidincnp_->Update(1.0, *(poro_field()->fluid_phinp()), -1.0);
   if (artery_coupling_active_)
   {
     arterypressincnp_->Update(
-        1.0, *(poro_field()->fluid_field()->ArtNetTimInt()->Pressurenp()), -1.0);
-    artscaincnp_->Update(1.0, *(scatramsht_->ArtScatraField()->Phinp()), -1.0);
+        1.0, *(poro_field()->fluid_field()->art_net_tim_int()->pressurenp()), -1.0);
+    artscaincnp_->Update(1.0, *(scatramsht_->art_scatra_field()->phinp()), -1.0);
   }
 
   // build the L2-norm of the scalar increment and the scalar
   scaincnp_->Norm2(&scaincnorm_L2);
-  ScatraAlgo()->ScaTraField()->Phinp()->Norm2(&scanorm_L2);
+  scatra_algo()->sca_tra_field()->phinp()->Norm2(&scanorm_L2);
   structincnp_->Norm2(&dispincnorm_L2);
-  poro_field()->StructDispnp()->Norm2(&dispnorm_L2);
+  poro_field()->struct_dispnp()->Norm2(&dispnorm_L2);
   fluidincnp_->Norm2(&fluidincnorm_L2);
-  poro_field()->FluidPhinp()->Norm2(&fluidnorm_L2);
+  poro_field()->fluid_phinp()->Norm2(&fluidnorm_L2);
   if (artery_coupling_active_)
   {
     arterypressincnp_->Norm2(&artpressincnorm_L2);
-    poro_field()->fluid_field()->ArtNetTimInt()->Pressurenp()->Norm2(&artpressnorm_L2);
+    poro_field()->fluid_field()->art_net_tim_int()->pressurenp()->Norm2(&artpressnorm_L2);
     artscaincnp_->Norm2(&artscaincnorm_L2);
-    poro_field()->fluid_field()->ArtNetTimInt()->Pressurenp()->Norm2(&artscanorm_L2);
+    poro_field()->fluid_field()->art_net_tim_int()->pressurenp()->Norm2(&artscanorm_L2);
   }
 
   // care for the case that there is (almost) zero scalar
@@ -212,7 +212,7 @@ bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::convergence_ch
   if (artscanorm_L2 < 1e-6) artscanorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "                                                                                 "
                  "                                                             *\n";
@@ -245,7 +245,7 @@ bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::convergence_ch
       ((artscaincnorm_L2 / artscanorm_L2) <= ittol_))
   {
     stopnonliniter = true;
-    if (Comm().MyPID() == 0)
+    if (get_comm().MyPID() == 0)
     {
       printf(
           "* MULTIPORO  <-------> SCATRA Outer Iteration loop converged after iteration %3d/%3d !  "
@@ -266,7 +266,7 @@ bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::convergence_ch
           ((artscaincnorm_L2 / artscanorm_L2) > ittol_)))
   {
     stopnonliniter = true;
-    if ((Comm().MyPID() == 0))
+    if ((get_comm().MyPID() == 0))
     {
       printf(
           "* MULTIPORO  <-------> SCATRA Outer Iteration loop not converged in itemax steps        "
@@ -277,7 +277,7 @@ bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::convergence_ch
       printf("\n");
       printf("\n");
     }
-    HandleDivergence();
+    handle_divergence();
   }
 
   return stopnonliniter;
@@ -311,7 +311,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWayNested::init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWayNested::Solve()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWayNested::solve()
 {
   int itnum = 0;
   bool stopnonliniter = false;
@@ -326,13 +326,13 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWayNested::Solve()
     iter_update_states();
 
     // set structure-based scalar transport values
-    SetScatraSolution();
+    set_scatra_solution();
 
     // solve structural system
     do_poro_step();
 
     // set mesh displacement and velocity fields
-    SetPoroSolution();
+    set_poro_solution();
 
     // solve scalar transport equation
     do_scatra_step();
@@ -371,7 +371,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWaySequential::init
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Solve()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWaySequential::solve()
 {
   int itnum = 0;
   bool stopnonliniter = false;
@@ -386,24 +386,24 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Solv
     iter_update_states();
 
     // 1) set scatra and structure solution (on fluid field)
-    SetScatraSolution();
+    set_scatra_solution();
     poro_field()->set_struct_solution(
-        poro_field()->structure_field()->Dispnp(), poro_field()->structure_field()->Velnp());
+        poro_field()->structure_field()->dispnp(), poro_field()->structure_field()->velnp());
 
     // 2) solve fluid
-    poro_field()->fluid_field()->Solve();
+    poro_field()->fluid_field()->solve();
 
     // 3) relaxation
-    poro_field()->PerformRelaxation(poro_field()->fluid_field()->Phinp(), itnum);
+    poro_field()->perform_relaxation(poro_field()->fluid_field()->phinp(), itnum);
 
     // 4) set relaxed fluid solution on structure field
     poro_field()->set_relaxed_fluid_solution();
 
     // 5) solve structure
-    poro_field()->structure_field()->Solve();
+    poro_field()->structure_field()->solve();
 
     // 6) set mesh displacement and velocity fields on ScaTra
-    SetPoroSolution();
+    set_poro_solution();
 
     // 7) solve scalar transport equation
     do_scatra_step();

@@ -63,7 +63,7 @@ namespace Core::Geo
     \param label        (in)        : label
     \param physcoord    (in)        : physical coordinates of point on object
     */
-    void setNodeObjectType(
+    void set_node_object_type(
         const int nodeId, const int label, const Core::LinAlg::Matrix<3, 1>& physcoord);
 
     /*!
@@ -73,7 +73,7 @@ namespace Core::Geo
     \param label        (in)        : label
     \param physcoord    (in)        : physical coordinates of point on object
     */
-    void setLineObjectType(const int lineId, const int surfId, const int label,
+    void set_line_object_type(const int lineId, const int surfId, const int label,
         const Core::LinAlg::Matrix<3, 1>& physcoord);
 
     /*!
@@ -88,17 +88,17 @@ namespace Core::Geo
     /*!
     \brief Return object type
      */
-    inline ObjectType getObjectType() const { return object_type_; }
+    inline ObjectType get_object_type() const { return object_type_; }
 
     /*!
     \brief Return label
      */
-    inline int getLabel() const { return label_; }
+    inline int get_label() const { return label_; }
 
     /*!
     \brief Return vector of physical coordinates
      */
-    inline Core::LinAlg::Matrix<3, 1> getPhysCoord() const
+    inline Core::LinAlg::Matrix<3, 1> get_phys_coord() const
     {
       if (object_type_ == NOTYPE_OBJECT)
         FOUR_C_THROW("no object type and physical coordinates are set");

@@ -88,12 +88,12 @@ namespace
   {
     constexpr int nsd = Core::FE::dim<distype>;
     int base_numnod = Core::FE::getNumberOfElementNodes(base_distype);
-    Core::LinAlg::SerialDenseMatrix mat(intpoints.NumPoints(), base_numnod);
+    Core::LinAlg::SerialDenseMatrix mat(intpoints.num_points(), base_numnod);
 
 
-    for (int gp = 0; gp < intpoints.NumPoints(); ++gp)
+    for (int gp = 0; gp < intpoints.num_points(); ++gp)
     {
-      Core::LinAlg::Matrix<nsd, 1> xi(intpoints.Point(gp), true);
+      Core::LinAlg::Matrix<nsd, 1> xi(intpoints.point(gp), true);
 
       Core::LinAlg::SerialDenseVector shape_functions(base_numnod);
       Core::FE::shape_function_dim<Core::LinAlg::Matrix<nsd, 1>, Core::LinAlg::SerialDenseVector,
@@ -114,7 +114,7 @@ namespace
   {
     constexpr int nsd = Core::FE::dim<distype>;
     int base_numnod = Core::FE::getNumberOfElementNodes(base_distype);
-    Core::LinAlg::SerialDenseMatrix mat(intpoints.NumPoints(), base_numnod);
+    Core::LinAlg::SerialDenseMatrix mat(intpoints.num_points(), base_numnod);
 
     // Obtain weights and knot vector of element
     Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, 1> weights(true);
@@ -124,9 +124,9 @@ namespace
     if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
 
 
-    for (int gp = 0; gp < intpoints.NumPoints(); ++gp)
+    for (int gp = 0; gp < intpoints.num_points(); ++gp)
     {
-      Core::LinAlg::Matrix<nsd, 1> xi(intpoints.Point(gp), true);
+      Core::LinAlg::Matrix<nsd, 1> xi(intpoints.point(gp), true);
 
       Core::LinAlg::SerialDenseVector shape_functions(base_numnod);
       Core::FE::Nurbs::nurbs_shape_function_dim(
@@ -263,10 +263,10 @@ namespace
   {
     for (decltype(nodal_data.numRows()) i = 0; i < nodal_data.numRows(); ++i)
     {
-      const int lid = global_data.Map().LID(ele.NodeIds()[i]);
+      const int lid = global_data.Map().LID(ele.node_ids()[i]);
       if (lid >= 0)  // rownode
       {
-        const double invmyadjele = (nodal_average) ? 1.0 / ele.Nodes()[i]->NumElement() : 1.0;
+        const double invmyadjele = (nodal_average) ? 1.0 / ele.nodes()[i]->num_element() : 1.0;
         for (decltype(nodal_data.numCols()) j = 0; j < nodal_data.numCols(); ++j)
         {
           (*(global_data(j)))[lid] += nodal_data(i, j) * invmyadjele;
@@ -283,12 +283,12 @@ Core::LinAlg::SerialDenseMatrix Core::FE::EvaluateGaussPointsToNodesExtrapolatio
 {
   static std::unordered_map<unsigned, Core::LinAlg::SerialDenseMatrix> extrapolation_matrix_cache{};
 
-  if (extrapolation_matrix_cache.find(intpoints.NumPoints()) == extrapolation_matrix_cache.end())
+  if (extrapolation_matrix_cache.find(intpoints.num_points()) == extrapolation_matrix_cache.end())
   {
     Core::FE::CellType base_distype =
-        GetGaussPointExtrapolationBaseDistype<distype>(intpoints.NumPoints());
+        GetGaussPointExtrapolationBaseDistype<distype>(intpoints.num_points());
 
-    FOUR_C_ASSERT(Core::FE::getNumberOfElementNodes(base_distype) <= intpoints.NumPoints(),
+    FOUR_C_ASSERT(Core::FE::getNumberOfElementNodes(base_distype) <= intpoints.num_points(),
         "The base discretization has more nodes than Gauss points. The extrapolation is not "
         "unique! "
         "This should not happen. The evaluation of the base extrapolation type for the number of "
@@ -300,11 +300,11 @@ Core::LinAlg::SerialDenseMatrix Core::FE::EvaluateGaussPointsToNodesExtrapolatio
     Core::LinAlg::SerialDenseMatrix matrix_gp_to_base =
         EvaluateProjectionGaussPointsToBaseDistype(shapefcns_at_gps);
 
-    extrapolation_matrix_cache[intpoints.NumPoints()] =
+    extrapolation_matrix_cache[intpoints.num_points()] =
         EvaluateProjectionGaussPointsToDistype<distype>(matrix_gp_to_base, base_distype);
   }
 
-  return extrapolation_matrix_cache[intpoints.NumPoints()];
+  return extrapolation_matrix_cache[intpoints.num_points()];
 }
 
 // template specialization for pyramid 5 elements
@@ -317,12 +317,12 @@ Core::LinAlg::SerialDenseMatrix
 Core::FE::EvaluateGaussPointsToNodesExtrapolationMatrix<Core::FE::CellType::pyramid5>(
     const Core::FE::IntegrationPoints3D& intpoints)
 {
-  if (intpoints.NumPoints() != 8)
+  if (intpoints.num_points() != 8)
   {
     FOUR_C_THROW(
         "Gauss point extrapolation is not yet implemented for Pyramid5 elements with %d Gauss "
         "points. Currently, only 8 are supported",
-        intpoints.NumPoints());
+        intpoints.num_points());
   }
 
   static Core::LinAlg::SerialDenseMatrix extrapolation_matrix = std::invoke(
@@ -382,12 +382,12 @@ Core::LinAlg::SerialDenseMatrix Core::FE::EvaluateGaussPointsToNURBSKnotsExtrapo
 {
   static std::unordered_map<unsigned, Core::LinAlg::SerialDenseMatrix> extrapolation_matrix_cache{};
 
-  if (extrapolation_matrix_cache.find(intpoints.NumPoints()) == extrapolation_matrix_cache.end())
+  if (extrapolation_matrix_cache.find(intpoints.num_points()) == extrapolation_matrix_cache.end())
   {
     Core::FE::CellType base_distype =
-        GetGaussPointExtrapolationBaseDistype<distype>(intpoints.NumPoints());
+        GetGaussPointExtrapolationBaseDistype<distype>(intpoints.num_points());
 
-    FOUR_C_ASSERT(Core::FE::getNumberOfElementNodes(base_distype) <= intpoints.NumPoints(),
+    FOUR_C_ASSERT(Core::FE::getNumberOfElementNodes(base_distype) <= intpoints.num_points(),
         "The base discretization has more nodes than Gauss points. The extrapolation is not "
         "unique! "
         "This should not happen. The evaluation of the base extrapolation type for the number of "
@@ -399,11 +399,11 @@ Core::LinAlg::SerialDenseMatrix Core::FE::EvaluateGaussPointsToNURBSKnotsExtrapo
     LinAlg::SerialDenseMatrix matrix_gp_to_base =
         EvaluateProjectionGaussPointsToBaseDistype(shapefcns_at_gps);
 
-    extrapolation_matrix_cache[intpoints.NumPoints()] =
+    extrapolation_matrix_cache[intpoints.num_points()] =
         EvaluateProjectionGaussPointsToDistype<distype>(matrix_gp_to_base, base_distype);
   }
 
-  return extrapolation_matrix_cache[intpoints.NumPoints()];
+  return extrapolation_matrix_cache[intpoints.num_points()];
 }
 
 template <Core::FE::CellType distype, class GaussIntegration>

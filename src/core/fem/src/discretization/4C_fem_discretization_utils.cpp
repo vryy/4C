@@ -29,7 +29,7 @@ void Core::FE::UTILS::evaluate_initial_field(const Core::UTILS::FunctionManager&
 {
   // get initial field conditions
   std::vector<Core::Conditions::Condition*> initfieldconditions;
-  discret.GetCondition("Initfield", initfieldconditions);
+  discret.get_condition("Initfield", initfieldconditions);
 
   //--------------------------------------------------------
   // loop through Initfield conditions and evaluate them
@@ -50,7 +50,7 @@ void Core::FE::UTILS::evaluate_initial_field(const Core::UTILS::FunctionManager&
   {
     for (const auto& initfieldcondition : initfieldconditions)
     {
-      if (initfieldcondition->Type() != type) continue;
+      if (initfieldcondition->type() != type) continue;
       const std::string condstring = initfieldcondition->parameters().get<std::string>("Field");
       if (condstring != fieldstring) continue;
       DoInitialField(function_manager, discret, *initfieldcondition, *fieldvector, locids);
@@ -65,7 +65,7 @@ void Core::FE::UTILS::DoInitialField(const Core::UTILS::FunctionManager& functio
     const Core::FE::Discretization& discret, Core::Conditions::Condition& cond,
     Epetra_Vector& fieldvector, const std::vector<int>& locids)
 {
-  const std::vector<int> cond_nodeids = *cond.GetNodes();
+  const std::vector<int> cond_nodeids = *cond.get_nodes();
   if (cond_nodeids.empty()) FOUR_C_THROW("Initfield condition does not have nodal cloud.");
 
   // loop nodes to identify and evaluate spatial distributions
@@ -75,22 +75,22 @@ void Core::FE::UTILS::DoInitialField(const Core::UTILS::FunctionManager& functio
   for (const int cond_nodeid : cond_nodeids)
   {
     // do only nodes in my row map
-    int cond_node_lid = discret.NodeRowMap()->LID(cond_nodeid);
+    int cond_node_lid = discret.node_row_map()->LID(cond_nodeid);
     if (cond_node_lid < 0) continue;
-    Core::Nodes::Node* node = discret.lRowNode(cond_node_lid);
+    Core::Nodes::Node* node = discret.l_row_node(cond_node_lid);
 
     // call explicitly the main dofset, i.e. the first column
-    std::vector<int> node_dofs = discret.Dof(0, node);
+    std::vector<int> node_dofs = discret.dof(0, node);
     const int total_numdof = static_cast<int>(node_dofs.size());
 
     // Get native number of dofs at this node. There might be multiple dofsets
     // (in xfem cases), thus the size of the dofs vector might be a multiple
     // of this.
-    auto* const myeles = node->Elements();
-    auto* ele_with_max_dof = std::max_element(myeles, myeles + node->NumElement(),
+    auto* const myeles = node->elements();
+    auto* ele_with_max_dof = std::max_element(myeles, myeles + node->num_element(),
         [&](Core::Elements::Element* a, Core::Elements::Element* b)
-        { return a->NumDofPerNode(*node) < b->NumDofPerNode(*node); });
-    const int numdof = (*ele_with_max_dof)->NumDofPerNode(*node);
+        { return a->num_dof_per_node(*node) < b->num_dof_per_node(*node); });
+    const int numdof = (*ele_with_max_dof)->num_dof_per_node(*node);
 
     if ((total_numdof % numdof) != 0) FOUR_C_THROW("illegal dof set number");
 
@@ -109,8 +109,8 @@ void Core::FE::UTILS::DoInitialField(const Core::UTILS::FunctionManager& functio
 
           const double functfac =
               funct_num > 0
-                  ? function_manager.FunctionById<Core::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                        .evaluate(node->X().data(), time, localdof)
+                  ? function_manager.function_by_id<Core::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+                        .evaluate(node->x().data(), time, localdof)
                   : 0.0;
 
           // assign value

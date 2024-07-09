@@ -89,7 +89,7 @@ Discret::ELEMENTS::FluidEleParameter::FluidEleParameter()
       multifrac_loma_conti_(false)
 {
   // we have to know the time parameters here to check for illegal combinations
-  fldparatimint_ = Discret::ELEMENTS::FluidEleParameterTimInt::Instance();
+  fldparatimint_ = Discret::ELEMENTS::FluidEleParameterTimInt::instance();
 }
 
 //----------------------------------------------------------------------*
@@ -134,7 +134,7 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_general_fluid_parameter(
   physicaltype_ = Core::UTILS::GetAsEnum<Inpar::FLUID::PhysicalType>(params, "Physical Type");
   if (((physicaltype_ == Inpar::FLUID::loma) or
           (physicaltype_ == Inpar::FLUID::varying_density)) and
-      (fldparatimint_->IsStationary() == true))
+      (fldparatimint_->is_stationary() == true))
     FOUR_C_THROW("physical type is not supported in stationary FLUID implementation.");
 
   // set flag for type of linearization (fixed-point-like or Newton)
@@ -149,16 +149,16 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_general_fluid_parameter(
     is_newton_ = true;
   }
 
-  if (fldparatimint_->IsGenalphaNP() and physicaltype_ == Inpar::FLUID::loma)
+  if (fldparatimint_->is_genalpha_np() and physicaltype_ == Inpar::FLUID::loma)
     FOUR_C_THROW("the combination Np_Gen_Alpha and loma is not supported");
 
-  if (not fldparatimint_->IsGenalpha() and physicaltype_ == Inpar::FLUID::loma)
+  if (not fldparatimint_->is_genalpha() and physicaltype_ == Inpar::FLUID::loma)
     FOUR_C_THROW("the combination OST and loma is said to be supported but does not work!!");
 
-  if (fldparatimint_->IsGenalphaNP() and is_conservative_)
+  if (fldparatimint_->is_genalpha_np() and is_conservative_)
     FOUR_C_THROW("the combination Np_Gen_Alpha and conservative flow is not supported");
 
-  if (not fldparatimint_->IsStationary() and is_conservative_ and
+  if (not fldparatimint_->is_stationary() and is_conservative_ and
       physicaltype_ != Inpar::FLUID::incompressible)
   {
     if (myrank == 0)
@@ -228,7 +228,7 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_general_fluid_parameter(
       FOUR_C_THROW("Definition of Tau cannot be handled by the element");
 
     // set correct stationary definition of stabilization parameter automatically
-    if (fldparatimint_->IsStationary())
+    if (fldparatimint_->is_stationary())
     {
       if (whichtau_ == Inpar::FLUID::tau_taylor_hughes_zarins)
         whichtau_ = Inpar::FLUID::tau_taylor_hughes_zarins_wo_dt;
@@ -331,7 +331,7 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_general_fluid_parameter(
   }
   else if (stabtype_ == Inpar::FLUID::stabtype_pressureprojection)
   {
-    if (not(fldparatimint_->IsStationary() and
+    if (not(fldparatimint_->is_stationary() and
             ((physicaltype_ == Inpar::FLUID::stokes) or (physicaltype_ == Inpar::FLUID::oseen))))
       FOUR_C_THROW(
           "Polynomial pressure projection has only been tested for stationary Stokes/Oseen "
@@ -409,7 +409,7 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_general_fluid_parameter(
   if ((tds_ == Inpar::FLUID::subscales_time_dependent) or
       (transient_ != Inpar::FLUID::inertia_stab_drop))
   {
-    if (not fldparatimint_->IsGenalphaNP())
+    if (not fldparatimint_->is_genalpha_np())
       FOUR_C_THROW(
           "time dependent subscales does not work for OST/AfGenAlpha/BDF2/Stationary. \nOne need "
           "to look for bugs");
@@ -527,7 +527,7 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_turbulence_parameters(
   // No turbulent flow: TURBULENCE_APPROACH = DNS
   if (turbmodelparams.get<std::string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
   {
-    if (fldparatimint_->IsStationary() == true)
+    if (fldparatimint_->is_stationary() == true)
       FOUR_C_THROW("Stationary turbulent flow does not make any sense");
 
     std::string& physical_turbulence_model = turbmodelparams.get<std::string>("PHYSICAL_MODEL");

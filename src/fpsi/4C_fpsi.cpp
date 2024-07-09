@@ -29,9 +29,9 @@ FPSI::FpsiBase::FpsiBase(const Epetra_Comm& comm, const Teuchos::ParameterList& 
  *----------------------------------------------------------------------*/
 void FPSI::FpsiBase::redistribute_interface()
 {
-  Global::Problem* problem = Global::Problem::Instance();
-  const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
-  Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
+  Global::Problem* problem = Global::Problem::instance();
+  const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
+  Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::instance();
 
   if (comm.NumProc() >
       1)  // if we have more than one processor, we need to redistribute at the FPSI interface
@@ -41,18 +41,18 @@ void FPSI::FpsiBase::redistribute_interface()
     Teuchos::RCP<std::map<int, int>> PoroFluid_Fluid_InterfaceMap =
         FPSI_UTILS->get_poro_fluid_fluid_interface_map();
 
-    FPSI_UTILS->redistribute_interface(problem->GetDis("fluid"), problem->GetDis("porofluid"),
+    FPSI_UTILS->redistribute_interface(problem->get_dis("fluid"), problem->get_dis("porofluid"),
         "fpsi_coupling", *PoroFluid_Fluid_InterfaceMap);
-    FPSI_UTILS->redistribute_interface(problem->GetDis("ale"), problem->GetDis("porofluid"),
+    FPSI_UTILS->redistribute_interface(problem->get_dis("ale"), problem->get_dis("porofluid"),
         "fpsi_coupling", *PoroFluid_Fluid_InterfaceMap);
-    FPSI_UTILS->redistribute_interface(problem->GetDis("porofluid"), problem->GetDis("fluid"),
+    FPSI_UTILS->redistribute_interface(problem->get_dis("porofluid"), problem->get_dis("fluid"),
         "fpsi_coupling", *Fluid_PoroFluid_InterfaceMap);
-    FPSI_UTILS->redistribute_interface(problem->GetDis("structure"), problem->GetDis("fluid"),
+    FPSI_UTILS->redistribute_interface(problem->get_dis("structure"), problem->get_dis("fluid"),
         "fpsi_coupling", *Fluid_PoroFluid_InterfaceMap);
 
     // Material pointers need to be reset after redistribution.
     PoroElast::UTILS::SetMaterialPointersMatchingGrid(
-        problem->GetDis("structure"), problem->GetDis("porofluid"));
+        problem->get_dis("structure"), problem->get_dis("porofluid"));
   }
 
   return;

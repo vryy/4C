@@ -100,7 +100,7 @@ void PARTICLEENGINE::ParticleContainer::decrease_container_size()
   }
 }
 
-void PARTICLEENGINE::ParticleContainer::AddParticle(
+void PARTICLEENGINE::ParticleContainer::add_particle(
     int& index, int globalid, const ParticleStates& states)
 {
   // increase size of container
@@ -141,7 +141,7 @@ void PARTICLEENGINE::ParticleContainer::AddParticle(
   particlestored_++;
 }
 
-void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
+void PARTICLEENGINE::ParticleContainer::replace_particle(
     int index, int globalid, const ParticleStates& states)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -176,7 +176,7 @@ void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
   }
 }
 
-void PARTICLEENGINE::ParticleContainer::GetParticle(
+void PARTICLEENGINE::ParticleContainer::get_particle(
     int index, int& globalid, ParticleStates& states) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -201,7 +201,7 @@ void PARTICLEENGINE::ParticleContainer::GetParticle(
   }
 }
 
-void PARTICLEENGINE::ParticleContainer::RemoveParticle(int index)
+void PARTICLEENGINE::ParticleContainer::remove_particle(int index)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (index < 0 or index > (particlestored_ - 1))
@@ -224,7 +224,7 @@ void PARTICLEENGINE::ParticleContainer::RemoveParticle(int index)
   }
 }
 
-double PARTICLEENGINE::ParticleContainer::GetMinValueOfState(ParticleState state) const
+double PARTICLEENGINE::ParticleContainer::get_min_value_of_state(ParticleState state) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (not storedstates_.count(state))
@@ -241,7 +241,7 @@ double PARTICLEENGINE::ParticleContainer::GetMinValueOfState(ParticleState state
   return min;
 }
 
-double PARTICLEENGINE::ParticleContainer::GetMaxValueOfState(ParticleState state) const
+double PARTICLEENGINE::ParticleContainer::get_max_value_of_state(ParticleState state) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (not storedstates_.count(state))

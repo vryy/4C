@@ -30,7 +30,7 @@ bool CONTACT::UTILS::UseSafeRedistributeAndGhosting(const Teuchos::ParameterList
    */
   bool use_safe_ghosting_branch = false;
   {
-    const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
+    const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
     const enum Inpar::Solid::IntegrationStrategy intstrat =
         Core::UTILS::IntegralValue<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
 
@@ -52,9 +52,9 @@ bool CONTACT::UTILS::UseSafeRedistributeAndGhosting(const Teuchos::ParameterList
        */
       if (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(contactParams, "ALGORITHM") ==
               Inpar::Mortar::algorithm_mortar &&
-          (Global::Problem::Instance()->GetProblemType() != Core::ProblemType::poroelast &&
-              Global::Problem::Instance()->GetProblemType() != Core::ProblemType::poroscatra &&
-              Global::Problem::Instance()->GetProblemType() != Core::ProblemType::struct_ale))
+          (Global::Problem::instance()->get_problem_type() != Core::ProblemType::poroelast &&
+              Global::Problem::instance()->get_problem_type() != Core::ProblemType::poroscatra &&
+              Global::Problem::instance()->get_problem_type() != Core::ProblemType::struct_ale))
         use_safe_ghosting_branch = true;
     }
     else

@@ -79,7 +79,7 @@ Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::SolidEleCalc()
       mass_matrix_integration_(
           create_gauss_integration<celltype>(get_gauss_rule_mass_matrix<celltype>()))
 {
-  Discret::ELEMENTS::ResizeGPHistory(history_data_, stiffness_matrix_integration_.NumPoints());
+  Discret::ELEMENTS::ResizeGPHistory(history_data_, stiffness_matrix_integration_.num_points());
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
@@ -143,7 +143,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype,
                 const Core::LinAlg::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
             {
               const Stress<celltype> stress = evaluate_material_stress<celltype>(
-                  solid_material, deformation_gradient, gl_strain, params, gp, ele.Id());
+                  solid_material, deformation_gradient, gl_strain, params, gp, ele.id());
 
               if (force.has_value())
               {
@@ -163,11 +163,11 @@ void Discret::ELEMENTS::SolidEleCalc<celltype,
                 if (equal_integration_mass_stiffness)
                 {
                   add_mass_matrix(
-                      shape_functions, integration_factor, solid_material.Density(gp), *mass);
+                      shape_functions, integration_factor, solid_material.density(gp), *mass);
                 }
                 else
                 {
-                  element_mass += solid_material.Density(gp) * integration_factor;
+                  element_mass += solid_material.density(gp) * integration_factor;
                   element_volume += integration_factor;
                 }
               }
@@ -189,14 +189,14 @@ void Discret::ELEMENTS::SolidEleCalc<celltype,
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Recover(
+void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::recover(
     const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Update(
+void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::update(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material,
     const Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
@@ -221,7 +221,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Update(
             [&](const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
                     deformation_gradient,
                 const Core::LinAlg::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
-            { solid_material.update(deformation_gradient, gp, params, ele.Id()); });
+            { solid_material.update(deformation_gradient, gp, params, ele.id()); });
       });
 
   solid_material.update();
@@ -256,7 +256,7 @@ double Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::calculate_
                 const Core::LinAlg::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
             {
               double psi = 0.0;
-              solid_material.StrainEnergy(gl_strain, psi, gp, ele.Id());
+              solid_material.strain_energy(gl_strain, psi, gp, ele.id());
               intenergy += psi * integration_factor;
             });
       });
@@ -272,8 +272,8 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::calculate_st
 {
   std::vector<char>& serialized_stress_data = stressIO.mutable_data;
   std::vector<char>& serialized_strain_data = strainIO.mutable_data;
-  Core::LinAlg::SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), num_str_);
-  Core::LinAlg::SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), num_str_);
+  Core::LinAlg::SerialDenseMatrix stress_data(stiffness_matrix_integration_.num_points(), num_str_);
+  Core::LinAlg::SerialDenseMatrix strain_data(stiffness_matrix_integration_.num_points(), num_str_);
 
   const ElementNodes<celltype> nodal_coordinates =
       evaluate_element_nodes<celltype>(ele, discretization, lm);
@@ -297,7 +297,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::calculate_st
                 const Core::LinAlg::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
             {
               const Stress<celltype> stress = evaluate_material_stress<celltype>(
-                  solid_material, deformation_gradient, gl_strain, params, gp, ele.Id());
+                  solid_material, deformation_gradient, gl_strain, params, gp, ele.id());
 
               assemble_strain_type_to_matrix_row<celltype>(
                   gl_strain, deformation_gradient, strainIO.type, strain_data, gp);
@@ -349,7 +349,7 @@ template <Core::FE::CellType celltype, typename ElementFormulation>
 void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::setup(
     Mat::So3Material& solid_material, Input::LineDefinition* linedef)
 {
-  solid_material.setup(stiffness_matrix_integration_.NumPoints(), linedef);
+  solid_material.setup(stiffness_matrix_integration_.num_points(), linedef);
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
@@ -363,7 +363,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::material_pos
       stiffness_matrix_integration_, ele, params);
 
   // Call post_setup of material
-  solid_material.post_setup(params, ele.Id());
+  solid_material.post_setup(params, ele.id());
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
@@ -372,11 +372,11 @@ void Discret::ELEMENTS::SolidEleCalc<celltype,
     const Mat::So3Material& solid_material,
     FourC::Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
-  FOUR_C_ASSERT(ele.IsParamsInterface(),
+  FOUR_C_ASSERT(ele.is_params_interface(),
       "This action type should only be called from the new time integration framework!");
 
   ask_and_add_quantities_to_gauss_point_data_output(
-      stiffness_matrix_integration_.NumPoints(), solid_material, gp_data_output_manager);
+      stiffness_matrix_integration_.num_points(), solid_material, gp_data_output_manager);
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
@@ -385,7 +385,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype,
     const Mat::So3Material& solid_material,
     FourC::Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
-  FOUR_C_ASSERT(ele.IsParamsInterface(),
+  FOUR_C_ASSERT(ele.is_params_interface(),
       "This action type should only be called from the new time integration framework!");
 
   collect_and_assemble_gauss_point_data_output<celltype>(
@@ -438,7 +438,7 @@ Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::get_normal_cauchy
               preparation_data, history_data_);
 
           return EvaluateCauchyNDirAtXi<celltype>(
-              solid_material, deformation_gradient, n, dir, ele.Id(), evaluator, linearizations);
+              solid_material, deformation_gradient, n, dir, ele.id(), evaluator, linearizations);
         });
   }
 }
@@ -472,7 +472,7 @@ struct VerifyPackable
               Discret::ELEMENTS::DisplacementBasedFormulation<celltypes>>*> &&
           ...);
 
-  void StaticAsserts() const
+  void static_asserts() const
   {
     static_assert(are_all_packable);
     static_assert(are_all_unpackable);

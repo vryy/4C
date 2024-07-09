@@ -82,13 +82,13 @@ namespace FSI
 
 
     */
-    void SetupSystem() override;
+    void setup_system() override;
 
     //! Create #lambda_ and #lambdaold_
-    void SetLambda() override;
+    void set_lambda() override;
 
     //! Set #notsetup_ = true after redistribution
-    void SetNotSetup() override
+    void set_not_setup() override
     {
       notsetup_ = true;
       return;
@@ -102,7 +102,7 @@ namespace FSI
     //@}
 
     /// the composed system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const override;
 
     //! @name Methods for infnorm-scaling of the system
 
@@ -219,12 +219,12 @@ namespace FSI
         Teuchos::RCP<Core::FE::Discretization> fluiddis,
         const Inpar::FSI::Redistribute domain) override;
 
-    Teuchos::RCP<Adapter::FluidFSIMsht> FsiFluidField()
+    Teuchos::RCP<Adapter::FluidFSIMsht> fsi_fluid_field()
     {
       return Teuchos::rcp_static_cast<Adapter::FluidFSIMsht>(fluid_field());
     }
 
-    Teuchos::RCP<Adapter::AleFsiMshtWrapper> FsiAleField()
+    Teuchos::RCP<Adapter::AleFsiMshtWrapper> fsi_ale_field()
     {
       return Teuchos::rcp_static_cast<Adapter::AleFsiMshtWrapper>(ale_field());
     }
@@ -238,7 +238,7 @@ namespace FSI
     void output() override;
 
     /// Write Lagrange multiplier
-    void OutputLambda() override;
+    void output_lambda() override;
 
     /// setup solver for global block system
     Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system(

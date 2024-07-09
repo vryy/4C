@@ -30,8 +30,8 @@ namespace
     MircoConstitutiveLawPressureTest()
     {
       const int problemid(0);
-      Global::Problem& problem = (*Global::Problem::Instance());
-      problem.Materials()->SetReadFromProblem(problemid);
+      Global::Problem& problem = (*Global::Problem::instance());
+      problem.materials()->set_read_from_problem(problemid);
 
       Teuchos::RCP<Core::UTILS::SymbolicFunctionOfSpaceTime<1>> FFUNCT1 =
           Teuchos::rcp(new Core::UTILS::SymbolicFunctionOfSpaceTime<1>({"0.7"}, {}));
@@ -42,16 +42,16 @@ namespace
       Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> FUNCT2 = FFUNCT2;
 
       Core::UTILS::FunctionManager functionmanager_;
-      functionmanager_.SetFunctions<std::any>({FUNCT1, FUNCT2});
-      problem.SetFunctionManager(std::move(functionmanager_));
+      functionmanager_.set_functions<std::any>({FUNCT1, FUNCT2});
+      problem.set_function_manager(std::move(functionmanager_));
 
       // set up material to be added to problem instance
       Core::IO::InputParameterContainer mat_stvenant;
-      mat_stvenant.Add("YOUNG", 1.0);
-      mat_stvenant.Add("NUE", 0.3);
-      mat_stvenant.Add("DENS", 1.0);
+      mat_stvenant.add("YOUNG", 1.0);
+      mat_stvenant.add("NUE", 0.3);
+      mat_stvenant.add("DENS", 1.0);
 
-      problem.Materials()->insert(
+      problem.materials()->insert(
           1, Mat::make_parameter(1, Core::Materials::MaterialType::m_stvenant, mat_stvenant));
 
       // initialize container for material parameters
@@ -60,26 +60,26 @@ namespace
               1, Inpar::CONTACT::ConstitutiveLawType::colaw_mirco, "Mirco Constitutivelaw"));
 
       // add parameters to container
-      container->Add("FirstMatID", 1);
-      container->Add("SecondMatID", 1);
-      container->Add("LateralLength", 1000.0);
-      container->Add("Resolution", 6);
-      container->Add("PressureGreenFunFlag", true);
-      container->Add("InitialTopologyStdDeviationFunct", 2);
-      container->Add("HurstExponentFunct", 1);
-      container->Add("RandomTopologyFlag", true);
-      container->Add("RandomSeedFlag", false);
-      container->Add("RandomGeneratorSeed", 95);
-      container->Add("Tolerance", 0.01);
-      container->Add("MaxIteration", 100);
-      container->Add("WarmStartingFlag", true);
-      container->Add("Offset", 2.0);
-      container->Add("FiniteDifferenceFraction", 0.001);
-      container->Add("ActiveGapTolerance", 1e-6);
-      container->Add("TopologyFilePath", std::string("sup6.dat"));
+      container->add("FirstMatID", 1);
+      container->add("SecondMatID", 1);
+      container->add("LateralLength", 1000.0);
+      container->add("Resolution", 6);
+      container->add("PressureGreenFunFlag", true);
+      container->add("InitialTopologyStdDeviationFunct", 2);
+      container->add("HurstExponentFunct", 1);
+      container->add("RandomTopologyFlag", true);
+      container->add("RandomSeedFlag", false);
+      container->add("RandomGeneratorSeed", 95);
+      container->add("Tolerance", 0.01);
+      container->add("MaxIteration", 100);
+      container->add("WarmStartingFlag", true);
+      container->add("Offset", 2.0);
+      container->add("FiniteDifferenceFraction", 0.001);
+      container->add("ActiveGapTolerance", 1e-6);
+      container->add("TopologyFilePath", std::string("sup6.dat"));
 
       const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> mircococonstlaw =
-          CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(container);
+          CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(container);
       coconstlaw_ = mircococonstlaw;
 
       std::vector<double> x(3, 0.0);
@@ -115,8 +115,8 @@ namespace
   //! test member function EvaluateDeriv
   TEST_F(MircoConstitutiveLawPressureTest, TestEvaluateDeriv)
   {
-    EXPECT_NEAR(coconstlaw_->EvaluateDeriv(-12.0, cnode.get()), 1.56329102801896e-04, 1.e-10);
-    EXPECT_ANY_THROW(coconstlaw_->EvaluateDeriv(-0.25, cnode.get()));
+    EXPECT_NEAR(coconstlaw_->evaluate_deriv(-12.0, cnode.get()), 1.56329102801896e-04, 1.e-10);
+    EXPECT_ANY_THROW(coconstlaw_->evaluate_deriv(-0.25, cnode.get()));
   }
 }  // namespace
 

@@ -62,11 +62,11 @@ namespace Mat
   class SutherlandType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "SutherlandType"; }
+    std::string name() const override { return "SutherlandType"; }
 
-    static SutherlandType& Instance() { return instance_; };
+    static SutherlandType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static SutherlandType instance_;
@@ -92,9 +92,9 @@ namespace Mat
       top of parobject.H (this file) and should return it in this method.
     */
 
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return SutherlandType::Instance().UniqueParObjectId();
+      return SutherlandType::instance().unique_par_object_id();
     }
 
     /*!
@@ -102,7 +102,7 @@ namespace Mat
 
       Resizes the vector data and stores all information of a class in it.
       The first information to be stored in data has to be the
-      unique parobject id delivered by UniqueParObjectId() which will then
+      unique parobject id delivered by unique_par_object_id() which will then
       identify the exact class on the receiving processor.
 
       \param data (in/out): char vector to store class information
@@ -116,7 +116,7 @@ namespace Mat
       exact copy of an instance of a class on a different processor.
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
-      UniqueParObjectId().
+      unique_par_object_id().
 
       \param data (in) : vector storing all data to be unpacked into this
       instance.
@@ -126,48 +126,48 @@ namespace Mat
     //@}
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_sutherland;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new Sutherland(*this));
     }
 
     /// compute viscosity
-    double ComputeViscosity(const double temp) const;
+    double compute_viscosity(const double temp) const;
 
     /// compute diffusivity
-    double ComputeDiffusivity(const double temp) const;
+    double compute_diffusivity(const double temp) const;
 
     /// compute density
-    double ComputeDensity(const double temp, const double thermpress) const;
+    double compute_density(const double temp, const double thermpress) const;
 
     /// return material parameters for element calculation
     //@{
 
     /// reference dynamic viscosity (kg/(m*s))
-    double RefVisc() const { return params_->refvisc_; }
+    double ref_visc() const { return params_->refvisc_; }
     /// reference temperature (K)
-    double RefTemp() const { return params_->reftemp_; }
+    double ref_temp() const { return params_->reftemp_; }
     /// Sutherland temperature (K)
-    double SuthTemp() const { return params_->suthtemp_; }
+    double suth_temp() const { return params_->suthtemp_; }
     /// specific heat capacity
-    double Shc() const { return params_->shc_; }
+    double shc() const { return params_->shc_; }
     /// Prandtl number
-    double PraNum() const { return params_->pranum_; }
+    double pra_num() const { return params_->pranum_; }
     /// (initial) thermodynamic pressure
-    double ThermPress() const { return params_->thermpress_; }
+    double therm_press() const { return params_->thermpress_; }
     /// specific gas constant R
-    double GasConst() const { return params_->gasconst_; }
+    double gas_const() const { return params_->gasconst_; }
 
     //@}
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
    private:
     /// my material parameters

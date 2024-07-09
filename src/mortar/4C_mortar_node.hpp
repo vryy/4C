@@ -27,11 +27,11 @@ namespace Mortar
   class NodeType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "Mortar::NodeType"; }
+    std::string name() const override { return "Mortar::NodeType"; }
 
-    static NodeType& Instance() { return instance_; };
+    static NodeType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static NodeType instance_;
@@ -96,7 +96,7 @@ namespace Mortar
     /*!
      \brief Return current edge tangent(length 3)
      */
-    double* EdgeTangent() { return edgeTangent_; }
+    double* edge_tangent() { return edgeTangent_; }
 
     //! @}
 
@@ -132,12 +132,12 @@ namespace Mortar
     /*!
      \brief Return the 'D' map (vector) of this node
      */
-    Core::Gen::Pairedvector<int, double>& GetD() { return drows_; }
+    Core::Gen::Pairedvector<int, double>& get_d() { return drows_; }
 
     /*!
      \brief Return the 'M' map of this node
      */
-    std::map<int, double>& GetM() { return mrows_; }
+    std::map<int, double>& get_m() { return mrows_; }
 
     //! @}
 
@@ -147,12 +147,12 @@ namespace Mortar
     /*!
      \brief Return the 'D' map (vector) of this node for node-to-segment
      */
-    Core::Gen::Pairedvector<int, double>& GetDnts() { return drows_nts_; }
+    Core::Gen::Pairedvector<int, double>& get_dnts() { return drows_nts_; }
 
     /*!
      \brief Return the 'M' map of this node for node-to-segment
      */
-    std::map<int, double>& GetMnts() { return mrows_nts_; }
+    std::map<int, double>& get_mnts() { return mrows_nts_; }
 
     //! @}
 
@@ -162,12 +162,12 @@ namespace Mortar
     /*!
      \brief Return the 'D' map (vector) of this node for line-to-segment
      */
-    Core::Gen::Pairedvector<int, double>& GetDlts() { return drows_lts_; }
+    Core::Gen::Pairedvector<int, double>& get_dlts() { return drows_lts_; }
 
     /*!
      \brief Return the 'M' map of this node for line-to-segment
      */
-    std::map<int, double>& GetMlts() { return mrows_lts_; }
+    std::map<int, double>& get_mlts() { return mrows_lts_; }
 
     //! @}
 
@@ -177,24 +177,24 @@ namespace Mortar
     /*!
      \brief Return the 'D' map (vector) of this node for line-to-line
      */
-    Core::Gen::Pairedvector<int, double>& GetDltl() { return drows_ltl_; }
+    Core::Gen::Pairedvector<int, double>& get_dltl() { return drows_ltl_; }
 
     /*!
      \brief Return the 'M' map of this node for line-to-line
      */
-    std::map<int, double>& GetMltl() { return mrows_ltl_; }
+    std::map<int, double>& get_mltl() { return mrows_ltl_; }
 
     //! @}
 
     /*!
      \brief Return the 'Mmod' map of this node
      */
-    std::map<int, double>& GetMmod() { return mmodrows_; }
+    std::map<int, double>& get_mmod() { return mmodrows_; }
 
     /*!
      \brief Return the d matrix scale factor of this node
      */
-    double& GetDscale() { return d_nonsmooth_; }
+    double& get_dscale() { return d_nonsmooth_; }
 
    private:
     //! don't want = operator
@@ -324,7 +324,7 @@ namespace Mortar
      \brief Deep copy the derived class and return pointer to it
 
      */
-    Mortar::Node* Clone() const override;
+    Mortar::Node* clone() const override;
 
 
 
@@ -335,7 +335,10 @@ namespace Mortar
      top of lib/parobject.H.
 
      */
-    int UniqueParObjectId() const override { return NodeType::Instance().UniqueParObjectId(); }
+    int unique_par_object_id() const override
+    {
+      return NodeType::instance().unique_par_object_id();
+    }
 
     /*!
      \brief Pack this class so it can be communicated
@@ -365,7 +368,7 @@ namespace Mortar
     /*!
      \brief Is node on slave or master side of mortar interface
      */
-    bool IsSlave() const { return isslave_; }
+    bool is_slave() const { return isslave_; }
 
     /*!
      \brief Modify slave / master status of current node
@@ -378,24 +381,24 @@ namespace Mortar
      changed to master, thy do NOT carry Lagrange multipliers and their
      neighbors' dual shape fct. are modified!
      */
-    bool& SetSlave() { return isslave_; }
+    bool& set_slave() { return isslave_; }
 
     /*!
      \brief Return attached status
 
      */
-    bool IsDetected() { return detected_; }
+    bool is_detected() { return detected_; }
 
     /*!
      \brief Return attached status
 
      */
-    bool& SetDetected() { return detected_; }
+    bool& set_detected() { return detected_; }
 
     /*!
      \brief Is slave node tied or untied
      */
-    bool IsTiedSlave() const { return istiedslave_; }
+    bool is_tied_slave() const { return istiedslave_; }
 
     /*!
      \brief Modify tying status of current slave node
@@ -416,72 +419,72 @@ namespace Mortar
      for each node accordingly.
 
      */
-    bool& SetTiedSlave() { return istiedslave_; }
+    bool& set_tied_slave() { return istiedslave_; }
 
     /*!
      \brief Is node on boundary of slave side of mortar interface
      */
-    bool IsOnBound() const { return isonbound_; }
+    bool is_on_bound() const { return isonbound_; }
 
     /*!
      \brief Set slave side boundary status of current node
      */
-    bool& SetBound() { return isonbound_; }
+    bool& set_bound() { return isonbound_; }
 
     /*!
      \brief Is this node on a boundary, edge, or corner?
      */
-    bool IsOnBoundorCE() const { return ((isonedge_ or isoncorner_) or isonbound_); }
+    bool is_on_boundor_ce() const { return ((isonedge_ or isoncorner_) or isonbound_); }
 
     /*!
      \brief Is this node on an edge or corner?
      */
-    bool IsOnCornerEdge() const { return (isonedge_ or isoncorner_); }
+    bool is_on_corner_edge() const { return (isonedge_ or isoncorner_); }
 
     /*!
      \brief Is this nnode on a geometrical edge
      */
-    bool IsOnEdge() const { return isonedge_; }
+    bool is_on_edge() const { return isonedge_; }
 
     /*!
      \brief Set node is on geometrical edge
      */
-    bool& SetOnEdge() { return isonedge_; }
+    bool& set_on_edge() { return isonedge_; }
 
     /*!
      \brief Is this node on geometrical corner?
      */
-    bool IsOnCorner() const { return isoncorner_; }
+    bool is_on_corner() const { return isoncorner_; }
 
     /*!
      \brief Is this node on a boundary or a corner?
      */
-    bool IsOnCornerorBound() const { return (isoncorner_ or isonbound_); }
+    bool is_on_corneror_bound() const { return (isoncorner_ or isonbound_); }
 
     /*!
      \brief Set node is on geometrical corner
      */
-    bool& SetOnCorner() { return isoncorner_; }
+    bool& set_on_corner() { return isoncorner_; }
 
     /*!
      \brief Return D.B.C. status of this node (true if at least one dof with D.B.C)
      */
-    bool IsDbc() const { return isdbc_; }
+    bool is_dbc() const { return isdbc_; }
 
     /*!
      \brief Set D.B.C. status of current node
      */
-    bool& SetDbc() { return isdbc_; }
+    bool& set_dbc() { return isdbc_; }
 
     /*!
      \brief Get number of degrees of freedom
      */
-    [[nodiscard]] int NumDof() const { return static_cast<int>(dofs_.size()); }
+    [[nodiscard]] int num_dof() const { return static_cast<int>(dofs_.size()); }
 
     /*!
      \brief Get predefined degrees of freedom
      */
-    [[nodiscard]] const std::vector<int>& Dofs() const { return dofs_; };
+    [[nodiscard]] const std::vector<int>& dofs() const { return dofs_; };
 
     /*!
      \brief Return current configuration (length 3)
@@ -501,15 +504,15 @@ namespace Mortar
     /*!
      \brief Return projection status of this node (only for slave side!)
      */
-    bool& HasProj() { return hasproj_; }
+    bool& has_proj() { return hasproj_; }
 
     /*!
      \brief Return segmentation / cell status of this node (only for slave side!)
      */
-    bool& HasSegment() { return hassegment_; }
+    bool& has_segment() { return hassegment_; }
 
     /// get the upper bound for the number of D-entries
-    int GetNumDentries() const { return dentries_; };
+    int get_num_dentries() const { return dentries_; };
 
     /*!
      \brief Return of data container of this node
@@ -518,9 +521,9 @@ namespace Mortar
      contact specific quantities/information are stored.
 
      */
-    inline Mortar::NodeDataContainer& MoData() const
+    inline Mortar::NodeDataContainer& mo_data() const
     {
-      if (modata_ == Teuchos::null) FOUR_C_THROW("No mortar data attached. (node-id = %d)", Id());
+      if (modata_ == Teuchos::null) FOUR_C_THROW("No mortar data attached. (node-id = %d)", id());
       return *modata_;
     }
 
@@ -539,10 +542,10 @@ namespace Mortar
      \param col : global dof column id of the value added
 
      */
-    void AddDValue(const int& colnode, const double& val);
-    void AddDntsValue(const int& colnode, const double& val);
-    void AddDltsValue(const int& colnode, const double& val);
-    void AddDltlValue(const int& colnode, const double& val);
+    void add_d_value(const int& colnode, const double& val);
+    void add_dnts_value(const int& colnode, const double& val);
+    void add_dlts_value(const int& colnode, const double& val);
+    void add_dltl_value(const int& colnode, const double& val);
 
     /*!
      \brief Add a value to the 'M' map of this node
@@ -555,10 +558,10 @@ namespace Mortar
      \param col : global dof column id of the value added
 
      */
-    void AddMValue(const int& colnode, const double& val);
-    void AddMntsValue(const int& colnode, const double& val);
-    void AddMltsValue(const int& colnode, const double& val);
-    void AddMltlValue(const int& colnode, const double& val);
+    void add_m_value(const int& colnode, const double& val);
+    void add_mnts_value(const int& colnode, const double& val);
+    void add_mlts_value(const int& colnode, const double& val);
+    void add_mltl_value(const int& colnode, const double& val);
 
     /*!
      \brief Add a value to the 'Mmod' map of this node
@@ -571,12 +574,12 @@ namespace Mortar
      \param col : global dof column id of the value added
 
      */
-    void AddMmodValue(const int& colnode, const double& val);
+    void add_mmod_value(const int& colnode, const double& val);
 
     /*!
      \brief Build nodal normal
      */
-    virtual void BuildAveragedNormal();
+    virtual void build_averaged_normal();
 
     /*!
      \brief Find closest node from given node set and return pointer
@@ -589,7 +592,7 @@ namespace Mortar
      \param mindist (out):       Distance to closest node
 
      */
-    virtual Mortar::Node* FindClosestNode(const Teuchos::RCP<Core::FE::Discretization> intdis,
+    virtual Mortar::Node* find_closest_node(const Teuchos::RCP<Core::FE::Discretization> intdis,
         const Teuchos::RCP<Epetra_Map> nodesearchmap, double& mindist);
 
     /*!
@@ -606,7 +609,7 @@ namespace Mortar
      \param limit      (in):    limit in percent of edge length
 
      */
-    virtual bool CheckMeshDistortion(double& relocation, const double& limit);
+    virtual bool check_mesh_distortion(double& relocation, const double& limit);
 
     /*!
      \brief Initializes the data container of the node
@@ -635,17 +638,17 @@ namespace Mortar
      is deleted / reset to Teuchos::null pointer
 
      */
-    virtual void ResetDataContainer();
+    virtual void reset_data_container();
 
     // return dirichlet satus at node
-    bool* DbcDofs() { return dbcdofs_; }
+    bool* dbc_dofs() { return dbcdofs_; }
 
     /*!
      \brief Return weighting for nurbs control point (node)
 
      */
-    inline double& NurbsW() { return nurbsw_; }
-    inline double NurbsW() const { return nurbsw_; }
+    inline double& nurbs_w() { return nurbsw_; }
+    inline double nurbs_w() const { return nurbsw_; }
 
     //@}
 

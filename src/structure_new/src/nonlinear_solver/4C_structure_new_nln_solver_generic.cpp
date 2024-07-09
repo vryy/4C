@@ -76,7 +76,7 @@ Teuchos::RCP<::NOX::Abstract::Group>& Solid::Nln::SOLVER::Generic::group_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group& Solid::Nln::SOLVER::Generic::SolutionGroup() { return group(); }
+::NOX::Abstract::Group& Solid::Nln::SOLVER::Generic::solution_group() { return group(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

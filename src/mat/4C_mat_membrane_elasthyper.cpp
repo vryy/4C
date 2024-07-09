@@ -41,7 +41,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::MembraneElastHyper::create_material(
 Mat::MembraneElastHyperType Mat::MembraneElastHyperType::instance_;
 
 
-Core::Communication::ParObject* Mat::MembraneElastHyperType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MembraneElastHyperType::create(const std::vector<char>& data)
 {
   Mat::MembraneElastHyper* memelhy = new Mat::MembraneElastHyper();
   memelhy->unpack(data);
@@ -74,7 +74,7 @@ void Mat::MembraneElastHyper::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // add base class Element
@@ -92,7 +92,7 @@ void Mat::MembraneElastHyper::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -112,7 +112,7 @@ void Mat::MembraneElastHyper::setup(int numgp, Input::LineDefinition* linedef)
   // call setup of base class
   Mat::ElastHyper::setup(numgp, linedef);
 
-  GetFiberVecs(fibervecs_);
+  get_fiber_vecs(fibervecs_);
 
   return;
 }  // Mat::MembraneElastHyper::setup()
@@ -120,7 +120,7 @@ void Mat::MembraneElastHyper::setup(int numgp, Input::LineDefinition* linedef)
 /*----------------------------------------------------------------------*
  | hyperelastic stress response plus elasticity tensor   sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneElastHyper::EvaluateMembrane(const Core::LinAlg::Matrix<3, 3>& defgrd,
+void Mat::MembraneElastHyper::evaluate_membrane(const Core::LinAlg::Matrix<3, 3>& defgrd,
     const Core::LinAlg::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
     const Core::LinAlg::Matrix<3, 3>& Q_trafo, Core::LinAlg::Matrix<3, 1>& stress,
     Core::LinAlg::Matrix<3, 3>& cmat, const int gp, const int eleGID)
@@ -170,7 +170,7 @@ void Mat::MembraneElastHyper::EvaluateMembrane(const Core::LinAlg::Matrix<3, 3>&
 /*----------------------------------------------------------------------*
  | evaluate strain energy function                       sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneElastHyper::StrainEnergy(
+void Mat::MembraneElastHyper::strain_energy(
     Core::LinAlg::Matrix<3, 3>& cauchygreen, double& psi, const int gp, const int eleGID)
 {
   // kinematic quantities and identity tensors
@@ -197,7 +197,7 @@ void Mat::MembraneElastHyper::StrainEnergy(
   for (auto& p : potsum_)
   {
     // note that modified invariants equal the principal invariants as detF=J=1 (incompressibility)
-    p->AddStrainEnergy(psi, prinv_iso, prinv_iso, glstrain, gp, eleGID);
+    p->add_strain_energy(psi, prinv_iso, prinv_iso, glstrain, gp, eleGID);
   }
 }  // Mat::MembraneElastHyper::StrainEnergy
 
@@ -220,7 +220,7 @@ void Mat::MembraneElastHyper::evaluate_anisotropic_stress_cmat(
     fibervector.multiply_tn(1.0, Q_trafo, fibervecs_[p], 0.0);
 
     // set new fibervector in anisotropic material
-    potsum_[p]->SetFiberVecs(fibervector);
+    potsum_[p]->set_fiber_vecs(fibervector);
 
     // three dimensional right Cauchy-Green
     // REMARK: strain-like 6-Voigt vector

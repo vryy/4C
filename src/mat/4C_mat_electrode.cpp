@@ -72,7 +72,7 @@ Mat::PAR::Electrode::Electrode(const Core::Mat::PAR::Parameter::Data& matdata)
       // parse *.csv file
       if (ocpcsv[0] != '/')
       {
-        if (Global::Problem::Instance()->OutputControlFile() == Teuchos::null)
+        if (Global::Problem::instance()->output_control_file() == Teuchos::null)
         {
           std::cout << "WARNING: could not check, if OCP .csv file in MAT_electrode is correct."
                     << std::endl;
@@ -80,7 +80,7 @@ Mat::PAR::Electrode::Electrode(const Core::Mat::PAR::Parameter::Data& matdata)
           break;
         }
         std::string ocpcsvpath =
-            Global::Problem::Instance()->OutputControlFile()->input_file_name();
+            Global::Problem::instance()->output_control_file()->input_file_name();
         ocpcsvpath = ocpcsvpath.substr(0, ocpcsvpath.rfind('/') + 1);
         ocpcsv.insert(ocpcsv.begin(), ocpcsvpath.begin(), ocpcsvpath.end());
       }
@@ -242,7 +242,7 @@ Mat::ElectrodeType Mat::ElectrodeType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::ElectrodeType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ElectrodeType::create(const std::vector<char>& data)
 {
   auto* electrode = new Mat::Electrode();
   electrode->unpack(data);
@@ -260,11 +260,11 @@ void Mat::Electrode::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 }
 
@@ -274,24 +274,24 @@ void Mat::Electrode::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
   {
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::Electrode*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
   }
 
@@ -307,7 +307,7 @@ double Mat::Electrode::compute_open_circuit_potential(
   double ocp(0.0);
 
   // intercalation fraction
-  const double X = compute_intercalation_fraction(concentration, ChiMax(), CMax(), detF);
+  const double X = compute_intercalation_fraction(concentration, chi_max(), c_max(), detF);
 
   // print warning to screen if prescribed interval of validity for ocp calculation model is given
   // but not satisfied
@@ -426,10 +426,10 @@ double Mat::Electrode::compute_open_circuit_potential(
 double Mat::Electrode::compute_d_open_circuit_potential_d_concentration(
     double concentration, double faraday, double frt, double detF) const
 {
-  const double X = compute_intercalation_fraction(concentration, ChiMax(), CMax(), detF);
+  const double X = compute_intercalation_fraction(concentration, chi_max(), c_max(), detF);
   const double d_ocp_dX =
       compute_d_open_circuit_potential_d_intercalation_fraction(X, faraday, frt);
-  const double d_X_dc = compute_d_intercalation_fraction_d_concentration(ChiMax(), CMax(), detF);
+  const double d_X_dc = compute_d_intercalation_fraction_d_concentration(chi_max(), c_max(), detF);
 
   return d_ocp_dX * d_X_dc;
 }
@@ -546,11 +546,11 @@ double Mat::Electrode::compute_d_open_circuit_potential_d_intercalation_fraction
 double Mat::Electrode::compute_d_open_circuit_potential_d_det_f(
     const double concentration, const double faraday, const double frt, const double detF) const
 {
-  const double X = compute_intercalation_fraction(concentration, ChiMax(), CMax(), detF);
+  const double X = compute_intercalation_fraction(concentration, chi_max(), c_max(), detF);
   const double d_OCP_dX =
       compute_d_open_circuit_potential_d_intercalation_fraction(X, faraday, frt);
   const double d_X_ddetF =
-      compute_d_intercalation_fraction_d_det_f(concentration, ChiMax(), CMax());
+      compute_d_intercalation_fraction_d_det_f(concentration, chi_max(), c_max());
 
   return d_OCP_dX * d_X_ddetF;
 }
@@ -563,8 +563,8 @@ double Mat::Electrode::compute_d2_open_circuit_potential_d_concentration_d_conce
   double d2_ocp_dX2(0.0), d2_ocp_dc2(0.0);
 
   // intercalation fraction
-  const double X = compute_intercalation_fraction(concentration, ChiMax(), CMax(), detF);
-  const double d_X_dc = compute_d_intercalation_fraction_d_concentration(ChiMax(), CMax(), detF);
+  const double X = compute_intercalation_fraction(concentration, chi_max(), c_max(), detF);
+  const double d_X_dc = compute_d_intercalation_fraction_d_concentration(chi_max(), c_max(), detF);
 
   // physically reasonable intercalation fraction
   if (X > 0.0 and X < 1.0)
@@ -689,7 +689,7 @@ double Mat::Electrode::compute_d_open_circuit_potential_d_temperature(
     }
     case Mat::PAR::ocp_redlichkister:
     {
-      const double X = compute_intercalation_fraction(concentration, ChiMax(), CMax(), 1.0);
+      const double X = compute_intercalation_fraction(concentration, chi_max(), c_max(), 1.0);
 
       ocpderiv = std::log((1.0 - X) / X) * gasconstant / faraday;
       break;

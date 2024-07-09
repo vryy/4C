@@ -92,13 +92,13 @@ namespace Solid
     {
       // allocate auxiliary integrator
       sta_ = Teuchos::rcp(
-          new T(timeparams, ioparams, sdyn, xparams, sti->discretization(), sti->Solver(),
+          new T(timeparams, ioparams, sdyn, xparams, sti->discretization(), sti->solver(),
               Teuchos::null,  // no contact solver
               sti->disc_writer()));
-      sta_->init(timeparams, sdyn, xparams, sti->discretization(), sti->Solver());
+      sta_->init(timeparams, sdyn, xparams, sti->discretization(), sti->solver());
 
       // check explicitness
-      if (sta_->MethodImplicit())
+      if (sta_->method_implicit())
       {
         FOUR_C_THROW("Implicit might work, but please check carefully");
       }
@@ -112,7 +112,7 @@ namespace Solid
       {
         ada_ = ada_downward;
       }
-      else if (sta_->MethodName() == sti_->MethodName())
+      else if (sta_->method_name() == sti_->method_name())
       {
         ada_ = ada_ident;
       }
@@ -150,10 +150,10 @@ namespace Solid
     void init(Teuchos::RCP<TimInt>& sti) override
     {
       // merge
-      sta_->Merge(*sti);
+      sta_->merge(*sti);
 
       // resize multi-step quantities
-      sta_->ResizeMStep();
+      sta_->resize_m_step();
 
       return;
     }
@@ -168,7 +168,7 @@ namespace Solid
     void integrate_step_auxiliar() override
     {
       // integrate the auxiliary time integrator one step in time
-      sta_->IntegrateStep();
+      sta_->integrate_step();
 
       // copy onto target
       locerrdisn_->Update(1.0, *(sta_->disn_), 0.0);
@@ -186,9 +186,9 @@ namespace Solid
     //@{
 
     //! Provide the name
-    enum Inpar::Solid::TimAdaKind MethodName() const override
+    enum Inpar::Solid::TimAdaKind method_name() const override
     {
-      return map_name_tim_int_to_tim_ada(sti_->MethodName());
+      return map_name_tim_int_to_tim_ada(sti_->method_name());
     }
 
     //! Provide local order of accuracy of displacements
@@ -210,7 +210,7 @@ namespace Solid
     double method_lin_err_coeff_vel() const override { return sta_->method_lin_err_coeff_vel(); }
 
     //! Provide type of algorithm
-    enum AdaEnum MethodAdaptDis() const override { return ada_; }
+    enum AdaEnum method_adapt_dis() const override { return ada_; }
 
     //@}
 

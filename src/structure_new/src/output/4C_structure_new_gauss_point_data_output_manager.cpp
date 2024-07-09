@@ -219,8 +219,8 @@ void Solid::MODELEVALUATOR::GaussPointDataOutputManager::send_my_quantities_to_p
   pack_my_quantities(sdata);
 
   MPI_Request request;
-  exporter.i_send(exporter.Comm().MyPID(), 0, sdata.data(), sdata.size(), MPI_TAG, request);
-  exporter.Wait(request);
+  exporter.i_send(exporter.get_comm().MyPID(), 0, sdata.data(), sdata.size(), MPI_TAG, request);
+  exporter.wait(request);
 }
 
 std::unique_ptr<std::unordered_map<std::string, int>>
@@ -229,7 +229,7 @@ Solid::MODELEVALUATOR::GaussPointDataOutputManager::receive_quantities_from_proc
 {
   std::vector<char> rdata(0);
   int size;
-  exporter.Receive(from_proc, MPI_TAG, rdata, size);
+  exporter.receive(from_proc, MPI_TAG, rdata, size);
 
   auto quantities = std::unique_ptr<std::unordered_map<std::string, int>>(
       new std::unordered_map<std::string, int>());
@@ -244,14 +244,14 @@ void Solid::MODELEVALUATOR::GaussPointDataOutputManager::broadcast_my_quantitite
     const Core::Communication::Exporter& exporter)
 {
   std::vector<char> data(0);
-  if (exporter.Comm().MyPID() == 0)
+  if (exporter.get_comm().MyPID() == 0)
   {
     pack_my_quantities(data);
   }
 
-  exporter.Broadcast(0, data, MPI_TAG);
+  exporter.broadcast(0, data, MPI_TAG);
 
-  if (exporter.Comm().MyPID() != 0)
+  if (exporter.get_comm().MyPID() != 0)
   {
     std::size_t pos = 0;
     std::unordered_map<std::string, int> received_quantities{};

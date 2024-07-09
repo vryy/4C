@@ -260,7 +260,7 @@ void Core::VolMortar::VolMortarIntegratorEleBased<distype_s>::initialize_gp()
  |  Initialize gauss points for ele-based integration        farah 02/15|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s>
-void Core::VolMortar::VolMortarIntegratorEleBased<distype_s>::IntegrateEleBased3D(
+void Core::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_based3_d(
     Core::Elements::Element& sele, std::vector<int>& foundeles, Core::LinAlg::SparseMatrix& D,
     Core::LinAlg::SparseMatrix& M, Teuchos::RCP<const Core::FE::Discretization> Adis,
     Teuchos::RCP<const Core::FE::Discretization> Bdis, int dofseta, int dofsetb,
@@ -300,8 +300,8 @@ void Core::VolMortar::VolMortarIntegratorEleBased<distype_s>::IntegrateEleBased3
     for (int found = 0; found < (int)foundeles.size(); ++found)
     {
       // get master element
-      Core::Elements::Element* Bele = Bdis->gElement(foundeles[found]);
-      Core::FE::CellType shape = Bele->Shape();
+      Core::Elements::Element* Bele = Bdis->g_element(foundeles[found]);
+      Core::FE::CellType shape = Bele->shape();
 
       bool proj = false;
 
@@ -490,7 +490,7 @@ bool Core::VolMortar::VolMortarEleBasedGP(Core::Elements::Element& sele,
     Bxi[0] = AuxXi[0];
     Bxi[1] = AuxXi[1];
     Bxi[2] = AuxXi[2];
-    mele = Bdis->gElement(gpid);
+    mele = Bdis->g_element(gpid);
   }
 
   // for "master" side
@@ -504,32 +504,32 @@ bool Core::VolMortar::VolMortarEleBasedGP(Core::Elements::Element& sele,
   // dual shape functions
   for (int j = 0; j < ns_; ++j)
   {
-    Core::Nodes::Node* cnode = sele.Nodes()[j];
-    if (cnode->Owner() != Adis->Comm().MyPID()) continue;
+    Core::Nodes::Node* cnode = sele.nodes()[j];
+    if (cnode->owner() != Adis->get_comm().MyPID()) continue;
 
-    const int nsdof = Adis->NumDof(dofseta, cnode);
+    const int nsdof = Adis->num_dof(dofseta, cnode);
 
     if (shape == shape_std)
     {
       for (int j = 0; j < ns_; ++j)
       {
-        Core::Nodes::Node* cnode = sele.Nodes()[j];
-        int nsdof = Adis->NumDof(dofseta, cnode);
+        Core::Nodes::Node* cnode = sele.nodes()[j];
+        int nsdof = Adis->num_dof(dofseta, cnode);
 
         // loop over slave dofs
         for (int jdof = 0; jdof < nsdof; ++jdof)
         {
-          int row = Adis->Dof(dofseta, cnode, jdof);
+          int row = Adis->dof(dofseta, cnode, jdof);
 
           // integrate M
           for (int k = 0; k < nm_; ++k)
           {
-            Core::Nodes::Node* mnode = mele->Nodes()[k];
-            int nmdof = Bdis->NumDof(dofsetb, mnode);
+            Core::Nodes::Node* mnode = mele->nodes()[k];
+            int nmdof = Bdis->num_dof(dofsetb, mnode);
 
             for (int kdof = 0; kdof < nmdof; ++kdof)
             {
-              int col = Bdis->Dof(dofsetb, mnode, kdof);
+              int col = Bdis->dof(dofsetb, mnode, kdof);
 
               // multiply the two shape functions
               double prod = sval_A(j) * mval_A(k) * jac * wgt;
@@ -537,7 +537,7 @@ bool Core::VolMortar::VolMortarEleBasedGP(Core::Elements::Element& sele,
               // dof to dof
               if (jdof == kdof)
               {
-                if (abs(prod) > VOLMORTARINTTOL) M.Assemble(prod, row, col);
+                if (abs(prod) > VOLMORTARINTTOL) M.assemble(prod, row, col);
               }
             }
           }
@@ -545,8 +545,8 @@ bool Core::VolMortar::VolMortarEleBasedGP(Core::Elements::Element& sele,
           // integrate D
           for (int k = 0; k < ns_; ++k)
           {
-            Core::Nodes::Node* snode = sele.Nodes()[k];
-            int nddof = Adis->NumDof(dofseta, snode);
+            Core::Nodes::Node* snode = sele.nodes()[k];
+            int nddof = Adis->num_dof(dofseta, snode);
 
             for (int kdof = 0; kdof < nddof; ++kdof)
             {
@@ -556,7 +556,7 @@ bool Core::VolMortar::VolMortarEleBasedGP(Core::Elements::Element& sele,
               // dof to dof
               if (jdof == kdof)
               {
-                if (abs(prod) > VOLMORTARINTTOL) D.Assemble(prod, row, row);
+                if (abs(prod) > VOLMORTARINTTOL) D.assemble(prod, row, row);
               }
             }
           }
@@ -568,26 +568,26 @@ bool Core::VolMortar::VolMortarEleBasedGP(Core::Elements::Element& sele,
       // loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
-        const int row = Adis->Dof(dofseta, cnode, jdof);
+        const int row = Adis->dof(dofseta, cnode, jdof);
 
         if (not PAB_dofrowmap->MyGID(row)) continue;
 
         // integrate D
         const double prod2 = lmval_A(j) * sval_A(j) * jac * wgt;
-        if (abs(prod2) > VOLMORTARINTTOL) D.Assemble(prod2, row, row);
+        if (abs(prod2) > VOLMORTARINTTOL) D.assemble(prod2, row, row);
 
         // integrate M
         for (int k = 0; k < nm_; ++k)
         {
-          Core::Nodes::Node* mnode = mele->Nodes()[k];
-          const int col = Bdis->Dof(dofsetb, mnode, jdof);
+          Core::Nodes::Node* mnode = mele->nodes()[k];
+          const int col = Bdis->dof(dofsetb, mnode, jdof);
 
           if (not PAB_dofcolmap->MyGID(col)) continue;
 
           // multiply the two shape functions
           const double prod = lmval_A(j) * mval_A(k) * jac * wgt;
 
-          if (abs(prod) > VOLMORTARINTTOL) M.Assemble(prod, row, col);
+          if (abs(prod) > VOLMORTARINTTOL) M.assemble(prod, row, col);
         }
       }
     }
@@ -862,7 +862,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::initialize_gp(
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells2D(
+void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells2_d(
     Core::Elements::Element& sele, Core::Elements::Element& mele,
     Teuchos::RCP<Mortar::IntCell> cell, Core::LinAlg::SparseMatrix& dmatrix,
     Core::LinAlg::SparseMatrix& mmatrix, Teuchos::RCP<const Core::FE::Discretization> slavedis,
@@ -884,7 +884,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells2
 
     // get global Gauss point coordinates
     double globgp[3] = {0.0, 0.0, 0.0};
-    cell->LocalToGlobal(eta, globgp, 0);
+    cell->local_to_global(eta, globgp, 0);
 
     // map gp into slave and master para space
     double sxi[3] = {0.0, 0.0, 0.0};
@@ -905,7 +905,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells2
     UTILS::dual_shape_function<distype_s>(lmval, sxi, sele);
 
     // evaluate the integration cell Jacobian
-    double jac = cell->Jacobian();
+    double jac = cell->jacobian();
 
     // compute segment D/M matrix ****************************************
     // standard shape functions
@@ -913,26 +913,26 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells2
     {
       for (int j = 0; j < ns_; ++j)
       {
-        Core::Nodes::Node* cnode = sele.Nodes()[j];
-        int nsdof = slavedis->NumDof(sdofset, cnode);
+        Core::Nodes::Node* cnode = sele.nodes()[j];
+        int nsdof = slavedis->num_dof(sdofset, cnode);
 
-        if (cnode->Owner() != slavedis->Comm().MyPID()) continue;
+        if (cnode->owner() != slavedis->get_comm().MyPID()) continue;
 
         // loop over slave dofs
         for (int jdof = 0; jdof < nsdof; ++jdof)
         {
-          int row = slavedis->Dof(sdofset, cnode, jdof);
+          int row = slavedis->dof(sdofset, cnode, jdof);
 
           ////////////////////////////////////////
           // integrate M
           for (int k = 0; k < nm_; ++k)
           {
-            Core::Nodes::Node* mnode = mele.Nodes()[k];
-            int nmdof = masterdis->NumDof(mdofset, mnode);
+            Core::Nodes::Node* mnode = mele.nodes()[k];
+            int nmdof = masterdis->num_dof(mdofset, mnode);
 
             for (int kdof = 0; kdof < nmdof; ++kdof)
             {
-              int col = masterdis->Dof(mdofset, mnode, kdof);
+              int col = masterdis->dof(mdofset, mnode, kdof);
 
               // multiply the two shape functions
               double prod = sval(j) * mval(k) * jac * wgt;
@@ -940,7 +940,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells2
               // dof to dof
               if (jdof == kdof)
               {
-                if (abs(prod) > VOLMORTARINTTOL) mmatrix.Assemble(prod, row, col);
+                if (abs(prod) > VOLMORTARINTTOL) mmatrix.assemble(prod, row, col);
               }
             }
           }
@@ -949,8 +949,8 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells2
           // integrate D
           for (int k = 0; k < ns_; ++k)
           {
-            Core::Nodes::Node* snode = sele.Nodes()[k];
-            int nddof = slavedis->NumDof(sdofset, snode);
+            Core::Nodes::Node* snode = sele.nodes()[k];
+            int nddof = slavedis->num_dof(sdofset, snode);
 
             for (int kdof = 0; kdof < nddof; ++kdof)
             {
@@ -962,7 +962,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells2
               // dof to dof
               if (jdof == kdof)
               {
-                if (abs(prod) > VOLMORTARINTTOL) dmatrix.Assemble(prod, row, row);
+                if (abs(prod) > VOLMORTARINTTOL) dmatrix.assemble(prod, row, row);
               }
             }
           }
@@ -973,27 +973,27 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells2
     {
       for (int j = 0; j < ns_; ++j)
       {
-        Core::Nodes::Node* cnode = sele.Nodes()[j];
+        Core::Nodes::Node* cnode = sele.nodes()[j];
 
-        if (cnode->Owner() != slavedis->Comm().MyPID()) continue;
+        if (cnode->owner() != slavedis->get_comm().MyPID()) continue;
 
-        int nsdof = slavedis->NumDof(sdofset, cnode);
+        int nsdof = slavedis->num_dof(sdofset, cnode);
 
         // loop over slave dofs
         for (int jdof = 0; jdof < nsdof; ++jdof)
         {
-          int row = slavedis->Dof(sdofset, cnode, jdof);
+          int row = slavedis->dof(sdofset, cnode, jdof);
 
           ////////////////////////////////////////////////////////////////
           // integrate M and D
           for (int k = 0; k < nm_; ++k)
           {
-            Core::Nodes::Node* mnode = mele.Nodes()[k];
-            int nmdof = masterdis->NumDof(mdofset, mnode);
+            Core::Nodes::Node* mnode = mele.nodes()[k];
+            int nmdof = masterdis->num_dof(mdofset, mnode);
 
             for (int kdof = 0; kdof < nmdof; ++kdof)
             {
-              int col = masterdis->Dof(mdofset, mnode, kdof);
+              int col = masterdis->dof(mdofset, mnode, kdof);
 
               // multiply the two shape functions
               double prod = lmval(j) * mval(k) * jac * wgt;
@@ -1001,8 +1001,8 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells2
               // dof to dof
               if (jdof == kdof)
               {
-                if (abs(prod) > VOLMORTARINTTOL) mmatrix.Assemble(prod, row, col);
-                if (abs(prod) > VOLMORTARINTTOL) dmatrix.Assemble(prod, row, row);
+                if (abs(prod) > VOLMORTARINTTOL) mmatrix.assemble(prod, row, col);
+                if (abs(prod) > VOLMORTARINTTOL) dmatrix.assemble(prod, row, row);
               }
             }
           }
@@ -1024,7 +1024,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells2
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells3D(
+void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells3_d(
     Core::Elements::Element& Aele, Core::Elements::Element& Bele,
     Teuchos::RCP<Core::VolMortar::Cell> cell, Core::LinAlg::SparseMatrix& dmatrix_A,
     Core::LinAlg::SparseMatrix& mmatrix_A, Core::LinAlg::SparseMatrix& dmatrix_B,
@@ -1051,7 +1051,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells3
 
     // get global Gauss point coordinates
     double globgp[3] = {0.0, 0.0, 0.0};
-    cell->LocalToGlobal(eta, globgp);
+    cell->local_to_global(eta, globgp);
 
     // map gp into A and B para space
     double Axi[3] = {0.0, 0.0, 0.0};
@@ -1061,10 +1061,10 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells3
 
     // evaluate the integration cell Jacobian
     double jac = 0.0;
-    if (cell->Shape() == Core::FE::CellType::tet4)
-      jac = cell->Vol();
-    else if (cell->Shape() == Core::FE::CellType::hex8)
-      jac = cell->CalcJac(eta);
+    if (cell->shape() == Core::FE::CellType::tet4)
+      jac = cell->vol();
+    else if (cell->shape() == Core::FE::CellType::hex8)
+      jac = cell->calc_jac(eta);
     else
       FOUR_C_THROW("used shape not supported in volmortar integrator!");
 
@@ -1086,23 +1086,23 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells3
     // dual shape functions
     for (int j = 0; j < ns_; ++j)
     {
-      Core::Nodes::Node* cnode = Aele.Nodes()[j];
-      int nsdof = Adis->NumDof(sdofset_A, cnode);
+      Core::Nodes::Node* cnode = Aele.nodes()[j];
+      int nsdof = Adis->num_dof(sdofset_A, cnode);
 
       // loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
-        int row = Adis->Dof(sdofset_A, cnode, jdof);
+        int row = Adis->dof(sdofset_A, cnode, jdof);
 
         // integrate M and D
         for (int k = 0; k < nm_; ++k)
         {
-          Core::Nodes::Node* mnode = Bele.Nodes()[k];
-          int nmdof = Bdis->NumDof(mdofset_A, mnode);
+          Core::Nodes::Node* mnode = Bele.nodes()[k];
+          int nmdof = Bdis->num_dof(mdofset_A, mnode);
 
           for (int kdof = 0; kdof < nmdof; ++kdof)
           {
-            int col = Bdis->Dof(mdofset_A, mnode, kdof);
+            int col = Bdis->dof(mdofset_A, mnode, kdof);
 
             // multiply the two shape functions
             double prod = lmval_A(j) * mval_A(k) * jac * wgt;
@@ -1110,8 +1110,8 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells3
             // dof to dof
             if (jdof == kdof)
             {
-              if (abs(prod) > VOLMORTARINTTOL) mmatrix_A.Assemble(prod, row, col);
-              if (abs(prod) > VOLMORTARINTTOL) dmatrix_A.Assemble(prod, row, row);
+              if (abs(prod) > VOLMORTARINTTOL) mmatrix_A.assemble(prod, row, col);
+              if (abs(prod) > VOLMORTARINTTOL) dmatrix_A.assemble(prod, row, row);
             }
           }
         }
@@ -1122,23 +1122,23 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells3
     // dual shape functions
     for (int j = 0; j < nm_; ++j)
     {
-      Core::Nodes::Node* cnode = Bele.Nodes()[j];
-      int nsdof = Bdis->NumDof(sdofset_B, cnode);
+      Core::Nodes::Node* cnode = Bele.nodes()[j];
+      int nsdof = Bdis->num_dof(sdofset_B, cnode);
 
       // loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
-        int row = Bdis->Dof(sdofset_B, cnode, jdof);
+        int row = Bdis->dof(sdofset_B, cnode, jdof);
 
         // integrate M and D
         for (int k = 0; k < ns_; ++k)
         {
-          Core::Nodes::Node* mnode = Aele.Nodes()[k];
-          int nmdof = Adis->NumDof(mdofset_B, mnode);
+          Core::Nodes::Node* mnode = Aele.nodes()[k];
+          int nmdof = Adis->num_dof(mdofset_B, mnode);
 
           for (int kdof = 0; kdof < nmdof; ++kdof)
           {
-            int col = Adis->Dof(mdofset_B, mnode, kdof);
+            int col = Adis->dof(mdofset_B, mnode, kdof);
 
             // multiply the two shape functions
             double prod = lmval_B(j) * sval_A(k) * jac * wgt;
@@ -1146,8 +1146,8 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells3
             // dof to dof
             if (jdof == kdof)
             {
-              if (abs(prod) > VOLMORTARINTTOL) mmatrix_B.Assemble(prod, row, col);
-              if (abs(prod) > VOLMORTARINTTOL) dmatrix_B.Assemble(prod, row, row);
+              if (abs(prod) > VOLMORTARINTTOL) mmatrix_B.assemble(prod, row, col);
+              if (abs(prod) > VOLMORTARINTTOL) dmatrix_B.assemble(prod, row, row);
             }
           }
         }
@@ -1184,11 +1184,11 @@ void Core::VolMortar::VolMortarIntegrator<distype_s,
   //**********************************************************************
   // loop over all Gauss points for integration
   //**********************************************************************
-  for (int gp = 0; gp < intpoints->NumPoints(); ++gp)
+  for (int gp = 0; gp < intpoints->num_points(); ++gp)
   {
-    double weight_out = intpoints->Weight(gp);
+    double weight_out = intpoints->weight(gp);
     // coordinates and weight
-    double eta[3] = {intpoints->Point(gp)[0], intpoints->Point(gp)[1], intpoints->Point(gp)[2]};
+    double eta[3] = {intpoints->point(gp)[0], intpoints->point(gp)[1], intpoints->point(gp)[2]};
 
     double globgp[3] = {0.0, 0.0, 0.0};
 
@@ -1233,23 +1233,23 @@ void Core::VolMortar::VolMortarIntegrator<distype_s,
     // dual shape functions
     for (int j = 0; j < ns_; ++j)
     {
-      Core::Nodes::Node* cnode = Aele.Nodes()[j];
-      int nsdof = Adis->NumDof(sdofset_A, cnode);
+      Core::Nodes::Node* cnode = Aele.nodes()[j];
+      int nsdof = Adis->num_dof(sdofset_A, cnode);
 
       // loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
-        int row = Adis->Dof(sdofset_A, cnode, jdof);
+        int row = Adis->dof(sdofset_A, cnode, jdof);
 
         // integrate M and D
         for (int k = 0; k < nm_; ++k)
         {
-          Core::Nodes::Node* mnode = Bele.Nodes()[k];
-          int nmdof = Bdis->NumDof(mdofset_A, mnode);
+          Core::Nodes::Node* mnode = Bele.nodes()[k];
+          int nmdof = Bdis->num_dof(mdofset_A, mnode);
 
           for (int kdof = 0; kdof < nmdof; ++kdof)
           {
-            int col = Bdis->Dof(mdofset_A, mnode, kdof);
+            int col = Bdis->dof(mdofset_A, mnode, kdof);
 
             // multiply the two shape functions
             double prod = lmval_A(j) * mval_A(k) * jac * weight_out;
@@ -1258,8 +1258,8 @@ void Core::VolMortar::VolMortarIntegrator<distype_s,
             // dof to dof
             if (jdof == kdof)
             {
-              if (abs(prod) > VOLMORTARINTTOL) mmatrix_A.Assemble(prod, row, col);
-              if (abs(prod) > VOLMORTARINTTOL) dmatrix_A.Assemble(prod, row, row);
+              if (abs(prod) > VOLMORTARINTTOL) mmatrix_A.assemble(prod, row, col);
+              if (abs(prod) > VOLMORTARINTTOL) dmatrix_A.assemble(prod, row, row);
             }
           }
         }
@@ -1270,23 +1270,23 @@ void Core::VolMortar::VolMortarIntegrator<distype_s,
     // dual shape functions
     for (int j = 0; j < nm_; ++j)
     {
-      Core::Nodes::Node* cnode = Bele.Nodes()[j];
-      int nsdof = Bdis->NumDof(sdofset_B, cnode);
+      Core::Nodes::Node* cnode = Bele.nodes()[j];
+      int nsdof = Bdis->num_dof(sdofset_B, cnode);
 
       // loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
-        int row = Bdis->Dof(sdofset_B, cnode, jdof);
+        int row = Bdis->dof(sdofset_B, cnode, jdof);
 
         // integrate M and D
         for (int k = 0; k < ns_; ++k)
         {
-          Core::Nodes::Node* mnode = Aele.Nodes()[k];
-          int nmdof = Adis->NumDof(mdofset_B, mnode);
+          Core::Nodes::Node* mnode = Aele.nodes()[k];
+          int nmdof = Adis->num_dof(mdofset_B, mnode);
 
           for (int kdof = 0; kdof < nmdof; ++kdof)
           {
-            int col = Adis->Dof(sdofset_B, mnode, kdof);
+            int col = Adis->dof(sdofset_B, mnode, kdof);
 
             // multiply the two shape functions
             double prod = lmval_B(j) * sval_A(k) * jac * weight_out;
@@ -1296,8 +1296,8 @@ void Core::VolMortar::VolMortarIntegrator<distype_s,
             // dof to dof
             if (jdof == kdof)
             {
-              if (abs(prod) > VOLMORTARINTTOL) mmatrix_B.Assemble(prod, row, col);
-              if (abs(prod) > VOLMORTARINTTOL) dmatrix_B.Assemble(prod, row, row);
+              if (abs(prod) > VOLMORTARINTTOL) mmatrix_B.assemble(prod, row, col);
+              if (abs(prod) > VOLMORTARINTTOL) dmatrix_B.assemble(prod, row, row);
             }
           }
         }
@@ -1356,7 +1356,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_b
     for (int found = 0; found < (int)foundeles.size(); ++found)
     {
       // get master element
-      Core::Elements::Element* Bele = Bdis->gElement(foundeles[found]);
+      Core::Elements::Element* Bele = Bdis->g_element(foundeles[found]);
       double Bxi[3] = {0.0, 0.0, 0.0};
 
       bool converged = true;
@@ -1385,7 +1385,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_b
         Bxi[0] = AuxXi[0];
         Bxi[1] = AuxXi[1];
         Bxi[2] = AuxXi[2];
-        Bele = Bdis->gElement(gpid);
+        Bele = Bdis->g_element(gpid);
       }
 
       // for "master" side
@@ -1399,30 +1399,30 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_b
       // dual shape functions
       for (int j = 0; j < ns_; ++j)
       {
-        Core::Nodes::Node* cnode = Aele.Nodes()[j];
-        if (cnode->Owner() != Adis->Comm().MyPID()) continue;
+        Core::Nodes::Node* cnode = Aele.nodes()[j];
+        if (cnode->owner() != Adis->get_comm().MyPID()) continue;
 
-        int nsdof = Adis->NumDof(dofsetA, cnode);
+        int nsdof = Adis->num_dof(dofsetA, cnode);
 
         // loop over slave dofs
         for (int jdof = 0; jdof < nsdof; ++jdof)
         {
-          int row = Adis->Dof(dofsetA, cnode, jdof);
+          int row = Adis->dof(dofsetA, cnode, jdof);
 
           // integrate D
           double prod2 = lmval_A(j) * sval_A(j) * jac * wgt;
-          if (abs(prod2) > VOLMORTARINTTOL) dmatrix_A.Assemble(prod2, row, row);
+          if (abs(prod2) > VOLMORTARINTTOL) dmatrix_A.assemble(prod2, row, row);
 
           // integrate M
           for (int k = 0; k < nm_; ++k)
           {
-            Core::Nodes::Node* mnode = Bele->Nodes()[k];
-            int col = Bdis->Dof(dofsetB, mnode, jdof);
+            Core::Nodes::Node* mnode = Bele->nodes()[k];
+            int col = Bdis->dof(dofsetB, mnode, jdof);
 
             // multiply the two shape functions
             double prod = lmval_A(j) * mval_A(k) * jac * wgt;
 
-            if (abs(prod) > VOLMORTARINTTOL) mmatrix_A.Assemble(prod, row, col);
+            if (abs(prod) > VOLMORTARINTTOL) mmatrix_A.assemble(prod, row, col);
           }
         }
       }
@@ -1482,7 +1482,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_b
     for (int found = 0; found < (int)foundeles.size(); ++found)
     {
       // get master element
-      Core::Elements::Element* Aele = Adis->gElement(foundeles[found]);
+      Core::Elements::Element* Aele = Adis->g_element(foundeles[found]);
       double Axi[3] = {0.0, 0.0, 0.0};
 
       bool converged = true;
@@ -1511,7 +1511,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_b
         Axi[0] = AuxXi[0];
         Axi[1] = AuxXi[1];
         Axi[2] = AuxXi[2];
-        Aele = Adis->gElement(gpid);
+        Aele = Adis->g_element(gpid);
       }
 
       // evaluate trace space shape functions (on both elements)
@@ -1524,30 +1524,30 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_b
       // dual shape functions
       for (int j = 0; j < nm_; ++j)
       {
-        Core::Nodes::Node* cnode = Bele.Nodes()[j];
-        if (cnode->Owner() != Bdis->Comm().MyPID()) continue;
+        Core::Nodes::Node* cnode = Bele.nodes()[j];
+        if (cnode->owner() != Bdis->get_comm().MyPID()) continue;
 
-        int nsdof = Bdis->NumDof(dofsetB, cnode);
+        int nsdof = Bdis->num_dof(dofsetB, cnode);
 
         // loop over slave dofs
         for (int jdof = 0; jdof < nsdof; ++jdof)
         {
-          int row = Bdis->Dof(dofsetB, cnode, jdof);
+          int row = Bdis->dof(dofsetB, cnode, jdof);
 
           // integrate D
           double prod2 = lmval_B(j) * sval_B(j) * jac * wgt;
-          if (abs(prod2) > VOLMORTARINTTOL) dmatrix_B.Assemble(prod2, row, row);
+          if (abs(prod2) > VOLMORTARINTTOL) dmatrix_B.assemble(prod2, row, row);
 
           // integrate M
           for (int k = 0; k < ns_; ++k)
           {
-            Core::Nodes::Node* mnode = Aele->Nodes()[k];
-            int col = Adis->Dof(dofsetA, mnode, jdof);
+            Core::Nodes::Node* mnode = Aele->nodes()[k];
+            int col = Adis->dof(dofsetA, mnode, jdof);
 
             // multiply the two shape functions
             double prod = lmval_B(j) * mval_A(k) * jac * wgt;
 
-            if (abs(prod) > VOLMORTARINTTOL) mmatrix_B.Assemble(prod, row, col);
+            if (abs(prod) > VOLMORTARINTTOL) mmatrix_B.assemble(prod, row, col);
           }
         }
       }
@@ -1566,7 +1566,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_b
  |  element is completely located within an other element               |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateEle3D(int domain,
+void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele3_d(int domain,
     Core::Elements::Element& Aele, Core::Elements::Element& Bele,
     Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
     Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
@@ -1635,23 +1635,23 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateEle3D(
     // dual shape functions
     for (int j = 0; j < ns_; ++j)
     {
-      Core::Nodes::Node* cnode = Aele.Nodes()[j];
-      int nsdof = Adis->NumDof(sdofset_A, cnode);
+      Core::Nodes::Node* cnode = Aele.nodes()[j];
+      int nsdof = Adis->num_dof(sdofset_A, cnode);
 
       // loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
-        int row = Adis->Dof(sdofset_A, cnode, jdof);
+        int row = Adis->dof(sdofset_A, cnode, jdof);
 
         // integrate M and D
         for (int k = 0; k < nm_; ++k)
         {
-          Core::Nodes::Node* mnode = Bele.Nodes()[k];
-          int nmdof = Bdis->NumDof(mdofset_A, mnode);
+          Core::Nodes::Node* mnode = Bele.nodes()[k];
+          int nmdof = Bdis->num_dof(mdofset_A, mnode);
 
           for (int kdof = 0; kdof < nmdof; ++kdof)
           {
-            int col = Bdis->Dof(mdofset_A, mnode, kdof);
+            int col = Bdis->dof(mdofset_A, mnode, kdof);
 
             // multiply the two shape functions
             double prod = lmval_A(j) * mval_A(k) * jac * wgt;
@@ -1659,8 +1659,8 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateEle3D(
             // dof to dof
             if (jdof == kdof)
             {
-              if (abs(prod) > VOLMORTARINTTOL) mmatrix_A.Assemble(prod, row, col);
-              if (abs(prod) > VOLMORTARINTTOL) dmatrix_A.Assemble(prod, row, row);
+              if (abs(prod) > VOLMORTARINTTOL) mmatrix_A.assemble(prod, row, col);
+              if (abs(prod) > VOLMORTARINTTOL) dmatrix_A.assemble(prod, row, row);
             }
           }
         }
@@ -1671,23 +1671,23 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateEle3D(
     // dual shape functions
     for (int j = 0; j < nm_; ++j)
     {
-      Core::Nodes::Node* cnode = Bele.Nodes()[j];
-      int nsdof = Bdis->NumDof(sdofset_B, cnode);
+      Core::Nodes::Node* cnode = Bele.nodes()[j];
+      int nsdof = Bdis->num_dof(sdofset_B, cnode);
 
       // loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
-        int row = Bdis->Dof(sdofset_B, cnode, jdof);
+        int row = Bdis->dof(sdofset_B, cnode, jdof);
 
         // integrate M and D
         for (int k = 0; k < ns_; ++k)
         {
-          Core::Nodes::Node* mnode = Aele.Nodes()[k];
-          int nmdof = Adis->NumDof(mdofset_B, mnode);
+          Core::Nodes::Node* mnode = Aele.nodes()[k];
+          int nmdof = Adis->num_dof(mdofset_B, mnode);
 
           for (int kdof = 0; kdof < nmdof; ++kdof)
           {
-            int col = Adis->Dof(mdofset_B, mnode, kdof);
+            int col = Adis->dof(mdofset_B, mnode, kdof);
 
             // multiply the two shape functions
             double prod = lmval_B(j) * sval_A(k) * jac * wgt;
@@ -1695,8 +1695,8 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateEle3D(
             // dof to dof
             if (jdof == kdof)
             {
-              if (abs(prod) > VOLMORTARINTTOL) mmatrix_B.Assemble(prod, row, col);
-              if (abs(prod) > VOLMORTARINTTOL) dmatrix_B.Assemble(prod, row, row);
+              if (abs(prod) > VOLMORTARINTTOL) mmatrix_B.assemble(prod, row, col);
+              if (abs(prod) > VOLMORTARINTTOL) dmatrix_B.assemble(prod, row, row);
             }
           }
         }
@@ -1724,7 +1724,7 @@ bool Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::check_mapping2_
     if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[0] > 1.0 + tol || sxi[1] > 1.0 + tol)
     {
       std::cout << "\n***Warning: Gauss point projection outside!";
-      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+      std::cout << "Slave ID: " << sele.id() << " Master ID: " << mele.id() << std::endl;
       std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << std::endl;
       return false;
     }
@@ -1735,7 +1735,7 @@ bool Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::check_mapping2_
         sxi[0] + sxi[1] > 1.0 + 2 * tol)
     {
       std::cout << "\n***Warning: Gauss point projection outside!";
-      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+      std::cout << "Slave ID: " << sele.id() << " Master ID: " << mele.id() << std::endl;
       std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << std::endl;
       return false;
     }
@@ -1750,7 +1750,7 @@ bool Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::check_mapping2_
     if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
     {
       std::cout << "\n***Warning: Gauss point projection outside!";
-      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+      std::cout << "Slave ID: " << sele.id() << " Master ID: " << mele.id() << std::endl;
       std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << std::endl;
       return false;
     }
@@ -1761,7 +1761,7 @@ bool Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::check_mapping2_
         mxi[0] + mxi[1] > 1.0 + 2 * tol)
     {
       std::cout << "\n***Warning: Gauss point projection outside!";
-      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+      std::cout << "Slave ID: " << sele.id() << " Master ID: " << mele.id() << std::endl;
       std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << std::endl;
       return false;
     }
@@ -2041,17 +2041,17 @@ Core::VolMortar::ConsInterpolator::ConsInterpolator()
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 06/14|
  *----------------------------------------------------------------------*/
-void Core::VolMortar::ConsInterpolator::Interpolate(Core::Nodes::Node* node,
+void Core::VolMortar::ConsInterpolator::interpolate(Core::Nodes::Node* node,
     Core::LinAlg::SparseMatrix& pmatrix, Teuchos::RCP<const Core::FE::Discretization> nodediscret,
     Teuchos::RCP<const Core::FE::Discretization> elediscret, std::vector<int>& foundeles,
     std::pair<int, int>& dofset, const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
     const Teuchos::RCP<const Epetra_Map>& P_dofcolmap)
 {
   // check ownership
-  if (node->Owner() != nodediscret->Comm().MyPID()) return;
+  if (node->owner() != nodediscret->get_comm().MyPID()) return;
 
   // map gp into A and B para space
-  double nodepos[3] = {node->X()[0], node->X()[1], node->X()[2]};
+  double nodepos[3] = {node->x()[0], node->x()[1], node->x()[2]};
   double dist = 1.0e12;
   int eleid = 0;
   double AuxXi[3] = {0.0, 0.0, 0.0};
@@ -2062,9 +2062,9 @@ void Core::VolMortar::ConsInterpolator::Interpolate(Core::Nodes::Node* node,
     bool proj = false;
 
     // get master element
-    Core::Elements::Element* ele = elediscret->gElement(foundeles[found]);
+    Core::Elements::Element* ele = elediscret->g_element(foundeles[found]);
 
-    switch (ele->Shape())
+    switch (ele->shape())
     {
       // 2D --------------------------------------------
       case Core::FE::CellType::tri3:
@@ -2211,32 +2211,32 @@ bool Core::VolMortar::ConsInterpolatorEval(Core::Nodes::Node* node, Core::Elemen
     xi[0] = AuxXi[0];
     xi[1] = AuxXi[1];
     xi[2] = AuxXi[2];
-    ele = elediscret->gElement(eleid);
+    ele = elediscret->g_element(eleid);
   }
 
   // get values
   Core::LinAlg::Matrix<n_, 1> val;
   UTILS::shape_function<distype>(val, xi);
 
-  int nsdof = nodediscret->NumDof(dofset.first, node);
+  int nsdof = nodediscret->num_dof(dofset.first, node);
 
   // loop over slave dofs
   for (int jdof = 0; jdof < nsdof; ++jdof)
   {
-    const int row = nodediscret->Dof(dofset.first, node, jdof);
+    const int row = nodediscret->dof(dofset.first, node, jdof);
 
     if (not P_dofrowmap->MyGID(row)) continue;
 
     for (int k = 0; k < ele->num_node(); ++k)
     {
-      Core::Nodes::Node* bnode = ele->Nodes()[k];
-      const int col = elediscret->Dof(dofset.second, bnode, jdof);
+      Core::Nodes::Node* bnode = ele->nodes()[k];
+      const int col = elediscret->dof(dofset.second, bnode, jdof);
 
       if (not P_dofcolmap->MyGID(col)) continue;
 
       const double val2 = val(k);
       // if (abs(val2)>VOLMORTARINTTOL)
-      pmatrix.Assemble(val2, row, col);
+      pmatrix.assemble(val2, row, col);
     }
   }
 

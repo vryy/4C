@@ -303,7 +303,7 @@ void VtuWriter::write_point_data_vector(const Core::IO::visualization_vector_typ
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtuWriter::WriteCellDataVector(const Core::IO::visualization_vector_type_variant& data,
+void VtuWriter::write_cell_data_vector(const Core::IO::visualization_vector_type_variant& data,
     unsigned int num_components_per_cell, const std::string& name)
 {
   // if required, end the point data section

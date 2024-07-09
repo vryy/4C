@@ -50,7 +50,7 @@ namespace SSI
     //!
     //! \param ele     element whose ScaTra::ImplType shall be determined
     //! \return        impltype of the scatra element
-    virtual Inpar::ScaTra::ImplType GetImplType(Core::Elements::Element* ele);
+    virtual Inpar::ScaTra::ImplType get_impl_type(Core::Elements::Element* ele);
 
    protected:
     //! check material of cloned element

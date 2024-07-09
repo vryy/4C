@@ -20,14 +20,14 @@ Core::LinAlg::SerialDenseMatrix Core::Geo::InitialPositionArray(
 {
   const int numnode = ele->num_node();
   Core::LinAlg::SerialDenseMatrix xyze(3, numnode);
-  const Core::Nodes::Node* const* nodes = ele->Nodes();
+  const Core::Nodes::Node* const* nodes = ele->nodes();
   if (nodes == nullptr)
   {
     FOUR_C_THROW("element has no nodal pointers, so getting a position array doesn't make sense!");
   }
   for (int inode = 0; inode < numnode; inode++)
   {
-    const double* x = nodes[inode]->X().data();
+    const double* x = nodes[inode]->x().data();
     std::copy(x, x + 3, &xyze(0, inode));
   }
   return xyze;
@@ -39,14 +39,14 @@ void Core::Geo::InitialPositionArray(
 {
   const int numnode = ele->num_node();
   xyze.shape(3, numnode);
-  const Core::Nodes::Node* const* nodes = ele->Nodes();
+  const Core::Nodes::Node* const* nodes = ele->nodes();
   if (nodes == nullptr)
   {
     FOUR_C_THROW("element has no nodal pointers, so getting a position array doesn't make sense!");
   }
   for (int inode = 0; inode < numnode; inode++)
   {
-    const double* x = nodes[inode]->X().data();
+    const double* x = nodes[inode]->x().data();
     std::copy(x, x + 3, &xyze(0, inode));
   }
 }
@@ -60,7 +60,7 @@ Core::LinAlg::SerialDenseMatrix Core::Geo::getCurrentNodalPositions(
 {
   const int numnode = ele->num_node();
   Core::LinAlg::SerialDenseMatrix xyze(3, numnode);
-  const int* nodeids = ele->NodeIds();
+  const int* nodeids = ele->node_ids();
   for (int inode = 0; inode < numnode; ++inode)
   {
     const Core::LinAlg::Matrix<3, 1>& x = currentcutterpositions.find(nodeids[inode])->second;
@@ -80,7 +80,7 @@ Core::LinAlg::SerialDenseMatrix Core::Geo::getCurrentNodalPositions(
 {
   const int numnode = ele->num_node();
   Core::LinAlg::SerialDenseMatrix xyze(3, numnode);
-  const int* nodeids = ele->NodeIds();
+  const int* nodeids = ele->node_ids();
   for (int inode = 0; inode < numnode; ++inode)
   {
     const Core::LinAlg::Matrix<3, 1>& x = currentpositions.find(nodeids[inode])->second;

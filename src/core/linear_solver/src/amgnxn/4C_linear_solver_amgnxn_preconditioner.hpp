@@ -43,7 +43,7 @@ namespace Core::LinearSolver
     virtual void setup(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A);
 
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperator() const override;
+    Teuchos::RCP<Epetra_Operator> prec_operator() const override;
 
    private:
     // Private variables
@@ -58,13 +58,16 @@ namespace Core::LinearSolver
    public:
     AmGnxnInterface(Teuchos::ParameterList &params, int NumBlocks);
 
-    std::vector<std::string> GetMueLuXmlFiles() { return xml_files_; }
-    std::vector<int> GetNumPdes() { return num_pdes_; }
-    std::vector<int> GetNullSpacesDim() { return null_spaces_dim_; }
-    std::vector<Teuchos::RCP<std::vector<double>>> GetNullSpacesData() { return null_spaces_data_; }
+    std::vector<std::string> get_mue_lu_xml_files() { return xml_files_; }
+    std::vector<int> get_num_pdes() { return num_pdes_; }
+    std::vector<int> get_null_spaces_dim() { return null_spaces_dim_; }
+    std::vector<Teuchos::RCP<std::vector<double>>> get_null_spaces_data()
+    {
+      return null_spaces_data_;
+    }
     // int GetNumLevelAMG(){return NumLevelAMG_;}
     Teuchos::ParameterList get_preconditioner_params() { return prec_params_; }
-    Teuchos::ParameterList GetSmoothersParams() { return smoo_params_; }
+    Teuchos::ParameterList get_smoothers_params() { return smoo_params_; }
     std::string get_preconditioner_type() { return prec_type_; }
 
    private:

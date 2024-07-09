@@ -438,7 +438,7 @@ void Mat::ElastHyperProperties(
 {
   for (auto& p : potsum)
   {
-    p->SpecifyFormulation(properties.isoprinc, properties.isomod, properties.anisoprinc,
+    p->specify_formulation(properties.isoprinc, properties.isomod, properties.anisoprinc,
         properties.anisomod, properties.viscoGeneral);
 
     properties.coeffStretchesPrinc |= p->have_coefficients_stretches_principal();

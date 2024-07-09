@@ -55,12 +55,12 @@ namespace Core::Geo
 
       /// Initializes Cut Parameters by Parameterlist (typically from *.dat-file section CUT
       /// GENERAL)
-      void Init_by_Paramlist(const Teuchos::ParameterList& cutparams);
+      void init_by_paramlist(const Teuchos::ParameterList& cutparams);
 
       /// Initializes Cut Parameters for Cuttests (use full cln)
-      void Init_for_Cuttests();
+      void init_for_cuttests();
 
-      void SetFindPositions(bool positions) { positions_ = positions; }
+      void set_find_positions(bool positions) { positions_ = positions; }
 
       void set_nodal_dof_set_strategy(Core::Geo::Cut::NodalDofSetStrategy nodal_dofset_strategy)
       {
@@ -72,11 +72,11 @@ namespace Core::Geo
         return nodal_dofset_strategy_;
       }
 
-      bool FindPositions() const { return positions_; }
+      bool find_positions() const { return positions_; }
 
-      bool SimpleShapes() const { return simpleshapes_; }
+      bool simple_shapes() const { return simpleshapes_; }
 
-      void SetSimpleShapes(bool simpleshapes) { simpleshapes_ = simpleshapes; }
+      void set_simple_shapes(bool simpleshapes) { simpleshapes_ = simpleshapes; }
 
       /** \brief Set the position for the boundary cell creation
        *
@@ -108,28 +108,28 @@ namespace Core::Geo
 
       /** \brief get the quad4 integration cell generation indicator
        *  (TRUE: QUAD4, FALSE: TRI3's are used) */
-      bool GenQuad4() const { return genquad4_; }
+      bool gen_quad4() const { return genquad4_; }
 
       /** \brief get the hex8 integration cell generation indicator
        *  (TRUE: HEX8, FALSE: TRI4's are used) */
-      bool GenHex8() const { return genhex8_; }
+      bool gen_hex8() const { return genhex8_; }
 
       /** \brief get the wedge6 integration cell generation indicator
        *  (TRUE: WEDGE6, FALSE: TRI4's are used) */
-      bool GenWedge6() const { return genwedge6_; }
+      bool gen_wedge6() const { return genwedge6_; }
 
       /** \brief get the pyramid5 integration cell generation indicator
        *  (TRUE: PYRAMID5, FALSE: TRI4's are used) */
-      bool GenPyramid5() const { return genpyramid5_; }
+      bool gen_pyramid5() const { return genpyramid5_; }
 
       /** \brief Indicator if quad4 cutsides are split into tri3 cutsides */
-      bool SplitCutSides() const { return split_cutsides_; }
+      bool split_cut_sides() const { return split_cutsides_; }
 
       /** \brief Cubaturedegree for creating of integrationpoints on boundarycells */
-      int BC_Cubaturedegree() const { return bc_cubaturedegree_; }
+      int bc_cubaturedegree() const { return bc_cubaturedegree_; }
 
       /** \brief Run the SelfCut Algorithm*/
-      bool Do_SelfCut() { return do_selfcut_; }
+      bool do_self_cut() { return do_selfcut_; }
 
       /** \brief perform the mesh correction in the selfcut algorithm*/
       bool self_cut_do_mesh_correction() { return selfcut_do_meshcorrection_; }

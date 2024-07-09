@@ -81,7 +81,7 @@ namespace Wear
         ) override;
 
     /// general time loop
-    void TimeLoop() override;
+    void time_loop() override;
 
     // update ale and structure
     void update() override;

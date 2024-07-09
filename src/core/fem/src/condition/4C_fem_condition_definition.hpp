@@ -91,26 +91,26 @@ namespace Core::Conditions
       \param reader (i) the actual dat file reader that has access to the dat file
       \param cmap (o) the conditions we read here
      */
-    void Read(Core::IO::DatFileReader& reader,
+    void read(Core::IO::DatFileReader& reader,
         std::multimap<int, Teuchos::RCP<Core::Conditions::Condition>>& cmap);
 
     /// print my dat file section and possible conditions from the discretization
     std::ostream& print(std::ostream& stream, const Core::FE::Discretization* dis = nullptr);
 
     /// name of my section in input file
-    std::string SectionName() const { return sectionname_; }
+    std::string section_name() const { return sectionname_; }
 
     /// my condition name
-    std::string Name() const { return conditionname_; }
+    std::string name() const { return conditionname_; }
 
     /// my condition description
-    std::string Description() const { return description_; }
+    std::string description() const { return description_; }
 
     /// my condition inputline
-    std::vector<Teuchos::RCP<Input::LineComponent>> Inputline() const { return inputline_; }
+    std::vector<Teuchos::RCP<Input::LineComponent>> inputline() const { return inputline_; }
 
     /// my GeometryType
-    Core::Conditions::GeometryType GeometryType() const { return gtype_; }
+    Core::Conditions::GeometryType geometry_type() const { return gtype_; }
 
    private:
     std::string sectionname_;

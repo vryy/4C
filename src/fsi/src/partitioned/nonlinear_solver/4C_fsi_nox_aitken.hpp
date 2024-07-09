@@ -47,7 +47,7 @@ namespace NOX
           const ::NOX::Solver::Generic& s) override;
 
       //! return relaxation parameter
-      double GetOmega();
+      double get_omega();
 
      private:
       //! difference of last two solutions
@@ -90,7 +90,7 @@ namespace NOX
         return aitken_;
       }
 
-      Teuchos::RCP<AitkenRelaxation> GetAitken() { return aitken_; };
+      Teuchos::RCP<AitkenRelaxation> get_aitken() { return aitken_; };
 
      private:
       mutable Teuchos::RCP<AitkenRelaxation> aitken_;

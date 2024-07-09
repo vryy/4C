@@ -48,16 +48,16 @@ namespace Core::Elements
      *  These functions are not allowed to be called by the elements! */
     //! @{
     //! set the action type
-    inline void SetActionType(const enum Core::Elements::ActionType& actiontype)
+    inline void set_action_type(const enum Core::Elements::ActionType& actiontype)
     {
       ele_action_ = actiontype;
     }
 
     //! set the total time for the evaluation call
-    inline void SetTotalTime(const double& total_time) { total_time_ = total_time; }
+    inline void set_total_time(const double& total_time) { total_time_ = total_time; }
 
     //! set the current time step for the evaluation call
-    inline void SetDeltaTime(const double& dt) { delta_time_ = dt; }
+    inline void set_delta_time(const double& dt) { delta_time_ = dt; }
 
     //! store function manager
     void set_function_manager(const Core::UTILS::FunctionManager& function_manager)

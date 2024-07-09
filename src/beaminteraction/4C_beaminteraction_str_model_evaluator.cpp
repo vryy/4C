@@ -94,14 +94,14 @@ void Solid::MODELEVALUATOR::BeamInteraction::setup()
   force_beaminteraction_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map(), true));
   dis_at_last_redistr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map(), true));
   // get myrank
-  myrank_ = discret_ptr()->Comm().MyPID();
+  myrank_ = discret_ptr()->get_comm().MyPID();
 
   beaminteraction_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionParams());
   beaminteraction_params_ptr_->init();
   beaminteraction_params_ptr_->setup();
 
   // print logo
-  Logo();
+  logo();
 
   // set submodel types
   set_sub_model_types();
@@ -119,17 +119,17 @@ void Solid::MODELEVALUATOR::BeamInteraction::setup()
   ia_discret_ = discloner->create_matching_discretization(
       discret_ptr_, "ia_structure", true, true, false, true);
   // create discretization writer
-  ia_discret_->SetWriter(Teuchos::rcp(new Core::IO::DiscretizationWriter(ia_discret_,
-      Global::Problem::Instance()->OutputControlFile(),
-      Global::Problem::Instance()->spatial_approximation_type())));
+  ia_discret_->set_writer(Teuchos::rcp(new Core::IO::DiscretizationWriter(ia_discret_,
+      Global::Problem::instance()->output_control_file(),
+      Global::Problem::instance()->spatial_approximation_type())));
 
   // init data container
   ia_state_ptr_ = Teuchos::rcp(new Solid::MODELEVALUATOR::BeamInteractionDataState());
   ia_state_ptr_->init();
   ia_state_ptr_->setup(ia_discret_);
 
-  ia_state_ptr_->GetDisNp() = Teuchos::rcp(new Epetra_Vector(*global_state_ptr()->get_dis_np()));
-  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->GetDisNp(),
+  ia_state_ptr_->get_dis_np() = Teuchos::rcp(new Epetra_Vector(*global_state_ptr()->get_dis_np()));
+  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->get_dis_np(),
       tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), ia_discret_);
 
   // -------------------------------------------------------------------------
@@ -146,20 +146,20 @@ void Solid::MODELEVALUATOR::BeamInteraction::setup()
   std::vector<Teuchos::RCP<Core::FE::Discretization>> discret_vec(1, ia_discret_);
 
   // We have to pass the displacement column vector to the initialization of the binning strategy.
-  ia_state_ptr_->GetDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-  Core::LinAlg::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetDisColNp());
+  ia_state_ptr_->get_dis_col_np() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->dof_col_map()));
+  Core::LinAlg::Export(*ia_state_ptr_->get_dis_np(), *ia_state_ptr_->get_dis_col_np());
 
-  std::vector<Teuchos::RCP<const Epetra_Vector>> disp_vec(1, ia_state_ptr_->GetDisColNp());
-  Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+  std::vector<Teuchos::RCP<const Epetra_Vector>> disp_vec(1, ia_state_ptr_->get_dis_col_np());
+  Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
   Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
-      "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+      "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
       binning_params);
 
   auto element_filter = [](const Core::Elements::Element* element)
   {
     if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element))
       return Core::Binstrategy::Utils::SpecialElement::beam;
-    else if (element->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
+    else if (element->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
       return Core::Binstrategy::Utils::SpecialElement::rigid_sphere;
     else
       return Core::Binstrategy::Utils::SpecialElement::none;
@@ -167,35 +167,35 @@ void Solid::MODELEVALUATOR::BeamInteraction::setup()
 
   auto rigid_sphere_radius = [](const Core::Elements::Element* element)
   {
-    if (element->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
-      return dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(element)->Radius();
+    if (element->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
+      return dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(element)->radius();
     else
       return 0.0;
   };
 
   auto correct_beam_center_node = [](const Core::Nodes::Node* node)
   {
-    const Core::Elements::Element* element = node->Elements()[0];
+    const Core::Elements::Element* element = node->elements()[0];
     const auto* beamelement = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
-    if (beamelement != nullptr and not beamelement->IsCenterlineNode(*node))
-      return element->Nodes()[0];
+    if (beamelement != nullptr and not beamelement->is_centerline_node(*node))
+      return element->nodes()[0];
     else
       return node;
   };
 
   binstrategy_ = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
-      Global::Problem::Instance()->OutputControlFile(), ia_discret_->Comm(),
-      ia_discret_->Comm().MyPID(), element_filter, rigid_sphere_radius, correct_beam_center_node,
-      discret_vec, disp_vec));
+      Global::Problem::instance()->output_control_file(), ia_discret_->get_comm(),
+      ia_discret_->get_comm().MyPID(), element_filter, rigid_sphere_radius,
+      correct_beam_center_node, discret_vec, disp_vec));
 
   binstrategy_->set_deforming_binning_domain_handler(
       tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box());
 
-  bindis_ = binstrategy_->BinDiscret();
+  bindis_ = binstrategy_->bin_discret();
 
   // construct, init and setup beam crosslinker handler and binning strategy
   // todo: move this and its single call during partition to crosslinker submodel
-  if (HaveSubModelType(Inpar::BEAMINTERACTION::submodel_crosslinking))
+  if (have_sub_model_type(Inpar::BEAMINTERACTION::submodel_crosslinking))
   {
     beam_crosslinker_handler_ = Teuchos::rcp(new BEAMINTERACTION::BeamCrosslinkerHandler());
     beam_crosslinker_handler_->init(global_state().get_my_rank(), binstrategy_);
@@ -214,10 +214,10 @@ void Solid::MODELEVALUATOR::BeamInteraction::setup()
 
   // distribute problem according to bin distribution to procs ( in case of restart
   // partitioning is done during read_restart() )
-  if (not Global::Problem::Instance()->restart()) partition_problem();
+  if (not Global::Problem::instance()->restart()) partition_problem();
 
   // some actions need a partitioned system followed by a renewal of the partition
-  if (not Global::Problem::Instance()->restart() and post_partition_problem()) partition_problem();
+  if (not Global::Problem::instance()->restart() and post_partition_problem()) partition_problem();
 
   post_setup();
 
@@ -247,15 +247,15 @@ void Solid::MODELEVALUATOR::BeamInteraction::post_setup()
       (*sme_iter)->get_half_interaction_distance(half_interaction_distance_);
 
     if (global_state().get_my_rank() == 0)
-      std::cout << " half min bin size " << 0.5 * binstrategy_->GetMinBinSize() << std::endl;
+      std::cout << " half min bin size " << 0.5 * binstrategy_->get_min_bin_size() << std::endl;
 
     // safety checks
-    if (half_interaction_distance_ > (0.5 * binstrategy_->GetMinBinSize()))
+    if (half_interaction_distance_ > (0.5 * binstrategy_->get_min_bin_size()))
       FOUR_C_THROW(
           "Your half interaction distance %f is larger than half your smallest bin %f. You will "
           "not be\n"
           "able to track all interactions like this. Increase bin size?",
-          half_interaction_distance_, 0.5 * binstrategy_->GetMinBinSize());
+          half_interaction_distance_, 0.5 * binstrategy_->get_min_bin_size());
     if (half_interaction_distance_ < 0)
       FOUR_C_THROW("At least one model needs to define half interaction radius");
   }
@@ -273,7 +273,7 @@ void Solid::MODELEVALUATOR::BeamInteraction::set_sub_model_types()
   // check for crosslinking in biopolymer networks
   // ---------------------------------------------------------------------------
   if (Core::UTILS::IntegralValue<int>(
-          Global::Problem::Instance()->beam_interaction_params().sublist("SPHERE BEAM LINK"),
+          Global::Problem::instance()->beam_interaction_params().sublist("SPHERE BEAM LINK"),
           "SPHEREBEAMLINKING"))
     submodeltypes_->insert(Inpar::BEAMINTERACTION::submodel_spherebeamlink);
 
@@ -281,7 +281,7 @@ void Solid::MODELEVALUATOR::BeamInteraction::set_sub_model_types()
   // check for crosslinking in biopolymer networks
   // ---------------------------------------------------------------------------
   if (Core::UTILS::IntegralValue<int>(
-          Global::Problem::Instance()->beam_interaction_params().sublist("CROSSLINKING"),
+          Global::Problem::instance()->beam_interaction_params().sublist("CROSSLINKING"),
           "CROSSLINKER"))
     submodeltypes_->insert(Inpar::BEAMINTERACTION::submodel_crosslinking);
 
@@ -291,7 +291,7 @@ void Solid::MODELEVALUATOR::BeamInteraction::set_sub_model_types()
 
   // conditions for beam penalty point coupling
   std::vector<Core::Conditions::Condition*> beampenaltycouplingconditions(0);
-  discret_ptr_->GetCondition("PenaltyPointCouplingCondition", beampenaltycouplingconditions);
+  discret_ptr_->get_condition("PenaltyPointCouplingCondition", beampenaltycouplingconditions);
   if (beampenaltycouplingconditions.size() > 0)
     submodeltypes_->insert(Inpar::BEAMINTERACTION::submodel_beamcontact);
 
@@ -299,21 +299,21 @@ void Solid::MODELEVALUATOR::BeamInteraction::set_sub_model_types()
   // check for beam contact
   // ---------------------------------------------------------------------------
   if (Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
-          Global::Problem::Instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
+          Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none or
       Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
-          Global::Problem::Instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
+          Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none or
       Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
-          Global::Problem::Instance()->beam_interaction_params().sublist(
+          Global::Problem::instance()->beam_interaction_params().sublist(
               "BEAM TO SOLID VOLUME MESHTYING"),
           "CONTACT_DISCRETIZATION") != Inpar::BeamToSolid::BeamToSolidContactDiscretization::none or
       Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
-          Global::Problem::Instance()->beam_interaction_params().sublist(
+          Global::Problem::instance()->beam_interaction_params().sublist(
               "BEAM TO SOLID SURFACE MESHTYING"),
           "CONTACT_DISCRETIZATION") != Inpar::BeamToSolid::BeamToSolidContactDiscretization::none or
       Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
-          Global::Problem::Instance()->beam_interaction_params().sublist(
+          Global::Problem::instance()->beam_interaction_params().sublist(
               "BEAM TO SOLID SURFACE CONTACT"),
           "CONTACT_DISCRETIZATION") != Inpar::BeamToSolid::BeamToSolidContactDiscretization::none)
     submodeltypes_->insert(Inpar::BEAMINTERACTION::submodel_beamcontact);
@@ -322,13 +322,13 @@ void Solid::MODELEVALUATOR::BeamInteraction::set_sub_model_types()
   // check for beam potential-based interactions
   // ---------------------------------------------------------------------------
   std::vector<Core::Conditions::Condition*> beampotconditions(0);
-  discret().GetCondition("BeamPotentialLineCharge", beampotconditions);
+  discret().get_condition("BeamPotentialLineCharge", beampotconditions);
   if (beampotconditions.size() > 0)
     submodeltypes_->insert(Inpar::BEAMINTERACTION::submodel_potential);
 
   // Check if all all combinations of submodel evaluators work
   if (Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
-          Global::Problem::Instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
+          Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none and
       beampenaltycouplingconditions.size() > 0)
     FOUR_C_THROW(
@@ -401,7 +401,7 @@ Solid::MODELEVALUATOR::BeamInteraction::transform_to_vector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::MODELEVALUATOR::BeamInteraction::HaveSubModelType(
+bool Solid::MODELEVALUATOR::BeamInteraction::have_sub_model_type(
     Inpar::BEAMINTERACTION::SubModelType const& submodeltype) const
 {
   check_init();
@@ -419,8 +419,8 @@ void Solid::MODELEVALUATOR::BeamInteraction::partition_problem()
 
   // displacement vector according to periodic boundary conditions
   std::vector<Teuchos::RCP<Epetra_Vector>> mutabledisnp(
-      1, Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap())));
-  Core::LinAlg::Export(*ia_state_ptr_->GetDisNp(), *mutabledisnp[0]);
+      1, Teuchos::rcp(new Epetra_Vector(*ia_discret_->dof_col_map())));
+  Core::LinAlg::Export(*ia_state_ptr_->get_dis_np(), *mutabledisnp[0]);
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> disnp(
       1, Teuchos::rcp(new const Epetra_Vector(*mutabledisnp[0])));
@@ -436,15 +436,15 @@ void Solid::MODELEVALUATOR::BeamInteraction::partition_problem()
       binstrategy_->weighted_distribution_of_bins_to_procs(discret_vec, disnp, nodesinbin, weight);
 
   // extract noderowmap because it will be called reset() after adding elements
-  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*bindis_->NodeRowMap()));
+  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*bindis_->node_row_map()));
   // delete old bins ( in case you partition during your simulation or after a restart)
-  bindis_->DeleteElements();
+  bindis_->delete_elements();
   binstrategy_->fill_bins_into_bin_discretization(rowbins_);
 
   // now node (=crosslinker) to bin (=element) relation needs to be
   // established in binning discretization. Therefore some nodes need to
   // change their owner according to the bins owner they reside in
-  if (HaveSubModelType(Inpar::BEAMINTERACTION::submodel_crosslinking))
+  if (have_sub_model_type(Inpar::BEAMINTERACTION::submodel_crosslinking))
     beam_crosslinker_handler_->distribute_linker_to_bins(noderowmap);
 
   // determine boundary bins (physical boundary as well as boundary to other procs)
@@ -458,15 +458,15 @@ void Solid::MODELEVALUATOR::BeamInteraction::partition_problem()
   Teuchos::RCP<Epetra_Map> stdelecolmap;
   Teuchos::RCP<Epetra_Map> stdnodecolmapdummy;
   binstrategy_->standard_discretization_ghosting(
-      ia_discret_, rowbins_, ia_state_ptr_->GetDisNp(), stdelecolmap, stdnodecolmapdummy);
+      ia_discret_, rowbins_, ia_state_ptr_->get_dis_np(), stdelecolmap, stdnodecolmapdummy);
 
   // distribute elements that can be cut by the periodic boundary to bins
   Teuchos::RCP<Epetra_Vector> iadiscolnp =
-      Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-  Core::LinAlg::Export(*ia_state_ptr_->GetDisNp(), *iadiscolnp);
+      Teuchos::rcp(new Epetra_Vector(*ia_discret_->dof_col_map()));
+  Core::LinAlg::Export(*ia_state_ptr_->get_dis_np(), *iadiscolnp);
 
   binstrategy_->distribute_row_elements_to_bins_using_ele_aabb(
-      ia_discret_, ia_state_ptr_->GetBinToRowEleMap(), iadiscolnp);
+      ia_discret_, ia_state_ptr_->get_bin_to_row_ele_map(), iadiscolnp);
 
   // build row elements to bin map
   build_row_ele_to_bin_map();
@@ -476,7 +476,7 @@ void Solid::MODELEVALUATOR::BeamInteraction::partition_problem()
 
   // assign Elements to bins
   binstrategy_->remove_all_eles_from_bins();
-  binstrategy_->AssignElesToBins(ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map(),
+  binstrategy_->assign_eles_to_bins(ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map(),
       BEAMINTERACTION::UTILS::ConvertElementToBinContentType);
 
   // update maps of state vectors and matrices
@@ -514,15 +514,15 @@ void Solid::MODELEVALUATOR::BeamInteraction::extend_ghosting()
   std::set<int> colbins;
 
   // first, add default one layer ghosting
-  std::set<int> const& boundcolbins = binstrategy_->BoundaryColBinsIds();
+  std::set<int> const& boundcolbins = binstrategy_->boundary_col_bins_ids();
   colbins.insert(boundcolbins.begin(), boundcolbins.end());
 
   // if the bounding box of a row element of myrank touches a boundary col bin, we need
   // to ghost its neighborhood as well
   std::map<int, std::set<int>>::const_iterator it;
   std::vector<int> binvec(27);
-  for (it = ia_state_ptr_->GetBinToRowEleMap().begin();
-       it != ia_state_ptr_->GetBinToRowEleMap().end(); ++it)
+  for (it = ia_state_ptr_->get_bin_to_row_ele_map().begin();
+       it != ia_state_ptr_->get_bin_to_row_ele_map().end(); ++it)
   {
     // not doing the following if is only valid if you ensure that the largest element
     // in the discretization (in deformed state) is smaller than the smalles bin size
@@ -538,7 +538,7 @@ void Solid::MODELEVALUATOR::BeamInteraction::extend_ghosting()
   // enable submodel specific ghosting contributions to bin col map
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->AddBinsToBinColMap(colbins);
+    (*sme_iter)->add_bins_to_bin_col_map(colbins);
 
   // 1) extend ghosting of bin discretization
   // todo: think about if you really need to assign degrees of freedom for crosslinker
@@ -552,10 +552,10 @@ void Solid::MODELEVALUATOR::BeamInteraction::extend_ghosting()
   // build auxiliary bin col map
   std::vector<int> auxgids(colbins.begin(), colbins.end());
   Teuchos::RCP<Epetra_Map> auxmap = Teuchos::rcp(
-      new Epetra_Map(-1, static_cast<int>(auxgids.size()), auxgids.data(), 0, bindis_->Comm()));
+      new Epetra_Map(-1, static_cast<int>(auxgids.size()), auxgids.data(), 0, bindis_->get_comm()));
 
-  Teuchos::RCP<Epetra_Map> ia_elecolmap = binstrategy_->ExtendElementColMap(
-      ia_state_ptr_->GetBinToRowEleMap(), ia_state_ptr_->GetBinToRowEleMap(),
+  Teuchos::RCP<Epetra_Map> ia_elecolmap = binstrategy_->extend_element_col_map(
+      ia_state_ptr_->get_bin_to_row_ele_map(), ia_state_ptr_->get_bin_to_row_ele_map(),
       ia_state_ptr_->get_extended_bin_to_row_ele_map(), auxmap);
 
   // 2) extend ghosting of discretization
@@ -570,24 +570,25 @@ void Solid::MODELEVALUATOR::BeamInteraction::reset(const Epetra_Vector& x)
   check_init_setup();
 
   // todo: somewhat illegal as of const correctness
-  tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box()->ApplyDirichlet(
-      global_state().get_time_n(), Global::Problem::Instance()->FunctionManager());
+  tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box()->apply_dirichlet(
+      global_state().get_time_n(), Global::Problem::instance()->function_manager());
 
   // get current displacement state and export to interaction discretization dofmap
   BEAMINTERACTION::UTILS::UpdateDofMapOfVector(
-      ia_discret_, ia_state_ptr_->GetDisNp(), global_state().get_dis_np());
-  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->GetDisNp(),
+      ia_discret_, ia_state_ptr_->get_dis_np(), global_state().get_dis_np());
+  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->get_dis_np(),
       tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), ia_discret_);
 
   // update column vector
-  ia_state_ptr_->GetDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-  Core::LinAlg::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetDisColNp());
+  ia_state_ptr_->get_dis_col_np() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->dof_col_map()));
+  Core::LinAlg::Export(*ia_state_ptr_->get_dis_np(), *ia_state_ptr_->get_dis_col_np());
 
   // update restart displacement vector
   if (ia_state_ptr_->get_restart_coupling_flag())
   {
-    ia_state_ptr_->GetDisRestartCol() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-    Core::LinAlg::Export(*ia_state_ptr_->GetDisRestart(), *ia_state_ptr_->GetDisRestartCol());
+    ia_state_ptr_->get_dis_restart_col() =
+        Teuchos::rcp(new Epetra_Vector(*ia_discret_->dof_col_map()));
+    Core::LinAlg::Export(*ia_state_ptr_->get_dis_restart(), *ia_state_ptr_->get_dis_restart_col());
   }
 
   // submodel loop
@@ -598,9 +599,9 @@ void Solid::MODELEVALUATOR::BeamInteraction::reset(const Epetra_Vector& x)
   // Zero out force and stiffness contributions
   force_beaminteraction_->PutScalar(0.0);
   ia_force_beaminteraction_->PutScalar(0.0);
-  ia_state_ptr_->GetForceNp()->PutScalar(0.0);
-  stiff_beaminteraction_->Zero();
-  ia_state_ptr_->GetStiff()->Zero();
+  ia_state_ptr_->get_force_np()->PutScalar(0.0);
+  stiff_beaminteraction_->zero();
+  ia_state_ptr_->get_stiff()->zero();
 
   // update gidmap_ and exporter in matrix transform object
   // Note: we need this in every evaluation call (i.e. every iteration) because a change
@@ -611,8 +612,8 @@ void Solid::MODELEVALUATOR::BeamInteraction::reset(const Epetra_Vector& x)
   // note: this is only necessary if active sets change in consecutive iteration steps
   // ( as crosslinker for example are only updated each time step, we only need to do this
   // every time step)
-  if (HaveSubModelType(Inpar::BEAMINTERACTION::submodel_potential) ||
-      HaveSubModelType(Inpar::BEAMINTERACTION::submodel_beamcontact))
+  if (have_sub_model_type(Inpar::BEAMINTERACTION::submodel_potential) ||
+      have_sub_model_type(Inpar::BEAMINTERACTION::submodel_beamcontact))
     update_coupling_adapter_and_matrix_transformation();
 }
 
@@ -627,10 +628,10 @@ bool Solid::MODELEVALUATOR::BeamInteraction::evaluate_force()
     (*sme_iter)->evaluate_force();
 
   // do communication
-  if (ia_state_ptr_->GetForceNp()->GlobalAssemble(Add, false) != 0)
+  if (ia_state_ptr_->get_force_np()->GlobalAssemble(Add, false) != 0)
     FOUR_C_THROW("GlobalAssemble failed");
   // add to non fe vector
-  if (ia_force_beaminteraction_->Update(1., *ia_state_ptr_->GetForceNp(), 1.))
+  if (ia_force_beaminteraction_->Update(1., *ia_state_ptr_->get_force_np(), 1.))
     FOUR_C_THROW("update went wrong");
 
   // transformation from ia_discret to problem discret
@@ -645,17 +646,17 @@ bool Solid::MODELEVALUATOR::BeamInteraction::evaluate_stiff()
 {
   check_init_setup();
 
-  ia_state_ptr_->GetStiff()->UnComplete();
+  ia_state_ptr_->get_stiff()->un_complete();
 
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
     (*sme_iter)->evaluate_stiff();
 
-  if (not ia_state_ptr_->GetStiff()->Filled()) ia_state_ptr_->GetStiff()->Complete();
+  if (not ia_state_ptr_->get_stiff()->filled()) ia_state_ptr_->get_stiff()->complete();
 
   transform_stiff();
 
-  if (not stiff_beaminteraction_->Filled()) stiff_beaminteraction_->Complete();
+  if (not stiff_beaminteraction_->filled()) stiff_beaminteraction_->complete();
 
   return true;
 }
@@ -666,24 +667,24 @@ bool Solid::MODELEVALUATOR::BeamInteraction::evaluate_force_stiff()
 {
   check_init_setup();
 
-  ia_state_ptr_->GetStiff()->UnComplete();
+  ia_state_ptr_->get_stiff()->un_complete();
 
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
     (*sme_iter)->evaluate_force_stiff();
 
   // do communication
-  if (ia_state_ptr_->GetForceNp()->GlobalAssemble(Add, false) != 0)
+  if (ia_state_ptr_->get_force_np()->GlobalAssemble(Add, false) != 0)
     FOUR_C_THROW("GlobalAssemble failed");
 
   // add to non fe vector
-  if (ia_force_beaminteraction_->Update(1., *ia_state_ptr_->GetForceNp(), 1.))
+  if (ia_force_beaminteraction_->Update(1., *ia_state_ptr_->get_force_np(), 1.))
     FOUR_C_THROW("update went wrong");
-  if (not ia_state_ptr_->GetStiff()->Filled()) ia_state_ptr_->GetStiff()->Complete();
+  if (not ia_state_ptr_->get_stiff()->filled()) ia_state_ptr_->get_stiff()->complete();
 
   transform_force_stiff();
 
-  if (not stiff_beaminteraction_->Filled()) stiff_beaminteraction_->Complete();
+  if (not stiff_beaminteraction_->filled()) stiff_beaminteraction_->complete();
 
   return true;
 }
@@ -708,11 +709,11 @@ bool Solid::MODELEVALUATOR::BeamInteraction::assemble_jacobian(
   check_init_setup();
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
-  jac_dd_ptr->Add(*stiff_beaminteraction_, false, timefac_np, 1.0);
+  jac_dd_ptr->add(*stiff_beaminteraction_, false, timefac_np, 1.0);
 
   // no need to keep it
-  stiff_beaminteraction_->Zero();
-  ia_state_ptr_->GetStiff()->Zero();
+  stiff_beaminteraction_->zero();
+  ia_state_ptr_->get_stiff()->zero();
 
   return true;
 }
@@ -726,8 +727,8 @@ void Solid::MODELEVALUATOR::BeamInteraction::write_restart(
 
   int const stepn = global_state().get_step_n();
   double const timen = global_state().get_time_n();
-  Teuchos::RCP<Core::IO::DiscretizationWriter> ia_writer = ia_discret_->Writer();
-  Teuchos::RCP<Core::IO::DiscretizationWriter> bin_writer = bindis_->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> ia_writer = ia_discret_->writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> bin_writer = bindis_->writer();
 
   // write restart of ia_discret
   ia_writer->write_mesh(stepn, timen);
@@ -756,12 +757,12 @@ void Solid::MODELEVALUATOR::BeamInteraction::read_restart(Core::IO::Discretizati
   check_init_setup();
 
   int const stepn = global_state().get_step_n();
-  auto input_control_file = Global::Problem::Instance()->InputControlFile();
+  auto input_control_file = Global::Problem::instance()->input_control_file();
 
   // pre sub model loop
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->PreReadRestart();
+    (*sme_iter)->pre_read_restart();
 
   // read interaction discretization
   Core::IO::DiscretizationReader ia_reader(ia_discret_, input_control_file, stepn);
@@ -788,19 +789,21 @@ void Solid::MODELEVALUATOR::BeamInteraction::read_restart(Core::IO::Discretizati
 
   // post sub model loop
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->PostReadRestart();
+    (*sme_iter)->post_read_restart();
 
   // Check if we need to store the restart displacement in the data state container.
   const Teuchos::ParameterList& beam_interaction_params =
-      Global::Problem::Instance()->beam_interaction_params();
-  if (HaveSubModelType(Inpar::BEAMINTERACTION::submodel_beamcontact) &&
+      Global::Problem::instance()->beam_interaction_params();
+  if (have_sub_model_type(Inpar::BEAMINTERACTION::submodel_beamcontact) &&
       (bool)Core::UTILS::IntegralValue<int>(
           beam_interaction_params.sublist("BEAM TO SOLID VOLUME MESHTYING"),
           "COUPLE_RESTART_STATE"))
   {
     ia_state_ptr_->set_restart_coupling_flag(true);
-    ia_state_ptr_->GetDisRestart() = Teuchos::rcp(new Epetra_Vector(*ia_state_ptr_->GetDisNp()));
-    ia_state_ptr_->GetDisRestartCol() = Teuchos::rcp(new Epetra_Vector(*ia_state_ptr_->GetDisNp()));
+    ia_state_ptr_->get_dis_restart() =
+        Teuchos::rcp(new Epetra_Vector(*ia_state_ptr_->get_dis_np()));
+    ia_state_ptr_->get_dis_restart_col() =
+        Teuchos::rcp(new Epetra_Vector(*ia_state_ptr_->get_dis_np()));
   }
 }
 
@@ -838,7 +841,7 @@ void Solid::MODELEVALUATOR::BeamInteraction::update_step_state(const double& tim
   // submodel loop
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->UpdateStepState(timefac_n);
+    (*sme_iter)->update_step_state(timefac_n);
 }
 
 /*----------------------------------------------------------------------------*
@@ -868,7 +871,7 @@ void Solid::MODELEVALUATOR::BeamInteraction::update_step_element()
   if (beam_redist)
   {
     binstrategy_->transfer_nodes_and_elements(
-        ia_discret_, ia_state_ptr_->GetDisColNp(), ia_state_ptr_->GetBinToRowEleMap());
+        ia_discret_, ia_state_ptr_->get_dis_col_np(), ia_state_ptr_->get_bin_to_row_ele_map());
 
     build_row_ele_to_bin_map();
 
@@ -877,7 +880,7 @@ void Solid::MODELEVALUATOR::BeamInteraction::update_step_element()
 
     // assign Elements to bins
     binstrategy_->remove_all_eles_from_bins();
-    binstrategy_->AssignElesToBins(ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map(),
+    binstrategy_->assign_eles_to_bins(ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map(),
         BEAMINTERACTION::UTILS::ConvertElementToBinContentType);
 
     // current displacement state gets new reference state
@@ -896,7 +899,7 @@ void Solid::MODELEVALUATOR::BeamInteraction::update_step_element()
   {
     extend_ghosting();
     binstrategy_->remove_all_eles_from_bins();
-    binstrategy_->AssignElesToBins(ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map(),
+    binstrategy_->assign_eles_to_bins(ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map(),
         BEAMINTERACTION::UTILS::ConvertElementToBinContentType);
 
     if (global_state().get_my_rank() == 0)
@@ -918,7 +921,7 @@ void Solid::MODELEVALUATOR::BeamInteraction::update_step_element()
 
   // submodel loop update
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->UpdateStepElement(binning_redist || beam_redist);
+    (*sme_iter)->update_step_element(binning_redist || beam_redist);
 
   // submodel post update
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
@@ -936,10 +939,10 @@ bool Solid::MODELEVALUATOR::BeamInteraction::check_if_beam_discret_redistributio
   Teuchos::RCP<Epetra_Vector> dis_increment =
       Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map(), true));
   int doflid[3];
-  for (int i = 0; i < discret_ptr_->NumMyRowNodes(); ++i)
+  for (int i = 0; i < discret_ptr_->num_my_row_nodes(); ++i)
   {
     // get a pointer at i-th row node
-    Core::Nodes::Node* node = discret_ptr_->lRowNode(i);
+    Core::Nodes::Node* node = discret_ptr_->l_row_node(i);
 
     /* Hermite Interpolation: Check whether node is a beam node which is NOT
      * used for centerline interpolation if so, we simply skip it because
@@ -949,7 +952,7 @@ bool Solid::MODELEVALUATOR::BeamInteraction::check_if_beam_discret_redistributio
       continue;
 
     // get GIDs of this node's degrees of freedom
-    std::vector<int> dofnode = discret_ptr_->Dof(node);
+    std::vector<int> dofnode = discret_ptr_->dof(node);
 
     for (int dim = 0; dim < 3; ++dim)
     {
@@ -976,10 +979,10 @@ bool Solid::MODELEVALUATOR::BeamInteraction::check_if_beam_discret_redistributio
         << " half interaction distance " << half_interaction_distance_ << Core::IO::endl;
     Core::IO::cout(Core::IO::debug) << " gmaxdisincr " << gmaxdisincr << Core::IO::endl;
     Core::IO::cout(Core::IO::debug)
-        << " half min bin size " << 0.5 * binstrategy_->GetMinBinSize() << Core::IO::endl;
+        << " half min bin size " << 0.5 * binstrategy_->get_min_bin_size() << Core::IO::endl;
   }
 
-  return ((half_interaction_distance_ + gmaxdisincr) > (0.5 * binstrategy_->GetMinBinSize()));
+  return ((half_interaction_distance_ + gmaxdisincr) > (0.5 * binstrategy_->get_min_bin_size()));
 }
 
 /*----------------------------------------------------------------------------*
@@ -1022,10 +1025,10 @@ void Solid::MODELEVALUATOR::BeamInteraction::output_step_state(
 
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->OutputStepState(iowriter);
+    (*sme_iter)->output_step_state(iowriter);
 
   // visualize bins according to specification in input file ( MESHFREE -> WRITEBINS "" )
-  binstrategy_->WriteBinOutput(global_state().get_step_n(), global_state().get_time_n());
+  binstrategy_->write_bin_output(global_state().get_step_n(), global_state().get_time_n());
 }
 
 /*----------------------------------------------------------------------------*
@@ -1084,7 +1087,7 @@ void Solid::MODELEVALUATOR::BeamInteraction::reset_step_state()
 {
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
-    (*sme_iter)->ResetStepState();
+    (*sme_iter)->reset_step_state();
 }
 
 /*----------------------------------------------------------------------------*
@@ -1109,11 +1112,11 @@ void Solid::MODELEVALUATOR::BeamInteraction::build_row_ele_to_bin_map()
   check_init();
 
   // delete old map
-  ia_state_ptr_->GetRowEleToBinMap().clear();
+  ia_state_ptr_->get_row_ele_to_bin_map().clear();
   // loop over bins
   std::map<int, std::set<int>>::const_iterator biniter;
-  for (biniter = ia_state_ptr_->GetBinToRowEleMap().begin();
-       biniter != ia_state_ptr_->GetBinToRowEleMap().end(); ++biniter)
+  for (biniter = ia_state_ptr_->get_bin_to_row_ele_map().begin();
+       biniter != ia_state_ptr_->get_bin_to_row_ele_map().end(); ++biniter)
   {
     // loop over ele content of this bin
     std::set<int>::const_iterator eleiter;
@@ -1122,7 +1125,7 @@ void Solid::MODELEVALUATOR::BeamInteraction::build_row_ele_to_bin_map()
       int elegid = *eleiter;
       int bingid = biniter->first;
       // assign bins to elements
-      ia_state_ptr_->GetRowEleToBinMap()[elegid].insert(bingid);
+      ia_state_ptr_->get_row_ele_to_bin_map()[elegid].insert(bingid);
     }
   }
 }
@@ -1138,32 +1141,33 @@ void Solid::MODELEVALUATOR::BeamInteraction::update_maps()
   // todo: check if update is necessary (->SameAs())
 
   // beam displacement
-  BEAMINTERACTION::UTILS::UpdateDofMapOfVector(ia_discret_, ia_state_ptr_->GetDisNp());
+  BEAMINTERACTION::UTILS::UpdateDofMapOfVector(ia_discret_, ia_state_ptr_->get_dis_np());
 
   // get current displacement state and export to interaction discretization dofmap
   BEAMINTERACTION::UTILS::UpdateDofMapOfVector(
-      ia_discret_, ia_state_ptr_->GetDisNp(), global_state().get_dis_np());
-  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->GetDisNp(),
+      ia_discret_, ia_state_ptr_->get_dis_np(), global_state().get_dis_np());
+  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->get_dis_np(),
       tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), ia_discret_);
 
   // update column vector
-  ia_state_ptr_->GetDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-  Core::LinAlg::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetDisColNp());
+  ia_state_ptr_->get_dis_col_np() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->dof_col_map()));
+  Core::LinAlg::Export(*ia_state_ptr_->get_dis_np(), *ia_state_ptr_->get_dis_col_np());
 
   // update restart displacement vector
   if (ia_state_ptr_->get_restart_coupling_flag())
   {
-    ia_state_ptr_->GetDisRestartCol() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-    Core::LinAlg::Export(*ia_state_ptr_->GetDisRestart(), *ia_state_ptr_->GetDisRestartCol());
+    ia_state_ptr_->get_dis_restart_col() =
+        Teuchos::rcp(new Epetra_Vector(*ia_discret_->dof_col_map()));
+    Core::LinAlg::Export(*ia_state_ptr_->get_dis_restart(), *ia_state_ptr_->get_dis_restart_col());
   }
 
   // force
   ia_force_beaminteraction_ = Teuchos::rcp(new Epetra_Vector(*ia_discret_->dof_row_map(), true));
-  ia_state_ptr_->GetForceNp() =
+  ia_state_ptr_->get_force_np() =
       Teuchos::rcp(new Epetra_FEVector(*ia_discret_->dof_row_map(), true));
 
   // stiff
-  ia_state_ptr_->GetStiff() = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  ia_state_ptr_->get_stiff() = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
       *ia_discret_->dof_row_map(), 81, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
 
   BEAMINTERACTION::UTILS::SetupEleTypeMapExtractor(ia_discret_, eletypeextractor_);
@@ -1178,7 +1182,7 @@ void Solid::MODELEVALUATOR::BeamInteraction::transform_force()
   TEUCHOS_FUNC_TIME_MONITOR("Solid::MODELEVALUATOR::BeamInteraction::transform_force");
 
   // transform force vector to problem discret layout/distribution
-  force_beaminteraction_ = coupsia_->MasterToSlave(ia_force_beaminteraction_);
+  force_beaminteraction_ = coupsia_->master_to_slave(ia_force_beaminteraction_);
 }
 
 /*-----------------------------------------------------------------------------*
@@ -1189,9 +1193,9 @@ void Solid::MODELEVALUATOR::BeamInteraction::transform_stiff()
 
   TEUCHOS_FUNC_TIME_MONITOR("Solid::MODELEVALUATOR::BeamInteraction::transform_stiff");
 
-  stiff_beaminteraction_->UnComplete();
+  stiff_beaminteraction_->un_complete();
   // transform stiffness matrix to problem discret layout/distribution
-  (*siatransform_)(*ia_state_ptr_->GetStiff(), 1.0,
+  (*siatransform_)(*ia_state_ptr_->get_stiff(), 1.0,
       Core::Adapter::CouplingMasterConverter(*coupsia_), *stiff_beaminteraction_, false);
 }
 
@@ -1222,9 +1226,8 @@ void Solid::MODELEVALUATOR::BeamInteraction::print_binning_info_to_screen() cons
   {
     Core::IO::cout(Core::IO::verbose)
         << " \n---------------------------------------------------------- " << Core::IO::endl;
-    Core::IO::cout(Core::IO::verbose)
-        << " chosen/computed cutoff radius                      : " << binstrategy_->GetMinBinSize()
-        << Core::IO::endl;
+    Core::IO::cout(Core::IO::verbose) << " chosen/computed cutoff radius                      : "
+                                      << binstrategy_->get_min_bin_size() << Core::IO::endl;
     Core::IO::cout(Core::IO::verbose)
         << " largest edge length of largest element xaabb       : " << bin_size_lower_bound
         << Core::IO::endl;
@@ -1239,7 +1242,7 @@ void Solid::MODELEVALUATOR::BeamInteraction::print_binning_info_to_screen() cons
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BeamInteraction::Logo() const
+void Solid::MODELEVALUATOR::BeamInteraction::logo() const
 {
   check_init();
 

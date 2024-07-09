@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Solid::TimIntImpl::NoxSetup()
+void Solid::TimIntImpl::nox_setup()
 {
   // create
   noxparams_ = Teuchos::rcp(new Teuchos::ParameterList());
@@ -46,7 +46,7 @@ void Solid::TimIntImpl::NoxSetup()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Solid::TimIntImpl::NoxSetup(const Teuchos::ParameterList& noxparams)
+void Solid::TimIntImpl::nox_setup(const Teuchos::ParameterList& noxparams)
 {
   // copy the input list
   noxparams_ = Teuchos::rcp(new Teuchos::ParameterList(noxparams));
@@ -92,7 +92,7 @@ void Solid::TimIntImpl::NoxSetup(const Teuchos::ParameterList& noxparams)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::StatusTest::Combo> Solid::TimIntImpl::NoxCreateStatusTest(
+Teuchos::RCP<::NOX::StatusTest::Combo> Solid::TimIntImpl::nox_create_status_test(
     Teuchos::RCP<::NOX::Abstract::Group> grp)
 {
   // type of norm
@@ -294,7 +294,7 @@ bool Solid::TimIntImpl::computeF(const Epetra_Vector& x, Epetra_Vector& RHS,
 
   // update end-point displacements etc.
   //   brings #disn_ in sync with #x, so we are ready for next call here
-  UpdateIter(0);
+  update_iter(0);
 
   // Evaluate the residual (without its linearization)
   evaluate_force_residual();
@@ -357,7 +357,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> Solid::TimIntImpl::nox_create_linear_s
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int Solid::TimIntImpl::NoxSolve()
+int Solid::TimIntImpl::nox_solve()
 {
   // extract parameter lists
   Teuchos::ParameterList& nlParams = *noxparams_;
@@ -375,7 +375,7 @@ int Solid::TimIntImpl::NoxSolve()
       new NOX::Solid::Group(*this, printParams, Teuchos::rcp(this, false), noxSoln, linSys));
 
   // Create status test
-  noxstatustest_ = NoxCreateStatusTest(grp);
+  noxstatustest_ = nox_create_status_test(grp);
 
   // Create the solver
   Teuchos::RCP<::NOX::Solver::Generic> solver =
@@ -387,12 +387,12 @@ int Solid::TimIntImpl::NoxSolve()
   noxstatustest_->print(std::cout);
 
   // error check
-  return NoxErrorCheck(status, solver);
+  return nox_error_check(status, solver);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int Solid::TimIntImpl::NoxErrorCheck(
+int Solid::TimIntImpl::nox_error_check(
     ::NOX::StatusTest::StatusType status, Teuchos::RCP<::NOX::Solver::Generic> solver)
 {
   noxstatustest_->print(std::cout);

@@ -62,11 +62,11 @@ namespace ScaTra
     /*========================================================================*/
 
     //! Setup splitter for concentration and potential dofs
-    void SetupSplitter() override;
+    void setup_splitter() override;
 
     //! additional, to standard partitioning in scatra, the global system matrix in elch can be
     //! partitioned into concentration and potential dofs
-    void BuildBlockMaps(
+    void build_block_maps(
         const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& partitioningconditions,
         std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const override;
 
@@ -95,11 +95,11 @@ namespace ScaTra
     /*--- set, prepare, and predict ------------------------------------------*/
 
     //! setup natural convection
-    void SetupNatConv() override;
+    void setup_nat_conv() override;
 
     /*--- calculate and update -----------------------------------------------*/
 
-    [[nodiscard]] bool NotFinished() const override;
+    [[nodiscard]] bool not_finished() const override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
@@ -155,42 +155,42 @@ namespace ScaTra
     void output_electrode_info_interior();
 
     //! output cell voltage to screen and file
-    void OutputCellVoltage();
+    void output_cell_voltage();
 
     void write_restart() const override;
 
     //! output type of closing equation for electric potential
-    Inpar::ElCh::EquPot EquPot() const { return equpot_; }
+    Inpar::ElCh::EquPot equ_pot() const { return equpot_; }
 
     //! return constant F/RT
-    double FRT() const { return fr_ / temperature_; }
+    double frt() const { return fr_ / temperature_; }
 
     //! current temperature is determined and returned
     double get_current_temperature() const;
 
     //! return elch parameter list
-    Teuchos::RCP<const Teuchos::ParameterList> ElchParameterList() const { return elchparams_; }
+    Teuchos::RCP<const Teuchos::ParameterList> elch_parameter_list() const { return elchparams_; }
 
     //! return states of charge of resolved electrodes
-    const std::map<int, double>& ElectrodeSOC() const { return electrodesoc_; };
+    const std::map<int, double>& electrode_soc() const { return electrodesoc_; };
 
     //! return C rates with respect to resolved electrodes
-    const std::map<int, double>& ElectrodeCRates() const { return electrodecrates_; };
+    const std::map<int, double>& electrode_c_rates() const { return electrodecrates_; };
 
     //! return mean reactant concentrations at electrode boundaries
-    const std::map<int, double>& ElectrodeConc() const { return electrodeconc_; };
+    const std::map<int, double>& electrode_conc() const { return electrodeconc_; };
 
     //! return mean electric overpotentials at electrode boundaries
-    const std::map<int, double>& ElectrodeEta() const { return electrodeeta_; };
+    const std::map<int, double>& electrode_eta() const { return electrodeeta_; };
 
     //! return total electric currents at electrode boundaries
-    const std::map<int, double>& ElectrodeCurr() const { return electrodecurr_; };
+    const std::map<int, double>& electrode_curr() const { return electrodecurr_; };
 
     //! return cell voltage
-    const double& CellVoltage() const { return cellvoltage_; };
+    const double& cell_voltage() const { return cellvoltage_; };
 
     //! return map extractor for macro scale in multi-scale simulations
-    const Teuchos::RCP<const Core::LinAlg::MultiMapExtractor>& SplitterMacro() const
+    const Teuchos::RCP<const Core::LinAlg::MultiMapExtractor>& splitter_macro() const
     {
       return splitter_macro_;
     };
@@ -450,7 +450,7 @@ namespace ScaTra
     /*========================================================================*/
 
     //! return maximum number of dofs per node
-    int NumDofPerNode() const override
+    int num_dof_per_node() const override
     {
       check_is_setup();
       return *(numdofpernode_.rbegin());
@@ -458,7 +458,7 @@ namespace ScaTra
 
     //! return maximum number of transported scalars per node (not including potential and current
     //! density)
-    int NumScal() const override
+    int num_scal() const override
     {
       check_is_setup();
       return *(numscal_.rbegin());
@@ -466,7 +466,7 @@ namespace ScaTra
 
     //! return maximum number of transported scalars per node (not including potential and current
     //! density)
-    int NumScalInCondition(const Core::Conditions::Condition& condition,
+    int num_scal_in_condition(const Core::Conditions::Condition& condition,
         const Teuchos::RCP<const Core::FE::Discretization>& discret) const override;
 
     /*========================================================================*/

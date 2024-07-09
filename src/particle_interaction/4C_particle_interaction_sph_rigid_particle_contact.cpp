@@ -72,7 +72,7 @@ void ParticleInteraction::SPHRigidParticleContactBase::setup(
   // update with actual boundary particle types
   const auto boundarytypes = boundarytypes_;
   for (const auto& type_i : boundarytypes)
-    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+    if (not particlecontainerbundle_->get_particle_types().count(type_i))
       boundarytypes_.erase(type_i);
 
   // safety check
@@ -165,15 +165,15 @@ void ParticleInteraction::SPHRigidParticleContactElastic::elastic_contact_partic
         particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get pointer to particle states
-    const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
-    double* force_i = container_i->CondGetPtrToState(PARTICLEENGINE::Force, particle_i);
+    const double* vel_i = container_i->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_i);
+    double* force_i = container_i->cond_get_ptr_to_state(PARTICLEENGINE::Force, particle_i);
 
     // get pointer to particle states
-    const double* vel_j = container_j->GetPtrToState(PARTICLEENGINE::Velocity, particle_j);
+    const double* vel_j = container_j->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_j);
 
     double* force_j = nullptr;
     if (status_j == PARTICLEENGINE::Owned)
-      force_j = container_j->CondGetPtrToState(PARTICLEENGINE::Force, particle_j);
+      force_j = container_j->cond_get_ptr_to_state(PARTICLEENGINE::Force, particle_j);
 
     // compute normal gap and rate of normal gap
     const double gap = particlepair.absdist_ - initialparticlespacing;
@@ -201,7 +201,7 @@ void ParticleInteraction::SPHRigidParticleContactElastic::
 
   // get wall data state container
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
-      particlewallinterface_->GetWallDataState();
+      particlewallinterface_->get_wall_data_state();
 
   // get reference to particle-wall pair data
   const SPHParticleWallPairData& particlewallpairdata =
@@ -250,9 +250,9 @@ void ParticleInteraction::SPHRigidParticleContactElastic::
         particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get pointer to particle states
-    const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
-    const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
-    double* force_i = container_i->CondGetPtrToState(PARTICLEENGINE::Force, particle_i);
+    const double* pos_i = container_i->get_ptr_to_state(PARTICLEENGINE::Position, particle_i);
+    const double* vel_i = container_i->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_i);
+    double* force_i = container_i->cond_get_ptr_to_state(PARTICLEENGINE::Force, particle_i);
 
     // get pointer to column wall element
     Core::Elements::Element* ele = particlewallpair.ele_;
@@ -264,29 +264,29 @@ void ParticleInteraction::SPHRigidParticleContactElastic::
     Core::LinAlg::SerialDenseVector funct(numnodes);
     std::vector<int> lmele;
 
-    if (walldatastate->GetVelCol() != Teuchos::null or
-        walldatastate->GetForceCol() != Teuchos::null)
+    if (walldatastate->get_vel_col() != Teuchos::null or
+        walldatastate->get_force_col() != Teuchos::null)
     {
       // evaluate shape functions of element at wall contact point
       Core::FE::shape_function_2D(
-          funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->Shape());
+          funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->shape());
 
       // get location vector of wall element
       lmele.reserve(numnodes * 3);
       std::vector<int> lmowner;
       std::vector<int> lmstride;
-      ele->LocationVector(
+      ele->location_vector(
           *particlewallinterface_->get_wall_discretization(), lmele, lmowner, lmstride);
     }
 
     // velocity of wall contact point j
     double vel_j[3] = {0.0, 0.0, 0.0};
 
-    if (walldatastate->GetVelCol() != Teuchos::null)
+    if (walldatastate->get_vel_col() != Teuchos::null)
     {
       // get nodal velocities
       std::vector<double> nodal_vel(numnodes * 3);
-      Core::FE::ExtractMyValues(*walldatastate->GetVelCol(), nodal_vel, lmele);
+      Core::FE::ExtractMyValues(*walldatastate->get_vel_col(), nodal_vel, lmele);
 
       // determine velocity of wall contact point j
       for (int node = 0; node < numnodes; ++node)
@@ -306,7 +306,7 @@ void ParticleInteraction::SPHRigidParticleContactElastic::
 
     // calculation of wall contact force
     double wallcontactforce[3] = {0.0, 0.0, 0.0};
-    if (writeinteractionoutput or walldatastate->GetForceCol() != Teuchos::null)
+    if (writeinteractionoutput or walldatastate->get_force_col() != Teuchos::null)
       UTILS::VecSetScale(wallcontactforce, fac, particlewallpair.e_ij_);
 
     // write interaction output
@@ -328,7 +328,7 @@ void ParticleInteraction::SPHRigidParticleContactElastic::
     }
 
     // assemble contact force acting on wall element
-    if (walldatastate->GetForceCol() != Teuchos::null)
+    if (walldatastate->get_force_col() != Teuchos::null)
     {
       // determine nodal forces
       std::vector<double> nodal_force(numnodes * 3);
@@ -337,7 +337,7 @@ void ParticleInteraction::SPHRigidParticleContactElastic::
           nodal_force[node * 3 + dim] = funct[node] * wallcontactforce[dim];
 
       // assemble nodal forces
-      const int err = walldatastate->GetForceCol()->SumIntoGlobalValues(
+      const int err = walldatastate->get_force_col()->SumIntoGlobalValues(
           numnodes * 3, nodal_force.data(), lmele.data());
       if (err < 0) FOUR_C_THROW("sum into Epetra_Vector failed!");
     }
@@ -352,11 +352,11 @@ void ParticleInteraction::SPHRigidParticleContactElastic::
     auto& visualization_data = visualization_manager->get_visualization_data();
 
     // set wall attack points
-    visualization_data.GetPointCoordinates() = attackpoints;
+    visualization_data.get_point_coordinates() = attackpoints;
 
     // append states
-    visualization_data.SetPointDataVector<double>("contact force", contactforces, 3);
-    visualization_data.SetPointDataVector<double>("normal direction", normaldirection, 3);
+    visualization_data.set_point_data_vector<double>("contact force", contactforces, 3);
+    visualization_data.set_point_data_vector<double>("normal direction", normaldirection, 3);
   }
 }
 

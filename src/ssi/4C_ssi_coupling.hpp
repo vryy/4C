@@ -86,7 +86,7 @@ namespace SSI
     //! \param dis    discretization to write scatra solution on
     //! \param phi    scalar field solution
     //! \param nds    number of dofset to write state on
-    virtual void SetScalarField(
+    virtual void set_scalar_field(
         Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) = 0;
 
     //! \brief set micro soultion of scatra field other field
@@ -94,11 +94,11 @@ namespace SSI
     //! \param dis     discretization to write micro scatra solution on
     //! \param phi     micro scatra solution
     //! \param nds     number of dofset to write micro scatra solution on
-    virtual void SetScalarFieldMicro(
+    virtual void set_scalar_field_micro(
         Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) = 0;
 
     //! set temperature field on structure field
-    virtual void SetTemperatureField(
+    virtual void set_temperature_field(
         Core::FE::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) = 0;
   };
 
@@ -124,13 +124,13 @@ namespace SSI
     void set_velocity_fields(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
-    void SetScalarField(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
+    void set_scalar_field(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
         unsigned nds) override;
 
-    void SetScalarFieldMicro(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
-        unsigned nds) override;
+    void set_scalar_field_micro(Core::FE::Discretization& dis,
+        Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
-    void SetTemperatureField(
+    void set_temperature_field(
         Core::FE::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override;
 
    private:
@@ -196,13 +196,13 @@ namespace SSI
     void set_velocity_fields(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
-    void SetScalarField(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
+    void set_scalar_field(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
         unsigned nds) override;
 
-    void SetScalarFieldMicro(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
-        unsigned nds) override;
+    void set_scalar_field_micro(Core::FE::Discretization& dis,
+        Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
-    void SetTemperatureField(
+    void set_temperature_field(
         Core::FE::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override
     {
       FOUR_C_THROW("only for matching nodes");
@@ -284,13 +284,13 @@ namespace SSI
     void set_velocity_fields(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
-    void SetScalarField(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
+    void set_scalar_field(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
         unsigned nds) override;
 
-    void SetScalarFieldMicro(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
-        unsigned nds) override;
+    void set_scalar_field_micro(Core::FE::Discretization& dis,
+        Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
-    void SetTemperatureField(
+    void set_temperature_field(
         Core::FE::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override
     {
       FOUR_C_THROW("only for matching nodes");
@@ -360,13 +360,13 @@ namespace SSI
     void set_velocity_fields(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
-    void SetScalarField(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
+    void set_scalar_field(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
         unsigned nds) override;
 
-    void SetScalarFieldMicro(Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi,
-        unsigned nds) override;
+    void set_scalar_field_micro(Core::FE::Discretization& dis,
+        Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
-    void SetTemperatureField(
+    void set_temperature_field(
         Core::FE::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override;
 
    private:

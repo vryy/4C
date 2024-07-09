@@ -64,7 +64,7 @@ namespace Mat
       //@{
 
       /// provide access to material/summand by its ID
-      Teuchos::RCP<const Mat::Elastic::Summand> MaterialById(
+      Teuchos::RCP<const Mat::Elastic::Summand> material_by_id(
           const int id  ///< ID to look for in collection of summands
       ) const;
 
@@ -122,11 +122,11 @@ namespace Mat
   class PlasticElastHyperType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "PlasticElastHyperType"; }
+    std::string name() const override { return "PlasticElastHyperType"; }
 
-    static PlasticElastHyperType& Instance() { return instance_; };
+    static PlasticElastHyperType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static PlasticElastHyperType instance_;
@@ -153,16 +153,16 @@ namespace Mat
     ///
     /// every class implementing ParObject needs a unique id defined at the
     /// top of parobject.H (this file) and should return it in this method.
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return PlasticElastHyperType::Instance().UniqueParObjectId();
+      return PlasticElastHyperType::instance().unique_par_object_id();
     }
 
     /// \brief Pack this class so it can be communicated
     ///
     /// Resizes the vector data and stores all information of a class in it.
     /// The first information to be stored in data has to be the
-    /// unique parobject id delivered by UniqueParObjectId() which will then
+    /// unique parobject id delivered by unique_par_object_id() which will then
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
@@ -174,7 +174,7 @@ namespace Mat
     /// exact copy of an instance of a class on a different processor.
     /// The first entry in data has to be an integer which is the unique
     /// parobject id defined at the top of this file and delivered by
-    /// UniqueParObjectId().
+    /// unique_par_object_id().
     ///
     /// \param data (in) : vector storing all data to be unpacked into this
     ///                    instance.
@@ -183,47 +183,47 @@ namespace Mat
     //@}
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_plelasthyper;
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Inpar::Solid::KinemType kinem) override
     {
       if (!(kinem == Inpar::Solid::KinemType::nonlinearTotLag))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new PlasticElastHyper(*this));
     }
 
     /// material mass density
-    double Density() const override { return MatParams()->density_; }
+    double density() const override { return mat_params()->density_; }
 
     /// initial yield stress
-    virtual double Inityield() const { return MatParams()->inityield_; }
+    virtual double inityield() const { return mat_params()->inityield_; }
 
     /// linear isotropic hardening modulus
-    virtual double Isohard() const { return MatParams()->isohard_; }
+    virtual double isohard() const { return mat_params()->isohard_; }
 
     /// exponent for nonlinear isotropic hardening
-    virtual double Expisohard() const { return MatParams()->expisohard_; }
+    virtual double expisohard() const { return mat_params()->expisohard_; }
 
     /// saturation yield stress for nonlinear isotropic hardening
-    virtual double Infyield() const { return MatParams()->infyield_; }
+    virtual double infyield() const { return mat_params()->infyield_; }
 
     /// linear kinematic hardening modulus
-    virtual double Kinhard() const { return MatParams()->kinhard_; }
+    virtual double kinhard() const { return mat_params()->kinhard_; }
 
     /// complementarity parameter
     virtual double cpl() const
     {
-      if (MatParams() != nullptr)
-        return MatParams()->cpl_;
+      if (mat_params() != nullptr)
+        return mat_params()->cpl_;
       else
         return 0.;
     }
@@ -231,8 +231,8 @@ namespace Mat
     /// stabilization parameter
     virtual double s() const
     {
-      if (MatParams() != nullptr)
-        return MatParams()->stab_s_;
+      if (mat_params() != nullptr)
+        return mat_params()->stab_s_;
       else
         return 0.;
     }
@@ -240,55 +240,55 @@ namespace Mat
     /// plastic spin unequal zero
     virtual bool have_plastic_spin() const
     {
-      return (MatParams()->plspin_chi_ != 0. &&
-              (MatParams()->kinhard_ != 0 || MatParams()->rY_11_ != 0.));
+      return (mat_params()->plspin_chi_ != 0. &&
+              (mat_params()->kinhard_ != 0 || mat_params()->rY_11_ != 0.));
     }
 
     /// plastic spin parameter chi
-    virtual double PlSpinChi() const { return MatParams()->plspin_chi_; }
+    virtual double pl_spin_chi() const { return mat_params()->plspin_chi_; }
 
     /// viscosity (of the plastic flow, no visco-elasticity)
-    virtual double Visc() const { return MatParams()->visc_; }
+    virtual double visc() const { return mat_params()->visc_; }
 
     /// rate dependency of visco-plasticity
-    virtual double ViscRate() const { return MatParams()->rate_dependency_; }
+    virtual double visc_rate() const { return mat_params()->rate_dependency_; }
 
     /// viscosity (of the plastic flow, no visco-elasticity)
-    virtual double ViscSoft() const { return MatParams()->visc_soft_; }
+    virtual double visc_soft() const { return mat_params()->visc_soft_; }
 
     /// thermal expansion coefficient
-    virtual double Cte() const { return MatParams()->cte_; }
+    virtual double cte() const { return mat_params()->cte_; }
 
     /// initial temperature
-    virtual double InitTemp() const { return MatParams()->inittemp_; }
+    virtual double init_temp() const { return mat_params()->inittemp_; }
 
     /// initial yield stress softening with temperature
-    virtual double YieldSoft() const { return MatParams()->yieldsoft_; }
+    virtual double yield_soft() const { return mat_params()->yieldsoft_; }
 
     /// isotropic Hardening softening with temperature
-    virtual double HardSoft() const { return MatParams()->hardsoft_; }
+    virtual double hard_soft() const { return mat_params()->hardsoft_; }
 
     /// Taylor Quinney factor
-    virtual double TaylorQuinney() const { return MatParams()->taylor_quinney_; }
+    virtual double taylor_quinney() const { return mat_params()->taylor_quinney_; }
 
     /// set dissipation mode
-    virtual void SetDissipationMode(Inpar::TSI::DissipationMode mode)
+    virtual void set_dissipation_mode(Inpar::TSI::DissipationMode mode)
     {
-      if (MatParams() != nullptr) MatParams()->dis_mode_ = mode;
+      if (mat_params() != nullptr) mat_params()->dis_mode_ = mode;
     }
 
     /// get dissipation mode
-    virtual Inpar::TSI::DissipationMode DisMode() const
+    virtual Inpar::TSI::DissipationMode dis_mode() const
     {
-      if (MatParams() != nullptr)
-        return MatParams()->dis_mode_;
+      if (mat_params() != nullptr)
+        return mat_params()->dis_mode_;
       else
         return (Inpar::TSI::DissipationMode)0;
     }
 
     /// evaluate quantities for elastic stiffness matrix
     /// in consideration of plastic history/deformation
-    virtual void EvaluateElast(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    virtual void evaluate_elast(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<3, 3>* deltaLp, Core::LinAlg::Matrix<6, 1>* pk2,
         Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
         const int eleGID);  ///< global ID of element
@@ -302,17 +302,17 @@ namespace Mat
 
     /// evaluate stresses and stiffness contribution
     /// due to thermal expansion
-    virtual void EvaluateCTvol(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    virtual void evaluate_c_tvol(const Core::LinAlg::Matrix<3, 3>* defgrd,
         Core::LinAlg::Matrix<6, 1>* cTvol, Core::LinAlg::Matrix<6, 6>* dCTvoldE, const int gp,
         const int eleGID);  ///< global ID of element
 
     /// evaluate the Gough Joule Effect
-    virtual void EvaluateGoughJoule(
+    virtual void evaluate_gough_joule(
         double j, int gp, int eleGID, double& he_fac, double& he_fac_deriv);
 
     /// evaluate everything needed for the condensation of the plastic deformation
     /// at element level. (with zero plastic spin)
-    virtual void EvaluatePlast(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+    virtual void evaluate_plast(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< Deformation gradient
         const Core::LinAlg::Matrix<3, 3>* deltaDp,  ///< symmetric part of plastic flow increment
         const double* temp,                         ///< current temperature
         Teuchos::ParameterList& params,             ///< Container for additional information
@@ -339,7 +339,7 @@ namespace Mat
 
     /// evaluate everything needed for the condensation of the plastic deformation
     /// at element level. (with plastic spin)
-    virtual void EvaluatePlast(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+    virtual void evaluate_plast(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< Deformation gradient
         const Core::LinAlg::Matrix<3, 3>*
             deltaLp,                          ///< plastic deformation gradient (non-symmetric)
         const double* temp,                   ///< current temperature
@@ -365,7 +365,7 @@ namespace Mat
         Core::LinAlg::Matrix<6, 9>* d_cauchy_dF = nullptr,
         Core::LinAlg::Matrix<6, 1>* d_cauchy_dT = nullptr);
 
-    virtual void EvaluateCauchyPlast(const Core::LinAlg::Matrix<3, 1>& dPI,
+    virtual void evaluate_cauchy_plast(const Core::LinAlg::Matrix<3, 1>& dPI,
         const Core::LinAlg::Matrix<6, 1>& ddPII, const Core::LinAlg::Matrix<3, 3>* defgrd,
         Core::LinAlg::Matrix<6, 1>& cauchy, Core::LinAlg::Matrix<6, 9>& d_cauchy_dFpi,
         Core::LinAlg::Matrix<6, 6>& d_cauchy_dC, Core::LinAlg::Matrix<6, 9>& d_cauchy_dF,
@@ -385,12 +385,12 @@ namespace Mat
       return;
     }
 
-    virtual double StrainEnergy(
+    virtual double strain_energy(
         const Core::LinAlg::Matrix<3, 3>& defgrd, const int gp, const int eleGID)
     {
-      return StrainEnergyTSI(defgrd, gp, eleGID, MatParams()->inittemp_);
+      return strain_energy_tsi(defgrd, gp, eleGID, mat_params()->inittemp_);
     }
-    virtual double StrainEnergyTSI(const Core::LinAlg::Matrix<3, 3>& defgrd, const int gp,
+    virtual double strain_energy_tsi(const Core::LinAlg::Matrix<3, 3>& defgrd, const int gp,
         const int eleGID, const double temp);
 
     /// setup material data
@@ -406,11 +406,11 @@ namespace Mat
     void post_setup(const Teuchos::ParameterList params, int eleGID);
 
     /// setup material TSI data
-    virtual void SetupTSI(const int numgp, const int numdofperelement, const bool eas,
+    virtual void setup_tsi(const int numgp, const int numdofperelement, const bool eas,
         const Inpar::TSI::DissipationMode mode);
 
     /// setup plastic orthotropy tensor H
-    virtual void SetupHillPlasticity(Input::LineDefinition* linedef);
+    virtual void setup_hill_plasticity(Input::LineDefinition* linedef);
 
     /// update sumands
     void update() override
@@ -421,61 +421,62 @@ namespace Mat
     };
 
     /// update plastic history variables
-    virtual void UpdateGP(const int gp, const Core::LinAlg::Matrix<3, 3>* deltaDp);
+    virtual void update_gp(const int gp, const Core::LinAlg::Matrix<3, 3>* deltaDp);
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return MatParams(); }
+    Core::Mat::PAR::Parameter* parameter() const override { return mat_params(); }
 
     /// Access to material params
-    virtual Mat::PAR::PlasticElastHyper* MatParams() const { return params_; }
+    virtual Mat::PAR::PlasticElastHyper* mat_params() const { return params_; }
 
     /// Return whether the material requires the deformation gradient for its evaluation
     bool needs_defgrd() override { return true; };
 
     /// get plastic algorithm parameters
-    virtual void GetParams(double s, double cpl)
+    virtual void get_params(double s, double cpl)
     {
-      if (MatParams() == nullptr) return;  // ... from post processor
-      MatParams()->stab_s_ = s;
-      MatParams()->cpl_ = cpl;
+      if (mat_params() == nullptr) return;  // ... from post processor
+      mat_params()->stab_s_ = s;
+      mat_params()->cpl_ = cpl;
     };
 
     /// return accumulated plastic strain at GP
-    virtual double AccumulatedStrain(int gp) const { return last_alpha_isotropic_[gp]; }
+    virtual double accumulated_strain(int gp) const { return last_alpha_isotropic_[gp]; }
 
     /// is this GP active
-    virtual bool Active(int gp) const { return activity_state_[gp]; }
+    virtual bool active(int gp) const { return activity_state_[gp]; }
 
     /// heating at this gp
-    virtual double& HepDiss(int gp) { return (*HepDiss_)[gp]; }
+    virtual double& hep_diss(int gp) { return (*HepDiss_)[gp]; }
 
     /// derivative of heating at this gp
-    virtual Core::LinAlg::SerialDenseVector& dHepDissDd(int gp) { return (*dHepDissdd_)[gp]; }
+    virtual Core::LinAlg::SerialDenseVector& d_hep_diss_dd(int gp) { return (*dHepDissdd_)[gp]; }
 
     // derivative of heating w.r.t. temperature
-    virtual double& dHepDT(int gp) { return (*dHepDissdT_)[gp]; }
+    virtual double& d_hep_dt(int gp) { return (*dHepDissdT_)[gp]; }
 
     // derivative of heating at each gp w.r.t. nodal temperature vector
     // (only EAS contribution)
-    virtual Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseVector>> dHepDTeas()
+    virtual Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseVector>> d_hep_d_teas()
     {
       return dHepDissdTeas_;
     }
 
     //! return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names) const;
+    virtual void vis_names(std::map<std::string, int>& names) const;
 
     //! return visualization data
-    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+    bool vis_data(
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
-    bool EvaluateOutputData(
+    bool evaluate_output_data(
         const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
     //! purely elastic material (input via negative initial yield stress
-    bool AllElastic() { return Inityield() < 0.; }
+    bool all_elastic() { return inityield() < 0.; }
 
    protected:
     /// calculates the kinematic quantities and tensors used afterwards

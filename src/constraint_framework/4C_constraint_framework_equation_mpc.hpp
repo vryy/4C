@@ -39,7 +39,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
      * @param [in] constraint_vector constraint vector
      * @param [in] displacements \f$D_{n+1}\f$
      */
-    virtual void EvaluateEquation(Core::LinAlg::SparseMatrix& Q_dd,
+    virtual void evaluate_equation(Core::LinAlg::SparseMatrix& Q_dd,
         Core::LinAlg::SparseMatrix& Q_dL, Core::LinAlg::SparseMatrix& Q_Ld,
         Epetra_Vector& constraint_vector, const Epetra_Vector& D_np1) = 0;
 
@@ -47,19 +47,19 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
      *
      * @return [out] number of multi point constraint equation the object contains
      */
-    int GetNumberOfMPCs() const;
+    int get_number_of_mp_cs() const;
 
     /*! \brief Return the global id of the affected row of this equation
      *
      * @return [out] global id of the affected row of this equation
      */
-    int GetFirstRowId() const;
+    int get_first_row_id() const;
 
     /*! \brief Return the global id of the affected row of this equation
      *
      * @param [in] global_row_id global id of the affected row of this equation
      */
-    void SetFirstRowId(int global_row_id);
+    void set_first_row_id(int global_row_id);
 
    private:
     //! Number of dof coupled per Object (= Number of MPCs per Obj.)
@@ -85,7 +85,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     LinearCoupledEquation(int id, const std::vector<int>& dofs, std::vector<double> coefficients);
 
     //! derived
-    void EvaluateEquation(Core::LinAlg::SparseMatrix& Q_dd, Core::LinAlg::SparseMatrix& Q_dL,
+    void evaluate_equation(Core::LinAlg::SparseMatrix& Q_dd, Core::LinAlg::SparseMatrix& Q_dL,
         Core::LinAlg::SparseMatrix& Q_Ld, Epetra_Vector& constraint_vector,
         const Epetra_Vector& D_np1) override;
 

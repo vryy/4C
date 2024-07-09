@@ -210,7 +210,7 @@ namespace NOX
 
       //! Returns the type of operator that is passed into the group constructors.
       /*! Uses dynamic casting to identify the underlying object type. */
-      virtual OperatorType getOperatorType(const Epetra_Operator& o);
+      virtual OperatorType get_operator_type(const Epetra_Operator& o);
 
      protected:
       /// generalized conjugate residual solver

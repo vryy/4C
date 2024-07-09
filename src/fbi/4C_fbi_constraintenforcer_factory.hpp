@@ -52,7 +52,7 @@ namespace Adapter
      *
      * \return FBI constraint enforcement strategy
      */
-    static Teuchos::RCP<FBIConstraintenforcer> CreateEnforcer(
+    static Teuchos::RCP<FBIConstraintenforcer> create_enforcer(
         const Teuchos::ParameterList& fsidyn, const Teuchos::ParameterList& fbidyn);
   };
 }  // namespace Adapter

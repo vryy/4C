@@ -75,7 +75,7 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix* stiffness_matrix,
           Core::LinAlg::SerialDenseMatrix* mass_matrix) override;
 
-      void Recover(Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
+      void recover(Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params,
           Solid::ELEMENTS::ParamsInterface& interface_ptr) override;
 
@@ -90,7 +90,7 @@ namespace Discret
           const Core::LinAlg::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) override;
 
-      void Update(Core::Elements::Element& ele, Mat::So3Material& solid_material,
+      void update(Core::Elements::Element& ele, Mat::So3Material& solid_material,
           const Core::FE::Discretization& discretization,
           const Core::LinAlg::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) override;
@@ -98,7 +98,7 @@ namespace Discret
       void reset_to_last_converged(
           Core::Elements::Element& ele, Mat::So3Material& solid_material) override;
 
-      void VisData(const std::string& name, std::vector<double>& data) override;
+      void vis_data(const std::string& name, std::vector<double>& data) override;
 
      private:
       //! EAS matrices and vectors to be stored between iterations

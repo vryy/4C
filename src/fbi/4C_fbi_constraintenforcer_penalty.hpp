@@ -113,7 +113,7 @@ namespace Adapter
     Teuchos::RCP<Epetra_Vector> assemble_fluid_coupling_residual() const override;
 
     /// Interface to do preparations to solve the fluid
-    void PrepareFluidSolve() override;
+    void prepare_fluid_solve() override;
 
     /// Output the constraint violation
     virtual void print_violation(double time, int step);

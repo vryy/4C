@@ -30,9 +30,9 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::SoWeg6Type Discret::ELEMENTS::SoWeg6Type::instance_;
 
-Discret::ELEMENTS::SoWeg6Type& Discret::ELEMENTS::SoWeg6Type::Instance() { return instance_; }
+Discret::ELEMENTS::SoWeg6Type& Discret::ELEMENTS::SoWeg6Type::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoWeg6Type::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::SoWeg6Type::create(const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoWeg6(-1, -1);
   object->unpack(data);
@@ -40,7 +40,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoWeg6Type::Create(const std:
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoWeg6Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoWeg6Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -53,7 +53,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoWeg6Type::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoWeg6Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoWeg6Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -70,7 +70,7 @@ void Discret::ELEMENTS::SoWeg6Type::nodal_block_information(
   nv = 3;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoWeg6Type::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoWeg6Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
@@ -112,14 +112,14 @@ Discret::ELEMENTS::SoWeg6::SoWeg6(int id, int owner)
   }
 
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      Global::Problem::Instance()->getParameterList();
+      Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
     pstype_ = Prestress::GetType();
     pstime_ = Prestress::GetPrestressTime();
 
     Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+        Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
   if (Prestress::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_WEG6, NUMGPT_WEG6));
@@ -146,7 +146,7 @@ Discret::ELEMENTS::SoWeg6::SoWeg6(const Discret::ELEMENTS::SoWeg6& old)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoWeg6::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SoWeg6::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::SoWeg6(*this);
   return newelement;
@@ -156,7 +156,7 @@ Core::Elements::Element* Discret::ELEMENTS::SoWeg6::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::SoWeg6::Shape() const { return Core::FE::CellType::wedge6; }
+Core::FE::CellType Discret::ELEMENTS::SoWeg6::shape() const { return Core::FE::CellType::wedge6; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
@@ -167,7 +167,7 @@ void Discret::ELEMENTS::SoWeg6::pack(Core::Communication::PackBuffer& data) cons
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   SoBase::pack(data);
@@ -201,7 +201,7 @@ void Discret::ELEMENTS::SoWeg6::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -254,16 +254,15 @@ void Discret::ELEMENTS::SoWeg6::print(std::ostream& os) const
 std::vector<double> Discret::ELEMENTS::SoWeg6::element_center_refe_coords()
 {
   // update element geometry
-  Core::Nodes::Node** nodes = Nodes();
   Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xrefe;  // material coord. of element
   for (int i = 0; i < NUMNOD_WEG6; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
   }
-  const Core::FE::CellType distype = Shape();
+  const Core::FE::CellType distype = shape();
   Core::LinAlg::Matrix<NUMNOD_WEG6, 1> funct;
   // Element midpoint at r=s=1/3, t=0.0
   Core::FE::shape_function_3D(funct, 1.0 / 3.0, 1.0 / 3.0, 0.0, distype);
@@ -279,9 +278,9 @@ std::vector<double> Discret::ELEMENTS::SoWeg6::element_center_refe_coords()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                maf 07/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoWeg6::VisNames(std::map<std::string, int>& names)
+void Discret::ELEMENTS::SoWeg6::vis_names(std::map<std::string, int>& names)
 {
-  SolidMaterial()->VisNames(names);
+  solid_material()->vis_names(names);
 
   return;
 }
@@ -289,12 +288,12 @@ void Discret::ELEMENTS::SoWeg6::VisNames(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                         maf 07/08|
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoWeg6::VisData(const std::string& name, std::vector<double>& data)
+bool Discret::ELEMENTS::SoWeg6::vis_data(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (Core::Elements::Element::VisData(name, data)) return true;
+  if (Core::Elements::Element::vis_data(name, data)) return true;
 
-  return SolidMaterial()->VisData(name, data, NUMGPT_WEG6, this->Id());
+  return solid_material()->vis_data(name, data, NUMGPT_WEG6, this->id());
 }
 
 
@@ -302,7 +301,7 @@ bool Discret::ELEMENTS::SoWeg6::VisData(const std::string& name, std::vector<dou
 |  get vector of surfaces (public)                             maf 04/07|
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoWeg6::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoWeg6::surfaces()
 {
   return Core::Communication::ElementBoundaryFactory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -311,7 +310,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoWeg6::Su
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               maf 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoWeg6::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoWeg6::lines()
 {
   return Core::Communication::ElementBoundaryFactory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);

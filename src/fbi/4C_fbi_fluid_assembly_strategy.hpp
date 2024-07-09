@@ -74,7 +74,7 @@ namespace FBI
        * \param[in] lmrowowner vector with owner procs of row gids
        * \param[in] lmcol vector with column gids
        */
-      virtual void AssembleFluidMatrix(Teuchos::RCP<Core::LinAlg::SparseOperator> cff, int elegid,
+      virtual void assemble_fluid_matrix(Teuchos::RCP<Core::LinAlg::SparseOperator> cff, int elegid,
           const std::vector<int>& lmstride, const Core::LinAlg::SerialDenseMatrix& elemat,
           const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
           const std::vector<int>& lmcol);
@@ -98,7 +98,7 @@ namespace FBI
        * matrix relating DOFs in the first discretization to DOFs in the second discretization
        *
        */
-      virtual void Assemble(const Core::FE::Discretization& discretization1,
+      virtual void assemble(const Core::FE::Discretization& discretization1,
           const Core::FE::Discretization& discretization2, std::vector<int> const& elegid,
           std::vector<Core::LinAlg::SerialDenseVector> const& elevec,
           std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elemat,

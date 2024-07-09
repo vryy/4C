@@ -46,8 +46,8 @@ bool Solid::MODELEVALUATOR::PartitionedSSI::assemble_jacobian(
     // cast old Jacobian
     auto& jac_sparse = dynamic_cast<Core::LinAlg::SparseMatrix&>(jac);
 
-    auto map_structure_interior = ssi_part_->ssi_structure_mesh_tying()->InteriorMap();
-    auto cond_master_dof_map = ssi_part_->ssi_structure_mesh_tying()->FullMasterSideMap();
+    auto map_structure_interior = ssi_part_->ssi_structure_mesh_tying()->interior_map();
+    auto cond_master_dof_map = ssi_part_->ssi_structure_mesh_tying()->full_master_side_map();
 
     // initialize new Jacobian
     Core::LinAlg::SparseMatrix jac_new(*global_state().dof_row_map(), 81, true, true);
@@ -68,10 +68,10 @@ bool Solid::MODELEVALUATOR::PartitionedSSI::assemble_jacobian(
     Core::LinAlg::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_master_dof_map,
         *cond_master_dof_map, 1.0, nullptr, nullptr, jac_new, true, true);
 
-    for (const auto& meshtying : ssi_part_->ssi_structure_mesh_tying()->MeshTyingHandlers())
+    for (const auto& meshtying : ssi_part_->ssi_structure_mesh_tying()->mesh_tying_handlers())
     {
-      auto cond_slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
-      auto converter = meshtying->SlaveSideConverter();
+      auto cond_slave_dof_map = meshtying->slave_master_coupling()->slave_dof_map();
+      auto converter = meshtying->slave_side_converter();
 
       // transform and assemble slave-side rows of original Jacobian into new Jacobian (interior
       // columns)
@@ -93,10 +93,10 @@ bool Solid::MODELEVALUATOR::PartitionedSSI::assemble_jacobian(
       Core::LinAlg::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_master_dof_map,
           *cond_slave_dof_map, 1.0, nullptr, &(*converter), jac_new, true, true);
 
-      for (const auto& meshtying2 : ssi_part_->ssi_structure_mesh_tying()->MeshTyingHandlers())
+      for (const auto& meshtying2 : ssi_part_->ssi_structure_mesh_tying()->mesh_tying_handlers())
       {
-        auto cond_slave_dof_map2 = meshtying2->SlaveMasterCoupling()->SlaveDofMap();
-        auto converter2 = meshtying2->SlaveSideConverter();
+        auto cond_slave_dof_map2 = meshtying2->slave_master_coupling()->slave_dof_map();
+        auto converter2 = meshtying2->slave_side_converter();
 
         // assemble derivatives of surface slave dofs w.r.t. line slave dofs (block l)
         Core::LinAlg::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_slave_dof_map,
@@ -104,15 +104,15 @@ bool Solid::MODELEVALUATOR::PartitionedSSI::assemble_jacobian(
       }
     }
 
-    auto slavemaps = ssi_part_->ssi_structure_mesh_tying()->FullSlaveSideMap();
+    auto slavemaps = ssi_part_->ssi_structure_mesh_tying()->full_slave_side_map();
 
     // subject slave-side rows of new Jacobian to pseudo Dirichlet conditions to finalize
     // structural meshtying
-    jac_new.Complete();
-    jac_new.ApplyDirichlet(*slavemaps);
+    jac_new.complete();
+    jac_new.apply_dirichlet(*slavemaps);
 
     // replace old Jacobian by new one
-    jac_sparse.Assign(Core::LinAlg::View, jac_new);
+    jac_sparse.assign(Core::LinAlg::View, jac_new);
   }
 
   return true;
@@ -126,13 +126,13 @@ void Solid::MODELEVALUATOR::PartitionedSSI::run_pre_compute_x(
   // perform structural meshtying
   if (ssi_part_->ssi_interface_meshtying())
   {
-    for (const auto& meshtying : ssi_part_->ssi_structure_mesh_tying()->MeshTyingHandlers())
+    for (const auto& meshtying : ssi_part_->ssi_structure_mesh_tying()->mesh_tying_handlers())
     {
       auto coupling_map_extractor = meshtying->slave_master_extractor();
 
       // transform and assemble master-side part of structural increment vector to slave side
       coupling_map_extractor->insert_vector(
-          *meshtying->SlaveMasterCoupling()->MasterToSlave(
+          *meshtying->slave_master_coupling()->master_to_slave(
               coupling_map_extractor->extract_vector(dir_mutable, 2)),
           1, dir_mutable);
     }
@@ -159,11 +159,11 @@ bool Solid::MODELEVALUATOR::PartitionedSSI::assemble_force(
   // perform structural meshtying
   if (ssi_part_->ssi_interface_meshtying() and ssi_part_->is_setup())
   {
-    for (const auto& meshtying : ssi_part_->ssi_structure_mesh_tying()->MeshTyingHandlers())
+    for (const auto& meshtying : ssi_part_->ssi_structure_mesh_tying()->mesh_tying_handlers())
     {
       auto coupling_map_extractor = meshtying->slave_master_extractor();
       // transform and assemble slave-side part of structural right-hand side vector to master side
-      coupling_map_extractor->add_vector(*meshtying->SlaveMasterCoupling()->SlaveToMaster(
+      coupling_map_extractor->add_vector(*meshtying->slave_master_coupling()->slave_to_master(
                                              coupling_map_extractor->extract_vector(f, 1)),
           2, f);
 

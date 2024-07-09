@@ -43,7 +43,7 @@ void Core::Communication::Exporter::i_send(const int frompid, const int topid, c
     const int dsize, const int tag, MPI_Request& request) const
 {
   if (my_pid() != frompid) return;
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
   if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Isend((void*)data, dsize, MPI_CHAR, topid, tag, comm->Comm(), &request);
 }
@@ -52,7 +52,7 @@ void Core::Communication::Exporter::i_send(const int frompid, const int topid, c
     const int dsize, const int tag, MPI_Request& request) const
 {
   if (my_pid() != frompid) return;
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
   if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Isend((void*)data, dsize, MPI_INT, topid, tag, comm->Comm(), &request);
 }
@@ -61,15 +61,15 @@ void Core::Communication::Exporter::i_send(const int frompid, const int topid, c
     const int dsize, const int tag, MPI_Request& request) const
 {
   if (my_pid() != frompid) return;
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
   if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Isend((void*)data, dsize, MPI_DOUBLE, topid, tag, comm->Comm(), &request);
 }
 
-void Core::Communication::Exporter::ReceiveAny(
+void Core::Communication::Exporter::receive_any(
     int& source, int& tag, std::vector<char>& recvbuff, int& length) const
 {
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
   if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
@@ -83,10 +83,10 @@ void Core::Communication::Exporter::ReceiveAny(
   MPI_Recv(recvbuff.data(), length, MPI_CHAR, source, tag, comm->Comm(), &status);
 }
 
-void Core::Communication::Exporter::Receive(
+void Core::Communication::Exporter::receive(
     const int source, const int tag, std::vector<char>& recvbuff, int& length) const
 {
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
   if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
@@ -97,10 +97,10 @@ void Core::Communication::Exporter::Receive(
   MPI_Recv(recvbuff.data(), length, MPI_CHAR, source, tag, comm->Comm(), &status);
 }
 
-void Core::Communication::Exporter::ReceiveAny(
+void Core::Communication::Exporter::receive_any(
     int& source, int& tag, std::vector<int>& recvbuff, int& length) const
 {
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
   if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
@@ -114,10 +114,10 @@ void Core::Communication::Exporter::ReceiveAny(
   MPI_Recv(recvbuff.data(), length, MPI_INT, source, tag, comm->Comm(), &status);
 }
 
-void Core::Communication::Exporter::Receive(
+void Core::Communication::Exporter::receive(
     const int source, const int tag, std::vector<int>& recvbuff, int& length) const
 {
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
   if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
@@ -128,10 +128,10 @@ void Core::Communication::Exporter::Receive(
   MPI_Recv(recvbuff.data(), length, MPI_INT, source, tag, comm->Comm(), &status);
 }
 
-void Core::Communication::Exporter::ReceiveAny(
+void Core::Communication::Exporter::receive_any(
     int& source, int& tag, std::vector<double>& recvbuff, int& length) const
 {
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
   if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
@@ -145,10 +145,10 @@ void Core::Communication::Exporter::ReceiveAny(
   MPI_Recv(recvbuff.data(), length, MPI_DOUBLE, source, tag, comm->Comm(), &status);
 }
 
-void Core::Communication::Exporter::Receive(
+void Core::Communication::Exporter::receive(
     const int source, const int tag, std::vector<double>& recvbuff, int& length) const
 {
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
   if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
@@ -159,10 +159,10 @@ void Core::Communication::Exporter::Receive(
   MPI_Recv(recvbuff.data(), length, MPI_DOUBLE, source, tag, comm->Comm(), &status);
 }
 
-void Core::Communication::Exporter::Allreduce(
+void Core::Communication::Exporter::allreduce(
     std::vector<int>& sendbuff, std::vector<int>& recvbuff, MPI_Op mpi_op)
 {
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
   if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
 
   int length = (int)sendbuff.size();
@@ -171,10 +171,10 @@ void Core::Communication::Exporter::Allreduce(
   MPI_Allreduce(sendbuff.data(), recvbuff.data(), length, MPI_INT, mpi_op, comm->Comm());
 }
 
-void Core::Communication::Exporter::Broadcast(
+void Core::Communication::Exporter::broadcast(
     const int frompid, std::vector<char>& data, const int tag) const
 {
-  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(get_comm()));
   if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
 
   int length = static_cast<int>(data.size());
@@ -188,7 +188,7 @@ void Core::Communication::Exporter::Broadcast(
 
 void Core::Communication::Exporter::construct_exporter()
 {
-  if (SourceMap().SameAs(TargetMap())) return;
+  if (source_map().SameAs(target_map())) return;
 
   // allocate a sendplan array and init to zero
   // send_plan():
@@ -200,26 +200,26 @@ void Core::Communication::Exporter::construct_exporter()
   // To build these plans, everybody has to communicate what he has and wants:
   // bundle this info to save on communication:
   int sizes[2];
-  sizes[0] = SourceMap().NumMyElements();
-  sizes[1] = TargetMap().NumMyElements();
+  sizes[0] = source_map().NumMyElements();
+  sizes[1] = target_map().NumMyElements();
   const int sendsize = sizes[0] + sizes[1];
   std::vector<int> sendbuff;
   sendbuff.reserve(sendsize);
-  std::copy(SourceMap().MyGlobalElements(),
-      SourceMap().MyGlobalElements() + SourceMap().NumMyElements(), std::back_inserter(sendbuff));
-  std::copy(TargetMap().MyGlobalElements(),
-      TargetMap().MyGlobalElements() + TargetMap().NumMyElements(), std::back_inserter(sendbuff));
+  std::copy(source_map().MyGlobalElements(),
+      source_map().MyGlobalElements() + source_map().NumMyElements(), std::back_inserter(sendbuff));
+  std::copy(target_map().MyGlobalElements(),
+      target_map().MyGlobalElements() + target_map().NumMyElements(), std::back_inserter(sendbuff));
 
   for (int proc = 0; proc < num_proc(); ++proc)
   {
     int recvsizes[2];
     recvsizes[0] = sizes[0];
     recvsizes[1] = sizes[1];
-    Comm().Broadcast(recvsizes, 2, proc);
+    get_comm().Broadcast(recvsizes, 2, proc);
     const int recvsize = recvsizes[0] + recvsizes[1];
     std::vector<int> recvbuff(recvsize);
     if (proc == my_pid()) std::copy(sendbuff.begin(), sendbuff.end(), recvbuff.data());
-    Comm().Broadcast(recvbuff.data(), recvsize, proc);
+    get_comm().Broadcast(recvbuff.data(), recvsize, proc);
     // const int* have = recvbuff.data();            // this is what proc has
     const int* want = &recvbuff[recvsizes[0]];  // this is what proc needs
 
@@ -229,14 +229,14 @@ void Core::Communication::Exporter::construct_exporter()
       for (int i = 0; i < recvsizes[1]; ++i)
       {
         const int gid = want[i];
-        if (SourceMap().MyGID(gid))
+        if (source_map().MyGID(gid))
         {
-          const int lid = SourceMap().LID(gid);
+          const int lid = source_map().LID(gid);
           send_plan()[proc].insert(lid);
         }
       }
     }
-    Comm().Barrier();
+    get_comm().Barrier();
   }  // for (int proc=0; proc<NumProc(); ++proc)
 }
 
@@ -245,7 +245,7 @@ void Core::Communication::Exporter::generic_export(ExporterHelper& helper)
   if (send_plan().size() == 0) return;
   // if (SourceMap().SameAs(TargetMap())) return;
 
-  helper.PreExportTest(this);
+  helper.pre_export_test(this);
 
   //------------------------------------------------ do the send/recv loop
   for (int i = 0; i < num_proc() - 1; ++i)
@@ -267,8 +267,8 @@ void Core::Communication::Exporter::generic_export(ExporterHelper& helper)
 
     for (int lid : send_plan()[tproc])
     {
-      const int gid = SourceMap().GID(lid);
-      if (helper.PackObject(gid, sendblock)) sendgid.push_back(gid);
+      const int gid = source_map().GID(lid);
+      if (helper.pack_object(gid, sendblock)) sendgid.push_back(gid);
     }
 
     // send tproc no. of chars tproc must receive
@@ -293,19 +293,19 @@ void Core::Communication::Exporter::generic_export(ExporterHelper& helper)
     int length = 0;
     int tag = 1;
     // do a blocking specific receive
-    Receive(source, tag, rnmessages, length);
+    receive(source, tag, rnmessages, length);
     if (length != 2 or tag != 1) FOUR_C_THROW("Messages got mixed up");
 
     // receive the objects
     std::vector<char> recvblock(rnmessages[0]);
     tag = 2;
-    ReceiveAny(source, tag, recvblock, length);
+    receive_any(source, tag, recvblock, length);
     if (tag != 2) FOUR_C_THROW("Messages got mixed up");
 
     // receive the gids
     std::vector<int> recvgid(rnmessages[1]);
     tag = 3;
-    ReceiveAny(source, tag, recvgid, length);
+    receive_any(source, tag, recvgid, length);
     if (tag != 3) FOUR_C_THROW("Messages got mixed up");
 
     std::vector<char>::size_type index = 0;
@@ -313,20 +313,20 @@ void Core::Communication::Exporter::generic_export(ExporterHelper& helper)
     while (index < recvblock.size())
     {
       int gid = recvgid[j];
-      helper.UnpackObject(gid, index, recvblock);
+      helper.unpack_object(gid, index, recvblock);
       j += 1;
     }
 
     //----------------------------------- do waiting for messages to tproc to leave
-    Wait(sizerequest);
-    Wait(sendrequest);
-    Wait(sendgidrequest);
+    wait(sizerequest);
+    wait(sendrequest);
+    wait(sendgidrequest);
 
     // make sure we do not get mixed up messages as we use wild card receives here
-    Comm().Barrier();
+    get_comm().Barrier();
   }  // for (int i=0; i<NumProc()-1; ++i)
 
-  helper.PostExportCleanup(this);
+  helper.post_export_cleanup(this);
 }
 
 void Core::Communication::Exporter::Export(std::map<int, int>& data)

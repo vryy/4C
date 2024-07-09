@@ -30,24 +30,24 @@ namespace ScaTra
     /// construct with a block matrix base
     explicit SplitStrategy(Core::LinAlg::BlockSparseMatrixBase& mat)
         : mat_(mat),
-          matrix00_(mat_.Matrix(0, 0)),
-          matrix01_(mat_.Matrix(0, 1)),
-          matrix10_(mat_.Matrix(1, 0)),
-          matrix11_(mat_.Matrix(1, 1)),
+          matrix00_(mat_.matrix(0, 0)),
+          matrix01_(mat_.matrix(0, 1)),
+          matrix10_(mat_.matrix(1, 0)),
+          matrix11_(mat_.matrix(1, 1)),
           numscal_(-1),
           numdofpernode_(-1)
     {
     }
 
     /// find row block to a given row gid
-    int RowBlock(int lrow, int rgid)
+    int row_block(int lrow, int rgid)
     {
       if ((lrow % numdofpernode_) < numscal_) return 0;
       return 1;
     }
 
     /// find column block to a given column gid
-    int ColBlock(int rblock, int lcol, int cgid)
+    int col_block(int rblock, int lcol, int cgid)
     {
       if ((lcol % numdofpernode_) < numscal_) return 0;
       return 1;
@@ -62,14 +62,14 @@ namespace ScaTra
      * shows this drawback.
      * Effects: Faster assembly and a more sparse global matrix (and graph)
      */
-    void Assemble(int eid, int myrank, const std::vector<int>& lmstride,
+    void assemble(int eid, int myrank, const std::vector<int>& lmstride,
         const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
     {
       const int lrowdim = (int)lmrow.size();
       const int lcoldim = (int)lmcol.size();
 
-      if (mat_.Filled())
+      if (mat_.filled())
       {
         // We use the maps of the matrix to gain fast access to the LID's.
         // Assembling with SumIntoMyValues based on LID's is two times faster
@@ -88,14 +88,14 @@ namespace ScaTra
         if (!doit) return;
 
         // get the maps
-        const Epetra_Map& colmap00 = mat_.Matrix(0, 0).ColMap();
-        const Epetra_Map& colmap01 = mat_.Matrix(0, 1).ColMap();
-        const Epetra_Map& colmap10 = mat_.Matrix(1, 0).ColMap();
-        const Epetra_Map& colmap11 = mat_.Matrix(1, 1).ColMap();
-        const Epetra_Map& rowmap00 = mat_.Matrix(0, 0).RowMap();
-        const Epetra_Map& rowmap01 = mat_.Matrix(0, 1).RowMap();
-        const Epetra_Map& rowmap10 = mat_.Matrix(1, 0).RowMap();
-        const Epetra_Map& rowmap11 = mat_.Matrix(1, 1).RowMap();
+        const Epetra_Map& colmap00 = mat_.matrix(0, 0).col_map();
+        const Epetra_Map& colmap01 = mat_.matrix(0, 1).col_map();
+        const Epetra_Map& colmap10 = mat_.matrix(1, 0).col_map();
+        const Epetra_Map& colmap11 = mat_.matrix(1, 1).col_map();
+        const Epetra_Map& rowmap00 = mat_.matrix(0, 0).row_map();
+        const Epetra_Map& rowmap01 = mat_.matrix(0, 1).row_map();
+        const Epetra_Map& rowmap10 = mat_.matrix(1, 0).row_map();
+        const Epetra_Map& rowmap11 = mat_.matrix(1, 1).row_map();
 
         // prepare vectors for holding column local ids and the values to be assembled
         const int nnode = lcoldim / numdofpernode_;
@@ -169,12 +169,12 @@ namespace ScaTra
             }
 
             // assemble
-            errone = matrix00_.EpetraMatrix()->SumIntoMyValues(
+            errone = matrix00_.epetra_matrix()->SumIntoMyValues(
                 rlid0, nnode, values00.data(), localcol00map[scalarid].data());
             if (errone)
               FOUR_C_THROW(
                   "Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A00", errone);
-            errone = matrix01_.EpetraMatrix()->SumIntoMyValues(
+            errone = matrix01_.epetra_matrix()->SumIntoMyValues(
                 rlid1, nnode, values1.data(), localcol01.data());
             if (errone)
               FOUR_C_THROW(
@@ -208,12 +208,12 @@ namespace ScaTra
             }
 
             // assemble
-            errone = matrix10_.EpetraMatrix()->SumIntoMyValues(
+            errone = matrix10_.epetra_matrix()->SumIntoMyValues(
                 rlid0, nnode * numscal_, values0.data(), localcol10.data());
             if (errone)
               FOUR_C_THROW(
                   "Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A10", errone);
-            errone = matrix11_.EpetraMatrix()->SumIntoMyValues(
+            errone = matrix11_.epetra_matrix()->SumIntoMyValues(
                 rlid1, nnode, values1.data(), localcol11.data());
             if (errone)
               FOUR_C_THROW(
@@ -232,7 +232,7 @@ namespace ScaTra
           if (lmrowowner[lrow] != myrank) continue;
 
           int rgid = lmrow[lrow];
-          int rblock = RowBlock(lrow, rgid);
+          int rblock = row_block(lrow, rgid);
           const int scalarid = lrow % numdofpernode_;
 
           if (scalarid < numscal_)
@@ -242,20 +242,20 @@ namespace ScaTra
             {
               double val = Aele(lrow, lcol);
               int cgid = lmcol[lcol];
-              int cblock = ColBlock(rblock, lcol, cgid);
+              int cblock = col_block(rblock, lcol, cgid);
 
-              Core::LinAlg::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
-              matrix.Assemble(val, rgid, cgid);
+              Core::LinAlg::SparseMatrix& matrix = mat_.matrix(rblock, cblock);
+              matrix.assemble(val, rgid, cgid);
             }
             // values for block matrix A01:
             for (int lcol = numscal_; lcol < lcoldim; lcol += numdofpernode_)
             {
               double val = Aele(lrow, lcol);
               int cgid = lmcol[lcol];
-              int cblock = ColBlock(rblock, lcol, cgid);
+              int cblock = col_block(rblock, lcol, cgid);
 
-              Core::LinAlg::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
-              matrix.Assemble(val, rgid, cgid);
+              Core::LinAlg::SparseMatrix& matrix = mat_.matrix(rblock, cblock);
+              matrix.assemble(val, rgid, cgid);
             }
           }
           else  // rblock == 1, assemble everything
@@ -264,10 +264,10 @@ namespace ScaTra
             {
               double val = Aele(lrow, lcol);
               int cgid = lmcol[lcol];
-              int cblock = ColBlock(rblock, lcol, cgid);
+              int cblock = col_block(rblock, lcol, cgid);
 
-              Core::LinAlg::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
-              matrix.Assemble(val, rgid, cgid);
+              Core::LinAlg::SparseMatrix& matrix = mat_.matrix(rblock, cblock);
+              matrix.assemble(val, rgid, cgid);
             }
           }
         }
@@ -275,19 +275,19 @@ namespace ScaTra
     }
 
     /// assemble into the given block
-    void Assemble(double val, int rgid, int cgid)
+    void assemble(double val, int rgid, int cgid)
     {
-      int rblock = RowBlock(0, rgid);
-      int cblock = ColBlock(rblock, 0, cgid);
-      Core::LinAlg::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
-      matrix.Assemble(val, rgid, cgid);
+      int rblock = row_block(0, rgid);
+      int cblock = col_block(rblock, 0, cgid);
+      Core::LinAlg::SparseMatrix& matrix = mat_.matrix(rblock, cblock);
+      matrix.assemble(val, rgid, cgid);
     }
 
     /// assemble the remaining ghost entries
-    void Complete() {}
+    void complete() {}
 
     /// set number of concentration dofs
-    void SetNumScal(const int numscal)
+    void set_num_scal(const int numscal)
     {
       numscal_ = numscal;
       numdofpernode_ = numscal + 1;

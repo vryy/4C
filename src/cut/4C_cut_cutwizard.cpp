@@ -35,16 +35,16 @@ void Core::Geo::CutWizard::BackMesh::init(const Teuchos::RCP<const Epetra_Vector
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::Geo::CutWizard::BackMesh::NumMyColElements() const
+int Core::Geo::CutWizard::BackMesh::num_my_col_elements() const
 {
-  return back_discret_->NumMyColElements();
+  return back_discret_->num_my_col_elements();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Core::Elements::Element* Core::Geo::CutWizard::BackMesh::lColElement(int lid) const
+const Core::Elements::Element* Core::Geo::CutWizard::BackMesh::l_col_element(int lid) const
 {
-  return back_discret_->lColElement(lid);
+  return back_discret_->l_col_element(lid);
 }
 
 /*-------------------------------------------------------------*
@@ -54,8 +54,8 @@ Core::Geo::CutWizard::CutWizard(const Teuchos::RCP<Core::FE::Discretization>& ba
     std::function<void(const Core::Nodes::Node& node, std::vector<int>& lm)> global_dof_indices)
     : back_mesh_(Teuchos::rcp(new CutWizard::BackMesh(backdis, this))),
       global_dof_indices_(std::move(global_dof_indices)),
-      comm_(backdis->Comm()),
-      myrank_(backdis->Comm().MyPID()),
+      comm_(backdis->get_comm()),
+      myrank_(backdis->get_comm().MyPID()),
       intersection_(Teuchos::rcp(new Core::Geo::Cut::CombIntersection(myrank_))),
       do_mesh_intersection_(false),
       do_levelset_intersection_(false),
@@ -99,7 +99,7 @@ Core::Geo::CutWizard::CutWizard(const Epetra_Comm& comm)
 /*-------------------------------------------------------------*
  * set options and flags used during the cut
  *--------------------------------------------------------------*/
-void Core::Geo::CutWizard::SetOptions(
+void Core::Geo::CutWizard::set_options(
     const Teuchos::ParameterList& cutparams,  //!< parameter list for cut options
     Core::Geo::Cut::NodalDofSetStrategy
         nodal_dofset_strategy,                     //!< strategy for nodal dofset management
@@ -121,11 +121,11 @@ void Core::Geo::CutWizard::SetOptions(
   screenoutput_ = screenoutput;
 
   // set position option to the intersection class
-  intersection_->SetFindPositions(positions);
+  intersection_->set_find_positions(positions);
   intersection_->set_nodal_dof_set_strategy(nodal_dofset_strategy);
 
   // Initialize Cut Parameters based on dat file section CUT GENERAL
-  intersection_->GetOptions().Init_by_Paramlist(cutparams);
+  intersection_->get_options().init_by_paramlist(cutparams);
 
   is_set_options_ = true;
 }
@@ -134,7 +134,7 @@ void Core::Geo::CutWizard::SetOptions(
 /*-------------------------------------------------------------*
  * set displacement and level-set vectors used during the cut
  *--------------------------------------------------------------*/
-void Core::Geo::CutWizard::SetBackgroundState(
+void Core::Geo::CutWizard::set_background_state(
     Teuchos::RCP<const Epetra_Vector>
         back_disp_col,  //!< col vector holding background ALE displacements for backdis
     Teuchos::RCP<const Epetra_Vector>
@@ -146,24 +146,24 @@ void Core::Geo::CutWizard::SetBackgroundState(
   back_mesh_->init(back_disp_col, back_levelset_col);
   level_set_sid_ = level_set_sid;
 
-  do_levelset_intersection_ = back_mesh_->IsLevelSet();
+  do_levelset_intersection_ = back_mesh_->is_level_set();
 }
 
 
 /*-------------------------------------------------------------*
  * set displacement and level-set vectors used during the cut
  *--------------------------------------------------------------*/
-void Core::Geo::CutWizard::AddCutterState(const int mc_idx,
+void Core::Geo::CutWizard::add_cutter_state(const int mc_idx,
     Teuchos::RCP<Core::FE::Discretization> cutter_dis,
     Teuchos::RCP<const Epetra_Vector> cutter_disp_col)
 {
-  AddCutterState(0, cutter_dis, cutter_disp_col, 0);
+  add_cutter_state(0, cutter_dis, cutter_disp_col, 0);
 }
 
 /*-------------------------------------------------------------*
  * set displacement and level-set vectors used during the cut
  *--------------------------------------------------------------*/
-void Core::Geo::CutWizard::AddCutterState(const int mc_idx,
+void Core::Geo::CutWizard::add_cutter_state(const int mc_idx,
     Teuchos::RCP<Core::FE::Discretization> cutter_dis,
     Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid)
 {
@@ -191,26 +191,26 @@ void Core::Geo::CutWizard::set_marked_condition_sides(
   //  -- Loop over the surface elements and find (if it exists) a corresponding side loaded into the
   //  cut
   //  ## WARNING: Not sure what happens if it doesn't find a surface?
-  for (int lid = 0; lid < cutter_dis->NumMyRowElements(); ++lid)
+  for (int lid = 0; lid < cutter_dis->num_my_row_elements(); ++lid)
   {
-    Core::Elements::Element* cutter_dis_ele = cutter_dis->lRowElement(lid);
+    Core::Elements::Element* cutter_dis_ele = cutter_dis->l_row_element(lid);
 
     const int numnode = cutter_dis_ele->num_node();
-    const int* nodeids = cutter_dis_ele->NodeIds();
+    const int* nodeids = cutter_dis_ele->node_ids();
     std::vector<int> node_ids_of_cutterele(nodeids, nodeids + numnode);
 
-    const int eid = cutter_dis_ele->Id();  // id of marked side based on the cutter discretization
+    const int eid = cutter_dis_ele->id();  // id of marked side based on the cutter discretization
     const int marked_sid = eid + start_ele_gid;  // id of marked side within the cut library
 
     // Get sidehandle to corresponding background surface discretization
     // -- if it exists!!!
     Core::Geo::Cut::SideHandle* cut_sidehandle =
-        intersection_->GetMeshHandle().get_side(node_ids_of_cutterele);
+        intersection_->get_mesh_handle().get_side(node_ids_of_cutterele);
 
     if (cut_sidehandle != nullptr)
     {
       Core::Geo::Cut::plain_side_set cut_sides;
-      cut_sidehandle->CollectSides(cut_sides);
+      cut_sidehandle->collect_sides(cut_sides);
 
       // Set Id's and mark the sides in correspondence with the coupling manager object.
       for (Core::Geo::Cut::plain_side_set::iterator it = cut_sides.begin(); it != cut_sides.end();
@@ -232,7 +232,7 @@ void Core::Geo::CutWizard::set_marked_condition_sides(
 /*-------------------------------------------------------------*
  * main Cut call
  *--------------------------------------------------------------*/
-void Core::Geo::CutWizard::Cut(
+void Core::Geo::CutWizard::cut(
     bool include_inner  //!< perform cut in the interior of the cutting mesh
 )
 {
@@ -273,7 +273,7 @@ void Core::Geo::CutWizard::Cut(
 /*-------------------------------------------------------------*
  * prepare the cut, add background elements and cutting sides
  *--------------------------------------------------------------*/
-void Core::Geo::CutWizard::Prepare()
+void Core::Geo::CutWizard::prepare()
 {
   // safety checks if the cut is initialized correctly
   if (!safety_checks(true)) return;
@@ -309,7 +309,7 @@ void Core::Geo::CutWizard::Prepare()
 
 
   // build the static search tree for the collision detection in the self cut
-  intersection_->BuildSelfCutTree();
+  intersection_->build_self_cut_tree();
 
   // build the static search tree for the collision detection
   intersection_->build_static_search_tree();
@@ -341,7 +341,7 @@ void Core::Geo::CutWizard::add_cutting_sides()
 void Core::Geo::CutWizard::add_ls_cutting_side()
 {
   // add a new level-set side
-  intersection_->AddLevelSetSide(level_set_sid_);
+  intersection_->add_level_set_side(level_set_sid_);
 }
 
 
@@ -377,15 +377,15 @@ void Core::Geo::CutWizard::add_mesh_cutting_side(Teuchos::RCP<Core::FE::Discreti
   std::vector<int> lm;
   std::vector<double> mydisp;
 
-  int numcutelements = cutterdis->NumMyColElements();
+  int numcutelements = cutterdis->num_my_col_elements();
 
 
   for (int lid = 0; lid < numcutelements; ++lid)
   {
-    Core::Elements::Element* element = cutterdis->lColElement(lid);
+    Core::Elements::Element* element = cutterdis->l_col_element(lid);
 
     const int numnode = element->num_node();
-    Core::Nodes::Node** nodes = element->Nodes();
+    Core::Nodes::Node** nodes = element->nodes();
 
     Core::LinAlg::SerialDenseMatrix xyze(3, numnode);
 
@@ -395,9 +395,9 @@ void Core::Geo::CutWizard::add_mesh_cutting_side(Teuchos::RCP<Core::FE::Discreti
 
       lm.clear();
       mydisp.clear();
-      cutterdis->Dof(&node, lm);
+      cutterdis->dof(&node, lm);
 
-      Core::LinAlg::Matrix<3, 1> x(node.X().data());
+      Core::LinAlg::Matrix<3, 1> x(node.x().data());
 
       if (cutter_disp_col != Teuchos::null)
       {
@@ -441,14 +441,14 @@ void Core::Geo::CutWizard::add_mesh_cutting_side(int mi, Core::Elements::Element
     const Core::LinAlg::SerialDenseMatrix& xyze, const int start_ele_gid)
 {
   const int numnode = ele->num_node();
-  const int* nodeids = ele->NodeIds();
+  const int* nodeids = ele->node_ids();
 
   std::vector<int> nids(nodeids, nodeids + numnode);
 
-  const int eid = ele->Id();            // id of cutting side based on the cutter discretization
+  const int eid = ele->id();            // id of cutting side based on the cutter discretization
   const int sid = eid + start_ele_gid;  // id of cutting side within the cut library
 
-  intersection_->add_mesh_cutting_side(sid, nids, xyze, ele->Shape(), mi);
+  intersection_->add_mesh_cutting_side(sid, nids, xyze, ele->shape(), mi);
 }
 
 /*-------------------------------------------------------------*
@@ -461,21 +461,21 @@ void Core::Geo::CutWizard::add_background_elements()
 
   // Loop over all Elements to find cut elements and add them to the LevelsetIntersection class
   // Brute force method.
-  int numelements = back_mesh_->NumMyColElements();
+  int numelements = back_mesh_->num_my_col_elements();
 
   for (int lid = 0; lid < numelements; ++lid)
   {
-    const Core::Elements::Element* element = back_mesh_->lColElement(lid);
+    const Core::Elements::Element* element = back_mesh_->l_col_element(lid);
 
     Core::LinAlg::SerialDenseMatrix xyze;
 
     get_physical_nodal_coordinates(element, xyze);
 
-    if (back_mesh_->IsLevelSet())
+    if (back_mesh_->is_level_set())
     {
       myphinp.clear();
 
-      Core::FE::ExtractMyNodeBasedValues(element, myphinp, back_mesh_->BackLevelSetCol());
+      Core::FE::ExtractMyNodeBasedValues(element, myphinp, back_mesh_->back_level_set_col());
       add_element(element, xyze, myphinp.data(), lsv_only_plus_domain_);
     }
     else
@@ -494,16 +494,16 @@ void Core::Geo::CutWizard::get_physical_nodal_coordinates(
   std::vector<double> mydisp;
 
   const int numnode = element->num_node();
-  const Core::Nodes::Node* const* nodes = element->Nodes();
+  const Core::Nodes::Node* const* nodes = element->nodes();
 
   xyze.shape(3, numnode);
   for (int i = 0; i < numnode; ++i)
   {
     const Core::Nodes::Node& node = *nodes[i];
 
-    Core::LinAlg::Matrix<3, 1> x(node.X().data());
+    Core::LinAlg::Matrix<3, 1> x(node.x().data());
 
-    if (back_mesh_->IsBackDisp())
+    if (back_mesh_->is_back_disp())
     {
       lm.clear();
       mydisp.clear();
@@ -518,7 +518,7 @@ void Core::Geo::CutWizard::get_physical_nodal_coordinates(
       lm_red.clear();
       for (int k = 0; k < 3; k++) lm_red.push_back(lm[k]);
 
-      Core::FE::ExtractMyValues(back_mesh_->BackDispCol(), mydisp, lm_red);
+      Core::FE::ExtractMyValues(back_mesh_->back_disp_col(), mydisp, lm_red);
 
       if (mydisp.size() != 3) FOUR_C_THROW("we need 3 displacements here");
 
@@ -539,12 +539,12 @@ void Core::Geo::CutWizard::add_element(const Core::Elements::Element* ele,
     const Core::LinAlg::SerialDenseMatrix& xyze, double* myphinp, bool lsv_only_plus_domain)
 {
   const int numnode = ele->num_node();
-  const int* nodeids = ele->NodeIds();
+  const int* nodeids = ele->node_ids();
 
   std::vector<int> nids(nodeids, nodeids + numnode);
 
   // If include_inner == false then add elements with negative level set values to discretization.
-  intersection_->add_element(ele->Id(), nids, xyze, ele->Shape(), myphinp, lsv_only_plus_domain);
+  intersection_->add_element(ele->id(), nids, xyze, ele->shape(), myphinp, lsv_only_plus_domain);
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -565,7 +565,7 @@ void Core::Geo::CutWizard::run_cut(
       const double t_start = Teuchos::Time::wallTime();
 
       // cut the mesh
-      intersection_->Cut_SelfCut(include_inner, screenoutput_);
+      intersection_->cut_self_cut(include_inner, screenoutput_);
 
       // just for time measurement
       comm_.Barrier();
@@ -596,7 +596,7 @@ void Core::Geo::CutWizard::run_cut(
   {
     const double t_start = Teuchos::Time::wallTime();
 
-    intersection_->Cut(screenoutput_);
+    intersection_->cut(screenoutput_);
 
     // just for time measurement
     comm_.Barrier();
@@ -627,7 +627,7 @@ void Core::Geo::CutWizard::run_cut(
     const double t_start = Teuchos::Time::wallTime();
 
     // perform tessellation or moment fitting on the mesh
-    intersection_->Cut_Finalize(
+    intersection_->cut_finalize(
         include_inner, v_cellgausstype_, b_cellgausstype_, tetcellsonly_, screenoutput_);
 
     // just for time measurement
@@ -656,9 +656,9 @@ void Core::Geo::CutWizard::find_position_dof_sets(bool include_inner)
 
   //----------------------------------------------------------
 
-  if (intersection_->GetOptions().FindPositions())
+  if (intersection_->get_options().find_positions())
   {
-    Core::Geo::Cut::Mesh& m = intersection_->NormalMesh();
+    Core::Geo::Cut::Mesh& m = intersection_->normal_mesh();
 
     bool communicate = (comm_.NumProc() > 1);
 
@@ -668,7 +668,7 @@ void Core::Geo::CutWizard::find_position_dof_sets(bool include_inner)
     if (communicate)
     {
       cut_parallel =
-          Teuchos::rcp(new Core::Geo::Cut::Parallel(back_mesh_->GetPtr(), m, *intersection_));
+          Teuchos::rcp(new Core::Geo::Cut::Parallel(back_mesh_->get_ptr(), m, *intersection_));
     }
 
     // find inside and outside positions of nodes
@@ -679,7 +679,7 @@ void Core::Geo::CutWizard::find_position_dof_sets(bool include_inner)
     // first, set the position for the mesh cut
     if (do_mesh_intersection_)
     {
-      m.FindNodePositions();
+      m.find_node_positions();
 
       if (communicate) cut_parallel->communicate_node_positions();
     }
@@ -688,19 +688,19 @@ void Core::Geo::CutWizard::find_position_dof_sets(bool include_inner)
     // second, set the position for the level-set cut (no parallel communication necessary)
     if (do_levelset_intersection_)
     {
-      m.FindLSNodePositions();
+      m.find_ls_node_positions();
     }
 
     if (do_mesh_intersection_)
     {
-      m.FindFacetPositions();
+      m.find_facet_positions();
     }
 
     //--------------------------------------------
     comm_.Barrier();
 
     // find number and connection of dofsets at nodes from cut volumes
-    intersection_->CreateNodalDofSet(include_inner, back_mesh_->get());
+    intersection_->create_nodal_dof_set(include_inner, back_mesh_->get());
 
     if (communicate) cut_parallel->communicate_node_dof_set_numbers(include_inner);
   }
@@ -799,36 +799,39 @@ Core::Geo::Cut::SideHandle* Core::Geo::CutWizard::get_side(int sid)
   return intersection_->get_side(sid);
 }
 
-Core::Geo::Cut::SideHandle* Core::Geo::CutWizard::GetCutSide(int sid)
+Core::Geo::Cut::SideHandle* Core::Geo::CutWizard::get_cut_side(int sid)
 {
   if (intersection_ == Teuchos::null) FOUR_C_THROW("No intersection object available!");
   Teuchos::RCP<Core::Geo::Cut::MeshIntersection> meshintersection =
       Teuchos::rcp_dynamic_cast<Core::Geo::Cut::MeshIntersection>(intersection_);
   if (meshintersection == Teuchos::null) FOUR_C_THROW("Cast to MeshIntersection failed!");
-  return meshintersection->GetCutSide(sid);
+  return meshintersection->get_cut_side(sid);
 }
 
-Core::Geo::Cut::ElementHandle* Core::Geo::CutWizard::GetElement(const int eleid) const
+Core::Geo::Cut::ElementHandle* Core::Geo::CutWizard::get_element(const int eleid) const
 {
-  return intersection_->GetElement(eleid);
+  return intersection_->get_element(eleid);
 }
 
-Core::Geo::Cut::ElementHandle* Core::Geo::CutWizard::GetElement(
+Core::Geo::Cut::ElementHandle* Core::Geo::CutWizard::get_element(
     const Core::Elements::Element* ele) const
 {
-  return GetElement(ele->Id());
+  return get_element(ele->id());
 }
 
-Core::Geo::Cut::Node* Core::Geo::CutWizard::GetNode(int nid) { return intersection_->GetNode(nid); }
-
-Core::Geo::Cut::SideHandle* Core::Geo::CutWizard::GetMeshCuttingSide(int sid, int mi)
+Core::Geo::Cut::Node* Core::Geo::CutWizard::get_node(int nid)
 {
-  return intersection_->GetCutSide(sid, mi);
+  return intersection_->get_node(nid);
 }
 
-bool Core::Geo::CutWizard::HasLSCuttingSide(int sid)
+Core::Geo::Cut::SideHandle* Core::Geo::CutWizard::get_mesh_cutting_side(int sid, int mi)
 {
-  return intersection_->HasLSCuttingSide(sid);
+  return intersection_->get_cut_side(sid, mi);
+}
+
+bool Core::Geo::CutWizard::has_ls_cutting_side(int sid)
+{
+  return intersection_->has_ls_cutting_side(sid);
 }
 
 void Core::Geo::CutWizard::update_boundary_cell_coords(
@@ -841,15 +844,15 @@ void Core::Geo::CutWizard::update_boundary_cell_coords(
   std::vector<int> lm;
   std::vector<double> mydisp;
 
-  int numcutelements = cutterdis->NumMyColElements();
+  int numcutelements = cutterdis->num_my_col_elements();
 
 
   for (int lid = 0; lid < numcutelements; ++lid)
   {
-    Core::Elements::Element* element = cutterdis->lColElement(lid);
+    Core::Elements::Element* element = cutterdis->l_col_element(lid);
 
     const int numnode = element->num_node();
-    Core::Nodes::Node** nodes = element->Nodes();
+    Core::Nodes::Node** nodes = element->nodes();
 
     Core::LinAlg::SerialDenseMatrix xyze(3, numnode);
     std::vector<int> dofs;
@@ -861,9 +864,9 @@ void Core::Geo::CutWizard::update_boundary_cell_coords(
       lm.clear();
       mydisp.clear();
 
-      Core::LinAlg::Matrix<3, 1> x(node.X().data());
+      Core::LinAlg::Matrix<3, 1> x(node.x().data());
 
-      cutterdis->Dof(&node, lm);
+      cutterdis->dof(&node, lm);
 
       dofs.push_back(lm[0]);
       dofs.push_back(lm[1]);
@@ -898,40 +901,40 @@ void Core::Geo::CutWizard::update_boundary_cell_coords(
       std::copy(x.data(), x.data() + 3, &xyze(0, i));
     }
 
-    Core::Geo::Cut::SideHandle* sh = GetCutSide(element->Id() + start_ele_gid);
+    Core::Geo::Cut::SideHandle* sh = get_cut_side(element->id() + start_ele_gid);
     if (!sh) FOUR_C_THROW("couldn't get sidehandle!");
 
-    if (xyze.numCols() == 4 && sh->Shape() == Core::FE::CellType::quad4)
+    if (xyze.numCols() == 4 && sh->shape() == Core::FE::CellType::quad4)
     {
       Core::LinAlg::Matrix<3, 4> XYZE(xyze.values(), true);
 
       Core::Geo::Cut::plain_side_set sides;
-      sh->CollectSides(sides);
+      sh->collect_sides(sides);
 
       for (Core::Geo::Cut::plain_side_set::iterator sit = sides.begin(); sit != sides.end(); ++sit)
       {
         Core::Geo::Cut::Side* side = *sit;
 
         Core::Geo::Cut::plain_boundarycell_set bcs;
-        side->GetBoundaryCells(bcs);
+        side->get_boundary_cells(bcs);
 
         for (Core::Geo::Cut::plain_boundarycell_set::iterator bit = bcs.begin(); bit != bcs.end();
              ++bit)
         {
           Core::Geo::Cut::BoundaryCell* bc = *bit;
 
-          for (std::size_t bcpoint = 0; bcpoint < bc->Points().size(); ++bcpoint)
+          for (std::size_t bcpoint = 0; bcpoint < bc->points().size(); ++bcpoint)
           {
             // get local coord on sidehandle
-            Core::LinAlg::Matrix<2, 1> xsi = sh->local_coordinates(bc->Points()[bcpoint]);
+            Core::LinAlg::Matrix<2, 1> xsi = sh->local_coordinates(bc->points()[bcpoint]);
 
             // eval shape function
             Core::LinAlg::Matrix<4, 1> funct;
-            Core::FE::shape_function_2D(funct, xsi(0, 0), xsi(1, 0), sh->Shape());
+            Core::FE::shape_function_2D(funct, xsi(0, 0), xsi(1, 0), sh->shape());
 
             Core::LinAlg::Matrix<3, 1> newpos(true);
             newpos.multiply(XYZE, funct);
-            bc->ResetPos(bcpoint, newpos);
+            bc->reset_pos(bcpoint, newpos);
           }
         }
       }
@@ -944,7 +947,7 @@ void Core::Geo::CutWizard::update_boundary_cell_coords(
 int Core::Geo::CutWizard::get_bc_cubaturedegree() const
 {
   if (is_set_options_)
-    return intersection_->GetOptions().BC_Cubaturedegree();
+    return intersection_->get_options().bc_cubaturedegree();
   else
     FOUR_C_THROW("get_bc_cubaturedegree: Options are not set!");
   return -1;  // dummy to make compiler happy :)

@@ -55,7 +55,7 @@ XFEM::LevelSetCoupling::LevelSetCoupling(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCoupling::SetCouplingDofsets()
+void XFEM::LevelSetCoupling::set_coupling_dofsets()
 {
   bg_nds_phi_ = get_coupling_dofset_nds("phi_scatra_proxy_in_fluid");
 }
@@ -92,14 +92,14 @@ void XFEM::LevelSetCoupling::set_cutter_discretization()
 
   // do we have node-matching disretizations? otherwise we need to somehow project quantities
   // between the meshes
-  have_nodematching_dis_ = HaveMatchingNodes(cutter_dis_, bg_dis_);
+  have_nodematching_dis_ = have_matching_nodes(cutter_dis_, bg_dis_);
 
 
   std::string dofset_name = "";
 
-  if (cutter_dis_->Name() == "scatra")
+  if (cutter_dis_->name() == "scatra")
     dofset_name = "phi_in_scatra";
-  else if (cutter_dis_->Name() == "fluid")
+  else if (cutter_dis_->name() == "fluid")
     dofset_name = "phi_scatra_proxy_in_fluid";
   else
     FOUR_C_THROW("unsupported cutter dis!");
@@ -113,28 +113,29 @@ void XFEM::LevelSetCoupling::set_cutter_discretization()
 // TODO: shift to Discret::Utils...
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-bool XFEM::LevelSetCoupling::HaveMatchingNodes(const Teuchos::RCP<Core::FE::Discretization>& dis_A,
+bool XFEM::LevelSetCoupling::have_matching_nodes(
+    const Teuchos::RCP<Core::FE::Discretization>& dis_A,
     const Teuchos::RCP<Core::FE::Discretization>& dis_B)
 {
   // check for equal node row maps
-  const Epetra_Map* noderowmap_A = dis_A->NodeRowMap();
-  const Epetra_Map* noderowmap_B = dis_B->NodeRowMap();
+  const Epetra_Map* noderowmap_A = dis_A->node_row_map();
+  const Epetra_Map* noderowmap_B = dis_B->node_row_map();
 
   if (!(noderowmap_A->SameAs(*noderowmap_B))) return false;
 
   // check for equal node coordinates
   for (int lid = 0; lid < noderowmap_A->NumMyElements(); ++lid)
   {
-    const Core::Nodes::Node* node_A = dis_A->lRowNode(lid);
-    const Core::Nodes::Node* node_B = dis_B->lRowNode(lid);
+    const Core::Nodes::Node* node_A = dis_A->l_row_node(lid);
+    const Core::Nodes::Node* node_B = dis_B->l_row_node(lid);
 
-    const int nsd = node_A->Dim();
+    const int nsd = node_A->n_dim();
 
     Core::LinAlg::SerialDenseVector X_A(nsd);
     Core::LinAlg::SerialDenseVector X_B(nsd);
 
-    std::copy(node_A->X().data(), node_A->X().data() + nsd, X_A.values());
-    std::copy(node_B->X().data(), node_B->X().data() + nsd, X_B.values());
+    std::copy(node_A->x().data(), node_A->x().data() + nsd, X_A.values());
+    std::copy(node_B->x().data(), node_B->x().data() + nsd, X_B.values());
 
     Core::LinAlg::SerialDenseVector diff(X_A);
     diff.scale(-1.0);
@@ -152,7 +153,7 @@ bool XFEM::LevelSetCoupling::HaveMatchingNodes(const Teuchos::RCP<Core::FE::Disc
 void XFEM::LevelSetCoupling::init_state_vectors()
 {
   // initialize state vectors w.r.t. background discretization
-  InitStateVectors_Bg();
+  init_state_vectors_bg();
   // initialize state vectors w.r.t. cutter (potential subset of scatra) discretization
   init_state_vectors_cutter();
 }
@@ -160,7 +161,7 @@ void XFEM::LevelSetCoupling::init_state_vectors()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCoupling::InitStateVectors_Bg()
+void XFEM::LevelSetCoupling::init_state_vectors_bg()
 {
   // background-dis (fluid) related state vectors
   const Epetra_Map* bg_dofrowmap = bg_dis_->dof_row_map(bg_nds_phi_);
@@ -179,7 +180,7 @@ void XFEM::LevelSetCoupling::init_state_vectors_cutter()
   const Epetra_Map* cutter_dofrowmap =
       cutter_dis_->dof_row_map(cutter_nds_phi_);  // used for level set field and its derivatives
   const Epetra_Map* cutter_dofcolmap =
-      cutter_dis_->DofColMap(cutter_nds_phi_);  // used for level set field and its derivatives
+      cutter_dis_->dof_col_map(cutter_nds_phi_);  // used for level set field and its derivatives
 
   cutter_phinp_ = Core::LinAlg::CreateVector(*cutter_dofrowmap, true);
   cutter_phinp_col_ = Core::LinAlg::CreateVector(*cutter_dofcolmap, true);
@@ -198,16 +199,16 @@ void XFEM::LevelSetCoupling::prepare_cutter_output()
   // -------------------------------------------------------------------
   // prepare output
   // -------------------------------------------------------------------
-  cutter_output_ = cutter_dis_->Writer();
+  cutter_output_ = cutter_dis_->writer();
 
   if (cutter_output_ == Teuchos::null)
   {
-    cutter_dis_->SetWriter(Teuchos::rcp(new Core::IO::DiscretizationWriter(cutter_dis_,
-        Global::Problem::Instance()->OutputControlFile(),
-        Global::Problem::Instance()->spatial_approximation_type())));
+    cutter_dis_->set_writer(Teuchos::rcp(new Core::IO::DiscretizationWriter(cutter_dis_,
+        Global::Problem::instance()->output_control_file(),
+        Global::Problem::instance()->spatial_approximation_type())));
   }
 
-  bg_output_ = bg_dis_->Writer();
+  bg_output_ = bg_dis_->writer();
 }
 
 
@@ -217,7 +218,7 @@ void XFEM::LevelSetCoupling::do_condition_specific_setup()
 {
   // TODO: remove the smoothed normal stuff from this function!!!
   // read initial level-set field
-  SetLevelSetField(time_);
+  set_level_set_field(time_);
 
   // set level-boolean type (may be overwritten in constructors of derived class
   set_level_set_boolean_type();
@@ -304,7 +305,7 @@ void XFEM::LevelSetCoupling::output(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCoupling::GmshOutput(const std::string& filename_base, const int step,
+void XFEM::LevelSetCoupling::gmsh_output(const std::string& filename_base, const int step,
     const int gmsh_step_diff, const bool gmsh_debug_out_screen)
 {
   // TODO: adapt!!!
@@ -352,7 +353,7 @@ void XFEM::LevelSetCoupling::read_restart(const int step, const int lsc_idx)
 
   //-------- boundary discretization
   Core::IO::DiscretizationReader boundaryreader(
-      cutter_dis_, Global::Problem::Instance()->InputControlFile(), step);
+      cutter_dis_, Global::Problem::instance()->input_control_file(), step);
 
   const double time = boundaryreader.read_double("time");
 
@@ -365,7 +366,7 @@ void XFEM::LevelSetCoupling::read_restart(const int step, const int lsc_idx)
                    << " ; step=" << step << ")" << Core::IO::endl;
   }
 
-  SetLevelSetField(time);
+  set_level_set_field(time);
 }
 
 // TODO: remove the Navier-Slip stuff
@@ -373,7 +374,7 @@ void XFEM::LevelSetCoupling::read_restart(const int step, const int lsc_idx)
  | Set the level set field and if smoothed gradients are needed create these |
  |                                                                           |
  *---------------------------------------------------------------------------*/
-bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
+bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
 {
   // TODO: clean this routine!!!
 
@@ -393,24 +394,24 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
   const int func_no = cond->parameters().get<int>("levelsetfieldno");
 
   // loop all nodes on the processor
-  for (int lnodeid = 0; lnodeid < cutter_dis_->NumMyRowNodes(); lnodeid++)
+  for (int lnodeid = 0; lnodeid < cutter_dis_->num_my_row_nodes(); lnodeid++)
   {
     // get the processor's local scatra node
-    Core::Nodes::Node* lnode = cutter_dis_->lRowNode(lnodeid);
+    Core::Nodes::Node* lnode = cutter_dis_->l_row_node(lnodeid);
 
     // get value
     if (func_no < 0)
-      value = funct_implementation(func_no, lnode->X().data(), time);
+      value = funct_implementation(func_no, lnode->x().data(), time);
     else if (func_no >= 1)
     {
-      value = Global::Problem::Instance()
-                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
-                  .evaluate(lnode->X().data(), time, 0);
+      value = Global::Problem::instance()
+                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
+                  .evaluate(lnode->x().data(), time, 0);
     }
     else
       FOUR_C_THROW("invalid function no. to set level-set field!");
 
-    const std::vector<int> lm = cutter_dis_->Dof(cutter_nds_phi_, lnode);
+    const std::vector<int> lm = cutter_dis_->dof(cutter_nds_phi_, lnode);
 
     if (lm.size() != 1) FOUR_C_THROW("assume 1 dof in cutterdis-Dofset for phi vector");
 
@@ -451,22 +452,22 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
       // To get phi nodal values into pressure dofs in the fluid discretization!!! - any idea for
       // nice implementation?
       const Epetra_Map* modphinp_dofrowmap =
-          Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(cutter_dis_)->InitialDofRowMap();
+          Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(cutter_dis_)->initial_dof_row_map();
       Teuchos::RCP<Epetra_Vector> modphinp =
           Teuchos::rcp(new Epetra_Vector(*modphinp_dofrowmap, true));
 
       double* val = cutter_phinp_->Values();
 
-      int numrows = cutter_dis_->NumMyRowNodes();
+      int numrows = cutter_dis_->num_my_row_nodes();
       // loop all column nodes on the processor
       for (int lnodeid = 0; lnodeid < numrows; ++lnodeid)
       {
         // get the processor's local node
-        Core::Nodes::Node* lsnode = cutter_dis_->lRowNode(lnodeid);
+        Core::Nodes::Node* lsnode = cutter_dis_->l_row_node(lnodeid);
         if (lsnode == nullptr) FOUR_C_THROW("Returned node is null-pointer.");
 
         std::vector<int> initialdof =
-            Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(cutter_dis_)->InitialDof(lsnode);
+            Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(cutter_dis_)->initial_dof(lsnode);
 
         if (initialdof.size() != 4)
           FOUR_C_THROW("Initial Dof Size is not 4! Size: %d", initialdof.size());
@@ -482,19 +483,19 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
       // dependent on the desired projection, just remove this line
       if (not modphinp->Map().SameAs(
               *Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(cutter_dis_)
-                   ->InitialDofRowMap()))
+                   ->initial_dof_row_map()))
         FOUR_C_THROW("input map is not a dof row map of the fluid");
 
       // set given state for element evaluation
-      cutter_dis_->ClearState();
+      cutter_dis_->clear_state();
       Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(cutter_dis_)
-          ->SetInitialState(0, "pres", modphinp);
+          ->set_initial_state(0, "pres", modphinp);
 
       // Lives on NodeRow-map!!!
-      const auto& solverparams = Global::Problem::Instance()->SolverParams(l2_proj_num);
+      const auto& solverparams = Global::Problem::instance()->solver_params(l2_proj_num);
       Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_rownode =
           Core::FE::compute_nodal_l2_projection(cutter_dis_, "pres", 3, eleparams, solverparams,
-              Global::Problem::Instance()->solver_params_callback());
+              Global::Problem::instance()->solver_params_callback());
       if (gradphinp_smoothed_rownode == Teuchos::null)
         FOUR_C_THROW("A smoothed grad phi is required, but an empty one is provided!");
 
@@ -519,7 +520,8 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
   }
 
   // map the cutterdis-based phinp to the bgdis-noderowmap based phinp
-  MapCutterToBgVector(cutter_dis_, cutter_phinp_, cutter_nds_phi_, bg_dis_, phinp_, bg_nds_phi_);
+  map_cutter_to_bg_vector(
+      cutter_dis_, cutter_phinp_, cutter_nds_phi_, bg_dis_, phinp_, bg_nds_phi_);
 
   // check if boundary position changed from the last step
 
@@ -535,28 +537,28 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
 // TODO: generalization in Discret::UTILS???
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-void XFEM::LevelSetCoupling::MapCutterToBgVector(
+void XFEM::LevelSetCoupling::map_cutter_to_bg_vector(
     const Teuchos::RCP<Core::FE::Discretization>& source_dis,
     const Teuchos::RCP<Epetra_Vector>& source_vec_dofbased, const int source_nds,
     const Teuchos::RCP<Core::FE::Discretization>& target_dis,
     const Teuchos::RCP<Epetra_Vector>& target_vec_dofbased, const int target_nds)
 {
-  if (HaveMatchingNodes(source_dis, target_dis))  // check for equal node positions
+  if (have_matching_nodes(source_dis, target_dis))  // check for equal node positions
   {
     // here we assume that source_dis and target_dis are equal!
 
     // loop the nodes
-    for (int lnodeid = 0; lnodeid < target_dis->NumMyRowNodes(); ++lnodeid)
+    for (int lnodeid = 0; lnodeid < target_dis->num_my_row_nodes(); ++lnodeid)
     {
-      Core::Nodes::Node* node_source = source_dis->lRowNode(lnodeid);
-      Core::Nodes::Node* node_target = target_dis->lRowNode(lnodeid);
+      Core::Nodes::Node* node_source = source_dis->l_row_node(lnodeid);
+      Core::Nodes::Node* node_target = target_dis->l_row_node(lnodeid);
 
       // get the set of source dof IDs for this node
       std::vector<int> lm_source;
-      source_dis->Dof(source_nds, node_source, lm_source);
+      source_dis->dof(source_nds, node_source, lm_source);
 
       std::vector<int> lm_target;
-      target_dis->Dof(target_nds, node_target, lm_target);
+      target_dis->dof(target_nds, node_target, lm_target);
 
       if (static_cast<int>(lm_source.size()) != 1)
         FOUR_C_THROW("we expect a unique dof per node here!");
@@ -582,21 +584,21 @@ void XFEM::LevelSetCoupling::MapCutterToBgVector(
 Teuchos::RCP<Epetra_Vector> XFEM::LevelSetCoupling::get_level_set_field_as_node_row_vector()
 {
   Teuchos::RCP<Epetra_Vector> bg_phinp_nodemap_ =
-      Core::LinAlg::CreateVector(*bg_dis_->NodeRowMap(), true);
+      Core::LinAlg::CreateVector(*bg_dis_->node_row_map(), true);
 
   // loop the nodes
-  for (int lnodeid = 0; lnodeid < bg_dis_->NumMyRowNodes(); ++lnodeid)
+  for (int lnodeid = 0; lnodeid < bg_dis_->num_my_row_nodes(); ++lnodeid)
   {
-    Core::Nodes::Node* node = bg_dis_->lRowNode(lnodeid);
+    Core::Nodes::Node* node = bg_dis_->l_row_node(lnodeid);
     std::vector<int> lm_source;
-    bg_dis_->Dof(bg_nds_phi_, node, lm_source);
+    bg_dis_->dof(bg_nds_phi_, node, lm_source);
 
     std::vector<double> val_source;
     Core::FE::ExtractMyValues(*phinp_, val_source, lm_source);
 
     if (val_source.size() != 1) FOUR_C_THROW("we expect only one dof");
 
-    const int lid_target = bg_dis_->NodeRowMap()->LID(node->Id());
+    const int lid_target = bg_dis_->node_row_map()->LID(node->id());
     const int err = bg_phinp_nodemap_->ReplaceMyValues(1, val_source.data(), &lid_target);
     if (err) FOUR_C_THROW("could not replace values for phi vector");
   }
@@ -1004,17 +1006,17 @@ XFEM::LevelSetCouplingBC::LevelSetCouplingBC(
 /*----------------------------------------------------------------------*
  | set interface level set field at current time           schott 02/15 |
  *----------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingBC::PrepareSolve()
+void XFEM::LevelSetCouplingBC::prepare_solve()
 {
   if (myrank_ == 0) Core::IO::cout << "\t set level-set field, time " << time_ << Core::IO::endl;
 
-  has_interface_moved_ = SetLevelSetField(time_);
+  has_interface_moved_ = set_level_set_field(time_);
   return;
 }
 
 
 
-bool XFEM::LevelSetCouplingBC::HasMovingInterface() { return has_interface_moved_; }
+bool XFEM::LevelSetCouplingBC::has_moving_interface() { return has_interface_moved_; }
 
 
 
@@ -1281,7 +1283,7 @@ void XFEM::LevelSetCouplingNavierSlip::set_element_specific_conditions(
   // TODO: can we combine this function with set_element_conditions in the coupling base routine!
 
   // number of column cutter boundary elements
-  int nummycolele = cutter_dis_->NumMyColElements();
+  int nummycolele = cutter_dis_->num_my_col_elements();
 
   cutterele_cond.clear();
   cutterele_cond.reserve(nummycolele);
@@ -1294,7 +1296,7 @@ void XFEM::LevelSetCouplingNavierSlip::set_element_specific_conditions(
   // loop all column cutting elements on this processor
   for (int lid = 0; lid < nummycolele; ++lid)
   {
-    Core::Elements::Element* cutele = cutter_dis_->lColElement(lid);
+    Core::Elements::Element* cutele = cutter_dis_->l_col_element(lid);
 
     // get all conditions with given condition name
     std::vector<Core::Conditions::Condition*> mycond;
@@ -1311,7 +1313,7 @@ void XFEM::LevelSetCouplingNavierSlip::set_element_specific_conditions(
       FOUR_C_THROW(
           "%i conditions of the same name with robin id %i, for element %i! %s coupling-condition "
           "not unique!",
-          mynewcond.size(), (robin_id + 1), cutele->Id(), cond_name.c_str());
+          mynewcond.size(), (robin_id + 1), cutele->id(), cond_name.c_str());
     }
     else if (mynewcond.size() == 1)  // unique condition found
     {
@@ -1377,7 +1379,7 @@ void XFEM::LevelSetCouplingNavierSlip::evaluate_coupling_conditions_old_state(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNavierSlip::GetSlipCoefficient(
+void XFEM::LevelSetCouplingNavierSlip::get_slip_coefficient(
     double& slipcoeff, const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond)
 {
   if (is_constant_sliplength_)
@@ -1483,7 +1485,7 @@ void XFEM::LevelSetCouplingNavierSlip::update_configuration_map_gp(
 {
   double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
   double sliplength = 0.0;
-  GetSlipCoefficient(sliplength, x, cond);
+  get_slip_coefficient(sliplength, x, cond);
 
   if (sliplength < 0.0) FOUR_C_THROW("The slip length can not be negative.");
 

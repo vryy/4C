@@ -195,7 +195,7 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::pre_evaluate(Teuchos::Parame
 {
   Base::pre_evaluate(params, discretization, la);
 
-  if (discretization.HasState(0, "displacement") and (not is_init_porosity_))
+  if (discretization.has_state(0, "displacement") and (not is_init_porosity_))
   {
     init_porosity_ = Teuchos::rcp(new Core::LinAlg::Matrix<Base::numnod_, 1>(true));
     Base::extract_values_from_global_vector(
@@ -237,7 +237,7 @@ int Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::my_evaluate(Teuchos::Paramete
     case Base::calc_struct_nlnstiff:
     case Base::calc_struct_nlnstiffmass:
     {
-      if (la.Size() > 1)
+      if (la.size() > 1)
       {
         // stiffness
         Core::LinAlg::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.values(), true);
@@ -273,11 +273,11 @@ int Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::my_evaluate(Teuchos::Paramete
         Core::LinAlg::Matrix<Base::numdim_, Base::numnod_> myfluidvel(true);
         Core::LinAlg::Matrix<Base::numnod_, 1> myepreaf(true);
 
-        if (discretization.HasState(0, "velocity"))
+        if (discretization.has_state(0, "velocity"))
           Base::extract_values_from_global_vector(
               discretization, 0, la[0].lm_, &myvel, nullptr, "velocity");
 
-        if (discretization.HasState(1, "fluidvel"))
+        if (discretization.has_state(1, "fluidvel"))
         {
           // extract local values of the global vectors
           Base::extract_values_from_global_vector(
@@ -309,7 +309,7 @@ int Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::my_evaluate(Teuchos::Paramete
       // need current fluid state,
       // call the fluid discretization: fluid equates 2nd dofset
       // disassemble velocities and pressures
-      if (discretization.HasState(1, "fluidvel"))
+      if (discretization.has_state(1, "fluidvel"))
       {
         Core::LinAlg::Matrix<Base::numdim_, Base::numnod_> myvel(true);
         Core::LinAlg::Matrix<Base::numdim_, Base::numnod_> myfluidvel(true);
@@ -320,11 +320,11 @@ int Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::my_evaluate(Teuchos::Paramete
         Base::extract_values_from_global_vector(
             discretization, 0, la[0].lm_, &mydisp, &myporosity, "displacement");
 
-        if (discretization.HasState(0, "velocity"))
+        if (discretization.has_state(0, "velocity"))
           Base::extract_values_from_global_vector(
               discretization, 0, la[0].lm_, &myvel, nullptr, "velocity");
 
-        if (discretization.HasState(1, "fluidvel"))
+        if (discretization.has_state(1, "fluidvel"))
         {
           // extract local values of the global vectors
           Base::extract_values_from_global_vector(
@@ -361,7 +361,7 @@ int Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::my_evaluate(Teuchos::Paramete
       // need current fluid state,
       // call the fluid discretization: fluid equates 2nd dofset
       // disassemble velocities and pressures
-      if (discretization.HasState(1, "fluidvel"))
+      if (discretization.has_state(1, "fluidvel"))
       {
         // extract local values of the global vectors
         Base::extract_values_from_global_vector(
@@ -384,10 +384,10 @@ int Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::my_evaluate(Teuchos::Paramete
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::InitElement()
+void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::init_element()
 {
   // initialize base element
-  Base::InitElement();
+  Base::init_element();
 }
 
 template <class So3Ele, Core::FE::CellType distype>
@@ -407,10 +407,10 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::nonlinear_stiffness_poroelas
   Core::LinAlg::Matrix<Base::numdim_, Base::numnod_> xrefe;  // material coord. of element
   Core::LinAlg::Matrix<Base::numdim_, Base::numnod_> xcurr;  // current  coord. of element
 
-  Core::Nodes::Node** nodes = Base::Nodes();
+  Core::Nodes::Node** nodes = Base::nodes();
   for (int i = 0; i < Base::numnod_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes[i]->x();
     for (int j = 0; j < Base::numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -639,7 +639,7 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::gauss_point_loop_p1(
     //--------------------------------------------------------
 
     // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
-    if (Base::fluid_mat_->Type() == Mat::PAR::darcy_brinkman)
+    if (Base::fluid_mat_->type() == Mat::PAR::darcy_brinkman)
     {
       Base::fill_matrix_and_vectors_brinkman(gp, J, porosity, fvelder, defgrd_inv, bop, C_inv,
           dphi_dus, dJ_dus, dCinv_dus, dFinvTdus, sub_stiff, sub_force, fstress);
@@ -650,7 +650,7 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::gauss_point_loop_p1(
         erea_v, sub_stiff, sub_force, fstress);
 
     // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
-    double detJ_w = Base::detJ_[gp] * Base::intpoints_.Weight(gp);  // gpweights[gp];
+    double detJ_w = Base::detJ_[gp] * Base::intpoints_.weight(gp);  // gpweights[gp];
 
     const double reacoeff = Base::fluid_mat_->compute_reaction_coeff();
     // if (force != nullptr or stiffmatrix != nullptr or reamatrix != nullptr )
@@ -676,9 +676,9 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::gauss_point_loop_p1(
       }
     }
 
-    if (Base::fluid_mat_->Type() == Mat::PAR::darcy_brinkman)
+    if (Base::fluid_mat_->type() == Mat::PAR::darcy_brinkman)
     {
-      double visc = Base::fluid_mat_->Viscosity();
+      double visc = Base::fluid_mat_->viscosity();
       Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> CinvFvel;
       Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> visctress1;
       CinvFvel.multiply(C_inv, fvelder);
@@ -734,10 +734,10 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::coupling_poroelast(std::vect
   Core::LinAlg::Matrix<Base::numdim_, Base::numnod_> xrefe;  // material coord. of element
   Core::LinAlg::Matrix<Base::numdim_, Base::numnod_> xcurr;  // current  coord. of element
 
-  Core::Nodes::Node** nodes = Base::Nodes();
+  Core::Nodes::Node** nodes = Base::nodes();
   for (int i = 0; i < Base::numnod_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes[i]->x();
     for (int j = 0; j < Base::numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -868,7 +868,7 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::gauss_point_loop_p1_od(
     Base::fill_matrix_and_vectors_od(gp, shapefct, N_XYZ, J, porosity, dphi_dp, velint, fvelint,
         defgrd_inv, Gradp, bop, C_inv, sub_stiff);
 
-    if (Base::fluid_mat_->Type() == Mat::PAR::darcy_brinkman)
+    if (Base::fluid_mat_->type() == Mat::PAR::darcy_brinkman)
     {
       Base::fill_matrix_and_vectors_brinkman_od(
           gp, shapefct, N_XYZ, J, porosity, dphi_dp, fvelder, defgrd_inv, bop, C_inv, sub_stiff);
@@ -885,7 +885,7 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::gauss_point_loop_p1_od(
     //--------------------------------------------------------
 
     // **********************evaluate stiffness matrix and force vector**********************
-    double detJ_w = Base::detJ_[gp] * Base::intpoints_.Weight(gp);
+    double detJ_w = Base::detJ_[gp] * Base::intpoints_.weight(gp);
 
     for (int k = 0; k < Base::numnod_; k++)
     {

@@ -27,33 +27,33 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<Core::FE::Discretization> actdis = Global::Problem::Instance()->GetDis("ale");
+  Teuchos::RCP<Core::FE::Discretization> actdis = Global::Problem::instance()->get_dis("ale");
 
   // -------------------------------------------------------------------
   // ask ALE::AleBaseAlgorithm for the ale time integrator
   // -------------------------------------------------------------------
   Teuchos::RCP<Adapter::AleBaseAlgorithm> ale = Teuchos::rcp(
-      new Adapter::AleBaseAlgorithm(Global::Problem::Instance()->AleDynamicParams(), actdis));
+      new Adapter::AleBaseAlgorithm(Global::Problem::instance()->ale_dynamic_params(), actdis));
   Teuchos::RCP<Adapter::Ale> aletimint = ale->ale_field();
 
   // -------------------------------------------------------------------
   // read the restart information, set vectors and variables if necessary
   // -------------------------------------------------------------------
-  const int restart = Global::Problem::Instance()->restart();
+  const int restart = Global::Problem::instance()->restart();
   if (restart) aletimint->read_restart(restart);
 
   // -------------------------------------------------------------------
   // call time loop
   // -------------------------------------------------------------------
   aletimint->create_system_matrix();
-  aletimint->Integrate();
+  aletimint->integrate();
 
   // -------------------------------------------------------------------
   // do the result test
   // -------------------------------------------------------------------
   // test results
-  Global::Problem::Instance()->AddFieldTest(aletimint->CreateFieldTest());
-  Global::Problem::Instance()->TestAll(actdis->Comm());
+  Global::Problem::instance()->add_field_test(aletimint->create_field_test());
+  Global::Problem::instance()->test_all(actdis->get_comm());
 
   return;
 }

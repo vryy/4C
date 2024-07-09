@@ -58,10 +58,10 @@ FLD::UTILS::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
   // Read in all conditions
   // ---------------------------------------------------------------------
   std::vector<Core::Conditions::Condition*> couplingcond;
-  discret3_d_->GetCondition("Art_3D_redD_CouplingCond", couplingcond);
+  discret3_d_->get_condition("Art_3D_redD_CouplingCond", couplingcond);
 
   std::vector<Core::Conditions::Condition*> couplingcond2;
-  discret_red_d_->GetCondition("Art_redD_3D_CouplingCond", couplingcond2);
+  discret_red_d_->get_condition("Art_redD_3D_CouplingCond", couplingcond2);
 
   // the number of lines of coupling boundary conditions found in the input
   // note that some of these lines could belong to the same physical condition
@@ -286,11 +286,11 @@ void FLD::UTILS::FluidCouplingWrapperBase::apply_boundary_conditions(
 
   // Read in the 3D coupling conditions
   std::vector<Core::Conditions::Condition*> conds3D;
-  discret3_d_->GetCondition("Art_3D_redD_CouplingCond", conds3D);
+  discret3_d_->get_condition("Art_3D_redD_CouplingCond", conds3D);
 
   // Read in the reduced-D coupling conditions
   std::vector<Core::Conditions::Condition*> conds_redD;
-  discret_red_d_->GetCondition("Art_redD_3D_CouplingCond", conds_redD);
+  discret_red_d_->get_condition("Art_redD_3D_CouplingCond", conds_redD);
 
   int condID;
   for (mapiter = coup_map3_d_.begin(); mapiter != coup_map3_d_.end(); mapiter++)
@@ -345,7 +345,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::apply_boundary_conditions(
           FOUR_C_THROW("(%s): No such coupling variable on the 3D side is defined yet",
               variable_str.c_str());
         }
-        if (discret3_d_->Comm().MyPID() == 0)
+        if (discret3_d_->get_comm().MyPID() == 0)
         {
           std::cout << "3D condition "
                     << " [" << condID << "] returns " << variable_str << " "
@@ -480,7 +480,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::apply_boundary_conditions(
     //    params->set("reducedD map of values", mapRed_Dnp_);
 
 
-    this->Integrate(true, params);
+    this->integrate(true, params);
   }
 
   // -------------------------------------------------------------------
@@ -506,7 +506,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::apply_boundary_conditions(
 
     // update the variable on all of the processors
     double par_var = 0.0;
-    discret3_d_->Comm().SumAll(&var, &par_var, 1);
+    discret3_d_->get_comm().SumAll(&var, &par_var, 1);
     (*map_red_dnp_)[VariableWithId.str()] = par_var;
 
     // Apply the boundary condition to the outlets
@@ -710,7 +710,7 @@ FLD::UTILS::FluidCouplingBc::FluidCouplingBc(Teuchos::RCP<Core::FE::Discretizati
   // read in all 3D to reducedD boundary conditions
   // ---------------------------------------------------------------------
   std::vector<Core::Conditions::Condition*> couplingcond;
-  dis_redD->GetCondition("Art_redD_3D_CouplingCond", couplingcond);
+  dis_redD->get_condition("Art_redD_3D_CouplingCond", couplingcond);
 
 
   // ---------------------------------------------------------------------
@@ -722,7 +722,7 @@ FLD::UTILS::FluidCouplingBc::FluidCouplingBc(Teuchos::RCP<Core::FE::Discretizati
   // ---------------------------------------------------------------------
   // get the processor ID from the communicator
   // ---------------------------------------------------------------------
-  myrank_ = discret_3_d_->Comm().MyPID();
+  myrank_ = discret_3_d_->get_comm().MyPID();
 
   // ---------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -874,11 +874,11 @@ double FLD::UTILS::FluidCouplingBc::area(double& density, double& viscosity, int
   viscosity = eleparams.get<double>("viscosity");
 
   // find the lowest proc number that knows the material data
-  int numproc = discret_3_d_->Comm().NumProc();
+  int numproc = discret_3_d_->get_comm().NumProc();
   int theproc = -1;  // the lowest proc that has the desired information
   std::vector<double> alldens(numproc);
 
-  discret_3_d_->Comm().GatherAll(&density, alldens.data(), 1);
+  discret_3_d_->get_comm().GatherAll(&density, alldens.data(), 1);
   for (int i = 0; i < numproc; i++)
     if (alldens[i] > 0.0)
     {
@@ -888,13 +888,13 @@ double FLD::UTILS::FluidCouplingBc::area(double& density, double& viscosity, int
   if (theproc < 0) FOUR_C_THROW("Something parallel went terribly wrong!");
 
   // do the actual communication of density ...
-  discret_3_d_->Comm().Broadcast(&density, 1, theproc);
+  discret_3_d_->get_comm().Broadcast(&density, 1, theproc);
   // ... and viscosity
-  discret_3_d_->Comm().Broadcast(&viscosity, 1, theproc);
+  discret_3_d_->get_comm().Broadcast(&viscosity, 1, theproc);
 
   // get total area in parallel case
   double pararea = 0.0;
-  discret_3_d_->Comm().SumAll(&actarea, &pararea, 1);
+  discret_3_d_->get_comm().SumAll(&actarea, &pararea, 1);
 
   if (myrank_ == 0)
   {
@@ -1008,7 +1008,7 @@ double FLD::UTILS::FluidCouplingBc::pressure_calculation(double time, double dta
 
   // get total flowrate in parallel case
   double parpressure = 0.0;
-  discret_3_d_->Comm().SumAll(&actpressure, &parpressure, 1);
+  discret_3_d_->get_comm().SumAll(&actpressure, &parpressure, 1);
 
   return parpressure;
 }  // FluidImplicitTimeInt::pressure_calculation
@@ -1094,7 +1094,7 @@ void FLD::UTILS::FluidCouplingBc::inflow_boundary(
 
 
   std::vector<Core::Conditions::Condition*> cond3D;
-  discret_3_d_->GetCondition("Art_3D_redD_CouplingCond", cond3D);
+  discret_3_d_->get_condition("Art_3D_redD_CouplingCond", cond3D);
 
   double density = 0.0;
   double viscosity = 0.0;
@@ -1140,7 +1140,7 @@ void FLD::UTILS::FluidCouplingBc::evaluate_dirichlet(
   // wrong!");
   //  std::cout<<"3D discretization:"<<std::endl<<*discret_3D_<<std::endl;
   std::vector<Core::Conditions::Condition*> conds_red;
-  discret_red_d_->GetCondition("Art_redD_3D_CouplingCond", conds_red);
+  discret_red_d_->get_condition("Art_redD_3D_CouplingCond", conds_red);
 
   Core::Conditions::Condition* cond_red = nullptr;
   for (unsigned int i = 0; i != conds_red.size(); i++)
@@ -1159,7 +1159,7 @@ void FLD::UTILS::FluidCouplingBc::evaluate_dirichlet(
 
   //  residual->Update(1.0,*couplingbc_,1.0);
   std::vector<Core::Conditions::Condition*> conds;
-  discret_3_d_->GetCondition("Art_3D_redD_CouplingCond", conds);
+  discret_3_d_->get_condition("Art_3D_redD_CouplingCond", conds);
 
   Core::Conditions::Condition* cond;
   for (unsigned int i = 0; i != conds.size(); i++)
@@ -1186,21 +1186,21 @@ void FLD::UTILS::FluidCouplingBc::evaluate_dirichlet(
   std::cout << "velocity: " << std::endl;
   std::cout << "Dflowrate: " << Dflowrate << std::endl;
   std::cout << "area: " << area << std::endl;
-  const std::vector<int>* nodes = cond->GetNodes();
+  const std::vector<int>* nodes = cond->get_nodes();
 
   for (unsigned int i = 0; i < nodes->size(); i++)
   {
     int gid = (*nodes)[i];
     std::cout << "Node(" << gid << "): ";
 
-    if (discret_3_d_->HaveGlobalNode(gid))
+    if (discret_3_d_->have_global_node(gid))
     {
-      Core::Nodes::Node* node = discret_3_d_->gNode(gid);
-      unsigned int numDof = discret_3_d_->NumDof(node);
+      Core::Nodes::Node* node = discret_3_d_->g_node(gid);
+      unsigned int numDof = discret_3_d_->num_dof(node);
       std::cout << "(" << numDof << ") dof --> ";
       for (unsigned int dof = 0; dof < numDof - 1; dof++)
       {
-        int dof_gid = discret_3_d_->Dof(node, dof);
+        int dof_gid = discret_3_d_->dof(node, dof);
         //        std::cout<<"("<<dof<<")+>["<<dof_gid<<"]\t";
         if (condmap.MyGID(dof_gid))
         {

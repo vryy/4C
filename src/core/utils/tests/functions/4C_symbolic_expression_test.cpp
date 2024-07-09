@@ -49,14 +49,14 @@ namespace
   {
     Core::UTILS::SymbolicExpression<double> symbolicexpression("2.0");
 
-    EXPECT_DOUBLE_EQ(symbolicexpression.Value({}), 2.0);
+    EXPECT_DOUBLE_EQ(symbolicexpression.value({}), 2.0);
   }
 
   TEST(SymbolicExpressionTest, TestValue)
   {
     Core::UTILS::SymbolicExpression<double> symbolicexpression("2*x");
 
-    EXPECT_DOUBLE_EQ(symbolicexpression.Value({{"x", 2.0}}), 4.0);
+    EXPECT_DOUBLE_EQ(symbolicexpression.value({{"x", 2.0}}), 4.0);
   }
 
   TEST(SymbolicExpressionTest, TestFirstDeriv)
@@ -81,9 +81,9 @@ namespace
     std::copy(variables_FAD.begin(), variables_FAD.end(),
         std::inserter(variable_values, variable_values.begin()));
 
-    auto fdfad_bilin = symbolicexpression_bilin.FirstDerivative(variable_values, constants);
-    auto fdfad_xtimesx = symbolicexpression_xtimesx.FirstDerivative(variable_values, constants);
-    auto fdfad_pow2 = symbolicexpression_pow2.FirstDerivative(variable_values, constants);
+    auto fdfad_bilin = symbolicexpression_bilin.first_derivative(variable_values, constants);
+    auto fdfad_xtimesx = symbolicexpression_xtimesx.first_derivative(variable_values, constants);
+    auto fdfad_pow2 = symbolicexpression_pow2.first_derivative(variable_values, constants);
 
     EXPECT_DOUBLE_EQ(fdfad_bilin.dx(0), 12.0);                    // dFunction1/dVariable1
     EXPECT_DOUBLE_EQ(fdfad_bilin.dx(1), 24.0);                    // dFunction1/dVariable2
@@ -109,23 +109,23 @@ namespace
     Core::UTILS::SymbolicExpression<double> symbolicexpression_xtimesx("x * x");
 
     EXPECT_NEAR(
-        symbolicexpression_sincostan.Value({{"x", 0.2}, {"y", 0.4}}), 1.4114033869288349, 1.0e-14);
+        symbolicexpression_sincostan.value({{"x", 0.2}, {"y", 0.4}}), 1.4114033869288349, 1.0e-14);
 
     EXPECT_NEAR(
-        symbolicexpression_logexp.Value({{"x", 0.2}, {"y", 0.4}}), -0.59794000867203767, 1.0e-14);
+        symbolicexpression_logexp.value({{"x", 0.2}, {"y", 0.4}}), -0.59794000867203767, 1.0e-14);
 
-    EXPECT_NEAR(symbolicexpression_sqrtheavisidefabs.Value({}), 5.3, 1.0e-14);
+    EXPECT_NEAR(symbolicexpression_sqrtheavisidefabs.value({}), 5.3, 1.0e-14);
 
-    EXPECT_NEAR(symbolicexpression_atan2.Value({}), 0.46364760900080609, 1.0e-14);
-    EXPECT_NEAR(symbolicexpression_xpow2.Value({{"x", 0.2}}),
-        symbolicexpression_xtimesx.Value({{"x", 0.2}}), 1.0e-14);
+    EXPECT_NEAR(symbolicexpression_atan2.value({}), 0.46364760900080609, 1.0e-14);
+    EXPECT_NEAR(symbolicexpression_xpow2.value({{"x", 0.2}}),
+        symbolicexpression_xtimesx.value({{"x", 0.2}}), 1.0e-14);
   }
 
   TEST(SymbolicExpressionTest, TestValidLiterals)
   {
     Core::UTILS::SymbolicExpression<double> symbolicexpression("2*pi * 1.0e-3  + 3.0E-4 * x");
 
-    EXPECT_NEAR(symbolicexpression.Value({{"x", 1.0}}), 0.0065831853071795865, 1.0e-14);
+    EXPECT_NEAR(symbolicexpression.value({{"x", 1.0}}), 0.0065831853071795865, 1.0e-14);
   }
 
   TEST(SymbolicExpressionTest, EvaluateWithMissingVariableThrows)
@@ -133,7 +133,7 @@ namespace
     Core::UTILS::SymbolicExpression<double> symbolicexpression(
         "2*Variable1*Constant1*Variable2*Variable3");
 
-    EXPECT_ANY_THROW(symbolicexpression.Value({{"Variable1", 1.0}, {"Constant1", 1.0}}));
+    EXPECT_ANY_THROW(symbolicexpression.value({{"Variable1", 1.0}, {"Constant1", 1.0}}));
   }
 
   TEST(SymbolicExpressionTest, InvalidOperatorThrows)

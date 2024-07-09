@@ -84,7 +84,7 @@ void PARTICLEALGORITHM::TimInt::setup(
   }
 
   // determine set of particle types to be integrated in time
-  for (auto& typeEnum : particlecontainerbundle->GetParticleTypes())
+  for (auto& typeEnum : particlecontainerbundle->get_particle_types())
     if (not typesexludedfromtimeintegration.count(typeEnum)) typestointegrate_.insert(typeEnum);
 }
 
@@ -101,7 +101,7 @@ void PARTICLEALGORITHM::TimInt::insert_particle_states_of_particle_types(
     temperatureboundarycondition_->insert_particle_states_of_particle_types(particlestatestotypes);
 }
 
-void PARTICLEALGORITHM::TimInt::SetInitialStates()
+void PARTICLEALGORITHM::TimInt::set_initial_states()
 {
   // add initial random noise to particle position
   add_initial_random_noise_to_position();
@@ -191,7 +191,7 @@ void PARTICLEALGORITHM::TimInt::add_initial_random_noise_to_position()
 
   // safety check
   const double max_amplitude = *std::max_element(amplitude.begin(), amplitude.end());
-  if (max_amplitude > particleengineinterface_->MinBinSize())
+  if (max_amplitude > particleengineinterface_->min_bin_size())
     FOUR_C_THROW(
         "amplitude of noise added to initial position larger than minimum relevant bin size!");
 
@@ -207,16 +207,16 @@ void PARTICLEALGORITHM::TimInt::add_initial_random_noise_to_position()
         particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    const int particlestored = container->ParticlesStored();
+    const int particlestored = container->particles_stored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
 
     // get pointer to particle state
-    double* pos = container->GetPtrToState(PARTICLEENGINE::Position, 0);
+    double* pos = container->get_ptr_to_state(PARTICLEENGINE::Position, 0);
 
     // get particle state dimension
-    int statedim = container->GetStateDim(PARTICLEENGINE::Position);
+    int statedim = container->get_state_dim(PARTICLEENGINE::Position);
 
     // iterate over owned particles of current type
     for (int i = 0; i < particlestored; ++i)
@@ -225,7 +225,7 @@ void PARTICLEALGORITHM::TimInt::add_initial_random_noise_to_position()
       for (int dim = 0; dim < statedim; ++dim)
       {
         // generate random value
-        const double randomvalue = Global::Problem::Instance()->Random()->Uni();
+        const double randomvalue = Global::Problem::instance()->random()->uni();
 
         // update position of particle
         pos[statedim * i + dim] += randomvalue * amplitude[dim];
@@ -260,8 +260,8 @@ void PARTICLEALGORITHM::TimIntSemiImplicitEuler::setup(
         particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
     // safety check
-    if (container->HaveStoredState(PARTICLEENGINE::ModifiedVelocity) or
-        container->HaveStoredState(PARTICLEENGINE::ModifiedAcceleration))
+    if (container->have_stored_state(PARTICLEENGINE::ModifiedVelocity) or
+        container->have_stored_state(PARTICLEENGINE::ModifiedAcceleration))
       FOUR_C_THROW(
           "modified velocity and acceleration states not implemented yet for semi-implicit Euler "
           "time integration scheme!");
@@ -284,37 +284,37 @@ void PARTICLEALGORITHM::TimIntSemiImplicitEuler::pre_interaction_routine()
         particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
     // update velocity of all particles
-    container->UpdateState(1.0, PARTICLEENGINE::Velocity, dt_, PARTICLEENGINE::Acceleration);
+    container->update_state(1.0, PARTICLEENGINE::Velocity, dt_, PARTICLEENGINE::Acceleration);
 
     // clear acceleration of all particles
-    container->ClearState(PARTICLEENGINE::Acceleration);
+    container->clear_state(PARTICLEENGINE::Acceleration);
 
     // angular velocity and acceleration states
-    if (container->HaveStoredState(PARTICLEENGINE::AngularVelocity) and
-        container->HaveStoredState(PARTICLEENGINE::AngularAcceleration))
+    if (container->have_stored_state(PARTICLEENGINE::AngularVelocity) and
+        container->have_stored_state(PARTICLEENGINE::AngularAcceleration))
     {
       // update angular velocity of all particles
-      container->UpdateState(
+      container->update_state(
           1.0, PARTICLEENGINE::AngularVelocity, dt_, PARTICLEENGINE::AngularAcceleration);
 
       // clear angular acceleration of all particles
-      container->ClearState(PARTICLEENGINE::AngularAcceleration);
+      container->clear_state(PARTICLEENGINE::AngularAcceleration);
     }
 
     // update position of all particles
-    container->UpdateState(1.0, PARTICLEENGINE::Position, dt_, PARTICLEENGINE::Velocity);
+    container->update_state(1.0, PARTICLEENGINE::Position, dt_, PARTICLEENGINE::Velocity);
   }
 
   if (particlerigidbodyinterface_)
   {
     // update velocities of all rigid bodies and corresponding rigid particles
-    particlerigidbodyinterface_->UpdateVelocities(dt_);
+    particlerigidbodyinterface_->update_velocities(dt_);
 
     // clear accelerations of all rigid bodies
-    particlerigidbodyinterface_->ClearAccelerations();
+    particlerigidbodyinterface_->clear_accelerations();
 
     // update positions of all rigid bodies and corresponding rigid particles
-    particlerigidbodyinterface_->UpdatePositions(dt_);
+    particlerigidbodyinterface_->update_positions(dt_);
   }
 
   // evaluate dirichlet boundary condition
@@ -337,10 +337,10 @@ PARTICLEALGORITHM::TimIntVelocityVerlet::TimIntVelocityVerlet(const Teuchos::Par
   // empty constructor
 }
 
-void PARTICLEALGORITHM::TimIntVelocityVerlet::SetInitialStates()
+void PARTICLEALGORITHM::TimIntVelocityVerlet::set_initial_states()
 {
   // call base class method
-  TimInt::SetInitialStates();
+  TimInt::set_initial_states();
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
@@ -354,10 +354,10 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::SetInitialStates()
         particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
     // modified velocity states
-    if (container->HaveStoredState(PARTICLEENGINE::ModifiedVelocity))
+    if (container->have_stored_state(PARTICLEENGINE::ModifiedVelocity))
     {
       // update modified velocity of all particles
-      container->UpdateState(0.0, PARTICLEENGINE::ModifiedVelocity, 1.0, PARTICLEENGINE::Velocity);
+      container->update_state(0.0, PARTICLEENGINE::ModifiedVelocity, 1.0, PARTICLEENGINE::Velocity);
     }
   }
 }
@@ -378,55 +378,55 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::pre_interaction_routine()
         particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
     // update velocity of all particles
-    container->UpdateState(1.0, PARTICLEENGINE::Velocity, dthalf_, PARTICLEENGINE::Acceleration);
+    container->update_state(1.0, PARTICLEENGINE::Velocity, dthalf_, PARTICLEENGINE::Acceleration);
 
     // clear acceleration of all particles
-    container->ClearState(PARTICLEENGINE::Acceleration);
+    container->clear_state(PARTICLEENGINE::Acceleration);
 
     // angular velocity and acceleration states
-    if (container->HaveStoredState(PARTICLEENGINE::AngularVelocity) and
-        container->HaveStoredState(PARTICLEENGINE::AngularAcceleration))
+    if (container->have_stored_state(PARTICLEENGINE::AngularVelocity) and
+        container->have_stored_state(PARTICLEENGINE::AngularAcceleration))
     {
       // update angular velocity of all particles
-      container->UpdateState(
+      container->update_state(
           1.0, PARTICLEENGINE::AngularVelocity, dthalf_, PARTICLEENGINE::AngularAcceleration);
 
       // clear angular acceleration of all particles
-      container->ClearState(PARTICLEENGINE::AngularAcceleration);
+      container->clear_state(PARTICLEENGINE::AngularAcceleration);
     }
 
     // modified velocity and acceleration states
-    if (container->HaveStoredState(PARTICLEENGINE::ModifiedVelocity) and
-        container->HaveStoredState(PARTICLEENGINE::ModifiedAcceleration))
+    if (container->have_stored_state(PARTICLEENGINE::ModifiedVelocity) and
+        container->have_stored_state(PARTICLEENGINE::ModifiedAcceleration))
     {
       // update modified velocity of all particles
-      container->UpdateState(0.0, PARTICLEENGINE::ModifiedVelocity, 1.0, PARTICLEENGINE::Velocity);
-      container->UpdateState(
+      container->update_state(0.0, PARTICLEENGINE::ModifiedVelocity, 1.0, PARTICLEENGINE::Velocity);
+      container->update_state(
           1.0, PARTICLEENGINE::ModifiedVelocity, dthalf_, PARTICLEENGINE::ModifiedAcceleration);
 
       // clear modified acceleration of all particles
-      container->ClearState(PARTICLEENGINE::ModifiedAcceleration);
+      container->clear_state(PARTICLEENGINE::ModifiedAcceleration);
 
       // update position of all particles
-      container->UpdateState(1.0, PARTICLEENGINE::Position, dt_, PARTICLEENGINE::ModifiedVelocity);
+      container->update_state(1.0, PARTICLEENGINE::Position, dt_, PARTICLEENGINE::ModifiedVelocity);
     }
     else
     {
       // update position of all particles
-      container->UpdateState(1.0, PARTICLEENGINE::Position, dt_, PARTICLEENGINE::Velocity);
+      container->update_state(1.0, PARTICLEENGINE::Position, dt_, PARTICLEENGINE::Velocity);
     }
   }
 
   if (particlerigidbodyinterface_)
   {
     // update velocities of all rigid bodies and corresponding rigid particles
-    particlerigidbodyinterface_->UpdateVelocities(dthalf_);
+    particlerigidbodyinterface_->update_velocities(dthalf_);
 
     // clear accelerations of all rigid bodies
-    particlerigidbodyinterface_->ClearAccelerations();
+    particlerigidbodyinterface_->clear_accelerations();
 
     // update positions of all rigid bodies and corresponding rigid particles
-    particlerigidbodyinterface_->UpdatePositions(dt_);
+    particlerigidbodyinterface_->update_positions(dt_);
   }
 
   // evaluate dirichlet boundary condition
@@ -458,20 +458,20 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::post_interaction_routine()
         particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
     // update velocity of all particles
-    container->UpdateState(1.0, PARTICLEENGINE::Velocity, dthalf_, PARTICLEENGINE::Acceleration);
+    container->update_state(1.0, PARTICLEENGINE::Velocity, dthalf_, PARTICLEENGINE::Acceleration);
 
     // angular velocity and acceleration states
-    if (container->HaveStoredState(PARTICLEENGINE::AngularVelocity) and
-        container->HaveStoredState(PARTICLEENGINE::AngularAcceleration))
+    if (container->have_stored_state(PARTICLEENGINE::AngularVelocity) and
+        container->have_stored_state(PARTICLEENGINE::AngularAcceleration))
     {
       // update angular velocity of all particles
-      container->UpdateState(
+      container->update_state(
           1.0, PARTICLEENGINE::AngularVelocity, dthalf_, PARTICLEENGINE::AngularAcceleration);
     }
   }
 
   // update velocities of all rigid bodies and corresponding rigid particles
-  if (particlerigidbodyinterface_) particlerigidbodyinterface_->UpdateVelocities(dthalf_);
+  if (particlerigidbodyinterface_) particlerigidbodyinterface_->update_velocities(dthalf_);
 
   // evaluate dirichlet boundary condition
   if (dirichletboundarycondition_)

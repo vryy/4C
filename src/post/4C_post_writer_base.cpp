@@ -18,8 +18,8 @@ FOUR_C_NAMESPACE_OPEN
 PostWriterBase::PostWriterBase(PostField* field, const std::string& filename)
     : field_(field),
       filename_(filename),
-      myrank_(field->problem()->comm()->MyPID()),
-      numproc_(field->problem()->comm()->NumProc())
+      myrank_(field->problem()->get_comm()->MyPID()),
+      numproc_(field->problem()->get_comm()->NumProc())
 {
 }
 

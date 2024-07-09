@@ -91,7 +91,7 @@ void ScaTra::TimIntCardiacMonodomainOST::read_restart(
   Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
-        discret_, Global::Problem::Instance()->InputControlFile(), step));
+        discret_, Global::Problem::instance()->input_control_file(), step));
   else
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
 
@@ -189,7 +189,7 @@ void ScaTra::TimIntCardiacMonodomainBDF2::read_restart(
   Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
-        discret_, Global::Problem::Instance()->InputControlFile(), step));
+        discret_, Global::Problem::instance()->input_control_file(), step));
   else
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
 
@@ -273,7 +273,7 @@ void ScaTra::TimIntCardiacMonodomainGenAlpha::read_restart(
   TimIntGenAlpha::read_restart(step, input);
 
   Core::IO::DiscretizationReader reader(
-      discret_, Global::Problem::Instance()->InputControlFile(), step);
+      discret_, Global::Problem::instance()->input_control_file(), step);
 
   // Cardiac Monodomain specific
   reader.read_vector(activation_time_np_, "activation_time_np");

@@ -60,16 +60,16 @@ namespace Core::Geo
 
       /// add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for
       /// quadratic sides)
-      SideHandle* AddCutSide(
+      SideHandle* add_cut_side(
           int sid, const std::vector<int>& nids, Core::FE::CellType distype, int mi = 0);
 
       /// add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for
       /// quadratic sides)
-      SideHandle* AddCutSide(int sid, const std::vector<int>& nids,
+      SideHandle* add_cut_side(int sid, const std::vector<int>& nids,
           const Core::LinAlg::SerialDenseMatrix& xyz, Core::FE::CellType distype, int mi = 0);
 
       /// build the static search tree for the collision detection in the self cut
-      void BuildSelfCutTree();
+      void build_self_cut_tree();
 
       /// build the static search tree for the collision detection
       void build_static_search_tree();
@@ -79,7 +79,7 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// standard cut routine for non-parallel frameworks and cuttest
-      void CutTest_Cut(bool include_inner,
+      void cut_test_cut(bool include_inner,
           VCellGaussPts VCellgausstype = VCellGaussPts_Tessellation,
           BCellGaussPts BCellgausstype = BCellGaussPts_Tessellation, bool tetcellsonly = true,
           bool screenoutput = true,
@@ -87,7 +87,7 @@ namespace Core::Geo
                                                    // can be activated, otherwise this will fail!
 
       /// handles cut sides which cut each other
-      void Cut_SelfCut(bool include_inner, bool screenoutput = true) override;
+      void cut_self_cut(bool include_inner, bool screenoutput = true) override;
 
       /// detects if a side of the cut mesh possibly collides with an element of the background mesh
       void cut_collision_detection(bool include_inner, bool screenoutput = true) override;
@@ -104,10 +104,10 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// get the cut mesh's side based on side id
-      SideHandle* GetCutSide(int sid, int mi = 0) const;
+      SideHandle* get_cut_side(int sid, int mi = 0) const;
 
       /// get the cut mesh based on mesh id
-      Mesh& CutMesh(int i = 0) { return cut_mesh_[i]->LinearMesh(); }
+      Mesh& cut_mesh(int i = 0) { return cut_mesh_[i]->linear_mesh(); }
 
      private:
       /*========================================================================*/

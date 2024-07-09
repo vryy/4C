@@ -15,12 +15,12 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::FluidBoundaryType Discret::ELEMENTS::FluidBoundaryType::instance_;
 
-Discret::ELEMENTS::FluidBoundaryType& Discret::ELEMENTS::FluidBoundaryType::Instance()
+Discret::ELEMENTS::FluidBoundaryType& Discret::ELEMENTS::FluidBoundaryType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::FluidBoundaryType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::FluidBoundaryType::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::FluidBoundary* object = new Discret::ELEMENTS::FluidBoundary(-1, -1);
@@ -28,7 +28,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::FluidBoundaryType::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidBoundaryType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidBoundaryType::create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -46,18 +46,18 @@ Discret::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, co
       numdofpernode_(-1)
 {
   set_parent_master_element(parent, lsurface);
-  SetNodeIds(nnode, nodeids);
-  BuildNodalPointers(nodes);
-  distype_ = Core::FE::getShapeOfBoundaryElement(num_node(), ParentMasterElement()->Shape());
+  set_node_ids(nnode, nodeids);
+  build_nodal_pointers(nodes);
+  distype_ = Core::FE::getShapeOfBoundaryElement(num_node(), parent_master_element()->shape());
 
-  numdofpernode_ = ParentMasterElement()->NumDofPerNode(*Nodes()[0]);
+  numdofpernode_ = parent_master_element()->num_dof_per_node(*FluidBoundary::nodes()[0]);
   // Safety check if all nodes have the same number of dofs!
   for (int nlid = 1; nlid < num_node(); ++nlid)
   {
-    if (numdofpernode_ != ParentMasterElement()->NumDofPerNode(*Nodes()[nlid]))
+    if (numdofpernode_ != parent_master_element()->num_dof_per_node(*FluidBoundary::nodes()[nlid]))
       FOUR_C_THROW(
           "You need different NumDofPerNode for each node on this fluid boundary? (%d != %d)",
-          numdofpernode_, ParentMasterElement()->NumDofPerNode(*Nodes()[nlid]));
+          numdofpernode_, parent_master_element()->num_dof_per_node(*FluidBoundary::nodes()[nlid]));
   }
   return;
 }
@@ -86,7 +86,7 @@ Discret::ELEMENTS::FluidBoundary::FluidBoundary(const Discret::ELEMENTS::FluidBo
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::FluidBoundary::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::FluidBoundary::clone() const
 {
   Discret::ELEMENTS::FluidBoundary* newelement = new Discret::ELEMENTS::FluidBoundary(*this);
   return newelement;
@@ -101,7 +101,7 @@ void Discret::ELEMENTS::FluidBoundary::pack(Core::Communication::PackBuffer& dat
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   FaceElement::pack(data);
@@ -120,7 +120,7 @@ void Discret::ELEMENTS::FluidBoundary::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -151,7 +151,7 @@ void Discret::ELEMENTS::FluidBoundary::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidBoundary::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidBoundary::lines()
 {
   FOUR_C_THROW("Lines of FluidBoundary not implemented");
 }
@@ -159,7 +159,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidBound
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          ager 12/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidBoundary::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidBoundary::surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

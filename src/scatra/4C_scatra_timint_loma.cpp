@@ -61,20 +61,20 @@ void ScaTra::ScaTraTimIntLoma::init()
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntLoma::setup()
 {
-  SetupSplitter();
+  setup_splitter();
   return;
 }
 
 /*----------------------------------------------------------------------*
  | setup splitter                                          deanda 11/17 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntLoma::SetupSplitter()
+void ScaTra::ScaTraTimIntLoma::setup_splitter()
 {
   // set up a species-temperature splitter (if more than one scalar)
-  if (NumScal() > 1)
+  if (num_scal() > 1)
   {
     splitter_ = Teuchos::rcp(new Core::LinAlg::MapExtractor);
-    Core::LinAlg::CreateMapExtractorFromDiscretization(*discret_, NumScal() - 1, *splitter_);
+    Core::LinAlg::CreateMapExtractorFromDiscretization(*discret_, num_scal() - 1, *splitter_);
   }
 
   return;
@@ -87,10 +87,10 @@ void ScaTra::ScaTraTimIntLoma::SetupSplitter()
 void ScaTra::ScaTraTimIntLoma::set_initial_therm_pressure()
 {
   // get thermodynamic pressure from material parameters
-  int id = problem_->Materials()->FirstIdByType(Core::Materials::m_sutherland);
+  int id = problem_->materials()->first_id_by_type(Core::Materials::m_sutherland);
   if (id != -1)  // i.e., Sutherland material found
   {
-    const Core::Mat::PAR::Parameter* mat = problem_->Materials()->ParameterById(id);
+    const Core::Mat::PAR::Parameter* mat = problem_->materials()->parameter_by_id(id);
     const Mat::PAR::Sutherland* actmat = static_cast<const Mat::PAR::Sutherland*>(mat);
 
     thermpressn_ = actmat->thermpress_;
@@ -124,10 +124,10 @@ void ScaTra::ScaTraTimIntLoma::set_initial_therm_pressure()
 /*----------------------------------------------------------------------*
  | compute initial total mass in domain                        vg 01/09 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntLoma::ComputeInitialMass()
+void ScaTra::ScaTraTimIntLoma::compute_initial_mass()
 {
   // set scalar values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("phinp", phin_);
   // set action for elements
   Teuchos::ParameterList eleparams;
@@ -139,9 +139,9 @@ void ScaTra::ScaTraTimIntLoma::ComputeInitialMass()
 
   // evaluate integral of inverse temperature
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(NumScal() + 1));
-  discret_->EvaluateScalars(eleparams, scalars);
-  discret_->ClearState();  // clean up
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(num_scal() + 1));
+  discret_->evaluate_scalars(eleparams, scalars);
+  discret_->clear_state();  // clean up
 
   // compute initial mass times gas constant: R*M_0 = int(1/T_0)*tp
   initialmass_ = (*scalars)[0] * thermpressn_;
@@ -169,7 +169,7 @@ void ScaTra::ScaTraTimIntLoma::ComputeInitialMass()
 void ScaTra::ScaTraTimIntLoma::compute_therm_pressure_from_mass_cons()
 {
   // set scalar values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("phinp", phinp_);
   // set action for elements
   Teuchos::ParameterList eleparams;
@@ -181,9 +181,9 @@ void ScaTra::ScaTraTimIntLoma::compute_therm_pressure_from_mass_cons()
 
   // evaluate integral of inverse temperature
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(NumScal() + 1));
-  discret_->EvaluateScalars(eleparams, scalars);
-  discret_->ClearState();  // clean up
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(num_scal() + 1));
+  discret_->evaluate_scalars(eleparams, scalars);
+  discret_->clear_state();  // clean up
 
   // compute thermodynamic pressure: tp = R*M_0/int(1/T)
   thermpressnp_ = initialmass_ / (*scalars)[0];

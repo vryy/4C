@@ -57,7 +57,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec1_epetra) = 0;
 
       //! Internal implementation class for ScaTraHDGBoundary elements
-      static ScaTraHDGBoundaryImplInterface* Impl(const Core::Elements::Element* ele);
+      static ScaTraHDGBoundaryImplInterface* impl(const Core::Elements::Element* ele);
 
     };  // class ScaTraHDGBoundaryImplInterface
 
@@ -67,7 +67,7 @@ namespace Discret
     {
      public:
       //! Singleton access method
-      static ScaTraHDGBoundaryImpl<distype>* Instance(
+      static ScaTraHDGBoundaryImpl<distype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       //! Constructor

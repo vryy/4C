@@ -139,7 +139,7 @@ Mat::SuperElasticSMAType Mat::SuperElasticSMAType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()    hemmler 09/16 |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::SuperElasticSMAType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::SuperElasticSMAType::create(const std::vector<char>& data)
 {
   Mat::SuperElasticSMA* superelast = new Mat::SuperElasticSMA();
   superelast->unpack(data);
@@ -168,18 +168,18 @@ void Mat::SuperElasticSMA::pack(Core::Communication::PackBuffer& data) const
 
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 
   // pack history data
   int histsize;
   // if material is not initialized, i.e. start simulation, nothing to pack
-  if (!Initialized())
+  if (!initialized())
   {
     histsize = 0;
   }
@@ -211,23 +211,23 @@ void Mat::SuperElasticSMA::unpack(const std::vector<char>& data)
   strainenergy_ = 0.0;
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::SuperElasticSMA*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   // history data
@@ -1020,11 +1020,11 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)           hemmler 09/16 |
  *---------------------------------------------------------------------*/
-void Mat::SuperElasticSMA::VisNames(std::map<std::string, int>& names)
+void Mat::SuperElasticSMA::vis_names(std::map<std::string, int>& names)
 {
   names["martensiticfraction"] = 1;  // scalar
   names["druckerprager"] = 1;        // scalar
-}  // VisNames()
+}  // vis_names()
 
 Core::LinAlg::Matrix<2, 1> Mat::SuperElasticSMA::compute_local_newton_residual(
     Core::LinAlg::Matrix<2, 1> lambda_s, double xi_s, LoadingData loading, Material mat_data)
@@ -1130,7 +1130,7 @@ Mat::SuperElasticSMA::LoadingData Mat::SuperElasticSMA::compute_local_newton_loa
 /*---------------------------------------------------------------------*
  | return visualization data (public)                    hemmler 09/16 |
  *---------------------------------------------------------------------*/
-bool Mat::SuperElasticSMA::VisData(
+bool Mat::SuperElasticSMA::vis_data(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "martensiticfraction")
@@ -1150,13 +1150,13 @@ bool Mat::SuperElasticSMA::VisData(
   }
   return false;
 
-}  // VisData()
+}  // vis_data()
 
 
 /*----------------------------------------------------------------------*
  |  calculate strain energy                                hemmler 11/16|
  *----------------------------------------------------------------------*/
-void Mat::SuperElasticSMA::StrainEnergy(
+void Mat::SuperElasticSMA::strain_energy(
     const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   psi = strainenergy_;

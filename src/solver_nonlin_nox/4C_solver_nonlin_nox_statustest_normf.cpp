@@ -167,7 +167,7 @@ double NOX::Nln::StatusTest::NormF::get_specified_tolerance(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::Nln::StatusTest::NormF::GetInitialTolerance(
+double NOX::Nln::StatusTest::NormF::get_initial_tolerance(
     const NOX::Nln::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < nChecks_; ++i)

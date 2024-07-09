@@ -57,7 +57,7 @@ namespace Core
       FOUR_C_THROW("Not implemented!");
       return base;
     }
-    static constexpr double GetDouble(T t) { return cln::double_approx(t.Value()); }
+    static constexpr double get_double(T t) { return cln::double_approx(t.Value()); }
   };
 
   template <typename T>

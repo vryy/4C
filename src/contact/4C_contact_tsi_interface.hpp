@@ -44,7 +44,7 @@ namespace CONTACT
     of the tangential stick condition.
 
     */
-    virtual void AssembleLinStick(Core::LinAlg::SparseMatrix& linstickLMglobal,
+    virtual void assemble_lin_stick(Core::LinAlg::SparseMatrix& linstickLMglobal,
         Core::LinAlg::SparseMatrix& linstickDISglobal,
         Core::LinAlg::SparseMatrix& linstickTEMPglobal, Epetra_Vector& linstickRHSglobal);
 
@@ -57,7 +57,7 @@ namespace CONTACT
     nodal tangents and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleLinSlip(Core::LinAlg::SparseMatrix& linslipLMglobal,
+    virtual void assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLMglobal,
         Core::LinAlg::SparseMatrix& linslipDISglobal, Core::LinAlg::SparseMatrix& linslipTEMPglobal,
         Epetra_Vector& linslipRHSglobal);
 
@@ -69,7 +69,7 @@ namespace CONTACT
     in the global system of equations, containing linearizations
     wrt displacements, contact forces, temperatures
     */
-    virtual void AssembleLinConduct(Core::LinAlg::SparseMatrix& linConductDISglobal,
+    virtual void assemble_lin_conduct(Core::LinAlg::SparseMatrix& linConductDISglobal,
         Core::LinAlg::SparseMatrix& linConductTEMPglobal,
         Core::LinAlg::SparseMatrix& linConductThermoLMglobal,
         Core::LinAlg::SparseMatrix& linConductContactLMglobal);
@@ -93,7 +93,7 @@ namespace CONTACT
                      -M_{jl,c} X_j (mind the minus sign!)
       where X_j is some (scalar) nodal value determined by "mode"
       */
-    virtual void AssembleLinDM_X(Core::LinAlg::SparseMatrix* linD_X,
+    virtual void assemble_lin_dm_x(Core::LinAlg::SparseMatrix* linD_X,
         Core::LinAlg::SparseMatrix* linM_X, const double fac, const LinDmXMode mode,
         const Teuchos::RCP<Epetra_Map> node_rowmap);
 
@@ -106,7 +106,7 @@ namespace CONTACT
       The dissipation is calculated by the tangential slip times the contact Lagrange multiplier
       Diss = \lambda^{contact}  \cdot  (1 - n \otimes n) \cdot jump
       */
-    virtual void AssembleDM_linDiss(Core::LinAlg::SparseMatrix* d_LinDissDISP,
+    virtual void assemble_dm_lin_diss(Core::LinAlg::SparseMatrix* d_LinDissDISP,
         Core::LinAlg::SparseMatrix* m_LinDissDISP, Core::LinAlg::SparseMatrix* d_LinDissContactLM,
         Core::LinAlg::SparseMatrix* m_LinDissContactLM, const double fac);
 
@@ -131,14 +131,14 @@ namespace CONTACT
       This assembles lambda_n* ( D_{jk) LMn_j
                                 -M_{jl} LMn_j ) (mind the minus sign! No sum over j!)
       */
-    virtual void AssembleDM_LMn(const double fac, Core::LinAlg::SparseMatrix* DM_LMn);
+    virtual void assemble_dm_l_mn(const double fac, Core::LinAlg::SparseMatrix* DM_LMn);
 
     /*!
       \brief Assemble inactive part of the thermal heat conduction equation
 
       This assembles lambda(thermo) = 0 for all inactive contact nodes
       */
-    virtual void AssembleInactive(Core::LinAlg::SparseMatrix* linConductThermoLM);
+    virtual void assemble_inactive(Core::LinAlg::SparseMatrix* linConductThermoLM);
 
 
     /*!

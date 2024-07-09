@@ -95,10 +95,10 @@ namespace Core::LinAlg
       \warning Only low level solver routines are interested in the internal
       Epetra_Operator.
      */
-    virtual Teuchos::RCP<Epetra_Operator> EpetraOperator() { return Teuchos::rcp(this, false); }
+    virtual Teuchos::RCP<Epetra_Operator> epetra_operator() { return Teuchos::rcp(this, false); }
 
     /// set matrix to zero
-    virtual void Zero() = 0;
+    virtual void zero() = 0;
 
     /// throw away the matrix and its graph and start anew
     virtual void reset() = 0;
@@ -133,11 +133,11 @@ namespace Core::LinAlg
     \param lm (in) : vector with gids
     \param lmowner (in) : vector with owner procs of gids
     */
-    virtual void Assemble(int eid, const std::vector<int>& lmstride,
+    virtual void assemble(int eid, const std::vector<int>& lmstride,
         const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lm,
         const std::vector<int>& lmowner)
     {
-      Assemble(eid, lmstride, Aele, lm, lmowner, lm);
+      assemble(eid, lmstride, Aele, lm, lmowner, lm);
     }
 
     /// Assemble a Core::LinAlg::SerialDenseMatrix into a matrix with striding
@@ -175,32 +175,32 @@ namespace Core::LinAlg
       \param lmrowowner (in) : vector with owner procs of row gids
       \param lmcol (in)      : vector with column gids
     */
-    virtual void Assemble(int eid, const std::vector<int>& lmstride,
+    virtual void assemble(int eid, const std::vector<int>& lmstride,
         const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol) = 0;
 
     /// single value assemble using gids
-    virtual void Assemble(double val, int rgid, int cgid) = 0;
+    virtual void assemble(double val, int rgid, int cgid) = 0;
 
     /// If Complete() has been called, this query returns true, otherwise it returns false.
-    virtual bool Filled() const = 0;
+    virtual bool filled() const = 0;
 
     /// Call fill_complete on a matrix
     /*!
      * @param enforce_complete Enforce fill_complete() even though the matrix might already be
      * filled
      */
-    virtual void Complete(bool enforce_complete = false) = 0;
+    virtual void complete(bool enforce_complete = false) = 0;
 
     /// Call fill_complete on a matrix (for rectangular and square matrices)
-    virtual void Complete(
+    virtual void complete(
         const Epetra_Map& domainmap, const Epetra_Map& rangemap, bool enforce_complete = false) = 0;
 
     /// Undo a previous Complete() call
-    virtual void UnComplete() = 0;
+    virtual void un_complete() = 0;
 
     /// Apply dirichlet boundary condition to a matrix
-    virtual void ApplyDirichlet(const Epetra_Vector& dbctoggle, bool diagonalblock = true) = 0;
+    virtual void apply_dirichlet(const Epetra_Vector& dbctoggle, bool diagonalblock = true) = 0;
 
     /// Apply dirichlet boundary condition to a matrix
     ///
@@ -211,7 +211,7 @@ namespace Core::LinAlg
     ///  matrix was symmetric. However, the blanking of columns is computationally
     ///  quite expensive, because the matrix is stored in a sparse and distributed
     ///  manner.
-    virtual void ApplyDirichlet(const Epetra_Map& dbcmap, bool diagonalblock = true) = 0;
+    virtual void apply_dirichlet(const Epetra_Map& dbcmap, bool diagonalblock = true) = 0;
 
     /** \brief Return TRUE if all Dirichlet boundary conditions have been applied
      *  to this matrix
@@ -222,29 +222,29 @@ namespace Core::LinAlg
      *  \param (in) trafo: pointer to an optional trafo matrix (see LocSys).
      *
      *  \author hiermeier \date 01/18 */
-    virtual bool IsDbcApplied(const Epetra_Map& dbcmap, bool diagonalblock = true,
+    virtual bool is_dbc_applied(const Epetra_Map& dbcmap, bool diagonalblock = true,
         const Core::LinAlg::SparseMatrix* trafo = nullptr) const = 0;
 
     /// Returns the Epetra_Map object associated with the (full) domain of this operator.
-    virtual const Epetra_Map& DomainMap() const = 0;
+    virtual const Epetra_Map& domain_map() const = 0;
 
     /// Add one operator to another
-    virtual void Add(const Core::LinAlg::SparseOperator& A, const bool transposeA,
+    virtual void add(const Core::LinAlg::SparseOperator& A, const bool transposeA,
         const double scalarA, const double scalarB) = 0;
 
     /// Add one SparseMatrixBase to another
-    virtual void AddOther(Core::LinAlg::SparseMatrixBase& A, const bool transposeA,
+    virtual void add_other(Core::LinAlg::SparseMatrixBase& A, const bool transposeA,
         const double scalarA, const double scalarB) const = 0;
 
     /// Add one BlockSparseMatrix to another
-    virtual void AddOther(Core::LinAlg::BlockSparseMatrixBase& A, const bool transposeA,
+    virtual void add_other(Core::LinAlg::BlockSparseMatrixBase& A, const bool transposeA,
         const double scalarA, const double scalarB) const = 0;
 
     /// Multiply all values by a constant value (in place: A <- ScalarConstant * A).
-    virtual int Scale(double ScalarConstant) = 0;
+    virtual int scale(double ScalarConstant) = 0;
 
     /// Matrix-vector product
-    virtual int Multiply(bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const = 0;
+    virtual int multiply(bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const = 0;
   };
 
 

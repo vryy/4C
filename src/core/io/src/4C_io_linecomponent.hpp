@@ -439,7 +439,7 @@ namespace Input
         : LineComponent(name, optional),
           insert_operation_([process_operation, name](const std::string& read_string,
                                 Core::IO::InputParameterContainer& container)
-              { container.Add(name, process_operation(read_string)); }),
+              { container.add(name, process_operation(read_string)); }),
           print_string_(std::move(print_string)){};
 
     void default_line(std::ostream& stream) override;

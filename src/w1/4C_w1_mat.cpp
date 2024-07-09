@@ -44,26 +44,26 @@ void Discret::ELEMENTS::Wall1::w1_call_matgeononl(
     const int gp                                       ///< Gauss point
 )
 {
-  if (material->MaterialType() == Core::Materials::m_structporo or
-      material->MaterialType() == Core::Materials::m_structpororeaction or
-      material->MaterialType() == Core::Materials::m_structpororeactionECM)
+  if (material->material_type() == Core::Materials::m_structporo or
+      material->material_type() == Core::Materials::m_structpororeaction or
+      material->material_type() == Core::Materials::m_structpororeactionECM)
   {
     Teuchos::RCP<const Mat::StructPoro> actmat =
         Teuchos::rcp_static_cast<const Mat::StructPoro>(material);
     // setup is done in so3_poro
     // actmat->setup(NUMGPT_SOH8);
-    material = actmat->GetMaterial();
+    material = actmat->get_material();
   }
 
   /*--------------------------- call material law -> get tangent modulus--*/
-  switch (material->MaterialType())
+  switch (material->material_type())
   {
     case Core::Materials::m_stvenant: /*----------------------- linear elastic ---*/
     {
       const Mat::StVenantKirchhoff* actmat =
           static_cast<const Mat::StVenantKirchhoff*>(material.get());
-      double ym = actmat->Youngs();
-      double pv = actmat->PoissonRatio();
+      double ym = actmat->youngs();
+      double pv = actmat->poisson_ratio();
 
 
       /*-------------- some comments, so that even fluid people are able to
@@ -183,7 +183,7 @@ void Discret::ELEMENTS::Wall1::w1_call_matgeononl(
       FOUR_C_THROW("Invalid type of material law for wall element");
       break;
     }
-  }  // switch(material->MaterialType())
+  }  // switch(material->material_type())
 
   return;
 }  // Discret::ELEMENTS::Wall1::w1_call_matgeononl
@@ -346,7 +346,7 @@ void Discret::ELEMENTS::Wall1::material_response3d(Core::LinAlg::Matrix<6, 1>* s
     Core::LinAlg::Matrix<6, 6>* cmat, const Core::LinAlg::Matrix<6, 1>* glstrain,
     Teuchos::ParameterList& params, const int gp)
 {
-  SolidMaterial()->evaluate(nullptr, glstrain, params, stress, cmat, gp, Id());
+  solid_material()->evaluate(nullptr, glstrain, params, stress, cmat, gp, id());
 
   return;
 }
@@ -358,7 +358,7 @@ double Discret::ELEMENTS::Wall1::energy_internal(Teuchos::RCP<const Core::Mat::M
     Teuchos::ParameterList& params, const Core::LinAlg::SerialDenseVector& Ev, const int gp)
 {
   // switch material type
-  switch (material->MaterialType())
+  switch (material->material_type())
   {
     case Core::Materials::m_stvenant:  // linear elastic
     {
@@ -382,7 +382,7 @@ double Discret::ELEMENTS::Wall1::energy_internal(Teuchos::RCP<const Core::Mat::M
       double psi = 0.0;
 
       // call material for evaluation of strain energy function
-      SolidMaterial()->StrainEnergy(glstrain, psi, gp, Id());
+      solid_material()->strain_energy(glstrain, psi, gp, id());
 
       return psi;
     }
@@ -399,7 +399,7 @@ double Discret::ELEMENTS::Wall1::energy_internal(Teuchos::RCP<const Core::Mat::M
       double psi = 0.0;
 
       // call material for evaluation of strain energy function
-      SolidMaterial()->StrainEnergy(glstrain, psi, gp, Id());
+      solid_material()->strain_energy(glstrain, psi, gp, id());
 
       return psi;
     }
@@ -410,7 +410,7 @@ double Discret::ELEMENTS::Wall1::energy_internal(Teuchos::RCP<const Core::Mat::M
       return 0.0;
     }
     break;
-  }  // end of switch (material->MaterialType())
+  }  // end of switch (material->material_type())
 
   FOUR_C_THROW(
       "You should never end up here, since all possible cases should be "

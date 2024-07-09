@@ -47,7 +47,7 @@ void Solid::MODELEVALUATOR::SpringDashpot::setup()
 
   // get all spring dashpot conditions
   std::vector<Teuchos::RCP<Core::Conditions::Condition>> springdashpots;
-  discret().GetCondition("RobinSpringDashpot", springdashpots);
+  discret().get_condition("RobinSpringDashpot", springdashpots);
 
   // new instance of spring dashpot BC for each condition
   for (auto& springdashpot : springdashpots)
@@ -73,7 +73,7 @@ void Solid::MODELEVALUATOR::SpringDashpot::reset(const Epetra_Vector& x)
   check_init_setup();
 
   // loop over all spring dashpot conditions and reset them
-  for (const auto& spring : springs_) spring->ResetNewton();
+  for (const auto& spring : springs_) spring->reset_newton();
 
   // update the structural displacement vector
   disnp_ptr_ = global_state().get_dis_np();
@@ -82,7 +82,7 @@ void Solid::MODELEVALUATOR::SpringDashpot::reset(const Epetra_Vector& x)
   velnp_ptr_ = global_state().get_vel_np();
 
   fspring_np_ptr_->PutScalar(0.0);
-  stiff_spring_ptr_->Zero();
+  stiff_spring_ptr_->zero();
 }
 
 /*----------------------------------------------------------------------*
@@ -96,13 +96,13 @@ bool Solid::MODELEVALUATOR::SpringDashpot::evaluate_force()
   fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map_view()));
   for (const auto& spring : springs_)
   {
-    const CONSTRAINTS::SpringDashpot::SpringType stype = spring->GetSpringType();
+    const CONSTRAINTS::SpringDashpot::SpringType stype = spring->get_spring_type();
 
     if (stype == CONSTRAINTS::SpringDashpot::xyz or
         stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
     {
       springdashpotparams.set("total time", global_state().get_time_np());
-      spring->EvaluateRobin(
+      spring->evaluate_robin(
           Teuchos::null, fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
     if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
@@ -134,13 +134,13 @@ bool Solid::MODELEVALUATOR::SpringDashpot::evaluate_stiff()
   // loop over all spring dashpot conditions and evaluate them
   for (const auto& spring : springs_)
   {
-    const CONSTRAINTS::SpringDashpot::SpringType stype = spring->GetSpringType();
+    const CONSTRAINTS::SpringDashpot::SpringType stype = spring->get_spring_type();
 
     if (stype == CONSTRAINTS::SpringDashpot::xyz or
         stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
     {
       springdashpotparams.set("total time", global_state().get_time_np());
-      spring->EvaluateRobin(
+      spring->evaluate_robin(
           stiff_spring_ptr_, Teuchos::null, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
     if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
@@ -151,7 +151,7 @@ bool Solid::MODELEVALUATOR::SpringDashpot::evaluate_stiff()
     }
   }
 
-  if (not stiff_spring_ptr_->Filled()) stiff_spring_ptr_->Complete();
+  if (not stiff_spring_ptr_->filled()) stiff_spring_ptr_->complete();
 
   return true;
 }
@@ -177,13 +177,13 @@ bool Solid::MODELEVALUATOR::SpringDashpot::evaluate_force_stiff()
   // loop over all spring dashpot conditions and evaluate them
   for (const auto& spring : springs_)
   {
-    const CONSTRAINTS::SpringDashpot::SpringType stype = spring->GetSpringType();
+    const CONSTRAINTS::SpringDashpot::SpringType stype = spring->get_spring_type();
 
     if (stype == CONSTRAINTS::SpringDashpot::xyz or
         stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
     {
       springdashpotparams.set("total time", global_state().get_time_np());
-      spring->EvaluateRobin(
+      spring->evaluate_robin(
           stiff_spring_ptr_, fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
     if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
@@ -194,7 +194,7 @@ bool Solid::MODELEVALUATOR::SpringDashpot::evaluate_force_stiff()
     }
   }
 
-  if (not stiff_spring_ptr_->Filled()) stiff_spring_ptr_->Complete();
+  if (not stiff_spring_ptr_->filled()) stiff_spring_ptr_->complete();
 
   return true;
 }
@@ -214,9 +214,9 @@ bool Solid::MODELEVALUATOR::SpringDashpot::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
-  jac_dd_ptr->Add(*stiff_spring_ptr_, false, timefac_np, 1.0);
+  jac_dd_ptr->add(*stiff_spring_ptr_, false, timefac_np, 1.0);
   // no need to keep it
-  stiff_spring_ptr_->Zero();
+  stiff_spring_ptr_->zero();
   // nothing to do
   return true;
 }
@@ -230,17 +230,17 @@ void Solid::MODELEVALUATOR::SpringDashpot::write_restart(
   Teuchos::RCP<Epetra_Vector> springoffsetprestr =
       Teuchos::rcp(new Epetra_Vector(*discret().dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> springoffsetprestr_old =
-      Teuchos::rcp(new Epetra_MultiVector(*(discret().NodeRowMap()), 3, true));
+      Teuchos::rcp(new Epetra_MultiVector(*(discret().node_row_map()), 3, true));
 
   // collect outputs from all spring dashpot conditions
   for (const auto& spring : springs_)
   {
     // get spring type from current condition
-    const CONSTRAINTS::SpringDashpot::SpringType stype = spring->GetSpringType();
+    const CONSTRAINTS::SpringDashpot::SpringType stype = spring->get_spring_type();
 
     if (stype == CONSTRAINTS::SpringDashpot::xyz or
         stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
-      spring->OutputPrestrOffset(springoffsetprestr);
+      spring->output_prestr_offset(springoffsetprestr);
     if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
       spring->output_prestr_offset_old(springoffsetprestr_old);
   }
@@ -257,7 +257,7 @@ void Solid::MODELEVALUATOR::SpringDashpot::read_restart(Core::IO::Discretization
 {
   Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(*discret().dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> tempvecold =
-      Teuchos::rcp(new Epetra_MultiVector(*(discret().NodeRowMap()), 3, true));
+      Teuchos::rcp(new Epetra_MultiVector(*(discret().node_row_map()), 3, true));
 
   ioreader.read_vector(tempvec, "springoffsetprestr");
   ioreader.read_multi_vector(tempvecold, "springoffsetprestr_old");
@@ -266,12 +266,12 @@ void Solid::MODELEVALUATOR::SpringDashpot::read_restart(Core::IO::Discretization
   for (const auto& spring : springs_)
   {
     // get spring type from current condition
-    const CONSTRAINTS::SpringDashpot::SpringType stype = spring->GetSpringType();
+    const CONSTRAINTS::SpringDashpot::SpringType stype = spring->get_spring_type();
 
     if (stype == CONSTRAINTS::SpringDashpot::xyz or
         stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
-      spring->SetRestart(tempvec);
-    if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal) spring->SetRestartOld(tempvecold);
+      spring->set_restart(tempvec);
+    if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal) spring->set_restart_old(tempvecold);
   }
 }
 
@@ -294,7 +294,7 @@ void Solid::MODELEVALUATOR::SpringDashpot::update_step_state(const double& timef
     {
       case Inpar::Solid::PreStress::mulf:
       case Inpar::Solid::PreStress::material_iterative:
-        for (const auto& spring : springs_) spring->ResetPrestress(global_state().get_dis_np());
+        for (const auto& spring : springs_) spring->reset_prestress(global_state().get_dis_np());
       default:
         break;
     }
@@ -309,20 +309,20 @@ void Solid::MODELEVALUATOR::SpringDashpot::output_step_state(
 {
   // row maps for export
   Teuchos::RCP<Epetra_Vector> gap =
-      Teuchos::rcp(new Epetra_Vector(*(discret().NodeRowMap()), true));
+      Teuchos::rcp(new Epetra_Vector(*(discret().node_row_map()), true));
   Teuchos::RCP<Epetra_MultiVector> normals =
-      Teuchos::rcp(new Epetra_MultiVector(*(discret().NodeRowMap()), 3, true));
+      Teuchos::rcp(new Epetra_MultiVector(*(discret().node_row_map()), 3, true));
   Teuchos::RCP<Epetra_MultiVector> springstress =
-      Teuchos::rcp(new Epetra_MultiVector(*(discret().NodeRowMap()), 3, true));
+      Teuchos::rcp(new Epetra_MultiVector(*(discret().node_row_map()), 3, true));
 
   // collect outputs from all spring dashpot conditions
   bool found_cursurfnormal = false;
   for (const auto& spring : springs_)
   {
-    spring->OutputGapNormal(gap, normals, springstress);
+    spring->output_gap_normal(gap, normals, springstress);
 
     // get spring type from current condition
-    const CONSTRAINTS::SpringDashpot::SpringType stype = spring->GetSpringType();
+    const CONSTRAINTS::SpringDashpot::SpringType stype = spring->get_spring_type();
     if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal) found_cursurfnormal = true;
   }
 
@@ -334,7 +334,7 @@ void Solid::MODELEVALUATOR::SpringDashpot::output_step_state(
   }
 
   // write spring stress if defined in io-flag
-  if (Core::UTILS::IntegralValue<bool>(Global::Problem::Instance()->IOParams(), "OUTPUT_SPRING"))
+  if (Core::UTILS::IntegralValue<bool>(Global::Problem::instance()->io_params(), "OUTPUT_SPRING"))
     iowriter.write_vector("springstress", springstress);
 }
 
@@ -346,7 +346,7 @@ void Solid::MODELEVALUATOR::SpringDashpot::reset_step_state()
 
   for (auto& spring : springs_)
   {
-    spring->ResetStepState();
+    spring->reset_step_state();
   }
 }
 

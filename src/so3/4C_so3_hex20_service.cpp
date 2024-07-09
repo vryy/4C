@@ -17,16 +17,15 @@ FOUR_C_NAMESPACE_OPEN
 std::vector<double> Discret::ELEMENTS::SoHex20::soh20_element_center_refe_coords()
 {
   // update element geometry
-  Core::Nodes::Node** nodes = Nodes();
   Core::LinAlg::Matrix<NUMNOD_SOH20, NUMDIM_SOH20> xrefe;  // material coord. of element
   for (int i = 0; i < NUMNOD_SOH20; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
   }
-  const Core::FE::CellType distype = Shape();
+  const Core::FE::CellType distype = shape();
   Core::LinAlg::Matrix<NUMNOD_SOH20, 1> funct;
   // Element midpoint at r=s=t=0.0
   Core::FE::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);

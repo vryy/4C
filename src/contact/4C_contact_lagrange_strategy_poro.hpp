@@ -53,7 +53,7 @@ namespace CONTACT
 
     //! @name Evaluation methods
 
-    void DoReadRestart(Core::IO::DiscretizationReader& reader,
+    void do_read_restart(Core::IO::DiscretizationReader& reader,
         Teuchos::RCP<const Epetra_Vector> dis,
         Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
@@ -81,13 +81,13 @@ namespace CONTACT
     //Todo to be updated the global derivative matrices S and P and Tresca friction matrix L +
     vector r.
     */
-    void PoroInitialize(Core::Adapter::Coupling& coupfs, Teuchos::RCP<const Epetra_Map> fluiddofs,
+    void poro_initialize(Core::Adapter::Coupling& coupfs, Teuchos::RCP<const Epetra_Map> fluiddofs,
         bool fullinit = true);
 
     /*!
     \brief as D and M Matrices are initialized here
     */
-    void PoroMtInitialize();
+    void poro_mt_initialize();
 
     /*!
     \brief Prepare Matrices D and M, that are not Computed coming from the mortar adapter
@@ -104,7 +104,7 @@ namespace CONTACT
     \brief
     set old matrices dold_ mold_ and the old lagrange multiplier in case of poro meshtying
     */
-    void PoroMtUpdate();
+    void poro_mt_update();
 
     /*!
     \brief Evaluate poro no penetration contact
@@ -151,13 +151,13 @@ namespace CONTACT
     We only recover the Lagrange multipliers for poro no penetration condition here, which had been
     statically condensated during the setup of the global problem!*/
 
-    void RecoverPoroNoPen(Teuchos::RCP<Epetra_Vector> disi, Teuchos::RCP<Epetra_Vector> inc);
+    void recover_poro_no_pen(Teuchos::RCP<Epetra_Vector> disi, Teuchos::RCP<Epetra_Vector> inc);
 
-    void RecoverPoroNoPen(
+    void recover_poro_no_pen(
         Teuchos::RCP<Epetra_Vector> disi, std::map<int, Teuchos::RCP<Epetra_Vector>> inc);
 
 
-    void UpdatePoroContact();
+    void update_poro_contact();
 
     /*!
     \brief Set current state
@@ -181,11 +181,11 @@ namespace CONTACT
     bool has_poro_no_penetration() const override { return no_penetration_; }
 
     // Return Lagrange Multiplier for No Penetration Condition!
-    Teuchos::RCP<Epetra_Vector> LambdaNoPen() { return lambda_; }
-    Teuchos::RCP<const Epetra_Vector> LambdaNoPen() const { return lambda_; }
+    Teuchos::RCP<Epetra_Vector> lambda_no_pen() { return lambda_; }
+    Teuchos::RCP<const Epetra_Vector> lambda_no_pen() const { return lambda_; }
 
     // Return all active fluid slave dofs
-    Teuchos::RCP<Epetra_Map> FluidActiveNDofMap() { return fgactiven_; };
+    Teuchos::RCP<Epetra_Map> fluid_active_n_dof_map() { return fgactiven_; };
 
    protected:
     // don't want = operator and cctor

@@ -31,11 +31,11 @@ FOUR_C_NAMESPACE_OPEN
  |  This method assembles the contribution of a 1D/2D slave and master  |
  |  overlap pair to the weighted gap of the adjacent slave nodes.       |
  *----------------------------------------------------------------------*/
-bool CONTACT::Integrator::AssembleG(
+bool CONTACT::Integrator::assemble_g(
     const Epetra_Comm& comm, Mortar::Element& sele, Core::LinAlg::SerialDenseVector& gseg)
 {
   // get adjacent slave nodes to assemble to
-  Core::Nodes::Node** snodes = sele.Nodes();
+  Core::Nodes::Node** snodes = sele.nodes();
   if (!snodes) FOUR_C_THROW("AssembleG: Null pointer for snodes!");
 
   // loop over all slave nodes
@@ -44,14 +44,14 @@ bool CONTACT::Integrator::AssembleG(
     CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(snodes[slave]);
 
     // only process slave node rows that belong to this proc
-    if (snode->Owner() != comm.MyPID()) continue;
+    if (snode->owner() != comm.MyPID()) continue;
 
     // do not process slave side boundary nodes
     // (their row entries would be zero anyway!)
-    if (snode->IsOnBound()) continue;
+    if (snode->is_on_bound()) continue;
 
     double val = gseg(slave);
-    snode->AddgValue(val);
+    snode->addg_value(val);
 
     /*
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -69,11 +69,11 @@ bool CONTACT::Integrator::AssembleG(
  |  Assemble g~ contribution (2D / 3D)                        popp 02/10|
  |  PIECEWISE LINEAR LM INTERPOLATION VERSION                           |
  *----------------------------------------------------------------------*/
-bool CONTACT::Integrator::AssembleG(
+bool CONTACT::Integrator::assemble_g(
     const Epetra_Comm& comm, Mortar::IntElement& sintele, Core::LinAlg::SerialDenseVector& gseg)
 {
   // get adjacent slave int nodes to assemble to
-  Core::Nodes::Node** snodes = sintele.Nodes();
+  Core::Nodes::Node** snodes = sintele.nodes();
   if (!snodes) FOUR_C_THROW("AssembleG: Null pointer for sintnodes!");
 
   // loop over all slave nodes
@@ -82,14 +82,14 @@ bool CONTACT::Integrator::AssembleG(
     CONTACT::Node* snode = dynamic_cast<CONTACT::Node*>(snodes[slave]);
 
     // only process slave node rows that belong to this proc
-    if (snode->Owner() != comm.MyPID()) continue;
+    if (snode->owner() != comm.MyPID()) continue;
 
     // do not process slave side boundary nodes
     // (their row entries would be zero anyway!)
-    if (snode->IsOnBound()) continue;
+    if (snode->is_on_bound()) continue;
 
     double val = gseg(slave);
-    snode->AddgValue(val);
+    snode->addg_value(val);
   }
 
   return true;

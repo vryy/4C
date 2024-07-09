@@ -36,9 +36,9 @@ namespace Core::IO
   /*----------------------------------------------------------------------*/
   DomainReader::DomainReader(Teuchos::RCP<Core::FE::Discretization> dis,
       const Core::IO::DatFileReader& reader, std::string sectionname)
-      : name_(dis->Name()),
+      : name_(dis->name()),
         reader_(reader),
-        comm_(reader.Comm()),
+        comm_(reader.get_comm()),
         sectionname_(sectionname),
         dis_(dis)
   {
@@ -52,7 +52,7 @@ namespace Core::IO
 
     Teuchos::Time time("", true);
 
-    if (!reader_.MyOutputFlag() && myrank == 0)
+    if (!reader_.my_output_flag() && myrank == 0)
       Core::IO::cout << "Entering domain generation mode for " << name_
                      << " discretization ...\nCreate and partition elements      in...."
                      << Core::IO::endl;
@@ -62,9 +62,9 @@ namespace Core::IO
     inputData.node_gid_of_first_new_node_ = nodeGIdOfFirstNewNode;
 
     Core::IO::GridGenerator::CreateRectangularCuboidDiscretization(
-        *dis_, inputData, static_cast<bool>(reader_.MyOutputFlag()));
+        *dis_, inputData, static_cast<bool>(reader_.my_output_flag()));
 
-    if (!myrank && reader_.MyOutputFlag() == 0)
+    if (!myrank && reader_.my_output_flag() == 0)
       Core::IO::cout << "............................................... " << std::setw(10)
                      << std::setprecision(5) << std::scientific << time.totalElapsedTime(true)
                      << " secs" << Core::IO::endl;
@@ -81,7 +81,7 @@ namespace Core::IO
     if (comm_->MyPID() == 0)
     {
       // open input file at the right position
-      std::string inputFileName = reader_.MyInputfileName();
+      std::string inputFileName = reader_.my_inputfile_name();
       std::ifstream file(inputFileName.c_str());
       std::ifstream::pos_type pos = reader_.excluded_section_position(sectionname_);
       if (pos != std::ifstream::pos_type(-1))
@@ -216,14 +216,14 @@ namespace Core::IO
 
     Teuchos::Time time("", true);
 
-    if (!myrank && !reader_.MyOutputFlag())
+    if (!myrank && !reader_.my_output_flag())
       Core::IO::cout << "Complete discretization " << std::left << std::setw(16) << name_
                      << " in...." << Core::IO::flush;
 
     int err = dis_->fill_complete(false, false, false);
     if (err) FOUR_C_THROW("dis_->fill_complete() returned %d", err);
 
-    if (!myrank && !reader_.MyOutputFlag())
+    if (!myrank && !reader_.my_output_flag())
       Core::IO::cout << time.totalElapsedTime(true) << " secs" << Core::IO::endl;
 
     Core::Rebalance::UTILS::print_parallel_distribution(*dis_);

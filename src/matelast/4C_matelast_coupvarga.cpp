@@ -21,8 +21,9 @@ Mat::Elastic::PAR::CoupVarga::CoupVarga(const Core::Mat::PAR::Parameter::Data& m
 
 Mat::Elastic::CoupVarga::CoupVarga(Mat::Elastic::PAR::CoupVarga* params) : params_(params) {}
 
-void Mat::Elastic::CoupVarga::AddShearMod(bool& haveshearmod,  ///< non-zero shear modulus was added
-    double& shearmod                                           ///< variable to add upon
+void Mat::Elastic::CoupVarga::add_shear_mod(
+    bool& haveshearmod,  ///< non-zero shear modulus was added
+    double& shearmod     ///< variable to add upon
 ) const
 {
   // indeed, a shear modulus is provided

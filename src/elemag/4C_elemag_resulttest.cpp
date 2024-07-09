@@ -38,28 +38,28 @@ void EleMag::ElemagResultTest::test_node(Input::LineDefinition& res, int& nerr, 
   // care for the case of multiple discretizations of the same field type
   std::string dis;
   res.extract_string("DIS", dis);
-  if (dis != dis_->Name()) return;
+  if (dis != dis_->name()) return;
 
   int node;
   res.extract_int("NODE", node);
   node -= 1;
 
-  int havenode(dis_->HaveGlobalNode(node));
+  int havenode(dis_->have_global_node(node));
   int isnodeofanybody(0);
-  dis_->Comm().SumAll(&havenode, &isnodeofanybody, 1);
+  dis_->get_comm().SumAll(&havenode, &isnodeofanybody, 1);
 
   if (isnodeofanybody == 0)
   {
-    FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1, dis_->Name().c_str());
+    FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1, dis_->name().c_str());
   }
   else
   {
-    if (dis_->HaveGlobalNode(node))
+    if (dis_->have_global_node(node))
     {
-      Core::Nodes::Node* actnode = dis_->gNode(node);
+      Core::Nodes::Node* actnode = dis_->g_node(node);
 
       // Here, we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->Owner() != dis_->Comm().MyPID()) return;
+      if (actnode->owner() != dis_->get_comm().MyPID()) return;
 
       double result = 0.;
       // const Epetra_BlockMap& map = mysol_->Map();

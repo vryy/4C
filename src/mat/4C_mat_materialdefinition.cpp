@@ -46,11 +46,11 @@ void Mat::MaterialDefinition::add_component(const Teuchos::RCP<Input::LineCompon
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::vector<std::pair<int, Core::IO::InputParameterContainer>> Mat::MaterialDefinition::Read(
+std::vector<std::pair<int, Core::IO::InputParameterContainer>> Mat::MaterialDefinition::read(
     Core::IO::DatFileReader& reader)
 {
   std::string name = "--MATERIALS";
-  std::vector<const char*> section = reader.Section(name);
+  std::vector<const char*> section = reader.section(name);
 
   std::vector<std::pair<int, Core::IO::InputParameterContainer>> found_materials;
   if (!section.empty())
@@ -68,9 +68,9 @@ std::vector<std::pair<int, Core::IO::InputParameterContainer>> Mat::MaterialDefi
 
       Core::IO::LineParser parser("While reading 'MATERIALS' section: ");
 
-      parser.Consume(*condline, "MAT");
-      const int matid = parser.Read<int>(*condline);
-      const std::string name = parser.Read<std::string>(*condline);
+      parser.consume(*condline, "MAT");
+      const int matid = parser.read<int>(*condline);
+      const std::string name = parser.read<std::string>(*condline);
 
       // Remove the parts that were already read.
       condline->str(condline->str().erase(0, (size_t)condline->tellg()));
@@ -80,7 +80,8 @@ std::vector<std::pair<int, Core::IO::InputParameterContainer>> Mat::MaterialDefi
         if (matid <= -1) FOUR_C_THROW("Illegal negative ID provided");
 
         Core::IO::InputParameterContainer input_data;
-        for (auto& j : inputline_) condline = j->read(Name(), condline, input_data);
+        for (auto& j : inputline_)
+          condline = j->read(MaterialDefinition::name(), condline, input_data);
 
         // current material input line contains bad elements
         if (condline->str().find_first_not_of(' ') != std::string::npos)
@@ -141,17 +142,17 @@ void Mat::AppendMaterialDefinition(std::vector<Teuchos::RCP<MaterialDefinition>>
   {
     Teuchos::RCP<Mat::MaterialDefinition> mmd = *m;
 
-    if (mmd->Type() == mat->Type())
+    if (mmd->type() == mat->type())
       FOUR_C_THROW(
           "Trying to define two materials with the same type '%d'\n"
           "Please revise your definitions of valid materials",
-          mmd->Type());
+          mmd->type());
 
-    if (mmd->Name() == mat->Name())
+    if (mmd->name() == mat->name())
       FOUR_C_THROW(
           "Trying to define two materials with the same name '%s'\n"
           "Please revise your definitions of valid materials",
-          mmd->Name().c_str());
+          mmd->name().c_str());
   }
 
   // no coincidence found

@@ -31,7 +31,7 @@ namespace Core::Communication
     class ParObjectPreRegister
     {
      public:
-      static ParObjectPreRegister* Instance()
+      static ParObjectPreRegister* instance()
       {
         if (instance_ == nullptr)
         {
@@ -40,15 +40,15 @@ namespace Core::Communication
         return instance_.get();
       }
 
-      void Register(ParObjectType* parobjecttype) { types_.push_back(parobjecttype); }
+      void do_register(ParObjectType* parobjecttype) { types_.push_back(parobjecttype); }
 
-      static void Finalize()
+      static void finalize()
       {
         if (instance_)
         {
           for (auto& parobjecttype : instance_->types_)
           {
-            parobjecttype->UniqueParObjectId();
+            parobjecttype->unique_par_object_id();
           }
           instance_.reset();
         }
@@ -69,17 +69,17 @@ namespace Core::Communication
 /*----------------------------------------------------------------------*/
 Core::Communication::ParObjectType::ParObjectType() : objectid_(0)
 {
-  ParObjectPreRegister::Instance()->Register(this);
+  ParObjectPreRegister::instance()->do_register(this);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::Communication::ParObjectType::UniqueParObjectId()
+int Core::Communication::ParObjectType::unique_par_object_id()
 {
   if (objectid_ == 0)
   {
-    Core::Communication::ParObjectFactory::Instance().do_register(this);
+    Core::Communication::ParObjectFactory::instance().do_register(this);
   }
   return objectid_;
 }
@@ -87,7 +87,7 @@ int Core::Communication::ParObjectType::UniqueParObjectId()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::Communication::ParObjectFactory& Core::Communication::ParObjectFactory::Instance()
+Core::Communication::ParObjectFactory& Core::Communication::ParObjectFactory::instance()
 {
   static std::unique_ptr<Core::Communication::ParObjectFactory> instance;
   if (instance == nullptr)
@@ -103,7 +103,7 @@ Core::Communication::ParObjectFactory& Core::Communication::ParObjectFactory::In
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::Communication::ParObject* Core::Communication::ParObjectFactory::Create(
+Core::Communication::ParObject* Core::Communication::ParObjectFactory::create(
     const std::vector<char>& data)
 {
   finalize_registration();
@@ -120,7 +120,7 @@ Core::Communication::ParObject* Core::Communication::ParObjectFactory::Create(
         "object id %d undefined. Have you extended Core::Communication::ParObjectList()?", type);
   }
 
-  ParObject* o = i->second->Create(data);
+  ParObject* o = i->second->create(data);
 
   if (o == nullptr)
   {
@@ -133,14 +133,14 @@ Core::Communication::ParObject* Core::Communication::ParObjectFactory::Create(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Core::Communication::ParObjectFactory::Create(
+Teuchos::RCP<Core::Elements::Element> Core::Communication::ParObjectFactory::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   finalize_registration();
   std::map<std::string, Core::Elements::ElementType*>::iterator c = element_cache_.find(eletype);
   if (c != element_cache_.end())
   {
-    return c->second->Create(eletype, eledistype, id, owner);
+    return c->second->create(eletype, eledistype, id, owner);
   }
 
   // This is element specific code. Thus we need a down cast.
@@ -151,7 +151,7 @@ Teuchos::RCP<Core::Elements::Element> Core::Communication::ParObjectFactory::Cre
     Core::Elements::ElementType* eot = dynamic_cast<Core::Elements::ElementType*>(pot);
     if (eot != nullptr)
     {
-      Teuchos::RCP<Core::Elements::Element> ele = eot->Create(eletype, eledistype, id, owner);
+      Teuchos::RCP<Core::Elements::Element> ele = eot->create(eletype, eledistype, id, owner);
       if (ele != Teuchos::null)
       {
         element_cache_[eletype] = eot;
@@ -169,7 +169,7 @@ Teuchos::RCP<Core::Elements::Element> Core::Communication::ParObjectFactory::Cre
 /*----------------------------------------------------------------------*/
 void Core::Communication::ParObjectFactory::do_register(ParObjectType* object_type)
 {
-  std::string name = object_type->Name();
+  std::string name = object_type->name();
   const unsigned char* str = reinterpret_cast<const unsigned char*>(name.c_str());
 
   // simple hash
@@ -186,7 +186,7 @@ void Core::Communication::ParObjectFactory::do_register(ParObjectType* object_ty
   if (i != type_map_.end())
   {
     FOUR_C_THROW("object (%s,%d) already defined: (%s,%d)", name.c_str(), hash,
-        i->second->Name().c_str(), i->first);
+        i->second->name().c_str(), i->first);
   }
 
   if (hash == 0)
@@ -205,7 +205,7 @@ void Core::Communication::ParObjectFactory::do_register(ParObjectType* object_ty
 /*----------------------------------------------------------------------*/
 void Core::Communication::ParObjectFactory::finalize_registration()
 {
-  ParObjectPreRegister::Finalize();
+  ParObjectPreRegister::finalize();
 }
 
 
@@ -218,10 +218,10 @@ void Core::Communication::ParObjectFactory::initialize_elements(Core::FE::Discre
   // find participating element types such that only those element types are initialized
 
   std::set<int> ids;
-  int numelements = dis.NumMyColElements();
+  int numelements = dis.num_my_col_elements();
   for (int i = 0; i < numelements; ++i)
   {
-    ids.insert(dis.lColElement(i)->ElementType().UniqueParObjectId());
+    ids.insert(dis.l_col_element(i)->element_type().unique_par_object_id());
   }
 
   std::vector<int> localtypeids;
@@ -230,7 +230,7 @@ void Core::Communication::ParObjectFactory::initialize_elements(Core::FE::Discre
   localtypeids.reserve(ids.size());
   localtypeids.assign(ids.begin(), ids.end());
 
-  Core::LinAlg::AllreduceVector(localtypeids, globaltypeids, dis.Comm());
+  Core::LinAlg::AllreduceVector(localtypeids, globaltypeids, dis.get_comm());
 
   std::set<Core::Elements::ElementType*>& ae = active_elements_[&dis];
 

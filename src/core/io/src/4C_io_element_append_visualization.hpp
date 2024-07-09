@@ -38,18 +38,18 @@ namespace Core::IO
       std::vector<double>& point_coordinates)
   {
     const unsigned int num_spatial_dimensions = 3;
-    auto vtk_cell_info = GetVtkCellTypeFromFourCElementShapeType(ele.Shape());
+    auto vtk_cell_info = GetVtkCellTypeFromFourCElementShapeType(ele.shape());
     const std::vector<int>& numbering = vtk_cell_info.second;
 
     // Add the cell type to the output.
     cell_types.push_back(vtk_cell_info.first);
 
     // Add each node to the output.
-    const Core::Nodes::Node* const* nodes = ele.Nodes();
+    const Core::Nodes::Node* const* nodes = ele.nodes();
 
     for (int inode = 0; inode < ele.num_node(); ++inode)
       for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
-        point_coordinates.push_back(nodes[numbering[inode]]->X()[idim]);
+        point_coordinates.push_back(nodes[numbering[inode]]->x()[idim]);
 
     // Return the number of added points.
     return ele.num_node();
@@ -146,9 +146,9 @@ namespace Core::IO
       for (unsigned int i_controlpoint = 0; i_controlpoint < (unsigned int)ele.num_node();
            ++i_controlpoint)
       {
-        const Core::Nodes::Node* controlpoint = ele.Nodes()[i_controlpoint];
+        const Core::Nodes::Node* controlpoint = ele.nodes()[i_controlpoint];
         for (int i_dim = 0; i_dim < dim_output; ++i_dim)
-          pos_controlpoints(dim_output * i_controlpoint + i_dim) = controlpoint->X()[i_dim];
+          pos_controlpoints(dim_output * i_controlpoint + i_dim) = controlpoint->x()[i_dim];
       }
 
       Core::LinAlg::Matrix<dim_output, 1, double> point_result;
@@ -171,14 +171,14 @@ namespace Core::IO
               break;
             default:
               FOUR_C_THROW("The node numbering for the nurbs element shape %s is not implemented",
-                  Core::FE::CellTypeToString(ele.Shape()).c_str());
+                  Core::FE::CellTypeToString(ele.shape()).c_str());
               break;
           }
         }
 
         // Get the position at the parameter coordinate.
         point_result = EvalNurbsInterpolation<number_of_output_points, dim_nurbs, dim_output>(
-            pos_controlpoints, xi, weights, knots, ele.Shape());
+            pos_controlpoints, xi, weights, knots, ele.shape());
 
         for (unsigned int i_dim = 0; i_dim < dim_output; i_dim++)
           point_coordinates.push_back(point_result(i_dim));
@@ -197,7 +197,7 @@ namespace Core::IO
   {
     using implemented_celltypes =
         Core::FE::CelltypeSequence<Core::FE::CellType::nurbs9, Core::FE::CellType::nurbs27>;
-    return Core::FE::CellTypeSwitch<implemented_celltypes>(ele.Shape(),
+    return Core::FE::CellTypeSwitch<implemented_celltypes>(ele.shape(),
         [&](auto celltype_t)
         {
           return AppendVisualizationGeometryNURBS<celltype_t()>(
@@ -224,7 +224,7 @@ namespace Core::IO
       unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
       std::vector<double>& vtu_point_result_data)
   {
-    const std::vector<int>& numbering = GetVtkCellTypeFromFourCElementShapeType(ele.Shape()).second;
+    const std::vector<int>& numbering = GetVtkCellTypeFromFourCElementShapeType(ele.shape()).second;
 
     for (unsigned int inode = 0; inode < (unsigned int)ele.num_node(); ++inode)
     {
@@ -232,7 +232,7 @@ namespace Core::IO
       nodedofs.clear();
 
       // local storage position of desired dof gid in dofset number 0
-      discret.Dof((unsigned)0, ele.Nodes()[numbering[inode]], nodedofs);
+      discret.dof((unsigned)0, ele.nodes()[numbering[inode]], nodedofs);
 
       // adjust resultdofs according to elements dof
       if (nodedofs.size() < result_num_dofs_per_node)
@@ -297,7 +297,7 @@ namespace Core::IO
           dof_result;
       std::vector<double> eledisp;
       std::vector<int> lm, lmowner, lmstride;
-      ele.LocationVector(discret, lm, lmowner, lmstride);
+      ele.location_vector(discret, lm, lmowner, lmstride);
       Core::FE::ExtractMyValues(*result_data_dofbased, eledisp, lm);
       dof_result.set_view(eledisp.data());
 
@@ -318,14 +318,14 @@ namespace Core::IO
               break;
             default:
               FOUR_C_THROW("The node numbering for the nurbs element shape %s is not implemented",
-                  Core::FE::CellTypeToString(ele.Shape()).c_str());
+                  Core::FE::CellTypeToString(ele.shape()).c_str());
           }
         }
 
         // Get the field value at the parameter coordinate
         point_result =
             EvalNurbsInterpolation<number_of_output_points, dim_nurbs, result_num_dofs_per_node>(
-                dof_result, xi, weights, knots, ele.Shape());
+                dof_result, xi, weights, knots, ele.shape());
 
         for (unsigned int i_dim = 0; i_dim < result_num_dofs_per_node; i_dim++)
           vtu_point_result_data.push_back(point_result(i_dim));
@@ -356,7 +356,7 @@ namespace Core::IO
   {
     using implemented_celltypes =
         Core::FE::CelltypeSequence<Core::FE::CellType::nurbs9, Core::FE::CellType::nurbs27>;
-    return Core::FE::CellTypeSwitch<implemented_celltypes>(ele.Shape(),
+    return Core::FE::CellTypeSwitch<implemented_celltypes>(ele.shape(),
         [&](auto celltype_t)
         {
           switch (result_num_dofs_per_node)

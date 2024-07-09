@@ -38,7 +38,7 @@ void FBI::FBIBinningGeometryCoupler::setup_binning(
     Teuchos::RCP<const Epetra_Vector> structure_displacement)
 {
   Teuchos::RCP<const Epetra_Vector> disp2 =
-      Teuchos::rcp(new const Epetra_Vector(*(discretizations[1]->DofColMap())));
+      Teuchos::rcp(new const Epetra_Vector(*(discretizations[1]->dof_col_map())));
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> disp_vec = {structure_displacement, disp2};
 
@@ -50,7 +50,7 @@ void FBI::FBIBinningGeometryCoupler::partition_geometry(
     Teuchos::RCP<const Epetra_Vector> structure_displacement)
 {
   Teuchos::RCP<const Epetra_Vector> disp2 =
-      Teuchos::rcp(new const Epetra_Vector(*(discretizations[1]->DofColMap())));
+      Teuchos::rcp(new const Epetra_Vector(*(discretizations[1]->dof_col_map())));
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> disp_vec = {structure_displacement, disp2};
 
@@ -62,17 +62,17 @@ void FBI::FBIBinningGeometryCoupler::partition_geometry(
   binstrategy_->distribute_row_elements_to_bins_using_ele_aabb(
       discretizations[0], bintoelemap_, structure_displacement);
 
-  binstrategy_->BinDiscret()->fill_complete(false, false, false);
+  binstrategy_->bin_discret()->fill_complete(false, false, false);
 
   std::set<int> colbins;
 
   // first, add default one layer ghosting
 
   std::vector<int> binvec(27);
-  for (auto i = 0; i < binstrategy_->BinDiscret()->ElementRowMap()->NumMyElements(); ++i)
+  for (auto i = 0; i < binstrategy_->bin_discret()->element_row_map()->NumMyElements(); ++i)
   {
-    auto currbin = binstrategy_->BinDiscret()->lRowElement(i);
-    int it = currbin->Id();
+    auto currbin = binstrategy_->bin_discret()->l_row_element(i);
+    int it = currbin->id();
     {
       binstrategy_->get_neighbor_and_own_bin_ids(it, binvec);
       colbins.insert(binvec.begin(), binvec.end());
@@ -86,11 +86,11 @@ void FBI::FBIBinningGeometryCoupler::partition_geometry(
 
   // assign Elements to bins
   binstrategy_->remove_all_eles_from_bins();
-  binstrategy_->AssignElesToBins(
+  binstrategy_->assign_eles_to_bins(
       discretizations[0], bintoelemap_, BEAMINTERACTION::UTILS::ConvertElementToBinContentType);
 }
 /*----------------------------------------------------------------------*/
-void FBI::FBIBinningGeometryCoupler::UpdateBinning(
+void FBI::FBIBinningGeometryCoupler::update_binning(
     Teuchos::RCP<Core::FE::Discretization>& structure_discretization,
     Teuchos::RCP<const Epetra_Vector> structure_column_displacement)
 {
@@ -100,7 +100,7 @@ void FBI::FBIBinningGeometryCoupler::UpdateBinning(
 
   // assign Elements to bins
   binstrategy_->remove_all_eles_from_bins();
-  binstrategy_->AssignElesToBins(structure_discretization, bintoelemap_,
+  binstrategy_->assign_eles_to_bins(structure_discretization, bintoelemap_,
       BEAMINTERACTION::UTILS::ConvertElementToBinContentType);
 }
 /*----------------------------------------------------------------------*/
@@ -117,7 +117,7 @@ void FBI::FBIBinningGeometryCoupler::setup(
 }
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIBinningGeometryCoupler::Search(
+Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIBinningGeometryCoupler::search(
     std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
     Teuchos::RCP<const Epetra_Vector>& column_structure_displacement)
 {
@@ -125,12 +125,12 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIBinningGeometryCoupler::Se
       Teuchos::TimeMonitor::getNewTimer("FBI::FBIBinningCoupler::Search");
   Teuchos::TimeMonitor monitor(*t);
 
-  UpdateBinning(discretizations[0], column_structure_displacement);
+  update_binning(discretizations[0], column_structure_displacement);
   // Vector to hand elements pointers to the bridge object
   Teuchos::RCP<std::map<int, std::vector<int>>> pairids =
       Teuchos::rcp(new std::map<int, std::vector<int>>);
 
-  pairids = FBI::FBIGeometryCoupler::Search(discretizations, column_structure_displacement);
+  pairids = FBI::FBIGeometryCoupler::search(discretizations, column_structure_displacement);
 
   return pairids;
 }
@@ -146,25 +146,25 @@ void FBI::FBIBinningGeometryCoupler::compute_current_positions(Core::FE::Discret
       9);  // todo this does not work for all possible elements, does it? Variable size?
   std::vector<double> mydisp(3, 0.0);
 
-  const Epetra_Map* bincolmap = binstrategy_->BinDiscret()->ElementColMap();
+  const Epetra_Map* bincolmap = binstrategy_->bin_discret()->element_col_map();
   std::vector<int> colbinvec;
   colbinvec.reserve(bincolmap->NumMyElements());
 
   for (int lid = 0; lid < bincolmap->NumMyElements(); ++lid)
   {
-    Core::Elements::Element* currbin = binstrategy_->BinDiscret()->lColElement(lid);
-    colbinvec.push_back(currbin->Id());
+    Core::Elements::Element* currbin = binstrategy_->bin_discret()->l_col_element(lid);
+    colbinvec.push_back(currbin->id());
   }
 
   std::set<Core::Elements::Element*> beam_element_list;
 
-  binstrategy_->GetBinContent(
+  binstrategy_->get_bin_content(
       beam_element_list, {Core::Binstrategy::Utils::BinContentType::Beam}, colbinvec, false);
 
   for (std::set<Core::Elements::Element*>::iterator element = beam_element_list.begin();
        element != beam_element_list.end(); element++)
   {
-    Core::Nodes::Node** node_list = (*element)->Nodes();
+    Core::Nodes::Node** node_list = (*element)->nodes();
     unsigned int numnode = (*element)->num_node();
     for (unsigned int i = 0; i < numnode; i++)
     {
@@ -172,11 +172,11 @@ void FBI::FBIBinningGeometryCoupler::compute_current_positions(Core::FE::Discret
       if (disp != Teuchos::null)
       {
         // get the DOF numbers of the current node
-        dis.Dof(node, 0, src_dofs);
+        dis.dof(node, 0, src_dofs);
         // get the current displacements
         Core::FE::ExtractMyValues(*disp, mydisp, src_dofs);
 
-        for (int d = 0; d < 3; ++d) (*positions)[node->Id()](d) = node->X()[d] + mydisp.at(d);
+        for (int d = 0; d < 3; ++d) (*positions)[node->id()](d) = node->x()[d] + mydisp.at(d);
       }
     }
   }
@@ -184,12 +184,12 @@ void FBI::FBIBinningGeometryCoupler::compute_current_positions(Core::FE::Discret
 
 /*----------------------------------------------------------------------*/
 
-void FBI::FBIBinningGeometryCoupler::SetBinning(
+void FBI::FBIBinningGeometryCoupler::set_binning(
     Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning)
 {
   binstrategy_ = binning;
-  binstrategy_->BinDiscret()->fill_complete(false, false, false);
-  binrowmap_ = Teuchos::rcp(new Epetra_Map(*(binstrategy_->BinDiscret()->ElementRowMap())));
+  binstrategy_->bin_discret()->fill_complete(false, false, false);
+  binrowmap_ = Teuchos::rcp(new Epetra_Map(*(binstrategy_->bin_discret()->element_row_map())));
 };
 
 FOUR_C_NAMESPACE_CLOSE

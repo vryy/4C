@@ -41,20 +41,26 @@ namespace STI
    public:
     //! return counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
     //! iterations (partitioned algorithm)
-    const unsigned& Iter() const { return iter_; };
+    const unsigned& iter() const { return iter_; };
 
     //! read restart data
     void read_restart(int step  //! time step for restart
         ) override;
 
     //! access scatra time integrator
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> ScaTraField() const { return scatra_->ScaTraField(); };
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> sca_tra_field() const
+    {
+      return scatra_->sca_tra_field();
+    };
 
     //! access thermo time integrator
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> ThermoField() const { return thermo_->ScaTraField(); };
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> thermo_field() const
+    {
+      return thermo_->sca_tra_field();
+    };
 
     //! time loop
-    void TimeLoop();
+    void time_loop();
 
    protected:
     //! constructor

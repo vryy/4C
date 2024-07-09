@@ -62,37 +62,37 @@ namespace Mortar
     \brief Return local id of this IntElement
 
     */
-    int Lid() const { return lid_; }
+    int lid() const override { return lid_; }
 
     /*!
     \brief Get shape type of parent element
 
     */
-    virtual Core::FE::CellType ParShape() const { return parele_->Shape(); }
+    virtual Core::FE::CellType par_shape() const { return parele_->shape(); }
 
     /*!
     \brief Get shape type of parent element
 
     */
-    virtual Mortar::Element* ParEle() const { return parele_; }
+    virtual Mortar::Element* par_ele() const { return parele_; }
 
     /*!
     \brief Affine map of IntElement coordinates to parent element
 
     */
-    virtual bool MapToParent(const double* xi, double* parxi);
+    virtual bool map_to_parent(const double* xi, double* parxi);
 
     /*!
     \brief Affine map of IntElement coordinate derivatives to parent element
 
     */
-    virtual bool MapToParent(const std::vector<Core::Gen::Pairedvector<int, double>>& dxi,
+    virtual bool map_to_parent(const std::vector<Core::Gen::Pairedvector<int, double>>& dxi,
         std::vector<Core::Gen::Pairedvector<int, double>>& dparxi);
 
-    Core::Nodes::Node** Nodes() override
+    Core::Nodes::Node** nodes() override
     {
-      if (parele_->Shape() != Core::FE::CellType::nurbs9)
-        return Core::Elements::Element::Nodes();
+      if (parele_->shape() != Core::FE::CellType::nurbs9)
+        return Core::Elements::Element::nodes();
       else
         return nodes_ptr_.data();
     }
@@ -107,7 +107,7 @@ namespace Mortar
            Returns a vector of vector of maps. Outer vector for the (pseudo-)nodes,
            inner vector for the spatial dimensions, map for the derivatives.
     */
-    void NodeLinearization(
+    void node_linearization(
         std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& nodelin) override;
 
    protected:
@@ -177,13 +177,13 @@ namespace Mortar
     \brief Return ID of this intcell
 
     */
-    const int& Id() const { return id_; }
+    const int& id() const { return id_; }
 
     /*!
     \brief Set slave element ID of this intcell
 
     */
-    void SetSlaveId(const int slaveid)
+    void set_slave_id(const int slaveid)
     {
       slaveId_ = slaveid;
       return;
@@ -193,7 +193,7 @@ namespace Mortar
     \brief Return slave element ID of this intcell
 
     */
-    const int& GetSlaveId() const
+    const int& get_slave_id() const
     {
       if (slaveId_ < 0) FOUR_C_THROW("Invalid slave element ID for this integration cell!");
 
@@ -204,7 +204,7 @@ namespace Mortar
     \brief Set master element ID of this intcell
 
     */
-    void SetMasterId(const int masterid)
+    void set_master_id(const int masterid)
     {
       masterId_ = masterid;
       return;
@@ -213,7 +213,7 @@ namespace Mortar
     \brief Return master element ID of this intcell
 
     */
-    const int& GetMasterId() const
+    const int& get_master_id() const
     {
       if (masterId_ < 0) FOUR_C_THROW("Invalid master element ID for this integration cell!");
 
@@ -224,31 +224,31 @@ namespace Mortar
     \brief Return number of vertices of this intcell
 
     */
-    int NumVertices() const { return nvertices_; }
+    int num_vertices() const { return nvertices_; }
 
     /*!
     \brief Return current area
 
     */
-    virtual double& Area() { return area_; }
+    virtual double& area() { return area_; }
 
     /*!
     \brief Return coordinates of intcell vertices
 
     */
-    const Core::LinAlg::Matrix<3, 3>& Coords() { return coords_; }
+    const Core::LinAlg::Matrix<3, 3>& coords() { return coords_; }
 
     /*!
     \brief Return normal of auxiliary plane of this intcell
 
     */
-    virtual double* Auxn() { return auxn_; }
+    virtual double* auxn() { return auxn_; }
 
     /*!
     \brief Get shape type of element
 
     */
-    virtual Core::FE::CellType Shape() const { return shape_; }
+    virtual Core::FE::CellType shape() const { return shape_; }
 
     /*!
     \brief Return one of the three 'DerivVertex' maps (vectors) of this node
@@ -260,7 +260,7 @@ namespace Mortar
     is addressed by an int-variable and checked internally.
 
     */
-    virtual std::vector<Core::Gen::Pairedvector<int, double>>& GetDerivVertex(int i)
+    virtual std::vector<Core::Gen::Pairedvector<int, double>>& get_deriv_vertex(int i)
     {
       if (shape_ == Core::FE::CellType::line2)
       {
@@ -297,7 +297,7 @@ namespace Mortar
                             set to 2 for derivative eta usage
     \param globccord (out): interpolated global coordinates
     */
-    virtual bool LocalToGlobal(const double* xi, double* globcoord, int inttype);
+    virtual bool local_to_global(const double* xi, double* globcoord, int inttype);
 
     // output functionality
     virtual void print();
@@ -313,14 +313,14 @@ namespace Mortar
     \brief Evaluate Jacobian determinant for parameter space integration
 
     */
-    virtual double Jacobian();
+    virtual double jacobian();
 
     /*!
     \brief Compute Jacobian determinant derivative
            Note that this is a linearization with respect to the intcell
            vertices, which themselves have to be linearized later, of course!
     */
-    virtual void DerivJacobian(Core::Gen::Pairedvector<int, double>& derivjac);
+    virtual void deriv_jacobian(Core::Gen::Pairedvector<int, double>& derivjac);
 
     //@}
 
@@ -404,7 +404,7 @@ namespace Mortar
     \brief Return vector of vertex coordinates (length 3)
 
     */
-    virtual std::vector<double>& Coord() { return coord_; }
+    virtual std::vector<double>& coord() { return coord_; }
 
     /*!
     \brief Return vertex type (slave, projmaster or lineclip)
@@ -416,13 +416,13 @@ namespace Mortar
     \brief Return pointer to next vertex on polygon
 
     */
-    virtual Vertex* Next() { return next_; }
+    virtual Vertex* next() { return next_; }
 
     /*!
     \brief Assign pointer to next vertex on polygon
 
     */
-    virtual void AssignNext(Vertex* assign)
+    virtual void assign_next(Vertex* assign)
     {
       next_ = assign;
       return;
@@ -432,13 +432,13 @@ namespace Mortar
     \brief Return pointer to previous vertex on polygon
 
     */
-    virtual Vertex* Prev() { return prev_; }
+    virtual Vertex* prev() { return prev_; }
 
     /*!
     \brief Assign pointer to previous vertex on polygon
 
     */
-    virtual void AssignPrev(Vertex* assign)
+    virtual void assign_prev(Vertex* assign)
     {
       prev_ = assign;
       return;
@@ -449,7 +449,7 @@ namespace Mortar
     True if vertex is an intersection point of the polygons.
 
     */
-    virtual bool& Intersect() { return intersect_; }
+    virtual bool& intersect() { return intersect_; }
 
     /*!
     \brief Return entry / exit status of this vertex
@@ -458,7 +458,7 @@ namespace Mortar
     respective other polygon. Irrelevant if intersect_==false.
 
     */
-    virtual bool& EntryExit()
+    virtual bool& entry_exit()
     {
       if (!intersect_) FOUR_C_THROW("EntryExit only for intersections");
       return entryexit_;
@@ -471,7 +471,7 @@ namespace Mortar
     vertex on the other polygon.
 
     */
-    virtual Vertex* Neighbor()
+    virtual Vertex* neighbor()
     {
       if (!intersect_) FOUR_C_THROW("Neighbor only for intersections");
       return neighbor_;
@@ -481,7 +481,7 @@ namespace Mortar
     \brief Assign pointer to neighbor on other polygon
 
     */
-    virtual void AssignNeighbor(Vertex* assign)
+    virtual void assign_neighbor(Vertex* assign)
     {
       if (!intersect_) FOUR_C_THROW("Neighbor only for intersections");
       neighbor_ = assign;
@@ -493,7 +493,7 @@ namespace Mortar
     valid intersections yield an alpha in the range [0,1].
 
     */
-    virtual double& Alpha() { return alpha_; }
+    virtual double& alpha() { return alpha_; }
 
     /*!
     \brief Return vector of relevant node ids (length 1 or 4)
@@ -503,7 +503,7 @@ namespace Mortar
     corresponding slave and master lines which intersect!
 
     */
-    virtual std::vector<int>& Nodeids()
+    virtual std::vector<int>& nodeids()
     {  // if(type_==Vertex::slave && nodeids_.size()!=1) FOUR_C_THROW("Error: Vertex Ids");
       // if(type_==Vertex::projmaster && nodeids_.size()!=1) FOUR_C_THROW("Error: Vertex Ids");
       // if(type_==Vertex::lineclip && nodeids_.size()!=4) FOUR_C_THROW("Error: Vertex Ids");

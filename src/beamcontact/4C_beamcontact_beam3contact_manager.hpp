@@ -90,37 +90,37 @@ namespace CONTACT
     \brief Get problem discretization
 
     */
-    inline const Core::FE::Discretization& ProblemDiscret() const { return pdiscret_; }
+    inline const Core::FE::Discretization& problem_discret() const { return pdiscret_; }
 
     /*!
     \brief Get beam to solid contact discretization
 
     */
-    inline Core::FE::Discretization& BTSolDiscret() { return *btsoldiscret_; }
+    inline Core::FE::Discretization& bt_sol_discret() { return *btsoldiscret_; }
 
     /*!
     \brief Get communicator
 
     */
-    virtual const Epetra_Comm& Comm() const { return pdiscomm_; }
+    virtual const Epetra_Comm& get_comm() const { return pdiscomm_; }
 
     /*!
     \brief Get different node or element maps
 
     */
-    inline Teuchos::RCP<Epetra_Map> RowNodes() const { return noderowmap_; }
-    inline Teuchos::RCP<Epetra_Map> ColNodes() const { return nodecolmap_; }
-    inline Teuchos::RCP<Epetra_Map> FullNodes() const { return nodefullmap_; }
-    inline Teuchos::RCP<Epetra_Map> RowElements() const { return elerowmap_; }
-    inline Teuchos::RCP<Epetra_Map> ColElements() const { return elecolmap_; }
-    inline Teuchos::RCP<Epetra_Map> FullElements() const { return elefullmap_; }
+    inline Teuchos::RCP<Epetra_Map> row_nodes() const { return noderowmap_; }
+    inline Teuchos::RCP<Epetra_Map> col_nodes() const { return nodecolmap_; }
+    inline Teuchos::RCP<Epetra_Map> full_nodes() const { return nodefullmap_; }
+    inline Teuchos::RCP<Epetra_Map> row_elements() const { return elerowmap_; }
+    inline Teuchos::RCP<Epetra_Map> col_elements() const { return elecolmap_; }
+    inline Teuchos::RCP<Epetra_Map> full_elements() const { return elefullmap_; }
     // template<int numnodes, int numnodalvalues>
-    inline const std::vector<Teuchos::RCP<Beam3contactinterface>>& Pairs() const
+    inline const std::vector<Teuchos::RCP<Beam3contactinterface>>& pairs() const
     {
       return oldpairs_;
     }
 
-    inline Teuchos::RCP<Beam3ContactOctTree> OcTree() const { return tree_; }
+    inline Teuchos::RCP<Beam3ContactOctTree> oc_tree() const { return tree_; }
 
     /*!
     \brief Get list of beam contact input parameters
@@ -135,13 +135,13 @@ namespace CONTACT
     /*!
     \brief Get current constraint norm
     */
-    double GetConstrNorm() { return constrnorm_; }
+    double get_constr_norm() { return constrnorm_; }
 
     // \brief Get current penalty parameter
-    double GetCurrentpp() { return currentpp_; }
+    double get_currentpp() { return currentpp_; }
 
     // \brief Get minimal beam/sphere element radius of discretization
-    double GetMinEleRadius() { return mineleradius_; }
+    double get_min_ele_radius() { return mineleradius_; }
 
     //@}
 
@@ -177,7 +177,7 @@ namespace CONTACT
     Calculate and print gap values and constraint norm.
 
     */
-    void UpdateConstrNorm();
+    void update_constr_norm();
 
     /*!
     \brief Shift current normal "normal_" vector to old normal vector "normal_old_"
@@ -186,7 +186,7 @@ namespace CONTACT
     as a reference for the modified gap function definition
 
     */
-    void UpdateAllPairs();
+    void update_all_pairs();
 
     /*!
     \brief Create output files for GMSH visualization
@@ -196,7 +196,7 @@ namespace CONTACT
     method only works safely for the serial case, the parallel case is not yet implemented!
 
     */
-    void GmshOutput(const Epetra_Vector& disrow, const int& timestep, const int& newtonstep,
+    void gmsh_output(const Epetra_Vector& disrow, const int& timestep, const int& newtonstep,
         bool endoftimestep = false);
 
     /*!
@@ -214,17 +214,17 @@ namespace CONTACT
     flag in 'beam3contact_defines.h'.
 
     */
-    void ConsoleOutput();
+    void console_output();
 
     /*!
     \brief Get total potential energy of penalty approach
     */
-    double GetTotEnergy() { return totpenaltyenergy_; };
+    double get_tot_energy() { return totpenaltyenergy_; };
 
     /*!
     \brief Get total contact work of penalty approach
     */
-    double GetTotWork() { return totpenaltywork_; };
+    double get_tot_work() { return totpenaltywork_; };
 
     /*!
     \brief Read restart

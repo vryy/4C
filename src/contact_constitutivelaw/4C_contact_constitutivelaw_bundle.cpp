@@ -23,14 +23,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::Bundle::Bundle() : readfromproblem_(0) {}
 /*----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::Bundle::Insert(
+void CONTACT::CONSTITUTIVELAW::Bundle::insert(
     int matid, Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> mat)
 {
   map_.insert(std::pair<int, Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container>>(matid, mat));
 }
 
 /*----------------------------------------------------------------------*/
-int CONTACT::CONSTITUTIVELAW::Bundle::Find(const int id) const
+int CONTACT::CONSTITUTIVELAW::Bundle::find(const int id) const
 {
   if (map_.find(id) == map_.end())
     return -1;
@@ -39,7 +39,7 @@ int CONTACT::CONSTITUTIVELAW::Bundle::Find(const int id) const
 }
 
 /*----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::Bundle::MakeParameters()
+void CONTACT::CONSTITUTIVELAW::Bundle::make_parameters()
 {
   for (std::map<int, Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container>>::iterator m = map_.begin();
        m != map_.end(); ++m)
@@ -50,7 +50,7 @@ void CONTACT::CONSTITUTIVELAW::Bundle::MakeParameters()
     {
       // indirectly add quick access parameter members
       Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> law =
-          CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(lawid);
+          CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(lawid);
       // check if allocation was successful
       Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> lawpar = m->second;
       if (law != Teuchos::null) continue;
@@ -61,7 +61,7 @@ void CONTACT::CONSTITUTIVELAW::Bundle::MakeParameters()
 }
 
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> CONTACT::CONSTITUTIVELAW::Bundle::ById(
+Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> CONTACT::CONSTITUTIVELAW::Bundle::by_id(
     const int id) const
 {
   std::map<int, Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container>>::const_iterator m =

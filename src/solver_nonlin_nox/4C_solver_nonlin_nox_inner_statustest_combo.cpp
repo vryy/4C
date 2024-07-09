@@ -192,7 +192,7 @@ bool NOX::Nln::Inner::StatusTest::Combo::is_safe(Generic& a)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const std::vector<Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>>&
-NOX::Nln::Inner::StatusTest::Combo::GetTestVector() const
+NOX::Nln::Inner::StatusTest::Combo::get_test_vector() const
 {
   return tests_;
 }

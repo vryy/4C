@@ -216,7 +216,7 @@ namespace PARTICLEWALL
       return walldiscretization_;
     };
 
-    std::shared_ptr<PARTICLEWALL::WallDataState> GetWallDataState() const final
+    std::shared_ptr<PARTICLEWALL::WallDataState> get_wall_data_state() const final
     {
       return walldatastate_;
     }

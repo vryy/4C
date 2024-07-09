@@ -32,7 +32,7 @@ Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::ScaTraEleCalcPoroReac(
           numdofpernode, numscal, disname)
 {
   // safety check
-  if (not my::scatrapara_->TauGP())
+  if (not my::scatrapara_->tau_gp())
     FOUR_C_THROW("For poro reactions, tau needs to be evaluated by integration-point evaluations!");
 
   return;
@@ -42,7 +42,7 @@ Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::ScaTraEleCalcPoroReac(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>*
-Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Instance(
+Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -52,7 +52,7 @@ Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Instance(
             new ScaTraEleCalcPoroReac<distype>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -93,13 +93,13 @@ void Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::materials(
     const int iquad  //!< id of current gauss point
 )
 {
-  switch (material->MaterialType())
+  switch (material->material_type())
   {
     case Core::Materials::m_scatra:
       mat_scatra(material, k, densn, densnp, densam, visc, iquad);
       break;
     default:
-      FOUR_C_THROW("Material type %i is not supported", material->MaterialType());
+      FOUR_C_THROW("Material type %i is not supported", material->material_type());
       break;
   }
   return;

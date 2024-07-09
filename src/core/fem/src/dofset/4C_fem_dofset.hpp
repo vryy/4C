@@ -111,34 +111,34 @@ namespace Core::DOFSets
 
 
     /// create a copy of this object
-    virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new DofSet(*this)); }
+    virtual Teuchos::RCP<DofSet> clone() { return Teuchos::rcp(new DofSet(*this)); }
 
     //! @name Access methods
 
     /// Get number of dofs for given node
-    int NumDof(const Core::Nodes::Node* node) const override
+    int num_dof(const Core::Nodes::Node* node) const override
     {
-      int lid = node->LID();
+      int lid = node->lid();
       if (lid == -1) return 0;
       return (*numdfcolnodes_)[lid];
     }
 
     /// Get number of dofs for given element
-    int NumDof(const Core::Elements::Element* element) const override
+    int num_dof(const Core::Elements::Element* element) const override
     {
       // check if this is a face element
-      int lid = element->LID();
+      int lid = element->lid();
       if (lid == -1) return 0;
-      if (element->IsFaceElement())
+      if (element->is_face_element())
         return (numdfcolfaces_ != Teuchos::null) ? (*numdfcolfaces_)[lid] : 0;
       else
         return (*numdfcolelements_)[lid];
     }
 
     /// Get the gid of a dof for given node
-    int Dof(const Core::Nodes::Node* node, int dof) const override
+    int dof(const Core::Nodes::Node* node, int dof) const override
     {
-      int lid = node->LID();
+      int lid = node->lid();
       if (lid == -1) return -1;
       if (pccdofhandling_)
         return dofscolnodes_->GID((*shiftcolnodes_)[lid] + dof);
@@ -147,20 +147,20 @@ namespace Core::DOFSets
     }
 
     /// Get the gid of a dof for given element
-    int Dof(const Core::Elements::Element* element, int dof) const override
+    int dof(const Core::Elements::Element* element, int dof) const override
     {
-      int lid = element->LID();
+      int lid = element->lid();
       if (lid == -1) return -1;
-      if (element->IsFaceElement())
+      if (element->is_face_element())
         return (idxcolfaces_ != Teuchos::null) ? (*idxcolfaces_)[lid] + dof : -1;
       else
         return (*idxcolelements_)[lid] + dof;
     }
 
     /// Get the gid of all dofs of a node
-    std::vector<int> Dof(const Core::Nodes::Node* node) const override
+    std::vector<int> dof(const Core::Nodes::Node* node) const override
     {
-      const int lid = node->LID();
+      const int lid = node->lid();
       if (lid == -1) return std::vector<int>();
       const int idx = (*idxcolnodes_)[lid];
       std::vector<int> dof((*numdfcolnodes_)[lid]);
@@ -175,34 +175,34 @@ namespace Core::DOFSets
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(std::vector<int>& dof,     ///< vector of dof gids (to be filled)
-        const Core::Nodes::Node* node,  ///< the node
+    void dof(std::vector<int>& global_dof_index,  ///< vector of dof gids (to be filled)
+        const Core::Nodes::Node* node,            ///< the node
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
     ) const override
     {
       FOUR_C_ASSERT(nodaldofset == 0, "only one nodal dofset supported!");
-      dof = Dof(node);
+      global_dof_index = dof(node);
     }
 
     /// Get the gid of all dofs of a element
-    std::vector<int> Dof(const Core::Elements::Element* element) const override
+    std::vector<int> dof(const Core::Elements::Element* element) const override
     {
-      int lid = element->LID();
+      int lid = element->lid();
       if (lid == -1) return std::vector<int>();
 
-      if (element->IsFaceElement() && idxcolfaces_ == Teuchos::null) return std::vector<int>();
+      if (element->is_face_element() && idxcolfaces_ == Teuchos::null) return std::vector<int>();
 
-      int idx = element->IsFaceElement() ? (*idxcolfaces_)[lid] : (*idxcolelements_)[lid];
+      int idx = element->is_face_element() ? (*idxcolfaces_)[lid] : (*idxcolelements_)[lid];
       std::vector<int> dof(
-          element->IsFaceElement() ? (*numdfcolfaces_)[lid] : (*numdfcolelements_)[lid]);
+          element->is_face_element() ? (*numdfcolfaces_)[lid] : (*numdfcolelements_)[lid]);
       for (unsigned i = 0; i < dof.size(); ++i) dof[i] = idx + i;
       return dof;
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(const Core::Nodes::Node* node, std::vector<int>& lm) const override
+    void dof(const Core::Nodes::Node* node, std::vector<int>& lm) const override
     {
-      int lid = node->LID();
+      int lid = node->lid();
       if (lid == -1) return;
       int idx = (*idxcolnodes_)[lid];
       int size = (*numdfcolnodes_)[lid];
@@ -216,12 +216,12 @@ namespace Core::DOFSets
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
+    void dof(const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
         const unsigned startindex,  ///< first index of vector at which will be written to end
         std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
     ) const override
     {
-      const int lid = node->LID();
+      const int lid = node->lid();
       if (lid == -1) return;
       const int idx = (*idxcolnodes_)[lid];
       const int size = (*numdfcolnodes_)[lid];
@@ -236,31 +236,31 @@ namespace Core::DOFSets
     }
 
     /// Get the gid of all dofs of a element
-    void Dof(const Core::Elements::Element* element, std::vector<int>& lm) const override
+    void dof(const Core::Elements::Element* element, std::vector<int>& lm) const override
     {
-      int lid = element->LID();
+      int lid = element->lid();
       if (lid == -1) return;
 
-      if (element->IsFaceElement() && idxcolfaces_ == Teuchos::null) return;
+      if (element->is_face_element() && idxcolfaces_ == Teuchos::null) return;
 
-      int idx = element->IsFaceElement() ? (*idxcolfaces_)[lid] : (*idxcolelements_)[lid];
-      int size = element->IsFaceElement() ? (*numdfcolfaces_)[lid] : (*numdfcolelements_)[lid];
+      int idx = element->is_face_element() ? (*idxcolfaces_)[lid] : (*idxcolelements_)[lid];
+      int size = element->is_face_element() ? (*numdfcolfaces_)[lid] : (*numdfcolelements_)[lid];
       for (int i = 0; i < size; ++i) lm.push_back(idx + i);
     }
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    void Dof(const Core::Elements::Element*
+    void dof(const Core::Elements::Element*
                  element,  ///< element which provides its expected number of DOFs per node
         const Core::Nodes::Node* node,  ///< node, for which you want the DOF positions
         std::vector<int>& lm  ///< already allocated vector to be filled with DOF positions
     ) const override
     {
-      const int lid = node->LID();
+      const int lid = node->lid();
       if (lid == -1) return;
       const int idx = (*idxcolnodes_)[lid];
       // this method is used to setup the vector of number of dofs, so we cannot ask
       // numdfcolelements_ here as above. Instead we have to ask the node itself
-      const int size = NumDofPerNode(*element, *node);
+      const int size = num_dof_per_node(*element, *node);
       for (int i = 0; i < size; ++i)
       {
         if (pccdofhandling_)
@@ -271,19 +271,19 @@ namespace Core::DOFSets
     }
 
     /// are the dof maps already initialized?
-    bool Initialized() const override;
+    bool initialized() const override;
 
     /// Get degree of freedom row map
     const Epetra_Map* dof_row_map() const override;
 
     /// Get degree of freedom column map
-    const Epetra_Map* DofColMap() const override;
+    const Epetra_Map* dof_col_map() const override;
 
     //! Print this class
     void print(std::ostream& os) const override;
 
     //! Return true if \ref assign_degrees_of_freedom was called
-    bool Filled() const override { return filled_; }
+    bool filled() const override { return filled_; }
 
     //@}
 
@@ -310,36 +310,36 @@ namespace Core::DOFSets
     /// Proxies need to know about changes to the DofSet.
 
     /// our original DofSet dies
-    void Disconnect(DofSetInterface* dofset) override { return; };
+    void disconnect(DofSetInterface* dofset) override { return; };
 
     //@}
 
     /// Get Number of Global Elements of degree of freedom row map
-    int NumGlobalElements() const override;
+    int num_global_elements() const override;
 
     /// Get maximum GID of degree of freedom row map
-    int MaxAllGID() const override;
+    int max_all_gid() const override;
 
     /// Get minimum GID of degree of freedom row map
-    int MinAllGID() const override;
+    int min_all_gid() const override;
 
 
    protected:
     /// get number of nodal dofs
-    int NumDofPerNode(const Core::Nodes::Node& node) const override
+    int num_dof_per_node(const Core::Nodes::Node& node) const override
     {
-      const int numele = node.NumElement();
-      const Core::Elements::Element* const* myele = node.Elements();
+      const int numele = node.num_element();
+      const Core::Elements::Element* const* myele = node.elements();
       int numdf = 0;
-      for (int j = 0; j < numele; ++j) numdf = std::max(numdf, NumDofPerNode(*myele[j], node));
+      for (int j = 0; j < numele; ++j) numdf = std::max(numdf, num_dof_per_node(*myele[j], node));
       return numdf;
     }
 
     /// get number of nodal dofs for this element at this node
-    virtual int NumDofPerNode(
+    [[nodiscard]] virtual int num_dof_per_node(
         const Core::Elements::Element& element, const Core::Nodes::Node& node) const
     {
-      return element.NumDofPerNode(node);
+      return element.num_dof_per_node(node);
     }
 
     /// get number of element dofs for this element

@@ -69,11 +69,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -81,7 +81,7 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override;
+      int unique_par_object_id() const override;
 
       /*!
       \brief Pack this class so it can be communicated
@@ -100,10 +100,10 @@ namespace Discret
       void unpack(const std::vector<char>& data) override;
 
       //! Get vector of Teuchos::RCPs to the lines of this element
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       //! Get vector of Teuchos::RCPs to the surfaces of this element
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       //! @name Access methods
 
@@ -116,14 +116,14 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
+      int num_dof_per_node(const Core::Nodes::Node& node) const override { return 3; }
 
       /*!
       \brief Print this element
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override;
+      Core::Elements::ElementType& element_type() const override;
 
       //!@}
 
@@ -171,7 +171,7 @@ namespace Discret
       //!@}
 
       //! initialize the inverse of the jacobian and its determinant in the material configuration
-      void InitElement() override;
+      void init_element() override;
 
       //! don't want = operator
       Wall1PoroP1& operator=(const Wall1PoroP1& old) = delete;

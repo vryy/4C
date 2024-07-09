@@ -46,11 +46,11 @@ namespace POROFLUIDMULTIPHASE
         Teuchos::RCP<Epetra_Vector> residual, Core::LinAlg::SolverParams& solver_params) override;
 
     //! calculate norms for convergence checks
-    void CalculateNorms(std::vector<double>& preresnorm, std::vector<double>& incprenorm,
+    void calculate_norms(std::vector<double>& preresnorm, std::vector<double>& incprenorm,
         std::vector<double>& prenorm, const Teuchos::RCP<const Epetra_Vector> increment) override;
 
     //! create the field test
-    void CreateFieldTest() override;
+    void create_field_test() override;
 
     //! restart
     void read_restart(const int step) override;
@@ -63,20 +63,20 @@ namespace POROFLUIDMULTIPHASE
         const Teuchos::RCP<const Epetra_Vector> inc) override;
 
     //! access to global (combined) increment of coupled problem
-    Teuchos::RCP<const Epetra_Vector> CombinedIncrement(
+    Teuchos::RCP<const Epetra_Vector> combined_increment(
         const Teuchos::RCP<const Epetra_Vector> inc) const override;
 
     //! check if initial fields on coupled DOFs are equal
-    void CheckInitialFields(Teuchos::RCP<const Epetra_Vector> vec_cont) const override;
+    void check_initial_fields(Teuchos::RCP<const Epetra_Vector> vec_cont) const override;
 
     //! set the element pairs that are close as found by search algorithm
-    void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs) override;
+    void set_nearby_ele_pairs(const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     //! setup the strategy
     void setup() override;
 
     //! apply the mesh movement
-    void ApplyMeshMovement() const override;
+    void apply_mesh_movement() const override;
   };
 
 }  // namespace POROFLUIDMULTIPHASE

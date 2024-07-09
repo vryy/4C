@@ -31,7 +31,7 @@ BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointedType
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Communication::ParObject* BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointedType::Create(
+Core::Communication::ParObject* BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointedType::create(
     const std::vector<char>& data)
 {
   BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed* my_beam3rline2 =
@@ -59,14 +59,14 @@ BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::BeamLinkBeam3rLine2RigidJointe
 {
   if (linkele_ != Teuchos::null)
     linkele_ = Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::Beam3r>(
-        Teuchos::rcp(old.linkele_->Clone(), true));
+        Teuchos::rcp(old.linkele_->clone(), true));
   else
     linkele_ = Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::Clone()
+Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::clone()
     const
 {
   Teuchos::RCP<BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed> newlinker =
@@ -97,7 +97,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::setup(int matnum)
   linkele_ = Teuchos::rcp(new Discret::ELEMENTS::Beam3r(-1, 0));
 
   // set material
-  linkele_->SetMaterial(0, Mat::Factory(matnum));
+  linkele_->set_material(0, Mat::Factory(matnum));
 
   // Todo @grill: safety check for proper material type (done on element anyway, but do it here as
   // well)?!
@@ -107,7 +107,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::setup(int matnum)
   // set dummy node Ids, in order to make NumNodes() method of element return the correct number of
   // nodes
   constexpr std::array nodeids = {-1, -1};
-  linkele_->SetNodeIds(2, nodeids.data());
+  linkele_->set_node_ids(2, nodeids.data());
 
   // the triads at the two connection sites are chosen identical initially, so we only use the first
   // one
@@ -119,8 +119,8 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::setup(int matnum)
 
   for (unsigned int i = 0; i < 3; ++i)
   {
-    refpos[i] = GetBindSpotPos1()(i);
-    refpos[3 + i] = GetBindSpotPos2()(i);
+    refpos[i] = get_bind_spot_pos1()(i);
+    refpos[3 + i] = get_bind_spot_pos2()(i);
 
     refrotvec[i] = linkelerotvec(i);
     refrotvec[3 + i] = linkelerotvec(i);
@@ -144,7 +144,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::pack(
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class
   BeamLinkRigidJointed::pack(data);
@@ -161,7 +161,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::unpack(const std::vector<
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class
   std::vector<char> basedata(0);
@@ -291,8 +291,8 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::fill_state_variables_for_
 {
   for (unsigned int i = 0; i < 3; ++i)
   {
-    disp_totlag_centerline(i) = GetBindSpotPos1()(i);
-    disp_totlag_centerline(3 + i) = GetBindSpotPos2()(i);
+    disp_totlag_centerline(i) = get_bind_spot_pos1()(i);
+    disp_totlag_centerline(3 + i) = get_bind_spot_pos2()(i);
   }
 
   Qnode.push_back(get_bind_spot_quaternion1());
@@ -301,16 +301,16 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::fill_state_variables_for_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::GetInternalEnergy() const
+double BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::get_internal_energy() const
 {
-  return linkele_->GetInternalEnergy();
+  return linkele_->get_internal_energy();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::GetKineticEnergy() const
+double BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::get_kinetic_energy() const
 {
-  return linkele_->GetKineticEnergy();
+  return linkele_->get_kinetic_energy();
 }
 
 FOUR_C_NAMESPACE_CLOSE

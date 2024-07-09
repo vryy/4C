@@ -46,8 +46,8 @@ void Discret::ELEMENTS::CalculateS2IGrowthElchLinearizations(const double j0, co
     double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave, double& dj_dpot_master)
 {
   const double kr = scatraeleparamsboundary->charge_transfer_constant();
-  const double alphaa = scatraeleparamsboundary->Alphadata();
-  const double alphac = scatraeleparamsboundary->AlphaC();
+  const double alphaa = scatraeleparamsboundary->alphadata();
+  const double alphac = scatraeleparamsboundary->alpha_c();
 
   const double expterm1 = std::exp(alphaa * frt * eta);
   const double expterm2 = std::exp(-alphac * frt * eta);
@@ -56,7 +56,7 @@ void Discret::ELEMENTS::CalculateS2IGrowthElchLinearizations(const double j0, co
   double dF_dc_slave(0.0), dF_dc_master(0.0), dF_dpot_slave(0.0), dF_dpot_master(0.0);
   double dF_dj_inverse(0.0);
 
-  switch (scatraeleparamsboundary->RegularizationType())
+  switch (scatraeleparamsboundary->regularization_type())
   {
     case Inpar::S2I::RegularizationType::regularization_none:
     {
@@ -65,7 +65,7 @@ void Discret::ELEMENTS::CalculateS2IGrowthElchLinearizations(const double j0, co
       // compute linearizations of Butler-Volmer mass flux density via implicit differentiation,
       // where F = j0*expterm - j = 0
       dF_dc_slave =
-          scatraeleparamsboundary->ConditionType() == Core::Conditions::S2IKinetics
+          scatraeleparamsboundary->condition_type() == Core::Conditions::S2IKinetics
               ? kr * std::pow(emasterphiint, alphaa) * std::pow(cmax - eslavephiint, alphaa - 1.0) *
                         std::pow(eslavephiint, alphac - 1.0) *
                         (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm -
@@ -113,7 +113,7 @@ void Discret::ELEMENTS::CalculateS2IGrowthElchLinearizations(const double j0, co
     default:
     {
       FOUR_C_THROW("Regularization type %i not recognized!",
-          static_cast<int>(scatraeleparamsboundary->RegularizationType()));
+          static_cast<int>(scatraeleparamsboundary->regularization_type()));
     }
   }
 
@@ -130,12 +130,12 @@ double Discret::ELEMENTS::CalculateS2IElchGrowthLinearizations(const double j0, 
     const double regfacderiv, const double expterm1, const double expterm2,
     const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary)
 {
-  const double alphaa = scatraeleparamsboundary->Alphadata();
-  const double alphac = scatraeleparamsboundary->AlphaC();
+  const double alphaa = scatraeleparamsboundary->alphadata();
+  const double alphac = scatraeleparamsboundary->alpha_c();
 
   double dF_dgrowth(0.0), dF_dj_inverse(0.0);
 
-  switch (scatraeleparamsboundary->RegularizationType())
+  switch (scatraeleparamsboundary->regularization_type())
   {
     case Inpar::S2I::RegularizationType::regularization_none:
     {
@@ -173,7 +173,7 @@ double Discret::ELEMENTS::CalculateS2IElchGrowthLinearizations(const double j0, 
     default:
     {
       FOUR_C_THROW("Regularization type %i not recognized!",
-          static_cast<int>(scatraeleparamsboundary->RegularizationType()));
+          static_cast<int>(scatraeleparamsboundary->regularization_type()));
     }
   }
 
@@ -196,8 +196,8 @@ double Discret::ELEMENTS::CalculateGrowthMassFluxDensity(const double j0, const 
   double i(0.0);
   const double i0 = j0 * faraday;
 
-  const double alphaa = scatraeleparamsboundary->Alphadata();
-  const double alphac = scatraeleparamsboundary->AlphaC();
+  const double alphaa = scatraeleparamsboundary->alphadata();
+  const double alphac = scatraeleparamsboundary->alpha_c();
 
   // compute Butler-Volmer current density in case of physically reasonable half-cell open-circuit
   // potential
@@ -207,7 +207,7 @@ double Discret::ELEMENTS::CalculateGrowthMassFluxDensity(const double j0, const 
     // scatra-scatra interface layer resistance
     double eta = pot_ed - pot_el - epd;
     double regfac = GetRegularizationFactor(thickness, eta, scatraeleparamsboundary);
-    i = (scatraeleparamsboundary->RegularizationType() ==
+    i = (scatraeleparamsboundary->regularization_type() ==
             Inpar::S2I::RegularizationType::regularization_hein)
             ? i0 * (regfac * std::exp(alphaa * frt * eta) - std::exp(-alphac * frt * eta))
             : i0 * regfac * (std::exp(alphaa * frt * eta) - std::exp(-alphac * frt * eta));
@@ -227,7 +227,7 @@ double Discret::ELEMENTS::CalculateGrowthMassFluxDensity(const double j0, const 
       regfac = GetRegularizationFactor(thickness, eta, scatraeleparamsboundary);
       const double expterm1 = std::exp(alphaa * frt * eta);
       const double expterm2 = std::exp(-alphac * frt * eta);
-      const double residual = (scatraeleparamsboundary->RegularizationType() ==
+      const double residual = (scatraeleparamsboundary->regularization_type() ==
                                   Inpar::S2I::RegularizationType::regularization_hein)
                                   ? i0 * (regfac * expterm1 - expterm2) - i
                                   : i0 * regfac * (expterm1 - expterm2) - i;
@@ -242,7 +242,7 @@ double Discret::ELEMENTS::CalculateGrowthMassFluxDensity(const double j0, const 
       // compute linearization of current Newton-Raphson residual w.r.t. Butler-Volmer current
       // density
       const double linearization =
-          (scatraeleparamsboundary->RegularizationType() ==
+          (scatraeleparamsboundary->regularization_type() ==
               Inpar::S2I::RegularizationType::regularization_hein)
               ? -i0 * resistance * frt * (regfac * alphaa * expterm1 + alphac * expterm2) - 1.0
               : -i0 * resistance * frt * regfac * (alphaa * expterm1 + alphac * expterm2) - 1.0;
@@ -269,11 +269,11 @@ double Discret::ELEMENTS::GetRegularizationFactor(const double thickness, const 
   double regfac(1.0);
 
   // get the S2I condition type
-  const Core::Conditions::ConditionType conditiontype = scatraeleparamsboundary->ConditionType();
+  const Core::Conditions::ConditionType conditiontype = scatraeleparamsboundary->condition_type();
 
   // get the S2I coupling growth regularization type
   const Inpar::S2I::RegularizationType regularizationtype =
-      scatraeleparamsboundary->RegularizationType();
+      scatraeleparamsboundary->regularization_type();
 
   // actually compute regularization factor if lithium stripping is relevant
   if (conditiontype == Core::Conditions::S2IKineticsGrowth and
@@ -345,11 +345,11 @@ double Discret::ELEMENTS::GetRegularizationFactorDerivative(const double thickne
   double regfacderiv(0.0);
 
   // get the S2I condition type
-  const Core::Conditions::ConditionType conditiontype = scatraeleparamsboundary->ConditionType();
+  const Core::Conditions::ConditionType conditiontype = scatraeleparamsboundary->condition_type();
 
   // get the S2I coupling growth regularization type
   const Inpar::S2I::RegularizationType regularizationtype =
-      scatraeleparamsboundary->RegularizationType();
+      scatraeleparamsboundary->regularization_type();
 
   // actually compute derivative of regularization factor if lithium stripping is relevant
   if (conditiontype == Core::Conditions::S2IKineticsGrowth and thickness > 0.0 and

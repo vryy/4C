@@ -99,7 +99,7 @@ namespace Core::UTILS
      * naming the missing variable.
      * @return Value of the parsed expression
      */
-    ValueType Value(const std::map<std::string, ValueType>& variable_values) const;
+    ValueType value(const std::map<std::string, ValueType>& variable_values) const;
 
 
     /*!
@@ -115,7 +115,7 @@ namespace Core::UTILS
      * to evaluate the parsed expression.
      * @return  First derivative of the parsed expression with respect to the variables
      */
-    FirstDerivativeType FirstDerivative(std::map<std::string, FirstDerivativeType> variable_values,
+    FirstDerivativeType first_derivative(std::map<std::string, FirstDerivativeType> variable_values,
         const std::map<std::string, ValueType>& constant_values) const;
 
 
@@ -133,7 +133,7 @@ namespace Core::UTILS
      * to evaluate the parsed expression.
      * @return  Second derivative of the parsed expression with respect to the variables
      */
-    SecondDerivativeType SecondDerivative(
+    SecondDerivativeType second_derivative(
         const std::map<std::string, SecondDerivativeType>& variable_values,
         const std::map<std::string, ValueType>& constant_values) const;
 

@@ -27,8 +27,8 @@ FOUR_C_NAMESPACE_OPEN
 Core::Geo::Cut::Parallel::Parallel(const Teuchos::RCP<Core::FE::Discretization>& discret,
     Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::ParentIntersection& parentintersection)
     : discret_(discret),
-      myrank_(discret_->Comm().MyPID()),
-      numproc_(discret_->Comm().NumProc()),
+      myrank_(discret_->get_comm().MyPID()),
+      numproc_(discret_->get_comm().NumProc()),
       mesh_(mesh),
       parentintersection_(parentintersection)
 {
@@ -42,7 +42,7 @@ Core::Geo::Cut::Parallel::Parallel(const Teuchos::RCP<Core::FE::Discretization>&
 void Core::Geo::Cut::Parallel::communicate_node_positions()
 {
   // wait for all processors before the Communication starts
-  discret_->Comm().Barrier();
+  discret_->get_comm().Barrier();
 
   TEUCHOS_FUNC_TIME_MONITOR(
       "Core::Geo::CUT --- 5/6 --- cut_positions_dofsets --- communicate_node_positions");
@@ -111,7 +111,7 @@ void Core::Geo::Cut::Parallel::communicate_node_positions()
   }
 #endif
 
-  discret_->Comm().Barrier();
+  discret_->get_comm().Barrier();
 
   //----------------------------------------------------------
 
@@ -166,7 +166,7 @@ void Core::Geo::Cut::Parallel::export_communication_finished(bool& procDone)
     if ((bool)allProcsDone == false) procDone = false;
 
     // processors wait for each other
-    discret_->Comm().Barrier();
+    discret_->get_comm().Barrier();
   }
 
 
@@ -266,7 +266,7 @@ void Core::Geo::Cut::Parallel::export_node_position_data()
         //--------------------
       }
 
-      discret_->Comm().Barrier();  // processors wait for each other
+      discret_->get_comm().Barrier();  // processors wait for each other
     }
 
 
@@ -282,13 +282,13 @@ void Core::Geo::Cut::Parallel::export_node_position_data()
       int pos = it->second;
 
       // find the node on current proc
-      Node* n = mesh_.GetNode(nid);
+      Node* n = mesh_.get_node(nid);
 
       if (n != nullptr)  // node on this proc found
       {
         Point* p = n->point();
 
-        Point::PointPosition my_pos = p->Position();
+        Point::PointPosition my_pos = p->position();
 
 
         if ((pos == Point::undecided) and (my_pos != Point::undecided))
@@ -322,13 +322,13 @@ void Core::Geo::Cut::Parallel::export_node_position_data()
 
       // find the shadow node on current proc (uniquely identified with other nodes of element
       // boundary or element itself)
-      Node* n = mesh_.GetNode(nids);
+      Node* n = mesh_.get_node(nids);
 
       if (n != nullptr)  // node on this proc found
       {
         Point* p = n->point();
 
-        Point::PointPosition my_pos = p->Position();
+        Point::PointPosition my_pos = p->position();
 
 
         if ((pos == Point::undecided) and (my_pos != Point::undecided))
@@ -375,7 +375,7 @@ void Core::Geo::Cut::Parallel::distribute_my_received_node_position_data()
 
     // find the node on current proc (remark: this node has to be on this proc, it's the original
     // source proc)
-    Node* n = mesh_.GetNode(nid);
+    Node* n = mesh_.get_node(nid);
 
     // set the node position for the node and distribute it to facets, vcs ...
     if (n != nullptr)
@@ -400,7 +400,7 @@ void Core::Geo::Cut::Parallel::distribute_my_received_node_position_data()
 
     // find the shadow node on current proc (remark: this node has to be on this proc, it's the
     // original source proc)
-    Node* n = mesh_.GetNode(nids);
+    Node* n = mesh_.get_node(nids);
 
     // set the node position for the node and distribute it to facets, vcs ...
     if (n != nullptr)
@@ -427,7 +427,7 @@ void Core::Geo::Cut::Parallel::set_position_for_node(const Node* n, const Point:
   if (pos != Point::undecided)
   {
     // std::cout << "reset the position for node " << nid << std::endl;
-    p->Position(pos);
+    p->position(pos);
   }
 
   if (pos == Point::outside or pos == Point::inside)
@@ -435,11 +435,11 @@ void Core::Geo::Cut::Parallel::set_position_for_node(const Node* n, const Point:
     // The nodal position is already known. Set it to my facets. If the
     // facets are already set, this will not have much effect anyway. But on
     // multiple cuts we avoid unset facets this way.
-    const plain_facet_set& facets = p->Facets();
+    const plain_facet_set& facets = p->facets();
     for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); ++i)
     {
       Facet* f = *i;
-      f->Position(pos);
+      f->position(pos);
     }
   }
 
@@ -453,7 +453,7 @@ void Core::Geo::Cut::Parallel::set_position_for_node(const Node* n, const Point:
 void Core::Geo::Cut::Parallel::communicate_node_dof_set_numbers(bool include_inner)
 {
   // wait for all processors before the Communication starts
-  discret_->Comm().Barrier();
+  discret_->get_comm().Barrier();
 
   TEUCHOS_FUNC_TIME_MONITOR(
       "Core::Geo::CUT --- 5/6 --- cut_positions_dofsets --- communicate_node_dof_set_numbers");
@@ -479,7 +479,7 @@ void Core::Geo::Cut::Parallel::communicate_node_dof_set_numbers(bool include_inn
   // procs set the information
   distribute_dof_set_data();
 
-  discret_->Comm().Barrier();
+  discret_->get_comm().Barrier();
 
   //  const double t_diff = Teuchos::Time::wallTime()-t_start;
   //  if ( myrank_ == 0 )
@@ -563,7 +563,7 @@ void Core::Geo::Cut::Parallel::export_dof_set_data(bool include_inner)
 
 
 
-      discret_->Comm().Barrier();  // processors wait for each other
+      discret_->get_comm().Barrier();  // processors wait for each other
     }
 
 
@@ -599,13 +599,13 @@ void Core::Geo::Cut::Parallel::export_dof_set_data(bool include_inner)
       {
         int nid = node_dofsetnumber_it->first;
 
-        bool haveGlobalNode = discret_->HaveGlobalNode(nid);
+        bool haveGlobalNode = discret_->have_global_node(nid);
 
         if (haveGlobalNode)
         {
-          Core::Nodes::Node* node = discret_->gNode(nid);
+          Core::Nodes::Node* node = discret_->g_node(nid);
 
-          if (node->Owner() == myrank_)
+          if (node->owner() == myrank_)
           {
             find_volumecell = true;
             // std::cout << "find the vc!!!" << std::endl;
@@ -649,14 +649,14 @@ void Core::Geo::Cut::Parallel::export_dof_set_data(bool include_inner)
         int nid = node_dofsetnumber_it->first;
         int curr_dofset_number = node_dofsetnumber_it->second;
 
-        bool haveGlobalNode = discret_->HaveGlobalNode(nid);
+        bool haveGlobalNode = discret_->have_global_node(nid);
 
         // decide if the current proc carries the required information
         if (haveGlobalNode)  // node on this proc available as row or col node
         {
           // std::cout << "in haveGlobalNode for node " << nid << std::endl;
-          Core::Nodes::Node* node = discret_->gNode(nid);
-          if (node->Owner() == myrank_)
+          Core::Nodes::Node* node = discret_->g_node(nid);
+          if (node->owner() == myrank_)
           {
             int new_dofset_number = -1;
 
@@ -671,14 +671,14 @@ void Core::Geo::Cut::Parallel::export_dof_set_data(bool include_inner)
             if (my_vc != nullptr)
             {
               // std::cout << "in my_vc != nullptr" << std::endl;
-              const std::vector<int> nds = my_vc->NodalDofSet();
+              const std::vector<int> nds = my_vc->nodal_dof_set();
 
               if ((int)(nds.size()) == 0)
               {
-                std::cout << "position of found vc is " << my_vc->Position() << std::endl;
+                std::cout << "position of found vc is " << my_vc->position() << std::endl;
 
                 std::stringstream str;
-                str << "cut_element" << my_vc->parent_element()->Id() << "_fail.pos";
+                str << "cut_element" << my_vc->parent_element()->id() << "_fail.pos";
                 std::ofstream file(str.str().c_str());
                 Core::Geo::Cut::Output::GmshCompleteCutElement(file, my_vc->parent_element());
                 Core::Geo::Cut::Output::GmshNewSection(file, "MyVC");
@@ -691,18 +691,18 @@ void Core::Geo::Cut::Parallel::export_dof_set_data(bool include_inner)
                   Core::Geo::Cut::Output::GmshCoordDump(file, (*rec_it), 0);
                 }
                 Core::Geo::Cut::Output::GmshEndSection(file, true);
-                std::cout << "Is the element cut = " << my_vc->parent_element()->IsCut() << "\n";
+                std::cout << "Is the element cut = " << my_vc->parent_element()->is_cut() << "\n";
                 std::cout << "VC_DATA is inside: Is the element cut = " << (*vc_data)->inside_cell_
                           << "\n";
                 FOUR_C_THROW("the nds-vector of volume cell in element %d on proc %d has size %d",
-                    my_vc->parent_element()->Id(), myrank_, (int)(nds.size()));
+                    my_vc->parent_element()->id(), myrank_, (int)(nds.size()));
               }
               if (index >= (int)(nds.size()))
               {
                 FOUR_C_THROW(
                     " index %d exceeds the nds vector of my vc with size %d in element %d on proc "
                     "%d",
-                    index, nds.size(), my_vc->parent_element()->Id(), myrank_);
+                    index, nds.size(), my_vc->parent_element()->id(), myrank_);
               }
 
               new_dofset_number = nds[index];
@@ -766,7 +766,7 @@ void Core::Geo::Cut::Parallel::distribute_dof_set_data()
 
     int peid = (*data)->peid_;
 
-    Core::Geo::Cut::ElementHandle* e = parentintersection_.GetElement(peid);
+    Core::Geo::Cut::ElementHandle* e = parentintersection_.get_element(peid);
 
     std::vector<int> nds;
 
@@ -774,7 +774,7 @@ void Core::Geo::Cut::Parallel::distribute_dof_set_data()
     {
       if ((*data)->inside_cell_)
       {
-        const std::vector<plain_volumecell_set>& ele_vc_sets_inside = e->GetVcSetsInside();
+        const std::vector<plain_volumecell_set>& ele_vc_sets_inside = e->get_vc_sets_inside();
         std::vector<std::vector<int>>& nodaldofset_vc_sets_inside =
             e->get_nodal_dof_set_vc_sets_inside();
 
@@ -783,7 +783,7 @@ void Core::Geo::Cut::Parallel::distribute_dof_set_data()
       }
       else
       {
-        const std::vector<plain_volumecell_set>& ele_vc_sets_outside = e->GetVcSetsOutside();
+        const std::vector<plain_volumecell_set>& ele_vc_sets_outside = e->get_vc_sets_outside();
         std::vector<std::vector<int>>& nodaldofset_vc_sets_outside =
             e->get_nodal_dof_set_vc_sets_outside();
 
@@ -830,14 +830,14 @@ Core::Geo::Cut::VolumeCell* Core::Geo::Cut::Parallel::find_volume_cell(
 
   VolumeCell* my_vc = nullptr;
 
-  ElementHandle* pele = parentintersection_.GetElement(vc_data.peid_);
+  ElementHandle* pele = parentintersection_.get_element(vc_data.peid_);
 
   if (pele == nullptr)
     FOUR_C_THROW("element with Id %i not found on proc %i", vc_data.peid_, myrank_);
 
   plain_volumecell_set my_vcs;
 
-  pele->GetVolumeCells(my_vcs);
+  pele->get_volume_cells(my_vcs);
 
   // find all the received volumecell's points
   for (plain_volumecell_set::iterator c = my_vcs.begin(); c != my_vcs.end(); c++)
@@ -849,12 +849,12 @@ Core::Geo::Cut::VolumeCell* Core::Geo::Cut::Parallel::find_volume_cell(
 
     // get points for my_vc
     plain_point_set my_cut_points;
-    const plain_facet_set& facets = cell->Facets();
+    const plain_facet_set& facets = cell->facets();
 
     for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); i++)
     {
       Facet* f = *i;
-      const std::vector<Point*>& facetpoints = f->Points();
+      const std::vector<Point*>& facetpoints = f->points();
       std::copy(facetpoints.begin(), facetpoints.end(),
           std::inserter(my_cut_points, my_cut_points.begin()));
     }
@@ -893,7 +893,7 @@ Core::Geo::Cut::VolumeCell* Core::Geo::Cut::Parallel::find_volume_cell(
           // compare the coordinates
           for (int i = 0; i < 3; i++)
           {
-            if (fabs((*my_it)->X()[i] - (*rec_it)(i)) > tol)
+            if (fabs((*my_it)->x()[i] - (*rec_it)(i)) > tol)
             {
               point_found = false;
               break;  // stop the loop over coordinates
@@ -929,7 +929,7 @@ Core::Geo::Cut::VolumeCell* Core::Geo::Cut::Parallel::find_volume_cell(
             // compare the coordinates
             for (int i = 0; i < 3; i++)
             {
-              if (fabs((*my_it)->X()[i] - (*rec_it)(i)) > tol)
+              if (fabs((*my_it)->x()[i] - (*rec_it)(i)) > tol)
               {
                 point_found = false;
                 break;  // stop the loop over coordinates
@@ -954,7 +954,7 @@ Core::Geo::Cut::VolumeCell* Core::Geo::Cut::Parallel::find_volume_cell(
     // additional check which we can make for sure (If there are no DOF Sets this cannot be the
     // correct Volumecell)
     if (vc_found == true)
-      if (!cell->NodalDofSet().size()) vc_found = false;
+      if (!cell->nodal_dof_set().size()) vc_found = false;
 
 
     if (vc_found == true)
@@ -1039,19 +1039,19 @@ Core::Geo::Cut::VolumeCell* Core::Geo::Cut::Parallel::find_volume_cell(
       VolumeCell* cell = *c;
       // get points for my_vc
       plain_point_set my_cut_points;
-      const plain_facet_set& facets = cell->Facets();
+      const plain_facet_set& facets = cell->facets();
 
       for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); i++)
       {
         Facet* f = *i;
-        const std::vector<Point*>& facetpoints = f->Points();
+        const std::vector<Point*>& facetpoints = f->points();
         std::copy(facetpoints.begin(), facetpoints.end(),
             std::inserter(my_cut_points, my_cut_points.begin()));
       }
       for (plain_point_set::iterator my_it = my_cut_points.begin(); my_it != my_cut_points.end();
            my_it++)
       {
-        Core::LinAlg::Matrix<3, 1> coord((*my_it)->X(), true);
+        Core::LinAlg::Matrix<3, 1> coord((*my_it)->x(), true);
         Core::Geo::Cut::Output::GmshCoordDump(file, coord, 0);
       }
     }
@@ -1059,7 +1059,7 @@ Core::Geo::Cut::VolumeCell* Core::Geo::Cut::Parallel::find_volume_cell(
     for (plain_volumecell_set::iterator c = my_vcs.begin(); c != my_vcs.end(); c++)
     {
       VolumeCell* cell = *c;
-      const plain_facet_set& facete = cell->Facets();
+      const plain_facet_set& facete = cell->facets();
       Core::Geo::Cut::Output::GmshNewSection(file, "VolumeCell", true);
       Core::Geo::Cut::Output::GmshVolumecellDump(file, cell, "lines", true);
       for (plain_facet_set::const_iterator it = facete.begin(); it != facete.end(); ++it)
@@ -1085,10 +1085,10 @@ void Core::Geo::Cut::Parallel::replace_nds_vectors(ElementHandle* e,
   plain_volumecell_set cells = ele_vc_sets[set_index];
 
   // get the old nds vector for all cells in current set, represented by the first Volumecell
-  const std::vector<int> nds_old = (*cells.begin())->NodalDofSet();
+  const std::vector<int> nds_old = (*cells.begin())->nodal_dof_set();
 
   // get vector of nids in current element
-  const std::vector<Core::Geo::Cut::Node*> nodes = e->Nodes();
+  const std::vector<Core::Geo::Cut::Node*> nodes = e->nodes();
 
   // create the new dofset Vector
   std::vector<int> nds_new;
@@ -1098,7 +1098,7 @@ void Core::Geo::Cut::Parallel::replace_nds_vectors(ElementHandle* e,
   {
     if (nds_old[i] == -1)  // entry that has to be replaced with received data
     {
-      int nid = nodes[i]->Id();  // key for received node_dofsetnumber_map
+      int nid = nodes[i]->id();  // key for received node_dofsetnumber_map
       nds_new.push_back(node_dofsetnumber_map.find(nid)->second);
     }
     else  // set original dofset number
@@ -1110,7 +1110,7 @@ void Core::Geo::Cut::Parallel::replace_nds_vectors(ElementHandle* e,
   // set the new nds vector for all volumecells in the current set
   for (plain_volumecell_set::iterator c = cells.begin(); c != cells.end(); c++)
   {
-    (*c)->SetNodalDofSet(nds_new);
+    (*c)->set_nodal_dof_set(nds_new);
   }
 
   nodaldofset_vc_sets[set_index] = nds_new;
@@ -1187,7 +1187,7 @@ void Core::Geo::Cut::Parallel::send_data(Core::Communication::PackBuffer& dataSe
 #endif
 
   // exporter for sending
-  Core::Communication::Exporter exporter(discret_->Comm());
+  Core::Communication::Exporter exporter(discret_->get_comm());
 
   // send length of the data to be received ...
   MPI_Request req_length_data;
@@ -1196,8 +1196,8 @@ void Core::Geo::Cut::Parallel::send_data(Core::Communication::PackBuffer& dataSe
 
   // ... and receive length
   std::vector<int> lengthRecv(1, 0);
-  exporter.Receive(source, length_tag, lengthRecv, size_one);
-  exporter.Wait(req_length_data);
+  exporter.receive(source, length_tag, lengthRecv, size_one);
+  exporter.wait(req_length_data);
 
   //-----------------------------------------
 
@@ -1209,8 +1209,8 @@ void Core::Geo::Cut::Parallel::send_data(Core::Communication::PackBuffer& dataSe
   // ... and receive data
   dataRecv.clear();
   dataRecv.resize(lengthRecv[0]);
-  exporter.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
-  exporter.Wait(req_data);
+  exporter.receive_any(source, data_tag, dataRecv, lengthRecv[0]);
+  exporter.wait(req_data);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   std::cout << "--- receiving " << lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc "
@@ -1237,13 +1237,13 @@ void Core::Geo::Cut::Parallel::print_dof_set_data()
  *------------------------------------------------------------------------------------------------*/
 int Core::Geo::Cut::Parallel::get_dof_set_vec_index(int nid, int eid)
 {
-  Core::Elements::Element* ele = discret_->gElement(eid);
+  Core::Elements::Element* ele = discret_->g_element(eid);
 
   if (ele == nullptr) FOUR_C_THROW("element %d not available on proc %d", eid, myrank_);
 
   int numnode = ele->num_node();
 
-  const int* ele_n_ids = ele->NodeIds();
+  const int* ele_n_ids = ele->node_ids();
 
   int index = 0;
 

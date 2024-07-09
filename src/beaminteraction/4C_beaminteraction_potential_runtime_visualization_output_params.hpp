@@ -60,14 +60,14 @@ namespace BEAMINTERACTION
     };
 
     /// whether to write output for forces
-    bool IsWriteForces() const
+    bool is_write_forces() const
     {
       throw_error_if_not_init_and_setup();
       return output_forces_;
     };
 
     /// whether to write output for moments
-    bool IsWriteMoments() const
+    bool is_write_moments() const
     {
       throw_error_if_not_init_and_setup();
       return output_moments_;

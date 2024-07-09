@@ -52,10 +52,10 @@ namespace Mat
       //@{
 
       //! yield stress for forces
-      double GetYieldStressN() const override { return yield_stress_n_; }
+      double get_yield_stress_n() const override { return yield_stress_n_; }
 
       //! yield stress momentum
-      double GetYieldStressM() const override { return yield_stress_m_; }
+      double get_yield_stress_m() const override { return yield_stress_m_; }
 
       //! hardening rigidity axial direction
       double get_hardening_axial_rigidity() const override
@@ -107,13 +107,13 @@ namespace Mat
   class BeamElastPlasticMaterialType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return typeid(this).name(); }
+    std::string name() const override { return typeid(this).name(); }
 
     //! get instance for beam material
-    static BeamElastPlasticMaterialType& Instance() { return instance_; };
+    static BeamElastPlasticMaterialType& instance() { return instance_; };
 
     //! create material object
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static BeamElastPlasticMaterialType instance_;
@@ -146,17 +146,17 @@ namespace Mat
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H and should return it in this method.
     */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return BeamElastPlasticMaterialType<T>::Instance().UniqueParObjectId();
+      return BeamElastPlasticMaterialType<T>::instance().unique_par_object_id();
     }
 
     /*!
      * \brief Pack this class so it can be communicated
      *
      * Resizes the vector data and stores all information of a class in it. The first information
-     * to be stored in data has to be the unique parobject id delivered by UniqueParObjectId() which
-     * will then identify the exact class on the receiving processor.
+     * to be stored in data has to be the unique parobject id delivered by unique_par_object_id()
+     * which will then identify the exact class on the receiving processor.
      *
      * @param data (in/out): char vector to store class information
      */
@@ -202,7 +202,7 @@ namespace Mat
 
     /** \brief return copy of this material object
      */
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new BeamPlasticMaterial(*this));
     }

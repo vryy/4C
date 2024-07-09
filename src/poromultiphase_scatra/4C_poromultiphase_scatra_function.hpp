@@ -47,13 +47,13 @@ namespace PoroMultiPhaseScaTra
         const std::size_t component) const override = 0;
 
 
-    std::vector<double> EvaluateDerivative(
+    std::vector<double> evaluate_derivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override = 0;
 
     //! only one component possible for PoroMultiPhaseScatraFunction so far
-    [[nodiscard]] std::size_t NumberComponents() const override { return 1; }
+    [[nodiscard]] std::size_t number_components() const override { return 1; }
 
     /*!
      * \brief check for correct order of input parameters variables and constants this check is
@@ -62,7 +62,7 @@ namespace PoroMultiPhaseScaTra
      * \param variables (i) A vector containing a pair (variablename, value) for each variable
      * \param constants (i) A vector containing a pair (variablename, value) for each constant
      */
-    virtual void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+    virtual void check_order(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) const = 0;
 
    protected:
@@ -100,12 +100,12 @@ namespace PoroMultiPhaseScaTra
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
-    std::vector<double> EvaluateDerivative(
+    std::vector<double> evaluate_derivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
-    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+    void check_order(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) const override;
 
    private:
@@ -141,12 +141,12 @@ namespace PoroMultiPhaseScaTra
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
-    std::vector<double> EvaluateDerivative(
+    std::vector<double> evaluate_derivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
-    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+    void check_order(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) const override;
 
    private:
@@ -183,12 +183,12 @@ namespace PoroMultiPhaseScaTra
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
-    std::vector<double> EvaluateDerivative(
+    std::vector<double> evaluate_derivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
-    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+    void check_order(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) const override;
 
    private:
@@ -226,12 +226,12 @@ namespace PoroMultiPhaseScaTra
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
-    std::vector<double> EvaluateDerivative(
+    std::vector<double> evaluate_derivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
-    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+    void check_order(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) const override;
 
    private:
@@ -268,12 +268,12 @@ namespace PoroMultiPhaseScaTra
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
-    std::vector<double> EvaluateDerivative(
+    std::vector<double> evaluate_derivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
-    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+    void check_order(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) const override;
 
    private:
@@ -306,12 +306,12 @@ namespace PoroMultiPhaseScaTra
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
-    std::vector<double> EvaluateDerivative(
+    std::vector<double> evaluate_derivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const std::size_t component) const override;
 
-    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+    void check_order(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) const override;
 
    private:
@@ -345,12 +345,12 @@ namespace PoroMultiPhaseScaTra
         const std::vector<std::pair<std::string, double>>& constants,
         const size_t component) const override;
 
-    std::vector<double> EvaluateDerivative(
+    std::vector<double> evaluate_derivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const size_t component) const override;
 
-    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+    void check_order(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) const override;
 
    private:
@@ -387,12 +387,12 @@ namespace PoroMultiPhaseScaTra
         const std::vector<std::pair<std::string, double>>& constants,
         const size_t component) const override;
 
-    std::vector<double> EvaluateDerivative(
+    std::vector<double> evaluate_derivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const size_t component) const override;
 
-    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+    void check_order(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) const override;
 
    private:
@@ -452,7 +452,7 @@ namespace PoroMultiPhaseScaTra
      * \param[in] constants A vector containing a pair (variablename, value) for each
      * constant
      */
-    std::vector<double> EvaluateDerivative(
+    std::vector<double> evaluate_derivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
         const size_t component) const override;
@@ -464,7 +464,7 @@ namespace PoroMultiPhaseScaTra
      * \param[in] variables A vector containing a pair (variablename, value) for each variable
      * \param[in] constants A vector containing a pair (variablename, value) for each constant
      */
-    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+    void check_order(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) const override;
 
 

@@ -28,20 +28,20 @@ namespace Discret
     class StructuralSurfaceType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "StructuralSurfaceType"; }
+      std::string name() const override { return "StructuralSurfaceType"; }
 
-      static StructuralSurfaceType& Instance();
+      static StructuralSurfaceType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -91,16 +91,16 @@ namespace Discret
       /*!
       \brief Deep copy this instance of an element and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -108,9 +108,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      inline int UniqueParObjectId() const override
+      inline int unique_par_object_id() const override
       {
-        return StructuralSurfaceType::Instance().UniqueParObjectId();
+        return StructuralSurfaceType::instance().unique_par_object_id();
       }
 
       /*!
@@ -138,7 +138,7 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      inline int NumDofPerNode(const Core::Nodes::Node& node) const override
+      inline int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
         return numdofpernode_;
       }
@@ -161,14 +161,14 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return StructuralSurfaceType::Instance();
+        return StructuralSurfaceType::instance();
       }
 
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
-      int NumLine() const override;
+      int num_line() const override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -211,10 +211,10 @@ namespace Discret
       virtual double estimate_nitsche_trace_max_eigenvalue_tsi(std::vector<double>& parent_disp);
 
       //! Return a pointer to the parent element of this boundary element
-      virtual Core::Elements::Element* parent_element() const { return ParentMasterElement(); }
+      virtual Core::Elements::Element* parent_element() const { return parent_master_element(); }
 
       //! Return local surface number
-      int LSurfNumber() const { return FaceMasterNumber(); }
+      int l_surf_number() const { return face_master_number(); }
 
      public:  // changed to public rauch 05/2014
       //! action for surface evaluation
@@ -312,9 +312,9 @@ namespace Discret
         const int numnode = num_node();
         for (int i = 0; i < numnode; ++i)
         {
-          x(i, 0) = Nodes()[i]->X()[0];
-          x(i, 1) = Nodes()[i]->X()[1];
-          x(i, 2) = Nodes()[i]->X()[2];
+          x(i, 0) = nodes()[i]->x()[0];
+          x(i, 1) = nodes()[i]->x()[1];
+          x(i, 2) = nodes()[i]->x()[2];
         }
         return;
       }
@@ -331,9 +331,9 @@ namespace Discret
         const int numnode = num_node();
         for (int i = 0; i < numnode; ++i)
         {
-          x(i, 0) = Nodes()[i]->X()[0] + disp[i * 3 + 0];
-          x(i, 1) = Nodes()[i]->X()[1] + disp[i * 3 + 1];
-          x(i, 2) = Nodes()[i]->X()[2] + disp[i * 3 + 2];
+          x(i, 0) = nodes()[i]->x()[0] + disp[i * 3 + 0];
+          x(i, 1) = nodes()[i]->x()[1] + disp[i * 3 + 1];
+          x(i, 2) = nodes()[i]->x()[2] + disp[i * 3 + 2];
         }
         return;
       }

@@ -55,7 +55,7 @@ namespace Core::Geo
          *  Call this method to get the pointgraph which fits to your problem dimension.
          *
          *  \author hiermeier \date 11/16 */
-        static PointGraph *Create(Mesh &mesh, Element *element, Side *side,
+        static PointGraph *create(Mesh &mesh, Element *element, Side *side,
             PointGraph::Location location, PointGraph::Strategy strategy);
 
        protected:
@@ -70,17 +70,17 @@ namespace Core::Geo
 
           virtual ~Graph() = default;
 
-          void AddEdge(int row, int col);
+          void add_edge(int row, int col);
 
-          void AddEdge(Point *p1, Point *p2);
+          void add_edge(Point *p1, Point *p2);
 
-          Point *GetPoint(int i);
+          Point *get_point(int i);
 
           void print(std::ostream &stream = std::cout);
 
-          void PlotAllPoints(std::ostream &stream = std::cout);
+          void plot_all_points(std::ostream &stream = std::cout);
 
-          void PlotPoints(Element *element);
+          void plot_points(Element *element);
 
           /** Creates maincycles (outer polygons) and holecycles (inner polygons = holes)
            *  of the selfcut graph */
@@ -92,11 +92,11 @@ namespace Core::Geo
           /*!
           \brief Any edge with single point in the graph is deleted
            */
-          void FixSinglePoints(Cycle &cycle);
+          void fix_single_points(Cycle &cycle);
 
-          virtual bool HasSinglePoints(Location location);
+          virtual bool has_single_points(Location location);
 
-          virtual bool HasTouchingEdge(Element *element, Side *side);
+          virtual bool has_touching_edge(Element *element, Side *side);
 
           // Simplify connection if the single point lies close to the nodal point
           // and touches the same edges as the nodal point
@@ -104,9 +104,9 @@ namespace Core::Geo
           // to this point is created
           // In this case we remove connection to nodal point, and treat cut point and "new nodal
           // point"
-          virtual bool SimplifyConnections(Element *element, Side *side);
+          virtual bool simplify_connections(Element *element, Side *side);
 
-          void GnuplotDumpCycles(const std::string &filename, const std::vector<Cycle> &cycles);
+          void gnuplot_dump_cycles(const std::string &filename, const std::vector<Cycle> &cycles);
 
           std::map<int, plain_int_set> graph_;
           std::map<int, Point *> all_points_;

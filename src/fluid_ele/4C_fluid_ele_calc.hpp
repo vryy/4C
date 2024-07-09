@@ -117,7 +117,7 @@ namespace Discret
       /*!
         Interface function for supporting methods of the element
        */
-      int EvaluateService(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int evaluate_service(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
@@ -132,9 +132,9 @@ namespace Discret
        *   \author mayr.mt
        *   \date   04/2012
        */
-      virtual int CalcDivOp(Discret::ELEMENTS::Fluid* ele,  //< current fluid element
-          Core::FE::Discretization& discretization,         //< fluid discretization
-          std::vector<int>& lm,                             //< some DOF management
+      virtual int calc_div_op(Discret::ELEMENTS::Fluid* ele,  //< current fluid element
+          Core::FE::Discretization& discretization,           //< fluid discretization
+          std::vector<int>& lm,                               //< some DOF management
           Core::LinAlg::SerialDenseVector& elevec1  //< reference to element vector to be filled
       );
 
@@ -142,7 +142,7 @@ namespace Discret
        *
        *  \author mayr.mt \date 05/2014
        */
-      virtual int CalcMassMatrix(Discret::ELEMENTS::Fluid* ele,
+      virtual int calc_mass_matrix(Discret::ELEMENTS::Fluid* ele,
           //    Teuchos::ParameterList&              params,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra
@@ -198,7 +198,7 @@ namespace Discret
        *
        *  \author rauch \date 05/2014
        */
-      int ResetImmersedEle(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params);
+      int reset_immersed_ele(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params);
 
       /*! \brief Calculate coordinates and velocities and element center
        *
@@ -213,7 +213,7 @@ namespace Discret
        *
        *  \author bk \date 08/2014
        */
-      virtual int CalcTimeStep(Discret::ELEMENTS::Fluid* ele,
+      virtual int calc_time_step(Discret::ELEMENTS::Fluid* ele,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1);
 
@@ -260,9 +260,9 @@ namespace Discret
        *   \author ehrl
        *   \date   12/2012
        */
-      virtual int ComputeDivU(Discret::ELEMENTS::Fluid* ele,  //< current fluid element
-          Core::FE::Discretization& discretization,           //< fluid discretization
-          std::vector<int>& lm,                               //< location vector for DOF management
+      virtual int compute_div_u(Discret::ELEMENTS::Fluid* ele,  //< current fluid element
+          Core::FE::Discretization& discretization,             //< fluid discretization
+          std::vector<int>& lm,                     //< location vector for DOF management
           Core::LinAlg::SerialDenseVector& elevec1  //< reference to element vector to be filled
       );
 
@@ -329,7 +329,7 @@ namespace Discret
       };
 
       /// Evaluate the XFEM cut element
-      int EvaluateXFEM(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      int evaluate_xfem(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -353,7 +353,7 @@ namespace Discret
       /*!
         \brief finite difference check for debugging
       */
-      virtual void FDcheck(const Core::LinAlg::Matrix<nsd_, nen_>& evelaf,
+      virtual void f_dcheck(const Core::LinAlg::Matrix<nsd_, nen_>& evelaf,
           const Core::LinAlg::Matrix<nsd_, nen_>& eveln,
           const Core::LinAlg::Matrix<nsd_, nen_>& fsevelaf,
           const Core::LinAlg::Matrix<nen_, 1>& epreaf,
@@ -441,18 +441,18 @@ namespace Discret
 
       /// calculate body force from nodal conditions. Static function interface to allow
       /// for its use in FluidEleCalcHDG.
-      static void BodyForce(Discret::ELEMENTS::Fluid* ele,  //< pointer to element
-          const double time,                                //< current time
-          const Inpar::FLUID::PhysicalType physicaltype,    //< physical type
-          Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,        //< body force at nodes
+      static void body_force(Discret::ELEMENTS::Fluid* ele,  //< pointer to element
+          const double time,                                 //< current time
+          const Inpar::FLUID::PhysicalType physicaltype,     //< physical type
+          Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,         //< body force at nodes
           Core::LinAlg::Matrix<nsd_, nen_>&
               eprescpgaf,  //< prescribed pressure gradient (required for turbulent channel flow!)
           Core::LinAlg::Matrix<nen_, 1>& escabofoaf  //< scatra body force at nodes
       );
 
       /// calculate correction term at nodes
-      static void CorrectionTerm(Discret::ELEMENTS::Fluid* ele,  //< pointer to element
-          Core::LinAlg::Matrix<1, nen_>& ecorrectionterm         //<correction term at nodes
+      static void correction_term(Discret::ELEMENTS::Fluid* ele,  //< pointer to element
+          Core::LinAlg::Matrix<1, nen_>& ecorrectionterm          //<correction term at nodes
       );
 
 

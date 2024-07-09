@@ -38,7 +38,7 @@ namespace Discret
     {
      public:
       //! singleton access method
-      static ScaTraEleCalcSTIElectrode<distype>* Instance(
+      static ScaTraEleCalcSTIElectrode<distype>* instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
 
@@ -56,7 +56,7 @@ namespace Discret
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action for off-diagonal system matrix block
-      int EvaluateActionOD(Core::Elements::Element* ele,    //!< current element
+      int evaluate_action_od(Core::Elements::Element* ele,  //!< current element
           Teuchos::ParameterList& params,                   //!< parameter list
           Core::FE::Discretization& discretization,         //!< discretization
           const ScaTra::Action& action,                     //!< action parameter
@@ -193,19 +193,19 @@ namespace Discret
 
       //! compute and store half cell open circuit potential and its first and second derivatives
       //! w.r.t. concentration
-      void SetOCPAndDerivs(const Core::Elements::Element* ele, const double& concentration,
+      void set_ocp_and_derivs(const Core::Elements::Element* ele, const double& concentration,
           const double& temperature)
       {
         const double faraday =
-            Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+            Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
         const double gasconstant =
-            Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
+            Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->gas_constant();
         // factor F/RT
         const double frt = faraday / (gasconstant * temperature);
 
         // access electrode material
         const Teuchos::RCP<const Mat::Electrode> matelectrode =
-            Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->Material(1));
+            Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->material(1));
         if (matelectrode == Teuchos::null) FOUR_C_THROW("Invalid electrode material!");
 
         // no deformation available in this code part
@@ -221,13 +221,13 @@ namespace Discret
       };
 
       //! return half cell open circuit potential
-      const double& GetOCP() { return ocp_; };
+      const double& get_ocp() { return ocp_; };
 
       //! return first derivative of half cell open circuit potential w.r.t. concentration
-      const double& GetOCPDeriv() { return ocpderiv_; };
+      const double& get_ocp_deriv() { return ocpderiv_; };
 
       //! return second derivative of half cell open circuit potential w.r.t. concentration
-      const double& GetOCPDeriv2() { return ocpderiv2_; };
+      const double& get_ocp_deriv2() { return ocpderiv2_; };
 
      protected:
       //! half cell open circuit potential

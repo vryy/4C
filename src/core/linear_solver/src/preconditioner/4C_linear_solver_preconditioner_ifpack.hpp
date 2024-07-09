@@ -35,7 +35,7 @@ namespace Core::LinearSolver
         Epetra_MultiVector* b) override;
 
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return prec_; }
+    Teuchos::RCP<Epetra_Operator> prec_operator() const override { return prec_; }
 
    private:
     //! IFPACK parameter list

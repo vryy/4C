@@ -27,9 +27,9 @@ Adapter::FluidACFSI::FluidACFSI(Teuchos::RCP<Fluid> fluid,
   return;
 }
 
-std::vector<double> Adapter::FluidACFSI::GetWindkesselErrors()
+std::vector<double> Adapter::FluidACFSI::get_windkessel_errors()
 {
-  if (fluidimpl_->ImpedanceBC_() == Teuchos::null)  // iff there is no windkessel condition
+  if (fluidimpl_->impedance_bc() == Teuchos::null)  // iff there is no windkessel condition
   {
     // FOUR_C_THROW("fluid field has no Windkessel!");
     std::vector<double> tmp(1, true);
@@ -37,7 +37,7 @@ std::vector<double> Adapter::FluidACFSI::GetWindkesselErrors()
     return tmp;
   }
 
-  return fluidimpl_->ImpedanceBC_()->getWKrelerrors();
+  return fluidimpl_->impedance_bc()->get_w_krelerrors();
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -49,28 +49,28 @@ namespace Core::Geo
       \brief Returns the shape of the boundarycell
        */
 
-      virtual Core::FE::CellType Shape() const = 0;
+      virtual Core::FE::CellType shape() const = 0;
 
       /*! \brief Returns the cubature degree to generate quadrature rule for the cell
        *
        *  This is the maximal polynomial degree which is integrate exactly by the used
        *  gaussion quadrature rule. */
-      virtual int CubatureDegree() const = 0;
+      virtual int cubature_degree() const = 0;
 
       /*!
       \brief Writes the geometry of boundarycell, and the constant scalar "value" in GMSH format
        */
-      void DumpGmsh(std::ofstream& file, int* value = nullptr);
+      void dump_gmsh(std::ofstream& file, int* value = nullptr);
 
       /*!
       \brief Writes the geometry of boundarycell, and the constant scalar "value" in GMSH format
        */
-      virtual void DumpGmshNormal(std::ofstream& file) = 0;
+      virtual void dump_gmsh_normal(std::ofstream& file) = 0;
 
       /*!
       \brief Returns the area of tri3 and quad4 boundarycell
        */
-      virtual double Area() = 0;
+      virtual double area() = 0;
 
       /*!
       \brief Returns the center of tri3 and quad4 boundarycell
@@ -80,29 +80,29 @@ namespace Core::Geo
       /*!
       \brief Get the outward normal vector for the tri3 and quad4 boundarycell
        */
-      virtual void Normal(
+      virtual void normal(
           const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const = 0;
 
       /*!
       \brief Get the corner points of the boundarycell in Cylce for geometrical operations
        */
-      const Cycle& PointCycle() const { return *points_; }
+      const Cycle& point_cycle() const { return *points_; }
 
       /*!
       \brief Get the corner points of the boundarycell as vector of Points
        */
-      const std::vector<Point*>& Points() const;
+      const std::vector<Point*>& points() const;
 
       /*!
       \brief Get the coodinates of the corner points of boundarycell
        */
-      const Core::LinAlg::SerialDenseMatrix& Coordinates() const { return xyz_; }
+      const Core::LinAlg::SerialDenseMatrix& coordinates() const { return xyz_; }
 
       /*!
       \brief Move the corner points of the boundary cell by a specific offset
        */
       template <Core::FE::CellType celldistype>
-      void AssignOffset(int idx, double offset)
+      void assign_offset(int idx, double offset)
       {
         Core::LinAlg::Matrix<3, Core::FE::num_nodes<celldistype>> xyz_mat(xyz_, true);
         for (unsigned int n = 0; n < Core::FE::num_nodes<celldistype>; ++n)
@@ -115,40 +115,40 @@ namespace Core::Geo
        *
        *  \author winter
        *  \date 07/15 */
-      std::vector<std::vector<double>> CoordinatesV();
+      std::vector<std::vector<double>> coordinates_v();
 
       /*!
       \brief Get the Facet which represent the boundarycell
        */
-      Facet* GetFacet() { return facet_; }
-      const Facet* GetFacet() const { return facet_; }
+      Facet* get_facet() { return facet_; }
+      const Facet* get_facet() const { return facet_; }
 
       /*!
       \brief Delete all the points of this boundarycell
        */
       void clear();
 
-      bool IsValid() const;
+      bool is_valid() const;
 
       /*!
       \brief Function to test if the distance between points is within point tolerance.
        */
-      virtual bool IsValidBoundaryCell() = 0;
+      virtual bool is_valid_boundary_cell() = 0;
 
       /*!
       \brief Get the Gaussian integration rule for the boundarycell
        */
-      virtual Core::FE::GaussIntegration gaussRule(int cubaturedegree) = 0;
+      virtual Core::FE::GaussIntegration gauss_rule(int cubaturedegree) = 0;
 
       /*!
       \brief Get the Gaussian integration rule for the boundarycell
        */
-      virtual Core::FE::GaussIntegration gaussRule() { return gaussRule(CubatureDegree()); }
+      virtual Core::FE::GaussIntegration gauss_rule() { return gauss_rule(cubature_degree()); }
 
       /*!
       \brief Get the normal vector for the arbitrary boundarycell alone
        */
-      virtual Core::LinAlg::Matrix<3, 1> GetNormalVector() = 0;
+      virtual Core::LinAlg::Matrix<3, 1> get_normal_vector() = 0;
 
       /*! \brief Print the corner points on screen
        *
@@ -166,7 +166,7 @@ namespace Core::Geo
       factor to be multiplied with integration weight and normal vector of the boundarycell
        */
       template <Core::FE::CellType celldistype>
-      void Transform(const Core::LinAlg::Matrix<2, 1>& eta, Core::LinAlg::Matrix<3, 1>& x_gp_lin,
+      void transform(const Core::LinAlg::Matrix<2, 1>& eta, Core::LinAlg::Matrix<3, 1>& x_gp_lin,
           Core::LinAlg::Matrix<3, 1>& normal, double& drs, bool referencepos = false)
       {
         const int numnodes = Core::FE::num_nodes<celldistype>;
@@ -208,7 +208,7 @@ namespace Core::Geo
       }
 
       /// Reset the point with local index lid
-      void ResetPos(int lid, Core::LinAlg::Matrix<3, 1> newpos)
+      void reset_pos(int lid, Core::LinAlg::Matrix<3, 1> newpos)
       {
         if (lid > xyz_.numCols()) FOUR_C_THROW("Index out of range! %d > %d", lid, xyz_.numCols());
 
@@ -292,24 +292,24 @@ namespace Core::Geo
         /* intentionally left blank */
       }
 
-      Core::FE::CellType Shape() const override { return Core::FE::CellType::point1; }
+      Core::FE::CellType shape() const override { return Core::FE::CellType::point1; }
 
-      int CubatureDegree() const override { return 0; }
+      int cubature_degree() const override { return 0; }
 
-      void DumpGmshNormal(std::ofstream& file) override;
+      void dump_gmsh_normal(std::ofstream& file) override;
 
-      double Area() override { return 0.0; };
+      double area() override { return 0.0; };
 
       void element_center(Core::LinAlg::Matrix<3, 1>& midpoint) override;
 
-      void Normal(
+      void normal(
           const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const override;
 
-      Core::FE::GaussIntegration gaussRule(int cubaturedegree) override;
+      Core::FE::GaussIntegration gauss_rule(int cubaturedegree) override;
 
-      Core::LinAlg::Matrix<3, 1> GetNormalVector() override;
+      Core::LinAlg::Matrix<3, 1> get_normal_vector() override;
 
-      bool IsValidBoundaryCell() override { return true; };
+      bool is_valid_boundary_cell() override { return true; };
 
      protected:
       Core::FE::GaussRule2D my_simple_gauss_rule() override
@@ -330,24 +330,24 @@ namespace Core::Geo
         /* intentionally left blank */
       }
 
-      Core::FE::CellType Shape() const override { return Core::FE::CellType::line2; }
+      Core::FE::CellType shape() const override { return Core::FE::CellType::line2; }
 
-      int CubatureDegree() const override { return 4; }
+      int cubature_degree() const override { return 4; }
 
-      void DumpGmshNormal(std::ofstream& file) override;
+      void dump_gmsh_normal(std::ofstream& file) override;
 
-      double Area() override;
+      double area() override;
 
       void element_center(Core::LinAlg::Matrix<3, 1>& midpoint) override;
 
-      void Normal(
+      void normal(
           const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const override;
 
-      Core::FE::GaussIntegration gaussRule(int cubaturedegree) override;
+      Core::FE::GaussIntegration gauss_rule(int cubaturedegree) override;
 
-      Core::LinAlg::Matrix<3, 1> GetNormalVector() override;
+      Core::LinAlg::Matrix<3, 1> get_normal_vector() override;
 
-      bool IsValidBoundaryCell() override { return (Area() > REF_AREA_BCELL); };
+      bool is_valid_boundary_cell() override { return (area() > REF_AREA_BCELL); };
 
      protected:
       Core::FE::GaussRule2D my_simple_gauss_rule() override
@@ -367,28 +367,28 @@ namespace Core::Geo
       {
       }
 
-      Core::FE::CellType Shape() const override { return Core::FE::CellType::tri3; }
+      Core::FE::CellType shape() const override { return Core::FE::CellType::tri3; }
 
-      int CubatureDegree() const override { return 20; }
+      int cubature_degree() const override { return 20; }
 
-      void DumpGmshNormal(std::ofstream& file) override;
+      void dump_gmsh_normal(std::ofstream& file) override;
 
-      double Area() override;
+      double area() override;
 
       void element_center(Core::LinAlg::Matrix<3, 1>& midpoint) override;
 
-      void Normal(
+      void normal(
           const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const override;
 
-      Core::FE::GaussIntegration gaussRule(int cubaturedegree) override;
+      Core::FE::GaussIntegration gauss_rule(int cubaturedegree) override;
 
-      Core::LinAlg::Matrix<3, 1> GetNormalVector() override;
+      Core::LinAlg::Matrix<3, 1> get_normal_vector() override;
 
       /** \brief  A first step to validate if a boundary cell is valid.
        *
        *  \author winter
        *  \date 11/15 */
-      bool IsValidBoundaryCell() override;
+      bool is_valid_boundary_cell() override;
 
      protected:
       Core::FE::GaussRule2D my_simple_gauss_rule() override
@@ -408,26 +408,26 @@ namespace Core::Geo
       {
       }
 
-      Core::FE::CellType Shape() const override { return Core::FE::CellType::quad4; }
+      Core::FE::CellType shape() const override { return Core::FE::CellType::quad4; }
 
-      int CubatureDegree() const override { return 20; }
+      int cubature_degree() const override { return 20; }
 
-      void DumpGmshNormal(std::ofstream& file) override;
+      void dump_gmsh_normal(std::ofstream& file) override;
 
       // Maybe shoelace theorem can be used here?
-      double Area() override { return my_area<Core::FE::CellType::quad4>(); }
+      double area() override { return my_area<Core::FE::CellType::quad4>(); }
 
       void element_center(Core::LinAlg::Matrix<3, 1>& midpoint) override;
 
-      void Normal(
+      void normal(
           const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const override;
 
-      Core::FE::GaussIntegration gaussRule(int cubaturedegree) override;
+      Core::FE::GaussIntegration gauss_rule(int cubaturedegree) override;
 
-      Core::LinAlg::Matrix<3, 1> GetNormalVector() override;
+      Core::LinAlg::Matrix<3, 1> get_normal_vector() override;
 
       // Probably not the best way...
-      bool IsValidBoundaryCell() override { return (Area() > REF_AREA_BCELL); }
+      bool is_valid_boundary_cell() override { return (area() > REF_AREA_BCELL); }
 
      protected:
       Core::FE::GaussRule2D my_simple_gauss_rule() override
@@ -448,24 +448,24 @@ namespace Core::Geo
       {
       }
 
-      Core::FE::CellType Shape() const override { return Core::FE::CellType::dis_none; }
+      Core::FE::CellType shape() const override { return Core::FE::CellType::dis_none; }
 
-      int CubatureDegree() const override { return 0; }
+      int cubature_degree() const override { return 0; }
 
-      void DumpGmshNormal(std::ofstream& file) override;
+      void dump_gmsh_normal(std::ofstream& file) override;
 
-      double Area() override { return 0.0; }
+      double area() override { return 0.0; }
 
       void element_center(Core::LinAlg::Matrix<3, 1>& midpoint) override;
 
-      void Normal(
+      void normal(
           const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const override;
 
-      Core::FE::GaussIntegration gaussRule(int cubaturedegree) override;
+      Core::FE::GaussIntegration gauss_rule(int cubaturedegree) override;
 
-      Core::LinAlg::Matrix<3, 1> GetNormalVector() override;
+      Core::LinAlg::Matrix<3, 1> get_normal_vector() override;
 
-      bool IsValidBoundaryCell() override { return (Area() > REF_AREA_BCELL); }
+      bool is_valid_boundary_cell() override { return (area() > REF_AREA_BCELL); }
 
      protected:
       Core::FE::GaussRule2D my_simple_gauss_rule() override

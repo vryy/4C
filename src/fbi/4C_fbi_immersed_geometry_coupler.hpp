@@ -63,7 +63,7 @@ namespace FBI
      *
      * \param[in] binning binning strategy
      */
-    virtual void SetBinning(Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning);
+    virtual void set_binning(Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning);
 
     /** \brief Setup the Geoemtry object
      *
@@ -86,7 +86,7 @@ namespace FBI
      *
      * \returns map relating the beam element IDs to a vector of nearby fluid element IDs
      */
-    virtual Teuchos::RCP<std::map<int, std::vector<int>>> Search(
+    virtual Teuchos::RCP<std::map<int, std::vector<int>>> search(
         std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
         Teuchos::RCP<const Epetra_Vector>& column_structure_displacement);
 
@@ -98,7 +98,7 @@ namespace FBI
      * \note For now we assume that we only have beam elements in the structure discretization
      */
 
-    virtual void ExtendBeamGhosting(Core::FE::Discretization& discretization);
+    virtual void extend_beam_ghosting(Core::FE::Discretization& discretization);
 
     /**
      * \brief Handles the parallel communication necessary to create the beam-fluid pairs
@@ -114,7 +114,7 @@ namespace FBI
      * \param[in] pairids  a map containing a map relating all beam element ids to a set
      * of fluid elements ids which they potentially cut
      */
-    virtual void PreparePairCreation(
+    virtual void prepare_pair_creation(
         std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
         Teuchos::RCP<std::map<int, std::vector<int>>> pairids);
 
@@ -123,7 +123,7 @@ namespace FBI
      * \param[in] structure_discretization structure discretization
      * \param[in] structure_displacement vector containing the column structure displacement
      */
-    virtual void UpdateBinning(Teuchos::RCP<Core::FE::Discretization>& structure_discretization,
+    virtual void update_binning(Teuchos::RCP<Core::FE::Discretization>& structure_discretization,
         Teuchos::RCP<const Epetra_Vector> structure_column_displacement){};
 
    protected:

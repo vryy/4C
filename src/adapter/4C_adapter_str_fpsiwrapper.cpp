@@ -22,9 +22,9 @@ namespace
   bool PrestressIsActive(const double currentTime)
   {
     Inpar::Solid::PreStress pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
-        Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
+        Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
     const double pstime =
-        Global::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
+        Global::Problem::instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
     return pstype != Inpar::Solid::PreStress::none && currentTime <= pstime + 1.0e-15;
   }
 }  // namespace
@@ -48,13 +48,13 @@ Teuchos::RCP<Epetra_Vector> Adapter::FPSIStructureWrapper::extract_interface_dis
   else
   {
     // prestressing business
-    if (PrestressIsActive(TimeOld()))
+    if (PrestressIsActive(time_old()))
     {
       return Teuchos::rcp(new Epetra_Vector(*interface_->fpsi_cond_map(), true));
     }
     else
     {
-      return interface_->extract_fpsi_cond_vector(Dispn());
+      return interface_->extract_fpsi_cond_vector(dispn());
     }
   }
 }
@@ -71,13 +71,13 @@ Teuchos::RCP<Epetra_Vector> Adapter::FPSIStructureWrapper::extract_interface_dis
   else
   {
     // prestressing business
-    if (PrestressIsActive(Time()))
+    if (PrestressIsActive(time()))
     {
       return Teuchos::rcp(new Epetra_Vector(*interface_->fpsi_cond_map(), true));
     }
     else
     {
-      return interface_->extract_fpsi_cond_vector(Dispnp());
+      return interface_->extract_fpsi_cond_vector(dispnp());
     }
   }
 }

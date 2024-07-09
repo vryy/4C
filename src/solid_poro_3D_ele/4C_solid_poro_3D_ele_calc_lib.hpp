@@ -46,11 +46,11 @@ namespace Discret::ELEMENTS
       const Core::Elements::Element& ele)
   {
     // get state of the global vector
-    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(dofset, state);
+    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(dofset, state);
     if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
     // ask for the number of dofs of dofset
-    const int numdofpernode = discretization.NumDof(dofset, ele.Nodes()[0]);
+    const int numdofpernode = discretization.num_dof(dofset, ele.nodes()[0]);
 
     // extract local values of the global vectors
     std::vector<double> mymatrix(lm.size());
@@ -620,13 +620,13 @@ namespace Discret::ELEMENTS
         &fluidmultiphase_phiAtGP[0], &fluidmultiphase_phiAtGP[numfluidphases]);
 
     // evaluate the pressures
-    porofluidmat.EvaluateGenPressure(genpress, fluidphi);
+    porofluidmat.evaluate_gen_pressure(genpress, fluidphi);
 
     // transform generalized pressures to true pressure values
     porofluidmat.transform_gen_pres_to_true_pres(genpress, press);
 
     // explicit evaluation of saturation
-    porofluidmat.EvaluateSaturation(sat, fluidphi, press);
+    porofluidmat.evaluate_saturation(sat, fluidphi, press);
 
     // calculate the derivative of the pressure (actually first its inverse)
     porofluidmat.evaluate_deriv_of_dof_wrt_pressure(pressderiv, fluidphi);
@@ -683,13 +683,13 @@ namespace Discret::ELEMENTS
         &fluidmultiphase_phiAtGP[0], &fluidmultiphase_phiAtGP[numfluidphases]);
 
     // evaluate the pressures
-    porofluidmat.EvaluateGenPressure(genpress, fluidphi);
+    porofluidmat.evaluate_gen_pressure(genpress, fluidphi);
 
     //! transform generalized pressures to true pressure values
     porofluidmat.transform_gen_pres_to_true_pres(genpress, press);
 
     // explicit evaluation of saturation
-    porofluidmat.EvaluateSaturation(sat, fluidphi, press);
+    porofluidmat.evaluate_saturation(sat, fluidphi, press);
 
     // solid pressure = sum (S_i*p_i)
     const double solidpressure = std::inner_product(sat.begin(), sat.end(), press.begin(), 0.0);

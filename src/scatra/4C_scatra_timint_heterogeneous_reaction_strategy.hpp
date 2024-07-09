@@ -45,13 +45,13 @@ namespace ScaTra
 
 
     //! compute residual terms and their linearizations
-    void EvaluateMeshtying() override;
+    void evaluate_meshtying() override;
 
     //! setup meshtying objects
     void setup_meshtying() override;
 
     //! initialize meshtying objects
-    void InitMeshtying() override;
+    void init_meshtying() override;
 
     /*!
     \brief Evaluate a given condition

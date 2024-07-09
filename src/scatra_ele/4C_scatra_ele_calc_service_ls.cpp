@@ -40,8 +40,8 @@ int Discret::ELEMENTS::ScaTraEleCalcLS<distype>::evaluate_action(Core::Elements:
     case ScaTra::Action::calc_error:
     {
       // extract local values from the global vectors
-      Teuchos::RCP<const Epetra_Vector> phizero = discretization.GetState("phiref");
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      Teuchos::RCP<const Epetra_Vector> phizero = discretization.get_state("phiref");
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phizero == Teuchos::null or phinp == Teuchos::null)
         FOUR_C_THROW("Cannot get state vector 'phizero' and/ or 'phinp'!");
 
@@ -97,7 +97,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLS<distype>::cal_error_compared_to_analyt_s
     case Inpar::ScaTra::calcerror_initial_field:
     {
       // start loop over integration points
-      for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
+      for (int iquad = 0; iquad < intpoints.ip().nquad; iquad++)
       {
         const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 

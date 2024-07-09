@@ -24,11 +24,11 @@ Core::Geo::Cut::Element* create_hex8(
   nids.reserve(8);
   for (int i = 0; i < 8; ++i)
   {
-    mesh.GetNode(numnode, &xyze(0, i));
+    mesh.get_node(numnode, &xyze(0, i));
     nids.push_back(numnode++);
   }
 
-  return mesh.CreateHex8(numele++, nids);
+  return mesh.create_hex8(numele++, nids);
 }
 
 Core::Geo::Cut::Element* create_tet4(
@@ -38,11 +38,11 @@ Core::Geo::Cut::Element* create_tet4(
   nids.reserve(4);
   for (int i = 0; i < 4; ++i)
   {
-    mesh.GetNode(numnode, &xyze(0, i));
+    mesh.get_node(numnode, &xyze(0, i));
     nids.push_back(numnode++);
   }
 
-  return mesh.CreateTet4(numele++, nids);
+  return mesh.create_tet4(numele++, nids);
 }
 
 Core::Geo::Cut::Element* create_wedge6(
@@ -52,11 +52,11 @@ Core::Geo::Cut::Element* create_wedge6(
   nids.reserve(6);
   for (int i = 0; i < 6; ++i)
   {
-    mesh.GetNode(numnode, &xyze(0, i));
+    mesh.get_node(numnode, &xyze(0, i));
     nids.push_back(numnode++);
   }
 
-  return mesh.CreateWedge6(numele++, nids);
+  return mesh.create_wedge6(numele++, nids);
 }
 
 Core::Geo::Cut::Element* create_pyramid5(
@@ -66,11 +66,11 @@ Core::Geo::Cut::Element* create_pyramid5(
   nids.reserve(5);
   for (int i = 0; i < 5; ++i)
   {
-    mesh.GetNode(numnode, &xyze(0, i));
+    mesh.get_node(numnode, &xyze(0, i));
     nids.push_back(numnode++);
   }
 
-  return mesh.CreatePyramid5(numele++, nids);
+  return mesh.create_pyramid5(numele++, nids);
 }
 
 Core::Geo::Cut::Side* create_quad4(
@@ -80,11 +80,11 @@ Core::Geo::Cut::Side* create_quad4(
   nids.reserve(4);
   for (int i = 0; i < 4; ++i)
   {
-    mesh.GetNode(numnode, &xyze(0, i));
+    mesh.get_node(numnode, &xyze(0, i));
     nids.push_back(numnode++);
   }
 
-  return mesh.CreateQuad4Side(numele++, nids);
+  return mesh.create_quad4_side(numele++, nids);
 }
 
 void create_hex8(Core::LinAlg::SerialDenseMatrix& xyze, double dx, double dy, double dz)
@@ -151,7 +151,7 @@ void create_hex8_mesh(Core::Geo::Cut::Mesh& mesh, int rows, int cols, int depth)
         coord[1] = 1. / cols * j;
         coord[2] = 1. / depth * k;
 
-        mesh.GetNode(numnode + id, coord);
+        mesh.get_node(numnode + id, coord);
       }
     }
   }
@@ -174,7 +174,7 @@ void create_hex8_mesh(Core::Geo::Cut::Mesh& mesh, int rows, int cols, int depth)
         nids.push_back(numnode + i + (j + 1) * (rows + 1) + 1 + (k + 1) * (rows + 1) * (cols + 1));
         nids.push_back(numnode + i + (j + 1) * (rows + 1) + (k + 1) * (rows + 1) * (cols + 1));
 
-        mesh.CreateHex8(numele++, nids);
+        mesh.create_hex8(numele++, nids);
       }
     }
   }
@@ -201,7 +201,7 @@ void create_quad4_mesh(
       coord[1] = x * sqrt2 + y * sqrt2 + 0.5;
       coord[2] = 0.5;
 
-      mesh.GetNode(numnode + id, coord);
+      mesh.get_node(numnode + id, coord);
     }
   }
 
@@ -216,7 +216,7 @@ void create_quad4_mesh(
       nids.push_back(numnode + i + (j + 1) * (rows + 1) + 1);
       nids.push_back(numnode + i + (j + 1) * (rows + 1));
 
-      sides.push_back(mesh.CreateQuad4Side(numele++, nids));
+      sides.push_back(mesh.create_quad4_side(numele++, nids));
     }
   }
 
@@ -244,7 +244,7 @@ void create_quad4_cylinder_mesh(
       coord[1] = y + r * sin(2 * M_PI * alpha);
       coord[2] = static_cast<double>(j) / cols;
 
-      intersection.CutMesh().GetNode(numnode + id, coord);
+      intersection.cut_mesh().get_node(numnode + id, coord);
     }
   }
 
@@ -259,7 +259,7 @@ void create_quad4_cylinder_mesh(
       nids.push_back(numnode + ((i + 1) % (rows)) + (j + 1) * rownodes);
       nids.push_back(numnode + ((i) % (rows)) + (j + 1) * rownodes);
 
-      intersection.AddCutSide(numele++, nids, Core::FE::CellType::quad4);
+      intersection.add_cut_side(numele++, nids, Core::FE::CellType::quad4);
     }
   }
 
@@ -268,96 +268,96 @@ void create_quad4_cylinder_mesh(
 
 void cutmesh(Core::Geo::Cut::Mesh& mesh)
 {
-  mesh.MakeCutLines();
-  mesh.MakeFacets();
-  mesh.MakeVolumeCells();
+  mesh.make_cut_lines();
+  mesh.make_facets();
+  mesh.make_volume_cells();
 
-  if (mesh.CreateOptions().FindPositions())
+  if (mesh.create_options().find_positions())
   {
-    mesh.FindNodePositions();
-    mesh.FindNodalDOFSets(true);
+    mesh.find_node_positions();
+    mesh.find_nodal_dof_sets(true);
   }
 
   mesh.create_integration_cells(0);
 
   // Run safety checks
-  mesh.TestElementVolume(false);
+  mesh.test_element_volume(false);
 }
 
 
 SimpleWrapper::SimpleWrapper() : side_count_(0)
 {
   mesh_ = new Core::Geo::Cut::MeshIntersection;
-  mesh_->GetOptions().Init_for_Cuttests();  // use full cln
+  mesh_->get_options().init_for_cuttests();  // use full cln
 }
 
 SimpleWrapper::~SimpleWrapper() { delete mesh_; }
 
-void SimpleWrapper::CreateHex8(const Core::LinAlg::SerialDenseMatrix& xyze)
+void SimpleWrapper::create_hex8(const Core::LinAlg::SerialDenseMatrix& xyze)
 {
   create_element(Core::FE::CellType::hex8, xyze);
 }
 
-void SimpleWrapper::CreateTet4(const Core::LinAlg::SerialDenseMatrix& xyze)
+void SimpleWrapper::create_tet4(const Core::LinAlg::SerialDenseMatrix& xyze)
 {
   create_element(Core::FE::CellType::tet4, xyze);
 }
 
-void SimpleWrapper::CreatePyramid5(const Core::LinAlg::SerialDenseMatrix& xyze)
+void SimpleWrapper::create_pyramid5(const Core::LinAlg::SerialDenseMatrix& xyze)
 {
   create_element(Core::FE::CellType::pyramid5, xyze);
 }
 
-void SimpleWrapper::CreateWedge6(const Core::LinAlg::SerialDenseMatrix& xyze)
+void SimpleWrapper::create_wedge6(const Core::LinAlg::SerialDenseMatrix& xyze)
 {
   create_element(Core::FE::CellType::wedge6, xyze);
 }
 
-void SimpleWrapper::CreateHex8Sides(const Core::LinAlg::SerialDenseMatrix& xyze)
+void SimpleWrapper::create_hex8_sides(const Core::LinAlg::SerialDenseMatrix& xyze)
 {
   create_element_sides(Core::FE::CellType::hex8, xyze);
 }
 
-void SimpleWrapper::CreateTet4Sides(const Core::LinAlg::SerialDenseMatrix& xyze)
+void SimpleWrapper::create_tet4_sides(const Core::LinAlg::SerialDenseMatrix& xyze)
 {
   create_element_sides(Core::FE::CellType::tet4, xyze);
 }
 
-void SimpleWrapper::CreatePyramid5Sides(const Core::LinAlg::SerialDenseMatrix& xyze)
+void SimpleWrapper::create_pyramid5_sides(const Core::LinAlg::SerialDenseMatrix& xyze)
 {
   create_element_sides(Core::FE::CellType::pyramid5, xyze);
 }
 
-void SimpleWrapper::CreateWedge6Sides(const Core::LinAlg::SerialDenseMatrix& xyze)
+void SimpleWrapper::create_wedge6_sides(const Core::LinAlg::SerialDenseMatrix& xyze)
 {
   create_element_sides(Core::FE::CellType::wedge6, xyze);
 }
 
-void SimpleWrapper::CreateTri3(const Core::LinAlg::SerialDenseMatrix& xyze)
+void SimpleWrapper::create_tri3(const Core::LinAlg::SerialDenseMatrix& xyze)
 {
   create_side(Core::FE::CellType::tri3, xyze);
 }
 
-void SimpleWrapper::CreateQuad4(const Core::LinAlg::SerialDenseMatrix& xyze)
+void SimpleWrapper::create_quad4(const Core::LinAlg::SerialDenseMatrix& xyze)
 {
   create_side(Core::FE::CellType::quad4, xyze);
 }
 
-void SimpleWrapper::CreateHex8(double dx, double dy, double dz)
+void SimpleWrapper::create_hex8(double dx, double dy, double dz)
 {
   Core::LinAlg::SerialDenseMatrix xyze(3, 8);
-  create_hex8(xyze, dx, dy, dz);
-  CreateHex8(xyze);
+  ::create_hex8(xyze, dx, dy, dz);
+  create_hex8(xyze);
 }
 
-void SimpleWrapper::CreateHex8Sides(double dx, double dy, double dz)
+void SimpleWrapper::create_hex8_sides(double dx, double dy, double dz)
 {
   Core::LinAlg::SerialDenseMatrix xyze(3, 8);
-  create_hex8(xyze, dx, dy, dz);
-  CreateHex8Sides(xyze);
+  ::create_hex8(xyze, dx, dy, dz);
+  create_hex8_sides(xyze);
 }
 
-void SimpleWrapper::CreateTet4Sides()
+void SimpleWrapper::create_tet4_sides()
 {
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
@@ -377,10 +377,10 @@ void SimpleWrapper::CreateTet4Sides()
   xyze(1, 3) = 0.5;
   xyze(2, 3) = 0.5;
 
-  CreateTet4Sides(xyze);
+  create_tet4_sides(xyze);
 }
 
-void SimpleWrapper::CreateQuad4Mesh(int rows, int cols)
+void SimpleWrapper::create_quad4_mesh(int rows, int cols)
 {
   double sqrt2 = 1. / sqrt(2.);
 
@@ -418,14 +418,14 @@ void SimpleWrapper::CreateQuad4Mesh(int rows, int cols)
         Core::LinAlg::Matrix<3, 1>& x = side_points_[nids[l]];
         std::copy(x.data(), x.data() + 3, &xyze(0, l));
       }
-      CreateQuad4(xyze);
+      create_quad4(xyze);
     }
   }
 }
 
-void SimpleWrapper::AssumeVolumeCells(unsigned num)
+void SimpleWrapper::assume_volume_cells(unsigned num)
 {
-  unsigned numvc = mesh_->NormalMesh().VolumeCells().size();
+  unsigned numvc = mesh_->normal_mesh().volume_cells().size();
   if (numvc != num)
   {
     std::stringstream str;
@@ -434,9 +434,9 @@ void SimpleWrapper::AssumeVolumeCells(unsigned num)
   }
 }
 
-void SimpleWrapper::CutTest_Cut(bool include_inner, bool do_Cut_Positions_Dofsets)
+void SimpleWrapper::cut_test_cut(bool include_inner, bool do_Cut_Positions_Dofsets)
 {
-  mesh_->CutTest_Cut(include_inner, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
+  mesh_->cut_test_cut(include_inner, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
       Core::Geo::Cut::BCellGaussPts_Tessellation, true, true, do_Cut_Positions_Dofsets);
 }
 
@@ -561,7 +561,7 @@ void SimpleWrapper::create_side(
     nids.push_back(get_id(x, side_points_));
   }
 
-  mesh_->AddCutSide(id, nids, xyze, distype);
+  mesh_->add_cut_side(id, nids, xyze, distype);
 }
 
 int SimpleWrapper::get_id(

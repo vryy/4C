@@ -57,9 +57,9 @@ CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(Core::FE::Discretization
   // Sanity check for writing output for each interface
   {
     const bool writeInterfaceOutput =
-        Core::UTILS::IntegralValue<bool>(GetStrategy().Params(), "OUTPUT_INTERFACES");
+        Core::UTILS::IntegralValue<bool>(get_strategy().params(), "OUTPUT_INTERFACES");
 
-    if (writeInterfaceOutput && HaveContact() && ContactManager()->GetStrategy().is_friction())
+    if (writeInterfaceOutput && have_contact() && contact_manager()->get_strategy().is_friction())
       FOUR_C_THROW(
           "Output for each interface does not work yet, if friction is enabled. Switch off the "
           "interface-based output in the input file (or implement/fix it for frictional contact "
@@ -75,8 +75,8 @@ CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(Core::FE::Discretization
 void CONTACT::MeshtyingContactBridge::store_dirichlet_status(
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
 {
-  if (HaveMeshtying()) MtManager()->GetStrategy().store_dirichlet_status(dbcmaps);
-  if (HaveContact()) ContactManager()->GetStrategy().store_dirichlet_status(dbcmaps);
+  if (have_meshtying()) mt_manager()->get_strategy().store_dirichlet_status(dbcmaps);
+  if (have_contact()) contact_manager()->get_strategy().store_dirichlet_status(dbcmaps);
 
   return;
 }
@@ -86,9 +86,10 @@ void CONTACT::MeshtyingContactBridge::store_dirichlet_status(
  *----------------------------------------------------------------------*/
 void CONTACT::MeshtyingContactBridge::set_state(Teuchos::RCP<Epetra_Vector> zeros)
 {
-  if (HaveMeshtying()) MtManager()->GetStrategy().set_state(Mortar::state_new_displacement, *zeros);
-  if (HaveContact())
-    ContactManager()->GetStrategy().set_state(Mortar::state_new_displacement, *zeros);
+  if (have_meshtying())
+    mt_manager()->get_strategy().set_state(Mortar::state_new_displacement, *zeros);
+  if (have_contact())
+    contact_manager()->get_strategy().set_state(Mortar::state_new_displacement, *zeros);
 
   return;
 }
@@ -96,14 +97,14 @@ void CONTACT::MeshtyingContactBridge::set_state(Teuchos::RCP<Epetra_Vector> zero
 /*----------------------------------------------------------------------*
  |  Get Strategy                                             farah 06/14|
  *----------------------------------------------------------------------*/
-Mortar::StrategyBase& CONTACT::MeshtyingContactBridge::GetStrategy() const
+Mortar::StrategyBase& CONTACT::MeshtyingContactBridge::get_strategy() const
 {
   // if contact is involved use contact strategy!
   // contact conditions/strategies are dominating the algorithm!
-  if (HaveMeshtying() and !HaveContact())
-    return MtManager()->GetStrategy();
+  if (have_meshtying() and !have_contact())
+    return mt_manager()->get_strategy();
   else
-    return ContactManager()->GetStrategy();
+    return contact_manager()->get_strategy();
 }
 
 /*----------------------------------------------------------------------*
@@ -113,10 +114,10 @@ void CONTACT::MeshtyingContactBridge::postprocess_quantities(
     Teuchos::RCP<Core::IO::DiscretizationWriter>& output)
 {
   // contact
-  if (HaveContact()) ContactManager()->postprocess_quantities(*output);
+  if (have_contact()) contact_manager()->postprocess_quantities(*output);
 
   // meshtying
-  if (HaveMeshtying()) MtManager()->postprocess_quantities(*output);
+  if (have_meshtying()) mt_manager()->postprocess_quantities(*output);
 
   return;
 }
@@ -128,14 +129,14 @@ void CONTACT::MeshtyingContactBridge::postprocess_quantities_per_interface(
 {
   // This is an optional feature, so we check if it has been enabled in the input file
   const bool writeInterfaceOutput =
-      Core::UTILS::IntegralValue<bool>(GetStrategy().Params(), "OUTPUT_INTERFACES");
+      Core::UTILS::IntegralValue<bool>(get_strategy().params(), "OUTPUT_INTERFACES");
   if (writeInterfaceOutput)
   {
     // contact
-    if (HaveContact()) ContactManager()->postprocess_quantities_per_interface(outputParams);
+    if (have_contact()) contact_manager()->postprocess_quantities_per_interface(outputParams);
 
     // meshtying
-    if (HaveMeshtying()) MtManager()->postprocess_quantities_per_interface(outputParams);
+    if (have_meshtying()) mt_manager()->postprocess_quantities_per_interface(outputParams);
   }
 
   return;
@@ -144,13 +145,13 @@ void CONTACT::MeshtyingContactBridge::postprocess_quantities_per_interface(
 /*----------------------------------------------------------------------*
  |  Recover lagr. mult and slave displ                       farah 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::MeshtyingContactBridge::Recover(Teuchos::RCP<Epetra_Vector> disi)
+void CONTACT::MeshtyingContactBridge::recover(Teuchos::RCP<Epetra_Vector> disi)
 {
   // meshtying
-  if (HaveMeshtying()) MtManager()->GetStrategy().recover(disi);
+  if (have_meshtying()) mt_manager()->get_strategy().recover(disi);
 
   // contact
-  if (HaveContact()) ContactManager()->GetStrategy().recover(disi);
+  if (have_contact()) contact_manager()->get_strategy().recover(disi);
 
   return;
 }
@@ -162,10 +163,10 @@ void CONTACT::MeshtyingContactBridge::read_restart(Core::IO::DiscretizationReade
     Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero)
 {
   // contact
-  if (HaveContact()) ContactManager()->read_restart(reader, dis, zero);
+  if (have_contact()) contact_manager()->read_restart(reader, dis, zero);
 
   // meshtying
-  if (HaveMeshtying()) MtManager()->read_restart(reader, dis, zero);
+  if (have_meshtying()) mt_manager()->read_restart(reader, dis, zero);
 
   return;
 }
@@ -177,10 +178,10 @@ void CONTACT::MeshtyingContactBridge::write_restart(
     Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool forcedrestart)
 {
   // contact
-  if (HaveContact()) ContactManager()->write_restart(*output, forcedrestart);
+  if (have_contact()) contact_manager()->write_restart(*output, forcedrestart);
 
   // meshtying
-  if (HaveMeshtying()) MtManager()->write_restart(*output, forcedrestart);
+  if (have_meshtying()) mt_manager()->write_restart(*output, forcedrestart);
 
   return;
 }
@@ -188,13 +189,13 @@ void CONTACT::MeshtyingContactBridge::write_restart(
 /*----------------------------------------------------------------------*
  |  Write restart                                            farah 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::MeshtyingContactBridge::Update(Teuchos::RCP<Epetra_Vector> dis)
+void CONTACT::MeshtyingContactBridge::update(Teuchos::RCP<Epetra_Vector> dis)
 {
   // contact
-  if (HaveContact()) ContactManager()->GetStrategy().Update(dis);
+  if (have_contact()) contact_manager()->get_strategy().update(dis);
 
   // meshtying
-  if (HaveMeshtying()) MtManager()->GetStrategy().Update(dis);
+  if (have_meshtying()) mt_manager()->get_strategy().update(dis);
 
   return;
 }
@@ -202,39 +203,39 @@ void CONTACT::MeshtyingContactBridge::Update(Teuchos::RCP<Epetra_Vector> dis)
 /*----------------------------------------------------------------------*
  |  Write restart                                             popp 11/14|
  *----------------------------------------------------------------------*/
-void CONTACT::MeshtyingContactBridge::VisualizeGmsh(const int istep, const int iter)
+void CONTACT::MeshtyingContactBridge::visualize_gmsh(const int istep, const int iter)
 {
   // contact
-  if (HaveContact()) ContactManager()->GetStrategy().visualize_gmsh(istep, iter);
+  if (have_contact()) contact_manager()->get_strategy().visualize_gmsh(istep, iter);
 
   // meshtying
-  if (HaveMeshtying()) MtManager()->GetStrategy().visualize_gmsh(istep, iter);
+  if (have_meshtying()) mt_manager()->get_strategy().visualize_gmsh(istep, iter);
 
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::MeshtyingContactBridge::Comm() const
+const Epetra_Comm& CONTACT::MeshtyingContactBridge::get_comm() const
 {
-  if (cman_ != Teuchos::null) return cman_->Comm();
+  if (cman_ != Teuchos::null) return cman_->get_comm();
 
-  if (mtman_ != Teuchos::null) return mtman_->Comm();
+  if (mtman_ != Teuchos::null) return mtman_->get_comm();
 
-  FOUR_C_THROW("can't get comm()");
-  return cman_->Comm();
+  FOUR_C_THROW("can't get get_comm()");
+  return cman_->get_comm();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Mortar::ManagerBase> CONTACT::MeshtyingContactBridge::ContactManager() const
+Teuchos::RCP<Mortar::ManagerBase> CONTACT::MeshtyingContactBridge::contact_manager() const
 {
   return cman_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Mortar::ManagerBase> CONTACT::MeshtyingContactBridge::MtManager() const
+Teuchos::RCP<Mortar::ManagerBase> CONTACT::MeshtyingContactBridge::mt_manager() const
 {
   return mtman_;
 }

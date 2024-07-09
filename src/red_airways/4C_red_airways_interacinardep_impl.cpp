@@ -33,10 +33,10 @@ FOUR_C_NAMESPACE_OPEN
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::RedInterAcinarDepImplInterface*
-Discret::ELEMENTS::RedInterAcinarDepImplInterface::Impl(
+Discret::ELEMENTS::RedInterAcinarDepImplInterface::impl(
     Discret::ELEMENTS::RedInterAcinarDep* red_acinus)
 {
-  switch (red_acinus->Shape())
+  switch (red_acinus->shape())
   {
     case Core::FE::CellType::line2:
     {
@@ -49,7 +49,7 @@ Discret::ELEMENTS::RedInterAcinarDepImplInterface::Impl(
     }
     default:
       FOUR_C_THROW(
-          "shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->num_node());
+          "shape %d (%d nodes) not supported", red_acinus->shape(), red_acinus->num_node());
       break;
   }
   return nullptr;
@@ -78,7 +78,7 @@ int Discret::ELEMENTS::InterAcinarDepImpl<distype>::evaluate(RedInterAcinarDep* 
     Core::LinAlg::SerialDenseVector& elevec3_epetra, Teuchos::RCP<Core::Mat::Material> mat)
 {
   // Get the vector with inter-acinar linkers
-  Teuchos::RCP<const Epetra_Vector> ial = discretization.GetState("intr_ac_link");
+  Teuchos::RCP<const Epetra_Vector> ial = discretization.get_state("intr_ac_link");
 
   // Extract local values from the global vectors
   std::vector<double> myial(lm.size());
@@ -99,7 +99,7 @@ int Discret::ELEMENTS::InterAcinarDepImpl<distype>::evaluate(RedInterAcinarDep* 
  |                                              (private)  ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::InterAcinarDepImpl<distype>::Initial(RedInterAcinarDep* ele,
+void Discret::ELEMENTS::InterAcinarDepImpl<distype>::initial(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& n_intr_acn_l, Teuchos::RCP<const Core::Mat::Material> material)
 {
@@ -107,7 +107,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::Initial(RedInterAcinarDep* 
       Discret::ReducedLung::EvaluationData::get();
 
   // Set the generation number for the inter-acinar linker element to -2.0
-  int gid = ele->Id();
+  int gid = ele->id();
   double val = -2.0;
   evaluation_data.generations->ReplaceGlobalValues(1, &val, &gid);
 
@@ -153,11 +153,11 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::sysmat(std::vector<double>&
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcinarDep* ele,
+void Discret::ELEMENTS::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& rhs, Teuchos::RCP<Core::Mat::Material> material)
 {
-  const int myrank = discretization.Comm().MyPID();
+  const int myrank = discretization.get_comm().MyPID();
 
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
@@ -169,7 +169,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInter
   const int numnode = lm.size();
 
   // Get state for pressure
-  Teuchos::RCP<const Epetra_Vector> pnp = discretization.GetState("pnp");
+  Teuchos::RCP<const Epetra_Vector> pnp = discretization.get_state("pnp");
   if (pnp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pnp'");
 
   // Extract local values from the global vectors
@@ -191,16 +191,16 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInter
    **/
   for (int i = 0; i < ele->num_node(); i++)
   {
-    if (ele->Nodes()[i]->Owner() == myrank)
+    if (ele->nodes()[i]->owner() == myrank)
     {
-      if (ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
+      if (ele->nodes()[i]->get_condition("RedAirwayPrescribedCond"))
       {
         std::string Bc;
         double BCin = 0.0;
-        if (ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
+        if (ele->nodes()[i]->get_condition("RedAirwayPrescribedCond"))
         {
           Core::Conditions::Condition* condition =
-              ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
+              ele->nodes()[i]->get_condition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().get<std::string>("boundarycond"));
 
@@ -213,8 +213,8 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInter
           // Get factor of first CURVE
           if ((*curve)[0] >= 0)
           {
-            curvefac = Global::Problem::Instance()
-                           ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[0])
+            curvefac = Global::Problem::instance()
+                           ->function_by_id<Core::UTILS::FunctionOfTime>((*curve)[0])
                            .evaluate(time);
             BCin = (*vals)[0] * curvefac;
           }
@@ -233,9 +233,9 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInter
           double functionfac = 0.0;
           if (functnum > 0)
           {
-            functionfac = Global::Problem::Instance()
-                              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .evaluate((ele->Nodes()[i])->X().data(), time, 0);
+            functionfac = Global::Problem::instance()
+                              ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              .evaluate((ele->nodes()[i])->x().data(), time, 0);
           }
 
           // Get factor of second CURVE
@@ -243,19 +243,19 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInter
           double curve2fac = 1.0;
           if (curve) curve2num = (*curve)[1];
           if (curve2num >= 0)
-            curve2fac = Global::Problem::Instance()
-                            ->FunctionById<Core::UTILS::FunctionOfTime>(curve2num)
+            curve2fac = Global::Problem::instance()
+                            ->function_by_id<Core::UTILS::FunctionOfTime>(curve2num)
                             .evaluate(time);
 
           // Add first_CURVE + FUNCTION * second_CURVE
           BCin += functionfac * curve2fac;
 
           // Get the local id of the node to whom the bc is prescribed
-          int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+          int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
           if (local_id < 0)
           {
-            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i]->Id(),
-                discretization.Comm().MyPID());
+            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->nodes()[i]->id(),
+                discretization.get_comm().MyPID());
             exit(1);
           }
         }
@@ -270,7 +270,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInter
           if (Bc == "VolumeDependentPleuralPressure")
           {
             Core::Conditions::Condition* pplCond =
-                ele->Nodes()[i]->GetCondition("RedAirwayVolDependentPleuralPressureCond");
+                ele->nodes()[i]->get_condition("RedAirwayVolDependentPleuralPressureCond");
             double Pp_np = 0.0;
             if (pplCond)
             {
@@ -281,8 +281,8 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInter
               // Read in the value of the applied BC
               if ((*curve)[0] >= 0)
               {
-                curvefac = Global::Problem::Instance()
-                               ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[0])
+                curvefac = Global::Problem::instance()
+                               ->function_by_id<Core::UTILS::FunctionOfTime>((*curve)[0])
                                .evaluate(time);
               }
 
@@ -356,7 +356,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInter
             }
             else
             {
-              std::cout << "Node " << ele->Nodes()[i]->Id() + 1 << "is not on corresponding DLINE "
+              std::cout << "Node " << ele->nodes()[i]->id() + 1 << "is not on corresponding DLINE "
                         << std::endl;
               FOUR_C_THROW("No volume dependent pleural pressure condition was defined");
             }
@@ -391,14 +391,14 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInter
        **/
       else
       {
-        if (ele->Nodes()[i]->NumElement() == 1)
+        if (ele->nodes()[i]->num_element() == 1)
         {
           // Get the local id of the node to whom the bc is prescribed
-          int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+          int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
           if (local_id < 0)
           {
-            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i],
-                discretization.Comm().MyPID());
+            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->nodes()[i],
+                discretization.get_comm().MyPID());
             exit(1);
           }
 

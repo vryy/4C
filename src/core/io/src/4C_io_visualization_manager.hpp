@@ -107,7 +107,7 @@ namespace Core::IO
      * @param visualization_step (in) Time step counter of current time step (does not have to be
      * continuous) this is not necessarily the same as the simulation time step counter
      */
-    void WriteToDisk(const double visualziation_time, const int visualization_step);
+    void write_to_disk(const double visualziation_time, const int visualization_step);
 
    private:
     /**

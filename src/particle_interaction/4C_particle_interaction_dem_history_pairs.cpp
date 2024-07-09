@@ -225,7 +225,7 @@ void ParticleInteraction::DEMHistoryPairs::communicate_history_pairs()
   communicate_specific_history_pairs(particletargets, particlewalladhesionhistorydata_);
 }
 
-void ParticleInteraction::DEMHistoryPairs::UpdateHistoryPairs()
+void ParticleInteraction::DEMHistoryPairs::update_history_pairs()
 {
   TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::DEMHistoryPairs::UpdateHistoryPairs");
 

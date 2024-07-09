@@ -63,25 +63,25 @@ namespace BEAMINTERACTION
       return *pot_law_prefactors_;
     }
 
-    inline enum Inpar::BEAMPOTENTIAL::BeamPotentialType PotentialType() const
+    inline enum Inpar::BEAMPOTENTIAL::BeamPotentialType potential_type() const
     {
       throw_error_if_not_init_and_setup();
       return potential_type_;
     }
 
-    inline enum Inpar::BEAMPOTENTIAL::BeamPotentialStrategy Strategy() const
+    inline enum Inpar::BEAMPOTENTIAL::BeamPotentialStrategy strategy() const
     {
       throw_error_if_not_init_and_setup();
       return strategy_;
     }
 
-    inline double CutoffRadius() const
+    inline double cutoff_radius() const
     {
       throw_error_if_not_init_and_setup();
       return cutoff_radius_;
     }
 
-    inline enum Inpar::BEAMPOTENTIAL::BeamPotentialRegularizationType RegularizationType() const
+    inline enum Inpar::BEAMPOTENTIAL::BeamPotentialRegularizationType regularization_type() const
     {
       throw_error_if_not_init_and_setup();
       return regularization_type_;
@@ -99,26 +99,26 @@ namespace BEAMINTERACTION
       return num_integration_segments_;
     }
 
-    inline int NumberGaussPoints() const
+    inline int number_gauss_points() const
     {
       throw_error_if_not_init_and_setup();
       return num_gp_s_;
     }
 
-    inline bool UseFAD() const
+    inline bool use_fad() const
     {
       throw_error_if_not_init_and_setup();
       return use_fad_;
     }
 
-    inline enum Inpar::BEAMPOTENTIAL::MasterSlaveChoice ChoiceMasterSlave() const
+    inline enum Inpar::BEAMPOTENTIAL::MasterSlaveChoice choice_master_slave() const
     {
       throw_error_if_not_init_and_setup();
       return choice_master_slave_;
     }
 
     //! whether to write visualization output for beam contact
-    inline bool RuntimeOutput() const
+    inline bool runtime_output() const
     {
       throw_error_if_not_init_and_setup();
       return visualization_output_;
@@ -132,7 +132,7 @@ namespace BEAMINTERACTION
       return params_runtime_visualization_output_btb_potential_;
     }
 
-    inline double PotentialReductionLength() const
+    inline double potential_reduction_length() const
     {
       throw_error_if_not_init_and_setup();
       return potential_reduction_length_;

@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
  * factory method                                            vuong 09/16
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Mat::PAR::REACTIONCOUPLING::ReactionInterface>
-Mat::PAR::REACTIONCOUPLING::ReactionInterface::CreateReaction(
+Mat::PAR::REACTIONCOUPLING::ReactionInterface::create_reaction(
     Mat::PAR::ReactionCoupling couplingtype,  //!< coupling type defining reaction
     bool isreacstart,                         //!< flag for reaction start feature
     const std::vector<double>& reacstart      //!< reaction start vector
@@ -570,7 +570,7 @@ void Mat::PAR::REACTIONCOUPLING::ByFunction::initialize(int numscal,  //!< numbe
     const std::vector<double>& couprole                               //!< coupling role vector
 )
 {
-  switch (Global::Problem::Instance()->NDim())
+  switch (Global::Problem::instance()->n_dim())
   {
     case 1:
       return initialize_internal<1>(numscal, couprole);
@@ -581,7 +581,7 @@ void Mat::PAR::REACTIONCOUPLING::ByFunction::initialize(int numscal,  //!< numbe
       return initialize_internal<3>(numscal, couprole);
 
     default:
-      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::instance()->n_dim());
   }
 }
 
@@ -602,9 +602,9 @@ void Mat::PAR::REACTIONCOUPLING::ByFunction::initialize_internal(
       const int functID = round(couprole[ii]);
       if (functID != 0)
       {
-        if (Global::Problem::Instance()
-                ->FunctionById<Core::UTILS::FunctionOfAnything>(functID - 1)
-                .NumberComponents() != 1)
+        if (Global::Problem::instance()
+                ->function_by_id<Core::UTILS::FunctionOfAnything>(functID - 1)
+                .number_components() != 1)
           FOUR_C_THROW("expected only one component for the reaction evaluation");
 
         for (int k = 0; k < numscal; k++)
@@ -641,7 +641,7 @@ double Mat::PAR::REACTIONCOUPLING::ByFunction::calc_rea_body_force_term(
                        //!< stoichometry)
 )
 {
-  switch (Global::Problem::Instance()->NDim())
+  switch (Global::Problem::instance()->n_dim())
   {
     case 1:
       return calc_rea_body_force_term_internal<1>(
@@ -655,7 +655,7 @@ double Mat::PAR::REACTIONCOUPLING::ByFunction::calc_rea_body_force_term(
           k, numscal, phinp, constants, couprole, scale_reac);
 
     default:
-      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::instance()->n_dim());
       return 0.0;
   }
 }
@@ -690,8 +690,8 @@ double Mat::PAR::REACTIONCOUPLING::ByFunction::calc_rea_body_force_term_internal
   variables_for_parser_evaluation.emplace_back("z", 0.0);
 
   // evaluate reaction term
-  double bftfac = Global::Problem::Instance()
-                      ->FunctionById<Core::UTILS::FunctionOfAnything>(round(couprole[k]) - 1)
+  double bftfac = Global::Problem::instance()
+                      ->function_by_id<Core::UTILS::FunctionOfAnything>(round(couprole[k]) - 1)
                       .evaluate(variables_for_parser_evaluation, constants, 0);
 
   return scale_reac * bftfac;
@@ -711,7 +711,7 @@ void Mat::PAR::REACTIONCOUPLING::ByFunction::calc_rea_body_force_deriv(
     double scale_reac  //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
 )
 {
-  switch (Global::Problem::Instance()->NDim())
+  switch (Global::Problem::instance()->n_dim())
   {
     case 1:
       return calc_rea_body_force_deriv_internal<1>(
@@ -723,7 +723,7 @@ void Mat::PAR::REACTIONCOUPLING::ByFunction::calc_rea_body_force_deriv(
       return calc_rea_body_force_deriv_internal<3>(
           k, numscal, derivs, phinp, constants, couprole, scale_reac);
     default:
-      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::instance()->n_dim());
   }
 }
 
@@ -760,9 +760,9 @@ void Mat::PAR::REACTIONCOUPLING::ByFunction::calc_rea_body_force_deriv_internal(
 
   // evaluate the derivatives of the reaction term
   std::vector<double> myderivs =
-      Global::Problem::Instance()
-          ->FunctionById<Core::UTILS::FunctionOfAnything>(round(couprole[k]) - 1)
-          .EvaluateDerivative(variables_, constants_for_parser_evaluation, 0);
+      Global::Problem::instance()
+          ->function_by_id<Core::UTILS::FunctionOfAnything>(round(couprole[k]) - 1)
+          .evaluate_derivative(variables_, constants_for_parser_evaluation, 0);
 
   // add it to derivs
   for (int toderive = 0; toderive < numscal; toderive++)
@@ -783,7 +783,7 @@ void Mat::PAR::REACTIONCOUPLING::ByFunction::calc_rea_body_force_deriv_add_varia
     double scale_reac  //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
 )
 {
-  switch (Global::Problem::Instance()->NDim())
+  switch (Global::Problem::instance()->n_dim())
   {
     case 1:
       return calc_rea_body_force_deriv_add_variables_internal<1>(
@@ -795,7 +795,7 @@ void Mat::PAR::REACTIONCOUPLING::ByFunction::calc_rea_body_force_deriv_add_varia
       return calc_rea_body_force_deriv_add_variables_internal<3>(
           k, derivs, variables, constants, couprole, scale_reac);
     default:
-      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::instance()->n_dim());
   }
 }
 
@@ -814,9 +814,9 @@ void Mat::PAR::REACTIONCOUPLING::ByFunction::calc_rea_body_force_deriv_add_varia
 {
   // evaluate the derivatives of the reaction term
   std::vector<double> myderivs =
-      Global::Problem::Instance()
-          ->FunctionById<Core::UTILS::FunctionOfAnything>(round(couprole[k]) - 1)
-          .EvaluateDerivative(variables, constants, 0);
+      Global::Problem::instance()
+          ->function_by_id<Core::UTILS::FunctionOfAnything>(round(couprole[k]) - 1)
+          .evaluate_derivative(variables, constants, 0);
 
   if (myderivs.size() != derivs.size())
   {
@@ -838,7 +838,7 @@ void Mat::PAR::REACTIONCOUPLING::ByFunction::add_additional_variables(
     const std::vector<double>& couprole                            //!< coupling role vector
 )
 {
-  switch (Global::Problem::Instance()->NDim())
+  switch (Global::Problem::instance()->n_dim())
   {
     case 1:
       return add_additional_variables_internal<1>(k, variables, couprole);
@@ -847,7 +847,7 @@ void Mat::PAR::REACTIONCOUPLING::ByFunction::add_additional_variables(
     case 3:
       return add_additional_variables_internal<3>(k, variables, couprole);
     default:
-      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::instance()->n_dim());
   }
 }
 

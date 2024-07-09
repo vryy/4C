@@ -50,7 +50,7 @@ namespace Core::UTILS
     /**
      * Evaluate the derivative of the function for the given @p time and @p component.
      */
-    [[nodiscard]] virtual double EvaluateDerivative(
+    [[nodiscard]] virtual double evaluate_derivative(
         double time, std::size_t component = 0) const = 0;
   };
 
@@ -73,7 +73,7 @@ namespace Core::UTILS
 
     [[nodiscard]] double evaluate(double time, std::size_t component = 0) const override;
 
-    [[nodiscard]] double EvaluateDerivative(double time, std::size_t component = 0) const override;
+    [[nodiscard]] double evaluate_derivative(double time, std::size_t component = 0) const override;
 
    private:
     using ValueType = double;

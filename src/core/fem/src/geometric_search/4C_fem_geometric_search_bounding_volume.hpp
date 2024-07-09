@@ -82,7 +82,7 @@ namespace Core::GeometricSearch
      *
      * @param point Point to add to the bounding volume
      */
-    inline void AddPoint(const Core::LinAlg::Matrix<3, 1, double>& point)
+    inline void add_point(const Core::LinAlg::Matrix<3, 1, double>& point)
     {
       bounding_volume_ += ArborX::Point{
           static_cast<float>(point(0)), static_cast<float>(point(1)), static_cast<float>(point(2))};
@@ -92,7 +92,7 @@ namespace Core::GeometricSearch
      *
      * @param offset Value by which to expand the bounding volume
      */
-    inline void ExtendBoundaries(const double offset)
+    inline void extend_boundaries(const double offset)
     {
       // Loop over directions.
       for (int i_dir = 0; i_dir < kdop_directions; i_dir++)

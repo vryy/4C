@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Rigidsphere::ReadElement(
+bool Discret::ELEMENTS::Rigidsphere::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // currently only rotationally symmetric profiles for beam --> Iyy = Izz

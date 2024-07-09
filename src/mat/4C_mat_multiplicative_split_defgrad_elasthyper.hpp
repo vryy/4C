@@ -71,11 +71,11 @@ namespace Mat
   class MultiplicativeSplitDefgradElastHyperType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "MultiplicativeSplitDefgrad_ElastHyperType"; }
+    std::string name() const override { return "MultiplicativeSplitDefgrad_ElastHyperType"; }
 
-    static MultiplicativeSplitDefgradElastHyperType& Instance() { return instance_; };
+    static MultiplicativeSplitDefgradElastHyperType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static MultiplicativeSplitDefgradElastHyperType instance_;
@@ -103,19 +103,20 @@ namespace Mat
 
     /// Returns all inelastic factors as a vector
     const std::vector<std::pair<PAR::InelasticSource, Teuchos::RCP<Mat::InelasticDefgradFactors>>>&
-    FacDefGradIn() const
+    fac_def_grad_in() const
     {
       return facdefgradin_;
     }
 
     /// Return vector of all inelastic deformation gradients
-    const std::vector<std::pair<PAR::InelasticSource, Core::LinAlg::Matrix<3, 3>>>& GetiFinj() const
+    const std::vector<std::pair<PAR::InelasticSource, Core::LinAlg::Matrix<3, 3>>>& geti_finj()
+        const
     {
       return i_finj_;
     }
 
     /// total number of inelastic contributions
-    int NumInelasticDefGrad() const { return static_cast<int>(facdefgradin_.size()); }
+    int num_inelastic_def_grad() const { return static_cast<int>(facdefgradin_.size()); }
 
     /// Assigns the different inelastic factors to different sources
     void setup(Mat::PAR::MultiplicativeSplitDefgradElastHyper* params);
@@ -152,34 +153,34 @@ namespace Mat
     explicit MultiplicativeSplitDefgradElastHyper(
         Mat::PAR::MultiplicativeSplitDefgradElastHyper* params);
 
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return MultiplicativeSplitDefgradElastHyperType::Instance().UniqueParObjectId();
+      return MultiplicativeSplitDefgradElastHyperType::instance().unique_par_object_id();
     }
 
     void pack(Core::Communication::PackBuffer& data) const override;
 
     void unpack(const std::vector<char>& data) override;
 
-    void ValidKinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Inpar::Solid::KinemType kinem) override
     {
       if (kinem != Inpar::Solid::KinemType::nonlinearTotLag)
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_multiplicative_split_defgrad_elasthyper;
     }
 
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new MultiplicativeSplitDefgradElastHyper(*this));
     }
 
-    double Density() const override { return params_->density_; }
+    double density() const override { return params_->density_; }
 
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrad,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
@@ -213,8 +214,9 @@ namespace Mat
      * @param[out] dstressdx  Derivative of 2nd Piola Kirchhoff stresses w.r.t. primary variable of
      *                        different field
      */
-    void EvaluateODStiffMat(PAR::InelasticSource source, const Core::LinAlg::Matrix<3, 3>* defgrad,
-        const Core::LinAlg::Matrix<6, 9>& dSdiFin, Core::LinAlg::Matrix<6, 1>& dstressdx);
+    void evaluate_od_stiff_mat(PAR::InelasticSource source,
+        const Core::LinAlg::Matrix<3, 3>* defgrad, const Core::LinAlg::Matrix<6, 9>& dSdiFin,
+        Core::LinAlg::Matrix<6, 1>& dstressdx);
 
     /*!
      * @brief Evaluate additional terms of the elasticity tensor
@@ -261,7 +263,7 @@ namespace Mat
      * @param[out] dSdiFin      derivative of 2nd Piola Kirchhoff stresses w.r.t. inverse inelastic
      *                          deformation gradient
      */
-    void EvaluatedSdiFin(const Core::LinAlg::Matrix<3, 1>& gamma,
+    void evaluated_sdi_fin(const Core::LinAlg::Matrix<3, 1>& gamma,
         const Core::LinAlg::Matrix<8, 1>& delta, const Core::LinAlg::Matrix<3, 3>& iFinM,
         const Core::LinAlg::Matrix<3, 3>& iCinCM, const Core::LinAlg::Matrix<6, 1>& iCinV,
         const Core::LinAlg::Matrix<9, 1>& CiFin9x1, const Core::LinAlg::Matrix<9, 1>& CiFinCe9x1,
@@ -390,7 +392,7 @@ namespace Mat
      *
      * @param[in]  concentration concentration at gauss point
      */
-    void SetConcentrationGP(double concentration);
+    void set_concentration_gp(double concentration);
 
    private:
     /// Holder for anisotropy

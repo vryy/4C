@@ -31,7 +31,7 @@ namespace PoroElast
         Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter);
 
     //! Setup the monolithic system (depends on which field is splitted)
-    void SetupSystem() override = 0;
+    void setup_system() override = 0;
 
     //! setup composed right hand side from field solvers (depends on which field is splitted)
     void setup_rhs(bool firstcall = false) override = 0;
@@ -47,7 +47,7 @@ namespace PoroElast
     void recover_lagrange_multiplier_after_time_step() override = 0;
 
     //! inner newton iteration
-    void Solve() override;
+    void solve() override;
 
    protected:
     //! @name transfer helpers

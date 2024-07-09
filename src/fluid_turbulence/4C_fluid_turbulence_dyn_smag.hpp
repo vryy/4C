@@ -66,7 +66,7 @@ namespace FLD
     */
     virtual ~DynSmagFilter() = default;
 
-    void AddScatra(Teuchos::RCP<Core::FE::Discretization> scatradis);
+    void add_scatra(Teuchos::RCP<Core::FE::Discretization> scatradis);
 
     /*!
     \brief Perform box filter operation, compare filtered quantities

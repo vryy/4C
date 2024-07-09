@@ -28,13 +28,13 @@ namespace Discret
        *----------------------------------------------------------------------*/
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::AddSlaveEleDisp(
+      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::add_slave_ele_disp(
           const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
           const std::vector<int>& lm                 ///< local map
       )
       {
         std::vector<double> mymatrix(lm.size());
-        AddSlaveEleDisp(slavedis, lm, mymatrix);
+        add_slave_ele_disp(slavedis, lm, mymatrix);
         return;
       }
 
@@ -42,16 +42,16 @@ namespace Discret
        *----------------------------------------------------------------------*/
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::AddSlaveEleDisp(
+      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::add_slave_ele_disp(
           const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
           const std::vector<int>& lm,                ///< local map
           std::vector<double>& mymatrix              ///< slave element displacement vector
       )
       {
         // leave, if displacements are not set
-        if (!slavedis.HasState(disp_statename_)) return;
+        if (!slavedis.has_state(disp_statename_)) return;
         // get state of the global vector
-        Teuchos::RCP<const Epetra_Vector> matrix_state = slavedis.GetState(disp_statename_);
+        Teuchos::RCP<const Epetra_Vector> matrix_state = slavedis.get_state(disp_statename_);
         if (matrix_state == Teuchos::null)
           FOUR_C_THROW("Cannot get state vector %s", disp_statename_.c_str());
 
@@ -84,13 +84,13 @@ namespace Discret
        *----------------------------------------------------------------------*/
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::SetSlaveState(
+      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::set_slave_state(
           const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
           const std::vector<int>& lm                 ///< local map
       )
       {
         // get state of the global vector
-        Teuchos::RCP<const Epetra_Vector> matrix_state = slavedis.GetState(vel_statename_);
+        Teuchos::RCP<const Epetra_Vector> matrix_state = slavedis.get_state(vel_statename_);
         if (matrix_state == Teuchos::null)
           FOUR_C_THROW("Cannot get state vector %s", vel_statename_.c_str());
 
@@ -117,13 +117,13 @@ namespace Discret
        *----------------------------------------------------------------------*/
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::SetSlaveStaten(
+      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::set_slave_staten(
           const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
           const std::vector<int>& lm                 ///< local map
       )
       {
         // get state of the global vector
-        Teuchos::RCP<const Epetra_Vector> matrix_state = slavedis.GetState(veln_statename_);
+        Teuchos::RCP<const Epetra_Vector> matrix_state = slavedis.get_state(veln_statename_);
         if (matrix_state == Teuchos::null)
           FOUR_C_THROW("Cannot get state vector %s", veln_statename_.c_str());
 
@@ -150,7 +150,7 @@ namespace Discret
        *----------------------------------------------------------------------*/
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceVelnp(
+      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::get_interface_velnp(
           Core::LinAlg::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
       ) const
       {
@@ -161,7 +161,7 @@ namespace Discret
        *----------------------------------------------------------------------*/
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceVeln(
+      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::get_interface_veln(
           Core::LinAlg::Matrix<nsd_, 1>& ivelintn  ///< interface velocity at coupling slave side
       ) const
       {
@@ -172,7 +172,7 @@ namespace Discret
        *----------------------------------------------------------------------*/
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfacePresnp(
+      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::get_interface_presnp(
           double& ipres  ///< interface pressure at coupling slave side
       ) const
       {
@@ -184,7 +184,7 @@ namespace Discret
        *----------------------------------------------------------------------*/
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfacePresn(
+      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::get_interface_presn(
           double& ipresn  ///< interface pressure at coupling slave side
       ) const
       {
@@ -222,7 +222,7 @@ namespace Discret
        *----------------------------------------------------------------------*/
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetSlaveFunct(
+      void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::get_slave_funct(
           Core::LinAlg::Matrix<slave_nen_, 1>& slave_funct  ///< coupling slave shape functions
       ) const
       {
@@ -241,7 +241,7 @@ namespace Discret
       )
       {
         // get state of the global vector
-        Teuchos::RCP<const Epetra_Vector> matrix_state = cutterdis.GetState(state);
+        Teuchos::RCP<const Epetra_Vector> matrix_state = cutterdis.get_state(state);
         if (matrix_state == Teuchos::null)
           FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
@@ -275,7 +275,7 @@ namespace Discret
       )
       {
         // get state of the global vector
-        Teuchos::RCP<const Epetra_Vector> matrix_state = cutterdis.GetState(state);
+        Teuchos::RCP<const Epetra_Vector> matrix_state = cutterdis.get_state(state);
         if (matrix_state == Teuchos::null)
           FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
@@ -357,7 +357,7 @@ namespace Discret
         Teuchos::RCP<Core::Geo::Cut::Position> pos =
             Core::Geo::Cut::PositionFactory::build_position<nsd_, slave_distype>(
                 slave_xyze_, xslave);
-        pos->Compute();
+        pos->compute();
 
         if (slave_nsd_ == nsd_)
         {
@@ -600,7 +600,7 @@ namespace Discret
        *----------------------------------------------------------------------*/
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      double SlaveElementRepresentation<distype, slave_distype, slave_numdof>::EvalElementVolume()
+      double SlaveElementRepresentation<distype, slave_distype, slave_numdof>::eval_element_volume()
       {
         switch (Core::FE::dim<slave_distype>)
         {

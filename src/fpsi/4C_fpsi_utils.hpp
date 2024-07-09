@@ -36,7 +36,7 @@ namespace FPSI
   {
    public:
     //! Singleton access method
-    static Teuchos::RCP<Utils> Instance();
+    static Teuchos::RCP<Utils> instance();
 
     //! singleton object
     static Teuchos::RCP<FPSI::Utils> instance_;
@@ -52,7 +52,7 @@ namespace FPSI
         std::map<int, int>& interfacefacingelementmap);
 
     //! build map for fpsi interface
-    void SetupInterfaceMap(const Epetra_Comm& comm,
+    void setup_interface_map(const Epetra_Comm& comm,
         Teuchos::RCP<Core::FE::Discretization> structdis,
         Teuchos::RCP<Core::FE::Discretization> porofluiddis,
         Teuchos::RCP<Core::FE::Discretization> fluiddis,

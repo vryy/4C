@@ -75,7 +75,7 @@ namespace PaSI
      *
      * \author Sebastian Fuchs \date 02/2017
      */
-    void Timeloop() final;
+    void timeloop() final;
 
    protected:
     /*!

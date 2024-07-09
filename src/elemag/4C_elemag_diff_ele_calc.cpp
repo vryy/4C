@@ -88,7 +88,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::E
     action = Core::UTILS::GetAsEnum<EleMag::Action>(params, "action");
   }
 
-  InitializeShapes(hdgele);
+  initialize_shapes(hdgele);
 
   bool updateonly = false;
   shapes_->evaluate(*ele);
@@ -96,26 +96,26 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::E
   {
     case EleMag::project_field:
     {
-      local_solver_->ProjectField(hdgele, params, elevec1, elevec2);
+      local_solver_->project_field(hdgele, params, elevec1, elevec2);
       break;
     }
     case EleMag::project_electric_from_scatra_field:
     {
-      ElementInit(hdgele, params);
+      element_init(hdgele, params);
       local_solver_->project_electric_field_from_scatra(hdgele, params, mat, elevec1);
       break;
     }
     case EleMag::compute_error:
     {
       // Postprocess the solution only if required
-      if (params.get<bool>("postprocess")) local_solver_->PostProcessing(*hdgele);
+      if (params.get<bool>("postprocess")) local_solver_->post_processing(*hdgele);
 
       local_solver_->compute_error(hdgele, params, elevec1);
       break;
     }
     case EleMag::project_field_test:
     {
-      local_solver_->ProjectFieldTest(hdgele, params, elevec1, elevec2);
+      local_solver_->project_field_test(hdgele, params, elevec1, elevec2);
       break;
     }
     case EleMag::project_field_test_trace:
@@ -126,18 +126,18 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::E
     }
     case EleMag::project_dirich_field:
     {
-      // if (mat->MaterialType() != Core::Materials::m_electromagneticmat)
+      // if (mat->material_type() != Core::Materials::m_electromagneticmat)
       //  FOUR_C_THROW("for physical type 'lossless' please supply MAT_Electromagnetic");
       if (params.isParameter("faceconsider"))
       {
         // ElementInit(hdgele, params);
-        local_solver_->ProjectDirichField(hdgele, params, elevec1);
+        local_solver_->project_dirich_field(hdgele, params, elevec1);
       }
       break;
     }
     case EleMag::ele_init:
     {
-      ElementInit(hdgele, params);
+      element_init(hdgele, params);
       break;
     }
     case EleMag::fill_restart_vecs:
@@ -169,13 +169,13 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::E
       for (int i = 0; i < face; ++i)
       {
         Core::FE::PolynomialSpaceParams params(Core::FE::DisTypeToFaceShapeType<distype>::shape,
-            hdgele->Faces()[i]->Degree(), usescompletepoly_);
-        int nfdofs = Core::FE::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(params)->Size();
+            hdgele->faces()[i]->degree(), usescompletepoly_);
+        int nfdofs = Core::FE::PolynomialSpaceCache<nsd_ - 1>::instance().create(params)->size();
         sumindex += nfdofs;
       }
       read_global_vectors(hdgele, discretization, lm);
       if (!params.isParameter("nodeindices"))
-        local_solver_->ComputeAbsorbingBC(
+        local_solver_->compute_absorbing_bc(
             discretization, hdgele, params, mat, face, elemat1, sumindex, elevec1);
       else
         FOUR_C_THROW("why would you set an absorbing LINE in THREE dimensions?");
@@ -202,7 +202,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::E
       // Compute RHS factor
       const Mat::ElectromagneticMat* elemagmat =
           static_cast<const Mat::ElectromagneticMat*>(mat.get());
-      const double mu = elemagmat->mu(hdgele->Id());
+      const double mu = elemagmat->mu(hdgele->id());
       if (mu < 0.1)
         params.set<double>("mod_mu", std::pow(mu, 0.5 * (1 + std::log(dt) / std::log(mu))));
       else
@@ -210,15 +210,15 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::E
 
       read_global_vectors(hdgele, discretization, lm);
       elevec1.putScalar(0.0);
-      local_solver_->ComputeMatrices(discretization, mat, *hdgele, dt, dyna_, tau);
+      local_solver_->compute_matrices(discretization, mat, *hdgele, dt, dyna_, tau);
 
       // if (!resonly)
-      local_solver_->CondenseLocalPart(elemat1);
+      local_solver_->condense_local_part(elemat1);
 
       // Make the matrix symmetric if the element contains dirichlet faces
-      local_solver_->Symmetrify(*hdgele, elemat1);
+      local_solver_->symmetrify(*hdgele, elemat1);
 
-      local_solver_->ComputeResidual(params, elevec1, dt, *hdgele);
+      local_solver_->compute_residual(params, elevec1, dt, *hdgele);
 
       break;
     }
@@ -238,7 +238,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::E
       // Compute RHS factor
       const Mat::ElectromagneticMat* elemagmat =
           static_cast<const Mat::ElectromagneticMat*>(mat.get());
-      const double mu = elemagmat->mu(hdgele->Id());
+      const double mu = elemagmat->mu(hdgele->id());
       if (mu < 0.1)
         params.set<double>("mod_mu", std::pow(mu, 0.5 * (1 + std::log(dt) / std::log(mu))));
       else
@@ -247,7 +247,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::E
       read_global_vectors(hdgele, discretization, lm);
 
       elevec1.putScalar(0.0);
-      local_solver_->ComputeMatrices(discretization, mat, *hdgele, dt, dyna_, tau);
+      local_solver_->compute_matrices(discretization, mat, *hdgele, dt, dyna_, tau);
       /* Could be useful for optimization purposes
       if(!allelesequal)
         localSolver_->ComputeMatrices(discretization, mat, *hdgele, dt, dyna_);
@@ -284,9 +284,9 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::E
  * Print trace
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::PrintTrace(Core::Elements::Element* ele)
+void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::print_trace(Core::Elements::Element* ele)
 {
-  std::cout << "Local trace of element: " << ele->LID() << std::endl;
+  std::cout << "Local trace of element: " << ele->lid() << std::endl;
   std::cout << "Number of entries: " << localtrace_.size() << std::endl;
   std::cout << "Number of spatial dimensions: " << nsd_ << std::endl;
   std::cout << "Numer of faces: " << nfaces_ << std::endl;
@@ -309,23 +309,23 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::PrintTrace(Core::Elements::E
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::InitializeShapes(
+void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::initialize_shapes(
     const Discret::ELEMENTS::ElemagDiff* ele)
 {
-  if (shapes_ == Teuchos::null || shapes_->degree_ != unsigned(ele->Degree()) ||
+  if (shapes_ == Teuchos::null || shapes_->degree_ != unsigned(ele->degree()) ||
       shapes_->usescompletepoly_ != usescompletepoly_)
   {
     shapes_ = Teuchos::rcp(
-        new Core::FE::ShapeValues<distype>(ele->Degree(), usescompletepoly_, 2 * ele->Degree()));
+        new Core::FE::ShapeValues<distype>(ele->degree(), usescompletepoly_, 2 * ele->degree()));
 
     // TODO: Check wheter 2 * (ele->Degree()+1) is required as exact integration degree
     postproc_shapes_ = Teuchos::rcp(new Core::FE::ShapeValues<distype>(
-        ele->Degree() + 1, usescompletepoly_, 2 * (ele->Degree() + 1)));
+        ele->degree() + 1, usescompletepoly_, 2 * (ele->degree() + 1)));
   }
 
   if (shapesface_ == Teuchos::null)
   {
-    Core::FE::ShapeValuesFaceParams svfparams(ele->Degree(), usescompletepoly_, 2 * ele->Degree());
+    Core::FE::ShapeValuesFaceParams svfparams(ele->degree(), usescompletepoly_, 2 * ele->degree());
     shapesface_ = Teuchos::rcp(new Core::FE::ShapeValuesFace<distype>(svfparams));
   }
 
@@ -357,10 +357,10 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::read_global_vectors(
   interior_magneticnp_ = elemagele->eleinteriorMagnetic_;
 
   // read vectors from time integrator
-  if (discretization.HasState("trace"))  // in case of "update interior variables"
+  if (discretization.has_state("trace"))  // in case of "update interior variables"
   {
     elemagele->elenodeTrace2d_.size(lm.size());
-    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState("trace");
+    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state("trace");
     Core::FE::ExtractMyValues(*matrix_state, elemagele->elenodeTrace2d_, lm);
   }
 
@@ -387,10 +387,10 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::fill_restart_vectors(
   }
 
   // tell this change in the interior variables the discretization
-  std::vector<int> localDofs = discretization.Dof(1, ele);
-  const Epetra_Map* intdofcolmap = discretization.DofColMap(1);
+  std::vector<int> localDofs = discretization.dof(1, ele);
+  const Epetra_Map* intdofcolmap = discretization.dof_col_map(1);
   {
-    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "intVar");
+    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(1, "intVar");
     Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
     for (unsigned int i = 0; i < localDofs.size(); ++i)
     {
@@ -406,7 +406,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::fill_restart_vectors(
   }
 
   // Here the magnetic field is not stored because there is no need for the time integration
-  Teuchos::RCP<const Epetra_Vector> intVarnm = discretization.GetState(1, "intVarnm");
+  Teuchos::RCP<const Epetra_Vector> intVarnm = discretization.get_state(1, "intVarnm");
   Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*intVarnm);
   for (unsigned int i = size; i < localDofs.size(); ++i)
   {
@@ -429,8 +429,8 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::element_init_from_restart(
 
   std::vector<double> interiorVar(size * 2);
 
-  Teuchos::RCP<const Epetra_Vector> intVar = discretization.GetState(1, "intVar");
-  std::vector<int> localDofs1 = discretization.Dof(1, ele);
+  Teuchos::RCP<const Epetra_Vector> intVar = discretization.get_state(1, "intVar");
+  std::vector<int> localDofs1 = discretization.dof(1, ele);
   Core::FE::ExtractMyValues(*intVar, interiorVar, localDofs1);
   // now write this in corresponding eleinteriorElectric_ and eleinteriorMagnetic_
   for (unsigned int i = 0; i < size; ++i)
@@ -441,7 +441,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::element_init_from_restart(
 
   std::vector<double> interiorVarnm(size * 2);
 
-  Teuchos::RCP<const Epetra_Vector> intVarnm = discretization.GetState(1, "intVarnm");
+  Teuchos::RCP<const Epetra_Vector> intVarnm = discretization.get_state(1, "intVarnm");
   Core::FE::ExtractMyValues(*intVarnm, interiorVarnm, localDofs1);
   for (unsigned int i = 0; i < size; ++i)
   {
@@ -455,7 +455,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::element_init_from_restart(
  * Element init
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::ElementInit(
+void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::element_init(
     Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params)
 {
   // Save the position of element's dirichlet dofs
@@ -474,7 +474,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::ElementInit(
   diff_ele->eleinteriorMagnetic_.size(shapes_->ndofs_ * nsd_);
 
   // ele->elenodeTrace_.Size(ele->NumFace() * shapesface_->nfdofs_ * nsd_);
-  ele->elenodeTrace2d_.size(ele->NumFace() * shapesface_->nfdofs_ * (nsd_ - 1));
+  ele->elenodeTrace2d_.size(ele->num_face() * shapesface_->nfdofs_ * (nsd_ - 1));
 
   // Postproc
   ele->eleinteriorElectricPost_.size(postproc_shapes_->ndofs_ * nsd_);
@@ -486,7 +486,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::ElementInit(
  * ProjectField
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectField(
+int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_field(
     Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
@@ -630,7 +630,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_electric
     // it is necessary to rescale it by the value of conductivity.
     const Mat::ElectromagneticMat* elemagmat =
         static_cast<const Mat::ElectromagneticMat*>(mat.get());
-    const double sigma = elemagmat->sigma(ele->Id());
+    const double sigma = elemagmat->sigma(ele->id());
 
     for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
@@ -698,11 +698,11 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_error(
   postproc_shapes_.evaluate(*ele);
 
   Core::FE::ShapeValues<distype> highshapes(
-      ele->Degree(), shapes_.usescompletepoly_, (ele->Degree() + 2) * 2);
+      ele->degree(), shapes_.usescompletepoly_, (ele->degree() + 2) * 2);
   highshapes.evaluate(*ele);
 
   Core::FE::ShapeValues<distype> highshapes_post(
-      ele->Degree() + 1, shapes_.usescompletepoly_, (ele->Degree() + 3) * 2);
+      ele->degree() + 1, shapes_.usescompletepoly_, (ele->degree() + 3) * 2);
   highshapes_post.evaluate(*ele);
   // get function
   const int func = params.get<int>("funcno");
@@ -852,14 +852,14 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_error(
  * PostProcessing
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
+void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::post_processing(
     Discret::ELEMENTS::ElemagDiff& ele)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::ElemagDiffEleCalc::PostProcessing");
   shapes_.evaluate(ele);
   postproc_shapes_.evaluate(ele);
 
-  Core::FE::ShapeValues<distype> k2_shapes(ele.Degree() + 2, false, 2 * (ele.Degree() + 2));
+  Core::FE::ShapeValues<distype> k2_shapes(ele.degree() + 2, false, 2 * (ele.degree() + 2));
   k2_shapes.evaluate(ele);
 
   // Build matrix
@@ -891,7 +891,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
   for (unsigned int q = 0; q < k2_shapes.nqpoints_; ++q)
   {
     Core::LinAlg::Matrix<nsd_, 1> xsi;
-    const double* gpcoord = k2_shapes.quadrature_->Point(q);
+    const double* gpcoord = k2_shapes.quadrature_->point(q);
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
     Core::LinAlg::SerialDenseVector values(postproc_shapes_.ndofs_);
     postproc_shapes_.polySpace_->evaluate(xsi, values);
@@ -907,7 +907,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
   for (unsigned int q = 0; q < postproc_shapes_.nqpoints_; ++q)
   {
     Core::LinAlg::Matrix<nsd_, 1> xsi;
-    const double* gpcoord = postproc_shapes_.quadrature_->Point(q);
+    const double* gpcoord = postproc_shapes_.quadrature_->point(q);
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
     Core::LinAlg::SerialDenseVector values(shapes_.ndofs_);
     shapes_.polySpace_->evaluate(xsi, values);
@@ -929,7 +929,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
   for (unsigned int q = 0; q < k2_shapes.nqpoints_; ++q)
   {
     Core::LinAlg::Matrix<nsd_, 1> xsi;
-    const double* gpcoord = k2_shapes.quadrature_->Point(q);
+    const double* gpcoord = k2_shapes.quadrature_->point(q);
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
     Core::LinAlg::SerialDenseVector values(shapes_.ndofs_);
     shapes_.polySpace_->evaluate(xsi, values);
@@ -962,7 +962,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
  * ProjectFieldTest
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
+int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_field_test(
     Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
@@ -1119,7 +1119,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_field_te
   for (unsigned int f = 0; f < nfaces_; ++f)
   {
     // Updating face data
-    shapesface_->EvaluateFace(*ele, f);
+    shapesface_->evaluate_face(*ele, f);
 
     // Initializing the matrices
     // It is necessary to create a matrix and a trVec for each face because the
@@ -1208,14 +1208,14 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_field_te
  * ProjectDirichField
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectDirichField(
+int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_dirich_field(
     Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // Updating face data
   const int face = params.get<unsigned int>("faceconsider");
   // std::cout << face << std::endl;
-  shapesface_->EvaluateFace(*ele, face);
+  shapesface_->evaluate_face(*ele, face);
 
   Teuchos::Array<int>* functno = params.getPtr<Teuchos::Array<int>>("funct");
   const double time = params.get<double>("time");
@@ -1293,9 +1293,9 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::evaluate_all(co
     const double t, const Core::LinAlg::Matrix<nsd_, 1>& xyz,
     Core::LinAlg::SerialDenseVector& v) const
 {
-  int numComp = Global::Problem::Instance()
-                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
-                    .NumberComponents();
+  int numComp = Global::Problem::instance()
+                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                    .number_components();
 
   // If the number is not recognised throw an error
   if (not(numComp == v.numRows() || numComp == 2 * v.numRows() || numComp == v.numRows() / 2 ||
@@ -1310,8 +1310,8 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::evaluate_all(co
   // If the number of component is half of the vector, repeat the first half twice
   // If there is only one component always use it
   for (int d = 0; d < v.numRows(); ++d)
-    v[d] = Global::Problem::Instance()
-               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+    v[d] = Global::Problem::instance()
+               ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
                .evaluate(xyz.data(), t, d % numComp);
 
   return;
@@ -1325,9 +1325,9 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_functio
     const int start_func, const double t, const Core::LinAlg::Matrix<nsd_, 1>& xyz,
     Core::LinAlg::SerialDenseMatrix& v) const
 {
-  int numComp = Global::Problem::Instance()
-                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
-                    .NumberComponents();
+  int numComp = Global::Problem::instance()
+                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                    .number_components();
 
   // If the number is not recognised throw an error
   if (not(numComp == v.numRows() || numComp == 2 * v.numRows() || numComp == v.numRows() / 2 ||
@@ -1342,9 +1342,10 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_functio
   // If there is only one component always use it
   for (int d = 0; d < v.numRows(); ++d)
   {
-    std::vector<double> deriv = Global::Problem::Instance()
-                                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
-                                    .evaluate_spatial_derivative(xyz.data(), t, d % numComp);
+    std::vector<double> deriv =
+        Global::Problem::instance()
+            ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+            .evaluate_spatial_derivative(xyz.data(), t, d % numComp);
     for (unsigned int d_der = 0; d_der < nsd_; ++d_der) v(d, d_der) = deriv[d_der];
   }
 
@@ -1359,9 +1360,9 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_functio
     const int start_func, const double t, const double dt, const Core::LinAlg::Matrix<nsd_, 1>& xyz,
     Core::LinAlg::SerialDenseVector& v) const
 {
-  int numComp = Global::Problem::Instance()
-                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
-                    .NumberComponents();
+  int numComp = Global::Problem::instance()
+                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                    .number_components();
 
   // If the number is not recognised throw an error
   if (not(numComp == v.numRows() || numComp == 2 * v.numRows() || numComp == v.numRows() / 2 ||
@@ -1376,11 +1377,11 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_functio
   // If the number of component is half of the vector, repeat the first half twice
   // If there is only one component always use it
   for (int d = 0; d < v.numRows(); ++d)
-    v[d] = (Global::Problem::Instance()
-                   ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+    v[d] = (Global::Problem::instance()
+                   ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
                    .evaluate(xyz.data(), t + (0.5 * dt), d % numComp) -
-               Global::Problem::Instance()
-                   ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+               Global::Problem::instance()
+                   ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
                    .evaluate(xyz.data(), t - (0.5 * dt), d % numComp)) /
            dt;
 
@@ -1396,7 +1397,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::interpolate_solution_to_nodes
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::ElemagDiffEleCalc::interpolate_solution_to_nodes");
-  InitializeShapes(ele);
+  initialize_shapes(ele);
 
   // Check if the vector has the correct size
   FOUR_C_ASSERT(elevec1.numRows() == (int)nen_ * (4 * nsd_), "Vector does not have correct size");
@@ -1477,7 +1478,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::interpolate_solution_to_nodes
     // Checking how many nodes the face has
     const int nfn = Core::FE::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
-    shapesface_->EvaluateFace(*ele, f);
+    shapesface_->evaluate_face(*ele, f);
 
     Core::LinAlg::SerialDenseVector facetrace((nsd_ - 1) * shapesface_->nfdofs_);
     Core::LinAlg::SerialDenseVector temptrace(nsd_ * shapesface_->nfdofs_);
@@ -1493,12 +1494,12 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::interpolate_solution_to_nodes
       for (unsigned int idim = 0; idim < nsd_ - 1; idim++)
       {
         // If the face belongs to the element being considered
-        if (ele->Faces()[f]->ParentMasterElement() == ele)
+        if (ele->faces()[f]->parent_master_element() == ele)
           xsishuffle(idim, i) = locations(idim, i);
         else
           // If the face does not belong to the element being considered it is
           // necessary to change the ordering
-          xsishuffle(idim, ele->Faces()[f]->GetLocalTrafoMap()[i]) = locations(idim, i);
+          xsishuffle(idim, ele->faces()[f]->get_local_trafo_map()[i]) = locations(idim, i);
       }
     }
 
@@ -1563,7 +1564,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::interpolate_solution_to_nodes
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ElemagDiffEleCalc<distype>*
-Discret::ELEMENTS::ElemagDiffEleCalc<distype>::Instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::ElemagDiffEleCalc<distype>::instance(Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
@@ -1572,7 +1573,7 @@ Discret::ELEMENTS::ElemagDiffEleCalc<distype>::Instance(Core::UTILS::SingletonAc
             new Discret::ELEMENTS::ElemagDiffEleCalc<distype>());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 /*----------------------------------------------------------------------*
@@ -1616,7 +1617,7 @@ Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::LocalSolver(
   for (unsigned int i = 0; i < nfaces_; ++i)
   {
     // Evaluating the dofs number on each face of the element
-    shapesface_->EvaluateFace(*ele, i);
+    shapesface_->evaluate_face(*ele, i);
     // Computing the dimension of the approximation space for the hybrid variable
     onfdofs += shapesface_->nfdofs_;
   }
@@ -1666,7 +1667,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::update_interior_variables_an
   Core::LinAlg::SerialDenseMatrix tempMat2(shapes_->ndofs_ * nsd_, shapes_->ndofs_ * nsd_);
 
   // The source has to be checked for bdf
-  local_solver_->ComputeSource(params, tempVec2, xVec);
+  local_solver_->compute_source(params, tempVec2, xVec);
 
   Core::LinAlg::multiply_tn(tempMat, local_solver_->Bmat, local_solver_->invAmat);  // FA^{-1}
 
@@ -1784,7 +1785,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::update_interior_variables_an
  * ComputeAbsorbingBC
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
+void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_absorbing_bc(
     Core::FE::Discretization& discretization, Discret::ELEMENTS::ElemagDiff* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat, int face,
     Core::LinAlg::SerialDenseMatrix& elemat, int indexstart,
@@ -1951,7 +1952,7 @@ Core::LinAlg::multiply(1.0,   tempVec2, 1.0,  magneticMat,  tempVec1);
  * ComputeSource
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeSource(
+void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_source(
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& interiorSourcen,
     Core::LinAlg::SerialDenseVector& interiorSourcenp)
 {
@@ -2091,7 +2092,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_interio
  * ComputeResidual
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeResidual(
+void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_residual(
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& elevec, double dt,
     Discret::ELEMENTS::ElemagDiff& ele)
 {
@@ -2115,7 +2116,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeResidual
   Core::LinAlg::SerialDenseVector tempVec2(intdofs);
   // Once the compute source is ready we will need to delete these
   // The ComputeSource is necesessary to include the forcing terms
-  ComputeSource(params, tempVec2, tempVec1);
+  compute_source(params, tempVec2, tempVec1);
 
   if (dyna_ == Inpar::EleMag::elemag_bdf2)
   {
@@ -2188,8 +2189,9 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeResidual
  * ComputeFaceMatrices
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFaceMatrices(const int face,
-    double dt, int indexstart, int newindex, double sigma, double mu, const double tau)
+void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_face_matrices(
+    const int face, double dt, int indexstart, int newindex, double sigma, double mu,
+    const double tau)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::ElemagDiffEleCalc::ComputeFaceMatrices");
 
@@ -2234,7 +2236,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFaceMatr
     // If the shape function is zero on the face we can just skip it. Remember
     // that the matrix have already been set to zero and therefore if nothing
     // is done the value ramains zero
-    if (shapesface_->shfunctI.NonzeroOnFace(i))
+    if (shapesface_->shfunctI.nonzero_on_face(i))
     {
       // loop over number of face shape functions
       for (unsigned int j = 0; j < shapesface_->nfdofs_; ++j)
@@ -2313,7 +2315,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFaceMatr
   // Some terms are still missing in G!!
   for (unsigned int i = 0; i < ndofs_; ++i)
     for (unsigned int j = 0; j < ndofs_; ++j)
-      if (shapesface_->shfunctI.NonzeroOnFace(i) && shapesface_->shfunctI.NonzeroOnFace(j))
+      if (shapesface_->shfunctI.nonzero_on_face(i) && shapesface_->shfunctI.nonzero_on_face(j))
         for (unsigned int d = 0; d < nsd_; ++d)
           for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
           {
@@ -2340,7 +2342,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFaceMatr
  * CondenseLocalPart
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::CondenseLocalPart(
+void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::condense_local_part(
     Core::LinAlg::SerialDenseMatrix& eleMat)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::ElemagDiffEleCalc::CondenseLocalPart");
@@ -2417,7 +2419,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::CondenseLocalPa
  * Symmetrify
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::Symmetrify(
+void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::symmetrify(
     Discret::ELEMENTS::ElemagDiff& ele, Core::LinAlg::SerialDenseMatrix& eleMat, bool dodirich)
 {
   if (ele.lm_.lmdirich_.size())
@@ -2439,7 +2441,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::Symmetrify(
  * Compute internal and face matrices
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeMatrices(
+void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_matrices(
     Core::FE::Discretization& discretization, const Teuchos::RCP<Core::Mat::Material>& mat,
     Discret::ELEMENTS::ElemagDiff& ele, double dt, Inpar::EleMag::DynamicType dyna,
     const double tau)
@@ -2448,9 +2450,9 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeMatrices
   // Check current_informations, \chapter{Elements and materials for electromagnetics},
   // \section{Remarks}
   const Mat::ElectromagneticMat* elemagmat = static_cast<const Mat::ElectromagneticMat*>(mat.get());
-  double sigma = elemagmat->sigma(ele.Id());
-  double epsilon = elemagmat->epsilon(ele.Id());
-  double mu = elemagmat->mu(ele.Id());
+  double sigma = elemagmat->sigma(ele.id());
+  double epsilon = elemagmat->epsilon(ele.id());
+  double mu = elemagmat->mu(ele.id());
 
   // Why this? Why do we need to make these matrices zero here? Why not all of them?
   // init face matrices
@@ -2478,14 +2480,14 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeMatrices
     Core::FE::ShapeValuesFaceParams svfparams(
         ele.Faces()[face]->Degree(),
         shapes_.usescompletepoly_, 2 * ele.Faces()[face]->Degree());
-    shapesface_ = Core::FE::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
+    shapesface_ = Core::FE::ShapeValuesFaceCache<distype>::instance().Create(svfparams);
     */
 
     // Updating face data
-    shapesface_->EvaluateFace(ele, face);
+    shapesface_->evaluate_face(ele, face);
 
     // Here are the matrices for the boundary integrals
-    ComputeFaceMatrices(face, dt, sumindex, newindex, sigma, mu, tau);
+    compute_face_matrices(face, dt, sumindex, newindex, sigma, mu, tau);
     sumindex += nsd_ * shapesface_->nfdofs_;
     newindex += (nsd_ - 1) * shapesface_->nfdofs_;
   }

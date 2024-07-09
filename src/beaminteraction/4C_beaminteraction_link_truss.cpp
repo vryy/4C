@@ -29,7 +29,7 @@ BEAMINTERACTION::BeamLinkTrussType BEAMINTERACTION::BeamLinkTrussType::instance_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Communication::ParObject* BEAMINTERACTION::BeamLinkTrussType::Create(
+Core::Communication::ParObject* BEAMINTERACTION::BeamLinkTrussType::create(
     const std::vector<char>& data)
 {
   BEAMINTERACTION::BeamLinkTruss* my_truss_linker = new BEAMINTERACTION::BeamLinkTruss();
@@ -55,14 +55,14 @@ BEAMINTERACTION::BeamLinkTruss::BeamLinkTruss(const BEAMINTERACTION::BeamLinkTru
 {
   if (linkele_ != Teuchos::null)
     linkele_ = Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::Truss3>(
-        Teuchos::rcp(old.linkele_->Clone(), true));
+        Teuchos::rcp(old.linkele_->clone(), true));
   else
     linkele_ = Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkTruss::Clone() const
+Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkTruss::clone() const
 {
   Teuchos::RCP<BEAMINTERACTION::BeamLinkTruss> newlinker =
       Teuchos::rcp(new BEAMINTERACTION::BeamLinkTruss(*this));
@@ -104,22 +104,22 @@ void BEAMINTERACTION::BeamLinkTruss::setup(const int matnum)
   linkele_ = Teuchos::rcp(new Discret::ELEMENTS::Truss3(-1, 0));
 
   // set material
-  linkele_->SetMaterial(0, Mat::Factory(matnum));
+  linkele_->set_material(0, Mat::Factory(matnum));
 
   // set cross-section area Fixme hard-coded dummy value for now
-  linkele_->SetCrossSec(1.0);
+  linkele_->set_cross_sec(1.0);
 
   // set dummy node Ids, in order to make NumNodes() method of element return the correct number of
   // nodes
   int nodeids[] = {-1, -1};
-  linkele_->SetNodeIds(2, nodeids);
+  linkele_->set_node_ids(2, nodeids);
 
   std::vector<double> refpos(6, 0.0);
 
   for (unsigned int i = 0; i < 3; ++i)
   {
-    refpos[i] = GetBindSpotPos1()(i);
-    refpos[3 + i] = GetBindSpotPos2()(i);
+    refpos[i] = get_bind_spot_pos1()(i);
+    refpos[3 + i] = get_bind_spot_pos2()(i);
   }
 
   linkele_->set_up_reference_geometry(refpos);
@@ -136,7 +136,7 @@ void BEAMINTERACTION::BeamLinkTruss::pack(Core::Communication::PackBuffer& data)
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class
   BeamLinkPinJointed::pack(data);
@@ -153,7 +153,7 @@ void BEAMINTERACTION::BeamLinkTruss::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class
   std::vector<char> basedata(0);
@@ -267,12 +267,12 @@ bool BEAMINTERACTION::BeamLinkTruss::evaluate_force_stiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::ResetState(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
+void BEAMINTERACTION::BeamLinkTruss::reset_state(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
     std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad)
 {
   check_init_setup();
 
-  BeamLinkPinJointed::ResetState(bspotpos, bspottriad);
+  BeamLinkPinJointed::reset_state(bspotpos, bspottriad);
 }
 
 /*----------------------------------------------------------------------------*
@@ -282,8 +282,8 @@ void BEAMINTERACTION::BeamLinkTruss::fill_state_variables_for_element_evaluation
 {
   for (unsigned int i = 0; i < 3; ++i)
   {
-    absolute_nodal_positions(i) = GetBindSpotPos1()(i);
-    absolute_nodal_positions(3 + i) = GetBindSpotPos2()(i);
+    absolute_nodal_positions(i) = get_bind_spot_pos1()(i);
+    absolute_nodal_positions(3 + i) = get_bind_spot_pos2()(i);
   }
 }
 
@@ -292,12 +292,12 @@ void BEAMINTERACTION::BeamLinkTruss::fill_state_variables_for_element_evaluation
 void BEAMINTERACTION::BeamLinkTruss::get_disp_for_element_evaluation(
     std::map<std::string, std::vector<double>>& ele_state) const
 {
-  const auto ref_position = linkele_->X();
+  const auto ref_position = linkele_->x();
   std::vector<double> disp(6, 0);
   for (unsigned int i = 0; i < 3; ++i)
   {
-    disp[i] = GetBindSpotPos1()(i) - ref_position(i, 0);
-    disp[3 + i] = GetBindSpotPos2()(i) - ref_position(i + 3, 0);
+    disp[i] = get_bind_spot_pos1()(i) - ref_position(i, 0);
+    disp[3 + i] = get_bind_spot_pos2()(i) - ref_position(i + 3, 0);
   }
 
   ele_state.emplace(std::make_pair("disp", disp));
@@ -312,7 +312,7 @@ void BEAMINTERACTION::BeamLinkTruss::scale_linker_reference_length(double scalef
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::GetBindingSpotForce(
+void BEAMINTERACTION::BeamLinkTruss::get_binding_spot_force(
     int bspotid, Core::LinAlg::SerialDenseVector& bspotforce) const
 {
   bspotforce = bspotforces_[bspotid];
@@ -334,18 +334,18 @@ double BEAMINTERACTION::BeamLinkTruss::get_current_linker_length() const
   curr_nodal_coords(4) = curr_nodal_coords(1);
   curr_nodal_coords(5) = curr_nodal_coords(2);
 
-  return linkele_->CurrLength(curr_nodal_coords);
+  return linkele_->curr_length(curr_nodal_coords);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double BEAMINTERACTION::BeamLinkTruss::GetInternalEnergy() const
+double BEAMINTERACTION::BeamLinkTruss::get_internal_energy() const
 {
-  return linkele_->GetInternalEnergy();
+  return linkele_->get_internal_energy();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double BEAMINTERACTION::BeamLinkTruss::GetKineticEnergy() const { return 0.0; }
+double BEAMINTERACTION::BeamLinkTruss::get_kinetic_energy() const { return 0.0; }
 
 FOUR_C_NAMESPACE_CLOSE

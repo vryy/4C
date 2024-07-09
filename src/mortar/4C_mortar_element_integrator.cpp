@@ -37,9 +37,9 @@ Mortar::ElementIntegrator::ElementIntegrator(Core::FE::CellType eletype)
     {
       const Core::FE::IntegrationPoints1D intpoints(Core::FE::GaussRule1D::line_5point);
       ngp_ = intpoints.nquad;
-      coords_.reshape(nGP(), 2);
-      weights_.resize(nGP());
-      for (int i = 0; i < nGP(); ++i)
+      coords_.reshape(n_gp(), 2);
+      weights_.resize(n_gp());
+      for (int i = 0; i < n_gp(); ++i)
       {
         coords_(i, 0) = intpoints.qxg[i][0];
         coords_(i, 1) = 0.0;
@@ -70,9 +70,9 @@ Mortar::ElementIntegrator::ElementIntegrator(Core::FE::CellType eletype)
   if (rule2d != Teuchos::null)
   {
     ngp_ = rule2d->nquad;
-    coords_.reshape(nGP(), 2);
-    weights_.resize(nGP());
-    for (int i = 0; i < nGP(); ++i)
+    coords_.reshape(n_gp(), 2);
+    weights_.resize(n_gp());
+    for (int i = 0; i < n_gp(); ++i)
     {
       coords_(i, 0) = rule2d->qxg[i][0];
       coords_(i, 1) = rule2d->qxg[i][1];

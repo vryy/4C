@@ -30,7 +30,7 @@ namespace Mat
           : Parameter(matdata), constviscosity_(constviscosity){};
 
       // get viscosity
-      virtual double GetViscosity(const double abspressgrad) const = 0;
+      virtual double get_viscosity(const double abspressgrad) const = 0;
 
       // get derivative of viscosity wrt |grad(p)|
       virtual double get_deriv_of_viscosity_wrt_abs_press_grad(const double abspressgrad) const = 0;
@@ -39,7 +39,7 @@ namespace Mat
       bool has_constant_viscosity() const { return constviscosity_; }
 
       /// factory method
-      static Mat::PAR::FluidPoroViscosityLaw* CreateViscosityLaw(int matID);
+      static Mat::PAR::FluidPoroViscosityLaw* create_viscosity_law(int matID);
 
      private:
       const bool constviscosity_;
@@ -56,7 +56,7 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
 
       // get viscosity
-      double GetViscosity(const double abspressgrad) const override { return viscosity_; };
+      double get_viscosity(const double abspressgrad) const override { return viscosity_; };
 
       // get derivative of viscosity wrt |grad(p)|  --> 0 in case of const. viscosity
       double get_deriv_of_viscosity_wrt_abs_press_grad(const double abspressgrad) const override
@@ -87,7 +87,7 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
 
       // get viscosity
-      double GetViscosity(const double abspressgrad) const override;
+      double get_viscosity(const double abspressgrad) const override;
 
       // get derivative of viscosity wrt |grad(p)|
       double get_deriv_of_viscosity_wrt_abs_press_grad(const double abspressgrad) const override;

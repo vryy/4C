@@ -82,7 +82,7 @@ namespace Core::IO
     /**
      * @brief Return a const reference to the point coordinates
      */
-    [[nodiscard]] const std::vector<double>& GetPointCoordinates() const
+    [[nodiscard]] const std::vector<double>& get_point_coordinates() const
     {
       return point_coordinates_;
     }
@@ -92,7 +92,7 @@ namespace Core::IO
      *
      * @param n (in) If this is larger than 0, additional entries will be reserved
      */
-    [[nodiscard]] std::vector<double>& GetPointCoordinates(const size_t n = 0)
+    [[nodiscard]] std::vector<double>& get_point_coordinates(const size_t n = 0)
     {
       return additional_reserve(point_coordinates_, n);
     }
@@ -105,14 +105,14 @@ namespace Core::IO
     /**
      * @brief Return a const reference to the cell types
      */
-    [[nodiscard]] const std::vector<uint8_t>& GetCellTypes() const { return cell_types_; }
+    [[nodiscard]] const std::vector<uint8_t>& get_cell_types() const { return cell_types_; }
 
     /**
      * @brief Return a mutable reference to the cell types
      *
      * @param n (in) If this is larger than 0, additional entries will be reserved
      */
-    [[nodiscard]] std::vector<uint8_t>& GetCellTypes(const size_t n = 0)
+    [[nodiscard]] std::vector<uint8_t>& get_cell_types(const size_t n = 0)
     {
       return additional_reserve(cell_types_, n);
     }
@@ -120,7 +120,7 @@ namespace Core::IO
     /**
      * @brief Return a const reference to the cell connectivity
      */
-    [[nodiscard]] const std::vector<index_type>& GetCellConnectivity() const
+    [[nodiscard]] const std::vector<index_type>& get_cell_connectivity() const
     {
       return cell_connectivity_;
     }
@@ -130,7 +130,7 @@ namespace Core::IO
      *
      * @param n (in) If this is larger than 0, additional entries will be reserved
      */
-    [[nodiscard]] std::vector<index_type>& GetCellConnectivity(const size_t n = 0)
+    [[nodiscard]] std::vector<index_type>& get_cell_connectivity(const size_t n = 0)
     {
       return additional_reserve(cell_connectivity_, n);
     }
@@ -138,14 +138,14 @@ namespace Core::IO
     /**
      * @brief Return a const reference to the cell offsets
      */
-    [[nodiscard]] const std::vector<index_type>& GetCellOffsets() const { return cell_offsets_; }
+    [[nodiscard]] const std::vector<index_type>& get_cell_offsets() const { return cell_offsets_; }
 
     /**
      * @brief Return a mutable reference to the cell offsets
      *
      * @param n (in) If this is larger than 0, additional entries will be reserved
      */
-    [[nodiscard]] std::vector<index_type>& GetCellOffsets(const size_t n = 0)
+    [[nodiscard]] std::vector<index_type>& get_cell_offsets(const size_t n = 0)
     {
       return additional_reserve(cell_offsets_, n);
     }
@@ -153,7 +153,7 @@ namespace Core::IO
     /**
      * @brief Return a const reference to the face connectivity
      */
-    [[nodiscard]] const std::vector<index_type>& GetFaceConnectivity() const
+    [[nodiscard]] const std::vector<index_type>& get_face_connectivity() const
     {
       return face_connectivity_;
     }
@@ -163,7 +163,7 @@ namespace Core::IO
      *
      * @param n (in) If this is larger than 0, additional entries will be reserved
      */
-    [[nodiscard]] std::vector<index_type>& GetFaceConnectivity(const size_t n = 0)
+    [[nodiscard]] std::vector<index_type>& get_face_connectivity(const size_t n = 0)
     {
       return additional_reserve(face_connectivity_, n);
     }
@@ -171,14 +171,14 @@ namespace Core::IO
     /**
      * @brief Return a const reference to the face offsets
      */
-    [[nodiscard]] const std::vector<index_type>& GetFaceOffsets() const { return face_offsets_; }
+    [[nodiscard]] const std::vector<index_type>& get_face_offsets() const { return face_offsets_; }
 
     /**
      * @brief Return a mutable reference to the face offsets
      *
      * @param n (in) If this is larger than 0, additional entries will be reserved
      */
-    [[nodiscard]] std::vector<index_type>& GetFaceOffsets(const size_t n = 0)
+    [[nodiscard]] std::vector<index_type>& get_face_offsets(const size_t n = 0)
     {
       return additional_reserve(face_offsets_, n);
     }
@@ -190,7 +190,7 @@ namespace Core::IO
      * @param data_name (in) Name of the data field
      */
     template <typename T>
-    [[nodiscard]] const std::vector<T>& GetPointData(const std::string& data_name) const
+    [[nodiscard]] const std::vector<T>& get_point_data(const std::string& data_name) const
     {
       return get_data<std::vector<T>>(point_data_, data_name);
     }
@@ -203,7 +203,7 @@ namespace Core::IO
      * @param n (in) If this is larger than 0, additional entries will be reserved
      */
     template <typename T>
-    [[nodiscard]] std::vector<T>& GetPointData(const std::string& data_name, const size_t n = 0)
+    [[nodiscard]] std::vector<T>& get_point_data(const std::string& data_name, const size_t n = 0)
     {
       // The const_cast can be done here, since we know that the underlying data is not const
       return additional_reserve(
@@ -215,7 +215,7 @@ namespace Core::IO
      *
      * @param data_name (in) Name of the data field
      */
-    [[nodiscard]] const visualization_vector_type_variant& GetPointDataVariant(
+    [[nodiscard]] const visualization_vector_type_variant& get_point_data_variant(
         const std::string& data_name) const
     {
       return get_data_vector_from_map_item(get_data_map_item(point_data_, data_name));
@@ -228,7 +228,7 @@ namespace Core::IO
      * @param data_name (in) Name of the data field
      */
     template <typename T>
-    [[nodiscard]] const std::vector<T>& GetCellData(const std::string& data_name) const
+    [[nodiscard]] const std::vector<T>& get_cell_data(const std::string& data_name) const
     {
       return get_data<std::vector<T>>(cell_data_, data_name);
     }
@@ -241,7 +241,7 @@ namespace Core::IO
      * @param n (in) If this is larger than 0, additional entries will be reserved
      */
     template <typename T>
-    [[nodiscard]] std::vector<T>& GetCellData(const std::string& data_name, const size_t n = 0)
+    [[nodiscard]] std::vector<T>& get_cell_data(const std::string& data_name, const size_t n = 0)
     {
       // The const_cast can be done here, since we know that the underlying data is not const
       return additional_reserve(
@@ -254,7 +254,7 @@ namespace Core::IO
      *
      * @param data_name (in) Name of the data field
      */
-    [[nodiscard]] const visualization_vector_type_variant& GetCellDataVariant(
+    [[nodiscard]] const visualization_vector_type_variant& get_cell_data_variant(
         const std::string& data_name) const
     {
       return get_data_vector_from_map_item(get_data_map_item(cell_data_, data_name));
@@ -267,7 +267,7 @@ namespace Core::IO
      * @param data_name (in) Name of the data field
      */
     template <typename T>
-    [[nodiscard]] const std::vector<T>& GetFieldData(const std::string& data_name) const
+    [[nodiscard]] const std::vector<T>& get_field_data(const std::string& data_name) const
     {
       return get_data<std::vector<T>>(field_data_, data_name);
     }
@@ -280,7 +280,7 @@ namespace Core::IO
      * @param n (in) If this is larger than 0, additional entries will be reserved
      */
     template <typename T>
-    [[nodiscard]] std::vector<T>& GetFieldData(const std::string& data_name, const size_t n = 0)
+    [[nodiscard]] std::vector<T>& get_field_data(const std::string& data_name, const size_t n = 0)
     {
       // The const_cast can be done here, since we know that the underlying data is not const
       return additional_reserve(
@@ -292,7 +292,7 @@ namespace Core::IO
      *
      * @param data_name (in) Name of the data field
      */
-    [[nodiscard]] const visualization_vector_type_variant& GetFieldDataVariant(
+    [[nodiscard]] const visualization_vector_type_variant& get_field_data_variant(
         const std::string& data_name) const
     {
       return get_data_vector_from_map_item(get_data_map_item(field_data_, data_name));
@@ -301,8 +301,8 @@ namespace Core::IO
     /**
      * @brief Return a const reference to the map containing the field data
      */
-    [[nodiscard]] const std::map<std::string, visualization_vector_type_variant>& GetFieldDataMap()
-        const
+    [[nodiscard]] const std::map<std::string, visualization_vector_type_variant>&
+    get_field_data_map() const
     {
       return field_data_;
     }
@@ -317,7 +317,7 @@ namespace Core::IO
      * entries.
      */
     template <typename T>
-    std::vector<T>& RegisterPointData(
+    std::vector<T>& register_point_data(
         const std::string& data_name, const unsigned int n_dim, const size_t reserve = 0)
     {
       return register_data_vector<T>(point_data_, data_name, n_dim, reserve);
@@ -333,7 +333,7 @@ namespace Core::IO
      * entries.
      */
     template <typename T>
-    std::vector<T>& RegisterCellData(
+    std::vector<T>& register_cell_data(
         const std::string& data_name, const unsigned int n_dim, const size_t reserve = 0)
     {
       return register_data_vector<T>(cell_data_, data_name, n_dim, reserve);
@@ -347,7 +347,7 @@ namespace Core::IO
      * dimension of this vector should be n_dim.
      */
     template <typename T>
-    std::vector<T>& RegisterFieldData(const std::string& data_name, const unsigned int n_dim = 1)
+    std::vector<T>& register_field_data(const std::string& data_name, const unsigned int n_dim = 1)
     {
       if (field_data_.find(data_name) != field_data_.end())
         FOUR_C_THROW(
@@ -371,7 +371,7 @@ namespace Core::IO
      * number of entires in the result vector has to be a multiplicity of n_dim
      */
     template <typename T>
-    void SetPointDataVector(
+    void set_point_data_vector(
         const std::string& data_name, const std::vector<T>& result, const unsigned int n_dim)
     {
       set_data_vector(point_data_, data_name, n_dim, result);
@@ -387,7 +387,7 @@ namespace Core::IO
      * number of entires in the result vector has to be a multiplicity of n_dim
      */
     template <typename T>
-    void SetCellDataVector(
+    void set_cell_data_vector(
         const std::string& data_name, const std::vector<T>& result, const unsigned int n_dim)
     {
       set_data_vector(cell_data_, data_name, n_dim, result);
@@ -401,7 +401,7 @@ namespace Core::IO
      * @param result (in) Data to be set
      */
     template <typename T>
-    void SetFieldDataVector(const std::string& data_name, const std::vector<T>& result)
+    void set_field_data_vector(const std::string& data_name, const std::vector<T>& result)
     {
       if (field_data_.find(data_name) != field_data_.end())
       {
@@ -423,7 +423,7 @@ namespace Core::IO
     /**
      * @brief Return a std::set with the registered point data names
      */
-    [[nodiscard]] std::set<std::string> GetPointDataNames() const
+    [[nodiscard]] std::set<std::string> get_point_data_names() const
     {
       return get_data_names(point_data_);
     }
@@ -431,7 +431,7 @@ namespace Core::IO
     /**
      * @brief Return a std::set with the registered cell data names
      */
-    [[nodiscard]] std::set<std::string> GetCellDataNames() const
+    [[nodiscard]] std::set<std::string> get_cell_data_names() const
     {
       return get_data_names(cell_data_);
     }
@@ -439,7 +439,7 @@ namespace Core::IO
     /**
      * @brief Return a std::set with the registered field data names
      */
-    [[nodiscard]] std::set<std::string> GetFieldDataNames() const
+    [[nodiscard]] std::set<std::string> get_field_data_names() const
     {
       return get_data_names(field_data_);
     }
@@ -449,7 +449,7 @@ namespace Core::IO
      *
      * @param data_name (in) Name of the data
      */
-    [[nodiscard]] size_t GetPointDataSize(const std::string& data_name) const
+    [[nodiscard]] size_t get_point_data_size(const std::string& data_name) const
     {
       return get_data_vector_size(
           get_data_vector_from_map_item(get_data_map_item(point_data_, data_name)));
@@ -460,7 +460,7 @@ namespace Core::IO
      *
      * @param data_name (in) Name of the data
      */
-    [[nodiscard]] size_t GetCellDataSize(const std::string& data_name) const
+    [[nodiscard]] size_t get_cell_data_size(const std::string& data_name) const
     {
       return get_data_vector_size(
           get_data_vector_from_map_item(get_data_map_item(cell_data_, data_name)));
@@ -505,7 +505,7 @@ namespace Core::IO
     /**
      * @brief Clear all data from this container, the registered data names will also be removed
      */
-    void ResetContainer();
+    void reset_container();
 
     /**
      * @brief Complete possibly missing data entries and perform a consistency check
@@ -525,7 +525,7 @@ namespace Core::IO
      * - It is checked that the face connectivity and offset arrays have the correct dimension
      * - It is checked that the point and cell data vectors have the correct dimension
      */
-    void ConsistencyCheck() const;
+    void consistency_check() const;
 
     /**
      * @brief Check and complete the consistency of the cell connectivity and offsets

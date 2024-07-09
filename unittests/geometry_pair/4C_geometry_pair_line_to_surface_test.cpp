@@ -81,7 +81,7 @@ namespace
     // Project the point to the surface.
     Core::LinAlg::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToOther(point, element_data_solid, xi, projection_result);
+    pair.project_point_to_other(point, element_data_solid, xi, projection_result);
 
     // Check the results.
     Core::LinAlg::Matrix<3, 1, double> xi_result(true);
@@ -115,7 +115,7 @@ namespace
     // Project the point to the surface.
     Core::LinAlg::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToOther(point, element_data_solid, xi, projection_result);
+    pair.project_point_to_other(point, element_data_solid, xi, projection_result);
 
     // Check the results.
     Core::LinAlg::Matrix<3, 1, double> xi_result(true);
@@ -149,7 +149,7 @@ namespace
     // Project the point to the surface.
     Core::LinAlg::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToOther(point, element_data_solid, xi, projection_result);
+    pair.project_point_to_other(point, element_data_solid, xi, projection_result);
 
     // Check the results.
     Core::LinAlg::Matrix<3, 1, double> xi_result(true);
@@ -183,7 +183,7 @@ namespace
     // Project the point to the surface.
     Core::LinAlg::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToOther(point, element_data_solid, xi, projection_result);
+    pair.project_point_to_other(point, element_data_solid, xi, projection_result);
 
     // Check the results.
     Core::LinAlg::Matrix<3, 1, double> xi_result(true);
@@ -217,7 +217,7 @@ namespace
     // Project the point to the surface.
     Core::LinAlg::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToOther(point, element_data_solid, xi, projection_result);
+    pair.project_point_to_other(point, element_data_solid, xi, projection_result);
 
     // Check the results.
     Core::LinAlg::Matrix<3, 1, double> xi_result(true);
@@ -267,11 +267,11 @@ namespace
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
-      EXPECT_NEAR(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+      EXPECT_NEAR(intersection_points[i_intersection].get_eta(), eta_result(i_intersection),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
 
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        EXPECT_NEAR(intersection_points[i_intersection].GetXi()(i_dir),
+        EXPECT_NEAR(intersection_points[i_intersection].get_xi()(i_dir),
             xi_result(i_dir, i_intersection), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
     }
   }
@@ -314,11 +314,11 @@ namespace
     eta_result(1) = -0.1706930518170407;
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
-      EXPECT_NEAR(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+      EXPECT_NEAR(intersection_points[i_intersection].get_eta(), eta_result(i_intersection),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
 
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        EXPECT_NEAR(intersection_points[i_intersection].GetXi()(i_dir),
+        EXPECT_NEAR(intersection_points[i_intersection].get_xi()(i_dir),
             xi_result(i_dir, i_intersection), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
     }
   }
@@ -362,11 +362,11 @@ namespace
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
-      EXPECT_NEAR(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+      EXPECT_NEAR(intersection_points[i_intersection].get_eta(), eta_result(i_intersection),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
 
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        EXPECT_NEAR(intersection_points[i_intersection].GetXi()(i_dir),
+        EXPECT_NEAR(intersection_points[i_intersection].get_xi()(i_dir),
             xi_result(i_dir, i_intersection), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
     }
   }
@@ -410,11 +410,11 @@ namespace
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
-      EXPECT_NEAR(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+      EXPECT_NEAR(intersection_points[i_intersection].get_eta(), eta_result(i_intersection),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
 
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        EXPECT_NEAR(intersection_points[i_intersection].GetXi()(i_dir),
+        EXPECT_NEAR(intersection_points[i_intersection].get_xi()(i_dir),
             xi_result(i_dir, i_intersection), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
     }
   }
@@ -457,11 +457,11 @@ namespace
 
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
     {
-      EXPECT_NEAR(intersection_points[i_intersection].GetEta(), eta_result(i_intersection),
+      EXPECT_NEAR(intersection_points[i_intersection].get_eta(), eta_result(i_intersection),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
 
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        EXPECT_NEAR(intersection_points[i_intersection].GetXi()(i_dir),
+        EXPECT_NEAR(intersection_points[i_intersection].get_xi()(i_dir),
             xi_result(i_dir, i_intersection), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
     }
   }

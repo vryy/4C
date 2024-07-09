@@ -34,14 +34,14 @@ namespace Core::Geo
 
       void add_element(Element* cut_element);
 
-      bool IsCut(Side* s1, Side* s2)
+      bool is_cut(Side* s1, Side* s2)
       {
         return cut_sides_.count(s1) > 0 and cut_sides_.count(s2) > 0;
       }
 
-      bool IsCut(Element* element) { return cut_elements_.count(element) > 0; }
+      bool is_cut(Element* element) { return cut_elements_.count(element) > 0; }
 
-      bool IsCut(Side* side)
+      bool is_cut(Side* side)
       {
         return cut_sides_.count(side) > 0;
         //     return ( cut_sides_.count( side ) > 0 and
@@ -49,11 +49,11 @@ namespace Core::Geo
         //              EndPoint()->IsCut( side ) );
       }
 
-      bool IsInternalCut(Side* side);
+      bool is_internal_cut(Side* side);
 
-      bool OnEdge(Edge* edge) { return p1_->IsCut(edge) and p2_->IsCut(edge); }
+      bool on_edge(Edge* edge) { return p1_->is_cut(edge) and p2_->is_cut(edge); }
 
-      Point* OtherPoint(Point* point)
+      Point* other_point(Point* point)
       {
         if (p1_ == point)
           return p2_;
@@ -63,13 +63,13 @@ namespace Core::Geo
           FOUR_C_THROW("foreign point provided");
       }
 
-      Point* BeginPoint() { return p1_; }
-      const Point* BeginPoint() const { return p1_; }
+      Point* begin_point() { return p1_; }
+      const Point* begin_point() const { return p1_; }
 
-      Point* EndPoint() { return p2_; }
-      const Point* EndPoint() const { return p2_; }
+      Point* end_point() { return p2_; }
+      const Point* end_point() const { return p2_; }
 
-      bool Between(Point* p1, Point* p2)
+      bool between(Point* p1, Point* p2)
       {
         return ((p1 == p1_ and p2 == p2_) or (p1 == p2_ and p2 == p1_));
       }
@@ -83,11 +83,11 @@ namespace Core::Geo
         std::cout << "\n";
       }
 
-      void Plot(std::ofstream& f) const
+      void plot(std::ofstream& f) const
       {
         f << "# line\n";
-        p1_->Plot(f);
-        p2_->Plot(f);
+        p1_->plot(f);
+        p2_->plot(f);
         f << "\n\n";
       }
 
@@ -99,10 +99,10 @@ namespace Core::Geo
         std::swap(sides, intersection);
       }
 
-      const plain_side_set& CutSides() const { return cut_sides_; }
+      const plain_side_set& cut_sides() const { return cut_sides_; }
 
       /// Replace point p by point p_new in the line
-      void Replace(Point* p, Point* p_new)
+      void replace(Point* p, Point* p_new)
       {
         auto& replace_p = (p == p1_) ? p1_ : p2_;
         replace_p = p_new;

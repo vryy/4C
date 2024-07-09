@@ -24,7 +24,7 @@ using namespace Discret::ELEMENTS::XFLUID;
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void SlaveElementInterface<distype>::DefineStateNames(
+void SlaveElementInterface<distype>::define_state_names(
     Core::FE::CellType slave_distype,  ///< coupling slave discretization type
     std::string& disp_statename,       ///< name of displacement state at current step
     std::string& vel_statename,        ///< name of velocity state at current step
@@ -72,11 +72,11 @@ SlaveElementInterface<distype>::create_slave_element_representation(
   SlaveElementInterface* sla = nullptr;
 
   // get number of dofs for this slave element
-  const unsigned numdofpernode = slave_ele->NumDofPerNode(*slave_ele->Nodes()[0]);
+  const unsigned numdofpernode = slave_ele->num_dof_per_node(*slave_ele->nodes()[0]);
 
   if (numdofpernode == 3)
   {
-    switch (slave_ele->Shape())
+    switch (slave_ele->shape())
     {
         //      case Core::FE::CellType::tri3:
         //      {
@@ -109,14 +109,14 @@ SlaveElementInterface<distype>::create_slave_element_representation(
         break;
       }
       default:
-        FOUR_C_THROW("Unsupported boundary element shape %d", slave_ele->Shape());
+        FOUR_C_THROW("Unsupported boundary element shape %d", slave_ele->shape());
         break;
     }
   }
   else if (numdofpernode ==
            4)  // volumetric coupling partners only required for fluid-fluid coupling
   {
-    switch (slave_ele->Shape())
+    switch (slave_ele->shape())
     {
         //      case Core::FE::CellType::tri3:
         //      {
@@ -167,7 +167,7 @@ SlaveElementInterface<distype>::create_slave_element_representation(
         break;
       }
       default:
-        FOUR_C_THROW("unsupported boundary element shape %d", slave_ele->Shape());
+        FOUR_C_THROW("unsupported boundary element shape %d", slave_ele->shape());
         break;
     }
   }
@@ -201,13 +201,13 @@ NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(Core::Elements::
   NitscheInterface* nit = nullptr;
 
   // get number of dofs for this boundary element
-  const unsigned numdofpernode = bele->NumDofPerNode(*bele->Nodes()[0]);
+  const unsigned numdofpernode = bele->num_dof_per_node(*bele->nodes()[0]);
 
   // three dofs per node, for standard Dirichlet coupling, four dofs per node for background
   // geometry coupling
   if (numdofpernode == 3)
   {
-    switch (bele->Shape())
+    switch (bele->shape())
     {
       //      case Core::FE::CellType::tri3:
       //      {
@@ -238,13 +238,13 @@ NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(Core::Elements::
         break;
       }
       default:
-        FOUR_C_THROW("Unsupported boundary element shape %d", bele->Shape());
+        FOUR_C_THROW("Unsupported boundary element shape %d", bele->shape());
         break;
     }
   }
   else if (numdofpernode == 4)
   {
-    switch (bele->Shape())
+    switch (bele->shape())
     {
       //      case Core::FE::CellType::tri3:
       //      {
@@ -275,7 +275,7 @@ NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(Core::Elements::
         break;
       }
       default:
-        FOUR_C_THROW("Unsupported boundary element shape %d", bele->Shape());
+        FOUR_C_THROW("Unsupported boundary element shape %d", bele->shape());
         break;
     }
   }
@@ -299,13 +299,13 @@ NitscheInterface<distype>::create_nitsche_coupling_x_fluid_sided(Core::Elements:
   NitscheInterface* nit = nullptr;
 
   // get number of dofs for this boundary element
-  const unsigned numdofpernode = bele->NumDofPerNode(*bele->Nodes()[0]);
+  const unsigned numdofpernode = bele->num_dof_per_node(*bele->nodes()[0]);
 
   // three dofs per node, for monolithic XFSI, four dofs per node for background-sided fluid-fluid
   // coupling
   if (numdofpernode == 3)
   {
-    switch (bele->Shape())
+    switch (bele->shape())
     {
         //    case Core::FE::CellType::tri3:
         //    {
@@ -343,13 +343,13 @@ NitscheInterface<distype>::create_nitsche_coupling_x_fluid_sided(Core::Elements:
         break;
       }
       default:
-        FOUR_C_THROW("Unsupported boundary element shape %d", bele->Shape());
+        FOUR_C_THROW("Unsupported boundary element shape %d", bele->shape());
         break;
     }
   }
   else if (numdofpernode == 4)
   {
-    switch (bele->Shape())
+    switch (bele->shape())
     {
       //    case Core::FE::CellType::tri3:
       //    {
@@ -387,7 +387,7 @@ NitscheInterface<distype>::create_nitsche_coupling_x_fluid_sided(Core::Elements:
         break;
       }
       default:
-        FOUR_C_THROW("Unsupported boundary element shape %d", bele->Shape());
+        FOUR_C_THROW("Unsupported boundary element shape %d", bele->shape());
         break;
     }
   }
@@ -411,11 +411,11 @@ NitscheInterface<distype>::create_nitsche_coupling_two_sided(Core::Elements::Ele
   NitscheInterface* nit = nullptr;
 
   // get number of dofs for the embedded element
-  const unsigned numdofpernode = vele->NumDofPerNode(*vele->Nodes()[0]);
+  const unsigned numdofpernode = vele->num_dof_per_node(*vele->nodes()[0]);
 
   if (numdofpernode == 4)
   {
-    switch (vele->Shape())
+    switch (vele->shape())
     {
         //    case Core::FE::CellType::tet4:
         //    {
@@ -453,13 +453,13 @@ NitscheInterface<distype>::create_nitsche_coupling_two_sided(Core::Elements::Ele
         break;
       }
       default:
-        FOUR_C_THROW("Unsupported volume element shape %d.", vele->Shape());
+        FOUR_C_THROW("Unsupported volume element shape %d.", vele->shape());
         break;
     }
   }
   else if (numdofpernode == 3)
   {
-    switch (vele->Shape())
+    switch (vele->shape())
     {
       case Core::FE::CellType::hex8:
       {
@@ -470,7 +470,7 @@ NitscheInterface<distype>::create_nitsche_coupling_two_sided(Core::Elements::Ele
       }
       default:
         // expecting 3 dofs per slave element node as this is fluid-solid coupling
-        FOUR_C_THROW("Unsupported volume element shape %d.", vele->Shape());
+        FOUR_C_THROW("Unsupported volume element shape %d.", vele->shape());
         break;
     }
   }
@@ -506,7 +506,7 @@ HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_wdbc(
 )
 {
   // get number of dofs for this boundary element
-  const unsigned numdofpernode = bele->NumDofPerNode(*bele->Nodes()[0]);
+  const unsigned numdofpernode = bele->num_dof_per_node(*bele->nodes()[0]);
 
   // three dofs per node, for standard Dirichlet coupling, four dofs per node for fluid-fluid
   // coupling
@@ -515,7 +515,7 @@ HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_wdbc(
     FOUR_C_THROW("Unsupported number of %d nodes for standard Dirichlet coupling.", numdofpernode);
   }
 
-  switch (bele->Shape())
+  switch (bele->shape())
   {
       //    case Core::FE::CellType::tri3:
       //    {
@@ -546,7 +546,7 @@ HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_wdbc(
       break;
     }
     default:
-      FOUR_C_THROW("Unsupported boundary element shape %d", bele->Shape());
+      FOUR_C_THROW("Unsupported boundary element shape %d", bele->shape());
       break;
   }
 
@@ -572,13 +572,13 @@ HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_sided(
   HybridLMInterface* hlm = nullptr;
 
   // get number of dofs for this boundary element
-  const unsigned numdofpernode = bele->NumDofPerNode(*bele->Nodes()[0]);
+  const unsigned numdofpernode = bele->num_dof_per_node(*bele->nodes()[0]);
 
   // three dofs per node, for monolithic XFSI, four dofs per node for backgrounds-sided fluid-fluid
   // coupling
   if (numdofpernode == 3)
   {
-    switch (bele->Shape())
+    switch (bele->shape())
     {
         //    case Core::FE::CellType::tri3:
         //    {
@@ -616,13 +616,13 @@ HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_sided(
         break;
       }
       default:
-        FOUR_C_THROW("Unsupported boundary element shape %d", bele->Shape());
+        FOUR_C_THROW("Unsupported boundary element shape %d", bele->shape());
         break;
     }
   }
   else if (numdofpernode == 4)
   {
-    switch (bele->Shape())
+    switch (bele->shape())
     {
         //      case Core::FE::CellType::tri3:
         //      {
@@ -660,7 +660,7 @@ HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_sided(
         break;
       }
       default:
-        FOUR_C_THROW("Unsupported boundary element shape %d", bele->Shape());
+        FOUR_C_THROW("Unsupported boundary element shape %d", bele->shape());
         break;
     }
   }

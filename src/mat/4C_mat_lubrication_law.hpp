@@ -28,7 +28,7 @@ namespace Mat
       explicit LubricationLaw(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// compute current viscosity and save it
-      virtual void ComputeViscosity(
+      virtual void compute_viscosity(
           const double& press,  ///< (i) lubrication pressure at gauss point
           double& viscosity     ///< (o) viscosity at gauss point
           ) = 0;
@@ -54,8 +54,8 @@ namespace Mat
       Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// compute current viscosity and save it
-      void ComputeViscosity(const double& press,  ///< (i) lubrication pressure at gauss point
-          double& viscosity                       ///< (o) viscosity at gauss point
+      void compute_viscosity(const double& press,  ///< (i) lubrication pressure at gauss point
+          double& viscosity                        ///< (o) viscosity at gauss point
           ) override;
 
       //! evaluate constitutive relation for viscosity and compute derivatives
@@ -84,8 +84,8 @@ namespace Mat
 
 
       /// compute current viscosity and save it
-      void ComputeViscosity(const double& press,  ///< (i) lubrication pressure at gauss point
-          double& viscosity                       ///< (o) viscosity at gauss point
+      void compute_viscosity(const double& press,  ///< (i) lubrication pressure at gauss point
+          double& viscosity                        ///< (o) viscosity at gauss point
           ) override;
 
       //! evaluate constitutive relation for viscosity and compute derivatives
@@ -117,8 +117,8 @@ namespace Mat
 
 
       /// compute current viscosity and save it
-      void ComputeViscosity(const double& press,  ///< (i) lubrication pressure at gauss point
-          double& viscosity                       ///< (o) viscosity at gauss point
+      void compute_viscosity(const double& press,  ///< (i) lubrication pressure at gauss point
+          double& viscosity                        ///< (o) viscosity at gauss point
           ) override;
 
       //! evaluate constitutive relation for viscosity and compute derivatives

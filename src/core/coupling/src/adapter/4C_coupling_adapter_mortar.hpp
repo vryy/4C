@@ -136,7 +136,7 @@ feel free to write your own tailored setup() method.
     );
 
     /// create integration cells
-    virtual void EvaluateGeometry(std::vector<Teuchos::RCP<Mortar::IntCell>>&
+    virtual void evaluate_geometry(std::vector<Teuchos::RCP<Mortar::IntCell>>&
             intcells  //!< vector of mortar integration cells
     );
 
@@ -162,31 +162,31 @@ feel free to write your own tailored setup() method.
     );
 
     //! Get the mortar interface itself
-    Teuchos::RCP<Mortar::Interface> Interface() const { return interface_; }
+    Teuchos::RCP<Mortar::Interface> interface() const { return interface_; }
 
     //! Access to slave side mortar matrix \f$D\f$
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMortarMatrixD() const
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_mortar_matrix_d() const
     {
       if (D_ == Teuchos::null) FOUR_C_THROW("D Matrix is null pointer!");
       return D_;
     };
 
     //! Access to inverse of slave side mortar matrix \f$D^{-1}\f$
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMortarMatrixDinv() const
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_mortar_matrix_dinv() const
     {
       if (Dinv_ == Teuchos::null) FOUR_C_THROW("DInv Matrix is null pointer!");
       return Dinv_;
     };
 
     //! Access to master side mortar matrix \f$M\f$
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMortarMatrixM() const
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_mortar_matrix_m() const
     {
       if (M_ == Teuchos::null) FOUR_C_THROW("M Matrix is null pointer!");
       return M_;
     };
 
     //! Access to mortar projection operator \f$P\f$
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMortarMatrixP() const
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_mortar_matrix_p() const
     {
       if (P_ == Teuchos::null) FOUR_C_THROW("P Matrix is null pointer!");
       return P_;
@@ -199,7 +199,7 @@ feel free to write your own tailored setup() method.
      *
      *  \return Slave vector
      */
-    Teuchos::RCP<Epetra_Vector> MasterToSlave(
+    Teuchos::RCP<Epetra_Vector> master_to_slave(
         Teuchos::RCP<Epetra_Vector> mv  ///< [in] master vector (to be transferred)
     ) const override;
 
@@ -207,7 +207,7 @@ feel free to write your own tailored setup() method.
      *
      *  \return Slave vector
      */
-    Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
+    Teuchos::RCP<Epetra_MultiVector> master_to_slave(
         Teuchos::RCP<Epetra_MultiVector> mv  ///< [in] master vector (to be transferred)
     ) const override;
 
@@ -215,7 +215,7 @@ feel free to write your own tailored setup() method.
      *
      *  \return Slave vector
      */
-    Teuchos::RCP<Epetra_Vector> MasterToSlave(
+    Teuchos::RCP<Epetra_Vector> master_to_slave(
         Teuchos::RCP<const Epetra_Vector> mv  ///< [in] master vector (to be transferred)
     ) const override;
 
@@ -223,7 +223,7 @@ feel free to write your own tailored setup() method.
      *
      *  \return Slave vector
      */
-    Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
+    Teuchos::RCP<Epetra_MultiVector> master_to_slave(
         Teuchos::RCP<const Epetra_MultiVector> mv  ///< [in] master vector (to be transferred)
     ) const override;
 
@@ -231,7 +231,7 @@ feel free to write your own tailored setup() method.
      *
      *  \return Master vector
      */
-    Teuchos::RCP<Epetra_Vector> SlaveToMaster(
+    Teuchos::RCP<Epetra_Vector> slave_to_master(
         Teuchos::RCP<Epetra_Vector> sv  ///< [in] slave vector (to be transferred)
     ) const override;
 
@@ -239,7 +239,7 @@ feel free to write your own tailored setup() method.
      *
      *  \return Master vector
      */
-    Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
+    Teuchos::RCP<Epetra_MultiVector> slave_to_master(
         Teuchos::RCP<Epetra_MultiVector> sv  ///< [in] slave vector (to be transferred)
     ) const override;
 
@@ -247,7 +247,7 @@ feel free to write your own tailored setup() method.
      *
      *  \return Master vector
      */
-    Teuchos::RCP<Epetra_Vector> SlaveToMaster(
+    Teuchos::RCP<Epetra_Vector> slave_to_master(
         Teuchos::RCP<const Epetra_Vector> sv  ///< [in] slave vector (to be transferred)
     ) const override;
 
@@ -255,18 +255,18 @@ feel free to write your own tailored setup() method.
      *
      *  \return Master vector
      */
-    Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
+    Teuchos::RCP<Epetra_MultiVector> slave_to_master(
         Teuchos::RCP<const Epetra_MultiVector> sv  ///< [in] slave vector (to be transferred)
     ) const override;
 
     /// transfer a dof vector from master to slave
-    void MasterToSlave(
+    void master_to_slave(
         Teuchos::RCP<const Epetra_MultiVector> mv,  ///< [in] master vector (to be transferred)
         Teuchos::RCP<Epetra_MultiVector> sv         ///< [out] slave vector (containing result)
     ) const override;
 
     /// transfer a dof vector from slave to master
-    void SlaveToMaster(
+    void slave_to_master(
         Teuchos::RCP<const Epetra_MultiVector> sv,  ///< [in] slave vector (to be transferred)
         Teuchos::RCP<Epetra_MultiVector> mv         ///< [out] master vector (containing result)
     ) const override;
@@ -277,10 +277,10 @@ feel free to write your own tailored setup() method.
     //@{
 
     /// Get the interface dof row map of the master side
-    Teuchos::RCP<const Epetra_Map> MasterDofMap() const override { return pmasterdofrowmap_; }
+    Teuchos::RCP<const Epetra_Map> master_dof_map() const override { return pmasterdofrowmap_; }
 
     /// Get the interface dof row map of the slave side
-    Teuchos::RCP<const Epetra_Map> SlaveDofMap() const override { return pslavedofrowmap_; }
+    Teuchos::RCP<const Epetra_Map> slave_dof_map() const override { return pslavedofrowmap_; }
 
     //@}
 
@@ -288,7 +288,7 @@ feel free to write your own tailored setup() method.
     //@{
 
     /// do condensation of Lagrange multiplier and slave-sided dofs
-    void MortarCondensation(
+    void mortar_condensation(
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& k,  ///< in:  tangent matrix w/o condensation
                                                       ///< out: tangent matrix w/  condensation
         Teuchos::RCP<Epetra_Vector>& rhs              ///< in:  rhs vector     w/o condensation
@@ -296,7 +296,7 @@ feel free to write your own tailored setup() method.
     ) const;
 
     /// recover slave-sided dofs
-    void MortarRecover(Teuchos::RCP<Core::LinAlg::SparseMatrix>& k,  ///< in: tangent matrix
+    void mortar_recover(Teuchos::RCP<Core::LinAlg::SparseMatrix>& k,  ///< in: tangent matrix
         Teuchos::RCP<Epetra_Vector>& inc  ///< in:  solution vector     w/o condensation
                                           ///< out: solution vector     w/  condensation
     ) const;

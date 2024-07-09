@@ -62,7 +62,8 @@ namespace Solid
   {
    public:
     //! Provide the name as std::string
-    static std::string MapKindEnumToString(const enum Inpar::Solid::TimAdaKind term  //!< the enum
+    static std::string map_kind_enum_to_string(
+        const enum Inpar::Solid::TimAdaKind term  //!< the enum
     )
     {
       switch (term)
@@ -122,7 +123,7 @@ namespace Solid
     /*! \brief Integrate in time
      * This is the key method here, i.e. the time integration algorithm.
      */
-    int Integrate();
+    int integrate();
 
     /*! Finalize the class initialization
      * Merge() and ResizeMStep() need to be called after(!) both init()
@@ -141,7 +142,7 @@ namespace Solid
     virtual void integrate_step_auxiliar() = 0;
 
     //! Indicate error and determine new step size
-    void Indicate(bool& accepted,  //!< true=accepted, false=not accepted
+    void indicate(bool& accepted,  //!< true=accepted, false=not accepted
         double& stpsiznew          //!< step size prediction for next step or step repetition
     );
 
@@ -202,7 +203,7 @@ namespace Solid
     //@{
 
     //! get the vector of the local discretization error
-    Teuchos::RCP<Epetra_Vector>& LocErrDis() { return locerrdisn_; }
+    Teuchos::RCP<Epetra_Vector>& loc_err_dis() { return locerrdisn_; }
 
     //@}
 
@@ -210,14 +211,14 @@ namespace Solid
     //@{
 
     //! Print error norm string
-    std::string PrintErrNorm() const;
+    std::string print_err_norm() const;
 
     //! Print time adapting constants
-    void PrintConstants(std::ostream& str  //!< output stream
+    void print_constants(std::ostream& str  //!< output stream
     ) const;
 
     //! Print time adapting variables
-    void PrintVariables(std::ostream& str  //!< output stream
+    void print_variables(std::ostream& str  //!< output stream
     ) const;
 
     //! Print time adapting parameters:TimeIntegrator
@@ -228,10 +229,10 @@ namespace Solid
     void size_for_output();
 
     //! Prepare output to file(s)
-    void PrepareOutputPeriod(bool force_prepare);
+    void prepare_output_period(bool force_prepare);
 
     //! Output to file(s)
-    void OutputPeriod();
+    void output_period();
 
     //!  Update output periods
     void update_period();
@@ -240,16 +241,16 @@ namespace Solid
     virtual void set_dt(const double dtnew);
 
     //! Update step size
-    virtual void UpdateStepSize();
+    virtual void update_step_size();
 
     //! Update step size
-    virtual void UpdateStepSize(const double dtnew);
+    virtual void update_step_size(const double dtnew);
 
     //! Access to current time step size
-    virtual double Dt() const { return stepsize_; }
+    virtual double dt() const { return stepsize_; }
 
     //! Access to target time \f$t_{n+1}\f$ of current time step
-    virtual double Time() const { return time_ + stepsize_; }
+    virtual double time() const { return time_ + stepsize_; }
 
     //! Check whether step size output file is attached
     bool attached_file_step_size()
@@ -261,11 +262,11 @@ namespace Solid
     }
 
     //! Attach file handle for step size file #outsizefile_
-    void AttachFileStepSize();
+    void attach_file_step_size();
 
 
     //! Write step size
-    void OutputStepSize();
+    void output_step_size();
 
     //@}
 
@@ -273,10 +274,10 @@ namespace Solid
     //@{
 
     //! Provide the name
-    virtual enum Inpar::Solid::TimAdaKind MethodName() const = 0;
+    virtual enum Inpar::Solid::TimAdaKind method_name() const = 0;
 
     //! Provide the name as std::string
-    std::string MethodTitle() const { return MapKindEnumToString(MethodName()); }
+    std::string method_title() const { return map_kind_enum_to_string(method_name()); }
 
     //! Provide local order of accuracy based upon linear test equation
     //! for displacements
@@ -293,12 +294,12 @@ namespace Solid
     virtual double method_lin_err_coeff_vel() const = 0;
 
     //! Provide type of algorithm
-    virtual enum AdaEnum MethodAdaptDis() const = 0;
+    virtual enum AdaEnum method_adapt_dis() const = 0;
 
     //@}
 
     //! use contact solver or not
-    bool UseContactSolver() { return false; };
+    bool use_contact_solver() { return false; };
 
    protected:
     //! not wanted: copy constructor

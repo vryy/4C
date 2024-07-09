@@ -42,14 +42,14 @@ class MonWriter
   //! destructor
   virtual ~MonWriter() = default;
   //! write something
-  virtual void WriteMonFile(PostProblem& problem, std::string& infieldtype, int node);
+  virtual void write_mon_file(PostProblem& problem, std::string& infieldtype, int node);
 
   //! write something : stress a point
-  void WriteMonStressFile(
+  void write_mon_stress_file(
       PostProblem& problem, std::string& infieldtype, std::string stresstype, int node);
 
   //! write something : strain a point
-  void WriteMonStrainFile(
+  void write_mon_strain_file(
       PostProblem& problem, std::string& infieldtype, std::string straintype, int node);
 
   //! write something : strain a point

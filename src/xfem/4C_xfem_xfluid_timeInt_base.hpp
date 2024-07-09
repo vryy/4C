@@ -217,7 +217,7 @@ namespace XFEM
       /*========================================================================*/
 
       //! std::string representation of the data's state
-      std::string stateToString()
+      std::string state_to_string()
       {
         std::string output;
         switch (state_)
@@ -245,7 +245,7 @@ namespace XFEM
       };
 
       //! std::string representation of the data's type
-      std::string typeToString()
+      std::string type_to_string()
       {
         std::string output;
         switch (type_)
@@ -399,7 +399,7 @@ namespace XFEM
     /*========================================================================*/
 
     //! time-integration for how many nodes called?
-    int numNodes() { return timeIntData_->size(); };
+    int num_nodes() { return timeIntData_->size(); };
 
 
    protected:
@@ -665,7 +665,7 @@ namespace XFEM
     /*========================================================================*/
 
     //! identify an element containing a point and additional data
-    void elementSearch(
+    void element_search(
         Core::Elements::Element*& ele,   ///< pointer to element if point lies in a found element
         Core::LinAlg::Matrix<3, 1>& x,   ///< global coordiantes of point
         Core::LinAlg::Matrix<3, 1>& xi,  ///< determined local coordinates w.r.t ele
@@ -673,30 +673,30 @@ namespace XFEM
     ) const;
 
     //! interpolate velocity and derivatives for a point in an element
-    void getGPValues(Core::Elements::Element* ele,  ///< pointer to element
+    void get_gp_values(Core::Elements::Element* ele,  ///< pointer to element
+        Core::LinAlg::Matrix<3, 1>& xi,               ///< local coordinates of point w.r.t element
+        std::vector<int>& nds,                        ///< nodal dofset of point for elemental nodes
+        XFEM::XFEMDofSet& dofset,                     ///< XFEM dofset
+        Core::LinAlg::Matrix<3, 1>& vel,              ///< determine velocity at point
+        Core::LinAlg::Matrix<3, 3>& vel_deriv,        ///< determine velocity derivatives at point
+        double& pres,                                 ///< pressure
+        Core::LinAlg::Matrix<1, 3>& pres_deriv,       ///< pressure gradient
+        Teuchos::RCP<const Epetra_Vector> vel_vec,    ///< vector used for interpolating at gp
+        bool compute_deriv = true                     ///< shall derivatives be computed?
+    ) const;
+
+    //! interpolate velocity and derivatives for a point in an element
+    template <Core::FE::CellType distype>
+    void get_gp_values_t(Core::Elements::Element* ele,  ///< pointer to element
         Core::LinAlg::Matrix<3, 1>& xi,             ///< local coordinates of point w.r.t element
         std::vector<int>& nds,                      ///< nodal dofset of point for elemental nodes
-        XFEM::XFEMDofSet& dofset,                   ///< XFEM dofset
+        XFEM::XFEMDofSet& dofset,                   ///< xfem dofset
         Core::LinAlg::Matrix<3, 1>& vel,            ///< determine velocity at point
         Core::LinAlg::Matrix<3, 3>& vel_deriv,      ///< determine velocity derivatives at point
         double& pres,                               ///< pressure
         Core::LinAlg::Matrix<1, 3>& pres_deriv,     ///< pressure gradient
         Teuchos::RCP<const Epetra_Vector> vel_vec,  ///< vector used for interpolating at gp
         bool compute_deriv = true                   ///< shall derivatives be computed?
-    ) const;
-
-    //! interpolate velocity and derivatives for a point in an element
-    template <Core::FE::CellType distype>
-    void getGPValuesT(Core::Elements::Element* ele,  ///< pointer to element
-        Core::LinAlg::Matrix<3, 1>& xi,              ///< local coordinates of point w.r.t element
-        std::vector<int>& nds,                       ///< nodal dofset of point for elemental nodes
-        XFEM::XFEMDofSet& dofset,                    ///< xfem dofset
-        Core::LinAlg::Matrix<3, 1>& vel,             ///< determine velocity at point
-        Core::LinAlg::Matrix<3, 3>& vel_deriv,       ///< determine velocity derivatives at point
-        double& pres,                                ///< pressure
-        Core::LinAlg::Matrix<1, 3>& pres_deriv,      ///< pressure gradient
-        Teuchos::RCP<const Epetra_Vector> vel_vec,   ///< vector used for interpolating at gp
-        bool compute_deriv = true                    ///< shall derivatives be computed?
     ) const;
 
     //!  back-tracking of data at final Lagrangian origin of a point                       schott
@@ -738,10 +738,10 @@ namespace XFEM
     /*========================================================================*/
 
     //! export data to startpoint processor when Semi-Lagrange algorithm failed
-    void exportStartData();
+    void export_start_data();
 
     //! export final data to the proc where the according node is
-    void exportFinalData();
+    void export_final_data();
 
 
 

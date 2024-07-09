@@ -40,7 +40,7 @@ namespace
   void CheckTestResults(const T& x, const V& x_ref)
   {
     const double eps = 1e-12;
-    const unsigned int n_dim = x.numRows();
+    const unsigned int n_dim = x.num_rows();
 
     // Check the values of the result as well as the first derivatives
     for (unsigned int i = 0; i < n_dim; i++)

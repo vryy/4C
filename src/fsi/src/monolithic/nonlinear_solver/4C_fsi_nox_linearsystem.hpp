@@ -64,7 +64,7 @@ namespace NOX::FSI
             Teuchos::null);  ///< scaling of the linear system
 
     /// provide storage pattern of tangent matrix, i.e. the operator
-    OperatorType getOperatorType(const Epetra_Operator& Op);
+    OperatorType get_operator_type(const Epetra_Operator& Op);
 
     ///
     void reset(Teuchos::ParameterList& linearSolverParams);

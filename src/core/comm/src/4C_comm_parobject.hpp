@@ -55,7 +55,7 @@ namespace Core::Communication
    Fool::Pack (vector< char > &data) const
    {
    data.resize(0);                       // resize data to zero
-   int tmp = UniqueParObjectId()         // get the unique parobject id
+   int tmp = unique_par_object_id()         // get the unique parobject id
    add_to_pack(data,tmp);                  // pack this id
    add_to_pack(data,i);                    // pack i
    add_to_pack(data,b);                    // pack b
@@ -72,7 +72,7 @@ namespace Core::Communication
    std::vector<char>::size_type position = 0;                      // used to mark current reading
    position in data int tmp; extract_from_pack(position,data,tmp);    // unpack the unique id if
   (tmp
-   != UniqueParObjectId()) FOUR_C_THROW("data does not belong to this class");
+   != unique_par_object_id()) FOUR_C_THROW("data does not belong to this class");
    extract_from_pack(position,data,i);      // extract i
    extract_from_pack(position,data,b);      // extract b
    extract_from_pack(position,data,bla);    // extract bla
@@ -162,13 +162,13 @@ namespace Core::Communication
      * Every class implementing ParObject needs a unique id defined at the top of parobject.H (this
      * file) and should return it in this method.
      */
-    virtual int UniqueParObjectId() const = 0;
+    virtual int unique_par_object_id() const = 0;
 
     /*!
      * \brief Pack this class so it can be communicated
      *
      * Resizes the vector data and stores all information of a class in it. The first information to
-     * be stored in data has to be the unique parobject id delivered by UniqueParObjectId() which
+     * be stored in data has to be the unique parobject id delivered by unique_par_object_id() which
      * will then identify the exact class on the receiving processor.
      *
      * \param[in,out] data char vector to store class information
@@ -180,7 +180,7 @@ namespace Core::Communication
      *
      * The vector data contains all information to rebuild the exact copy of an instance of a class
      * on a different processor. The first entry in data has to be an integer which is the unique
-     * parobject id defined at the top of this file and delivered by UniqueParObjectId().
+     * parobject id defined at the top of this file and delivered by unique_par_object_id().
      *
      * \param[in] data vector storing all data to be unpacked into this instance.
      */

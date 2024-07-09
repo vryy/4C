@@ -95,24 +95,24 @@ namespace Core::Conditions
     /*!
     \brief Return condition id
     */
-    [[nodiscard]] inline int Id() const { return id_; }
+    [[nodiscard]] inline int id() const { return id_; }
 
     /*!
     \brief Return vector of my global node ids
     */
-    [[nodiscard]] const std::vector<int>* GetNodes() const { return &nodes_; }
+    [[nodiscard]] const std::vector<int>* get_nodes() const { return &nodes_; }
 
     /*!
     \brief Set vector of my global node ids
     */
-    void SetNodes(const std::vector<int>& nodes) { nodes_ = nodes; }
+    void set_nodes(const std::vector<int>& nodes) { nodes_ = nodes; }
 
     /*!
       \brief Return if a node gid is contained in this condition
      */
-    [[nodiscard]] bool ContainsNode(int ngid) const
+    [[nodiscard]] bool contains_node(int ngid) const
     {
-      const std::vector<int>* n = GetNodes();
+      const std::vector<int>* n = get_nodes();
       // Core::Conditions::Condition nodes are ordered by design! So we can perform a binary
       // search here.
       return std::binary_search(n->begin(), n->end(), ngid);
@@ -130,7 +130,7 @@ namespace Core::Conditions
     condition the returned flag is true, otherwise its false;
 
     */
-    [[nodiscard]] inline bool GeometryDescription() const { return buildgeometry_; }
+    [[nodiscard]] inline bool geometry_description() const { return buildgeometry_; }
 
     /*!
     \brief Return type of geometry this condition lives on
@@ -139,7 +139,7 @@ namespace Core::Conditions
     geometry description is build for this condition iff GeometryDescription()==true
 
     */
-    [[nodiscard]] inline Core::Conditions::GeometryType GType() const { return gtype_; }
+    [[nodiscard]] inline Core::Conditions::GeometryType g_type() const { return gtype_; }
 
     /*!
     \brief Print this Condition
@@ -149,15 +149,15 @@ namespace Core::Conditions
     /*!
     \brief Return type of condition
     */
-    [[nodiscard]] inline Core::Conditions::ConditionType Type() const { return type_; }
+    [[nodiscard]] inline Core::Conditions::ConditionType type() const { return type_; }
 
     /*!
     \brief Get a reference to the geometry description of the condition
 
     */
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& Geometry() { return *geometry_; }
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geometry() { return *geometry_; }
 
-    [[nodiscard]] const std::map<int, Teuchos::RCP<Core::Elements::Element>>& Geometry() const
+    [[nodiscard]] const std::map<int, Teuchos::RCP<Core::Elements::Element>>& geometry() const
     {
       return *geometry_;
     }
@@ -172,7 +172,7 @@ namespace Core::Conditions
     \brief Adjust IDs of associated elements in order to obtain global
     unique IDs within one condition type
     */
-    void AdjustId(const int shift);
+    void adjust_id(const int shift);
 
     /**
      * Create a copy of this object but do not copy the geometry.

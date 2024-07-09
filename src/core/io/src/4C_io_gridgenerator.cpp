@@ -39,7 +39,7 @@ namespace Core::IO::GridGenerator
   void CreateRectangularCuboidDiscretization(Core::FE::Discretization& dis,
       const Core::IO::GridGenerator::RectangularCuboidInputs& inputData, bool outputFlag)
   {
-    const Epetra_Comm& comm = dis.Comm();
+    const Epetra_Comm& comm = dis.get_comm();
     const int myrank = comm.MyPID();
     const int numproc = comm.NumProc();
 
@@ -175,7 +175,7 @@ namespace Core::IO::GridGenerator
 
       // For the time being we support old and new input facilities. To
       // smooth transition.
-      Input::LineDefinition* linedef = ed.ElementLines(inputData.elementtype_, inputData.distype_);
+      Input::LineDefinition* linedef = ed.element_lines(inputData.elementtype_, inputData.distype_);
       if (linedef == nullptr)
         FOUR_C_THROW("a matching line definition is needed for %s %s",
             inputData.elementtype_.c_str(), inputData.distype_.c_str());
@@ -253,7 +253,7 @@ namespace Core::IO::GridGenerator
     std::tie(elementRowMap, elementColMap) = dis.build_element_row_column(*nodeRowMap, *nodeColMap);
 
     // we can now export elements to resonable row element distribution
-    dis.ExportRowElements(*elementRowMap);
+    dis.export_row_elements(*elementRowMap);
 
     // export to the column map / create ghosting of elements
     dis.export_column_elements(*elementColMap);
@@ -327,9 +327,9 @@ namespace Core::IO::GridGenerator
 
       Teuchos::RCP<Core::Nodes::Node> node =
           Teuchos::rcp(new Core::Nodes::Node(gid, coords, myrank));
-      dis.AddNode(node);
+      dis.add_node(node);
     }
-    dis.ExportColumnNodes(*nodeColMap);
+    dis.export_column_nodes(*nodeColMap);
   }
 
   /*----------------------------------------------------------------------*
@@ -395,8 +395,8 @@ namespace Core::IO::GridGenerator
     // let the factory create a matching empty element
     Teuchos::RCP<Core::Elements::Element> ele =
         Core::Communication::Factory(elementtype, distype, eleid, myrank);
-    ele->SetNodeIds(nodeids.size(), &(nodeids[0]));
-    ele->ReadElement(elementtype, distype, linedef);
+    ele->set_node_ids(nodeids.size(), &(nodeids[0]));
+    ele->read_element(elementtype, distype, linedef);
     return ele;
   }
 
@@ -493,8 +493,8 @@ namespace Core::IO::GridGenerator
     // let the factory create a matching empty element
     Teuchos::RCP<Core::Elements::Element> ele =
         Core::Communication::Factory(elementtype, distype, eleid, myrank);
-    ele->SetNodeIds(nodeids.size(), &(nodeids[0]));
-    ele->ReadElement(elementtype, distype, linedef);
+    ele->set_node_ids(nodeids.size(), &(nodeids[0]));
+    ele->read_element(elementtype, distype, linedef);
     return ele;
   }
 

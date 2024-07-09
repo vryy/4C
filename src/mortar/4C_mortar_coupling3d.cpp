@@ -46,7 +46,7 @@ Mortar::Coupling3d::Coupling3d(Core::FE::Discretization& idiscret, int dim, bool
 /*----------------------------------------------------------------------*
  |  get communicator  (public)                                popp 06/09|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& Mortar::Coupling3d::Comm() const { return idiscret_.Comm(); }
+const Epetra_Comm& Mortar::Coupling3d::get_comm() const { return idiscret_.get_comm(); }
 
 
 /*----------------------------------------------------------------------*
@@ -57,7 +57,7 @@ bool Mortar::Coupling3d::evaluate_coupling()
   // rough check whether element centers are "near"
   // whether or not quadratic 3d coupling is performed, we only
   // check the distance of the parent slave and master elements
-  bool near = RoughCheckCenters();
+  bool near = rough_check_centers();
   if (!near) return false;
 
   // tolerance for polygon clipping
@@ -80,20 +80,20 @@ bool Mortar::Coupling3d::evaluate_coupling()
   project_master();
 
   // tolerance for polygon clipping
-  const double sminedge = SlaveIntElement().MinEdgeSize();
-  const double mminedge = MasterIntElement().MinEdgeSize();
+  const double sminedge = slave_int_element().min_edge_size();
+  const double mminedge = master_int_element().min_edge_size();
   tol = MORTARCLIPTOL * std::min(sminedge, mminedge);
 
   // do polygon clipping
-  bool clip = polygon_clipping_convex_hull(slave_vertices(), master_vertices(), Clip(), tol);
-  int clipsize = (int)(Clip().size());
+  bool do_clip = polygon_clipping_convex_hull(slave_vertices(), master_vertices(), clip(), tol);
+  int clipsize = (int)(clip().size());
 
   // within polygon clipping we may have performed a second rough check
   // if the two elements are really "near" (NOTE: this has only been done
   // if problems occured within polygon clipping, i.e. the projected master
   // element being non-convex. In the standard case, bool clip is simply true)
   // --> this way, robustness of coupling is further increased!
-  if (!clip) return false;
+  if (!do_clip) return false;
 
   // proceed only if clipping polygon is at least a triangle
   if (clipsize < 3) return false;
@@ -114,21 +114,21 @@ bool Mortar::Coupling3d::evaluate_coupling()
 /*----------------------------------------------------------------------*
  |  Rough check if elements are near (with centers)           popp 11/08|
  *----------------------------------------------------------------------*/
-bool Mortar::Coupling3d::RoughCheckCenters()
+bool Mortar::Coupling3d::rough_check_centers()
 {
-  const double sme = SlaveIntElement().MaxEdgeSize();
-  const double mme = MasterIntElement().MaxEdgeSize();
+  const double sme = slave_int_element().max_edge_size();
+  const double mme = master_int_element().max_edge_size();
   const double near = 2.0 * std::max(sme, mme);
 
   double loccs[2] = {0.0, 0.0};
-  Core::FE::CellType dts = SlaveIntElement().Shape();
+  Core::FE::CellType dts = slave_int_element().shape();
   if (dts == Core::FE::CellType::tri3 || dts == Core::FE::CellType::tri6)
   {
     loccs[0] = 1.0 / 3.0;
     loccs[1] = 1.0 / 3.0;
   }
   double loccm[2] = {0.0, 0.0};
-  Core::FE::CellType dtm = MasterIntElement().Shape();
+  Core::FE::CellType dtm = master_int_element().shape();
   if (dtm == Core::FE::CellType::tri3 || dtm == Core::FE::CellType::tri6)
   {
     loccm[0] = 1.0 / 3.0;
@@ -137,8 +137,8 @@ bool Mortar::Coupling3d::RoughCheckCenters()
 
   double sc[3] = {0.0, 0.0, 0.0};
   double mc[3] = {0.0, 0.0, 0.0};
-  SlaveIntElement().LocalToGlobal(loccs, sc, 0);
-  MasterIntElement().LocalToGlobal(loccm, mc, 0);
+  slave_int_element().local_to_global(loccs, sc, 0);
+  master_int_element().local_to_global(loccm, mc, 0);
 
   const double cdist = sqrt((mc[0] - sc[0]) * (mc[0] - sc[0]) + (mc[1] - sc[1]) * (mc[1] - sc[1]) +
                             (mc[2] - sc[2]) * (mc[2] - sc[2]));
@@ -155,14 +155,14 @@ bool Mortar::Coupling3d::RoughCheckCenters()
 bool Mortar::Coupling3d::rough_check_nodes()
 {
   // project master nodes onto auxiliary plane
-  int nnodes = MasterIntElement().num_node();
-  Core::Nodes::Node** mynodes = MasterIntElement().Nodes();
+  int nnodes = master_int_element().num_node();
+  Core::Nodes::Node** mynodes = master_int_element().nodes();
   if (!mynodes) FOUR_C_THROW("rough_check_nodes: Null pointer!");
 
   // prepare check
   bool near = false;
-  const double sme = SlaveIntElement().MaxEdgeSize();
-  const double mme = MasterIntElement().MaxEdgeSize();
+  const double sme = slave_int_element().max_edge_size();
+  const double mme = master_int_element().max_edge_size();
   const double limit = 0.3 * std::max(sme, mme);
 
   for (int i = 0; i < nnodes; ++i)
@@ -172,9 +172,9 @@ bool Mortar::Coupling3d::rough_check_nodes()
 
     // first build difference of point and element center
     // and then dot product with unit normal at center
-    double dist = (mycnode->xspatial()[0] - Auxc()[0]) * Auxn()[0] +
-                  (mycnode->xspatial()[1] - Auxc()[1]) * Auxn()[1] +
-                  (mycnode->xspatial()[2] - Auxc()[2]) * Auxn()[2];
+    double dist = (mycnode->xspatial()[0] - auxc()[0]) * auxn()[0] +
+                  (mycnode->xspatial()[1] - auxc()[1]) * auxn()[1] +
+                  (mycnode->xspatial()[2] - auxc()[2]) * auxn()[2];
 
     // only near if at least one node is "close" to auxiliary plane
     // (signed distance in order to capture intrusion correctly)
@@ -198,7 +198,7 @@ bool Mortar::Coupling3d::rough_check_orient()
   // for tri3, tri6 elements: xi = eta = 1/3
   double loccenter[2] = {0.0, 0.0};
 
-  Core::FE::CellType dt = MasterIntElement().Shape();
+  Core::FE::CellType dt = master_int_element().shape();
   if (dt == Core::FE::CellType::tri3 || dt == Core::FE::CellType::tri6)
   {
     loccenter[0] = 1.0 / 3;
@@ -215,10 +215,10 @@ bool Mortar::Coupling3d::rough_check_orient()
 
   // compute the unit normal vector at the master element center
   double nmc[3] = {0.0, 0.0, 0.0};
-  MasterIntElement().compute_unit_normal_at_xi(loccenter, nmc);
+  master_int_element().compute_unit_normal_at_xi(loccenter, nmc);
 
   // check orientation with respect to slave element
-  double dot = nmc[0] * Auxn()[0] + nmc[1] * Auxn()[1] + nmc[2] * Auxn()[2];
+  double dot = nmc[0] * auxn()[0] + nmc[1] * auxn()[1] + nmc[2] * auxn()[2];
   if (dot < -1.0e-12)
     return true;
   else
@@ -236,7 +236,7 @@ bool Mortar::Coupling3d::auxiliary_plane()
   // for tri3, tri6 elements: xi = eta = 1/3
   double loccenter[2] = {0.0, 0.0};
 
-  Core::FE::CellType dt = SlaveIntElement().Shape();
+  Core::FE::CellType dt = slave_int_element().shape();
   if (dt == Core::FE::CellType::tri3 || dt == Core::FE::CellType::tri6)
   {
     loccenter[0] = 1.0 / 3.0;
@@ -252,10 +252,10 @@ bool Mortar::Coupling3d::auxiliary_plane()
     FOUR_C_THROW("auxiliary_plane called for unknown element type");
 
   // compute element center via shape fct. interpolation
-  SlaveIntElement().LocalToGlobal(loccenter, Auxc(), 0);
+  slave_int_element().local_to_global(loccenter, auxc(), 0);
 
   // we then compute the unit normal vector at the element center
-  Lauxn() = SlaveIntElement().compute_unit_normal_at_xi(loccenter, Auxn());
+  lauxn() = slave_int_element().compute_unit_normal_at_xi(loccenter, auxn());
 
 
   // calculate auxplane with cpp normal!
@@ -298,8 +298,8 @@ bool Mortar::Coupling3d::auxiliary_plane()
 bool Mortar::Coupling3d::project_slave()
 {
   // project slave nodes onto auxiliary plane
-  int nnodes = SlaveIntElement().num_node();
-  Core::Nodes::Node** mynodes = SlaveIntElement().Nodes();
+  int nnodes = slave_int_element().num_node();
+  Core::Nodes::Node** mynodes = slave_int_element().nodes();
   if (!mynodes) FOUR_C_THROW("project_slave: Null pointer!");
 
   // initialize storage for slave coords + their ids
@@ -313,15 +313,15 @@ bool Mortar::Coupling3d::project_slave()
 
     // first build difference of point and element center
     // and then dot product with unit normal at center
-    const double dist = (mycnode->xspatial()[0] - Auxc()[0]) * Auxn()[0] +
-                        (mycnode->xspatial()[1] - Auxc()[1]) * Auxn()[1] +
-                        (mycnode->xspatial()[2] - Auxc()[2]) * Auxn()[2];
+    const double dist = (mycnode->xspatial()[0] - auxc()[0]) * auxn()[0] +
+                        (mycnode->xspatial()[1] - auxc()[1]) * auxn()[1] +
+                        (mycnode->xspatial()[2] - auxc()[2]) * auxn()[2];
 
     // compute projection
-    for (int k = 0; k < 3; ++k) vertices[k] = mycnode->xspatial()[k] - dist * Auxn()[k];
+    for (int k = 0; k < 3; ++k) vertices[k] = mycnode->xspatial()[k] - dist * auxn()[k];
 
     // get node id, too
-    snodeids[0] = mycnode->Id();
+    snodeids[0] = mycnode->id();
 
     // store into vertex data structure
     slave_vertices().push_back(
@@ -343,8 +343,8 @@ bool Mortar::Coupling3d::project_slave()
 bool Mortar::Coupling3d::project_master()
 {
   // project master nodes onto auxiliary plane
-  int nnodes = MasterIntElement().num_node();
-  Core::Nodes::Node** mynodes = MasterIntElement().Nodes();
+  int nnodes = master_int_element().num_node();
+  Core::Nodes::Node** mynodes = master_int_element().nodes();
   if (!mynodes) FOUR_C_THROW("project_master: Null pointer!");
 
   // initialize storage for master coords + their ids
@@ -358,15 +358,15 @@ bool Mortar::Coupling3d::project_master()
 
     // first build difference of point and element center
     // and then dot product with unit normal at center
-    const double dist = (mycnode->xspatial()[0] - Auxc()[0]) * Auxn()[0] +
-                        (mycnode->xspatial()[1] - Auxc()[1]) * Auxn()[1] +
-                        (mycnode->xspatial()[2] - Auxc()[2]) * Auxn()[2];
+    const double dist = (mycnode->xspatial()[0] - auxc()[0]) * auxn()[0] +
+                        (mycnode->xspatial()[1] - auxc()[1]) * auxn()[1] +
+                        (mycnode->xspatial()[2] - auxc()[2]) * auxn()[2];
 
     // compute projection
-    for (int k = 0; k < 3; ++k) vertices[k] = mycnode->xspatial()[k] - dist * Auxn()[k];
+    for (int k = 0; k < 3; ++k) vertices[k] = mycnode->xspatial()[k] - dist * auxn()[k];
 
     // get node id, too
-    mnodeids[0] = mycnode->Id();
+    mnodeids[0] = mycnode->id();
 
     // store into vertex data structure
     master_vertices().push_back(Vertex(
@@ -414,10 +414,10 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
   std::array<double, 3> center2 = {0.0, 0.0, 0.0};
 
   for (int i = 0; i < (int)poly1.size(); ++i)
-    for (int k = 0; k < 3; ++k) center1[k] += poly1[i].Coord()[k] / ((int)poly1.size());
+    for (int k = 0; k < 3; ++k) center1[k] += poly1[i].coord()[k] / ((int)poly1.size());
 
   for (int i = 0; i < (int)poly2.size(); ++i)
-    for (int k = 0; k < 3; ++k) center2[k] += poly2[i].Coord()[k] / ((int)poly2.size());
+    for (int k = 0; k < 3; ++k) center2[k] += poly2[i].coord()[k] / ((int)poly2.size());
 
   if (out)
   {
@@ -433,10 +433,10 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
 
   for (int k = 0; k < 3; ++k)
   {
-    diff1[k] = poly1[0].Coord()[k] - center1[k];
-    edge1[k] = poly1[1].Coord()[k] - poly1[0].Coord()[k];
-    diff2[k] = poly2[0].Coord()[k] - center2[k];
-    edge2[k] = poly2[1].Coord()[k] - poly2[0].Coord()[k];
+    diff1[k] = poly1[0].coord()[k] - center1[k];
+    edge1[k] = poly1[1].coord()[k] - poly1[0].coord()[k];
+    diff2[k] = poly2[0].coord()[k] - center2[k];
+    edge2[k] = poly2[1].coord()[k] - poly2[0].coord()[k];
   }
 
   std::array<double, 3> cross1 = {0.0, 0.0, 0.0};
@@ -451,8 +451,8 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
   cross2[2] = diff2[0] * edge2[1] - diff2[1] * edge2[0];
 
   // check against auxiliary plane normal
-  double check1 = cross1[0] * Auxn()[0] + cross1[1] * Auxn()[1] + cross1[2] * Auxn()[2];
-  double check2 = cross2[0] * Auxn()[0] + cross2[1] * Auxn()[1] + cross2[2] * Auxn()[2];
+  double check1 = cross1[0] * auxn()[0] + cross1[1] * auxn()[1] + cross1[2] * auxn()[2];
+  double check2 = cross2[0] * auxn()[0] + cross2[1] * auxn()[1] + cross2[2] * auxn()[2];
 
   // check polygon 1 and throw FOUR_C_THROW if not c-clockwise
   if (check1 <= 0)
@@ -479,27 +479,27 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
     for (int k = 0; k < 3; ++k)
     {
       if (i != (int)poly1.size() - 1)
-        edge[k] = poly1[i + 1].Coord()[k] - poly1[i].Coord()[k];
+        edge[k] = poly1[i + 1].coord()[k] - poly1[i].coord()[k];
       else
-        edge[k] = poly1[0].Coord()[k] - poly1[i].Coord()[k];
+        edge[k] = poly1[0].coord()[k] - poly1[i].coord()[k];
     }
 
     // edge normal is result of cross product
     std::array<double, 3> n = {0.0, 0.0, 0.0};
-    n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-    n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-    n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+    n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+    n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+    n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
 
     // we need the next edge vector now
     std::array<double, 3> nextedge = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
       if (i < (int)poly1.size() - 2)
-        nextedge[k] = poly1[i + 2].Coord()[k] - poly1[i + 1].Coord()[k];
+        nextedge[k] = poly1[i + 2].coord()[k] - poly1[i + 1].coord()[k];
       else if (i == (int)poly1.size() - 2)
-        nextedge[k] = poly1[0].Coord()[k] - poly1[i + 1].Coord()[k];
+        nextedge[k] = poly1[0].coord()[k] - poly1[i + 1].coord()[k];
       else
-        nextedge[k] = poly1[1].Coord()[k] - poly1[0].Coord()[k];
+        nextedge[k] = poly1[1].coord()[k] - poly1[0].coord()[k];
     }
 
     // check scalar product
@@ -514,27 +514,27 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
     for (int k = 0; k < 3; ++k)
     {
       if (i != (int)poly2.size() - 1)
-        edge[k] = poly2[i + 1].Coord()[k] - poly2[i].Coord()[k];
+        edge[k] = poly2[i + 1].coord()[k] - poly2[i].coord()[k];
       else
-        edge[k] = poly2[0].Coord()[k] - poly2[i].Coord()[k];
+        edge[k] = poly2[0].coord()[k] - poly2[i].coord()[k];
     }
 
     // edge normal is result of cross product
     std::array<double, 3> n = {0.0, 0.0, 0.0};
-    n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-    n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-    n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+    n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+    n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+    n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
 
     // we need the next edge vector now
     std::array<double, 3> nextedge = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
       if (i < (int)poly2.size() - 2)
-        nextedge[k] = poly2[i + 2].Coord()[k] - poly2[i + 1].Coord()[k];
+        nextedge[k] = poly2[i + 2].coord()[k] - poly2[i + 1].coord()[k];
       else if (i == (int)poly2.size() - 2)
-        nextedge[k] = poly2[0].Coord()[k] - poly2[i + 1].Coord()[k];
+        nextedge[k] = poly2[0].coord()[k] - poly2[i + 1].coord()[k];
       else
-        nextedge[k] = poly2[1].Coord()[k] - poly2[0].Coord()[k];
+        nextedge[k] = poly2[1].coord()[k] - poly2[0].coord()[k];
     }
 
     // check scalar product
@@ -547,13 +547,13 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
   {
     std::cout << "\nInput Poylgon 1:";
     for (int i = 0; i < (int)poly1.size(); ++i)
-      std::cout << "\nVertex " << i << ":\t" << std::scientific << poly1[i].Coord()[0] << "\t"
-                << poly1[i].Coord()[1] << "\t" << poly1[i].Coord()[2];
+      std::cout << "\nVertex " << i << ":\t" << std::scientific << poly1[i].coord()[0] << "\t"
+                << poly1[i].coord()[1] << "\t" << poly1[i].coord()[2];
 
     std::cout << "\nInput Poylgon 2:";
     for (int i = 0; i < (int)poly2.size(); ++i)
-      std::cout << "\nVertex " << i << ":\t" << std::scientific << poly2[i].Coord()[0] << "\t"
-                << poly2[i].Coord()[1] << "\t" << poly2[i].Coord()[2];
+      std::cout << "\nVertex " << i << ":\t" << std::scientific << poly2[i].coord()[0] << "\t"
+                << poly2[i].coord()[1] << "\t" << poly2[i].coord()[2];
 
     std::cout << std::endl << std::endl;
   }
@@ -570,20 +570,20 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
     // standard case
     if (i != 0 && i != (int)poly1.size() - 1)
     {
-      poly1[i].AssignNext(&poly1[i + 1]);
-      poly1[i].AssignPrev(&poly1[i - 1]);
+      poly1[i].assign_next(&poly1[i + 1]);
+      poly1[i].assign_prev(&poly1[i - 1]);
     }
     // first element in list
     else if (i == 0)
     {
-      poly1[i].AssignNext(&poly1[i + 1]);
-      poly1[i].AssignPrev(&poly1[(int)poly1.size() - 1]);
+      poly1[i].assign_next(&poly1[i + 1]);
+      poly1[i].assign_prev(&poly1[(int)poly1.size() - 1]);
     }
     // last element in list
     else
     {
-      poly1[i].AssignNext(&poly1[0]);
-      poly1[i].AssignPrev(&poly1[i - 1]);
+      poly1[i].assign_next(&poly1[0]);
+      poly1[i].assign_prev(&poly1[i - 1]);
     }
   }
   for (int i = 0; i < (int)poly2.size(); ++i)
@@ -591,20 +591,20 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
     // standard case
     if (i != 0 && i != (int)poly2.size() - 1)
     {
-      poly2[i].AssignNext(&poly2[i + 1]);
-      poly2[i].AssignPrev(&poly2[i - 1]);
+      poly2[i].assign_next(&poly2[i + 1]);
+      poly2[i].assign_prev(&poly2[i - 1]);
     }
     // first element in list
     else if (i == 0)
     {
-      poly2[i].AssignNext(&poly2[i + 1]);
-      poly2[i].AssignPrev(&poly2[(int)poly2.size() - 1]);
+      poly2[i].assign_next(&poly2[i + 1]);
+      poly2[i].assign_prev(&poly2[(int)poly2.size() - 1]);
     }
     // last element in list
     else
     {
-      poly2[i].AssignNext(&poly2[0]);
-      poly2[i].AssignPrev(&poly2[i - 1]);
+      poly2[i].assign_next(&poly2[0]);
+      poly2[i].assign_prev(&poly2[i - 1]);
     }
   }
 
@@ -622,8 +622,8 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       std::array<double, 3> edge2 = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
-        diff1[k] = poly1[i].Coord()[k] - poly2[j].Coord()[k];
-        edge2[k] = (poly2[j].Next())->Coord()[k] - poly2[j].Coord()[k];
+        diff1[k] = poly1[i].coord()[k] - poly2[j].coord()[k];
+        edge2[k] = (poly2[j].next())->coord()[k] - poly2[j].coord()[k];
       }
 
       // check if point of poly1 lies within [0,1] for edge2
@@ -635,9 +635,9 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
 
       // compute distance from point on poly1 to edge2
       std::array<double, 3> n2 = {0.0, 0.0, 0.0};
-      n2[0] = edge2[1] * Auxn()[2] - edge2[2] * Auxn()[1];
-      n2[1] = edge2[2] * Auxn()[0] - edge2[0] * Auxn()[2];
-      n2[2] = edge2[0] * Auxn()[1] - edge2[1] * Auxn()[0];
+      n2[0] = edge2[1] * auxn()[2] - edge2[2] * auxn()[1];
+      n2[1] = edge2[2] * auxn()[0] - edge2[0] * auxn()[2];
+      n2[2] = edge2[0] * auxn()[1] - edge2[1] * auxn()[0];
       double ln = sqrt(n2[0] * n2[0] + n2[1] * n2[1] + n2[2] * n2[2]);
       for (int k = 0; k < 3; ++k) n2[k] /= ln;
 
@@ -648,17 +648,17 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       {
         // std::cout << "Vertex " << i << " on poly1 is very close to edge " << j << " of poly2 ->
         // moved inside!" << std::endl;
-        poly1[i].Coord()[0] -= tol * n2[0];
-        poly1[i].Coord()[1] -= tol * n2[1];
-        poly1[i].Coord()[2] -= tol * n2[2];
+        poly1[i].coord()[0] -= tol * n2[0];
+        poly1[i].coord()[1] -= tol * n2[1];
+        poly1[i].coord()[2] -= tol * n2[2];
       }
       else if (dist < tol && dist >= 0)
       {
         // std::cout << "Vertex " << i << " on poly1 is very close to edge " << j << " of poly2 ->
         // moved outside!" << std::endl;
-        poly1[i].Coord()[0] += tol * n2[0];
-        poly1[i].Coord()[1] += tol * n2[1];
-        poly1[i].Coord()[2] += tol * n2[2];
+        poly1[i].coord()[0] += tol * n2[0];
+        poly1[i].coord()[1] += tol * n2[1];
+        poly1[i].coord()[2] += tol * n2[2];
       }
       else
       {
@@ -676,8 +676,8 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       std::array<double, 3> edge1 = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
-        diff2[k] = poly2[i].Coord()[k] - poly1[j].Coord()[k];
-        edge1[k] = (poly1[j].Next())->Coord()[k] - poly1[j].Coord()[k];
+        diff2[k] = poly2[i].coord()[k] - poly1[j].coord()[k];
+        edge1[k] = (poly1[j].next())->coord()[k] - poly1[j].coord()[k];
       }
 
       // check if point of poly2 lies within [0,1] for edge1
@@ -689,9 +689,9 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
 
       // compute distance from point on poly2 to edge1
       std::array<double, 3> n1 = {0.0, 0.0, 0.0};
-      n1[0] = edge1[1] * Auxn()[2] - edge1[2] * Auxn()[1];
-      n1[1] = edge1[2] * Auxn()[0] - edge1[0] * Auxn()[2];
-      n1[2] = edge1[0] * Auxn()[1] - edge1[1] * Auxn()[0];
+      n1[0] = edge1[1] * auxn()[2] - edge1[2] * auxn()[1];
+      n1[1] = edge1[2] * auxn()[0] - edge1[0] * auxn()[2];
+      n1[2] = edge1[0] * auxn()[1] - edge1[1] * auxn()[0];
       double ln = sqrt(n1[0] * n1[0] + n1[1] * n1[1] + n1[2] * n1[2]);
       for (int k = 0; k < 3; ++k) n1[k] /= ln;
 
@@ -702,17 +702,17 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       {
         // std::cout << "Vertex " << i << " on poly2 is very close to edge " << j << " of poly1 ->
         // moved inside!" << std::endl;
-        poly2[i].Coord()[0] -= tol * n1[0];
-        poly2[i].Coord()[1] -= tol * n1[1];
-        poly2[i].Coord()[2] -= tol * n1[2];
+        poly2[i].coord()[0] -= tol * n1[0];
+        poly2[i].coord()[1] -= tol * n1[1];
+        poly2[i].coord()[2] -= tol * n1[2];
       }
       else if (dist < tol && dist >= 0)
       {
         // std::cout << "Vertex " << i << " on poly2 is very close to edge " << j << " of poly1 ->
         // moved outside!" << std::endl;
-        poly2[i].Coord()[0] += tol * n1[0];
-        poly2[i].Coord()[1] += tol * n1[1];
-        poly2[i].Coord()[2] += tol * n1[2];
+        poly2[i].coord()[0] += tol * n1[0];
+        poly2[i].coord()[1] += tol * n1[1];
+        poly2[i].coord()[2] += tol * n1[2];
       }
       else
       {
@@ -739,19 +739,19 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       std::array<double, 3> edge2 = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
-        edge1[k] = (poly1[i].Next())->Coord()[k] - poly1[i].Coord()[k];
-        edge2[k] = (poly2[j].Next())->Coord()[k] - poly2[j].Coord()[k];
+        edge1[k] = (poly1[i].next())->coord()[k] - poly1[i].coord()[k];
+        edge2[k] = (poly2[j].next())->coord()[k] - poly2[j].coord()[k];
       }
 
       // outward edge normals of polygon 1 and 2 edges
       std::array<double, 3> n1 = {0.0, 0.0, 0.0};
       std::array<double, 3> n2 = {0.0, 0.0, 0.0};
-      n1[0] = edge1[1] * Auxn()[2] - edge1[2] * Auxn()[1];
-      n1[1] = edge1[2] * Auxn()[0] - edge1[0] * Auxn()[2];
-      n1[2] = edge1[0] * Auxn()[1] - edge1[1] * Auxn()[0];
-      n2[0] = edge2[1] * Auxn()[2] - edge2[2] * Auxn()[1];
-      n2[1] = edge2[2] * Auxn()[0] - edge2[0] * Auxn()[2];
-      n2[2] = edge2[0] * Auxn()[1] - edge2[1] * Auxn()[0];
+      n1[0] = edge1[1] * auxn()[2] - edge1[2] * auxn()[1];
+      n1[1] = edge1[2] * auxn()[0] - edge1[0] * auxn()[2];
+      n1[2] = edge1[0] * auxn()[1] - edge1[1] * auxn()[0];
+      n2[0] = edge2[1] * auxn()[2] - edge2[2] * auxn()[1];
+      n2[1] = edge2[2] * auxn()[0] - edge2[0] * auxn()[2];
+      n2[2] = edge2[0] * auxn()[1] - edge2[1] * auxn()[0];
 
       // check for parallelity of edges
       double parallel = edge1[0] * n2[0] + edge1[1] * n2[1] + edge1[2] * n2[2];
@@ -770,8 +770,8 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       double wec_p2 = 0.0;
       for (int k = 0; k < 3; ++k)
       {
-        wec_p1 += (poly1[i].Coord()[k] - poly2[j].Coord()[k]) * n2[k];
-        wec_p2 += ((poly1[i].Next())->Coord()[k] - poly2[j].Coord()[k]) * n2[k];
+        wec_p1 += (poly1[i].coord()[k] - poly2[j].coord()[k]) * n2[k];
+        wec_p2 += ((poly1[i].next())->coord()[k] - poly2[j].coord()[k]) * n2[k];
       }
 
       if (wec_p1 * wec_p2 <= 0)
@@ -780,8 +780,8 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
         double wec_q2 = 0.0;
         for (int k = 0; k < 3; ++k)
         {
-          wec_q1 += (poly2[j].Coord()[k] - poly1[i].Coord()[k]) * n1[k];
-          wec_q2 += ((poly2[j].Next())->Coord()[k] - poly1[i].Coord()[k]) * n1[k];
+          wec_q1 += (poly2[j].coord()[k] - poly1[i].coord()[k]) * n1[k];
+          wec_q2 += ((poly2[j].next())->coord()[k] - poly1[i].coord()[k]) * n1[k];
         }
 
         if (wec_q1 * wec_q2 <= 0)
@@ -792,8 +792,8 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
           std::vector<double> iq(3);
           for (int k = 0; k < 3; ++k)
           {
-            ip[k] = (1 - alphap) * poly1[i].Coord()[k] + alphap * (poly1[i].Next())->Coord()[k];
-            iq[k] = (1 - alphaq) * poly2[j].Coord()[k] + alphaq * (poly2[j].Next())->Coord()[k];
+            ip[k] = (1 - alphap) * poly1[i].coord()[k] + alphap * (poly1[i].next())->coord()[k];
+            iq[k] = (1 - alphaq) * poly2[j].coord()[k] + alphaq * (poly2[j].next())->coord()[k];
             if (abs(ip[k]) < 1.0e-12) ip[k] = 0.0;
             if (abs(iq[k]) < 1.0e-12) iq[k] = 0.0;
           }
@@ -808,15 +808,15 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
 
           // generate vectors of underlying node ids for lineclip (2x slave, 2x master)
           std::vector<int> lcids(4);
-          lcids[0] = (int)(poly1[i].Nodeids()[0]);
-          lcids[1] = (int)((poly1[i].Next())->Nodeids()[0]);
-          lcids[2] = (int)(poly2[j].Nodeids()[0]);
-          lcids[3] = (int)((poly2[j].Next())->Nodeids()[0]);
+          lcids[0] = (int)(poly1[i].nodeids()[0]);
+          lcids[1] = (int)((poly1[i].next())->nodeids()[0]);
+          lcids[2] = (int)(poly2[j].nodeids()[0]);
+          lcids[3] = (int)((poly2[j].next())->nodeids()[0]);
 
           // store intersection points
-          intersec1.push_back(Vertex(ip, Vertex::lineclip, lcids, poly1[i].Next(), &poly1[i], true,
+          intersec1.push_back(Vertex(ip, Vertex::lineclip, lcids, poly1[i].next(), &poly1[i], true,
               false, nullptr, alphap));
-          intersec2.push_back(Vertex(iq, Vertex::lineclip, lcids, poly2[j].Next(), &poly2[j], true,
+          intersec2.push_back(Vertex(iq, Vertex::lineclip, lcids, poly2[j].next(), &poly2[j], true,
               false, nullptr, alphaq));
         }
       }
@@ -895,14 +895,14 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
 
       for (int k = 0; k < 3; ++k)
       {
-        edge[k] = (poly2[i].Next())->Coord()[k] - poly2[i].Coord()[k];
-        diff[k] = poly1[0].Coord()[k] - poly2[i].Coord()[k];
+        edge[k] = (poly2[i].next())->coord()[k] - poly2[i].coord()[k];
+        diff[k] = poly1[0].coord()[k] - poly2[i].coord()[k];
       }
 
       std::array<double, 3> n = {0.0, 0.0, 0.0};
-      n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-      n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-      n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+      n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+      n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+      n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
 
       double check = diff[0] * n[0] + diff[1] * n[1] + diff[2] * n[2];
 
@@ -930,14 +930,14 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
 
         for (int k = 0; k < 3; ++k)
         {
-          edge[k] = (poly1[i].Next())->Coord()[k] - poly1[i].Coord()[k];
-          diff[k] = poly2[0].Coord()[k] - poly1[i].Coord()[k];
+          edge[k] = (poly1[i].next())->coord()[k] - poly1[i].coord()[k];
+          diff[k] = poly2[0].coord()[k] - poly1[i].coord()[k];
         }
 
         std::array<double, 3> n = {0.0, 0.0, 0.0};
-        n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-        n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-        n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+        n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+        n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+        n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
 
         double check = diff[0] * n[0] + diff[1] * n[1] + diff[2] * n[2];
 
@@ -986,8 +986,8 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
   else
   {
     // assign neighbor intersection nodes on the respective other polygon
-    for (int i = 0; i < (int)intersec1.size(); ++i) intersec1[i].AssignNeighbor(&intersec2[i]);
-    for (int i = 0; i < (int)intersec2.size(); ++i) intersec2[i].AssignNeighbor(&intersec1[i]);
+    for (int i = 0; i < (int)intersec1.size(); ++i) intersec1[i].assign_neighbor(&intersec2[i]);
+    for (int i = 0; i < (int)intersec2.size(); ++i) intersec2[i].assign_neighbor(&intersec1[i]);
 
     // check all edges for double intersections
     for (int i = 0; i < (int)poly1.size(); ++i)
@@ -995,7 +995,7 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       std::vector<Vertex*> dis;
       for (int z = 0; z < (int)intersec1.size(); ++z)
       {
-        if (intersec1[z].Next() == poly1[i].Next() && intersec1[z].Prev() == &poly1[i])
+        if (intersec1[z].next() == poly1[i].next() && intersec1[z].prev() == &poly1[i])
         {
           dis.push_back(&intersec1[z]);
         }
@@ -1004,14 +1004,14 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       if ((int)dis.size() < 2) continue;
       if ((int)dis.size() > 2) FOUR_C_THROW("More than 2 intersections on 1 edge impossible!");
 
-      double alpha1 = dis[0]->Alpha();
-      double alpha2 = dis[1]->Alpha();
+      double alpha1 = dis[0]->alpha();
+      double alpha2 = dis[1]->alpha();
 
       if (alpha1 < alpha2)
       {
         // ordering is poly1[i] -> dis[0] -> dis[1] -> poly1[i].Next()
-        dis[0]->AssignNext(dis[1]);
-        dis[1]->AssignPrev(dis[0]);
+        dis[0]->assign_next(dis[1]);
+        dis[1]->assign_prev(dis[0]);
       }
       else if (alpha1 == alpha2)
       {
@@ -1020,8 +1020,8 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       else
       {
         // ordering is poly1[i] -> dis[1] -> dis[0] -> poly1[i].Next()
-        dis[1]->AssignNext(dis[0]);
-        dis[0]->AssignPrev(dis[1]);
+        dis[1]->assign_next(dis[0]);
+        dis[0]->assign_prev(dis[1]);
       }
     }
 
@@ -1030,7 +1030,7 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       std::vector<Vertex*> dis;
       for (int z = 0; z < (int)intersec2.size(); ++z)
       {
-        if (intersec2[z].Next() == poly2[i].Next() && intersec2[z].Prev() == &poly2[i])
+        if (intersec2[z].next() == poly2[i].next() && intersec2[z].prev() == &poly2[i])
         {
           dis.push_back(&intersec2[z]);
         }
@@ -1039,14 +1039,14 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       if ((int)dis.size() < 2) continue;
       if ((int)dis.size() > 2) FOUR_C_THROW("More than 2 intersections on 1 edge impossible!");
 
-      double alpha1 = dis[0]->Alpha();
-      double alpha2 = dis[1]->Alpha();
+      double alpha1 = dis[0]->alpha();
+      double alpha2 = dis[1]->alpha();
 
       if (alpha1 < alpha2)
       {
         // ordering is poly2[i] -> dis[0] -> dis[1] -> poly2[i].Next()
-        dis[0]->AssignNext(dis[1]);
-        dis[1]->AssignPrev(dis[0]);
+        dis[0]->assign_next(dis[1]);
+        dis[1]->assign_prev(dis[0]);
       }
       else if (alpha1 == alpha2)
       {
@@ -1055,21 +1055,21 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       else
       {
         // ordering is poly2[i] -> dis[1] -> dis[0] -> poly2[i].Next()
-        dis[1]->AssignNext(dis[0]);
-        dis[0]->AssignPrev(dis[1]);
+        dis[1]->assign_next(dis[0]);
+        dis[0]->assign_prev(dis[1]);
       }
     }
 
     // assign new next / previous nodes for vertices near intersections
     for (int i = 0; i < (int)intersec1.size(); ++i)
     {
-      (intersec1[i].Prev())->AssignNext(&intersec1[i]);
-      (intersec1[i].Next())->AssignPrev(&intersec1[i]);
+      (intersec1[i].prev())->assign_next(&intersec1[i]);
+      (intersec1[i].next())->assign_prev(&intersec1[i]);
     }
     for (int i = 0; i < (int)intersec2.size(); ++i)
     {
-      (intersec2[i].Prev())->AssignNext(&intersec2[i]);
-      (intersec2[i].Next())->AssignPrev(&intersec2[i]);
+      (intersec2[i].prev())->assign_next(&intersec2[i]);
+      (intersec2[i].next())->assign_prev(&intersec2[i]);
     }
 
     // perform entry / exit classification of intersections
@@ -1084,17 +1084,17 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       std::array<double, 3> edge2 = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
-        edge1[k] = (intersec1[i].Next())->Coord()[k] - (intersec1[i].Prev())->Coord()[k];
-        edge2[k] = ((intersec1[i].Neighbor())->Next())->Coord()[k] -
-                   ((intersec1[i].Neighbor())->Prev())->Coord()[k];
+        edge1[k] = (intersec1[i].next())->coord()[k] - (intersec1[i].prev())->coord()[k];
+        edge2[k] = ((intersec1[i].neighbor())->next())->coord()[k] -
+                   ((intersec1[i].neighbor())->prev())->coord()[k];
       }
       std::array<double, 3> n2 = {0.0, 0.0, 0.0};
-      n2[0] = edge2[1] * Auxn()[2] - edge2[2] * Auxn()[1];
-      n2[1] = edge2[2] * Auxn()[0] - edge2[0] * Auxn()[2];
-      n2[2] = edge2[0] * Auxn()[1] - edge2[1] * Auxn()[0];
+      n2[0] = edge2[1] * auxn()[2] - edge2[2] * auxn()[1];
+      n2[1] = edge2[2] * auxn()[0] - edge2[0] * auxn()[2];
+      n2[2] = edge2[0] * auxn()[1] - edge2[1] * auxn()[0];
 
       double check = edge1[0] * n2[0] + edge1[1] * n2[1] + edge1[2] * n2[2];
-      if (check < 0) intersec1[i].EntryExit() = true;
+      if (check < 0) intersec1[i].entry_exit() = true;
     }
 
     for (int i = 0; i < (int)intersec1.size(); ++i)
@@ -1104,17 +1104,17 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       std::array<double, 3> edge2 = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
-        edge1[k] = (intersec2[i].Next())->Coord()[k] - (intersec2[i].Prev())->Coord()[k];
-        edge2[k] = ((intersec2[i].Neighbor())->Next())->Coord()[k] -
-                   ((intersec2[i].Neighbor())->Prev())->Coord()[k];
+        edge1[k] = (intersec2[i].next())->coord()[k] - (intersec2[i].prev())->coord()[k];
+        edge2[k] = ((intersec2[i].neighbor())->next())->coord()[k] -
+                   ((intersec2[i].neighbor())->prev())->coord()[k];
       }
       std::array<double, 3> n2 = {0.0, 0.0, 0.0};
-      n2[0] = edge2[1] * Auxn()[2] - edge2[2] * Auxn()[1];
-      n2[1] = edge2[2] * Auxn()[0] - edge2[0] * Auxn()[2];
-      n2[2] = edge2[0] * Auxn()[1] - edge2[1] * Auxn()[0];
+      n2[0] = edge2[1] * auxn()[2] - edge2[2] * auxn()[1];
+      n2[1] = edge2[2] * auxn()[0] - edge2[0] * auxn()[2];
+      n2[2] = edge2[0] * auxn()[1] - edge2[1] * auxn()[0];
 
       double check = edge1[0] * n2[0] + edge1[1] * n2[1] + edge1[2] * n2[2];
-      if (check < 0) intersec2[i].EntryExit() = true;
+      if (check < 0) intersec2[i].entry_exit() = true;
     }
 
     // print intersection points and their status
@@ -1122,17 +1122,17 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
     {
       for (int i = 0; i < (int)intersec1.size(); ++i)
       {
-        std::cout << "Intersec1: " << i << " " << intersec1[i].Coord()[0] << " "
-                  << intersec1[i].Coord()[1] << " " << intersec1[i].Coord()[2];
-        std::cout << " EntryExit: " << intersec1[i].EntryExit() << std::endl;
+        std::cout << "Intersec1: " << i << " " << intersec1[i].coord()[0] << " "
+                  << intersec1[i].coord()[1] << " " << intersec1[i].coord()[2];
+        std::cout << " EntryExit: " << intersec1[i].entry_exit() << std::endl;
       }
 
       // std::cout << std::endl;
       for (int i = 0; i < (int)intersec2.size(); ++i)
       {
-        std::cout << "Intersec2: " << i << " " << intersec2[i].Coord()[0] << " "
-                  << intersec2[i].Coord()[1] << " " << intersec2[i].Coord()[2];
-        std::cout << " EntryExit: " << intersec2[i].EntryExit() << std::endl;
+        std::cout << "Intersec2: " << i << " " << intersec2[i].coord()[0] << " "
+                  << intersec2[i].coord()[1] << " " << intersec2[i].coord()[2];
+        std::cout << " EntryExit: " << intersec2[i].entry_exit() << std::endl;
       }
     }
 
@@ -1147,30 +1147,30 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
 
     // push_back start Vertex coords into result polygon
     if (out)
-      std::cout << "\nStart loop on Slave at " << current->Coord()[0] << " " << current->Coord()[1]
-                << " " << current->Coord()[2] << std::endl;
-    respoly.push_back(Vertex(current->Coord(), Vertex::lineclip, current->Nodeids(), nullptr,
+      std::cout << "\nStart loop on Slave at " << current->coord()[0] << " " << current->coord()[1]
+                << " " << current->coord()[2] << std::endl;
+    respoly.push_back(Vertex(current->coord(), Vertex::lineclip, current->nodeids(), nullptr,
         nullptr, false, false, nullptr, -1.0));
 
     do
     {
       // find next Vertex / Vertices (path)
-      if (current->EntryExit() == true)
+      if (current->entry_exit() == true)
       {
         if (out)
           std::cout << "intersection was Entry, so move to Next() on same polygon!" << std::endl;
         do
         {
-          current = current->Next();
+          current = current->next();
           if (out)
-            std::cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1]
-                      << " " << current->Coord()[2] << std::endl;
-          respoly.push_back(Vertex(current->Coord(), current->v_type(), current->Nodeids(), nullptr,
+            std::cout << "Current vertex is " << current->coord()[0] << " " << current->coord()[1]
+                      << " " << current->coord()[2] << std::endl;
+          respoly.push_back(Vertex(current->coord(), current->v_type(), current->nodeids(), nullptr,
               nullptr, false, false, nullptr, -1.0));
-        } while (current->Intersect() == false);
+        } while (current->intersect() == false);
         if (out)
-          std::cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1]
-                    << " " << current->Coord()[2] << std::endl;
+          std::cout << "Found intersection: " << current->coord()[0] << " " << current->coord()[1]
+                    << " " << current->coord()[2] << std::endl;
       }
       else
       {
@@ -1178,23 +1178,23 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
           std::cout << "intersection was Exit, so move to Prev() on same polygon!" << std::endl;
         do
         {
-          current = current->Prev();
+          current = current->prev();
           if (out)
-            std::cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1]
-                      << " " << current->Coord()[2] << std::endl;
-          respoly.push_back(Vertex(current->Coord(), current->v_type(), current->Nodeids(), nullptr,
+            std::cout << "Current vertex is " << current->coord()[0] << " " << current->coord()[1]
+                      << " " << current->coord()[2] << std::endl;
+          respoly.push_back(Vertex(current->coord(), current->v_type(), current->nodeids(), nullptr,
               nullptr, false, false, nullptr, -1.0));
-        } while (current->Intersect() == false);
+        } while (current->intersect() == false);
         if (out)
-          std::cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1]
-                    << " " << current->Coord()[2] << std::endl;
+          std::cout << "Found intersection: " << current->coord()[0] << " " << current->coord()[1]
+                    << " " << current->coord()[2] << std::endl;
       }
 
       // jump to the other input polygon
-      current = current->Neighbor();
+      current = current->neighbor();
       if (out)
-        std::cout << "Jumping to other polygon at intersection: " << current->Coord()[0] << " "
-                  << current->Coord()[1] << " " << current->Coord()[2] << std::endl;
+        std::cout << "Jumping to other polygon at intersection: " << current->coord()[0] << " "
+                  << current->coord()[1] << " " << current->coord()[2] << std::endl;
       if (out) std::cout << "Length of result list so far: " << (int)respoly.size() << std::endl;
 
       // check length of result polygon list
@@ -1212,9 +1212,9 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
     double fldist2 = 0.0;
     for (int k = 0; k < 3; ++k)
     {
-      fldiff[k] = respoly[(int)respoly.size() - 1].Coord()[k] - intersec1[0].Coord()[k];
+      fldiff[k] = respoly[(int)respoly.size() - 1].coord()[k] - intersec1[0].coord()[k];
       fldist += fldiff[k] * fldiff[k];
-      fldiff2[k] = respoly[(int)respoly.size() - 1].Coord()[k] - intersec2[0].Coord()[k];
+      fldiff2[k] = respoly[(int)respoly.size() - 1].coord()[k] - intersec2[0].coord()[k];
       fldist2 += fldiff2[k] * fldiff2[k];
     }
     fldist = sqrt(fldist);
@@ -1243,8 +1243,8 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
         std::array<double, 3> diff = {0.0, 0.0, 0.0};
         std::array<double, 3> diff2 = {0.0, 0.0, 0.0};
 
-        for (int k = 0; k < 3; ++k) diff[k] = respoly[i].Coord()[k] - respoly[i - 1].Coord()[k];
-        for (int k = 0; k < 3; ++k) diff2[k] = respoly[0].Coord()[k] - respoly[i].Coord()[k];
+        for (int k = 0; k < 3; ++k) diff[k] = respoly[i].coord()[k] - respoly[i - 1].coord()[k];
+        for (int k = 0; k < 3; ++k) diff2[k] = respoly[0].coord()[k] - respoly[i].coord()[k];
 
         double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
         double dist2 = sqrt(diff2[0] * diff2[0] + diff2[1] * diff2[1] + diff2[2] * diff2[2]);
@@ -1260,7 +1260,7 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       else
       {
         std::array<double, 3> diff = {0.0, 0.0, 0.0};
-        for (int k = 0; k < 3; ++k) diff[k] = respoly[i].Coord()[k] - respoly[i - 1].Coord()[k];
+        for (int k = 0; k < 3; ++k) diff[k] = respoly[i].coord()[k] - respoly[i - 1].coord()[k];
 
         double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
         double tolcollapse = 1.0e6 * tol;
@@ -1290,7 +1290,7 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
     std::array<double, 3> center = {0.0, 0.0, 0.0};
 
     for (int i = 0; i < (int)respoly.size(); ++i)
-      for (int k = 0; k < 3; ++k) center[k] += respoly[i].Coord()[k] / ((int)respoly.size());
+      for (int k = 0; k < 3; ++k) center[k] += respoly[i].coord()[k] / ((int)respoly.size());
 
     if (out)
       std::cout << "\nCenter ResPoly: " << center[0] << " " << center[1] << " " << center[2]
@@ -1302,8 +1302,8 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
 
     for (int k = 0; k < 3; ++k)
     {
-      diff[k] = respoly[0].Coord()[k] - center[k];
-      edge[k] = respoly[1].Coord()[k] - respoly[0].Coord()[k];
+      diff[k] = respoly[0].coord()[k] - center[k];
+      edge[k] = respoly[1].coord()[k] - respoly[0].coord()[k];
     }
 
     std::array<double, 3> cross = {0.0, 0.0, 0.0};
@@ -1313,7 +1313,7 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
     cross[2] = diff[0] * edge[1] - diff[1] * edge[0];
 
     // check against auxiliary plane normal
-    double check = cross[0] * Auxn()[0] + cross[1] * Auxn()[1] + cross[2] * Auxn()[2];
+    double check = cross[0] * auxn()[0] + cross[1] * auxn()[1] + cross[2] * auxn()[2];
 
     if (check < 0)
     {
@@ -1327,8 +1327,8 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       // print final input polygons to screen
       std::cout << "\nResult Poylgon:";
       for (int i = 0; i < (int)respoly.size(); ++i)
-        std::cout << "\nVertex " << i << ":\t" << respoly[i].Coord()[0] << "\t"
-                  << respoly[i].Coord()[1] << "\t" << respoly[i].Coord()[2];
+        std::cout << "\nVertex " << i << ":\t" << respoly[i].coord()[0] << "\t"
+                  << respoly[i].coord()[1] << "\t" << respoly[i].coord()[2];
       std::cout << std::endl;
     }
 
@@ -1342,26 +1342,26 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
       for (int k = 0; k < 3; ++k)
       {
         if (i != (int)respoly.size() - 1)
-          edge[k] = respoly[i + 1].Coord()[k] - respoly[i].Coord()[k];
+          edge[k] = respoly[i + 1].coord()[k] - respoly[i].coord()[k];
         else
-          edge[k] = respoly[0].Coord()[k] - respoly[i].Coord()[k];
+          edge[k] = respoly[0].coord()[k] - respoly[i].coord()[k];
       }
       // edge normal is result of cross product
       std::array<double, 3> n = {0.0, 0.0, 0.0};
-      n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-      n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-      n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+      n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+      n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+      n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
 
       // we need the next edge vector now
       std::array<double, 3> nextedge = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
         if (i < (int)respoly.size() - 2)
-          nextedge[k] = respoly[i + 2].Coord()[k] - respoly[i + 1].Coord()[k];
+          nextedge[k] = respoly[i + 2].coord()[k] - respoly[i + 1].coord()[k];
         else if (i == (int)respoly.size() - 2)
-          nextedge[k] = respoly[0].Coord()[k] - respoly[i + 1].Coord()[k];
+          nextedge[k] = respoly[0].coord()[k] - respoly[i + 1].coord()[k];
         else
-          nextedge[k] = respoly[1].Coord()[k] - respoly[0].Coord()[k];
+          nextedge[k] = respoly[1].coord()[k] - respoly[0].coord()[k];
       }
       // check scalar product
       double check = n[0] * nextedge[0] + n[1] * nextedge[1] + n[2] * nextedge[2];
@@ -1401,22 +1401,22 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
     {
       if (i != (int)poly1.size() - 1)
       {
-        gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0] << ","
-                        << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << ","
-                        << poly1[i + 1].Coord()[0] << "," << poly1[i + 1].Coord()[1] << ","
-                        << poly1[i + 1].Coord()[2] << ")";
+        gmshfilecontent << "SL(" << std::scientific << poly1[i].coord()[0] << ","
+                        << poly1[i].coord()[1] << "," << poly1[i].coord()[2] << ","
+                        << poly1[i + 1].coord()[0] << "," << poly1[i + 1].coord()[1] << ","
+                        << poly1[i + 1].coord()[2] << ")";
         gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
       }
       else
       {
-        gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0] << ","
-                        << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << ","
-                        << poly1[0].Coord()[0] << "," << poly1[0].Coord()[1] << ","
-                        << poly1[0].Coord()[2] << ")";
+        gmshfilecontent << "SL(" << std::scientific << poly1[i].coord()[0] << ","
+                        << poly1[i].coord()[1] << "," << poly1[i].coord()[2] << ","
+                        << poly1[0].coord()[0] << "," << poly1[0].coord()[1] << ","
+                        << poly1[0].coord()[2] << ")";
         gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
       }
-      gmshfilecontent << "T3(" << std::scientific << poly1[i].Coord()[0] << ","
-                      << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << "," << 17 << ")";
+      gmshfilecontent << "T3(" << std::scientific << poly1[i].coord()[0] << ","
+                      << poly1[i].coord()[1] << "," << poly1[i].coord()[2] << "," << 17 << ")";
       gmshfilecontent << "{"
                       << "S" << i << "};" << std::endl;
     }
@@ -1425,22 +1425,22 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
     {
       if (i != (int)poly2.size() - 1)
       {
-        gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0] << ","
-                        << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << ","
-                        << poly2[i + 1].Coord()[0] << "," << poly2[i + 1].Coord()[1] << ","
-                        << poly2[i + 1].Coord()[2] << ")";
+        gmshfilecontent << "SL(" << std::scientific << poly2[i].coord()[0] << ","
+                        << poly2[i].coord()[1] << "," << poly2[i].coord()[2] << ","
+                        << poly2[i + 1].coord()[0] << "," << poly2[i + 1].coord()[1] << ","
+                        << poly2[i + 1].coord()[2] << ")";
         gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
       else
       {
-        gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0] << ","
-                        << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << ","
-                        << poly2[0].Coord()[0] << "," << poly2[0].Coord()[1] << ","
-                        << poly2[0].Coord()[2] << ")";
+        gmshfilecontent << "SL(" << std::scientific << poly2[i].coord()[0] << ","
+                        << poly2[i].coord()[1] << "," << poly2[i].coord()[2] << ","
+                        << poly2[0].coord()[0] << "," << poly2[0].coord()[1] << ","
+                        << poly2[0].coord()[2] << ")";
         gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
-      gmshfilecontent << "T3(" << std::scientific << poly2[i].Coord()[0] << ","
-                      << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << "," << 17 << ")";
+      gmshfilecontent << "T3(" << std::scientific << poly2[i].coord()[0] << ","
+                      << poly2[i].coord()[1] << "," << poly2[i].coord()[2] << "," << 17 << ")";
       gmshfilecontent << "{"
                       << "M" << i << "};" << std::endl;
     }
@@ -1449,22 +1449,22 @@ void Mortar::Coupling3d::polygon_clipping(std::vector<Vertex>& poly1, std::vecto
     {
       if (i != (int)respoly.size() - 1)
       {
-        gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0] << ","
-                        << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << ","
-                        << respoly[i + 1].Coord()[0] << "," << respoly[i + 1].Coord()[1] << ","
-                        << respoly[i + 1].Coord()[2] << ")";
+        gmshfilecontent << "SL(" << std::scientific << respoly[i].coord()[0] << ","
+                        << respoly[i].coord()[1] << "," << respoly[i].coord()[2] << ","
+                        << respoly[i + 1].coord()[0] << "," << respoly[i + 1].coord()[1] << ","
+                        << respoly[i + 1].coord()[2] << ")";
         gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
       else
       {
-        gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0] << ","
-                        << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << ","
-                        << respoly[0].Coord()[0] << "," << respoly[0].Coord()[1] << ","
-                        << respoly[0].Coord()[2] << ")";
+        gmshfilecontent << "SL(" << std::scientific << respoly[i].coord()[0] << ","
+                        << respoly[i].coord()[1] << "," << respoly[i].coord()[2] << ","
+                        << respoly[0].coord()[0] << "," << respoly[0].coord()[1] << ","
+                        << respoly[0].coord()[2] << ")";
         gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
-      gmshfilecontent << "T3(" << std::scientific << respoly[i].Coord()[0] << ","
-                      << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << "," << 27 << ")";
+      gmshfilecontent << "T3(" << std::scientific << respoly[i].coord()[0] << ","
+                      << respoly[i].coord()[1] << "," << respoly[i].coord()[2] << "," << 27 << ")";
       gmshfilecontent << "{"
                       << "R" << i << "};" << std::endl;
     }
@@ -1520,10 +1520,10 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
   std::array<double, 3> center2 = {0.0, 0.0, 0.0};
 
   for (int i = 0; i < (int)poly1.size(); ++i)
-    for (int k = 0; k < 3; ++k) center1[k] += poly1[i].Coord()[k] / ((int)poly1.size());
+    for (int k = 0; k < 3; ++k) center1[k] += poly1[i].coord()[k] / ((int)poly1.size());
 
   for (int i = 0; i < (int)poly2.size(); ++i)
-    for (int k = 0; k < 3; ++k) center2[k] += poly2[i].Coord()[k] / ((int)poly2.size());
+    for (int k = 0; k < 3; ++k) center2[k] += poly2[i].coord()[k] / ((int)poly2.size());
 
   if (out)
   {
@@ -1539,10 +1539,10 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
 
   for (int k = 0; k < 3; ++k)
   {
-    diff1[k] = poly1[0].Coord()[k] - center1[k];
-    edge1[k] = poly1[1].Coord()[k] - poly1[0].Coord()[k];
-    diff2[k] = poly2[0].Coord()[k] - center2[k];
-    edge2[k] = poly2[1].Coord()[k] - poly2[0].Coord()[k];
+    diff1[k] = poly1[0].coord()[k] - center1[k];
+    edge1[k] = poly1[1].coord()[k] - poly1[0].coord()[k];
+    diff2[k] = poly2[0].coord()[k] - center2[k];
+    edge2[k] = poly2[1].coord()[k] - poly2[0].coord()[k];
   }
 
   std::array<double, 3> cross1 = {0.0, 0.0, 0.0};
@@ -1557,8 +1557,8 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
   cross2[2] = diff2[0] * edge2[1] - diff2[1] * edge2[0];
 
   // check against auxiliary plane normal
-  double check1 = cross1[0] * Auxn()[0] + cross1[1] * Auxn()[1] + cross1[2] * Auxn()[2];
-  double check2 = cross2[0] * Auxn()[0] + cross2[1] * Auxn()[1] + cross2[2] * Auxn()[2];
+  double check1 = cross1[0] * auxn()[0] + cross1[1] * auxn()[1] + cross1[2] * auxn()[2];
+  double check2 = cross2[0] * auxn()[0] + cross2[1] * auxn()[1] + cross2[2] * auxn()[2];
 
   // check polygon 1 and throw FOUR_C_THROW if not c-clockwise
   if (check1 <= 0)
@@ -1585,27 +1585,27 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
     for (int k = 0; k < 3; ++k)
     {
       if (i != (int)poly1.size() - 1)
-        edge[k] = poly1[i + 1].Coord()[k] - poly1[i].Coord()[k];
+        edge[k] = poly1[i + 1].coord()[k] - poly1[i].coord()[k];
       else
-        edge[k] = poly1[0].Coord()[k] - poly1[i].Coord()[k];
+        edge[k] = poly1[0].coord()[k] - poly1[i].coord()[k];
     }
 
     // edge normal is result of cross product
     std::array<double, 3> n = {0.0, 0.0, 0.0};
-    n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-    n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-    n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+    n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+    n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+    n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
 
     // we need the next edge vector now
     std::array<double, 3> nextedge = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
       if (i < (int)poly1.size() - 2)
-        nextedge[k] = poly1[i + 2].Coord()[k] - poly1[i + 1].Coord()[k];
+        nextedge[k] = poly1[i + 2].coord()[k] - poly1[i + 1].coord()[k];
       else if (i == (int)poly1.size() - 2)
-        nextedge[k] = poly1[0].Coord()[k] - poly1[i + 1].Coord()[k];
+        nextedge[k] = poly1[0].coord()[k] - poly1[i + 1].coord()[k];
       else
-        nextedge[k] = poly1[1].Coord()[k] - poly1[0].Coord()[k];
+        nextedge[k] = poly1[1].coord()[k] - poly1[0].coord()[k];
     }
 
     // check scalar product
@@ -1624,27 +1624,27 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
     for (int k = 0; k < 3; ++k)
     {
       if (i != (int)poly2.size() - 1)
-        edge[k] = poly2[i + 1].Coord()[k] - poly2[i].Coord()[k];
+        edge[k] = poly2[i + 1].coord()[k] - poly2[i].coord()[k];
       else
-        edge[k] = poly2[0].Coord()[k] - poly2[i].Coord()[k];
+        edge[k] = poly2[0].coord()[k] - poly2[i].coord()[k];
     }
 
     // edge normal is result of cross product
     std::array<double, 3> n = {0.0, 0.0, 0.0};
-    n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-    n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-    n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+    n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+    n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+    n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
 
     // we need the next edge vector now
     std::array<double, 3> nextedge = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
       if (i < (int)poly2.size() - 2)
-        nextedge[k] = poly2[i + 2].Coord()[k] - poly2[i + 1].Coord()[k];
+        nextedge[k] = poly2[i + 2].coord()[k] - poly2[i + 1].coord()[k];
       else if (i == (int)poly2.size() - 2)
-        nextedge[k] = poly2[0].Coord()[k] - poly2[i + 1].Coord()[k];
+        nextedge[k] = poly2[0].coord()[k] - poly2[i + 1].coord()[k];
       else
-        nextedge[k] = poly2[1].Coord()[k] - poly2[0].Coord()[k];
+        nextedge[k] = poly2[1].coord()[k] - poly2[0].coord()[k];
     }
 
     // check scalar product
@@ -1655,8 +1655,8 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
       // but instead check if the two elements to be clipped are
       // close to each other at all. If so, then really throw the
       // FOUR_C_THROW, if not, simply continue with the next pair!
-      int sid = SlaveElement().Id();
-      int mid = MasterElement().Id();
+      int sid = slave_element().id();
+      int mid = master_element().id();
       bool nearcheck = rough_check_nodes();
       if (nearcheck)
       {
@@ -1695,28 +1695,28 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
                         << std::endl;
 
         // get slave and master nodes
-        int nsnodes = SlaveIntElement().num_node();
-        Core::Nodes::Node** mysnodes = SlaveIntElement().Nodes();
+        int nsnodes = slave_int_element().num_node();
+        Core::Nodes::Node** mysnodes = slave_int_element().nodes();
         if (!mysnodes) FOUR_C_THROW("Null pointer!");
         std::vector<Node*> mycsnodes(nsnodes);
         for (int i = 0; i < nsnodes; ++i) mycsnodes[i] = dynamic_cast<Node*>(mysnodes[i]);
-        int nmnodes = MasterIntElement().num_node();
-        Core::Nodes::Node** mymnodes = MasterIntElement().Nodes();
+        int nmnodes = master_int_element().num_node();
+        Core::Nodes::Node** mymnodes = master_int_element().nodes();
         if (!mymnodes) FOUR_C_THROW("Null pointer!");
         std::vector<Node*> mycmnodes(nmnodes);
         for (int i = 0; i < nmnodes; ++i) mycmnodes[i] = dynamic_cast<Node*>(mymnodes[i]);
 
         // get node coordinates
         Core::LinAlg::SerialDenseMatrix scoord(3, nsnodes);
-        SlaveIntElement().GetNodalCoords(scoord);
-        double scolor = (double)SlaveIntElement().Owner();
+        slave_int_element().get_nodal_coords(scoord);
+        double scolor = (double)slave_int_element().owner();
         Core::LinAlg::SerialDenseMatrix mcoord(3, nmnodes);
-        MasterIntElement().GetNodalCoords(mcoord);
-        double mcolor = (double)MasterIntElement().Owner();
+        master_int_element().get_nodal_coords(mcoord);
+        double mcolor = (double)master_int_element().owner();
 
         // plot elements
         // 3D linear case (3noded triangular elements)
-        if (SlaveIntElement().Shape() == Core::FE::CellType::tri3)
+        if (slave_int_element().shape() == Core::FE::CellType::tri3)
         {
           gmshfilecontent << "ST(" << std::scientific << scoord(0, 0) << "," << scoord(1, 0) << ","
                           << scoord(2, 0) << "," << scoord(0, 1) << "," << scoord(1, 1) << ","
@@ -1725,7 +1725,7 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
           gmshfilecontent << "{" << std::scientific << scolor << "," << scolor << "," << scolor
                           << "};" << std::endl;
         }
-        else if (SlaveIntElement().Shape() == Core::FE::CellType::quad4)
+        else if (slave_int_element().shape() == Core::FE::CellType::quad4)
         {
           gmshfilecontent << "SQ(" << std::scientific << scoord(0, 0) << "," << scoord(1, 0) << ","
                           << scoord(2, 0) << "," << scoord(0, 1) << "," << scoord(1, 1) << ","
@@ -1736,7 +1736,7 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
                           << "," << scolor << "};" << std::endl;
         }
 
-        if (MasterIntElement().Shape() == Core::FE::CellType::tri3)
+        if (master_int_element().shape() == Core::FE::CellType::tri3)
         {
           gmshfilecontent << "ST(" << std::scientific << mcoord(0, 0) << "," << mcoord(1, 0) << ","
                           << mcoord(2, 0) << "," << mcoord(0, 1) << "," << mcoord(1, 1) << ","
@@ -1745,7 +1745,7 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
           gmshfilecontent << "{" << std::scientific << mcolor << "," << mcolor << "," << mcolor
                           << "};" << std::endl;
         }
-        else if (MasterIntElement().Shape() == Core::FE::CellType::quad4)
+        else if (master_int_element().shape() == Core::FE::CellType::quad4)
         {
           gmshfilecontent << "SQ(" << std::scientific << mcoord(0, 0) << "," << mcoord(1, 0) << ","
                           << mcoord(2, 0) << "," << mcoord(0, 1) << "," << mcoord(1, 1) << ","
@@ -1827,13 +1827,13 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
   {
     std::cout << "\nInput Poylgon 1:";
     for (int i = 0; i < (int)poly1.size(); ++i)
-      std::cout << "\nVertex " << i << ":\t" << std::scientific << poly1[i].Coord()[0] << "\t"
-                << poly1[i].Coord()[1] << "\t" << poly1[i].Coord()[2];
+      std::cout << "\nVertex " << i << ":\t" << std::scientific << poly1[i].coord()[0] << "\t"
+                << poly1[i].coord()[1] << "\t" << poly1[i].coord()[2];
 
     std::cout << "\nInput Poylgon 2:";
     for (int i = 0; i < (int)poly2.size(); ++i)
-      std::cout << "\nVertex " << i << ":\t" << std::scientific << poly2[i].Coord()[0] << "\t"
-                << poly2[i].Coord()[1] << "\t" << poly2[i].Coord()[2];
+      std::cout << "\nVertex " << i << ":\t" << std::scientific << poly2[i].coord()[0] << "\t"
+                << poly2[i].coord()[1] << "\t" << poly2[i].coord()[2];
 
     std::cout << std::endl << std::endl;
   }
@@ -1850,20 +1850,20 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
     // standard case
     if (i != 0 && i != (int)poly1.size() - 1)
     {
-      poly1[i].AssignNext(&poly1[i + 1]);
-      poly1[i].AssignPrev(&poly1[i - 1]);
+      poly1[i].assign_next(&poly1[i + 1]);
+      poly1[i].assign_prev(&poly1[i - 1]);
     }
     // first element in list
     else if (i == 0)
     {
-      poly1[i].AssignNext(&poly1[i + 1]);
-      poly1[i].AssignPrev(&poly1[(int)poly1.size() - 1]);
+      poly1[i].assign_next(&poly1[i + 1]);
+      poly1[i].assign_prev(&poly1[(int)poly1.size() - 1]);
     }
     // last element in list
     else
     {
-      poly1[i].AssignNext(&poly1[0]);
-      poly1[i].AssignPrev(&poly1[i - 1]);
+      poly1[i].assign_next(&poly1[0]);
+      poly1[i].assign_prev(&poly1[i - 1]);
     }
   }
   for (int i = 0; i < (int)poly2.size(); ++i)
@@ -1871,20 +1871,20 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
     // standard case
     if (i != 0 && i != (int)poly2.size() - 1)
     {
-      poly2[i].AssignNext(&poly2[i + 1]);
-      poly2[i].AssignPrev(&poly2[i - 1]);
+      poly2[i].assign_next(&poly2[i + 1]);
+      poly2[i].assign_prev(&poly2[i - 1]);
     }
     // first element in list
     else if (i == 0)
     {
-      poly2[i].AssignNext(&poly2[i + 1]);
-      poly2[i].AssignPrev(&poly2[(int)poly2.size() - 1]);
+      poly2[i].assign_next(&poly2[i + 1]);
+      poly2[i].assign_prev(&poly2[(int)poly2.size() - 1]);
     }
     // last element in list
     else
     {
-      poly2[i].AssignNext(&poly2[0]);
-      poly2[i].AssignPrev(&poly2[i - 1]);
+      poly2[i].assign_next(&poly2[0]);
+      poly2[i].assign_prev(&poly2[i - 1]);
     }
   }
 
@@ -1905,19 +1905,19 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
       std::array<double, 3> edge2 = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
-        edge1[k] = (poly1[i].Next())->Coord()[k] - poly1[i].Coord()[k];
-        edge2[k] = (poly2[j].Next())->Coord()[k] - poly2[j].Coord()[k];
+        edge1[k] = (poly1[i].next())->coord()[k] - poly1[i].coord()[k];
+        edge2[k] = (poly2[j].next())->coord()[k] - poly2[j].coord()[k];
       }
 
       // outward edge normals of polygon 1 and 2 edges
       std::array<double, 3> n1 = {0.0, 0.0, 0.0};
       std::array<double, 3> n2 = {0.0, 0.0, 0.0};
-      n1[0] = edge1[1] * Auxn()[2] - edge1[2] * Auxn()[1];
-      n1[1] = edge1[2] * Auxn()[0] - edge1[0] * Auxn()[2];
-      n1[2] = edge1[0] * Auxn()[1] - edge1[1] * Auxn()[0];
-      n2[0] = edge2[1] * Auxn()[2] - edge2[2] * Auxn()[1];
-      n2[1] = edge2[2] * Auxn()[0] - edge2[0] * Auxn()[2];
-      n2[2] = edge2[0] * Auxn()[1] - edge2[1] * Auxn()[0];
+      n1[0] = edge1[1] * auxn()[2] - edge1[2] * auxn()[1];
+      n1[1] = edge1[2] * auxn()[0] - edge1[0] * auxn()[2];
+      n1[2] = edge1[0] * auxn()[1] - edge1[1] * auxn()[0];
+      n2[0] = edge2[1] * auxn()[2] - edge2[2] * auxn()[1];
+      n2[1] = edge2[2] * auxn()[0] - edge2[0] * auxn()[2];
+      n2[2] = edge2[0] * auxn()[1] - edge2[1] * auxn()[0];
 
       // check for parallelity of edges
       double parallel = edge1[0] * n2[0] + edge1[1] * n2[1] + edge1[2] * n2[2];
@@ -1936,8 +1936,8 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
       double wec_p2 = 0.0;
       for (int k = 0; k < 3; ++k)
       {
-        wec_p1 += (poly1[i].Coord()[k] - poly2[j].Coord()[k]) * n2[k];
-        wec_p2 += ((poly1[i].Next())->Coord()[k] - poly2[j].Coord()[k]) * n2[k];
+        wec_p1 += (poly1[i].coord()[k] - poly2[j].coord()[k]) * n2[k];
+        wec_p2 += ((poly1[i].next())->coord()[k] - poly2[j].coord()[k]) * n2[k];
       }
 
       if (wec_p1 * wec_p2 <= 0)
@@ -1946,8 +1946,8 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
         double wec_q2 = 0.0;
         for (int k = 0; k < 3; ++k)
         {
-          wec_q1 += (poly2[j].Coord()[k] - poly1[i].Coord()[k]) * n1[k];
-          wec_q2 += ((poly2[j].Next())->Coord()[k] - poly1[i].Coord()[k]) * n1[k];
+          wec_q1 += (poly2[j].coord()[k] - poly1[i].coord()[k]) * n1[k];
+          wec_q2 += ((poly2[j].next())->coord()[k] - poly1[i].coord()[k]) * n1[k];
         }
 
         if (wec_q1 * wec_q2 <= 0)
@@ -1958,8 +1958,8 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
           std::vector<double> iq(3);
           for (int k = 0; k < 3; ++k)
           {
-            ip[k] = (1 - alphap) * poly1[i].Coord()[k] + alphap * (poly1[i].Next())->Coord()[k];
-            iq[k] = (1 - alphaq) * poly2[j].Coord()[k] + alphaq * (poly2[j].Next())->Coord()[k];
+            ip[k] = (1 - alphap) * poly1[i].coord()[k] + alphap * (poly1[i].next())->coord()[k];
+            iq[k] = (1 - alphaq) * poly2[j].coord()[k] + alphaq * (poly2[j].next())->coord()[k];
             if (abs(ip[k]) < tol) ip[k] = 0.0;
             if (abs(iq[k]) < tol) iq[k] = 0.0;
           }
@@ -1974,13 +1974,13 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
 
           // generate vectors of underlying node ids for lineclip (2x slave, 2x master)
           std::vector<int> lcids(4);
-          lcids[0] = (int)(poly1[i].Nodeids()[0]);
-          lcids[1] = (int)((poly1[i].Next())->Nodeids()[0]);
-          lcids[2] = (int)(poly2[j].Nodeids()[0]);
-          lcids[3] = (int)((poly2[j].Next())->Nodeids()[0]);
+          lcids[0] = (int)(poly1[i].nodeids()[0]);
+          lcids[1] = (int)((poly1[i].next())->nodeids()[0]);
+          lcids[2] = (int)(poly2[j].nodeids()[0]);
+          lcids[3] = (int)((poly2[j].next())->nodeids()[0]);
 
           // store intersection points
-          intersec.push_back(Vertex(ip, Vertex::lineclip, lcids, poly1[i].Next(), &poly1[i], true,
+          intersec.push_back(Vertex(ip, Vertex::lineclip, lcids, poly1[i].next(), &poly1[i], true,
               false, nullptr, alphap));
         }
       }
@@ -1994,12 +1994,12 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
     for (int i = 0; i < (int)intersec.size(); ++i)
     {
       Vertex& testv = intersec[i];
-      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " "
-                << testv.Coord()[2] << std::endl;
+      std::cout << "Coords: " << testv.coord()[0] << " " << testv.coord()[1] << " "
+                << testv.coord()[2] << std::endl;
       std::cout << "Type: " << testv.v_type() << std::endl;
-      std::cout << "Alpha: " << testv.Alpha() << std::endl;
-      std::cout << "Lineclip ids: " << testv.Nodeids()[0] << " " << testv.Nodeids()[1] << " "
-                << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << std::endl
+      std::cout << "Alpha: " << testv.alpha() << std::endl;
+      std::cout << "Lineclip ids: " << testv.nodeids()[0] << " " << testv.nodeids()[1] << " "
+                << testv.nodeids()[2] << " " << testv.nodeids()[3] << std::endl
                 << std::endl;
     }
   }
@@ -2021,7 +2021,7 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
     {
       // distance vector
       std::array<double, 3> diff = {0.0, 0.0, 0.0};
-      for (int k = 0; k < 3; ++k) diff[k] = intersec[i].Coord()[k] - poly1[j].Coord()[k];
+      for (int k = 0; k < 3; ++k) diff[k] = intersec[i].coord()[k] - poly1[j].coord()[k];
       double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
       // only keep intersection point if not close
@@ -2040,7 +2040,7 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
       {
         // distance vector
         std::array<double, 3> diff = {0.0, 0.0, 0.0};
-        for (int k = 0; k < 3; ++k) diff[k] = intersec[i].Coord()[k] - poly2[j].Coord()[k];
+        for (int k = 0; k < 3; ++k) diff[k] = intersec[i].coord()[k] - poly2[j].coord()[k];
         double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
         // only keep intersection point if not close
@@ -2063,12 +2063,12 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
     for (int i = 0; i < (int)collintersec.size(); ++i)
     {
       Vertex& testv = collintersec[i];
-      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " "
-                << testv.Coord()[2] << std::endl;
+      std::cout << "Coords: " << testv.coord()[0] << " " << testv.coord()[1] << " "
+                << testv.coord()[2] << std::endl;
       std::cout << "Type: " << testv.v_type() << std::endl;
-      std::cout << "Alpha: " << testv.Alpha() << std::endl;
-      std::cout << "Lineclip ids: " << testv.Nodeids()[0] << " " << testv.Nodeids()[1] << " "
-                << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << std::endl
+      std::cout << "Alpha: " << testv.alpha() << std::endl;
+      std::cout << "Lineclip ids: " << testv.nodeids()[0] << " " << testv.nodeids()[1] << " "
+                << testv.nodeids()[2] << " " << testv.nodeids()[3] << std::endl
                 << std::endl;
     }
   }
@@ -2097,15 +2097,15 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
       std::array<double, 3> edge = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
-        diff[k] = poly1[i].Coord()[k] - poly1[j].Coord()[k];
-        edge[k] = (poly1[j].Next())->Coord()[k] - poly1[j].Coord()[k];
+        diff[k] = poly1[i].coord()[k] - poly1[j].coord()[k];
+        edge[k] = (poly1[j].next())->coord()[k] - poly1[j].coord()[k];
       }
 
       // compute distance from point on poly1 to edge
       std::array<double, 3> n = {0.0, 0.0, 0.0};
-      n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-      n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-      n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+      n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+      n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+      n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
       double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
       for (int k = 0; k < 3; ++k) n[k] /= ln;
 
@@ -2130,15 +2130,15 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
         std::array<double, 3> edge = {0.0, 0.0, 0.0};
         for (int k = 0; k < 3; ++k)
         {
-          diff[k] = poly1[i].Coord()[k] - poly2[j].Coord()[k];
-          edge[k] = (poly2[j].Next())->Coord()[k] - poly2[j].Coord()[k];
+          diff[k] = poly1[i].coord()[k] - poly2[j].coord()[k];
+          edge[k] = (poly2[j].next())->coord()[k] - poly2[j].coord()[k];
         }
 
         // compute distance from point on poly1 to edge
         std::array<double, 3> n = {0.0, 0.0, 0.0};
-        n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-        n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-        n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+        n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+        n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+        n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
         double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
         for (int k = 0; k < 3; ++k) n[k] /= ln;
 
@@ -2171,15 +2171,15 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
       std::array<double, 3> edge = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
-        diff[k] = poly2[i].Coord()[k] - poly1[j].Coord()[k];
-        edge[k] = (poly1[j].Next())->Coord()[k] - poly1[j].Coord()[k];
+        diff[k] = poly2[i].coord()[k] - poly1[j].coord()[k];
+        edge[k] = (poly1[j].next())->coord()[k] - poly1[j].coord()[k];
       }
 
       // compute distance from point on poly1 to edge
       std::array<double, 3> n = {0.0, 0.0, 0.0};
-      n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-      n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-      n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+      n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+      n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+      n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
       double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
       for (int k = 0; k < 3; ++k) n[k] /= ln;
 
@@ -2204,15 +2204,15 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
         std::array<double, 3> edge = {0.0, 0.0, 0.0};
         for (int k = 0; k < 3; ++k)
         {
-          diff[k] = poly2[i].Coord()[k] - poly2[j].Coord()[k];
-          edge[k] = (poly2[j].Next())->Coord()[k] - poly2[j].Coord()[k];
+          diff[k] = poly2[i].coord()[k] - poly2[j].coord()[k];
+          edge[k] = (poly2[j].next())->coord()[k] - poly2[j].coord()[k];
         }
 
         // compute distance from point on poly1 to edge
         std::array<double, 3> n = {0.0, 0.0, 0.0};
-        n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-        n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-        n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+        n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+        n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+        n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
         double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
         for (int k = 0; k < 3; ++k) n[k] /= ln;
 
@@ -2245,15 +2245,15 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
       std::array<double, 3> edge = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
-        diff[k] = collintersec[i].Coord()[k] - poly1[j].Coord()[k];
-        edge[k] = (poly1[j].Next())->Coord()[k] - poly1[j].Coord()[k];
+        diff[k] = collintersec[i].coord()[k] - poly1[j].coord()[k];
+        edge[k] = (poly1[j].next())->coord()[k] - poly1[j].coord()[k];
       }
 
       // compute distance from point on poly1 to edge
       std::array<double, 3> n = {0.0, 0.0, 0.0};
-      n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-      n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-      n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+      n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+      n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+      n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
       double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
       for (int k = 0; k < 3; ++k) n[k] /= ln;
 
@@ -2278,15 +2278,15 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
         std::array<double, 3> edge = {0.0, 0.0, 0.0};
         for (int k = 0; k < 3; ++k)
         {
-          diff[k] = collintersec[i].Coord()[k] - poly2[j].Coord()[k];
-          edge[k] = (poly2[j].Next())->Coord()[k] - poly2[j].Coord()[k];
+          diff[k] = collintersec[i].coord()[k] - poly2[j].coord()[k];
+          edge[k] = (poly2[j].next())->coord()[k] - poly2[j].coord()[k];
         }
 
         // compute distance from point on poly1 to edge
         std::array<double, 3> n = {0.0, 0.0, 0.0};
-        n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
-        n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
-        n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
+        n[0] = edge[1] * auxn()[2] - edge[2] * auxn()[1];
+        n[1] = edge[2] * auxn()[0] - edge[0] * auxn()[2];
+        n[2] = edge[0] * auxn()[1] - edge[1] * auxn()[0];
         double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
         for (int k = 0; k < 3; ++k) n[k] /= ln;
 
@@ -2312,8 +2312,8 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
     for (int i = 0; i < (int)convexhull.size(); ++i)
     {
       Vertex& testv = convexhull[i];
-      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " "
-                << testv.Coord()[2] << std::endl;
+      std::cout << "Coords: " << testv.coord()[0] << " " << testv.coord()[1] << " "
+                << testv.coord()[2] << std::endl;
       std::cout << "Type: " << testv.v_type() << std::endl;
     }
   }
@@ -2348,7 +2348,7 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
 
       // distance vector
       std::array<double, 3> diff = {0.0, 0.0, 0.0};
-      for (int k = 0; k < 3; ++k) diff[k] = convexhull[i].Coord()[k] - convexhull[j].Coord()[k];
+      for (int k = 0; k < 3; ++k) diff[k] = convexhull[i].coord()[k] - convexhull[j].coord()[k];
       double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
       // only keep point if not close
@@ -2376,7 +2376,7 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
 
         // distance vector
         std::array<double, 3> diff = {0.0, 0.0, 0.0};
-        for (int k = 0; k < 3; ++k) diff[k] = convexhull[i].Coord()[k] - convexhull[j].Coord()[k];
+        for (int k = 0; k < 3; ++k) diff[k] = convexhull[i].coord()[k] - convexhull[j].coord()[k];
         double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
         // only keep intersection point if not close
@@ -2399,8 +2399,8 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
     for (int i = 0; i < (int)collconvexhull.size(); ++i)
     {
       Vertex& testv = collconvexhull[i];
-      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " "
-                << testv.Coord()[2] << std::endl;
+      std::cout << "Coords: " << testv.coord()[0] << " " << testv.coord()[1] << " "
+                << testv.coord()[2] << std::endl;
       std::cout << "Type: " << testv.v_type() << std::endl;
     }
   }
@@ -2427,13 +2427,13 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
   {
     // do transformation to auxiliary plane
     std::array<double, 3> newzero = {
-        collconvexhull[0].Coord()[0], collconvexhull[0].Coord()[1], collconvexhull[0].Coord()[2]};
-    std::array<double, 3> newxaxis = {collconvexhull[1].Coord()[0] - collconvexhull[0].Coord()[0],
-        collconvexhull[1].Coord()[1] - collconvexhull[0].Coord()[1],
-        collconvexhull[1].Coord()[2] - collconvexhull[0].Coord()[2]};
-    std::array<double, 3> newyaxis = {Auxn()[1] * newxaxis[2] - Auxn()[2] * newxaxis[1],
-        Auxn()[2] * newxaxis[0] - Auxn()[0] * newxaxis[2],
-        Auxn()[0] * newxaxis[1] - Auxn()[1] * newxaxis[0]};
+        collconvexhull[0].coord()[0], collconvexhull[0].coord()[1], collconvexhull[0].coord()[2]};
+    std::array<double, 3> newxaxis = {collconvexhull[1].coord()[0] - collconvexhull[0].coord()[0],
+        collconvexhull[1].coord()[1] - collconvexhull[0].coord()[1],
+        collconvexhull[1].coord()[2] - collconvexhull[0].coord()[2]};
+    std::array<double, 3> newyaxis = {auxn()[1] * newxaxis[2] - auxn()[2] * newxaxis[1],
+        auxn()[2] * newxaxis[0] - auxn()[0] * newxaxis[2],
+        auxn()[0] * newxaxis[1] - auxn()[1] * newxaxis[0]};
     double lnewxaxis =
         sqrt(newxaxis[0] * newxaxis[0] + newxaxis[1] * newxaxis[1] + newxaxis[2] * newxaxis[2]);
     double lnewyaxis =
@@ -2452,7 +2452,7 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
     {
       trafo(0, k) = newxaxis[k];
       trafo(1, k) = newyaxis[k];
-      trafo(2, k) = Auxn()[k];
+      trafo(2, k) = auxn()[k];
     }
 
     // temporary storage for transformed points
@@ -2466,7 +2466,7 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
 
       for (int j = 0; j < 3; ++j)
         for (int k = 0; k < 3; ++k)
-          newpoint[j] += trafo(j, k) * (collconvexhull[i].Coord()[k] - newzero[k]);
+          newpoint[j] += trafo(j, k) * (collconvexhull[i].coord()[k] - newzero[k]);
 
       if (abs(newpoint[2]) > tol) FOUR_C_THROW("Transformation to aux. plane failed: z!=0 !");
       transformed(0, i) = newpoint[0];
@@ -2518,22 +2518,22 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
     {
       if (i != (int)poly1.size() - 1)
       {
-        gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0] << ","
-                        << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << ","
-                        << poly1[i + 1].Coord()[0] << "," << poly1[i + 1].Coord()[1] << ","
-                        << poly1[i + 1].Coord()[2] << ")";
+        gmshfilecontent << "SL(" << std::scientific << poly1[i].coord()[0] << ","
+                        << poly1[i].coord()[1] << "," << poly1[i].coord()[2] << ","
+                        << poly1[i + 1].coord()[0] << "," << poly1[i + 1].coord()[1] << ","
+                        << poly1[i + 1].coord()[2] << ")";
         gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
       }
       else
       {
-        gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0] << ","
-                        << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << ","
-                        << poly1[0].Coord()[0] << "," << poly1[0].Coord()[1] << ","
-                        << poly1[0].Coord()[2] << ")";
+        gmshfilecontent << "SL(" << std::scientific << poly1[i].coord()[0] << ","
+                        << poly1[i].coord()[1] << "," << poly1[i].coord()[2] << ","
+                        << poly1[0].coord()[0] << "," << poly1[0].coord()[1] << ","
+                        << poly1[0].coord()[2] << ")";
         gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
       }
-      gmshfilecontent << "T3(" << std::scientific << poly1[i].Coord()[0] << ","
-                      << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << "," << 17 << ")";
+      gmshfilecontent << "T3(" << std::scientific << poly1[i].coord()[0] << ","
+                      << poly1[i].coord()[1] << "," << poly1[i].coord()[2] << "," << 17 << ")";
       gmshfilecontent << "{"
                       << "S" << i << "};" << std::endl;
     }
@@ -2544,22 +2544,22 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
     {
       if (i != (int)poly2.size() - 1)
       {
-        gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0] << ","
-                        << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << ","
-                        << poly2[i + 1].Coord()[0] << "," << poly2[i + 1].Coord()[1] << ","
-                        << poly2[i + 1].Coord()[2] << ")";
+        gmshfilecontent << "SL(" << std::scientific << poly2[i].coord()[0] << ","
+                        << poly2[i].coord()[1] << "," << poly2[i].coord()[2] << ","
+                        << poly2[i + 1].coord()[0] << "," << poly2[i + 1].coord()[1] << ","
+                        << poly2[i + 1].coord()[2] << ")";
         gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
       else
       {
-        gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0] << ","
-                        << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << ","
-                        << poly2[0].Coord()[0] << "," << poly2[0].Coord()[1] << ","
-                        << poly2[0].Coord()[2] << ")";
+        gmshfilecontent << "SL(" << std::scientific << poly2[i].coord()[0] << ","
+                        << poly2[i].coord()[1] << "," << poly2[i].coord()[2] << ","
+                        << poly2[0].coord()[0] << "," << poly2[0].coord()[1] << ","
+                        << poly2[0].coord()[2] << ")";
         gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
-      gmshfilecontent << "T3(" << std::scientific << poly2[i].Coord()[0] << ","
-                      << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << "," << 17 << ")";
+      gmshfilecontent << "T3(" << std::scientific << poly2[i].coord()[0] << ","
+                      << poly2[i].coord()[1] << "," << poly2[i].coord()[2] << "," << 17 << ")";
       gmshfilecontent << "{"
                       << "M" << i << "};" << std::endl;
     }
@@ -2570,22 +2570,22 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
     {
       if (i != (int)respoly.size() - 1)
       {
-        gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0] << ","
-                        << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << ","
-                        << respoly[i + 1].Coord()[0] << "," << respoly[i + 1].Coord()[1] << ","
-                        << respoly[i + 1].Coord()[2] << ")";
+        gmshfilecontent << "SL(" << std::scientific << respoly[i].coord()[0] << ","
+                        << respoly[i].coord()[1] << "," << respoly[i].coord()[2] << ","
+                        << respoly[i + 1].coord()[0] << "," << respoly[i + 1].coord()[1] << ","
+                        << respoly[i + 1].coord()[2] << ")";
         gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
       else
       {
-        gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0] << ","
-                        << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << ","
-                        << respoly[0].Coord()[0] << "," << respoly[0].Coord()[1] << ","
-                        << respoly[0].Coord()[2] << ")";
+        gmshfilecontent << "SL(" << std::scientific << respoly[i].coord()[0] << ","
+                        << respoly[i].coord()[1] << "," << respoly[i].coord()[2] << ","
+                        << respoly[0].coord()[0] << "," << respoly[0].coord()[1] << ","
+                        << respoly[0].coord()[2] << ")";
         gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
-      gmshfilecontent << "T3(" << std::scientific << respoly[i].Coord()[0] << ","
-                      << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << "," << 27 << ")";
+      gmshfilecontent << "T3(" << std::scientific << respoly[i].coord()[0] << ","
+                      << respoly[i].coord()[1] << "," << respoly[i].coord()[2] << "," << 27 << ")";
       gmshfilecontent << "{"
                       << "R" << i << "};" << std::endl;
     }
@@ -2608,19 +2608,19 @@ double Mortar::Coupling3d::polygon_area()
 {
   // initialize and check for trivial case
   double area = 0.0;
-  int clipsize = (int)(Clip().size());
+  int clipsize = (int)(clip().size());
   if (clipsize < 3) return area;
 
   // loop over all vertices to compute area
   for (int k = 0; k < clipsize; ++k)
   {
     // current and next vertex vector
-    std::vector<double> vk = Clip()[k].Coord();
+    std::vector<double> vk = clip()[k].coord();
     std::vector<double> vkp1;
     if (k == clipsize - 1)
-      vkp1 = Clip()[0].Coord();
+      vkp1 = clip()[0].coord();
     else
-      vkp1 = Clip()[k + 1].Coord();
+      vkp1 = clip()[k + 1].coord();
 
     // cross product
     std::array<double, 3> cross = {0.0, 0.0, 0.0};
@@ -2630,7 +2630,7 @@ double Mortar::Coupling3d::polygon_area()
 
     // add scalar product with negative(!) normal to area
     // (because the clip polygon is oriented clockwise w.r.t. normal)
-    area -= 0.5 * (cross[0] * Auxn()[0] + cross[1] * Auxn()[1] + cross[2] * Auxn()[2]);
+    area -= 0.5 * (cross[0] * auxn()[0] + cross[1] * auxn()[1] + cross[2] * auxn()[2]);
   }
 
   // when areas are close to zero, we might get sign problems
@@ -2647,7 +2647,7 @@ double Mortar::Coupling3d::polygon_area()
 double Mortar::Coupling3d::slave_element_area()
 {
   // initialize
-  double selearea = SlaveIntElement().MoData().Area();
+  double selearea = slave_int_element().mo_data().area();
 
   return selearea;
 }
@@ -2659,8 +2659,8 @@ double Mortar::Coupling3d::slave_element_area()
 bool Mortar::Coupling3d::has_proj_status()
 {
   // check all nodes
-  int nnodes = SlaveIntElement().num_node();
-  Core::Nodes::Node** mynodes = SlaveIntElement().Nodes();
+  int nnodes = slave_int_element().num_node();
+  Core::Nodes::Node** mynodes = slave_int_element().nodes();
   if (!mynodes) FOUR_C_THROW("has_proj_status: Null pointer!");
 
   // loop over all slave nodes
@@ -2670,17 +2670,17 @@ bool Mortar::Coupling3d::has_proj_status()
     if (!mycnode) FOUR_C_THROW("has_proj_status: Null pointer!");
 
     // loop over all vertices of clip polygon
-    for (int j = 0; j < (int)(Clip().size()); ++j)
+    for (int j = 0; j < (int)(clip().size()); ++j)
     {
       bool identical = false;
 
       // check if this clip vertex is slave-type and has the
       // current slave node id
-      if ((int)(Clip()[j].v_type()) == Vertex::slave)
-        if (mycnode->Id() == Clip()[j].Nodeids()[0]) identical = true;
+      if ((int)(clip()[j].v_type()) == Vertex::slave)
+        if (mycnode->id() == clip()[j].nodeids()[0]) identical = true;
 
       // set hasproj to true, if so
-      if (identical) mycnode->HasProj() = true;
+      if (identical) mycnode->has_proj() = true;
     }
   }
 
@@ -2694,11 +2694,11 @@ bool Mortar::Coupling3d::has_proj_status()
 bool Mortar::Coupling3d::triangulation(std::map<int, double>& projpar, double tol)
 {
   // number of nodes
-  const int nsrows = SlaveElement().num_node();
-  const int nmrows = MasterElement().num_node();
+  const int nsrows = slave_element().num_node();
+  const int nmrows = master_element().num_node();
 
   // preparations
-  int clipsize = (int)(Clip().size());
+  int clipsize = (int)(clip().size());
   std::vector<std::vector<Core::Gen::Pairedvector<int, double>>> linvertex(
       clipsize, std::vector<Core::Gen::Pairedvector<int, double>>(3, 3 * nsrows + 3 * nmrows));
 
@@ -2709,7 +2709,7 @@ bool Mortar::Coupling3d::triangulation(std::map<int, double>& projpar, double to
   //**********************************************************************
   // (1) Linearization of clip vertex coordinates (only for contact)
   //**********************************************************************
-  VertexLinearization(linvertex, projpar);
+  vertex_linearization(linvertex, projpar);
 
   switch (tri_type)
   {
@@ -2743,8 +2743,8 @@ bool Mortar::Coupling3d::delaunay_triangulation(
     std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex, double tol)
 {
   // preparations
-  Cells().resize(0);
-  int clipsize = (int)(Clip().size());
+  cells().resize(0);
+  int clipsize = (int)(clip().size());
   bool out = false;
   if (out) std::cout << "***\nPolygon with " << clipsize << " vertices\n***" << std::endl;
 
@@ -2758,10 +2758,10 @@ bool Mortar::Coupling3d::delaunay_triangulation(
     // IntCell vertices = clip polygon vertices
     Core::LinAlg::Matrix<3, 3> coords;
     for (int i = 0; i < clipsize; ++i)
-      for (int k = 0; k < 3; ++k) coords(k, i) = Clip()[i].Coord()[k];
+      for (int k = 0; k < 3; ++k) coords(k, i) = clip()[i].coord()[k];
 
     // create IntCell object and push back
-    Cells().push_back(Teuchos::rcp(new IntCell(0, 3, coords, Auxn(), Core::FE::CellType::tri3,
+    cells().push_back(Teuchos::rcp(new IntCell(0, 3, coords, auxn(), Core::FE::CellType::tri3,
         linvertex[0], linvertex[1], linvertex[2], get_deriv_auxn())));
 
     // get out of here
@@ -2827,9 +2827,9 @@ bool Mortar::Coupling3d::delaunay_triangulation(
       Core::LinAlg::Matrix<3, 3> coords;
       for (int k = 0; k < 3; ++k)
       {
-        coords(k, 0) = Clip()[idx0].Coord()[k];
-        coords(k, 1) = Clip()[idx1].Coord()[k];
-        coords(k, 2) = Clip()[idx2].Coord()[k];
+        coords(k, 0) = clip()[idx0].coord()[k];
+        coords(k, 1) = clip()[idx1].coord()[k];
+        coords(k, 2) = clip()[idx2].coord()[k];
       }
 
       // define center of circumcircle of current triangle
@@ -2876,9 +2876,9 @@ bool Mortar::Coupling3d::delaunay_triangulation(
 
       // try to minimize error
       int direction = 0;
-      if (abs(Auxn()[0]) >= abs(Auxn()[1]) && abs(Auxn()[0]) >= abs(Auxn()[2])) direction = 1;
-      if (abs(Auxn()[1]) >= abs(Auxn()[0]) && abs(Auxn()[1]) >= abs(Auxn()[2])) direction = 2;
-      if (abs(Auxn()[2]) >= abs(Auxn()[0]) && abs(Auxn()[2]) >= abs(Auxn()[1])) direction = 3;
+      if (abs(auxn()[0]) >= abs(auxn()[1]) && abs(auxn()[0]) >= abs(auxn()[2])) direction = 1;
+      if (abs(auxn()[1]) >= abs(auxn()[0]) && abs(auxn()[1]) >= abs(auxn()[2])) direction = 2;
+      if (abs(auxn()[2]) >= abs(auxn()[0]) && abs(auxn()[2]) >= abs(auxn()[1])) direction = 3;
       if (direction == 0) FOUR_C_THROW("Did not find best direction");
 
       // intersection of the two perpendicular bisections
@@ -2939,9 +2939,9 @@ bool Mortar::Coupling3d::delaunay_triangulation(
 
         // compute distance
         const double dist =
-            sqrt((xcenter - Clip()[k].Coord()[0]) * (xcenter - Clip()[k].Coord()[0]) +
-                 (ycenter - Clip()[k].Coord()[1]) * (ycenter - Clip()[k].Coord()[1]) +
-                 (zcenter - Clip()[k].Coord()[2]) * (zcenter - Clip()[k].Coord()[2]));
+            sqrt((xcenter - clip()[k].coord()[0]) * (xcenter - clip()[k].coord()[0]) +
+                 (ycenter - clip()[k].coord()[1]) * (ycenter - clip()[k].coord()[1]) +
+                 (zcenter - clip()[k].coord()[2]) * (zcenter - clip()[k].coord()[2]));
 
         // monitor critical Delaunay criterion decision
         // (necessary to avoid inconsistent good/bad grouping later)
@@ -3196,13 +3196,13 @@ bool Mortar::Coupling3d::delaunay_triangulation(
     Core::LinAlg::Matrix<3, 3> coords;
     for (int k = 0; k < 3; ++k)
     {
-      coords(k, 0) = Clip()[idx0].Coord()[k];
-      coords(k, 1) = Clip()[idx1].Coord()[k];
-      coords(k, 2) = Clip()[idx2].Coord()[k];
+      coords(k, 0) = clip()[idx0].coord()[k];
+      coords(k, 1) = clip()[idx1].coord()[k];
+      coords(k, 2) = clip()[idx2].coord()[k];
     }
 
     // create IntCell object and push back
-    Cells().push_back(Teuchos::rcp(new IntCell(t, 3, coords, Auxn(), Core::FE::CellType::tri3,
+    cells().push_back(Teuchos::rcp(new IntCell(t, 3, coords, auxn(), Core::FE::CellType::tri3,
         linvertex[idx0], linvertex[idx1], linvertex[idx2], get_deriv_auxn())));
   }
 
@@ -3230,10 +3230,10 @@ bool Mortar::Coupling3d::center_triangulation(
     std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex, double tol)
 {
   // preparations
-  Cells().resize(0);
-  int clipsize = (int)(Clip().size());
+  cells().resize(0);
+  int clipsize = (int)(clip().size());
   std::vector<Core::Gen::Pairedvector<int, double>> lincenter(
-      3, (MasterElement().num_node() + SlaveElement().num_node()) * 3);
+      3, (master_element().num_node() + slave_element().num_node()) * 3);
 
   //**********************************************************************
   // (1) Trivial clipping polygon -> IntCells
@@ -3245,10 +3245,10 @@ bool Mortar::Coupling3d::center_triangulation(
     // IntCell vertices = clip polygon vertices
     Core::LinAlg::Matrix<3, 3> coords;
     for (int i = 0; i < clipsize; ++i)
-      for (int k = 0; k < 3; ++k) coords(k, i) = Clip()[i].Coord()[k];
+      for (int k = 0; k < 3; ++k) coords(k, i) = clip()[i].coord()[k];
 
     // create IntCell object and push back
-    Cells().push_back(Teuchos::rcp(new IntCell(0, 3, coords, Auxn(), Core::FE::CellType::tri3,
+    cells().push_back(Teuchos::rcp(new IntCell(0, 3, coords, auxn(), Core::FE::CellType::tri3,
         linvertex[0], linvertex[1], linvertex[2], get_deriv_auxn())));
 
     // get out of here
@@ -3265,7 +3265,7 @@ bool Mortar::Coupling3d::center_triangulation(
   // first we need node averaged center
   std::array<double, 3> nac = {0.0, 0.0, 0.0};
   for (int i = 0; i < clipsize; ++i)
-    for (int k = 0; k < 3; ++k) nac[k] += (Clip()[i].Coord()[k] / clipsize);
+    for (int k = 0; k < 3; ++k) nac[k] += (clip()[i].coord()[k] / clipsize);
 
   // loop over all triangles of polygon
   for (int i = 0; i < clipsize; ++i)
@@ -3276,14 +3276,14 @@ bool Mortar::Coupling3d::center_triangulation(
     // standard case
     if (i < clipsize - 1)
     {
-      for (int k = 0; k < 3; ++k) xi_i[k] = Clip()[i].Coord()[k];
-      for (int k = 0; k < 3; ++k) xi_ip1[k] = Clip()[i + 1].Coord()[k];
+      for (int k = 0; k < 3; ++k) xi_i[k] = clip()[i].coord()[k];
+      for (int k = 0; k < 3; ++k) xi_ip1[k] = clip()[i + 1].coord()[k];
     }
     // last vertex of clip polygon
     else
     {
-      for (int k = 0; k < 3; ++k) xi_i[k] = Clip()[clipsize - 1].Coord()[k];
-      for (int k = 0; k < 3; ++k) xi_ip1[k] = Clip()[0].Coord()[k];
+      for (int k = 0; k < 3; ++k) xi_i[k] = clip()[clipsize - 1].coord()[k];
+      for (int k = 0; k < 3; ++k) xi_ip1[k] = clip()[0].coord()[k];
     }
 
     // triangle area
@@ -3310,7 +3310,7 @@ bool Mortar::Coupling3d::center_triangulation(
   //**********************************************************************
   // (3) Linearization of clip center coordinates (only for contact)
   //**********************************************************************
-  CenterLinearization(linvertex, lincenter);
+  center_linearization(linvertex, lincenter);
 
   //**********************************************************************
   // (4) General clipping polygon: Triangulation -> IntCells
@@ -3325,21 +3325,21 @@ bool Mortar::Coupling3d::center_triangulation(
     for (int k = 0; k < 3; ++k)
     {
       coords(k, 0) = clipcenter[k];
-      coords(k, 1) = Clip()[num].Coord()[k];
+      coords(k, 1) = clip()[num].coord()[k];
     }
 
     // the third vertex is the next vertex on clip polygon
     int numplus1 = num + 1;
     if (num == clipsize - 1)
     {
-      for (int k = 0; k < 3; ++k) coords(k, 2) = Clip()[0].Coord()[k];
+      for (int k = 0; k < 3; ++k) coords(k, 2) = clip()[0].coord()[k];
       numplus1 = 0;
     }
     else
-      for (int k = 0; k < 3; ++k) coords(k, 2) = Clip()[num + 1].Coord()[k];
+      for (int k = 0; k < 3; ++k) coords(k, 2) = clip()[num + 1].coord()[k];
 
     // create IntCell object and push back
-    Cells().push_back(Teuchos::rcp(new IntCell(num, 3, coords, Auxn(), Core::FE::CellType::tri3,
+    cells().push_back(Teuchos::rcp(new IntCell(num, 3, coords, auxn(), Core::FE::CellType::tri3,
         lincenter, linvertex[num], linvertex[numplus1], get_deriv_auxn())));
   }
 
@@ -3351,7 +3351,7 @@ bool Mortar::Coupling3d::center_triangulation(
 /*----------------------------------------------------------------------*
  |  Integration of cells (3D)                                 popp 11/08|
  *----------------------------------------------------------------------*/
-bool Mortar::Coupling3d::IntegrateCells(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+bool Mortar::Coupling3d::integrate_cells(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
 {
   /**********************************************************************/
   /* INTEGRATION                                                        */
@@ -3360,13 +3360,13 @@ bool Mortar::Coupling3d::IntegrateCells(const Teuchos::RCP<Mortar::ParamsInterfa
   /**********************************************************************/
 
   // nothing to do here, if there are no cells
-  if (Cells().size() == 0) return false;
+  if (cells().size() == 0) return false;
 
   // loop over all integration cells
-  for (int i = 0; i < (int)(Cells().size()); ++i)
+  for (int i = 0; i < (int)(cells().size()); ++i)
   {
     // integrate cell only if it has a non-zero area
-    if (Cells()[i]->Area() < MORTARINTLIM * slave_element_area()) continue;
+    if (cells()[i]->area() < MORTARINTLIM * slave_element_area()) continue;
 
       // debug output of integration cells in GMSH
 #ifdef MORTARGMSHCELLS
@@ -3375,14 +3375,14 @@ bool Mortar::Coupling3d::IntegrateCells(const Teuchos::RCP<Mortar::ParamsInterfa
     // set segmentation status of all slave nodes
     // (hassegment_ of a slave node is true if ANY segment/cell
     // is integrated that contributes to this slave node)
-    int nnodes = SlaveIntElement().num_node();
-    Core::Nodes::Node** mynodes = SlaveIntElement().Nodes();
+    int nnodes = slave_int_element().num_node();
+    Core::Nodes::Node** mynodes = slave_int_element().nodes();
     if (!mynodes) FOUR_C_THROW("Null pointer!");
     for (int k = 0; k < nnodes; ++k)
     {
       Mortar::Node* mycnode = dynamic_cast<Mortar::Node*>(mynodes[k]);
       if (!mycnode) FOUR_C_THROW("Null pointer!");
-      mycnode->HasSegment() = true;
+      mycnode->has_segment() = true;
     }
 
     // *******************************************************************
@@ -3393,59 +3393,59 @@ bool Mortar::Coupling3d::IntegrateCells(const Teuchos::RCP<Mortar::ParamsInterfa
     // (3) quadratic element(s) involved -> linear LM interpolation
     // (4) quadratic element(s) involved -> piecew. linear LM interpolation
     // *******************************************************************
-    Inpar::Mortar::LagMultQuad lmtype = LagMultQuad();
+    Inpar::Mortar::LagMultQuad lmtype = lag_mult_quad();
 
     // *******************************************************************
     // case (1)
     // *******************************************************************
-    if (!Quad())
+    if (!quad())
     {
       // call integrator
-      Mortar::Integrator::Impl(SlaveElement(), MasterElement(), interface_params())
+      Mortar::Integrator::impl(slave_element(), master_element(), interface_params())
           ->integrate_cell3_d_aux_plane(
-              SlaveElement(), MasterElement(), Cells()[i], Auxn(), Comm());
+              slave_element(), master_element(), cells()[i], auxn(), get_comm());
     }
 
     // *******************************************************************
     // cases (2) and (3)
     // *******************************************************************
-    else if (Quad() &&
+    else if (quad() &&
              (lmtype == Inpar::Mortar::lagmult_quad || lmtype == Inpar::Mortar::lagmult_lin ||
                  lmtype == Inpar::Mortar::lagmult_const))
     {
       // dynamic_cast to make sure to pass in IntElement&
-      Mortar::IntElement& sintref = dynamic_cast<Mortar::IntElement&>(SlaveIntElement());
-      Mortar::IntElement& mintref = dynamic_cast<Mortar::IntElement&>(MasterIntElement());
+      Mortar::IntElement& sintref = dynamic_cast<Mortar::IntElement&>(slave_int_element());
+      Mortar::IntElement& mintref = dynamic_cast<Mortar::IntElement&>(master_int_element());
 
-      Mortar::Integrator::Impl(SlaveElement(), MasterElement(), interface_params())
+      Mortar::Integrator::impl(slave_element(), master_element(), interface_params())
           ->integrate_cell3_d_aux_plane_quad(
-              SlaveElement(), MasterElement(), sintref, mintref, Cells()[i], Auxn());
+              slave_element(), master_element(), sintref, mintref, cells()[i], auxn());
     }
 
     // *******************************************************************
     // case (4)
     // *******************************************************************
-    else if (Quad() && lmtype == Inpar::Mortar::lagmult_pwlin)
+    else if (quad() && lmtype == Inpar::Mortar::lagmult_pwlin)
     {
       // check for dual shape functions
-      if (ShapeFcn() == Inpar::Mortar::shape_dual)
+      if (shape_fcn() == Inpar::Mortar::shape_dual)
         FOUR_C_THROW(
             "ERROR: Piecewise linear LM interpolation not yet implemented for DUAL 3D quadratic "
             "mortar");
 
       // dynamic_cast to make sure to pass in IntElement&
-      Mortar::IntElement& sintref = dynamic_cast<Mortar::IntElement&>(SlaveIntElement());
-      Mortar::IntElement& mintref = dynamic_cast<Mortar::IntElement&>(MasterIntElement());
+      Mortar::IntElement& sintref = dynamic_cast<Mortar::IntElement&>(slave_int_element());
+      Mortar::IntElement& mintref = dynamic_cast<Mortar::IntElement&>(master_int_element());
 
-      Mortar::Integrator::Impl(SlaveElement(), MasterElement(), interface_params())
+      Mortar::Integrator::impl(slave_element(), master_element(), interface_params())
           ->integrate_cell3_d_aux_plane_quad(
-              SlaveElement(), MasterElement(), sintref, mintref, Cells()[i], Auxn());
+              slave_element(), master_element(), sintref, mintref, cells()[i], auxn());
     }
 
     // *******************************************************************
     // undefined case
     // *******************************************************************
-    else if (Quad() && lmtype == Inpar::Mortar::lagmult_undefined)
+    else if (quad() && lmtype == Inpar::Mortar::lagmult_undefined)
     {
       FOUR_C_THROW(
           "Lagrange multiplier interpolation for quadratic elements undefined\n"
@@ -3470,15 +3470,15 @@ bool Mortar::Coupling3d::IntegrateCells(const Teuchos::RCP<Mortar::ParamsInterfa
 /*----------------------------------------------------------------------*
  |  Integration of cells (3D)                                 popp 07/11|
  *----------------------------------------------------------------------*/
-void Mortar::Coupling3d::GmshOutputCells(int lid)
+void Mortar::Coupling3d::gmsh_output_cells(int lid)
 {
   // every processor writes its own cell file
-  int proc = idiscret_.Comm().MyPID();
-  int nproc = idiscret_.Comm().NumProc();
+  int proc = idiscret_.get_comm().MyPID();
+  int nproc = idiscret_.get_comm().NumProc();
 
   // write each integration cell only once
   // (no overlap, only owner of slave element writes output)
-  if (proc != SlaveElement().Owner()) return;
+  if (proc != slave_element().owner()) return;
 
   // construct unique filename for gmsh output
   // first index = time step index
@@ -3498,7 +3498,7 @@ void Mortar::Coupling3d::GmshOutputCells(int lid)
     fp = fopen(filename.str().c_str(), "a");
 
   // plot current integration cell
-  const Core::LinAlg::Matrix<3, 3>& coord = Cells()[lid]->Coords();
+  const Core::LinAlg::Matrix<3, 3>& coord = cells()[lid]->coords();
 
   // write output to temporary std::stringstream
   std::stringstream gmshfilecontent;
@@ -3548,7 +3548,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
   // *********************************************************************
   // do splitting for given element
   // *********************************************************** quad9 ***
-  if (ele.Shape() == Core::FE::CellType::quad9)
+  if (ele.shape() == Core::FE::CellType::quad9)
   {
     // split into for quad4 elements
     int numnode = 4;
@@ -3557,68 +3557,68 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     // first integration element
     // containing parent nodes 0,4,8,7
     int nodeids[4] = {0, 0, 0, 0};
-    nodeids[0] = ele.NodeIds()[0];
-    nodeids[1] = ele.NodeIds()[4];
-    nodeids[2] = ele.NodeIds()[8];
-    nodeids[3] = ele.NodeIds()[7];
+    nodeids[0] = ele.node_ids()[0];
+    nodeids[1] = ele.node_ids()[4];
+    nodeids[2] = ele.node_ids()[8];
+    nodeids[3] = ele.node_ids()[7];
 
     std::vector<Core::Nodes::Node*> nodes(4);
-    nodes[0] = ele.Nodes()[0];
-    nodes[1] = ele.Nodes()[4];
-    nodes[2] = ele.Nodes()[8];
-    nodes[3] = ele.Nodes()[7];
+    nodes[0] = ele.nodes()[0];
+    nodes[1] = ele.nodes()[4];
+    nodes[2] = ele.nodes()[8];
+    nodes[3] = ele.nodes()[7];
 
     auxele.push_back(Teuchos::rcp(new IntElement(
-        0, ele.Id(), ele.Owner(), &ele, dt, numnode, nodeids, nodes, ele.IsSlave(), false)));
+        0, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false)));
 
     // second integration element
     // containing parent nodes 4,1,5,8
-    nodeids[0] = ele.NodeIds()[4];
-    nodeids[1] = ele.NodeIds()[1];
-    nodeids[2] = ele.NodeIds()[5];
-    nodeids[3] = ele.NodeIds()[8];
+    nodeids[0] = ele.node_ids()[4];
+    nodeids[1] = ele.node_ids()[1];
+    nodeids[2] = ele.node_ids()[5];
+    nodeids[3] = ele.node_ids()[8];
 
-    nodes[0] = ele.Nodes()[4];
-    nodes[1] = ele.Nodes()[1];
-    nodes[2] = ele.Nodes()[5];
-    nodes[3] = ele.Nodes()[8];
+    nodes[0] = ele.nodes()[4];
+    nodes[1] = ele.nodes()[1];
+    nodes[2] = ele.nodes()[5];
+    nodes[3] = ele.nodes()[8];
 
     auxele.push_back(Teuchos::rcp(new IntElement(
-        1, ele.Id(), ele.Owner(), &ele, dt, numnode, nodeids, nodes, ele.IsSlave(), false)));
+        1, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false)));
 
     // third integration element
     // containing parent nodes 8,5,2,6
-    nodeids[0] = ele.NodeIds()[8];
-    nodeids[1] = ele.NodeIds()[5];
-    nodeids[2] = ele.NodeIds()[2];
-    nodeids[3] = ele.NodeIds()[6];
+    nodeids[0] = ele.node_ids()[8];
+    nodeids[1] = ele.node_ids()[5];
+    nodeids[2] = ele.node_ids()[2];
+    nodeids[3] = ele.node_ids()[6];
 
-    nodes[0] = ele.Nodes()[8];
-    nodes[1] = ele.Nodes()[5];
-    nodes[2] = ele.Nodes()[2];
-    nodes[3] = ele.Nodes()[6];
+    nodes[0] = ele.nodes()[8];
+    nodes[1] = ele.nodes()[5];
+    nodes[2] = ele.nodes()[2];
+    nodes[3] = ele.nodes()[6];
 
     auxele.push_back(Teuchos::rcp(new IntElement(
-        2, ele.Id(), ele.Owner(), &ele, dt, numnode, nodeids, nodes, ele.IsSlave(), false)));
+        2, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false)));
 
     // fourth integration element
     // containing parent nodes 7,8,6,3
-    nodeids[0] = ele.NodeIds()[7];
-    nodeids[1] = ele.NodeIds()[8];
-    nodeids[2] = ele.NodeIds()[6];
-    nodeids[3] = ele.NodeIds()[3];
+    nodeids[0] = ele.node_ids()[7];
+    nodeids[1] = ele.node_ids()[8];
+    nodeids[2] = ele.node_ids()[6];
+    nodeids[3] = ele.node_ids()[3];
 
-    nodes[0] = ele.Nodes()[7];
-    nodes[1] = ele.Nodes()[8];
-    nodes[2] = ele.Nodes()[6];
-    nodes[3] = ele.Nodes()[3];
+    nodes[0] = ele.nodes()[7];
+    nodes[1] = ele.nodes()[8];
+    nodes[2] = ele.nodes()[6];
+    nodes[3] = ele.nodes()[3];
 
     auxele.push_back(Teuchos::rcp(new IntElement(
-        3, ele.Id(), ele.Owner(), &ele, dt, numnode, nodeids, nodes, ele.IsSlave(), false)));
+        3, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false)));
   }
 
   // *********************************************************** quad8 ***
-  else if (ele.Shape() == Core::FE::CellType::quad8)
+  else if (ele.shape() == Core::FE::CellType::quad8)
   {
     // split into four tri3 elements and one quad4 element
     int numnodetri = 3;
@@ -3629,77 +3629,77 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     // first integration element
     // containing parent nodes 0,4,7
     int nodeids[3] = {0, 0, 0};
-    nodeids[0] = ele.NodeIds()[0];
-    nodeids[1] = ele.NodeIds()[4];
-    nodeids[2] = ele.NodeIds()[7];
+    nodeids[0] = ele.node_ids()[0];
+    nodeids[1] = ele.node_ids()[4];
+    nodeids[2] = ele.node_ids()[7];
 
     std::vector<Core::Nodes::Node*> nodes(3);
-    nodes[0] = ele.Nodes()[0];
-    nodes[1] = ele.Nodes()[4];
-    nodes[2] = ele.Nodes()[7];
+    nodes[0] = ele.nodes()[0];
+    nodes[1] = ele.nodes()[4];
+    nodes[2] = ele.nodes()[7];
 
     auxele.push_back(Teuchos::rcp(new IntElement(
-        0, ele.Id(), ele.Owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.IsSlave(), false)));
+        0, ele.id(), ele.owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.is_slave(), false)));
 
     // second integration element
     // containing parent nodes 1,5,4
-    nodeids[0] = ele.NodeIds()[1];
-    nodeids[1] = ele.NodeIds()[5];
-    nodeids[2] = ele.NodeIds()[4];
+    nodeids[0] = ele.node_ids()[1];
+    nodeids[1] = ele.node_ids()[5];
+    nodeids[2] = ele.node_ids()[4];
 
-    nodes[0] = ele.Nodes()[1];
-    nodes[1] = ele.Nodes()[5];
-    nodes[2] = ele.Nodes()[4];
+    nodes[0] = ele.nodes()[1];
+    nodes[1] = ele.nodes()[5];
+    nodes[2] = ele.nodes()[4];
 
     auxele.push_back(Teuchos::rcp(new IntElement(
-        1, ele.Id(), ele.Owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.IsSlave(), false)));
+        1, ele.id(), ele.owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.is_slave(), false)));
 
     // third integration element
     // containing parent nodes 2,6,5
-    nodeids[0] = ele.NodeIds()[2];
-    nodeids[1] = ele.NodeIds()[6];
-    nodeids[2] = ele.NodeIds()[5];
+    nodeids[0] = ele.node_ids()[2];
+    nodeids[1] = ele.node_ids()[6];
+    nodeids[2] = ele.node_ids()[5];
 
-    nodes[0] = ele.Nodes()[2];
-    nodes[1] = ele.Nodes()[6];
-    nodes[2] = ele.Nodes()[5];
+    nodes[0] = ele.nodes()[2];
+    nodes[1] = ele.nodes()[6];
+    nodes[2] = ele.nodes()[5];
 
     auxele.push_back(Teuchos::rcp(new IntElement(
-        2, ele.Id(), ele.Owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.IsSlave(), false)));
+        2, ele.id(), ele.owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.is_slave(), false)));
 
     // fourth integration element
     // containing parent nodes 3,7,6
-    nodeids[0] = ele.NodeIds()[3];
-    nodeids[1] = ele.NodeIds()[7];
-    nodeids[2] = ele.NodeIds()[6];
+    nodeids[0] = ele.node_ids()[3];
+    nodeids[1] = ele.node_ids()[7];
+    nodeids[2] = ele.node_ids()[6];
 
-    nodes[0] = ele.Nodes()[3];
-    nodes[1] = ele.Nodes()[7];
-    nodes[2] = ele.Nodes()[6];
+    nodes[0] = ele.nodes()[3];
+    nodes[1] = ele.nodes()[7];
+    nodes[2] = ele.nodes()[6];
 
     auxele.push_back(Teuchos::rcp(new IntElement(
-        3, ele.Id(), ele.Owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.IsSlave(), false)));
+        3, ele.id(), ele.owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.is_slave(), false)));
 
     // fifth integration element
     // containing parent nodes 4,5,6,7
     int nodeidsquad[4] = {0, 0, 0, 0};
-    nodeidsquad[0] = ele.NodeIds()[4];
-    nodeidsquad[1] = ele.NodeIds()[5];
-    nodeidsquad[2] = ele.NodeIds()[6];
-    nodeidsquad[3] = ele.NodeIds()[7];
+    nodeidsquad[0] = ele.node_ids()[4];
+    nodeidsquad[1] = ele.node_ids()[5];
+    nodeidsquad[2] = ele.node_ids()[6];
+    nodeidsquad[3] = ele.node_ids()[7];
 
     std::vector<Core::Nodes::Node*> nodesquad(4);
-    nodesquad[0] = ele.Nodes()[4];
-    nodesquad[1] = ele.Nodes()[5];
-    nodesquad[2] = ele.Nodes()[6];
-    nodesquad[3] = ele.Nodes()[7];
+    nodesquad[0] = ele.nodes()[4];
+    nodesquad[1] = ele.nodes()[5];
+    nodesquad[2] = ele.nodes()[6];
+    nodesquad[3] = ele.nodes()[7];
 
-    auxele.push_back(Teuchos::rcp(new IntElement(4, ele.Id(), ele.Owner(), &ele, dtquad,
-        numnodequad, nodeidsquad, nodesquad, ele.IsSlave(), false)));
+    auxele.push_back(Teuchos::rcp(new IntElement(4, ele.id(), ele.owner(), &ele, dtquad,
+        numnodequad, nodeidsquad, nodesquad, ele.is_slave(), false)));
   }
 
   // ************************************************************ tri6 ***
-  else if (ele.Shape() == Core::FE::CellType::tri6)
+  else if (ele.shape() == Core::FE::CellType::tri6)
   {
     // split into four tri3 elements
     int numnode = 3;
@@ -3708,87 +3708,87 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     // first integration element
     // containing parent nodes 0,3,5
     int nodeids[3] = {0, 0, 0};
-    nodeids[0] = ele.NodeIds()[0];
-    nodeids[1] = ele.NodeIds()[3];
-    nodeids[2] = ele.NodeIds()[5];
+    nodeids[0] = ele.node_ids()[0];
+    nodeids[1] = ele.node_ids()[3];
+    nodeids[2] = ele.node_ids()[5];
 
     std::vector<Core::Nodes::Node*> nodes(3);
-    nodes[0] = ele.Nodes()[0];
-    nodes[1] = ele.Nodes()[3];
-    nodes[2] = ele.Nodes()[5];
+    nodes[0] = ele.nodes()[0];
+    nodes[1] = ele.nodes()[3];
+    nodes[2] = ele.nodes()[5];
 
     auxele.push_back(Teuchos::rcp(new IntElement(
-        0, ele.Id(), ele.Owner(), &ele, dt, numnode, nodeids, nodes, ele.IsSlave(), false)));
+        0, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false)));
 
     // second integration element
     // containing parent nodes 3,1,4
-    nodeids[0] = ele.NodeIds()[3];
-    nodeids[1] = ele.NodeIds()[1];
-    nodeids[2] = ele.NodeIds()[4];
+    nodeids[0] = ele.node_ids()[3];
+    nodeids[1] = ele.node_ids()[1];
+    nodeids[2] = ele.node_ids()[4];
 
-    nodes[0] = ele.Nodes()[3];
-    nodes[1] = ele.Nodes()[1];
-    nodes[2] = ele.Nodes()[4];
+    nodes[0] = ele.nodes()[3];
+    nodes[1] = ele.nodes()[1];
+    nodes[2] = ele.nodes()[4];
 
     auxele.push_back(Teuchos::rcp(new IntElement(
-        1, ele.Id(), ele.Owner(), &ele, dt, numnode, nodeids, nodes, ele.IsSlave(), false)));
+        1, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false)));
 
     // third integration element
     // containing parent nodes 5,4,2
-    nodeids[0] = ele.NodeIds()[5];
-    nodeids[1] = ele.NodeIds()[4];
-    nodeids[2] = ele.NodeIds()[2];
+    nodeids[0] = ele.node_ids()[5];
+    nodeids[1] = ele.node_ids()[4];
+    nodeids[2] = ele.node_ids()[2];
 
-    nodes[0] = ele.Nodes()[5];
-    nodes[1] = ele.Nodes()[4];
-    nodes[2] = ele.Nodes()[2];
+    nodes[0] = ele.nodes()[5];
+    nodes[1] = ele.nodes()[4];
+    nodes[2] = ele.nodes()[2];
 
     auxele.push_back(Teuchos::rcp(new IntElement(
-        2, ele.Id(), ele.Owner(), &ele, dt, numnode, nodeids, nodes, ele.IsSlave(), false)));
+        2, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false)));
 
     // fourth integration element
     // containing parent nodes 4,5,3
-    nodeids[0] = ele.NodeIds()[4];
-    nodeids[1] = ele.NodeIds()[5];
-    nodeids[2] = ele.NodeIds()[3];
+    nodeids[0] = ele.node_ids()[4];
+    nodeids[1] = ele.node_ids()[5];
+    nodeids[2] = ele.node_ids()[3];
 
-    nodes[0] = ele.Nodes()[4];
-    nodes[1] = ele.Nodes()[5];
-    nodes[2] = ele.Nodes()[3];
+    nodes[0] = ele.nodes()[4];
+    nodes[1] = ele.nodes()[5];
+    nodes[2] = ele.nodes()[3];
 
     auxele.push_back(Teuchos::rcp(new IntElement(
-        3, ele.Id(), ele.Owner(), &ele, dt, numnode, nodeids, nodes, ele.IsSlave(), false)));
+        3, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false)));
   }
 
   // *********************************************************** quad4 ***
-  else if (ele.Shape() == Core::FE::CellType::quad4)
+  else if (ele.shape() == Core::FE::CellType::quad4)
   {
     // 1:1 conversion to IntElement
     std::vector<Core::Nodes::Node*> nodes(4);
-    nodes[0] = ele.Nodes()[0];
-    nodes[1] = ele.Nodes()[1];
-    nodes[2] = ele.Nodes()[2];
-    nodes[3] = ele.Nodes()[3];
+    nodes[0] = ele.nodes()[0];
+    nodes[1] = ele.nodes()[1];
+    nodes[2] = ele.nodes()[2];
+    nodes[3] = ele.nodes()[3];
 
-    auxele.push_back(Teuchos::rcp(new IntElement(0, ele.Id(), ele.Owner(), &ele, ele.Shape(),
-        ele.num_node(), ele.NodeIds(), nodes, ele.IsSlave(), false)));
+    auxele.push_back(Teuchos::rcp(new IntElement(0, ele.id(), ele.owner(), &ele, ele.shape(),
+        ele.num_node(), ele.node_ids(), nodes, ele.is_slave(), false)));
   }
 
   // ************************************************************ tri3 ***
-  else if (ele.Shape() == Core::FE::CellType::tri3)
+  else if (ele.shape() == Core::FE::CellType::tri3)
   {
     // 1:1 conversion to IntElement
     std::vector<Core::Nodes::Node*> nodes(3);
-    nodes[0] = ele.Nodes()[0];
-    nodes[1] = ele.Nodes()[1];
-    nodes[2] = ele.Nodes()[2];
+    nodes[0] = ele.nodes()[0];
+    nodes[1] = ele.nodes()[1];
+    nodes[2] = ele.nodes()[2];
 
-    auxele.push_back(Teuchos::rcp(new IntElement(0, ele.Id(), ele.Owner(), &ele, ele.Shape(),
-        ele.num_node(), ele.NodeIds(), nodes, ele.IsSlave(), false)));
+    auxele.push_back(Teuchos::rcp(new IntElement(0, ele.id(), ele.owner(), &ele, ele.shape(),
+        ele.num_node(), ele.node_ids(), nodes, ele.is_slave(), false)));
   }
 
   // ************************************************************ nurbs9 ***
-  else if (ele.Shape() == Core::FE::CellType::nurbs9)
+  else if (ele.shape() == Core::FE::CellType::nurbs9)
   {
     // create one IntElement from one nurbs9 element
     // new nodes are created as the images of the corners of the parameter
@@ -3806,37 +3806,37 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     std::array<int, 4> id = {0, 0, 0, 0};
     bool rewind = false;
 
-    if (ele.NormalFac() == 1.)
+    if (ele.normal_fac() == 1.)
     {
       rewind = false;
       pseudo_nodes_param_coords[0][0] = -1.;
       pseudo_nodes_param_coords[0][1] = -1.;
-      id[0] = ele.NodeIds()[0];
+      id[0] = ele.node_ids()[0];
       pseudo_nodes_param_coords[1][0] = +1.;
       pseudo_nodes_param_coords[1][1] = -1.;
-      id[1] = ele.NodeIds()[2];
+      id[1] = ele.node_ids()[2];
       pseudo_nodes_param_coords[2][0] = +1.;
       pseudo_nodes_param_coords[2][1] = +1.;
-      id[2] = ele.NodeIds()[8];
+      id[2] = ele.node_ids()[8];
       pseudo_nodes_param_coords[3][0] = -1.;
       pseudo_nodes_param_coords[3][1] = +1.;
-      id[3] = ele.NodeIds()[6];
+      id[3] = ele.node_ids()[6];
     }
-    else if (ele.NormalFac() == -1.)
+    else if (ele.normal_fac() == -1.)
     {
       rewind = true;
       pseudo_nodes_param_coords[0][0] = -1.;
       pseudo_nodes_param_coords[0][1] = -1.;
-      id[0] = ele.NodeIds()[0];
+      id[0] = ele.node_ids()[0];
       pseudo_nodes_param_coords[1][0] = -1.;
       pseudo_nodes_param_coords[1][1] = +1.;
-      id[1] = ele.NodeIds()[6];
+      id[1] = ele.node_ids()[6];
       pseudo_nodes_param_coords[2][0] = +1.;
       pseudo_nodes_param_coords[2][1] = +1.;
-      id[2] = ele.NodeIds()[8];
+      id[2] = ele.node_ids()[8];
       pseudo_nodes_param_coords[3][0] = +1.;
       pseudo_nodes_param_coords[3][1] = -1.;
-      id[3] = ele.NodeIds()[2];
+      id[3] = ele.node_ids()[2];
     }
     else
       FOUR_C_THROW("don't know what to do with this ele.NormalFac()");
@@ -3853,14 +3853,14 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
       ele.evaluate_shape(xi, sval, sderiv, 9, true);
       for (int dim = 0; dim < dim_; ++dim)
         for (int n = 0; n < ele.num_node(); ++n)
-          xspatial[dim] += sval(n) * dynamic_cast<Mortar::Node*>(ele.Nodes()[n])->xspatial()[dim];
-      pseudo_nodes.push_back(Mortar::Node(-1, xspatial, ele.Owner(), empty_dofs, ele.IsSlave()));
+          xspatial[dim] += sval(n) * dynamic_cast<Mortar::Node*>(ele.nodes()[n])->xspatial()[dim];
+      pseudo_nodes.push_back(Mortar::Node(-1, xspatial, ele.owner(), empty_dofs, ele.is_slave()));
     }
 
     for (int i = 0; i < 4; ++i) pseudo_nodes_ptr.push_back(&(pseudo_nodes[i]));
 
-    auxele.push_back(Teuchos::rcp(new IntElement(0, ele.Id(), ele.Owner(), &ele,
-        Core::FE::CellType::quad4, 4, &(id[0]), pseudo_nodes_ptr, ele.IsSlave(), rewind)));
+    auxele.push_back(Teuchos::rcp(new IntElement(0, ele.id(), ele.owner(), &ele,
+        Core::FE::CellType::quad4, 4, &(id[0]), pseudo_nodes_ptr, ele.is_slave(), rewind)));
   }
 
   // ********************************************************* invalid ***
@@ -3884,7 +3884,7 @@ Mortar::Coupling3dQuad::Coupling3dQuad(Core::FE::Discretization& idiscret, int d
       mintele_(mintele)
 {
   //  3D quadratic coupling only for quadratic ansatz type
-  if (!Quad()) FOUR_C_THROW("Coupling3dQuad called for non-quadratic ansatz!");
+  if (!Coupling3dQuad::quad()) FOUR_C_THROW("Coupling3dQuad called for non-quadratic ansatz!");
 
   return;
 }
@@ -3893,7 +3893,7 @@ Mortar::Coupling3dQuad::Coupling3dQuad(Core::FE::Discretization& idiscret, int d
 /*----------------------------------------------------------------------*
  |  get communicator  (public)                               farah 01/13|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& Mortar::Coupling3dManager::Comm() const { return idiscret_.Comm(); }
+const Epetra_Comm& Mortar::Coupling3dManager::get_comm() const { return idiscret_.get_comm(); }
 
 
 /*----------------------------------------------------------------------*
@@ -3934,7 +3934,7 @@ Mortar::Coupling3dQuadManager::Coupling3dQuadManager(Core::FE::Discretization& i
 bool Mortar::Coupling3dManager::evaluate_coupling(Teuchos::RCP<Mortar::ParamsInterface> mparams_ptr)
 {
   // check of we need to start the real coupling
-  if (MasterElements().size() == 0) return false;
+  if (master_elements().size() == 0) return false;
 
   // decide which type of coupling should be evaluated
   Inpar::Mortar::AlgorithmType algo =
@@ -3967,16 +3967,16 @@ void Mortar::Coupling3dManager::integrate_coupling(
   //**********************************************************************
   // STANDARD INTEGRATION (SEGMENTS)
   //**********************************************************************
-  if (IntType() == Inpar::Mortar::inttype_segments)
+  if (int_type() == Inpar::Mortar::inttype_segments)
   {
     // loop over all master elements associated with this slave element
-    for (int m = 0; m < (int)MasterElements().size(); ++m)
+    for (int m = 0; m < (int)master_elements().size(); ++m)
     {
       // create Coupling3d object and push back
-      Coupling().push_back(Teuchos::rcp(
-          new Coupling3d(idiscret_, dim_, false, imortar_, SlaveElement(), MasterElement(m))));
+      coupling().push_back(Teuchos::rcp(
+          new Coupling3d(idiscret_, dim_, false, imortar_, slave_element(), master_element(m))));
       // do coupling
-      Coupling()[m]->evaluate_coupling();
+      coupling()[m]->evaluate_coupling();
     }
 
     // special treatment of boundary elements
@@ -3984,42 +3984,43 @@ void Mortar::Coupling3dManager::integrate_coupling(
     consist_dual_shape();
 
     // integrate cells
-    for (int m = 0; m < (int)MasterElements().size(); ++m)
-      Coupling()[m]->IntegrateCells(mparams_ptr);
+    for (int m = 0; m < (int)master_elements().size(); ++m)
+      coupling()[m]->integrate_cells(mparams_ptr);
   }
   //**********************************************************************
   // FAST INTEGRATION (ELEMENTS)
   //**********************************************************************
-  else if (IntType() == Inpar::Mortar::inttype_elements ||
-           IntType() == Inpar::Mortar::inttype_elements_BS)
+  else if (int_type() == Inpar::Mortar::inttype_elements ||
+           int_type() == Inpar::Mortar::inttype_elements_BS)
   {
-    if ((int)MasterElements().size() == 0) return;
+    if ((int)master_elements().size() == 0) return;
 
-    if (!Quad())
+    if (!quad())
     {
       bool boundary_ele = false;
 
       // integrate D and M -- 2 Cells
-      Mortar::Integrator::Impl(SlaveElement(), MasterElement(0), imortar_)
-          ->IntegrateEleBased3D(SlaveElement(), MasterElements(), &boundary_ele, idiscret_.Comm());
+      Mortar::Integrator::impl(slave_element(), master_element(0), imortar_)
+          ->integrate_ele_based3_d(
+              slave_element(), master_elements(), &boundary_ele, idiscret_.get_comm());
 
-      if (IntType() == Inpar::Mortar::inttype_elements_BS)
+      if (int_type() == Inpar::Mortar::inttype_elements_BS)
       {
         if (boundary_ele == true)
         {
           if (lmdualconsistent_ != Inpar::Mortar::consistent_none)
           {
             // loop over all master elements associated with this slave element
-            for (int m = 0; m < (int)MasterElements().size(); ++m)
+            for (int m = 0; m < (int)master_elements().size(); ++m)
             {
               // create Coupling3d object and push back
-              Coupling().push_back(Teuchos::rcp(new Coupling3d(
-                  idiscret_, dim_, false, imortar_, SlaveElement(), MasterElement(m))));
+              coupling().push_back(Teuchos::rcp(new Coupling3d(
+                  idiscret_, dim_, false, imortar_, slave_element(), master_element(m))));
               // do coupling
-              Coupling()[m]->evaluate_coupling();
+              coupling()[m]->evaluate_coupling();
 
               // integrate cells
-              Coupling()[m]->IntegrateCells(mparams_ptr);
+              coupling()[m]->integrate_cells(mparams_ptr);
             }
           }
 
@@ -4027,21 +4028,21 @@ void Mortar::Coupling3dManager::integrate_coupling(
           else
           {
             // loop over all master elements associated with this slave element
-            for (int m = 0; m < (int)MasterElements().size(); ++m)
+            for (int m = 0; m < (int)master_elements().size(); ++m)
             {
               // create Coupling3d object and push back
-              Coupling().push_back(Teuchos::rcp(new Coupling3d(
-                  idiscret_, dim_, false, imortar_, SlaveElement(), MasterElement(m))));
+              coupling().push_back(Teuchos::rcp(new Coupling3d(
+                  idiscret_, dim_, false, imortar_, slave_element(), master_element(m))));
               // do coupling
-              Coupling()[m]->evaluate_coupling();
+              coupling()[m]->evaluate_coupling();
             }
 
             // consistent dual shape functions
             consist_dual_shape();
 
             // integrate cells
-            for (int m = 0; m < (int)MasterElements().size(); ++m)
-              Coupling()[m]->IntegrateCells(mparams_ptr);
+            for (int m = 0; m < (int)master_elements().size(); ++m)
+              coupling()[m]->integrate_cells(mparams_ptr);
           }
         }
         else
@@ -4070,8 +4071,8 @@ void Mortar::Coupling3dManager::integrate_coupling(
   }
 
   // free memory of consistent dual shape function coefficient matrix
-  SlaveElement().MoData().ResetDualShape();
-  SlaveElement().MoData().ResetDerivDualShape();
+  slave_element().mo_data().reset_dual_shape();
+  slave_element().mo_data().reset_deriv_dual_shape();
 
   return;
 }
@@ -4088,20 +4089,20 @@ void Mortar::Coupling3dQuadManager::integrate_coupling(
   //**********************************************************************
   // STANDARD INTEGRATION (SEGMENTS)
   //**********************************************************************
-  if (IntType() == Inpar::Mortar::inttype_segments)
+  if (int_type() == Inpar::Mortar::inttype_segments)
   {
     // build linear integration elements from quadratic Mortar::Elements
     std::vector<Teuchos::RCP<Mortar::IntElement>> sauxelements(0);
     std::vector<std::vector<Teuchos::RCP<Mortar::IntElement>>> mauxelements(
-        MasterElements().size());
-    split_int_elements(SlaveElement(), sauxelements);
+        master_elements().size());
+    split_int_elements(slave_element(), sauxelements);
 
     // loop over all master elements associated with this slave element
-    for (int m = 0; m < (int)MasterElements().size(); ++m)
+    for (int m = 0; m < (int)master_elements().size(); ++m)
     {
       // build linear integration elements from quadratic Mortar::Elements
       mauxelements[m].resize(0);
-      split_int_elements(*MasterElements()[m], mauxelements[m]);
+      split_int_elements(*master_elements()[m], mauxelements[m]);
 
       // loop over all IntElement pairs for coupling
       for (int i = 0; i < (int)sauxelements.size(); ++i)
@@ -4109,11 +4110,11 @@ void Mortar::Coupling3dQuadManager::integrate_coupling(
         for (int j = 0; j < (int)mauxelements[m].size(); ++j)
         {
           // create instance of coupling class
-          Coupling().push_back(Teuchos::rcp(new Coupling3dQuad(idiscret_, dim_, true, imortar_,
-              SlaveElement(), *MasterElements()[m], *sauxelements[i], *mauxelements[m][j])));
+          coupling().push_back(Teuchos::rcp(new Coupling3dQuad(idiscret_, dim_, true, imortar_,
+              slave_element(), *master_elements()[m], *sauxelements[i], *mauxelements[m][j])));
 
           // do coupling
-          Coupling()[Coupling().size() - 1]->evaluate_coupling();
+          coupling()[coupling().size() - 1]->evaluate_coupling();
         }  // for maux
       }    // for saux
     }      // for m
@@ -4121,34 +4122,35 @@ void Mortar::Coupling3dQuadManager::integrate_coupling(
     consist_dual_shape();
 
     // do integration
-    for (int i = 0; i < (int)Coupling().size(); ++i) Coupling()[i]->IntegrateCells(mparams_ptr);
+    for (int i = 0; i < (int)coupling().size(); ++i) coupling()[i]->integrate_cells(mparams_ptr);
   }
   //**********************************************************************
   // FAST INTEGRATION (ELEMENTS)
   //**********************************************************************
-  else if (IntType() == Inpar::Mortar::inttype_elements ||
-           IntType() == Inpar::Mortar::inttype_elements_BS)
+  else if (int_type() == Inpar::Mortar::inttype_elements ||
+           int_type() == Inpar::Mortar::inttype_elements_BS)
   {
-    if ((int)MasterElements().size() == 0) return;
+    if ((int)master_elements().size() == 0) return;
 
     bool boundary_ele = false;
 
     // integrate D and M -- 2 Cells
-    Mortar::Integrator::Impl(SlaveElement(), MasterElement(0), imortar_)
-        ->IntegrateEleBased3D(SlaveElement(), MasterElements(), &boundary_ele, idiscret_.Comm());
+    Mortar::Integrator::impl(slave_element(), master_element(0), imortar_)
+        ->integrate_ele_based3_d(
+            slave_element(), master_elements(), &boundary_ele, idiscret_.get_comm());
 
-    if (IntType() == Inpar::Mortar::inttype_elements_BS)
+    if (int_type() == Inpar::Mortar::inttype_elements_BS)
     {
       if (boundary_ele == true)
       {
         // loop over all master elements associated with this slave element
-        for (int m = 0; m < (int)MasterElements().size(); ++m)
+        for (int m = 0; m < (int)master_elements().size(); ++m)
         {
           // build linear integration elements from quadratic Mortar::Elements
           std::vector<Teuchos::RCP<Mortar::IntElement>> sauxelements(0);
           std::vector<Teuchos::RCP<Mortar::IntElement>> mauxelements(0);
-          split_int_elements(SlaveElement(), sauxelements);
-          split_int_elements(*MasterElements()[m], mauxelements);
+          split_int_elements(slave_element(), sauxelements);
+          split_int_elements(*master_elements()[m], mauxelements);
 
           // loop over all IntElement pairs for coupling
           for (int i = 0; i < (int)sauxelements.size(); ++i)
@@ -4156,13 +4158,13 @@ void Mortar::Coupling3dQuadManager::integrate_coupling(
             for (int j = 0; j < (int)mauxelements.size(); ++j)
             {
               // create instance of coupling class
-              Mortar::Coupling3dQuad coup(idiscret_, dim_, true, imortar_, SlaveElement(),
-                  *MasterElements()[m], *sauxelements[i], *mauxelements[j]);
+              Mortar::Coupling3dQuad coup(idiscret_, dim_, true, imortar_, slave_element(),
+                  *master_elements()[m], *sauxelements[i], *mauxelements[j]);
               // do coupling
               coup.evaluate_coupling();
 
               // Integrate Cells
-              coup.IntegrateCells(mparams_ptr);
+              coup.integrate_cells(mparams_ptr);
             }  // for maux
           }    // for saux
         }      // for m
@@ -4186,8 +4188,8 @@ void Mortar::Coupling3dQuadManager::integrate_coupling(
   }
 
   // free memory of consistent dual shape function coefficient matrix
-  SlaveElement().MoData().ResetDualShape();
-  SlaveElement().MoData().ResetDerivDualShape();
+  slave_element().mo_data().reset_dual_shape();
+  slave_element().mo_data().reset_deriv_dual_shape();
 
   return;
 }
@@ -4199,29 +4201,29 @@ void Mortar::Coupling3dManager::consist_dual_shape()
 {
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
-  if (ShapeFcn() == Inpar::Mortar::shape_standard ||
+  if (shape_fcn() == Inpar::Mortar::shape_standard ||
       lmdualconsistent_ == Inpar::Mortar::consistent_none)
     return;
 
   // Consistent modification not yet checked for constant LM interpolation
-  if (Quad() == true && LagMultQuad() == Inpar::Mortar::lagmult_const &&
+  if (quad() == true && lag_mult_quad() == Inpar::Mortar::lagmult_const &&
       lmdualconsistent_ != Inpar::Mortar::consistent_none)
     FOUR_C_THROW(
         "ERROR: Consistent dual shape functions not yet checked for constant LM interpolation!");
 
-  if (Coupling().size() == 0) return;
+  if (coupling().size() == 0) return;
 
-  if (IntType() == Inpar::Mortar::inttype_segments &&
+  if (int_type() == Inpar::Mortar::inttype_segments &&
       lmdualconsistent_ == Inpar::Mortar::consistent_boundary)
   {
     // check if fully projecting
     bool boundary_ele = false;
 
-    Mortar::ElementIntegrator integrator(SlaveElement().Shape());
-    for (int gp = 0; gp < integrator.nGP(); ++gp)
+    Mortar::ElementIntegrator integrator(slave_element().shape());
+    for (int gp = 0; gp < integrator.n_gp(); ++gp)
     {
       // coordinates and weight
-      std::array<double, 2> eta = {integrator.Coordinate(gp, 0), integrator.Coordinate(gp, 1)};
+      std::array<double, 2> eta = {integrator.coordinate(gp, 0), integrator.coordinate(gp, 1)};
 
       // note that the third component of sxi is necessary!
       // (although it will always be 0.0 of course)
@@ -4237,17 +4239,17 @@ void Mortar::Coupling3dManager::consist_dual_shape()
       bool projectable_gp = false;
 
       // discretization type of master element
-      Core::FE::CellType dt = Coupling()[0]->MasterElement().Shape();
+      Core::FE::CellType dt = coupling()[0]->master_element().shape();
 
       //*******************************************************************
       // loop over meles
       //*******************************************************************
-      for (int nummaster = 0; nummaster < (int)Coupling().size(); ++nummaster)
+      for (int nummaster = 0; nummaster < (int)coupling().size(); ++nummaster)
       {
         // project Gauss point onto master element
-        Mortar::Projector::Impl(SlaveElement(), Coupling()[nummaster]->MasterElement())
-            ->ProjectGaussPoint3D(
-                SlaveElement(), sxi, Coupling()[nummaster]->MasterElement(), mxi, projalpha);
+        Mortar::Projector::impl(slave_element(), coupling()[nummaster]->master_element())
+            ->project_gauss_point3_d(
+                slave_element(), sxi, coupling()[nummaster]->master_element(), mxi, projalpha);
 
         bool is_on_mele = true;
 
@@ -4283,7 +4285,7 @@ void Mortar::Coupling3dManager::consist_dual_shape()
   }
 
   // get number of nodes of present slave element
-  int nnodes = SlaveElement().num_node();
+  int nnodes = slave_element().num_node();
 
   // initialize Jacobian determinant
   double detg = 0.0;
@@ -4293,50 +4295,51 @@ void Mortar::Coupling3dManager::consist_dual_shape()
   Core::LinAlg::SerialDenseMatrix de(nnodes, nnodes, true);
 
   // loop over all master elements associated with this slave element
-  for (int m = 0; m < (int)MasterElements().size(); ++m)
+  for (int m = 0; m < (int)master_elements().size(); ++m)
   {
     // loop over all integration cells
-    for (int c = 0; c < (int)Coupling()[m]->Cells().size(); ++c)
+    for (int c = 0; c < (int)coupling()[m]->cells().size(); ++c)
     {
-      Teuchos::RCP<Mortar::IntCell> currcell = Coupling()[m]->Cells()[c];
+      Teuchos::RCP<Mortar::IntCell> currcell = coupling()[m]->cells()[c];
 
       // create an integrator for this cell
       for (int gp = 0;
-           gp < Mortar::Integrator::Impl(SlaveElement(), MasterElement(m), imortar_)->nGP(); ++gp)
+           gp < Mortar::Integrator::impl(slave_element(), master_element(m), imortar_)->n_gp();
+           ++gp)
       {
         // coordinates and weight
-        double eta[2] = {
-            Mortar::Integrator::Impl(SlaveElement(), MasterElement(m), imortar_)->Coordinate(gp, 0),
-            Mortar::Integrator::Impl(SlaveElement(), MasterElement(m), imortar_)
-                ->Coordinate(gp, 1)};
+        double eta[2] = {Mortar::Integrator::impl(slave_element(), master_element(m), imortar_)
+                             ->coordinate(gp, 0),
+            Mortar::Integrator::impl(slave_element(), master_element(m), imortar_)
+                ->coordinate(gp, 1)};
         double wgt =
-            Mortar::Integrator::Impl(SlaveElement(), MasterElement(m), imortar_)->Weight(gp);
+            Mortar::Integrator::impl(slave_element(), master_element(m), imortar_)->weight(gp);
 
         // get global Gauss point coordinates
         double globgp[3] = {0.0, 0.0, 0.0};
-        currcell->LocalToGlobal(eta, globgp, 0);
+        currcell->local_to_global(eta, globgp, 0);
 
         // project Gauss point onto slave integration element
         double sxi[2] = {0.0, 0.0};
         double sprojalpha = 0.0;
 
         // TODO random?
-        Mortar::Projector::Impl(SlaveElement())
+        Mortar::Projector::impl(slave_element())
             ->project_gauss_point_auxn3_d(
-                globgp, Coupling()[m]->Auxn(), SlaveElement(), sxi, sprojalpha);
+                globgp, coupling()[m]->auxn(), slave_element(), sxi, sprojalpha);
 
         // create vector for shape function evaluation
         Core::LinAlg::SerialDenseVector sval(nnodes);
         Core::LinAlg::SerialDenseMatrix sderiv(nnodes, 2, true);
 
         // evaluate trace space shape functions at Gauss point
-        if (LagMultQuad() == Inpar::Mortar::lagmult_lin)
-          SlaveElement().evaluate_shape_lag_mult_lin(
+        if (lag_mult_quad() == Inpar::Mortar::lagmult_lin)
+          slave_element().evaluate_shape_lag_mult_lin(
               Inpar::Mortar::shape_standard, sxi, sval, sderiv, nnodes);
         else
-          SlaveElement().evaluate_shape(sxi, sval, sderiv, nnodes);
+          slave_element().evaluate_shape(sxi, sval, sderiv, nnodes);
 
-        detg = currcell->Jacobian();
+        detg = currcell->jacobian();
 
         // computing de, me
         for (int j = 0; j < nnodes; ++j)
@@ -4367,12 +4370,12 @@ void Mortar::Coupling3dManager::consist_dual_shape()
   Core::LinAlg::SerialDenseMatrix ae(nnodes, nnodes, true);
 
   // compute matrix A_e for linear interpolation of quadratic element
-  if (LagMultQuad() == Inpar::Mortar::lagmult_lin)
+  if (lag_mult_quad() == Inpar::Mortar::lagmult_lin)
   {
     // declare and initialize to zero inverse of Matrix M_e
     Core::LinAlg::SerialDenseMatrix meinv(nnodes, nnodes, true);
 
-    if (SlaveElement().Shape() == Core::FE::CellType::tri6)
+    if (slave_element().shape() == Core::FE::CellType::tri6)
     {
       // reduce me to non-zero nodes before inverting
       Core::LinAlg::Matrix<3, 3> melin;
@@ -4386,8 +4389,8 @@ void Mortar::Coupling3dManager::consist_dual_shape()
       for (int j = 0; j < 3; ++j)
         for (int k = 0; k < 3; ++k) meinv(j, k) = melin(j, k);
     }
-    else if (SlaveElement().Shape() == Core::FE::CellType::quad8 ||
-             SlaveElement().Shape() == Core::FE::CellType::quad9)
+    else if (slave_element().shape() == Core::FE::CellType::quad8 ||
+             slave_element().shape() == Core::FE::CellType::quad9)
     {
       // reduce me to non-zero nodes before inverting
       Core::LinAlg::Matrix<4, 4> melin;
@@ -4412,7 +4415,7 @@ void Mortar::Coupling3dManager::consist_dual_shape()
     Core::LinAlg::InvertAndMultiplyByCholesky(me, de, ae);
 
   // store ae matrix in slave element data container
-  SlaveElement().MoData().DualShape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+  slave_element().mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
 
   return;
 }

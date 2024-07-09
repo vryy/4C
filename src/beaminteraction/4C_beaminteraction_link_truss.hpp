@@ -38,11 +38,11 @@ namespace BEAMINTERACTION
   class BeamLinkTrussType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "BeamLinkTrussType"; };
+    std::string name() const override { return "BeamLinkTrussType"; };
 
-    static BeamLinkTrussType& Instance() { return instance_; };
+    static BeamLinkTrussType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static BeamLinkTrussType instance_;
@@ -90,9 +90,9 @@ namespace BEAMINTERACTION
     Every class implementing ParObject needs a unique id defined at the
     top of parobject.H
     */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return BeamLinkTrussType::Instance().UniqueParObjectId();
+      return BeamLinkTrussType::instance().unique_par_object_id();
     };
 
     /*!
@@ -112,7 +112,7 @@ namespace BEAMINTERACTION
     void unpack(const std::vector<char>& data) override;
 
     /// return copy of this linking object
-    Teuchos::RCP<BeamLink> Clone() const override;
+    Teuchos::RCP<BeamLink> clone() const override;
 
     //@}
 
@@ -120,16 +120,16 @@ namespace BEAMINTERACTION
     //! @name Access methods
 
     //! get internal linker energy
-    double GetInternalEnergy() const override;
+    double get_internal_energy() const override;
 
     //! get kinetic linker energy
-    double GetKineticEnergy() const override;
+    double get_kinetic_energy() const override;
 
     //! scale linker element reference length
     void scale_linker_reference_length(double scalefac) override;
 
     //! get force in first or second binding spot
-    void GetBindingSpotForce(
+    void get_binding_spot_force(
         int bspotid, Core::LinAlg::SerialDenseVector& bspotforce) const override;
 
     double get_current_linker_length() const override;
@@ -162,7 +162,7 @@ namespace BEAMINTERACTION
     /*
     \brief Update position and triad of both connection sites (a.k.a. binding spots)
     */
-    void ResetState(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
+    void reset_state(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
         std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad) override;
 
 

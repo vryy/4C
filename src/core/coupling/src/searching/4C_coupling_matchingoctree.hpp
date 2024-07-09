@@ -207,7 +207,7 @@ namespace Core::COUPLING
       \param slavedis     (i) discretization the slave nodes belong to
       \param slavenodeids (i) gids of nodes to match
       \param coupling     (o) master node gid to (slave node gid, distance) */
-    virtual void FindMatch(const Core::FE::Discretization& slavedis,
+    virtual void find_match(const Core::FE::Discretization& slavedis,
         const std::vector<int>& slavenodeids, std::map<int, std::pair<int, double>>& coupling);
 
     /*! \brief find pairs of nearest nodes
@@ -453,7 +453,7 @@ namespace Core::COUPLING
 
 
     \return  bool true if element is leaf  */
-    bool IsLeaf();
+    bool is_leaf();
 
     /*! \brief Return child containing point
 

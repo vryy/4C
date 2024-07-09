@@ -35,13 +35,13 @@ FOUR_C_NAMESPACE_OPEN
 void wear_dyn_drt(int restart)
 {
   // create a communicator
-  const Epetra_Comm& comm = Global::Problem::Instance()->GetDis("structure")->Comm();
+  const Epetra_Comm& comm = Global::Problem::instance()->get_dis("structure")->get_comm();
 
   // ***********************************************************
   // Setup the problem
   // ***********************************************************
-  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
-  const Teuchos::ParameterList& wearpara = Global::Problem::Instance()->WearParams();
+  const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& wearpara = Global::Problem::instance()->wear_params();
 
   // check if quasistatic analysis
   if (sdyn.get<std::string>("DYNAMICTYP") != "Statics")
@@ -53,23 +53,23 @@ void wear_dyn_drt(int restart)
 
   // access the structure discretization, make sure it is filled
   Teuchos::RCP<Core::FE::Discretization> structdis = Teuchos::null;
-  structdis = Global::Problem::Instance()->GetDis("structure");
+  structdis = Global::Problem::instance()->get_dis("structure");
   // set degrees of freedom in the discretization
-  if (!structdis->Filled() or !structdis->HaveDofs()) structdis->fill_complete();
+  if (!structdis->filled() or !structdis->have_dofs()) structdis->fill_complete();
 
   // access the ale discretization
   Teuchos::RCP<Core::FE::Discretization> aledis = Teuchos::null;
-  aledis = Global::Problem::Instance()->GetDis("ale");
-  if (!aledis->Filled()) aledis->fill_complete();
+  aledis = Global::Problem::instance()->get_dis("ale");
+  if (!aledis->filled()) aledis->fill_complete();
 
   // we use the structure discretization as layout for the ale discretization
-  if (structdis->NumGlobalNodes() == 0) FOUR_C_THROW("Structure discretization is empty!");
+  if (structdis->num_global_nodes() == 0) FOUR_C_THROW("Structure discretization is empty!");
 
   // clone ale mesh from structure discretization
-  if (aledis->NumGlobalNodes() == 0)
+  if (aledis->num_global_nodes() == 0)
   {
     Core::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
-        structdis, aledis, Global::Problem::Instance()->CloningMaterialMap());
+        structdis, aledis, Global::Problem::instance()->cloning_material_map());
     aledis->fill_complete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
@@ -80,7 +80,7 @@ void wear_dyn_drt(int restart)
   {
     // if we have non-matching meshes:
     if (!Core::UTILS::IntegralValue<bool>(
-            Global::Problem::Instance()->WearParams(), "MATCHINGGRID"))
+            Global::Problem::instance()->wear_params(), "MATCHINGGRID"))
     {
       // create vector of discr.
       std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
@@ -88,16 +88,16 @@ void wear_dyn_drt(int restart)
       dis.push_back(aledis);
 
       Teuchos::ParameterList binning_params =
-          Global::Problem::Instance()->binning_strategy_params();
+          Global::Problem::instance()->binning_strategy_params();
       Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
-          "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+          "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
           binning_params);
       auto element_filter = [](const Core::Elements::Element* element)
       { return Core::Binstrategy::Utils::SpecialElement::none; };
       auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
       auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
       Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
-          Global::Problem::Instance()->OutputControlFile(), dis, element_filter,
+          Global::Problem::instance()->output_control_file(), dis, element_filter,
           rigid_sphere_radius, correct_beam_center_node, false);
     }
   }
@@ -125,14 +125,14 @@ void wear_dyn_drt(int restart)
   if (restart != 0) stru_ale->read_restart(restart);
 
   // solve the whole problem
-  stru_ale->TimeLoop();
+  stru_ale->time_loop();
 
   // summarize the performance measurements
   Teuchos::TimeMonitor::summarize();
 
   // perform the result test
-  Global::Problem::Instance()->AddFieldTest(stru_ale->structure_field()->CreateFieldTest());
-  Global::Problem::Instance()->TestAll(comm);
+  Global::Problem::instance()->add_field_test(stru_ale->structure_field()->create_field_test());
+  Global::Problem::instance()->test_all(comm);
 
   return;
 }  // wear_dyn_drt()

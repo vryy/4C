@@ -166,8 +166,8 @@ void Solid::ResultTest::init(
   data_ = Teuchos::rcpFromRef(data);
   strudisc_ = gstate.get_discret();
 
-  if (Global::Problem::Instance()->GetProblemType() == Core::ProblemType::struct_ale and
-      (Global::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0)
+  if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::struct_ale and
+      (Global::Problem::instance()->wear_params()).get<double>("WEARCOEFF") > 0.0)
     FOUR_C_THROW("Material displ. are not yet considered!");
   else
     dismatn_ = Teuchos::null;
@@ -193,26 +193,26 @@ void Solid::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& te
   // care for the case of multiple discretizations of the same field type
   std::string dis;
   res.extract_string("DIS", dis);
-  if (dis != strudisc_->Name()) return;
+  if (dis != strudisc_->name()) return;
 
   int node;
   res.extract_int("NODE", node);
   node -= 1;
 
-  int havenode(strudisc_->HaveGlobalNode(node));
+  int havenode(strudisc_->have_global_node(node));
   int isnodeofanybody(0);
-  strudisc_->Comm().SumAll(&havenode, &isnodeofanybody, 1);
+  strudisc_->get_comm().SumAll(&havenode, &isnodeofanybody, 1);
 
   if (isnodeofanybody == 0)
   {
     FOUR_C_THROW(
-        "Node %d does not belong to discretization %s", node + 1, strudisc_->Name().c_str());
+        "Node %d does not belong to discretization %s", node + 1, strudisc_->name().c_str());
   }
 
   std::string position;
   res.extract_string("QUANTITY", position);
 
-  if (strudisc_->HaveGlobalNode(node))
+  if (strudisc_->have_global_node(node))
   {
     double result;
     int error_code = get_nodal_result(result, node, position);
@@ -234,10 +234,10 @@ int Solid::ResultTest::get_nodal_result(
 {
   result = 0.0;
 
-  const Core::Nodes::Node* actnode = strudisc_->gNode(node);
+  const Core::Nodes::Node* actnode = strudisc_->g_node(node);
 
   // Here we are just interested in the nodes that we own (i.e. a row node)!
-  if (actnode->Owner() != strudisc_->Comm().MyPID()) return -1;
+  if (actnode->owner() != strudisc_->get_comm().MyPID()) return -1;
 
   bool unknownpos = true;  // make sure the result value std::string can be handled
 
@@ -258,10 +258,10 @@ int Solid::ResultTest::get_nodal_result(
     if (idx >= 0)
     {
       unknownpos = false;
-      int lid = disnpmap.LID(strudisc_->Dof(0, actnode, idx));
+      int lid = disnpmap.LID(strudisc_->dof(0, actnode, idx));
       if (lid < 0)
         FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
-            actnode->Id());
+            actnode->id());
       result = (*disn_)[lid];
     }
   }
@@ -281,10 +281,10 @@ int Solid::ResultTest::get_nodal_result(
     if (idx >= 0)
     {
       unknownpos = false;
-      int lid = dismpmap.LID(strudisc_->Dof(0, actnode, idx));
+      int lid = dismpmap.LID(strudisc_->dof(0, actnode, idx));
       if (lid < 0)
         FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
-            actnode->Id());
+            actnode->id());
       result = (*dismatn_)[lid];
     }
   }
@@ -304,10 +304,10 @@ int Solid::ResultTest::get_nodal_result(
     if (idx >= 0)
     {
       unknownpos = false;
-      int lid = velnpmap.LID(strudisc_->Dof(0, actnode, idx));
+      int lid = velnpmap.LID(strudisc_->dof(0, actnode, idx));
       if (lid < 0)
         FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
-            actnode->Id());
+            actnode->id());
       result = (*veln_)[lid];
     }
   }
@@ -327,10 +327,10 @@ int Solid::ResultTest::get_nodal_result(
     if (idx >= 0)
     {
       unknownpos = false;
-      int lid = accnpmap.LID(strudisc_->Dof(0, actnode, idx));
+      int lid = accnpmap.LID(strudisc_->dof(0, actnode, idx));
       if (lid < 0)
         FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
-            actnode->Id());
+            actnode->id());
       result = (*accn_)[lid];
     }
   }
@@ -391,10 +391,10 @@ int Solid::ResultTest::get_nodal_result(
     if (idx >= 0)
     {
       unknownpos = false;
-      int lid = reactmap.LID(strudisc_->Dof(0, actnode, idx));
+      int lid = reactmap.LID(strudisc_->dof(0, actnode, idx));
       if (lid < 0)
         FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
-            actnode->Id());
+            actnode->id());
       result = (*reactn_)[lid];
     }
   }
@@ -416,7 +416,7 @@ void Solid::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& n
   // care for the case of multiple discretizations of the same field type
   std::string dis;
   res.extract_string("DIS", dis);
-  if (dis != strudisc_->Name()) return;
+  if (dis != strudisc_->name()) return;
 
   auto get_geometry_info = [res]() -> std::tuple<int, int>
   {
@@ -490,7 +490,7 @@ void Solid::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& n
   for (int node : nodes)
   {
     double tmp = 0.0;
-    if (strudisc_->HaveGlobalNode(node)) get_nodal_result(tmp, node, position);
+    if (strudisc_->have_global_node(node)) get_nodal_result(tmp, node, position);
 
     switch (op)
     {
@@ -516,13 +516,13 @@ void Solid::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& n
     switch (op)
     {
       case TestOp::sum:
-        disc.Comm().SumAll(&tmp_result, &result, 1);
+        disc.get_comm().SumAll(&tmp_result, &result, 1);
         break;
       case TestOp::max:
-        disc.Comm().MaxAll(&tmp_result, &result, 1);
+        disc.get_comm().MaxAll(&tmp_result, &result, 1);
         break;
       case TestOp::min:
-        disc.Comm().MinAll(&tmp_result, &result, 1);
+        disc.get_comm().MinAll(&tmp_result, &result, 1);
         break;
       default:
         break;
@@ -532,7 +532,7 @@ void Solid::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& n
   const double result = gather_result(*strudisc_, tmp_result);
 
   // test the value; we only do at rank 0
-  if (strudisc_->Comm().MyPID() == 0)
+  if (strudisc_->get_comm().MyPID() == 0)
   {
     int err = 0;
     switch (geometry_type)
@@ -559,7 +559,7 @@ void Solid::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& n
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ResultTest::TestSpecial(
+void Solid::ResultTest::test_special(
     Input::LineDefinition& res, int& nerr, int& test_count, int& uneval_test_count)
 {
   check_init_setup();
@@ -639,11 +639,11 @@ std::optional<int> Solid::ResultTest::get_last_lin_iteration_number(
 {
   std::optional<int> result = std::nullopt;
 
-  if (strudisc_->Comm().MyPID() == 0)
+  if (strudisc_->get_comm().MyPID() == 0)
   {
     const int stepn = GetIntegerNumberAtLastPositionOfName(quantity);
 
-    const int restart = Global::Problem::Instance()->restart();
+    const int restart = Global::Problem::instance()->restart();
     if (stepn <= restart) return -1;
 
     special_status = Status::evaluated;
@@ -660,11 +660,11 @@ std::optional<int> Solid::ResultTest::get_nln_iteration_number(
 {
   std::optional<int> result = std::nullopt;
 
-  if (strudisc_->Comm().MyPID() == 0)
+  if (strudisc_->get_comm().MyPID() == 0)
   {
     const int stepn = GetIntegerNumberAtLastPositionOfName(quantity);
 
-    const int restart = Global::Problem::Instance()->restart();
+    const int restart = Global::Problem::instance()->restart();
     if (stepn <= restart) return -1;
 
     special_status = Status::evaluated;
@@ -685,14 +685,14 @@ std::optional<int> Solid::ResultTest::get_nodes_per_proc_number(
   const int proc_num = std::stoi(proc_string);
 
   // extract processor ID
-  if (proc_num >= strudisc_->Comm().NumProc())
+  if (proc_num >= strudisc_->get_comm().NumProc())
     FOUR_C_THROW("Solid::ResultTest::get_nodes_per_proc_number: Invalid processor ID!");
 
-  if (strudisc_->Comm().MyPID() == proc_num)
+  if (strudisc_->get_comm().MyPID() == proc_num)
   {
     // extract number of nodes owned by specified processor
     special_status = Status::evaluated;
-    result = strudisc_->NodeRowMap()->NumMyElements();
+    result = strudisc_->node_row_map()->NumMyElements();
   }
 
   return result;
@@ -705,7 +705,7 @@ std::optional<double> Solid::ResultTest::get_energy(
 {
   std::optional<double> result = std::nullopt;
 
-  if (strudisc_->Comm().MyPID() == 0)
+  if (strudisc_->get_comm().MyPID() == 0)
   {
     special_status = Status::evaluated;
     result = data_->get_energy_data(quantity);

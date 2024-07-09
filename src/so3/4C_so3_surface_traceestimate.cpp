@@ -30,10 +30,10 @@ FOUR_C_NAMESPACE_OPEN
 double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_combined(
     std::vector<double>& parent_disp)
 {
-  switch (parent_element()->Shape())
+  switch (parent_element()->shape())
   {
     case Core::FE::CellType::hex8:
-      if (Shape() == Core::FE::CellType::quad4)
+      if (shape() == Core::FE::CellType::quad4)
         return estimate_nitsche_trace_max_eigenvalue_combined<Core::FE::CellType::hex8,
             Core::FE::CellType::quad4>(parent_disp);
       else
@@ -74,7 +74,7 @@ double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenval
   for (int i = 0; i < parent_element()->num_node(); ++i)
     for (int d = 0; d < dim; ++d)
     {
-      xrefe(i, d) = parent_element()->Nodes()[i]->X()[d];
+      xrefe(i, d) = parent_element()->nodes()[i]->x()[d];
       xcurr(i, d) = xrefe(i, d) + parent_disp[i * dim + d];
     }
 
@@ -119,18 +119,18 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix(
 
   Core::FE::IntPointsAndWeights<dim> ip(Discret::ELEMENTS::DisTypeToOptGaussRule<dt_vol>::rule);
 
-  for (int gp = 0; gp < ip.IP().nquad; ++gp)
+  for (int gp = 0; gp < ip.ip().nquad; ++gp)
   {
-    const Core::LinAlg::Matrix<3, 1> xi(ip.IP().qxg[gp], false);
+    const Core::LinAlg::Matrix<3, 1> xi(ip.ip().qxg[gp], false);
     strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
 
     Core::LinAlg::Matrix<6, 6> cmat(true);
     Core::LinAlg::Matrix<6, 1> stress(true);
     Teuchos::ParameterList params;
-    Teuchos::rcp_dynamic_cast<Mat::So3Material>(parent_element()->Material())
-        ->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, parent_element()->Id());
+    Teuchos::rcp_dynamic_cast<Mat::So3Material>(parent_element()->material())
+        ->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, parent_element()->id());
     bc.multiply_tn(bop, cmat);
-    vol.multiply(ip.IP().qwgt[gp] * jac, bc, bop, 1.);
+    vol.multiply(ip.ip().qwgt[gp] * jac, bc, bop, 1.);
   }
 
   return;
@@ -168,18 +168,18 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
       Discret::ELEMENTS::DisTypeToOptGaussRule<dt_surf>::rule);
   Core::LinAlg::SerialDenseMatrix deriv_surf(2, Core::FE::num_nodes<dt_surf>);
 
-  for (int gp = 0; gp < ip.IP().nquad; ++gp)
+  for (int gp = 0; gp < ip.ip().nquad; ++gp)
   {
     Core::FE::CollectedGaussPoints intpoints =
         Core::FE::CollectedGaussPoints(1);  // reserve just for 1 entry ...
-    intpoints.Append(ip.IP().qxg[gp][0], ip.IP().qxg[gp][1], 0.0, ip.IP().qwgt[gp]);
+    intpoints.append(ip.ip().qxg[gp][0], ip.ip().qxg[gp][1], 0.0, ip.ip().qwgt[gp]);
 
     // get coordinates of gauss point w.r.t. local parent coordinate system
     Core::LinAlg::SerialDenseMatrix pqxg(1, 3);
     Core::LinAlg::Matrix<3, 3> derivtrafo;
 
     Core::FE::BoundaryGPToParentGP<3>(
-        pqxg, derivtrafo, intpoints, parent_element()->Shape(), Shape(), FaceParentNumber());
+        pqxg, derivtrafo, intpoints, parent_element()->shape(), shape(), face_parent_number());
 
     Core::LinAlg::Matrix<3, 1> xi;
     for (int i = 0; i < 3; ++i) xi(i) = pqxg(0, i);
@@ -188,33 +188,33 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
     Core::LinAlg::Matrix<6, 6> cmat(true);
     Core::LinAlg::Matrix<6, 1> stress(true);
     Teuchos::ParameterList params;
-    Teuchos::rcp_dynamic_cast<Mat::So3Material>(parent_element()->Material())
-        ->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, parent_element()->Id());
+    Teuchos::rcp_dynamic_cast<Mat::So3Material>(parent_element()->material())
+        ->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, parent_element()->id());
 
     double normalfac = 1.;
-    if (Shape() == Core::FE::CellType::nurbs9)
+    if (shape() == Core::FE::CellType::nurbs9)
     {
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
       std::vector<Core::LinAlg::SerialDenseVector> boundaryknots(dim - 1);
       dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(
-          Global::Problem::Instance()->GetDis("structure").get())
-          ->GetKnotVector()
+          Global::Problem::instance()->get_dis("structure").get())
+          ->get_knot_vector()
           ->get_boundary_ele_and_parent_knots(
-              parentknots, boundaryknots, normalfac, parent_element()->Id(), FaceParentNumber());
+              parentknots, boundaryknots, normalfac, parent_element()->id(), face_parent_number());
 
       Core::LinAlg::Matrix<Core::FE::num_nodes<dt_surf>, 1> weights, shapefcn;
       for (int i = 0; i < Core::FE::num_nodes<dt_surf>; ++i)
-        weights(i) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[i])->W();
+        weights(i) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[i])->w();
 
       Core::LinAlg::Matrix<2, 1> xi_surf;
-      xi_surf(0) = ip.IP().qxg[gp][0];
-      xi_surf(1) = ip.IP().qxg[gp][1];
+      xi_surf(0) = ip.ip().qxg[gp][0];
+      xi_surf(1) = ip.ip().qxg[gp][1];
       Core::FE::Nurbs::nurbs_get_2D_funct_deriv(
           shapefcn, deriv_surf, xi_surf, boundaryknots, weights, dt_surf);
     }
     else
       Core::FE::shape_function_2D_deriv1(
-          deriv_surf, ip.IP().qxg[gp][0], ip.IP().qxg[gp][1], Shape());
+          deriv_surf, ip.ip().qxg[gp][0], ip.ip().qxg[gp][1], shape());
 
     surface_integration(detA, n, xrefe_surf, deriv_surf);
     n_v.scale(normalfac);
@@ -233,7 +233,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
     Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * 3, 6> tmp3;
     tmp3.multiply_tn(bop, tmp2);
 
-    surf.multiply(detA * ip.IP().qwgt[gp], tmp3, bop, 1.);
+    surf.multiply(detA * ip.ip().qwgt[gp], tmp3, bop, 1.);
   }
 
   return;
@@ -256,14 +256,14 @@ void Discret::ELEMENTS::StructuralSurface::strains(
   {
     std::vector<Core::LinAlg::SerialDenseVector> knots;
     dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(
-        Global::Problem::Instance()->GetDis("structure").get())
-        ->GetKnotVector()
-        ->GetEleKnots(knots, ParentElementId());
+        Global::Problem::instance()->get_dis("structure").get())
+        ->get_knot_vector()
+        ->get_ele_knots(knots, parent_element_id());
 
     Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 1> weights, shapefcn;
 
     for (int i = 0; i < Core::FE::num_nodes<dt_vol>; ++i)
-      weights(i) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(parent_element()->Nodes()[i])->W();
+      weights(i) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(parent_element()->nodes()[i])->w();
 
     Core::FE::Nurbs::nurbs_get_3D_funct_deriv(shapefcn, deriv, xi, knots, weights, dt_vol);
   }
@@ -323,9 +323,9 @@ void Discret::ELEMENTS::StructuralSurface::subspace_projector(
   if (dim != 3) FOUR_C_THROW("this should be 3D");
 
   Core::LinAlg::Matrix<3, 1> c;
-  for (int r = 0; r < (int)xcurr.numRows(); ++r)
-    for (int d = 0; d < (int)xcurr.numCols(); ++d) c(d) += xcurr(r, d);
-  c.scale(1. / xcurr.numRows());
+  for (int r = 0; r < (int)xcurr.num_rows(); ++r)
+    for (int d = 0; d < (int)xcurr.num_cols(); ++d) c(d) += xcurr(r, d);
+  c.scale(1. / xcurr.num_rows());
 
   Core::LinAlg::Matrix<dim, 1> r[3];
   for (int i = 0; i < 3; ++i) r[i](i) = 1.;
@@ -402,10 +402,10 @@ void Discret::ELEMENTS::StructuralSurface::subspace_projector(
 double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_tsi(
     std::vector<double>& parent_disp)
 {
-  switch (parent_element()->Shape())
+  switch (parent_element()->shape())
   {
     case Core::FE::CellType::hex8:
-      if (Shape() == Core::FE::CellType::quad4)
+      if (shape() == Core::FE::CellType::quad4)
         return estimate_nitsche_trace_max_eigenvalue_tsi<Core::FE::CellType::hex8,
             Core::FE::CellType::quad4>(parent_disp);
       else
@@ -441,7 +441,7 @@ double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenval
   for (int i = 0; i < parent_element()->num_node(); ++i)
     for (int d = 0; d < dim; ++d)
     {
-      xrefe(i, d) = parent_element()->Nodes()[i]->X()[d];
+      xrefe(i, d) = parent_element()->nodes()[i]->x()[d];
       xcurr(i, d) = xrefe(i, d) + parent_disp[i * dim + d];
     }
 
@@ -488,14 +488,14 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix_tsi(
 
   Core::FE::IntPointsAndWeights<dim> ip(Discret::ELEMENTS::DisTypeToOptGaussRule<dt_vol>::rule);
 
-  if (parent_element()->NumMaterial() < 2) FOUR_C_THROW("where's my second material");
+  if (parent_element()->num_material() < 2) FOUR_C_THROW("where's my second material");
   Teuchos::RCP<Mat::FourierIso> mat_thr =
-      Teuchos::rcp_dynamic_cast<Mat::FourierIso>(parent_element()->Material(1), true);
-  const double k0 = mat_thr->Conductivity();
+      Teuchos::rcp_dynamic_cast<Mat::FourierIso>(parent_element()->material(1), true);
+  const double k0 = mat_thr->conductivity();
 
-  for (int gp = 0; gp < ip.IP().nquad; ++gp)
+  for (int gp = 0; gp < ip.ip().nquad; ++gp)
   {
-    const Core::LinAlg::Matrix<3, 1> xi(ip.IP().qxg[gp], false);
+    const Core::LinAlg::Matrix<3, 1> xi(ip.ip().qxg[gp], false);
     strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
 
     Core::LinAlg::Matrix<3, 3> iC;
@@ -505,7 +505,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix_tsi(
     iC_N_XYZ.multiply(iC, N_XYZ);
     iC_N_XYZ.scale(k0);
 
-    vol.multiply_tn(ip.IP().qwgt[gp] * jac, N_XYZ, iC_N_XYZ, 1.);
+    vol.multiply_tn(ip.ip().qwgt[gp] * jac, N_XYZ, iC_N_XYZ, 1.);
   }
 }
 
@@ -539,27 +539,27 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix_tsi(
       Discret::ELEMENTS::DisTypeToOptGaussRule<dt_surf>::rule);
   Core::LinAlg::SerialDenseMatrix deriv_surf(2, Core::FE::num_nodes<dt_surf>);
 
-  if (parent_element()->NumMaterial() < 2) FOUR_C_THROW("where's my second material");
+  if (parent_element()->num_material() < 2) FOUR_C_THROW("where's my second material");
   Teuchos::RCP<Mat::FourierIso> mat_thr =
-      Teuchos::rcp_dynamic_cast<Mat::FourierIso>(parent_element()->Material(1), true);
-  const double k0 = mat_thr->Conductivity();
+      Teuchos::rcp_dynamic_cast<Mat::FourierIso>(parent_element()->material(1), true);
+  const double k0 = mat_thr->conductivity();
 
-  for (int gp = 0; gp < ip.IP().nquad; ++gp)
+  for (int gp = 0; gp < ip.ip().nquad; ++gp)
   {
-    Core::FE::shape_function_2D_deriv1(deriv_surf, ip.IP().qxg[gp][0], ip.IP().qxg[gp][1], Shape());
+    Core::FE::shape_function_2D_deriv1(deriv_surf, ip.ip().qxg[gp][0], ip.ip().qxg[gp][1], shape());
     surface_integration(detA, n, xrefe_surf, deriv_surf);
     n_v.scale(1. / n_v.norm2());
 
     Core::FE::CollectedGaussPoints intpoints =
         Core::FE::CollectedGaussPoints(1);  // reserve just for 1 entry ...
-    intpoints.Append(ip.IP().qxg[gp][0], ip.IP().qxg[gp][1], 0.0, ip.IP().qwgt[gp]);
+    intpoints.append(ip.ip().qxg[gp][0], ip.ip().qxg[gp][1], 0.0, ip.ip().qwgt[gp]);
 
     // get coordinates of gauss point w.r.t. local parent coordinate system
     Core::LinAlg::SerialDenseMatrix pqxg(1, 3);
     Core::LinAlg::Matrix<3, 3> derivtrafo;
 
     Core::FE::BoundaryGPToParentGP<3>(
-        pqxg, derivtrafo, intpoints, parent_element()->Shape(), Shape(), FaceParentNumber());
+        pqxg, derivtrafo, intpoints, parent_element()->shape(), shape(), face_parent_number());
 
     Core::LinAlg::Matrix<3, 1> xi;
     for (int i = 0; i < 3; ++i) xi(i) = pqxg(0, i);
@@ -574,7 +574,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix_tsi(
     iCn_N_XYZ.multiply_tn(iCn, N_XYZ);
     iCn_N_XYZ.scale(k0);
 
-    surf.multiply_tn(detA * ip.IP().qwgt[gp], iCn_N_XYZ, iCn_N_XYZ, 1.);
+    surf.multiply_tn(detA * ip.ip().qwgt[gp], iCn_N_XYZ, iCn_N_XYZ, 1.);
   }
 }
 

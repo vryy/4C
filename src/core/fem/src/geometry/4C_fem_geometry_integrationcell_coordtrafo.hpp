@@ -32,7 +32,7 @@ namespace Core::Geo
     // get cell node coordinates in xi_domain
     const Core::LinAlg::SerialDenseMatrix& xyze_cell(cell.cell_nodal_pos_xi_domain());
     Core::Geo::elementToCurrentCoordinates(
-        cell.Shape(), xyze_cell, pos_eta_boundary, pos_xsi_domain);
+        cell.shape(), xyze_cell, pos_eta_boundary, pos_xsi_domain);
     return;
   }
 }  // namespace Core::Geo

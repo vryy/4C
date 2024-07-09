@@ -102,13 +102,13 @@ namespace Core::IO
     //! Destructor
     virtual ~ElementReader() = default;
     // Return list of unique nodes
-    std::set<int> GetUniqueNodes() const { return nodes_; }
+    std::set<int> get_unique_nodes() const { return nodes_; }
 
     /// give the discretization this reader fills
-    Teuchos::RCP<Core::FE::Discretization> GetDis() const { return dis_; }
+    Teuchos::RCP<Core::FE::Discretization> get_dis() const { return dis_; }
 
     /// Return the list of row elements
-    Teuchos::RCP<Epetra_Map> GetRowElements() const { return roweles_; }
+    Teuchos::RCP<Epetra_Map> get_row_elements() const { return roweles_; }
 
     /*! Read elements and partition the node graph
 
@@ -134,14 +134,14 @@ namespace Core::IO
       Results are distributed to other procs using two global vectors!
     - build final nodal row map, export graph to the new map
     */
-    virtual void ReadAndDistribute();
+    virtual void read_and_distribute();
 
     /*!
     \brief Tell whether the given node belongs to us
 
     \note This is based on the redundant nodes_ set and only available on processor 0.
     */
-    bool HasNode(const int nodeid) const { return nodes_.find(nodeid) != nodes_.end(); }
+    bool has_node(const int nodeid) const { return nodes_.find(nodeid) != nodes_.end(); }
 
    private:
     /// Get the overall number of elements and their corresponding global IDs

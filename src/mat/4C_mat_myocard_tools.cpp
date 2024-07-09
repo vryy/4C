@@ -23,7 +23,7 @@ MyocardTools::MyocardTools() {}
 /*----------------------------------------------------------------------*
  |                                                           cbert 08/13 |
  *----------------------------------------------------------------------*/
-double MyocardTools::GatingFunction(const double Gate1, const double Gate2, const double p,
+double MyocardTools::gating_function(const double Gate1, const double Gate2, const double p,
     const double var, const double thresh) const
 {
   double Erg = Gate1 + (Gate2 - Gate1) * (1.0 + tanh(p * (var - thresh))) / 2;
@@ -34,7 +34,7 @@ double MyocardTools::GatingFunction(const double Gate1, const double Gate2, cons
 /*----------------------------------------------------------------------*
  |                                                           cbert 10/14 |
  *----------------------------------------------------------------------*/
-double MyocardTools::GatingVarCalc(
+double MyocardTools::gating_var_calc(
     const double dt, double y_0, const double y_inf, const double y_tau) const
 {
   // Solve dy/dt = (1/a)*(y_inf-y)

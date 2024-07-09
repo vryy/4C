@@ -76,7 +76,7 @@ void Core::Adapter::MortarVolCoupl::init(int spatial_dimension,
   dofsets21_ = dofsets21;
   materialstrategy_ = materialstrategy;
 
-  if ((dis1->NumDofSets() == 1) and (dis2->NumDofSets() == 1) and createauxdofs)
+  if ((dis1->num_dof_sets() == 1) and (dis2->num_dof_sets() == 1) and createauxdofs)
   {
     if (coupleddof12 == nullptr or coupleddof21 == nullptr)
       FOUR_C_THROW("ERROR: No coupling dofs for volmortar algorithm specified!");
@@ -110,7 +110,7 @@ void Core::Adapter::MortarVolCoupl::setup(
   // Evaluate volmortar coupling:
   if (Core::UTILS::IntegralValue<Core::VolMortar::CouplingType>(params, "COUPLINGTYPE") ==
       Core::VolMortar::couplingtype_volmortar)
-    coupdis->EvaluateVolmortar();
+    coupdis->evaluate_volmortar();
   //-----------------------
   // consistent interpolation (NO Core::VOLMORTAR)
   else if (Core::UTILS::IntegralValue<Core::VolMortar::CouplingType>(params, "COUPLINGTYPE") ==
@@ -121,14 +121,14 @@ void Core::Adapter::MortarVolCoupl::setup(
     FOUR_C_THROW("ERROR: Chosen coupling not implemented!!!");
 
   // get the P operators
-  p12_ = coupdis->GetPMatrix12();
-  p21_ = coupdis->GetPMatrix21();
+  p12_ = coupdis->get_p_matrix12();
+  p21_ = coupdis->get_p_matrix21();
 
   /***********************************************************
    * Assign materials                                        *
    ***********************************************************/
   // assign materials from one discretization to the other
-  coupdis->AssignMaterials();
+  coupdis->assign_materials();
 
   // validate flag issetup_
   issetup_ = true;
@@ -138,7 +138,7 @@ void Core::Adapter::MortarVolCoupl::setup(
 /*----------------------------------------------------------------------*
  |  redistribute                                             rauch 08/16|
  *----------------------------------------------------------------------*/
-void Core::Adapter::MortarVolCoupl::Redistribute(const Teuchos::ParameterList& binning_params,
+void Core::Adapter::MortarVolCoupl::redistribute(const Teuchos::ParameterList& binning_params,
     Teuchos::RCP<Core::IO::OutputControl> output_control,
     std::function<Core::Binstrategy::Utils::SpecialElement(const Core::Elements::Element* element)>
         element_filter,
@@ -176,10 +176,10 @@ void Core::Adapter::MortarVolCoupl::create_aux_dofsets(Teuchos::RCP<Core::FE::Di
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
   dofsetaux =
       Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(coupleddof21->size(), 0, 0, true));
-  if (dis2->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in fluid field");
+  if (dis2->add_dof_set(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in fluid field");
   dofsetaux =
       Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(coupleddof12->size(), 0, 0, true));
-  if (dis1->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in structure field");
+  if (dis1->add_dof_set(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in structure field");
 
   // call assign_degrees_of_freedom also for auxiliary dofsets
   // note: the order of fill_complete() calls determines the gid numbering!
@@ -194,7 +194,7 @@ void Core::Adapter::MortarVolCoupl::create_aux_dofsets(Teuchos::RCP<Core::FE::Di
 /*----------------------------------------------------------------------*
  |  AssignMaterials                                          vuong 09/14|
  *----------------------------------------------------------------------*/
-void Core::Adapter::MortarVolCoupl::AssignMaterials(Teuchos::RCP<Core::FE::Discretization> dis1,
+void Core::Adapter::MortarVolCoupl::assign_materials(Teuchos::RCP<Core::FE::Discretization> dis1,
     Teuchos::RCP<Core::FE::Discretization> dis2, const Teuchos::ParameterList& volmortar_params,
     const Teuchos::ParameterList& cut_params,
     Teuchos::RCP<Core::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy)
@@ -207,7 +207,7 @@ void Core::Adapter::MortarVolCoupl::AssignMaterials(Teuchos::RCP<Core::FE::Discr
           volmortar_params, cut_params, nullptr, nullptr, nullptr, nullptr, materialstrategy));
 
   // assign materials from one discretization to the other
-  coupdis->AssignMaterials();
+  coupdis->assign_materials();
 }
 
 /*----------------------------------------------------------------------*
@@ -220,8 +220,8 @@ Teuchos::RCP<const Epetra_Vector> Core::Adapter::MortarVolCoupl::apply_vector_ma
   check_setup();
   check_init();
 
-  Teuchos::RCP<Epetra_Vector> mapvec = Core::LinAlg::CreateVector(p12_->RowMap(), true);
-  int err = p12_->Multiply(false, *vec, *mapvec);
+  Teuchos::RCP<Epetra_Vector> mapvec = Core::LinAlg::CreateVector(p12_->row_map(), true);
+  int err = p12_->multiply(false, *vec, *mapvec);
   if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
   return mapvec;
@@ -237,8 +237,8 @@ Teuchos::RCP<const Epetra_Vector> Core::Adapter::MortarVolCoupl::apply_vector_ma
   check_setup();
   check_init();
 
-  Teuchos::RCP<Epetra_Vector> mapvec = Core::LinAlg::CreateVector(p21_->RowMap(), true);
-  int err = p21_->Multiply(false, *vec, *mapvec);
+  Teuchos::RCP<Epetra_Vector> mapvec = Core::LinAlg::CreateVector(p21_->row_map(), true);
+  int err = p21_->multiply(false, *vec, *mapvec);
   if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
   return mapvec;
@@ -272,7 +272,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::Adapter::MortarVolCoupl::apply_ma
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Core::Adapter::MortarVolCoupl::MasterToSlave(
+Teuchos::RCP<Epetra_Vector> Core::Adapter::MortarVolCoupl::master_to_slave(
     Teuchos::RCP<const Epetra_Vector> mv) const
 {
   // safety check
@@ -280,16 +280,16 @@ Teuchos::RCP<Epetra_Vector> Core::Adapter::MortarVolCoupl::MasterToSlave(
   check_init();
 
   // create vector
-  Teuchos::RCP<Epetra_Vector> sv = Core::LinAlg::CreateVector(p21_->RowMap(), true);
+  Teuchos::RCP<Epetra_Vector> sv = Core::LinAlg::CreateVector(p21_->row_map(), true);
   // project
-  MasterToSlave(mv, sv);
+  master_to_slave(mv, sv);
 
   return sv;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Adapter::MortarVolCoupl::MasterToSlave(
+void Core::Adapter::MortarVolCoupl::master_to_slave(
     Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const
 {
 #ifdef FOUR_C_DEBUG
@@ -304,10 +304,10 @@ void Core::Adapter::MortarVolCoupl::MasterToSlave(
   check_init();
 
   // slave vector with auxiliary dofmap
-  Epetra_MultiVector sv_aux(p21_->RowMap(), sv->NumVectors());
+  Epetra_MultiVector sv_aux(p21_->row_map(), sv->NumVectors());
 
   // project
-  int err = p21_->Multiply(false, *mv, sv_aux);
+  int err = p21_->multiply(false, *mv, sv_aux);
   if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
   // copy from auxiliary to physical map (needed for coupling in fluid ale algorithm)
@@ -322,7 +322,7 @@ void Core::Adapter::MortarVolCoupl::MasterToSlave(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Core::Adapter::MortarVolCoupl::MasterToSlave(
+Teuchos::RCP<Epetra_MultiVector> Core::Adapter::MortarVolCoupl::master_to_slave(
     Teuchos::RCP<const Epetra_MultiVector> mv) const
 {
   // safety check
@@ -331,16 +331,16 @@ Teuchos::RCP<Epetra_MultiVector> Core::Adapter::MortarVolCoupl::MasterToSlave(
 
   // create vector
   Teuchos::RCP<Epetra_MultiVector> sv =
-      Teuchos::rcp(new Epetra_MultiVector(p21_->RowMap(), mv->NumVectors()));
+      Teuchos::rcp(new Epetra_MultiVector(p21_->row_map(), mv->NumVectors()));
   // project
-  MasterToSlave(mv, sv);
+  master_to_slave(mv, sv);
 
   return sv;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Core::Adapter::MortarVolCoupl::SlaveToMaster(
+Teuchos::RCP<Epetra_Vector> Core::Adapter::MortarVolCoupl::slave_to_master(
     Teuchos::RCP<const Epetra_Vector> sv) const
 {
   // safety check
@@ -348,9 +348,9 @@ Teuchos::RCP<Epetra_Vector> Core::Adapter::MortarVolCoupl::SlaveToMaster(
   check_init();
 
   // create vector
-  Teuchos::RCP<Epetra_Vector> mv = Core::LinAlg::CreateVector(p12_->RowMap(), true);
+  Teuchos::RCP<Epetra_Vector> mv = Core::LinAlg::CreateVector(p12_->row_map(), true);
   // project
-  SlaveToMaster(sv, mv);
+  slave_to_master(sv, mv);
 
   return mv;
 }
@@ -358,7 +358,7 @@ Teuchos::RCP<Epetra_Vector> Core::Adapter::MortarVolCoupl::SlaveToMaster(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Core::Adapter::MortarVolCoupl::SlaveToMaster(
+Teuchos::RCP<Epetra_MultiVector> Core::Adapter::MortarVolCoupl::slave_to_master(
     Teuchos::RCP<const Epetra_MultiVector> sv) const
 {
   // safety check
@@ -367,9 +367,9 @@ Teuchos::RCP<Epetra_MultiVector> Core::Adapter::MortarVolCoupl::SlaveToMaster(
 
   // create vector
   Teuchos::RCP<Epetra_MultiVector> mv =
-      Teuchos::rcp(new Epetra_MultiVector(p12_->RowMap(), sv->NumVectors()));
+      Teuchos::rcp(new Epetra_MultiVector(p12_->row_map(), sv->NumVectors()));
   // project
-  SlaveToMaster(sv, mv);
+  slave_to_master(sv, mv);
 
   return mv;
 }
@@ -377,7 +377,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::Adapter::MortarVolCoupl::SlaveToMaster(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Adapter::MortarVolCoupl::SlaveToMaster(
+void Core::Adapter::MortarVolCoupl::slave_to_master(
     Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const
 {
 #ifdef FOUR_C_DEBUG
@@ -392,10 +392,10 @@ void Core::Adapter::MortarVolCoupl::SlaveToMaster(
   check_init();
 
   // master vector with auxiliary dofmap
-  Epetra_MultiVector mv_aux(p12_->RowMap(), mv->NumVectors());
+  Epetra_MultiVector mv_aux(p12_->row_map(), mv->NumVectors());
 
   // project
-  int err = p12_->Multiply(false, *sv, mv_aux);
+  int err = p12_->multiply(false, *sv, mv_aux);
   if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
   // copy from auxiliary to physical map (needed for coupling in fluid ale algorithm)
@@ -409,24 +409,24 @@ void Core::Adapter::MortarVolCoupl::SlaveToMaster(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> Core::Adapter::MortarVolCoupl::MasterDofMap() const
+Teuchos::RCP<const Epetra_Map> Core::Adapter::MortarVolCoupl::master_dof_map() const
 {
   // safety check
   check_setup();
   check_init();
 
-  return Teuchos::rcpFromRef(p12_->RowMap());
+  return Teuchos::rcpFromRef(p12_->row_map());
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> Core::Adapter::MortarVolCoupl::SlaveDofMap() const
+Teuchos::RCP<const Epetra_Map> Core::Adapter::MortarVolCoupl::slave_dof_map() const
 {
   // safety check
   check_setup();
 
-  return Teuchos::rcpFromRef(p21_->RowMap());
+  return Teuchos::rcpFromRef(p21_->row_map());
 }
 
 FOUR_C_NAMESPACE_CLOSE

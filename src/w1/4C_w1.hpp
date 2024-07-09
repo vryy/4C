@@ -47,21 +47,21 @@ namespace Discret
     class Wall1Type : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "Wall1Type"; }
+      std::string name() const override { return "Wall1Type"; }
 
-      static Wall1Type& Instance();
+      static Wall1Type& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, int const numdof, int const dimnsp) override;
 
       void setup_element_definition(
@@ -140,15 +140,15 @@ namespace Discret
 
       /// Deep copy this instance of Wall1 and return pointer to the copy
       ///
-      /// The Clone() method is used from the virtual base class Element in cases
+      /// The clone() method is used from the virtual base class Element in cases
       /// where the type of the derived class is unknown and a copy-ctor is needed
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /// Get shape type of element
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /// Set discretization type of element
-      virtual void SetDisType(Core::FE::CellType shape)
+      virtual void set_dis_type(Core::FE::CellType shape)
       {
         distype_ = shape;
         return;
@@ -156,7 +156,7 @@ namespace Discret
 
 
       /// Return number of lines of this element
-      int NumLine() const override
+      int num_line() const override
       {
         if (num_node() == 4 || num_node() == 8 || num_node() == 9)
           return 4;
@@ -165,19 +165,22 @@ namespace Discret
       }
 
       /// Return number of surfaces of this element
-      int NumSurface() const override { return 1; }
+      int num_surface() const override { return 1; }
 
       /// Get vector of Teuchos::RCPs to the lines of this element
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /// Get vector of Teuchos::RCPs to the surfaces of this element
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       /// Return unique ParObject id
       ///
       /// every class implementing ParObject needs a unique id defined at the
       /// top of this file.
-      int UniqueParObjectId() const override { return Wall1Type::Instance().UniqueParObjectId(); }
+      int unique_par_object_id() const override
+      {
+        return Wall1Type::instance().unique_par_object_id();
+      }
 
       /// Pack this class so it can be communicated
       ///
@@ -197,7 +200,7 @@ namespace Discret
       /*!
       \brief Does this element use EAS?
       */
-      bool HaveEAS() const override { return (eastype_ != eas_vague); };
+      bool have_eas() const override { return (eastype_ != eas_vague); };
 
       /// Get number of degrees of freedom of a certain node
       /// (implements pure virtual Core::Elements::Element)
@@ -206,7 +209,7 @@ namespace Discret
       /// As this may vary along a simulation, the element can redecide the
       /// number of degrees of freedom per node along the way for each of it's nodes
       /// separately.
-      int NumDofPerNode(const Core::Nodes::Node& node) const override { return Wall1::noddof_; }
+      int num_dof_per_node(const Core::Nodes::Node& node) const override { return Wall1::noddof_; }
 
       /// Get number of degrees of freedom per element
       /// (implements pure virtual Core::Elements::Element)
@@ -219,7 +222,7 @@ namespace Discret
       ///      element dofs that are condensed internally should NOT be considered.
       int num_dof_per_element() const override { return 0; }
 
-      Core::Elements::ElementType& ElementType() const override { return Wall1Type::Instance(); }
+      Core::Elements::ElementType& element_type() const override { return Wall1Type::instance(); }
 
       //@}
 
@@ -227,7 +230,7 @@ namespace Discret
       //@{
 
       /// Read input for this element
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -706,18 +709,18 @@ namespace Discret
     class Wall1LineType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "Wall1LineType"; }
+      std::string name() const override { return "Wall1LineType"; }
 
-      static Wall1LineType& Instance();
+      static Wall1LineType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& actnode, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -766,22 +769,22 @@ namespace Discret
 
       /// Deep copy this instance of an element and return pointer to the copy
       ///
-      /// The Clone() method is used from the virtual base class Element in cases
+      /// The clone() method is used from the virtual base class Element in cases
       /// where the type of the derived class is unknown and a copy-ctor is needed
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
 
       /// Get shape type of element
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
 
       /// Return unique ParObject id
       ///
       /// every class implementing ParObject needs a unique id defined at the
       /// top of the parobject.H file.
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return Wall1LineType::Instance().UniqueParObjectId();
+        return Wall1LineType::instance().unique_par_object_id();
       }
 
       /// Pack this class so it can be communicated
@@ -807,9 +810,9 @@ namespace Discret
       /// As this may vary along a simulation, the element can redecide the
       /// number of degrees of freedom per node along the way for each of it's nodes
       /// separately.
-      int NumDofPerNode(const Core::Nodes::Node& node) const override
+      int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
-        return ParentMasterElement()->NumDofPerNode(node);
+        return parent_master_element()->num_dof_per_node(node);
       }
 
       /// Get number of degrees of freedom per element
@@ -826,9 +829,9 @@ namespace Discret
       /// Print this element
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return Wall1LineType::Instance();
+        return Wall1LineType::instance();
       }
 
       //@}

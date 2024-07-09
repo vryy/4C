@@ -40,7 +40,7 @@ namespace Core::Geo
     {
      public:
       /// create the FacetGraph object for the given element dimension
-      static Teuchos::RCP<Core::Geo::Cut::FacetGraph> Create(
+      static Teuchos::RCP<Core::Geo::Cut::FacetGraph> create(
           const std::vector<Side*>& sides, const plain_facet_set& facets);
 
      public:
@@ -58,7 +58,7 @@ namespace Core::Geo
         cycle_list_.print();
       }
 
-      virtual void CreateVolumeCells(Mesh& mesh, Element* element, plain_volumecell_set& cells);
+      virtual void create_volume_cells(Mesh& mesh, Element* element, plain_volumecell_set& cells);
 
      protected:
       /// empty constructor for derived classes only

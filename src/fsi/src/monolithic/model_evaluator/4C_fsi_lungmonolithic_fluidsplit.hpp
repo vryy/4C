@@ -42,7 +42,7 @@ namespace FSI
       2.) create combined map
       3.) create block system matrix
     */
-    void SetupSystem() override;
+    void setup_system() override;
 
     /// setup composed system matrix from field solvers
     void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) override;

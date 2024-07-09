@@ -56,10 +56,10 @@ void Adapter::FluidFPSI::use_block_matrix(
     bool splitmatrix, Teuchos::RCP<FPSI::UTILS::MapExtractor> const& shapederivSplitter)
 {
   Teuchos::RCP<std::set<int>> condelements =
-      Interface()->conditioned_element_map(*discretization());
+      interface()->conditioned_element_map(*discretization());
   Teuchos::RCP<std::set<int>> condelements_shape =
       shapederivSplitter->conditioned_element_map(*discretization());
-  fluidimpl_->use_block_matrix(condelements, *Interface(), *Interface(), condelements_shape,
+  fluidimpl_->use_block_matrix(condelements, *interface(), *interface(), condelements_shape,
       *shapederivSplitter, *shapederivSplitter, splitmatrix);
 }
 
@@ -68,9 +68,9 @@ void Adapter::FluidFPSI::use_block_matrix(
 void Adapter::FluidFPSI::use_block_matrix(bool splitmatrix)
 {
   Teuchos::RCP<std::set<int>> condelements =
-      Interface()->conditioned_element_map(*discretization());
-  fluidimpl_->use_block_matrix(condelements, *Interface(), *Interface(), condelements, *Interface(),
-      *Interface(), splitmatrix);
+      interface()->conditioned_element_map(*discretization());
+  fluidimpl_->use_block_matrix(condelements, *interface(), *interface(), condelements, *interface(),
+      *interface(), splitmatrix);
 }
 
 FOUR_C_NAMESPACE_CLOSE

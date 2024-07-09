@@ -156,8 +156,8 @@ namespace CONTACT
 
     Core::FE::shape_function<distype>(xi, funct);
 
-    const Core::Nodes::Node* const* nodes = element->Nodes();
-    const int nodedim = nodes[0]->Dim();
+    const Core::Nodes::Node* const* nodes = element->nodes();
+    const int nodedim = nodes[0]->n_dim();
 
     FOUR_C_THROW_UNLESS(nodes, "ERROR: Did not get nodes of element!");
     FOUR_C_THROW_UNLESS(probdim == nodedim,
@@ -167,7 +167,7 @@ namespace CONTACT
     {
       for (int j = 0; j < nodedim; ++j)
       {
-        nodecoords(j, i) = nodes[i]->X()[j];
+        nodecoords(j, i) = nodes[i]->x()[j];
       }
     }
 
@@ -193,8 +193,8 @@ namespace CONTACT
 
     Core::FE::shape_function_deriv1<distype>(xi, deriv);
 
-    const Core::Nodes::Node* const* nodes = element->Nodes();
-    const int nodedim = nodes[0]->Dim();
+    const Core::Nodes::Node* const* nodes = element->nodes();
+    const int nodedim = nodes[0]->n_dim();
 
     FOUR_C_THROW_UNLESS(nodes, "ERROR: Did not get nodes of element!");
     FOUR_C_THROW_UNLESS(nodedim == 3, "ERROR: Only implemented for 3D cases so far!");
@@ -203,7 +203,7 @@ namespace CONTACT
     {
       for (int j = 0; j < nodedim; ++j)
       {
-        nodecoords(j, i) = nodes[i]->X()[j];
+        nodecoords(j, i) = nodes[i]->x()[j];
       }
     }
 

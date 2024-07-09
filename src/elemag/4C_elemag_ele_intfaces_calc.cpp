@@ -19,42 +19,42 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ElemagIntFaceImplInterface* Discret::ELEMENTS::ElemagIntFaceImplInterface::Impl(
+Discret::ELEMENTS::ElemagIntFaceImplInterface* Discret::ELEMENTS::ElemagIntFaceImplInterface::impl(
     const Core::Elements::Element* ele)
 {
-  switch (ele->Shape())
+  switch (ele->shape())
   {
     case Core::FE::CellType::quad4:
     {
-      return ElemagIntFaceImpl<Core::FE::CellType::quad4>::Instance();
+      return ElemagIntFaceImpl<Core::FE::CellType::quad4>::instance();
     }
     case Core::FE::CellType::quad8:
     {
-      return ElemagIntFaceImpl<Core::FE::CellType::quad8>::Instance();
+      return ElemagIntFaceImpl<Core::FE::CellType::quad8>::instance();
     }
     case Core::FE::CellType::quad9:
     {
-      return ElemagIntFaceImpl<Core::FE::CellType::quad9>::Instance();
+      return ElemagIntFaceImpl<Core::FE::CellType::quad9>::instance();
     }
     case Core::FE::CellType::tri3:
     {
-      return ElemagIntFaceImpl<Core::FE::CellType::tri3>::Instance();
+      return ElemagIntFaceImpl<Core::FE::CellType::tri3>::instance();
     }
     case Core::FE::CellType::tri6:
     {
-      return ElemagIntFaceImpl<Core::FE::CellType::tri6>::Instance();
+      return ElemagIntFaceImpl<Core::FE::CellType::tri6>::instance();
     }
     case Core::FE::CellType::line2:
     {
-      return ElemagIntFaceImpl<Core::FE::CellType::line2>::Instance();
+      return ElemagIntFaceImpl<Core::FE::CellType::line2>::instance();
     }
     case Core::FE::CellType::line3:
     {
-      return ElemagIntFaceImpl<Core::FE::CellType::line3>::Instance();
+      return ElemagIntFaceImpl<Core::FE::CellType::line3>::instance();
     }
     default:
       FOUR_C_THROW(
-          "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->num_node());
+          "Element shape %d (%d nodes) not activated. Just do it.", ele->shape(), ele->num_node());
       break;
   }
   return nullptr;
@@ -62,7 +62,7 @@ Discret::ELEMENTS::ElemagIntFaceImplInterface* Discret::ELEMENTS::ElemagIntFaceI
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ElemagIntFaceImpl<distype>*
-Discret::ELEMENTS::ElemagIntFaceImpl<distype>::Instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::ElemagIntFaceImpl<distype>::instance(Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
@@ -71,7 +71,7 @@ Discret::ELEMENTS::ElemagIntFaceImpl<distype>::Instance(Core::UTILS::SingletonAc
             new Discret::ELEMENTS::ElemagIntFaceImpl<distype>());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 

@@ -52,7 +52,7 @@ namespace FLD
     Core::LinAlg::Matrix<4 * iel, 1> temp(temperature.data(), true);
 
     // set element data
-    const Core::FE::CellType distype = ele->Shape();
+    const Core::FE::CellType distype = ele->shape();
 
     // the plane normal tells you in which plane the integration takes place
     const int normdirect = params.get<int>("normal direction to homogeneous plane");
@@ -111,10 +111,10 @@ namespace FLD
 
     // get node coordinates of element
     Core::LinAlg::Matrix<3, iel> xyze;
-    Core::Nodes::Node** nodes = ele->Nodes();
+    Core::Nodes::Node** nodes = ele->nodes();
     for (int inode = 0; inode < iel; inode++)
     {
-      const auto& x = nodes[inode]->X();
+      const auto& x = nodes[inode]->x();
       xyze(0, inode) = x[0];
       xyze(1, inode) = x[1];
       xyze(2, inode) = x[2];
@@ -338,7 +338,7 @@ namespace FLD
 
           // check for degenerated elements
           if (det <= 0.0)
-            FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+            FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->id(), det);
 
           // interpolated values at gausspoints
           double ugp = 0;
@@ -461,7 +461,7 @@ namespace FLD
     Core::LinAlg::Matrix<4 * iel, 1> phi(scalar.data(), true);
 
     // set element data
-    const Core::FE::CellType distype = ele->Shape();
+    const Core::FE::CellType distype = ele->shape();
 
     // the plane normal tells you in which plane the integration takes place
     const int normdirect = params.get<int>("normal direction to homogeneous plane");
@@ -512,10 +512,10 @@ namespace FLD
 
     // get node coordinates of element
     Core::LinAlg::Matrix<3, iel> xyze;
-    Core::Nodes::Node** nodes = ele->Nodes();
+    Core::Nodes::Node** nodes = ele->nodes();
     for (int inode = 0; inode < iel; inode++)
     {
-      const auto& x = nodes[inode]->X();
+      const auto& x = nodes[inode]->x();
       xyze(0, inode) = x[0];
       xyze(1, inode) = x[1];
       xyze(2, inode) = x[2];
@@ -738,7 +738,7 @@ namespace FLD
 
           // check for degenerated elements
           if (det <= 0.0)
-            FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+            FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->id(), det);
 
           // interpolated values at gausspoints
           double ugp = 0;
@@ -893,7 +893,7 @@ namespace FLD
     }
 
     // set element data
-    const Core::FE::CellType distype = ele->Shape();
+    const Core::FE::CellType distype = ele->shape();
 
     // allocate arrays for shape functions, derivatives and the transposed jacobian
     Core::LinAlg::Matrix<iel, 1> funct;
@@ -913,9 +913,9 @@ namespace FLD
     Core::LinAlg::Matrix<NSD, iel> xyze;
     for (int inode = 0; inode < iel; inode++)
     {
-      xyze(0, inode) = ele->Nodes()[inode]->X()[0];
-      xyze(1, inode) = ele->Nodes()[inode]->X()[1];
-      xyze(2, inode) = ele->Nodes()[inode]->X()[2];
+      xyze(0, inode) = ele->nodes()[inode]->x()[0];
+      xyze(1, inode) = ele->nodes()[inode]->x()[1];
+      xyze(2, inode) = ele->nodes()[inode]->x()[2];
     }
 
     // get gauss rule: we use a one-point rule here
@@ -1012,13 +1012,13 @@ namespace FLD
 
     // get material at gauss point
     double dens = 0.0;
-    Teuchos::RCP<Core::Mat::Material> material = ele->Material();
-    if (material->MaterialType() == Core::Materials::m_fluid)
+    Teuchos::RCP<Core::Mat::Material> material = ele->material();
+    if (material->material_type() == Core::Materials::m_fluid)
     {
       const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(material.get());
-      dens = actmat->Density();
+      dens = actmat->density();
     }
-    else if (material->MaterialType() == Core::Materials::m_sutherland)
+    else if (material->material_type() == Core::Materials::m_sutherland)
     {
       const Mat::Sutherland* actmat = static_cast<const Mat::Sutherland*>(material.get());
 
@@ -1027,7 +1027,7 @@ namespace FLD
       for (int rr = 0; rr < iel; rr++) temp += funct(rr, 0) * etemp(0, rr);
 
       // compute density based on temperature
-      dens = actmat->ComputeDensity(temp, thermpress);
+      dens = actmat->compute_density(temp, thermpress);
     }
 
     // get velocities (n+alpha_F/1,i) at integration point
@@ -1049,7 +1049,7 @@ namespace FLD
       }
     }
 
-    if (fldpara->TurbModAction() == Inpar::FLUID::dynamic_smagorinsky)
+    if (fldpara->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky)
     {
       // get velocity (n+alpha_F/1,i) derivatives at integration point
       //
@@ -1127,7 +1127,7 @@ namespace FLD
     // determine contribution to patch volume
     volume = wquad * det;
 
-    if (not(fldpara->TurbModAction() == Inpar::FLUID::dynamic_vreman))
+    if (not(fldpara->turb_mod_action() == Inpar::FLUID::dynamic_vreman))
     {
       for (int rr = 0; rr < NSD; ++rr)
       {
@@ -1136,8 +1136,8 @@ namespace FLD
         // add contribution to integral over velocities
         (*vel_hat)[rr] += tmp;
         // add contribution to integral over dens times velocity
-        if (fldpara->TurbModAction() == Inpar::FLUID::dynamic_smagorinsky and
-            fldpara->PhysicalType() == Inpar::FLUID::loma)
+        if (fldpara->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky and
+            fldpara->physical_type() == Inpar::FLUID::loma)
           (*densvel_hat)[rr] += dens * tmp;
 
         // add contribution to integral over reynolds stresses
@@ -1149,7 +1149,7 @@ namespace FLD
     }
 
 
-    if (fldpara->TurbModAction() == Inpar::FLUID::dynamic_smagorinsky)
+    if (fldpara->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky)
     {
       // add contribution to integral over the modeled part of subgrid
       // scale stresses
@@ -1159,14 +1159,14 @@ namespace FLD
         for (int nn = 0; nn < NSD; ++nn)
         {
           (*modeled_subgrid_stress)[rr][nn] += rateofstrain_volume * epsilon(rr, nn);
-          if (fldpara->PhysicalType() == Inpar::FLUID::loma and nn == rr)
+          if (fldpara->physical_type() == Inpar::FLUID::loma and nn == rr)
             (*modeled_subgrid_stress)[rr][nn] -= 1.0 / 3.0 * rateofstrain_volume * vdiv;
         }
       }
 
       // add additional scalar quantities for loma
       // i.e., filtered density and filtered density times strainrate^2
-      if (fldpara->PhysicalType() == Inpar::FLUID::loma)
+      if (fldpara->physical_type() == Inpar::FLUID::loma)
       {
         dens_hat = dens * volume;
         dens_strainrate_hat = dens * volume * rateofstrain * rateofstrain;
@@ -1174,7 +1174,7 @@ namespace FLD
     }
 
 
-    if (fldpara->TurbModAction() == Inpar::FLUID::dynamic_vreman)
+    if (fldpara->turb_mod_action() == Inpar::FLUID::dynamic_vreman)
     {
       // In the literature about the Vreman model, the indices i and j are swapped compared to the
       // standard definition in 4C. All variables used for the Vreman model are used as in
@@ -1349,7 +1349,7 @@ namespace FLD
 
     for (int nn = 0; nn < iel; ++nn)
     {
-      int lid = (ele->Nodes()[nn])->LID();
+      int lid = (ele->nodes()[nn])->lid();
 
       for (int dimi = 0; dimi < 3; ++dimi)
       {
@@ -1367,11 +1367,11 @@ namespace FLD
       }
     }
 
-    if (fldpara->PhysicalType() == Inpar::FLUID::loma)
+    if (fldpara->physical_type() == Inpar::FLUID::loma)
     {
       for (int nn = 0; nn < iel; ++nn)
       {
-        int lid = (ele->Nodes()[nn])->LID();
+        int lid = (ele->nodes()[nn])->lid();
 
         edens_hat(0, nn) = (*col_filtered_dens)[lid];
         edensstrainrate_hat(0, nn) = (*col_filtered_dens_strainrate)[lid];
@@ -1384,7 +1384,7 @@ namespace FLD
     }
 
     // set element data
-    const Core::FE::CellType distype = ele->Shape();
+    const Core::FE::CellType distype = ele->shape();
 
     // allocate arrays for shapefunctions, derivatives and the transposed jacobian
     Core::LinAlg::Matrix<iel, 1> funct;
@@ -1399,9 +1399,9 @@ namespace FLD
     Core::LinAlg::Matrix<3, iel> xyze;
     for (int inode = 0; inode < iel; inode++)
     {
-      xyze(0, inode) = ele->Nodes()[inode]->X()[0];
-      xyze(1, inode) = ele->Nodes()[inode]->X()[1];
-      xyze(2, inode) = ele->Nodes()[inode]->X()[2];
+      xyze(0, inode) = ele->nodes()[inode]->x()[0];
+      xyze(1, inode) = ele->nodes()[inode]->x()[1];
+      xyze(2, inode) = ele->nodes()[inode]->x()[2];
 
       xcenter += xyze(0, inode);
       ycenter += xyze(1, inode);
@@ -1616,7 +1616,7 @@ namespace FLD
     double densint_hat = 0.0;
     double densstrainrateint_hat = 0.0;
 
-    if (fldpara->PhysicalType() == Inpar::FLUID::loma)
+    if (fldpara->physical_type() == Inpar::FLUID::loma)
     {
       // get filtered density times velocity at integration point
       /*
@@ -1672,11 +1672,11 @@ namespace FLD
     else
     {
       // get density from material
-      Teuchos::RCP<Core::Mat::Material> material = ele->Material();
-      if (material->MaterialType() == Core::Materials::m_fluid)
+      Teuchos::RCP<Core::Mat::Material> material = ele->material();
+      if (material->material_type() == Core::Materials::m_fluid)
       {
         const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(material.get());
-        densint_hat = actmat->Density();
+        densint_hat = actmat->density();
       }
       else
         FOUR_C_THROW("mat fluid expected");
@@ -1767,7 +1767,7 @@ namespace FLD
         M_ij(rr, mm) = filtered_modeled_subgrid_stress_hat(rr, mm) -
                        filterwidthratio * filterwidthratio * densint_hat * rateofstrain_hat *
                            epsilon_hat(rr, mm);
-        if (fldpara->PhysicalType() == Inpar::FLUID::loma and rr == mm)
+        if (fldpara->physical_type() == Inpar::FLUID::loma and rr == mm)
           M_ij(rr, mm) += filterwidthratio * filterwidthratio * densint_hat * rateofstrain_hat *
                           1.0 / 3.0 * div_vel_hat;
       }
@@ -1785,7 +1785,7 @@ namespace FLD
     }
 
     // calculate CI for trace of modeled subgrid-stress tensor (loma only)
-    if (fldpara->PhysicalType() == Inpar::FLUID::loma)
+    if (fldpara->physical_type() == Inpar::FLUID::loma)
     {
       CI_numerator = restress_hat(0, 0) + restress_hat(1, 1) + restress_hat(2, 2) -
                      densvelint_hat.dot(densvelint_hat) / densint_hat;
@@ -1818,7 +1818,7 @@ namespace FLD
     // get to element
     for (int nn = 0; nn < iel; ++nn)
     {
-      int lid = (ele->Nodes()[nn])->LID();
+      int lid = (ele->nodes()[nn])->lid();
 
       for (int dimi = 0; dimi < 3; ++dimi)
       {
@@ -1835,7 +1835,7 @@ namespace FLD
 
     for (int nn = 0; nn < iel; ++nn)
     {
-      int lid = (ele->Nodes()[nn])->LID();
+      int lid = (ele->nodes()[nn])->lid();
 
       eexpression_hat(0, nn) = (*col_filtered_expression)[lid];
       ealpha2_hat(0, nn) = (*col_filtered_alpha2)[lid];
@@ -1846,7 +1846,7 @@ namespace FLD
 
 
     // set element data
-    const Core::FE::CellType distype = ele->Shape();
+    const Core::FE::CellType distype = ele->shape();
     Core::LinAlg::Matrix<iel, 1> funct(true);
     // allocate arrays for shape functions, derivatives and the transposed jacobian
     Core::LinAlg::Matrix<NSD, NSD> xjm(true);
@@ -1858,9 +1858,9 @@ namespace FLD
     Core::LinAlg::Matrix<NSD, iel> xyze(true);
     for (int inode = 0; inode < iel; inode++)
     {
-      xyze(0, inode) = ele->Nodes()[inode]->X()[0];
-      xyze(1, inode) = ele->Nodes()[inode]->X()[1];
-      xyze(2, inode) = ele->Nodes()[inode]->X()[2];
+      xyze(0, inode) = ele->nodes()[inode]->x()[0];
+      xyze(1, inode) = ele->nodes()[inode]->x()[1];
+      xyze(2, inode) = ele->nodes()[inode]->x()[2];
     }
 
     // get gauss rule: we use a one-point rule here
@@ -2032,13 +2032,13 @@ namespace FLD
     // get material
     double dynvisc = 0.0;
     double dens = 0.0;
-    if (mat->MaterialType() == Core::Materials::m_fluid)
+    if (mat->material_type() == Core::Materials::m_fluid)
     {
       const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(mat.get());
       // get constant viscosity
-      dynvisc = actmat->Viscosity();
+      dynvisc = actmat->viscosity();
       // get constant density
-      dens = actmat->Density();
+      dens = actmat->density();
       if (dens == 0.0 or dynvisc == 0.0)
       {
         FOUR_C_THROW("Could not get material parameters!");
@@ -2064,7 +2064,7 @@ namespace FLD
     // get node coordinates of element
     for (int inode = 0; inode < nen; inode++)
     {
-      for (int idim = 0; idim < nsd; idim++) xyze(idim, inode) = ele->Nodes()[inode]->X()[idim];
+      for (int idim = 0; idim < nsd; idim++) xyze(idim, inode) = ele->nodes()[inode]->x()[idim];
 
       center += xyze(1, inode);
     }
@@ -2078,13 +2078,13 @@ namespace FLD
           Discret::ELEMENTS::DisTypeToStabGaussRule<distype>::rule);
 
       // coordinates of the current integration point
-      const double* gpcoord = (intpoints.IP().qxg)[0];
+      const double* gpcoord = (intpoints.ip().qxg)[0];
       Core::LinAlg::Matrix<nsd, 1> xsi;
       for (int idim = 0; idim < nsd; idim++)
       {
         xsi(idim) = gpcoord[idim];
       }
-      const double wquad = intpoints.IP().qwgt[0];
+      const double wquad = intpoints.ip().qwgt[0];
 
       // shape functions and their first derivatives
       Core::FE::shape_function<distype>(xsi, funct);
@@ -2098,7 +2098,7 @@ namespace FLD
       // check for degenerated elements
       if (det < 1E-16)
         FOUR_C_THROW(
-            "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+            "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", ele->id(), det);
 
       // set element area or volume
       vol = wquad * det;
@@ -2498,7 +2498,7 @@ namespace FLD
     // allocate array for coefficient D
     // D may depend on the direction (if N depends on it)
     double D = 0.0;
-    double Csgs_phi = fldpara->CsgsPhi();  // turbmodelparamsmfs->get<double>("CSGS_PHI");
+    double Csgs_phi = fldpara->csgs_phi();  // turbmodelparamsmfs->get<double>("CSGS_PHI");
 
     if (withscatra)
     {
@@ -2557,7 +2557,7 @@ namespace FLD
         gamma = 4.0 / 3.0;
       else  // Pr >> 1
       {
-        if (fldpara->PhysicalType() == Inpar::FLUID::loma) FOUR_C_THROW("Loma with Pr>>1?");
+        if (fldpara->physical_type() == Inpar::FLUID::loma) FOUR_C_THROW("Loma with Pr>>1?");
         if (Nvel[0] < 1.0)  // Sc >> 1 and fluid fully resolved, i.e., case 2 (ii)
           gamma = 2.0;
         else  // Sc >> 1 and fluid not fully resolved, i.e., case 2 (i)
@@ -2765,7 +2765,7 @@ namespace FLD
       for (int idim = 0; idim < nsd; idim++) evel(idim, inode) = vel[inode * 4 + idim];
     }
 
-    if (fldpara->AdaptCsgsPhi())
+    if (fldpara->adapt_csgs_phi())
     {
       // allocate array for gauss-point velocities and derivatives
       Core::LinAlg::Matrix<nsd, 1> velint;
@@ -2782,7 +2782,7 @@ namespace FLD
       Core::LinAlg::Matrix<nsd, nen> xyze;
       for (int inode = 0; inode < nen; inode++)
       {
-        for (int idim = 0; idim < nsd; idim++) xyze(idim, inode) = ele->Nodes()[inode]->X()[idim];
+        for (int idim = 0; idim < nsd; idim++) xyze(idim, inode) = ele->nodes()[inode]->x()[idim];
       }
 
       // use one-point Gauss rule
@@ -2790,11 +2790,11 @@ namespace FLD
           Discret::ELEMENTS::DisTypeToStabGaussRule<distype>::rule);
 
       // coordinates of the current integration point
-      const double* gpcoord = (intpoints.IP().qxg)[0];
+      const double* gpcoord = (intpoints.ip().qxg)[0];
       Core::LinAlg::Matrix<nsd, 1> xsi;
       for (int idim = 0; idim < nsd; idim++) xsi(idim) = gpcoord[idim];
 
-      double wquad = intpoints.IP().qwgt[0];
+      double wquad = intpoints.ip().qwgt[0];
 
       // shape functions and their first derivatives
       Core::FE::shape_function<distype>(xsi, funct);
@@ -2806,26 +2806,26 @@ namespace FLD
       // check for degenerated elements
       if (det < 1E-16)
         FOUR_C_THROW(
-            "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+            "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", ele->id(), det);
 
       // set element volume
       vol = wquad * det;
 
       // adopt integration points and weights for gauss point evaluation of B
-      if (fldpara->BGp())
+      if (fldpara->b_gp())
       {
         Core::FE::IntPointsAndWeights<nsd> gauss_intpoints(
             Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
         intpoints = gauss_intpoints;
       }
 
-      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+      for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
       {
         // coordinates of the current integration point
-        const double* gpcoord_iquad = (intpoints.IP().qxg)[iquad];
+        const double* gpcoord_iquad = (intpoints.ip().qxg)[iquad];
         for (int idim = 0; idim < nsd; idim++) xsi(idim) = gpcoord_iquad[idim];
 
-        wquad = intpoints.IP().qwgt[iquad];
+        wquad = intpoints.ip().qwgt[iquad];
 
         // shape functions and their first derivatives
         Core::FE::shape_function<distype>(xsi, funct);
@@ -2837,7 +2837,7 @@ namespace FLD
         // check for degenerated elements
         if (det < 1E-16)
           FOUR_C_THROW(
-              "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+              "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", ele->id(), det);
 
         double fac = wquad * det;
 
@@ -2850,8 +2850,8 @@ namespace FLD
         // get material
         double dens = 0.0;
         double visc = 0.0;
-        Teuchos::RCP<Core::Mat::Material> material = ele->Material();
-        if (material->MaterialType() == Core::Materials::m_sutherland)
+        Teuchos::RCP<Core::Mat::Material> material = ele->material();
+        if (material->material_type() == Core::Materials::m_sutherland)
         {
           const Mat::Sutherland* actmat = static_cast<const Mat::Sutherland*>(material.get());
 
@@ -2860,24 +2860,24 @@ namespace FLD
           for (int rr = 0; rr < nen; rr++) temp += funct(rr, 0) * esca(0, rr);
 
           // compute density and viscosity based on temperature
-          dens = actmat->ComputeDensity(temp, thermpress);
-          visc = actmat->ComputeViscosity(temp);
+          dens = actmat->compute_density(temp, thermpress);
+          visc = actmat->compute_viscosity(temp);
         }
-        else if (material->MaterialType() == Core::Materials::m_fluid)
+        else if (material->material_type() == Core::Materials::m_fluid)
         {
           const Mat::NewtonianFluid* actmat =
               static_cast<const Mat::NewtonianFluid*>(material.get());
 
           // get density and viscosity
-          dens = actmat->Density();
-          visc = actmat->Viscosity();
+          dens = actmat->density();
+          visc = actmat->viscosity();
         }
         else
           FOUR_C_THROW("Newtonian fluid or Sutherland material expected!");
 
         // calculate characteristic element length
         double hk = 1.0e+10;
-        switch (fldpara->RefLength())
+        switch (fldpara->ref_length())
         {
           case Inpar::FLUID::streamlength:
           {
@@ -3128,14 +3128,14 @@ namespace FLD
       xyze(2,inode) = x[2];
     }
   */
-    if (ele->IsAle())
+    if (ele->is_ale())
     {
       // --------------------------------------------------
       // create matrix objects for nodal values
       Core::LinAlg::Matrix<nsd, iel> edispnp(true);
 
       // get most recent displacements
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
 
       if (dispnp == Teuchos::null)
       {
@@ -3190,13 +3190,13 @@ namespace FLD
     // const GaussRule3D          gaussrule = get_optimal_gaussrule(distype);
     // const IntegrationPoints3D  intpoints(gaussrule);
 
-    for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+    for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
     {
       // local Gauss point coordinates
       Core::LinAlg::Matrix<nsd, 1> xsi(true);
 
       // local coordinates of the current integration point
-      const double* gpcoord = (intpoints.IP().qxg)[iquad];
+      const double* gpcoord = (intpoints.ip().qxg)[iquad];
       for (int idim = 0; idim < nsd; ++idim)
       {
         xsi(idim) = gpcoord[idim];
@@ -3249,11 +3249,11 @@ namespace FLD
       // check for degenerated elements
       if (det < 0.0)
       {
-        FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+        FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->id(), det);
       }
 
       // set total integration factor
-      const double fac = intpoints.IP().qwgt[iquad] * det;
+      const double fac = intpoints.ip().qwgt[iquad] * det;
 
       // integrate shapefunction gradient over element
       for (int dim = 0; dim < 3; dim++)

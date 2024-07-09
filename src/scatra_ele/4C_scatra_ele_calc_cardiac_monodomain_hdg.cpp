@@ -46,7 +46,7 @@ Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Instance(
+Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname, bool create)
 {
   static std::map<std::string, ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>*> instances;
@@ -87,7 +87,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
     Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor)
 {
   const Teuchos::RCP<Mat::Myocard>& actmat =
-      Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->Material());
+      Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
   Discret::ELEMENTS::ScaTraHDG* hdgele =
       dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(const_cast<Core::Elements::Element*>(ele));
 
@@ -95,12 +95,12 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
   {
     // get diffusivity at ele center
     Core::LinAlg::Matrix<probdim, probdim> diff(true);
-    actmat->Diffusivity(diff, 0);
+    actmat->diffusivity(diff, 0);
     Core::LinAlg::SerialDenseMatrix difftensortmp(this->nsd_, this->nsd_);
     for (unsigned int i = 0; i < this->nsd_; ++i)
       for (unsigned int j = 0; j < this->nsd_; ++j) difftensortmp(i, j) = diff(i, j);
     (*difftensor).push_back(difftensortmp);
-    Core::Nodes::FiberNode* fnode = dynamic_cast<Core::Nodes::FiberNode*>(ele->Nodes()[0]);
+    Core::Nodes::FiberNode* fnode = dynamic_cast<Core::Nodes::FiberNode*>(ele->nodes()[0]);
     if (fnode) FOUR_C_THROW("Fiber direction defined twice (nodes and elements)");
   }
   else
@@ -108,7 +108,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
     actmat->reset_diffusion_tensor();
 
     Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes =
-        Teuchos::rcp(new Core::FE::ShapeValues<distype>(1, false, 2 * hdgele->Degree()));
+        Teuchos::rcp(new Core::FE::ShapeValues<distype>(1, false, 2 * hdgele->degree()));
 
     shapes->evaluate(*ele);
 
@@ -123,7 +123,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
     }
 
     Core::Nodes::NodalFiberHolder gpFiberHolder;
-    Core::Nodes::ProjectFibersToGaussPoints<distype>(ele->Nodes(), shapefcns, gpFiberHolder);
+    Core::Nodes::ProjectFibersToGaussPoints<distype>(ele->nodes(), shapefcns, gpFiberHolder);
 
     std::vector<Core::LinAlg::Matrix<probdim, 1>> fibergp(shapes->nqpoints_);
     setup_cardiac_fibers<probdim>(gpFiberHolder, fibergp);
@@ -134,7 +134,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
     {
       Core::LinAlg::SerialDenseMatrix difftensortmp(this->nsd_, this->nsd_);
       Core::LinAlg::Matrix<probdim, probdim> diff(true);
-      actmat->Diffusivity(diff, q);
+      actmat->diffusivity(diff, q);
       for (unsigned int i = 0; i < this->nsd_; ++i)
         for (unsigned int j = 0; j < this->nsd_; ++j) difftensortmp(i, j) = diff(i, j);
       (*difftensor).push_back(difftensortmp);
@@ -173,7 +173,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
     Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor)
 {
   const Teuchos::RCP<Mat::Myocard>& actmat =
-      Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->Material());
+      Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
   Discret::ELEMENTS::ScaTraHDG* hdgele =
       dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(const_cast<Core::Elements::Element*>(ele));
 
@@ -181,12 +181,12 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
   {
     // get diffusivity at ele center
     Core::LinAlg::Matrix<probdim, probdim> diff(true);
-    actmat->Diffusivity(diff, 0);
+    actmat->diffusivity(diff, 0);
     Core::LinAlg::SerialDenseMatrix difftensortmp(this->nsd_, this->nsd_);
     for (unsigned int i = 0; i < this->nsd_; ++i)
       for (unsigned int j = 0; j < this->nsd_; ++j) difftensortmp(i, j) = diff(i, j);
     (*difftensor).push_back(difftensortmp);
-    Core::Nodes::FiberNode* fnode = dynamic_cast<Core::Nodes::FiberNode*>(ele->Nodes()[0]);
+    Core::Nodes::FiberNode* fnode = dynamic_cast<Core::Nodes::FiberNode*>(ele->nodes()[0]);
     if (fnode) FOUR_C_THROW("Fiber direction defined twice (nodes and elements)");
   }
   else
@@ -194,8 +194,8 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
     actmat->reset_diffusion_tensor();
 
     const Core::FE::IntPointsAndWeights<Core::FE::dim<distype>> intpoints(
-        ScaTra::DisTypeToMatGaussRule<distype>::get_gauss_rule(2 * hdgele->Degree()));
-    const std::size_t numgp = intpoints.IP().nquad;
+        ScaTra::DisTypeToMatGaussRule<distype>::get_gauss_rule(2 * hdgele->degree()));
+    const std::size_t numgp = intpoints.ip().nquad;
 
     std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, 1>> shapefcns(numgp);
 
@@ -204,13 +204,13 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
     {
       // gaussian points coordinates
       for (int idim = 0; idim < Core::FE::dim<distype>; ++idim)
-        gp_coord(idim) = intpoints.IP().qxg[q][idim];
+        gp_coord(idim) = intpoints.ip().qxg[q][idim];
 
       Core::FE::shape_function<distype>(gp_coord, shapefcns[q]);
     }
 
     Core::Nodes::NodalFiberHolder gpFiberHolder;
-    Core::Nodes::ProjectFibersToGaussPoints<distype>(ele->Nodes(), shapefcns, gpFiberHolder);
+    Core::Nodes::ProjectFibersToGaussPoints<distype>(ele->nodes(), shapefcns, gpFiberHolder);
 
     std::vector<Core::LinAlg::Matrix<probdim, 1>> fibergp(numgp);
     setup_cardiac_fibers<probdim>(gpFiberHolder, fibergp);
@@ -221,7 +221,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
     {
       Core::LinAlg::SerialDenseMatrix difftensortmp(this->nsd_, this->nsd_);
       Core::LinAlg::Matrix<probdim, probdim> diff(true);
-      actmat->Diffusivity(diff, q);
+      actmat->diffusivity(diff, q);
       for (unsigned int i = 0; i < this->nsd_; ++i)
         for (unsigned int j = 0; j < this->nsd_; ++j) difftensortmp(i, j) = diff(i, j);
       (*difftensor).push_back(difftensortmp);
@@ -242,7 +242,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat
     Core::LinAlg::SerialDenseMatrix& difftensor, Core::LinAlg::SerialDenseVector& ivecn,
     Core::LinAlg::SerialDenseVector& ivecnp, Core::LinAlg::SerialDenseMatrix& ivecnpderiv)
 {
-  if (material->MaterialType() == Core::Materials::m_myocard)
+  if (material->material_type() == Core::Materials::m_myocard)
     mat_myocard(material, k, difftensor, ivecn, ivecnp, ivecnpderiv);
   else
     FOUR_C_THROW("Material type is not supported");
@@ -279,7 +279,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat
 
   // polynomial space to get the value of the shape function at the material gauss points
   Core::FE::PolynomialSpaceParams params(distype, this->shapes_->degree_, this->usescompletepoly_);
-  polySpace_ = Core::FE::PolynomialSpaceCache<probdim>::Instance().Create(params);
+  polySpace_ = Core::FE::PolynomialSpaceCache<probdim>::instance().create(params);
 
   int nqpoints;
 
@@ -292,18 +292,18 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat
       deg = 3 * this->shapes_->degree_;
     const Core::FE::IntPointsAndWeights<Core::FE::dim<distype>> intpoints(
         ScaTra::DisTypeToMatGaussRule<distype>::get_gauss_rule(deg));
-    nqpoints = intpoints.IP().nquad;
+    nqpoints = intpoints.ip().nquad;
 
-    if (nqpoints != actmat->GetNumberOfGP())
+    if (nqpoints != actmat->get_number_of_gp())
       FOUR_C_THROW(
           "Number of quadrature points (%d) does not match number of points in material (%d)!",
-          nqpoints, actmat->GetNumberOfGP());
+          nqpoints, actmat->get_number_of_gp());
 
     if (values_mat_gp_all_.empty() or
-        values_mat_gp_all_.size() != (unsigned)actmat->GetNumberOfGP())
+        values_mat_gp_all_.size() != (unsigned)actmat->get_number_of_gp())
     {
-      values_mat_gp_all_.resize(actmat->GetNumberOfGP());
-      gp_mat_alpha_.resize(actmat->GetNumberOfGP());
+      values_mat_gp_all_.resize(actmat->get_number_of_gp());
+      gp_mat_alpha_.resize(actmat->get_number_of_gp());
     }
 
     if (unsigned(values_mat_gp_all_[0].numRows()) != this->shapes_->ndofs_)
@@ -312,10 +312,10 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat
       {
         values_mat_gp_all_[q].size(this->shapes_->ndofs_);
 
-        gp_mat_alpha_[q] = intpoints.IP().qwgt[q];
+        gp_mat_alpha_[q] = intpoints.ip().qwgt[q];
         // gaussian points coordinates
         for (int idim = 0; idim < Core::FE::dim<distype>; ++idim)
-          mat_gp_coord(idim) = intpoints.IP().qxg[q][idim];
+          mat_gp_coord(idim) = intpoints.ip().qxg[q][idim];
 
         polySpace_->evaluate(mat_gp_coord, values_mat_gp_all_[q]);
       }
@@ -330,19 +330,19 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat
       deg = 3 * this->shapes_->degree_;
 
     Teuchos::RCP<Core::FE::GaussPoints> quadrature_(
-        Core::FE::GaussPointCache::Instance().Create(distype, deg));
-    nqpoints = quadrature_->NumPoints();
+        Core::FE::GaussPointCache::instance().create(distype, deg));
+    nqpoints = quadrature_->num_points();
 
-    if (nqpoints != actmat->GetNumberOfGP())
+    if (nqpoints != actmat->get_number_of_gp())
       FOUR_C_THROW(
           "Number of quadrature points (%d) does not match number of points in material (%d)!",
-          nqpoints, actmat->GetNumberOfGP());
+          nqpoints, actmat->get_number_of_gp());
 
     if (values_mat_gp_all_.empty() or
-        values_mat_gp_all_.size() != (unsigned)actmat->GetNumberOfGP())
+        values_mat_gp_all_.size() != (unsigned)actmat->get_number_of_gp())
     {
-      values_mat_gp_all_.resize(actmat->GetNumberOfGP());
-      gp_mat_alpha_.resize(actmat->GetNumberOfGP());
+      values_mat_gp_all_.resize(actmat->get_number_of_gp());
+      gp_mat_alpha_.resize(actmat->get_number_of_gp());
     }
 
     if (unsigned(values_mat_gp_all_[0].numRows()) != this->shapes_->ndofs_)
@@ -351,10 +351,10 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat
       {
         values_mat_gp_all_[q].size(this->shapes_->ndofs_);
 
-        gp_mat_alpha_[q] = quadrature_->Weight(q);
+        gp_mat_alpha_[q] = quadrature_->weight(q);
         // gaussian points coordinates
         for (int idim = 0; idim < Core::FE::dim<distype>; ++idim)
-          mat_gp_coord(idim) = quadrature_->Point(q)[idim];
+          mat_gp_coord(idim) = quadrature_->point(q)[idim];
 
         polySpace_->evaluate(mat_gp_coord, values_mat_gp_all_[q]);
       }
@@ -378,13 +378,13 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat
 
     // Reaction term at material gauss points
 
-    if (!this->scatrapara_->SemiImplicit())
+    if (!this->scatrapara_->semi_implicit())
     {
-      imatgpnpderiv = actmat->ReaCoeffDeriv(phinpgp, this->dt(), q);
+      imatgpnpderiv = actmat->rea_coeff_deriv(phinpgp, this->dt(), q);
     }
 
-    imatgpn = actmat->ReaCoeffN(phingp, this->dt(), q);
-    imatgpnp = actmat->ReaCoeff(phinpgp, this->dt(), q);
+    imatgpn = actmat->rea_coeff_n(phingp, this->dt(), q);
+    imatgpnp = actmat->rea_coeff(phinpgp, this->dt(), q);
 
     // loop over shape functions
     for (unsigned int i = 0; i < this->shapes_->ndofs_; ++i)
@@ -392,7 +392,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat
       ivecn(i) += imatgpn * values_mat_gp_all_[q](i) * jacdet * gp_mat_alpha_[q];
     }
 
-    if (!this->scatrapara_->SemiImplicit())
+    if (!this->scatrapara_->semi_implicit())
       for (unsigned int i = 0; i < this->shapes_->ndofs_; ++i)
       {
         for (unsigned int j = 0; j < this->shapes_->ndofs_; ++j)
@@ -417,20 +417,20 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::tim
   std::vector<Teuchos::RCP<Mat::Myocard>> updatemat;
 
   // access the general material
-  Teuchos::RCP<Core::Mat::Material> material = ele->Material();
+  Teuchos::RCP<Core::Mat::Material> material = ele->material();
 
   // first, determine the materials which need a time update, i.e. myocard materials
-  if (material->MaterialType() == Core::Materials::m_matlist)
+  if (material->material_type() == Core::Materials::m_matlist)
   {
     const Teuchos::RCP<Mat::MatList> actmat = Teuchos::rcp_dynamic_cast<Mat::MatList>(material);
-    if (actmat->NumMat() < this->numscal_) FOUR_C_THROW("Not enough materials in MatList.");
+    if (actmat->num_mat() < this->numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < this->numscal_; ++k)
     {
-      const int matid = actmat->MatID(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->MaterialById(matid);
+      const int matid = actmat->mat_id(k);
+      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
-      if (singlemat->MaterialType() == Core::Materials::m_myocard)
+      if (singlemat->material_type() == Core::Materials::m_myocard)
       {
         // reference to Teuchos::rcp not possible here, since the material
         // is required to be not const for this application
@@ -439,7 +439,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::tim
     }
   }
 
-  if (material->MaterialType() == Core::Materials::m_myocard)
+  if (material->material_type() == Core::Materials::m_myocard)
   {
     // reference to Teuchos::rcp not possible here, since the material is required to be
     // not const for this application
@@ -465,27 +465,27 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization)
 {
   // NOTE: add integral values only for elements which are NOT ghosted!
-  if (ele->Owner() == discretization.Comm().MyPID())
+  if (ele->owner() == discretization.get_comm().MyPID())
   {
     // access the general material
-    Teuchos::RCP<Core::Mat::Material> material = ele->Material();
+    Teuchos::RCP<Core::Mat::Material> material = ele->material();
     Teuchos::RCP<Epetra_MultiVector> material_internal_state =
         params.get<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state");
 
-    if (material->MaterialType() == Core::Materials::m_myocard)
+    if (material->material_type() == Core::Materials::m_myocard)
     {
       Teuchos::RCP<Mat::Myocard> material =
-          Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->Material());
+          Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
       for (int k = 0; k < material->get_number_of_internal_state_variables(); ++k)
       {
         double material_state = 0;
-        unsigned int nqpoints = material->GetNumberOfGP();
+        unsigned int nqpoints = material->get_number_of_gp();
         for (unsigned int q = 0; q < nqpoints; ++q)
         {
-          material_state += material->GetInternalState(k, q);
+          material_state += material->get_internal_state(k, q);
         }
         int err =
-            material_internal_state->ReplaceGlobalValue(ele->Id(), k, material_state / nqpoints);
+            material_internal_state->ReplaceGlobalValue(ele->id(), k, material_state / nqpoints);
         if (err != 0) FOUR_C_THROW("%i", err);
       }
     }
@@ -507,25 +507,25 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization)
 {
   // NOTE: add integral values only for elements which are NOT ghosted!
-  if (ele->Owner() == discretization.Comm().MyPID())
+  if (ele->owner() == discretization.get_comm().MyPID())
   {
     // access the general material
-    Teuchos::RCP<Core::Mat::Material> material = ele->Material();
+    Teuchos::RCP<Core::Mat::Material> material = ele->material();
     Teuchos::RCP<Epetra_MultiVector> material_internal_state =
         params.get<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state");
 
-    if (material->MaterialType() == Core::Materials::m_myocard)
+    if (material->material_type() == Core::Materials::m_myocard)
     {
       Teuchos::RCP<Mat::Myocard> material =
-          Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->Material());
+          Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
       for (int k = 0; k < material->get_number_of_internal_state_variables(); ++k)
       {
-        int nqpoints = material->GetNumberOfGP();
+        int nqpoints = material->get_number_of_gp();
         for (int q = 0; q < nqpoints; ++q)
         {
           Teuchos::RCP<Epetra_Vector> material_internal_state_component =
               Teuchos::rcp((*material_internal_state)(k * nqpoints + q), false);
-          material->SetInternalState(k, (*material_internal_state_component)[ele->Id()], q);
+          material->set_internal_state(k, (*material_internal_state_component)[ele->id()], q);
         }
       }
     }
@@ -560,27 +560,27 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
 )
 {
   const Teuchos::RCP<Mat::Myocard>& actmat =
-      Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->Material());
+      Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
 
   Discret::ELEMENTS::ScaTraHDG* hdgele =
       dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(const_cast<Core::Elements::Element*>(ele));
 
   int deg = 0;
-  if (hdgele->Degree() == 1)
-    deg = 4 * hdgele->Degree();
+  if (hdgele->degree() == 1)
+    deg = 4 * hdgele->degree();
   else
-    deg = 3 * hdgele->Degree();
+    deg = 3 * hdgele->degree();
   int degold = 0;
-  if (hdgele->DegreeOld() == 1)
-    degold = 4 * hdgele->DegreeOld();
+  if (hdgele->degree_old() == 1)
+    degold = 4 * hdgele->degree_old();
   else
-    degold = 3 * hdgele->DegreeOld();
+    degold = 3 * hdgele->degree_old();
 
   Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes = Teuchos::rcp(
-      new Core::FE::ShapeValues<distype>(hdgele->DegreeOld(), this->usescompletepoly_, deg));
+      new Core::FE::ShapeValues<distype>(hdgele->degree_old(), this->usescompletepoly_, deg));
 
   Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes_old = Teuchos::rcp(
-      new Core::FE::ShapeValues<distype>(hdgele->DegreeOld(), this->usescompletepoly_, degold));
+      new Core::FE::ShapeValues<distype>(hdgele->degree_old(), this->usescompletepoly_, degold));
 
   shapes->evaluate(*ele);
   shapes_old->evaluate(*ele);
@@ -615,7 +615,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
 
   for (unsigned int q = 0; q < shapes_old->nqpoints_; ++q)
     for (int k = 0; k < actmat->get_number_of_internal_state_variables(); ++k)
-      state_variables(q, k) = actmat->GetInternalState(k, q);
+      state_variables(q, k) = actmat->get_internal_state(k, q);
 
   Core::LinAlg::SerialDenseMatrix tempMat1(
       shapes->ndofs_, actmat->get_number_of_internal_state_variables());
@@ -635,13 +635,13 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
       shapes->nqpoints_, actmat->get_number_of_internal_state_variables());
   Core::LinAlg::multiply_tn(tempMat2, massPart, tempMat1);
 
-  actmat->SetGP(shapes->nqpoints_);
+  actmat->set_gp(shapes->nqpoints_);
   actmat->resize_internal_state_variables();
 
 
   for (unsigned int q = 0; q < shapes->nqpoints_; ++q)
     for (int k = 0; k < actmat->get_number_of_internal_state_variables(); ++k)
-      actmat->SetInternalState(k, tempMat2(q, k), q);
+      actmat->set_internal_state(k, tempMat2(q, k), q);
 
   return 0;
 }
@@ -657,28 +657,28 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
 )
 {
   const Teuchos::RCP<Mat::Myocard>& actmat =
-      Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->Material());
+      Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
 
   Discret::ELEMENTS::ScaTraHDG* hdgele =
       dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(const_cast<Core::Elements::Element*>(ele));
 
   // polynomial space to get the value of the shape function at the material gauss points
-  Core::FE::PolynomialSpaceParams params(distype, hdgele->DegreeOld(), this->usescompletepoly_);
+  Core::FE::PolynomialSpaceParams params(distype, hdgele->degree_old(), this->usescompletepoly_);
   Teuchos::RCP<Core::FE::PolynomialSpace<probdim>> polySpace =
-      Core::FE::PolynomialSpaceCache<probdim>::Instance().Create(params);
+      Core::FE::PolynomialSpaceCache<probdim>::instance().create(params);
 
   int deg = 0;
   int degold = 0;
 
-  if (hdgele->Degree() == 1)
-    deg = 4 * hdgele->Degree();
+  if (hdgele->degree() == 1)
+    deg = 4 * hdgele->degree();
   else
-    deg = 3 * hdgele->Degree();
+    deg = 3 * hdgele->degree();
 
-  if (hdgele->DegreeOld() == 1)
-    degold = 4 * hdgele->DegreeOld();
+  if (hdgele->degree_old() == 1)
+    degold = 4 * hdgele->degree_old();
   else
-    degold = 3 * hdgele->DegreeOld();
+    degold = 3 * hdgele->degree_old();
 
   const Core::FE::IntPointsAndWeights<Core::FE::dim<distype>> intpoints_old(
       ScaTra::DisTypeToMatGaussRule<distype>::get_gauss_rule(degold));
@@ -686,29 +686,29 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
       ScaTra::DisTypeToMatGaussRule<distype>::get_gauss_rule(deg));
 
 
-  std::vector<Core::LinAlg::SerialDenseVector> shape_gp_old(intpoints_old.IP().nquad);
-  std::vector<Core::LinAlg::SerialDenseVector> shape_gp(intpoints.IP().nquad);
+  std::vector<Core::LinAlg::SerialDenseVector> shape_gp_old(intpoints_old.ip().nquad);
+  std::vector<Core::LinAlg::SerialDenseVector> shape_gp(intpoints.ip().nquad);
 
   // coordinate of material gauss points
   Core::LinAlg::Matrix<probdim, 1> mat_gp_coord(true);
 
-  for (int q = 0; q < intpoints_old.IP().nquad; ++q)
+  for (int q = 0; q < intpoints_old.ip().nquad; ++q)
   {
-    shape_gp_old[q].size(polySpace->Size());
+    shape_gp_old[q].size(polySpace->size());
 
     // gaussian points coordinates
     for (int idim = 0; idim < Core::FE::dim<distype>; ++idim)
-      mat_gp_coord(idim) = intpoints_old.IP().qxg[q][idim];
+      mat_gp_coord(idim) = intpoints_old.ip().qxg[q][idim];
     polySpace->evaluate(mat_gp_coord, shape_gp_old[q]);
   }
 
-  for (int q = 0; q < intpoints.IP().nquad; ++q)
+  for (int q = 0; q < intpoints.ip().nquad; ++q)
   {
-    shape_gp[q].size(polySpace->Size());
+    shape_gp[q].size(polySpace->size());
 
     // gaussian points coordinates
     for (int idim = 0; idim < Core::FE::dim<distype>; ++idim)
-      mat_gp_coord(idim) = intpoints.IP().qxg[q][idim];
+      mat_gp_coord(idim) = intpoints.ip().qxg[q][idim];
     polySpace->evaluate(mat_gp_coord, shape_gp[q]);
   }
 
@@ -718,26 +718,26 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
 
 
 
-  Core::LinAlg::SerialDenseMatrix massPartOld(polySpace->Size(), shape_gp_old.size());
-  Core::LinAlg::SerialDenseMatrix massPartOldW(polySpace->Size(), shape_gp_old.size());
-  Core::LinAlg::SerialDenseMatrix massPart(polySpace->Size(), shape_gp.size());
-  Core::LinAlg::SerialDenseMatrix massPartW(polySpace->Size(), shape_gp.size());
-  Core::LinAlg::SerialDenseMatrix Mmat(polySpace->Size(), polySpace->Size());
+  Core::LinAlg::SerialDenseMatrix massPartOld(polySpace->size(), shape_gp_old.size());
+  Core::LinAlg::SerialDenseMatrix massPartOldW(polySpace->size(), shape_gp_old.size());
+  Core::LinAlg::SerialDenseMatrix massPart(polySpace->size(), shape_gp.size());
+  Core::LinAlg::SerialDenseMatrix massPartW(polySpace->size(), shape_gp.size());
+  Core::LinAlg::SerialDenseMatrix Mmat(polySpace->size(), polySpace->size());
 
   Core::LinAlg::SerialDenseMatrix state_variables(
       shape_gp_old.size(), actmat->get_number_of_internal_state_variables());
 
-  for (unsigned int i = 0; i < polySpace->Size(); ++i)
+  for (unsigned int i = 0; i < polySpace->size(); ++i)
   {
     for (unsigned int q = 0; q < shape_gp.size(); ++q)
     {
       massPart(i, q) = shape_gp[q](i);
-      massPartW(i, q) = shape_gp[q](i) * jacdet * intpoints.IP().qwgt[q];
+      massPartW(i, q) = shape_gp[q](i) * jacdet * intpoints.ip().qwgt[q];
     }
     for (unsigned int q = 0; q < shape_gp_old.size(); ++q)
     {
       massPartOld(i, q) = shape_gp_old[q](i);
-      massPartOldW(i, q) = shape_gp_old[q](i) * jacdet * intpoints_old.IP().qwgt[q];
+      massPartOldW(i, q) = shape_gp_old[q](i) * jacdet * intpoints_old.ip().qwgt[q];
     }
   }
 
@@ -745,10 +745,10 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
 
   for (unsigned int q = 0; q < shape_gp_old.size(); ++q)
     for (int k = 0; k < actmat->get_number_of_internal_state_variables(); ++k)
-      state_variables(q, k) = actmat->GetInternalState(k, q);
+      state_variables(q, k) = actmat->get_internal_state(k, q);
 
   Core::LinAlg::SerialDenseMatrix tempMat1(
-      polySpace->Size(), actmat->get_number_of_internal_state_variables());
+      polySpace->size(), actmat->get_number_of_internal_state_variables());
   Core::LinAlg::multiply(tempMat1, massPartOldW, state_variables);
 
   using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
@@ -765,13 +765,13 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
       shape_gp.size(), actmat->get_number_of_internal_state_variables());
   Core::LinAlg::multiply_tn(tempMat2, massPart, tempMat1);
 
-  actmat->SetGP(shape_gp.size());
+  actmat->set_gp(shape_gp.size());
   actmat->resize_internal_state_variables();
 
 
   for (unsigned int q = 0; q < shape_gp.size(); ++q)
     for (int k = 0; k < actmat->get_number_of_internal_state_variables(); ++k)
-      actmat->SetInternalState(k, tempMat2(q, k), q);
+      actmat->set_internal_state(k, tempMat2(q, k), q);
 
   return 0;
 }

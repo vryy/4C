@@ -55,7 +55,7 @@ namespace Solid
       //! @{
 
       //! [derived]
-      Inpar::Solid::ModelType Type() const override
+      Inpar::Solid::ModelType type() const override
       {
         return Inpar::Solid::model_partitioned_coupling;
       }
@@ -134,7 +134,7 @@ namespace Solid
       void output_step_state(Core::IO::DiscretizationWriter& iowriter) const override { return; };
 
       //! [derived]
-      void Predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
+      void predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
 
       //! [derived]
       void reset_step_state() override { return; };

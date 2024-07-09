@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | calc coefficients for given rho_inf                      seitz 03/16 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::CalcCoeff()
+void THR::TimIntGenAlpha::calc_coeff()
 {
   // rho_inf specified --> calculate optimal parameters
   if (rho_inf_ != -1.)
@@ -33,7 +33,7 @@ void THR::TimIntGenAlpha::CalcCoeff()
 /*----------------------------------------------------------------------*
  | check if coefficients are in correct regime               dano 10/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::VerifyCoeff()
+void THR::TimIntGenAlpha::verify_coeff()
 {
   // alpha_f
   if ((alphaf_ < 0.0) or (alphaf_ > 1.0)) FOUR_C_THROW("alpha_f out of range [0.0,1.0]");
@@ -88,13 +88,13 @@ THR::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& ioparams,
       fcapn_(Teuchos::null)
 {
   // calculate coefficients from given spectral radius
-  CalcCoeff();
+  calc_coeff();
 
   // info to user
   if (myrank_ == 0)
   {
     // check if coefficients have admissible values
-    VerifyCoeff();
+    verify_coeff();
 
     // print values of time integration parameters to screen
     std::cout << "with generalised-alpha" << std::endl
@@ -180,13 +180,13 @@ void THR::TimIntGenAlpha::evaluate_rhs_tang_residual()
 {
   // build by last converged state and predicted target state
   // the predicted mid-state
-  EvaluateMidState();
+  evaluate_mid_state();
 
   // build new external forces
   fextn_->PutScalar(0.0);
 
   // initialise tangent matrix to zero
-  tang_->Zero();
+  tang_->zero();
 
   // set initial external force vector of convective heat transfer boundary
   // conditions
@@ -234,7 +234,7 @@ void THR::TimIntGenAlpha::evaluate_rhs_tang_residual()
 
   // no further modification on tang_ required
   // tang_ is already effective dynamic tangent matrix
-  tang_->Complete();  // close tangent matrix
+  tang_->complete();  // close tangent matrix
 
   // hallelujah
   return;
@@ -246,7 +246,7 @@ void THR::TimIntGenAlpha::evaluate_rhs_tang_residual()
  | evaluate mid-state vectors by averaging end-point         dano 05/13 |
  | vectors                                                              |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::EvaluateMidState()
+void THR::TimIntGenAlpha::evaluate_mid_state()
 {
   // be careful: in contrast to temporal discretisation of structural field
   // (1-alpha) is used for OLD solution at t_n
@@ -290,7 +290,7 @@ double THR::TimIntGenAlpha::calc_ref_norm_temperature()
  | calculate characteristic/reference norms for forces       dano 10/09 |
  | originally by lw                                                     |
  *----------------------------------------------------------------------*/
-double THR::TimIntGenAlpha::CalcRefNormForce()
+double THR::TimIntGenAlpha::calc_ref_norm_force()
 {
   // The reference norms are used to scale the calculated iterative
   // temperature norm and/or the residual force norm. For this
@@ -375,16 +375,16 @@ void THR::TimIntGenAlpha::update_iter_iteratively()
 /*----------------------------------------------------------------------*
  | update after time step                                    dano 10/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::UpdateStepState()
+void THR::TimIntGenAlpha::update_step_state()
 {
   // update all old state at t_{n-1} etc
   // important for step size adaptivity
   // new temperatures at t_{n+1} -> t_n
   //    T_{n} := T_{n+1}, etc
-  temp_->UpdateSteps(*tempn_);
+  temp_->update_steps(*tempn_);
   // new temperature rates at t_{n+1} -> t_n
   //    R_{n} := R_{n+1}, etc
-  rate_->UpdateSteps(*raten_);
+  rate_->update_steps(*raten_);
 
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}
@@ -408,7 +408,7 @@ void THR::TimIntGenAlpha::UpdateStepState()
  | update after time step after output on element level      dano 05/13 |
  | update anything that needs to be updated at the element level        |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::UpdateStepElement()
+void THR::TimIntGenAlpha::update_step_element()
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -426,11 +426,11 @@ void THR::TimIntGenAlpha::UpdateStepElement()
 /*----------------------------------------------------------------------*
  | read restart forces                                       dano 10/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::ReadRestartForce()
+void THR::TimIntGenAlpha::read_restart_force()
 {
   // read the vectors that were written in WriteRestartForce()
   Core::IO::DiscretizationReader reader(
-      discret_, Global::Problem::Instance()->InputControlFile(), step_);
+      discret_, Global::Problem::instance()->input_control_file(), step_);
   reader.read_vector(fext_, "fexternal");
   reader.read_vector(fint_, "fint");
   reader.read_vector(fcap_, "fcap");
@@ -444,7 +444,7 @@ void THR::TimIntGenAlpha::ReadRestartForce()
 /*----------------------------------------------------------------------*
  | write internal and external forces for restart            dano 07/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+void THR::TimIntGenAlpha::write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   // in contrast to former implementation we save the current vectors.
   // This is required in case of materials with history.

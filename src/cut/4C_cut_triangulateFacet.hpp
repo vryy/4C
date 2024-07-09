@@ -56,14 +56,14 @@ namespace Core::Geo
       /*!
       \brief Split the facet into appropriate number of tri and quad
        */
-      void SplitFacet();
+      void split_facet();
 
       /*!
       \brief A general facet is triangulated with ear clipping method.
       When triOnly=true calls conventional Earclipping method. Otherwise it creates both Tri and
       Quad cells to reduce the number of Gaussian points
        */
-      void EarClipping(std::vector<int> ptConcavity,
+      void ear_clipping(std::vector<int> ptConcavity,
           bool triOnly = false,           // create triangles only?
           bool DeleteInlinePts = false);  // how to deal with collinear points?
 
@@ -78,7 +78,7 @@ namespace Core::Geo
       /*!
       \brief Returns Tri and Quad cells that are created by facet splitting
        */
-      std::vector<std::vector<Point *>> GetSplitCells() { return split_; }
+      std::vector<std::vector<Point *>> get_split_cells() { return split_; }
 
      private:
       /*!

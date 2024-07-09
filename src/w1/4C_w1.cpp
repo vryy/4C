@@ -21,9 +21,9 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::Wall1Type Discret::ELEMENTS::Wall1Type::instance_;
 
-Discret::ELEMENTS::Wall1Type& Discret::ELEMENTS::Wall1Type::Instance() { return instance_; }
+Discret::ELEMENTS::Wall1Type& Discret::ELEMENTS::Wall1Type::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::Wall1Type::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Wall1Type::create(const std::vector<char>& data)
 {
   Discret::ELEMENTS::Wall1* object = new Discret::ELEMENTS::Wall1(-1, -1);
   object->unpack(data);
@@ -31,7 +31,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Wall1Type::Create(const std::
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALL")
@@ -45,7 +45,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1Type::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1Type::create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new Discret::ELEMENTS::Wall1(id, owner));
@@ -60,7 +60,7 @@ void Discret::ELEMENTS::Wall1Type::nodal_block_information(
   nv = 2;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Wall1Type::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Wall1Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, int const numdof, int const dimnsp)
 {
   return ComputeSolid2DNullSpace(node, x0);
@@ -143,7 +143,7 @@ void Discret::ELEMENTS::Wall1Type::setup_element_definition(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1LineType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1LineType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Wall1Line( id, owner ) );
@@ -168,7 +168,7 @@ Discret::ELEMENTS::Wall1::Wall1(int id, int owner)
       structale_(false),
       distype_(Core::FE::CellType::dis_none)
 {
-  if (Global::Problem::Instance()->GetProblemType() == Core::ProblemType::struct_ale)
+  if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::struct_ale)
     structale_ = true;
   return;
 }
@@ -199,7 +199,7 @@ Discret::ELEMENTS::Wall1::Wall1(const Discret::ELEMENTS::Wall1& old)
  |  Deep copy this instance of Wall1 and return pointer to it (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Wall1::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Wall1::clone() const
 {
   Discret::ELEMENTS::Wall1* newelement = new Discret::ELEMENTS::Wall1(*this);
   return newelement;
@@ -209,7 +209,7 @@ Core::Elements::Element* Discret::ELEMENTS::Wall1::Clone() const
  |                                                             (public) |
  |                                                          mgit 04/07 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Wall1::Shape() const { return distype_; }
+Core::FE::CellType Discret::ELEMENTS::Wall1::shape() const { return distype_; }
 
 
 /*----------------------------------------------------------------------*
@@ -221,7 +221,7 @@ void Discret::ELEMENTS::Wall1::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   SoBase::pack(data);
@@ -260,7 +260,7 @@ void Discret::ELEMENTS::Wall1::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -298,7 +298,7 @@ void Discret::ELEMENTS::Wall1::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             mgit 07/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1::lines()
 {
   return Core::Communication::ElementBoundaryFactory<Wall1Line, Wall1>(
       Core::Communication::buildLines, *this);
@@ -308,7 +308,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1::Lin
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          mgit 03/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1::surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

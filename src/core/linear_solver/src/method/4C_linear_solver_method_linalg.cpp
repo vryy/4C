@@ -47,21 +47,21 @@ void Core::LinAlg::Solver::reset() { solver_ = Teuchos::null; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::Solver::getNumIters() const { return solver_->getNumIters(); }
+int Core::LinAlg::Solver::get_num_iters() const { return solver_->get_num_iters(); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::LinAlg::Solver::adapt_tolerance(
     const double desirednlnres, const double currentnlnres, const double better)
 {
-  if (!Params().isSublist("Belos Parameters")) FOUR_C_THROW("Adaptive tolerance only for Belos.");
+  if (!params().isSublist("Belos Parameters")) FOUR_C_THROW("Adaptive tolerance only for Belos.");
 
-  Teuchos::ParameterList& solver_params = Params().sublist("Belos Parameters");
+  Teuchos::ParameterList& solver_params = params().sublist("Belos Parameters");
 
   if (!solver_params.isParameter("Convergence Tolerance"))
     FOUR_C_THROW("No iterative solver tolerance in ParameterList");
 
-  const bool do_output = solver_params.get<int>("Output Frequency", 1) and !Comm().MyPID();
+  const bool do_output = solver_params.get<int>("Output Frequency", 1) and !get_comm().MyPID();
 
   const std::string conv_test_strategy = solver_params.get<std::string>(
       "Implicit Residual Scaling", Belos::convertScaleTypeToString(Belos::ScaleType::None));
@@ -114,10 +114,10 @@ void Core::LinAlg::Solver::adapt_tolerance(
  *----------------------------------------------------------------------*/
 void Core::LinAlg::Solver::set_tolerance(const double tolerance)
 {
-  if (!Params().isSublist("Belos Parameters"))
+  if (!params().isSublist("Belos Parameters"))
     FOUR_C_THROW("Set tolerance of linear solver only for Belos solver.");
 
-  Teuchos::ParameterList& solver_params = Params().sublist("Belos Parameters");
+  Teuchos::ParameterList& solver_params = params().sublist("Belos Parameters");
 
   const bool have_saved_value = solver_params.isParameter("Convergence Tolerance Saved");
   if (!have_saved_value)
@@ -131,11 +131,11 @@ void Core::LinAlg::Solver::set_tolerance(const double tolerance)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Solver::ResetTolerance()
+void Core::LinAlg::Solver::reset_tolerance()
 {
-  if (!Params().isSublist("Belos Parameters")) return;
+  if (!params().isSublist("Belos Parameters")) return;
 
-  Teuchos::ParameterList& solver_params = Params().sublist("Belos Parameters");
+  Teuchos::ParameterList& solver_params = params().sublist("Belos Parameters");
 
   const bool have_saved_value = solver_params.isParameter("Convergence Tolerance Saved");
   if (!have_saved_value) return;
@@ -176,13 +176,13 @@ void Core::LinAlg::Solver::setup(Teuchos::RCP<Epetra_Operator> matrix,
   if (solver_ == Teuchos::null)
   {
     // decide what solver to use
-    std::string solvertype = Params().get("solver", "none");
+    std::string solvertype = Solver::params().get("solver", "none");
 
     if ("belos" == solvertype)
     {
       solver_ =
           Teuchos::rcp(new Core::LinearSolver::IterativeSolver<Epetra_Operator, Epetra_MultiVector>(
-              comm_, Params()));
+              comm_, Solver::params()));
     }
     else if ("umfpack" == solvertype or "superlu" == solvertype)
     {
@@ -198,7 +198,7 @@ void Core::LinAlg::Solver::setup(Teuchos::RCP<Epetra_Operator> matrix,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::Solver::Solve(Teuchos::RCP<Epetra_Operator> matrix,
+int Core::LinAlg::Solver::solve(Teuchos::RCP<Epetra_Operator> matrix,
     Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b,
     const SolverParams& params)
 {
@@ -207,7 +207,7 @@ int Core::LinAlg::Solver::Solve(Teuchos::RCP<Epetra_Operator> matrix,
   int error_value = 0;
   {
     TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::Solver:  2)   Solve");
-    error_value = solver_->Solve();
+    error_value = solver_->solve();
   }
 
   return error_value;

@@ -48,7 +48,7 @@ void BEAMINTERACTION::BeamPotentialParams::init(const double restart_time)
 
   // Teuchos parameter list for beam potential-based interactions
   const Teuchos::ParameterList& beam_potential_params_list =
-      Global::Problem::Instance()->beam_potential_params();
+      Global::Problem::instance()->beam_potential_params();
 
   /****************************************************************************/
   // get and check required parameters

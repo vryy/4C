@@ -45,13 +45,13 @@ namespace Arteries
         const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) override;
 
     // test results
-    void TestResults() override;
+    void test_results() override;
 
     // create field test
-    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
 
     /// setup the variables to do a new time step
-    void TimeUpdate() override;
+    void time_update() override;
 
     /// prepare time step
     void prepare_time_step() override;
@@ -70,7 +70,7 @@ namespace Arteries
     void add_neumann_to_residual();
 
     /// initialization
-    void InitSaveState() override
+    void init_save_state() override
     {
       FOUR_C_THROW("InitSaveState() not available for stationary formulation");
     }
@@ -79,12 +79,12 @@ namespace Arteries
     void read_restart(int step, bool CoupledTo3D = false) override;
 
     /// save state
-    void SaveState() override
+    void save_state() override
     {
       FOUR_C_THROW("SaveState() not available for stationary formulation");
     }
 
-    void LoadState() override
+    void load_state() override
     {
       FOUR_C_THROW("LoadState() not available for stationary formulation");
     }
@@ -93,24 +93,24 @@ namespace Arteries
     void output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override;
 
     //! output of element radius
-    void OutputRadius();
+    void output_radius();
 
     //! output of element volumetric flow
-    void OutputFlow();
+    void output_flow();
 
     //! set the initial field on the artery discretization
-    void SetInitialField(const Inpar::ArtDyn::InitialField init,  //!< type of initial field
-        const int startfuncno                                     //!< number of spatial function
+    void set_initial_field(const Inpar::ArtDyn::InitialField init,  //!< type of initial field
+        const int startfuncno                                       //!< number of spatial function
         ) override;
 
     // prepare the loop
     void prepare_time_loop() override;
 
     // solve artery system of equation
-    void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams) override;
+    void solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams) override;
 
     // prepare linear solve (apply DBC)
-    void PrepareLinearSolve() override;
+    void prepare_linear_solve() override;
 
     // Assembling of the RHS Vector and the LHS Matrix
     void assemble_mat_and_rhs() override;
@@ -119,19 +119,19 @@ namespace Arteries
     void linear_solve();
 
     // Solve Scatra equations
-    void SolveScatra() override;
+    void solve_scatra() override;
 
     // get solution vector = pressure
-    Teuchos::RCP<const Epetra_Vector> Pressurenp() const override { return pressurenp_; }
+    Teuchos::RCP<const Epetra_Vector> pressurenp() const override { return pressurenp_; }
 
     //! get element volume flow
-    Teuchos::RCP<const Epetra_Vector> EleVolflow() const { return ele_volflow_; }
+    Teuchos::RCP<const Epetra_Vector> ele_volflow() const { return ele_volflow_; }
 
     //! get element radius
-    Teuchos::RCP<const Epetra_Vector> EleRadius() const { return ele_radius_; }
+    Teuchos::RCP<const Epetra_Vector> ele_radius() const { return ele_radius_; }
 
     //! iterative update of primary variable
-    void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc) override
+    void update_iter(const Teuchos::RCP<const Epetra_Vector> inc) override
     {
       pressurenp_->Update(1.0, *inc, 1.0);
       return;

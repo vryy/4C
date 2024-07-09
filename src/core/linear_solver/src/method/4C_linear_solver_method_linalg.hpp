@@ -130,7 +130,7 @@ namespace Core::LinAlg
                                to matrix kernel.
     \param params  (in)    : parameters for the solver. See documentation of SolverParams
     */
-    int Solve(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
+    int solve(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
         Teuchos::RCP<Epetra_MultiVector> b, const SolverParams& params);
 
     /*!
@@ -141,9 +141,9 @@ namespace Core::LinAlg
     void reset();
 
     //! get tolerance from Belos solver
-    double GetTolerance() const
+    double get_tolerance() const
     {
-      return Params().sublist("Belos Parameters").get<double>("Convergence Tolerance", 1.0e-8);
+      return params().sublist("Belos Parameters").get<double>("Convergence Tolerance", 1.0e-8);
     }
 
     /*!
@@ -157,7 +157,7 @@ namespace Core::LinAlg
 
     \sa adapt_tolerance
     */
-    void ResetTolerance();
+    void reset_tolerance();
 
     //@}
     //! @name Input of parameters
@@ -210,13 +210,13 @@ namespace Core::LinAlg
     \brief Get communicator
 
     */
-    inline const Epetra_Comm& Comm() const { return comm_; }
+    inline const Epetra_Comm& get_comm() const { return comm_; }
 
     /*!
     \brief Get solver parameters
 
     */
-    inline Teuchos::ParameterList& Params() const { return *params_; }
+    inline Teuchos::ParameterList& params() const { return *params_; }
 
     //@}
 
@@ -225,12 +225,12 @@ namespace Core::LinAlg
 
     \note This name is purely descriptive and does not affect any computations.
     */
-    inline std::string Name() const { return params_->get<std::string>("name"); }
+    inline std::string name() const { return params_->get<std::string>("name"); }
 
     /*!
     \brief Return number of iterations performed by solver
     */
-    int getNumIters() const;
+    int get_num_iters() const;
 
    private:
     /*!

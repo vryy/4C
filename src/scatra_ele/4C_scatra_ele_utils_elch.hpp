@@ -38,7 +38,7 @@ namespace Discret
 
      public:
       //! singleton access method
-      static ScaTraEleUtilsElch<distype>* Instance(
+      static ScaTraEleUtilsElch<distype>* instance(
           const int numdofpernode,    ///< number of degrees of freedom per node
           const int numscal,          ///< number of transported scalars per node
           const std::string& disname  ///< name of discretization
@@ -97,8 +97,8 @@ namespace Discret
       ) const;
 
       //! evaluate ion material
-      void MatIon(const Teuchos::RCP<const Core::Mat::Material> material,  //!< ion material
-          const int k,                                                     //!< ID of ion material
+      void mat_ion(const Teuchos::RCP<const Core::Mat::Material> material,  //!< ion material
+          const int k,                                                      //!< ID of ion material
           const Inpar::ElCh::EquPot equpot,  //!< type of closing equation for electric potential
           const Teuchos::RCP<ScaTraEleDiffManagerElch>& diffmanager  //!< diffusion manager
       );

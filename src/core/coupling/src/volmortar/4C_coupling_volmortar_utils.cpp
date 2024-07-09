@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  assign material to discretization A                       vuong 09/14|
  *----------------------------------------------------------------------*/
-void Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
+void Core::VolMortar::UTILS::DefaultMaterialStrategy::assign_material2_to1(
     const Core::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele1,
     const std::vector<int>& ids_2, Teuchos::RCP<Core::FE::Discretization> dis1,
     Teuchos::RCP<Core::FE::Discretization> dis2)
@@ -36,7 +36,7 @@ void Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
 
     for (unsigned i = 0; i < ids_2.size(); ++i)
     {
-      Core::Elements::Element* actele2 = dis2->gElement(ids_2[i]);
+      Core::Elements::Element* actele2 = dis2->g_element(ids_2[i]);
       std::vector<double> centercoords2 = Core::FE::element_center_refe_coords(*actele2);
 
       Core::LinAlg::Matrix<3, 1> diffcoords(true);
@@ -52,7 +52,7 @@ void Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
   }
 
   // assign additional material to element A
-  ele1->AddMaterial(ele2->Material());
+  ele1->add_material(ele2->material());
 
   // done
   return;
@@ -61,7 +61,7 @@ void Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
 /*----------------------------------------------------------------------*
  |  assign material to discretization B                       vuong 09/14|
  *----------------------------------------------------------------------*/
-void Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
+void Core::VolMortar::UTILS::DefaultMaterialStrategy::assign_material1_to2(
     const Core::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele2,
     const std::vector<int>& ids_1, Teuchos::RCP<Core::FE::Discretization> dis1,
     Teuchos::RCP<Core::FE::Discretization> dis2)
@@ -79,7 +79,7 @@ void Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
 
     for (unsigned i = 0; i < ids_1.size(); ++i)
     {
-      Core::Elements::Element* actele1 = dis1->gElement(ids_1[i]);
+      Core::Elements::Element* actele1 = dis1->g_element(ids_1[i]);
       std::vector<double> centercoords1 = Core::FE::element_center_refe_coords(*actele1);
 
       Core::LinAlg::Matrix<3, 1> diffcoords(true);
@@ -95,7 +95,7 @@ void Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
   }
 
   // assign additional material to element B
-  ele2->AddMaterial(ele1->Material());
+  ele2->add_material(ele1->material());
 
   // done
   return;

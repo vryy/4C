@@ -43,7 +43,7 @@ namespace STI
     );
 
     //! test special quantity not associated with a particular element or node
-    void TestSpecial(
+    void test_special(
         Input::LineDefinition& res,  //!< input file line containing result test specification
         int& nerr,                   //!< number of failed result tests
         int& test_count              ///< number of result tests

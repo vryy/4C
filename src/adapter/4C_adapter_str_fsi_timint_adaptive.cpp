@@ -31,7 +31,7 @@ Adapter::StructureFSITimIntAda::StructureFSITimIntAda(
     Teuchos::RCP<Solid::TimAda> sta, Teuchos::RCP<Structure> sti)
     : FSIStructureWrapper(sti), StructureTimIntAda(sta, sti), str_time_integrator_(sti)
 {
-  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
   const Teuchos::ParameterList& sada = sdyn.sublist("TIMEADAPTIVITY");
 
   // type of error norm
@@ -44,7 +44,7 @@ Adapter::StructureFSITimIntAda::StructureFSITimIntAda(
   // and are located at the FSI interface.
   std::vector<Teuchos::RCP<const Epetra_Map>> intersectionmaps;
   intersectionmaps.push_back(sti->get_dbc_map_extractor()->cond_map());
-  intersectionmaps.push_back(Interface()->fsi_cond_map());
+  intersectionmaps.push_back(interface()->fsi_cond_map());
   Teuchos::RCP<Epetra_Map> intersectionmap =
       Core::LinAlg::MultiMapExtractor::intersect_maps(intersectionmaps);
 
@@ -55,7 +55,7 @@ Adapter::StructureFSITimIntAda::StructureFSITimIntAda(
 
 /*----------------------------------------------------------------------------*/
 /* Indicate norms of local discretization error */
-void Adapter::StructureFSITimIntAda::IndicateErrorNorms(double& err, double& errcond,
+void Adapter::StructureFSITimIntAda::indicate_error_norms(double& err, double& errcond,
     double& errother, double& errinf, double& errinfcond, double& errinfother)
 {
   // call functionality of adaptive structural time integrator
@@ -73,7 +73,7 @@ void Adapter::StructureFSITimIntAda::indicate_errors(double& err, double& errcon
     double& errinf, double& errinfcond, double& errinfother)
 {
   // vector with local discretization error for each DOF
-  Teuchos::RCP<Epetra_Vector> error = str_ada()->LocErrDis();
+  Teuchos::RCP<Epetra_Vector> error = str_ada()->loc_err_dis();
 
   // extract the condition part of the full error vector
   // (i.e. only interface displacement DOFs)
@@ -111,11 +111,11 @@ double Adapter::StructureFSITimIntAda::calculate_dt(const double norm)
 
 /*----------------------------------------------------------------------------*/
 /* Get time step size of adaptive structural time integrator */
-double Adapter::StructureFSITimIntAda::Dt() const { return str_ada()->Dt(); }
+double Adapter::StructureFSITimIntAda::dt() const { return str_ada()->dt(); }
 
 /*----------------------------------------------------------------------------*/
 /* Get target time \f$t_{n+1}\f$ of current time step */
-double Adapter::StructureFSITimIntAda::Time() const { return str_ada()->Time(); }
+double Adapter::StructureFSITimIntAda::time() const { return str_ada()->time(); }
 
 /*----------------------------------------------------------------------------*/
 /* Set new time step size */
@@ -123,9 +123,9 @@ void Adapter::StructureFSITimIntAda::set_dt(const double dtnew) { str_ada()->set
 
 /*----------------------------------------------------------------------------*/
 /* Update step size */
-void Adapter::StructureFSITimIntAda::UpdateStepSize(const double dtnew)
+void Adapter::StructureFSITimIntAda::update_step_size(const double dtnew)
 {
-  str_ada()->UpdateStepSize(dtnew);
+  str_ada()->update_step_size(dtnew);
 }
 
 /*----------------------------------------------------------------------------*/

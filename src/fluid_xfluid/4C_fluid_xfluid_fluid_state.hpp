@@ -52,7 +52,7 @@ namespace FLD
         const Teuchos::RCP<const Epetra_Map>& embfluiddofrowmap);
 
     /// setup map extractors for dirichlet maps & velocity/pressure maps
-    void SetupMapExtractors(const Teuchos::RCP<Core::FE::Discretization>& xfluiddiscret,
+    void setup_map_extractors(const Teuchos::RCP<Core::FE::Discretization>& xfluiddiscret,
         const Teuchos::RCP<Core::FE::Discretization>& embfluiddiscret, const double& time);
 
     /// build merged fluid dirichlet map extractor
@@ -62,20 +62,23 @@ namespace FLD
     //! @name Accessors
     //@{
 
-    Teuchos::RCP<Core::LinAlg::MapExtractor> DBCMapExtractor() override { return xffluiddbcmaps_; }
+    Teuchos::RCP<Core::LinAlg::MapExtractor> dbc_map_extractor() override
+    {
+      return xffluiddbcmaps_;
+    }
 
-    Teuchos::RCP<Core::LinAlg::MapExtractor> VelPresSplitter() override
+    Teuchos::RCP<Core::LinAlg::MapExtractor> vel_pres_splitter() override
     {
       return xffluidvelpressplitter_;
     }
 
-    bool Destroy() override;
+    bool destroy() override;
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override;
-    Teuchos::RCP<Epetra_Vector>& Residual() override { return xffluidresidual_; }
-    Teuchos::RCP<Epetra_Vector>& Zeros() override { return xffluidzeros_; }
-    Teuchos::RCP<Epetra_Vector>& IncVel() override { return xffluidincvel_; }
-    Teuchos::RCP<Epetra_Vector>& Velnp() override { return xffluidvelnp_; }
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override;
+    Teuchos::RCP<Epetra_Vector>& residual() override { return xffluidresidual_; }
+    Teuchos::RCP<Epetra_Vector>& zeros() override { return xffluidzeros_; }
+    Teuchos::RCP<Epetra_Vector>& inc_vel() override { return xffluidincvel_; }
+    Teuchos::RCP<Epetra_Vector>& velnp() override { return xffluidvelnp_; }
     //@}
 
     void complete_coupling_matrices_and_rhs() override;

@@ -40,7 +40,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::WeaklyCompressibleFluid::create_mate
 Mat::WeaklyCompressibleFluidType Mat::WeaklyCompressibleFluidType::instance_;
 
 
-Core::Communication::ParObject* Mat::WeaklyCompressibleFluidType::Create(
+Core::Communication::ParObject* Mat::WeaklyCompressibleFluidType::create(
     const std::vector<char>& data)
 {
   Mat::WeaklyCompressibleFluid* fluid = new Mat::WeaklyCompressibleFluid();
@@ -69,12 +69,12 @@ void Mat::WeaklyCompressibleFluid::pack(Core::Communication::PackBuffer& data) c
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 }
 
@@ -85,23 +85,23 @@ void Mat::WeaklyCompressibleFluid::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::WeaklyCompressibleFluid*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   if (position != data.size())
@@ -111,9 +111,9 @@ void Mat::WeaklyCompressibleFluid::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double Mat::WeaklyCompressibleFluid::ComputeDensity(const double press) const
+double Mat::WeaklyCompressibleFluid::compute_density(const double press) const
 {
-  const double density = RefDensity() + ComprCoeff() * (press - RefPressure());
+  const double density = ref_density() + compr_coeff() * (press - ref_pressure());
 
   return density;
 }
@@ -121,9 +121,9 @@ double Mat::WeaklyCompressibleFluid::ComputeDensity(const double press) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double Mat::WeaklyCompressibleFluid::ComputePressure(const double dens) const
+double Mat::WeaklyCompressibleFluid::compute_pressure(const double dens) const
 {
-  const double pressure = RefPressure() + 1.0 / ComprCoeff() * (dens - RefDensity());
+  const double pressure = ref_pressure() + 1.0 / compr_coeff() * (dens - ref_density());
 
   return pressure;
 }

@@ -57,7 +57,7 @@ namespace RTD
      * @param row This vector of strings fills the row. Of course, the size of this vector must be
      * equal to the size of the table (construction parameter). Otherwise an error is thrown.
      */
-    void AddRow(const std::vector<std::string>& row);
+    void add_row(const std::vector<std::string>& row);
     /*!
      * The relative widths of the table columns are set here. The numbers should be given as
      * characters after which a new line is created, that is, each cell gets an enforced line
@@ -68,7 +68,7 @@ namespace RTD
      * @param widths vector of unsigned ints, defining the characters that should fit into each
      * cell.
      */
-    void SetWidths(const std::vector<unsigned>& widths);
+    void set_widths(const std::vector<unsigned>& widths);
     /*!
      * The directives are entered as a key-value pair, which is also the way, how it is written in
      * a list-table. If the type of table is changed some day, the key-value pairs can probably
@@ -78,13 +78,13 @@ namespace RTD
      * @param value The value of the control parameter, given as a string no matter what it
      *              actually is.
      */
-    void AddDirective(const std::string& key, const std::string& value);
+    void add_directive(const std::string& key, const std::string& value);
     /*!
      * A getter method for the current number of rows in the table
      *
      * @return Number of rows of the table (that is, the size of the private vector tablerows_
      */
-    unsigned GetRows() const;
+    unsigned get_rows() const;
     /*!
      * Here the table is printed as a restructuredText list-table
      *

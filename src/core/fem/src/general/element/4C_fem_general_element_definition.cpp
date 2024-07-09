@@ -33,119 +33,119 @@ void Core::Elements::ElementDefinition::print_element_dat_header_to_stream(std::
 {
   setup_valid_element_lines();
 
-  PrintSectionHeader(stream, "STRUCTURE ELEMENTS");
+  print_section_header(stream, "STRUCTURE ELEMENTS");
 
   //  PrintElementLines(stream,"ART");
-  PrintElementLines(stream, "BEAM3");
-  PrintElementLines(stream, "BEAM3R");
-  PrintElementLines(stream, "BEAM3EB");
-  PrintElementLines(stream, "BEAM3K");
-  PrintElementLines(stream, "BELE3");
-  PrintElementLines(stream, "RIGIDSPHERE");
-  PrintElementLines(stream, "NSTET5");
-  PrintElementLines(stream, "SHELL7P");
-  PrintElementLines(stream, "SHELL7PSCATRA");
-  PrintElementLines(stream, "SOLID");
-  PrintElementLines(stream, "SOLIDPORO");
-  PrintElementLines(stream, "SOLIDSCATRA");
-  PrintElementLines(stream, "SOLIDH18_DEPRECATED");
-  PrintElementLines(stream, "SOLIDH20_DEPRECATED");
-  PrintElementLines(stream, "SOLIDH27_DEPRECATED");
-  PrintElementLines(stream, "SOLIDH27PORO");
-  PrintElementLines(stream, "SOLIDH27PLAST");
-  PrintElementLines(stream, "SOLIDH27THERMO");
-  PrintElementLines(stream, "SONURBS27THERMO");
-  PrintElementLines(stream, "SOLIDH20THERMO");
-  PrintElementLines(stream, "SONURBS27");
-  PrintElementLines(stream, "SOLIDH8_DEPRECATED");
-  PrintElementLines(stream, "MEMBRANE");
-  PrintElementLines(stream, "SOLIDH8P1J1");
-  PrintElementLines(stream, "SOLIDH8FBAR_DEPRECATED");
-  PrintElementLines(stream, "SOLIDH8FBARSCATRA_DEPRECATED");
-  PrintElementLines(stream, "SOLIDH8FBARTHERMO");
-  PrintElementLines(stream, "SOLIDH8PORO");
-  PrintElementLines(stream, "SOLIDH8POROSCATRA");
-  PrintElementLines(stream, "SOLIDH8POROP1");
-  PrintElementLines(stream, "SOLIDH8POROP1SCATRA");
-  PrintElementLines(stream, "SOLIDH8THERMO");
-  PrintElementLines(stream, "SOLIDH8PLAST");
-  PrintElementLines(stream, "SOLIDH8SCATRA");
-  PrintElementLines(stream, "SOLIDSH18");
-  PrintElementLines(stream, "SOLIDSH18PLAST");
-  PrintElementLines(stream, "SOLIDSH8");
-  PrintElementLines(stream, "SOLIDSH8PLAST");
-  PrintElementLines(stream, "SOLIDSH8P8");
-  PrintElementLines(stream, "SOLIDSHW6");
-  PrintElementLines(stream, "SOLIDT10_DEPRECATED");
-  PrintElementLines(stream, "SOLIDT4_DEPRECATED");
-  PrintElementLines(stream, "SOLIDT4PLAST");
-  PrintElementLines(stream, "SOLIDT4PORO");
-  PrintElementLines(stream, "SOLIDT4THERMO");
-  PrintElementLines(stream, "SOLIDT10THERMO");
-  PrintElementLines(stream, "SOLIDT4PLAST");
-  PrintElementLines(stream, "SOLIDT4SCATRA_DEPRECATED");
-  PrintElementLines(stream, "SOLIDT10SCATRA_DEPRECATED");
-  PrintElementLines(stream, "SOLIDW6_DEPRECATED");
-  PrintElementLines(stream, "SOLIDP5_DEPRECATED");
-  PrintElementLines(stream, "SOLIDP5FBAR_DEPRECATED");
-  PrintElementLines(stream, "SOLIDW6SCATRA_DEPRECATED");
-  PrintElementLines(stream, "TORSION3");
-  PrintElementLines(stream, "TRUSS3");
-  PrintElementLines(stream, "TRUSS3SCATRA");
-  PrintElementLines(stream, "WALL");
-  PrintElementLines(stream, "WALLNURBS");
-  PrintElementLines(stream, "WALLSCATRA");
-  PrintElementLines(stream, "WALLQ4PORO");
-  PrintElementLines(stream, "WALLQ4POROSCATRA");
-  PrintElementLines(stream, "WALLQ4POROP1");
-  PrintElementLines(stream, "WALLQ4POROP1SCATRA");
-  PrintElementLines(stream, "WALLQ9PORO");
+  print_element_lines(stream, "BEAM3");
+  print_element_lines(stream, "BEAM3R");
+  print_element_lines(stream, "BEAM3EB");
+  print_element_lines(stream, "BEAM3K");
+  print_element_lines(stream, "BELE3");
+  print_element_lines(stream, "RIGIDSPHERE");
+  print_element_lines(stream, "NSTET5");
+  print_element_lines(stream, "SHELL7P");
+  print_element_lines(stream, "SHELL7PSCATRA");
+  print_element_lines(stream, "SOLID");
+  print_element_lines(stream, "SOLIDPORO");
+  print_element_lines(stream, "SOLIDSCATRA");
+  print_element_lines(stream, "SOLIDH18_DEPRECATED");
+  print_element_lines(stream, "SOLIDH20_DEPRECATED");
+  print_element_lines(stream, "SOLIDH27_DEPRECATED");
+  print_element_lines(stream, "SOLIDH27PORO");
+  print_element_lines(stream, "SOLIDH27PLAST");
+  print_element_lines(stream, "SOLIDH27THERMO");
+  print_element_lines(stream, "SONURBS27THERMO");
+  print_element_lines(stream, "SOLIDH20THERMO");
+  print_element_lines(stream, "SONURBS27");
+  print_element_lines(stream, "SOLIDH8_DEPRECATED");
+  print_element_lines(stream, "MEMBRANE");
+  print_element_lines(stream, "SOLIDH8P1J1");
+  print_element_lines(stream, "SOLIDH8FBAR_DEPRECATED");
+  print_element_lines(stream, "SOLIDH8FBARSCATRA_DEPRECATED");
+  print_element_lines(stream, "SOLIDH8FBARTHERMO");
+  print_element_lines(stream, "SOLIDH8PORO");
+  print_element_lines(stream, "SOLIDH8POROSCATRA");
+  print_element_lines(stream, "SOLIDH8POROP1");
+  print_element_lines(stream, "SOLIDH8POROP1SCATRA");
+  print_element_lines(stream, "SOLIDH8THERMO");
+  print_element_lines(stream, "SOLIDH8PLAST");
+  print_element_lines(stream, "SOLIDH8SCATRA");
+  print_element_lines(stream, "SOLIDSH18");
+  print_element_lines(stream, "SOLIDSH18PLAST");
+  print_element_lines(stream, "SOLIDSH8");
+  print_element_lines(stream, "SOLIDSH8PLAST");
+  print_element_lines(stream, "SOLIDSH8P8");
+  print_element_lines(stream, "SOLIDSHW6");
+  print_element_lines(stream, "SOLIDT10_DEPRECATED");
+  print_element_lines(stream, "SOLIDT4_DEPRECATED");
+  print_element_lines(stream, "SOLIDT4PLAST");
+  print_element_lines(stream, "SOLIDT4PORO");
+  print_element_lines(stream, "SOLIDT4THERMO");
+  print_element_lines(stream, "SOLIDT10THERMO");
+  print_element_lines(stream, "SOLIDT4PLAST");
+  print_element_lines(stream, "SOLIDT4SCATRA_DEPRECATED");
+  print_element_lines(stream, "SOLIDT10SCATRA_DEPRECATED");
+  print_element_lines(stream, "SOLIDW6_DEPRECATED");
+  print_element_lines(stream, "SOLIDP5_DEPRECATED");
+  print_element_lines(stream, "SOLIDP5FBAR_DEPRECATED");
+  print_element_lines(stream, "SOLIDW6SCATRA_DEPRECATED");
+  print_element_lines(stream, "TORSION3");
+  print_element_lines(stream, "TRUSS3");
+  print_element_lines(stream, "TRUSS3SCATRA");
+  print_element_lines(stream, "WALL");
+  print_element_lines(stream, "WALLNURBS");
+  print_element_lines(stream, "WALLSCATRA");
+  print_element_lines(stream, "WALLQ4PORO");
+  print_element_lines(stream, "WALLQ4POROSCATRA");
+  print_element_lines(stream, "WALLQ4POROP1");
+  print_element_lines(stream, "WALLQ4POROP1SCATRA");
+  print_element_lines(stream, "WALLQ9PORO");
 
 
-  PrintSectionHeader(stream, "FLUID ELEMENTS");
-  PrintElementLines(stream, "FLUID");
-  PrintElementLines(stream, "FLUIDXW");
-  PrintElementLines(stream, "FLUIDHDG");
-  PrintElementLines(stream, "FLUIDHDGWEAKCOMP");
-  PrintElementLines(stream, "FLUIDIMMERSED");
-  PrintElementLines(stream, "FLUIDPOROIMMERSED");
+  print_section_header(stream, "FLUID ELEMENTS");
+  print_element_lines(stream, "FLUID");
+  print_element_lines(stream, "FLUIDXW");
+  print_element_lines(stream, "FLUIDHDG");
+  print_element_lines(stream, "FLUIDHDGWEAKCOMP");
+  print_element_lines(stream, "FLUIDIMMERSED");
+  print_element_lines(stream, "FLUIDPOROIMMERSED");
 
-  PrintSectionHeader(stream, "LUBRICATION ELEMENTS");
-  PrintElementLines(stream, "LUBRICATION");
+  print_section_header(stream, "LUBRICATION ELEMENTS");
+  print_element_lines(stream, "LUBRICATION");
 
-  PrintSectionHeader(stream, "TRANSPORT ELEMENTS");
-  PrintElementLines(stream, "TRANSP");
+  print_section_header(stream, "TRANSPORT ELEMENTS");
+  print_element_lines(stream, "TRANSP");
 
-  PrintSectionHeader(stream, "TRANSPORT2 ELEMENTS");
-  PrintElementLines(stream, "TRANSP");
+  print_section_header(stream, "TRANSPORT2 ELEMENTS");
+  print_element_lines(stream, "TRANSP");
 
-  PrintSectionHeader(stream, "ALE ELEMENTS");
-  PrintElementLines(stream, "ALE2");
-  PrintElementLines(stream, "ALE3");
+  print_section_header(stream, "ALE ELEMENTS");
+  print_element_lines(stream, "ALE2");
+  print_element_lines(stream, "ALE3");
 
   // PrintElementLines(stream,"BELE3_3");
   // PrintElementLines(stream,"VELE3");
 
-  PrintSectionHeader(stream, "THERMO ELEMENTS");
-  PrintElementLines(stream, "THERMO");
+  print_section_header(stream, "THERMO ELEMENTS");
+  print_element_lines(stream, "THERMO");
 
-  PrintSectionHeader(stream, "ARTERY ELEMENTS");
-  PrintElementLines(stream, "ART");
+  print_section_header(stream, "ARTERY ELEMENTS");
+  print_element_lines(stream, "ART");
 
-  PrintSectionHeader(stream, "REDUCED D AIRWAYS ELEMENTS");
-  PrintElementLines(stream, "RED_AIRWAY");
-  PrintElementLines(stream, "RED_ACINUS");
-  PrintElementLines(stream, "RED_ACINAR_INTER_DEP");
+  print_section_header(stream, "REDUCED D AIRWAYS ELEMENTS");
+  print_element_lines(stream, "RED_AIRWAY");
+  print_element_lines(stream, "RED_ACINUS");
+  print_element_lines(stream, "RED_ACINAR_INTER_DEP");
 
-  PrintSectionHeader(stream, "ELECTROMAGNETIC ELEMENTS");
-  PrintElementLines(stream, "ELECTROMAGNETIC");
-  PrintElementLines(stream, "ELECTROMAGNETICDIFF");
+  print_section_header(stream, "ELECTROMAGNETIC ELEMENTS");
+  print_element_lines(stream, "ELECTROMAGNETIC");
+  print_element_lines(stream, "ELECTROMAGNETICDIFF");
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Elements::ElementDefinition::PrintSectionHeader(std::ostream& stream, std::string name)
+void Core::Elements::ElementDefinition::print_section_header(std::ostream& stream, std::string name)
 {
   unsigned l = name.length();
   stream << "--";
@@ -156,7 +156,7 @@ void Core::Elements::ElementDefinition::PrintSectionHeader(std::ostream& stream,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Elements::ElementDefinition::PrintElementLines(std::ostream& stream, std::string name)
+void Core::Elements::ElementDefinition::print_element_lines(std::ostream& stream, std::string name)
 {
   if (definitions_.find(name) != definitions_.end())
   {
@@ -178,13 +178,13 @@ void Core::Elements::ElementDefinition::PrintElementLines(std::ostream& stream, 
 /*----------------------------------------------------------------------*/
 void Core::Elements::ElementDefinition::setup_valid_element_lines()
 {
-  Core::Communication::ParObjectFactory::Instance().setup_element_definition(definitions_);
+  Core::Communication::ParObjectFactory::instance().setup_element_definition(definitions_);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Input::LineDefinition* Core::Elements::ElementDefinition::ElementLines(
+Input::LineDefinition* Core::Elements::ElementDefinition::element_lines(
     std::string name, std::string distype)
 {
   // This is ugly. But we want to access both maps just once.

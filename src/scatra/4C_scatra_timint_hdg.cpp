@@ -65,20 +65,20 @@ void ScaTra::TimIntHDG::setup()
 
   // vector to store the dofs per element
   const Teuchos::RCP<Epetra_IntVector> eledofs =
-      Teuchos::rcp(new Epetra_IntVector(*discret_->ElementColMap()));
+      Teuchos::rcp(new Epetra_IntVector(*discret_->element_col_map()));
 
   // loop over elements
-  for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
+  for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
     Discret::ELEMENTS::ScaTraHDG *hdgele =
-        dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
+        dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->l_col_element(iele));
     (*eledofs)[iele] = hdgele->num_dof_per_element_auxiliary();
   }
 
   // add proxy for interior degrees of freedom to scatra discretization
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
       Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
-  if (discret_->AddDofSet(dofsetaux) != 2)
+  if (discret_->add_dof_set(dofsetaux) != 2)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
   discret_->fill_complete();
 
@@ -88,7 +88,7 @@ void ScaTra::TimIntHDG::setup()
   intphin_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
 
   // write number of degrees of freedom for hdg and interior variables to screen output
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::cout << "Number of degrees of freedom in HDG system: "
               << discret_->dof_row_map(0)->NumGlobalElements() << std::endl;
@@ -132,17 +132,17 @@ void ScaTra::TimIntHDG::setup()
   ScaTra::TimIntGenAlpha::setup();
 
   // create vector for concentration at nodes for output
-  interpolatedPhinp_ = Core::LinAlg::CreateVector(*discret_->NodeRowMap(), true);
+  interpolatedPhinp_ = Core::LinAlg::CreateVector(*discret_->node_row_map(), true);
 
   // vector to store the elementdegree at each time step
-  elementdegree_ = Core::LinAlg::CreateVector(*(discret_->ElementRowMap()), true);
+  elementdegree_ = Core::LinAlg::CreateVector(*(discret_->element_row_map()), true);
 }
 
 
 /*------------------------------------------------------------------------*
 | calculate pseudo-theta for startalgo_, modified for HDG  hoermann 09/15 |
 *-------------------------------------------------------------------------*/
-void ScaTra::TimIntHDG::SetTheta()
+void ScaTra::TimIntHDG::set_theta()
 {
   // -------------------------------------------------------------------
   //  For af-generalized-alpha time-integration scheme:
@@ -262,7 +262,7 @@ void ScaTra::TimIntHDG::gen_alpha_intermediate_values()
 *-----------------------------------------------------------------------*/
 void ScaTra::TimIntHDG::set_old_part_of_righthandside()
 {
-  SetTheta();
+  set_theta();
   hist_->PutScalar(0.0);
 
   // This code is entered at the beginning of the nonlinear iteration, so
@@ -295,11 +295,11 @@ namespace
       Teuchos::RCP<Epetra_Vector> &phi, Teuchos::RCP<Epetra_MultiVector> &gradphi,
       Teuchos::RCP<Epetra_Vector> &tracephi, int nds_intvar_, int ndofs)
   {
-    dis.ClearState(true);
+    dis.clear_state(true);
 
     // create dofsets for concentration at nodes
     tracephi.reset(new Epetra_Vector(phi->Map()));
-    gradphi.reset(new Epetra_MultiVector(*dis.NodeRowMap(), ndim));
+    gradphi.reset(new Epetra_MultiVector(*dis.node_row_map(), ndim));
 
     // call element routine to interpolate HDG to elements
     Teuchos::ParameterList eleparams;
@@ -311,14 +311,14 @@ namespace
     Core::LinAlg::SerialDenseMatrix dummyMat;
     Core::LinAlg::SerialDenseVector dummyVec;
     Core::LinAlg::SerialDenseVector interpolVec;
-    std::vector<unsigned char> touchCount(dis.NumMyRowNodes());
+    std::vector<unsigned char> touchCount(dis.num_my_row_nodes());
 
     phi->PutScalar(0.);
 
-    for (int el = 0; el < dis.NumMyColElements(); ++el)
+    for (int el = 0; el < dis.num_my_col_elements(); ++el)
     {
-      Core::Elements::Element *ele = dis.lColElement(el);
-      ele->LocationVector(dis, la, false);
+      Core::Elements::Element *ele = dis.l_col_element(el);
+      ele->location_vector(dis, la, false);
       interpolVec.size(ele->num_node() * (2 + ndim));
 
       ele->evaluate(eleparams, dis, la, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
@@ -326,8 +326,8 @@ namespace
       // sum values on nodes into vectors and record the touch count (build average of values)
       for (int i = 0; i < ele->num_node(); ++i)
       {
-        Core::Nodes::Node *node = ele->Nodes()[i];
-        const int localIndex = dis.NodeRowMap()->LID(node->Id());
+        Core::Nodes::Node *node = ele->nodes()[i];
+        const int localIndex = dis.node_row_map()->LID(node->id());
         if (localIndex < 0) continue;
         touchCount[localIndex]++;
         (*phi)[localIndex] += interpolVec(i);
@@ -344,7 +344,7 @@ namespace
       (*tracephi)[i] /= touchCount[i];
       for (int d = 0; d < ndim; ++d) (*gradphi)[d][i] /= touchCount[i];
     }
-    dis.ClearState(true);
+    dis.clear_state(true);
   }
 }  // namespace
 
@@ -359,9 +359,9 @@ void ScaTra::TimIntHDG::output_state()
   Teuchos::RCP<Epetra_MultiVector> interpolatedGradPhi;
   Teuchos::RCP<Epetra_Vector> interpolatedtracePhi;
   // get (averaged) values at element nodes
-  getNodeVectorsHDG(*discret_, intphinp_, phinp_, Global::Problem::Instance()->NDim(),
+  getNodeVectorsHDG(*discret_, intphinp_, phinp_, Global::Problem::instance()->n_dim(),
       interpolatedPhinp_, interpolatedGradPhi, interpolatedtracePhi, nds_intvar_,
-      discret_->NumDofSets());
+      discret_->num_dof_sets());
 
   // write vector to output file
   output_->write_vector("phi_hdg", interpolatedPhinp_, Core::IO::nodevector);
@@ -393,7 +393,7 @@ void ScaTra::TimIntHDG::write_restart() const
 void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::InputControl> input)
 {
   Core::IO::DiscretizationReader reader(
-      discret_, Global::Problem::Instance()->InputControlFile(), step);
+      discret_, Global::Problem::instance()->input_control_file(), step);
 
   time_ = reader.read_double("time");
   step_ = reader.read_int("step");
@@ -404,7 +404,7 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
   if (padaptivity_)
   {
     // redistribute discr. with help of binning strategy
-    if (discret_->Comm().NumProc() > 1)
+    if (discret_->get_comm().NumProc() > 1)
     {
       // create vector of discr.
       std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
@@ -418,18 +418,18 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
 
       // binning strategy is created and parallel redistribution is performed
       Teuchos::ParameterList binning_params =
-          Global::Problem::Instance()->binning_strategy_params();
+          Global::Problem::instance()->binning_strategy_params();
       Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
-          "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+          "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
           binning_params);
       auto element_filter = [](const Core::Elements::Element *element)
       { return Core::Binstrategy::Utils::SpecialElement::none; };
       auto rigid_sphere_radius = [](const Core::Elements::Element *element) { return 0.0; };
       auto correct_beam_center_node = [](const Core::Nodes::Node *node) { return node; };
       binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
-          Global::Problem::Instance()->OutputControlFile(), discret_->Comm(),
-          discret_->Comm().MyPID(), element_filter, rigid_sphere_radius, correct_beam_center_node,
-          dis));
+          Global::Problem::instance()->output_control_file(), discret_->get_comm(),
+          discret_->get_comm().MyPID(), element_filter, rigid_sphere_radius,
+          correct_beam_center_node, dis));
       binningstrategy
           ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
               dis, stdelecolmap, stdnodecolmap);
@@ -438,26 +438,26 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
 
   // vector to store the dofs per element
   const Teuchos::RCP<Epetra_IntVector> eledofs =
-      Teuchos::rcp(new Epetra_IntVector(*discret_->ElementColMap()));
+      Teuchos::rcp(new Epetra_IntVector(*discret_->element_col_map()));
 
   // build new maps for face dofs with adapted element order
-  hdgdis_->BuildFaces();
-  hdgdis_->BuildFaceRowMap();
-  hdgdis_->BuildFaceColMap();
+  hdgdis_->build_faces();
+  hdgdis_->build_face_row_map();
+  hdgdis_->build_face_col_map();
 
   // assign the degrees of freedom to the adapted dofsets
   hdgdis_->assign_degrees_of_freedom(0);
 
   // replace all ghosted element with the original thus the correct polynomial degree is used
-  discret_->export_column_elements(*discret_->ElementColMap(), false, false);
+  discret_->export_column_elements(*discret_->element_col_map(), false, false);
 
   hdgdis_->fill_complete();
 
   // store the number of dofs per element on vector
-  for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
+  for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
     Discret::ELEMENTS::ScaTraHDG *hdgele =
-        dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
+        dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->l_col_element(iele));
     // store the number of dofs for the element
     (*eledofs)[iele] = hdgele->num_dof_per_element_auxiliary();
   }
@@ -466,7 +466,7 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
   Teuchos::RCP<Core::DOFSets::DofSetPredefinedDoFNumber> eledofs_new =
       Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
   // replace old interior element dofs with the new created dofset
-  discret_->ReplaceDofSet(nds_intvar_, eledofs_new, false);
+  discret_->replace_dof_set(nds_intvar_, eledofs_new, false);
 
   hdgdis_->assign_degrees_of_freedom(0);
 
@@ -495,8 +495,8 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
   phin_->Update(1.0, *phinp_, 0.0);
 
   // reset vector
-  interpolatedPhinp_.reset(new Epetra_Vector(*(discret_->NodeRowMap())));
-  elementdegree_.reset(new Epetra_Vector(*(discret_->ElementRowMap())));
+  interpolatedPhinp_.reset(new Epetra_Vector(*(discret_->node_row_map())));
+  elementdegree_.reset(new Epetra_Vector(*(discret_->element_row_map())));
 
   return;
 }
@@ -504,7 +504,7 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
 /*----------------------------------------------------------------------*
  |  set initial field for phi                            hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntHDG::SetInitialField(
+void ScaTra::TimIntHDG::set_initial_field(
     const Inpar::ScaTra::InitialField init, const int startfuncno)
 {
   switch (init)
@@ -533,30 +533,30 @@ void ScaTra::TimIntHDG::SetInitialField(
 
       Core::LinAlg::SerialDenseMatrix dummyMat;
       Core::LinAlg::SerialDenseVector updateVec1, updateVec2, dummyVec;
-      Core::Elements::Element::LocationArray la(discret_->NumDofSets());
+      Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
 
       const Epetra_Map *dofrowmap = discret_->dof_row_map();
       const Epetra_Map *intdofrowmap = discret_->dof_row_map(nds_intvar_);
       double error = 0;
 
-      for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
+      for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
       {
-        Core::Elements::Element *ele = discret_->lColElement(iele);
-        ele->LocationVector(*discret_, la, false);
+        Core::Elements::Element *ele = discret_->l_col_element(iele);
+        ele->location_vector(*discret_, la, false);
         if (static_cast<std::size_t>(updateVec1.numRows()) != la[0].lm_.size())
           updateVec1.size(la[0].lm_.size());
         else
           updateVec1.putScalar(0.0);
-        if (updateVec2.numRows() != discret_->NumDof(nds_intvar_, ele))
-          updateVec2.size(discret_->NumDof(nds_intvar_, ele));
+        if (updateVec2.numRows() != discret_->num_dof(nds_intvar_, ele))
+          updateVec2.size(discret_->num_dof(nds_intvar_, ele));
         else
           updateVec2.putScalar(0.0);
         ele->evaluate(
             eleparams, *discret_, la, dummyMat, dummyMat, updateVec1, updateVec2, dummyVec);
 
-        if (ele->Owner() == discret_->Comm().MyPID())
+        if (ele->owner() == discret_->get_comm().MyPID())
         {
-          std::vector<int> localDofs = discret_->Dof(nds_intvar_, ele);
+          std::vector<int> localDofs = discret_->dof(nds_intvar_, ele);
           FOUR_C_ASSERT(
               localDofs.size() == static_cast<std::size_t>(updateVec2.numRows()), "Internal error");
           for (unsigned int i = 0; i < localDofs.size(); ++i)
@@ -580,8 +580,8 @@ void ScaTra::TimIntHDG::SetInitialField(
       }
 
       double globerror = 0;
-      discret_->Comm().SumAll(&error, &globerror, 1);
-      if (discret_->Comm().MyPID() == 0)
+      discret_->get_comm().SumAll(&error, &globerror, 1);
+      if (discret_->get_comm().MyPID() == 0)
         std::cout << "Error project when setting face twice: " << globerror << std::endl;
 
       // initialize also the solution vector. These values are a pretty good guess for the
@@ -650,7 +650,7 @@ void ScaTra::TimIntHDG::gen_alpha_compute_time_derivative()
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntHDG::update_interior_variables(Teuchos::RCP<Epetra_Vector> updatevector)
 {
-  discret_->ClearState(true);
+  discret_->clear_state(true);
   Teuchos::ParameterList eleparams;
   Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
       "action", ScaTra::Action::update_interior_variables, eleparams);
@@ -662,20 +662,20 @@ void ScaTra::TimIntHDG::update_interior_variables(Teuchos::RCP<Epetra_Vector> up
   Core::LinAlg::SerialDenseMatrix dummyMat;
   Core::LinAlg::SerialDenseVector dummyVec;
   Core::LinAlg::SerialDenseVector updateVec;
-  Core::Elements::Element::LocationArray la(discret_->NumDofSets());
+  Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
   const Epetra_Map *intdofrowmap = discret_->dof_row_map(nds_intvar_);
 
-  for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
+  for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    Core::Elements::Element *ele = discret_->lColElement(iele);
-    if (ele->Owner() != discret_->Comm().MyPID()) continue;
+    Core::Elements::Element *ele = discret_->l_col_element(iele);
+    if (ele->owner() != discret_->get_comm().MyPID()) continue;
 
-    ele->LocationVector(*discret_, la, false);
-    updateVec.size(discret_->NumDof(nds_intvar_, ele));
+    ele->location_vector(*discret_, la, false);
+    updateVec.size(discret_->num_dof(nds_intvar_, ele));
 
     ele->evaluate(eleparams, *discret_, la, dummyMat, dummyMat, updateVec, dummyVec, dummyVec);
 
-    std::vector<int> localDofs = discret_->Dof(nds_intvar_, ele);
+    std::vector<int> localDofs = discret_->dof(nds_intvar_, ele);
     FOUR_C_ASSERT(
         localDofs.size() == static_cast<std::size_t>(updateVec.numRows()), "Internal error");
     for (unsigned int i = 0; i < localDofs.size(); ++i)
@@ -685,7 +685,7 @@ void ScaTra::TimIntHDG::update_interior_variables(Teuchos::RCP<Epetra_Vector> up
     updatevector->ReplaceMyValues(localDofs.size(), updateVec.values(), localDofs.data());
   }
 
-  discret_->ClearState(true);
+  discret_->clear_state(true);
 }
 
 
@@ -697,7 +697,7 @@ void ScaTra::TimIntHDG::fd_check()
   // make a copy of state variables to undo perturbations later
   Teuchos::RCP<Epetra_Vector> phinp_original = Teuchos::rcp(new Epetra_Vector(*phinp_));
 
-  discret_->ClearState(true);
+  discret_->clear_state(true);
 
   const Epetra_Map *dofrowmap = discret_->dof_row_map(0);
   const Epetra_Map *intdofrowmap = discret_->dof_row_map(nds_intvar_);
@@ -721,12 +721,12 @@ void ScaTra::TimIntHDG::fd_check()
   Teuchos::RCP<Epetra_Vector> intphitemp;
   intphitemp = Core::LinAlg::CreateVector(*intdofrowmap, true);
 
-  strategy.Zero();
+  strategy.zero();
 
   // calculate of residual vector
   update_interior_variables(intphitemp);
 
-  discret_->ClearState(true);
+  discret_->clear_state(true);
   discret_->set_state("phiaf", phinp_);
   discret_->set_state(nds_intvar_, "intphin", intphin_);
   discret_->set_state(0, "phin", phin_);
@@ -734,30 +734,30 @@ void ScaTra::TimIntHDG::fd_check()
   Teuchos::ParameterList eleparams;
   Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
       "action", ScaTra::Action::calc_mat_and_rhs, eleparams);
-  Core::Elements::Element::LocationArray la(discret_->NumDofSets());
+  Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
 
   // loop over elements
-  for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
+  for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    Core::Elements::Element *ele = discret_->lColElement(iele);
-    ele->LocationVector(*discret_, la, false);
+    Core::Elements::Element *ele = discret_->l_col_element(iele);
+    ele->location_vector(*discret_, la, false);
 
-    strategy.ClearElementStorage(la[0].Size(), la[0].Size());
+    strategy.clear_element_storage(la[0].size(), la[0].size());
 
     // evaluate
-    ele->evaluate(eleparams, *discret_, la, strategy.Elematrix1(), strategy.Elematrix2(),
-        strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
-    int eid = ele->Id();
-    strategy.AssembleMatrix1(eid, la[0].lm_, la[0].lm_, la[0].lmowner_, la[0].stride_);
-    strategy.AssembleVector1(la[0].lm_, la[0].lmowner_);
+    ele->evaluate(eleparams, *discret_, la, strategy.elematrix1(), strategy.elematrix2(),
+        strategy.elevector1(), strategy.elevector2(), strategy.elevector3());
+    int eid = ele->id();
+    strategy.assemble_matrix1(eid, la[0].lm_, la[0].lm_, la[0].lmowner_, la[0].stride_);
+    strategy.assemble_vector1(la[0].lm_, la[0].lmowner_);
   }
-  strategy.Complete();
+  strategy.complete();
 
   // make a copy of system matrix as Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> sysmatcopy = Teuchos::null;
   sysmatcopy = (new Core::LinAlg::SparseMatrix(
                     *(Teuchos::rcp_static_cast<Core::LinAlg::SparseMatrix>(systemmatrix1))))
-                   ->EpetraMatrix();
+                   ->epetra_matrix();
   sysmatcopy->FillComplete();
 
   // make a copy of system right-hand side vector
@@ -779,10 +779,10 @@ void ScaTra::TimIntHDG::fd_check()
       // check whether current column index is a valid global column index and continue loop if not
       int collid(sysmatcopy->ColMap().LID(colgid));
       int maxcollid(-1);
-      discret_->Comm().MaxAll(&collid, &maxcollid, 1);
+      discret_->get_comm().MaxAll(&collid, &maxcollid, 1);
       if (maxcollid < 0) continue;
 
-      strategy.Zero();
+      strategy.zero();
 
       // fill state vector with original state variables
       phinp_->Update(1., *phinp_original, 0.);
@@ -794,7 +794,7 @@ void ScaTra::TimIntHDG::fd_check()
               "Perturbation could not be imposed on state vector for finite difference check!");
       update_interior_variables(intphitemp);
 
-      discret_->ClearState(true);
+      discret_->clear_state(true);
 
       discret_->set_state("phiaf", phinp_);
       discret_->set_state(nds_intvar_, "intphin", intphin_);
@@ -805,21 +805,21 @@ void ScaTra::TimIntHDG::fd_check()
       Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
           "action", ScaTra::Action::calc_mat_and_rhs, eleparams);
 
-      Core::Elements::Element::LocationArray la(discret_->NumDofSets());
+      Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
 
-      for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
+      for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
       {
-        Core::Elements::Element *ele = discret_->lColElement(iele);
-        ele->LocationVector(*discret_, la, false);
+        Core::Elements::Element *ele = discret_->l_col_element(iele);
+        ele->location_vector(*discret_, la, false);
 
-        strategy.ClearElementStorage(la[0].Size(), la[0].Size());
-        ele->evaluate(eleparams, *discret_, la, strategy.Elematrix1(), strategy.Elematrix2(),
-            strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
-        int eid = ele->Id();
-        strategy.AssembleMatrix1(eid, la[0].lm_, la[0].lm_, la[0].lmowner_, la[0].stride_);
-        strategy.AssembleVector1(la[0].lm_, la[0].lmowner_);
+        strategy.clear_element_storage(la[0].size(), la[0].size());
+        ele->evaluate(eleparams, *discret_, la, strategy.elematrix1(), strategy.elematrix2(),
+            strategy.elevector1(), strategy.elevector2(), strategy.elevector3());
+        int eid = ele->id();
+        strategy.assemble_matrix1(eid, la[0].lm_, la[0].lm_, la[0].lmowner_, la[0].stride_);
+        strategy.assemble_vector1(la[0].lm_, la[0].lmowner_);
       }
-      strategy.Complete();
+      strategy.complete();
       fdvec->PutScalar(0.0);
 
       // finite difference suggestion (first divide by epsilon and then subtract for better
@@ -904,7 +904,7 @@ void ScaTra::TimIntHDG::evaluate_error_compared_to_analytical_sol()
       if (myrank_ == 0)
       {
         // print last error in a separate file
-        const std::string simulation = problem_->OutputControlFile()->file_name();
+        const std::string simulation = problem_->output_control_file()->file_name();
         const std::string fname = simulation + "_time.relerror";
         std::ofstream f;
 
@@ -969,7 +969,7 @@ Teuchos::RCP<Core::LinAlg::SerialDenseVector> ScaTra::TimIntHDG::compute_error()
   eleparams.set<double>("time", time_);
 
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("phiaf", phinp_);
   discret_->set_state(nds_intvar_, "intphinp", intphinp_);
   // get (squared) error values
@@ -979,8 +979,8 @@ Teuchos::RCP<Core::LinAlg::SerialDenseVector> ScaTra::TimIntHDG::compute_error()
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
       Teuchos::rcp(new Core::LinAlg::SerialDenseVector(NumErrorEntries));
 
-  discret_->EvaluateScalars(eleparams, errors);
-  discret_->ClearState();
+  discret_->evaluate_scalars(eleparams, errors);
+  discret_->clear_state();
 
   return errors;
 }
@@ -1006,7 +1006,7 @@ void ScaTra::TimIntHDG::calc_mat_initial()
 {
   TEUCHOS_FUNC_TIME_MONITOR("ScaTra::TimIntHDG::CalcMat");
 
-  discret_->ClearState(true);
+  discret_->clear_state(true);
 
   // check validity of material and element formulation
   Teuchos::ParameterList eleparams;
@@ -1026,42 +1026,43 @@ void ScaTra::TimIntHDG::calc_mat_initial()
   Core::FE::AssembleStrategy strategy(
       0, 0, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-  strategy.Zero();
-  Core::Elements::Element::LocationArray la(discret_->NumDofSets());
+  strategy.zero();
+  Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
 
   //    // get cpu time
   //    const double tcmatinit = Teuchos::Time::wallTime();
 
   // loop over elements
-  for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
+  for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    Core::Elements::Element *ele = discret_->lColElement(iele);
+    Core::Elements::Element *ele = discret_->l_col_element(iele);
 
     // if the element has only ghosted nodes it will not assemble -> skip evaluation
-    if (ele->HasOnlyGhostNodes(discret_->Comm().MyPID())) continue;
-    ele->LocationVector(*discret_, la, false);
+    if (ele->has_only_ghost_nodes(discret_->get_comm().MyPID())) continue;
+    ele->location_vector(*discret_, la, false);
 
-    strategy.ClearElementStorage(la[0].Size(), la[0].Size());
+    strategy.clear_element_storage(la[0].size(), la[0].size());
 
     // evaluate
-    int err = ele->evaluate(eleparams, *discret_, la, strategy.Elematrix1(), strategy.Elematrix2(),
-        strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
+    int err = ele->evaluate(eleparams, *discret_, la, strategy.elematrix1(), strategy.elematrix2(),
+        strategy.elevector1(), strategy.elevector2(), strategy.elevector3());
     if (err)
-      FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret_->Comm().MyPID(), ele->Id(), err);
+      FOUR_C_THROW(
+          "Proc %d: Element %d returned err=%d", discret_->get_comm().MyPID(), ele->id(), err);
 
-    int eid = ele->Id();
-    strategy.AssembleMatrix1(eid, la[0].lm_, la[0].lm_, la[0].lmowner_, la[0].stride_);
+    int eid = ele->id();
+    strategy.assemble_matrix1(eid, la[0].lm_, la[0].lm_, la[0].lmowner_, la[0].stride_);
   }
-  sysmat_->Complete();
+  sysmat_->complete();
 
   //    // end time measurement for element
   //    double dtmatinit=Teuchos::Time::wallTime()-tcmatinit;
   //    std::cout << "Time measurement evaluate: " << dtmatinit << std::endl;
 
   // Output of non-zeros in system matrix
-  if (step_ == 0 and discret_->Comm().MyPID() == 0)
+  if (step_ == 0 and discret_->get_comm().MyPID() == 0)
   {
-    int numglobalnonzeros = SystemMatrix()->EpetraMatrix()->NumGlobalNonzeros();
+    int numglobalnonzeros = system_matrix()->epetra_matrix()->NumGlobalNonzeros();
     std::cout << "Number of non-zeros in system matrix: " << numglobalnonzeros << std::endl;
   }
 
@@ -1086,15 +1087,15 @@ void ScaTra::TimIntHDG::adapt_degree()
 
   // vector to store the dofs per single element
   const Teuchos::RCP<Epetra_IntVector> eledofs =
-      Teuchos::rcp(new Epetra_IntVector(*discret_->ElementColMap()));
+      Teuchos::rcp(new Epetra_IntVector(*discret_->element_col_map()));
 
   // vector to store the location array of the dofsets before the adaption with the new order
   std::vector<Core::Elements::Element::LocationArray> la_old;
 
   // copy the old face dof map and the old interior element dof map
-  Teuchos::RCP<Epetra_Map> facedofs_old = Teuchos::rcp(new Epetra_Map(*discret_->DofColMap(0)));
+  Teuchos::RCP<Epetra_Map> facedofs_old = Teuchos::rcp(new Epetra_Map(*discret_->dof_col_map(0)));
   Teuchos::RCP<Epetra_Map> eledofs_old =
-      Teuchos::rcp(new Epetra_Map(*discret_->DofColMap(nds_intvar_)));
+      Teuchos::rcp(new Epetra_Map(*discret_->dof_col_map(nds_intvar_)));
 
   // set action
   Teuchos::ParameterList eleparams;
@@ -1115,20 +1116,20 @@ void ScaTra::TimIntHDG::adapt_degree()
   int degchange(0);
 
   // loop over elements
-  for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
+  for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
     // add new location array in vector for each element
-    la_old.push_back(Core::Elements::Element::LocationArray(discret_->NumDofSets()));
+    la_old.push_back(Core::Elements::Element::LocationArray(discret_->num_dof_sets()));
 
-    Core::Elements::Element *ele = discret_->lColElement(iele);
+    Core::Elements::Element *ele = discret_->l_col_element(iele);
 
     // fill location array and store it for later use
-    ele->LocationVector(*discret_, la_old[iele], false);
+    ele->location_vector(*discret_, la_old[iele], false);
 
-    if (ele->Owner() == discret_->Comm().MyPID())
+    if (ele->owner() == discret_->get_comm().MyPID())
     {
       Discret::ELEMENTS::ScaTraHDG *hdgele =
-          dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
+          dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->l_col_element(iele));
 
       // call routine on elements to calculate error on element
       ele->evaluate(
@@ -1144,26 +1145,26 @@ void ScaTra::TimIntHDG::adapt_degree()
       else
         errorlog = 0.;
 
-      int deg = hdgele->Degree() + ceil(errorlog / padapterrorbase_);
+      int deg = hdgele->degree() + ceil(errorlog / padapterrorbase_);
 
       if (deg < 0)
         deg = 0;
       else if (deg > padaptdegreemax_)
         deg = padaptdegreemax_;
 
-      if (hdgele->Degree() != deg) degchange = 1;
+      if (hdgele->degree() != deg) degchange = 1;
 
       // set degree on element
-      hdgele->SetDegree(deg);
+      hdgele->set_degree(deg);
 
       // store element degree (only for output)
-      const int eleIndex = discret_->ElementRowMap()->LID(ele->Id());
+      const int eleIndex = discret_->element_row_map()->LID(ele->id());
       if (eleIndex >= 0) (*elementdegree_)[eleIndex] = deg;
     }
   }
 
   int degchangeall;
-  discret_->Comm().SumAll(&degchange, &degchangeall, 1);
+  discret_->get_comm().SumAll(&degchange, &degchangeall, 1);
 
   if (!degchangeall) return;
 
@@ -1177,27 +1178,27 @@ void ScaTra::TimIntHDG::adapt_degree()
   //  const double tcfillcomplete = Teuchos::Time::wallTime();
 
   // number of dofset in location array
-  int nds_intvar_old(discret_->NumDofSets() + 2);
-  int nds_var_old(discret_->NumDofSets());
+  int nds_intvar_old(discret_->num_dof_sets() + 2);
+  int nds_var_old(discret_->num_dof_sets());
 
   // build new maps for face dofs with adapted element order
-  hdgdis_->BuildFaces();
-  hdgdis_->BuildFaceRowMap();
-  hdgdis_->BuildFaceColMap();
+  hdgdis_->build_faces();
+  hdgdis_->build_face_row_map();
+  hdgdis_->build_face_col_map();
 
   // assign the degrees of freedom to the adapted dofsets
   hdgdis_->assign_degrees_of_freedom(0);
 
   // replace all ghosted element with the original thus the correct polynomial degree is used
-  discret_->export_column_elements(*discret_->ElementColMap(), false, false);
+  discret_->export_column_elements(*discret_->element_col_map(), false, false);
 
   hdgdis_->fill_complete();
 
   // store the number of dofs per element on vector
-  for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
+  for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
     Discret::ELEMENTS::ScaTraHDG *hdgele =
-        dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
+        dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->l_col_element(iele));
     // store the number of dofs for the element
     (*eledofs)[iele] = hdgele->num_dof_per_element_auxiliary();
   }
@@ -1206,7 +1207,7 @@ void ScaTra::TimIntHDG::adapt_degree()
   Teuchos::RCP<Core::DOFSets::DofSetPredefinedDoFNumber> eledofs_new =
       Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
   // replace old interior element dofs with the new created dofset
-  discret_->ReplaceDofSet(nds_intvar_, eledofs_new, false);
+  discret_->replace_dof_set(nds_intvar_, eledofs_new, false);
 
   hdgdis_->assign_degrees_of_freedom(0);
 
@@ -1309,25 +1310,25 @@ void ScaTra::TimIntHDG::adapt_variable_vector(Teuchos::RCP<Epetra_Vector> phi_ne
 
   // create location array for new and old dofsets (old ones are already filled and only copied to
   // the location array)
-  Core::Elements::Element::LocationArray la(2 * discret_->NumDofSets());
+  Core::Elements::Element::LocationArray la(2 * discret_->num_dof_sets());
   // create location array for new dofsets
-  Core::Elements::Element::LocationArray la_temp(discret_->NumDofSets());
+  Core::Elements::Element::LocationArray la_temp(discret_->num_dof_sets());
 
-  for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
+  for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    Core::Elements::Element *ele = discret_->lColElement(iele);
+    Core::Elements::Element *ele = discret_->l_col_element(iele);
 
     // if the element has only ghosted nodes it will not assemble -> skip evaluation
-    if (ele->HasOnlyGhostNodes(discret_->Comm().MyPID())) continue;
+    if (ele->has_only_ghost_nodes(discret_->get_comm().MyPID())) continue;
 
     // fill location array for adapted dofsets
-    ele->LocationVector(*discret_, la_temp, false);
+    ele->location_vector(*discret_, la_temp, false);
 
-    for (int i = 0; i < discret_->NumDofSets(); i++)
+    for (int i = 0; i < discret_->num_dof_sets(); i++)
     {
       // copy old and new location arrays to global location array la
       la[i] = la_temp[i];
-      la[discret_->NumDofSets() + i] = la_old[iele][i];
+      la[discret_->num_dof_sets() + i] = la_old[iele][i];
     }
 
     const unsigned size = la_temp[0].lm_.size();
@@ -1336,8 +1337,8 @@ void ScaTra::TimIntHDG::adapt_variable_vector(Teuchos::RCP<Epetra_Vector> phi_ne
       phi_ele.size(la[0].lm_.size());
     else
       phi_ele.putScalar(0.0);
-    if (intphi_ele.numRows() != discret_->NumDof(nds_intvar_, ele))
-      intphi_ele.size(discret_->NumDof(nds_intvar_, ele));
+    if (intphi_ele.numRows() != discret_->num_dof(nds_intvar_, ele))
+      intphi_ele.size(discret_->num_dof(nds_intvar_, ele));
     else
       intphi_ele.putScalar(0.0);
 
@@ -1345,9 +1346,9 @@ void ScaTra::TimIntHDG::adapt_variable_vector(Teuchos::RCP<Epetra_Vector> phi_ne
     ele->evaluate(eleparams, *discret_, la, dummyMat, dummyMat, phi_ele, intphi_ele, dummyVec);
 
     // store projected values of the element on the new state vector for the interior variables
-    if (ele->Owner() == discret_->Comm().MyPID())
+    if (ele->owner() == discret_->get_comm().MyPID())
     {
-      std::vector<int> localDofs = discret_->Dof(nds_intvar_, ele);
+      std::vector<int> localDofs = discret_->dof(nds_intvar_, ele);
       FOUR_C_ASSERT(
           localDofs.size() == static_cast<std::size_t>(intphi_ele.numRows()), "Internal error");
       for (unsigned int i = 0; i < localDofs.size(); ++i)
@@ -1403,7 +1404,7 @@ void ScaTra::TimIntHDG::assemble_rhs()
       "action", ScaTra::Action::calc_mat_and_rhs, eleparams);
 
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
 
   // add state vectors according to time-integration scheme
   add_time_integration_specific_vectors();
@@ -1414,29 +1415,29 @@ void ScaTra::TimIntHDG::assemble_rhs()
   Core::FE::AssembleStrategy strategy(
       0, 0, Teuchos::null, Teuchos::null, residual_, Teuchos::null, Teuchos::null);
 
-  strategy.Zero();
+  strategy.zero();
 
-  Core::Elements::Element::LocationArray la(discret_->NumDofSets());
+  Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
 
   // loop over elements
-  for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
+  for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    Core::Elements::Element *ele = discret_->lColElement(iele);
+    Core::Elements::Element *ele = discret_->l_col_element(iele);
 
     // if the element has only ghosted nodes it will not assemble -> skip evaluation
-    if (ele->HasOnlyGhostNodes(discret_->Comm().MyPID())) continue;
+    if (ele->has_only_ghost_nodes(discret_->get_comm().MyPID())) continue;
 
-    ele->LocationVector(*discret_, la, false);
+    ele->location_vector(*discret_, la, false);
 
-    strategy.ClearElementStorage(la[0].Size(), la[0].Size());
+    strategy.clear_element_storage(la[0].size(), la[0].size());
 
     // evaluate
-    ele->evaluate(eleparams, *discret_, la, strategy.Elematrix1(), strategy.Elematrix2(),
-        strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
-    strategy.AssembleVector1(la[0].lm_, la[0].lmowner_);
+    ele->evaluate(eleparams, *discret_, la, strategy.elematrix1(), strategy.elematrix2(),
+        strategy.elevector1(), strategy.elevector2(), strategy.elevector3());
+    strategy.assemble_vector1(la[0].lm_, la[0].lmowner_);
   }
 
-  discret_->ClearState();
+  discret_->clear_state();
 
   // potential residual scaling and potential addition of Neumann terms
   scaling_and_neumann();

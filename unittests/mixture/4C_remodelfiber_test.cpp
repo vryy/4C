@@ -31,9 +31,9 @@ namespace
     MIXTURE::Implementation::RemodelFiberImplementation<2, T> generate_fiber()
     {
       Core::IO::InputParameterContainer container;
-      container.Add("K1", 1.3);
-      container.Add("K2", 1.3);
-      container.Add("COMPRESSION", true);
+      container.add("K1", 1.3);
+      container.add("K2", 1.3);
+      container.add("COMPRESSION", true);
 
       fiber_material_parameter_ =
           std::make_shared<MIXTURE::PAR::RemodelFiberMaterialExponential<FADdouble>>(

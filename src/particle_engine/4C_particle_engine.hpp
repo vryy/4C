@@ -142,7 +142,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] freeuniquegids free unique global ids
      */
-    void FreeUniqueGlobalIds(std::vector<int>& freeuniquegids) override;
+    void free_unique_global_ids(std::vector<int>& freeuniquegids) override;
 
     /*!
      * \brief get unique global ids for all particles
@@ -191,7 +191,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlestodistribute particles to be distributed to their owning processor
      */
-    void DistributeParticles(std::vector<ParticleObjShrdPtr>& particlestodistribute);
+    void distribute_particles(std::vector<ParticleObjShrdPtr>& particlestodistribute);
 
     /*!
      * \brief transfer particles to new bins and processors
@@ -203,14 +203,14 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      */
-    void TransferParticles();
+    void transfer_particles();
 
     /*!
      * \brief ghost particles on other processors
      *
      * \author Sebastian Fuchs \date 05/2018
      */
-    void GhostParticles();
+    void ghost_particles();
 
     /*!
      * \brief refresh particles being ghosted on other processors
@@ -221,7 +221,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 05/2018
      */
-    void RefreshParticles() const;
+    void refresh_particles() const;
 
     /*!
      * \brief refresh specific states of particles of specific types
@@ -318,7 +318,7 @@ namespace PARTICLEENGINE
      *
      * \return binning strategy
      */
-    std::shared_ptr<Core::Binstrategy::BinningStrategy> GetBinningStrategy() const
+    std::shared_ptr<Core::Binstrategy::BinningStrategy> get_binning_strategy() const
     {
       return binstrategy_;
     };
@@ -330,7 +330,7 @@ namespace PARTICLEENGINE
      *
      * \return bin row map
      */
-    Teuchos::RCP<Epetra_Map> GetBinRowMap() const { return binrowmap_; };
+    Teuchos::RCP<Epetra_Map> get_bin_row_map() const { return binrowmap_; };
 
     /*!
      * \brief get bin column map
@@ -339,7 +339,7 @@ namespace PARTICLEENGINE
      *
      * \return bin column map
      */
-    Teuchos::RCP<Epetra_Map> GetBinColMap() const { return bincolmap_; };
+    Teuchos::RCP<Epetra_Map> get_bin_col_map() const { return bincolmap_; };
 
     ParticleContainerBundleShrdPtr get_particle_container_bundle() const override
     {
@@ -353,7 +353,7 @@ namespace PARTICLEENGINE
      *
      * \return relation of (owned and ghosted) particles to bins
      */
-    const ParticlesToBins& GetParticlesToBins() const;
+    const ParticlesToBins& get_particles_to_bins() const;
 
     const PotentialParticleNeighbors& get_potential_particle_neighbors() const override;
 
@@ -398,9 +398,9 @@ namespace PARTICLEENGINE
     void get_particles_within_radius(const double* position, const double radius,
         std::vector<LocalIndexTuple>& neighboringparticles) const override;
 
-    std::array<double, 3> BinSize() const override;
+    std::array<double, 3> bin_size() const override;
 
-    double MinBinSize() const override { return minbinsize_; };
+    double min_bin_size() const override { return minbinsize_; };
 
     bool have_periodic_boundary_conditions() const override;
 
@@ -435,7 +435,7 @@ namespace PARTICLEENGINE
      *
      * \return discretization reader
      */
-    std::shared_ptr<Core::IO::DiscretizationReader> BinDisReader(int restartstep) const;
+    std::shared_ptr<Core::IO::DiscretizationReader> bin_dis_reader(int restartstep) const;
 
     int get_number_of_particles() const override;
 
@@ -452,7 +452,7 @@ namespace PARTICLEENGINE
      * \param[in] step output step
      * \param[in] time output time
      */
-    void WriteBinDisOutput(const int step, const double time) const;
+    void write_bin_dis_output(const int step, const double time) const;
 
    private:
     //! \name init and setup methods

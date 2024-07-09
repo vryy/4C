@@ -63,22 +63,22 @@ namespace PoroMultiPhaseScaTra
     void read_restart(int restart) override;
 
     //! create result test for subproblems
-    void CreateFieldTest();
+    void create_field_test();
 
     //! setup
-    virtual void SetupSystem() = 0;
+    virtual void setup_system() = 0;
 
     //! setup solver (only needed in monolithic case)
-    virtual void SetupSolver() = 0;
+    virtual void setup_solver() = 0;
 
     //! prepare timeloop of coupled problem
     void prepare_time_loop();
 
     //! timeloop of coupled problem
-    void Timeloop();
+    void timeloop();
 
     //! time step of coupled problem --> here the actual action happens (overwritten by sub-classes)
-    virtual void TimeStep() = 0;
+    virtual void time_step() = 0;
 
     //! time step of coupled problem
     void prepare_time_step() override { prepare_time_step(false); };
@@ -90,10 +90,10 @@ namespace PoroMultiPhaseScaTra
     void update_and_output();
 
     //! apply solution of poro-problem to scatra
-    void SetPoroSolution();
+    void set_poro_solution();
 
     //! apply solution of scatra to poro
-    void SetScatraSolution();
+    void set_scatra_solution();
 
     //! apply the additional Dirichlet boundary condition for volume fraction species
     void apply_additional_dbc_for_vol_frac_species();
@@ -102,13 +102,13 @@ namespace PoroMultiPhaseScaTra
     const Teuchos::RCP<Adapter::PoroMultiPhase>& poro_field() { return poromulti_; }
 
     //! access to fluid field
-    const Teuchos::RCP<Adapter::ScaTraBaseAlgorithm>& ScatraAlgo() { return scatra_; }
+    const Teuchos::RCP<Adapter::ScaTraBaseAlgorithm>& scatra_algo() { return scatra_; }
 
     //! dof map of vector of unknowns of scatra field
-    virtual Teuchos::RCP<const Epetra_Map> ScatraDofRowMap() const;
+    virtual Teuchos::RCP<const Epetra_Map> scatra_dof_row_map() const;
 
     //! handle divergence of solver
-    void HandleDivergence() const;
+    void handle_divergence() const;
 
    private:
     //! underlying poroelast multi phase

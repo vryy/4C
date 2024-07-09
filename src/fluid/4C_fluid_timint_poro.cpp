@@ -64,13 +64,13 @@ void FLD::TimIntPoro::set_element_turbulence_parameters()
 void FLD::TimIntPoro::assemble_mat_and_rhs()
 {
   FluidImplicitTimeInt::assemble_mat_and_rhs();
-  PoroIntUpdate();
+  poro_int_update();
 }
 
 void FLD::TimIntPoro::read_restart(int step)
 {
   Core::IO::DiscretizationReader reader(
-      discret_, Global::Problem::Instance()->InputControlFile(), step);
+      discret_, Global::Problem::instance()->input_control_file(), step);
   reader.read_vector(gridv_, "gridv");
 }
 
@@ -112,17 +112,17 @@ void FLD::TimIntPoro::set_initial_porosity_field(
       const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
       // loop all nodes on the processor
-      for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+      for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
       {
         // get the processor local node
-        Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+        Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
         // the set of degrees of freedom associated with the node
-        std::vector<int> nodedofset = discret_->Dof(lnode);
+        std::vector<int> nodedofset = discret_->dof(lnode);
 
         int numdofs = nodedofset.size();
-        double initialval = Global::Problem::Instance()
-                                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                .evaluate(lnode->X().data(), time_, 0);
+        double initialval = Global::Problem::instance()
+                                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                                .evaluate(lnode->x().data(), time_, 0);
 
         // check whether there are invalid values of porosity
         if (initialval < 1e-15) FOUR_C_THROW("zero or negative initial porosity");
@@ -199,13 +199,13 @@ void FLD::TimIntPoro::set_custom_ele_params_assemble_mat_and_rhs(Teuchos::Parame
   eleparams.set("delta time", dta_);
 }
 
-void FLD::TimIntPoro::PoroIntUpdate()
+void FLD::TimIntPoro::poro_int_update()
 {
-  sysmat_->UnComplete();
+  sysmat_->un_complete();
 
   std::string condname = "PoroPartInt";
   std::vector<Core::Conditions::Condition*> poroPartInt;
-  discret_->GetCondition(condname, poroPartInt);
+  discret_->get_condition(condname, poroPartInt);
   if (poroPartInt.size())
   {
     Teuchos::ParameterList eleparams;
@@ -217,19 +217,19 @@ void FLD::TimIntPoro::PoroIntUpdate()
     eleparams.set<PoroElast::Coupltype>("coupling", PoroElast::fluidfluid);
     eleparams.set<int>("Physical Type", physicaltype_);
 
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state("dispnp", dispnp_);
     discret_->set_state("gridv", gridv_);
     discret_->set_state("velnp", velnp_);
     discret_->set_state("scaaf", scaaf_);
     discret_->evaluate_condition(
         eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condname);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 
   condname = "PoroPresInt";
   std::vector<Core::Conditions::Condition*> poroPresInt;
-  discret_->GetCondition(condname, poroPresInt);
+  discret_->get_condition(condname, poroPresInt);
   if (poroPresInt.size())
   {
     Teuchos::ParameterList eleparams;
@@ -239,15 +239,15 @@ void FLD::TimIntPoro::PoroIntUpdate()
     eleparams.set<PoroElast::Coupltype>("coupling", PoroElast::fluidfluid);
     eleparams.set<int>("Physical Type", physicaltype_);
 
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state("dispnp", dispnp_);
     discret_->set_state("gridv", gridv_);
     discret_->set_state("velnp", velnp_);
     discret_->evaluate_condition(
         eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condname);
-    discret_->ClearState();
+    discret_->clear_state();
   }
-  sysmat_->Complete();
+  sysmat_->complete();
 }
 
 void FLD::TimIntPoro::tim_int_calculate_acceleration()

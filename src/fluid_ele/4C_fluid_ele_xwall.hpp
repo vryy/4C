@@ -32,21 +32,21 @@ namespace Discret
     class FluidXWallType : public FluidType
     {
      public:
-      std::string Name() const override { return "FluidXWallType"; }
+      std::string name() const override { return "FluidXWallType"; }
 
-      static FluidXWallType& Instance();
+      static FluidXWallType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
@@ -84,11 +84,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of fluid and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get number of degrees of freedom of a certain node
@@ -99,7 +99,7 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override
+      int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
         // number of Dof's is fluid-specific.
         const int nsd = Core::FE::getDimension(distype_);
@@ -112,9 +112,9 @@ namespace Discret
         return 0;
       }
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return FluidXWallType::Instance();
+        return FluidXWallType::instance();
       }
 
       /*!
@@ -123,22 +123,22 @@ namespace Discret
       \param double (out): cost to evaluate this element
       */
       // the standard element is 10.0
-      double EvaluationCost() override { return 50.0; }
+      double evaluation_cost() override { return 50.0; }
 
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return FluidXWallType::Instance().UniqueParObjectId();
+        return FluidXWallType::instance().unique_par_object_id();
       }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       //@}
 
@@ -161,11 +161,11 @@ namespace Discret
     class FluidXWallBoundaryType : public FluidBoundaryType
     {
      public:
-      std::string Name() const override { return "FluidXWallBoundaryType"; }
+      std::string name() const override { return "FluidXWallBoundaryType"; }
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
-      static FluidXWallBoundaryType& Instance();
+      static FluidXWallBoundaryType& instance();
 
      private:
       static FluidXWallBoundaryType instance_;
@@ -205,11 +205,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of an element and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -217,9 +217,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return FluidXWallBoundaryType::Instance().UniqueParObjectId();
+        return FluidXWallBoundaryType::instance().unique_par_object_id();
       }
 
       //@}
@@ -231,9 +231,9 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return FluidXWallBoundaryType::Instance();
+        return FluidXWallBoundaryType::instance();
       }
 
       //@}
@@ -276,7 +276,7 @@ namespace Discret
       \param condstring (in) : Name of condition to be evaluated
       \param params (in)     : List of parameters for use at element level
       */
-      void LocationVector(const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet,
+      void location_vector(const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet,
           const std::string& condstring, Teuchos::ParameterList& params) const override;
 
      private:

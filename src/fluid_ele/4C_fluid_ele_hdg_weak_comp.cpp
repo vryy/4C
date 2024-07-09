@@ -21,14 +21,14 @@ FOUR_C_NAMESPACE_OPEN
 // initialize static variable
 Discret::ELEMENTS::FluidHDGWeakCompType Discret::ELEMENTS::FluidHDGWeakCompType::instance_;
 
-Discret::ELEMENTS::FluidHDGWeakCompType& Discret::ELEMENTS::FluidHDGWeakCompType::Instance()
+Discret::ELEMENTS::FluidHDGWeakCompType& Discret::ELEMENTS::FluidHDGWeakCompType::instance()
 {
   return instance_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::FluidHDGWeakCompType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::FluidHDGWeakCompType::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::FluidHDGWeakComp* object = new Discret::ELEMENTS::FluidHDGWeakComp(-1, -1);
@@ -40,7 +40,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::FluidHDGWeakCompType::Create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGWeakCompType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGWeakCompType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDHDGWEAKCOMP")
@@ -54,7 +54,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGWeakCompType::C
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGWeakCompType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGWeakCompType::create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new Discret::ELEMENTS::FluidHDGWeakComp(id, owner));
@@ -73,7 +73,7 @@ void Discret::ELEMENTS::FluidHDGWeakCompType::nodal_block_information(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidHDGWeakCompType::ComputeNullSpace(
+void Discret::ELEMENTS::FluidHDGWeakCompType::compute_null_space(
     Core::FE::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
 }
@@ -124,7 +124,7 @@ Discret::ELEMENTS::FluidHDGWeakComp::FluidHDGWeakComp(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::FluidHDGWeakComp::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::FluidHDGWeakComp::clone() const
 {
   Discret::ELEMENTS::FluidHDGWeakComp* newelement = new Discret::ELEMENTS::FluidHDGWeakComp(*this);
   return newelement;
@@ -138,7 +138,7 @@ void Discret::ELEMENTS::FluidHDGWeakComp::pack(Core::Communication::PackBuffer& 
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // add base class Element
@@ -158,7 +158,7 @@ void Discret::ELEMENTS::FluidHDGWeakComp::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -179,10 +179,10 @@ void Discret::ELEMENTS::FluidHDGWeakComp::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::FluidHDGWeakComp::ReadElement(
+bool Discret::ELEMENTS::FluidHDGWeakComp::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
-  bool success = Fluid::ReadElement(eletype, distype, linedef);
+  bool success = Fluid::read_element(eletype, distype, linedef);
   int degree;
   linedef->extract_int("DEG", degree);
   degree_ = degree;
@@ -212,7 +212,7 @@ int Discret::ELEMENTS::FluidHDGWeakComp::evaluate(Teuchos::ParameterList& params
   const FLD::Action act = Core::UTILS::GetAsEnum<FLD::Action>(params, "action");
 
   // get material
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
   // switch between different physical types as used below
   std::string impltype = "hdgweakcomp";
@@ -225,7 +225,7 @@ int Discret::ELEMENTS::FluidHDGWeakComp::evaluate(Teuchos::ParameterList& params
     //-----------------------------------------------------------------------
     case FLD::calc_fluid_systemmat_and_residual:
     {
-      return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
+      return Discret::ELEMENTS::FluidFactory::provide_impl(shape(), impltype)
           ->evaluate(
               this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
     }
@@ -238,8 +238,8 @@ int Discret::ELEMENTS::FluidHDGWeakComp::evaluate(Teuchos::ParameterList& params
     case FLD::project_fluid_field:
     case FLD::update_local_solution:
     {
-      return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
-          ->EvaluateService(
+      return Discret::ELEMENTS::FluidFactory::provide_impl(shape(), impltype)
+          ->evaluate_service(
               this, params, mat, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }

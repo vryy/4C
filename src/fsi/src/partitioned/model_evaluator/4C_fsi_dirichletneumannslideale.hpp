@@ -74,7 +74,7 @@ namespace FSI
      * This encompasses computation of rotation free ALE displacement values, remeshing
      * of the fluid field and reevaluation of the Mortar interface terms.
      */
-    void Remeshing() override;
+    void remeshing() override;
 
    protected:
     /** \brief interface fluid operator

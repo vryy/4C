@@ -61,7 +61,7 @@ namespace NOX
           */
           Combo& add_status_test(const Teuchos::RCP<Generic>& a);
 
-          const std::vector<Teuchos::RCP<Generic>>& GetTestVector() const;
+          const std::vector<Teuchos::RCP<Generic>>& get_test_vector() const;
 
          protected:
           //! Check whether or not it is safe to add a to this list of tests.

@@ -19,24 +19,24 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Mat::PAR::FluidPoroViscosityLaw* Mat::PAR::FluidPoroViscosityLaw::CreateViscosityLaw(int matID)
+Mat::PAR::FluidPoroViscosityLaw* Mat::PAR::FluidPoroViscosityLaw::create_viscosity_law(int matID)
 {
   // initialize null pointer
   Mat::PAR::FluidPoroViscosityLaw* viscositylaw = nullptr;
 
   // retrieve problem instance to read from
-  const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
 
   // for the sake of safety
-  if (Global::Problem::Instance(probinst)->Materials() == Teuchos::null)
+  if (Global::Problem::instance(probinst)->materials() == Teuchos::null)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
-  if (Global::Problem::Instance(probinst)->Materials()->Num() == 0)
+  if (Global::Problem::instance(probinst)->materials()->num() == 0)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
-  auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(matID);
+  auto* curmat = Global::Problem::instance(probinst)->materials()->parameter_by_id(matID);
 
-  switch (curmat->Type())
+  switch (curmat->type())
   {
     case Core::Materials::m_fluidporo_viscositylaw_constant:
     {
@@ -49,7 +49,7 @@ Mat::PAR::FluidPoroViscosityLaw* Mat::PAR::FluidPoroViscosityLaw::CreateViscosit
       break;
     }
     default:
-      FOUR_C_THROW("invalid material for viscosity law %d", curmat->Type());
+      FOUR_C_THROW("invalid material for viscosity law %d", curmat->type());
       break;
   }
 
@@ -81,7 +81,7 @@ Mat::PAR::FluidPoroViscosityLawCellAdherence::FluidPoroViscosityLawCellAdherence
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Mat::PAR::FluidPoroViscosityLawCellAdherence::GetViscosity(const double abspressgrad) const
+double Mat::PAR::FluidPoroViscosityLawCellAdherence::get_viscosity(const double abspressgrad) const
 {
   // visc = visc0 / ((1 - xi)*(1 - psi / | grad(pressure) |) * heaviside(1 - psi / | grad(pressure)
   // |) + xi)

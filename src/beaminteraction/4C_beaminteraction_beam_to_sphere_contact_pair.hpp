@@ -89,7 +89,7 @@ namespace BEAMINTERACTION
     \brief Update state of translational nodal DoFs (absolute positions (and tangents)) of both
     elements
     */
-    void ResetState(const std::vector<double>& centerline_dofvec_ele1,
+    void reset_state(const std::vector<double>& centerline_dofvec_ele1,
         const std::vector<double>& centerline_dofvec_ele2) override;
 
     /** \brief print information about this beam contact element pair to screen
@@ -111,17 +111,17 @@ namespace BEAMINTERACTION
     /*!
     \brief Get beam element
     */
-    inline Discret::ELEMENTS::Beam3Base const* BeamElement() { return beam_element_; };
+    inline Discret::ELEMENTS::Beam3Base const* beam_element() { return beam_element_; };
 
     /*!
     \brief Get sphere element
     */
-    inline Discret::ELEMENTS::Rigidsphere const* SphereElement() { return sphere_element_; };
+    inline Discret::ELEMENTS::Rigidsphere const* sphere_element() { return sphere_element_; };
 
     /*!
     \brief Get flag indicating whether contact is active (true) or inactive (false)
     */
-    inline bool GetContactFlag() const override
+    inline bool get_contact_flag() const override
     {
       return (contactflag_ or nodalcontactflag_[0] or nodalcontactflag_[1]);
     };

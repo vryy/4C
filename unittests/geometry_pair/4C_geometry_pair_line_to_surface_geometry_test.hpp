@@ -273,7 +273,7 @@ namespace
     const int dummy_node_ids[2] = {0, 1};
     std::shared_ptr<Core::Elements::Element> element =
         std::make_shared<Discret::ELEMENTS::Beam3r>(0, 0);
-    element->SetNodeIds(2, dummy_node_ids);
+    element->set_node_ids(2, dummy_node_ids);
 
     // Set up the beam.
     auto element_data = GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_hermite, double>();

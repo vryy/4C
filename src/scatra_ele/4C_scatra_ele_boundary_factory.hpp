@@ -35,7 +35,7 @@ namespace Discret
       virtual ~ScaTraBoundaryFactory() = default;
 
       //! ProvideImpl
-      static ScaTraBoundaryInterface* ProvideImpl(const Core::Elements::Element* ele,
+      static ScaTraBoundaryInterface* provide_impl(const Core::Elements::Element* ele,
           const enum Inpar::ScaTra::ImplType impltype, const int numdofpernode, const int numscal,
           const std::string& disname);
 

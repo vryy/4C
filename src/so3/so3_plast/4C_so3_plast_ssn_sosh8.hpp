@@ -35,16 +35,16 @@ namespace Discret
     class SoSh8PlastType : public SoHex8PlastType
     {
      public:
-      std::string Name() const override { return "So_sh8PlastType"; }
+      std::string name() const override { return "So_sh8PlastType"; }
 
-      static SoSh8PlastType& Instance();
+      static SoSh8PlastType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -76,18 +76,18 @@ namespace Discret
 
       //! Deep copy this instance of Solid3 and return pointer to the copy
       //!
-      //! The Clone() method is used from the virtual base class Element in cases
+      //! The clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-ctor is needed
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
 
       //! Return unique ParObject id
       //!
       //! every class implementing ParObject needs a unique id defined at the top of
       //! this file.
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return SoSh8PlastType::Instance().UniqueParObjectId();
+        return SoSh8PlastType::instance().unique_par_object_id();
       }
 
       //! Pack this class so it can be communicated
@@ -102,10 +102,10 @@ namespace Discret
       void print(std::ostream& os) const override;
 
       //! return elementtype
-      SoSh8PlastType& ElementType() const override { return SoSh8PlastType::Instance(); }
+      SoSh8PlastType& element_type() const override { return SoSh8PlastType::instance(); }
 
       //! read input for this element
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //! definition of shell-thickness direction

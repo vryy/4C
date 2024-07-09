@@ -102,23 +102,23 @@ namespace Discret::ELEMENTS
   class Beam3ebType : public Core::Elements::ElementType
   {
    public:
-    std::string Name() const override { return "Beam3ebType"; }
+    std::string name() const override { return "Beam3ebType"; }
 
-    static Beam3ebType& Instance();
+    static Beam3ebType& instance();
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-    Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+    Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
         const std::string eledistype, const int id, const int owner) override;
 
-    Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+    Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
     int initialize(Core::FE::Discretization& dis) override;
 
     void nodal_block_information(
         Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-    Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+    Core::LinAlg::SerialDenseMatrix compute_null_space(
         Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
     void setup_element_definition(
@@ -165,14 +165,14 @@ namespace Discret::ELEMENTS
     /*!
     \brief Deep copy this instance of Beam3eb and return pointer to the copy
 
-    The Clone() method is used by the virtual base class Element in cases
+    The clone() method is used by the virtual base class Element in cases
     where the type of the derived class is unknown and a copy-ctor is needed
   .
     */
-    Core::Elements::Element* Clone() const override;
+    Core::Elements::Element* clone() const override;
 
     //! \brief Get shape type of element
-    Core::FE::CellType Shape() const override;
+    Core::FE::CellType shape() const override;
 
     /*!
     \brief Return unique ParObject id
@@ -180,7 +180,10 @@ namespace Discret::ELEMENTS
     Every class implementing ParObject needs a unique id defined at the
     top of parobject.H
     */
-    int UniqueParObjectId() const override { return Beam3ebType::Instance().UniqueParObjectId(); }
+    int unique_par_object_id() const override
+    {
+      return Beam3ebType::instance().unique_par_object_id();
+    }
 
     /*!
     \brief Pack this class so it can be communicated
@@ -198,35 +201,36 @@ namespace Discret::ELEMENTS
     */
     void unpack(const std::vector<char>& data) override;
 
-    Core::Elements::ElementType& ElementType() const override { return Beam3ebType::Instance(); }
+    Core::Elements::ElementType& element_type() const override { return Beam3ebType::instance(); }
 
     //@}
 
     //! \brief Return number of lines to this element
-    int NumLine() const override { return 1; }
+    int num_line() const override { return 1; }
 
     //! \brief get number of nodes used for centerline interpolation
-    inline int NumCenterlineNodes() const override { return 2; }
+    inline int num_centerline_nodes() const override { return 2; }
 
     //! \brief find out whether given node is used for centerline interpolation
-    inline bool IsCenterlineNode(const Core::Nodes::Node& node) const override { return true; }
+    inline bool is_centerline_node(const Core::Nodes::Node& node) const override { return true; }
 
     //! \brief Get jacobian this element
     const double& get_jacobi() const { return jacobi_; }
 
     //! \brief get access to the reference length
-    inline double RefLength() const override { return 2.0 * jacobi_; }
+    inline double ref_length() const override { return 2.0 * jacobi_; }
 
     /** \brief get unit tangent vector in reference configuration at i-th node of beam element
      * (element-internal numbering)
      */
-    inline void GetRefTangentAtNode(Core::LinAlg::Matrix<3, 1>& Tref_i, const int& i) const override
+    inline void get_ref_tangent_at_node(
+        Core::LinAlg::Matrix<3, 1>& Tref_i, const int& i) const override
     {
-      Tref_i = Tref()[i];
+      Tref_i = tref()[i];
     }
 
     //! \brief Get maximal bending curvature occuring in this element
-    const double& GetKappaMax() const { return kappa_max_; }
+    const double& get_kappa_max() const { return kappa_max_; }
 
     //! \brief Get material cross-section deformation measures, i.e. strain resultants
     inline void get_material_strain_resultants_at_all_g_ps(std::vector<double>& axial_strain_GPs,
@@ -266,27 +270,27 @@ namespace Discret::ELEMENTS
     }
 
     //! \brief get centerline position at xi \in [-1,1] (element parameter space)
-    void GetPosAtXi(Core::LinAlg::Matrix<3, 1>& pos, const double& xi,
+    void get_pos_at_xi(Core::LinAlg::Matrix<3, 1>& pos, const double& xi,
         const std::vector<double>& disp) const override;
 
     //! \brief get triad at xi \in [-1,1] (element parameter space)
-    void GetTriadAtXi(Core::LinAlg::Matrix<3, 3>& triad, const double& xi,
+    void get_triad_at_xi(Core::LinAlg::Matrix<3, 3>& triad, const double& xi,
         const std::vector<double>& disp) const override;
 
     //! \brief Get axial strain at xi for given nodal displacements
-    double GetAxialStrain(double& xi, const Core::LinAlg::Matrix<12, 1>& disp_totlag) const;
+    double get_axial_strain(double& xi, const Core::LinAlg::Matrix<12, 1>& disp_totlag) const;
 
     //! get internal (elastic) energy of element
-    double GetInternalEnergy() const override { return eint_; };
+    double get_internal_energy() const override { return eint_; };
 
     //! get kinetic energy of element
-    double GetKineticEnergy() const override { return ekin_; };
+    double get_kinetic_energy() const override { return ekin_; };
 
     //! \brief Get vector of Teuchos::RCPs to the lines of this element
-    std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+    std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
     //! \brief Get number of degrees of freedom of a single node
-    int NumDofPerNode(const Core::Nodes::Node& node) const override
+    int num_dof_per_node(const Core::Nodes::Node& node) const override
     {
 /*note: this is not necessarily the number of DOF assigned to this node by the discretization
  *finally, but only the number of DOF requested for this node by this element; the discretization
@@ -313,13 +317,13 @@ namespace Discret::ELEMENTS
     void print(std::ostream& os) const override;
 
     //! \brief get reference triad i.e. Tref_
-    std::vector<Core::LinAlg::Matrix<3, 1>> Tref() const;
+    std::vector<Core::LinAlg::Matrix<3, 1>> tref() const;
 
     //! \brief get jacobi factor jacobi_
     double jacobi() const;
 
     //! \brief get Jacobi factor ds/dxi(xi) at xi \in [-1;1]
-    inline double GetJacobiFacAtXi(const double& xi) const override
+    inline double get_jacobi_fac_at_xi(const double& xi) const override
     {
       /* beam3eb elements are restricted to initially straight beams, for which the jacobi factor
        * is constant along the entire element length */
@@ -336,10 +340,10 @@ namespace Discret::ELEMENTS
     store all necessary information.
 
     */
-    // virtual bool ReadElement();
+    // virtual bool read_element();
 
     //! \brief Read input for this element
-    bool ReadElement(const std::string& eletype, const std::string& distype,
+    bool read_element(const std::string& eletype, const std::string& distype,
         Input::LineDefinition* linedef) override;
 
     //@}
@@ -417,7 +421,7 @@ namespace Discret::ELEMENTS
     \return 0 if successful, negative otherwise
     */
     template <int nnode>
-    void EvaluatePTC(Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix& elemat1);
+    void evaluate_ptc(Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix& elemat1);
 
     //@}
 
@@ -432,7 +436,7 @@ namespace Discret::ELEMENTS
     int how_many_random_numbers_i_need() const override;
 
     //! \brief add indices of those DOFs of a given node that are positions
-    inline void PositionDofIndices(
+    inline void position_dof_indices(
         std::vector<int>& posdofs, const Core::Nodes::Node& node) const override
     {
       posdofs.push_back(0);
@@ -443,7 +447,7 @@ namespace Discret::ELEMENTS
     /** \brief add indices of those DOFs of a given node that are tangents (in the case of Hermite
      * interpolation)
      */
-    inline void TangentDofIndices(
+    inline void tangent_dof_indices(
         std::vector<int>& tangdofs, const Core::Nodes::Node& node) const override
     {
       tangdofs.push_back(3);
@@ -504,7 +508,7 @@ namespace Discret::ELEMENTS
         for (unsigned int dim = 0; dim < 3; ++dim)
           for (unsigned int node = 0; node < 2; ++node)
           {
-            dofvec_centerline[6 * node + dim] += Nodes()[node]->X()[dim];
+            dofvec_centerline[6 * node + dim] += nodes()[node]->x()[dim];
 
             // Hermite interpolation: add reference values for tangent DOFs as well
             dofvec_centerline[6 * node + 3 + dim] += Tref_[node](dim);

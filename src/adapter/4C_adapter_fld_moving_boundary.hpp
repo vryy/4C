@@ -61,7 +61,7 @@ namespace Adapter
     virtual const Teuchos::RCP<Adapter::Fluid>& fluid_field() = 0;
 
     /// communication object at the interface
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const = 0;
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const = 0;
 
     //@}
 
@@ -101,7 +101,7 @@ namespace Adapter
     }
 
     /// linear fluid solve with just a interface load
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+    virtual Teuchos::RCP<Epetra_Vector> relaxation_solve(
         Teuchos::RCP<Epetra_Vector> idisp, double dt) = 0;
 
     /// get the linear solver object used for this field
@@ -125,8 +125,8 @@ namespace Adapter
     //! For simplified FD MFNK solve we want to temporally limit the
     /// number of Newton steps inside the fluid solver
 
-    virtual int Itemax() const = 0;
-    virtual void SetItemax(int itemax) = 0;
+    virtual int itemax() const = 0;
+    virtual void set_itemax(int itemax) = 0;
 
     //@}
 
@@ -134,7 +134,7 @@ namespace Adapter
     virtual Teuchos::RCP<Epetra_Vector> integrate_interface_shape() = 0;
 
     /// create result test for encapulated fluid algorithm
-    virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() = 0;
   };
 
 
@@ -149,7 +149,7 @@ namespace Adapter
     /// virtual destructor to support polymorph destruction
     virtual ~FluidMovingBoundaryBaseAlgorithm() = default;
     /// fluid field solver
-    const Teuchos::RCP<FluidMovingBoundary>& MBFluidField() { return fluid_; }
+    const Teuchos::RCP<FluidMovingBoundary>& mb_fluid_field() { return fluid_; }
 
    private:
     /// fluid field solver

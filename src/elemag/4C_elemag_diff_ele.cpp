@@ -24,17 +24,17 @@ Discret::ELEMENTS::ElemagDiffType Discret::ELEMENTS::ElemagDiffType::instance_;
 Discret::ELEMENTS::ElemagDiffBoundaryType Discret::ELEMENTS::ElemagDiffBoundaryType::instance_;
 Discret::ELEMENTS::ElemagDiffIntFaceType Discret::ELEMENTS::ElemagDiffIntFaceType::instance_;
 
-Discret::ELEMENTS::ElemagDiffType& Discret::ELEMENTS::ElemagDiffType::Instance()
+Discret::ELEMENTS::ElemagDiffType& Discret::ELEMENTS::ElemagDiffType::instance()
 {
   return instance_;
 }
 
-Discret::ELEMENTS::ElemagDiffBoundaryType& Discret::ELEMENTS::ElemagDiffBoundaryType::Instance()
+Discret::ELEMENTS::ElemagDiffBoundaryType& Discret::ELEMENTS::ElemagDiffBoundaryType::instance()
 {
   return instance_;
 }
 
-Discret::ELEMENTS::ElemagDiffIntFaceType& Discret::ELEMENTS::ElemagDiffIntFaceType::Instance()
+Discret::ELEMENTS::ElemagDiffIntFaceType& Discret::ELEMENTS::ElemagDiffIntFaceType::instance()
 {
   return instance_;
 }
@@ -42,7 +42,7 @@ Discret::ELEMENTS::ElemagDiffIntFaceType& Discret::ELEMENTS::ElemagDiffIntFaceTy
 /*----------------------------------------------------------------------*
  |                                                      berardocco 03/19|
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::ElemagDiffType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::ElemagDiffType::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::ElemagDiff* object = new Discret::ELEMENTS::ElemagDiff(-1, -1);
@@ -53,7 +53,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::ElemagDiffType::Create(
 /*----------------------------------------------------------------------*
  |                                                      berardocco 03/19|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagDiffType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagDiffType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "ELECTROMAGNETICDIFF")
@@ -66,7 +66,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagDiffType::Create(
 /*----------------------------------------------------------------------*
  |                                                      berardocco 03/19|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagDiffType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagDiffType::create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new Discret::ELEMENTS::ElemagDiff(id, owner));
@@ -75,7 +75,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagDiffType::Create(
 void Discret::ELEMENTS::ElemagDiffType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  numdf = Core::FE::getDimension(dwele->Shape()) - 1;  // 2;  // Bad Luca! Hard coding is not nice!
+  numdf = Core::FE::getDimension(dwele->shape()) - 1;  // 2;  // Bad Luca! Hard coding is not nice!
   dimns = numdf;
   nv = numdf;
   np = 0;
@@ -83,7 +83,7 @@ void Discret::ELEMENTS::ElemagDiffType::nodal_block_information(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::ElemagDiffType::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::ElemagDiffType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   Core::LinAlg::SerialDenseMatrix nullspace;
@@ -155,7 +155,7 @@ Discret::ELEMENTS::ElemagDiff::ElemagDiff(const Discret::ELEMENTS::ElemagDiff& o
  |  Deep copy this instance of Elemag and return pointer to it (public)   |
  |                                                        berardocco 03/19|
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::ElemagDiff::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::ElemagDiff::clone() const
 {
   Discret::ELEMENTS::ElemagDiff* newelement = new Discret::ELEMENTS::ElemagDiff(*this);
   return newelement;
@@ -174,7 +174,7 @@ void Discret::ELEMENTS::ElemagDiff::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)           berardocco 03/19|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagDiff::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagDiff::lines()
 {
   return Core::Communication::GetElementLines<ElemagDiffBoundary, ElemagDiff>(*this);
 }
@@ -183,7 +183,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagDiff
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                     berardocco 03/19|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagDiff::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagDiff::surfaces()
 {
   return Core::Communication::GetElementSurfaces<ElemagDiffBoundary, ElemagDiff>(*this);
 }
@@ -192,7 +192,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagDiff
 /*----------------------------------------------------------------------*
  |  get face element (public)                           berardocco 03/19|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagDiff::CreateFaceElement(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagDiff::create_face_element(
     Core::Elements::Element* parent_slave,  //!< parent slave fluid3 element
     int nnode,                              //!< number of surface nodes
     const int* nodeids,                     //!< node ids of surface element
@@ -234,7 +234,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagDiff::CreateFaceE
 //=======================================================================
 //=======================================================================
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagDiffBoundaryType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagDiffBoundaryType::create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -270,7 +270,7 @@ Discret::ELEMENTS::ElemagDiffBoundary::ElemagDiffBoundary(
  |  Deep copy this instance return pointer to it               (public) |
  |                                                     berardocco 03/19 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::ElemagDiffBoundary::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::ElemagDiffBoundary::clone() const
 {
   Discret::ELEMENTS::ElemagDiffBoundary* newelement =
       new Discret::ELEMENTS::ElemagDiffBoundary(*this);
@@ -286,7 +286,7 @@ void Discret::ELEMENTS::ElemagDiffBoundary::pack(Core::Communication::PackBuffer
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   Element::pack(data);
@@ -305,7 +305,7 @@ void Discret::ELEMENTS::ElemagDiffBoundary::unpack(const std::vector<char>& data
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -340,7 +340,7 @@ int Discret::ELEMENTS::ElemagDiffBoundary::evaluate(Teuchos::ParameterList& para
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  Discret::ELEMENTS::ElemagBoundaryImplInterface::Impl(this)->evaluate(
+  Discret::ELEMENTS::ElemagBoundaryImplInterface::impl(this)->evaluate(
       this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
   return 0;
 }
@@ -348,12 +348,12 @@ int Discret::ELEMENTS::ElemagDiffBoundary::evaluate(Teuchos::ParameterList& para
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element (public) berardocco 03/19 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ElemagDiffBoundary::LocationVector(const Core::FE::Discretization& dis,
+void Discret::ELEMENTS::ElemagDiffBoundary::location_vector(const Core::FE::Discretization& dis,
     LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {
   // we have to do it this way, just as for weak Dirichlet conditions
-  ParentMasterElement()->LocationVector(dis, la, false);
+  parent_master_element()->location_vector(dis, la, false);
   return;
 }
 
@@ -369,7 +369,7 @@ void Discret::ELEMENTS::ElemagDiffBoundary::LocationVector(const Core::FE::Discr
 //=======================================================================
 //=======================================================================
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagDiffIntFaceType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagDiffIntFaceType::create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -398,8 +398,8 @@ Discret::ELEMENTS::ElemagDiffIntFace::ElemagDiffIntFace(int id,  ///< element id
   set_parent_master_element(parent_master, lsurface_master);
   set_parent_slave_element(parent_slave, lsurface_slave);
   set_local_trafo_map(localtrafomap);
-  SetNodeIds(nnode, nodeids);
-  BuildNodalPointers(nodes);
+  set_node_ids(nnode, nodeids);
+  build_nodal_pointers(nodes);
   return;
 }
 
@@ -417,7 +417,7 @@ Discret::ELEMENTS::ElemagDiffIntFace::ElemagDiffIntFace(
  |  Deep copy this instance return pointer to it               (public) |
  |                                                      berardocco 03/19|
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::ElemagDiffIntFace::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::ElemagDiffIntFace::clone() const
 {
   Discret::ELEMENTS::ElemagDiffIntFace* newelement =
       new Discret::ELEMENTS::ElemagDiffIntFace(*this);
@@ -427,7 +427,7 @@ Core::Elements::Element* Discret::ELEMENTS::ElemagDiffIntFace::Clone() const
 /*----------------------------------------------------------------------*
  |  create the patch location vector (public)          berardocco 03/19 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
+void Discret::ELEMENTS::ElemagDiffIntFace::patch_location_vector(
     Core::FE::Discretization& discretization,  ///< discretization
     std::vector<int>& nds_master,              ///< nodal dofset w.r.t master parent element
     std::vector<int>& nds_slave,               ///< nodal dofset w.r.t slave parent element
@@ -447,7 +447,7 @@ void Discret::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
 
   //-----------------------------------------------------------------------
   const int m_numnode = ParentMasterElement()->num_node();
-  Core::Nodes::Node** m_nodes = ParentMasterElement()->Nodes();
+  Core::Nodes::Node** m_nodes = ParentMasterElement()->nodes();
 
   if (m_numnode != static_cast<int>(nds_master.size()))
   {
@@ -456,7 +456,7 @@ void Discret::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
 
   //-----------------------------------------------------------------------
   const int s_numnode = ParentSlaveElement()->num_node();
-  Core::Nodes::Node** s_nodes = ParentSlaveElement()->Nodes();
+  Core::Nodes::Node** s_nodes = ParentSlaveElement()->nodes();
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
   {
@@ -465,7 +465,7 @@ void Discret::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
 
   //-----------------------------------------------------------------------
   const int f_numnode = num_node();
-  Core::Nodes::Node** f_nodes = Nodes();
+  Core::Nodes::Node** f_nodes = nodes();
 
   //-----------------------------------------------------------------------
   // create the patch local map and additional local maps between elements lm and patch lm
@@ -497,11 +497,11 @@ void Discret::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
   for (int k = 0; k < m_numnode; ++k)
   {
     Core::Nodes::Node* node = m_nodes[k];
-    std::vector<int> dof = discretization.Dof(dofset, node);
+    std::vector<int> dof = discretization.dof(dofset, node);
 
     // get maximum of numdof per node with the help of master and/or slave element (returns 4 in 3D
     // case, does not return dofset's numnode)
-    const int size = discretization.NumDof(dofset, node);
+    const int size = discretization.num_dof(dofset, node);
     const int offset = size * nds_master[k];
 
     FOUR_C_ASSERT(
@@ -509,7 +509,7 @@ void Discret::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
 
     // insert a pair of node-Id and current length of master_lm ( to get the start offset for node's
     // dofs)
-    m_node_lm_offset.insert(std::pair<int, int>(node->Id(), master_lm.size()));
+    m_node_lm_offset.insert(std::pair<int, int>(node->id(), master_lm.size()));
 
     for (int j = 0; j < size; ++j)
     {
@@ -536,15 +536,15 @@ void Discret::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
 
     // slave node already contained?
     std::map<int, int>::iterator m_offset;
-    m_offset = m_node_lm_offset.find(node->Id());
+    m_offset = m_node_lm_offset.find(node->id());
 
     if (m_offset == m_node_lm_offset.end())  // node not included yet
     {
-      std::vector<int> dof = discretization.Dof(dofset, node);
+      std::vector<int> dof = discretization.dof(dofset, node);
 
       // get maximum of numdof per node with the help of master and/or slave element (returns 4 in
       // 3D case, does not return dofset's numnode)
-      const int size = discretization.NumDof(dofset, node);
+      const int size = discretization.num_dof(dofset, node);
       const int offset = size * nds_slave[k];
 
       FOUR_C_ASSERT(
@@ -565,7 +565,7 @@ void Discret::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
     }
     else  // node is also a master's node
     {
-      const int size = discretization.NumDof(dofset, node);
+      const int size = discretization.num_dof(dofset, node);
 
       int offset = m_offset->second;
 
@@ -596,11 +596,11 @@ void Discret::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
 
     // face node must be contained
     std::map<int, int>::iterator m_offset;
-    m_offset = m_node_lm_offset.find(node->Id());
+    m_offset = m_node_lm_offset.find(node->id());
 
     if (m_offset != m_node_lm_offset.end())  // node not included yet
     {
-      const int size = discretization.NumDof(dofset, node);
+      const int size = discretization.num_dof(dofset, node);
 
       int offset = m_offset->second;
 

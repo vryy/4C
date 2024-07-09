@@ -43,21 +43,21 @@ namespace Discret
     class Ale2Type : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "Ale2Type"; }
+      std::string name() const override { return "Ale2Type"; }
 
-      static Ale2Type& Instance();
+      static Ale2Type& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
@@ -99,21 +99,21 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Ale2 and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override
+      int num_line() const override
       {
         if (num_node() == 9 || num_node() == 8 || num_node() == 4)
           return 4;
@@ -129,24 +129,24 @@ namespace Discret
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override { return 1; }
+      int num_surface() const override { return 1; }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      int NumVolume() const override { return -1; }
+      int num_volume() const override { return -1; }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -154,7 +154,10 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override { return Ale2Type::Instance().UniqueParObjectId(); }
+      int unique_par_object_id() const override
+      {
+        return Ale2Type::instance().unique_par_object_id();
+      }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -187,7 +190,7 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 2; }
+      int num_dof_per_node(const Core::Nodes::Node& node) const override { return 2; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -207,7 +210,7 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override { return Ale2Type::Instance(); }
+      Core::Elements::ElementType& element_type() const override { return Ale2Type::instance(); }
 
       //@}
 
@@ -216,7 +219,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -482,18 +485,18 @@ namespace Discret
     class Ale2LineType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "Ale2LineType"; }
+      std::string name() const override { return "Ale2LineType"; }
 
-      static Ale2LineType& Instance();
+      static Ale2LineType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -539,16 +542,16 @@ namespace Discret
       /*!
       \brief Deep copy this instance of an element and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -556,9 +559,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return Ale2LineType::Instance().UniqueParObjectId();
+        return Ale2LineType::instance().unique_par_object_id();
       }
 
       /*!
@@ -592,7 +595,7 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 2; }
+      int num_dof_per_node(const Core::Nodes::Node& node) const override { return 2; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -612,7 +615,10 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override { return Ale2LineType::Instance(); }
+      Core::Elements::ElementType& element_type() const override
+      {
+        return Ale2LineType::instance();
+      }
 
       //@}
 

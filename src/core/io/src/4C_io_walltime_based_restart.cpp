@@ -51,7 +51,7 @@ Core::IO::RestartManager::RestartManager()
 }
 
 /// set the time interval to enforce restart writing
-void Core::IO::RestartManager::SetupRestartManager(
+void Core::IO::RestartManager::setup_restart_manager(
     const double restartinterval, const int restartevry)
 {
   restartevrytime_ = restartinterval;

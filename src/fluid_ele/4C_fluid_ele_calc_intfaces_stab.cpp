@@ -48,25 +48,25 @@ FOUR_C_NAMESPACE_OPEN
 //   Allocate one static instance of the internal implementation
 //   class for edge-based stabilizations and return pointer to it
 //-----------------------------------------------------------------
-Discret::ELEMENTS::FluidIntFaceStab* Discret::ELEMENTS::FluidIntFaceStab::Impl(
+Discret::ELEMENTS::FluidIntFaceStab* Discret::ELEMENTS::FluidIntFaceStab::impl(
     Discret::ELEMENTS::FluidIntFace* surfele)
 {
-  switch (surfele->Shape())
+  switch (surfele->shape())
   {
     // 3D:
     case Core::FE::CellType::tri3:
     {
-      if (surfele->ParentMasterElement()->Shape() == Core::FE::CellType::tet4 &&
-          surfele->ParentSlaveElement()->Shape() == Core::FE::CellType::tet4)
+      if (surfele->parent_master_element()->shape() == Core::FE::CellType::tet4 &&
+          surfele->parent_slave_element()->shape() == Core::FE::CellType::tet4)
       {
         return FluidInternalSurfaceStab<Core::FE::CellType::tri3, Core::FE::CellType::tet4,
-            Core::FE::CellType::tet4>::Instance();
+            Core::FE::CellType::tet4>::instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == Core::FE::CellType::wedge6 &&
-               surfele->ParentSlaveElement()->Shape() == Core::FE::CellType::wedge6)
+      else if (surfele->parent_master_element()->shape() == Core::FE::CellType::wedge6 &&
+               surfele->parent_slave_element()->shape() == Core::FE::CellType::wedge6)
       {
         return FluidInternalSurfaceStab<Core::FE::CellType::tri3, Core::FE::CellType::wedge6,
-            Core::FE::CellType::wedge6>::Instance();
+            Core::FE::CellType::wedge6>::instance();
       }
       else
       {
@@ -79,17 +79,17 @@ Discret::ELEMENTS::FluidIntFaceStab* Discret::ELEMENTS::FluidIntFaceStab::Impl(
     // 3D:
     case Core::FE::CellType::tri6:
     {
-      if (surfele->ParentMasterElement()->Shape() == Core::FE::CellType::tet10 &&
-          surfele->ParentSlaveElement()->Shape() == Core::FE::CellType::tet10)
+      if (surfele->parent_master_element()->shape() == Core::FE::CellType::tet10 &&
+          surfele->parent_slave_element()->shape() == Core::FE::CellType::tet10)
       {
         return FluidInternalSurfaceStab<Core::FE::CellType::tri6, Core::FE::CellType::tet10,
-            Core::FE::CellType::tet10>::Instance();
+            Core::FE::CellType::tet10>::instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == Core::FE::CellType::wedge15 &&
-               surfele->ParentSlaveElement()->Shape() == Core::FE::CellType::wedge15)
+      else if (surfele->parent_master_element()->shape() == Core::FE::CellType::wedge15 &&
+               surfele->parent_slave_element()->shape() == Core::FE::CellType::wedge15)
       {
         return FluidInternalSurfaceStab<Core::FE::CellType::tri6, Core::FE::CellType::wedge15,
-            Core::FE::CellType::wedge15>::Instance();
+            Core::FE::CellType::wedge15>::instance();
       }
       else
       {
@@ -102,17 +102,17 @@ Discret::ELEMENTS::FluidIntFaceStab* Discret::ELEMENTS::FluidIntFaceStab::Impl(
     // 3D:
     case Core::FE::CellType::quad4:
     {
-      if (surfele->ParentMasterElement()->Shape() == Core::FE::CellType::hex8 &&
-          surfele->ParentSlaveElement()->Shape() == Core::FE::CellType::hex8)
+      if (surfele->parent_master_element()->shape() == Core::FE::CellType::hex8 &&
+          surfele->parent_slave_element()->shape() == Core::FE::CellType::hex8)
       {
         return FluidInternalSurfaceStab<Core::FE::CellType::quad4, Core::FE::CellType::hex8,
-            Core::FE::CellType::hex8>::Instance();
+            Core::FE::CellType::hex8>::instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == Core::FE::CellType::wedge6 &&
-               surfele->ParentSlaveElement()->Shape() == Core::FE::CellType::wedge6)
+      else if (surfele->parent_master_element()->shape() == Core::FE::CellType::wedge6 &&
+               surfele->parent_slave_element()->shape() == Core::FE::CellType::wedge6)
       {
         return FluidInternalSurfaceStab<Core::FE::CellType::quad4, Core::FE::CellType::wedge6,
-            Core::FE::CellType::wedge6>::Instance();
+            Core::FE::CellType::wedge6>::instance();
       }
       else
       {
@@ -125,17 +125,17 @@ Discret::ELEMENTS::FluidIntFaceStab* Discret::ELEMENTS::FluidIntFaceStab::Impl(
     // 3D:
     case Core::FE::CellType::quad8:
     {
-      if (surfele->ParentMasterElement()->Shape() == Core::FE::CellType::hex20 &&
-          surfele->ParentSlaveElement()->Shape() == Core::FE::CellType::hex20)
+      if (surfele->parent_master_element()->shape() == Core::FE::CellType::hex20 &&
+          surfele->parent_slave_element()->shape() == Core::FE::CellType::hex20)
       {
         return FluidInternalSurfaceStab<Core::FE::CellType::quad8, Core::FE::CellType::hex20,
-            Core::FE::CellType::hex20>::Instance();
+            Core::FE::CellType::hex20>::instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == Core::FE::CellType::wedge15 &&
-               surfele->ParentSlaveElement()->Shape() == Core::FE::CellType::wedge15)
+      else if (surfele->parent_master_element()->shape() == Core::FE::CellType::wedge15 &&
+               surfele->parent_slave_element()->shape() == Core::FE::CellType::wedge15)
       {
         return FluidInternalSurfaceStab<Core::FE::CellType::quad8, Core::FE::CellType::wedge15,
-            Core::FE::CellType::wedge15>::Instance();
+            Core::FE::CellType::wedge15>::instance();
       }
       else
       {
@@ -147,11 +147,11 @@ Discret::ELEMENTS::FluidIntFaceStab* Discret::ELEMENTS::FluidIntFaceStab::Impl(
     }
     case Core::FE::CellType::quad9:
     {
-      if (surfele->ParentMasterElement()->Shape() == Core::FE::CellType::hex27 &&
-          surfele->ParentSlaveElement()->Shape() == Core::FE::CellType::hex27)
+      if (surfele->parent_master_element()->shape() == Core::FE::CellType::hex27 &&
+          surfele->parent_slave_element()->shape() == Core::FE::CellType::hex27)
       {
         return FluidInternalSurfaceStab<Core::FE::CellType::quad9, Core::FE::CellType::hex27,
-            Core::FE::CellType::hex27>::Instance();
+            Core::FE::CellType::hex27>::instance();
       }
       else
       {
@@ -162,17 +162,17 @@ Discret::ELEMENTS::FluidIntFaceStab* Discret::ELEMENTS::FluidIntFaceStab::Impl(
     // 2D:
     case Core::FE::CellType::line2:
     {
-      if (surfele->ParentMasterElement()->Shape() == Core::FE::CellType::quad4 &&
-          surfele->ParentSlaveElement()->Shape() == Core::FE::CellType::quad4)
+      if (surfele->parent_master_element()->shape() == Core::FE::CellType::quad4 &&
+          surfele->parent_slave_element()->shape() == Core::FE::CellType::quad4)
       {
         return FluidInternalSurfaceStab<Core::FE::CellType::line2, Core::FE::CellType::quad4,
-            Core::FE::CellType::quad4>::Instance();
+            Core::FE::CellType::quad4>::instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == Core::FE::CellType::tri3 &&
-               surfele->ParentSlaveElement()->Shape() == Core::FE::CellType::tri3)
+      else if (surfele->parent_master_element()->shape() == Core::FE::CellType::tri3 &&
+               surfele->parent_slave_element()->shape() == Core::FE::CellType::tri3)
       {
         return FluidInternalSurfaceStab<Core::FE::CellType::line2, Core::FE::CellType::tri3,
-            Core::FE::CellType::tri3>::Instance();
+            Core::FE::CellType::tri3>::instance();
       }
       else
       {
@@ -184,23 +184,23 @@ Discret::ELEMENTS::FluidIntFaceStab* Discret::ELEMENTS::FluidIntFaceStab::Impl(
     }
     case Core::FE::CellType::line3:
     {
-      if (surfele->ParentMasterElement()->Shape() == Core::FE::CellType::quad8 &&
-          surfele->ParentSlaveElement()->Shape() == Core::FE::CellType::quad8)
+      if (surfele->parent_master_element()->shape() == Core::FE::CellType::quad8 &&
+          surfele->parent_slave_element()->shape() == Core::FE::CellType::quad8)
       {
         return FluidInternalSurfaceStab<Core::FE::CellType::line3, Core::FE::CellType::quad8,
-            Core::FE::CellType::quad8>::Instance();
+            Core::FE::CellType::quad8>::instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == Core::FE::CellType::quad9 &&
-               surfele->ParentSlaveElement()->Shape() == Core::FE::CellType::quad9)
+      else if (surfele->parent_master_element()->shape() == Core::FE::CellType::quad9 &&
+               surfele->parent_slave_element()->shape() == Core::FE::CellType::quad9)
       {
         return FluidInternalSurfaceStab<Core::FE::CellType::line3, Core::FE::CellType::quad9,
-            Core::FE::CellType::quad9>::Instance();
+            Core::FE::CellType::quad9>::instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == Core::FE::CellType::tri6 &&
-               surfele->ParentSlaveElement()->Shape() == Core::FE::CellType::tri6)
+      else if (surfele->parent_master_element()->shape() == Core::FE::CellType::tri6 &&
+               surfele->parent_slave_element()->shape() == Core::FE::CellType::tri6)
       {
         return FluidInternalSurfaceStab<Core::FE::CellType::line3, Core::FE::CellType::tri6,
-            Core::FE::CellType::tri6>::Instance();
+            Core::FE::CellType::tri6>::instance();
       }
       else
       {
@@ -213,7 +213,7 @@ Discret::ELEMENTS::FluidIntFaceStab* Discret::ELEMENTS::FluidIntFaceStab::Impl(
     default:
       FOUR_C_THROW(
           "shape %d (%d nodes) not supported by internalfaces stabilization. Just switch on!",
-          surfele->Shape(), surfele->num_node());
+          surfele->shape(), surfele->num_node());
       break;
   }
 
@@ -222,7 +222,7 @@ Discret::ELEMENTS::FluidIntFaceStab* Discret::ELEMENTS::FluidIntFaceStab::Impl(
 
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
 Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>*
-Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Instance(
+Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::instance(
     Core::UTILS::SingletonAction action)
 {
   static Core::UTILS::SingletonOwner<
@@ -235,7 +235,7 @@ Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Instan
                 new Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>());
           });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 //-----------------------------------------------------------------
@@ -339,9 +339,9 @@ Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidI
 
   // creating a singleton instance ensures that the object will be deleted at the end
   // create intpoints with computed degree
-  intpoints_ = Core::FE::GaussPointCache::Instance().Create(distype, patch_degree);
+  intpoints_ = Core::FE::GaussPointCache::instance().create(distype, patch_degree);
 
-  numgp_ = intpoints_->NumPoints();
+  numgp_ = intpoints_->num_points();
 
   // local coordinates of the face's gausspoints w.r.t parent and neighbor element
   p_xi_points_.shape(numgp_, nsd_);
@@ -496,8 +496,8 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: evaluate");
 
-  Fluid* pele = intface->ParentMasterElement();
-  Fluid* nele = intface->ParentSlaveElement();
+  Fluid* pele = intface->parent_master_element();
+  Fluid* nele = intface->parent_slave_element();
 
   if (pele == nullptr) FOUR_C_THROW("pele is nullptr");
   if (nele == nullptr) FOUR_C_THROW("nele is nullptr");
@@ -509,26 +509,26 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   const bool ghost_penalty_reconstruct = fldintfacepara.is_ghost_penalty_reconstruction();
 
   // flags to integrate pressure gradient jump based stabilization terms
-  bool EOS_pres = fldintfacepara.Face_EOS_Pres();  // eos/gp pressure stabilization
+  bool EOS_pres = fldintfacepara.face_eos_pres();  // eos/gp pressure stabilization
 
   // flags to integrate velocity gradient jump based stabilization terms
   const bool EOS_conv_stream =
       fldintfacepara.face_eos_conv_stream();  // eos/gp convective streamline stabilization
   const bool EOS_conv_cross =
-      fldintfacepara.Face_EOS_Conv_Cross();  // eos/gp convective crosswind stabilization
+      fldintfacepara.face_eos_conv_cross();  // eos/gp convective crosswind stabilization
   const bool EOS_div_vel_jump =
       fldintfacepara
           .face_eos_div_vel_jump();  // eos/gp divergence stabilization based on velocity jump
 
   const bool GP_visc =
-      fldintfacepara.Face_GP_visc();  // ghost penalty stabilization according to Nitsche's method
+      fldintfacepara.face_gp_visc();  // ghost penalty stabilization according to Nitsche's method
   double GP_visc_fac =
       fldintfacepara.ghost_penalty_visc_fac();  // ghost penalty stabilization factor according to
                                                 // Nitsche's method
   if (!GP_visc) GP_visc_fac = 0.0;
 
   const bool GP_trans =
-      fldintfacepara.Face_GP_trans();  // ghost penalty stabilization according to Nitsche's method
+      fldintfacepara.face_gp_trans();  // ghost penalty stabilization according to Nitsche's method
   double GP_trans_fac =
       fldintfacepara.ghost_penalty_trans_fac();  // ghost penalty stabilization factor according to
                                                  // Nitsche's method
@@ -536,7 +536,7 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   const bool GP_u_p_2nd =
       fldintfacepara
-          .Face_GP_u_p_2nd();  // 2nd order ghost penalty stabilization for velocity und pressure
+          .face_gp_u_p_2nd();  // 2nd order ghost penalty stabilization for velocity und pressure
   double GP_u_2nd_fac =
       fldintfacepara
           .ghost_penalty_visc_2nd_fac();  // 2nd order velocity ghost penalty stabilization factor
@@ -564,7 +564,7 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   // special treatment of this specific tau definition
   EOS_div =
-      fldintfacepara.EOS_WhichTau() == Inpar::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump
+      fldintfacepara.eos_which_tau() == Inpar::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump
           ? false
           : EOS_div;
 
@@ -590,7 +590,7 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   if (EOS_div_vel_jump)
   {
-    if (fldparatimint.IsGenalphaNP())
+    if (fldparatimint.is_genalpha_np())
       FOUR_C_THROW("No combined divergence and streamline(EOS) stabilization for np-gen alpha");
   }
 
@@ -609,7 +609,7 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   double timefacrhs = 0.0;
 
   // full matrix pattern (implicit) for streamline and div-stab
-  if (fldparatimint.TimeAlgo() == Inpar::FLUID::timeint_one_step_theta)
+  if (fldparatimint.time_algo() == Inpar::FLUID::timeint_one_step_theta)
   {
     //    if (fldpara.TimeAlgo()==Inpar::FLUID::timeint_one_step_theta and fldpara.Theta()!=1.0)
     //      FOUR_C_THROW("Read remark!");
@@ -623,26 +623,26 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     // Literature: E.Burman, M.A.Fernandez 2009
     // "Finite element methods with symmetric stabilization for the transient
     // convection-diffusion-reaction equation"
-    timefac = fldparatimint.Dt();     // set theta = 1.0
-    timefacpre = fldparatimint.Dt();  // set theta = 1.0
-    timefacrhs = fldparatimint.Dt();  // set theta = 1.0
+    timefac = fldparatimint.dt();     // set theta = 1.0
+    timefacpre = fldparatimint.dt();  // set theta = 1.0
+    timefacrhs = fldparatimint.dt();  // set theta = 1.0
   }
-  else if (fldparatimint.IsGenalpha())
+  else if (fldparatimint.is_genalpha())
   {
-    timefac = fldparatimint.TimeFac();  // timefac_ = theta_*dt_;
+    timefac = fldparatimint.time_fac();  // timefac_ = theta_*dt_;
     timefacpre =
         fldparatimint
-            .TimeFacPre();  // special factor for pressure terms in genalpha time integration
-    timefacrhs = fldparatimint.TimeFacRhs();  // factor for rhs (for OST: also theta_*dt_), modified
-                                              // just for genalpha time integration
+            .time_fac_pre();  // special factor for pressure terms in genalpha time integration
+    timefacrhs = fldparatimint.time_fac_rhs();  // factor for rhs (for OST: also theta_*dt_),
+                                                // modified just for genalpha time integration
   }
-  else if (fldparatimint.TimeAlgo() == Inpar::FLUID::timeint_bdf2)
+  else if (fldparatimint.time_algo() == Inpar::FLUID::timeint_bdf2)
   {
-    timefac = fldparatimint.Dt();     // set theta = 1.0
-    timefacpre = fldparatimint.Dt();  // set theta = 1.0
-    timefacrhs = fldparatimint.Dt();  // set theta = 1.0
+    timefac = fldparatimint.dt();     // set theta = 1.0
+    timefacpre = fldparatimint.dt();  // set theta = 1.0
+    timefacrhs = fldparatimint.dt();  // set theta = 1.0
   }
-  else if (fldparatimint.IsStationary())
+  else if (fldparatimint.is_stationary())
   {
     timefac = 1.0;
     timefacpre = 1.0;
@@ -693,7 +693,7 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   //------------- extract patch velaf velocity---------
   // velocities (intermediate time step, n+alpha_F)
-  Teuchos::RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
+  Teuchos::RCP<const Epetra_Vector> velaf = discretization.get_state("velaf");
   if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
 
@@ -725,10 +725,10 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
 
 
-  if (fldparatimint.IsGenalphaNP())
+  if (fldparatimint.is_genalpha_np())
   {
     // velocities (intermediate time step, n+1)
-    Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+    Teuchos::RCP<const Epetra_Vector> velnp = discretization.get_state("velnp");
     if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
     std::vector<double> patch_velnp(ndofinpatch);
@@ -766,17 +766,17 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   std::vector<double> mypegridv(master_numdof);
   std::vector<double> mynegridv(slave_numdof);
 
-  if (pele->IsAle())
+  if (pele->is_ale())
   {
     // mesh displacements, new time step, n+1
-    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
     if (dispnp == Teuchos::null)
     {
       FOUR_C_THROW("Cannot get state vector 'dispnp'");
     }
 
     // ALE-grid velocities
-    Teuchos::RCP<const Epetra_Vector> gridv = discretization.GetState("gridv");
+    Teuchos::RCP<const Epetra_Vector> gridv = discretization.get_state("gridv");
     if (gridv == Teuchos::null)
     {
       FOUR_C_THROW("Cannot get state vector 'gridv'");
@@ -833,54 +833,54 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
 
   // convective velocities
-  if (fldintfacepara.PhysicalType() == Inpar::FLUID::incompressible)
+  if (fldintfacepara.physical_type() == Inpar::FLUID::incompressible)
   {
     peconvvelaf_.update(1.0, pevelaf_, 0.0);
     neconvvelaf_.update(1.0, nevelaf_, 0.0);
 
-    if (pele->IsAle())
+    if (pele->is_ale())
     {
       peconvvelaf_.update(-1.0, pegridv_, 1.0);
       neconvvelaf_.update(-1.0, negridv_, 1.0);
     }
   }
   // set element advective field for Oseen problems
-  else if (fldintfacepara.PhysicalType() == Inpar::FLUID::oseen)
+  else if (fldintfacepara.physical_type() == Inpar::FLUID::oseen)
   {
-    const int funcnum = fldintfacepara.OseenFieldFuncNo();
-    const double time = fldparatimint.Time();
+    const int funcnum = fldintfacepara.oseen_field_func_no();
+    const double time = fldparatimint.time();
 
     // parent element
     for (int jnode = 0; jnode < piel; ++jnode)
     {
-      const double* jx = pele->Nodes()[jnode]->X().data();
+      const double* jx = pele->nodes()[jnode]->x().data();
       for (int idim = 0; idim < nsd_; ++idim)
         peconvvelaf_(idim, jnode) =
-            Global::Problem::Instance()
-                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+            Global::Problem::instance()
+                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
                 .evaluate(jx, time, idim);
     }
 
     // neighbor element
     for (int jnode = 0; jnode < niel; ++jnode)
     {
-      const double* jx = nele->Nodes()[jnode]->X().data();
+      const double* jx = nele->nodes()[jnode]->x().data();
       for (int idim = 0; idim < nsd_; ++idim)
         neconvvelaf_(idim, jnode) =
-            Global::Problem::Instance()
-                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+            Global::Problem::instance()
+                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
                 .evaluate(jx, time, idim);
     }
 
-    if (pele->IsAle()) FOUR_C_THROW("is ALE for Oseen really reasonable");
+    if (pele->is_ale()) FOUR_C_THROW("is ALE for Oseen really reasonable");
   }
-  else if (fldintfacepara.PhysicalType() == Inpar::FLUID::stokes)
+  else if (fldintfacepara.physical_type() == Inpar::FLUID::stokes)
   {
     peconvvelaf_.clear();
     neconvvelaf_.clear();
 
     // zero convective terms
-    if (pele->IsAle()) FOUR_C_THROW("is ALE for Stokes really reasonable");
+    if (pele->is_ale()) FOUR_C_THROW("is ALE for Stokes really reasonable");
   }
   else
     FOUR_C_THROW("physical type for face-oriented stabilizations not supported so far");
@@ -891,14 +891,14 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // compute element length w.r.t patch of master and slave parent element
 
   // compute the element length w.r.t master and slave element
-  compute_patch_hk(pele, nele, intface, fldintfacepara.EOS_element_length());
+  compute_patch_hk(pele, nele, intface, fldintfacepara.eos_element_length());
 
 
   //--------------------------------------------------
   // compute velocity norm patch of master and slave parent element
   double max_vel_L2_norm = 0.0;
 
-  if (fldintfacepara.PhysicalType() != Inpar::FLUID::stokes)
+  if (fldintfacepara.physical_type() != Inpar::FLUID::stokes)
   {
     // get the L_inf-norm of the parent's element velocity for stabilization
     max_vel_L2_norm = std::max(peconvvelaf_.norm_inf(), neconvvelaf_.norm_inf());
@@ -918,7 +918,7 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // local coordinates of the face nodes w.r.t slave side
   Core::LinAlg::Matrix<facensd_, iel> local_slave_coordiantes_trafo(true);
 
-  const std::vector<int>& localtrafomap = intface->GetLocalTrafoMap();
+  const std::vector<int>& localtrafomap = intface->get_local_trafo_map();
 
 
   for (int i = 0; i < iel; i++)
@@ -968,7 +968,7 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
 
     // Gaussian point in face's element's local coordinates w.r.t master element
-    const double* gpcoord = intpoints_->Point(q);
+    const double* gpcoord = intpoints_->point(q);
     for (int idim = 0; idim < facensd_; idim++)
     {
       face_xi_points_master_(q, idim) = gpcoord[idim];
@@ -994,21 +994,21 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   {
     // get the local gp coordinates w.r.t parent (master) element
     Core::FE::BoundaryGPToParentGP3(
-        p_xi_points_, face_xi_points_master_, pdistype, distype, intface->FaceMasterNumber());
+        p_xi_points_, face_xi_points_master_, pdistype, distype, intface->face_master_number());
 
     // get the local gp coordinates w.r.t parent (master) element
     Core::FE::BoundaryGPToParentGP3(
-        n_xi_points_, face_xi_points_slave_, ndistype, distype, intface->FaceSlaveNumber());
+        n_xi_points_, face_xi_points_slave_, ndistype, distype, intface->face_slave_number());
   }
   else if (nsd_ == 2)
   {
     // get the local gp coordinates w.r.t parent (master) element
     Core::FE::BoundaryGPToParentGP2(
-        p_xi_points_, face_xi_points_master_, pdistype, distype, intface->FaceMasterNumber());
+        p_xi_points_, face_xi_points_master_, pdistype, distype, intface->face_master_number());
 
     // get the local gp coordinates w.r.t neighbor (slave) element
     Core::FE::BoundaryGPToParentGP2(
-        n_xi_points_, face_xi_points_slave_, ndistype, distype, intface->FaceSlaveNumber());
+        n_xi_points_, face_xi_points_slave_, ndistype, distype, intface->face_slave_number());
   }
   else
     FOUR_C_THROW("invalid nsd");
@@ -1062,14 +1062,14 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
     //-----------------------------------------------------
     // evaluate the shape functions at the integration point
-    const double fac = eval_shape_func_and_derivs_at_int_point(intpoints_->Weight(iquad),
-        face_xi_gp_, p_xi_gp_, n_xi_gp_, pele->Id(), nele->Id(), use2ndderiv);
+    const double fac = eval_shape_func_and_derivs_at_int_point(intpoints_->weight(iquad),
+        face_xi_gp_, p_xi_gp_, n_xi_gp_, pele->id(), nele->id(), use2ndderiv);
 
 
     //-----------------------------------------------------
     // get velocity and pressure and derivatives at integration point
 
-    eval_vel_pres_and_derivs_at_int_point(use2ndderiv, pele->IsAle());
+    eval_vel_pres_and_derivs_at_int_point(use2ndderiv, pele->is_ale());
 
     //-----------------------------------------------------
     vderxyaf_diff_.update(1.0, nvderxyaf_, -1.0, pvderxyaf_, 0.0);
@@ -1084,10 +1084,10 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
     //-----------------------------------------------------
     // get the stabilization parameters
-    set_convective_velint(fldintfacepara, pele->IsAle());
+    set_convective_velint(fldintfacepara, pele->is_ale());
 
     compute_stabilization_params(ghost_penalty_reconstruct, use2ndderiv,
-        fldintfacepara.EOS_WhichTau(), EOS_conv_stream, EOS_conv_cross, EOS_div_vel_jump,
+        fldintfacepara.eos_which_tau(), EOS_conv_stream, EOS_conv_cross, EOS_div_vel_jump,
         max_vel_L2_norm, timefac, GP_visc_fac, GP_trans_fac, GP_u_2nd_fac, GP_p_2nd_fac);
 
 
@@ -1119,8 +1119,8 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
       // assemble special pressure least-squares condition for pseudo 2D examples where pressure
       // level is determined via Krylov-projection
-      if (fldintfacepara.presKrylov2Dz() and
-          fldintfacepara.EOS_Pres() == Inpar::FLUID::EOS_PRES_std_eos)
+      if (fldintfacepara.pres_krylov2_dz() and
+          fldintfacepara.eos_pres() == Inpar::FLUID::EOS_PRES_std_eos)
       {
         pressure_krylov2_dz(tau_timefacfac_pre, tau_timefacfac_rhs);
       }
@@ -1396,11 +1396,11 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::g
 
     peprenp_(i) = mypvelnp[nsd_ + fi];
 
-    for (int j = 0; j < nsd_; ++j) pxyze_(j, i) = master_ele->Nodes()[i]->X()[j];
+    for (int j = 0; j < nsd_; ++j) pxyze_(j, i) = master_ele->nodes()[i]->x()[j];
   }
 
   // ALE-specific
-  if (master_ele->IsAle())
+  if (master_ele->is_ale())
   {
     // parent element displacements and grid-velocity
     for (int i = 0; i < piel; ++i)
@@ -1455,11 +1455,11 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::g
     neprenp_(i) = mynvelnp[nsd_ + fi];
 
     // extract node coords
-    for (int j = 0; j < nsd_; ++j) nxyze_(j, i) = slave_ele->Nodes()[i]->X()[j];
+    for (int j = 0; j < nsd_; ++j) nxyze_(j, i) = slave_ele->nodes()[i]->x()[j];
   }
 
   // ALE-specific
-  if (slave_ele->IsAle())
+  if (slave_ele->is_ale())
   {
     // slave element displacements and grid-velocity
     for (int i = 0; i < niel; ++i)
@@ -1490,31 +1490,31 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::g
   //          GET MATERIAL DATA
   //--------------------------------------------------
   reacoeff_ = 0.0;
-  if (material->MaterialType() == Core::Materials::m_fluid)
+  if (material->material_type() == Core::Materials::m_fluid)
   {
     const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(material.get());
     // we need the kinematic viscosity (nu ~ m^2/s) here
-    kinvisc_ = actmat->Viscosity() / actmat->Density();
-    density_ = actmat->Density();
+    kinvisc_ = actmat->viscosity() / actmat->density();
+    density_ = actmat->density();
   }
-  else if (material->MaterialType() == Core::Materials::m_fluidporo)
+  else if (material->material_type() == Core::Materials::m_fluidporo)
   {
     const Mat::FluidPoro* actmat = static_cast<const Mat::FluidPoro*>(material.get());
     // we need the kinematic viscosity (nu ~ m^2/s) here
-    kinvisc_ = actmat->Viscosity() / actmat->Density();
-    density_ = actmat->Density();
+    kinvisc_ = actmat->viscosity() / actmat->density();
+    density_ = actmat->density();
 
 
     // calculate reaction coefficient
     reacoeff_ = actmat->compute_reaction_coeff() *
-                dynamic_cast<Mat::PAR::FluidPoro*>(actmat->Parameter())->initial_porosity_;
+                dynamic_cast<Mat::PAR::FluidPoro*>(actmat->parameter())->initial_porosity_;
   }
-  else if (material->MaterialType() == Core::Materials::m_matlist)
+  else if (material->material_type() == Core::Materials::m_matlist)
   {
     // get material list for this element
     const Mat::MatList* matlist = static_cast<const Mat::MatList*>(material.get());
 
-    int numofmaterials = matlist->NumMat();
+    int numofmaterials = matlist->num_mat();
 
     // Error messages
     if (numofmaterials > 2)
@@ -1530,10 +1530,10 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::g
     {
       // set default id in list of materials
       int matid = -1;
-      matid = matlist->MatID(nmaterial);
+      matid = matlist->mat_id(nmaterial);
 
-      Teuchos::RCP<const Core::Mat::Material> matptr = matlist->MaterialById(matid);
-      Core::Materials::MaterialType mattype = matptr->MaterialType();
+      Teuchos::RCP<const Core::Mat::Material> matptr = matlist->material_by_id(matid);
+      Core::Materials::MaterialType mattype = matptr->material_type();
 
       // choose from different materials
       switch (mattype)
@@ -1544,9 +1544,9 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::g
         case Core::Materials::m_fluid:
         {
           const Mat::NewtonianFluid* mat = static_cast<const Mat::NewtonianFluid*>(matptr.get());
-          density[nmaterial] = mat->Density();
-          viscosity[nmaterial] = mat->Viscosity();
-          gamma_vector[nmaterial] = mat->Gamma();
+          density[nmaterial] = mat->density();
+          viscosity[nmaterial] = mat->viscosity();
+          gamma_vector[nmaterial] = mat->gamma();
           break;
         }
         //------------------------------------------------
@@ -1581,10 +1581,10 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::g
   // extract node coords
   for (int i = 0; i < iel; ++i)
   {
-    for (int j = 0; j < nsd_; ++j) xyze_(j, i) = surfele->Nodes()[i]->X()[j];
+    for (int j = 0; j < nsd_; ++j) xyze_(j, i) = surfele->nodes()[i]->x()[j];
   }
 
-  if (surfele->ParentMasterElement()->IsAle())
+  if (surfele->parent_master_element()->is_ale())
   {
     for (int i = 0; i < iel; ++i)
     {
@@ -2012,10 +2012,10 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
 
   // gaussian weight
-  const double wquad = iquad.Weight();
+  const double wquad = iquad.weight();
 
   // gaussian point in boundary elements local coordinates
-  const double* gpcoord = iquad.Point();
+  const double* gpcoord = iquad.point();
   for (int idim = 0; idim < facensd_; idim++)
   {
     xsi_(idim) = gpcoord[idim];
@@ -2205,7 +2205,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     const bool isale)
 {
   // get convective velocity at integration point
-  switch (fldintfacepara.PhysicalType())
+  switch (fldintfacepara.physical_type())
   {
     case Inpar::FLUID::incompressible:
     case Inpar::FLUID::artcomp:
@@ -2981,7 +2981,7 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   {
     //----------------------------------------------
     // loop surface of master element
-    for (int p_surf = 0; p_surf < master->NumSurface(); p_surf++)
+    for (int p_surf = 0; p_surf < master->num_surface(); p_surf++)
     {
       unsigned int nnode_psurf =
           m_connectivity_[p_surf].size();  // this number changes for pyramids or wedges
@@ -3016,7 +3016,7 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
     //----------------------------------------------
     // loop surfaces of slave element
-    for (int p_surf = 0; p_surf < slave->NumSurface(); p_surf++)
+    for (int p_surf = 0; p_surf < slave->num_surface(); p_surf++)
     {
       unsigned int nnode_psurf =
           s_connectivity_[p_surf].size();  // this number changes for pyramids or wedges
@@ -3054,7 +3054,7 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   {
     //----------------------------------------------
     // loop lines of master element
-    for (int p_line = 0; p_line < master->NumLine(); p_line++)
+    for (int p_line = 0; p_line < master->num_line(); p_line++)
     {
       unsigned int nnode_pline =
           m_connectivity_[p_line].size();  // this number changes for pyramids or wedges
@@ -3080,7 +3080,7 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
     //----------------------------------------------
     // loop lines of slave element
-    for (int p_line = 0; p_line < slave->NumLine(); p_line++)
+    for (int p_line = 0; p_line < slave->num_line(); p_line++)
     {
       unsigned int nnode_pline =
           s_connectivity_[p_line].size();  // this number changes for pyramids or wedges
@@ -3128,8 +3128,8 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   double patch_hk = 0.0;
 
   // do not consider the face/line itself
-  const int side_id_master = intface->FaceMasterNumber();
-  const int side_id_slave = intface->FaceSlaveNumber();
+  const int side_id_master = intface->face_master_number();
+  const int side_id_slave = intface->face_slave_number();
 
   if (nsd_ == 3)
   {
@@ -3144,7 +3144,7 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
     //----------------------------------------------
     // loop surface of master element
-    for (int p_surf = 0; p_surf < master->NumSurface(); p_surf++)
+    for (int p_surf = 0; p_surf < master->num_surface(); p_surf++)
     {
       // exclude the faces/lines itself as well as its opposite sides (for hexahedral elements)
       if (p_surf == side_id_master or p_surf == opposite_side_id_master) continue;
@@ -3182,7 +3182,7 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
     //----------------------------------------------
     // loop surfaces of slave element
-    for (int p_surf = 0; p_surf < slave->NumSurface(); p_surf++)
+    for (int p_surf = 0; p_surf < slave->num_surface(); p_surf++)
     {
       // exclude the faces/lines itself as well as its opposite sides (for hexahedral elements)
       if (p_surf == side_id_slave or p_surf == opposite_side_id_slave) continue;
@@ -3233,7 +3233,7 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
     //----------------------------------------------
     // loop lines of master element
-    for (int p_line = 0; p_line < master->NumLine(); p_line++)
+    for (int p_line = 0; p_line < master->num_line(); p_line++)
     {
       // exclude the faces/lines itself as well as its opposite sides (for quadrilateral elements)
       if (p_line == side_id_master or p_line == opposite_line_id_master) continue;
@@ -3262,7 +3262,7 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
     //----------------------------------------------
     // loop lines of slave element
-    for (int p_line = 0; p_line < slave->NumLine(); p_line++)
+    for (int p_line = 0; p_line < slave->num_line(); p_line++)
     {
       // exclude the faces/lines itself as well as its opposite sides (for quadrilateral elements)
       if (p_line == side_id_slave or p_line == opposite_line_id_slave) continue;
@@ -3309,7 +3309,7 @@ Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::comput
 {
   if (nsd_ == 3)
   {
-    const int side_id_master = intface->FaceMasterNumber();
+    const int side_id_master = intface->face_master_number();
 
     unsigned int nnode_psurf =
         m_connectivity_[side_id_master].size();  // this number changes for pyramids or wedges
@@ -3342,7 +3342,7 @@ Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::comput
   }
   else if (nsd_ == 2)
   {
-    const int line_id_master = intface->FaceMasterNumber();
+    const int line_id_master = intface->face_master_number();
 
     unsigned int nnode_pline =
         m_connectivity_[line_id_master].size();  // this number changes for pyramids or wedges
@@ -3381,8 +3381,8 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     Discret::ELEMENTS::FluidIntFace* intface                     ///< intface element
 )
 {
-  const int side_id_master = intface->FaceMasterNumber();
-  const int side_id_slave = intface->FaceSlaveNumber();
+  const int side_id_master = intface->face_master_number();
+  const int side_id_slave = intface->face_slave_number();
 
   // determine the opposite side to the internal face for master and slave parent element
   int opposite_side_id_master = find_opposite_surface(pdistype, side_id_master);

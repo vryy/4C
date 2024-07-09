@@ -25,42 +25,42 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidIntFaceImplInterface* Discret::ELEMENTS::FluidIntFaceImplInterface::Impl(
+Discret::ELEMENTS::FluidIntFaceImplInterface* Discret::ELEMENTS::FluidIntFaceImplInterface::impl(
     const Core::Elements::Element* ele)
 {
-  switch (ele->Shape())
+  switch (ele->shape())
   {
     case Core::FE::CellType::quad4:
     {
-      return FluidIntFaceImpl<Core::FE::CellType::quad4>::Instance();
+      return FluidIntFaceImpl<Core::FE::CellType::quad4>::instance();
     }
     case Core::FE::CellType::quad8:
     {
-      return FluidIntFaceImpl<Core::FE::CellType::quad8>::Instance();
+      return FluidIntFaceImpl<Core::FE::CellType::quad8>::instance();
     }
     case Core::FE::CellType::quad9:
     {
-      return FluidIntFaceImpl<Core::FE::CellType::quad9>::Instance();
+      return FluidIntFaceImpl<Core::FE::CellType::quad9>::instance();
     }
     case Core::FE::CellType::tri3:
     {
-      return FluidIntFaceImpl<Core::FE::CellType::tri3>::Instance();
+      return FluidIntFaceImpl<Core::FE::CellType::tri3>::instance();
     }
     case Core::FE::CellType::tri6:
     {
-      return FluidIntFaceImpl<Core::FE::CellType::tri6>::Instance();
+      return FluidIntFaceImpl<Core::FE::CellType::tri6>::instance();
     }
     case Core::FE::CellType::line2:
     {
-      return FluidIntFaceImpl<Core::FE::CellType::line2>::Instance();
+      return FluidIntFaceImpl<Core::FE::CellType::line2>::instance();
     }
     case Core::FE::CellType::line3:
     {
-      return FluidIntFaceImpl<Core::FE::CellType::line3>::Instance();
+      return FluidIntFaceImpl<Core::FE::CellType::line3>::instance();
     }
     default:
       FOUR_C_THROW(
-          "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->num_node());
+          "Element shape %d (%d nodes) not activated. Just do it.", ele->shape(), ele->num_node());
       break;
   }
   return nullptr;
@@ -68,7 +68,7 @@ Discret::ELEMENTS::FluidIntFaceImplInterface* Discret::ELEMENTS::FluidIntFaceImp
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidIntFaceImpl<distype>*
-Discret::ELEMENTS::FluidIntFaceImpl<distype>::Instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::FluidIntFaceImpl<distype>::instance(Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
@@ -77,7 +77,7 @@ Discret::ELEMENTS::FluidIntFaceImpl<distype>::Instance(Core::UTILS::SingletonAct
             new Discret::ELEMENTS::FluidIntFaceImpl<distype>());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 
@@ -87,9 +87,9 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidIntFaceImpl<distype>::FluidIntFaceImpl()
 {
   // pointer to class FluidImplParameterTimInt (access to the time-integration parameter)
-  fldparatimint_ = Discret::ELEMENTS::FluidEleParameterTimInt::Instance();
+  fldparatimint_ = Discret::ELEMENTS::FluidEleParameterTimInt::instance();
   // pointer to class FluidEleParameterIntFace (access to the faces specific parameter)
-  fldpara_intface_ = Discret::ELEMENTS::FluidEleParameterIntFace::Instance();
+  fldpara_intface_ = Discret::ELEMENTS::FluidEleParameterIntFace::instance();
 
   return;
 }
@@ -119,8 +119,8 @@ void Discret::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using
   // do not assemble if no stabilization terms activated for this face
   if (!stab_required) return;
 
-  if (!discretization.Filled()) FOUR_C_THROW("fill_complete() was not called");
-  if (!discretization.HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
+  if (!discretization.filled()) FOUR_C_THROW("fill_complete() was not called");
+  if (!discretization.have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   const bool assemblemat = systemmatrix != Teuchos::null;
   const bool assemblevec = systemvector != Teuchos::null;
@@ -142,8 +142,8 @@ void Discret::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using
 
   //----------------------- create patchlm -----------------
 
-  const int numnode_master = intface->ParentMasterElement()->num_node();
-  const int numnode_slave = intface->ParentSlaveElement()->num_node();
+  const int numnode_master = intface->parent_master_element()->num_node();
+  const int numnode_slave = intface->parent_slave_element()->num_node();
   const int numnode_face = intface->num_node();
 
   const int numnodeinpatch = numnode_master + numnode_slave - numnode_face;
@@ -168,7 +168,7 @@ void Discret::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using
 
 
   // create patch location vector combining master element, slave element and face element
-  intface->PatchLocationVector(discretization, nds_master, nds_slave, lm_patch,
+  intface->patch_location_vector(discretization, nds_master, nds_slave, lm_patch,
       // lm_master, lm_slave, lm_face,
       lm_masterToPatch, lm_slaveToPatch, lm_faceToPatch, lm_masterNodeToPatch, lm_slaveNodeToPatch,
       pbcconnectivity);
@@ -186,7 +186,7 @@ void Discret::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using
   }
 
   // modify the patch owner to the owner of the internal face element
-  const int owner = intface->Owner();
+  const int owner = intface->owner();
   std::vector<int> patchlm_owner(lm_patch.size(), owner);
 
   for (unsigned i = 0; i < lm_patch.size(); i++)
@@ -214,7 +214,7 @@ void Discret::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using
   // p-block separated pattern = "full matrix pattern";                      // assembles the whole
   // u-p matrix
 
-  Inpar::FLUID::EosGpPattern eos_gp_pattern = fldpara_intface_->Face_EOS_GP_Pattern();
+  Inpar::FLUID::EosGpPattern eos_gp_pattern = fldpara_intface_->face_eos_gp_pattern();
 
 
   int numblocks = 0;
@@ -285,7 +285,7 @@ void Discret::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using
       {
         for (int ij = 0; ij < numdofpernode; ij++)
         {
-          systemmatrix->FEAssemble(elemat_blocks[ij], patch_components_lm[ij],
+          systemmatrix->fe_assemble(elemat_blocks[ij], patch_components_lm[ij],
               patch_components_lmowner[ij], patch_components_lm[ij]);
         }
       }
@@ -295,11 +295,11 @@ void Discret::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using
         {
           for (int j = 0; j < nsd; j++)
           {
-            systemmatrix->FEAssemble(elemat_blocks[i * nsd + j], patch_components_lm[i],
+            systemmatrix->fe_assemble(elemat_blocks[i * nsd + j], patch_components_lm[i],
                 patch_components_lmowner[i], patch_components_lm[j]);
           }
         }
-        systemmatrix->FEAssemble(elemat_blocks[nsd * nsd], patch_components_lm[nsd],
+        systemmatrix->fe_assemble(elemat_blocks[nsd * nsd], patch_components_lm[nsd],
             patch_components_lmowner[nsd], patch_components_lm[nsd]);
       }
       else if (eos_gp_pattern == Inpar::FLUID::EOS_GP_Pattern_full)
@@ -308,7 +308,7 @@ void Discret::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using
         {
           for (int j = 0; j < numdofpernode; j++)
           {
-            systemmatrix->FEAssemble(elemat_blocks[i * numdofpernode + j], patch_components_lm[i],
+            systemmatrix->fe_assemble(elemat_blocks[i * numdofpernode + j], patch_components_lm[i],
                 patch_components_lmowner[i], patch_components_lm[j]);
           }
         }
@@ -366,7 +366,7 @@ int Discret::ELEMENTS::FluidIntFaceImpl<distype>::evaluate_internal_faces(
   {
     case FLD::EOS_and_GhostPenalty_stabilization:
     {
-      return Discret::ELEMENTS::FluidIntFaceStab::Impl(intface)->evaluate_edge_based_stabilization(
+      return Discret::ELEMENTS::FluidIntFaceStab::impl(intface)->evaluate_edge_based_stabilization(
           intface, material, *fldparatimint_, *fldpara_intface_, params, discretization, patchlm,
           lm_masterToPatch, lm_slaveToPatch, lm_faceToPatch, lm_masterNodeToPatch,
           lm_slaveNodeToPatch, elemat_blocks, elevec_blocks);

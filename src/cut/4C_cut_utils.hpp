@@ -359,15 +359,15 @@ namespace Core::Geo
     template <class T1, class T2>
     void FixMatrixShape(const T1& wrong_shape, T2& correct_shape)
     {
-      if (static_cast<unsigned>(wrong_shape.numRows()) <
-              static_cast<unsigned>(correct_shape.numRows()) or
-          static_cast<unsigned>(wrong_shape.numCols()) <
-              static_cast<unsigned>(correct_shape.numCols()))
+      if (static_cast<unsigned>(wrong_shape.num_rows()) <
+              static_cast<unsigned>(correct_shape.num_rows()) or
+          static_cast<unsigned>(wrong_shape.num_cols()) <
+              static_cast<unsigned>(correct_shape.num_cols()))
         FOUR_C_THROW("Shape fixing is not possible!");
 
-      for (unsigned c = 0; c < static_cast<unsigned>(correct_shape.numCols()); ++c)
-        std::copy(
-            &wrong_shape(0, c), &wrong_shape(0, c) + correct_shape.numRows(), &correct_shape(0, c));
+      for (unsigned c = 0; c < static_cast<unsigned>(correct_shape.num_cols()); ++c)
+        std::copy(&wrong_shape(0, c), &wrong_shape(0, c) + correct_shape.num_rows(),
+            &correct_shape(0, c));
     }
 
     /*--------------------------------------------------------------------------*/

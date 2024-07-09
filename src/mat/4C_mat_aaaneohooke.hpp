@@ -57,7 +57,7 @@ namespace Mat
         last = density
       };
 
-      double GetParameter(int parametername, const int EleId)
+      double get_parameter(int parametername, const int EleId)
       {
         // check if we have an element based value via size
         if (matparams_[parametername]->GlobalLength() == 1)
@@ -89,11 +89,11 @@ namespace Mat
   class AAAneohookeType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "AAAneohookeType"; }
+    std::string name() const override { return "AAAneohookeType"; }
 
-    static AAAneohookeType& Instance() { return instance_; };
+    static AAAneohookeType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static AAAneohookeType instance_;
@@ -111,7 +111,7 @@ namespace Mat
     AAAneohooke(Mat::PAR::AAAneohooke* params);
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Inpar::Solid::KinemType kinem) override
     {
       if (!(kinem == Inpar::Solid::KinemType::nonlinearTotLag))
         FOUR_C_THROW("element and material kinematics are not compatible");
@@ -125,9 +125,9 @@ namespace Mat
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return AAAneohookeType::Instance().UniqueParObjectId();
+      return AAAneohookeType::instance().unique_par_object_id();
     }
 
     /*!
@@ -135,7 +135,7 @@ namespace Mat
 
       Resizes the vector data and stores all information of a class in it.
       The first information to be stored in data has to be the
-      unique parobject id delivered by UniqueParObjectId() which will then
+      unique parobject id delivered by unique_par_object_id() which will then
       identify the exact class on the receiving processor.
 
       \param data (in/out): char vector to store class information
@@ -149,7 +149,7 @@ namespace Mat
       exact copy of an instance of a class on a different processor.
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
-      UniqueParObjectId().
+      unique_par_object_id().
 
       \param data (in) : vector storing all data to be unpacked into this
       instance.
@@ -160,24 +160,24 @@ namespace Mat
 
     /// material mass density
     // virtual double Density() const { return params_->GetDensity(); }
-    double Density() const override { return params_->GetParameter(params_->density, -1); }
+    double density() const override { return params_->get_parameter(params_->density, -1); }
 
     /// shear modulus
     // double shear_mod() const { return 0.5*params_->GetYoungs(-1)/(1.0+params_->GetNue()); }
     double shear_mod() const
     {
-      return 0.5 * params_->GetParameter(params_->young, -1) /
-             (1.0 + params_->GetParameter(params_->nue, -1));
+      return 0.5 * params_->get_parameter(params_->young, -1) /
+             (1.0 + params_->get_parameter(params_->nue, -1));
     }
 
     // material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_aaaneohooke;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new AAAneohooke(*this));
     }
@@ -189,17 +189,17 @@ namespace Mat
         const int eleGID) override;
 
     /// evaluate strain energy function
-    void StrainEnergy(const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp,
+    void strain_energy(const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp,
         const int eleGID) override;
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     /// Return names of visualization data
-    void VisNames(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) override;
 
     /// Return visualization data
-    bool VisData(
+    bool vis_data(
         const std::string& name, std::vector<double>& data, int numgp, int eleGID) override;
 
    private:

@@ -46,7 +46,7 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static ScaTraEleCalcPoro<distype>* Instance(
+      static ScaTraEleCalcPoro<distype>* instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
       /// Evaluate the element
@@ -206,9 +206,9 @@ namespace Discret
         return;
       }
 
-      void SetPorosity(double porosity) { porosity_ = porosity; }
+      void set_porosity(double porosity) { porosity_ = porosity; }
 
-      double GetPorosity(const int k) const
+      double get_porosity(const int k) const
       {
         //      if(k<NO_CONVECTION_NR)
         return porosity_;
@@ -243,7 +243,7 @@ namespace Discret
       /*========================================================================*/
 
       //! return convective velocity
-      virtual const Core::LinAlg::Matrix<nsd, 1>& ConVel(const int k) const {
+      virtual const Core::LinAlg::Matrix<nsd, 1>& con_vel(const int k) const {
           //    if(k<NO_CONVECTION_NR)
           {return my::convelint_;
     }
@@ -251,7 +251,7 @@ namespace Discret
     //      return zeroconvel_;
   };  // namespace ELEMENTS
   //! return convective part in convective form
-  virtual const Core::LinAlg::Matrix<nen, 1>& Conv(const int k) const
+  virtual const Core::LinAlg::Matrix<nen, 1>& conv(const int k) const
   {  //    if(k<NO_CONVECTION_NR)
     {
       return my::conv_;
@@ -261,7 +261,7 @@ namespace Discret
   }
 
   //! return convective term of current scalar value
-  virtual const double& ConvPhi(const int k) const
+  virtual const double& conv_phi(const int k) const
   {  //    if(k<NO_CONVECTION_NR)
     {
       return my::conv_phi_[k];

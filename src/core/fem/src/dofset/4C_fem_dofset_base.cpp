@@ -39,7 +39,7 @@ Core::DOFSets::DofSetBase::~DofSetBase()
   for (std::list<DofSetInterface*>::iterator i = registered_dofsets_.begin();
        i != registered_dofsets_.end(); ++i)
   {
-    (*i)->Disconnect(this);
+    (*i)->disconnect(this);
   }
   // remove dofset from static list if necessary
   static_dofsets_.remove(this);
@@ -49,7 +49,7 @@ Core::DOFSets::DofSetBase::~DofSetBase()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetBase::AddDofSettoList()
+void Core::DOFSets::DofSetBase::add_dof_setto_list()
 {
   if (std::find(static_dofsets_.begin(), static_dofsets_.end(), this) == static_dofsets_.end())
   {
@@ -80,7 +80,7 @@ void Core::DOFSets::DofSetBase::replace_in_static_dofsets(Teuchos::RCP<DofSetInt
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::DOFSets::DofSetBase::MaxGIDinList(const Epetra_Comm& comm) const
+int Core::DOFSets::DofSetBase::max_gi_din_list(const Epetra_Comm& comm) const
 {
   int count = -1;
   for (std::list<DofSetInterface*>::const_iterator i = static_dofsets_.begin();
@@ -89,9 +89,9 @@ int Core::DOFSets::DofSetBase::MaxGIDinList(const Epetra_Comm& comm) const
     if (*i == this) break;
 
     // ignore empty (no yet initialized) dof row maps
-    if ((*i)->Initialized())
+    if ((*i)->initialized())
     {
-      count = std::max((*i)->MaxAllGID(), count);
+      count = std::max((*i)->max_all_gid(), count);
     }
   }
   int max;
@@ -99,7 +99,7 @@ int Core::DOFSets::DofSetBase::MaxGIDinList(const Epetra_Comm& comm) const
   return max;
 }
 
-void Core::DOFSets::DofSetBase::PrintAllDofsets(const Epetra_Comm& comm) const
+void Core::DOFSets::DofSetBase::print_all_dofsets(const Epetra_Comm& comm) const
 {
   if (comm.MyPID() == 0)
   {
@@ -108,8 +108,8 @@ void Core::DOFSets::DofSetBase::PrintAllDofsets(const Epetra_Comm& comm) const
     for (std::list<DofSetInterface*>::const_iterator i = static_dofsets_.begin();
          i != static_dofsets_.end(); ++i)
     {
-      min.push_back((*i)->MinAllGID());
-      max.push_back((*i)->MaxAllGID());
+      min.push_back((*i)->min_all_gid());
+      max.push_back((*i)->max_all_gid());
     }
     if (min.size() < 1) return;
 
@@ -178,7 +178,7 @@ void Core::DOFSets::DofSetBase::PrintAllDofsets(const Epetra_Comm& comm) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetBase::Register(DofSetInterface* dofset)
+void Core::DOFSets::DofSetBase::register_proxy(DofSetInterface* dofset)
 {
   registered_dofsets_.push_back(dofset);
 }
@@ -186,7 +186,7 @@ void Core::DOFSets::DofSetBase::Register(DofSetInterface* dofset)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetBase::Unregister(DofSetInterface* dofset)
+void Core::DOFSets::DofSetBase::unregister(DofSetInterface* dofset)
 {
   registered_dofsets_.remove(dofset);
 }
@@ -194,21 +194,21 @@ void Core::DOFSets::DofSetBase::Unregister(DofSetInterface* dofset)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetBase::NotifyAssigned()
+void Core::DOFSets::DofSetBase::notify_assigned()
 {
   for (std::list<DofSetInterface*>::iterator i = registered_dofsets_.begin();
        i != registered_dofsets_.end(); ++i)
-    (*i)->NotifyAssigned();
+    (*i)->notify_assigned();
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetBase::NotifyReset()
+void Core::DOFSets::DofSetBase::notify_reset()
 {
   for (std::list<DofSetInterface*>::iterator i = registered_dofsets_.begin();
        i != registered_dofsets_.end(); ++i)
-    (*i)->NotifyReset();
+    (*i)->notify_reset();
 }
 
 /*----------------------------------------------------------------------*

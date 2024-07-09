@@ -23,12 +23,12 @@ FOUR_C_NAMESPACE_OPEN
 Discret::ELEMENTS::SoPyramid5fbarType Discret::ELEMENTS::SoPyramid5fbarType::instance_;
 
 
-Discret::ELEMENTS::SoPyramid5fbarType& Discret::ELEMENTS::SoPyramid5fbarType::Instance()
+Discret::ELEMENTS::SoPyramid5fbarType& Discret::ELEMENTS::SoPyramid5fbarType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoPyramid5fbarType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::SoPyramid5fbarType::create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoPyramid5fbar(-1, -1);
@@ -37,7 +37,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoPyramid5fbarType::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoPyramid5fbarType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoPyramid5fbarType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -50,7 +50,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoPyramid5fbarType::Cre
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoPyramid5fbarType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoPyramid5fbarType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -68,7 +68,7 @@ void Discret::ELEMENTS::SoPyramid5fbarType::nodal_block_information(
   np = 0;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoPyramid5fbarType::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoPyramid5fbarType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
@@ -102,11 +102,11 @@ Discret::ELEMENTS::SoPyramid5fbar::SoPyramid5fbar(int id, int owner)
     : Discret::ELEMENTS::SoPyramid5(id, owner)
 {
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      Global::Problem::Instance()->getParameterList();
+      Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
     Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+        Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
   if (Prestress::IsMulf(pstype_))
@@ -128,7 +128,7 @@ Discret::ELEMENTS::SoPyramid5fbar::SoPyramid5fbar(const Discret::ELEMENTS::SoPyr
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                          seitz 03/15 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoPyramid5fbar::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SoPyramid5fbar::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::SoPyramid5fbar(*this);
   return newelement;
@@ -143,7 +143,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::pack(Core::Communication::PackBuffer& da
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class So_pyramid5 Element
   Discret::ELEMENTS::SoPyramid5::pack(data);
@@ -159,7 +159,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class So_pyramid5 Element
   std::vector<char> basedata(0);

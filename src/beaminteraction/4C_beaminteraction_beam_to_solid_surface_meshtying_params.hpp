@@ -47,7 +47,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the coupling type for beam-to-surface coupling.
      */
-    inline Inpar::BeamToSolid::BeamToSolidSurfaceCoupling GetCouplingType() const
+    inline Inpar::BeamToSolid::BeamToSolidSurfaceCoupling get_coupling_type() const
     {
       return coupling_type_;
     }
@@ -55,7 +55,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns true if the coupling should be evaluated with FAD.
      */
-    inline bool GetIsFAD() const override
+    inline bool get_is_fad() const override
     {
       switch (coupling_type_)
       {
@@ -79,9 +79,9 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the order of the FAD type.
      */
-    inline int GetFADOrder() const override
+    inline int get_fad_order() const override
     {
-      if (GetIsFAD())
+      if (get_is_fad())
         return 2;
       else
         return 0;

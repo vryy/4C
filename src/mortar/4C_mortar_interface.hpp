@@ -162,190 +162,196 @@ namespace Mortar
     /// @name accessors
     /// @{
 
-    inline int& Id() { return id_; }
+    inline int& id() { return id_; }
 
-    inline int Id() const { return id_; }
+    inline int id() const { return id_; }
 
-    inline Teuchos::RCP<const Epetra_Comm>& CommPtr() { return comm_; }
+    inline Teuchos::RCP<const Epetra_Comm>& comm_ptr() { return comm_; }
 
-    inline const Epetra_Comm& Comm() const { return *comm_; }
+    inline const Epetra_Comm& get_comm() const { return *comm_; }
 
-    inline std::map<int, int>& ProcMap() { return procmap_; }
+    inline std::map<int, int>& proc_map() { return procmap_; }
 
-    inline const std::map<int, int>& ProcMap() const { return procmap_; }
+    inline const std::map<int, int>& proc_map() const { return procmap_; }
 
-    inline bool& IsRedistributed() { return redistributed_; }
+    inline bool& is_redistributed() { return redistributed_; }
 
-    inline bool IsRedistributed() const { return redistributed_; }
+    inline bool is_redistributed() const { return redistributed_; }
 
     inline Teuchos::RCP<Core::FE::Discretization>& i_discret() { return idiscret_; }
 
     inline Teuchos::RCP<const Core::FE::Discretization> i_discret() const { return idiscret_; }
 
-    inline int& Dim() { return dim_; }
+    inline int& n_dim() { return dim_; }
 
-    inline int Dim() const { return dim_; }
+    inline int n_dim() const { return dim_; }
 
-    inline Teuchos::ParameterList& IMortar() { return imortar_; }
+    inline Teuchos::ParameterList& i_mortar() { return imortar_; }
 
-    inline const Teuchos::ParameterList& IMortar() const { return imortar_; }
+    inline const Teuchos::ParameterList& i_mortar() const { return imortar_; }
 
-    inline enum Inpar::Mortar::ShapeFcn& ShapeFcn() { return shapefcn_; }
+    inline enum Inpar::Mortar::ShapeFcn& shape_fcn() { return shapefcn_; }
 
-    inline enum Inpar::Mortar::ShapeFcn ShapeFcn() const { return shapefcn_; }
+    inline enum Inpar::Mortar::ShapeFcn shape_fcn() const { return shapefcn_; }
 
-    inline bool& IsQuadSlave() { return quadslave_; }
+    inline bool& is_quad_slave() { return quadslave_; }
 
-    inline bool IsQuadSlave() const { return quadslave_; }
+    inline bool is_quad_slave() const { return quadslave_; }
 
-    inline const enum Inpar::Mortar::ExtendGhosting& GetExtendGhosting() const
+    inline const enum Inpar::Mortar::ExtendGhosting& get_extend_ghosting() const
     {
       return extendghosting_;
     }
 
-    inline void SetExtendGhosting(const enum Inpar::Mortar::ExtendGhosting& extendghosting)
+    inline void set_extend_ghosting(const enum Inpar::Mortar::ExtendGhosting& extendghosting)
     {
       extendghosting_ = extendghosting;
     }
 
-    inline Teuchos::RCP<Epetra_Map>& OldNodeColMap() { return oldnodecolmap_; }
+    inline Teuchos::RCP<Epetra_Map>& old_node_col_map() { return oldnodecolmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> OldNodeColMap() const { return oldnodecolmap_; }
+    inline Teuchos::RCP<const Epetra_Map> old_node_col_map() const { return oldnodecolmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& OldEleColMap() { return oldelecolmap_; }
+    inline Teuchos::RCP<Epetra_Map>& old_ele_col_map() { return oldelecolmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> OldEleColMap() const { return oldelecolmap_; }
+    inline Teuchos::RCP<const Epetra_Map> old_ele_col_map() const { return oldelecolmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SNodeRowMap() { return snoderowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& s_node_row_map() { return snoderowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SNodeRowMap() const { return snoderowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> s_node_row_map() const { return snoderowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SNodeColMap() { return snodecolmap_; }
+    inline Teuchos::RCP<Epetra_Map>& s_node_col_map() { return snodecolmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SNodeColMap() const { return snodecolmap_; }
+    inline Teuchos::RCP<const Epetra_Map> s_node_col_map() const { return snodecolmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& MNodeRowMap() { return mnoderowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& m_node_row_map() { return mnoderowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> MNodeRowMap() const { return mnoderowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> m_node_row_map() const { return mnoderowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& PSNodeRowMap() { return psnoderowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& ps_node_row_map() { return psnoderowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> PSNodeRowMap() const { return psnoderowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> ps_node_row_map() const { return psnoderowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& PMNodeRowMap() { return pmnoderowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& pm_node_row_map() { return pmnoderowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> PMNodeRowMap() const { return pmnoderowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> pm_node_row_map() const { return pmnoderowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& MNodeColMap() { return mnodecolmap_; }
+    inline Teuchos::RCP<Epetra_Map>& m_node_col_map() { return mnodecolmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> MNodeColMap() const { return mnodecolmap_; }
+    inline Teuchos::RCP<const Epetra_Map> m_node_col_map() const { return mnodecolmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SNodeRowMapBound() { return snoderowmapbound_; }
+    inline Teuchos::RCP<Epetra_Map>& s_node_row_map_bound() { return snoderowmapbound_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SNodeRowMapBound() const { return snoderowmapbound_; }
+    inline Teuchos::RCP<const Epetra_Map> s_node_row_map_bound() const { return snoderowmapbound_; }
 
 
-    inline Teuchos::RCP<Epetra_Map>& SNodeColMapBound() { return snodecolmapbound_; }
+    inline Teuchos::RCP<Epetra_Map>& s_node_col_map_bound() { return snodecolmapbound_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SNodeColMapBound() const { return snodecolmapbound_; }
+    inline Teuchos::RCP<const Epetra_Map> s_node_col_map_bound() const { return snodecolmapbound_; }
 
-    inline Teuchos::RCP<Epetra_Map>& MNodeRowMapNoBound() { return mnoderowmapnobound_; }
+    inline Teuchos::RCP<Epetra_Map>& m_node_row_map_no_bound() { return mnoderowmapnobound_; }
 
-    inline Teuchos::RCP<const Epetra_Map> MNodeRowMapNoBound() const { return mnoderowmapnobound_; }
+    inline Teuchos::RCP<const Epetra_Map> m_node_row_map_no_bound() const
+    {
+      return mnoderowmapnobound_;
+    }
 
-    inline Teuchos::RCP<Epetra_Map>& MNodeColMapNoBound() { return mnodecolmapnobound_; }
+    inline Teuchos::RCP<Epetra_Map>& m_node_col_map_no_bound() { return mnodecolmapnobound_; }
 
-    inline Teuchos::RCP<const Epetra_Map> MNodeColMapNoBound() const { return mnodecolmapnobound_; }
+    inline Teuchos::RCP<const Epetra_Map> m_node_col_map_no_bound() const
+    {
+      return mnodecolmapnobound_;
+    }
 
-    inline Teuchos::RCP<Epetra_Map>& SEleRowMap() { return selerowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& s_ele_row_map() { return selerowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SEleRowMap() const { return selerowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> s_ele_row_map() const { return selerowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SEleColMap() { return selecolmap_; }
+    inline Teuchos::RCP<Epetra_Map>& s_ele_col_map() { return selecolmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SEleColMap() const { return selecolmap_; }
+    inline Teuchos::RCP<const Epetra_Map> s_ele_col_map() const { return selecolmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& MEleRowMap() { return melerowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& m_ele_row_map() { return melerowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> MEleRowMap() const { return melerowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> m_ele_row_map() const { return melerowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& MEleColMap() { return melecolmap_; }
+    inline Teuchos::RCP<Epetra_Map>& m_ele_col_map() { return melecolmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> MEleColMap() const { return melecolmap_; }
+    inline Teuchos::RCP<const Epetra_Map> m_ele_col_map() const { return melecolmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SDofRowMap() { return sdofrowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& s_dof_row_map() { return sdofrowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SDofRowMap() const { return sdofrowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> s_dof_row_map() const { return sdofrowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SDofColMap() { return sdofcolmap_; }
+    inline Teuchos::RCP<Epetra_Map>& s_dof_col_map() { return sdofcolmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SDofColMap() const { return sdofcolmap_; }
+    inline Teuchos::RCP<const Epetra_Map> s_dof_col_map() const { return sdofcolmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& MDofRowMap() { return mdofrowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& m_dof_row_map() { return mdofrowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> MDofRowMap() const { return mdofrowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> m_dof_row_map() const { return mdofrowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& MDofColMap() { return mdofcolmap_; }
+    inline Teuchos::RCP<Epetra_Map>& m_dof_col_map() { return mdofcolmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> MDofColMap() const { return mdofcolmap_; }
+    inline Teuchos::RCP<const Epetra_Map> m_dof_col_map() const { return mdofcolmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& PSDofRowMap() { return psdofrowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& ps_dof_row_map() { return psdofrowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& PMDofRowMap() { return pmdofrowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& pm_dof_row_map() { return pmdofrowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> PMDofRowMap() const { return pmdofrowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> pm_dof_row_map() const { return pmdofrowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> PSDofRowMap() const { return psdofrowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> ps_dof_row_map() const { return psdofrowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& PLmDofRowMap() { return plmdofmap_; }
+    inline Teuchos::RCP<Epetra_Map>& p_lm_dof_row_map() { return plmdofmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> PLmDofRowMap() const { return plmdofmap_; }
+    inline Teuchos::RCP<const Epetra_Map> p_lm_dof_row_map() const { return plmdofmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& LmDofRowMap() { return lmdofmap_; }
+    inline Teuchos::RCP<Epetra_Map>& lm_dof_row_map() { return lmdofmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> LmDofRowMap() const { return lmdofmap_; }
+    inline Teuchos::RCP<const Epetra_Map> lm_dof_row_map() const { return lmdofmap_; }
 
-    inline int& MaxDofGlobal() { return maxdofglobal_; }
+    inline int& max_dof_global() { return maxdofglobal_; }
 
-    inline int MaxDofGlobal() const { return maxdofglobal_; }
+    inline int max_dof_global() const { return maxdofglobal_; }
 
-    inline Inpar::Mortar::SearchAlgorithm& SearchAlgorithm() { return searchalgo_; }
+    inline Inpar::Mortar::SearchAlgorithm& search_algorithm() { return searchalgo_; }
 
-    inline enum Inpar::Mortar::SearchAlgorithm SearchAlgorithm() const { return searchalgo_; }
+    inline enum Inpar::Mortar::SearchAlgorithm search_algorithm() const { return searchalgo_; }
 
-    inline Teuchos::RCP<Mortar::BinaryTree>& BinaryTree() { return binarytree_; }
+    inline Teuchos::RCP<Mortar::BinaryTree>& binary_tree() { return binarytree_; }
 
-    inline Teuchos::RCP<const Mortar::BinaryTree> BinaryTree() const { return binarytree_; }
+    inline Teuchos::RCP<const Mortar::BinaryTree> binary_tree() const { return binarytree_; }
 
-    inline double& SearchParam() { return searchparam_; }
+    inline double& search_param() { return searchparam_; }
 
-    inline double SearchParam() const { return searchparam_; }
+    inline double search_param() const { return searchparam_; }
 
-    inline bool& SearchUseAuxPos() { return searchuseauxpos_; }
+    inline bool& search_use_aux_pos() { return searchuseauxpos_; }
 
-    inline bool SearchUseAuxPos() const { return searchuseauxpos_; }
+    inline bool search_use_aux_pos() const { return searchuseauxpos_; }
 
-    inline double& IntTimeInterface() { return inttime_interface_; }
+    inline double& int_time_interface() { return inttime_interface_; }
 
-    inline double IntTimeInterface() const { return inttime_interface_; }
+    inline double int_time_interface() const { return inttime_interface_; }
 
-    inline bool& IsNurbs() { return nurbs_; }
+    inline bool& is_nurbs() { return nurbs_; }
 
-    inline bool IsNurbs() const { return nurbs_; }
+    inline bool is_nurbs() const { return nurbs_; }
 
-    inline bool& IsPoro() { return poro_; }
+    inline bool& is_poro() { return poro_; }
 
-    inline bool IsPoro() const { return poro_; }
+    inline bool is_poro() const { return poro_; }
 
 
 
-    inline Inpar::Mortar::Problemtype& PoroType() { return porotype_; }
+    inline Inpar::Mortar::Problemtype& poro_type() { return porotype_; }
 
-    inline Inpar::Mortar::Problemtype PoroType() const { return porotype_; }
+    inline Inpar::Mortar::Problemtype poro_type() const { return porotype_; }
 
     inline Teuchos::RCP<Core::Communication::Exporter>& sl_exporter_ptr() { return sl_exporter_; }
 
-    inline Core::Communication::Exporter& Exporter()
+    inline Core::Communication::Exporter& exporter()
     {
       if (sl_exporter_.is_null()) FOUR_C_THROW("The exporter has not been initialized.");
 
@@ -365,9 +371,9 @@ namespace Mortar
       return *masharingrefinterface_;
     }
 
-    inline bool& IsEhl() { return ehl_; }
+    inline bool& is_ehl() { return ehl_; }
 
-    inline bool IsEhl() const { return ehl_; }
+    inline bool is_ehl() const { return ehl_; }
 
     /// @}
 
@@ -571,7 +577,7 @@ namespace Mortar
      *  \param imortar (in) : global contact/mesh-tying parameter-list
      *
      *  \author hiermeier \date 03/17 */
-    static Teuchos::RCP<Interface> Create(const int id, const Epetra_Comm& comm,
+    static Teuchos::RCP<Interface> create(const int id, const Epetra_Comm& comm,
         const int spatialDim, const Teuchos::ParameterList& imortar);
 
     /*!
@@ -597,7 +603,7 @@ namespace Mortar
 
     @return Unique interface ID
     */
-    inline int Id() const { return id_; }
+    inline int id() const { return id_; }
 
     /*!
     \brief Print this Interface
@@ -611,7 +617,7 @@ namespace Mortar
 
     @return Boolean flag to indicate if fill_complete has been called
     */
-    bool Filled() const;
+    bool filled() const;
 
     /*!
     \brief Print parallel distribution of this Interface
@@ -621,19 +627,19 @@ namespace Mortar
     /*!
     \brief Get communicator
     */
-    const Epetra_Comm& Comm() const { return *comm_; }
+    const Epetra_Comm& get_comm() const { return *comm_; }
 
     /*!
     \brief Get global -> local processor map
     */
-    std::map<int, int>& Procmap() { return procmap_; }
+    std::map<int, int>& procmap() { return procmap_; }
 
     //! @name Access methods
 
     /*!
     \brief Get discretization of this interface
     */
-    Core::FE::Discretization& Discret() const { return *idiscret_; }
+    Core::FE::Discretization& discret() const { return *idiscret_; }
 
     /*!
     \brief Get problem dimension
@@ -642,7 +648,7 @@ namespace Mortar
     problem dimension. On interface level this corresponds to 1D interfaces
     (dim_==2) and 2D interfaces (dim_==3)!
     */
-    int Dim() const { return dim_; };
+    int n_dim() const { return dim_; };
 
     /*!
     \brief Get interface contact parameter list
@@ -655,34 +661,34 @@ namespace Mortar
 
     Returns TRUE if at least one higher-order 2d/3d slave element in interface.
     */
-    const bool& Quadslave() { return quadslave_; };
+    const bool& quadslave() { return quadslave_; };
 
     /*!
     \brief Get flag indicating nurbs shape functions
     */
-    bool IsNurbs() { return nurbs_; };
+    bool is_nurbs() { return nurbs_; };
 
     /*!
     \brief Get type of search algorithm
     */
-    Inpar::Mortar::SearchAlgorithm SearchAlg() const { return searchalgo_; };
+    Inpar::Mortar::SearchAlgorithm search_alg() const { return searchalgo_; };
 
     /*!
     \brief Get search algorithm parameter
     */
-    double SearchParam() const { return searchparam_; };
+    double search_param() const { return searchparam_; };
 
     /*!
     \brief bool whether auxiliary position is used when computing dops
     */
-    bool SearchUseAuxPos() const { return searchuseauxpos_; };
+    bool search_use_aux_pos() const { return searchuseauxpos_; };
 
     /*!
     \brief Get column map of all interface nodes (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& OldColNodes() const
+    const Teuchos::RCP<Epetra_Map>& old_col_nodes() const
     {
-      if (Filled())
+      if (filled())
         return oldnodecolmap_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -692,9 +698,9 @@ namespace Mortar
     /*!
     \brief Get column map of all interface elements (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& OldColElements() const
+    const Teuchos::RCP<Epetra_Map>& old_col_elements() const
     {
-      if (Filled())
+      if (filled())
         return oldelecolmap_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -704,9 +710,9 @@ namespace Mortar
     /*!
     \brief Get row map of slave nodes (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& SlaveRowNodes() const
+    const Teuchos::RCP<Epetra_Map>& slave_row_nodes() const
     {
-      if (Filled())
+      if (filled())
         return snoderowmap_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -718,19 +724,19 @@ namespace Mortar
 
     \note This is the slave row map before any parallel redistribution took place.
     */
-    const Teuchos::RCP<Epetra_Map>& PSlaveRowNodes() const
+    const Teuchos::RCP<Epetra_Map>& p_slave_row_nodes() const
     {
-      if (not Filled()) FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
+      if (not filled()) FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
 
-      return interface_data_->PSNodeRowMap();
+      return interface_data_->ps_node_row_map();
     }
 
     /*!
     \brief Get row map of master nodes (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& MasterRowNodes() const
+    const Teuchos::RCP<Epetra_Map>& master_row_nodes() const
     {
-      if (Filled())
+      if (filled())
         return mnoderowmap_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -742,19 +748,19 @@ namespace Mortar
 
     \note This is the master row map before any parallel redistribution took place.
     */
-    const Teuchos::RCP<Epetra_Map>& PMasterRowNodes() const
+    const Teuchos::RCP<Epetra_Map>& p_master_row_nodes() const
     {
-      if (not Filled()) FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
+      if (not filled()) FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
 
-      return interface_data_->PMNodeRowMap();
+      return interface_data_->pm_node_row_map();
     }
 
     /*!
     \brief Get column map of slave nodes (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& SlaveColNodes() const
+    const Teuchos::RCP<Epetra_Map>& slave_col_nodes() const
     {
-      if (Filled())
+      if (filled())
         return snodecolmap_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -764,9 +770,9 @@ namespace Mortar
     /*!
     \brief Get column map of master nodes (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& MasterColNodes() const
+    const Teuchos::RCP<Epetra_Map>& master_col_nodes() const
     {
-      if (Filled())
+      if (filled())
         return mnodecolmap_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -776,9 +782,9 @@ namespace Mortar
     /*!
     \brief Get row map of slave nodes + boundary nodes (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& SlaveRowNodesBound() const
+    const Teuchos::RCP<Epetra_Map>& slave_row_nodes_bound() const
     {
-      if (Filled())
+      if (filled())
         return snoderowmapbound_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -788,9 +794,9 @@ namespace Mortar
     /*!
     \brief Get column map of slave nodes + boundary nodes (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& SlaveColNodesBound() const
+    const Teuchos::RCP<Epetra_Map>& slave_col_nodes_bound() const
     {
-      if (Filled())
+      if (filled())
         return snodecolmapbound_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -802,7 +808,7 @@ namespace Mortar
     */
     const Teuchos::RCP<Epetra_Map>& master_row_nodes_no_bound() const
     {
-      if (Filled())
+      if (filled())
         return mnoderowmapnobound_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -814,7 +820,7 @@ namespace Mortar
     */
     const Teuchos::RCP<Epetra_Map>& master_col_nodes_no_bound() const
     {
-      if (Filled())
+      if (filled())
         return mnodecolmapnobound_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -824,9 +830,9 @@ namespace Mortar
     /*!
     \brief Get row map of slave elements (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& SlaveRowElements() const
+    const Teuchos::RCP<Epetra_Map>& slave_row_elements() const
     {
-      if (Filled())
+      if (filled())
         return selerowmap_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -836,9 +842,9 @@ namespace Mortar
     /*!
     \brief Get row map of master elements (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& MasterRowElements() const
+    const Teuchos::RCP<Epetra_Map>& master_row_elements() const
     {
-      if (Filled())
+      if (filled())
         return melerowmap_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -848,9 +854,9 @@ namespace Mortar
     /*!
     \brief Get column map of slave elements (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& SlaveColElements() const
+    const Teuchos::RCP<Epetra_Map>& slave_col_elements() const
     {
-      if (Filled())
+      if (filled())
         return selecolmap_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -860,9 +866,9 @@ namespace Mortar
     /*!
     \brief Get column map of master elements (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& MasterColElements() const
+    const Teuchos::RCP<Epetra_Map>& master_col_elements() const
     {
-      if (Filled())
+      if (filled())
         return melecolmap_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -872,9 +878,9 @@ namespace Mortar
     /*!
     \brief Get row map of slave dofs (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& SlaveRowDofs() const
+    const Teuchos::RCP<Epetra_Map>& slave_row_dofs() const
     {
-      if (Filled())
+      if (filled())
         return sdofrowmap_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -884,9 +890,9 @@ namespace Mortar
     /*!
     \brief Get column map of slave dofs (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& SlaveColDofs() const
+    const Teuchos::RCP<Epetra_Map>& slave_col_dofs() const
     {
-      if (Filled())
+      if (filled())
         return sdofcolmap_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -898,19 +904,19 @@ namespace Mortar
 
     \note This is the slave dof map before any parallel redistribution took place.
     */
-    const Teuchos::RCP<Epetra_Map>& PSlaveRowDofs() const
+    const Teuchos::RCP<Epetra_Map>& p_slave_row_dofs() const
     {
-      if (not Filled()) FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
+      if (not filled()) FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
 
-      return interface_data_->PSDofRowMap();
+      return interface_data_->ps_dof_row_map();
     }
 
     /*!
     \brief Get row map of master dofs (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& MasterRowDofs() const
+    const Teuchos::RCP<Epetra_Map>& master_row_dofs() const
     {
-      if (Filled())
+      if (filled())
         return mdofrowmap_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -920,9 +926,9 @@ namespace Mortar
     /*!
     \brief Get column map of master dofs (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& MasterColDofs() const
+    const Teuchos::RCP<Epetra_Map>& master_col_dofs() const
     {
-      if (Filled())
+      if (filled())
         return mdofcolmap_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -934,19 +940,19 @@ namespace Mortar
 
     \note This is the master dof map before any parallel redistribution took place.
     */
-    const Teuchos::RCP<Epetra_Map>& PMasterRowDofs() const
+    const Teuchos::RCP<Epetra_Map>& p_master_row_dofs() const
     {
-      if (not Filled()) FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
+      if (not filled()) FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
 
-      return interface_data_->PMDofRowMap();
+      return interface_data_->pm_dof_row_map();
     }
 
     /*!
     \brief Get map of Lagrange multiplier dofs (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& LagMultDofs() const
+    const Teuchos::RCP<Epetra_Map>& lag_mult_dofs() const
     {
-      if (Filled())
+      if (filled())
         return lmdofmap_;
       else
         FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
@@ -956,7 +962,7 @@ namespace Mortar
     /*!
     \brief Get maximum dof ID in global discretization
     */
-    int MaxDofGlobal() const
+    int max_dof_global() const
     {
       if (maxdofglobal_ < 0) FOUR_C_THROW("MaxDofGlobal not yet initialized");
       return maxdofglobal_;
@@ -973,7 +979,7 @@ namespace Mortar
 
     \return Filled()==false
     */
-    void AddMortarNode(Teuchos::RCP<Mortar::Node> mrtrnode);
+    void add_mortar_node(Teuchos::RCP<Mortar::Node> mrtrnode);
 
     /*!
     \brief Add a Mortar::Element to the interface (Filled()==true is prerequisite)
@@ -983,7 +989,7 @@ namespace Mortar
     \return Filled()==false
 
     */
-    void AddMortarElement(Teuchos::RCP<Mortar::Element> mrtrele);
+    void add_mortar_element(Teuchos::RCP<Mortar::Element> mrtrele);
 
     //! @name Parallel distribution and ghosting
     //! @{
@@ -1056,7 +1062,7 @@ namespace Mortar
     - M. Mayr, A. Popp: Scalable computational kernels for mortar finite element methods,
     Engineering with Computers, 2023, https://doi.org/10.1007/s00366-022-01779-3
     */
-    virtual void Redistribute();
+    virtual void redistribute();
 
     //! @}
 
@@ -1066,7 +1072,7 @@ namespace Mortar
     The methods creates a binary tree object for efficient search.
 
     */
-    virtual void CreateSearchTree();
+    virtual void create_search_tree();
 
     /*!
       \brief Restrict slave sets to actual meshtying zone
@@ -1077,7 +1083,7 @@ namespace Mortar
       to the actual meshtying zone for the whole simulation.
 
       */
-    void RestrictSlaveSets();
+    void restrict_slave_sets();
 
     /*!
     \brief Update interface Lagrange multiplier sets
@@ -1089,12 +1095,12 @@ namespace Mortar
     status and thus the LM set is assigned dynamically.
 
     */
-    inline void UpdateLagMultSets(int offset_if) { UpdateLagMultSets(offset_if, false); };
-    inline void UpdateLagMultSets(int offset_if, const bool& redistributed)
+    inline void update_lag_mult_sets(int offset_if) { update_lag_mult_sets(offset_if, false); };
+    inline void update_lag_mult_sets(int offset_if, const bool& redistributed)
     {
-      lmdofmap_ = UpdateLagMultSets(offset_if, redistributed, *sdofrowmap_);
+      lmdofmap_ = update_lag_mult_sets(offset_if, redistributed, *sdofrowmap_);
     };
-    Teuchos::RCP<Epetra_Map> UpdateLagMultSets(
+    Teuchos::RCP<Epetra_Map> update_lag_mult_sets(
         int offset_if, const bool& redistributed, const Epetra_Map& ref_map) const;
 
     /*! \brief Store the unredistributed local slave and lagrange multiplier maps
@@ -1131,7 +1137,7 @@ namespace Mortar
     \brief Create integration cells for interface
 
     */
-    void EvaluateGeometry(std::vector<Teuchos::RCP<Mortar::IntCell>>& intcells);
+    void evaluate_geometry(std::vector<Teuchos::RCP<Mortar::IntCell>>& intcells);
 
     /*! @name Evaluate mortar interface
      *
@@ -1216,32 +1222,32 @@ namespace Mortar
     \brief Integrate Mortar matrices D and M and gap g on slave/master overlaps
 
     */
-    virtual bool MortarCoupling(Mortar::Element* sele, std::vector<Mortar::Element*> mele,
+    virtual bool mortar_coupling(Mortar::Element* sele, std::vector<Mortar::Element*> mele,
         const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
 
     /*!
     \brief Assemble lagrange multipliers into global z vector (penalty strategy)
 
     */
-    void AssembleLM(Epetra_Vector& zglobal);
+    void assemble_lm(Epetra_Vector& zglobal);
 
     /*!
     \brief Assemble Mortar matrices D and M
 
     */
-    void AssembleDM(Core::LinAlg::SparseMatrix& dglobal, Core::LinAlg::SparseMatrix& mglobal);
+    void assemble_dm(Core::LinAlg::SparseMatrix& dglobal, Core::LinAlg::SparseMatrix& mglobal);
 
     /*!
     \brief Assemble Mortar matrix D
 
     */
-    void AssembleD(Core::LinAlg::SparseMatrix& dglobal);
+    void assemble_d(Core::LinAlg::SparseMatrix& dglobal);
 
     /*!
     \brief Assemble Mortar matrix M
 
     */
-    void AssembleM(Core::LinAlg::SparseMatrix& mglobal);
+    void assemble_m(Core::LinAlg::SparseMatrix& mglobal);
 
     /*!
     \brief Assemble matrix of normals N
@@ -1261,7 +1267,7 @@ namespace Mortar
     {d}, we have to apply the transformation matrix T and vice
     versa with the transformation matrix T^(-1).
     */
-    void AssembleTrafo(Core::LinAlg::SparseMatrix& trafo, Core::LinAlg::SparseMatrix& invtrafo,
+    void assemble_trafo(Core::LinAlg::SparseMatrix& trafo, Core::LinAlg::SparseMatrix& invtrafo,
         std::set<int>& donebefore);
 
     /*!
@@ -1289,17 +1295,17 @@ namespace Mortar
     /*!
     \brief find meles for one snode
     */
-    void FindMEles(Node& mrtrnode, std::vector<Mortar::Element*>& meles) const;
+    void find_m_eles(Node& mrtrnode, std::vector<Mortar::Element*>& meles) const;
 
     /*!
     \brief return integration time for current interface
     */
-    double Inttime() { return inttime_interface_; };
+    double inttime() { return inttime_interface_; };
 
     /*!
     \brief return bool if interface is redistributed
     */
-    bool& IsRedistributed() { return redistributed_; };
+    bool& is_redistributed() { return redistributed_; };
 
     //! @}
 
@@ -1308,16 +1314,16 @@ namespace Mortar
     /*!
     \brief Visualize mortar stuff with gmsh (may be overloaded)
     */
-    virtual void VisualizeGmsh(const int step, const int iter);
+    virtual void visualize_gmsh(const int step, const int iter);
 
     /*!
     \brief Print shape function type (enum)
     */
-    void PrintShapeFcn() { std::cout << shapefcn_ << std::endl; };
+    void print_shape_fcn() { std::cout << shapefcn_ << std::endl; };
 
-    void SetPoroFlag(bool poro) { interface_data_->IsPoro() = poro; }
-    void SetPoroType(Inpar::Mortar::Problemtype type) { interface_data_->PoroType() = type; }
-    void SetEhlFlag(bool ehl) { ehl_ = ehl; }
+    void set_poro_flag(bool poro) { interface_data_->is_poro() = poro; }
+    void set_poro_type(Inpar::Mortar::Problemtype type) { interface_data_->poro_type() = type; }
+    void set_ehl_flag(bool ehl) { ehl_ = ehl; }
 
     //@}
 

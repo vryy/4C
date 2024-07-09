@@ -74,17 +74,17 @@ namespace
       {
         // setup structural tensor
         SetupSingleStructuralTensor(
-            gpFibers_[gp][GetFiberIds()[0]], gpFibers_[gp][GetFiberIds()[1]], gpTensors_[gp]);
+            gpFibers_[gp][get_fiber_ids()[0]], gpFibers_[gp][get_fiber_ids()[1]], gpTensors_[gp]);
 
         // Setup structural tensors in stress like Voigt notation
         Core::LinAlg::Voigt::Stresses::matrix_to_vector(gpTensors_[gp], gpTensors_stress_[gp]);
 
         // setup scalar product
         gpScalarProducts_[gp] =
-            gpFibers_[gp][GetFiberIds()[0]].dot(gpFibers_[gp][GetFiberIds()[1]]);
+            gpFibers_[gp][get_fiber_ids()[0]].dot(gpFibers_[gp][get_fiber_ids()[1]]);
       }
 
-      setup_anisotropy_extension(GetFiberIds());
+      setup_anisotropy_extension(get_fiber_ids());
     }
 
     void setup_anisotropy_extension(std::array<int, 2> fiber_ids)
@@ -102,7 +102,7 @@ namespace
 
     [[nodiscard]] int get_gauss_point() const { return std::get<1>(GetParam()); }
 
-    [[nodiscard]] std::array<int, 2> GetFiberIds() const { return std::get<0>(GetParam()); }
+    [[nodiscard]] std::array<int, 2> get_fiber_ids() const { return std::get<0>(GetParam()); }
 
     Mat::Anisotropy anisotropy_;
     std::unique_ptr<Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension> anisotropyExtension_;
@@ -115,7 +115,7 @@ namespace
 
   TEST_P(CoupAnisoExpoShearGaussPointFibersTest, GetScalarProduct)
   {
-    EXPECT_NEAR(anisotropyExtension_->GetScalarProduct(get_gauss_point()),
+    EXPECT_NEAR(anisotropyExtension_->get_scalar_product(get_gauss_point()),
         gpScalarProducts_[get_gauss_point()], 1e-10);
   }
 

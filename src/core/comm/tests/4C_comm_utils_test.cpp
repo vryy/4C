@@ -46,11 +46,11 @@ namespace
     {
       communicators_ = MockUpCommunicators();
       Core::IO::cout.setup(
-          false, false, false, Core::IO::standard, communicators_->LocalComm(), 0, 0, "dummy");
+          false, false, false, Core::IO::standard, communicators_->local_comm(), 0, 0, "dummy");
 
       // create arbitrary distributed map within each group
       Teuchos::RCP<Epetra_Map> map = Teuchos::rcp(
-          new Epetra_Map(numberOfElementsToDistribute_, 0, *communicators_->LocalComm()));
+          new Epetra_Map(numberOfElementsToDistribute_, 0, *communicators_->local_comm()));
       epetraVector_ = Teuchos::rcp(new Epetra_Vector(*map, false));
 
       // fill test Epetra_Vector with entry equals gid
@@ -87,11 +87,11 @@ namespace
     {
       communicators_ = MockUpCommunicators();
       Core::IO::cout.setup(
-          false, false, false, Core::IO::standard, communicators_->LocalComm(), 0, 0, "dummy");
+          false, false, false, Core::IO::standard, communicators_->local_comm(), 0, 0, "dummy");
 
       // create arbitrary distributed map within each group
       Teuchos::RCP<Epetra_Map> rowmap = Teuchos::rcp(
-          new Epetra_Map(numberOfElementsToDistribute_, 0, *communicators_->LocalComm()));
+          new Epetra_Map(numberOfElementsToDistribute_, 0, *communicators_->local_comm()));
       int approximateNumberOfNonZeroesPerRow = 3;
       epetraCrsMatrix_ = Teuchos::rcp(
           new Epetra_CrsMatrix(::Copy, *rowmap, approximateNumberOfNonZeroesPerRow, false));

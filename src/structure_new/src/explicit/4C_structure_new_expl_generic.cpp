@@ -92,7 +92,7 @@ bool Solid::EXPLICIT::Generic::apply_stiff(
 
   if (not ok) return ok;
 
-  jac.Complete();
+  jac.complete();
 
   return ok;
 }
@@ -112,7 +112,7 @@ bool Solid::EXPLICIT::Generic::apply_force_stiff(
 
   if (not ok) return ok;
 
-  jac.Complete();
+  jac.complete();
 
   return ok;
 }
@@ -182,7 +182,7 @@ void Solid::EXPLICIT::Generic::reset_eval_params()
   eval_data().set_total_time(global_state().get_time_np());
   eval_data().set_delta_time((*global_state().get_delta_time())[0]);
   eval_data().set_is_tolerate_error(true);
-  eval_data().set_function_manager(Global::Problem::Instance()->FunctionManager());
+  eval_data().set_function_manager(Global::Problem::instance()->function_manager());
 }
 
 /*----------------------------------------------------------------------------*

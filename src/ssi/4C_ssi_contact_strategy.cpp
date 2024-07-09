@@ -60,9 +60,9 @@ void SSI::ContactStrategySparse::apply_contact_to_scatra_scatra(
       Core::LinAlg::CastToSparseMatrixAndCheckSuccess(scatra_scatra_matrix);
 
   const auto& scatra_scatra_sparsematrix =
-      nitsche_strategy_ssi()->GetMatrixBlockPtr(CONTACT::MatBlockType::scatra_scatra);
+      nitsche_strategy_ssi()->get_matrix_block_ptr(CONTACT::MatBlockType::scatra_scatra);
 
-  scatra_scatra_matrix_sparse->Add(*scatra_scatra_sparsematrix, false, 1.0, 1.0);
+  scatra_scatra_matrix_sparse->add(*scatra_scatra_sparsematrix, false, 1.0, 1.0);
 }
 
 /*-------------------------------------------------------------------------*
@@ -76,12 +76,12 @@ void SSI::ContactStrategyBlock::apply_contact_to_scatra_scatra(
   // get scatra-scatra block matrix and complete split matrix
   const auto& scatra_scatra_blockmatrix =
       nitsche_strategy_ssi()
-          ->GetMatrixBlockPtr(CONTACT::MatBlockType::scatra_scatra)
-          ->Split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *ssi_maps()->BlockMapScaTra(), *ssi_maps()->BlockMapScaTra());
-  scatra_scatra_blockmatrix->Complete();
+          ->get_matrix_block_ptr(CONTACT::MatBlockType::scatra_scatra)
+          ->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
+              *ssi_maps()->block_map_sca_tra(), *ssi_maps()->block_map_sca_tra());
+  scatra_scatra_blockmatrix->complete();
 
-  scatra_scatra_matrix_block->Add(*scatra_scatra_blockmatrix, false, 1.0, 1.0);
+  scatra_scatra_matrix_block->add(*scatra_scatra_blockmatrix, false, 1.0, 1.0);
 }
 
 /*-------------------------------------------------------------------------*
@@ -91,12 +91,12 @@ void SSI::ContactStrategySparse::apply_contact_to_scatra_structure(
 {
   auto scatra_structure_matrix_sparse =
       Core::LinAlg::CastToSparseMatrixAndCheckSuccess(scatra_structure_matrix);
-  scatra_structure_matrix_sparse->UnComplete();
+  scatra_structure_matrix_sparse->un_complete();
 
   const auto& scatra_struct_matrix =
-      nitsche_strategy_ssi()->GetMatrixBlockPtr(CONTACT::MatBlockType::scatra_displ);
+      nitsche_strategy_ssi()->get_matrix_block_ptr(CONTACT::MatBlockType::scatra_displ);
 
-  scatra_structure_matrix_sparse->Add(*scatra_struct_matrix, false, 1.0, 1.0);
+  scatra_structure_matrix_sparse->add(*scatra_struct_matrix, false, 1.0, 1.0);
 }
 
 /*-------------------------------------------------------------------------*
@@ -110,12 +110,12 @@ void SSI::ContactStrategyBlock::apply_contact_to_scatra_structure(
   // get scatra-structure block matrix and complete split matrix
   const auto& scatra_struct_blockmatrix =
       nitsche_strategy_ssi()
-          ->GetMatrixBlockPtr(CONTACT::MatBlockType::scatra_displ)
-          ->Split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *ssi_maps()->BlockMapStructure(), *ssi_maps()->BlockMapScaTra());
-  scatra_struct_blockmatrix->Complete();
+          ->get_matrix_block_ptr(CONTACT::MatBlockType::scatra_displ)
+          ->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
+              *ssi_maps()->block_map_structure(), *ssi_maps()->block_map_sca_tra());
+  scatra_struct_blockmatrix->complete();
 
-  scatra_structure_matrix_block->Add(*scatra_struct_blockmatrix, false, 1.0, 1.0);
+  scatra_structure_matrix_block->add(*scatra_struct_blockmatrix, false, 1.0, 1.0);
 }
 
 
@@ -126,12 +126,12 @@ void SSI::ContactStrategySparse::apply_contact_to_structure_scatra(
 {
   auto structure_scatra_matrix_sparse =
       Core::LinAlg::CastToSparseMatrixAndCheckSuccess(structure_scatra_matrix);
-  structure_scatra_matrix_sparse->UnComplete();
+  structure_scatra_matrix_sparse->un_complete();
 
   const auto& struct_scatra_matrix =
-      nitsche_strategy_ssi()->GetMatrixBlockPtr(CONTACT::MatBlockType::displ_scatra);
+      nitsche_strategy_ssi()->get_matrix_block_ptr(CONTACT::MatBlockType::displ_scatra);
 
-  structure_scatra_matrix_sparse->Add(*struct_scatra_matrix, false, 1.0, 1.0);
+  structure_scatra_matrix_sparse->add(*struct_scatra_matrix, false, 1.0, 1.0);
 }
 
 /*-------------------------------------------------------------------------*
@@ -145,12 +145,12 @@ void SSI::ContactStrategyBlock::apply_contact_to_structure_scatra(
   // get structure-scatra block matrix and complete split matrix
   const auto& struct_scatra_blockmatrix =
       nitsche_strategy_ssi()
-          ->GetMatrixBlockPtr(CONTACT::MatBlockType::displ_scatra)
-          ->Split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *ssi_maps()->BlockMapScaTra(), *ssi_maps()->BlockMapStructure());
-  struct_scatra_blockmatrix->Complete();
+          ->get_matrix_block_ptr(CONTACT::MatBlockType::displ_scatra)
+          ->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
+              *ssi_maps()->block_map_sca_tra(), *ssi_maps()->block_map_structure());
+  struct_scatra_blockmatrix->complete();
 
-  structure_scatra_matrix_block->Add(*struct_scatra_blockmatrix, false, 1.0, 1.0);
+  structure_scatra_matrix_block->add(*struct_scatra_blockmatrix, false, 1.0, 1.0);
 }
 
 /*-------------------------------------------------------------------------*

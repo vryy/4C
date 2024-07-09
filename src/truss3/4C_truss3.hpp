@@ -36,21 +36,21 @@ namespace Discret
     class Truss3Type : public Core::Elements::ElementType
     {
      public:
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
-      static Truss3Type& Instance();
+      static Truss3Type& instance();
 
-      std::string Name() const override { return "Truss3Type"; }
+      std::string name() const override { return "Truss3Type"; }
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -88,7 +88,7 @@ namespace Discret
        */
       Truss3(const Truss3& old);
 
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       //! prepare elemental specific geometric values
       //! \param[in] ele_state              elemental states (depending on the instantiated element)
@@ -113,10 +113,10 @@ namespace Discret
       //! calcluate stresses at Gauss point
       //! \param[in] params      parameter list
       //! \param[in] ele_state   elemental states (depending on the instantiated element)
-      virtual void CalcGPStresses(Teuchos::ParameterList& params,
+      virtual void calc_gp_stresses(Teuchos::ParameterList& params,
           const std::map<std::string, std::vector<double>>& ele_state);
 
-      Core::Elements::ElementType& ElementType() const override { return Truss3Type::Instance(); }
+      Core::Elements::ElementType& element_type() const override { return Truss3Type::instance(); }
 
       int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
@@ -130,42 +130,43 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //! get internal (elastic) energy of element
-      double GetInternalEnergy() const { return eint_; };
+      double get_internal_energy() const { return eint_; };
 
-      inline bool IsParamsInterface() const override { return (not interface_ptr_.is_null()); }
+      inline bool is_params_interface() const override { return (not interface_ptr_.is_null()); }
 
       //! cross section area
-      double CrossSection() const { return crosssec_; }
+      double cross_section() const { return crosssec_; }
 
       //! Return the current length of the truss from @p curr_nodal_coords
-      double CurrLength(const Core::LinAlg::Matrix<6, 1>& curr_nodal_coords) const
+      double curr_length(const Core::LinAlg::Matrix<6, 1>& curr_nodal_coords) const
       {
         return curr_nodal_coords.norm2() * M_SQRT1_2;
       }
 
       //! Return the squared value of the current length of the truss from @p curr_nodal_coords
-      double CurrLength2(const Core::LinAlg::Matrix<6, 1>& curr_nodal_coords) const
+      double curr_length2(const Core::LinAlg::Matrix<6, 1>& curr_nodal_coords) const
       {
-        return CurrLength(curr_nodal_coords) * CurrLength(curr_nodal_coords);
+        return curr_length(curr_nodal_coords) * curr_length(curr_nodal_coords);
       }
 
       //! derivative of current length w.r.t. nodal coordinate (entry @p col) from @p
       //! curr_nodal_coords
-      double dCurrLengthdu(const Core::LinAlg::Matrix<6, 1>& curr_nodal_coords, const int col) const
+      double d_curr_lengthdu(
+          const Core::LinAlg::Matrix<6, 1>& curr_nodal_coords, const int col) const
       {
         return curr_nodal_coords(col) / curr_nodal_coords.norm2() * M_SQRT1_2;
       }
 
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       // TODO: remove once truss3 element is fixed and no longer expects more dofs (6) than it can
       // inherently handle (3)...
-      void LocationVector(
+      void location_vector(
           const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet) const override;
 
       int num_dof_per_element() const override { return 0; }
 
-      int NumDofPerNode(const Core::Nodes::Node& node) const override
+      int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
         /*note: this is not necessarily the number of DOF assigned to this node by the
          *discretization finally, but only the number of DOF requested for this node by this
@@ -174,20 +175,20 @@ namespace Discret
         return 3;
       }
 
-      int NumLine() const override { return 1; }
+      int num_line() const override { return 1; }
 
       void pack(Core::Communication::PackBuffer& data) const override;
 
-      Teuchos::RCP<Core::Elements::ParamsInterface> ParamsInterfacePtr() override;
+      Teuchos::RCP<Core::Elements::ParamsInterface> params_interface_ptr() override;
 
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //! scale truss reference length
       void scale_reference_length(double scalefac);
 
       //! set cross section area of this element
-      void SetCrossSec(const double& crosssec);
+      void set_cross_sec(const double& crosssec);
 
       void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
 
@@ -197,14 +198,17 @@ namespace Discret
       //! \param xrefe     nodal coordinates in reference frame
       void set_up_reference_geometry(const std::vector<double>& xrefe);
 
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
-      int UniqueParObjectId() const override { return Truss3Type::Instance().UniqueParObjectId(); }
+      int unique_par_object_id() const override
+      {
+        return Truss3Type::instance().unique_par_object_id();
+      }
 
       void unpack(const std::vector<char>& data) override;
 
       //! coordinates of nodes in reference configuration
-      const Core::LinAlg::Matrix<6, 1>& X() const { return x_; }
+      const Core::LinAlg::Matrix<6, 1>& x() const { return x_; }
 
      protected:
       //! kind of integration to be performed
@@ -218,7 +222,7 @@ namespace Discret
       //! get access to the parameter interface
       inline FourC::Solid::ELEMENTS::ParamsInterface& params_interface()
       {
-        if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
+        if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
       }
 

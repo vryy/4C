@@ -1395,8 +1395,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
   const int dim2 = 3 * numnodessol;
 
   // Node ids of elements
-  const int* node_ids1 = element1_->NodeIds();
-  const int* node_ids2 = element2_->NodeIds();
+  const int* node_ids1 = element1_->node_ids();
+  const int* node_ids2 = element2_->node_ids();
 
   // Temporary vectors for contact forces, DOF-GIDs and owning procs
   Core::LinAlg::SerialDenseVector fcontact1(dim1);
@@ -1426,13 +1426,13 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
   for (int i = 0; i < numnodes; ++i)
   {
     // Get node pointer and dof ids
-    Core::Nodes::Node* node = ContactDiscret().gNode(node_ids1[i]);
+    Core::Nodes::Node* node = contact_discret().g_node(node_ids1[i]);
     std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     for (int j = 0; j < 3 * numnodalvalues; ++j)
     {
       lm1[3 * numnodalvalues * i + j] = NodeDofGIDs[j];
-      lmowner1[3 * numnodalvalues * i + j] = node->Owner();
+      lmowner1[3 * numnodalvalues * i + j] = node->owner();
     }
   }
 
@@ -1440,13 +1440,13 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
   for (int i = 0; i < numnodessol; ++i)
   {
     // Get node pointer and dof ids
-    Core::Nodes::Node* node = ContactDiscret().gNode(node_ids2[i]);
+    Core::Nodes::Node* node = contact_discret().g_node(node_ids2[i]);
     std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     for (int j = 0; j < 3; ++j)
     {
       lm2[3 * i + j] = NodeDofGIDs[j];
-      lmowner2[3 * i + j] = node->Owner();
+      lmowner2[3 * i + j] = node->owner();
     }
   }
 
@@ -1478,7 +1478,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
   for (int i = 0; i < numnodes; ++i)
   {
     // Get pointer and node ids
-    Core::Nodes::Node* node = ContactDiscret().gNode(node_ids1[i]);
+    Core::Nodes::Node* node = contact_discret().g_node(node_ids1[i]);
     std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     for (int j = 0; j < 3 * numnodalvalues; ++j)
@@ -1490,7 +1490,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
   for (int i = 0; i < numnodessol; ++i)
   {
     // Get pointer and node ids
-    Core::Nodes::Node* node = ContactDiscret().gNode(node_ids2[i]);
+    Core::Nodes::Node* node = contact_discret().g_node(node_ids2[i]);
     std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     for (int j = 0; j < 3; ++j)
@@ -1512,8 +1512,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
       stiffcontact2(i, j) = -Core::FADUtils::CastToDouble(stiffc2(i, j));
   }
 
-  stiffmatrix.Assemble(0, stiffcontact1, lmrow1, lmrowowner1, lmcol1);
-  stiffmatrix.Assemble(0, stiffcontact2, lmrow2, lmrowowner2, lmcol2);
+  stiffmatrix.assemble(0, stiffcontact1, lmrow1, lmrowowner1, lmcol1);
+  stiffmatrix.assemble(0, stiffcontact2, lmrow2, lmrowowner2, lmcol2);
 
   // ----------------------------------------------------------------
   // End: Assemble contact stiffness for beam and solid
@@ -1522,7 +1522,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
   const bool output = false;
   if (output)
   {
-    std::cout << "element1_->Id(): " << element1_->Id() << std::endl;
+    std::cout << "element1_->Id(): " << element1_->id() << std::endl;
 
     std::cout << "lmrow1: " << std::endl;
     for (int i = 0; i < dim1; i++) std::cout << lmrow1[i] << std::endl;
@@ -1530,7 +1530,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
     std::cout << "lmcol1: " << std::endl;
     for (int i = 0; i < dim1 + dim2; i++) std::cout << lmcol1[i] << std::endl;
 
-    std::cout << "element2_->Id(): " << element2_->Id() << std::endl;
+    std::cout << "element2_->Id(): " << element2_->id() << std::endl;
 
     std::cout << "lmrow2: " << std::endl;
     for (int i = 0; i < dim2; i++) std::cout << lmrow2[i] << std::endl;
@@ -2176,7 +2176,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::get_be
   N_etaeta.clear();
 
   // Get discretization type
-  const Core::FE::CellType distype = element1_->Shape();
+  const Core::FE::CellType distype = element1_->shape();
 
   Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPEBTS> N_i(true);
   Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPEBTS> N_i_eta(true);
@@ -2191,7 +2191,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::get_be
   }
   else if (numnodalvalues == 2)
   {
-    if (element1_->ElementType() != Discret::ELEMENTS::Beam3ebType::Instance())
+    if (element1_->element_type() != Discret::ELEMENTS::Beam3ebType::instance())
       FOUR_C_THROW("Only elements of type Beam3eb are valid for the case numnodalvalues=2!");
 
     double length = 2 * (static_cast<Discret::ELEMENTS::Beam3eb*>(element1_))->jacobi();
@@ -2244,9 +2244,9 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::get_su
   Core::LinAlg::Matrix<2, numnodessol, TYPEBTS> N_i_xi(true);
   Core::LinAlg::Matrix<3, numnodessol, TYPEBTS> N_i_xixi(true);
 
-  Core::FE::shape_function_2D(N_i, xi1, xi2, element2_->Shape());
-  Core::FE::shape_function_2D_deriv1(N_i_xi, xi1, xi2, element2_->Shape());
-  Core::FE::shape_function_2D_deriv2(N_i_xixi, xi1, xi2, element2_->Shape());
+  Core::FE::shape_function_2D(N_i, xi1, xi2, element2_->shape());
+  Core::FE::shape_function_2D_deriv1(N_i_xi, xi1, xi2, element2_->shape());
+  Core::FE::shape_function_2D_deriv2(N_i_xixi, xi1, xi2, element2_->shape());
 
   // Assemble the individual shape functions in matrices, such that: r = N * d, r_xi = N_xi * d,
   // r_xi1xi1 = N_xi1xi1 * d, ...
@@ -2610,7 +2610,7 @@ CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::get_global_
     const Core::Nodes::Node* node)
 {
   // Get dofs in beam contact discretization
-  const std::vector<int> cdofs = ContactDiscret().Dof(node);
+  const std::vector<int> cdofs = contact_discret().dof(node);
 
   // Get dofs in problem discretization via offset
   std::vector<int> pdofs((int)(cdofs.size()));
@@ -2630,7 +2630,7 @@ CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::get_global_
  | Change the sign of the normal vector                   meier 02/2014 |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::InvertNormal()
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::invert_normal()
 {
   //  for (int i=0; i<3;i++)
   //    normal_(i) = -normal_(i);
@@ -2671,7 +2671,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
  | Shift current normal vector to old normal vector       meier 02/2014 |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::ShiftNormal()
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::shift_normal()
 {
   //  for (int j=0;j<3;j++)
   //    normal_old_(j) = normal_(j);
@@ -2685,7 +2685,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::ShiftN
  | Check if there is a difference of old and new gap      meier 02/2014 |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-bool CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetNewGapStatus()
+bool CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::get_new_gap_status()
 {
   //  TYPEBTS gap_diff = gap_-gap_original_;
   //
@@ -2703,7 +2703,7 @@ bool CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetNew
  | Update nodal coordinates (public)                        meier 02/14 |
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::UpdateElePos(
+void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::update_ele_pos(
     Core::LinAlg::SerialDenseMatrix& newele1pos, Core::LinAlg::SerialDenseMatrix& newele2pos)
 {
   // Beam element positions
@@ -2799,7 +2799,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::shift_
  *----------------------------------------------------------------------*/
 
 
-Teuchos::RCP<CONTACT::Beam3tosolidcontactinterface> CONTACT::Beam3tosolidcontactinterface::Impl(
+Teuchos::RCP<CONTACT::Beam3tosolidcontactinterface> CONTACT::Beam3tosolidcontactinterface::impl(
     const int numnodessol, const int numnodes, const int numnodalvalues,
     const Core::FE::Discretization& pdiscret, const Core::FE::Discretization& cdiscret,
     const std::map<int, int>& dofoffsetmap, Core::Elements::Element* element1,

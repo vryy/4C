@@ -53,7 +53,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::ElementHandle::create_projec
 
   Core::FE::GaussIntegration intpoints(gp_ic);
   Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp =
-      Teuchos::rcp(new Core::FE::CollectedGaussPoints(gp_ic->NumPoints()));
+      Teuchos::rcp(new Core::FE::CollectedGaussPoints(gp_ic->num_points()));
 
   // Perform actual mapping to correct local coordinates
   Core::FE::GaussIntegration::project_gauss_points_local_to_global<distype>(xie, intpoints, cgp);
@@ -137,63 +137,63 @@ void Core::Geo::Cut::ElementHandle::append_volume_cell_gauss_points_tessellation
   // For tessellation, we have Gauss points calculated at local coordinates of each integrationcells
   // we transform this to local coordinates of background ElementHandle
   //----------------
-  const Core::Geo::Cut::plain_integrationcell_set& cells = vc->IntegrationCells();
+  const Core::Geo::Cut::plain_integrationcell_set& cells = vc->integration_cells();
   for (Core::Geo::Cut::plain_integrationcell_set::const_iterator i = cells.begin();
        i != cells.end(); ++i)
   {
     Core::Geo::Cut::IntegrationCell* ic = *i;
 
     Teuchos::RCP<Core::FE::GaussPoints> gp_ic =
-        Core::FE::GaussPointCache::Instance().Create(ic->Shape(), ic->CubatureDegree(ic->Shape()));
-    const std::vector<Core::Geo::Cut::Point*>& cpoints = ic->Points();
+        Core::FE::GaussPointCache::instance().create(ic->shape(), ic->cubature_degree(ic->shape()));
+    const std::vector<Core::Geo::Cut::Point*>& cpoints = ic->points();
 
-    switch (ic->Shape())
+    switch (ic->shape())
     {
       case Core::FE::CellType::tri3:
       {
         Teuchos::RCP<Core::FE::GaussPoints> gp =
             create_projected<Core::FE::CellType::tri3>(cpoints, gp_ic);
-        gpc->Append(gp);
+        gpc->append(gp);
         break;
       }
       case Core::FE::CellType::quad4:
       {
         Teuchos::RCP<Core::FE::GaussPoints> gp =
             create_projected<Core::FE::CellType::quad4>(cpoints, gp_ic);
-        gpc->Append(gp);
+        gpc->append(gp);
         break;
       }
       case Core::FE::CellType::hex8:
       {
         Teuchos::RCP<Core::FE::GaussPoints> gp =
             create_projected<Core::FE::CellType::hex8>(cpoints, gp_ic);
-        gpc->Append(gp);
+        gpc->append(gp);
         break;
       }
       case Core::FE::CellType::tet4:
       {
         Teuchos::RCP<Core::FE::GaussPoints> gp =
             create_projected<Core::FE::CellType::tet4>(cpoints, gp_ic);
-        gpc->Append(gp);
+        gpc->append(gp);
         break;
       }
       case Core::FE::CellType::wedge6:
       {
         Teuchos::RCP<Core::FE::GaussPoints> gp =
             create_projected<Core::FE::CellType::wedge6>(cpoints, gp_ic);
-        gpc->Append(gp);
+        gpc->append(gp);
         break;
       }
       case Core::FE::CellType::pyramid5:
       {
         Teuchos::RCP<Core::FE::GaussPoints> gp =
             create_projected<Core::FE::CellType::pyramid5>(cpoints, gp_ic);
-        gpc->Append(gp);
+        gpc->append(gp);
         break;
       }
       default:
         FOUR_C_THROW("unsupported integration cell type ( cell type = %s )",
-            Core::FE::CellTypeToString(ic->Shape()).c_str());
+            Core::FE::CellTypeToString(ic->shape()).c_str());
         exit(EXIT_FAILURE);
     }
   }
@@ -209,18 +209,18 @@ void Core::Geo::Cut::ElementHandle::append_volume_cell_gauss_points_moment_fitti
   //-------------------
 
   //---------------------------------------------
-  const std::vector<Core::Geo::Cut::Point*>& cpoints = vc->parent_element()->Points();
+  const std::vector<Core::Geo::Cut::Point*>& cpoints = vc->parent_element()->points();
   Teuchos::RCP<Core::FE::GaussPoints> gp_ic = vc->get_gauss_rule();
 
 
-  switch (Shape())
+  switch (shape())
   {
     case Core::FE::CellType::hex8:
     case Core::FE::CellType::tet4:
     case Core::FE::CellType::wedge6:
     case Core::FE::CellType::pyramid5:
     {
-      gpc->Append(gp_ic);
+      gpc->append(gp_ic);
       break;
     }
 
@@ -229,14 +229,14 @@ void Core::Geo::Cut::ElementHandle::append_volume_cell_gauss_points_moment_fitti
     {
       Teuchos::RCP<Core::FE::GaussPoints> gp =
           create_projected<Core::FE::CellType::hex8>(cpoints, gp_ic);
-      gpc->Append(gp);
+      gpc->append(gp);
       break;
     }
     case Core::FE::CellType::tet10:
     {
       Teuchos::RCP<Core::FE::GaussPoints> gp =
           create_projected<Core::FE::CellType::tet4>(cpoints, gp_ic);
-      gpc->Append(gp);
+      gpc->append(gp);
       break;
     }
     default:
@@ -264,7 +264,7 @@ void Core::Geo::Cut::ElementHandle::append_volume_cell_gauss_points_direct_diver
   // Core::Geo::Cut::VolumeCell::direct_divergence_gauss_rule
   if (gp == Teuchos::null) return;
 
-  gpc->Append(gp);
+  gpc->append(gp);
 }
 
 /*----------------------------------------------------------------------*/
@@ -281,7 +281,7 @@ Teuchos::RCP<Core::FE::GaussPointsComposite> Core::Geo::Cut::ElementHandle::gaus
   {
     Core::Geo::Cut::VolumeCell* vc = *i;
 
-    const plain_integrationcell_set& cells = vc->IntegrationCells();
+    const plain_integrationcell_set& cells = vc->integration_cells();
 
 
     if (gausstype == VCellGaussPts_Tessellation)
@@ -290,43 +290,43 @@ Teuchos::RCP<Core::FE::GaussPointsComposite> Core::Geo::Cut::ElementHandle::gaus
       {
         Core::Geo::Cut::IntegrationCell* ic = *i;
 
-        Teuchos::RCP<Core::FE::GaussPoints> gp_ic = Core::FE::GaussPointCache::Instance().Create(
-            ic->Shape(), ic->CubatureDegree(ic->Shape()));
-        const std::vector<Core::Geo::Cut::Point*>& cpoints = ic->Points();
+        Teuchos::RCP<Core::FE::GaussPoints> gp_ic = Core::FE::GaussPointCache::instance().create(
+            ic->shape(), ic->cubature_degree(ic->shape()));
+        const std::vector<Core::Geo::Cut::Point*>& cpoints = ic->points();
 
-        switch (ic->Shape())
+        switch (ic->shape())
         {
           case Core::FE::CellType::hex8:
           {
             Teuchos::RCP<Core::FE::GaussPoints> gp =
                 create_projected<Core::FE::CellType::hex8>(cpoints, gp_ic);
-            gpc->Append(gp);
+            gpc->append(gp);
             break;
           }
           case Core::FE::CellType::tet4:
           {
             Teuchos::RCP<Core::FE::GaussPoints> gp =
                 create_projected<Core::FE::CellType::tet4>(cpoints, gp_ic);
-            gpc->Append(gp);
+            gpc->append(gp);
             break;
           }
           case Core::FE::CellType::wedge6:
           {
             Teuchos::RCP<Core::FE::GaussPoints> gp =
                 create_projected<Core::FE::CellType::wedge6>(cpoints, gp_ic);
-            gpc->Append(gp);
+            gpc->append(gp);
             break;
           }
           case Core::FE::CellType::pyramid5:
           {
             Teuchos::RCP<Core::FE::GaussPoints> gp =
                 create_projected<Core::FE::CellType::pyramid5>(cpoints, gp_ic);
-            gpc->Append(gp);
+            gpc->append(gp);
             break;
           }
           default:
             FOUR_C_THROW("unsupported integration cell type ( cell type = %s )",
-                Core::FE::CellTypeToString(ic->Shape()).c_str());
+                Core::FE::CellTypeToString(ic->shape()).c_str());
             exit(EXIT_FAILURE);
         }
       }
@@ -335,7 +335,7 @@ Teuchos::RCP<Core::FE::GaussPointsComposite> Core::Geo::Cut::ElementHandle::gaus
              gausstype == VCellGaussPts_DirectDivergence)
     {
       Teuchos::RCP<Core::FE::GaussPoints> gp = vc->get_gauss_rule();
-      gpc->Append(gp);
+      gpc->append(gp);
     }
   }
 
@@ -388,14 +388,14 @@ void Core::Geo::Cut::ElementHandle::boundary_cell_gauss_points_lin(
 
       // Create (unmodified) gauss points for integration cell with requested
       // polynomial order. This is supposed to be fast, since there is a cache.
-      cell_points.push_back(bc->gaussRule(bc_cubaturedegree));
+      cell_points.push_back(bc->gauss_rule(bc_cubaturedegree));
     }
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::ElementHandle::GetBoundaryCellSets(
+void Core::Geo::Cut::ElementHandle::get_boundary_cell_sets(
     const std::vector<Core::Geo::Cut::Point::PointPosition>& desired_positions,
     std::vector<plain_boundarycell_set>& bcellsets)
 {
@@ -417,8 +417,8 @@ void Core::Geo::Cut::ElementHandle::get_volume_cells_dof_sets(
     std::vector<plain_volumecell_set>& cellsets, std::vector<std::vector<int>>& nds_sets,
     bool include_inner)
 {
-  const std::vector<plain_volumecell_set>& ele_vc_sets_inside = GetVcSetsInside();
-  const std::vector<plain_volumecell_set>& ele_vc_sets_outside = GetVcSetsOutside();
+  const std::vector<plain_volumecell_set>& ele_vc_sets_inside = get_vc_sets_inside();
+  const std::vector<plain_volumecell_set>& ele_vc_sets_outside = get_vc_sets_outside();
 
   std::vector<std::vector<int>>& nodaldofset_vc_sets_inside = get_nodal_dof_set_vc_sets_inside();
   std::vector<std::vector<int>>& nodaldofset_vc_sets_outside = get_nodal_dof_set_vc_sets_outside();
@@ -442,9 +442,9 @@ void Core::Geo::Cut::ElementHandle::get_volume_cells_dof_sets(
 /*----------------------------------------------------------------------*/
 //! Collect all volume-cells belonging to this elements
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::LinearElementHandle::GetVolumeCells(plain_volumecell_set& cells)
+void Core::Geo::Cut::LinearElementHandle::get_volume_cells(plain_volumecell_set& cells)
 {
-  const plain_volumecell_set& cs = element_->VolumeCells();
+  const plain_volumecell_set& cs = element_->volume_cells();
   std::copy(cs.begin(), cs.end(), std::inserter(cells, cells.begin()));
 }
 
@@ -452,15 +452,15 @@ void Core::Geo::Cut::LinearElementHandle::GetVolumeCells(plain_volumecell_set& c
 /*----------------------------------------------------------------------*/
 //! Collect all volume-cells belonging to this element ordered by position
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::LinearElementHandle::CollectVolumeCells(
+void Core::Geo::Cut::LinearElementHandle::collect_volume_cells(
     plain_volumecell_set& cells_inside, plain_volumecell_set& cells_outside)
 {
-  const plain_volumecell_set& ecells = element_->VolumeCells();
+  const plain_volumecell_set& ecells = element_->volume_cells();
 
   // sort for inside and outside volume cells
   for (plain_volumecell_set::const_iterator i = ecells.begin(); i != ecells.end(); i++)
   {
-    if ((*i)->Position() == Core::Geo::Cut::Point::outside)
+    if ((*i)->position() == Core::Geo::Cut::Point::outside)
     {
       cells_outside.insert(*i);
     }
@@ -489,7 +489,7 @@ bool Core::Geo::Cut::ElementHandle::get_cell_sets_dof_sets_gauss_points(
   /* switch this on to only integrate cut elements
    * only one cell_sets for current element and element is not intersected, then
    * use a non-XFEM Gaussrule */
-  if (!IsIntersected())
+  if (!is_intersected())
   {
     // perform  standard integration on an uncut element
     if (cell_sets.size() == 1)
@@ -536,16 +536,16 @@ void Core::Geo::Cut::LinearElementHandle::boundary_cell_set(Point::PointPosition
   bcell_sets.resize(1, plain_boundarycell_set());
 
   // get the volume cells of this linear element
-  const plain_volumecell_set& evolcells = element_->VolumeCells();
+  const plain_volumecell_set& evolcells = element_->volume_cells();
 
   plain_boundarycell_set& bcells = bcell_sets[0];
   for (plain_volumecell_set::const_iterator citvol = evolcells.begin(); citvol != evolcells.end();
        ++citvol)
   {
     const VolumeCell& evolcell = **citvol;
-    if (evolcell.Position() == position)
+    if (evolcell.position() == position)
     {
-      const plain_boundarycell_set& ebcells = evolcell.BoundaryCells();
+      const plain_boundarycell_set& ebcells = evolcell.boundary_cells();
       for (plain_boundarycell_set::const_iterator citbc = ebcells.begin(); citbc != ebcells.end();
            ++citbc)
       {
@@ -559,16 +559,16 @@ void Core::Geo::Cut::LinearElementHandle::boundary_cell_set(Point::PointPosition
 /*----------------------------------------------------------------------*/
 // get the element's sets of volume-cells ordered by inside/outside position
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::LinearElementHandle::VolumeCellSets()
+void Core::Geo::Cut::LinearElementHandle::volume_cell_sets()
 {
   if (!cells_set_)
   {
-    const plain_volumecell_set& ecells = element_->VolumeCells();
+    const plain_volumecell_set& ecells = element_->volume_cells();
 
     // sort for inside and outside volume cells
     for (plain_volumecell_set::const_iterator i = ecells.begin(); i != ecells.end(); i++)
     {
-      if ((*i)->Position() == Core::Geo::Cut::Point::outside)
+      if ((*i)->position() == Core::Geo::Cut::Point::outside)
       {
         plain_volumecell_set s;  // plain volume cell set with only one entry
         s.insert(*i);
@@ -593,12 +593,12 @@ void Core::Geo::Cut::LinearElementHandle::VolumeCellSets()
 // i.e. also for touched cases (at points, edges or sides),
 // or when an element side has more than one facet or is touched by fully/partially by the cut side
 /*----------------------------------------------------------------------*/
-bool Core::Geo::Cut::QuadraticElementHandle::IsCut()
+bool Core::Geo::Cut::QuadraticElementHandle::is_cut()
 {
   for (std::vector<Element*>::iterator i = subelements_.begin(); i != subelements_.end(); ++i)
   {
     Element* e = *i;
-    if (e->IsCut())
+    if (e->is_cut())
     {
       return true;
     }
@@ -611,14 +611,14 @@ bool Core::Geo::Cut::QuadraticElementHandle::IsCut()
 // return true if one of the sub-elements is intersected or the sub-elements
 // have different positions and therefore the global element is intersected by a cut-side
 /*----------------------------------------------------------------------*/
-bool Core::Geo::Cut::QuadraticElementHandle::IsIntersected()
+bool Core::Geo::Cut::QuadraticElementHandle::is_intersected()
 {
   Core::Geo::Cut::Point::PointPosition unique_pos = Core::Geo::Cut::Point::undecided;
 
   for (std::vector<Element*>::iterator i = subelements_.begin(); i != subelements_.end(); ++i)
   {
     Element* e = *i;
-    if (e->IsIntersected())
+    if (e->is_intersected())
     {
       return true;
     }
@@ -629,9 +629,9 @@ bool Core::Geo::Cut::QuadraticElementHandle::IsIntersected()
     if (unique_pos == Core::Geo::Cut::Point::undecided)
     {
       // assume a new unique position for all sub elements
-      unique_pos = (*e->VolumeCells().begin())->Position();
+      unique_pos = (*e->volume_cells().begin())->position();
     }
-    else if ((*e->VolumeCells().begin())->Position() != unique_pos)
+    else if ((*e->volume_cells().begin())->position() != unique_pos)
     {
       return true;
     }
@@ -643,12 +643,12 @@ bool Core::Geo::Cut::QuadraticElementHandle::IsIntersected()
 /*----------------------------------------------------------------------*/
 // Collect all volume-cells belonging to this elements
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::GetVolumeCells(plain_volumecell_set& cells)
+void Core::Geo::Cut::QuadraticElementHandle::get_volume_cells(plain_volumecell_set& cells)
 {
   for (std::vector<Element*>::iterator i = subelements_.begin(); i != subelements_.end(); ++i)
   {
     Element* e = *i;
-    const plain_volumecell_set& cs = e->VolumeCells();
+    const plain_volumecell_set& cs = e->volume_cells();
     std::copy(cs.begin(), cs.end(), std::inserter(cells, cells.begin()));
   }
 }
@@ -657,18 +657,18 @@ void Core::Geo::Cut::QuadraticElementHandle::GetVolumeCells(plain_volumecell_set
 /*----------------------------------------------------------------------*/
 // Collect all volume-cells belonging to this element ordered by position
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::CollectVolumeCells(
+void Core::Geo::Cut::QuadraticElementHandle::collect_volume_cells(
     plain_volumecell_set& cells_inside, plain_volumecell_set& cells_outside)
 {
   for (std::vector<Element*>::const_iterator i = subelements_.begin(); i != subelements_.end(); ++i)
   {
     Element* e = *i;
-    const plain_volumecell_set& ecells = e->VolumeCells();
+    const plain_volumecell_set& ecells = e->volume_cells();
 
     // sort for inside and outside volume-cells
     for (plain_volumecell_set::const_iterator i = ecells.begin(); i != ecells.end(); i++)
     {
-      if ((*i)->Position() == Core::Geo::Cut::Point::outside)
+      if ((*i)->position() == Core::Geo::Cut::Point::outside)
       {
         cells_outside.insert(*i);
       }
@@ -684,12 +684,12 @@ void Core::Geo::Cut::QuadraticElementHandle::CollectVolumeCells(
 /*----------------------------------------------------------------------*/
 //  get the quadratic element's volumetric integration cells (just for Tessellation)
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::GetIntegrationCells(plain_integrationcell_set& cells)
+void Core::Geo::Cut::QuadraticElementHandle::get_integration_cells(plain_integrationcell_set& cells)
 {
   for (std::vector<Element*>::iterator i = subelements_.begin(); i != subelements_.end(); ++i)
   {
     Element* e = *i;
-    e->GetIntegrationCells(cells);
+    e->get_integration_cells(cells);
   }
 }
 
@@ -699,13 +699,13 @@ void Core::Geo::Cut::QuadraticElementHandle::GetIntegrationCells(plain_integrati
 //  TODO: this has to be corrected such that just the bcs which belong the
 //  outside vcs will be returned
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::GetBoundaryCells(plain_boundarycell_set& bcells)
+void Core::Geo::Cut::QuadraticElementHandle::get_boundary_cells(plain_boundarycell_set& bcells)
 {
   FOUR_C_THROW("Deprecated version!");
   for (std::vector<Element*>::iterator i = subelements_.begin(); i != subelements_.end(); ++i)
   {
     Element* e = *i;
-    e->GetBoundaryCells(bcells);
+    e->get_boundary_cells(bcells);
   }
 }
 
@@ -723,10 +723,10 @@ void Core::Geo::Cut::QuadraticElementHandle::boundary_cell_set(Point::PointPosit
 void Core::Geo::Cut::QuadraticElementHandle::connect_boundary_cells(Point::PointPosition position)
 {
   plain_volumecell_set evolcells_position;
-  CollectVolumeCells(position, evolcells_position);
+  collect_volume_cells(position, evolcells_position);
 
   std::vector<plain_volumecell_set> connected_evolcells_position;
-  BuildCellSets(evolcells_position, connected_evolcells_position);
+  build_cell_sets(evolcells_position, connected_evolcells_position);
 
   build_boundary_cell_sets(connected_evolcells_position, connected_bcell_sets_[position]);
 }
@@ -749,7 +749,7 @@ void Core::Geo::Cut::QuadraticElementHandle::build_boundary_cell_sets(
          ++citvc)
     {
       const VolumeCell& vcell = **citvc;
-      const plain_boundarycell_set& bcells = vcell.BoundaryCells();
+      const plain_boundarycell_set& bcells = vcell.boundary_cells();
       for (plain_boundarycell_set::const_iterator citbc = bcells.begin(); citbc != bcells.end();
            ++citbc)
       {
@@ -762,19 +762,19 @@ void Core::Geo::Cut::QuadraticElementHandle::build_boundary_cell_sets(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::CollectVolumeCells(
+void Core::Geo::Cut::QuadraticElementHandle::collect_volume_cells(
     Point::PointPosition position, plain_volumecell_set& evolcells_position) const
 {
   for (std::vector<Element*>::const_iterator i = subelements_.begin(); i != subelements_.end(); ++i)
   {
     Element* e = *i;
-    const plain_volumecell_set& ecells = e->VolumeCells();
+    const plain_volumecell_set& ecells = e->volume_cells();
 
     // sort for inside and outside volume-cells
     for (plain_volumecell_set::const_iterator i = ecells.begin(); i != ecells.end(); i++)
     {
       VolumeCell* evolcell = *i;
-      if (evolcell->Position() == position)
+      if (evolcell->position() == position)
       {
         evolcells_position.insert(evolcell);
       }
@@ -787,17 +787,17 @@ void Core::Geo::Cut::QuadraticElementHandle::CollectVolumeCells(
 /*----------------------------------------------------------------------*/
 //! get the element's sets of volume-cells ordered by inside/outside position
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::VolumeCellSets()
+void Core::Geo::Cut::QuadraticElementHandle::volume_cell_sets()
 {
   // connect volumecells of subelements
-  ConnectVolumeCells();
+  connect_volume_cells();
 }
 
 
 /*----------------------------------------------------------------------*/
 //! connect volume-cells to sets of volume-cells
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::ConnectVolumeCells()
+void Core::Geo::Cut::QuadraticElementHandle::connect_volume_cells()
 {
   // find the connection between volumecells of all subelements for the current element (hex8,
   // hex20, tet4, tet10 etc.) remark: this function determines not the connection outside this
@@ -809,10 +809,10 @@ void Core::Geo::Cut::QuadraticElementHandle::ConnectVolumeCells()
     plain_volumecell_set e_vcs_inside;
     plain_volumecell_set e_vcs_outside;
 
-    CollectVolumeCells(e_vcs_inside, e_vcs_outside);
+    collect_volume_cells(e_vcs_inside, e_vcs_outside);
 
-    BuildCellSets(e_vcs_inside, connected_vc_sets_inside_);
-    BuildCellSets(e_vcs_outside, connected_vc_sets_outside_);
+    build_cell_sets(e_vcs_inside, connected_vc_sets_inside_);
+    build_cell_sets(e_vcs_outside, connected_vc_sets_outside_);
 
     cells_connected_ = true;
   }
@@ -821,7 +821,7 @@ void Core::Geo::Cut::QuadraticElementHandle::ConnectVolumeCells()
 /*----------------------------------------------------------------------*/
 //! build sets
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::BuildCellSets(
+void Core::Geo::Cut::QuadraticElementHandle::build_cell_sets(
     plain_volumecell_set& cells_to_connect, std::vector<plain_volumecell_set>& connected_sets)
 {
   plain_volumecell_set done;
@@ -839,7 +839,7 @@ void Core::Geo::Cut::QuadraticElementHandle::BuildCellSets(
       // but within one global element, therefore more than one vc of one subelements
       // may be connected.
       //        cell->Neighbors( nullptr, cells_to_connect, done, connected, elements );
-      cell->Neighbors(nullptr, cells_to_connect, done, connected);
+      cell->neighbors(nullptr, cells_to_connect, done, connected);
 
       if (connected.size() > 0)
       {
@@ -890,11 +890,11 @@ Core::Geo::Cut::Hex20ElementHandle::Hex20ElementHandle(
     for (int i = 0; i < 8; ++i)
     {
       int localnodeid = Core::FE::eleNodeNumbering_hex27_surfaces[localsideid][i];
-      Node* n = mesh.GetNode(node_ids[localnodeid], static_cast<double*>(nullptr));
+      Node* n = mesh.get_node(node_ids[localnodeid], static_cast<double*>(nullptr));
       side_nodes[i] = n;
       node_nids.insert(node_ids[localnodeid]);
-      n->Coordinates(&side_xyze(0, i));
-      side_lsvs(i) = n->LSV();
+      n->coordinates(&side_xyze(0, i));
+      side_lsvs(i) = n->lsv();
     }
 
     Core::FE::shape_function_2D(side_funct, 0.0, 0.0, Core::FE::CellType::quad8);
@@ -902,36 +902,36 @@ Core::Geo::Cut::Hex20ElementHandle::Hex20ElementHandle(
     lsv.multiply(side_lsvs, side_funct);
 
     // find the unique center node of the quadratic quad8 sides
-    center_nodes[localsideid] = mesh.GetNode(node_nids, xyz.data(), lsv(0));
+    center_nodes[localsideid] = mesh.get_node(node_nids, xyz.data(), lsv(0));
   }
 
   Node* node20 = center_nodes[0];
-  int node20_id = node20->Id();
+  int node20_id = node20->id();
 
   Node* node21 = center_nodes[1];
-  int node21_id = node21->Id();
+  int node21_id = node21->id();
 
   Node* node22 = center_nodes[2];
-  int node22_id = node22->Id();
+  int node22_id = node22->id();
 
   Node* node23 = center_nodes[3];
-  int node23_id = node23->Id();
+  int node23_id = node23->id();
 
   Node* node24 = center_nodes[4];
-  int node24_id = node24->Id();
+  int node24_id = node24->id();
 
   Node* node25 = center_nodes[5];
-  int node25_id = node25->Id();
+  int node25_id = node25->id();
 
   Core::LinAlg::Matrix<3, 20> xyze;
   Core::LinAlg::Matrix<1, 20> lsvs;
   nodes_.reserve(20);
   for (int i = 0; i < 20; ++i)
   {
-    Node* n = mesh.GetNode(node_ids[i], static_cast<double*>(nullptr));
+    Node* n = mesh.get_node(node_ids[i], static_cast<double*>(nullptr));
     nodes_.push_back(n);
-    n->Coordinates(&xyze(0, i));
-    lsvs(i) = n->LSV();
+    n->coordinates(&xyze(0, i));
+    lsvs(i) = n->lsv();
   }
 
   // special handling for the inner center node of hex20 element
@@ -945,8 +945,8 @@ Core::Geo::Cut::Hex20ElementHandle::Hex20ElementHandle(
   lsv.multiply(lsvs, funct);
   node_nids.clear();
   std::copy(node_ids.begin(), node_ids.end(), std::inserter(node_nids, node_nids.begin()));
-  Node* node26 = mesh.GetNode(node_nids, xyz.data(), lsv(0));
-  int node26_id = node26->Id();
+  Node* node26 = mesh.get_node(node_nids, xyz.data(), lsv(0));
+  int node26_id = node26->id();
 
 
   std::vector<int> nids(8);
@@ -959,10 +959,10 @@ Core::Geo::Cut::Hex20ElementHandle::Hex20ElementHandle(
   nids[5] = node21_id;
   nids[6] = node26_id;
   nids[7] = node24_id;
-  Element* sub1 = mesh.GetElement(-1, nids, *top_data);
-  sub1->setAsShadowElem();
-  sub1->setQuadCorners(mesh, node_ids);
-  sub1->setQuadShape(Core::FE::CellType::hex20);
+  Element* sub1 = mesh.get_element(-1, nids, *top_data);
+  sub1->set_as_shadow_elem();
+  sub1->set_quad_corners(mesh, node_ids);
+  sub1->set_quad_shape(Core::FE::CellType::hex20);
   subelements_.push_back(sub1);
 
   nids[0] = node_ids[8];
@@ -973,10 +973,10 @@ Core::Geo::Cut::Hex20ElementHandle::Hex20ElementHandle(
   nids[5] = node_ids[13];
   nids[6] = node22_id;
   nids[7] = node26_id;
-  Element* sub2 = mesh.GetElement(-1, nids, *top_data);
-  sub2->setAsShadowElem();
-  sub2->setQuadCorners(mesh, node_ids);
-  sub2->setQuadShape(Core::FE::CellType::hex20);
+  Element* sub2 = mesh.get_element(-1, nids, *top_data);
+  sub2->set_as_shadow_elem();
+  sub2->set_quad_corners(mesh, node_ids);
+  sub2->set_quad_shape(Core::FE::CellType::hex20);
   subelements_.push_back(sub2);
 
   nids[0] = node20_id;
@@ -987,10 +987,10 @@ Core::Geo::Cut::Hex20ElementHandle::Hex20ElementHandle(
   nids[5] = node22_id;
   nids[6] = node_ids[14];
   nids[7] = node23_id;
-  Element* sub3 = mesh.GetElement(-1, nids, *top_data);
-  sub3->setAsShadowElem();
-  sub3->setQuadCorners(mesh, node_ids);
-  sub3->setQuadShape(Core::FE::CellType::hex20);
+  Element* sub3 = mesh.get_element(-1, nids, *top_data);
+  sub3->set_as_shadow_elem();
+  sub3->set_quad_corners(mesh, node_ids);
+  sub3->set_quad_shape(Core::FE::CellType::hex20);
   subelements_.push_back(sub3);
 
   nids[0] = node_ids[11];
@@ -1001,10 +1001,10 @@ Core::Geo::Cut::Hex20ElementHandle::Hex20ElementHandle(
   nids[5] = node26_id;
   nids[6] = node23_id;
   nids[7] = node_ids[15];
-  Element* sub4 = mesh.GetElement(-1, nids, *top_data);
-  sub4->setAsShadowElem();
-  sub4->setQuadCorners(mesh, node_ids);
-  sub4->setQuadShape(Core::FE::CellType::hex20);
+  Element* sub4 = mesh.get_element(-1, nids, *top_data);
+  sub4->set_as_shadow_elem();
+  sub4->set_quad_corners(mesh, node_ids);
+  sub4->set_quad_shape(Core::FE::CellType::hex20);
   subelements_.push_back(sub4);
 
   /////////////////////////////////////////////////////////////////
@@ -1017,10 +1017,10 @@ Core::Geo::Cut::Hex20ElementHandle::Hex20ElementHandle(
   nids[5] = node_ids[16];
   nids[6] = node25_id;
   nids[7] = node_ids[19];
-  Element* sub5 = mesh.GetElement(-1, nids, *top_data);
-  sub5->setAsShadowElem();
-  sub5->setQuadCorners(mesh, node_ids);
-  sub5->setQuadShape(Core::FE::CellType::hex20);
+  Element* sub5 = mesh.get_element(-1, nids, *top_data);
+  sub5->set_as_shadow_elem();
+  sub5->set_quad_corners(mesh, node_ids);
+  sub5->set_quad_shape(Core::FE::CellType::hex20);
   subelements_.push_back(sub5);
 
   nids[0] = node21_id;
@@ -1031,10 +1031,10 @@ Core::Geo::Cut::Hex20ElementHandle::Hex20ElementHandle(
   nids[5] = node_ids[5];
   nids[6] = node_ids[17];
   nids[7] = node25_id;
-  Element* sub6 = mesh.GetElement(-1, nids, *top_data);
-  sub6->setAsShadowElem();
-  sub6->setQuadCorners(mesh, node_ids);
-  sub6->setQuadShape(Core::FE::CellType::hex20);
+  Element* sub6 = mesh.get_element(-1, nids, *top_data);
+  sub6->set_as_shadow_elem();
+  sub6->set_quad_corners(mesh, node_ids);
+  sub6->set_quad_shape(Core::FE::CellType::hex20);
   subelements_.push_back(sub6);
 
   nids[0] = node26_id;
@@ -1045,10 +1045,10 @@ Core::Geo::Cut::Hex20ElementHandle::Hex20ElementHandle(
   nids[5] = node_ids[17];
   nids[6] = node_ids[6];
   nids[7] = node_ids[18];
-  Element* sub7 = mesh.GetElement(-1, nids, *top_data);
-  sub7->setAsShadowElem();
-  sub7->setQuadCorners(mesh, node_ids);
-  sub7->setQuadShape(Core::FE::CellType::hex20);
+  Element* sub7 = mesh.get_element(-1, nids, *top_data);
+  sub7->set_as_shadow_elem();
+  sub7->set_quad_corners(mesh, node_ids);
+  sub7->set_quad_shape(Core::FE::CellType::hex20);
   subelements_.push_back(sub7);
 
   nids[0] = node24_id;
@@ -1059,17 +1059,17 @@ Core::Geo::Cut::Hex20ElementHandle::Hex20ElementHandle(
   nids[5] = node25_id;
   nids[6] = node_ids[18];
   nids[7] = node_ids[7];
-  Element* sub8 = mesh.GetElement(-1, nids, *top_data);
-  sub8->setAsShadowElem();
-  sub8->setQuadCorners(mesh, node_ids);
-  sub8->setQuadShape(Core::FE::CellType::hex20);
+  Element* sub8 = mesh.get_element(-1, nids, *top_data);
+  sub8->set_as_shadow_elem();
+  sub8->set_quad_corners(mesh, node_ids);
+  sub8->set_quad_shape(Core::FE::CellType::hex20);
   subelements_.push_back(sub8);
 
   // each subelement should know its parents id
   for (std::vector<Element*>::iterator i = subelements_.begin(); i != subelements_.end(); ++i)
   {
     Element* subelement = *i;
-    subelement->ParentId(eid);
+    subelement->parent_id(eid);
   }
 }
 
@@ -1086,7 +1086,7 @@ Core::Geo::Cut::Hex27ElementHandle::Hex27ElementHandle(
   nodes_.reserve(27);
   for (int i = 0; i < 27; ++i)
   {
-    Node* n = mesh.GetNode(node_ids[i], static_cast<double*>(nullptr));
+    Node* n = mesh.get_node(node_ids[i], static_cast<double*>(nullptr));
     nodes_.push_back(n);
   }
 
@@ -1102,10 +1102,10 @@ Core::Geo::Cut::Hex27ElementHandle::Hex27ElementHandle(
   nids[5] = node_ids[21];
   nids[6] = node_ids[26];
   nids[7] = node_ids[24];
-  Element* sub1 = mesh.GetElement(-1, nids, *top_data);
-  sub1->setAsShadowElem();
-  sub1->setQuadCorners(mesh, node_ids);
-  sub1->setQuadShape(Core::FE::CellType::hex27);
+  Element* sub1 = mesh.get_element(-1, nids, *top_data);
+  sub1->set_as_shadow_elem();
+  sub1->set_quad_corners(mesh, node_ids);
+  sub1->set_quad_shape(Core::FE::CellType::hex27);
   subelements_.push_back(sub1);
 
   nids[0] = node_ids[8];
@@ -1116,10 +1116,10 @@ Core::Geo::Cut::Hex27ElementHandle::Hex27ElementHandle(
   nids[5] = node_ids[13];
   nids[6] = node_ids[22];
   nids[7] = node_ids[26];
-  Element* sub2 = mesh.GetElement(-1, nids, *top_data);
-  sub2->setAsShadowElem();
-  sub2->setQuadCorners(mesh, node_ids);
-  sub2->setQuadShape(Core::FE::CellType::hex27);
+  Element* sub2 = mesh.get_element(-1, nids, *top_data);
+  sub2->set_as_shadow_elem();
+  sub2->set_quad_corners(mesh, node_ids);
+  sub2->set_quad_shape(Core::FE::CellType::hex27);
   subelements_.push_back(sub2);
 
   nids[0] = node_ids[20];
@@ -1130,10 +1130,10 @@ Core::Geo::Cut::Hex27ElementHandle::Hex27ElementHandle(
   nids[5] = node_ids[22];
   nids[6] = node_ids[14];
   nids[7] = node_ids[23];
-  Element* sub3 = mesh.GetElement(-1, nids, *top_data);
-  sub3->setAsShadowElem();
-  sub3->setQuadCorners(mesh, node_ids);
-  sub3->setQuadShape(Core::FE::CellType::hex27);
+  Element* sub3 = mesh.get_element(-1, nids, *top_data);
+  sub3->set_as_shadow_elem();
+  sub3->set_quad_corners(mesh, node_ids);
+  sub3->set_quad_shape(Core::FE::CellType::hex27);
   subelements_.push_back(sub3);
 
   nids[0] = node_ids[11];
@@ -1144,10 +1144,10 @@ Core::Geo::Cut::Hex27ElementHandle::Hex27ElementHandle(
   nids[5] = node_ids[26];
   nids[6] = node_ids[23];
   nids[7] = node_ids[15];
-  Element* sub4 = mesh.GetElement(-1, nids, *top_data);
-  sub4->setAsShadowElem();
-  sub4->setQuadCorners(mesh, node_ids);
-  sub4->setQuadShape(Core::FE::CellType::hex27);
+  Element* sub4 = mesh.get_element(-1, nids, *top_data);
+  sub4->set_as_shadow_elem();
+  sub4->set_quad_corners(mesh, node_ids);
+  sub4->set_quad_shape(Core::FE::CellType::hex27);
   subelements_.push_back(sub4);
 
   /////////////////////////////////////////////////////////////////
@@ -1160,10 +1160,10 @@ Core::Geo::Cut::Hex27ElementHandle::Hex27ElementHandle(
   nids[5] = node_ids[16];
   nids[6] = node_ids[25];
   nids[7] = node_ids[19];
-  Element* sub5 = mesh.GetElement(-1, nids, *top_data);
-  sub5->setAsShadowElem();
-  sub5->setQuadCorners(mesh, node_ids);
-  sub5->setQuadShape(Core::FE::CellType::hex27);
+  Element* sub5 = mesh.get_element(-1, nids, *top_data);
+  sub5->set_as_shadow_elem();
+  sub5->set_quad_corners(mesh, node_ids);
+  sub5->set_quad_shape(Core::FE::CellType::hex27);
   subelements_.push_back(sub5);
 
   nids[0] = node_ids[21];
@@ -1174,10 +1174,10 @@ Core::Geo::Cut::Hex27ElementHandle::Hex27ElementHandle(
   nids[5] = node_ids[5];
   nids[6] = node_ids[17];
   nids[7] = node_ids[25];
-  Element* sub6 = mesh.GetElement(-1, nids, *top_data);
-  sub6->setAsShadowElem();
-  sub6->setQuadCorners(mesh, node_ids);
-  sub6->setQuadShape(Core::FE::CellType::hex27);
+  Element* sub6 = mesh.get_element(-1, nids, *top_data);
+  sub6->set_as_shadow_elem();
+  sub6->set_quad_corners(mesh, node_ids);
+  sub6->set_quad_shape(Core::FE::CellType::hex27);
   subelements_.push_back(sub6);
 
   nids[0] = node_ids[26];
@@ -1188,10 +1188,10 @@ Core::Geo::Cut::Hex27ElementHandle::Hex27ElementHandle(
   nids[5] = node_ids[17];
   nids[6] = node_ids[6];
   nids[7] = node_ids[18];
-  Element* sub7 = mesh.GetElement(-1, nids, *top_data);
-  sub7->setAsShadowElem();
-  sub7->setQuadCorners(mesh, node_ids);
-  sub7->setQuadShape(Core::FE::CellType::hex27);
+  Element* sub7 = mesh.get_element(-1, nids, *top_data);
+  sub7->set_as_shadow_elem();
+  sub7->set_quad_corners(mesh, node_ids);
+  sub7->set_quad_shape(Core::FE::CellType::hex27);
   subelements_.push_back(sub7);
 
   nids[0] = node_ids[24];
@@ -1202,17 +1202,17 @@ Core::Geo::Cut::Hex27ElementHandle::Hex27ElementHandle(
   nids[5] = node_ids[25];
   nids[6] = node_ids[18];
   nids[7] = node_ids[7];
-  Element* sub8 = mesh.GetElement(-1, nids, *top_data);
-  sub8->setAsShadowElem();
-  sub8->setQuadCorners(mesh, node_ids);
-  sub8->setQuadShape(Core::FE::CellType::hex27);
+  Element* sub8 = mesh.get_element(-1, nids, *top_data);
+  sub8->set_as_shadow_elem();
+  sub8->set_quad_corners(mesh, node_ids);
+  sub8->set_quad_shape(Core::FE::CellType::hex27);
   subelements_.push_back(sub8);
 
   // each subelement should know its parents id
   for (std::vector<Element*>::iterator i = subelements_.begin(); i != subelements_.end(); ++i)
   {
     Element* subelement = *i;
-    subelement->ParentId(eid);
+    subelement->parent_id(eid);
   }
 }
 
@@ -1229,7 +1229,7 @@ Core::Geo::Cut::Tet10ElementHandle::Tet10ElementHandle(
   nodes_.reserve(10);
   for (int i = 0; i < 10; ++i)
   {
-    Node* n = mesh.GetNode(nids[i], static_cast<double*>(nullptr));
+    Node* n = mesh.get_node(nids[i], static_cast<double*>(nullptr));
     nodes_.push_back(n);
   }
 
@@ -1241,40 +1241,40 @@ Core::Geo::Cut::Tet10ElementHandle::Tet10ElementHandle(
   subnids[1] = nids[4];
   subnids[2] = nids[6];
   subnids[3] = nids[7];
-  Element* sub1 = mesh.GetElement(-1, subnids, *top_data);
-  sub1->setAsShadowElem();
-  sub1->setQuadCorners(mesh, nids);
-  sub1->setQuadShape(Core::FE::CellType::tet10);
+  Element* sub1 = mesh.get_element(-1, subnids, *top_data);
+  sub1->set_as_shadow_elem();
+  sub1->set_quad_corners(mesh, nids);
+  sub1->set_quad_shape(Core::FE::CellType::tet10);
   subelements_.push_back(sub1);
 
   subnids[0] = nids[4];
   subnids[1] = nids[1];
   subnids[2] = nids[5];
   subnids[3] = nids[8];
-  Element* sub2 = mesh.GetElement(-1, subnids, *top_data);
-  sub2->setAsShadowElem();
-  sub2->setQuadCorners(mesh, nids);
-  sub2->setQuadShape(Core::FE::CellType::tet10);
+  Element* sub2 = mesh.get_element(-1, subnids, *top_data);
+  sub2->set_as_shadow_elem();
+  sub2->set_quad_corners(mesh, nids);
+  sub2->set_quad_shape(Core::FE::CellType::tet10);
   subelements_.push_back(sub2);
 
   subnids[0] = nids[6];
   subnids[1] = nids[5];
   subnids[2] = nids[2];
   subnids[3] = nids[9];
-  Element* sub3 = mesh.GetElement(-1, subnids, *top_data);
-  sub3->setAsShadowElem();
-  sub3->setQuadCorners(mesh, nids);
-  sub3->setQuadShape(Core::FE::CellType::tet10);
+  Element* sub3 = mesh.get_element(-1, subnids, *top_data);
+  sub3->set_as_shadow_elem();
+  sub3->set_quad_corners(mesh, nids);
+  sub3->set_quad_shape(Core::FE::CellType::tet10);
   subelements_.push_back(sub3);
 
   subnids[0] = nids[7];
   subnids[1] = nids[8];
   subnids[2] = nids[9];
   subnids[3] = nids[3];
-  Element* sub4 = mesh.GetElement(-1, subnids, *top_data);
-  sub4->setAsShadowElem();
-  sub4->setQuadCorners(mesh, nids);
-  sub4->setQuadShape(Core::FE::CellType::tet10);
+  Element* sub4 = mesh.get_element(-1, subnids, *top_data);
+  sub4->set_as_shadow_elem();
+  sub4->set_quad_corners(mesh, nids);
+  sub4->set_quad_shape(Core::FE::CellType::tet10);
   subelements_.push_back(sub4);
 
   /////////////////////////////////////////////////////////////////
@@ -1283,47 +1283,47 @@ Core::Geo::Cut::Tet10ElementHandle::Tet10ElementHandle(
   subnids[1] = nids[5];
   subnids[2] = nids[6];
   subnids[3] = nids[8];
-  Element* sub5 = mesh.GetElement(-1, subnids, *top_data);
-  sub5->setAsShadowElem();
-  sub5->setQuadCorners(mesh, nids);
-  sub5->setQuadShape(Core::FE::CellType::tet10);
+  Element* sub5 = mesh.get_element(-1, subnids, *top_data);
+  sub5->set_as_shadow_elem();
+  sub5->set_quad_corners(mesh, nids);
+  sub5->set_quad_shape(Core::FE::CellType::tet10);
   subelements_.push_back(sub5);
 
   subnids[0] = nids[6];
   subnids[1] = nids[9];
   subnids[2] = nids[7];
   subnids[3] = nids[8];
-  Element* sub6 = mesh.GetElement(-1, subnids, *top_data);
-  sub6->setAsShadowElem();
-  sub6->setQuadCorners(mesh, nids);
-  sub6->setQuadShape(Core::FE::CellType::tet10);
+  Element* sub6 = mesh.get_element(-1, subnids, *top_data);
+  sub6->set_as_shadow_elem();
+  sub6->set_quad_corners(mesh, nids);
+  sub6->set_quad_shape(Core::FE::CellType::tet10);
   subelements_.push_back(sub6);
 
   subnids[0] = nids[4];
   subnids[1] = nids[6];
   subnids[2] = nids[7];
   subnids[3] = nids[8];
-  Element* sub7 = mesh.GetElement(-1, subnids, *top_data);
-  sub7->setAsShadowElem();
-  sub7->setQuadCorners(mesh, nids);
-  sub7->setQuadShape(Core::FE::CellType::tet10);
+  Element* sub7 = mesh.get_element(-1, subnids, *top_data);
+  sub7->set_as_shadow_elem();
+  sub7->set_quad_corners(mesh, nids);
+  sub7->set_quad_shape(Core::FE::CellType::tet10);
   subelements_.push_back(sub7);
 
   subnids[0] = nids[9];
   subnids[1] = nids[6];
   subnids[2] = nids[5];
   subnids[3] = nids[8];
-  Element* sub8 = mesh.GetElement(-1, subnids, *top_data);
-  sub8->setAsShadowElem();
-  sub8->setQuadCorners(mesh, nids);
-  sub8->setQuadShape(Core::FE::CellType::tet10);
+  Element* sub8 = mesh.get_element(-1, subnids, *top_data);
+  sub8->set_as_shadow_elem();
+  sub8->set_quad_corners(mesh, nids);
+  sub8->set_quad_shape(Core::FE::CellType::tet10);
   subelements_.push_back(sub8);
 
   // each subelement should know its parents id
   for (std::vector<Element*>::iterator i = subelements_.begin(); i != subelements_.end(); ++i)
   {
     Element* subelement = *i;
-    subelement->ParentId(eid);
+    subelement->parent_id(eid);
   }
 }
 
@@ -1367,11 +1367,11 @@ Core::Geo::Cut::Wedge15ElementHandle::Wedge15ElementHandle(
     for (int i = 0; i < 8; ++i)
     {
       int localnodeid = Core::FE::eleNodeNumbering_wedge18_quadsurfaces[localsideid][i];
-      Node* n = mesh.GetNode(node_ids[localnodeid], static_cast<double*>(nullptr));
+      Node* n = mesh.get_node(node_ids[localnodeid], static_cast<double*>(nullptr));
       side_nodes[i] = n;
       node_nids.insert(node_ids[localnodeid]);
-      n->Coordinates(&side_xyze(0, i));
-      side_lsvs(i) = n->LSV();
+      n->coordinates(&side_xyze(0, i));
+      side_lsvs(i) = n->lsv();
     }
 
     Core::FE::shape_function_2D(side_funct, 0.0, 0.0, Core::FE::CellType::quad8);
@@ -1379,7 +1379,7 @@ Core::Geo::Cut::Wedge15ElementHandle::Wedge15ElementHandle(
     lsv.multiply(side_lsvs, side_funct);
 
     // find the unique center node of the quadratic quad8 sides
-    center_nodes[localsideid] = mesh.GetNode(node_nids, xyz.data(), lsv(0));
+    center_nodes[localsideid] = mesh.get_node(node_nids, xyz.data(), lsv(0));
   }
 
   Core::LinAlg::Matrix<3, 6> tb_side_xyze;  // top_bottom_sides
@@ -1395,22 +1395,22 @@ Core::Geo::Cut::Wedge15ElementHandle::Wedge15ElementHandle(
     for (int i = 0; i < 6; ++i)
     {
       int localnodeid = Core::FE::eleNodeNumbering_wedge18_trisurfaces[localsideid][i];
-      Node* n = mesh.GetNode(node_ids[localnodeid], static_cast<double*>(nullptr));
+      Node* n = mesh.get_node(node_ids[localnodeid], static_cast<double*>(nullptr));
       tb_side_nodes[i] = n;
       node_nids.insert(node_ids[localnodeid]);
-      n->Coordinates(&tb_side_xyze(0, i));
-      tb_side_lsvs(i) = n->LSV();
+      n->coordinates(&tb_side_xyze(0, i));
+      tb_side_lsvs(i) = n->lsv();
     }
   }
 
   Node* node15 = center_nodes[0];
-  int node15_id = node15->Id();
+  int node15_id = node15->id();
 
   Node* node16 = center_nodes[1];
-  int node16_id = node16->Id();
+  int node16_id = node16->id();
 
   Node* node17 = center_nodes[2];
-  int node17_id = node17->Id();
+  int node17_id = node17->id();
 
 
   Core::LinAlg::Matrix<3, 15> xyze;
@@ -1418,10 +1418,10 @@ Core::Geo::Cut::Wedge15ElementHandle::Wedge15ElementHandle(
   nodes_.reserve(15);
   for (int i = 0; i < 15; ++i)
   {
-    Node* n = mesh.GetNode(node_ids[i], static_cast<double*>(nullptr));
+    Node* n = mesh.get_node(node_ids[i], static_cast<double*>(nullptr));
     nodes_.push_back(n);
-    n->Coordinates(&xyze(0, i));
-    lsvs(i) = n->LSV();
+    n->coordinates(&xyze(0, i));
+    lsvs(i) = n->lsv();
   }
 
 
@@ -1433,10 +1433,10 @@ Core::Geo::Cut::Wedge15ElementHandle::Wedge15ElementHandle(
   nids[3] = node_ids[9];
   nids[4] = node15_id;
   nids[5] = node17_id;
-  Element* sub1 = mesh.GetElement(-1, nids, *top_data);
-  sub1->setAsShadowElem();
-  sub1->setQuadCorners(mesh, node_ids);
-  sub1->setQuadShape(Core::FE::CellType::wedge6);
+  Element* sub1 = mesh.get_element(-1, nids, *top_data);
+  sub1->set_as_shadow_elem();
+  sub1->set_quad_corners(mesh, node_ids);
+  sub1->set_quad_shape(Core::FE::CellType::wedge6);
   subelements_.push_back(sub1);
 
   nids[0] = node_ids[6];
@@ -1445,10 +1445,10 @@ Core::Geo::Cut::Wedge15ElementHandle::Wedge15ElementHandle(
   nids[3] = node15_id;
   nids[4] = node_ids[10];
   nids[5] = node16_id;
-  Element* sub2 = mesh.GetElement(-1, nids, *top_data);
-  sub2->setAsShadowElem();
-  sub2->setQuadCorners(mesh, node_ids);
-  sub2->setQuadShape(Core::FE::CellType::wedge6);
+  Element* sub2 = mesh.get_element(-1, nids, *top_data);
+  sub2->set_as_shadow_elem();
+  sub2->set_quad_corners(mesh, node_ids);
+  sub2->set_quad_shape(Core::FE::CellType::wedge6);
   subelements_.push_back(sub2);
 
   nids[0] = node_ids[6];
@@ -1457,10 +1457,10 @@ Core::Geo::Cut::Wedge15ElementHandle::Wedge15ElementHandle(
   nids[3] = node15_id;
   nids[4] = node16_id;
   nids[5] = node17_id;
-  Element* sub3 = mesh.GetElement(-1, nids, *top_data);
-  sub3->setAsShadowElem();
-  sub3->setQuadCorners(mesh, node_ids);
-  sub3->setQuadShape(Core::FE::CellType::wedge6);
+  Element* sub3 = mesh.get_element(-1, nids, *top_data);
+  sub3->set_as_shadow_elem();
+  sub3->set_quad_corners(mesh, node_ids);
+  sub3->set_quad_shape(Core::FE::CellType::wedge6);
   subelements_.push_back(sub3);
 
   nids[0] = node_ids[8];
@@ -1469,10 +1469,10 @@ Core::Geo::Cut::Wedge15ElementHandle::Wedge15ElementHandle(
   nids[3] = node17_id;
   nids[4] = node16_id;
   nids[5] = node_ids[11];
-  Element* sub4 = mesh.GetElement(-1, nids, *top_data);
-  sub4->setAsShadowElem();
-  sub4->setQuadCorners(mesh, node_ids);
-  sub4->setQuadShape(Core::FE::CellType::wedge6);
+  Element* sub4 = mesh.get_element(-1, nids, *top_data);
+  sub4->set_as_shadow_elem();
+  sub4->set_quad_corners(mesh, node_ids);
+  sub4->set_quad_shape(Core::FE::CellType::wedge6);
   subelements_.push_back(sub4);
 
   /////////////////////////////////////////////////////////////////
@@ -1483,10 +1483,10 @@ Core::Geo::Cut::Wedge15ElementHandle::Wedge15ElementHandle(
   nids[3] = node_ids[3];
   nids[4] = node_ids[12];
   nids[5] = node_ids[14];
-  Element* sub5 = mesh.GetElement(-1, nids, *top_data);
-  sub5->setAsShadowElem();
-  sub5->setQuadCorners(mesh, node_ids);
-  sub5->setQuadShape(Core::FE::CellType::wedge6);
+  Element* sub5 = mesh.get_element(-1, nids, *top_data);
+  sub5->set_as_shadow_elem();
+  sub5->set_quad_corners(mesh, node_ids);
+  sub5->set_quad_shape(Core::FE::CellType::wedge6);
   subelements_.push_back(sub5);
 
   nids[0] = node15_id;
@@ -1495,10 +1495,10 @@ Core::Geo::Cut::Wedge15ElementHandle::Wedge15ElementHandle(
   nids[3] = node_ids[12];
   nids[4] = node_ids[4];
   nids[5] = node_ids[13];
-  Element* sub6 = mesh.GetElement(-1, nids, *top_data);
-  sub6->setAsShadowElem();
-  sub6->setQuadCorners(mesh, node_ids);
-  sub6->setQuadShape(Core::FE::CellType::wedge6);
+  Element* sub6 = mesh.get_element(-1, nids, *top_data);
+  sub6->set_as_shadow_elem();
+  sub6->set_quad_corners(mesh, node_ids);
+  sub6->set_quad_shape(Core::FE::CellType::wedge6);
   subelements_.push_back(sub6);
 
   nids[0] = node15_id;
@@ -1507,10 +1507,10 @@ Core::Geo::Cut::Wedge15ElementHandle::Wedge15ElementHandle(
   nids[3] = node_ids[12];
   nids[4] = node_ids[13];
   nids[5] = node_ids[14];
-  Element* sub7 = mesh.GetElement(-1, nids, *top_data);
-  sub7->setAsShadowElem();
-  sub7->setQuadCorners(mesh, node_ids);
-  sub7->setQuadShape(Core::FE::CellType::wedge6);
+  Element* sub7 = mesh.get_element(-1, nids, *top_data);
+  sub7->set_as_shadow_elem();
+  sub7->set_quad_corners(mesh, node_ids);
+  sub7->set_quad_shape(Core::FE::CellType::wedge6);
   subelements_.push_back(sub7);
 
   nids[0] = node17_id;
@@ -1519,17 +1519,17 @@ Core::Geo::Cut::Wedge15ElementHandle::Wedge15ElementHandle(
   nids[3] = node_ids[14];
   nids[4] = node_ids[13];
   nids[5] = node_ids[5];
-  Element* sub8 = mesh.GetElement(-1, nids, *top_data);
-  sub8->setAsShadowElem();
-  sub8->setQuadCorners(mesh, node_ids);
-  sub8->setQuadShape(Core::FE::CellType::wedge6);
+  Element* sub8 = mesh.get_element(-1, nids, *top_data);
+  sub8->set_as_shadow_elem();
+  sub8->set_quad_corners(mesh, node_ids);
+  sub8->set_quad_shape(Core::FE::CellType::wedge6);
   subelements_.push_back(sub8);
 
   // each subelement should know its parents id
   for (std::vector<Element*>::iterator i = subelements_.begin(); i != subelements_.end(); ++i)
   {
     Element* subelement = *i;
-    subelement->ParentId(eid);
+    subelement->parent_id(eid);
   }
 }
 
@@ -1543,14 +1543,14 @@ void Core::Geo::Cut::Hex20ElementHandle::local_coordinates(
   Teuchos::RCP<Core::Geo::Cut::Position> pos =
       Core::Geo::Cut::PositionFactory::build_position<3, Core::FE::CellType::hex20>(nodes_, xyz);
 
-  bool success = pos->Compute(1e-10);
+  bool success = pos->compute(1e-10);
   if (not success)
   {
     std::cout << "local coordinates for hex20 element could not be determined" << std::endl;
     for (int i = 0; i < (int)(nodes_.size()); i++)
     {
       std::cout << " node " << i << std::endl;
-      nodes_[i]->Plot(std::cout);
+      nodes_[i]->plot(std::cout);
     }
 
     std::cout << "point in xyz: " << xyz << std::endl;
@@ -1570,7 +1570,7 @@ void Core::Geo::Cut::Hex27ElementHandle::local_coordinates(
   Teuchos::RCP<Core::Geo::Cut::Position> pos =
       Core::Geo::Cut::PositionFactory::build_position<3, Core::FE::CellType::hex27>(nodes_, xyz);
 
-  bool success = pos->Compute();
+  bool success = pos->compute();
   if (not success)
   {
   }
@@ -1587,7 +1587,7 @@ void Core::Geo::Cut::Tet10ElementHandle::local_coordinates(
   Teuchos::RCP<Core::Geo::Cut::Position> pos =
       Core::Geo::Cut::PositionFactory::build_position<3, Core::FE::CellType::tet10>(nodes_, xyz);
 
-  bool success = pos->Compute();
+  bool success = pos->compute();
   if (not success)
   {
   }
@@ -1603,7 +1603,7 @@ void Core::Geo::Cut::Wedge15ElementHandle::local_coordinates(
   Teuchos::RCP<Core::Geo::Cut::Position> pos =
       Core::Geo::Cut::PositionFactory::build_position<3, Core::FE::CellType::wedge15>(nodes_, xyz);
 
-  bool success = pos->Compute();
+  bool success = pos->compute();
   if (not success)
   {
   }

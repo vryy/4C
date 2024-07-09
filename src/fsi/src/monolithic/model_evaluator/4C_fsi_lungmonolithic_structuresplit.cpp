@@ -38,7 +38,7 @@ FSI::LungMonolithicStructureSplit::LungMonolithicStructureSplit(
   // and are located at the FSI interface
   std::vector<Teuchos::RCP<const Epetra_Map>> intersectionmaps;
   intersectionmaps.push_back(structure_field()->get_dbc_map_extractor()->cond_map());
-  intersectionmaps.push_back(structure_field()->Interface()->fsi_cond_map());
+  intersectionmaps.push_back(structure_field()->interface()->fsi_cond_map());
   Teuchos::RCP<Epetra_Map> intersectionmap =
       Core::LinAlg::MultiMapExtractor::intersect_maps(intersectionmaps);
 
@@ -106,16 +106,16 @@ FSI::LungMonolithicStructureSplit::LungMonolithicStructureSplit(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungMonolithicStructureSplit::SetupSystem()
+void FSI::LungMonolithicStructureSplit::setup_system()
 {
-  GeneralSetup();
+  general_setup();
   // create combined map
   create_combined_dof_row_map();
 
   fluid_field()->use_block_matrix(false);
 
   // build ale system matrix in splitted system
-  ale_field()->create_system_matrix(ale_field()->Interface());
+  ale_field()->create_system_matrix(ale_field()->interface());
 
   //-----------------------------------------------------------------------------
   // create block system matrix
@@ -131,10 +131,10 @@ void FSI::LungMonolithicStructureSplit::create_combined_dof_row_map()
       Teuchos::rcp_dynamic_cast<Adapter::StructureLung>(structure_field());
 
   std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
-  vecSpaces.push_back(structfield->FSIInterface()->other_map());
+  vecSpaces.push_back(structfield->fsi_interface()->other_map());
   vecSpaces.push_back(fluid_field()->dof_row_map());
   // remaining (not coupled) dofs of ale field
-  vecSpaces.push_back(ale_field()->Interface()->Map(0));
+  vecSpaces.push_back(ale_field()->interface()->Map(0));
   // additional volume constraints
   vecSpaces.push_back(ConstrMap_);
 
@@ -152,15 +152,15 @@ void FSI::LungMonolithicStructureSplit::setup_rhs_residual(Epetra_Vector& f)
 {
   Teuchos::RCP<Epetra_Vector> structureRHS =
       Teuchos::rcp(new Epetra_Vector(*structure_field()->discretization()->dof_row_map()));
-  structureRHS->Update(1.0, *structure_field()->RHS(), 1.0, *AddStructRHS_, 0.0);
+  structureRHS->Update(1.0, *structure_field()->rhs(), 1.0, *AddStructRHS_, 0.0);
 
   const double fluidscale = fluid_field()->residual_scaling();
 
   Teuchos::RCP<Epetra_Vector> fluidRHS =
       Teuchos::rcp(new Epetra_Vector(*fluid_field()->discretization()->dof_row_map()));
-  fluidRHS->Update(1.0, *fluid_field()->RHS(), 1.0, *AddFluidRHS_, 0.0);
+  fluidRHS->Update(1.0, *fluid_field()->rhs(), 1.0, *AddFluidRHS_, 0.0);
 
-  setup_vector(f, structureRHS, fluidRHS, ale_field()->RHS(), ConstrRHS_, fluidscale);
+  setup_vector(f, structureRHS, fluidRHS, ale_field()->rhs(), ConstrRHS_, fluidscale);
 
   return;
 }
@@ -195,41 +195,41 @@ void FSI::LungMonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
   //--------------------------------------------------------------------------------
   // ale
   //--------------------------------------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a = ale_field()->BlockSystemMatrix();
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a = ale_field()->block_system_matrix();
   if (a == Teuchos::null) FOUR_C_THROW("expect ale block matrix");
 
-  Core::LinAlg::SparseMatrix& aig = a->Matrix(0, 1);
+  Core::LinAlg::SparseMatrix& aig = a->matrix(0, 1);
 
   Teuchos::RCP<Epetra_Vector> fveln = fluid_field()->extract_interface_veln();
   Teuchos::RCP<Epetra_Vector> sveln = fluid_to_struct(fveln);
   Teuchos::RCP<Epetra_Vector> aveln = struct_to_ale(sveln);
-  Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
+  Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.row_map()));
   aig.Apply(*aveln, *rhs);
 
-  rhs->Scale(-1. * Dt());
+  rhs->Scale(-1. * dt());
 
   extractor().add_vector(*rhs, 2, f);
 
   //--------------------------------------------------------------------------------
   // structure
   //--------------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> veln = structure_field()->Interface()->insert_fsi_cond_vector(sveln);
+  Teuchos::RCP<Epetra_Vector> veln = structure_field()->interface()->insert_fsi_cond_vector(sveln);
   rhs = Teuchos::rcp(new Epetra_Vector(veln->Map()));
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> s = structure_field()->system_matrix();
   s->Apply(*veln, *rhs);
 
   Teuchos::RCP<Epetra_Vector> addrhs = Teuchos::rcp(new Epetra_Vector(veln->Map()));
-  AddStructConstrMatrix_->Matrix(0, 0).Apply(*veln, *addrhs);
+  AddStructConstrMatrix_->matrix(0, 0).Apply(*veln, *addrhs);
 
   rhs->Update(1.0, *addrhs, 1.0);
-  rhs->Scale(-1. * Dt());
+  rhs->Scale(-1. * dt());
 
-  veln = structfield->FSIInterface()->extract_other_vector(rhs);
+  veln = structfield->fsi_interface()->extract_other_vector(rhs);
   extractor().add_vector(*veln, 0, f);
 
-  veln = structure_field()->Interface()->extract_fsi_cond_vector(rhs);
-  veln = fluid_field()->Interface()->insert_fsi_cond_vector(struct_to_fluid(veln));
+  veln = structure_field()->interface()->extract_fsi_cond_vector(rhs);
+  veln = fluid_field()->interface()->insert_fsi_cond_vector(struct_to_fluid(veln));
 
   veln->Scale(1. / fluidscale);
   extractor().add_vector(*veln, 1, f);
@@ -238,69 +238,69 @@ void FSI::LungMonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
   // constraint structure
   //--------------------------------------------------------------------------------
   // split in two blocks according to inner and fsi structure dofs
-  Teuchos::RCP<Epetra_Map> emptymap =
-      Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, structure_field()->discretization()->Comm()));
+  Teuchos::RCP<Epetra_Map> emptymap = Teuchos::rcp(
+      new Epetra_Map(-1, 0, nullptr, 0, structure_field()->discretization()->get_comm()));
   Core::LinAlg::MapExtractor extractor_temp;
   extractor_temp.setup(*ConstrMap_, emptymap, ConstrMap_);
 
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> constrstructblocks =
-      AddStructConstrMatrix_->Matrix(1, 0).Split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *structfield->FSIInterface(), extractor_temp);
-  constrstructblocks->Complete();
+      AddStructConstrMatrix_->matrix(1, 0).split<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          *structfield->fsi_interface(), extractor_temp);
+  constrstructblocks->complete();
 
-  Core::LinAlg::SparseMatrix& csig = constrstructblocks->Matrix(0, 1);
+  Core::LinAlg::SparseMatrix& csig = constrstructblocks->matrix(0, 1);
 
-  rhs = Teuchos::rcp(new Epetra_Vector(csig.RowMap()));
+  rhs = Teuchos::rcp(new Epetra_Vector(csig.row_map()));
   csig.Apply(*sveln, *rhs);
-  rhs->Scale(-1. * Dt());
+  rhs->Scale(-1. * dt());
   extractor().add_vector(*rhs, 3, f);
 
   //--------------------------------------------------------------------------------
   // constraint ale
   //--------------------------------------------------------------------------------
-  Core::LinAlg::SparseMatrix& caig = ConstrAleMatrix_->Matrix(0, 1);
+  Core::LinAlg::SparseMatrix& caig = ConstrAleMatrix_->matrix(0, 1);
   caig.Apply(*fveln, *rhs);
-  rhs->Scale(-1. * Dt());
+  rhs->Scale(-1. * dt());
   extractor().add_vector(*rhs, 3, f);
 
   //--------------------------------------------------------------------------------
   // shape derivatives
   //--------------------------------------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> mmm = fluidfield->ShapeDerivatives();
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> mmm = fluidfield->shape_derivatives();
 
   if (mmm != Teuchos::null)
   {
-    Core::LinAlg::SparseMatrix& fmig = mmm->Matrix(0, 1);
-    Core::LinAlg::SparseMatrix& fmgg = mmm->Matrix(1, 1);
-    Core::LinAlg::SparseMatrix& fmGg = mmm->Matrix(3, 1);
+    Core::LinAlg::SparseMatrix& fmig = mmm->matrix(0, 1);
+    Core::LinAlg::SparseMatrix& fmgg = mmm->matrix(1, 1);
+    Core::LinAlg::SparseMatrix& fmGg = mmm->matrix(3, 1);
 
-    rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
+    rhs = Teuchos::rcp(new Epetra_Vector(fmig.row_map()));
     fmig.Apply(*fveln, *rhs);
-    veln = fluid_field()->Interface()->insert_vector(rhs, 0);
+    veln = fluid_field()->interface()->insert_vector(rhs, 0);
 
-    rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
+    rhs = Teuchos::rcp(new Epetra_Vector(fmgg.row_map()));
     fmgg.Apply(*fveln, *rhs);
-    fluid_field()->Interface()->insert_vector(rhs, 1, veln);
+    fluid_field()->interface()->insert_vector(rhs, 1, veln);
 
-    rhs = Teuchos::rcp(new Epetra_Vector(fmGg.RowMap()));
+    rhs = Teuchos::rcp(new Epetra_Vector(fmGg.row_map()));
     fmGg.Apply(*fveln, *rhs);
-    fluid_field()->Interface()->insert_vector(rhs, 3, veln);
+    fluid_field()->interface()->insert_vector(rhs, 3, veln);
 
-    veln->Scale(-1. * Dt());
+    veln->Scale(-1. * dt());
     extractor().add_vector(*veln, 1, f);
 
-    Core::LinAlg::SparseMatrix& afmgg = AddFluidShapeDerivMatrix_->Matrix(1, 1);
-    Core::LinAlg::SparseMatrix& afmGg = AddFluidShapeDerivMatrix_->Matrix(3, 1);
+    Core::LinAlg::SparseMatrix& afmgg = AddFluidShapeDerivMatrix_->matrix(1, 1);
+    Core::LinAlg::SparseMatrix& afmGg = AddFluidShapeDerivMatrix_->matrix(3, 1);
 
-    rhs = Teuchos::rcp(new Epetra_Vector(afmgg.RowMap()));
+    rhs = Teuchos::rcp(new Epetra_Vector(afmgg.row_map()));
     afmgg.Apply(*fveln, *rhs);
-    veln = fluid_field()->Interface()->insert_vector(rhs, 1);
+    veln = fluid_field()->interface()->insert_vector(rhs, 1);
 
-    rhs = Teuchos::rcp(new Epetra_Vector(afmGg.RowMap()));
+    rhs = Teuchos::rcp(new Epetra_Vector(afmGg.row_map()));
     afmGg.Apply(*fveln, *rhs);
-    fluid_field()->Interface()->insert_vector(rhs, 3, veln);
+    fluid_field()->interface()->insert_vector(rhs, 3, veln);
 
-    veln->Scale(-1. * Dt());
+    veln->Scale(-1. * dt());
     extractor().add_vector(*veln, 1, f);
   }
 
@@ -322,59 +322,59 @@ void FSI::LungMonolithicStructureSplit::setup_system_matrix(
 
   const Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> f = fluid_field()->SystemMatrix();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> f = fluid_field()->system_matrix();
 
   double scale = fluid_field()->residual_scaling();
-  double timescale = fluid_field()->TimeScaling();
+  double timescale = fluid_field()->time_scaling();
 
   /*----------------------------------------------------------------------*/
   // fluid part
-  mat.Assign(1, 1, Core::LinAlg::View, *f);
+  mat.assign(1, 1, Core::LinAlg::View, *f);
 
   // fluid linearization with respect to mesh motion block
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> mmm = fluid_field()->ShapeDerivatives();
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> mmm = fluid_field()->shape_derivatives();
   const Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
   if (mmm != Teuchos::null)
   {
-    Core::LinAlg::SparseMatrix& fmii = mmm->Matrix(0, 0);
-    Core::LinAlg::SparseMatrix& fmig = mmm->Matrix(0, 1);
-    Core::LinAlg::SparseMatrix& fmiG = mmm->Matrix(0, 3);
+    Core::LinAlg::SparseMatrix& fmii = mmm->matrix(0, 0);
+    Core::LinAlg::SparseMatrix& fmig = mmm->matrix(0, 1);
+    Core::LinAlg::SparseMatrix& fmiG = mmm->matrix(0, 3);
 
-    Core::LinAlg::SparseMatrix& fmgi = mmm->Matrix(1, 0);
-    Core::LinAlg::SparseMatrix& fmgg = mmm->Matrix(1, 1);
-    Core::LinAlg::SparseMatrix& fmgG = mmm->Matrix(1, 3);
+    Core::LinAlg::SparseMatrix& fmgi = mmm->matrix(1, 0);
+    Core::LinAlg::SparseMatrix& fmgg = mmm->matrix(1, 1);
+    Core::LinAlg::SparseMatrix& fmgG = mmm->matrix(1, 3);
 
-    Core::LinAlg::SparseMatrix& fmGi = mmm->Matrix(3, 0);
-    Core::LinAlg::SparseMatrix& fmGg = mmm->Matrix(3, 1);
-    Core::LinAlg::SparseMatrix& fmGG = mmm->Matrix(3, 3);
+    Core::LinAlg::SparseMatrix& fmGi = mmm->matrix(3, 0);
+    Core::LinAlg::SparseMatrix& fmGg = mmm->matrix(3, 1);
+    Core::LinAlg::SparseMatrix& fmGG = mmm->matrix(3, 3);
 
-    Core::LinAlg::SparseMatrix& addfmGg = AddFluidShapeDerivMatrix_->Matrix(3, 1);
-    Core::LinAlg::SparseMatrix& addfmGG = AddFluidShapeDerivMatrix_->Matrix(3, 3);
+    Core::LinAlg::SparseMatrix& addfmGg = AddFluidShapeDerivMatrix_->matrix(3, 1);
+    Core::LinAlg::SparseMatrix& addfmGG = AddFluidShapeDerivMatrix_->matrix(3, 3);
 
-    mat.Matrix(1, 1).Add(fmig, false, 1. / timescale, 1.0);
-    mat.Matrix(1, 1).Add(fmgg, false, 1. / timescale, 1.0);
-    mat.Matrix(1, 1).Add(fmGg, false, 1. / timescale, 1.0);
+    mat.matrix(1, 1).add(fmig, false, 1. / timescale, 1.0);
+    mat.matrix(1, 1).add(fmgg, false, 1. / timescale, 1.0);
+    mat.matrix(1, 1).add(fmGg, false, 1. / timescale, 1.0);
 
-    fmiitransform_(mmm->FullRowMap(), mmm->FullColMap(), fmii, 1.,
-        Core::Adapter::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, false);
-    fmgitransform_(mmm->FullRowMap(), mmm->FullColMap(), fmgi, 1.,
-        Core::Adapter::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, true);
-    fm_gitransform_(mmm->FullRowMap(), mmm->FullColMap(), fmGi, 1.,
-        Core::Adapter::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, true);
+    fmiitransform_(mmm->full_row_map(), mmm->full_col_map(), fmii, 1.,
+        Core::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, false);
+    fmgitransform_(mmm->full_row_map(), mmm->full_col_map(), fmgi, 1.,
+        Core::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, true);
+    fm_gitransform_(mmm->full_row_map(), mmm->full_col_map(), fmGi, 1.,
+        Core::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, true);
 
-    fmg_gtransform_(mmm->FullRowMap(), mmm->FullColMap(), fmgG, 1.,
-        Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, false);
-    fmi_gtransform_(mmm->FullRowMap(), mmm->FullColMap(), fmiG, 1.,
-        Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, true);
-    fm_g_gtransform_(mmm->FullRowMap(), mmm->FullColMap(), fmGG, 1.,
-        Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, true);
+    fmg_gtransform_(mmm->full_row_map(), mmm->full_col_map(), fmgG, 1.,
+        Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(1, 0), true, false);
+    fmi_gtransform_(mmm->full_row_map(), mmm->full_col_map(), fmiG, 1.,
+        Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(1, 0), true, true);
+    fm_g_gtransform_(mmm->full_row_map(), mmm->full_col_map(), fmGG, 1.,
+        Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(1, 0), true, true);
 
-    mat.Matrix(1, 1).Add(addfmGg, false, 1. / timescale, 1.0);
+    mat.matrix(1, 1).add(addfmGg, false, 1. / timescale, 1.0);
 
-    addfm_g_gtransform_(AddFluidShapeDerivMatrix_->FullRowMap(),
-        AddFluidShapeDerivMatrix_->FullColMap(), addfmGG, 1.,
-        Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, true);
+    addfm_g_gtransform_(AddFluidShapeDerivMatrix_->full_row_map(),
+        AddFluidShapeDerivMatrix_->full_col_map(), addfmGG, 1.,
+        Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(1, 0), true, true);
   }
 
   /*----------------------------------------------------------------------*/
@@ -384,26 +384,26 @@ void FSI::LungMonolithicStructureSplit::setup_system_matrix(
       Teuchos::rcp_dynamic_cast<Adapter::StructureLung>(structure_field());
 
   Core::LinAlg::SparseMatrix& s = *structure_field()->system_matrix();
-  s.Add(AddStructConstrMatrix_->Matrix(0, 0), false, 1.0, 1.0);
+  s.add(AddStructConstrMatrix_->matrix(0, 0), false, 1.0, 1.0);
 
-  siitransform_(s, *structfield->FSIInterface()->Map(0), *structfield->FSIInterface()->Map(0), 1.0,
-      nullptr, nullptr, mat.Matrix(0, 0), true, false);
+  siitransform_(s, *structfield->fsi_interface()->Map(0), *structfield->fsi_interface()->Map(0),
+      1.0, nullptr, nullptr, mat.matrix(0, 0), true, false);
 
   Core::Adapter::CouplingMasterConverter converter(coupsf);
-  sigtransform_(s, *structfield->FSIInterface()->Map(0), *structfield->FSIInterface()->Map(1),
-      1. / timescale, nullptr, &converter, mat.Matrix(0, 1), true, false);
+  sigtransform_(s, *structfield->fsi_interface()->Map(0), *structfield->fsi_interface()->Map(1),
+      1. / timescale, nullptr, &converter, mat.matrix(0, 1), true, false);
 
-  sgitransform_(s, *structfield->FSIInterface()->Map(1), *structfield->FSIInterface()->Map(0),
-      1. / scale, &converter, nullptr, mat.Matrix(1, 0), true, true);
+  sgitransform_(s, *structfield->fsi_interface()->Map(1), *structfield->fsi_interface()->Map(0),
+      1. / scale, &converter, nullptr, mat.matrix(1, 0), true, true);
 
-  sggtransform_(s, *structfield->FSIInterface()->Map(1), *structfield->FSIInterface()->Map(1),
-      1. / (scale * timescale), &converter, &converter, mat.Matrix(1, 1), true, true);
+  sggtransform_(s, *structfield->fsi_interface()->Map(1), *structfield->fsi_interface()->Map(1),
+      1. / (scale * timescale), &converter, &converter, mat.matrix(1, 1), true, true);
 
   /*----------------------------------------------------------------------*/
   // fluid constraint part
   // add into new matrix instead of view -> avoids matrix UnComplete() operations in the
   // second and subsequent time steps
-  mat.Matrix(1, 3).Add(*FluidConstrMatrix_, false, 1., 0.);
+  mat.matrix(1, 3).add(*FluidConstrMatrix_, false, 1., 0.);
 
   /*----------------------------------------------------------------------*/
   // structure constraint part
@@ -411,58 +411,58 @@ void FSI::LungMonolithicStructureSplit::setup_system_matrix(
   // split in two blocks according to inner and fsi structure dofs
   Core::LinAlg::MapExtractor extractor;
 
-  sciitransform_(AddStructConstrMatrix_->Matrix(0, 1), *structfield->FSIInterface()->Map(0),
-      *ConstrMap_, 1., nullptr, nullptr, mat.Matrix(0, 3), true, false);
+  sciitransform_(AddStructConstrMatrix_->matrix(0, 1), *structfield->fsi_interface()->Map(0),
+      *ConstrMap_, 1., nullptr, nullptr, mat.matrix(0, 3), true, false);
 
   // add interface part to fluid block
-  scgitransform_(AddStructConstrMatrix_->Matrix(0, 1), *structfield->FSIInterface()->Map(1),
-      *ConstrMap_, 1. / scale, &converter, nullptr, mat.Matrix(1, 3), true, true);
+  scgitransform_(AddStructConstrMatrix_->matrix(0, 1), *structfield->fsi_interface()->Map(1),
+      *ConstrMap_, 1. / scale, &converter, nullptr, mat.matrix(1, 3), true, true);
 
   /*----------------------------------------------------------------------*/
   // ale part
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a = ale_field()->BlockSystemMatrix();
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a = ale_field()->block_system_matrix();
 
   if (a == Teuchos::null) FOUR_C_THROW("expect ale block matrix");
 
-  a->Complete();
+  a->complete();
 
-  Core::LinAlg::SparseMatrix& aii = a->Matrix(0, 0);
-  Core::LinAlg::SparseMatrix& aig = a->Matrix(0, 1);
-  Core::LinAlg::SparseMatrix& aiG = a->Matrix(0, 3);
+  Core::LinAlg::SparseMatrix& aii = a->matrix(0, 0);
+  Core::LinAlg::SparseMatrix& aig = a->matrix(0, 1);
+  Core::LinAlg::SparseMatrix& aiG = a->matrix(0, 3);
 
-  ai_gtransform_(a->FullRowMap(), a->FullColMap(), aiG, 1.,
-      Core::Adapter::CouplingSlaveConverter(*coupsaout_), mat.Matrix(2, 0));
-  aigtransform_(a->FullRowMap(), a->FullColMap(), aig, 1. / timescale,
-      Core::Adapter::CouplingSlaveConverter(*icoupfa_), mat.Matrix(2, 1));
-  mat.Assign(2, 2, Core::LinAlg::View, aii);
+  ai_gtransform_(a->full_row_map(), a->full_col_map(), aiG, 1.,
+      Core::Adapter::CouplingSlaveConverter(*coupsaout_), mat.matrix(2, 0));
+  aigtransform_(a->full_row_map(), a->full_col_map(), aig, 1. / timescale,
+      Core::Adapter::CouplingSlaveConverter(*icoupfa_), mat.matrix(2, 1));
+  mat.assign(2, 2, Core::LinAlg::View, aii);
 
   /*----------------------------------------------------------------------*/
   // constraint part -> fluid
   // add into new matrix instead of view -> avoids matrix UnComplete() operations in the
   // second and subsequent time steps
 
-  mat.Matrix(3, 1).Add(*ConstrFluidMatrix_, false, 1., 0.);
+  mat.matrix(3, 1).add(*ConstrFluidMatrix_, false, 1., 0.);
 
   /*----------------------------------------------------------------------*/
   // constraint part -> structure
   // split in two blocks according to inner and fsi structure dofs
 
-  csiitransform_(AddStructConstrMatrix_->Matrix(1, 0), *ConstrMap_,
-      *structfield->FSIInterface()->Map(0), 1., nullptr, nullptr, mat.Matrix(3, 0), true, false);
-  csigtransform_(AddStructConstrMatrix_->Matrix(1, 0), *ConstrMap_,
-      *structfield->FSIInterface()->Map(1), 1. / timescale, nullptr, &converter, mat.Matrix(3, 1),
+  csiitransform_(AddStructConstrMatrix_->matrix(1, 0), *ConstrMap_,
+      *structfield->fsi_interface()->Map(0), 1., nullptr, nullptr, mat.matrix(3, 0), true, false);
+  csigtransform_(AddStructConstrMatrix_->matrix(1, 0), *ConstrMap_,
+      *structfield->fsi_interface()->Map(1), 1. / timescale, nullptr, &converter, mat.matrix(3, 1),
       true, true);
 
   /*----------------------------------------------------------------------*/
   // constraint part -> ale
 
-  Core::LinAlg::SparseMatrix& caiG = ConstrAleMatrix_->Matrix(0, 3);
-  cai_gtransform_(*coupfsout_->MasterDofMap(), caiG.ColMap(), caiG, 1.0,
-      Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.Matrix(3, 0), true, true);
+  Core::LinAlg::SparseMatrix& caiG = ConstrAleMatrix_->matrix(0, 3);
+  cai_gtransform_(*coupfsout_->master_dof_map(), caiG.col_map(), caiG, 1.0,
+      Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(3, 0), true, true);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
-  mat.Complete();
+  mat.complete();
 }
 
 
@@ -491,16 +491,16 @@ void FSI::LungMonolithicStructureSplit::setup_vector(Epetra_Vector& f,
   const Teuchos::RCP<Adapter::StructureLung>& structfield =
       Teuchos::rcp_dynamic_cast<Adapter::StructureLung>(structure_field());
 
-  Teuchos::RCP<Epetra_Vector> sov = structfield->FSIInterface()->extract_other_vector(sv);
+  Teuchos::RCP<Epetra_Vector> sov = structfield->fsi_interface()->extract_other_vector(sv);
 
-  Teuchos::RCP<Epetra_Vector> aov = ale_field()->Interface()->extract_vector(av, 0);
+  Teuchos::RCP<Epetra_Vector> aov = ale_field()->interface()->extract_vector(av, 0);
 
   if (fluidscale != 0)
   {
     // add fluid interface values to structure vector
-    Teuchos::RCP<Epetra_Vector> scv = structure_field()->Interface()->extract_fsi_cond_vector(sv);
+    Teuchos::RCP<Epetra_Vector> scv = structure_field()->interface()->extract_fsi_cond_vector(sv);
     Teuchos::RCP<Epetra_Vector> modfv =
-        fluid_field()->Interface()->insert_fsi_cond_vector(struct_to_fluid(scv));
+        fluid_field()->interface()->insert_fsi_cond_vector(struct_to_fluid(scv));
     modfv->Update(1.0, *fv, 1. / fluidscale);
 
     extractor().insert_vector(*modfv, 1, f);
@@ -529,26 +529,26 @@ void FSI::LungMonolithicStructureSplit::extract_field_vectors(Teuchos::RCP<const
 
   // process structure unknowns
 
-  Teuchos::RCP<Epetra_Vector> fcx = fluid_field()->Interface()->extract_fsi_cond_vector(fx);
+  Teuchos::RCP<Epetra_Vector> fcx = fluid_field()->interface()->extract_fsi_cond_vector(fx);
   fluid_field()->velocity_to_displacement(fcx);
   Teuchos::RCP<const Epetra_Vector> sox = extractor().extract_vector(x, 0);
   Teuchos::RCP<Epetra_Vector> scx = fluid_to_struct(fcx);
 
-  Teuchos::RCP<Epetra_Vector> s = structfield->FSIInterface()->insert_other_vector(sox);
-  structure_field()->Interface()->insert_fsi_cond_vector(scx, s);
+  Teuchos::RCP<Epetra_Vector> s = structfield->fsi_interface()->insert_other_vector(sox);
+  structure_field()->interface()->insert_fsi_cond_vector(scx, s);
   sx = s;
 
   // process ale unknowns
 
   Teuchos::RCP<const Epetra_Vector> aox = extractor().extract_vector(x, 2);
   Teuchos::RCP<Epetra_Vector> acx = struct_to_ale(scx);
-  Teuchos::RCP<Epetra_Vector> a = ale_field()->Interface()->insert_vector(aox, 0);
-  ale_field()->Interface()->insert_vector(acx, 1, a);
+  Teuchos::RCP<Epetra_Vector> a = ale_field()->interface()->insert_vector(aox, 0);
+  ale_field()->interface()->insert_vector(acx, 1, a);
 
   Teuchos::RCP<Epetra_Vector> scox =
-      structure_field()->Interface()->extract_lung_asi_cond_vector(sx);
+      structure_field()->interface()->extract_lung_asi_cond_vector(sx);
   Teuchos::RCP<Epetra_Vector> acox = struct_to_ale_outflow(scox);
-  ale_field()->Interface()->insert_vector(acox, 3, a);
+  ale_field()->interface()->insert_vector(acox, 3, a);
 
   ax = a;
 }

@@ -30,20 +30,20 @@ void XFEM::UTILS::extract_node_vectors(Teuchos::RCP<Core::FE::Discretization> di
       Core::Rebalance::GetColVersionOfRowVector(dis, idispnp);
   nodevecmap.clear();
 
-  for (int lid = 0; lid < dis->NumMyColNodes(); ++lid)
+  for (int lid = 0; lid < dis->num_my_col_nodes(); ++lid)
   {
-    const Core::Nodes::Node* node = dis->lColNode(lid);
+    const Core::Nodes::Node* node = dis->l_col_node(lid);
     std::vector<int> lm;
-    dis->Dof(node, lm);
+    dis->dof(node, lm);
     std::vector<double> mydisp;
     Core::FE::ExtractMyValues(*dispcol, mydisp, lm);
     if (mydisp.size() < 3) FOUR_C_THROW("we need at least 3 dofs here");
 
     Core::LinAlg::Matrix<3, 1> currpos;
-    currpos(0) = node->X()[0] + mydisp[0];
-    currpos(1) = node->X()[1] + mydisp[1];
-    currpos(2) = node->X()[2] + mydisp[2];
-    nodevecmap.insert(std::make_pair(node->Id(), currpos));
+    currpos(0) = node->x()[0] + mydisp[0];
+    currpos(1) = node->x()[1] + mydisp[1];
+    currpos(2) = node->x()[2] + mydisp[2];
+    nodevecmap.insert(std::make_pair(node->id(), currpos));
   }
 }
 
@@ -59,13 +59,13 @@ void XFEM::UTILS::get_volume_cell_material(Core::Elements::Element* actele,
   else if (position != Core::Geo::Cut::Point::outside)  // plus domain, \Omega^j with j>i
     FOUR_C_THROW("Volume cell is either undecided or on surface. That can't be good....");
 
-  Teuchos::RCP<Core::Mat::Material> material = actele->Material();
+  Teuchos::RCP<Core::Mat::Material> material = actele->material();
 
-  if (material->MaterialType() == Core::Materials::m_matlist)
+  if (material->material_type() == Core::Materials::m_matlist)
   {
     // get material list for this element
     const Mat::MatList* matlist = static_cast<const Mat::MatList*>(material.get());
-    int numofmaterials = matlist->NumMat();
+    int numofmaterials = matlist->num_mat();
 
     // Error messages
     if (numofmaterials > 2)
@@ -75,8 +75,8 @@ void XFEM::UTILS::get_volume_cell_material(Core::Elements::Element* actele,
 
     // set default id in list of materials
     int matid = -1;
-    matid = matlist->MatID(position_id);
-    mat = matlist->MaterialById(matid);
+    matid = matlist->mat_id(position_id);
+    mat = matlist->material_by_id(matid);
   }
   else
   {
@@ -95,30 +95,30 @@ void XFEM::UTILS::SafetyCheckMaterials(
 {
   //------------------------------ see whether materials in patch are equal
 
-  if (pmat->MaterialType() != nmat->MaterialType())
+  if (pmat->material_type() != nmat->material_type())
     FOUR_C_THROW(" not the same material for master and slave parent element");
 
-  if (pmat->MaterialType() == Core::Materials::m_matlist)
+  if (pmat->material_type() == Core::Materials::m_matlist)
     FOUR_C_THROW(
         "A matlist has been found in edge based stabilization! If you are running XTPF, check "
         "calls as this should NOT happen!!!");
 
-  if (pmat->MaterialType() != Core::Materials::m_carreauyasuda &&
-      pmat->MaterialType() != Core::Materials::m_modpowerlaw &&
-      pmat->MaterialType() != Core::Materials::m_herschelbulkley &&
-      pmat->MaterialType() != Core::Materials::m_fluid)
+  if (pmat->material_type() != Core::Materials::m_carreauyasuda &&
+      pmat->material_type() != Core::Materials::m_modpowerlaw &&
+      pmat->material_type() != Core::Materials::m_herschelbulkley &&
+      pmat->material_type() != Core::Materials::m_fluid)
     FOUR_C_THROW("Material law for parent element is not a fluid");
 
-  if (pmat->MaterialType() == Core::Materials::m_fluid)
+  if (pmat->material_type() == Core::Materials::m_fluid)
   {
     {
       const Mat::NewtonianFluid* actmat_p = static_cast<const Mat::NewtonianFluid*>(pmat.get());
-      const double pvisc = actmat_p->Viscosity();
-      const double pdens = actmat_p->Density();
+      const double pvisc = actmat_p->viscosity();
+      const double pdens = actmat_p->density();
 
       const Mat::NewtonianFluid* actmat_m = static_cast<const Mat::NewtonianFluid*>(nmat.get());
-      const double nvisc = actmat_m->Viscosity();
-      const double ndens = actmat_m->Density();
+      const double nvisc = actmat_m->viscosity();
+      const double ndens = actmat_m->density();
 
       if (std::abs(nvisc - pvisc) > 1e-14)
       {
@@ -149,8 +149,8 @@ void XFEM::UTILS::ExtractQuantityAtElement(Core::LinAlg::SerialDenseMatrix::Base
     Teuchos::RCP<Core::FE::Discretization>& dis, const int nds_vector, const int nsd)
 {
   // get the other nds-set which is connected to the current one via this boundary-cell
-  Core::Elements::Element::LocationArray la(dis->NumDofSets());
-  element->LocationVector(*dis, la, false);
+  Core::Elements::Element::LocationArray la(dis->num_dof_sets());
+  element->location_vector(*dis, la, false);
 
   const size_t numnode = element->num_node();
 
@@ -176,7 +176,7 @@ void XFEM::UTILS::ExtractQuantityAtNode(Core::LinAlg::SerialDenseMatrix::Base& e
     const Core::Nodes::Node* node, const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
     Teuchos::RCP<Core::FE::Discretization>& dis, const int nds_vector, const unsigned int nsd)
 {
-  const std::vector<int> lm = dis->Dof(nds_vector, node);
+  const std::vector<int> lm = dis->dof(nds_vector, node);
   if (lm.size() != 1) FOUR_C_THROW("assume a unique level-set dof in cutterdis-Dofset");
 
   std::vector<double> local_vector(nsd);

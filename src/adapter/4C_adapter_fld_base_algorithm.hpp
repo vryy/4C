@@ -53,7 +53,7 @@ namespace Adapter
     const Teuchos::RCP<Fluid>& fluid_field() { return fluid_; }
 
     /// set the initial flow field in the fluid
-    void SetInitialFlowField(const Teuchos::ParameterList& fdyn);
+    void set_initial_flow_field(const Teuchos::ParameterList& fdyn);
 
    private:
     //! setup fluid algorithm (overriding some fluid parameters with

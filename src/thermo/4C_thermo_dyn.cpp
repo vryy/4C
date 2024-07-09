@@ -26,30 +26,30 @@ void thr_dyn_drt()
 {
   // access the discretization
   Teuchos::RCP<Core::FE::Discretization> thermodis = Teuchos::null;
-  thermodis = Global::Problem::Instance()->GetDis("thermo");
+  thermodis = Global::Problem::instance()->get_dis("thermo");
 
   // set degrees of freedom in the discretization
-  if (not thermodis->Filled()) thermodis->fill_complete();
+  if (not thermodis->filled()) thermodis->fill_complete();
 
-  const Teuchos::ParameterList& tdyn = Global::Problem::Instance()->thermal_dynamic_params();
+  const Teuchos::ParameterList& tdyn = Global::Problem::instance()->thermal_dynamic_params();
 
   // create instance of thermo basis algorithm (no structure discretization)
   Teuchos::RCP<Adapter::ThermoBaseAlgorithm> thermoonly =
       Teuchos::rcp(new Adapter::ThermoBaseAlgorithm(tdyn, thermodis));
 
   // do restart if demanded from input file
-  const int restart = Global::Problem::Instance()->restart();
+  const int restart = Global::Problem::instance()->restart();
   if (restart)
   {
-    thermoonly->ThermoField().read_restart(restart);
+    thermoonly->thermo_field().read_restart(restart);
   }
 
   // enter time loop to solve problem
-  (thermoonly->ThermoField()).Integrate();
+  (thermoonly->thermo_field()).integrate();
 
   // perform the result test if required
-  Global::Problem::Instance()->AddFieldTest(thermoonly->ThermoField().CreateFieldTest());
-  Global::Problem::Instance()->TestAll(thermodis->Comm());
+  Global::Problem::instance()->add_field_test(thermoonly->thermo_field().create_field_test());
+  Global::Problem::instance()->test_all(thermodis->get_comm());
 
   // done
   return;

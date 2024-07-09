@@ -19,9 +19,9 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::Vele3Type Discret::ELEMENTS::Vele3Type::instance_;
 
-Discret::ELEMENTS::Vele3Type& Discret::ELEMENTS::Vele3Type::Instance() { return instance_; }
+Discret::ELEMENTS::Vele3Type& Discret::ELEMENTS::Vele3Type::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::Vele3Type::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Vele3Type::create(const std::vector<char>& data)
 {
   Discret::ELEMENTS::Vele3* object = new Discret::ELEMENTS::Vele3(-1, -1);
   object->unpack(data);
@@ -29,7 +29,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Vele3Type::Create(const std::
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "VELE3")
@@ -42,7 +42,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3Type::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(new Discret::ELEMENTS::Vele3(id, owner));
@@ -55,7 +55,7 @@ void Discret::ELEMENTS::Vele3Type::nodal_block_information(
 {
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Vele3Type::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Vele3Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   Core::LinAlg::SerialDenseMatrix nullspace;
@@ -71,7 +71,7 @@ void Discret::ELEMENTS::Vele3Type::setup_element_definition(
   defs["HEX8"] = Input::LineDefinition::Builder().add_int_vector("HEX8", 8).build();
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3SurfaceType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3SurfaceType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Vele3Surface( id, owner ) );
@@ -79,7 +79,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3SurfaceType::Creat
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3LineType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3LineType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Vele3Line( id, owner ) );
@@ -102,7 +102,7 @@ Discret::ELEMENTS::Vele3::Vele3(const Discret::ELEMENTS::Vele3& old) : Core::Ele
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Vele3::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Vele3::clone() const
 {
   Discret::ELEMENTS::Vele3* newelement = new Discret::ELEMENTS::Vele3(*this);
   return newelement;
@@ -111,7 +111,7 @@ Core::Elements::Element* Discret::ELEMENTS::Vele3::Clone() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Vele3::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Vele3::shape() const
 {
   switch (num_node())
   {
@@ -144,7 +144,7 @@ void Discret::ELEMENTS::Vele3::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   Element::pack(data);
@@ -159,7 +159,7 @@ void Discret::ELEMENTS::Vele3::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -177,7 +177,7 @@ void Discret::ELEMENTS::Vele3::unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::Vele3::print(std::ostream& os) const
 {
-  os << "Vele3 " << Core::FE::CellTypeToString(Shape());
+  os << "Vele3 " << Core::FE::CellTypeToString(shape());
   Element::print(os);
   return;
 }
@@ -185,7 +185,7 @@ void Discret::ELEMENTS::Vele3::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gjb 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3::lines()
 {
   return Core::Communication::ElementBoundaryFactory<Vele3Line, Vele3>(
       Core::Communication::buildLines, *this);
@@ -195,7 +195,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3::Lin
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                            gjb 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3::surfaces()
 {
   return Core::Communication::ElementBoundaryFactory<Vele3Surface, Vele3>(
       Core::Communication::buildSurfaces, *this);
@@ -233,7 +233,7 @@ Core::FE::GaussRule3D Discret::ELEMENTS::Vele3::get_optimal_gaussrule(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Vele3::ReadElement(
+bool Discret::ELEMENTS::Vele3::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   return true;

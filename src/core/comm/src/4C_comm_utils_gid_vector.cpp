@@ -36,7 +36,8 @@ void Core::Communication::AddOwnedNodeGID(
 bool Core::Communication::IsNodeGIDOnThisProc(
     const Core::FE::Discretization& dis, const int node_gid)
 {
-  return (dis.HaveGlobalNode(node_gid) and dis.gNode(node_gid)->Owner() == dis.Comm().MyPID());
+  return (
+      dis.have_global_node(node_gid) and dis.g_node(node_gid)->owner() == dis.get_comm().MyPID());
 }
 
 FOUR_C_NAMESPACE_CLOSE

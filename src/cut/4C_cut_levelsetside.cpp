@@ -21,9 +21,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int probdim>
-bool Core::Geo::Cut::LevelSetSide<probdim>::Cut(Mesh& mesh, Edge& edge, PointSet& cut_points)
+bool Core::Geo::Cut::LevelSetSide<probdim>::cut(Mesh& mesh, Edge& edge, PointSet& cut_points)
 {
-  return edge.LevelSetCut(mesh, *this, cut_points);
+  return edge.level_set_cut(mesh, *this, cut_points);
 }
 
 template <int probdim>
@@ -36,16 +36,16 @@ bool Core::Geo::Cut::LevelSetSide<probdim>::find_cut_points_dispatch(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int probdim>
-void Core::Geo::Cut::LevelSetSide<probdim>::MakeInternalFacets(
+void Core::Geo::Cut::LevelSetSide<probdim>::make_internal_facets(
     Mesh& mesh, Element* element, plain_facet_set& facets)
 {
-  Teuchos::RCP<Impl::PointGraph> pg = Teuchos::rcp(Impl::PointGraph::Create(
+  Teuchos::RCP<Impl::PointGraph> pg = Teuchos::rcp(Impl::PointGraph::create(
       mesh, element, this, Impl::PointGraph::cut_side, Impl::PointGraph::own_lines));
 
   for (Impl::PointGraph::facet_iterator i = pg->fbegin(); i != pg->fend(); ++i)
   {
     const Cycle& points = *i;
-    Side::MakeInternalFacets(mesh, element, points, facets);
+    Side::make_internal_facets(mesh, element, points, facets);
   }
 }
 
@@ -62,7 +62,7 @@ bool Core::Geo::Cut::LevelSetSide<probdim>::find_ambiguous_cut_lines(
   //     required for integration.
   if (Core::Geo::Cut::Side::find_touching_cut_lines(mesh, element, side, cut)) return true;
 
-  switch (side.Shape())
+  switch (side.shape())
   {
     case Core::FE::CellType::line2:
     case Core::FE::CellType::tri3:
@@ -78,25 +78,25 @@ bool Core::Geo::Cut::LevelSetSide<probdim>::find_ambiguous_cut_lines(
           for (PointSet::const_iterator i = cut.begin(); i != cut.end(); ++i)
           {
             Point* p = *i;
-            if (not p->NodalPoint(element->Nodes()))
+            if (not p->nodal_point(element->nodes()))
             {
               edge_points.push_back(p);
             }
           }
           if (edge_points.size() == 2)
           {
-            mesh.NewLine(edge_points[0], edge_points[1], &side, this, element);
+            mesh.new_line(edge_points[0], edge_points[1], &side, this, element);
             std::cout << "WARNING: levelset cut on node not defined\n";
             return true;
           }
           else if (edge_points.size() == 0)
           {
-            const std::vector<Edge*>& edges = side.Edges();
+            const std::vector<Edge*>& edges = side.edges();
             for (std::vector<Edge*>::const_iterator i = edges.begin(); i != edges.end(); ++i)
             {
               Edge* e = *i;
-              Point* p1 = e->BeginNode()->point();
-              Point* p2 = e->EndNode()->point();
+              Point* p1 = e->begin_node()->point();
+              Point* p2 = e->end_node()->point();
 
               if (cut.count(p1) > 0 and cut.count(p2) == 0)
               {
@@ -109,7 +109,7 @@ bool Core::Geo::Cut::LevelSetSide<probdim>::find_ambiguous_cut_lines(
             }
             if (edge_points.size() == 2)
             {
-              mesh.NewLine(edge_points[0], edge_points[1], &side, this, element);
+              mesh.new_line(edge_points[0], edge_points[1], &side, this, element);
               return true;
             }
           }
@@ -121,7 +121,7 @@ bool Core::Geo::Cut::LevelSetSide<probdim>::find_ambiguous_cut_lines(
           // First, check if all cutpoints cut the edges of the side-element.
           std::vector<Point*> edge_points;
           edge_points.reserve(4);
-          const std::vector<Edge*>& edges = side.Edges();
+          const std::vector<Edge*>& edges = side.edges();
           PointSet cut_points(cut);
           for (std::vector<Edge*>::const_iterator i = edges.begin(); i != edges.end(); ++i)
           {
@@ -129,7 +129,7 @@ bool Core::Geo::Cut::LevelSetSide<probdim>::find_ambiguous_cut_lines(
             for (PointSet::iterator i = cut_points.begin(); i != cut_points.end();)
             {
               Point* p = *i;
-              if (p->IsCut(e))
+              if (p->is_cut(e))
               {
                 edge_points.push_back(p);
                 // cut_points.erase( i++ );
@@ -151,11 +151,11 @@ bool Core::Geo::Cut::LevelSetSide<probdim>::find_ambiguous_cut_lines(
           Core::LinAlg::Matrix<4, 1> lsv;
           Core::LinAlg::Matrix<4, 1> funct;
           Core::FE::shape_function_2D(funct, 0., 0., Core::FE::CellType::quad4);
-          const std::vector<Node*>& nodes = side.Nodes();
+          const std::vector<Node*>& nodes = side.nodes();
           std::vector<int> zero_positions;
           for (unsigned i = 0; i < 4; ++i)
           {
-            lsv(i) = nodes[i]->LSV();
+            lsv(i) = nodes[i]->lsv();
             if (lsv(i) == 0) zero_positions.push_back(i);
           }
 
@@ -191,22 +191,22 @@ bool Core::Geo::Cut::LevelSetSide<probdim>::find_ambiguous_cut_lines(
           Core::LinAlg::Matrix<3, 1> coords0;
           bool connect01and23;
 
-          edge_points[0]->Coordinates(&coords0(0, 0));
+          edge_points[0]->coordinates(&coords0(0, 0));
           std::vector<double> grad_phi0 = element->get_level_set_gradient(coords0);
 
           Core::LinAlg::Matrix<3, 1> coords1;
-          edge_points[1]->Coordinates(&coords1(0, 0));
+          edge_points[1]->coordinates(&coords1(0, 0));
           std::vector<double> grad_phi1 = element->get_level_set_gradient(coords1);
 
           double dotProduct01 = grad_phi0[0] * grad_phi1[0] + grad_phi0[1] * grad_phi1[1] +
                                 grad_phi0[2] * grad_phi1[2];
 
           Core::LinAlg::Matrix<3, 1> coords2;
-          edge_points[2]->Coordinates(&coords2(0, 0));
+          edge_points[2]->coordinates(&coords2(0, 0));
           std::vector<double> grad_phi2 = element->get_level_set_gradient(coords2);
 
           Core::LinAlg::Matrix<3, 1> coords3;
-          edge_points[3]->Coordinates(&coords3(0, 0));
+          edge_points[3]->coordinates(&coords3(0, 0));
           std::vector<double> grad_phi3 = element->get_level_set_gradient(coords3);
 
           double dotProduct23 = grad_phi2[0] * grad_phi3[0] + grad_phi2[1] * grad_phi3[1] +
@@ -233,13 +233,13 @@ bool Core::Geo::Cut::LevelSetSide<probdim>::find_ambiguous_cut_lines(
 
             if (negativemiddle)
             {
-              mesh.NewLine(edge_points[0], edge_points[1], &side, this, element);
-              mesh.NewLine(edge_points[2], edge_points[3], &side, this, element);
+              mesh.new_line(edge_points[0], edge_points[1], &side, this, element);
+              mesh.new_line(edge_points[2], edge_points[3], &side, this, element);
             }
             else
             {
-              mesh.NewLine(edge_points[0], edge_points[3], &side, this, element);
-              mesh.NewLine(edge_points[2], edge_points[1], &side, this, element);
+              mesh.new_line(edge_points[0], edge_points[3], &side, this, element);
+              mesh.new_line(edge_points[2], edge_points[1], &side, this, element);
             }
             return true;
           }
@@ -250,13 +250,13 @@ bool Core::Geo::Cut::LevelSetSide<probdim>::find_ambiguous_cut_lines(
 #endif
             if (negativemiddle)
             {
-              mesh.NewLine(edge_points[0], edge_points[3], &side, this, element);
-              mesh.NewLine(edge_points[2], edge_points[1], &side, this, element);
+              mesh.new_line(edge_points[0], edge_points[3], &side, this, element);
+              mesh.new_line(edge_points[2], edge_points[1], &side, this, element);
             }
             else
             {
-              mesh.NewLine(edge_points[0], edge_points[1], &side, this, element);
-              mesh.NewLine(edge_points[2], edge_points[3], &side, this, element);
+              mesh.new_line(edge_points[0], edge_points[1], &side, this, element);
+              mesh.new_line(edge_points[2], edge_points[3], &side, this, element);
             }
             return true;
           }
@@ -274,8 +274,8 @@ bool Core::Geo::Cut::LevelSetSide<probdim>::find_ambiguous_cut_lines(
       break;
     }  // case Core::FE::CellType::quad4:
     default:
-      FOUR_C_THROW("Unsupported side shape! (shape = %d | %s )", side.Shape(),
-          Core::FE::CellTypeToString(side.Shape()).c_str());
+      FOUR_C_THROW("Unsupported side shape! (shape = %d | %s )", side.shape(),
+          Core::FE::CellTypeToString(side.shape()).c_str());
       break;
   }
   return false;

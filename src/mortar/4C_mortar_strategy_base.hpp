@@ -70,52 +70,52 @@ namespace Mortar
     virtual ~StratDataContainer() = default;
 
     //! Return underlying problem dof row map (not only interfaces)
-    Teuchos::RCP<Epetra_Map>& ProbDofsPtr() { return probdofs_; };
-    Teuchos::RCP<const Epetra_Map> ProbDofsPtr() const { return probdofs_; };
+    Teuchos::RCP<Epetra_Map>& prob_dofs_ptr() { return probdofs_; };
+    Teuchos::RCP<const Epetra_Map> prob_dofs_ptr() const { return probdofs_; };
 
     //! Return underlying problem node row map (not only interfaces)
-    Teuchos::RCP<Epetra_Map>& ProbNodesPtr() { return probnodes_; };
-    Teuchos::RCP<const Epetra_Map> ProbNodesPtr() const { return probnodes_; };
+    Teuchos::RCP<Epetra_Map>& prob_nodes_ptr() { return probnodes_; };
+    Teuchos::RCP<const Epetra_Map> prob_nodes_ptr() const { return probnodes_; };
 
     //! Return communicator
-    Teuchos::RCP<const Epetra_Comm>& CommPtr() { return comm_; };
-    Teuchos::RCP<const Epetra_Comm> CommPtr() const { return comm_; };
+    Teuchos::RCP<const Epetra_Comm>& comm_ptr() { return comm_; };
+    Teuchos::RCP<const Epetra_Comm> comm_ptr() const { return comm_; };
 
     //! Return containing contact input parameters
-    Teuchos::ParameterList& SContact() { return scontact_; };
-    const Teuchos::ParameterList& SContact() const { return scontact_; };
+    Teuchos::ParameterList& s_contact() { return scontact_; };
+    const Teuchos::ParameterList& s_contact() const { return scontact_; };
 
     //! Return dimension of problem (2D or 3D)
-    int& Dim() { return dim_; };
-    const int& Dim() const { return dim_; };
+    int& n_dim() { return dim_; };
+    const int& n_dim() const { return dim_; };
 
     //! Return generalized-alpha parameter (0.0 for statics)
-    double& AlphaF() { return alphaf_; };
-    const double& AlphaF() const { return alphaf_; };
+    double& alpha_f() { return alphaf_; };
+    const double& alpha_f() const { return alphaf_; };
 
     /// get the (dynamic) time integration type
-    inline Inpar::Solid::DynamicType GetDynType() const { return dyntype_; };
+    inline Inpar::Solid::DynamicType get_dyn_type() const { return dyntype_; };
 
     /// return dynamic time integration parameter
-    inline double GetDynParameterN() const { return dynparam_n_; }
+    inline double get_dyn_parameter_n() const { return dynparam_n_; }
 
     /// set dynamic time integration parameter
-    inline void SetDynParameterN(const double dynparamN) { dynparam_n_ = dynparamN; }
+    inline void set_dyn_parameter_n(const double dynparamN) { dynparam_n_ = dynparamN; }
 
     /// set the (dynamic) time integration type
-    inline void SetDynType(Inpar::Solid::DynamicType dyntype) { dyntype_ = dyntype; }
+    inline void set_dyn_type(Inpar::Solid::DynamicType dyntype) { dyntype_ = dyntype; }
 
     //! Return flag indicating parallel redistribution status
-    bool& IsParRedist() { return parredist_; };
-    const bool& IsParRedist() const { return parredist_; };
+    bool& is_par_redist() { return parredist_; };
+    const bool& is_par_redist() const { return parredist_; };
 
     //! Return highest dof number in problem discretization
-    int& MaxDof() { return maxdof_; };
-    const int& MaxDof() const { return maxdof_; };
+    int& max_dof() { return maxdof_; };
+    const int& max_dof() const { return maxdof_; };
 
     //! Return current used system type
-    Inpar::CONTACT::SystemType& SysType() { return systype_; };
-    const Inpar::CONTACT::SystemType& SysType() const { return systype_; };
+    Inpar::CONTACT::SystemType& sys_type() { return systype_; };
+    const Inpar::CONTACT::SystemType& sys_type() const { return systype_; };
 
    private:
     //! Underlying problem dof row map (not only interfaces)
@@ -212,25 +212,25 @@ namespace Mortar
     //! @name Access methods
     //! @{
     //! Get parameter list
-    Teuchos::ParameterList& Params() { return scontact_; }
-    const Teuchos::ParameterList& Params() const { return scontact_; }
+    Teuchos::ParameterList& params() { return scontact_; }
+    const Teuchos::ParameterList& params() const { return scontact_; }
 
     //! return the current system type
-    const Inpar::CONTACT::SystemType& SystemType() const { return systype_; };
+    const Inpar::CONTACT::SystemType& system_type() const { return systype_; };
 
     //! Get problem dimension
-    int Dim() const { return dim_; }
+    int n_dim() const { return dim_; }
 
     //! Get Epetra communicator
-    const Epetra_Comm& Comm() const { return *comm_; }
+    const Epetra_Comm& get_comm() const { return *comm_; }
 
     //! Get the underlying problem dof row map
-    const Teuchos::RCP<Epetra_Map>& ProblemDofs() { return probdofs_; };
-    Teuchos::RCP<const Epetra_Map> ProblemDofs() const { return probdofs_; };
+    const Teuchos::RCP<Epetra_Map>& problem_dofs() { return probdofs_; };
+    Teuchos::RCP<const Epetra_Map> problem_dofs() const { return probdofs_; };
 
     //! Get the underlying problem node row map
-    const Teuchos::RCP<Epetra_Map>& ProblemNodes() { return probnodes_; };
-    Teuchos::RCP<const Epetra_Map> ProblemNodes() const { return probnodes_; };
+    const Teuchos::RCP<Epetra_Map>& problem_nodes() { return probnodes_; };
+    Teuchos::RCP<const Epetra_Map> problem_nodes() const { return probnodes_; };
 
     //@}
 
@@ -264,9 +264,10 @@ namespace Mortar
     virtual Teuchos::RCP<Epetra_Vector> contact_normal_force() = 0;
     virtual Teuchos::RCP<Epetra_Vector> contact_tangential_force() = 0;
     virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> d_matrix() = 0;
-    virtual void DoReadRestart(
+    virtual void do_read_restart(
         Core::IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) = 0;
-    virtual void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
+    virtual void do_write_restart(
+        std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
         bool forcedrestart = false) const = 0;
     virtual void evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
@@ -285,8 +286,8 @@ namespace Mortar
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
     virtual double initial_penalty() = 0;
     virtual void interface_forces(bool output = false) = 0;
-    virtual double Inttime() = 0;
-    virtual void Inttime_init() = 0;
+    virtual double inttime() = 0;
+    virtual void inttime_init() = 0;
     virtual bool is_in_contact() const = 0;
     virtual Teuchos::RCP<Epetra_Vector> lagrange_multiplier() = 0;
     virtual Teuchos::RCP<Epetra_Vector> lagrange_multiplier_old() = 0;
@@ -330,7 +331,7 @@ namespace Mortar
     virtual Teuchos::RCP<Epetra_Map> slip_row_nodes() = 0;
     virtual void store_dirichlet_status(Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps) = 0;
     virtual void store_nodal_quantities(Mortar::StrategyBase::QuantityType type) = 0;
-    virtual void Update(Teuchos::RCP<const Epetra_Vector> dis) = 0;
+    virtual void update(Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void update_active_set() = 0;
     virtual void update_active_set_semi_smooth(const bool firstStepPredictor = false) = 0;
     virtual void update_uzawa_augmented_lagrange() = 0;
@@ -343,20 +344,20 @@ namespace Mortar
     virtual bool has_poro_no_penetration() const { return false; }
 
     // Nitsche stuff
-    virtual bool IsNitsche() const { return false; }
+    virtual bool is_nitsche() const { return false; }
 
     // wear stuff
-    virtual bool WeightedWear() const { return false; };
-    virtual bool WearBothDiscrete() const { return false; };
-    virtual Teuchos::RCP<Epetra_Vector> WearRhs() { return Teuchos::null; };
-    virtual Teuchos::RCP<Epetra_Vector> WearMRhs() { return Teuchos::null; };
-    virtual Teuchos::RCP<Epetra_Vector> WSolveIncr() { return Teuchos::null; };
-    virtual Teuchos::RCP<Epetra_Vector> WMSolveIncr() { return Teuchos::null; };
-    virtual Teuchos::RCP<Epetra_Vector> ContactWear() { return Teuchos::null; };
-    virtual Teuchos::RCP<const Epetra_Vector> ContactWear() const { return Teuchos::null; };
-    virtual void OutputWear() { ; };
-    virtual Teuchos::RCP<const Epetra_Map> MasterSlipNodes() const { return Teuchos::null; };
-    virtual Teuchos::RCP<const Epetra_Map> MasterActiveNodes() const { return Teuchos::null; };
+    virtual bool weighted_wear() const { return false; };
+    virtual bool wear_both_discrete() const { return false; };
+    virtual Teuchos::RCP<Epetra_Vector> wear_rhs() { return Teuchos::null; };
+    virtual Teuchos::RCP<Epetra_Vector> wear_m_rhs() { return Teuchos::null; };
+    virtual Teuchos::RCP<Epetra_Vector> w_solve_incr() { return Teuchos::null; };
+    virtual Teuchos::RCP<Epetra_Vector> wm_solve_incr() { return Teuchos::null; };
+    virtual Teuchos::RCP<Epetra_Vector> contact_wear() { return Teuchos::null; };
+    virtual Teuchos::RCP<const Epetra_Vector> contact_wear() const { return Teuchos::null; };
+    virtual void output_wear() { ; };
+    virtual Teuchos::RCP<const Epetra_Map> master_slip_nodes() const { return Teuchos::null; };
+    virtual Teuchos::RCP<const Epetra_Map> master_active_nodes() const { return Teuchos::null; };
 
     // constraint preconditioner functions
     bool is_saddle_point_system() const override = 0;

@@ -63,11 +63,11 @@ namespace SSTI
 
     //! get maps of subproblems
     //@{
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> BlockMapScatra() const
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_scatra() const
     {
       return block_map_scatra_;
     }
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> BlockMapStructure() const
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_structure() const
     {
       return block_map_structure_;
     }
@@ -81,17 +81,17 @@ namespace SSTI
      * @brief global map extractor
      * @note only access with GetProblemPosition method
      */
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> MapsSubProblems() const
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> maps_sub_problems() const
     {
       return maps_subproblems_;
     }
 
     //! return map with dofs on both sides of interface
-    Teuchos::RCP<Epetra_Map> MapInterface(
+    Teuchos::RCP<Epetra_Map> map_interface(
         Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtyingstrategy) const;
 
     //! return block map with dofs on both sides of interface
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> MapsInterfaceBlocks(
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> maps_interface_blocks(
         Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtyingstrategy,
         Core::LinAlg::MatrixType scatramatrixtype, unsigned nummaps) const;
 
@@ -144,7 +144,7 @@ namespace SSTI
         const Core::LinAlg::MatrixType matrixtype_scatra, bool interfacemeshtying);
 
     //! method that clears all ssi matrices
-    void ClearMatrices();
+    void clear_matrices();
 
     //! call complete on all coupling matrices
     void complete_coupling_matrices();
@@ -152,7 +152,7 @@ namespace SSTI
     //! call uncomplete on all coupling matrices
     void un_complete_coupling_matrices();
 
-    Teuchos::RCP<Core::LinAlg::SparseOperator> SystemMatrix() { return systemmatrix_; };
+    Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix() { return systemmatrix_; };
 
     //! return sub blocks of system matrix
     //@{
@@ -164,7 +164,10 @@ namespace SSTI
     {
       return scatrastructureinterface_;
     };
-    Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTraThermoDomain() { return scatrathermodomain_; };
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sca_tra_thermo_domain()
+    {
+      return scatrathermodomain_;
+    };
     Teuchos::RCP<Core::LinAlg::SparseOperator> sca_tra_thermo_interface()
     {
       return scatrathermointerface_;
@@ -177,7 +180,10 @@ namespace SSTI
     {
       return structurethermodomain_;
     };
-    Teuchos::RCP<Core::LinAlg::SparseOperator> ThermoScaTraDomain() { return thermoscatradomain_; };
+    Teuchos::RCP<Core::LinAlg::SparseOperator> thermo_sca_tra_domain()
+    {
+      return thermoscatradomain_;
+    };
     Teuchos::RCP<Core::LinAlg::SparseOperator> thermo_sca_tra_interface()
     {
       return thermoscatrainterface_;
@@ -233,7 +239,7 @@ namespace SSTI
     ConvCheckMono(const Teuchos::ParameterList params);
 
     //! Is this Newton step converged
-    bool Converged(const SSTI::SSTIMono& ssti_mono);
+    bool converged(const SSTI::SSTIMono& ssti_mono);
 
    private:
     //! maximum number of Newton-Raphson iteration steps

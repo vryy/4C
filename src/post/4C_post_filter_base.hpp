@@ -49,17 +49,17 @@ class PostFilterBase
   //! destructor
   virtual ~PostFilterBase() = default;
   //! Writes the whole thing by invoking writer->WriteFiles()
-  void WriteFiles();
+  void write_files();
 
   //! get the underlying writer object
-  PostWriterBase& GetWriter()
+  PostWriterBase& get_writer()
   {
     FOUR_C_ASSERT(writer_ != Teuchos::null, "Not initialized");
     return *writer_;
   }
 
   //! look for problem dependent result entries and write them
-  virtual void WriteAllResults(PostField* field) = 0;
+  virtual void write_all_results(PostField* field) = 0;
 
   //! look for problem dependent result entries and write them for one time step
   virtual void write_all_results_one_time_step(PostResult& result, bool firststep, bool laststep)
@@ -72,28 +72,31 @@ class PostFilterBase
     \note This method sees only those element results that are defined in
     the first result group.
    */
-  void WriteElementResults(PostField* field) { WriteAnyResults(field, "element", elementbased); }
+  void write_element_results(PostField* field)
+  {
+    write_any_results(field, "element", elementbased);
+  }
 
   /// write all node based results
   /*!
     \note This method sees only those node results that are defined in
     the first result group.
    */
-  void WriteNodeResults(PostField* field) { WriteAnyResults(field, "node", nodebased); }
+  void write_node_results(PostField* field) { write_any_results(field, "node", nodebased); }
 
   /// write all dof based results
   /*!
     \note This method sees only those dof results that are defined in
     the first result group.
    */
-  void WriteDofResults(PostField* field) { WriteAnyResults(field, "dof", dofbased); }
+  void write_dof_results(PostField* field) { write_any_results(field, "dof", dofbased); }
 
   /// write all results of the given type
   /*!
     \note This method sees only those results that are defined in the first
     result group (that is the first time step).
    */
-  void WriteAnyResults(PostField* field, const char* type, const ResultType restype);
+  void write_any_results(PostField* field, const char* type, const ResultType restype);
 
  protected:
   //! The actual writer object

@@ -107,14 +107,14 @@ Core::LinAlg::SolverParams NOX::Nln::CONTACT::LinearSystem::set_solver_options(
   {
     // TODO: maps for merged meshtying and contact problem !!!
     // feed Belos based solvers with contact information
-    if (solverPtr->Params().isSublist("Belos Parameters"))
+    if (solverPtr->params().isSublist("Belos Parameters"))
     {
       if (i_constr_prec_.size() > 1)
         FOUR_C_THROW(
             "Currently only one constraint preconditioner interface can be handled! \n "
             "Needs to be extended!");
 
-      Teuchos::ParameterList& mueluParams = solverPtr->Params().sublist("Belos Parameters");
+      Teuchos::ParameterList& mueluParams = solverPtr->params().sublist("Belos Parameters");
 
       // vector entries:
       // (0) masterDofMap
@@ -159,7 +159,7 @@ void NOX::Nln::CONTACT::LinearSystem::set_linear_problem_for_solve(
       break;
     case NOX::Nln::LinSystem::LinalgBlockSparseMatrix:
     {
-      p_lin_prob_.ExtractActiveBlocks(jac, lhs, rhs);
+      p_lin_prob_.extract_active_blocks(jac, lhs, rhs);
       NOX::Nln::LinearSystem::set_linear_problem_for_solve(
           linear_problem, *p_lin_prob_.p_jac_, *p_lin_prob_.p_lhs_, *p_lin_prob_.p_rhs_);
 
@@ -180,7 +180,7 @@ void NOX::Nln::CONTACT::LinearSystem::set_linear_problem_for_solve(
 void NOX::Nln::CONTACT::LinearSystem::complete_solution_after_solve(
     const Epetra_LinearProblem& linProblem, Epetra_Vector& lhs) const
 {
-  p_lin_prob_.InsertIntoGlobalLhs(lhs);
+  p_lin_prob_.insert_into_global_lhs(lhs);
   p_lin_prob_.reset();
 }
 
@@ -264,7 +264,7 @@ Teuchos::RCP<Core::LinAlg::Solver> NOX::Nln::CONTACT::LinearSystem::get_linear_c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::InsertIntoGlobalLhs(
+void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::insert_into_global_lhs(
     Epetra_Vector& glhs) const
 {
   if (p_lhs_.is_null() or p_lhs_.get() == &glhs) return;
@@ -274,7 +274,7 @@ void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::InsertIntoGlobalLhs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::SetOriginalSystem(
+void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::set_original_system(
     Core::LinAlg::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs)
 {
   p_jac_ = Teuchos::rcpFromRef(mat);
@@ -284,14 +284,14 @@ void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::SetOriginalSystem(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
+void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::extract_active_blocks(
     Core::LinAlg::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs)
 {
   Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>& block_mat =
       dynamic_cast<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>&>(mat);
 
-  const int numrows = block_mat.Rows();
-  const int numcols = block_mat.Cols();
+  const int numrows = block_mat.rows();
+  const int numcols = block_mat.cols();
 
   if (numrows != numcols)
     FOUR_C_THROW("The number of row blocks must be equal the number of column blocks.");
@@ -304,13 +304,13 @@ void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
   {
     for (int c = 0; c < numcols; ++c)
     {
-      if (block_mat(r, c).EpetraMatrix()->GlobalMaxNumEntries() == 0 or
-          block_mat(r, c).EpetraMatrix()->NormFrobenius() == 0.0)
+      if (block_mat(r, c).epetra_matrix()->GlobalMaxNumEntries() == 0 or
+          block_mat(r, c).epetra_matrix()->NormFrobenius() == 0.0)
         isempty[r][c] = true;
     }
 
-    if (block_mat(r, r).EpetraMatrix()->NumGlobalDiagonals() ==
-            block_mat(r, r).EpetraMatrix()->NumGlobalNonzeros() &&
+    if (block_mat(r, r).epetra_matrix()->NumGlobalDiagonals() ==
+            block_mat(r, r).epetra_matrix()->NumGlobalNonzeros() &&
         !isempty[r][r])
       isdiagonal[r] = true;
   }
@@ -361,7 +361,7 @@ void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
   {
     case 0:
     {
-      SetOriginalSystem(mat, lhs, rhs);
+      set_original_system(mat, lhs, rhs);
       return;
     }
     default:
@@ -386,21 +386,21 @@ void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
       Teuchos::RCP<Core::LinAlg::SparseMatrix> active_sparse_mat =
           Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(p_jac_, true);
 
-      p_rhs_ = Core::LinAlg::ExtractMyVector(rhs, active_sparse_mat->RangeMap());
-      p_lhs_ = Core::LinAlg::ExtractMyVector(lhs, active_sparse_mat->DomainMap());
+      p_rhs_ = Core::LinAlg::ExtractMyVector(rhs, active_sparse_mat->range_map());
+      p_lhs_ = Core::LinAlg::ExtractMyVector(lhs, active_sparse_mat->domain_map());
 
       break;
     }
     default:
     {
-      p_jac_ = block_mat.Clone(Core::LinAlg::View, keep_row_col_index, keep_row_col_index);
-      p_jac_->Complete();
+      p_jac_ = block_mat.clone(Core::LinAlg::View, keep_row_col_index, keep_row_col_index);
+      p_jac_->complete();
 
       Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> active_block_mat =
           Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(p_jac_, true);
 
-      p_rhs_ = Core::LinAlg::ExtractMyVector(rhs, active_block_mat->FullRangeMap());
-      p_lhs_ = Core::LinAlg::ExtractMyVector(lhs, active_block_mat->FullDomainMap());
+      p_rhs_ = Core::LinAlg::ExtractMyVector(rhs, active_block_mat->full_range_map());
+      p_lhs_ = Core::LinAlg::ExtractMyVector(lhs, active_block_mat->full_domain_map());
 
       break;
     }
@@ -412,17 +412,17 @@ void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
 void NOX::Nln::CONTACT::LinearSystem::apply_diagonal_inverse(
     Core::LinAlg::SparseMatrix& mat, Epetra_Vector& lhs, const Epetra_Vector& rhs) const
 {
-  if (mat.EpetraMatrix()->NumGlobalDiagonals() != mat.EpetraMatrix()->NumGlobalNonzeros())
+  if (mat.epetra_matrix()->NumGlobalDiagonals() != mat.epetra_matrix()->NumGlobalNonzeros())
     FOUR_C_THROW("The given matrix seems to be no diagonal matrix!");
 
-  Epetra_Vector lhs_block(mat.DomainMap(), true);
+  Epetra_Vector lhs_block(mat.domain_map(), true);
   Core::LinAlg::ExtractMyVector(lhs, lhs_block);
 
-  Epetra_Vector rhs_block(mat.RangeMap(), true);
+  Epetra_Vector rhs_block(mat.range_map(), true);
   Core::LinAlg::ExtractMyVector(rhs, rhs_block);
 
-  Epetra_Vector diag_mat(mat.RangeMap(), true);
-  int err = mat.ExtractDiagonalCopy(diag_mat);
+  Epetra_Vector diag_mat(mat.range_map(), true);
+  int err = mat.extract_diagonal_copy(diag_mat);
   if (err) FOUR_C_THROW("ExtractDiagonalCopy failed! (err=%d)", err);
 
   err = lhs_block.ReciprocalMultiply(1.0, diag_mat, rhs_block, 0.0);

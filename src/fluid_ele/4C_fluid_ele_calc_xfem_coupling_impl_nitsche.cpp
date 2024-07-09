@@ -97,7 +97,7 @@ namespace Discret
        *----------------------------------------------------------------------*/
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
-      void NitscheCoupling<distype, slave_distype, slave_numdof>::ApplyConvStabTerms(
+      void NitscheCoupling<distype, slave_distype, slave_numdof>::apply_conv_stab_terms(
           const Teuchos::RCP<SlaveElementInterface<distype>>&
               slave_ele,  ///< associated slave element coupling object
           const Core::LinAlg::Matrix<nen_, 1>& funct_m,   ///< master shape functions
@@ -114,7 +114,7 @@ namespace Discret
       )
       {
         if (cond_type == Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID &&
-            fldparaxfem_.XffConvStabScaling() == Inpar::XFEM::XFF_ConvStabScaling_none)
+            fldparaxfem_.xff_conv_stab_scaling() == Inpar::XFEM::XFF_ConvStabScaling_none)
           FOUR_C_THROW("Cannot apply convective stabilization terms for XFF_ConvStabScaling_none!");
 
         // funct_m * timefac * fac * funct_m  * kappa_m (dyadic product)
@@ -123,7 +123,7 @@ namespace Discret
         // velint_s
         velint_s_.clear();
 
-        if (eval_coupling_) slave_ele->GetInterfaceVelnp(velint_s_);
+        if (eval_coupling_) slave_ele->get_interface_velnp(velint_s_);
 
         // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump
         // height for coupled problems
@@ -162,14 +162,14 @@ namespace Discret
             if (ser == Teuchos::null)
               FOUR_C_THROW("Failed to cast slave_ele to SlaveElementRepresentation!");
             Core::LinAlg::Matrix<slave_nen_, 1> funct_s;
-            ser->GetSlaveFunct(funct_s);
+            ser->get_slave_funct(funct_s);
 
             // funct_s * timefac * fac * funct_s * kappa_s (dyadic product)
             funct_s_s_dyad_.multiply_nt(funct_s_, funct_s);
 
             funct_s_m_dyad_.multiply_nt(funct_s_, funct_m);
 
-            if (fldparaxfem_.XffConvStabScaling() == Inpar::XFEM::XFF_ConvStabScaling_upwinding)
+            if (fldparaxfem_.xff_conv_stab_scaling() == Inpar::XFEM::XFF_ConvStabScaling_upwinding)
             {
               nit_stab_penalty(funct_m, timefacfac,
                   std::pair<bool, double>(true, NIT_stab_fac_conv),  // F_Pen_Row
@@ -181,8 +181,10 @@ namespace Discret
 
             // prevent instabilities due to convective mass transport across the fluid-fluid
             // interface
-            if (fldparaxfem_.XffConvStabScaling() == Inpar::XFEM::XFF_ConvStabScaling_upwinding ||
-                fldparaxfem_.XffConvStabScaling() == Inpar::XFEM::XFF_ConvStabScaling_only_averaged)
+            if (fldparaxfem_.xff_conv_stab_scaling() ==
+                    Inpar::XFEM::XFF_ConvStabScaling_upwinding ||
+                fldparaxfem_.xff_conv_stab_scaling() ==
+                    Inpar::XFEM::XFF_ConvStabScaling_only_averaged)
             {
               nit_stab_inflow_averaged_term(funct_m, velint_m, normal, density_m, timefacfac);
             }
@@ -273,7 +275,7 @@ namespace Discret
             configmap.at(Inpar::XFEM::X_Pen_n_Col).first ||
             configmap.at(Inpar::XFEM::X_Adj_t_Col).first ||
             configmap.at(Inpar::XFEM::X_Pen_t_Col).first)
-          this->GetInterfaceVelnp(velint_s_);
+          this->get_interface_velnp(velint_s_);
 
         // Calc full veldiff
         if (configmap.at(Inpar::XFEM::F_Adj_Row).first ||
@@ -345,7 +347,7 @@ namespace Discret
 
         // funct_s * timefac * fac
         funct_s_.clear();
-        if (slave_distype != Core::FE::CellType::dis_none) this->GetSlaveFunct(funct_s_);
+        if (slave_distype != Core::FE::CellType::dis_none) this->get_slave_funct(funct_s_);
 
         // funct_m * timefac * fac * funct_m  * kappa_m (dyadic product)
         funct_m_m_dyad_.multiply_nt(funct_m, funct_m);
@@ -404,8 +406,8 @@ namespace Discret
         // add averaged term (TODO: For XFF? How does this work for non-master coupled? @Benedikt?)
         // Todo: is not handled by configmap yet as it has the shape of a penalty term and therefore
         // will be evaluated there at the end!
-        if (fldparaxfem_.XffConvStabScaling() == Inpar::XFEM::XFF_ConvStabScaling_upwinding ||
-            fldparaxfem_.XffConvStabScaling() == Inpar::XFEM::XFF_ConvStabScaling_only_averaged)
+        if (fldparaxfem_.xff_conv_stab_scaling() == Inpar::XFEM::XFF_ConvStabScaling_upwinding ||
+            fldparaxfem_.xff_conv_stab_scaling() == Inpar::XFEM::XFF_ConvStabScaling_only_averaged)
         {
           nit_stab_inflow_averaged_term(funct_m, velint_m, normal, density_m, timefacfac);
         }
@@ -572,7 +574,7 @@ namespace Discret
 
           double pres_s = 0.0;
           // must use this-pointer because of two-stage lookup!
-          this->GetInterfacePresnp(pres_s);
+          this->get_interface_presnp(pres_s);
 
           if (configmap.at(Inpar::XFEM::XF_Con_Col).first)
           {
@@ -1086,7 +1088,7 @@ namespace Discret
             configmap.at(Inpar::XFEM::X_Pen_n_Col).first ||
             configmap.at(Inpar::XFEM::X_Adj_t_Col).first ||
             configmap.at(Inpar::XFEM::X_Pen_t_Col).first)
-          this->GetInterfaceVeln(velint_s_);
+          this->get_interface_veln(velint_s_);
 
         // Calc full veldiff
         if (configmap.at(Inpar::XFEM::F_Adj_Row).first ||
@@ -1159,7 +1161,7 @@ namespace Discret
 
         // funct_s * timefac * fac
         funct_s_.clear();
-        if (slave_distype != Core::FE::CellType::dis_none) this->GetSlaveFunct(funct_s_);
+        if (slave_distype != Core::FE::CellType::dis_none) this->get_slave_funct(funct_s_);
 
         // funct_m * funct_m (dyadic product)
         funct_m_m_dyad_.multiply_nt(funct_m, funct_m);
@@ -1182,8 +1184,9 @@ namespace Discret
           }
 
           // add averaged term
-          if (fldparaxfem_.XffConvStabScaling() == Inpar::XFEM::XFF_ConvStabScaling_upwinding ||
-              fldparaxfem_.XffConvStabScaling() == Inpar::XFEM::XFF_ConvStabScaling_only_averaged)
+          if (fldparaxfem_.xff_conv_stab_scaling() == Inpar::XFEM::XFF_ConvStabScaling_upwinding ||
+              fldparaxfem_.xff_conv_stab_scaling() ==
+                  Inpar::XFEM::XFF_ConvStabScaling_only_averaged)
           {
             nit_stab_inflow_averaged_term(funct_m, velint_m, normal, density_m, timefacfac, true);
           }
@@ -1321,7 +1324,7 @@ namespace Discret
             {
               double presn_s = 0.0;
               // must use this-pointer because of two-stage lookup!
-              this->GetInterfacePresn(presn_s);
+              this->get_interface_presn(presn_s);
 
               if (configmap.at(Inpar::XFEM::XF_Con_Col).first)
               {

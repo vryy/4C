@@ -42,14 +42,14 @@ namespace Discret
       void setup();
 
       /// whether to write velocity
-      bool OutputVelocityState() const
+      bool output_velocity_state() const
       {
         check_init_setup();
         return output_velocity_state_;
       };
 
       /// whether to write pressure
-      bool OutputPressureState() const
+      bool output_pressure_state() const
       {
         check_init_setup();
         return output_pressure_state_;
@@ -77,21 +77,21 @@ namespace Discret
       };
 
       /// whether to write the owner of elements
-      bool OutputElementOwner() const
+      bool output_element_owner() const
       {
         check_init_setup();
         return output_element_owner_;
       };
 
       /// whether to write the GIDs of elements
-      bool OutputElementGID() const
+      bool output_element_gid() const
       {
         check_init_setup();
         return output_element_gid_;
       };
 
       /// whether to write the GIDs of the nodes
-      bool OutputNodeGID() const
+      bool output_node_gid() const
       {
         check_init_setup();
         return output_node_gid_;

@@ -83,13 +83,13 @@ int Discret::ELEMENTS::RedInterAcinarDep::evaluate(Teuchos::ParameterList& param
   /*
     Here one must add the steps for evaluating an element
   */
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
   switch (act)
   {
     case calc_sys_matrix_rhs:
     {
-      return Discret::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->evaluate(
+      return Discret::ELEMENTS::RedInterAcinarDepImplInterface::impl(this)->evaluate(
           this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3, mat);
     }
     break;
@@ -99,13 +99,13 @@ int Discret::ELEMENTS::RedInterAcinarDep::evaluate(Teuchos::ParameterList& param
     break;
     case get_initial_state:
     {
-      Discret::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->Initial(
+      Discret::ELEMENTS::RedInterAcinarDepImplInterface::impl(this)->initial(
           this, params, discretization, lm, elevec3, mat);
     }
     break;
     case set_bc:
     {
-      Discret::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->EvaluateTerminalBC(
+      Discret::ELEMENTS::RedInterAcinarDepImplInterface::impl(this)->evaluate_terminal_bc(
           this, params, discretization, lm, elevec1, mat);
     }
     break;
@@ -120,7 +120,7 @@ int Discret::ELEMENTS::RedInterAcinarDep::evaluate(Teuchos::ParameterList& param
 
     case get_coupled_values:
     {
-      Discret::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->GetCoupledValues(
+      Discret::ELEMENTS::RedInterAcinarDepImplInterface::impl(this)->get_coupled_values(
           this, params, discretization, lm, mat);
     }
     break;

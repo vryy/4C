@@ -27,9 +27,9 @@ void Discret::UTILS::ISendReceiveAny(Teuchos::RCP<Core::FE::Discretization> cons
     std::vector<std::pair<int, std::vector<int>>>& recvdata)
 {
   // build exporter
-  Core::Communication::Exporter exporter(discret->Comm());
-  int const numproc = discret->Comm().NumProc();
-  int const myrank = discret->Comm().MyPID();
+  Core::Communication::Exporter exporter(discret->get_comm());
+  int const numproc = discret->get_comm().NumProc();
+  int const myrank = discret->get_comm().MyPID();
 
   // -----------------------------------------------------------------------
   // send
@@ -67,7 +67,7 @@ void Discret::UTILS::ISendReceiveAny(Teuchos::RCP<Core::FE::Discretization> cons
   // -----------------------------------------------------------------------
   // ---- prepare receiving procs -----
   std::vector<int> summedtargets(numproc, 0);
-  discret->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+  discret->get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
 
   // ---- receive ----
   for (int rec = 0; rec < summedtargets[myrank]; ++rec)
@@ -76,7 +76,7 @@ void Discret::UTILS::ISendReceiveAny(Teuchos::RCP<Core::FE::Discretization> cons
     int length = 0;
     int tag = -1;
     int from = -1;
-    exporter.ReceiveAny(from, tag, rdata, length);
+    exporter.receive_any(from, tag, rdata, length);
     if (tag != 1234)
       FOUR_C_THROW("Received on proc %i data with wrong tag from proc %i", myrank, from);
 
@@ -96,10 +96,10 @@ void Discret::UTILS::ISendReceiveAny(Teuchos::RCP<Core::FE::Discretization> cons
   }
 
   // wait for all communications to finish
-  for (int i = 0; i < length; ++i) exporter.Wait(request[i]);
+  for (int i = 0; i < length; ++i) exporter.wait(request[i]);
 
   // safety, should be a no time operation if everything works fine before
-  discret->Comm().Barrier();
+  discret->get_comm().Barrier();
 }
 
 FOUR_C_NAMESPACE_CLOSE

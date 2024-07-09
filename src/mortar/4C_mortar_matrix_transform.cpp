@@ -111,11 +111,11 @@ Mortar::MatrixRowColTransformer::redistributed_to_unredistributed(
   throw_if_not_init_and_setup();
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dst_mat = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      **master_row_[bt], src_mat.EpetraMatrix()->MaxNumEntries(), false, true));
+      **master_row_[bt], src_mat.epetra_matrix()->MaxNumEntries(), false, true));
 
   redistributed_to_unredistributed(bt, src_mat, *dst_mat);
 
-  dst_mat->Complete(**master_col_[bt], **master_row_[bt]);
+  dst_mat->complete(**master_col_[bt], **master_row_[bt]);
   return dst_mat;
 }
 
@@ -128,7 +128,7 @@ void Mortar::MatrixRowColTransformer::redistributed_to_unredistributed(
   throw_if_not_init_and_setup();
 
   const int err =
-      dst_mat.EpetraMatrix()->Import(*src_mat.EpetraMatrix(), *slave_to_master_[bt], Insert);
+      dst_mat.epetra_matrix()->Import(*src_mat.epetra_matrix(), *slave_to_master_[bt], Insert);
 
   // reset the distributor of the exporter after use
   reset_exporter(slave_to_master_[bt]);
@@ -145,11 +145,11 @@ Mortar::MatrixRowColTransformer::unredistributed_to_redistributed(
   throw_if_not_init_and_setup();
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dst_mat = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      **slave_row_[bt], src_mat.EpetraMatrix()->MaxNumEntries(), false, true));
+      **slave_row_[bt], src_mat.epetra_matrix()->MaxNumEntries(), false, true));
 
   redistributed_to_unredistributed(bt, src_mat, *dst_mat);
 
-  dst_mat->Complete(**slave_col_[bt], **slave_row_[bt]);
+  dst_mat->complete(**slave_col_[bt], **slave_row_[bt]);
   return dst_mat;
 }
 
@@ -162,7 +162,7 @@ void Mortar::MatrixRowColTransformer::unredistributed_to_redistributed(
   throw_if_not_init_and_setup();
 
   const int err =
-      dst_mat.EpetraMatrix()->Import(*src_mat.EpetraMatrix(), *master_to_slave_[bt], Insert);
+      dst_mat.epetra_matrix()->Import(*src_mat.epetra_matrix(), *master_to_slave_[bt], Insert);
 
   // reset the distributor of the exporter after use
   reset_exporter(master_to_slave_[bt]);

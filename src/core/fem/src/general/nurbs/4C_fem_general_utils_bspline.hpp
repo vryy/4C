@@ -256,7 +256,7 @@ namespace Core::FE::Nurbs
 
     */
     template <typename ScalarType>
-    void EvaluateBspline(ScalarType& bspline_value, const ScalarType x, const int ldofid)
+    void evaluate_bspline(ScalarType& bspline_value, const ScalarType x, const int ldofid)
     {
       //                        ^
       //             ****       ^        +-----------+
@@ -1405,7 +1405,7 @@ namespace Core::FE::Nurbs
     //--------------------------------------------------
     //! \brief Print some information on the bspline
     //--------------------------------------------------
-    void PrintBspline()
+    void print_bspline()
     {
       std::cout << "------------------\n";
       std::cout << "Bspline knotvector\n";

@@ -41,7 +41,7 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static ScaTraEleCalcElchScl<distype, probdim>* Instance(
+      static ScaTraEleCalcElchScl<distype, probdim>* instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
      protected:
@@ -201,28 +201,28 @@ namespace Discret
       /*========================================================================*/
 
       //! Set dieelectric susceptibility of medium
-      void SetSusceptibility(const double chi) { chi_ = chi; }
+      void set_susceptibility(const double chi) { chi_ = chi; }
 
       //! Set dieelectric permittivity of the medium
-      void SetPermittivity(const double epsilon) { epsilon_ = epsilon; }
+      void set_permittivity(const double epsilon) { epsilon_ = epsilon; }
 
       //! Get dieelectric permittivity of medium
-      double GetPermittivity() { return epsilon_; }
+      double get_permittivity() { return epsilon_; }
 
       //! Set Bulk concentration of cations
-      void SetBulkConc(const double cbulk) { c_bulk_ = cbulk; }
+      void set_bulk_conc(const double cbulk) { c_bulk_ = cbulk; }
 
       //! Get Bulk concentration of cations
-      double GetBulkConc() { return c_bulk_; }
+      double get_bulk_conc() { return c_bulk_; }
 
-      void SetTransNum(const double transnum, const int k) override
+      void set_trans_num(const double transnum, const int k) override
       {
         if (transnum != 1.0)
           FOUR_C_THROW("Only transference number of 1.0 is allowed in the SCL-model.");
-        dmdiffcond::SetTransNum(transnum, k);
+        dmdiffcond::set_trans_num(transnum, k);
       }
 
-      void SetDerivTransNum(const double derivtransnum, const int k, const int iscal) override
+      void set_deriv_trans_num(const double derivtransnum, const int k, const int iscal) override
       {
         if (derivtransnum != 0.0)
         {
@@ -230,22 +230,22 @@ namespace Discret
               "Only constant transference number (1.0) is allowed. Derivative w.r.t. concentration "
               "has to be zero.");
         }
-        dmdiffcond::SetDerivTransNum(derivtransnum, k, iscal);
+        dmdiffcond::set_deriv_trans_num(derivtransnum, k, iscal);
       }
 
-      void SetPhasePoro(const double eps, const int phase) override
+      void set_phase_poro(const double eps, const int phase) override
       {
         // Only porosity of 1.0 can be assigned to the SCL-material
         if (eps != 1.0) FOUR_C_THROW("Only constant porosity (1.0) is allowed for SCL-material.");
-        dmdiffcond::SetPhasePoro(eps, phase);
+        dmdiffcond::set_phase_poro(eps, phase);
       }
 
-      void SetPhaseTort(const double tort, const int phase) override
+      void set_phase_tort(const double tort, const int phase) override
       {
         // only tortuosity of 1.0 can be assigned to the SCL-material
         if (tort != 1.0)
           FOUR_C_THROW("Only constant tortuosity (1.0) is allowed for SCL-material.");
-        dmdiffcond::SetPhaseTort(tort, phase);
+        dmdiffcond::set_phase_tort(tort, phase);
       }
 
       /*========================================================================*/

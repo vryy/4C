@@ -115,21 +115,21 @@ namespace Discret
     class Ale3Type : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "Ale3Type"; }
+      std::string name() const override { return "Ale3Type"; }
 
-      static Ale3Type& Instance();
+      static Ale3Type& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
@@ -174,26 +174,26 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Ale3 and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override { return 0; }
+      int num_line() const override { return 0; }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override
+      int num_surface() const override
       {
         switch (num_node())
         {
@@ -217,13 +217,13 @@ namespace Discret
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      inline int NumVolume() const override { return 1; }
+      inline int num_volume() const override { return 1; }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -231,7 +231,10 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override { return Ale3Type::Instance().UniqueParObjectId(); }
+      int unique_par_object_id() const override
+      {
+        return Ale3Type::instance().unique_par_object_id();
+      }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -264,7 +267,7 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
+      int num_dof_per_node(const Core::Nodes::Node& node) const override { return 3; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -284,7 +287,7 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override { return Ale3Type::Instance(); }
+      Core::Elements::ElementType& element_type() const override { return Ale3Type::instance(); }
 
       //@}
 
@@ -293,7 +296,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -396,7 +399,7 @@ namespace Discret
       virtual ~Ale3ImplInterface() = default;
 
       /// Internal implementation class for fluid element
-      static Ale3ImplInterface* Impl(Discret::ELEMENTS::Ale3* ele);
+      static Ale3ImplInterface* impl(Discret::ELEMENTS::Ale3* ele);
 
       virtual void static_ke_spring(Ale3* ele,        ///< pointer to element
           Core::LinAlg::SerialDenseMatrix& sys_mat,   ///< element stiffness matrix (to be filled)
@@ -427,7 +430,7 @@ namespace Discret
                                            ///< configuration (false)
           ) = 0;
 
-      virtual void ElementNodeNormal(
+      virtual void element_node_normal(
           Ale3* ele, Core::LinAlg::SerialDenseVector& elevec1, std::vector<double>& my_dispnp) = 0;
     };
 
@@ -436,7 +439,7 @@ namespace Discret
     {
      public:
       /// Singleton access method
-      static Ale3Impl<distype>* Instance(
+      static Ale3Impl<distype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       void static_ke_laplace(Ale3* ele,                ///< pointer to element
@@ -470,14 +473,14 @@ namespace Discret
                                            ///< configuration (false)
           ) override;
 
-      void ElementNodeNormal(Ale3* ele,              ///< pointer to element
+      void element_node_normal(Ale3* ele,            ///< pointer to element
           Core::LinAlg::SerialDenseVector& elevec1,  ///< normal vector (to be filled)
           std::vector<double>& my_dispnp             ///< nodal displacements
           ) override;
 
       //! Calculate Jacobian matrix and its determinant
-      void CalcJacobian(Ale3* ele,  ///< pointer to element
-          double& detJ              ///< determinant of Jacobian matrix
+      void calc_jacobian(Ale3* ele,  ///< pointer to element
+          double& detJ               ///< determinant of Jacobian matrix
       );
 
      private:
@@ -552,18 +555,18 @@ namespace Discret
     class Ale3SurfaceType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "Ale3SurfaceType"; }
+      std::string name() const override { return "Ale3SurfaceType"; }
 
-      static Ale3SurfaceType& Instance();
+      static Ale3SurfaceType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -616,16 +619,16 @@ namespace Discret
       /*!
       \brief Deep copy this instance of an element and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -633,9 +636,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return Ale3SurfaceType::Instance().UniqueParObjectId();
+        return Ale3SurfaceType::instance().unique_par_object_id();
       }
 
       /*!
@@ -669,7 +672,7 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
+      int num_dof_per_node(const Core::Nodes::Node& node) const override { return 3; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -689,9 +692,9 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return Ale3SurfaceType::Instance();
+        return Ale3SurfaceType::instance();
       }
 
       //@}
@@ -769,9 +772,9 @@ namespace Discret
 
       virtual ~Ale3SurfaceImplInterface() = default;
       /// Internal implementation class for ale surface element
-      static Ale3SurfaceImplInterface* Impl(Discret::ELEMENTS::Ale3Surface* ele);
+      static Ale3SurfaceImplInterface* impl(Discret::ELEMENTS::Ale3Surface* ele);
 
-      virtual void ElementNodeNormal(Ale3Surface* ele, Teuchos::ParameterList& params,
+      virtual void element_node_normal(Ale3Surface* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1, std::vector<double>& mydispnp) = 0;
     };
@@ -783,7 +786,7 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static Ale3SurfaceImpl<distype>* Instance(
+      static Ale3SurfaceImpl<distype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       //! number of element nodes
@@ -798,7 +801,7 @@ namespace Discret
       //! number of degrees of freedom per node
       static constexpr int numdofpernode_ = nsd_;
 
-      void ElementNodeNormal(Ale3Surface* ele, Teuchos::ParameterList& params,
+      void element_node_normal(Ale3Surface* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1, std::vector<double>& mydispnp) override;
 

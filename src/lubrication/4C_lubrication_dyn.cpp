@@ -26,35 +26,36 @@ FOUR_C_NAMESPACE_OPEN
 void lubrication_dyn(int restart)
 {
   // access the communicator
-  const Epetra_Comm& comm = Global::Problem::Instance()->GetDis("lubrication")->Comm();
+  const Epetra_Comm& comm = Global::Problem::instance()->get_dis("lubrication")->get_comm();
 
   // print problem type
   if (comm.MyPID() == 0)
   {
     std::cout << "###################################################" << std::endl;
-    std::cout << "# YOUR PROBLEM TYPE: " << Global::Problem::Instance()->ProblemName() << std::endl;
+    std::cout << "# YOUR PROBLEM TYPE: " << Global::Problem::instance()->problem_name()
+              << std::endl;
     std::cout << "###################################################" << std::endl;
   }
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& lubricationdyn =
-      Global::Problem::Instance()->lubrication_dynamic_params();
+      Global::Problem::instance()->lubrication_dynamic_params();
 
   // access the lubrication discretization
   Teuchos::RCP<Core::FE::Discretization> lubricationdis =
-      Global::Problem::Instance()->GetDis("lubrication");
+      Global::Problem::instance()->get_dis("lubrication");
 
   lubricationdis->fill_complete();
 
   // we directly use the elements from the Lubrication elements section
-  if (lubricationdis->NumGlobalNodes() == 0)
+  if (lubricationdis->num_global_nodes() == 0)
     FOUR_C_THROW("No elements in the ---LUBRICATION ELEMENTS section");
 
   // add proxy of velocity related degrees of freedom to lubrication discretization
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
       Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
-          Global::Problem::Instance()->NDim(), 0, 0, true));
-  if (lubricationdis->AddDofSet(dofsetaux) != 1)
+          Global::Problem::instance()->n_dim(), 0, 0, true));
+  if (lubricationdis->add_dof_set(dofsetaux) != 1)
     FOUR_C_THROW("lub discretization has illegal number of dofsets!");
 
   // finalize discretization
@@ -73,17 +74,17 @@ void lubrication_dyn(int restart)
 
   // setup Lubrication basis algorithm
   lubricationonly->setup(
-      lubricationdyn, lubricationdyn, Global::Problem::Instance()->SolverParams(linsolvernumber));
+      lubricationdyn, lubricationdyn, Global::Problem::instance()->solver_params(linsolvernumber));
 
   // read the restart information, set vectors and variables
-  if (restart) lubricationonly->LubricationField()->read_restart(restart);
+  if (restart) lubricationonly->lubrication_field()->read_restart(restart);
 
   // enter time loop to solve problem
-  (lubricationonly->LubricationField())->TimeLoop();
+  (lubricationonly->lubrication_field())->time_loop();
 
   // perform the result test if required
-  Global::Problem::Instance()->AddFieldTest(lubricationonly->create_lubrication_field_test());
-  Global::Problem::Instance()->TestAll(comm);
+  Global::Problem::instance()->add_field_test(lubricationonly->create_lubrication_field_test());
+  Global::Problem::instance()->test_all(comm);
 
   return;
 

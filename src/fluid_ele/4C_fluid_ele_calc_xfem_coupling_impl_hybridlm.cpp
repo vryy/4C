@@ -42,7 +42,7 @@ namespace Discret
 
         // interface velocity at gauss-point (current gauss-point in calling method)
         Core::LinAlg::Matrix<nsd_, 1> velint_s(true);
-        this->GetInterfaceVelnp(velint_s);
+        this->get_interface_velnp(velint_s);
 
         // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump
         // height for coupled problems
@@ -50,7 +50,7 @@ namespace Discret
 
         // get nodal shape function vector
         Core::LinAlg::Matrix<slave_nen_, 1> slave_funct(true);
-        this->GetSlaveFunct(slave_funct);
+        this->get_slave_funct(slave_funct);
 
         bK_ms.multiply_nt(funct, slave_funct);
         bK_sm.update_t(bK_ms);
@@ -101,7 +101,7 @@ namespace Discret
       {
         // interface velocity at gauss-point (current gauss-point in calling method)
         Core::LinAlg::Matrix<nsd_, 1> velint_s(true);
-        this->GetInterfaceVelnp(velint_s);
+        this->get_interface_velnp(velint_s);
 
         // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump
         // height for coupled problems
@@ -113,7 +113,7 @@ namespace Discret
         Core::LinAlg::Matrix<slave_nen_, nen_> bG_sm(true);
 
         Core::LinAlg::Matrix<slave_nen_, 1> slave_funct;
-        this->GetSlaveFunct(slave_funct);
+        this->get_slave_funct(slave_funct);
 
         bG_ms.multiply_nt(funct, slave_funct);
         bG_sm.multiply_nt(slave_funct, funct);
@@ -310,7 +310,7 @@ namespace Discret
           for (unsigned imdof = 0; imdof < master_numdof_; ++imdof)
           {
             // (um-us)
-            if (BCumus.IsUsed(imdof, isvel))
+            if (BCumus.is_used(imdof, isvel))
             {
               const Core::LinAlg::Matrix<nen_, slave_nen_>& bCumus = *BCumus(imdof, isvel);
               // loop over slave element nodes
@@ -325,7 +325,7 @@ namespace Discret
             }  // (um-us)
 
             // (us-um), MHCS: (us-pm)
-            if (BCusum.IsUsed(isvel, imdof))
+            if (BCusum.is_used(isvel, imdof))
             {
               const Core::LinAlg::Matrix<slave_nen_, nen_>& bCusum = *BCusum(isvel, imdof);
               // loop over slave element nodes
@@ -343,7 +343,7 @@ namespace Discret
           // add surface-based pressure coupling terms (only MHVS)
 
           // (us-pm)
-          if (BG_uspm_.IsUsed(isvel, 0))
+          if (BG_uspm_.is_used(isvel, 0))
           {
             const Core::LinAlg::Matrix<slave_nen_, nen_>& bGuspm = *BG_uspm_(isvel, 0);
             // loop over slave element nodes
@@ -358,7 +358,7 @@ namespace Discret
           }  // (us-pm)
 
           // (pm-us)
-          if (BG_pmus_.IsUsed(0, isvel))
+          if (BG_pmus_.is_used(0, isvel))
           {
             const Core::LinAlg::Matrix<nen_, slave_nen_>& bGpmus = *BG_pmus_(0, isvel);
             // loop over slave element nodes
@@ -373,7 +373,7 @@ namespace Discret
           }  // (pm-us)
 
           // rhs - us
-          if (BGussinvKssrhs_s.IsUsed(isvel, 0))
+          if (BGussinvKssrhs_s.is_used(isvel, 0))
           {
             const Core::LinAlg::Matrix<slave_nen_, 1>& bGussinvKssrhs_s =
                 *BGussinvKssrhs_s(isvel, 0);
@@ -396,7 +396,7 @@ namespace Discret
           for (unsigned ibc = 0; ibc < nsd_; ++ibc)
           {
             // extract the stress-velocity coupling submatrix
-            if (BG_sus_.IsUsed(ibr, ibc))
+            if (BG_sus_.is_used(ibr, ibc))
             {
               Core::LinAlg::Matrix<nen_, slave_nen_>& bGsus = *BG_sus_(ibr, ibc);
 
@@ -424,7 +424,7 @@ namespace Discret
           // loop over block rows (interface velocity)
           for (unsigned ibr = 0; ibr < nsd_; ++ibr)
           {
-            if (BG_uss_.IsUsed(ibr, ibc))
+            if (BG_uss_.is_used(ibr, ibc))
             {
               Core::LinAlg::Matrix<slave_nen_, nen_>& bGuss = *BG_uss_(ibr, ibc);
 

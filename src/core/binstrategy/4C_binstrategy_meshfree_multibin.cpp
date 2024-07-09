@@ -17,12 +17,12 @@ FOUR_C_NAMESPACE_OPEN
 /// class MeshfreeMultiBinType
 Core::FE::MeshFree::MeshfreeMultiBinType Core::FE::MeshFree::MeshfreeMultiBinType::instance_;
 
-Core::FE::MeshFree::MeshfreeMultiBinType& Core::FE::MeshFree::MeshfreeMultiBinType::Instance()
+Core::FE::MeshFree::MeshfreeMultiBinType& Core::FE::MeshFree::MeshfreeMultiBinType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Core::FE::MeshFree::MeshfreeMultiBinType::Create(
+Core::Communication::ParObject* Core::FE::MeshFree::MeshfreeMultiBinType::create(
     const std::vector<char>& data)
 {
   auto object = new Core::FE::MeshFree::MeshfreeMultiBin(-1, -1);
@@ -30,7 +30,7 @@ Core::Communication::ParObject* Core::FE::MeshFree::MeshfreeMultiBinType::Create
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Core::FE::MeshFree::MeshfreeMultiBinType::Create(
+Teuchos::RCP<Core::Elements::Element> Core::FE::MeshFree::MeshfreeMultiBinType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MESHFREEMULTIBIN")
@@ -43,7 +43,7 @@ Teuchos::RCP<Core::Elements::Element> Core::FE::MeshFree::MeshfreeMultiBinType::
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Core::FE::MeshFree::MeshfreeMultiBinType::Create(
+Teuchos::RCP<Core::Elements::Element> Core::FE::MeshFree::MeshfreeMultiBinType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -74,7 +74,7 @@ Core::FE::MeshFree::MeshfreeMultiBin::MeshfreeMultiBin(
 /*--------------------------------------------------------------------------*
  |  clone-ctor (public)                                          ghamm 04/13|
  *--------------------------------------------------------------------------*/
-Core::Elements::Element* Core::FE::MeshFree::MeshfreeMultiBin::Clone() const
+Core::Elements::Element* Core::FE::MeshFree::MeshfreeMultiBin::clone() const
 {
   auto* newele = new Core::FE::MeshFree::MeshfreeMultiBin(*this);
   return newele;
@@ -93,7 +93,7 @@ void Core::FE::MeshFree::MeshfreeMultiBin::pack(Core::Communication::PackBuffer&
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Core::Elements::Element
   Core::Elements::Element::pack(data);
@@ -106,7 +106,7 @@ void Core::FE::MeshFree::MeshfreeMultiBin::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Core::Elements::Element
   std::vector<char> basedata(0);

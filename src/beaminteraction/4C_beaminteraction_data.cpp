@@ -37,7 +37,7 @@ void BEAMINTERACTION::BeamInteractionParams::init()
   issetup_ = false;
 
   Teuchos::ParameterList const& params_list =
-      Global::Problem::Instance()->beam_interaction_params();
+      Global::Problem::instance()->beam_interaction_params();
 
   rep_strategy_ = Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::RepartitionStrategy>(
       params_list, "REPARTITIONSTRATEGY");
@@ -287,12 +287,12 @@ BEAMINTERACTION::Data::BspotLinkerData::BspotLinkerData()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::Data::BspotLinkerData::SameAs(BspotLinkerData bspotlinker)
+bool BEAMINTERACTION::Data::BspotLinkerData::same_as(BspotLinkerData bspotlinker)
 {
-  if (bspotlinker.GetEleGid1() == elegid_1_ and bspotlinker.GetEleGid2() == elegid_2_ and
-      bspotlinker.GetLocBspotId1() == locbspot_1_ and
-      bspotlinker.GetLocBspotId2() == locbspot_2_ and bspotlinker.GetMatId() == mat_id_ and
-      bspotlinker.GetType() == type_)
+  if (bspotlinker.get_ele_gid1() == elegid_1_ and bspotlinker.get_ele_gid2() == elegid_2_ and
+      bspotlinker.get_loc_bspot_id1() == locbspot_1_ and
+      bspotlinker.get_loc_bspot_id2() == locbspot_2_ and bspotlinker.get_mat_id() == mat_id_ and
+      bspotlinker.get_type() == type_)
     return true;
 
   return false;

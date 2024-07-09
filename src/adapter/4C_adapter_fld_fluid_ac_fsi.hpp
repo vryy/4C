@@ -28,7 +28,7 @@ namespace Adapter
         Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// Get vector of current relative pressures errors from the Windkessels
-    std::vector<double> GetWindkesselErrors();
+    std::vector<double> get_windkessel_errors();
 
     //@}
   };

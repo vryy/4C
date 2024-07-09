@@ -58,7 +58,7 @@ void XFEM::XFieldState::init(const Teuchos::RCP<XFEM::ConditionManager>& conditi
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void XFEM::XFieldState::SetNewState(const XFEM::XFieldState& xstate)
+void XFEM::XFieldState::set_new_state(const XFEM::XFieldState& xstate)
 {
   this->isinit_ = xstate.isinit_;
   this->issetup_ = xstate.issetup_;

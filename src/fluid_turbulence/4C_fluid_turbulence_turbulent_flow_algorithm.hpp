@@ -34,16 +34,16 @@ namespace FLD
     virtual ~TurbulentFlowAlgorithm() = default;
 
     /// do time loop
-    void TimeLoop();
+    void time_loop();
 
     /// read restart
     /// only during inflow generation
     void read_restart(const int restart);
 
     /// do result check
-    Teuchos::RCP<Core::UTILS::ResultTest> DoResultCheck()
+    Teuchos::RCP<Core::UTILS::ResultTest> do_result_check()
     {
-      return fluidalgo_->fluid_field()->CreateFieldTest();
+      return fluidalgo_->fluid_field()->create_field_test();
     };
 
    private:

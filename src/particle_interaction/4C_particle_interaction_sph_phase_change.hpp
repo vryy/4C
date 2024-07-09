@@ -61,7 +61,7 @@ namespace ParticleInteraction
         const std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle);
 
     //! evaluate phase change
-    virtual void EvaluatePhaseChange(
+    virtual void evaluate_phase_change(
         std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const = 0;
 
    protected:
@@ -117,7 +117,7 @@ namespace ParticleInteraction
     explicit SPHPhaseChangeOneWayScalarBelowToAbove(const Teuchos::ParameterList& params);
 
     //! evaluate phase change
-    void EvaluatePhaseChange(
+    void evaluate_phase_change(
         std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const override;
   };
 
@@ -128,7 +128,7 @@ namespace ParticleInteraction
     explicit SPHPhaseChangeOneWayScalarAboveToBelow(const Teuchos::ParameterList& params);
 
     //! evaluate phase change
-    void EvaluatePhaseChange(
+    void evaluate_phase_change(
         std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const override;
   };
 
@@ -139,7 +139,7 @@ namespace ParticleInteraction
     explicit SPHPhaseChangeTwoWayScalar(const Teuchos::ParameterList& params);
 
     //! evaluate phase change
-    void EvaluatePhaseChange(
+    void evaluate_phase_change(
         std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const override;
   };
 

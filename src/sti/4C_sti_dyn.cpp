@@ -31,36 +31,36 @@ void sti_dyn(const int& restartstep  //! time step for restart
 )
 {
   // access global problem
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
   // access communicator
-  const Epetra_Comm& comm = problem->GetDis("scatra")->Comm();
+  const Epetra_Comm& comm = problem->get_dis("scatra")->get_comm();
 
   // access scatra discretization
-  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis("scatra");
+  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis("scatra");
 
   // add dofset for velocity-related quantities to scatra discretization
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(problem->NDim() + 1, 0, 0, true));
-  if (scatradis->AddDofSet(dofsetaux) != 1)
+      Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(problem->n_dim() + 1, 0, 0, true));
+  if (scatradis->add_dof_set(dofsetaux) != 1)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
 
   // finalize scatra discretization
   scatradis->fill_complete();
 
   // safety check
-  if (scatradis->NumGlobalNodes() == 0)
+  if (scatradis->num_global_nodes() == 0)
     FOUR_C_THROW(
         "The scatra discretization must not be empty, since the thermo discretization needs to be "
         "cloned from it!");
 
   // access thermo discretization
-  Teuchos::RCP<Core::FE::Discretization> thermodis = problem->GetDis("thermo");
+  Teuchos::RCP<Core::FE::Discretization> thermodis = problem->get_dis("thermo");
 
   // add dofset for velocity-related quantities to thermo discretization
   dofsetaux =
-      Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(problem->NDim() + 1, 0, 0, true));
-  if (thermodis->AddDofSet(dofsetaux) != 1)
+      Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(problem->n_dim() + 1, 0, 0, true));
+  if (thermodis->add_dof_set(dofsetaux) != 1)
     FOUR_C_THROW("Thermo discretization has illegal number of dofsets!");
 
   // equip thermo discretization with noderowmap for subsequent safety check
@@ -68,7 +68,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
   thermodis->fill_complete(false, false, false);
 
   // safety check
-  if (thermodis->NumGlobalNodes() != 0)
+  if (thermodis->num_global_nodes() != 0)
     FOUR_C_THROW(
         "The thermo discretization must be empty, since it is cloned from the scatra "
         "discretization!");
@@ -76,29 +76,29 @@ void sti_dyn(const int& restartstep  //! time step for restart
   // clone thermo discretization from scatra discretization, using clone strategy for scatra-thermo
   // interaction
   Core::FE::CloneDiscretization<STI::ScatraThermoCloneStrategy>(
-      scatradis, thermodis, Global::Problem::Instance()->CloningMaterialMap());
+      scatradis, thermodis, Global::Problem::instance()->cloning_material_map());
   thermodis->fill_complete(false, true, true);
 
   // add proxy of scalar transport degrees of freedom to thermo discretization and vice versa
-  if (thermodis->AddDofSet(scatradis->GetDofSetProxy()) != 2)
+  if (thermodis->add_dof_set(scatradis->get_dof_set_proxy()) != 2)
     FOUR_C_THROW("Thermo discretization has illegal number of dofsets!");
-  if (scatradis->AddDofSet(thermodis->GetDofSetProxy()) != 2)
+  if (scatradis->add_dof_set(thermodis->get_dof_set_proxy()) != 2)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
   thermodis->fill_complete(true, false, false);
   scatradis->fill_complete(true, false, false);
 
   // add material of scatra elements to thermo elements and vice versa
-  for (int i = 0; i < scatradis->NumMyColElements(); ++i)
+  for (int i = 0; i < scatradis->num_my_col_elements(); ++i)
   {
-    Core::Elements::Element* scatraele = scatradis->lColElement(i);
-    Core::Elements::Element* thermoele = thermodis->gElement(scatraele->Id());
+    Core::Elements::Element* scatraele = scatradis->l_col_element(i);
+    Core::Elements::Element* thermoele = thermodis->g_element(scatraele->id());
 
-    thermoele->AddMaterial(scatraele->Material());
-    scatraele->AddMaterial(thermoele->Material());
+    thermoele->add_material(scatraele->material());
+    scatraele->add_material(thermoele->material());
   }
 
   // access parameter lists for scatra-thermo interaction and scalar transport field
-  const Teuchos::ParameterList& stidyn = problem->STIDynamicParams();
+  const Teuchos::ParameterList& stidyn = problem->sti_dynamic_params();
   const Teuchos::ParameterList& scatradyn = problem->scalar_transport_dynamic_params();
 
   // extract and check ID of linear solver for scatra field
@@ -131,9 +131,9 @@ void sti_dyn(const int& restartstep  //! time step for restart
             "DYNAMIC/MONOLITHIC'!");
 
       sti_algorithm = Teuchos::rcp(new STI::Monolithic(comm, stidyn, scatradyn,
-          Global::Problem::Instance()->SolverParams(solver_id),
-          Global::Problem::Instance()->SolverParams(solver_id_scatra),
-          Global::Problem::Instance()->SolverParams(solver_id_thermo)));
+          Global::Problem::instance()->solver_params(solver_id),
+          Global::Problem::instance()->solver_params(solver_id_scatra),
+          Global::Problem::instance()->solver_params(solver_id_thermo)));
 
       break;
     }
@@ -148,8 +148,8 @@ void sti_dyn(const int& restartstep  //! time step for restart
     case Inpar::STI::CouplingType::twoway_thermotoscatra_aitken:
     {
       sti_algorithm = Teuchos::rcp(new STI::Partitioned(comm, stidyn, scatradyn,
-          Global::Problem::Instance()->SolverParams(solver_id_scatra),
-          Global::Problem::Instance()->SolverParams(solver_id_thermo)));
+          Global::Problem::instance()->solver_params(solver_id_scatra),
+          Global::Problem::instance()->solver_params(solver_id_thermo)));
 
       break;
     }
@@ -165,29 +165,29 @@ void sti_dyn(const int& restartstep  //! time step for restart
   if (restartstep) sti_algorithm->read_restart(restartstep);
 
   // provide scatra and thermo fields with velocities
-  sti_algorithm->ScaTraField()->set_velocity_field();
-  sti_algorithm->ThermoField()->set_velocity_field();
+  sti_algorithm->sca_tra_field()->set_velocity_field();
+  sti_algorithm->thermo_field()->set_velocity_field();
 
   // enter time loop and solve scatra-thermo interaction problem
-  sti_algorithm->TimeLoop();
+  sti_algorithm->time_loop();
 
   // summarize performance measurements
   Teuchos::TimeMonitor::summarize();
 
   // perform result tests
-  problem->AddFieldTest(
+  problem->add_field_test(
       Teuchos::rcp<Core::UTILS::ResultTest>(new STI::STIResultTest(sti_algorithm)));
   if (Teuchos::getIntegralValue<Inpar::STI::ScaTraTimIntType>(
-          problem->STIDynamicParams(), "SCATRATIMINTTYPE") == Inpar::STI::ScaTraTimIntType::elch)
-    problem->AddFieldTest(Teuchos::rcp<Core::UTILS::ResultTest>(new ScaTra::ElchResultTest(
-        Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntElch>(sti_algorithm->ScaTraField()))));
+          problem->sti_dynamic_params(), "SCATRATIMINTTYPE") == Inpar::STI::ScaTraTimIntType::elch)
+    problem->add_field_test(Teuchos::rcp<Core::UTILS::ResultTest>(new ScaTra::ElchResultTest(
+        Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntElch>(sti_algorithm->sca_tra_field()))));
   else
     FOUR_C_THROW(
         "Scatra-thermo interaction is currently only available for thermodynamic electrochemistry, "
         "but not for other kinds of thermodynamic scalar transport!");
-  problem->AddFieldTest(Teuchos::rcp<Core::UTILS::ResultTest>(
-      new ScaTra::ScaTraResultTest(sti_algorithm->ThermoField())));
-  problem->TestAll(comm);
+  problem->add_field_test(Teuchos::rcp<Core::UTILS::ResultTest>(
+      new ScaTra::ScaTraResultTest(sti_algorithm->thermo_field())));
+  problem->test_all(comm);
 
   return;
 }  // sti_dyn()

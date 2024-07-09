@@ -55,7 +55,7 @@ namespace Adapter
         ) override;
 
     /// create result test for multiphase porous fluid field
-    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
 
     /// read restart
     void read_restart(int restart) override;
@@ -64,7 +64,7 @@ namespace Adapter
     Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds = 0) const override;
 
     /// access dof row map
-    Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const override;
+    Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const override;
 
     /// access coupled system matrix
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
@@ -73,7 +73,7 @@ namespace Adapter
     Teuchos::RCP<Core::FE::Discretization> discretization() const override;
 
     //! apply moving mesh data
-    void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> dispnp  //!< displacement vector
+    void apply_mesh_movement(Teuchos::RCP<const Epetra_Vector> dispnp  //!< displacement vector
         ) override;
 
     //! set state on discretization
@@ -86,34 +86,34 @@ namespace Adapter
         ) override;
 
     //! set solution of scatra problem
-    void SetScatraSolution(unsigned nds, Teuchos::RCP<const Epetra_Vector> scalars);
+    void set_scatra_solution(unsigned nds, Teuchos::RCP<const Epetra_Vector> scalars);
 
     //! return primary field at time n+1
-    Teuchos::RCP<const Epetra_Vector> Phinp() const override;
+    Teuchos::RCP<const Epetra_Vector> phinp() const override;
 
     //! return primary field at time n
-    Teuchos::RCP<const Epetra_Vector> Phin() const override;
+    Teuchos::RCP<const Epetra_Vector> phin() const override;
 
     //! return solid pressure field at time n+1
-    Teuchos::RCP<const Epetra_Vector> SolidPressure() const override;
+    Teuchos::RCP<const Epetra_Vector> solid_pressure() const override;
 
     //! return pressure field at time n+1
-    Teuchos::RCP<const Epetra_Vector> Pressure() const override;
+    Teuchos::RCP<const Epetra_Vector> pressure() const override;
 
     //! return saturation field at time n+1
-    Teuchos::RCP<const Epetra_Vector> Saturation() const override;
+    Teuchos::RCP<const Epetra_Vector> saturation() const override;
 
     //! return valid volume fraction species dof vector
     Teuchos::RCP<const Epetra_Vector> valid_vol_frac_spec_dofs() const override;
 
     //! return phase flux field at time n+1
-    Teuchos::RCP<const Epetra_MultiVector> Flux() const override;
+    Teuchos::RCP<const Epetra_MultiVector> flux() const override;
 
     //! return number of dof set associated with solid pressure
     int get_dof_set_number_of_solid_pressure() const override;
 
     //! do time integration (time loop)
-    void TimeLoop() override;
+    void time_loop() override;
 
     //! initialization procedure prior to evaluation of a time step
     void prepare_time_step() override;
@@ -128,7 +128,7 @@ namespace Adapter
     void evaluate_error_compared_to_analytical_sol() override;
 
     //! general solver call for coupled algorithms
-    void Solve() override;
+    void solve() override;
 
     /// prepare timeloop of coupled problem
     void prepare_time_loop() override;
@@ -137,19 +137,19 @@ namespace Adapter
     Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const override;
 
     //! right-hand side alias the dynamic force residual
-    Teuchos::RCP<const Epetra_Vector> RHS() const override;
+    Teuchos::RCP<const Epetra_Vector> rhs() const override;
 
     //! right-hand side alias the dynamic force residual for coupled system
-    Teuchos::RCP<const Epetra_Vector> ArteryPorofluidRHS() const override;
+    Teuchos::RCP<const Epetra_Vector> artery_porofluid_rhs() const override;
 
     //! iterative update of phinp
-    void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc) override;
+    void update_iter(const Teuchos::RCP<const Epetra_Vector> inc) override;
 
     //! reconstruct pressures and saturation from current solution
     void reconstruct_pressures_and_saturations() override;
 
     //! reconstruct flux from current solution
-    void ReconstructFlux() override;
+    void reconstruct_flux() override;
 
     //! calculate phase velocities from current solution
     void calculate_phase_velocities() override;
@@ -166,10 +166,10 @@ namespace Adapter
         Teuchos::RCP<Core::LinAlg::SparseOperator> k_pfs) override;
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override;
 
     // return arterial network time integrator
-    Teuchos::RCP<Adapter::ArtNet> ArtNetTimInt() override;
+    Teuchos::RCP<Adapter::ArtNet> art_net_tim_int() override;
 
    private:
     /// multiphase porous flow time integrator

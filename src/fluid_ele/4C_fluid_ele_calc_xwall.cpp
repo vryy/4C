@@ -59,7 +59,7 @@ Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::FluidEleCalcXWall()
 
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>*
-Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Instance(
+Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::instance(
     Core::UTILS::SingletonAction action)
 {
   static Core::UTILS::SingletonOwner<Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>>
@@ -70,14 +70,14 @@ Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Instance(
                 new Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>());
           });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 /*-----------------------------------------------------------------------------*
  | Entry supporting methods of the element                          bk 06/2014 |
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateService(
+int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::evaluate_service(
     Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
     Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
     std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
@@ -116,7 +116,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateService(
     int err = evaluate_service_x_wall(
         ele, params, mat, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
 
-    // for some EvaluateService actions, elevec1 is not necessary
+    // for some evaluate_service actions, elevec1 is not necessary
     if (elevec1.length() != 0 && act != FLD::tauw_via_gradient && act != FLD::calc_div_u &&
         act != FLD::calc_dt_via_cfl && act != FLD::xwall_calc_mk &&
         act != FLD::calc_mass_flow_periodic_hill)
@@ -185,7 +185,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::evaluate_service_x_w
     }
     break;
     default:
-      return my::EvaluateService(
+      return my::evaluate_service(
           ele, params, mat, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
   }  // end of switch(act)
@@ -291,7 +291,7 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
     FOUR_C_THROW("This class is exclusively for the xwall enrichment type up to now");
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
-  if (my::rotsymmpbc_->HasRotSymmPBC()) FOUR_C_THROW("rotsymm pbc don't work with xwall");
+  if (my::rotsymmpbc_->has_rot_symm_pbc()) FOUR_C_THROW("rotsymm pbc don't work with xwall");
 
   // get xwall toggle
   {
@@ -367,9 +367,9 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
     const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(mat.get());
     if (!actmat) FOUR_C_THROW("not a newtonian fluid");
     // get constant dynamic viscosity
-    dens_ = actmat->Density();
+    dens_ = actmat->density();
     densinv_ = 1.0 / dens_;
-    visc_ = actmat->Viscosity() * densinv_;
+    visc_ = actmat->viscosity() * densinv_;
     viscinv_ = 1.0 / visc_;
   }
 
@@ -385,7 +385,7 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
   if (calcoldandnewpsi_ == true)
   {
     // get old wall distance in case of ale
-    if (ele->IsAle())
+    if (ele->is_ale())
     {
       const Teuchos::RCP<Epetra_Vector> incwdist =
           params.get<Teuchos::RCP<Epetra_Vector>>("incwalldist");
@@ -412,7 +412,7 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
 
   // get element mk for stabilization
   const Teuchos::RCP<Epetra_Vector> mkvec = params.get<Teuchos::RCP<Epetra_Vector>>("mk");
-  mk_ = (*mkvec)[mkvec->Map().LID(ele->Id())];
+  mk_ = (*mkvec)[mkvec->Map().LID(ele->id())];
 
   numgpnorm_ = params.get<int>("gpnorm");
   numgpnormow_ = params.get<int>("gpnormow");
@@ -421,7 +421,7 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
   Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, my::xyze_);
   Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
-  if (ele->IsAle()) get_grid_disp_ale(discretization, lm, edispnp);
+  if (ele->is_ale()) get_grid_disp_ale(discretization, lm, edispnp);
   prepare_gauss_rule();
 
   return;
@@ -839,7 +839,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::tau_w_via_gradient(
   Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, my::xyze_);
 
-  if (ele->IsAle())
+  if (ele->is_ale())
   {
     Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
     Core::LinAlg::Matrix<nsd_, nen_> egridv(true);
@@ -967,7 +967,7 @@ double Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::calc_mk()
        ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
-    eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
+    eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
 
     const unsigned Velx = 0;
     const unsigned Vely = 1;
@@ -1012,11 +1012,11 @@ double Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::calc_mk()
   const double maxeigenvalue = Core::LinAlg::GeneralizedEigen(elemat_epetra1, elemat_epetra2);
 
   double h_u = 0.0;
-  if (my::fldpara_->WhichTau() == Inpar::FLUID::tau_franca_barrenechea_valentin_frey_wall ||
-      my::fldpara_->WhichTau() == Inpar::FLUID::tau_codina ||
-      my::fldpara_->WhichTau() == Inpar::FLUID::tau_codina_convscaled)
+  if (my::fldpara_->which_tau() == Inpar::FLUID::tau_franca_barrenechea_valentin_frey_wall ||
+      my::fldpara_->which_tau() == Inpar::FLUID::tau_codina ||
+      my::fldpara_->which_tau() == Inpar::FLUID::tau_codina_convscaled)
   {
-    if (!(my::fldpara_->CharEleLengthU() == Inpar::FLUID::volume_equivalent_diameter_u))
+    if (!(my::fldpara_->char_ele_length_u() == Inpar::FLUID::volume_equivalent_diameter_u))
       FOUR_C_THROW("only volume equivalent diameter defined up to now");
 
     // volume equivalent diameter
@@ -1063,7 +1063,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::calc_mk(Discret::ELE
       ele, my::xyze_);
 
   Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
-  if (ele->IsAle()) get_grid_disp_ale(discretization, lm, edispnp);
+  if (ele->is_ale()) get_grid_disp_ale(discretization, lm, edispnp);
 
   elevec1[0] = calc_mk();
   return 0;
@@ -1090,13 +1090,13 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(
       discretization, lm, *my::rotsymmpbc_, &eveln, nullptr, "veln");
 
   Core::LinAlg::Matrix<nsd_, nen_> eaccn(true);
-  bool switchonaccn = discretization.HasState("accn");
+  bool switchonaccn = discretization.has_state("accn");
   if (switchonaccn)
     my::extract_values_from_global_vector(
         discretization, lm, *my::rotsymmpbc_, &eaccn, nullptr, "accn");
 
   Core::LinAlg::Matrix<nsd_, nen_> evelnp(true);
-  bool switchonvelnp = discretization.HasState("velnp");
+  bool switchonvelnp = discretization.has_state("velnp");
   if (switchonvelnp)
     my::extract_values_from_global_vector(
         discretization, lm, *my::rotsymmpbc_, &evelnp, nullptr, "velnp");
@@ -1109,7 +1109,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(
       ele, my::xyze_);
 
   Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
-  if (ele->IsAle()) get_grid_disp_ale(discretization, lm, edispnp);
+  if (ele->is_ale()) get_grid_disp_ale(discretization, lm, edispnp);
 
   //  Core::FE::GaussIntegration intpoints(Core::FE::CellType::line6);
 
@@ -1120,14 +1120,14 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(
        iquad != my::intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
-    eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
+    eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
 
     Core::LinAlg::Matrix<nen_, 1> newfunct(my::funct_);
 
     x_wall_tau_w_inc_back();
 
     // evaluate shape functions and derivatives at integration point
-    eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
+    eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
 
     Core::LinAlg::Matrix<nen_, 1> oldfunct(my::funct_);
 
@@ -1397,7 +1397,7 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule(
     if (dot1 < 0.90 && dot2 < 0.90 && dot3 < 0.90)
     {  // element, where the wall normal direction does not point in one specific element direction,
        // e.g. in corners
-      cgp_->IncreaseReserved(
+      cgp_->increase_reserved(
           (numgpnorm_ * numgpnorm_ * numgpnorm_) - (numgpnorm_ * numgpplane_ * numgpplane_));
       Core::FE::GaussIntegration intpointsplane(Core::FE::CellType::quad8, 2 * numgpnorm_ - 1);
       // start loop over integration points in layer
@@ -1408,8 +1408,8 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule(
         for (Core::FE::GaussIntegration::iterator iquadnorm = intpointsnormal.begin();
              iquadnorm != intpointsnormal.end(); ++iquadnorm)
         {
-          cgp_->Append(iquadnorm.Point()[0], iquadplane.Point()[0], iquadplane.Point()[1],
-              iquadplane.Weight() * iquadnorm.Weight());
+          cgp_->append(iquadnorm.point()[0], iquadplane.point()[0], iquadplane.point()[1],
+              iquadplane.weight() * iquadnorm.weight());
         }
       }
     }
@@ -1423,8 +1423,8 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule(
         for (Core::FE::GaussIntegration::iterator iquadnorm = intpointsnormal.begin();
              iquadnorm != intpointsnormal.end(); ++iquadnorm)
         {
-          cgp_->Append(iquadnorm.Point()[0], iquadplane.Point()[0], iquadplane.Point()[1],
-              iquadplane.Weight() * iquadnorm.Weight());
+          cgp_->append(iquadnorm.point()[0], iquadplane.point()[0], iquadplane.point()[1],
+              iquadplane.weight() * iquadnorm.weight());
         }
       }
     }
@@ -1438,8 +1438,8 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule(
         for (Core::FE::GaussIntegration::iterator iquadnorm = intpointsnormal.begin();
              iquadnorm != intpointsnormal.end(); ++iquadnorm)
         {
-          cgp_->Append(iquadplane.Point()[0], iquadnorm.Point()[0], iquadplane.Point()[1],
-              iquadplane.Weight() * iquadnorm.Weight());
+          cgp_->append(iquadplane.point()[0], iquadnorm.point()[0], iquadplane.point()[1],
+              iquadplane.weight() * iquadnorm.weight());
         }
       }
     }
@@ -1453,8 +1453,8 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule(
         for (Core::FE::GaussIntegration::iterator iquadnorm = intpointsnormal.begin();
              iquadnorm != intpointsnormal.end(); ++iquadnorm)
         {
-          cgp_->Append(iquadplane.Point()[0], iquadplane.Point()[1], iquadnorm.Point()[0],
-              iquadplane.Weight() * iquadnorm.Weight());
+          cgp_->append(iquadplane.point()[0], iquadplane.point()[1], iquadnorm.point()[0],
+              iquadplane.weight() * iquadnorm.weight());
         }
       }
     }

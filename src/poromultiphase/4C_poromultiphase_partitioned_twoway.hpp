@@ -36,10 +36,10 @@ namespace POROMULTIPHASE
         const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     /// setup
-    void SetupSystem() override;
+    void setup_system() override;
 
     /// time step of coupled problem
-    void TimeStep() override { outer_loop(); };
+    void time_step() override { outer_loop(); };
 
     /// read restart
     void read_restart(int restart) override;
@@ -48,7 +48,7 @@ namespace POROMULTIPHASE
     void update_and_output() override;
 
     // update
-    Teuchos::RCP<const Epetra_Vector> RelaxedFluidPhinp() const override { return fluidphinp_; }
+    Teuchos::RCP<const Epetra_Vector> relaxed_fluid_phinp() const override { return fluidphinp_; }
 
    private:
     //! perform iteration loop between fields
@@ -69,7 +69,7 @@ namespace POROMULTIPHASE
     virtual bool convergence_check(int itnum);
 
     //! perform relaxation
-    void PerformRelaxation(Teuchos::RCP<const Epetra_Vector> phi, const int itnum) override;
+    void perform_relaxation(Teuchos::RCP<const Epetra_Vector> phi, const int itnum) override;
 
     /// set (relaxed) fluid solution on structure field
     void set_relaxed_fluid_solution() override;

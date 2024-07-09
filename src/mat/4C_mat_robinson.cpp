@@ -106,7 +106,7 @@ Mat::RobinsonType Mat::RobinsonType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::RobinsonType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::RobinsonType::create(const std::vector<char>& data)
 {
   Mat::Robinson* robinson = new Mat::Robinson();
   robinson->unpack(data);
@@ -134,19 +134,19 @@ void Mat::Robinson::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
   // in case we are in post-process mode
-  if (params_ != nullptr) matid = params_->Id();
+  if (params_ != nullptr) matid = params_->id();
   add_to_pack(data, matid);
 
   // pack history data
   int numgp;
   // if material is not initialised, i.e. start simulation, nothing to pack
-  if (!Initialized())
+  if (!initialized())
   {
     numgp = 0;
   }
@@ -180,23 +180,23 @@ void Mat::Robinson::unpack(const std::vector<char>& data)
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::Robinson*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   // history data
@@ -354,7 +354,7 @@ void Mat::Robinson::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   straininc.update(-1., strain_last_[gp], 1.);
   strain_last_[gp] = *strain;
   // if no temperature has been set use the initial value
-  const double scalartemp = params.get<double>("scalartemp", InitTemp());
+  const double scalartemp = params.get<double>("scalartemp", init_temp());
 
   // update history of the condensed variables plastic strain and back stress
   // iterative update of the current history vectors at current Gauss point gp
@@ -478,7 +478,7 @@ void Mat::Robinson::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // (o): output vector stsovr: subtract 2 vectors
   // eta_{n+1} = devstress_{n+1} - backstress_{n+1}
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> eta(true);
-  RelDevStress(devstress, backstress_n, eta);
+  rel_dev_stress(devstress, backstress_n, eta);
 
   // to calculate the new history vectors (strainplcurr_, backstresscurr_), the
   // submatrices of the complete problems, that are condensed later, have to be calculated
@@ -577,7 +577,7 @@ void Mat::Robinson::setup_cmat(
 /*----------------------------------------------------------------------*
  | computes linear stress tensor                             dano 11/11 |
  *----------------------------------------------------------------------*/
-void Mat::Robinson::Stress(const double p,                         //!< volumetric stress
+void Mat::Robinson::stress(const double p,                         //!< volumetric stress
     const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& stress            //!< 2nd PK-stress
 )
@@ -593,7 +593,7 @@ void Mat::Robinson::Stress(const double p,                         //!< volumetr
 /*----------------------------------------------------------------------*
  | compute relative deviatoric stress tensor                 dano 11/11 |
  *----------------------------------------------------------------------*/
-void Mat::Robinson::RelDevStress(
+void Mat::Robinson::rel_dev_stress(
     const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& devstress,  // (i) deviatoric stress tensor
     const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& backstress_n,  // (i) back stress tensor
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& eta                  // (o) relative stress
@@ -1321,13 +1321,13 @@ void Mat::Robinson::calculate_condensed_system(
   //           [ kav  kaa ]      [ res^al ]
   Core::LinAlg::FixedSizeSerialDenseSolver<(2 * Mat::NUM_STRESS_3D), (2 * Mat::NUM_STRESS_3D), 1>
       solver_res;
-  solver_res.SetMatrix(kvvkvakavkaa);
+  solver_res.set_matrix(kvvkvakavkaa);
   // No need for a separate rhs. We assemble the rhs to the solution vector.
   // The solver will destroy the rhs and return the solution.
   // x: vector of unknowns, b: right hand side vector
   // kvarva = kvvkvakavkaa^{-1} . kvarva
-  solver_res.SetVectors(kvarva, kvarva);
-  solver_res.Solve();
+  solver_res.set_vectors(kvarva, kvarva);
+  solver_res.solve();
 
   // ----------------------------------- back substitution of tangent
   // solve x = A^{-1} . b
@@ -1338,13 +1338,13 @@ void Mat::Robinson::calculate_condensed_system(
   Core::LinAlg::FixedSizeSerialDenseSolver<(2 * Mat::NUM_STRESS_3D), (2 * Mat::NUM_STRESS_3D),
       Mat::NUM_STRESS_3D>
       solver_tang;
-  solver_tang.SetMatrix(kvvkvakavkaa);
+  solver_tang.set_matrix(kvvkvakavkaa);
   // No need for a separate rhs. We assemble the rhs to the solution vector.
   // The solver will destroy the rhs and return the solution.
   // x: vector of unknowns, b: right hand side vector: here: x=b=kvakvae
   // kvakvae = kvvkvakavkaa^{-1} . kvakvae
-  solver_tang.SetVectors(kvakvae, kvakvae);
-  solver_tang.Solve();
+  solver_tang.set_vectors(kvakvae, kvakvae);
+  solver_tang.solve();
 
   // final condensed system expressed only in stress, strain, cmat
   // sig_red^i = kee_red^i . iinc eps --> stress_red = cmat_red . Delta strain

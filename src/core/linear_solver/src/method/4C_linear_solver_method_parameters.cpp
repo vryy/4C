@@ -35,26 +35,26 @@ void Core::LinearSolver::Parameters::compute_solver_parameters(
 
   // set parameter information for solver
   {
-    if (nullspaceMap == Teuchos::null and dis.NumMyRowNodes() > 0)
+    if (nullspaceMap == Teuchos::null and dis.num_my_row_nodes() > 0)
     {
       // no map given, just grab the block information on the first element that appears
-      Core::Elements::Element* dwele = dis.lRowElement(0);
-      dwele->ElementType().nodal_block_information(dwele, numdf, dimns, nv, np);
+      Core::Elements::Element* dwele = dis.l_row_element(0);
+      dwele->element_type().nodal_block_information(dwele, numdf, dimns, nv, np);
     }
     else
     {
       // if a map is given, grab the block information of the first element in that map
-      for (int i = 0; i < dis.NumMyRowNodes(); ++i)
+      for (int i = 0; i < dis.num_my_row_nodes(); ++i)
       {
-        Core::Nodes::Node* actnode = dis.lRowNode(i);
-        std::vector<int> dofs = dis.Dof(0, actnode);
+        Core::Nodes::Node* actnode = dis.l_row_node(i);
+        std::vector<int> dofs = dis.dof(0, actnode);
 
         const int localIndex = nullspaceMap->LID(dofs[0]);
 
         if (localIndex == -1) continue;
 
-        Core::Elements::Element* dwele = dis.lRowElement(localIndex);
-        actnode->Elements()[0]->ElementType().nodal_block_information(dwele, numdf, dimns, nv, np);
+        Core::Elements::Element* dwele = dis.l_row_element(localIndex);
+        actnode->elements()[0]->element_type().nodal_block_information(dwele, numdf, dimns, nv, np);
         break;
       }
     }
@@ -62,7 +62,7 @@ void Core::LinearSolver::Parameters::compute_solver_parameters(
     // communicate data to procs without row element
     std::array<int, 4> ldata{numdf, dimns, nv, np};
     std::array<int, 4> gdata{0, 0, 0, 0};
-    dis.Comm().MaxAll(ldata.data(), gdata.data(), 4);
+    dis.get_comm().MaxAll(ldata.data(), gdata.data(), 4);
     numdf = gdata[0];
     dimns = gdata[1];
     nv = gdata[2];
@@ -105,7 +105,7 @@ void Core::LinearSolver::Parameters::compute_solver_parameters(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void Core::LinearSolver::Parameters::FixNullSpace(std::string field, const Epetra_Map& oldmap,
+void Core::LinearSolver::Parameters::fix_null_space(std::string field, const Epetra_Map& oldmap,
     const Epetra_Map& newmap, Teuchos::ParameterList& solveparams)
 {
   if (!oldmap.Comm().MyPID()) printf("Fixing %s Nullspace\n", field.c_str());

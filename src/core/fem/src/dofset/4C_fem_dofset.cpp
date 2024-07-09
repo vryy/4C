@@ -120,7 +120,7 @@ void Core::DOFSets::DofSet::reset()
   filled_ = false;
 
   // tell all proxies
-  NotifyReset();
+  notify_reset();
 }
 
 /*----------------------------------------------------------------------*
@@ -129,9 +129,9 @@ void Core::DOFSets::DofSet::reset()
 int Core::DOFSets::DofSet::assign_degrees_of_freedom(
     const Core::FE::Discretization& dis, const unsigned dspos, const int start)
 {
-  if (!dis.Filled()) FOUR_C_THROW("discretization Filled()==false");
-  if (!dis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("Nodal row map is not unique");
-  if (!dis.ElementRowMap()->UniqueGIDs()) FOUR_C_THROW("Element row map is not unique");
+  if (!dis.filled()) FOUR_C_THROW("discretization Filled()==false");
+  if (!dis.node_row_map()->UniqueGIDs()) FOUR_C_THROW("Nodal row map is not unique");
+  if (!dis.element_row_map()->UniqueGIDs()) FOUR_C_THROW("Element row map is not unique");
 
   // A definite offset is currently not supported.
   // TODO (kronbichler) find a better solution for this
@@ -142,7 +142,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
 
   // Add DofSets in order of assignment to list. Once it is there it has its
   // place and will get its starting id from the previous DofSet.
-  AddDofSettoList();
+  add_dof_setto_list();
 
   // We assume that all dof sets before this one have been set up. Otherwise
   // we'd have to reorder the list.
@@ -186,16 +186,16 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
   // or element.
 
   // numdf for all nodes and elements
-  numdfcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
-  numdfcolelements_ = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
-  if (facedis != Teuchos::null && facedis->FaceColMap() != nullptr)
-    numdfcolfaces_ = Teuchos::rcp(new Epetra_IntVector(*facedis->FaceColMap()));
+  numdfcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.node_col_map()));
+  numdfcolelements_ = Teuchos::rcp(new Epetra_IntVector(*dis.element_col_map()));
+  if (facedis != Teuchos::null && facedis->face_col_map() != nullptr)
+    numdfcolfaces_ = Teuchos::rcp(new Epetra_IntVector(*facedis->face_col_map()));
 
   // index of first dof for all nodes and elements
-  idxcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
-  idxcolelements_ = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
-  if (facedis != Teuchos::null && facedis->FaceColMap() != nullptr)
-    idxcolfaces_ = Teuchos::rcp(new Epetra_IntVector(*facedis->FaceColMap()));
+  idxcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.node_col_map()));
+  idxcolelements_ = Teuchos::rcp(new Epetra_IntVector(*dis.element_col_map()));
+  if (facedis != Teuchos::null && facedis->face_col_map() != nullptr)
+    idxcolfaces_ = Teuchos::rcp(new Epetra_IntVector(*facedis->face_col_map()));
 
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
@@ -209,18 +209,18 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
   {
     // get DoF coupling conditions
     std::vector<Core::Conditions::Condition*> couplingconditions(0);
-    dis.GetCondition("PointCoupling", couplingconditions);
+    dis.get_condition("PointCoupling", couplingconditions);
     if ((int)couplingconditions.size() > 0) pccdofhandling_ = true;
 
     // do the nodes first
-    Epetra_IntVector numdfrownodes(*dis.NodeRowMap());
-    Epetra_IntVector idxrownodes(*dis.NodeRowMap());
+    Epetra_IntVector numdfrownodes(*dis.node_row_map());
+    Epetra_IntVector idxrownodes(*dis.node_row_map());
 
-    int numrownodes = dis.NumMyRowNodes();
+    int numrownodes = dis.num_my_row_nodes();
     for (int i = 0; i < numrownodes; ++i)
     {
-      Core::Nodes::Node* actnode = dis.lRowNode(i);
-      numdfrownodes[i] = NumDofPerNode(*actnode);
+      Core::Nodes::Node* actnode = dis.l_row_node(i);
+      numdfrownodes[i] = num_dof_per_node(*actnode);
     }
 
     int minnodegid = get_minimal_node_gid_if_relevant(dis);
@@ -229,8 +229,8 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
 
     for (int i = 0; i < numrownodes; ++i)
     {
-      Core::Nodes::Node* actnode = dis.lRowNode(i);
-      const int gid = actnode->Id();
+      Core::Nodes::Node* actnode = dis.l_row_node(i);
+      const int gid = actnode->id();
 
       // **********************************************************************
       // **********************************************************************
@@ -242,7 +242,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
       {
         for (int k = 0; k < (int)couplingconditions.size(); ++k)
         {
-          if (couplingconditions[k]->ContainsNode(gid))
+          if (couplingconditions[k]->contains_node(gid))
           {
             if (relevantcondid != -1) FOUR_C_THROW("ERROR: Two coupling conditions on one node");
             relevantcondid = k;
@@ -254,7 +254,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
       bool specialtreatment = false;
       if (relevantcondid >= 0)
       {
-        const std::vector<int>* nodeids = couplingconditions[relevantcondid]->GetNodes();
+        const std::vector<int>* nodeids = couplingconditions[relevantcondid]->get_nodes();
         if (!nodeids) FOUR_C_THROW("ERROR: Condition does not have Node Ids");
 
         // check if all nodes in this condition are on same processor
@@ -263,7 +263,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
         for (int k = 0; k < (int)(nodeids->size()); ++k)
         {
           int checkgid = (*nodeids)[k];
-          if (!dis.NodeRowMap()->MyGID(checkgid)) allononeproc = false;
+          if (!dis.node_row_map()->MyGID(checkgid)) allononeproc = false;
         }
         if (!allononeproc)
           FOUR_C_THROW(
@@ -351,38 +351,38 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
     //////////////////////////////////////////////////////////////////
 
     // Now do it again for the faces
-    if (facedis != Teuchos::null && facedis->FaceRowMap() != nullptr)
+    if (facedis != Teuchos::null && facedis->face_row_map() != nullptr)
     {
-      Epetra_IntVector numdfrowfaces(*facedis->FaceRowMap());
-      Epetra_IntVector idxrowfaces(*facedis->FaceRowMap());
-      int numcolelements = dis.NumMyColElements();
+      Epetra_IntVector numdfrowfaces(*facedis->face_row_map());
+      Epetra_IntVector idxrowfaces(*facedis->face_row_map());
+      int numcolelements = dis.num_my_col_elements();
 
-      const int mypid = dis.Comm().MyPID();
+      const int mypid = dis.get_comm().MyPID();
       for (int i = 0; i < numcolelements; ++i)
       {
-        Teuchos::RCP<Core::Elements::FaceElement>* faces = dis.lColElement(i)->Faces();
+        Teuchos::RCP<Core::Elements::FaceElement>* faces = dis.l_col_element(i)->faces();
         // If no faces are found, continue...
         if (faces == nullptr) continue;
-        for (int face = 0; face < dis.lColElement(i)->NumFace(); ++face)
-          if (faces[face]->Owner() == mypid)
+        for (int face = 0; face < dis.l_col_element(i)->num_face(); ++face)
+          if (faces[face]->owner() == mypid)
           {
-            const int mylid = facedis->FaceRowMap()->LID(faces[face]->Id());
-            numdfrowfaces[mylid] = num_dof_per_face(*(dis.lColElement(i)), face);
+            const int mylid = facedis->face_row_map()->LID(faces[face]->id());
+            numdfrowfaces[mylid] = num_dof_per_face(*(dis.l_col_element(i)), face);
           }
       }
 
-      int minfacegid = facedis->FaceRowMap()->MinAllGID();
+      int minfacegid = facedis->face_row_map()->MinAllGID();
       int maxfacenumdf = numdfrowfaces.MaxValue();
 
       for (int i = 0; i < numcolelements; ++i)
       {
-        Teuchos::RCP<Core::Elements::FaceElement>* faces = dis.lColElement(i)->Faces();
+        Teuchos::RCP<Core::Elements::FaceElement>* faces = dis.l_col_element(i)->faces();
         if (faces == nullptr) continue;
-        for (int face = 0; face < dis.lColElement(i)->NumFace(); ++face)
-          if (faces[face]->Owner() == mypid)
+        for (int face = 0; face < dis.l_col_element(i)->num_face(); ++face)
+          if (faces[face]->owner() == mypid)
           {
-            const int gid = faces[face]->Id();
-            const int mylid = facedis->FaceRowMap()->LID(gid);
+            const int gid = faces[face]->id();
+            const int mylid = facedis->face_row_map()->LID(gid);
             int numdf = numdfrowfaces[mylid];
             int dof = count + (gid - minfacegid) * maxfacenumdf;
             idxrowfaces[mylid] = dof;
@@ -411,25 +411,25 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
     //////////////////////////////////////////////////////////////////
 
     // Now do it again for the elements
-    Epetra_IntVector numdfrowelements(*dis.ElementRowMap());
-    Epetra_IntVector idxrowelements(*dis.ElementRowMap());
+    Epetra_IntVector numdfrowelements(*dis.element_row_map());
+    Epetra_IntVector idxrowelements(*dis.element_row_map());
 
-    int numrowelements = dis.NumMyRowElements();
+    int numrowelements = dis.num_my_row_elements();
     for (int i = 0; i < numrowelements; ++i)
     {
-      Core::Elements::Element* actele = dis.lRowElement(i);
+      Core::Elements::Element* actele = dis.l_row_element(i);
       // const int gid = actele->Id();
       int numdf = num_dof_per_element(*actele);
       numdfrowelements[i] = numdf;
     }
 
-    int minelementgid = dis.ElementRowMap()->MinAllGID();
+    int minelementgid = dis.element_row_map()->MinAllGID();
     maxelementnumdf = numdfrowelements.MaxValue();
 
     for (int i = 0; i < numrowelements; ++i)
     {
-      Core::Elements::Element* actelement = dis.lRowElement(i);
-      const int gid = actelement->Id();
+      Core::Elements::Element* actelement = dis.l_row_element(i);
+      const int gid = actelement->id();
       int numdf = numdfrowelements[i];
       int dof = count + (gid - minelementgid) * maxelementnumdf;
       idxrowelements[i] = dof;
@@ -449,8 +449,8 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
   }
 
   // Now finally we have everything in place to build the maps.
-  int numrownodes = dis.NumMyRowNodes();
-  int numrowelements = dis.NumMyRowElements();
+  int numrownodes = dis.num_my_row_nodes();
+  int numrowelements = dis.num_my_row_elements();
 
   std::vector<int> localrowdofs;
   std::vector<int> localcoldofs;
@@ -492,17 +492,18 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
     // printf("\n");
   }
 
-  Core::Communication::Exporter nodeexporter(*dis.NodeRowMap(), *dis.NodeColMap(), dis.Comm());
+  Core::Communication::Exporter nodeexporter(
+      *dis.node_row_map(), *dis.node_col_map(), dis.get_comm());
   nodeexporter.Export(nodedofset);
 
   Core::Communication::Exporter elementexporter(
-      *dis.ElementRowMap(), *dis.ElementColMap(), dis.Comm());
+      *dis.element_row_map(), *dis.element_col_map(), dis.get_comm());
   elementexporter.Export(elementdofset);
 
-  if (facedis != Teuchos::null && facedis->FaceRowMap() != nullptr)
+  if (facedis != Teuchos::null && facedis->face_row_map() != nullptr)
   {
     Core::Communication::Exporter faceexporter(
-        *facedis->FaceRowMap(), *facedis->FaceColMap(), dis.Comm());
+        *facedis->face_row_map(), *facedis->face_col_map(), dis.get_comm());
     faceexporter.Export(facedofset);
   }
 
@@ -531,20 +532,20 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
   }
 
   dofrowmap_ =
-      Teuchos::rcp(new Epetra_Map(-1, localrowdofs.size(), localrowdofs.data(), 0, dis.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, localrowdofs.size(), localrowdofs.data(), 0, dis.get_comm()));
   if (!dofrowmap_->UniqueGIDs()) FOUR_C_THROW("Dof row map is not unique");
   dofcolmap_ =
-      Teuchos::rcp(new Epetra_Map(-1, localcoldofs.size(), localcoldofs.data(), 0, dis.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, localcoldofs.size(), localcoldofs.data(), 0, dis.get_comm()));
 
   // **********************************************************************
   // **********************************************************************
   // build map of all (non-unique) column DoFs
-  dofscolnodes_ = Teuchos::rcp(
-      new Epetra_Map(-1, allnodelocalcoldofs.size(), allnodelocalcoldofs.data(), 0, dis.Comm()));
+  dofscolnodes_ = Teuchos::rcp(new Epetra_Map(
+      -1, allnodelocalcoldofs.size(), allnodelocalcoldofs.data(), 0, dis.get_comm()));
 
   // build shift vector
-  shiftcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
-  int numcolnodes = dis.NumMyColNodes();
+  shiftcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.node_col_map()));
+  int numcolnodes = dis.num_my_col_nodes();
   for (int i = 0; i < numcolnodes; ++i)
   {
     if (i == 0)
@@ -553,8 +554,8 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
     }
     else
     {
-      Core::Nodes::Node* lastnode = dis.lColNode(i - 1);
-      (*shiftcolnodes_)[i] = (*shiftcolnodes_)[i - 1] + NumDofPerNode(*lastnode);
+      Core::Nodes::Node* lastnode = dis.l_col_node(i - 1);
+      (*shiftcolnodes_)[i] = (*shiftcolnodes_)[i - 1] + num_dof_per_node(*lastnode);
     }
   }
   // **********************************************************************
@@ -564,7 +565,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
   filled_ = true;
 
   // tell all proxies
-  NotifyAssigned();
+  notify_assigned();
 
   // return maximum dof number of this dofset (+1)
   count = dofrowmap_->MaxAllGID() + 1;
@@ -573,7 +574,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Core::DOFSets::DofSet::Initialized() const
+bool Core::DOFSets::DofSet::initialized() const
 {
   if (dofcolmap_ == Teuchos::null or dofrowmap_ == Teuchos::null)
     return false;
@@ -593,7 +594,7 @@ const Epetra_Map* Core::DOFSets::DofSet::dof_row_map() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map* Core::DOFSets::DofSet::DofColMap() const
+const Epetra_Map* Core::DOFSets::DofSet::dof_col_map() const
 {
   if (dofcolmap_ == Teuchos::null)
     FOUR_C_THROW("Core::DOFSets::DofSet::DofColMap(): dofcolmap_ not initialized, yet");
@@ -602,7 +603,7 @@ const Epetra_Map* Core::DOFSets::DofSet::DofColMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::DOFSets::DofSet::NumGlobalElements() const
+int Core::DOFSets::DofSet::num_global_elements() const
 {
   if (dofrowmap_ == Teuchos::null)
     FOUR_C_THROW("Core::DOFSets::DofSet::NumGlobalElements(): dofrowmap_ not initialized, yet");
@@ -612,7 +613,7 @@ int Core::DOFSets::DofSet::NumGlobalElements() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::DOFSets::DofSet::MaxAllGID() const
+int Core::DOFSets::DofSet::max_all_gid() const
 {
   if (dofrowmap_ == Teuchos::null)
     FOUR_C_THROW("Core::DOFSets::DofSet::MaxAllGID(): dofrowmap_ not initialized, yet");
@@ -622,7 +623,7 @@ int Core::DOFSets::DofSet::MaxAllGID() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::DOFSets::DofSet::MinAllGID() const
+int Core::DOFSets::DofSet::min_all_gid() const
 {
   if (dofrowmap_ == Teuchos::null)
     FOUR_C_THROW("Core::DOFSets::DofSet::MinAllGID(): dofrowmap_ not initialized, yet");
@@ -635,7 +636,7 @@ int Core::DOFSets::DofSet::MinAllGID() const
 int Core::DOFSets::DofSet::get_first_gid_number_to_be_used(
     const Core::FE::Discretization& dis) const
 {
-  return MaxGIDinList(dis.Comm()) + 1;
+  return max_gi_din_list(dis.get_comm()) + 1;
 }
 
 
@@ -644,7 +645,7 @@ int Core::DOFSets::DofSet::get_first_gid_number_to_be_used(
 int Core::DOFSets::DofSet::get_minimal_node_gid_if_relevant(
     const Core::FE::Discretization& dis) const
 {
-  return dis.NodeRowMap()->MinAllGID();
+  return dis.node_row_map()->MinAllGID();
 }
 
 FOUR_C_NAMESPACE_CLOSE

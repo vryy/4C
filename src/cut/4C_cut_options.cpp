@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /// Initializes Cut Parameters by Parameterlist (typically from *.dat-file section CUT GENERAL)
-void Core::Geo::Cut::Options::Init_by_Paramlist(const Teuchos::ParameterList& cutparams)
+void Core::Geo::Cut::Options::init_by_paramlist(const Teuchos::ParameterList& cutparams)
 {
   geomintersect_floattype_ =
       Core::UTILS::IntegralValue<CutFloatType>(cutparams, "KERNEL_INTERSECTION_FLOATTYPE");
@@ -39,7 +39,7 @@ void Core::Geo::Cut::Options::Init_by_Paramlist(const Teuchos::ParameterList& cu
 }
 
 /// Initializes Cut Parameters for Cuttests (use full cln) -- slowest option
-void Core::Geo::Cut::Options::Init_for_Cuttests()
+void Core::Geo::Cut::Options::init_for_cuttests()
 {
   geomintersect_floattype_ = floattype_cln;
   geomdistance_floattype_ = floattype_cln;

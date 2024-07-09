@@ -42,31 +42,31 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(
       err_(err),
       pcdbg_(pcdbg)
 {
-  fluidsolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(fluid.LinearSolver()));
+  fluidsolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(fluid.linear_solver()));
 
 #ifndef BLOCKMATRIXMERGE
   structuresolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(structure.linear_solver()));
-  alesolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(ale.LinearSolver()));
+  alesolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(ale.linear_solver()));
 #endif
 
   // check and fix ml nullspace if neccessary
   {
     Core::LinAlg::Solver& solver = *(structure.linear_solver());
     const Epetra_Map& oldmap = *(structure.discretization()->dof_row_map());
-    const Epetra_Map& newmap = Matrix(0, 0).EpetraMatrix()->RowMap();
-    Core::LinearSolver::Parameters::FixNullSpace("Structure", oldmap, newmap, solver.Params());
+    const Epetra_Map& newmap = matrix(0, 0).epetra_matrix()->RowMap();
+    Core::LinearSolver::Parameters::fix_null_space("Structure", oldmap, newmap, solver.params());
   }
   {
-    Core::LinAlg::Solver& solver = *(fluid.LinearSolver());
+    Core::LinAlg::Solver& solver = *(fluid.linear_solver());
     const Epetra_Map& oldmap = *(fluid.dof_row_map());
-    const Epetra_Map& newmap = Matrix(1, 1).EpetraMatrix()->RowMap();
-    Core::LinearSolver::Parameters::FixNullSpace("Fluid", oldmap, newmap, solver.Params());
+    const Epetra_Map& newmap = matrix(1, 1).epetra_matrix()->RowMap();
+    Core::LinearSolver::Parameters::fix_null_space("Fluid", oldmap, newmap, solver.params());
   }
   {
-    Core::LinAlg::Solver& solver = *(ale.LinearSolver());
+    Core::LinAlg::Solver& solver = *(ale.linear_solver());
     const Epetra_Map& oldmap = *(ale.discretization()->dof_row_map());
-    const Epetra_Map& newmap = Matrix(2, 2).EpetraMatrix()->RowMap();
-    Core::LinearSolver::Parameters::FixNullSpace("Ale", oldmap, newmap, solver.Params());
+    const Epetra_Map& newmap = matrix(2, 2).epetra_matrix()->RowMap();
+    Core::LinearSolver::Parameters::fix_null_space("Ale", oldmap, newmap, solver.params());
   }
 }
 
@@ -82,7 +82,7 @@ int FSI::BlockPreconditioningMatrix::ApplyInverse(
 
   if (pcdbg_ != Teuchos::null)
   {
-    pcdbg_->NewIteration();
+    pcdbg_->new_iteration();
 
     // X and Y are the same at this point (if we have been called by aztec!)
     Epetra_Vector& y = Teuchos::dyn_cast<Epetra_Vector>(Y);
@@ -125,7 +125,7 @@ void FSI::BlockPreconditioningMatrix::local_block_richardson(
       if (comm.MyPID() == 0) fprintf(err, "    fluid richardson (%d,%f):", iterations, omega);
     for (int i = 0; i < iterations; ++i)
     {
-      innerOp.EpetraMatrix()->Multiply(false, *y, *tmpx);
+      innerOp.epetra_matrix()->Multiply(false, *y, *tmpx);
       tmpx->Update(1.0, *x, -1.0);
 
       if (err != nullptr)
@@ -135,7 +135,7 @@ void FSI::BlockPreconditioningMatrix::local_block_richardson(
         if (comm.MyPID() == 0) fprintf(err, " %e", n);
       }
 
-      solver->Solve(innerOp.EpetraMatrix(), tmpy, tmpx, false);
+      solver->solve(innerOp.epetra_matrix(), tmpy, tmpx, false);
       y->Update(omega, *tmpy, 1.0);
     }
     if (err != nullptr)

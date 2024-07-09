@@ -51,10 +51,10 @@ void Mortar::STRATEGY::Factory::setup()
   check_init();
 
   // get a copy of the underlying structural communicator
-  comm_ptr_ = Teuchos::rcp(discret_ptr_->Comm().Clone());
+  comm_ptr_ = Teuchos::rcp(discret_ptr_->get_comm().Clone());
 
   // get the problem dimension
-  dim_ = Global::Problem::Instance()->NDim();
+  dim_ = Global::Problem::instance()->n_dim();
 
   // Note: Since this is an abstract class, the setup flag stays false.
 
@@ -93,7 +93,7 @@ const Core::FE::Discretization& Mortar::STRATEGY::Factory::discret() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Epetra_Comm& Mortar::STRATEGY::Factory::comm()
+Epetra_Comm& Mortar::STRATEGY::Factory::get_comm()
 {
   check_init_setup();
   return *comm_ptr_;
@@ -101,7 +101,7 @@ Epetra_Comm& Mortar::STRATEGY::Factory::comm()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Comm& Mortar::STRATEGY::Factory::comm() const
+const Epetra_Comm& Mortar::STRATEGY::Factory::get_comm() const
 {
   check_init_setup();
   return *comm_ptr_;
@@ -125,7 +125,7 @@ Teuchos::RCP<const Epetra_Comm> Mortar::STRATEGY::Factory::comm_ptr() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const int& Mortar::STRATEGY::Factory::dim() const
+const int& Mortar::STRATEGY::Factory::n_dim() const
 {
   if (dim_ == -1)
     FOUR_C_THROW(
@@ -136,9 +136,10 @@ const int& Mortar::STRATEGY::Factory::dim() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Mortar::STRATEGY::Factory::CheckDimension() const
+void Mortar::STRATEGY::Factory::check_dimension() const
 {
-  if (dim() != 2 && dim() != 3) FOUR_C_THROW("Mortar meshtying/contact problems must be 2D or 3D");
+  if (n_dim() != 2 && n_dim() != 3)
+    FOUR_C_THROW("Mortar meshtying/contact problems must be 2D or 3D");
 }
 
 /*----------------------------------------------------------------------*
@@ -150,9 +151,9 @@ void Mortar::STRATEGY::Factory::prepare_nurbs_element(const Core::FE::Discretiza
       dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&(discret));
   if (nurbsdis == nullptr) FOUR_C_THROW("Dynamic cast failed!");
 
-  Teuchos::RCP<const Core::FE::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
-  std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim());
-  std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim() - 1);
+  Teuchos::RCP<const Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
+  std::vector<Core::LinAlg::SerialDenseVector> parentknots(n_dim());
+  std::vector<Core::LinAlg::SerialDenseVector> mortarknots(n_dim() - 1);
 
   double normalfac = 0.0;
   Teuchos::RCP<Core::Elements::FaceElement> faceele =
@@ -160,12 +161,12 @@ void Mortar::STRATEGY::Factory::prepare_nurbs_element(const Core::FE::Discretiza
   if (faceele.is_null()) FOUR_C_THROW("Cast to FaceElement failed!");
 
   bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
-      faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
+      faceele->parent_master_element()->id(), faceele->face_master_number());
 
   // store nurbs specific data to node
-  cele->ZeroSized() = zero_size;
-  cele->Knots() = mortarknots;
-  cele->NormalFac() = normalfac;
+  cele->zero_sized() = zero_size;
+  cele->knots() = mortarknots;
+  cele->normal_fac() = normalfac;
 
   return;
 }
@@ -178,17 +179,17 @@ void Mortar::STRATEGY::Factory::prepare_nurbs_node(
   const Core::FE::Nurbs::ControlPoint* cp =
       dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(node);
 
-  mnode->NurbsW() = cp->W();
+  mnode->nurbs_w() = cp->w();
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Mortar::STRATEGY::Factory::BuildSearchTree(
+void Mortar::STRATEGY::Factory::build_search_tree(
     const std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces) const
 {
-  for (unsigned i = 0; i < interfaces.size(); ++i) interfaces[i]->CreateSearchTree();
+  for (unsigned i = 0; i < interfaces.size(); ++i) interfaces[i]->create_search_tree();
 
   return;
 }
@@ -196,12 +197,12 @@ void Mortar::STRATEGY::Factory::BuildSearchTree(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Mortar::STRATEGY::Factory::PrintStrategyBanner(
+void Mortar::STRATEGY::Factory::print_strategy_banner(
     const enum Inpar::CONTACT::SolvingStrategy soltype)
 {
   // some parameters
-  const Teuchos::ParameterList& smortar = Global::Problem::Instance()->mortar_coupling_params();
-  const Teuchos::ParameterList& scontact = Global::Problem::Instance()->contact_dynamic_params();
+  const Teuchos::ParameterList& smortar = Global::Problem::instance()->mortar_coupling_params();
+  const Teuchos::ParameterList& scontact = Global::Problem::instance()->contact_dynamic_params();
   Inpar::Mortar::ShapeFcn shapefcn =
       Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(smortar, "LM_SHAPEFCN");
   Inpar::CONTACT::SystemType systype =

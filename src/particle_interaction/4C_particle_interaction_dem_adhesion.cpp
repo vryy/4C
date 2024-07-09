@@ -216,17 +216,17 @@ void ParticleInteraction::DEMAdhesion::evaluate_particle_adhesion()
         particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get global ids of particle
-    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
-    const int* globalid_j = container_j->GetPtrToGlobalID(particle_j);
+    const int* globalid_i = container_i->get_ptr_to_global_id(particle_i);
+    const int* globalid_j = container_j->get_ptr_to_global_id(particle_j);
 
     // get pointer to particle states
-    const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
-    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
-    double* force_i = container_i->GetPtrToState(PARTICLEENGINE::Force, particle_i);
+    const double* vel_i = container_i->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_i);
+    const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
+    double* force_i = container_i->get_ptr_to_state(PARTICLEENGINE::Force, particle_i);
 
-    const double* vel_j = container_j->GetPtrToState(PARTICLEENGINE::Velocity, particle_j);
-    const double* rad_j = container_j->GetPtrToState(PARTICLEENGINE::Radius, particle_j);
-    double* force_j = container_j->GetPtrToState(PARTICLEENGINE::Force, particle_j);
+    const double* vel_j = container_j->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_j);
+    const double* rad_j = container_j->get_ptr_to_state(PARTICLEENGINE::Radius, particle_j);
+    double* force_j = container_j->get_ptr_to_state(PARTICLEENGINE::Force, particle_j);
 
     // relative velocity in contact point c between particle i and j (neglecting angular velocity)
     double vel_rel[3];
@@ -255,7 +255,7 @@ void ParticleInteraction::DEMAdhesion::evaluate_particle_adhesion()
           surface_energy, adhesionhistory_ij.surface_energy_);
 
     // calculate adhesion force
-    adhesionlaw_->AdhesionForce(particlepair.gap_, adhesionhistory_ij.surface_energy_, r_eff,
+    adhesionlaw_->adhesion_force(particlepair.gap_, adhesionhistory_ij.surface_energy_, r_eff,
         vel_rel_normal, particlepair.m_eff_, adhesionhistory_ij.adhesion_force_);
 
     // copy history from interaction pair ij to ji
@@ -289,7 +289,7 @@ void ParticleInteraction::DEMAdhesion::evaluate_particle_wall_adhesion()
 
   // get wall data state container
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
-      particlewallinterface_->GetWallDataState();
+      particlewallinterface_->get_wall_data_state();
 
   // get reference to particle-wall pair data
   const DEMParticleWallPairData& particlewallpairdata =
@@ -334,14 +334,14 @@ void ParticleInteraction::DEMAdhesion::evaluate_particle_wall_adhesion()
         particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get global id of particle
-    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
+    const int* globalid_i = container_i->get_ptr_to_global_id(particle_i);
 
     // get pointer to particle states
-    const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
-    const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
-    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
-    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
-    double* force_i = container_i->GetPtrToState(PARTICLEENGINE::Force, particle_i);
+    const double* pos_i = container_i->get_ptr_to_state(PARTICLEENGINE::Position, particle_i);
+    const double* vel_i = container_i->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_i);
+    const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
+    const double* mass_i = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
+    double* force_i = container_i->get_ptr_to_state(PARTICLEENGINE::Force, particle_i);
 
     // get pointer to column wall element
     Core::Elements::Element* ele = particlewallpair.ele_;
@@ -353,18 +353,18 @@ void ParticleInteraction::DEMAdhesion::evaluate_particle_wall_adhesion()
     Core::LinAlg::SerialDenseVector funct(numnodes);
     std::vector<int> lmele;
 
-    if (walldatastate->GetVelCol() != Teuchos::null or
-        walldatastate->GetForceCol() != Teuchos::null)
+    if (walldatastate->get_vel_col() != Teuchos::null or
+        walldatastate->get_force_col() != Teuchos::null)
     {
       // evaluate shape functions of element at wall contact point
       Core::FE::shape_function_2D(
-          funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->Shape());
+          funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->shape());
 
       // get location vector of wall element
       lmele.reserve(numnodes * 3);
       std::vector<int> lmowner;
       std::vector<int> lmstride;
-      ele->LocationVector(
+      ele->location_vector(
           *particlewallinterface_->get_wall_discretization(), lmele, lmowner, lmstride);
     }
 
@@ -375,7 +375,7 @@ void ParticleInteraction::DEMAdhesion::evaluate_particle_wall_adhesion()
     {
       // cast material to particle wall material
       const Teuchos::RCP<const Mat::ParticleWallMaterialDEM>& particlewallmaterial =
-          Teuchos::rcp_dynamic_cast<const Mat::ParticleWallMaterialDEM>(ele->Material());
+          Teuchos::rcp_dynamic_cast<const Mat::ParticleWallMaterialDEM>(ele->material());
       if (particlewallmaterial == Teuchos::null)
         FOUR_C_THROW("cast to Mat::ParticleWallMaterialDEM failed!");
 
@@ -389,11 +389,11 @@ void ParticleInteraction::DEMAdhesion::evaluate_particle_wall_adhesion()
     // velocity of wall contact point j
     double vel_j[3] = {0.0, 0.0, 0.0};
 
-    if (walldatastate->GetVelCol() != Teuchos::null)
+    if (walldatastate->get_vel_col() != Teuchos::null)
     {
       // get nodal velocities
       std::vector<double> nodal_vel(numnodes * 3);
-      Core::FE::ExtractMyValues(*walldatastate->GetVelCol(), nodal_vel, lmele);
+      Core::FE::ExtractMyValues(*walldatastate->get_vel_col(), nodal_vel, lmele);
 
       // determine velocity of wall contact point j
       for (int node = 0; node < numnodes; ++node)
@@ -410,7 +410,7 @@ void ParticleInteraction::DEMAdhesion::evaluate_particle_wall_adhesion()
 
     // get reference to touched adhesion history
     TouchedDEMHistoryPairAdhesion& touchedadhesionhistory_ij =
-        adhesionhistorydata[globalid_i[0]][ele->Id()];
+        adhesionhistorydata[globalid_i[0]][ele->id()];
 
     // mark adhesion history as touched
     touchedadhesionhistory_ij.first = true;
@@ -424,8 +424,8 @@ void ParticleInteraction::DEMAdhesion::evaluate_particle_wall_adhesion()
           surface_energy, adhesionhistory_ij.surface_energy_);
 
     // calculate adhesion force
-    adhesionlaw_->AdhesionForce(particlewallpair.gap_, adhesionhistory_ij.surface_energy_, rad_i[0],
-        vel_rel_normal, mass_i[0], adhesionhistory_ij.adhesion_force_);
+    adhesionlaw_->adhesion_force(particlewallpair.gap_, adhesionhistory_ij.surface_energy_,
+        rad_i[0], vel_rel_normal, mass_i[0], adhesionhistory_ij.adhesion_force_);
 
     // add adhesion force contribution
     UTILS::VecAddScale(force_i, adhesionhistory_ij.adhesion_force_, particlewallpair.e_ji_);
@@ -436,7 +436,7 @@ void ParticleInteraction::DEMAdhesion::evaluate_particle_wall_adhesion()
 
     // calculation of wall adhesion force
     double walladhesionforce[3] = {0.0, 0.0, 0.0};
-    if (writeinteractionoutput or walldatastate->GetForceCol() != Teuchos::null)
+    if (writeinteractionoutput or walldatastate->get_force_col() != Teuchos::null)
     {
       UTILS::VecSetScale(
           walladhesionforce, -adhesionhistory_ij.adhesion_force_, particlewallpair.e_ji_);
@@ -462,7 +462,7 @@ void ParticleInteraction::DEMAdhesion::evaluate_particle_wall_adhesion()
     }
 
     // assemble adhesion force acting on wall element
-    if (walldatastate->GetForceCol() != Teuchos::null)
+    if (walldatastate->get_force_col() != Teuchos::null)
     {
       // determine nodal forces
       std::vector<double> nodal_force(numnodes * 3);
@@ -471,7 +471,7 @@ void ParticleInteraction::DEMAdhesion::evaluate_particle_wall_adhesion()
           nodal_force[node * 3 + dim] = funct[node] * walladhesionforce[dim];
 
       // assemble nodal forces
-      const int err = walldatastate->GetForceCol()->SumIntoGlobalValues(
+      const int err = walldatastate->get_force_col()->SumIntoGlobalValues(
           numnodes * 3, nodal_force.data(), lmele.data());
       if (err < 0) FOUR_C_THROW("sum into Epetra_Vector failed!");
     }
@@ -485,12 +485,12 @@ void ParticleInteraction::DEMAdhesion::evaluate_particle_wall_adhesion()
     auto& visualization_data = visualization_manager->get_visualization_data();
 
     // set wall attack points
-    visualization_data.GetPointCoordinates() = attackpoints;
+    visualization_data.get_point_coordinates() = attackpoints;
 
     // append states
-    visualization_data.SetPointDataVector<double>("adhesion force", adhesionforces, 3);
-    visualization_data.SetPointDataVector<double>("normal direction", normaldirection, 3);
-    visualization_data.SetPointDataVector<double>("surface energy", surfaceenergy, 1);
+    visualization_data.set_point_data_vector<double>("adhesion force", adhesionforces, 3);
+    visualization_data.set_point_data_vector<double>("normal direction", normaldirection, 3);
+    visualization_data.set_point_data_vector<double>("surface energy", surfaceenergy, 1);
   }
 }
 

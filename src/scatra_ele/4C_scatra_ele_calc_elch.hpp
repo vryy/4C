@@ -291,11 +291,11 @@ namespace Discret
       {
       }
       //! Set valence of the single ionic species
-      virtual void SetValence(const double valence, const int k) { valence_[k] = valence; };
+      virtual void set_valence(const double valence, const int k) { valence_[k] = valence; };
 
       //! Access routine for valence of all ionic species or of single ionic species k
-      std::vector<double> GetValence() { return valence_; };
-      double GetValence(const int k) { return valence_[k]; };
+      std::vector<double> get_valence() { return valence_; };
+      double get_valence(const int k) { return valence_[k]; };
 
       //! the length of the vector containing the diffusion coefficients is increased by 1
       //! application: ENC with eliminated species
@@ -382,7 +382,7 @@ namespace Discret
         gradpot_.multiply(derxy, ephinp[my::numscal_]);
 
         // set factor F/RT
-        if (do_setfrt) SetFRT();
+        if (do_setfrt) set_frt();
       }
 
       /*========================================================================*/
@@ -390,28 +390,28 @@ namespace Discret
       /*========================================================================*/
 
       //! return factor F/RT
-      double FRT() const { return frt_; };
+      double frt() const { return frt_; };
 
       //! return the homogeneous temperature in the scatra field (can be time dependent)
-      double Temperature() const { return parameters_->Temperature(); }
+      double temperature() const { return parameters_->temperature(); }
 
       //! return 1/concentration of species k
-      const double& ConIntInv(const int k) const { return conintinv_[k]; };
+      const double& con_int_inv(const int k) const { return conintinv_[k]; };
 
       //! return 1/concentration of all species in a vector
-      const std::vector<double>& ConIntInv() const { return conintinv_; };
+      const std::vector<double>& con_int_inv() const { return conintinv_; };
 
       //! return gradient of electric potential
-      const Core::LinAlg::Matrix<nsd, 1>& GradPot() const { return gradpot_; };
+      const Core::LinAlg::Matrix<nsd, 1>& grad_pot() const { return gradpot_; };
 
       //! return subgrid velocity
-      const Core::LinAlg::Matrix<nen, 1>& SGConv() const { return sgconv_; };
+      const Core::LinAlg::Matrix<nen, 1>& sg_conv() const { return sgconv_; };
 
       //! set factor F/RT
-      virtual void SetFRT() { frt_ = parameters_->FRT(); }
+      virtual void set_frt() { frt_ = parameters_->frt(); }
 
       //! return parameter class
-      const Discret::ELEMENTS::ScaTraEleParameterElch* ElchParams() const { return parameters_; };
+      const Discret::ELEMENTS::ScaTraEleParameterElch* elch_params() const { return parameters_; };
 
      protected:
       //! parameter class for electrochemistry problems

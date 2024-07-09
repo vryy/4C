@@ -34,7 +34,7 @@ namespace Discret
       //! dtor
       virtual ~LubricationFactory() = default;
       //! ProvideImpl
-      static LubricationEleInterface* ProvideImpl(
+      static LubricationEleInterface* provide_impl(
           Core::FE::CellType distype, const std::string& disname);
 
      private:

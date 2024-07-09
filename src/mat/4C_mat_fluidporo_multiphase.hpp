@@ -75,11 +75,11 @@ namespace Mat
   class FluidPoroMultiPhaseType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "FluidPoroMultiPhaseType"; }
+    std::string name() const override { return "FluidPoroMultiPhaseType"; }
 
-    static FluidPoroMultiPhaseType& Instance() { return instance_; };
+    static FluidPoroMultiPhaseType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroMultiPhaseType instance_;
@@ -104,9 +104,9 @@ namespace Mat
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return FluidPoroMultiPhaseType::Instance().UniqueParObjectId();
+      return FluidPoroMultiPhaseType::instance().unique_par_object_id();
     }
 
     /*!
@@ -114,7 +114,7 @@ namespace Mat
 
       Resizes the vector data and stores all information of a class in it.
       The first information to be stored in data has to be the
-      unique parobject id delivered by UniqueParObjectId() which will then
+      unique parobject id delivered by unique_par_object_id() which will then
       identify the exact class on the receiving processor.
 
       \param data (in/out): char vector to store class information
@@ -128,7 +128,7 @@ namespace Mat
       exact copy of an instance of a class on a different processor.
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
-      UniqueParObjectId().
+      unique_par_object_id().
 
       \param data (in) : vector storing all data to be unpacked into this
       instance.
@@ -138,45 +138,45 @@ namespace Mat
     //@}
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_fluidporo_multiphase;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new FluidPoroMultiPhase(*this));
     }
 
     /// return permeability
-    double Permeability() const { return paramsporo_->permeability_; }
+    double permeability() const { return paramsporo_->permeability_; }
 
     /// return number of fluid phases
-    int NumFluidPhases() const { return paramsporo_->numfluidphases_; }
+    int num_fluid_phases() const { return paramsporo_->numfluidphases_; }
 
     /// return number of volume fractions
-    int NumVolFrac() const { return paramsporo_->numvolfrac_; }
+    int num_vol_frac() const { return paramsporo_->numvolfrac_; }
 
     /// Return quick accessible material parameter data
-    Mat::PAR::FluidPoroMultiPhase* Parameter() const override { return paramsporo_; }
+    Mat::PAR::FluidPoroMultiPhase* parameter() const override { return paramsporo_; }
 
     /// initialize the material
     virtual void initialize();
 
     /// return whether reaction terms need to be evaluated
-    virtual bool IsReactive() const { return false; };
+    virtual bool is_reactive() const { return false; };
 
     /// evaluate the generalized(!) pressure and saturation of all phases
     void evaluate_gen_pressure_and_saturation(
         std::vector<double>& genpressure, const std::vector<double>& phinp) const;
 
     /// evaluate the generalized(!) pressure of all phases
-    void EvaluateGenPressure(
+    void evaluate_gen_pressure(
         std::vector<double>& genpressure, const std::vector<double>& phinp) const;
 
     /// evaluate saturation of all phases
-    void EvaluateSaturation(std::vector<double>& saturation, const std::vector<double>& phinp,
+    void evaluate_saturation(std::vector<double>& saturation, const std::vector<double>& phinp,
         const std::vector<double>& pressure) const;
 
     //! transform generalized pressures to true pressures

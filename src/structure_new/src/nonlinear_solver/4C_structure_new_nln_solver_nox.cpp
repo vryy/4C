@@ -69,7 +69,7 @@ void Solid::Nln::SOLVER::Nox::setup()
   /* convert the Inpar::Solid::ModelType to a NOX::Nln::SolType
    * and fill the linear solver map. */
   Solid::Nln::ConvertModelType2SolType(
-      soltypes, linsolvers, data_sdyn().get_model_types(), data_sdyn().GetLinSolvers());
+      soltypes, linsolvers, data_sdyn().get_model_types(), data_sdyn().get_lin_solvers());
 
   // define and initialize the optimization type
   const NOX::Nln::OptimizationProblemType opttype = Solid::Nln::OptimizationType(soltypes);
@@ -183,7 +183,7 @@ void Solid::Nln::SOLVER::Nox::reset_params()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::Solid::ConvergenceStatus Solid::Nln::SOLVER::Nox::Solve()
+enum Inpar::Solid::ConvergenceStatus Solid::Nln::SOLVER::Nox::solve()
 {
   check_init_setup();
 

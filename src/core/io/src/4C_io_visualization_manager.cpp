@@ -100,7 +100,7 @@ void Core::IO::VisualizationManager::clear_data()
 /**
  *
  */
-void Core::IO::VisualizationManager::WriteToDisk(
+void Core::IO::VisualizationManager::write_to_disk(
     const double visualziation_time, const int visualization_step)
 {
   for (auto& [key, visualization_pair] : visualization_map_)

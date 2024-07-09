@@ -48,63 +48,63 @@ namespace Core::LinAlg
 
 
     /// make a copy of me
-    virtual Teuchos::RCP<BlockSparseMatrixBase> Clone(DataAccess access) = 0;
+    virtual Teuchos::RCP<BlockSparseMatrixBase> clone(DataAccess access) = 0;
 
     /// destroy the underlying Epetra objects
-    virtual bool Destroy(bool throw_exception_for_blocks = true);
+    virtual bool destroy(bool throw_exception_for_blocks = true);
 
     /// setup of block preconditioners
     /*!
       This method can be implemented by subclasses that implement
       ApplyInverse() to execute a block preconditioner on the matrix.
      */
-    virtual void SetupPreconditioner() {}
+    virtual void setup_preconditioner() {}
 
     /// Merge block matrix into a SparseMatrix
-    Teuchos::RCP<SparseMatrix> Merge(bool explicitdirichlet = true) const;
+    Teuchos::RCP<SparseMatrix> merge(bool explicitdirichlet = true) const;
 
     /** \name Block matrix access */
     //@{
 
     /// return block (r,c)
-    const SparseMatrix& Matrix(int r, int c) const { return blocks_[r * Cols() + c]; }
+    const SparseMatrix& matrix(int r, int c) const { return blocks_[r * cols() + c]; }
 
     /// return block (r,c)
-    SparseMatrix& Matrix(int r, int c) { return blocks_[r * Cols() + c]; }
+    SparseMatrix& matrix(int r, int c) { return blocks_[r * cols() + c]; }
 
     /// return block (r,c)
-    inline const SparseMatrix& operator()(int r, int c) const { return Matrix(r, c); }
+    inline const SparseMatrix& operator()(int r, int c) const { return matrix(r, c); }
 
     /// return block (r,c)
-    inline SparseMatrix& operator()(int r, int c) { return Matrix(r, c); }
+    inline SparseMatrix& operator()(int r, int c) { return matrix(r, c); }
 
     /// assign SparseMatrix to block (r,c)
     /*!
       \note The maps of the block have to match the maps of the given matrix.
      */
-    void Assign(int r, int c, DataAccess access, const SparseMatrix& mat);
+    void assign(int r, int c, DataAccess access, const SparseMatrix& mat);
 
     //@}
 
     /** \name FE methods */
     //@{
 
-    void Zero() override;
+    void zero() override;
     void reset() override;
 
-    void Complete(bool enforce_complete = false) override;
+    void complete(bool enforce_complete = false) override;
 
-    void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap,
+    void complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap,
         bool enforce_complete = false) override;
 
-    void UnComplete() override;
+    void un_complete() override;
 
-    void ApplyDirichlet(const Epetra_Vector& dbctoggle, bool diagonalblock = true) override;
+    void apply_dirichlet(const Epetra_Vector& dbctoggle, bool diagonalblock = true) override;
 
-    void ApplyDirichlet(const Epetra_Map& dbcmap, bool diagonalblock = true) override;
+    void apply_dirichlet(const Epetra_Map& dbcmap, bool diagonalblock = true) override;
 
     /// derived
-    bool IsDbcApplied(const Epetra_Map& dbcmap, bool diagonalblock = true,
+    bool is_dbc_applied(const Epetra_Map& dbcmap, bool diagonalblock = true,
         const Core::LinAlg::SparseMatrix* trafo = nullptr) const override;
 
     //@}
@@ -113,7 +113,7 @@ namespace Core::LinAlg
     //@{
 
     /// If Complete() has been called, this query returns true, otherwise it returns false.
-    bool Filled() const override;
+    bool filled() const override;
 
     //@}
 
@@ -121,38 +121,38 @@ namespace Core::LinAlg
     //@{
 
     /// number of row blocks
-    int Rows() const { return rangemaps_.num_maps(); }
+    int rows() const { return rangemaps_.num_maps(); }
 
     /// number of column blocks
-    int Cols() const { return domainmaps_.num_maps(); }
+    int cols() const { return domainmaps_.num_maps(); }
 
     /// range map for given row block
-    const Epetra_Map& RangeMap(int r) const { return *rangemaps_.Map(r); }
+    const Epetra_Map& range_map(int r) const { return *rangemaps_.Map(r); }
 
     /// domain map for given column block
-    const Epetra_Map& DomainMap(int r) const { return *domainmaps_.Map(r); }
+    const Epetra_Map& domain_map(int r) const { return *domainmaps_.Map(r); }
 
     /// total matrix range map with all blocks
-    const Epetra_Map& FullRangeMap() const { return *rangemaps_.FullMap(); }
+    const Epetra_Map& full_range_map() const { return *rangemaps_.full_map(); }
 
     /// total matrix domain map with all blocks
-    const Epetra_Map& FullDomainMap() const { return *domainmaps_.FullMap(); }
+    const Epetra_Map& full_domain_map() const { return *domainmaps_.full_map(); }
 
     /// total matrix domain map with all blocks (this is needed for
     /// consistency with Core::LinAlg::SparseMatrix)
-    const Epetra_Map& DomainMap() const override { return *domainmaps_.FullMap(); }
+    const Epetra_Map& domain_map() const override { return *domainmaps_.full_map(); }
 
     /// total matrix row map with all blocks
     /*!
       \pre Filled()==true
      */
-    Epetra_Map& FullRowMap() const { return *fullrowmap_; }
+    Epetra_Map& full_row_map() const { return *fullrowmap_; }
 
     /// total matrix column map with all blocks
     /*!
       \pre Filled()==true
      */
-    Epetra_Map& FullColMap() const { return *fullcolmap_; }
+    Epetra_Map& full_col_map() const { return *fullcolmap_; }
 
     //@}
 
@@ -174,26 +174,26 @@ namespace Core::LinAlg
     int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /// Resolve virtual function of parent class
-    int Multiply(bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
+    int multiply(bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /// Add a (transposed) BlockSparseMatrix: (*this) = (*this)*scalarB + A(^T)*scalarA
-    virtual void Add(const BlockSparseMatrixBase& A, const bool transposeA, const double scalarA,
+    virtual void add(const BlockSparseMatrixBase& A, const bool transposeA, const double scalarA,
         const double scalarB);
 
     /// Resolve virtual function of parent class
-    void Add(const SparseOperator& A, const bool transposeA, const double scalarA,
+    void add(const SparseOperator& A, const bool transposeA, const double scalarA,
         const double scalarB) override;
 
     /// Resolve virtual function of parent class
-    void AddOther(SparseMatrixBase& A, const bool transposeA, const double scalarA,
+    void add_other(SparseMatrixBase& A, const bool transposeA, const double scalarA,
         const double scalarB) const override;
 
     /// Resolve virtual function of parent class
-    void AddOther(BlockSparseMatrixBase& A, const bool transposeA, const double scalarA,
+    void add_other(BlockSparseMatrixBase& A, const bool transposeA, const double scalarA,
         const double scalarB) const override;
 
     /// Multiply all values in the matrix by a constant value (in place: A <- ScalarConstant * A).
-    int Scale(double ScalarConstant) override;
+    int scale(double ScalarConstant) override;
 
     /// Returns the infinity norm of the global matrix.
     double NormInf() const override;
@@ -224,10 +224,10 @@ namespace Core::LinAlg
     //@}
 
     /// access to domain map extractor in derived classes
-    const MultiMapExtractor& DomainExtractor() const { return domainmaps_; }
+    const MultiMapExtractor& domain_extractor() const { return domainmaps_; }
 
     /// access to range map extractor in derived classes
-    const MultiMapExtractor& RangeExtractor() const { return rangemaps_; }
+    const MultiMapExtractor& range_extractor() const { return rangemaps_; }
 
     /// friend functions
     friend Teuchos::RCP<BlockSparseMatrixBase> Multiply(const BlockSparseMatrixBase& A, bool transA,
@@ -294,7 +294,7 @@ namespace Core::LinAlg
 
     /** Do not forget to call Complete() after cloning, even if you
      *  use Core::LinAlg::View! */
-    Teuchos::RCP<BlockSparseMatrixBase> Clone(DataAccess access) override;
+    Teuchos::RCP<BlockSparseMatrixBase> clone(DataAccess access) override;
 
     /// clone only a part of the block sparse matrix
     /** Do not forget to call Complete() after cloning, even if you
@@ -305,16 +305,16 @@ namespace Core::LinAlg
      *  \param[in] col_block_ids : ID's of the column blocks to clone
      *
      *  \author hiermeier \date 04/17 */
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Clone(DataAccess access,
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> clone(DataAccess access,
         const std::vector<unsigned>& row_block_ids, const std::vector<unsigned>& col_block_ids);
 
     /// just a dummy that switches from strided assembly to standard assembly
-    void Assemble(int eid, const std::vector<int>& lmstride,
+    void assemble(int eid, const std::vector<int>& lmstride,
         const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol) override
     {
       const int myrank = Comm().MyPID();
-      Strategy::Assemble(eid, myrank, lmstride, Aele, lmrow, lmrowowner, lmcol);
+      Strategy::assemble(eid, myrank, lmstride, Aele, lmrow, lmrowowner, lmcol);
     }
 
     /// single value assemble
@@ -326,9 +326,9 @@ namespace Core::LinAlg
        the element matrix.
 
      */
-    void Assemble(double val, int rgid, int cgid) override { Strategy::Assemble(val, rgid, cgid); }
+    void assemble(double val, int rgid, int cgid) override { Strategy::assemble(val, rgid, cgid); }
 
-    void Complete(bool enforce_complete = false) override;
+    void complete(bool enforce_complete = false) override;
 
    private:
     /** \brief internal clone method which provides the possibility to clone only
@@ -343,7 +343,7 @@ namespace Core::LinAlg
      *  \param[in] range_extractor : necessary range extractor
      *
      *  \author hiermeier \date 04/17 */
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Clone(DataAccess access,
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> clone(DataAccess access,
         const std::vector<unsigned>& row_block_ids, const std::vector<unsigned>& col_block_ids,
         const MultiMapExtractor& domain_extractor, const MultiMapExtractor& range_extractor);
   };
@@ -373,15 +373,15 @@ namespace Core::LinAlg
     explicit DefaultBlockMatrixStrategy(BlockSparseMatrixBase& mat);
 
     /// assemble into the given block using nodal strides
-    void Assemble(int eid, int myrank, const std::vector<int>& lmstride,
+    void assemble(int eid, int myrank, const std::vector<int>& lmstride,
         const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol);
 
     /// assemble into the given block
-    void Assemble(double val, int rgid, int cgid);
+    void assemble(double val, int rgid, int cgid);
 
     /// assemble the remaining ghost entries
-    void Complete(bool enforce_complete = false);
+    void complete(bool enforce_complete = false);
 
    protected:
     /// assemble into the given block
@@ -479,29 +479,29 @@ Core::LinAlg::BlockSparseMatrix<Strategy>::BlockSparseMatrix(const MultiMapExtra
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class Strategy>
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::BlockSparseMatrix<Strategy>::Clone(
+Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::BlockSparseMatrix<Strategy>::clone(
     DataAccess access)
 {
-  std::vector<unsigned> row_block_ids(Rows());
-  for (unsigned i = 0; i < static_cast<unsigned>(Rows()); ++i) row_block_ids[i] = i;
+  std::vector<unsigned> row_block_ids(rows());
+  for (unsigned i = 0; i < static_cast<unsigned>(rows()); ++i) row_block_ids[i] = i;
 
-  std::vector<unsigned> col_block_ids(Cols());
-  for (unsigned i = 0; i < static_cast<unsigned>(Cols()); ++i) col_block_ids[i] = i;
+  std::vector<unsigned> col_block_ids(cols());
+  for (unsigned i = 0; i < static_cast<unsigned>(cols()); ++i) col_block_ids[i] = i;
 
-  return Clone(access, row_block_ids, col_block_ids, DomainExtractor(), RangeExtractor());
+  return clone(access, row_block_ids, col_block_ids, domain_extractor(), range_extractor());
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class Strategy>
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::BlockSparseMatrix<Strategy>::Clone(
+Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::BlockSparseMatrix<Strategy>::clone(
     DataAccess access, const std::vector<unsigned>& row_block_ids,
     const std::vector<unsigned>& col_block_ids, const MultiMapExtractor& domain_extractor,
     const MultiMapExtractor& range_extractor)
 {
-  int npr = Matrix(0, 0).MaxNumEntries();
-  bool explicitdirichlet = Matrix(0, 0).ExplicitDirichlet();
-  bool savegraph = Matrix(0, 0).SaveGraph();
+  int npr = matrix(0, 0).max_num_entries();
+  bool explicitdirichlet = matrix(0, 0).explicit_dirichlet();
+  bool savegraph = matrix(0, 0).save_graph();
   Teuchos::RCP<BlockSparseMatrixBase> bsm = Teuchos::rcp(new BlockSparseMatrix<Strategy>(
       domain_extractor, range_extractor, npr, explicitdirichlet, savegraph));
 
@@ -511,7 +511,7 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::BlockSparseMatri
     for (std::vector<unsigned>::const_iterator c = col_block_ids.begin(); c != col_block_ids.end();
          ++c)
     {
-      bsm->Matrix(*r, *c).Assign(access, Matrix(*r, *c));
+      bsm->matrix(*r, *c).assign(access, matrix(*r, *c));
     }
   }
   return bsm;
@@ -520,15 +520,15 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::BlockSparseMatri
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class Strategy>
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::BlockSparseMatrix<Strategy>::Clone(
+Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::BlockSparseMatrix<Strategy>::clone(
     DataAccess access, const std::vector<unsigned>& row_block_ids,
     const std::vector<unsigned>& col_block_ids)
 {
-  if (std::lower_bound(row_block_ids.begin(), row_block_ids.end(), static_cast<unsigned>(Rows())) !=
+  if (std::lower_bound(row_block_ids.begin(), row_block_ids.end(), static_cast<unsigned>(rows())) !=
       row_block_ids.end())
     FOUR_C_THROW("The partial row block ids exceed the maximal possible id!");
 
-  if (std::lower_bound(col_block_ids.begin(), col_block_ids.end(), static_cast<unsigned>(Cols())) !=
+  if (std::lower_bound(col_block_ids.begin(), col_block_ids.end(), static_cast<unsigned>(cols())) !=
       col_block_ids.end())
     FOUR_C_THROW("The partial column block ids exceed the maximal possible id!");
 
@@ -537,22 +537,22 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::BlockSparseMatri
 
   // extract domain extractors
   MultiMapExtractor p_domain_extractor;
-  this->get_partial_extractor(DomainExtractor(), col_block_ids, p_domain_extractor);
+  this->get_partial_extractor(domain_extractor(), col_block_ids, p_domain_extractor);
 
   // extract range extractors
   MultiMapExtractor p_range_extractor;
-  this->get_partial_extractor(RangeExtractor(), row_block_ids, p_range_extractor);
+  this->get_partial_extractor(range_extractor(), row_block_ids, p_range_extractor);
 
-  return Clone(access, row_block_ids, col_block_ids, p_domain_extractor, p_range_extractor);
+  return clone(access, row_block_ids, col_block_ids, p_domain_extractor, p_range_extractor);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class Strategy>
-void Core::LinAlg::BlockSparseMatrix<Strategy>::Complete(bool enforce_complete)
+void Core::LinAlg::BlockSparseMatrix<Strategy>::complete(bool enforce_complete)
 {
-  Strategy::Complete();
-  BlockSparseMatrixBase::Complete(enforce_complete);
+  Strategy::complete();
+  BlockSparseMatrixBase::complete(enforce_complete);
 }
 
 
@@ -560,10 +560,10 @@ void Core::LinAlg::BlockSparseMatrix<Strategy>::Complete(bool enforce_complete)
  *----------------------------------------------------------------------*/
 inline int Core::LinAlg::DefaultBlockMatrixStrategy::row_block(int rgid)
 {
-  int rows = mat_.Rows();
+  int rows = mat_.rows();
   for (int rblock = 0; rblock < rows; ++rblock)
   {
-    if (mat_.RangeMap(rblock).MyGID(rgid))
+    if (mat_.range_map(rblock).MyGID(rgid))
     {
       return rblock;
     }
@@ -576,22 +576,22 @@ inline int Core::LinAlg::DefaultBlockMatrixStrategy::row_block(int rgid)
  *----------------------------------------------------------------------*/
 inline int Core::LinAlg::DefaultBlockMatrixStrategy::col_block(int rblock, int cgid)
 {
-  int cols = mat_.Cols();
+  int cols = mat_.cols();
   for (int cblock = 0; cblock < cols; ++cblock)
   {
-    SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
+    SparseMatrix& matrix = mat_.matrix(rblock, cblock);
 
     // If we have a filled matrix we know the column map already.
-    if (matrix.Filled())
+    if (matrix.filled())
     {
-      if (matrix.ColMap().MyGID(cgid))
+      if (matrix.col_map().MyGID(cgid))
       {
         return cblock;
       }
     }
 
     // otherwise we can get just the non-ghost entries right now
-    else if (mat_.DomainMap(cblock).MyGID(cgid))
+    else if (mat_.domain_map(cblock).MyGID(cgid))
     {
       return cblock;
     }
@@ -605,7 +605,7 @@ inline int Core::LinAlg::DefaultBlockMatrixStrategy::col_block(int rblock, int c
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-inline void Core::LinAlg::DefaultBlockMatrixStrategy::Assemble(int eid, int myrank,
+inline void Core::LinAlg::DefaultBlockMatrixStrategy::assemble(int eid, int myrank,
     const std::vector<int>& lmstride, const Core::LinAlg::SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
@@ -614,9 +614,9 @@ inline void Core::LinAlg::DefaultBlockMatrixStrategy::Assemble(int eid, int myra
   const int lcoldim = (int)lmcol.size();
 
   FOUR_C_ASSERT(
-      static_cast<int>(scratch_lcols_.size()) == mat_.Rows(), "Unexpected number of block rows");
+      static_cast<int>(scratch_lcols_.size()) == mat_.rows(), "Unexpected number of block rows");
 
-  for (int rblock = 0; rblock < mat_.Rows(); ++rblock)
+  for (int rblock = 0; rblock < mat_.rows(); ++rblock)
   {
     scratch_lcols_[rblock].resize(lcoldim);
     std::fill(scratch_lcols_[rblock].begin(), scratch_lcols_[rblock].end(), -1);
@@ -648,7 +648,7 @@ inline void Core::LinAlg::DefaultBlockMatrixStrategy::Assemble(int eid, int myra
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-inline void Core::LinAlg::DefaultBlockMatrixStrategy::Assemble(double val, int rgid, int cgid)
+inline void Core::LinAlg::DefaultBlockMatrixStrategy::assemble(double val, int rgid, int cgid)
 {
   int rblock = row_block(rgid);
   int cblock = col_block(rblock, cgid);
@@ -668,8 +668,8 @@ inline void Core::LinAlg::DefaultBlockMatrixStrategy::assemble(
 
   if (cblock > -1)
   {
-    SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
-    matrix.Assemble(val, rgid, cgid);
+    SparseMatrix& matrix = mat_.matrix(rblock, cblock);
+    matrix.assemble(val, rgid, cgid);
   }
   else
   {

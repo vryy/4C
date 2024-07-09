@@ -49,16 +49,16 @@ void FSI::DirichletNeumannVolCoupl::setup()
 {
   FSI::DirichletNeumann::setup();
 
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   set_kinematic_coupling(
       Core::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::disp);
 
   if (!get_kinematic_coupling()) FOUR_C_THROW("Currently only displacement coupling is supported!");
 
-  setup_coupling_struct_ale(fsidyn, Comm());
+  setup_coupling_struct_ale(fsidyn, get_comm());
 
-  setup_interface_corrector(fsidyn, Comm());
+  setup_interface_corrector(fsidyn, get_comm());
 
   return;
 }
@@ -69,7 +69,7 @@ void FSI::DirichletNeumannVolCoupl::setup()
 void FSI::DirichletNeumannVolCoupl::setup_coupling_struct_ale(
     const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm)
 {
-  const int ndim = Global::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::instance()->n_dim();
 
   coupsa_ = Teuchos::rcp(new Core::Adapter::MortarVolCoupl());
 
@@ -90,8 +90,8 @@ void FSI::DirichletNeumannVolCoupl::setup_coupling_struct_ale(
       &dofsets12, &dofsets21, Teuchos::null, false);
 
   // setup coupling adapter
-  coupsa_->setup(Global::Problem::Instance()->VolmortarParams(),
-      Global::Problem::Instance()->CutGeneralParams());
+  coupsa_->setup(Global::Problem::instance()->volmortar_params(),
+      Global::Problem::instance()->cut_general_params());
 }
 
 /*----------------------------------------------------------------------*/
@@ -113,12 +113,12 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVolCoupl::fluid_op(
   FSI::Partitioned::fluid_op(idisp, fillFlag);
 
   // TODO cant this be done better?
-  Teuchos::RCP<Epetra_Vector> vdisp = Teuchos::rcp(new Epetra_Vector(*structure_field()->Dispnp()));
+  Teuchos::RCP<Epetra_Vector> vdisp = Teuchos::rcp(new Epetra_Vector(*structure_field()->dispnp()));
 
   if (fillFlag == User)
   {
     // SD relaxation calculation
-    return fluid_to_struct(MBFluidField()->RelaxationSolve(struct_to_fluid(idisp), Dt()));
+    return fluid_to_struct(mb_fluid_field()->relaxation_solve(struct_to_fluid(idisp), dt()));
   }
   else
   {
@@ -127,11 +127,11 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVolCoupl::fluid_op(
     const Teuchos::RCP<Epetra_Vector> ivel = interface_velocity(idisp);
 
     // A rather simple hack. We need something better!
-    const int itemax = MBFluidField()->Itemax();
-    if (fillFlag == MF_Res and mfresitemax_ > 0) MBFluidField()->SetItemax(mfresitemax_ + 1);
+    const int itemax = mb_fluid_field()->itemax();
+    if (fillFlag == MF_Res and mfresitemax_ > 0) mb_fluid_field()->set_itemax(mfresitemax_ + 1);
 
     Teuchos::RCP<Adapter::FluidAle> fluidale =
-        Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(MBFluidField());
+        Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(mb_fluid_field());
 
     icorrector_->set_interface_displacements(idisp, structure_fluid_coupling());
 
@@ -139,9 +139,9 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVolCoupl::fluid_op(
     fluidale->nonlinear_solve_vol_coupl(
         structure_to_ale(vdisp), struct_to_fluid(ivel), icorrector_);
 
-    MBFluidField()->SetItemax(itemax);
+    mb_fluid_field()->set_itemax(itemax);
 
-    return fluid_to_struct(MBFluidField()->extract_interface_forces());
+    return fluid_to_struct(mb_fluid_field()->extract_interface_forces());
   }
 }
 
@@ -150,7 +150,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVolCoupl::fluid_op(
 /*----------------------------------------------------------------------------*/
 void FSI::DirichletNeumannVolCoupl::extract_previous_interface_solution()
 {
-  iveln_ = fluid_to_struct(MBFluidField()->extract_interface_veln());
+  iveln_ = fluid_to_struct(mb_fluid_field()->extract_interface_veln());
   idispn_ = structure_field()->extract_interface_dispn();
 }
 
@@ -160,7 +160,7 @@ void FSI::DirichletNeumannVolCoupl::extract_previous_interface_solution()
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVolCoupl::structure_to_ale(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
-  return coupsa_->MasterToSlave(iv);
+  return coupsa_->master_to_slave(iv);
 }
 
 
@@ -169,7 +169,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVolCoupl::structure_to_ale(
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVolCoupl::ale_to_structure(
     Teuchos::RCP<Epetra_Vector> iv) const
 {
-  return coupsa_->SlaveToMaster(iv);
+  return coupsa_->slave_to_master(iv);
 }
 
 
@@ -180,7 +180,7 @@ void FSI::InterfaceCorrector::setup(Teuchos::RCP<Adapter::FluidAle> fluidale)
   fluidale_ = fluidale;
 
   volcorrector_ = Teuchos::rcp(new VolCorrector);
-  volcorrector_->setup(Global::Problem::Instance()->NDim(), fluidale);
+  volcorrector_->setup(Global::Problem::instance()->n_dim(), fluidale);
 
   return;
 }
@@ -217,7 +217,7 @@ void FSI::InterfaceCorrector::correct_interface_displacements(
 
   // FOUR_C_THROW("stop");
 
-  Teuchos::RCP<Epetra_Vector> idisp_fluid_corrected = icoupfs_->MasterToSlave(idisp_);
+  Teuchos::RCP<Epetra_Vector> idisp_fluid_corrected = icoupfs_->master_to_slave(idisp_);
 
   deltadisp_->Update(1.0, *idisp_fluid_corrected, -1.0);
 
@@ -240,7 +240,7 @@ void FSI::VolCorrector::correct_vol_displacements(Teuchos::RCP<Adapter::FluidAle
     Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> disp_fluid,
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
 {
-  if (fluidale->ale_field()->discretization()->Comm().MyPID() == 0)
+  if (fluidale->ale_field()->discretization()->get_comm().MyPID() == 0)
     std::cout << "******************   FSI Volume Correction Step   **********************"
               << std::endl;
 
@@ -251,7 +251,7 @@ void FSI::VolCorrector::correct_vol_displacements(Teuchos::RCP<Adapter::FluidAle
     correct_vol_displacements_phys_space(fluidale, deltadisp, disp_fluid, finterface);
 
   // output
-  if (fluidale->ale_field()->discretization()->Comm().MyPID() == 0)
+  if (fluidale->ale_field()->discretization()->get_comm().MyPID() == 0)
     std::cout << "******************FSI Volume Correction Step Done***********************"
               << std::endl;
 
@@ -269,7 +269,7 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
 {
   Teuchos::RCP<Epetra_Vector> correction = Teuchos::rcp(new Epetra_Vector(disp_fluid->Map(), true));
   Teuchos::RCP<Epetra_Vector> DofColMapDummy = Teuchos::rcp(
-      new Epetra_Vector(*fluidale->fluid_field()->discretization()->DofColMap(), true));
+      new Epetra_Vector(*fluidale->fluid_field()->discretization()->dof_col_map(), true));
   Core::LinAlg::Export(*deltadisp, *DofColMapDummy);
 
   const double tol = 1e-5;
@@ -278,21 +278,22 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
   for (std::map<int, std::vector<int>>::iterator it = fluidalenodemap_.begin();
        it != fluidalenodemap_.end(); ++it)
   {
-    Core::Elements::Element* aleele = fluidale->ale_field()->discretization()->gElement(it->first);
+    Core::Elements::Element* aleele = fluidale->ale_field()->discretization()->g_element(it->first);
 
     // loop over fluid volume nodes within one ale FSI element
     for (size_t i = 0; i < it->second.size(); ++i)
     {
       int gid = it->second[i];
-      Core::Nodes::Node* fluidnode = fluidale->fluid_field()->discretization()->gNode(gid);
+      Core::Nodes::Node* fluidnode = fluidale->fluid_field()->discretization()->g_node(gid);
 
-      if (fluidnode->Owner() != fluidale->ale_field()->discretization()->Comm().MyPID()) continue;
+      if (fluidnode->owner() != fluidale->ale_field()->discretization()->get_comm().MyPID())
+        continue;
 
-      double gpos[3] = {fluidnode->X()[0], fluidnode->X()[1], fluidnode->X()[2]};
+      double gpos[3] = {fluidnode->x()[0], fluidnode->x()[1], fluidnode->x()[2]};
       double lpos[3] = {0.0, 0.0, 0.0};
-      if (aleele->Shape() == Core::FE::CellType::quad4)
+      if (aleele->shape() == Core::FE::CellType::quad4)
         Mortar::UTILS::GlobalToLocal<Core::FE::CellType::quad4>(*aleele, gpos, lpos);
-      else if (aleele->Shape() == Core::FE::CellType::hex8)
+      else if (aleele->shape() == Core::FE::CellType::hex8)
         Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex8>(*aleele, gpos, lpos);
       else
         FOUR_C_THROW("ERROR: element type not implemented!");
@@ -306,13 +307,13 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
       for (size_t k = 0; k < fluidalenode_fs_imap_[it->first].size(); ++k)
       {
         int gidfsi = fluidalenode_fs_imap_[it->first][k];
-        Core::Nodes::Node* fluidnodeFSI = fluidale->fluid_field()->discretization()->gNode(gidfsi);
+        Core::Nodes::Node* fluidnodeFSI = fluidale->fluid_field()->discretization()->g_node(gidfsi);
 
-        double gposFSI[3] = {fluidnodeFSI->X()[0], fluidnodeFSI->X()[1], fluidnodeFSI->X()[2]};
+        double gposFSI[3] = {fluidnodeFSI->x()[0], fluidnodeFSI->x()[1], fluidnodeFSI->x()[2]};
         double lposFSI[3] = {0.0, 0.0, 0.0};
-        if (aleele->Shape() == Core::FE::CellType::quad4)
+        if (aleele->shape() == Core::FE::CellType::quad4)
           Mortar::UTILS::GlobalToLocal<Core::FE::CellType::quad4>(*aleele, gposFSI, lposFSI);
-        else if (aleele->Shape() == Core::FE::CellType::hex8)
+        else if (aleele->shape() == Core::FE::CellType::hex8)
           Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex8>(*aleele, gposFSI, lposFSI);
         else
           FOUR_C_THROW("ERROR: element type not implemented!");
@@ -330,7 +331,7 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
         // check length
         if (actdist < dist)
         {
-          id = fluidnodeFSI->Id();
+          id = fluidnodeFSI->id();
           dist = actdist;
         }
       }  // end loop
@@ -340,8 +341,8 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
 
       double fac = 0.0;
 
-      if (aleele->Shape() == Core::FE::CellType::quad4 or
-          aleele->Shape() == Core::FE::CellType::hex8)
+      if (aleele->shape() == Core::FE::CellType::quad4 or
+          aleele->shape() == Core::FE::CellType::hex8)
         fac = 1.0 - 0.5 * dist;
       else
         FOUR_C_THROW("ERROR: element type not implemented!");
@@ -349,8 +350,8 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
       // safety
       if (dist > 2.0) fac = 0.0;
 
-      Core::Nodes::Node* fluidnodeFSI = fluidale->fluid_field()->discretization()->gNode(id);
-      std::vector<int> temp = fluidale->fluid_field()->discretization()->Dof(fluidnodeFSI);
+      Core::Nodes::Node* fluidnodeFSI = fluidale->fluid_field()->discretization()->g_node(id);
+      std::vector<int> temp = fluidale->fluid_field()->discretization()->dof(fluidnodeFSI);
       std::vector<int> dofsFSI;
       for (int idof = 0; idof < dim_; idof++) dofsFSI.push_back(temp[idof]);
 
@@ -358,7 +359,7 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
       std::vector<double> FSIdisp(dofsFSI.size());
       Core::FE::ExtractMyValues(*DofColMapDummy, FSIdisp, dofsFSI);
 
-      std::vector<int> temp2 = fluidale->fluid_field()->discretization()->Dof(fluidnode);
+      std::vector<int> temp2 = fluidale->fluid_field()->discretization()->dof(fluidnode);
       std::vector<int> dofs;
       for (int idof = 0; idof < dim_; idof++) dofs.push_back(temp2[idof]);
 
@@ -367,7 +368,7 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
       for (int idof = 0; idof < dim_; idof++)
       {
         gnode(idof) = fac * FSIdisp[idof];
-        lmowner[idof] = fluidnode->Owner();
+        lmowner[idof] = fluidnode->owner();
       }
 
       Core::LinAlg::Assemble(*correction, gnode, dofs, lmowner);
@@ -382,7 +383,7 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
   correction->Norm2(&norm);
 
   // output
-  if (fluidale->ale_field()->discretization()->Comm().MyPID() == 0)
+  if (fluidale->ale_field()->discretization()->get_comm().MyPID() == 0)
     std::cout << "Norm of correction (parameter space): " << norm << std::endl;
 
   return;
@@ -397,7 +398,7 @@ void FSI::VolCorrector::correct_vol_displacements_phys_space(
 {
   Teuchos::RCP<Epetra_Vector> correction = Teuchos::rcp(new Epetra_Vector(disp_fluid->Map(), true));
   Teuchos::RCP<Epetra_Vector> DofColMapDummy = Teuchos::rcp(
-      new Epetra_Vector(*fluidale->fluid_field()->discretization()->DofColMap(), true));
+      new Epetra_Vector(*fluidale->fluid_field()->discretization()->dof_col_map(), true));
   Core::LinAlg::Export(*deltadisp, *DofColMapDummy);
 
   std::map<int, Core::LinAlg::Matrix<9, 2>> CurrentDOPs =
@@ -407,13 +408,13 @@ void FSI::VolCorrector::correct_vol_displacements_phys_space(
       *fluidale->ale_field()->discretization(), "FSICoupling");
 
   // evaluate search
-  for (int i = 0; i < fluidale->ale_field()->discretization()->NumMyColElements(); ++i)
+  for (int i = 0; i < fluidale->ale_field()->discretization()->num_my_col_elements(); ++i)
   {
     // 1 map node into bele
-    int gid = fluidale->ale_field()->discretization()->ElementColMap()->GID(i);
-    Core::Elements::Element* aleele = fluidale->ale_field()->discretization()->gElement(gid);
+    int gid = fluidale->ale_field()->discretization()->element_col_map()->GID(i);
+    Core::Elements::Element* aleele = fluidale->ale_field()->discretization()->g_element(gid);
 
-    if (FSIaleeles->find(aleele->Id()) == FSIaleeles->end()) continue;
+    if (FSIaleeles->find(aleele->id()) == FSIaleeles->end()) continue;
   }
 
   // do correction
@@ -424,7 +425,7 @@ void FSI::VolCorrector::correct_vol_displacements_phys_space(
   correction->Norm2(&norm);
 
   // output
-  if (fluidale->ale_field()->discretization()->Comm().MyPID() == 0)
+  if (fluidale->ale_field()->discretization()->get_comm().MyPID() == 0)
     std::cout << "Norm of correction (physical space): " << norm << std::endl;
 
   return;
@@ -435,7 +436,7 @@ void FSI::VolCorrector::correct_vol_displacements_phys_space(
 /*----------------------------------------------------------------------------*/
 void FSI::VolCorrector::setup(const int dim, Teuchos::RCP<Adapter::FluidAle> fluidale)
 {
-  if (fluidale->ale_field()->discretization()->Comm().MyPID() == 0)
+  if (fluidale->ale_field()->discretization()->get_comm().MyPID() == 0)
     std::cout << "******************FSI Volume Correction Setup***********************"
               << std::endl;
 
@@ -445,21 +446,21 @@ void FSI::VolCorrector::setup(const int dim, Teuchos::RCP<Adapter::FluidAle> flu
   // init current positions
   std::map<int, Core::LinAlg::Matrix<3, 1>> currentpositions;
 
-  for (int lid = 0; lid < fluidale->fluid_field()->discretization()->NumMyColElements(); ++lid)
+  for (int lid = 0; lid < fluidale->fluid_field()->discretization()->num_my_col_elements(); ++lid)
   {
-    Core::Elements::Element* sele = fluidale->fluid_field()->discretization()->lColElement(lid);
+    Core::Elements::Element* sele = fluidale->fluid_field()->discretization()->l_col_element(lid);
 
     // calculate slabs for every node on every element
     for (int k = 0; k < sele->num_node(); k++)
     {
-      Core::Nodes::Node* node = sele->Nodes()[k];
+      Core::Nodes::Node* node = sele->nodes()[k];
       Core::LinAlg::Matrix<3, 1> currpos;
 
-      currpos(0) = node->X()[0];
-      currpos(1) = node->X()[1];
-      currpos(2) = node->X()[2];
+      currpos(0) = node->x()[0];
+      currpos(1) = node->x()[1];
+      currpos(2) = node->x()[2];
 
-      currentpositions[node->Id()] = currpos;
+      currentpositions[node->id()] = currpos;
     }
   }
 
@@ -469,7 +470,7 @@ void FSI::VolCorrector::setup(const int dim, Teuchos::RCP<Adapter::FluidAle> flu
   // find the bounding box of the elements and initialize the search tree
   const Core::LinAlg::Matrix<3, 2> rootBox =
       Core::Geo::getXAABBofDis(*fluidale->fluid_field()->discretization(), currentpositions);
-  search_tree_->initializeTree(
+  search_tree_->initialize_tree(
       rootBox, *fluidale->fluid_field()->discretization(), Core::Geo::TreeType(Core::Geo::OCTTREE));
 
 
@@ -480,13 +481,13 @@ void FSI::VolCorrector::setup(const int dim, Teuchos::RCP<Adapter::FluidAle> flu
       *fluidale->ale_field()->discretization(), "FSICoupling");
 
   // evaluate search
-  for (int i = 0; i < fluidale->ale_field()->discretization()->NumMyColElements(); ++i)
+  for (int i = 0; i < fluidale->ale_field()->discretization()->num_my_col_elements(); ++i)
   {
     // 1 map node into bele
-    int gid = fluidale->ale_field()->discretization()->ElementColMap()->GID(i);
-    Core::Elements::Element* aleele = fluidale->ale_field()->discretization()->gElement(gid);
+    int gid = fluidale->ale_field()->discretization()->element_col_map()->GID(i);
+    Core::Elements::Element* aleele = fluidale->ale_field()->discretization()->g_element(gid);
 
-    if (FSIaleeles->find(aleele->Id()) == FSIaleeles->end()) continue;
+    if (FSIaleeles->find(aleele->id()) == FSIaleeles->end()) continue;
 
     // get found elements from other discr.
     fluidaleelemap_[gid] = search(*aleele, CurrentDOPs);
@@ -500,7 +501,7 @@ void FSI::VolCorrector::setup(const int dim, Teuchos::RCP<Adapter::FluidAle> flu
   for (std::map<int, std::vector<int>>::iterator it = fluidaleelemap_.begin();
        it != fluidaleelemap_.end(); ++it)
   {
-    Core::Elements::Element* aleele = fluidale->ale_field()->discretization()->gElement(it->first);
+    Core::Elements::Element* aleele = fluidale->ale_field()->discretization()->g_element(it->first);
 
     std::vector<int> localnodeids;
     std::vector<int> localnodeidsFSI;
@@ -509,18 +510,18 @@ void FSI::VolCorrector::setup(const int dim, Teuchos::RCP<Adapter::FluidAle> flu
     for (size_t i = 0; i < it->second.size(); ++i)
     {
       int gid = it->second[i];
-      Core::Elements::Element* fluidele = fluidale->fluid_field()->discretization()->gElement(gid);
+      Core::Elements::Element* fluidele = fluidale->fluid_field()->discretization()->g_element(gid);
 
       for (int j = 0; j < fluidele->num_node(); ++j)
       {
-        const int nodegid = fluidele->NodeIds()[j];
-        Core::Nodes::Node* fluidnode = fluidele->Nodes()[j];
+        const int nodegid = fluidele->node_ids()[j];
+        Core::Nodes::Node* fluidnode = fluidele->nodes()[j];
 
-        double gpos[3] = {fluidnode->X()[0], fluidnode->X()[1], fluidnode->X()[2]};
+        double gpos[3] = {fluidnode->x()[0], fluidnode->x()[1], fluidnode->x()[2]};
         double lpos[3] = {0.0, 0.0, 0.0};
-        if (aleele->Shape() == Core::FE::CellType::quad4)
+        if (aleele->shape() == Core::FE::CellType::quad4)
           Mortar::UTILS::GlobalToLocal<Core::FE::CellType::quad4>(*aleele, gpos, lpos);
-        else if (aleele->Shape() == Core::FE::CellType::hex8)
+        else if (aleele->shape() == Core::FE::CellType::hex8)
           Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex8>(*aleele, gpos, lpos);
         else
           FOUR_C_THROW("ERROR: element type not implemented!");
@@ -547,7 +548,7 @@ void FSI::VolCorrector::setup(const int dim, Teuchos::RCP<Adapter::FluidAle> flu
 
   std::cout << "ALE elements found: " << fluidaleelemap_.size() << std::endl;
 
-  if (fluidale->ale_field()->discretization()->Comm().MyPID() == 0)
+  if (fluidale->ale_field()->discretization()->get_comm().MyPID() == 0)
     std::cout << "******************FSI Volume Correction Setup Done***********************"
               << std::endl;
 
@@ -607,11 +608,11 @@ std::map<int, Core::LinAlg::Matrix<9, 2>> FSI::VolCorrector::calc_background_dop
 {
   std::map<int, Core::LinAlg::Matrix<9, 2>> currentKDOPs;
 
-  for (int lid = 0; lid < searchdis->NumMyColElements(); ++lid)
+  for (int lid = 0; lid < searchdis->num_my_col_elements(); ++lid)
   {
-    Core::Elements::Element* sele = searchdis->lColElement(lid);
+    Core::Elements::Element* sele = searchdis->l_col_element(lid);
 
-    currentKDOPs[sele->Id()] = calc_dop(*sele);
+    currentKDOPs[sele->id()] = calc_dop(*sele);
   }
 
   return currentKDOPs;
@@ -635,11 +636,11 @@ Core::LinAlg::Matrix<9, 2> FSI::VolCorrector::calc_dop(Core::Elements::Element& 
   // calculate slabs for every node on every element
   for (int k = 0; k < ele.num_node(); k++)
   {
-    Core::Nodes::Node* node = ele.Nodes()[k];
+    Core::Nodes::Node* node = ele.nodes()[k];
 
     // get current node position
     std::array<double, 3> pos = {0.0, 0.0, 0.0};
-    for (int j = 0; j < dim_; ++j) pos[j] = node->X()[j];
+    for (int j = 0; j < dim_; ++j) pos[j] = node->x()[j];
 
     // calculate slabs
     for (int j = 0; j < 9; j++)
@@ -680,7 +681,7 @@ std::vector<int> FSI::VolCorrector::search(
 
   //**********************************************************
   // search for near elements to the background node's coord
-  search_tree_->searchCollisions(currentKDOPs, queryKDOP, 0, gid);
+  search_tree_->search_collisions(currentKDOPs, queryKDOP, 0, gid);
 
   for (std::set<int>::iterator iter = gid.begin(); iter != gid.end(); ++iter) gids.push_back(*iter);
 

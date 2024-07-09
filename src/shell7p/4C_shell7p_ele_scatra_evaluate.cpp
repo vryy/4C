@@ -27,7 +27,7 @@ namespace
   inline std::vector<char>& GetMutableStressData(
       const Discret::ELEMENTS::Shell7pScatra& ele, const Teuchos::ParameterList& params)
   {
-    if (ele.IsParamsInterface())
+    if (ele.is_params_interface())
     {
       return *ele.str_params_interface().stress_data_ptr();
     }
@@ -40,7 +40,7 @@ namespace
   inline std::vector<char>& GetMutableStrainData(
       const Discret::ELEMENTS::Shell7pScatra& ele, const Teuchos::ParameterList& params)
   {
-    if (ele.IsParamsInterface())
+    if (ele.is_params_interface())
     {
       return *ele.str_params_interface().strain_data_ptr();
     }
@@ -53,7 +53,7 @@ namespace
   inline Inpar::Solid::StressType get_io_stress_type(
       const Discret::ELEMENTS::Shell7pScatra& ele, const Teuchos::ParameterList& params)
   {
-    if (ele.IsParamsInterface())
+    if (ele.is_params_interface())
     {
       return ele.str_params_interface().get_stress_output_type();
     }
@@ -66,7 +66,7 @@ namespace
   inline Inpar::Solid::StrainType get_io_strain_type(
       const Discret::ELEMENTS::Shell7pScatra& ele, const Teuchos::ParameterList& params)
   {
-    if (ele.IsParamsInterface())
+    if (ele.is_params_interface())
     {
       return ele.str_params_interface().get_strain_output_type();
     }
@@ -90,7 +90,7 @@ int Discret::ELEMENTS::Shell7pScatra::evaluate(Teuchos::ParameterList& params,
   const Core::Elements::ActionType action = std::invoke(
       [&]()
       {
-        if (IsParamsInterface())
+        if (is_params_interface())
           return str_params_interface().get_action_type();
         else
           return Core::Elements::String2ActionType(params.get<std::string>("action", "none"));
@@ -105,19 +105,19 @@ int Discret::ELEMENTS::Shell7pScatra::evaluate(Teuchos::ParameterList& params,
     // nonlinear stiffness and internal force vector
     case Core::Elements::struct_calc_nlnstiff:
     {
-      shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *SolidMaterial(),
+      shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *solid_material(),
           discretization, nodal_directors_, la[0].lm_, params, &elevec1, &elemat1, nullptr);
     }
     break;
     case Core::Elements::struct_calc_linstiff:
     {
-      shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *SolidMaterial(),
+      shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *solid_material(),
           discretization, nodal_directors_, la[0].lm_, params, &elevec1, &elemat1, &elemat2);
     }
     break;
     case Core::Elements::struct_calc_internalforce:
     {
-      shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *SolidMaterial(),
+      shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *solid_material(),
           discretization, nodal_directors_, la[0].lm_, params, &elevec1, nullptr, nullptr);
     }
     break;
@@ -128,7 +128,7 @@ int Discret::ELEMENTS::Shell7pScatra::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_nlnstiffmass:   // do mass, stiffness and internal forces
     case Core::Elements::struct_calc_nlnstifflmass:  // do lump mass, stiffness and internal forces
     {
-      shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *SolidMaterial(),
+      shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *solid_material(),
           discretization, nodal_directors_, la[0].lm_, params, &elevec1, &elemat1, &elemat2);
       if (action == Core::Elements::struct_calc_nlnstifflmass)
         Solid::UTILS::Shell::LumpMassMatrix(elemat2);
@@ -136,12 +136,12 @@ int Discret::ELEMENTS::Shell7pScatra::evaluate(Teuchos::ParameterList& params,
     break;
     case Core::Elements::struct_calc_recover:
     {
-      shell_interface_->Recover(*this, discretization, la[0].lm_, params, str_params_interface());
+      shell_interface_->recover(*this, discretization, la[0].lm_, params, str_params_interface());
     }
     break;
     case Core::Elements::struct_calc_stress:
     {
-      shell_interface_->calculate_stresses_strains(*this, *SolidMaterial(),
+      shell_interface_->calculate_stresses_strains(*this, *solid_material(),
           ShellStressIO{get_io_stress_type(*this, params), GetMutableStressData(*this, params)},
           ShellStrainIO{get_io_strain_type(*this, params), GetMutableStrainData(*this, params)},
           discretization, nodal_directors_, la[0].lm_, params);
@@ -150,9 +150,9 @@ int Discret::ELEMENTS::Shell7pScatra::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_energy:
     {
       double int_energy = shell_interface_->calculate_internal_energy(
-          *this, *SolidMaterial(), discretization, nodal_directors_, la[0].lm_, params);
+          *this, *solid_material(), discretization, nodal_directors_, la[0].lm_, params);
 
-      if (IsParamsInterface())
+      if (is_params_interface())
       {
         // new structural time integration
         str_params_interface().add_contribution_to_energy_type(int_energy, Solid::internal_energy);
@@ -168,14 +168,14 @@ int Discret::ELEMENTS::Shell7pScatra::evaluate(Teuchos::ParameterList& params,
     break;
     case Core::Elements::struct_calc_update_istep:
     {
-      shell_interface_->Update(
-          *this, *SolidMaterial(), discretization, nodal_directors_, la[0].lm_, params);
+      shell_interface_->update(
+          *this, *solid_material(), discretization, nodal_directors_, la[0].lm_, params);
     }
     break;
     case Core::Elements::struct_calc_reset_istep:
     {
       // Reset of history (if needed)
-      shell_interface_->reset_to_last_converged(*this, *SolidMaterial());
+      shell_interface_->reset_to_last_converged(*this, *solid_material());
     }
     break;
     case Core::Elements::struct_calc_predict:
@@ -203,7 +203,7 @@ int Discret::ELEMENTS::Shell7pScatra::evaluate_neumann(Teuchos::ParameterList& p
   const double time = std::invoke(
       [&]()
       {
-        if (IsParamsInterface())
+        if (is_params_interface())
           return str_params_interface().get_total_time();
         else
           return params.get("total time", -1.0);

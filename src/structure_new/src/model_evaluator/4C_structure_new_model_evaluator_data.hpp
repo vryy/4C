@@ -175,7 +175,7 @@ namespace Solid
 
 
       //! is the current state the predictor state?
-      bool IsPredictorState() const;
+      bool is_predictor_state() const;
 
       //! mutable access to the stress data vector
       Teuchos::RCP<std::vector<char>>& stress_data_ptr() override;
@@ -667,37 +667,37 @@ namespace Solid
       //!@{
 
       //! access the beam data container, if applicable
-      inline BeamData& GetBeamData()
+      inline BeamData& get_beam_data()
       {
         FOUR_C_ASSERT(!beam_data_ptr_.is_null(), "pointer to beam data container not set!");
         return *beam_data_ptr_;
       }
-      inline const Teuchos::RCP<BeamData>& GetBeamDataPtr()
+      inline const Teuchos::RCP<BeamData>& get_beam_data_ptr()
       {
         FOUR_C_ASSERT(!beam_data_ptr_.is_null(), "pointer to beam data container not set!");
         return beam_data_ptr_;
       }
 
       //! access the contact data container, if the contact model is active
-      inline ContactData& Contact()
+      inline ContactData& contact()
       {
         FOUR_C_ASSERT(!contact_data_ptr_.is_null(), "The contact model is not active!");
         return *contact_data_ptr_;
       }
-      inline const Teuchos::RCP<ContactData>& ContactPtr() const
+      inline const Teuchos::RCP<ContactData>& contact_ptr() const
       {
         FOUR_C_ASSERT(!contact_data_ptr_.is_null(), "The contact model is not active!");
         return contact_data_ptr_;
       }
 
       //! access the brownian dynamic data container
-      inline BrownianDynData& BrownianDyn()
+      inline BrownianDynData& brownian_dyn()
       {
         FOUR_C_ASSERT(
             !browniandyn_data_ptr_.is_null(), "The brownian dynamic model is not active!");
         return *browniandyn_data_ptr_;
       }
-      inline const Teuchos::RCP<BrownianDynData>& BrownianDynPtr()
+      inline const Teuchos::RCP<BrownianDynData>& brownian_dyn_ptr()
       {
         FOUR_C_ASSERT(
             !browniandyn_data_ptr_.is_null(), "The brownian dynamic model is not active!");
@@ -1186,7 +1186,7 @@ namespace Solid
       inline bool is_predictor_state() const override
       {
         check_init();
-        return str_data_ptr_->IsPredictorState();
+        return str_data_ptr_->is_predictor_state();
       }
 
       //! get the current time step [derived]
@@ -1341,7 +1341,7 @@ namespace Solid
       }
 
       /// thermal energy
-      double const& KT() const
+      double const& kt() const
       {
         check_init_setup();
         return kt_;

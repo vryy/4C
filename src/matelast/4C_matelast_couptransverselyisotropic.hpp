@@ -131,15 +131,15 @@ namespace Mat
       /// @name Packing and Unpacking
       /// @{
 
-      void PackSummand(Core::Communication::PackBuffer& data) const override;
+      void pack_summand(Core::Communication::PackBuffer& data) const override;
 
-      void UnpackSummand(
+      void unpack_summand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
 
       /// @}
 
       /// material type
-      Core::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType material_type() const override
       {
         return Core::Materials::mes_couptransverselyisotropic;
       }
@@ -165,7 +165,7 @@ namespace Mat
        * \param[in]  go       Gauss point
        * \param[in]  eleGID   element global ID
        */
-      void AddStrainEnergy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
+      void add_strain_energy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
           const Core::LinAlg::Matrix<3, 1>& modinv, const Core::LinAlg::Matrix<6, 1>& glstrain,
           const int gp, const int eleGID) override;
 
@@ -190,11 +190,11 @@ namespace Mat
        * \param[in] locsys    local coordinate system
        * \param[in] defgrd    deformation gradient
        */
-      void SetFiberVecs(const double newangle, const Core::LinAlg::Matrix<3, 3>& locsys,
+      void set_fiber_vecs(const double newangle, const Core::LinAlg::Matrix<3, 3>& locsys,
           const Core::LinAlg::Matrix<3, 3>& defgrd) override;
 
       /// Get fiber directions
-      void GetFiberVecs(
+      void get_fiber_vecs(
           std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 
@@ -207,7 +207,7 @@ namespace Mat
        * \param[out] anisomod     global indicator for anisotropic splitted formulation
        * \param[out] viscogeneral global indicator, if one viscoelastic formulation is used
        */
-      void SpecifyFormulation(bool& isoprinc, bool& isomod, bool& anisoprinc, bool& anisomod,
+      void specify_formulation(bool& isoprinc, bool& isomod, bool& anisoprinc, bool& anisomod,
           bool& viscogeneral) override
       {
         anisoprinc = true;

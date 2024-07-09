@@ -25,11 +25,11 @@ namespace
   void CreateMaterialInGlobalProblem()
   {
     Core::IO::InputParameterContainer mat_stvenant;
-    mat_stvenant.Add("YOUNG", 1.0);
-    mat_stvenant.Add("NUE", 0.1);
-    mat_stvenant.Add("DENS", 2.0);
+    mat_stvenant.add("YOUNG", 1.0);
+    mat_stvenant.add("NUE", 0.1);
+    mat_stvenant.add("DENS", 2.0);
 
-    Global::Problem::Instance()->Materials()->insert(
+    Global::Problem::instance()->materials()->insert(
         1, Mat::make_parameter(1, Core::Materials::MaterialType::m_stvenant, mat_stvenant));
   }
 
@@ -71,41 +71,41 @@ namespace
 
     testdis_->fill_complete(false, false, false);
 
-    Core::Nodes::Node* lastNode = testdis_->lRowNode(testdis_->NumMyRowNodes() - 1);
-    const auto nodePosition = lastNode->X();
+    Core::Nodes::Node* lastNode = testdis_->l_row_node(testdis_->num_my_row_nodes() - 1);
+    const auto nodePosition = lastNode->x();
 
     if (comm_->MyPID() == 0)
     {
       EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
       EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);
       EXPECT_NEAR(nodePosition[2], -0.5, 1e-14);
-      EXPECT_EQ(testdis_->NumMyRowNodes(), 2541);
-      EXPECT_EQ(testdis_->NumMyRowElements(), 250);
-      EXPECT_EQ(testdis_->NumMyColNodes(), 3003);
-      EXPECT_EQ(testdis_->NumMyColElements(), 300);
-      EXPECT_EQ(lastNode->Id(), 2557);
+      EXPECT_EQ(testdis_->num_my_row_nodes(), 2541);
+      EXPECT_EQ(testdis_->num_my_row_elements(), 250);
+      EXPECT_EQ(testdis_->num_my_col_nodes(), 3003);
+      EXPECT_EQ(testdis_->num_my_col_elements(), 300);
+      EXPECT_EQ(lastNode->id(), 2557);
     }
     else if (comm_->MyPID() == 1)
     {
       EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
       EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);
       EXPECT_NEAR(nodePosition[2], 2.0, 1e-14);
-      EXPECT_EQ(testdis_->NumMyRowNodes(), 2310);
-      EXPECT_EQ(testdis_->NumMyRowElements(), 250);
-      EXPECT_EQ(testdis_->NumMyColNodes(), 3003);
-      EXPECT_EQ(testdis_->NumMyColElements(), 300);
-      EXPECT_EQ(lastNode->Id(), 4867);
+      EXPECT_EQ(testdis_->num_my_row_nodes(), 2310);
+      EXPECT_EQ(testdis_->num_my_row_elements(), 250);
+      EXPECT_EQ(testdis_->num_my_col_nodes(), 3003);
+      EXPECT_EQ(testdis_->num_my_col_elements(), 300);
+      EXPECT_EQ(lastNode->id(), 4867);
     }
     else if (comm_->MyPID() == 2)
     {
       EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
       EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);
       EXPECT_NEAR(nodePosition[2], 4.5, 1e-14);
-      EXPECT_EQ(testdis_->NumMyRowNodes(), 2310);
-      EXPECT_EQ(testdis_->NumMyRowElements(), 250);
-      EXPECT_EQ(testdis_->NumMyColNodes(), 2541);
-      EXPECT_EQ(testdis_->NumMyColElements(), 250);
-      EXPECT_EQ(lastNode->Id(), 7177);
+      EXPECT_EQ(testdis_->num_my_row_nodes(), 2310);
+      EXPECT_EQ(testdis_->num_my_row_elements(), 250);
+      EXPECT_EQ(testdis_->num_my_col_nodes(), 2541);
+      EXPECT_EQ(testdis_->num_my_col_elements(), 250);
+      EXPECT_EQ(lastNode->id(), 7177);
     }
   }
 
@@ -120,41 +120,41 @@ namespace
 
     testdis_->fill_complete(false, false, false);
 
-    Core::Nodes::Node* lastNode = testdis_->lRowNode(testdis_->NumMyRowNodes() - 1);
-    const auto nodePosition = lastNode->X();
+    Core::Nodes::Node* lastNode = testdis_->l_row_node(testdis_->num_my_row_nodes() - 1);
+    const auto nodePosition = lastNode->x();
 
     if (comm_->MyPID() == 0)
     {
       EXPECT_NEAR(nodePosition[0], -0.3, 1e-14);
       EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);
       EXPECT_NEAR(nodePosition[2], 2.0, 1e-14);
-      EXPECT_EQ(testdis_->NumMyRowNodes(), 352);
-      EXPECT_EQ(testdis_->NumMyRowElements(), 511);
-      EXPECT_EQ(testdis_->NumMyColNodes(), 467);
-      EXPECT_EQ(testdis_->NumMyColElements(), 596);
-      EXPECT_EQ(lastNode->Id(), 4859);
+      EXPECT_EQ(testdis_->num_my_row_nodes(), 352);
+      EXPECT_EQ(testdis_->num_my_row_elements(), 511);
+      EXPECT_EQ(testdis_->num_my_col_nodes(), 467);
+      EXPECT_EQ(testdis_->num_my_col_elements(), 596);
+      EXPECT_EQ(lastNode->id(), 4859);
     }
     else if (comm_->MyPID() == 1)
     {
       EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
       EXPECT_NEAR(nodePosition[1], 0.75, 1e-14);
       EXPECT_NEAR(nodePosition[2], 2.0, 1e-14);
-      EXPECT_EQ(testdis_->NumMyRowNodes(), 335);
-      EXPECT_EQ(testdis_->NumMyRowElements(), 519);
-      EXPECT_EQ(testdis_->NumMyColNodes(), 465);
-      EXPECT_EQ(testdis_->NumMyColElements(), 590);
-      EXPECT_EQ(lastNode->Id(), 4757);
+      EXPECT_EQ(testdis_->num_my_row_nodes(), 335);
+      EXPECT_EQ(testdis_->num_my_row_elements(), 519);
+      EXPECT_EQ(testdis_->num_my_col_nodes(), 465);
+      EXPECT_EQ(testdis_->num_my_col_elements(), 590);
+      EXPECT_EQ(lastNode->id(), 4757);
     }
     else if (comm_->MyPID() == 2)
     {
       EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
       EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);
       EXPECT_NEAR(nodePosition[2], 4.5, 1e-14);
-      EXPECT_EQ(testdis_->NumMyRowNodes(), 369);
-      EXPECT_EQ(testdis_->NumMyRowElements(), 470);
-      EXPECT_EQ(testdis_->NumMyColNodes(), 456);
-      EXPECT_EQ(testdis_->NumMyColElements(), 570);
-      EXPECT_EQ(lastNode->Id(), 7177);
+      EXPECT_EQ(testdis_->num_my_row_nodes(), 369);
+      EXPECT_EQ(testdis_->num_my_row_elements(), 470);
+      EXPECT_EQ(testdis_->num_my_col_nodes(), 456);
+      EXPECT_EQ(testdis_->num_my_col_elements(), 570);
+      EXPECT_EQ(lastNode->id(), 7177);
     }
   }
 

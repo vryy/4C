@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::MembraneLine2Type Discret::ELEMENTS::MembraneLine2Type::instance_;
 
-Discret::ELEMENTS::MembraneLine2Type& Discret::ELEMENTS::MembraneLine2Type::Instance()
+Discret::ELEMENTS::MembraneLine2Type& Discret::ELEMENTS::MembraneLine2Type::instance()
 {
   return instance_;
 }
@@ -28,7 +28,7 @@ Discret::ELEMENTS::MembraneLine2Type& Discret::ELEMENTS::MembraneLine2Type::Inst
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::MembraneLine3Type Discret::ELEMENTS::MembraneLine3Type::instance_;
 
-Discret::ELEMENTS::MembraneLine3Type& Discret::ELEMENTS::MembraneLine3Type::Instance()
+Discret::ELEMENTS::MembraneLine3Type& Discret::ELEMENTS::MembraneLine3Type::instance()
 {
   return instance_;
 }
@@ -43,8 +43,8 @@ Discret::ELEMENTS::MembraneLine<distype>::MembraneLine(int id, int owner, int nn
     const int lline)
     : Core::Elements::FaceElement(id, owner), intpointsline_(Core::FE::GaussRule1D::line_2point)
 {
-  SetNodeIds(nnode, nodeids);
-  BuildNodalPointers(nodes);
+  set_node_ids(nnode, nodeids);
+  build_nodal_pointers(nodes);
   set_parent_master_element(parent, lline);
   switch (Core::FE::DisTypeToFaceShapeType<distype>::shape)
   {
@@ -86,7 +86,7 @@ Discret::ELEMENTS::MembraneLine<distype>::MembraneLine(
  |                                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Core::Elements::Element* Discret::ELEMENTS::MembraneLine<distype>::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::MembraneLine<distype>::clone() const
 {
   Discret::ELEMENTS::MembraneLine<distype>* newelement =
       new Discret::ELEMENTS::MembraneLine<distype>(*this);
@@ -98,7 +98,7 @@ Core::Elements::Element* Discret::ELEMENTS::MembraneLine<distype>::Clone() const
  |                                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Core::FE::CellType Discret::ELEMENTS::MembraneLine<distype>::Shape() const
+Core::FE::CellType Discret::ELEMENTS::MembraneLine<distype>::shape() const
 {
   return Core::FE::DisTypeToFaceShapeType<distype>::shape;
 }

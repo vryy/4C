@@ -70,8 +70,8 @@ int Discret::ELEMENTS::StructuralLine::evaluate_neumann(Teuchos::ParameterList& 
   */
   // find out whether we will use a time curve
   double time = -1.0;
-  if (parent_element()->IsParamsInterface())
-    time = parent_element()->ParamsInterfacePtr()->get_total_time();
+  if (parent_element()->is_params_interface())
+    time = parent_element()->params_interface_ptr()->get_total_time();
   else
     time = params.get("total time", -1.0);
 
@@ -97,7 +97,7 @@ int Discret::ELEMENTS::StructuralLine::evaluate_neumann(Teuchos::ParameterList& 
   const Core::FE::IntegrationPoints1D intpoints(gaussrule_);
   Core::LinAlg::SerialDenseVector shapefcts(numnode);
   Core::LinAlg::SerialDenseMatrix deriv(1, numnode);
-  const Core::FE::CellType shape = Shape();
+  const Core::FE::CellType shape = StructuralLine::shape();
 
   // integration
   for (int gp = 0; gp < intpoints.nquad; ++gp)
@@ -135,8 +135,8 @@ int Discret::ELEMENTS::StructuralLine::evaluate_neumann(Teuchos::ParameterList& 
               const double* coordgpref = gp_coord2;  // needed for function evaluation
 
               // evaluate function at current gauss point
-              functfac = Global::Problem::Instance()
-                             ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+              functfac = Global::Problem::instance()
+                             ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                              .evaluate(coordgpref, time, i);
             }
 

@@ -36,7 +36,7 @@ namespace
     // Create the elements.
     const int dummy_node_ids[2] = {0, 1};
     line_elements.push_back(Teuchos::rcp(new Discret::ELEMENTS::Beam3r(0, 0)));
-    line_elements.back()->SetNodeIds(2, dummy_node_ids);
+    line_elements.back()->set_node_ids(2, dummy_node_ids);
     volume_elements.push_back(Teuchos::rcp(new Discret::ELEMENTS::SoHex8(1, 0)));
     volume_elements.push_back(Teuchos::rcp(new Discret::ELEMENTS::SoHex8(2, 0)));
 
@@ -122,7 +122,7 @@ namespace
     // Create the elements.
     const int dummy_node_ids[2] = {0, 1};
     line_elements.push_back(Teuchos::rcp(new Discret::ELEMENTS::Beam3r(0, 0)));
-    line_elements.back()->SetNodeIds(2, dummy_node_ids);
+    line_elements.back()->set_node_ids(2, dummy_node_ids);
     volume_elements.push_back(Teuchos::rcp(new Discret::ELEMENTS::SoHex8(1, 0)));
     volume_elements.push_back(Teuchos::rcp(new Discret::ELEMENTS::SoHex8(2, 0)));
 
@@ -209,7 +209,7 @@ namespace
     // Create the elements.
     const int dummy_node_ids[2] = {0, 1};
     line_elements.push_back(Teuchos::rcp(new Discret::ELEMENTS::Beam3r(0, 0)));
-    line_elements.back()->SetNodeIds(2, dummy_node_ids);
+    line_elements.back()->set_node_ids(2, dummy_node_ids);
     volume_elements.push_back(Teuchos::rcp(new Discret::ELEMENTS::SoHex27(1, 0)));
 
     // Positional and tangent DOFs of the line(s).
@@ -327,7 +327,7 @@ namespace
     // Create the elements.
     const int dummy_node_ids[2] = {0, 1};
     line_elements.push_back(Teuchos::rcp(new Discret::ELEMENTS::Beam3r(0, 0)));
-    line_elements.back()->SetNodeIds(2, dummy_node_ids);
+    line_elements.back()->set_node_ids(2, dummy_node_ids);
     volume_elements.push_back(Teuchos::rcp(new Discret::ELEMENTS::SoTet10(1, 0)));
 
     // Positional and tangent DOFs of the line(s).
@@ -397,7 +397,7 @@ namespace
     // would need a different numbering.
     const int dummy_node_ids[2] = {0, 1};
     line_elements.push_back(Teuchos::rcp(new Discret::ELEMENTS::Beam3r(1, 0)));
-    line_elements.back()->SetNodeIds(2, dummy_node_ids);
+    line_elements.back()->set_node_ids(2, dummy_node_ids);
     volume_elements.push_back(Teuchos::rcp(new Discret::ELEMENTS::Nurbs::SoNurbs27(0, 0)));
 
     // Positional and tangent DOFs of the line(s).
@@ -520,10 +520,10 @@ namespace
       directions_knots->push_back(1.);
       directions_knots->push_back(1.);
       directions_knots->push_back(1.);
-      knot_vector->SetKnots(dir, 0, 2, 6, knotvectortype, directions_knots);
+      knot_vector->set_knots(dir, 0, 2, 6, knotvectortype, directions_knots);
     }
-    knot_vector->FinishKnots(0);
-    structdis->SetKnotVector(knot_vector);
+    knot_vector->finish_knots(0);
+    structdis->set_knot_vector(knot_vector);
 
     // Set the control points.
     std::vector<double> weights(27);
@@ -562,13 +562,13 @@ namespace
       std::vector<double> dummycoord = {0., 0., 0., 0., 0., 0.};
       Teuchos::RCP<Core::Nodes::Node> new_node =
           Teuchos::rcp(new Core::FE::Nurbs::ControlPoint(i_node, dummycoord, weights[i_node], 0));
-      structdis->AddNode(new_node);
+      structdis->add_node(new_node);
       nodes_map[i_node] = new_node;
     }
 
     // Set the nodes in the element.
-    volume_elements.back()->SetNodeIds(27, nodes);
-    volume_elements.back()->BuildNodalPointers(nodes_map);
+    volume_elements.back()->set_node_ids(27, nodes);
+    volume_elements.back()->build_nodal_pointers(nodes_map);
   }
 
   /**
@@ -588,7 +588,7 @@ namespace
     // Create the elements.
     const std::vector<int> dummy_node_ids{0, 1};
     line_elements.push_back(Teuchos::rcp(new Discret::ELEMENTS::Beam3r(0, 0)));
-    line_elements.back()->SetNodeIds(2, dummy_node_ids.data());
+    line_elements.back()->set_node_ids(2, dummy_node_ids.data());
     volume_elements.push_back(Teuchos::rcp(new Discret::ELEMENTS::SoHex8(1, 0)));
 
     // Positional and tangent DOFs of the line(s).

@@ -47,7 +47,7 @@ int Core::LinAlg::LinalgProjectedOperator::Apply(
   {
     // int ierr2=0;
     /*ierr2 = */
-    projector_->ApplyPT(Y);
+    projector_->apply_pt(Y);
   }
 
   return (ierr);

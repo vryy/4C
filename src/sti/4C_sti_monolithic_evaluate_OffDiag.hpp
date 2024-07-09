@@ -117,10 +117,10 @@ namespace STI
     }
 
     //! ScaTra subproblem
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> sca_tra_field() { return scatra_->ScaTraField(); }
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> sca_tra_field() { return scatra_->sca_tra_field(); }
 
     //! Thermo subproblem
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> thermo_field() { return thermo_->ScaTraField(); }
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> thermo_field() { return thermo_->sca_tra_field(); }
 
    private:
     //! map extractor associated with all degrees of freedom inside temperature field

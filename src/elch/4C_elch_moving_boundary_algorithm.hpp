@@ -45,13 +45,13 @@ namespace ElCh
     void init() override;
 
     /// outer level ELCH time loop
-    void TimeLoop() override;
+    void time_loop() override;
 
     /// read restart data
     void read_restart(int step) override;
 
     /// Add tests to global problem and start tests
-    void TestResults();
+    void test_results();
 
    protected:
     /// start a new time step

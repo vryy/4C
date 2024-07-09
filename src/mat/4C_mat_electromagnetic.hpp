@@ -50,7 +50,7 @@ namespace Mat
         last = mu_
       };
 
-      double GetParameter(int parametername, const int EleId)
+      double get_parameter(int parametername, const int EleId)
       {
         // check if we have an element based value via size
         if (matparams_[parametername]->GlobalLength() == 1)
@@ -83,11 +83,11 @@ namespace Mat
   class ElectromagneticMatType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "ElectromagneticMatType"; }
+    std::string name() const override { return "ElectromagneticMatType"; }
 
-    static ElectromagneticMatType& Instance() { return instance_; };
+    static ElectromagneticMatType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static ElectromagneticMatType instance_;
@@ -113,9 +113,9 @@ namespace Mat
         every class implementing ParObject needs a unique id defined at the
         top of parobject.H (this file) and should return it in this method.
      */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ElectromagneticMatType::Instance().UniqueParObjectId();
+      return ElectromagneticMatType::instance().unique_par_object_id();
     }
 
     /*!
@@ -123,7 +123,7 @@ namespace Mat
 
         Resizes the vector data and stores all information of a class in it.
         The first information to be stored in data has to be the
-        unique parobject id delivered by UniqueParObjectId() which will then
+        unique parobject id delivered by unique_par_object_id() which will then
         identify the exact class on the receiving processor.
 
         \param data (in/out): char vector to store class information
@@ -137,7 +137,7 @@ namespace Mat
         exact copy of an instance of a class on a different processor.
         The first entry in data has to be an integer which is the unique
         parobject id defined at the top of this file and delivered by
-        UniqueParObjectId().
+        unique_par_object_id().
 
         \param data (in) : vector storing all data to be unpacked into this
         instance.
@@ -149,30 +149,33 @@ namespace Mat
     //! @name Access methods
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_electromagneticmat;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new ElectromagneticMat(*this));
     }
 
     /// conductivity
-    double sigma(int eleid = -1) const { return params_->GetParameter(params_->sigma_, eleid); }
+    double sigma(int eleid = -1) const { return params_->get_parameter(params_->sigma_, eleid); }
 
     /// permittivity coefficient
-    double epsilon(int eleid = -1) const { return params_->GetParameter(params_->epsilon_, eleid); }
+    double epsilon(int eleid = -1) const
+    {
+      return params_->get_parameter(params_->epsilon_, eleid);
+    }
 
     /// permeability coefficient
-    double mu(int eleid = -1) const { return params_->GetParameter(params_->mu_, eleid); }
+    double mu(int eleid = -1) const { return params_->get_parameter(params_->mu_, eleid); }
 
 
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     //@}
 

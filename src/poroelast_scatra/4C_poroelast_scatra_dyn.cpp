@@ -22,10 +22,10 @@ FOUR_C_NAMESPACE_OPEN
 
 void poro_scatra_drt()
 {
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
   // 1.- Initialization
-  const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
+  const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
 
   // 2.- Parameter reading
   const Teuchos::ParameterList& poroscatradynparams = problem->poro_scatra_control_params();
@@ -45,16 +45,16 @@ void poro_scatra_drt()
   // 4.- Run of the actual problem.
 
   // 4.1.- Some setup needed for the poroelastic subproblem.
-  poro_scatra->SetupSystem();
+  poro_scatra->setup_system();
 
   // 4.2.- Solve the whole problem
-  poro_scatra->Timeloop();
+  poro_scatra->timeloop();
 
   // 4.3.- Summarize the performance measurements
   Teuchos::TimeMonitor::summarize();
 
   // 5. - perform the result test
-  poro_scatra->TestResults(comm);
+  poro_scatra->test_results(comm);
 }
 
 FOUR_C_NAMESPACE_CLOSE

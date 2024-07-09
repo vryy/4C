@@ -35,31 +35,31 @@ namespace Mat
       //! @{
 
       //! return Density  \f$ \rho \f$
-      double Density() const { return density_; };
+      double density() const { return density_; };
       //! return Poisson's ratio \f$ \nu \f$
-      double Nue() const { return nue_; };
+      double nue() const { return nue_; };
       //! return Young's modulus  \f$ E \f$
-      double Young() const { return young_; };
+      double young() const { return young_; };
       //! return temperature \f$ T \f$
-      double Temperature() const { return temperature_; };
+      double temperature() const { return temperature_; };
       //! return plastic shear strain rate pre-exp-factor \f$ A \f$
-      double PreExpFac() const { return pre_exp_fac_; };
+      double pre_exp_fac() const { return pre_exp_fac_; };
       //! return activation energy \f$ Q \f$
-      double ActivationEnergy() const { return activation_energy_; };
+      double activation_energy() const { return activation_energy_; };
       //! return gas constant \f$ R \f$
-      double GasConstant() const { return gas_constant_; };
+      double gas_constant() const { return gas_constant_; };
       //! return strain-rate-sensitivity \f$ m \f$
       double strain_rate_sensitivity() const { return strain_rate_sensitivity_; };
       //! return flow resistance pre-factor \f$ H_0 \f$
-      double FlowResPreFac() const { return flow_res_pre_fac_; };
+      double flow_res_pre_fac() const { return flow_res_pre_fac_; };
       //! return initial flow resistance \f$ S^0 \f$
-      double InitFlowRes() const { return init_flow_res_; };
+      double init_flow_res() const { return init_flow_res_; };
       //! return flow resistance exponent \f$ a \f$
-      double FlowResExp() const { return flow_res_exp_; };
+      double flow_res_exp() const { return flow_res_exp_; };
       //! return flow resistance saturation factor \f$ S_* \f$
-      double FlowResSatFac() const { return flow_res_sat_fac_; };
+      double flow_res_sat_fac() const { return flow_res_sat_fac_; };
       //! return flow resistance saturation exponent \f$ b \f$
-      double FlowResSatExp() const { return flow_res_sat_exp_; };
+      double flow_res_sat_exp() const { return flow_res_sat_exp_; };
 
       //! @}
 
@@ -101,11 +101,11 @@ namespace Mat
   class ViscoPlasticNoYieldSurfaceType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "ViscoPlasticNoYieldSurfaceType"; }
+    std::string name() const override { return "ViscoPlasticNoYieldSurfaceType"; }
 
-    static ViscoPlasticNoYieldSurfaceType& Instance() { return instance_; };
+    static ViscoPlasticNoYieldSurfaceType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static ViscoPlasticNoYieldSurfaceType instance_;
@@ -140,9 +140,9 @@ namespace Mat
     //! construct the material object given material parameters
     explicit ViscoPlasticNoYieldSurface(Mat::PAR::ViscoPlasticNoYieldSurface* params);
 
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ViscoPlasticNoYieldSurfaceType::Instance().UniqueParObjectId();
+      return ViscoPlasticNoYieldSurfaceType::instance().unique_par_object_id();
     }
 
     void pack(Core::Communication::PackBuffer& data) const override;
@@ -150,18 +150,18 @@ namespace Mat
     void unpack(const std::vector<char>& data) override;
 
    private:
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_vp_no_yield_surface;
     }
 
-    void ValidKinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Inpar::Solid::KinemType kinem) override
     {
       if (kinem != Inpar::Solid::KinemType::nonlinearTotLag)
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new ViscoPlasticNoYieldSurface(*this));
     }
@@ -310,9 +310,9 @@ namespace Mat
 
     bool needs_defgrd() override { return true; };
 
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
-    double Density() const override { return params_->Density(); }
+    double density() const override { return params_->density(); }
 
     //! material parameters
     Mat::PAR::ViscoPlasticNoYieldSurface* params_;

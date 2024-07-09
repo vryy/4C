@@ -83,7 +83,7 @@ void Solid::TimeInt::NoxInterface::check_init_setup() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::Integrator& Solid::TimeInt::NoxInterface::ImplInt()
+Solid::Integrator& Solid::TimeInt::NoxInterface::impl_int()
 {
   check_init_setup();
   return *int_ptr_;
@@ -101,7 +101,7 @@ bool Solid::TimeInt::NoxInterface::computeF(
   /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */
   Teuchos::RCP<Epetra_Vector> rhs_ptr = Teuchos::rcp(&F, false);
-  dbc_ptr_->ApplyDirichletToRhs(rhs_ptr);
+  dbc_ptr_->apply_dirichlet_to_rhs(rhs_ptr);
 
   return true;
 }
@@ -140,7 +140,7 @@ bool Solid::TimeInt::NoxInterface::compute_f_and_jacobian(
   /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */
   Teuchos::RCP<Epetra_Vector> rhs_ptr = Teuchos::rcp(&rhs, false);
-  dbc_ptr_->ApplyDirichletToRhs(rhs_ptr);
+  dbc_ptr_->apply_dirichlet_to_rhs(rhs_ptr);
 
   /* We do not consider the jacobian DBC at this point. The Dirichlet conditions
    * are applied inside the NOX::Nln::LinearSystem::applyJacobianInverse()
@@ -170,7 +170,7 @@ bool Solid::TimeInt::NoxInterface::compute_correction_system(
   /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */
   Teuchos::RCP<Epetra_Vector> rhs_ptr = Teuchos::rcpFromRef(rhs);
-  dbc_ptr_->ApplyDirichletToRhs(rhs_ptr);
+  dbc_ptr_->apply_dirichlet_to_rhs(rhs_ptr);
 
   return true;
 }
@@ -601,7 +601,7 @@ double Solid::TimeInt::NoxInterface::calc_ref_norm_force()
 {
   check_init_setup();
   const ::NOX::Epetra::Vector::NormType& nox_normtype =
-      timint_ptr_->get_data_sdyn().GetNoxNormType();
+      timint_ptr_->get_data_sdyn().get_nox_norm_type();
   return int_ptr_->calc_ref_norm_force(nox_normtype);
 }
 
@@ -654,14 +654,14 @@ void Solid::TimeInt::NoxInterface::get_dofs_from_elements(
 
   for (int egid : my_ele_gids)
   {
-    Core::Elements::Element* ele = discret_ptr->gElement(egid);
-    Core::Nodes::Node** nodes = ele->Nodes();
+    Core::Elements::Element* ele = discret_ptr->g_element(egid);
+    Core::Nodes::Node** nodes = ele->nodes();
 
     for (int i = 0; i < ele->num_node(); ++i)
     {
-      if (nodes[i]->Owner() != gstate_ptr_->get_comm().MyPID()) continue;
+      if (nodes[i]->owner() != gstate_ptr_->get_comm().MyPID()) continue;
 
-      const std::vector<int> ndofs(discret_ptr->Dof(0, nodes[i]));
+      const std::vector<int> ndofs(discret_ptr->dof(0, nodes[i]));
       my_ele_dofs.insert(ndofs.begin(), ndofs.end());
     }
   }

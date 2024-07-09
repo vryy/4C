@@ -401,7 +401,7 @@ namespace GEOMETRYPAIR
     static void set(
         ShapeFunctionData<t_nurbs9>& shape_function_data, const Core::Elements::Element* element)
     {
-      const auto* discretization = Global::Problem::Instance()->GetDis("structure").get();
+      const auto* discretization = Global::Problem::instance()->get_dis("structure").get();
       if (dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(discretization) == nullptr)
         FOUR_C_THROW(
             "Evaluation of the shape function data for nurbs requires a valid nurbs "
@@ -417,7 +417,7 @@ namespace GEOMETRYPAIR
       std::vector<Core::LinAlg::SerialDenseVector> my_parent_knots(3);
       shape_function_data.myknots_.resize(2);
       const bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(face_element,
-          face_element->FaceMasterNumber(), face_element->ParentElementId(), *(discretization),
+          face_element->face_master_number(), face_element->parent_element_id(), *(discretization),
           my_parent_knots, shape_function_data.myknots_, shape_function_data.weights_,
           shape_function_data.surface_normal_factor_);
       if (zero_size)
@@ -434,7 +434,7 @@ namespace GEOMETRYPAIR
     static void set(
         ShapeFunctionData<t_nurbs27>& shape_function_data, const Core::Elements::Element* element)
     {
-      const auto* discretization = Global::Problem::Instance()->GetDis("structure").get();
+      const auto* discretization = Global::Problem::instance()->get_dis("structure").get();
       if (dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(discretization) == nullptr)
         FOUR_C_THROW(
             "Evaluation of the shape function data for nurbs requires a valid nurbs "
@@ -492,7 +492,7 @@ namespace GEOMETRYPAIR
   struct ElementDataToDouble
   {
     template <typename ScalarType>
-    static GEOMETRYPAIR::ElementData<ElementType, double> ToDouble(
+    static GEOMETRYPAIR::ElementData<ElementType, double> to_double(
         const GEOMETRYPAIR::ElementData<ElementType, ScalarType>& element_data)
     {
       auto element_data_double = ElementData<ElementType, double>();
@@ -511,7 +511,7 @@ namespace GEOMETRYPAIR
       typename std::enable_if<IsSurfaceAveragedNormalsElement<ElementType>::value_>::type>
   {
     template <typename ScalarType>
-    static GEOMETRYPAIR::ElementData<ElementType, double> ToDouble(
+    static GEOMETRYPAIR::ElementData<ElementType, double> to_double(
         const GEOMETRYPAIR::ElementData<ElementType, ScalarType>& element_data)
     {
       auto element_data_double = ElementData<ElementType, double>();

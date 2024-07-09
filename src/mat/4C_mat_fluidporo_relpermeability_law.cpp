@@ -24,19 +24,19 @@ Mat::PAR::FluidPoroRelPermeabilityLaw::create_rel_permeability_law(int matID)
   Mat::PAR::FluidPoroRelPermeabilityLaw* relpermeabilitylaw = nullptr;
 
   // retrieve problem instance to read from
-  const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
 
   // for the sake of safety
-  if (Global::Problem::Instance(probinst)->Materials() == Teuchos::null)
+  if (Global::Problem::instance(probinst)->materials() == Teuchos::null)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
-  if (Global::Problem::Instance(probinst)->Materials()->Num() == 0)
+  if (Global::Problem::instance(probinst)->materials()->num() == 0)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(matID);
+  auto* curmat = Global::Problem::instance(probinst)->materials()->parameter_by_id(matID);
 
-  switch (curmat->Type())
+  switch (curmat->type())
   {
     case Core::Materials::m_fluidporo_relpermeabilitylaw_constant:
     {
@@ -49,7 +49,7 @@ Mat::PAR::FluidPoroRelPermeabilityLaw::create_rel_permeability_law(int matID)
       break;
     }
     default:
-      FOUR_C_THROW("invalid material for permeability law %d", curmat->Type());
+      FOUR_C_THROW("invalid material for permeability law %d", curmat->type());
       break;
   }
 

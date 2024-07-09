@@ -46,10 +46,10 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  discret_ = Global::Problem::Instance(microdisnum_)->GetDis("structure");
+  discret_ = Global::Problem::instance(microdisnum_)->get_dis("structure");
 
   // set degrees of freedom in the discretization
-  if (!discret_->Filled()) discret_->fill_complete();
+  if (!discret_->filled()) discret_->fill_complete();
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -59,12 +59,12 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   // while other parameters (like output options, convergence checks)
   // can be used individually from the microscale input file
   const Teuchos::ParameterList& sdyn_micro =
-      Global::Problem::Instance(microdisnum_)->structural_dynamic_params();
+      Global::Problem::instance(microdisnum_)->structural_dynamic_params();
   const Teuchos::ParameterList& sdyn_macro =
-      Global::Problem::Instance()->structural_dynamic_params();
+      Global::Problem::instance()->structural_dynamic_params();
 
   // i/o options should be read from the corresponding micro-file
-  const Teuchos::ParameterList& ioflags = Global::Problem::Instance(microdisnum_)->IOParams();
+  const Teuchos::ParameterList& ioflags = Global::Problem::instance(microdisnum_)->io_params();
 
   // -------------------------------------------------------------------
   // create a solver
@@ -78,11 +78,11 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
         "DYNAMIC to a valid number!");
 
   solver_ = Teuchos::rcp(new Core::LinAlg::Solver(
-      Global::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), discret_->Comm(),
-      Global::Problem::Instance()->solver_params_callback(),
+      Global::Problem::instance(microdisnum_)->solver_params(linsolvernumber), discret_->get_comm(),
+      Global::Problem::instance()->solver_params_callback(),
       Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::Instance()->IOParams(), "VERBOSITY")));
-  discret_->compute_null_space_if_necessary(solver_->Params());
+          Global::Problem::instance()->io_params(), "VERBOSITY")));
+  discret_->compute_null_space_if_necessary(solver_->params());
 
   Inpar::Solid::PredEnum pred =
       Core::UTILS::IntegralValue<Inpar::Solid::PredEnum>(sdyn_micro, "PREDICT");
@@ -98,7 +98,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   dt_ = sdyn_macro.get<double>("TIMESTEP");
   // broadcast important data that must be consistent on macro and micro scale (master and
   // supporting procs)
-  discret_->Comm().Broadcast(&dt_, 1, 0);
+  discret_->get_comm().Broadcast(&dt_, 1, 0);
   time_ = 0.0;
   timen_ = time_ + dt_;
   step_ = 0;
@@ -112,7 +112,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   printscreen_ = (ioflags.get<int>("STDOUTEVRY"));
 
 
-  restart_ = Global::Problem::Instance()->restart();
+  restart_ = Global::Problem::instance()->restart();
   restartevry_ = sdyn_macro.get<int>("RESTARTEVRY");
   iodisp_ = Core::UTILS::IntegralValue<int>(ioflags, "STRUCT_DISP");
   resevrydisp_ = sdyn_micro.get<int>("RESULTSEVRY");
@@ -133,17 +133,17 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
 
   // broadcast important data that must be consistent on macro and micro scale (master and
   // supporting procs)
-  discret_->Comm().Broadcast(&numstep_, 1, 0);
-  discret_->Comm().Broadcast(&restart_, 1, 0);
-  discret_->Comm().Broadcast(&restartevry_, 1, 0);
+  discret_->get_comm().Broadcast(&numstep_, 1, 0);
+  discret_->get_comm().Broadcast(&restart_, 1, 0);
+  discret_->get_comm().Broadcast(&restartevry_, 1, 0);
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   // -------------------------------------------------------------------
-  if (!discret_->Filled()) discret_->fill_complete();
+  if (!discret_->filled()) discret_->fill_complete();
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  myrank_ = discret_->Comm().MyPID();
+  myrank_ = discret_->get_comm().MyPID();
 
   // -------------------------------------------------------------------
   // create empty matrices
@@ -207,20 +207,20 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
     p.set("total time", timen_);
     p.set("delta time", dt_);
     // set vector values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state("residual displacement", zeros_);
     discret_->set_state("displacement", dis_);
 
     discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 
   // Determine dirichtoggle_ and its inverse since boundary conditions for
   // microscale simulations are due to the MicroBoundary condition
   // (and not Dirichlet BC)
 
-  MultiScale::MicroStatic::DetermineToggle();
-  MultiScale::MicroStatic::SetUpHomogenization();
+  MultiScale::MicroStatic::determine_toggle();
+  MultiScale::MicroStatic::set_up_homogenization();
 
   // reaction force vector at different times
   freactn_ = Core::LinAlg::CreateVector(*pdof_, true);
@@ -238,10 +238,10 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
 
   // create the parameters for the discretization
   discret_->set_state("displacement", dis_);
-  Core::Elements::Element::LocationArray la(discret_->NumDofSets());
-  for (const auto* ele : discret_->MyRowElementRange())
+  Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
+  for (const auto* ele : discret_->my_row_element_range())
   {
-    ele->LocationVector(*discret_, la, false);
+    ele->location_vector(*discret_, la, false);
 
     const auto* solid_ele = dynamic_cast<const Discret::ELEMENTS::Solid*>(ele);
     FOUR_C_THROW_UNLESS(solid_ele,
@@ -255,17 +255,17 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
 
           // integrate density
           my_micro_discretization_density_integration +=
-              solid_material.Density(gp) * integration_factor;
+              solid_material.density(gp) * integration_factor;
         });
   }
-  discret_->ClearState();
+  discret_->clear_state();
 
   // compute volume of all elements
-  discret_->Comm().SumAll(&my_micro_discretization_volume, &V0_, 1);
+  discret_->get_comm().SumAll(&my_micro_discretization_volume, &V0_, 1);
 
   // compute density of all elements
   double micro_discretization_density_integration = 0.0;
-  discret_->Comm().SumAll(
+  discret_->get_comm().SumAll(
       &my_micro_discretization_density_integration, &micro_discretization_density_integration, 1);
 
   density_ = micro_discretization_density_integration / V0_;
@@ -275,12 +275,12 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
 }  // MultiScale::MicroStatic::MicroStatic
 
 
-void MultiScale::MicroStatic::Predictor(Core::LinAlg::Matrix<3, 3>* defgrd)
+void MultiScale::MicroStatic::predictor(Core::LinAlg::Matrix<3, 3>* defgrd)
 {
   if (pred_ == Inpar::Solid::pred_constdis)
-    PredictConstDis(defgrd);
+    predict_const_dis(defgrd);
   else if (pred_ == Inpar::Solid::pred_tangdis)
-    PredictTangDis(defgrd);
+    predict_tang_dis(defgrd);
   else
     FOUR_C_THROW("requested predictor not implemented on the micro-scale");
   return;
@@ -290,15 +290,15 @@ void MultiScale::MicroStatic::Predictor(Core::LinAlg::Matrix<3, 3>* defgrd)
 /*----------------------------------------------------------------------*
  |  do predictor step (public)                               mwgee 03/07|
  *----------------------------------------------------------------------*/
-void MultiScale::MicroStatic::PredictConstDis(Core::LinAlg::Matrix<3, 3>* defgrd)
+void MultiScale::MicroStatic::predict_const_dis(Core::LinAlg::Matrix<3, 3>* defgrd)
 {
   // apply new displacements at DBCs -> this has to be done with the
   // mid-displacements since the given macroscopic deformation
   // gradient is evaluated at the mid-point!
   {
     // disn then also holds prescribed new dirichlet displacements
-    EvaluateMicroBC(defgrd, disn_);
-    discret_->ClearState();
+    evaluate_micro_bc(defgrd, disn_);
+    discret_->clear_state();
   }
 
   //--------------------------------- set EAS internal data if necessary
@@ -306,12 +306,12 @@ void MultiScale::MicroStatic::PredictConstDis(Core::LinAlg::Matrix<3, 3>* defgrd
   // this has to be done only once since the elements will remember
   // their EAS data until the end of the microscale simulation
   // (end of macroscopic iteration step)
-  SetEASData();
+  set_eas_data();
 
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
     // zero out stiffness
-    stiff_->Zero();
+    stiff_->zero();
     // create the parameters for the discretization
     Teuchos::ParameterList p;
     // action for elements
@@ -320,17 +320,17 @@ void MultiScale::MicroStatic::PredictConstDis(Core::LinAlg::Matrix<3, 3>* defgrd
     p.set("total time", timen_);
     p.set("delta time", dt_);
     // set vector values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     disi_->PutScalar(0.0);
     discret_->set_state("residual displacement", disi_);
     discret_->set_state("displacement", disn_);
     fintn_->PutScalar(0.0);  // initialise internal force vector
 
     discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
+    discret_->clear_state();
 
     // complete stiffness matrix
-    stiff_->Complete();
+    stiff_->complete();
 
     // set norm of displacement increments
     normdisi_ = 1.0e6;
@@ -360,7 +360,7 @@ void MultiScale::MicroStatic::PredictConstDis(Core::LinAlg::Matrix<3, 3>* defgrd
 /*----------------------------------------------------------------------*
  |  do predictor step (public)                                  lw 01/09|
  *----------------------------------------------------------------------*/
-void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
+void MultiScale::MicroStatic::predict_tang_dis(Core::LinAlg::Matrix<3, 3>* defgrd)
 {
   // for displacement increments on Dirichlet boundary
   Teuchos::RCP<Epetra_Vector> dbcinc = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
@@ -373,8 +373,8 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
   // gradient is evaluated at the mid-point!
   {
     // dbcinc then also holds prescribed new dirichlet displacements
-    EvaluateMicroBC(defgrd, dbcinc);
-    discret_->ClearState();
+    evaluate_micro_bc(defgrd, dbcinc);
+    discret_->clear_state();
   }
 
   // subtract the displacements of the last converged step
@@ -387,12 +387,12 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
   // this has to be done only once since the elements will remember
   // their EAS data until the end of the microscale simulation
   // (end of macroscopic iteration step)
-  SetEASData();
+  set_eas_data();
 
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
     // zero out stiffness
-    stiff_->Zero();
+    stiff_->zero();
     // create the parameters for the discretization
     Teuchos::ParameterList p;
     // action for elements
@@ -401,17 +401,17 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
     p.set("total time", timen_);
     p.set("delta time", dt_);
     // set vector values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     disi_->PutScalar(0.0);
     discret_->set_state("residual displacement", disi_);
     discret_->set_state("displacement", disn_);
     fintn_->PutScalar(0.0);  // initialise internal force vector
 
     discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 
-  stiff_->Complete();
+  stiff_->complete();
 
   //-------------------------------------------- compute residual forces
   // add static mid-balance
@@ -422,7 +422,7 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
     // linear reactions
     Teuchos::RCP<Epetra_Vector> freact =
         Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
-    stiff_->Multiply(false, *dbcinc, *freact);
+    stiff_->multiply(false, *dbcinc, *freact);
 
     // add linear reaction forces due to prescribed Dirichlet BCs
     fresn_->Update(-1.0, *freact, 1.0);
@@ -436,7 +436,7 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
 
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);
-  stiff_->Complete();
+  stiff_->complete();
   Core::LinAlg::apply_dirichlet_to_system(*stiff_, *disi_, *fresn_, *zeros_, *dirichtoggle_);
 
   // solve for disi_
@@ -445,7 +445,7 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
-  solver_->Solve(stiff_->EpetraMatrix(), disi_, fresn_, solver_params);
+  solver_->solve(stiff_->epetra_matrix(), disi_, fresn_, solver_params);
   solver_->reset();
 
   // store norm of displacement increments
@@ -472,13 +472,13 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
     // go to elements
     discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
     // zero out stiffness
-    stiff_->Zero();
+    stiff_->zero();
     // create the parameters for the discretization
     Teuchos::ParameterList p;
     // action for elements
@@ -487,14 +487,14 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
     p.set("total time", timen_);
     p.set("delta time", dt_);
     // set vector values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     disi_->PutScalar(0.0);
     discret_->set_state("residual displacement", disi_);
     discret_->set_state("displacement", disn_);
     fintn_->PutScalar(0.0);  // initialise internal force vector
 
     discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 
   //-------------------------------------------- compute residual forces
@@ -520,7 +520,7 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
 /*----------------------------------------------------------------------*
  |  do Newton iteration (public)                             mwgee 03/07|
  *----------------------------------------------------------------------*/
-void MultiScale::MicroStatic::FullNewton()
+void MultiScale::MicroStatic::full_newton()
 {
   //=================================================== equilibrium loop
   numiter_ = 0;
@@ -533,12 +533,12 @@ void MultiScale::MicroStatic::FullNewton()
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces (needed for relative convergence
   // check)
-  CalcRefNorms();
+  calc_ref_norms();
 
   Teuchos::Time timer("", true);
   timer.reset();
 
-  while (!Converged() && numiter_ <= maxiter_)
+  while (!converged() && numiter_ <= maxiter_)
   {
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -556,8 +556,8 @@ void MultiScale::MicroStatic::FullNewton()
     }
     solver_params.refactor = true;
     solver_params.reset = numiter_ == 0;
-    solver_->Solve(stiff_->EpetraMatrix(), disi_, fresn_, solver_params);
-    solver_->ResetTolerance();
+    solver_->solve(stiff_->epetra_matrix(), disi_, fresn_, solver_params);
+    solver_->reset_tolerance();
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -566,7 +566,7 @@ void MultiScale::MicroStatic::FullNewton()
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
-      stiff_->Zero();
+      stiff_->zero();
       // create the parameters for the discretization
       Teuchos::ParameterList p;
       // action for elements
@@ -575,7 +575,7 @@ void MultiScale::MicroStatic::FullNewton()
       p.set("total time", timen_);
       p.set("delta time", dt_);
       // set vector values needed by elements
-      discret_->ClearState();
+      discret_->clear_state();
       // we do not need to scale disi_ here with 1-alphaf (cf. strugenalpha), since
       // everything on the microscale "lives" at the pseudo generalized midpoint
       // -> we solve our quasi-static problem there and only update data to the "end"
@@ -585,11 +585,11 @@ void MultiScale::MicroStatic::FullNewton()
       fintn_->PutScalar(0.0);  // initialise internal force vector
 
       discret_->evaluate(p, stiff_, Teuchos::null, fintn_, Teuchos::null, Teuchos::null);
-      discret_->ClearState();
+      discret_->clear_state();
     }
 
     // complete stiffness matrix
-    stiff_->Complete();
+    stiff_->complete();
 
     //------------------------------------------ compute residual forces
     // add static mid-balance
@@ -646,12 +646,12 @@ void MultiScale::MicroStatic::prepare_output()
     p.set<int>("iostrain", iostrain_);
     p.set<int>("ioplstrain", ioplstrain_);
     // set vector values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state("residual displacement", zeros_);
     discret_->set_state("displacement", disn_);
     discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 }
 
@@ -677,7 +677,7 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
 
     Core::Communication::PackBuffer data;
 
-    for (int i = 0; i < discret_->ElementColMap()->NumMyElements(); ++i)
+    for (int i = 0; i < discret_->element_col_map()->NumMyElements(); ++i)
     {
       if ((*lastalpha_)[i] != Teuchos::null)
       {
@@ -688,7 +688,7 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
         Core::Communication::ParObject::add_to_pack(data, *emptyalpha);
       }
     }
-    output->write_vector("alpha", data(), *discret_->ElementColMap());
+    output->write_vector("alpha", data(), *discret_->element_col_map());
   }
 
   //----------------------------------------------------- output results
@@ -711,10 +711,10 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
     switch (iostress_)
     {
       case Inpar::Solid::stress_cauchy:
-        output->write_vector("gauss_cauchy_stresses_xyz", *stress_, *discret_->ElementRowMap());
+        output->write_vector("gauss_cauchy_stresses_xyz", *stress_, *discret_->element_row_map());
         break;
       case Inpar::Solid::stress_2pk:
-        output->write_vector("gauss_2PK_stresses_xyz", *stress_, *discret_->ElementRowMap());
+        output->write_vector("gauss_2PK_stresses_xyz", *stress_, *discret_->element_row_map());
         break;
       case Inpar::Solid::stress_none:
         break;
@@ -726,10 +726,10 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
     switch (iostrain_)
     {
       case Inpar::Solid::strain_ea:
-        output->write_vector("gauss_EA_strains_xyz", *strain_, *discret_->ElementRowMap());
+        output->write_vector("gauss_EA_strains_xyz", *strain_, *discret_->element_row_map());
         break;
       case Inpar::Solid::strain_gl:
-        output->write_vector("gauss_GL_strains_xyz", *strain_, *discret_->ElementRowMap());
+        output->write_vector("gauss_GL_strains_xyz", *strain_, *discret_->element_row_map());
         break;
       case Inpar::Solid::strain_none:
         break;
@@ -741,10 +741,10 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
     switch (ioplstrain_)
     {
       case Inpar::Solid::strain_ea:
-        output->write_vector("gauss_pl_EA_strains_xyz", *plstrain_, *discret_->ElementRowMap());
+        output->write_vector("gauss_pl_EA_strains_xyz", *plstrain_, *discret_->element_row_map());
         break;
       case Inpar::Solid::strain_gl:
-        output->write_vector("gauss_pl_GL_strains_xyz", *plstrain_, *discret_->ElementRowMap());
+        output->write_vector("gauss_pl_GL_strains_xyz", *plstrain_, *discret_->element_row_map());
         break;
       case Inpar::Solid::strain_none:
         break;
@@ -786,24 +786,24 @@ void MultiScale::MicroStatic::read_restart(int step, Teuchos::RCP<Epetra_Vector>
 }
 
 
-void MultiScale::MicroStatic::EvaluateMicroBC(
+void MultiScale::MicroStatic::evaluate_micro_bc(
     Core::LinAlg::Matrix<3, 3>* defgrd, Teuchos::RCP<Epetra_Vector> disp)
 {
   std::vector<Core::Conditions::Condition*> conds;
-  discret_->GetCondition("MicroBoundary", conds);
+  discret_->get_condition("MicroBoundary", conds);
   for (auto& cond : conds)
   {
-    const auto nodeids = *cond->GetNodes();
+    const auto nodeids = *cond->get_nodes();
 
     for (int nodeid : nodeids)
     {
       // do only nodes in my row map
-      if (!discret_->NodeRowMap()->MyGID(nodeid)) continue;
-      Core::Nodes::Node* actnode = discret_->gNode(nodeid);
+      if (!discret_->node_row_map()->MyGID(nodeid)) continue;
+      Core::Nodes::Node* actnode = discret_->g_node(nodeid);
       if (!actnode) FOUR_C_THROW("Cannot find global node %d", nodeid);
 
       // nodal coordinates
-      const auto& x = actnode->X();
+      const auto& x = actnode->x();
 
       // boundary displacements are prescribed via the macroscopic
       // deformation gradient
@@ -827,7 +827,7 @@ void MultiScale::MicroStatic::EvaluateMicroBC(
         disp_prescribed[k] = dis;
       }
 
-      std::vector<int> dofs = discret_->Dof(actnode);
+      std::vector<int> dofs = discret_->dof(actnode);
 
       for (int l = 0; l < 3; ++l)
       {
@@ -878,20 +878,20 @@ void MultiScale::MicroStatic::set_time(
 // Teuchos::RCP<Epetra_Vector> MultiScale::MicroStatic::ReturnNewDism() { return Teuchos::rcp(new
 // Epetra_Vector(*dism_)); }
 
-void MultiScale::MicroStatic::ClearState()
+void MultiScale::MicroStatic::clear_state()
 {
   dis_ = Teuchos::null;
   disn_ = Teuchos::null;
 }
 
-void MultiScale::MicroStatic::SetEASData()
+void MultiScale::MicroStatic::set_eas_data()
 {
-  for (int lid = 0; lid < discret_->ElementRowMap()->NumMyElements(); ++lid)
+  for (int lid = 0; lid < discret_->element_row_map()->NumMyElements(); ++lid)
   {
-    Core::Elements::Element* actele = discret_->lRowElement(lid);
+    Core::Elements::Element* actele = discret_->l_row_element(lid);
 
-    if (actele->ElementType() == Discret::ELEMENTS::SoHex8Type::Instance() or
-        actele->ElementType() == Discret::ELEMENTS::SoShw6Type::Instance())
+    if (actele->element_type() == Discret::ELEMENTS::SoHex8Type::instance() or
+        actele->element_type() == Discret::ELEMENTS::SoShw6Type::instance())
     {
       // create the parameters for the discretization
       Teuchos::ParameterList p;
@@ -965,7 +965,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
       P(i, j) /= V0_;
       // sum P(i,j) over the microdis
       double sum = 0.0;
-      discret_->Comm().SumAll(&(P(i, j)), &sum, 1);
+      discret_->get_comm().SumAll(&(P(i, j)), &sum, 1);
       P(i, j) = sum;
     }
   }
@@ -1007,7 +1007,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
     // make a copy
     stiff_dirich_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*stiff_));
 
-    stiff_->ApplyDirichlet(*dirichtoggle_);
+    stiff_->apply_dirichlet(*dirichtoggle_);
 
     // use solver blocks for structure
     // get the solver number used for structural solver
@@ -1017,19 +1017,19 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
 
     // get solver parameter list of linear solver
     const Teuchos::ParameterList& solverparams =
-        Global::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber);
+        Global::Problem::instance(microdisnum_)->solver_params(linsolvernumber);
 
     const auto solvertype =
         Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
 
     // create solver
     Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(solverparams,
-        discret_->Comm(), Global::Problem::Instance()->solver_params_callback(),
+        discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
         Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-            Global::Problem::Instance()->IOParams(), "VERBOSITY")));
+            Global::Problem::instance()->io_params(), "VERBOSITY")));
 
     // prescribe rigid body modes
-    discret_->compute_null_space_if_necessary(solver->Params());
+    discret_->compute_null_space_if_necessary(solver->params());
 
     Teuchos::RCP<Epetra_MultiVector> iterinc = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap, 9));
     iterinc->PutScalar(0.0);
@@ -1042,7 +1042,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
         Core::LinAlg::SolverParams solver_params;
         solver_params.refactor = true;
         solver_params.reset = true;
-        solver->Solve(stiff_->EpetraOperator(), iterinc, rhs_, solver_params);
+        solver->solve(stiff_->epetra_operator(), iterinc, rhs_, solver_params);
         break;
       }
       case Core::LinearSolver::SolverType::superlu:
@@ -1054,7 +1054,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
           Core::LinAlg::SolverParams solver_params;
           solver_params.refactor = true;
           solver_params.reset = true;
-          solver->Solve(stiff_->EpetraOperator(), Teuchos::rcp(((*iterinc)(i)), false),
+          solver->solve(stiff_->epetra_operator(), Teuchos::rcp(((*iterinc)(i)), false),
               Teuchos::rcp(((*rhs_)(i)), false), solver_params);
         }
         break;
@@ -1067,7 +1067,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
     }
 
     Teuchos::RCP<Epetra_MultiVector> temp = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap, 9));
-    stiff_dirich_->Multiply(false, *iterinc, *temp);
+    stiff_dirich_->multiply(false, *iterinc, *temp);
 
     Epetra_MultiVector fexp(*pdof_, 9);
     int err = fexp.Import(*temp, *importp_, Insert);
@@ -1093,9 +1093,9 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
 
     // sum result of matrix-matrix product over procs
     std::vector<double> sum(81, 0.0);
-    discret_->Comm().SumAll(val.data(), sum.data(), 81);
+    discret_->get_comm().SumAll(val.data(), sum.data(), 81);
 
-    if (discret_->Comm().MyPID() == 0)
+    if (discret_->get_comm().MyPID() == 0)
     {
       // write as a 9x9 matrix
       for (int i = 0; i < 9; i++)
@@ -1109,7 +1109,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
       // gradient into a constitutive tensor relating second
       // Piola-Kirchhoff stresses to Green-Lagrange strains.
 
-      ConvertMat(cmatpf, F_inv, *stress, *cmat);
+      convert_mat(cmatpf, F_inv, *stress, *cmat);
     }
 
     // after having constructed the stiffness matrix, this need not be
@@ -1124,7 +1124,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
 
 void MultiScale::stop_np_multiscale()
 {
-  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
   int task[2] = {9, 0};
   subcomm->Broadcast(task, 2, 0);
 }
@@ -1134,7 +1134,7 @@ void MultiScale::MicroStaticParObject::pack(Core::Communication::PackBuffer& dat
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
-  add_to_pack(data, UniqueParObjectId());
+  add_to_pack(data, unique_par_object_id());
 
   const auto* micro_data = MultiScale::MicroStaticParObject::get_micro_static_data_ptr();
   add_to_pack(data, micro_data->gp_);
@@ -1150,7 +1150,7 @@ void MultiScale::MicroStaticParObject::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   MultiScale::MicroStaticParObject::MicroStaticData micro_data{};
   extract_from_pack(position, data, micro_data.gp_);
@@ -1160,7 +1160,7 @@ void MultiScale::MicroStaticParObject::unpack(const std::vector<char>& data)
   extract_from_pack(position, data, micro_data.defgrd_);
   extract_from_pack(position, data, micro_data.stress_);
   extract_from_pack(position, data, micro_data.cmat_);
-  SetMicroStaticData(micro_data);
+  set_micro_static_data(micro_data);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -1168,7 +1168,7 @@ void MultiScale::MicroStaticParObject::unpack(const std::vector<char>& data)
 
 MultiScale::MicroStaticParObjectType MultiScale::MicroStaticParObjectType::instance_;
 
-Core::Communication::ParObject* MultiScale::MicroStaticParObjectType::Create(
+Core::Communication::ParObject* MultiScale::MicroStaticParObjectType::create(
     const std::vector<char>& data)
 {
   auto* micro = new MultiScale::MicroStaticParObject();

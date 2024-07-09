@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Core::IO::MeshReader::MeshReader(
     Core::IO::DatFileReader& reader, std::string node_section_name, MeshReaderParameters parameters)
-    : comm_(reader.Comm()),
+    : comm_(reader.get_comm()),
       reader_(reader),
       node_section_name_(std::move(node_section_name)),
       parameters_(std::move(parameters))
@@ -43,7 +43,7 @@ Core::IO::MeshReader::MeshReader(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::MeshReader::AddAdvancedReader(Teuchos::RCP<Core::FE::Discretization> dis,
+void Core::IO::MeshReader::add_advanced_reader(Teuchos::RCP<Core::FE::Discretization> dis,
     const Core::IO::DatFileReader& reader, const std::string& sectionname,
     const Core::IO::GeometryType geometrysource, const std::string* geofilepath)
 {
@@ -77,7 +77,7 @@ void Core::IO::MeshReader::AddAdvancedReader(Teuchos::RCP<Core::FE::Discretizati
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::MeshReader::ReadAndPartition()
+void Core::IO::MeshReader::read_and_partition()
 {
   // We need to track the max global node ID to offset node numbering and for sanity checks
   int max_node_id = 0;
@@ -106,7 +106,7 @@ void Core::IO::MeshReader::read_mesh_from_dat_file(int& max_node_id)
   TEUCHOS_FUNC_TIME_MONITOR("Core::IO::MeshReader::read_mesh_from_dat_file");
 
   // read element information
-  for (auto& element_reader : element_readers_) element_reader.ReadAndDistribute();
+  for (auto& element_reader : element_readers_) element_reader.read_and_distribute();
 
   // read nodes based on the element information
   ReadNodes(reader_, node_section_name_, element_readers_, max_node_id);
@@ -122,15 +122,15 @@ void Core::IO::MeshReader::rebalance()
   for (size_t i = 0; i < element_readers_.size(); i++)
   {
     // global node ids --- this will be a fully redundant vector!
-    int numnodes = static_cast<int>(element_readers_[i].GetUniqueNodes().size());
+    int numnodes = static_cast<int>(element_readers_[i].get_unique_nodes().size());
     comm_->Broadcast(&numnodes, 1, 0);
 
-    const auto discret = element_readers_[i].GetDis();
+    const auto discret = element_readers_[i].get_dis();
 
     // We want to be able to read empty fields. If we have such a beast
     // just skip the building of the node  graph and do a proper initialization
     if (numnodes)
-      graph_[i] = Core::Rebalance::BuildGraph(discret, element_readers_[i].GetRowElements());
+      graph_[i] = Core::Rebalance::BuildGraph(discret, element_readers_[i].get_row_elements());
     else
       graph_[i] = Teuchos::null;
 
@@ -173,7 +173,7 @@ void Core::IO::MeshReader::rebalance()
           colmap = Teuchos::rcp(new Epetra_Map(-1, graph_[i]->ColMap().NumMyElements(),
               graph_[i]->ColMap().MyGlobalElements(), 0, *comm_));
 
-          discret->Redistribute(*rowmap, *colmap, false, false, false);
+          discret->redistribute(*rowmap, *colmap, false, false, false);
 
           Teuchos::RCP<Epetra_MultiVector> coordinates = discret->build_node_coordinates();
 
@@ -191,7 +191,7 @@ void Core::IO::MeshReader::rebalance()
           colmap = Teuchos::rcp(new Epetra_Map(-1, graph_[i]->ColMap().NumMyElements(),
               graph_[i]->ColMap().MyGlobalElements(), 0, *comm_));
 
-          discret->Redistribute(*rowmap, *colmap, true, true, false);
+          discret->redistribute(*rowmap, *colmap, true, true, false);
 
           Teuchos::RCP<const Epetra_CrsGraph> enriched_graph =
               Core::Rebalance::BuildMonolithicNodeGraph(*discret,
@@ -212,7 +212,7 @@ void Core::IO::MeshReader::rebalance()
       rowmap = colmap = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
     }
 
-    discret->Redistribute(*rowmap, *colmap, false, false, false);
+    discret->redistribute(*rowmap, *colmap, false, false, false);
 
     Core::Rebalance::UTILS::print_parallel_distribution(*discret);
   }
@@ -230,7 +230,7 @@ void Core::IO::MeshReader::create_inline_mesh(int& max_node_id)
 
     domain_reader.create_partitioned_mesh(max_node_id);
     domain_reader.complete();
-    max_node_id = domain_reader.MyDis()->NodeRowMap()->MaxAllGID() + 1;
+    max_node_id = domain_reader.my_dis()->node_row_map()->MaxAllGID() + 1;
   }
 }
 

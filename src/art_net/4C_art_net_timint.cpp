@@ -47,7 +47,7 @@ Arteries::TimInt::TimInt(Teuchos::RCP<Core::FE::Discretization> actdis, const in
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
-  myrank_ = discret_->Comm().MyPID();
+  myrank_ = discret_->get_comm().MyPID();
 
   // -------------------------------------------------------------------
   // get the basic parameters first
@@ -74,12 +74,12 @@ void Arteries::TimInt::init(const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname)
 {
   solver_ = Teuchos::rcp(
-      new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(linsolvernumber_),
-          discret_->Comm(), Global::Problem::Instance()->solver_params_callback(),
+      new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber_),
+          discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
           Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::Instance()->IOParams(), "VERBOSITY")));
+              Global::Problem::instance()->io_params(), "VERBOSITY")));
 
-  discret_->compute_null_space_if_necessary(solver_->Params());
+  discret_->compute_null_space_if_necessary(solver_->params());
 
   return;
 }
@@ -94,7 +94,7 @@ void Arteries::TimInt::init(const Teuchos::ParameterList& globaltimeparams,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::TimInt::Integrate(
+void Arteries::TimInt::integrate(
     bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
   coupledTo3D_ = CoupledTo3D;
@@ -107,7 +107,7 @@ void Arteries::TimInt::Integrate(
   // Prepare the loop
   prepare_time_loop();
 
-  TimeLoop(CoupledTo3D, CouplingParams);
+  time_loop(CoupledTo3D, CouplingParams);
 
   // print the results of time measurements
   if (!coupledTo3D_)
@@ -143,7 +143,7 @@ void Arteries::TimInt::prepare_time_loop()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::TimInt::TimeLoop(
+void Arteries::TimInt::time_loop(
     bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   coupledTo3D_ = CoupledTo3D;
@@ -175,14 +175,14 @@ void Arteries::TimInt::TimeLoop(
       }
     }
 
-    Solve(CouplingTo3DParams);
+    solve(CouplingTo3DParams);
 
     // -------------------------------------------------------------------
     //                         Solve for the scalar transport
     // -------------------------------------------------------------------
     if (solvescatra_)
     {
-      SolveScatra();
+      solve_scatra();
     }
 
 
@@ -190,7 +190,7 @@ void Arteries::TimInt::TimeLoop(
     //                         update solution
     //        current solution becomes old solution of next timestep
     // -------------------------------------------------------------------
-    TimeUpdate();
+    time_update();
 
     // -------------------------------------------------------------------
     //  lift'n'drag forces, statistics time sample and output of solution

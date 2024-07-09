@@ -38,10 +38,10 @@ namespace FS3I
     void setup() override;
 
     /// timeloop of coupled problem
-    void Timeloop() override;
+    void timeloop() override;
 
     /// FPSI step
-    void DoFPSIStep();
+    void do_fpsi_step();
 
     /// Scatra step
     void do_scatra_step();

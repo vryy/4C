@@ -49,14 +49,14 @@ namespace ScaTra
     if (timeint_genalpha != nullptr)
     {
       is_genalpha_ = true;
-      phiaf_ = timeint_genalpha->Phiaf();
+      phiaf_ = timeint_genalpha->phiaf();
     }
 
     // determine number of modes
     // number of modes equal to number of elements in one spatial direction
     // this does not yield the correct value
     // nummodes_ = (int) pow((double) discret_->NumGlobalElements(),1.0/3.0);
-    switch (discret_->NumGlobalElements())
+    switch (discret_->num_global_elements())
     {
       case 512:
       {
@@ -95,7 +95,7 @@ namespace ScaTra
       }
       default:
       {
-        FOUR_C_THROW("Set problem size! %i", discret_->NumGlobalElements());
+        FOUR_C_THROW("Set problem size! %i", discret_->num_global_elements());
         break;
       }
     }
@@ -107,24 +107,24 @@ namespace ScaTra
     // the criterion allows differences in coordinates by 1e-9
     std::set<double, LineSortCriterion> coords;
     // loop all nodes and store x1-coordinate
-    for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+    for (int inode = 0; inode < discret_->num_my_row_nodes(); inode++)
     {
-      Core::Nodes::Node* node = discret_->lRowNode(inode);
-      if ((node->X()[1] < 2e-9 && node->X()[1] > -2e-9) and
-          (node->X()[2] < 2e-9 && node->X()[2] > -2e-9))
-        coords.insert(node->X()[0]);
+      Core::Nodes::Node* node = discret_->l_row_node(inode);
+      if ((node->x()[1] < 2e-9 && node->x()[1] > -2e-9) and
+          (node->x()[2] < 2e-9 && node->x()[2] > -2e-9))
+        coords.insert(node->x()[0]);
     }
 
     // communicate coordinates to all procs via round Robin loop
     {
-      int myrank = discret_->Comm().MyPID();
-      int numprocs = discret_->Comm().NumProc();
+      int myrank = discret_->get_comm().MyPID();
+      int numprocs = discret_->get_comm().NumProc();
 
       std::vector<char> sblock;
       std::vector<char> rblock;
 
       // create an exporter for point to point communication
-      Core::Communication::Exporter exporter(discret_->Comm());
+      Core::Communication::Exporter exporter(discret_->get_comm());
 
       // communicate coordinates
       for (int np = 0; np < numprocs; ++np)
@@ -152,18 +152,18 @@ namespace ScaTra
 
         // receive from predecessor
         frompid = (myrank + numprocs - 1) % numprocs;
-        exporter.ReceiveAny(frompid, tag, rblock, length);
+        exporter.receive_any(frompid, tag, rblock, length);
 
         if (tag != (myrank + numprocs - 1) % numprocs)
         {
           FOUR_C_THROW("received wrong message (ReceiveAny)");
         }
 
-        exporter.Wait(request);
+        exporter.wait(request);
 
         {
           // for safety
-          exporter.Comm().Barrier();
+          exporter.get_comm().Barrier();
         }
 
         // unpack received block into set of all coordinates
@@ -228,7 +228,7 @@ namespace ScaTra
   /*--------------------------------------------------------------*
    | initialize energy spectrum by initial field  rasthofer 05/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbScalarForcing::SetInitialSpectrum(Inpar::ScaTra::InitialField init_field_type)
+  void HomIsoTurbScalarForcing::set_initial_spectrum(Inpar::ScaTra::InitialField init_field_type)
   {
 #ifdef USE_TRAGET_SPECTRUM
     (*scalarvariancespectrum_n_)[0] = 0.0;
@@ -264,7 +264,7 @@ namespace ScaTra
   /*--------------------------------------------------------------*
    | activate calculation of forcing              rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbScalarForcing::ActivateForcing(const bool activate)
+  void HomIsoTurbScalarForcing::activate_forcing(const bool activate)
   {
     activate_ = activate;
     return;
@@ -274,7 +274,7 @@ namespace ScaTra
   /*--------------------------------------------------------------*
    | calculate volume force                       rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbScalarForcing::CalculateForcing(const int step)
+  void HomIsoTurbScalarForcing::calculate_forcing(const int step)
   {
 #ifdef FOUR_C_WITH_FFTW
     //-------------------------------------------------------------------------------
@@ -295,17 +295,17 @@ namespace ScaTra
 
     // set solution in local vectors for phi
 
-    for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+    for (int inode = 0; inode < discret_->num_my_row_nodes(); inode++)
     {
       // get node
-      Core::Nodes::Node* node = discret_->lRowNode(inode);
+      Core::Nodes::Node* node = discret_->l_row_node(inode);
 
       // get coordinates
       Core::LinAlg::Matrix<3, 1> xyz(true);
-      for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
+      for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->x()[idim];
 
       // get global ids of all dofs of the node
-      std::vector<int> dofs = discret_->Dof(0, node);
+      std::vector<int> dofs = discret_->dof(0, node);
 
       // determine position
       std::vector<int> loc(3);
@@ -342,7 +342,7 @@ namespace ScaTra
     // get values from all processors
     // number of nodes without slave nodes
     const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-    discret_->Comm().SumAll(local_phi->data(), global_phi->data(), countallnodes);
+    discret_->get_comm().SumAll(local_phi->data(), global_phi->data(), countallnodes);
 
     //----------------------------------------
     // fast Fourier transformation using FFTW
@@ -610,7 +610,7 @@ namespace ScaTra
   /*--------------------------------------------------------------*
    | get forcing                                   rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbScalarForcing::UpdateForcing(const int step)
+  void HomIsoTurbScalarForcing::update_forcing(const int step)
   {
 #ifdef FOUR_C_WITH_FFTW
     // check if forcing is selected
@@ -634,17 +634,17 @@ namespace ScaTra
 
       // set solution in local vectors for velocity
 
-      for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+      for (int inode = 0; inode < discret_->num_my_row_nodes(); inode++)
       {
         // get node
-        Core::Nodes::Node* node = discret_->lRowNode(inode);
+        Core::Nodes::Node* node = discret_->l_row_node(inode);
 
         // get coordinates
         Core::LinAlg::Matrix<3, 1> xyz(true);
-        for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
+        for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->x()[idim];
 
         // get global ids of all dofs of the node
-        std::vector<int> dofs = discret_->Dof(0, node);
+        std::vector<int> dofs = discret_->dof(0, node);
 
         // determine position
         std::vector<int> loc(3);
@@ -687,7 +687,7 @@ namespace ScaTra
       // get values form all processors
       // number of nodes without slave nodes
       const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-      discret_->Comm().SumAll(local_phi->data(), global_phi->data(), countallnodes);
+      discret_->get_comm().SumAll(local_phi->data(), global_phi->data(), countallnodes);
 
       //----------------------------------------
       // fast Fourier transformation using FFTW
@@ -754,17 +754,17 @@ namespace ScaTra
       // set force
       //----------------------------------------
 
-      for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+      for (int inode = 0; inode < discret_->num_my_row_nodes(); inode++)
       {
         // get node
-        Core::Nodes::Node* node = discret_->lRowNode(inode);
+        Core::Nodes::Node* node = discret_->l_row_node(inode);
 
         // get coordinates
         Core::LinAlg::Matrix<3, 1> xyz(true);
-        for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
+        for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->x()[idim];
 
         // get global ids of all dofs of the node
-        std::vector<int> dofs = discret_->Dof(0, node);
+        std::vector<int> dofs = discret_->dof(0, node);
 
         // determine position
         std::vector<int> loc(3);
@@ -812,7 +812,7 @@ namespace ScaTra
   /*--------------------------------------------------------------*
    | time update of energy spectrum               rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbScalarForcing::TimeUpdateForcing()
+  void HomIsoTurbScalarForcing::time_update_forcing()
   {
 #ifdef TIME_UPDATE_FORCING_SPECTRUM
     // update energy spectrum

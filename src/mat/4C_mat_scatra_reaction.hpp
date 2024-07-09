@@ -288,11 +288,11 @@ namespace Mat
   class ScatraReactionMatType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "ScatraReactionMatType"; }
+    std::string name() const override { return "ScatraReactionMatType"; }
 
-    static ScatraReactionMatType& Instance() { return instance_; };
+    static ScatraReactionMatType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static ScatraReactionMatType instance_;
@@ -319,9 +319,9 @@ namespace Mat
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ScatraReactionMatType::Instance().UniqueParObjectId();
+      return ScatraReactionMatType::instance().unique_par_object_id();
     }
 
     /*!
@@ -329,7 +329,7 @@ namespace Mat
 
       Resizes the vector data and stores all information of a class in it.
       The first information to be stored in data has to be the
-      unique parobject id delivered by UniqueParObjectId() which will then
+      unique parobject id delivered by unique_par_object_id() which will then
       identify the exact class on the receiving processor.
 
       \param data (in/out): char vector to store class information
@@ -343,7 +343,7 @@ namespace Mat
       exact copy of an instance of a class on a different processor.
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
-      UniqueParObjectId().
+      unique_par_object_id().
 
       \param data (in) : vector storing all data to be unpacked into this
       instance.
@@ -356,25 +356,25 @@ namespace Mat
     virtual void initialize() { params_->initialize(); }
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_scatra_reaction;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new ScatraReactionMat(*this));
     }
 
     /// return number of scalars for this reaction
-    int NumScal() const { return params_->numscal_; }
+    int num_scal() const { return params_->numscal_; }
 
-    double CalcPermInfluence(const int k,  //!< current scalar id
-        const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
-        const double time,                 //!< current time
-        const double* gpcoord,             //!< Gauss-point coordinates
-        const double scale                 //!< scaling factor for reference concentrations
+    double calc_perm_influence(const int k,  //!< current scalar id
+        const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
+        const double time,                   //!< current time
+        const double* gpcoord,               //!< Gauss-point coordinates
+        const double scale                   //!< scaling factor for reference concentrations
     ) const;
 
     void calc_perm_influence_deriv(const int k,  //!< current scalar id
@@ -423,7 +423,7 @@ namespace Mat
     bool get_is_distr_funct_reac_coeff() const { return params_->isdistrfunctreaccoeff_; }
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     /// calculate advanced reaction terms
     double calc_rea_body_force_term(const int k,  //!< current scalar id

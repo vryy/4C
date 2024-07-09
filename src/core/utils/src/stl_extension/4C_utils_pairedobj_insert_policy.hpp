@@ -137,7 +137,7 @@ namespace Core::Gen
     { /* empty */
     }
 
-    void setDebugMode(bool isdebug)
+    void set_debug_mode(bool isdebug)
     {
 #if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
       _isdebug = isdebug;
@@ -605,7 +605,7 @@ namespace Core::Gen
       return pair_ptr->second;
     }
 
-    inline bool isFilled() const { return isfilled_; }
+    inline bool is_filled() const { return isfilled_; }
 
     size_t complete(pairedvector_type& unique_vec, const size_t unique_entries)
     {

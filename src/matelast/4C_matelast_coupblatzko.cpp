@@ -24,7 +24,7 @@ Mat::Elastic::PAR::CoupBlatzKo::CoupBlatzKo(const Core::Mat::PAR::Parameter::Dat
 
 Mat::Elastic::CoupBlatzKo::CoupBlatzKo(Mat::Elastic::PAR::CoupBlatzKo* params) : params_(params) {}
 
-void Mat::Elastic::CoupBlatzKo::AddStrainEnergy(double& psi,
+void Mat::Elastic::CoupBlatzKo::add_strain_energy(double& psi,
     const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
     const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
@@ -99,7 +99,7 @@ void Mat::Elastic::CoupBlatzKo::add_third_derivatives_principal_iso(
   dddPIII_iso(8) += -(-1. + f) * mu * pow(prinv(2), -3.);
 }
 
-void Mat::Elastic::CoupBlatzKo::AddCoupDerivVol(
+void Mat::Elastic::CoupBlatzKo::add_coup_deriv_vol(
     const double J, double* dPj1, double* dPj2, double* dPj3, double* dPj4)
 {
   // material parameters for isochoric part

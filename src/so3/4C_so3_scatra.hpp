@@ -93,11 +93,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -105,16 +105,16 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
         switch (distype)
         {
           case Core::FE::CellType::tet4:
           {
-            return SoTet4ScatraType::Instance().UniqueParObjectId();
+            return SoTet4ScatraType::instance().unique_par_object_id();
           }
           case Core::FE::CellType::tet10:
-            return SoTet10ScatraType::Instance().UniqueParObjectId();
+            return SoTet10ScatraType::instance().unique_par_object_id();
           case Core::FE::CellType::hex8:
           {
             // cast the most specialised element
@@ -122,14 +122,14 @@ namespace Discret
             const auto* ele = dynamic_cast<const Discret::ELEMENTS::SoHex8fbar*>(this);
 
             if (ele != nullptr)
-              return SoHex8fbarScatraType::Instance().UniqueParObjectId();
+              return SoHex8fbarScatraType::instance().unique_par_object_id();
             else
-              return SoHex8ScatraType::Instance().UniqueParObjectId();
+              return SoHex8ScatraType::instance().unique_par_object_id();
           }
           case Core::FE::CellType::hex27:
-            return SoHex27ScatraType::Instance().UniqueParObjectId();
+            return SoHex27ScatraType::instance().unique_par_object_id();
           case Core::FE::CellType::wedge6:
-            return SoWeg6ScatraType::Instance().UniqueParObjectId();
+            return SoWeg6ScatraType::instance().unique_par_object_id();
           default:
             FOUR_C_THROW("unknown element type!");
             break;
@@ -164,18 +164,18 @@ namespace Discret
       void print(std::ostream& os) const override;
 
       //! returns a reference to the element type
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
         switch (distype)
         {
           case Core::FE::CellType::tet4:
           {
             const auto* ele = dynamic_cast<const Discret::ELEMENTS::SoTet4*>(this);
-            if (ele != nullptr) return SoTet4ScatraType::Instance();
+            if (ele != nullptr) return SoTet4ScatraType::instance();
             break;
           }
           case Core::FE::CellType::tet10:
-            return SoTet10ScatraType::Instance();
+            return SoTet10ScatraType::instance();
           case Core::FE::CellType::hex8:
           {
             // cast the most specialised element
@@ -183,20 +183,20 @@ namespace Discret
             const auto* ele = dynamic_cast<const Discret::ELEMENTS::SoHex8fbar*>(this);
 
             if (ele != nullptr)
-              return SoHex8fbarScatraType::Instance();
+              return SoHex8fbarScatraType::instance();
             else
-              return SoHex8ScatraType::Instance();
+              return SoHex8ScatraType::instance();
           }
           case Core::FE::CellType::hex27:
-            return SoHex27ScatraType::Instance();
+            return SoHex27ScatraType::instance();
           case Core::FE::CellType::wedge6:
-            return SoWeg6ScatraType::Instance();
+            return SoWeg6ScatraType::instance();
           default:
             FOUR_C_THROW("unknown element type!");
             break;
         }
         // Intel compiler needs a return so
-        return SoWeg6ScatraType::Instance();
+        return SoWeg6ScatraType::instance();
       };
 
 
@@ -207,11 +207,11 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& eledistype,
+      bool read_element(const std::string& eletype, const std::string& eledistype,
           Input::LineDefinition* linedef) override;
 
       //! initialize the elements
-      void InitElement();
+      void init_element();
 
       //@}
 
@@ -265,7 +265,7 @@ namespace Discret
 
         \param matnum : material number from input file
        */
-      void SetMaterial(int matnum, Teuchos::RCP<Core::Mat::Material> mat) override;
+      void set_material(int matnum, Teuchos::RCP<Core::Mat::Material> mat) override;
 
       /*!
        * @brief Evaluate Cauchy stress at given point in parameter space and calculate
@@ -309,7 +309,7 @@ namespace Discret
 
       /// @name params
       /// return ScaTra::ImplType
-      const Inpar::ScaTra::ImplType& ImplType() const { return impltype_; };
+      const Inpar::ScaTra::ImplType& impl_type() const { return impltype_; };
 
      private:
       //! scalar transport implementation type (physics)
@@ -357,7 +357,7 @@ namespace Discret
       //! \vec{r}} ]) at each gauss point
       std::vector<double> det_j_;
 
-      Core::Nodes::Node** Nodes() override;
+      Core::Nodes::Node** nodes() override;
 
       Teuchos::RCP<Core::Mat::Material> material() const;
 

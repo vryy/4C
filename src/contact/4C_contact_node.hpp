@@ -26,11 +26,11 @@ namespace CONTACT
   class NodeType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const final { return "CONTACT::NodeType"; }
+    std::string name() const final { return "CONTACT::NodeType"; }
 
-    static NodeType& Instance() { return instance_; };
+    static NodeType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static NodeType instance_;
@@ -98,33 +98,33 @@ namespace CONTACT
     /*!
      \brief Return the weighted gap (scalar) of this node
      */
-    virtual double& Getg() { return grow_; }
+    virtual double& getg() { return grow_; }
 
     /*!
      \brief Return the weighted gap (scalar) of this node for NTS
      */
-    virtual double& Getgnts() { return gnts_; }
+    virtual double& getgnts() { return gnts_; }
 
     /*!
      \brief Return the weighted gap (scalar) of this node for LTS
      */
-    virtual double& Getglts() { return glts_; }
+    virtual double& getglts() { return glts_; }
 
     /*!
     \brief Return the gap (vector) of this node for LTL
     */
-    virtual double* Getgltl() { return gltl_; }
+    virtual double* getgltl() { return gltl_; }
 
     /*!
     \brief Return the gap (vector) of this node for LTL
     */
-    virtual double* Getjumpltl() { return jumpltl_; }
+    virtual double* getjumpltl() { return jumpltl_; }
 
     /*!
     \brief Return contact status of last converged state n (active=true)
 
     */
-    virtual inline bool& ActiveOld() { return activeold_; }
+    virtual inline bool& active_old() { return activeold_; }
 
     /*!
      \brief Return the 'DerivN' map (vector) of this node
@@ -134,8 +134,8 @@ namespace CONTACT
      A vector is used because the normal itself is a vector (2 or 3 components).
 
      */
-    virtual std::vector<Core::Gen::Pairedvector<int, double>>& GetDerivN() { return derivn_; }
-    virtual std::vector<Core::Gen::Pairedvector<int, double>>& GetDerivTangent()
+    virtual std::vector<Core::Gen::Pairedvector<int, double>>& get_deriv_n() { return derivn_; }
+    virtual std::vector<Core::Gen::Pairedvector<int, double>>& get_deriv_tangent()
     {
       return derivEdge_;
     }
@@ -148,7 +148,7 @@ namespace CONTACT
      A vector is used because the tangent itself is a vector (2 or 3 components).
 
      */
-    virtual std::vector<Core::Gen::Pairedvector<int, double>>& GetDerivTxi() { return derivtxi_; }
+    virtual std::vector<Core::Gen::Pairedvector<int, double>>& get_deriv_txi() { return derivtxi_; }
 
     /*!
      \brief Return the 'DerivTeta' map (vector) of this node
@@ -158,7 +158,10 @@ namespace CONTACT
      A vector is used because the tangent itself is a vector (2 or 3 components).
 
      */
-    virtual std::vector<Core::Gen::Pairedvector<int, double>>& GetDerivTeta() { return derivteta_; }
+    virtual std::vector<Core::Gen::Pairedvector<int, double>>& get_deriv_teta()
+    {
+      return derivteta_;
+    }
 
     /*!
      \brief Return the 'DerivD' map of this node
@@ -173,9 +176,9 @@ namespace CONTACT
      support arbitrary types of shape functions, this is not possible anymore.
 
      */
-    virtual std::map<int, std::map<int, double>>& GetDerivD() { return derivd_; }
-    virtual std::map<int, std::map<int, double>>& GetDerivDlts() { return derivdlts_; }
-    virtual std::map<int, std::map<int, double>>& GetDerivDltl() { return derivdltl_; }
+    virtual std::map<int, std::map<int, double>>& get_deriv_d() { return derivd_; }
+    virtual std::map<int, std::map<int, double>>& get_deriv_dlts() { return derivdlts_; }
+    virtual std::map<int, std::map<int, double>>& get_deriv_dltl() { return derivdltl_; }
 
     /*!
      \brief Return the 'DerivM' map of maps of this node
@@ -187,10 +190,10 @@ namespace CONTACT
      all directional derivatives l existing for M_ik.
 
      */
-    virtual std::map<int, std::map<int, double>>& GetDerivM() { return derivm_; }
-    virtual std::map<int, std::map<int, double>>& GetDerivMnts() { return derivmnts_; }
-    virtual std::map<int, std::map<int, double>>& GetDerivMlts() { return derivmlts_; }
-    virtual std::map<int, std::map<int, double>>& GetDerivMltl() { return derivmltl_; }
+    virtual std::map<int, std::map<int, double>>& get_deriv_m() { return derivm_; }
+    virtual std::map<int, std::map<int, double>>& get_deriv_mnts() { return derivmnts_; }
+    virtual std::map<int, std::map<int, double>>& get_deriv_mlts() { return derivmlts_; }
+    virtual std::map<int, std::map<int, double>>& get_deriv_mltl() { return derivmltl_; }
 
     /*!
      \brief Return one specific 'DerivD' map of this node
@@ -199,7 +202,7 @@ namespace CONTACT
      specific D-matrix D_ik entry of this node i.
 
      */
-    virtual std::map<int, double>& GetDerivD(int& k)
+    virtual std::map<int, double>& get_deriv_d(int& k)
     {
       typedef std::map<int, std::map<int, double>>::const_iterator CI;
       CI p = derivd_.find(k);
@@ -214,7 +217,7 @@ namespace CONTACT
      specific M-matrix M_ik entry of this node i.
 
      */
-    virtual std::map<int, double>& GetDerivM(int& k)
+    virtual std::map<int, double>& get_deriv_m(int& k)
     {
       typedef std::map<int, std::map<int, double>>::const_iterator CI;
       CI p = derivm_.find(k);
@@ -229,17 +232,17 @@ namespace CONTACT
      weighted gap entry g~ with respect to the slave/master displacements.
 
      */
-    virtual std::map<int, double>& GetDerivG() { return derivg_; }
-    virtual std::map<int, double>& GetDerivGnts() { return derivgnts_; }
-    virtual std::map<int, double>& GetDerivGlts() { return derivglts_; }
-    virtual std::vector<std::map<int, double>>& GetDerivGltl() { return derivgltl_; }
-    virtual std::vector<std::map<int, double>>& GetDerivJumpltl() { return derivjumpltl_; }
+    virtual std::map<int, double>& get_deriv_g() { return derivg_; }
+    virtual std::map<int, double>& get_deriv_gnts() { return derivgnts_; }
+    virtual std::map<int, double>& get_deriv_glts() { return derivglts_; }
+    virtual std::vector<std::map<int, double>>& get_deriv_gltl() { return derivgltl_; }
+    virtual std::vector<std::map<int, double>>& get_deriv_jumpltl() { return derivjumpltl_; }
 
     /*!
      \brief Return the 'DerivGlm' map of this node
 
      */
-    virtual std::map<int, double>& GetDerivGW() { return derivgw_; }
+    virtual std::map<int, double>& get_deriv_gw() { return derivgw_; }
 
     /*!
      \brief Return the 'DerivW' map of this node
@@ -248,7 +251,7 @@ namespace CONTACT
      weighted wear increment entry w~ with respect to the slave/master displacements.
 
      */
-    virtual std::map<int, double>& GetDerivW() { return derivw_; }
+    virtual std::map<int, double>& get_deriv_w() { return derivw_; }
 
     /*!
      \brief Return the 'DerivW' map of this node
@@ -257,7 +260,7 @@ namespace CONTACT
      weighted wear increment entry w~ with respect to the lagr. mult.
 
      */
-    virtual std::map<int, double>& GetDerivWlm() { return derivw_lm_; }
+    virtual std::map<int, double>& get_deriv_wlm() { return derivw_lm_; }
 
     /*!
      \brief Return scaling factor for weighted gap
@@ -265,7 +268,7 @@ namespace CONTACT
      Note: This is only calculated when performing a penalty strategy
 
      */
-    virtual double& Kappa() { return kappa_; }
+    virtual double& kappa() { return kappa_; }
 
     /*!
      \brief Return the 'DerivZ map of this node
@@ -276,15 +279,15 @@ namespace CONTACT
      Note: This is only calculated when performing a penalty strategy
 
      */
-    virtual std::vector<std::map<int, double>>& GetDerivZ() { return derivz_; }
+    virtual std::vector<std::map<int, double>>& get_deriv_z() { return derivz_; }
 
-    virtual Core::Gen::Pairedvector<int, double>& GetAlpha() { return alpha_; };
-    virtual double& GetAlphaN() { return nalpha_; };
+    virtual Core::Gen::Pairedvector<int, double>& get_alpha() { return alpha_; };
+    virtual double& get_alpha_n() { return nalpha_; };
 
     /*!
      \brief Return old normal vector (length 3)
      */
-    virtual inline double* Normal_old() { return n_old_; }
+    virtual inline double* normal_old() { return n_old_; }
 
     //! @}
 
@@ -447,7 +450,7 @@ namespace CONTACT
     /*!
     \brief Return the normal coupling condition (scalar) of this node
     */
-    virtual double& GetnCoup() { return ncouprow_; }
+    virtual double& getn_coup() { return ncouprow_; }
 
     /*!
     \brief Return the 'DerivnCoup' map of this node
@@ -456,7 +459,7 @@ namespace CONTACT
     normal coupling condition with respect to the slave/master displacements.
 
     */
-    virtual std::map<int, double>& GetDerivnCoup() { return derivncoup_; }
+    virtual std::map<int, double>& get_derivn_coup() { return derivncoup_; }
 
     /*!
     \brief Return the 'VelDerivnCoup' map of this node
@@ -465,7 +468,7 @@ namespace CONTACT
     normal coupling condition with respect to the velocities. (for one sided contact just slave!)
 
     */
-    virtual std::map<int, double>& GetVelDerivnCoup() { return velderivncoup_; }
+    virtual std::map<int, double>& get_vel_derivn_coup() { return velderivncoup_; }
 
     /*!
     \brief Return the 'PresDerivnCoup' map of this node
@@ -474,7 +477,7 @@ namespace CONTACT
     normal coupling condition with respect to the pressures. (for one sided contact just slave!)
     //h.Willmann
     */
-    virtual std::map<int, double>& GetPresDerivnCoup() { return presderivncoup_; }
+    virtual std::map<int, double>& get_pres_derivn_coup() { return presderivncoup_; }
 
     /*!
     \brief Return current nodal fluid pressure (porous media!) (length 3)
@@ -494,7 +497,7 @@ namespace CONTACT
     /*!
     \brief Return current nodal lagrangean multiplier (length 3)
     */
-    virtual double* poroLM() { return porolm_; }
+    virtual double* poro_lm() { return porolm_; }
 
    protected:
     // don't want = operator and cctor
@@ -571,30 +574,30 @@ namespace CONTACT
     /*!
     \brief Return max (Temp_slave , Temp_master)
     */
-    double& TempMaster() { return temp_master_; }
+    double& temp_master() { return temp_master_; }
 
     /*!
     \brief Return temperature
     */
-    double& Temp() { return temp_; }
+    double& temp() { return temp_; }
 
     /*!
     \brief Return reference temperature
     */
-    double& Temp_Ref() { return t_ref_; }
+    double& temp_ref() { return t_ref_; }
 
     /*!
     \brief Return temperature
     */
-    double& Temp_Dam() { return t_dam_; }
+    double& temp_dam() { return t_dam_; }
 
     /*!
     \brief Return thermo Lagrange multiplier
     */
-    double& ThermoLM() { return thermo_lm_; }
+    double& thermo_lm() { return thermo_lm_; }
 
-    std::map<int, double>& DerivTempMasterDisp() { return derivTempMasterDisp_; }
-    std::map<int, double>& DerivTempMasterTemp() { return derivTempMasterTemp_; }
+    std::map<int, double>& deriv_temp_master_disp() { return derivTempMasterDisp_; }
+    std::map<int, double>& deriv_temp_master_temp() { return derivTempMasterTemp_; }
 
     void clear();
 
@@ -666,8 +669,9 @@ namespace CONTACT
       return deriv_weighted_avTangVel_;
     }
 
-    std::unordered_map<int, Core::LinAlg::Matrix<3, 1>>& GetSurfGrad() { return tang_grad_; }
-    std::unordered_map<int, std::unordered_map<int, Core::LinAlg::Matrix<3, 1>>>& GetSurfGradDeriv()
+    std::unordered_map<int, Core::LinAlg::Matrix<3, 1>>& get_surf_grad() { return tang_grad_; }
+    std::unordered_map<int, std::unordered_map<int, Core::LinAlg::Matrix<3, 1>>>&
+    get_surf_grad_deriv()
     {
       return tang_grad_deriv_;
     }
@@ -734,7 +738,7 @@ namespace CONTACT
      \brief Deep copy the derived class and return pointer to it
 
      */
-    CONTACT::Node* Clone() const override;
+    CONTACT::Node* clone() const override;
 
 
     /*!
@@ -744,7 +748,10 @@ namespace CONTACT
      top of lib/parobject.H.
 
      */
-    int UniqueParObjectId() const override { return NodeType::Instance().UniqueParObjectId(); }
+    int unique_par_object_id() const override
+    {
+      return NodeType::instance().unique_par_object_id();
+    }
 
     /*!
      \brief Pack this class so it can be communicated
@@ -774,9 +781,9 @@ namespace CONTACT
     /*!
      \brief Is Node initialized as active node (only slave nodes)
      */
-    virtual bool IsInitActive() const
+    virtual bool is_init_active() const
     {
-      if (!IsSlave()) FOUR_C_THROW("InitActive requested for Master node");
+      if (!is_slave()) FOUR_C_THROW("InitActive requested for Master node");
       return initactive_;
     }
 
@@ -789,18 +796,18 @@ namespace CONTACT
      information Active/Inactive)
 
      */
-    virtual bool& SetInitActive()
+    virtual bool& set_init_active()
     {
-      if (!IsSlave()) FOUR_C_THROW("InitActive requested for Master node");
+      if (!is_slave()) FOUR_C_THROW("InitActive requested for Master node");
       return initactive_;
     }
 
     /*!
      \brief Return contact status of this node (active=true)
      */
-    virtual bool& Active() { return active_; }
+    virtual bool& active() { return active_; }
 
-    virtual bool& InvolvedM() { return involvedm_; }
+    virtual bool& involved_m() { return involvedm_; }
 
     /*!
      \brief Return data container of this node
@@ -809,12 +816,12 @@ namespace CONTACT
      contact specific quantities/information are stored.
 
      */
-    inline CONTACT::NodeDataContainer& Data() { return *codata_; }
-    inline CONTACT::NodeDataContainer& Data() const { return *codata_; }
+    inline CONTACT::NodeDataContainer& data() { return *codata_; }
+    inline CONTACT::NodeDataContainer& data() const { return *codata_; }
 
-    inline CONTACT::NodePoroDataContainer& PoroData() { return *coporodata_; }
-    inline CONTACT::NodeTSIDataContainer& TSIData() { return *cTSIdata_; }
-    inline CONTACT::NodeEhlDataContainer& EhlData() { return *cEHLdata_; }
+    inline CONTACT::NodePoroDataContainer& poro_data() { return *coporodata_; }
+    inline CONTACT::NodeTSIDataContainer& tsi_data() { return *cTSIdata_; }
+    inline CONTACT::NodeEhlDataContainer& ehl_data() { return *cEHLdata_; }
 
     //@}
 
@@ -829,7 +836,7 @@ namespace CONTACT
      \param val : value to be added
 
      */
-    void AddgValue(double& val);
+    void addg_value(double& val);
 
     /*!
      \brief Add a value to the point-wise gap of this node (NTS)
@@ -837,7 +844,7 @@ namespace CONTACT
      \param val : value to be added
 
      */
-    void AddntsGapValue(double& val);
+    void addnts_gap_value(double& val);
 
     /*!
      \brief Add a value to the line-weighted gap of this node (LTS)
@@ -845,7 +852,7 @@ namespace CONTACT
      \param val : value to be added
 
      */
-    void AddltsGapValue(double& val);
+    void addlts_gap_value(double& val);
 
     /*!
      \brief Add a value to the point-wise gap of this node (LTL)
@@ -853,7 +860,7 @@ namespace CONTACT
      \param val : value to be added
 
      */
-    void AddltlGapValue(double* val);
+    void addltl_gap_value(double* val);
 
     /*!
      \brief Add a value to the point-wise jump of this node (LTL)
@@ -861,7 +868,7 @@ namespace CONTACT
      \param val : value to be added
 
      */
-    void AddltlJumpValue(double* val);
+    void addltl_jump_value(double* val);
 
 
     /*!
@@ -877,7 +884,7 @@ namespace CONTACT
     \param col : global dof column id of the value added
 
     */
-    void AddDerivZValue(int& row, const int& col, double val);
+    void add_deriv_z_value(int& row, const int& col, double val);
 
     /*!
     \brief Add a value to the NCoup of this node
@@ -885,12 +892,12 @@ namespace CONTACT
     \param val : value to be added
 
     */
-    void AddNcoupValue(double& val);
+    void add_ncoup_value(double& val);
 
     /*!
      \brief Build nodal normal
      */
-    void BuildAveragedNormal() override;
+    void build_averaged_normal() override;
 
     /*!
      \brief Build nodal edge tangent
@@ -937,14 +944,14 @@ namespace CONTACT
      is deleted / reset to Teuchos::null pointer
 
      */
-    void ResetDataContainer() override;
+    void reset_data_container() override;
 
     /*!
      \brief Get number of linearization entries
 
      */
-    virtual int& GetLinsize() { return linsize_; };
-    int GetLinsize() const { return linsize_; };
+    virtual int& get_linsize() { return linsize_; };
+    int get_linsize() const { return linsize_; };
 
     //! @}
 
@@ -954,17 +961,17 @@ namespace CONTACT
      * defined as empty here in the general mortar node. They can be called whenever you like.
      */
 
-    virtual void AddSNode(int node) {}
-    virtual void AddMNode(int node) {}
+    virtual void add_s_node(int node) {}
+    virtual void add_m_node(int node) {}
 
     //! @}
 
-    virtual bool HasTSIData() { return (cTSIdata_ != Teuchos::null); }
+    virtual bool has_tsi_data() { return (cTSIdata_ != Teuchos::null); }
 
     /*!
      \brief Write nodal normals to old ones
      */
-    void StoreOldNormal();
+    void store_old_normal();
 
    private:
     /*!

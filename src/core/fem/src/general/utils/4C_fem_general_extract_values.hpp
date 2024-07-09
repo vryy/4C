@@ -77,17 +77,17 @@ namespace Core::FE
   void ExtractMyValues(const Epetra_Vector& global, Matrix& local, const std::vector<int>& lm)
   {
     // safety check
-    if ((unsigned)(local.numRows() * local.numCols()) != lm.size())
+    if ((unsigned)(local.num_rows() * local.num_cols()) != lm.size())
       FOUR_C_THROW("Received matrix of wrong size!");
 
     // loop over all columns of cal matrix
-    for (unsigned icol = 0; icol < local.numCols(); ++icol)
+    for (unsigned icol = 0; icol < local.num_cols(); ++icol)
     {
       // loop over all rows of local matrix
-      for (unsigned irow = 0; irow < local.numRows(); ++irow)
+      for (unsigned irow = 0; irow < local.num_rows(); ++irow)
       {
         // extract local ID of current dof
-        const unsigned index = icol * local.numRows() + irow;
+        const unsigned index = icol * local.num_rows() + irow;
         const int lid = global.Map().LID(lm[index]);
 
         // safety check
@@ -149,9 +149,9 @@ namespace Core::FE
     if (nsd > global->NumVectors())
       FOUR_C_THROW("Requested %d of %d available columns", nsd, global->NumVectors());
     const int iel = ele->num_node();  // number of nodes
-    if (((int)localmatrix.numCols()) != iel)
+    if (((int)localmatrix.num_cols()) != iel)
       FOUR_C_THROW("local matrix has wrong number of columns");
-    if (((int)localmatrix.numRows()) != nsd) FOUR_C_THROW("local matrix has wrong number of rows");
+    if (((int)localmatrix.num_rows()) != nsd) FOUR_C_THROW("local matrix has wrong number of rows");
 
     for (int i = 0; i < nsd; i++)
     {
@@ -160,7 +160,7 @@ namespace Core::FE
       // loop over the element nodes
       for (int j = 0; j < iel; j++)
       {
-        const int nodegid = (ele->Nodes()[j])->Id();
+        const int nodegid = (ele->nodes()[j])->id();
         const int lid = global->Map().LID(nodegid);
         if (lid < 0)
           FOUR_C_THROW(
@@ -189,7 +189,7 @@ namespace Core::FE
     // loop over element nodes
     for (int i = 0; i < numnode; ++i)
     {
-      const int nodegid = (ele->Nodes()[i])->Id();
+      const int nodegid = (ele->nodes()[i])->id();
       const int lid = global.Map().LID(nodegid);
       if (lid < 0)
         FOUR_C_THROW(

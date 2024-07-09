@@ -86,7 +86,7 @@ void Solid::IMPLICIT::OneStepTheta::post_setup()
 {
   check_init_setup();
 
-  if (sdyn().get_mass_lin_type() != Inpar::Solid::ml_rotations and !sdyn().NeglectInertia())
+  if (sdyn().get_mass_lin_type() != Inpar::Solid::ml_rotations and !sdyn().neglect_inertia())
   {
     /* we can use this method for all elements with additive DoFs,
      * but it won't work like this for non-additive rotation vector DoFs */
@@ -216,7 +216,7 @@ bool Solid::IMPLICIT::OneStepTheta::apply_stiff(
 
   if (not ok) return ok;
 
-  jac.Complete();
+  jac.complete();
 
   return ok;
 }
@@ -236,7 +236,7 @@ bool Solid::IMPLICIT::OneStepTheta::apply_force_stiff(
 
   if (not ok) return ok;
 
-  jac.Complete();
+  jac.complete();
 
   return ok;
 }
@@ -272,10 +272,10 @@ void Solid::IMPLICIT::OneStepTheta::add_visco_mass_contributions(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
   const double& dt = (*global_state().get_delta_time())[0];
   // add inertial contributions and scale the structural stiffness block
-  stiff_ptr->Add(*global_state().get_mass_matrix(), false, 1.0 / (theta_ * dt * dt), 1.0);
+  stiff_ptr->add(*global_state().get_mass_matrix(), false, 1.0 / (theta_ * dt * dt), 1.0);
   // add Rayleigh damping contributions
   if (tim_int().get_data_sdyn().get_damping_type() == Inpar::Solid::damp_rayleigh)
-    stiff_ptr->Add(*global_state().get_damp_matrix(), false, 1.0 / dt, 1.0);
+    stiff_ptr->add(*global_state().get_damp_matrix(), false, 1.0 / dt, 1.0);
 }
 
 /*----------------------------------------------------------------------------*

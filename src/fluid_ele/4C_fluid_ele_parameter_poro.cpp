@@ -16,7 +16,7 @@ set all general porofluid parameter once for all elements.
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::FluidEleParameterPoro* Discret::ELEMENTS::FluidEleParameterPoro::Instance(
+Discret::ELEMENTS::FluidEleParameterPoro* Discret::ELEMENTS::FluidEleParameterPoro::instance(
     Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
@@ -26,7 +26,7 @@ Discret::ELEMENTS::FluidEleParameterPoro* Discret::ELEMENTS::FluidEleParameterPo
             new Discret::ELEMENTS::FluidEleParameterPoro());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 //----------------------------------------------------------------------*/

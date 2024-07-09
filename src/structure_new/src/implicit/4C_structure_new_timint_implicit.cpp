@@ -87,7 +87,7 @@ void Solid::TimeInt::Implicit::set_state(const Teuchos::RCP<Epetra_Vector>& x)
 {
   integrator_ptr()->set_state(*x);
   ::NOX::Epetra::Vector x_nox(x, ::NOX::Epetra::Vector::CreateView);
-  nln_solver().SolutionGroup().setX(x_nox);
+  nln_solver().solution_group().setX(x_nox);
   set_state_in_sync_with_nox_group(true);
 }
 
@@ -112,13 +112,13 @@ void Solid::TimeInt::Implicit::prepare_time_step()
   double& time_np = data_global_state().get_time_np();
   time_np = data_global_state().get_time_n() + (*data_global_state().get_delta_time())[0]; */
 
-  ::NOX::Abstract::Group& grp = nln_solver().SolutionGroup();
-  predictor().Predict(grp);
+  ::NOX::Abstract::Group& grp = nln_solver().solution_group();
+  predictor().predict(grp);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Solid::TimeInt::Implicit::Integrate()
+int Solid::TimeInt::Implicit::integrate()
 {
   check_init_setup();
   FOUR_C_THROW(
@@ -129,27 +129,27 @@ int Solid::TimeInt::Implicit::Integrate()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Solid::TimeInt::Implicit::IntegrateStep()
+int Solid::TimeInt::Implicit::integrate_step()
 {
   check_init_setup();
   // do the predictor step
-  ::NOX::Abstract::Group& grp = nln_solver().SolutionGroup();
-  predictor().Predict(grp);
-  return Solve();
+  ::NOX::Abstract::Group& grp = nln_solver().solution_group();
+  predictor().predict(grp);
+  return solve();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::Solve()
+Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::solve()
 {
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
   // reset the non-linear solver
   nln_solver().reset();
   // solve the non-linear problem
-  Inpar::Solid::ConvergenceStatus convstatus = nln_solver().Solve();
+  Inpar::Solid::ConvergenceStatus convstatus = nln_solver().solve();
   // return convergence status
-  return PerformErrorAction(convstatus);
+  return perform_error_action(convstatus);
 }
 
 /*----------------------------------------------------------------------------*
@@ -161,7 +161,7 @@ void Solid::TimeInt::Implicit::update_state_incrementally(
 
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
-  ::NOX::Abstract::Group& grp = nln_solver().SolutionGroup();
+  ::NOX::Abstract::Group& grp = nln_solver().solution_group();
 
   auto* grp_ptr = dynamic_cast<NOX::Nln::Group*>(&grp);
   FOUR_C_ASSERT(grp_ptr != nullptr, "Dynamic cast failed!");
@@ -202,7 +202,7 @@ void Solid::TimeInt::Implicit::evaluate()
 {
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
-  ::NOX::Abstract::Group& grp = nln_solver().SolutionGroup();
+  ::NOX::Abstract::Group& grp = nln_solver().solution_group();
 
   auto* grp_ptr = dynamic_cast<NOX::Nln::Group*>(&grp);
   FOUR_C_ASSERT(grp_ptr != nullptr, "Dynamic cast failed!");
@@ -230,12 +230,12 @@ const ::NOX::Abstract::Group& Solid::TimeInt::Implicit::get_solution_group() con
 Teuchos::RCP<::NOX::Abstract::Group> Solid::TimeInt::Implicit::solution_group_ptr()
 {
   check_init_setup();
-  return Teuchos::rcpFromRef(nln_solver().SolutionGroup());
+  return Teuchos::rcpFromRef(nln_solver().solution_group());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::PerformErrorAction(
+Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::perform_error_action(
     Inpar::Solid::ConvergenceStatus nonlinsoldiv)
 {
   check_init_setup();
@@ -253,7 +253,7 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::PerformErrorAction(
   const int& myrank = data_global_state().get_my_rank();
 
   // what to do when nonlinear solver does not converge
-  switch (GetDivergenceAction())
+  switch (get_divergence_action())
   {
     case Inpar::Solid::divcont_stop:
     {
@@ -292,23 +292,23 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::PerformErrorAction(
     {
       if (myrank == 0)
       {
-        Core::IO::cout << "Nonlinear solver failed to converge at time t= " << GetTimeNp()
+        Core::IO::cout << "Nonlinear solver failed to converge at time t= " << get_time_np()
                        << ". Divide timestep in half. "
-                       << "Old time step: " << GetDeltaTime() << Core::IO::endl
-                       << "New time step: " << 0.5 * GetDeltaTime() << Core::IO::endl
+                       << "Old time step: " << get_delta_time() << Core::IO::endl
+                       << "New time step: " << 0.5 * get_delta_time() << Core::IO::endl
                        << Core::IO::endl;
       }
 
       // halve the time step size
-      SetDeltaTime(GetDeltaTime() * 0.5);
+      set_delta_time(get_delta_time() * 0.5);
       // update the number of max time steps if it does not exceed the largest possible value for
       // the type int
-      if ((GetStepEnd() - GetStepNp() + 1) > std::numeric_limits<int>::max() - GetStepEnd())
+      if ((get_step_end() - get_step_np() + 1) > std::numeric_limits<int>::max() - get_step_end())
         FOUR_C_THROW(" Your updated step number exceeds largest possible value for type int");
-      int endstep = GetStepEnd() + (GetStepEnd() - GetStepNp()) + 1;
-      SetStepEnd(endstep);
+      int endstep = get_step_end() + (get_step_end() - get_step_np()) + 1;
+      set_step_end(endstep);
       // reset timen_ because it is set in the constructor
-      SetTimeNp(GetTimeN() + GetDeltaTime());
+      set_time_np(get_time_n() + get_delta_time());
       // reset step (e.g. quantities on element level or model specific stuff)
       reset_step();
 
@@ -321,23 +321,23 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::PerformErrorAction(
     {
       if (myrank == 0)
       {
-        Core::IO::cout << "Nonlinear solver failed to converge at time t= " << GetTimeNp()
+        Core::IO::cout << "Nonlinear solver failed to converge at time t= " << get_time_np()
                        << ". Divide timestep in half. "
-                       << "Old time step: " << GetDeltaTime() << Core::IO::endl
-                       << "New time step: " << 0.5 * GetDeltaTime() << Core::IO::endl
+                       << "Old time step: " << get_delta_time() << Core::IO::endl
+                       << "New time step: " << 0.5 * get_delta_time() << Core::IO::endl
                        << Core::IO::endl;
       }
 
       // halve the time step size
-      SetDeltaTime(GetDeltaTime() * 0.5);
+      set_delta_time(get_delta_time() * 0.5);
       // update the number of max time steps if it does not exceed the largest possible value for
       // the type int
-      if ((GetStepEnd() - GetStepNp() + 1) > std::numeric_limits<int>::max() - GetStepEnd())
+      if ((get_step_end() - get_step_np() + 1) > std::numeric_limits<int>::max() - get_step_end())
         FOUR_C_THROW(" Your updated step number exceeds largest possible value for type int");
-      int endstep = GetStepEnd() + (GetStepEnd() - GetStepNp()) + 1;
-      SetStepEnd(endstep);
+      int endstep = get_step_end() + (get_step_end() - get_step_np()) + 1;
+      set_step_end(endstep);
       // reset timen_ because it is set in the constructor
-      SetTimeNp(GetTimeN() + GetDeltaTime());
+      set_time_np(get_time_n() + get_delta_time());
 
       set_div_con_refine_level(get_div_con_refine_level() + 1);
       set_div_con_num_fine_step(0);
@@ -363,7 +363,7 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::PerformErrorAction(
       double proc_randnum_get = ((double)rand() / (double)RAND_MAX);
       double proc_randnum = proc_randnum_get;
       double randnum = 1.0;
-      const Epetra_Comm& comm = discretization()->Comm();
+      const Epetra_Comm& comm = discretization()->get_comm();
       comm.SumAll(&proc_randnum, &randnum, 1);
       const double numproc = comm.NumProc();
       randnum /= numproc;
@@ -381,15 +381,15 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::PerformErrorAction(
                        << get_random_time_step_factor() << " !" << Core::IO::endl;
       }
       // multiply time-step size by random number
-      SetDeltaTime(GetDeltaTime() * get_random_time_step_factor());
+      set_delta_time(get_delta_time() * get_random_time_step_factor());
       // update maximum number of time steps
-      int endstep = (1.0 / get_random_time_step_factor()) * GetStepEnd() +
-                    (1.0 - (1.0 / get_random_time_step_factor())) * GetStepNp() + 1;
+      int endstep = (1.0 / get_random_time_step_factor()) * get_step_end() +
+                    (1.0 - (1.0 / get_random_time_step_factor())) * get_step_np() + 1;
       if (endstep > std::numeric_limits<int>::max())
         FOUR_C_THROW(" Your updated step number exceeds largest possible value for type int");
-      SetStepEnd(endstep);
+      set_step_end(endstep);
       // reset timen_ because it is set in the constructor
-      SetTimeNp(GetTimeN() + GetDeltaTime());
+      set_time_np(get_time_n() + get_delta_time());
       // reset step (e.g. quantities on element level or model specific stuff)
       reset_step();
 
@@ -446,7 +446,7 @@ void Solid::TimeInt::Implicit::check_for_time_step_increase(Inpar::Solid::Conver
 
   const int maxnumfinestep = 4;
 
-  if (GetDivergenceAction() != Inpar::Solid::divcont_adapt_step)
+  if (get_divergence_action() != Inpar::Solid::divcont_adapt_step)
     return;
   else if (status == Inpar::Solid::conv_success and get_div_con_refine_level() != 0)
   {
@@ -455,7 +455,7 @@ void Solid::TimeInt::Implicit::check_for_time_step_increase(Inpar::Solid::Conver
     if (get_div_con_num_fine_step() == maxnumfinestep)
     {
       // increase the step size if the remaining number of steps is a even number
-      if (((GetStepEnd() - GetStepNp()) % 2) == 0 and GetStepEnd() != GetStepNp())
+      if (((get_step_end() - get_step_np()) % 2) == 0 and get_step_end() != get_step_np())
       {
         if (data_global_state().get_my_rank() == 0)
           Core::IO::cout << "Nonlinear solver successful. Double timestep size!" << Core::IO::endl;
@@ -463,10 +463,10 @@ void Solid::TimeInt::Implicit::check_for_time_step_increase(Inpar::Solid::Conver
         set_div_con_refine_level(get_div_con_refine_level() - 1);
         set_div_con_num_fine_step(0);
 
-        SetStepEnd(GetStepEnd() - (GetStepEnd() - GetStepNp()) / 2);
+        set_step_end(get_step_end() - (get_step_end() - get_step_np()) / 2);
 
         // double the time step size
-        SetDeltaTime(GetDeltaTime() * 2.0);
+        set_delta_time(get_delta_time() * 2.0);
       }
       else  // otherwise we have to wait one more time step until the step size can be increased
       {
@@ -518,7 +518,7 @@ void Solid::TimeInt::Implicit::print_jacobian_in_matlab_format(
       Teuchos::RCP<const Core::LinAlg::SparseMatrix> sparse_matrix =
           Teuchos::rcp_dynamic_cast<const Core::LinAlg::SparseMatrix>(jac_ptr, true);
       Core::LinAlg::PrintMatrixInMatlabFormat(
-          filename.str().c_str(), *sparse_matrix->EpetraMatrix());
+          filename.str().c_str(), *sparse_matrix->epetra_matrix());
 
       break;
     }

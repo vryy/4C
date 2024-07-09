@@ -82,7 +82,7 @@ namespace BEAMINTERACTION
       return rep_strategy_;
     };
 
-    Inpar::BEAMINTERACTION::SearchStrategy GetSearchStrategy() const
+    Inpar::BEAMINTERACTION::SearchStrategy get_search_strategy() const
     {
       check_init_setup();
       return search_strategy_;
@@ -121,20 +121,20 @@ namespace BEAMINTERACTION
 
       int get_id() const { return id_; };
 
-      Core::LinAlg::Matrix<3, 1> const& GetPosition() const { return pos_; };
+      Core::LinAlg::Matrix<3, 1> const& get_position() const { return pos_; };
 
-      int GetNumberOfBonds() const { return numbond_; };
+      int get_number_of_bonds() const { return numbond_; };
 
-      std::vector<std::pair<int, int>> const& GetBSpots() const { return bspots_; };
+      std::vector<std::pair<int, int>> const& get_b_spots() const { return bspots_; };
 
-      void SetId(int id) { id_ = id; };
+      void set_id(int id) { id_ = id; };
 
-      void SetPosition(Core::LinAlg::Matrix<3, 1> const& clpos) { pos_ = clpos; };
+      void set_position(Core::LinAlg::Matrix<3, 1> const& clpos) { pos_ = clpos; };
 
-      void SetNumberOfBonds(int clnumbond) { numbond_ = clnumbond; };
+      void set_number_of_bonds(int clnumbond) { numbond_ = clnumbond; };
 
-      void SetBSpots(std::vector<std::pair<int, int>> const& clbspots) { bspots_ = clbspots; };
-      void SetBspot(int bspotid, std::pair<int, int> bpsotone) { bspots_[bspotid] = bpsotone; };
+      void set_b_spots(std::vector<std::pair<int, int>> const& clbspots) { bspots_ = clbspots; };
+      void set_bspot(int bspotid, std::pair<int, int> bpsotone) { bspots_[bspotid] = bpsotone; };
 
       //! @}
 
@@ -191,12 +191,12 @@ namespace BEAMINTERACTION
 
       std::map<Inpar::BEAMINTERACTION::CrosslinkerType,
           std::map<int, Core::LinAlg::Matrix<3, 1>>> const&
-      GetBSpotPositions() const
+      get_b_spot_positions() const
       {
         return bspotpos_;
       };
 
-      Core::LinAlg::Matrix<3, 1> const& GetBSpotPosition(
+      Core::LinAlg::Matrix<3, 1> const& get_b_spot_position(
           Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid) const
       {
         return bspotpos_.at(linkertype).at(bspotid);
@@ -204,23 +204,23 @@ namespace BEAMINTERACTION
 
       std::map<Inpar::BEAMINTERACTION::CrosslinkerType,
           std::map<int, Core::LinAlg::Matrix<3, 3>>> const&
-      GetBSpotTriads() const
+      get_b_spot_triads() const
       {
         return bspottriad_;
       };
-      Core::LinAlg::Matrix<3, 3> const& GetBSpotTriad(
+      Core::LinAlg::Matrix<3, 3> const& get_b_spot_triad(
           Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid) const
       {
         return bspottriad_.at(linkertype).at(bspotid);
       };
 
       std::map<Inpar::BEAMINTERACTION::CrosslinkerType, std::map<int, std::set<int>>> const&
-      GetBSpotStatus() const
+      get_b_spot_status() const
       {
         return bspotstatus_;
       };
 
-      std::set<int> const& GetBSpotStatusAt(
+      std::set<int> const& get_b_spot_status_at(
           Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid) const
       {
         return bspotstatus_.at(linkertype).at(bspotid);
@@ -234,37 +234,37 @@ namespace BEAMINTERACTION
       };
 
 
-      void SetId(int id) { id_ = id; };
+      void set_id(int id) { id_ = id; };
 
-      void SetBSpotPositions(std::map<Inpar::BEAMINTERACTION::CrosslinkerType,
+      void set_b_spot_positions(std::map<Inpar::BEAMINTERACTION::CrosslinkerType,
           std::map<int, Core::LinAlg::Matrix<3, 1>>> const& bspotpos)
       {
         bspotpos_ = bspotpos;
       };
-      void SetBSpotPosition(Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid,
+      void set_b_spot_position(Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid,
           Core::LinAlg::Matrix<3, 1> const& bspotpos)
       {
         bspotpos_[linkertype][bspotid] = bspotpos;
       };
 
-      void SetBSpotTriads(std::map<Inpar::BEAMINTERACTION::CrosslinkerType,
+      void set_b_spot_triads(std::map<Inpar::BEAMINTERACTION::CrosslinkerType,
           std::map<int, Core::LinAlg::Matrix<3, 3>>> const& bspottriad)
       {
         bspottriad_ = bspottriad;
       };
-      void SetBSpotTriad(Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid,
+      void set_b_spot_triad(Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid,
           Core::LinAlg::Matrix<3, 3> const& bspottriad)
       {
         bspottriad_[linkertype][bspotid] = bspottriad;
       };
 
-      void SetBSpotStatus(
+      void set_b_spot_status(
           std::map<Inpar::BEAMINTERACTION::CrosslinkerType, std::map<int, std::set<int>>> const&
               bspotstatus)
       {
         bspotstatus_ = bspotstatus;
       };
-      void SetBSpotStatus(
+      void set_b_spot_status(
           Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid, std::set<int> clgids)
       {
         bspotstatus_[linkertype][bspotid] = clgids;
@@ -335,25 +335,25 @@ namespace BEAMINTERACTION
       //!@name data access functions
       //! @{
 
-      int GetClId() const { return clgid_; };
+      int get_cl_id() const { return clgid_; };
 
-      int GetEleId() const { return elegid_; };
+      int get_ele_id() const { return elegid_; };
 
-      int GetBSpotLocN() const { return bspotlocn_; };
+      int get_b_spot_loc_n() const { return bspotlocn_; };
 
-      int GetRequestProc() const { return requestproc_; };
+      int get_request_proc() const { return requestproc_; };
 
-      int GetPermission() const { return permission_; };
+      int get_permission() const { return permission_; };
 
-      void SetClId(int clgid) { clgid_ = clgid; };
+      void set_cl_id(int clgid) { clgid_ = clgid; };
 
-      void SetEleId(int elegid) { elegid_ = elegid; };
+      void set_ele_id(int elegid) { elegid_ = elegid; };
 
-      void SetBSpotLocN(int bspotlocn) { bspotlocn_ = bspotlocn; };
+      void set_b_spot_loc_n(int bspotlocn) { bspotlocn_ = bspotlocn; };
 
-      void SetRequestProc(int requestproc) { requestproc_ = requestproc; };
+      void set_request_proc(int requestproc) { requestproc_ = requestproc; };
 
-      void SetPermission(int permission) { permission_ = permission; };
+      void set_permission(int permission) { permission_ = permission; };
 
       //! @}
 
@@ -405,18 +405,18 @@ namespace BEAMINTERACTION
       //!@name data access functions
       //! @{
 
-      int GetClId() const { return clgid_; };
+      int get_cl_id() const { return clgid_; };
 
-      std::pair<int, int> const& GetEleToupdate() const { return eletoupdate_; };
+      std::pair<int, int> const& get_ele_toupdate() const { return eletoupdate_; };
 
-      Inpar::BEAMINTERACTION::CrosslinkerType GetLinkerType() const { return linkertype_; };
+      Inpar::BEAMINTERACTION::CrosslinkerType get_linker_type() const { return linkertype_; };
 
 
-      void SetClId(int clgid) { clgid_ = clgid; };
+      void set_cl_id(int clgid) { clgid_ = clgid; };
 
-      void SetEleToupdate(std::pair<int, int> eletoupdate) { eletoupdate_ = eletoupdate; };
+      void set_ele_toupdate(std::pair<int, int> eletoupdate) { eletoupdate_ = eletoupdate; };
 
-      void SetLinkerType(Inpar::BEAMINTERACTION::CrosslinkerType linkertype)
+      void set_linker_type(Inpar::BEAMINTERACTION::CrosslinkerType linkertype)
       {
         linkertype_ = linkertype;
       };
@@ -468,33 +468,33 @@ namespace BEAMINTERACTION
       //!@name data access functions
       //! @{
 
-      int GetEleGid1() const { return elegid_1_; };
-      int GetEleGid2() const { return elegid_2_; };
+      int get_ele_gid1() const { return elegid_1_; };
+      int get_ele_gid2() const { return elegid_2_; };
 
-      int GetLocBspotId1() const { return locbspot_1_; };
-      int GetLocBspotId2() const { return locbspot_2_; };
+      int get_loc_bspot_id1() const { return locbspot_1_; };
+      int get_loc_bspot_id2() const { return locbspot_2_; };
 
-      int GetType() const { return type_; };
+      int get_type() const { return type_; };
 
-      int GetMatId() const { return mat_id_; };
+      int get_mat_id() const { return mat_id_; };
 
-      int GetNumberOfBonds1() const { return number_of_bonds_1_; };
-      int GetNumberOfBonds2() const { return number_of_bonds_2_; };
+      int get_number_of_bonds1() const { return number_of_bonds_1_; };
+      int get_number_of_bonds2() const { return number_of_bonds_2_; };
 
-      void SetEleGid1(int elegid) { elegid_1_ = elegid; };
-      void SetEleGid2(int elegid) { elegid_2_ = elegid; };
+      void set_ele_gid1(int elegid) { elegid_1_ = elegid; };
+      void set_ele_gid2(int elegid) { elegid_2_ = elegid; };
 
-      void SetLocBspotId1(int locbspot) { locbspot_1_ = locbspot; };
-      void SetLocBspotId2(int locbspot) { locbspot_2_ = locbspot; };
+      void set_loc_bspot_id1(int locbspot) { locbspot_1_ = locbspot; };
+      void set_loc_bspot_id2(int locbspot) { locbspot_2_ = locbspot; };
 
       void set_type(int type) { type_ = type; };
 
-      void SetMatId(int mat_id) { mat_id_ = mat_id; };
+      void set_mat_id(int mat_id) { mat_id_ = mat_id; };
 
-      void SetNumberOfBonds1(int number_of_bonds) { number_of_bonds_1_ = number_of_bonds; };
-      void SetNumberOfBonds2(int number_of_bonds) { number_of_bonds_2_ = number_of_bonds; };
+      void set_number_of_bonds1(int number_of_bonds) { number_of_bonds_1_ = number_of_bonds; };
+      void set_number_of_bonds2(int number_of_bonds) { number_of_bonds_2_ = number_of_bonds; };
 
-      bool SameAs(BspotLinkerData bspotlinker);
+      bool same_as(BspotLinkerData bspotlinker);
 
       //! @}
 

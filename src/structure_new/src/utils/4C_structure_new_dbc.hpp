@@ -90,10 +90,10 @@ namespace Solid
     /*! \brief Apply the DBC to the rhs vector and calculate and save the reaction forces
      *
      *  \note Stay in the global coordinate system (Rotation: global-->local-->global).*/
-    void ApplyDirichletToRhs(Teuchos::RCP<Epetra_Vector>& b) const;
+    void apply_dirichlet_to_rhs(Teuchos::RCP<Epetra_Vector>& b) const;
 
     //! Update the locsys manager
-    void UpdateLocSysManager();
+    void update_loc_sys_manager();
 
     //! Calculate the dirichlet increment of the current (time) step
     Teuchos::RCP<Epetra_Vector> get_dirichlet_increment();
@@ -119,19 +119,19 @@ namespace Solid
     Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const;
 
     //! Get a pointer to the local system manager
-    Teuchos::RCP<Core::Conditions::LocsysManager> LocSysManagerPtr();
+    Teuchos::RCP<Core::Conditions::LocsysManager> loc_sys_manager_ptr();
 
     //! Get the zeros vector
-    const Epetra_Vector& GetZeros() const;
-    Teuchos::RCP<const Epetra_Vector> GetZerosPtr() const;
+    const Epetra_Vector& get_zeros() const;
+    Teuchos::RCP<const Epetra_Vector> get_zeros_ptr() const;
 
     //!@}
 
     //! Allows to expand dbc map with provided maptoadd
-    void AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd);
+    void add_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
     //! Allows to contract dbc map with provided maptoremove
-    void RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove);
+    void remove_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoremove);
 
     /*! \brief Rotate the system matrix from a global to a local coordinate system
      *
@@ -139,7 +139,7 @@ namespace Solid
      *
      *  \note Works only for Core::LinAlg::SparseMatrices.
      **/
-    bool RotateGlobalToLocal(const Teuchos::RCP<Core::LinAlg::SparseOperator>& A) const;
+    bool rotate_global_to_local(const Teuchos::RCP<Core::LinAlg::SparseOperator>& A) const;
 
     /*! \brief Rotate the rhs vector from the global to the local coordinate system
      *
@@ -147,7 +147,7 @@ namespace Solid
      *
      *  \param[in] v Vector to be rotated
      */
-    bool RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v) const;
+    bool rotate_global_to_local(const Teuchos::RCP<Epetra_Vector>& v) const;
 
     /*! \brief Rotate the rhs vector from the global to the local coordinate system
      *
@@ -156,7 +156,7 @@ namespace Solid
      *  \param[in] v Vector to be rotated
      *  \param[in] offset ??
      */
-    bool RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const;
+    bool rotate_global_to_local(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const;
 
     /*! \brief Rotate a vector from the local to the global coordinate system
      *
@@ -164,7 +164,7 @@ namespace Solid
      *
      *  \param[in] v Vector to be rotated
      */
-    bool RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v) const;
+    bool rotate_local_to_global(const Teuchos::RCP<Epetra_Vector>& v) const;
 
     /*! \brief Rotate a vector from the local to the global coordinate system
      *
@@ -173,7 +173,7 @@ namespace Solid
      *  \param[in] v Vector to be rotated
      *  \param[in] offset ??
      */
-    bool RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const;
+    bool rotate_local_to_global(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const;
 
    protected:
     //! Returns the initialization status

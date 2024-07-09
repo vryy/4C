@@ -50,9 +50,9 @@ FSI::ConstrMonolithic::ConstrMonolithic(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::ConstrMonolithic::GeneralSetup()
+void FSI::ConstrMonolithic::general_setup()
 {
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   linearsolverstrategy_ =
       Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
@@ -74,43 +74,43 @@ void FSI::ConstrMonolithic::GeneralSetup()
   Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
   // structure to fluid
-  const int ndim = Global::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::instance()->n_dim();
   coupsf.setup_condition_coupling(*structure_field()->discretization(),
-      structure_field()->Interface()->fsi_cond_map(), *fluid_field()->discretization(),
-      fluid_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
+      structure_field()->interface()->fsi_cond_map(), *fluid_field()->discretization(),
+      fluid_field()->interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // structure to ale
 
   coupsa.setup_condition_coupling(*structure_field()->discretization(),
-      structure_field()->Interface()->fsi_cond_map(), *ale_field()->discretization(),
-      ale_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
+      structure_field()->interface()->fsi_cond_map(), *ale_field()->discretization(),
+      ale_field()->interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // fluid to ale at the interface
 
   icoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
-      fluid_field()->Interface()->fsi_cond_map(), *ale_field()->discretization(),
-      ale_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
+      fluid_field()->interface()->fsi_cond_map(), *ale_field()->discretization(),
+      ale_field()->interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
   // interface dof map for all fields and have just one transfer
   // operator from the interface map to the full field map.
-  if (not coupsf.MasterDofMap()->SameAs(*coupsa.MasterDofMap()))
+  if (not coupsf.master_dof_map()->SameAs(*coupsa.master_dof_map()))
     FOUR_C_THROW("structure interface dof maps do not match");
 
-  if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
+  if (coupsf.master_dof_map()->NumGlobalElements() == 0)
     FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
   // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = fluid_field()->discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap = ale_field()->discretization()->NodeRowMap();
+  const Epetra_Map* fluidnodemap = fluid_field()->discretization()->node_row_map();
+  const Epetra_Map* alenodemap = ale_field()->discretization()->node_row_map();
 
   coupfa.setup_coupling(*fluid_field()->discretization(), *ale_field()->discretization(),
       *fluidnodemap, *alenodemap, ndim);
 
-  fluid_field()->SetMeshMap(coupfa.MasterDofMap());
+  fluid_field()->set_mesh_map(coupfa.master_dof_map());
 
-  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*ale_field()->Interface()->Map(0)));
+  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*ale_field()->interface()->Map(0)));
 
   // ---------------------------------------------------------------------------
   // Build the global Dirichlet map extractor
@@ -121,7 +121,7 @@ void FSI::ConstrMonolithic::GeneralSetup()
   // intersection of inner ALE DOFs with Dirichlet ALE DOFs.
   std::vector<Teuchos::RCP<const Epetra_Map>> aleintersectionmaps;
   aleintersectionmaps.push_back(ale_field()->get_dbc_map_extractor()->cond_map());
-  aleintersectionmaps.push_back(ale_field()->Interface()->other_map());
+  aleintersectionmaps.push_back(ale_field()->interface()->other_map());
   Teuchos::RCP<Epetra_Map> aleintersectionmap =
       Core::LinAlg::MultiMapExtractor::intersect_maps(aleintersectionmaps);
 
@@ -151,7 +151,7 @@ void FSI::ConstrMonolithic::evaluate(Teuchos::RCP<const Epetra_Vector> step_incr
   if (step_increment != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> lagrincr = extractor().extract_vector(step_increment, 3);
-    conman_->UpdateTotLagrMult(lagrincr);
+    conman_->update_tot_lagr_mult(lagrincr);
   }
 
   //-----------------------------------------------------------------------------
@@ -166,7 +166,7 @@ void FSI::ConstrMonolithic::evaluate(Teuchos::RCP<const Epetra_Vector> step_incr
 void FSI::ConstrMonolithic::scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   // should we scale the system?
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
@@ -174,30 +174,30 @@ void FSI::ConstrMonolithic::scale_system(Core::LinAlg::BlockSparseMatrixBase& ma
   {
     // The matrices are modified here. Do we have to change them back later on?
 
-    Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0, 0).EpetraMatrix();
+    Teuchos::RCP<Epetra_CrsMatrix> A = mat.matrix(0, 0).epetra_matrix();
     srowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
     scolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
     A->InvRowSums(*srowsum_);
     A->InvColSums(*scolsum_);
     if (A->LeftScale(*srowsum_) or A->RightScale(*scolsum_) or
-        mat.Matrix(0, 1).EpetraMatrix()->LeftScale(*srowsum_) or
-        mat.Matrix(0, 2).EpetraMatrix()->LeftScale(*srowsum_) or
-        mat.Matrix(0, 3).EpetraMatrix()->LeftScale(*srowsum_) or
-        mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
-        mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_) or
-        mat.Matrix(3, 0).EpetraMatrix()->RightScale(*scolsum_))
+        mat.matrix(0, 1).epetra_matrix()->LeftScale(*srowsum_) or
+        mat.matrix(0, 2).epetra_matrix()->LeftScale(*srowsum_) or
+        mat.matrix(0, 3).epetra_matrix()->LeftScale(*srowsum_) or
+        mat.matrix(1, 0).epetra_matrix()->RightScale(*scolsum_) or
+        mat.matrix(2, 0).epetra_matrix()->RightScale(*scolsum_) or
+        mat.matrix(3, 0).epetra_matrix()->RightScale(*scolsum_))
       FOUR_C_THROW("structure scaling failed");
 
-    A = mat.Matrix(2, 2).EpetraMatrix();
+    A = mat.matrix(2, 2).epetra_matrix();
     arowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
     acolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
     A->InvRowSums(*arowsum_);
     A->InvColSums(*acolsum_);
     if (A->LeftScale(*arowsum_) or A->RightScale(*acolsum_) or
-        mat.Matrix(2, 0).EpetraMatrix()->LeftScale(*arowsum_) or
-        mat.Matrix(2, 1).EpetraMatrix()->LeftScale(*arowsum_) or
-        mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
-        mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_))
+        mat.matrix(2, 0).epetra_matrix()->LeftScale(*arowsum_) or
+        mat.matrix(2, 1).epetra_matrix()->LeftScale(*arowsum_) or
+        mat.matrix(0, 2).epetra_matrix()->RightScale(*acolsum_) or
+        mat.matrix(1, 2).epetra_matrix()->RightScale(*acolsum_))
       FOUR_C_THROW("ale scaling failed");
 
     Teuchos::RCP<Epetra_Vector> sx = extractor().extract_vector(b, 0);
@@ -217,7 +217,7 @@ void FSI::ConstrMonolithic::scale_system(Core::LinAlg::BlockSparseMatrixBase& ma
 void FSI::ConstrMonolithic::unscale_solution(
     Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
@@ -241,26 +241,26 @@ void FSI::ConstrMonolithic::unscale_solution(
     extractor().insert_vector(*sx, 0, b);
     extractor().insert_vector(*ax, 2, b);
 
-    Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0, 0).EpetraMatrix();
+    Teuchos::RCP<Epetra_CrsMatrix> A = mat.matrix(0, 0).epetra_matrix();
     srowsum_->Reciprocal(*srowsum_);
     scolsum_->Reciprocal(*scolsum_);
     if (A->LeftScale(*srowsum_) or A->RightScale(*scolsum_) or
-        mat.Matrix(0, 1).EpetraMatrix()->LeftScale(*srowsum_) or
-        mat.Matrix(0, 2).EpetraMatrix()->LeftScale(*srowsum_) or
-        mat.Matrix(0, 3).EpetraMatrix()->LeftScale(*srowsum_) or
-        mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
-        mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_) or
-        mat.Matrix(3, 0).EpetraMatrix()->RightScale(*scolsum_))
+        mat.matrix(0, 1).epetra_matrix()->LeftScale(*srowsum_) or
+        mat.matrix(0, 2).epetra_matrix()->LeftScale(*srowsum_) or
+        mat.matrix(0, 3).epetra_matrix()->LeftScale(*srowsum_) or
+        mat.matrix(1, 0).epetra_matrix()->RightScale(*scolsum_) or
+        mat.matrix(2, 0).epetra_matrix()->RightScale(*scolsum_) or
+        mat.matrix(3, 0).epetra_matrix()->RightScale(*scolsum_))
       FOUR_C_THROW("structure scaling failed");
 
-    A = mat.Matrix(2, 2).EpetraMatrix();
+    A = mat.matrix(2, 2).epetra_matrix();
     arowsum_->Reciprocal(*arowsum_);
     acolsum_->Reciprocal(*acolsum_);
     if (A->LeftScale(*arowsum_) or A->RightScale(*acolsum_) or
-        mat.Matrix(2, 0).EpetraMatrix()->LeftScale(*arowsum_) or
-        mat.Matrix(2, 1).EpetraMatrix()->LeftScale(*arowsum_) or
-        mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
-        mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_))
+        mat.matrix(2, 0).epetra_matrix()->LeftScale(*arowsum_) or
+        mat.matrix(2, 1).epetra_matrix()->LeftScale(*arowsum_) or
+        mat.matrix(0, 2).epetra_matrix()->RightScale(*acolsum_) or
+        mat.matrix(1, 2).epetra_matrix()->RightScale(*acolsum_))
       FOUR_C_THROW("ale scaling failed");
   }
 
@@ -384,7 +384,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::ConstrMonolithic::create_status_test
   // setup tests for fluid velocities
 
   std::vector<Teuchos::RCP<const Epetra_Map>> fluidvel;
-  fluidvel.push_back(fluid_field()->InnerVelocityRowMap());
+  fluidvel.push_back(fluid_field()->inner_velocity_row_map());
   fluidvel.push_back(Teuchos::null);
   Core::LinAlg::MultiMapExtractor fluidvelextract(*dof_row_map(), fluidvel);
 
@@ -406,7 +406,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::ConstrMonolithic::create_status_test
   // setup tests for fluid pressure
 
   std::vector<Teuchos::RCP<const Epetra_Map>> fluidpress;
-  fluidpress.push_back(fluid_field()->PressureRowMap());
+  fluidpress.push_back(fluid_field()->pressure_row_map());
   fluidpress.push_back(Teuchos::null);
   Core::LinAlg::MultiMapExtractor fluidpressextract(*dof_row_map(), fluidpress);
 
@@ -426,7 +426,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::ConstrMonolithic::create_status_test
   // setup tests for volume constraint
 
   std::vector<Teuchos::RCP<const Epetra_Map>> volconstr;
-  volconstr.push_back(conman_->GetConstraintMap());
+  volconstr.push_back(conman_->get_constraint_map());
   volconstr.push_back(Teuchos::null);
   Core::LinAlg::MultiMapExtractor volconstrextract(*dof_row_map(), volconstr);
 
@@ -452,7 +452,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::ConstrMonolithic::create_status_test
 /*----------------------------------------------------------------------*/
 void FSI::ConstrMonolithic::create_system_matrix(bool structuresplit)
 {
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   // get the PCITER from inputfile

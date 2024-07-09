@@ -45,7 +45,7 @@ namespace CONTACT
       /*! \brief Read and check contact input parameters
        *
        * All specified contact-related input parameters are read from the
-       * Global::Problem::Instance() and stored into a local variable of
+       * Global::Problem::instance() and stored into a local variable of
        * type Teuchos::ParameterList. Invalid parameter combinations are
        * sorted out and throw a FOUR_C_THROW.
        *
@@ -64,23 +64,23 @@ namespace CONTACT
        * \todo ToDo Get rid of poroslave and poromaster parameters.
        *
        * \author Popp */
-      void BuildInterfaces(const Teuchos::ParameterList& params,
+      void build_interfaces(const Teuchos::ParameterList& params,
           std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces, bool& poroslave,
           bool& poromaster) const;
 
       /** \brief Create a contact interface object based on the given information
        *
        *  \author hiermeier \date 03/17 */
-      static Teuchos::RCP<CONTACT::Interface> CreateInterface(const int id, const Epetra_Comm& comm,
-          const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
-          const Teuchos::RCP<const Core::FE::Discretization>& parent_dis,
+      static Teuchos::RCP<CONTACT::Interface> create_interface(const int id,
+          const Epetra_Comm& comm, const int dim, Teuchos::ParameterList& icparams,
+          const bool selfcontact, const Teuchos::RCP<const Core::FE::Discretization>& parent_dis,
           Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr = Teuchos::null,
           const int contactconstitutivelaw_id = -1);
 
       /** \brief Create a contact interface object based on the given information
        *
        *  \author hiermeier \date 03/17 */
-      static Teuchos::RCP<CONTACT::Interface> CreateInterface(
+      static Teuchos::RCP<CONTACT::Interface> create_interface(
           const enum Inpar::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
           const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
           const Teuchos::RCP<const Core::FE::Discretization>& parent_dis,
@@ -90,7 +90,7 @@ namespace CONTACT
       /*! \brief Create the solver strategy object and pass all necessary data to it
        *
        * \author Popp */
-      Teuchos::RCP<CONTACT::AbstractStrategy> BuildStrategy(const Teuchos::ParameterList& params,
+      Teuchos::RCP<CONTACT::AbstractStrategy> build_strategy(const Teuchos::ParameterList& params,
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
           std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces,
           CONTACT::ParamsInterface* cparams_interface = nullptr) const;
@@ -101,7 +101,7 @@ namespace CONTACT
        *  access to the class members, use the alternative call.
        *
        * \author hiermeier \date 03/17 */
-      static Teuchos::RCP<CONTACT::AbstractStrategy> BuildStrategy(
+      static Teuchos::RCP<CONTACT::AbstractStrategy> build_strategy(
           const Inpar::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
           std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces, const Epetra_Map* dof_row_map,
@@ -111,7 +111,7 @@ namespace CONTACT
           CONTACT::ParamsInterface* cparams_interface = nullptr);
 
       //! Create the desired search tree object
-      void BuildSearchTree(const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces) const;
+      void build_search_tree(const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces) const;
 
       //! print some final screen output
       void print(const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces,
@@ -121,7 +121,7 @@ namespace CONTACT
       /*! \brief print strategy banner
        *
        *  \param soltype (in) : contact solving strategy type */
-      static void PrintStrategyBanner(const enum Inpar::CONTACT::SolvingStrategy soltype);
+      static void print_strategy_banner(const enum Inpar::CONTACT::SolvingStrategy soltype);
 
      protected:
      private:

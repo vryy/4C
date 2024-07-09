@@ -70,20 +70,20 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
   tempinc_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
 
   // setup mortar coupling
-  if (Global::Problem::Instance()->GetProblemType() == Core::ProblemType::thermo)
+  if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::thermo)
   {
-    Core::Conditions::Condition* mrtrcond = actdis->GetCondition("Mortar");
+    Core::Conditions::Condition* mrtrcond = actdis->get_condition("Mortar");
     if (mrtrcond != nullptr)
     {
       adaptermeshtying_ =
-          Teuchos::rcp(new Core::Adapter::CouplingMortar(Global::Problem::Instance()->NDim(),
-              Global::Problem::Instance()->mortar_coupling_params(),
-              Global::Problem::Instance()->contact_dynamic_params(),
-              Global::Problem::Instance()->spatial_approximation_type()));
+          Teuchos::rcp(new Core::Adapter::CouplingMortar(Global::Problem::instance()->n_dim(),
+              Global::Problem::instance()->mortar_coupling_params(),
+              Global::Problem::instance()->contact_dynamic_params(),
+              Global::Problem::instance()->spatial_approximation_type()));
 
       std::vector<int> coupleddof(1, 1);
-      adaptermeshtying_->setup(actdis, actdis, Teuchos::null, coupleddof, "Mortar", actdis->Comm(),
-          Global::Problem::Instance()->FunctionManager(), false, false, 0, 0);
+      adaptermeshtying_->setup(actdis, actdis, Teuchos::null, coupleddof, "Mortar",
+          actdis->get_comm(), Global::Problem::instance()->function_manager(), false, false, 0, 0);
       adaptermeshtying_->evaluate();
     }
   }
@@ -92,10 +92,10 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
 /*----------------------------------------------------------------------*
  | integrate step                                           bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::IntegrateStep()
+void THR::TimIntImpl::integrate_step()
 {
-  Predict();
-  Solve();
+  predict();
+  solve();
   return;
 }
 
@@ -151,7 +151,7 @@ void THR::TimIntImpl::evaluate()
 /*----------------------------------------------------------------------*
  | predict solution                                         bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::Predict()
+void THR::TimIntImpl::predict()
 {
   // choose predictor
   if (pred_ == Inpar::THR::pred_consttemp)
@@ -178,7 +178,7 @@ void THR::TimIntImpl::Predict()
   if (contact_strategy_nitsche_ != Teuchos::null)
   {
     // re-evaluate the contact
-    contact_strategy_nitsche_->Integrate(*contact_params_interface_);
+    contact_strategy_nitsche_->integrate(*contact_params_interface_);
   }
 
   // apply Dirichlet BCs
@@ -202,7 +202,7 @@ void THR::TimIntImpl::Predict()
   // determine characteristic norms
   // we set the minimum of calc_ref_norm_force() and #tolfres_, because
   // we want to prevent the case of a zero characteristic fnorm
-  normcharforce_ = CalcRefNormForce();
+  normcharforce_ = calc_ref_norm_force();
   if (normcharforce_ == 0.0) normcharforce_ = tolfres_;
   normchartemp_ = calc_ref_norm_temperature();
   if (normchartemp_ == 0.0) normchartemp_ = toltempi_;
@@ -244,7 +244,7 @@ void THR::TimIntImpl::prepare_partition_step()
   // determine characteristic norms
   // we set the minumum of calc_ref_norm_force() and #tolfres_, because
   // we want to prevent the case of a zero characteristic fnorm
-  normcharforce_ = CalcRefNormForce();
+  normcharforce_ = calc_ref_norm_force();
   if (normcharforce_ == 0.0) normcharforce_ = tolfres_;
   normchartemp_ = calc_ref_norm_temperature();
   if (normchartemp_ == 0.0) normchartemp_ = toltempi_;
@@ -304,7 +304,7 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
   {
     // linear reactions
     Teuchos::RCP<Epetra_Vector> freact = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
-    tang_->Multiply(false, *dbcinc, *freact);
+    tang_->multiply(false, *dbcinc, *freact);
 
     // add linear reaction forces due to prescribed Dirichlet BCs
     fres_->Update(1.0, *freact, 1.0);
@@ -323,7 +323,7 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
 
   // apply Dirichlet BCs to system of equations
   tempi_->PutScalar(0.0);
-  tang_->Complete();
+  tang_->complete();
   Core::LinAlg::apply_dirichlet_to_system(
       *tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->cond_map()));
 
@@ -333,7 +333,7 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
-  solver_->Solve(tang_->EpetraMatrix(), tempi_, fres_, solver_params);
+  solver_->solve(tang_->epetra_matrix(), tempi_, fres_, solver_params);
   solver_->reset();
 
   // build residual temperature norm
@@ -362,7 +362,7 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
     // go to elements
     discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 
   // shalom
@@ -378,7 +378,7 @@ void THR::TimIntImpl::prepare_time_step()
   // out of sync.
 
   // predict
-  Predict();
+  predict();
 
   // initialise incremental temperatures
   tempinc_->PutScalar(0.0);
@@ -387,7 +387,7 @@ void THR::TimIntImpl::prepare_time_step()
 /*----------------------------------------------------------------------*
  | converged                                                bborn 08/09 |
  *----------------------------------------------------------------------*/
-bool THR::TimIntImpl::Converged()
+bool THR::TimIntImpl::converged()
 {
   // verify: #normcharforce_ has been delivered strictly larger than zero
   if (normcharforce_ <= 0.0)
@@ -457,13 +457,13 @@ bool THR::TimIntImpl::Converged()
 /*----------------------------------------------------------------------*
  | solve equilibrium                                        bborn 08/09 |
  *----------------------------------------------------------------------*/
-Inpar::THR::ConvergenceStatus THR::TimIntImpl::Solve()
+Inpar::THR::ConvergenceStatus THR::TimIntImpl::solve()
 {
   // choose solution technique in accordance with user's will
   switch (itertype_)
   {
     case Inpar::THR::soltech_newtonfull:
-      return NewtonFull();
+      return newton_full();
     // catch problems
     default:
       FOUR_C_THROW("Solution technique \"%s\" is not implemented",
@@ -475,7 +475,7 @@ Inpar::THR::ConvergenceStatus THR::TimIntImpl::Solve()
 /*----------------------------------------------------------------------*
  | solution with full Newton-Raphson iteration              bborn 08/09 |
  *----------------------------------------------------------------------*/
-Inpar::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
+Inpar::THR::ConvergenceStatus THR::TimIntImpl::newton_full()
 {
   // we do a Newton-Raphson iteration here.
   // the specific time integration has set the following
@@ -483,22 +483,22 @@ Inpar::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
   // --> On #tang_ is the effective dynamic tangent matrix
 
   // check whether we have a sanely filled tangent matrix
-  if (not tang_->Filled())
+  if (not tang_->filled())
   {
     FOUR_C_THROW("Effective tangent matrix must be filled here");
   }
 
   // initialise equilibrium loop
   iter_ = 1;
-  normfres_ = CalcRefNormForce();
+  normfres_ = calc_ref_norm_force();
   // normtempi_ was already set in predictor; this is strictly >0
   timer_.reset();
 
   // Do mortar condensation
-  if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->MortarCondensation(tang_, fres_);
+  if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->mortar_condensation(tang_, fres_);
 
   // equilibrium iteration loop
-  while (((not Converged()) and (iter_ <= itermax_)) or (iter_ <= itermin_))
+  while (((not converged()) and (iter_ <= itermax_)) or (iter_ <= itermin_))
   {
     // make negative residual
     fres_->Scale(-1.0);
@@ -524,14 +524,14 @@ Inpar::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
     }
     solver_params.refactor = true;
     solver_params.reset = iter_ == 1;
-    solver_->Solve(tang_->EpetraMatrix(), tempi_, fres_, solver_params);
-    solver_->ResetTolerance();
+    solver_->solve(tang_->epetra_matrix(), tempi_, fres_, solver_params);
+    solver_->reset_tolerance();
 
     // recover condensed variables
-    if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->MortarRecover(tang_, tempi_);
+    if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->mortar_recover(tang_, tempi_);
 
     // update end-point temperatures etc
-    UpdateIter(iter_);
+    update_iter(iter_);
 
     // compute residual forces #fres_ and tangent #tang_
     // whose components are globally oriented
@@ -567,7 +567,7 @@ void THR::TimIntImpl::blank_dirichlet_and_calc_norms()
   dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
 
   // do mortar condensation
-  if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->MortarCondensation(tang_, fres_);
+  if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->mortar_condensation(tang_, fres_);
 
   // build residual force norm
   normfres_ = THR::Aux::calculate_vector_norm(iternorm_, fres_);
@@ -610,7 +610,7 @@ Inpar::THR::ConvergenceStatus THR::TimIntImpl::newton_full_error_check()
     return Inpar::THR::conv_nonlin_fail;
   }
   // if everything is fine print to screen and return
-  if (Converged())
+  if (converged())
   {
     check_for_time_step_increase();
     return Inpar::THR::conv_success;
@@ -625,12 +625,12 @@ Inpar::THR::ConvergenceStatus THR::TimIntImpl::newton_full_error_check()
  *----------------------------------------------------------------------*/
 void THR::TimIntImpl::halve_time_step()
 {
-  const double old_dt = Dt();
+  const double old_dt = dt();
   const double new_dt = old_dt * 0.5;
-  const int endstep = NumStep() + (NumStep() - Step()) + 1;
+  const int endstep = num_step() + (num_step() - step()) + 1;
   set_dt(new_dt);
-  SetTimen(TimeOld() + new_dt);
-  SetNumStep(endstep);
+  set_timen(time_old() + new_dt);
+  set_num_step(endstep);
   reset_step();
   // TODO limit the maximum number of refinement levels?
   // go down one refinement level
@@ -639,8 +639,8 @@ void THR::TimIntImpl::halve_time_step()
 
   // remember number of iterations
   resetiter_ += iter_;
-  if (Comm().MyPID() == 0)
-    Core::IO::cout << "Nonlinear solver failed to converge in step " << Step()
+  if (get_comm().MyPID() == 0)
+    Core::IO::cout << "Nonlinear solver failed to converge in step " << step()
                    << ". Divide timestep in half. "
                    << "Old time step: " << old_dt << Core::IO::endl
                    << "New time step: " << new_dt << Core::IO::endl
@@ -664,18 +664,18 @@ void THR::TimIntImpl::check_for_time_step_increase()
     if (divcontfinesteps_ >= maxnumfinestep)
     {
       // increase the step size if the remaining number of steps is a even number
-      if (((NumStep() - Step()) % 2) == 0 and NumStep() != Step())
+      if (((num_step() - step()) % 2) == 0 and num_step() != step())
       {
-        if (Comm().MyPID() == 0)
+        if (get_comm().MyPID() == 0)
           Core::IO::cout << "Nonlinear solver successful. Double timestep size!" << Core::IO::endl;
 
         // step up one refinement level
         divcontrefinelevel_--;
         divcontfinesteps_ = 0;
         // update total number of steps and next time step
-        const int endstep = NumStep() - (NumStep() - Step()) / 2;
-        SetNumStep(endstep);
-        set_dt(Dt() * 2.0);
+        const int endstep = num_step() - (num_step() - step()) / 2;
+        set_num_step(endstep);
+        set_dt(dt() * 2.0);
       }
     }
   }
@@ -712,7 +712,7 @@ void THR::TimIntImpl::prepare_system_for_newton_solve()
 /*----------------------------------------------------------------------*
  | Update iteration                                         bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::UpdateIter(const int iter  //!< iteration counter
+void THR::TimIntImpl::update_iter(const int iter  //!< iteration counter
 )
 {
   // we need to do an incremental update (expensive)
@@ -764,11 +764,11 @@ void THR::TimIntImpl::update()
 {
   // update temperature and temperature rate
   // after this call we will have tempn_ == temp_ (temp_{n+1} == temp_n), etc.
-  UpdateStepState();
+  update_step_state();
   // update everything on the element level
-  UpdateStepElement();
+  update_step_element();
   // update time and step
-  UpdateStepTime();
+  update_step_time();
   // correct iteration counter by adding all reset iterations
   iter_ += resetiter_;
   resetiter_ = 0;
@@ -780,7 +780,7 @@ void THR::TimIntImpl::update()
 /*----------------------------------------------------------------------*
  | update Newton step                                        dano 02/11 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi)
+void THR::TimIntImpl::update_newton(Teuchos::RCP<const Epetra_Vector> tempi)
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And
@@ -800,7 +800,7 @@ void THR::TimIntImpl::UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi)
 void THR::TimIntImpl::print_predictor()
 {
   // only master processor
-  if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
+  if ((myrank_ == 0) and printscreen_ and (step_old() % printscreen_ == 0))
   {
     // relative check of force residual
     if (normtypefres_ == Inpar::THR::convnorm_rel)
@@ -840,7 +840,7 @@ void THR::TimIntImpl::print_predictor()
 void THR::TimIntImpl::print_newton_iter()
 {
   // print to standard out
-  if ((myrank_ == 0) and printscreen_ and printiter_ and (StepOld() % printscreen_ == 0))
+  if ((myrank_ == 0) and printscreen_ and printiter_ and (step_old() % printscreen_ == 0))
   {
     if (iter_ == 1) print_newton_iter_header(stdout);
     print_newton_iter_text(stdout);
@@ -989,10 +989,10 @@ void THR::TimIntImpl::print_newton_conv()
 /*----------------------------------------------------------------------*
  | print step summary                                       bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::PrintStep()
+void THR::TimIntImpl::print_step()
 {
   // print out (only on master CPU)
-  if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
+  if ((myrank_ == 0) and printscreen_ and (step_old() % printscreen_ == 0))
   {
     print_step_text(stdout);
   }
@@ -1049,10 +1049,10 @@ void THR::TimIntImpl::fd_check()
       Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map(), true));
 
   // initialise approximation of tangent
-  Teuchos::RCP<Epetra_CrsMatrix> tang_approx = Core::LinAlg::CreateMatrix((tang_->RowMap()), 81);
+  Teuchos::RCP<Epetra_CrsMatrix> tang_approx = Core::LinAlg::CreateMatrix((tang_->row_map()), 81);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tang_copy =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(tang_->EpetraMatrix(), Core::LinAlg::Copy));
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(tang_->epetra_matrix(), Core::LinAlg::Copy));
   std::cout << "\n****************** THR finite difference check ******************" << std::endl;
   std::cout << "thermo field has " << dofs << " DOFs" << std::endl;
 
@@ -1103,11 +1103,11 @@ void THR::TimIntImpl::fd_check()
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tang_approx_sparse =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(tang_approx, Core::LinAlg::Copy));
   // tang_approx_sparse = tang_approx_sparse - tang_copy
-  tang_approx_sparse->Add(*tang_copy, false, -1.0, 1.0);
+  tang_approx_sparse->add(*tang_copy, false, -1.0, 1.0);
 
   // initialise CRSMatrices for the two tangents
-  Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = tang_copy->EpetraMatrix();
-  Teuchos::RCP<Epetra_CrsMatrix> error_crs = tang_approx_sparse->EpetraMatrix();
+  Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = tang_copy->epetra_matrix();
+  Teuchos::RCP<Epetra_CrsMatrix> error_crs = tang_approx_sparse->epetra_matrix();
   error_crs->FillComplete();
   sparse_crs->FillComplete();
 

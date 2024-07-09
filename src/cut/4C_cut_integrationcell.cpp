@@ -22,18 +22,18 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::IntegrationCell::Contains(Core::LinAlg::Matrix<3, 1>& x)
+bool Core::Geo::Cut::IntegrationCell::contains(Core::LinAlg::Matrix<3, 1>& x)
 {
-  switch (this->Shape())
+  switch (this->shape())
   {
     case Core::FE::CellType::tet4:
     {
       // find element local position of gauss point
-      return Contains<3, Core::FE::CellType::tet4>(x);
+      return contains<3, Core::FE::CellType::tet4>(x);
     }
     case Core::FE::CellType::hex8:
     {
-      return Contains<3, Core::FE::CellType::hex8>(x);
+      return contains<3, Core::FE::CellType::hex8>(x);
     }
     default:
     {
@@ -48,36 +48,36 @@ bool Core::Geo::Cut::IntegrationCell::Contains(Core::LinAlg::Matrix<3, 1>& x)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType celltype>
-bool Core::Geo::Cut::IntegrationCell::Contains(Core::LinAlg::Matrix<probdim, 1>& x)
+bool Core::Geo::Cut::IntegrationCell::contains(Core::LinAlg::Matrix<probdim, 1>& x)
 {
   const int ncn = Core::FE::num_nodes<celltype>;
 
   Core::LinAlg::Matrix<probdim, ncn> coords(xyz_);
 
   Teuchos::RCP<Core::Geo::Cut::Position> pos =
-      Core::Geo::Cut::Position::Create(coords, x, celltype);
-  pos->Compute();
+      Core::Geo::Cut::Position::create(coords, x, celltype);
+  pos->compute();
 
   return pos->within_limits();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::IntegrationCell::DumpGmsh(std::ofstream& file, int* value)
+void Core::Geo::Cut::IntegrationCell::dump_gmsh(std::ofstream& file, int* value)
 {
-  Output::GmshCellDump(file, Shape(), xyz_, &position_, value);
+  Output::GmshCellDump(file, shape(), xyz_, &position_, value);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Core::Geo::Cut::IntegrationCell::Volume() const
+double Core::Geo::Cut::IntegrationCell::volume() const
 {
-  return Core::Geo::ElementVolume(Shape(), xyz_);
+  return Core::Geo::ElementVolume(shape(), xyz_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::Geo::Cut::Line2IntegrationCell::CubatureDegree(Core::FE::CellType elementshape) const
+int Core::Geo::Cut::Line2IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const
 {
   // not 100% sure what this value really means, but 4 seems more than sufficient.
   return 4;
@@ -85,21 +85,21 @@ int Core::Geo::Cut::Line2IntegrationCell::CubatureDegree(Core::FE::CellType elem
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::Geo::Cut::Tri3IntegrationCell::CubatureDegree(Core::FE::CellType elementshape) const
+int Core::Geo::Cut::Tri3IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const
 {
   return 4;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::Geo::Cut::Quad4IntegrationCell::CubatureDegree(Core::FE::CellType elementshape) const
+int Core::Geo::Cut::Quad4IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const
 {
   return 4;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::Geo::Cut::Hex8IntegrationCell::CubatureDegree(Core::FE::CellType elementshape) const
+int Core::Geo::Cut::Hex8IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const
 {
   switch (elementshape)
   {
@@ -127,7 +127,7 @@ int Core::Geo::Cut::Hex8IntegrationCell::CubatureDegree(Core::FE::CellType eleme
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::Geo::Cut::Tet4IntegrationCell::CubatureDegree(Core::FE::CellType elementshape) const
+int Core::Geo::Cut::Tet4IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const
 {
   switch (elementshape)
   {
@@ -155,14 +155,14 @@ int Core::Geo::Cut::Tet4IntegrationCell::CubatureDegree(Core::FE::CellType eleme
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::Geo::Cut::Wedge6IntegrationCell::CubatureDegree(Core::FE::CellType elementshape) const
+int Core::Geo::Cut::Wedge6IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const
 {
   return 4;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::Geo::Cut::Pyramid5IntegrationCell::CubatureDegree(Core::FE::CellType elementshape) const
+int Core::Geo::Cut::Pyramid5IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const
 {
   return 4;
 }
@@ -172,9 +172,9 @@ int Core::Geo::Cut::Pyramid5IntegrationCell::CubatureDegree(Core::FE::CellType e
 void Core::Geo::Cut::IntegrationCell::print(std::ostream& stream) const
 {
   stream << "--- integration cell ( address: " << std::setw(10) << this << " )\n";
-  stream << "pos = " << Point::point_position2_string(Position()) << " "
-         << "shape = " << Core::FE::CellTypeToString(Shape()) << " "
-         << "volume = " << Volume() << "\n";
+  stream << "pos = " << Point::point_position2_string(position()) << " "
+         << "shape = " << Core::FE::CellTypeToString(shape()) << " "
+         << "volume = " << volume() << "\n";
   for (unsigned i = 0; i < points_.size(); ++i)
   {
     (points_)[i]->print(stream);

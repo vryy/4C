@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 Teuchos::RCP<Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>>
-Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::CreateEvaluator(
+Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_evaluator(
     const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
     const POROFLUIDMULTIPHASE::Action& action, int numdofpernode, int numfluidphases,
     const PoroFluidManager::PhaseManagerInterface& phasemanager)
@@ -72,18 +72,18 @@ Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::CreateEvalu
           // evaluator_phase->AddEvaluator(tmpevaluator);
 
           // add evaluator for the convective conservative term (w, S \nabla \cdot v )
-          if (para.IsAle())
+          if (para.is_ale())
           {
             assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
             tmpevaluator = Teuchos::rcp(new EvaluatorSatDivVel<nsd, nen>(assembler, curphase));
-            evaluator_phase->AddEvaluator(tmpevaluator);
+            evaluator_phase->add_evaluator(tmpevaluator);
           }
           // add evaluator for Biot stabilization
-          if (para.BiotStab())
+          if (para.biot_stab())
           {
             assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
             tmpevaluator = Teuchos::rcp(new EvaluatorBiotStab<nsd, nen>(assembler, curphase));
-            evaluator_phase->AddEvaluator(tmpevaluator);
+            evaluator_phase->add_evaluator(tmpevaluator);
           }
 
           // add evaluator for the diffusive term (\nabla w, K \nabla p)
@@ -91,38 +91,38 @@ Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::CreateEvalu
           assembler = Teuchos::rcp(
               new AssembleAlsoIntoOtherPhase(curphase, numfluidphases - 1, inittimederiv));
           tmpevaluator = Teuchos::rcp(new EvaluatorDiff<nsd, nen>(assembler, curphase));
-          evaluator_phase->AddEvaluator(tmpevaluator);
+          evaluator_phase->add_evaluator(tmpevaluator);
 
           // add evaluator for the reactive term
-          if (phasemanager.IsReactive(curphase))
+          if (phasemanager.is_reactive(curphase))
           {
             // the reactive term is also assembled into the last phase
             assembler = Teuchos::rcp(
                 new AssembleAlsoIntoOtherPhase(curphase, numfluidphases - 1, inittimederiv));
             tmpevaluator = Teuchos::rcp(new EvaluatorReac<nsd, nen>(assembler, curphase));
-            evaluator_phase->AddEvaluator(tmpevaluator);
+            evaluator_phase->add_evaluator(tmpevaluator);
           }
 
           // add evaluators for the instationary terms
-          if (not para.IsStationary())
+          if (not para.is_stationary())
           {
             // add evaluator for the instationary pressure term
             // the term is also assembled into the last phase
             assembler = Teuchos::rcp(
                 new AssembleAlsoIntoOtherPhase(curphase, numfluidphases - 1, inittimederiv));
             tmpevaluator = Teuchos::rcp(new EvaluatorMassPressure<nsd, nen>(assembler, curphase));
-            evaluator_phase->AddEvaluator(tmpevaluator);
+            evaluator_phase->add_evaluator(tmpevaluator);
 
             // add evaluator for the instationary solid pressure term
             assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
             tmpevaluator =
                 Teuchos::rcp(new EvaluatorMassSolidPressureSat<nsd, nen>(assembler, curphase));
-            evaluator_phase->AddEvaluator(tmpevaluator);
+            evaluator_phase->add_evaluator(tmpevaluator);
 
             // add evaluator for the instationary saturation term
             assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
             tmpevaluator = Teuchos::rcp(new EvaluatorMassSaturation<nsd, nen>(assembler, curphase));
-            evaluator_phase->AddEvaluator(tmpevaluator);
+            evaluator_phase->add_evaluator(tmpevaluator);
           }
 
           // add evaluators for the additional terms in fluid equations introduced by volume
@@ -130,26 +130,26 @@ Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::CreateEvalu
           if (hasvolfracs)
           {
             // add evaluators for the instationary terms
-            if (not para.IsStationary())
+            if (not para.is_stationary())
             {
               // add evaluator for the instationary solid pressure term
               assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
               tmpevaluator = Teuchos::rcp(
                   new EvaluatorVolFracAddInstatTermsSat<nsd, nen>(assembler, curphase));
-              evaluator_phase->AddEvaluator(tmpevaluator);
+              evaluator_phase->add_evaluator(tmpevaluator);
             }
 
-            if (para.IsAle())
+            if (para.is_ale())
             {
               assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
               tmpevaluator =
                   Teuchos::rcp(new EvaluatorVolFracAddDivVelTermSat<nsd, nen>(assembler, curphase));
-              evaluator_phase->AddEvaluator(tmpevaluator);
+              evaluator_phase->add_evaluator(tmpevaluator);
             }
           }
 
           // add the evaluator of the phase to the multiphase evaluator
-          evaluator_multiphase->AddEvaluator(evaluator_phase);
+          evaluator_multiphase->add_evaluator(evaluator_phase);
         }
 
         // build evaluators for the last fluid phase
@@ -165,46 +165,46 @@ Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::CreateEvalu
           Teuchos::RCP<AssembleInterface> assembler = Teuchos::null;
 
           // add evaluator for the convective conservative term (w, \nabla \cdot v )
-          if (para.IsAle())
+          if (para.is_ale())
           {
             assembler = Teuchos::rcp(new AssembleStandard(curphase, false));
             tmpevaluator = Teuchos::rcp(new EvaluatorDivVel<nsd, nen>(assembler, curphase));
-            evaluator_lastphase->AddEvaluator(tmpevaluator);
+            evaluator_lastphase->add_evaluator(tmpevaluator);
           }
           // add evaluator for Biot stabilization
-          if (para.BiotStab())
+          if (para.biot_stab())
           {
             assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
             tmpevaluator = Teuchos::rcp(new EvaluatorBiotStab<nsd, nen>(assembler, curphase));
-            evaluator_lastphase->AddEvaluator(tmpevaluator);
+            evaluator_lastphase->add_evaluator(tmpevaluator);
           }
 
           // add evaluator for the diffusive term (\nabla w, K \nabla p)
           assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
           tmpevaluator = Teuchos::rcp(new EvaluatorDiff<nsd, nen>(assembler, curphase));
-          evaluator_lastphase->AddEvaluator(tmpevaluator);
+          evaluator_lastphase->add_evaluator(tmpevaluator);
 
           // add evaluator for the reactive term
-          if (phasemanager.IsReactive(curphase))
+          if (phasemanager.is_reactive(curphase))
           {
             assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
             tmpevaluator = Teuchos::rcp(new EvaluatorReac<nsd, nen>(assembler, curphase));
-            evaluator_lastphase->AddEvaluator(tmpevaluator);
+            evaluator_lastphase->add_evaluator(tmpevaluator);
           }
 
           // add evaluators for the instationary terms
-          if (not para.IsStationary())
+          if (not para.is_stationary())
           {
             // add evaluator for the instationary pressure term
             assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
             tmpevaluator = Teuchos::rcp(new EvaluatorMassPressure<nsd, nen>(assembler, curphase));
-            evaluator_lastphase->AddEvaluator(tmpevaluator);
+            evaluator_lastphase->add_evaluator(tmpevaluator);
 
             // add evaluator for the instationary solid pressure term
             assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
             tmpevaluator =
                 Teuchos::rcp(new EvaluatorMassSolidPressure<nsd, nen>(assembler, curphase));
-            evaluator_lastphase->AddEvaluator(tmpevaluator);
+            evaluator_lastphase->add_evaluator(tmpevaluator);
           }
 
           // add evaluators for the additional terms in fluid equations introduced by volume
@@ -212,26 +212,26 @@ Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::CreateEvalu
           if (hasvolfracs)
           {
             // add evaluators for the instationary terms
-            if (not para.IsStationary())
+            if (not para.is_stationary())
             {
               // add evaluator for the instationary solid pressure term
               assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
               tmpevaluator =
                   Teuchos::rcp(new EvaluatorVolFracAddInstatTerms<nsd, nen>(assembler, curphase));
-              evaluator_lastphase->AddEvaluator(tmpevaluator);
+              evaluator_lastphase->add_evaluator(tmpevaluator);
             }
 
-            if (para.IsAle())
+            if (para.is_ale())
             {
               assembler = Teuchos::rcp(new AssembleStandard(curphase, inittimederiv));
               tmpevaluator =
                   Teuchos::rcp(new EvaluatorVolFracAddDivVelTerm<nsd, nen>(assembler, curphase));
-              evaluator_lastphase->AddEvaluator(tmpevaluator);
+              evaluator_lastphase->add_evaluator(tmpevaluator);
             }
           }
 
           // add the evaluator of the phase to the multiphase evaluator
-          evaluator_multiphase->AddEvaluator(evaluator_lastphase);
+          evaluator_multiphase->add_evaluator(evaluator_lastphase);
         }
       }
 
@@ -249,49 +249,49 @@ Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::CreateEvalu
         // 1) volume fraction terms
         // ----------------------------------------------------------------- add evaluators for the
         // instationary terms
-        if (not para.IsStationary())
+        if (not para.is_stationary())
         {
           assembler = Teuchos::rcp(new AssembleStandard(-1, inittimederiv));
           tmpevaluator = Teuchos::rcp(new EvaluatorVolFracInstat<nsd, nen>(assembler, -1));
-          evaluator_volfrac->AddEvaluator(tmpevaluator);
+          evaluator_volfrac->add_evaluator(tmpevaluator);
         }
 
         // add evaluators for the mesh-divergence term
-        if (para.IsAle())
+        if (para.is_ale())
         {
           assembler = Teuchos::rcp(new AssembleStandard(-1, inittimederiv));
           tmpevaluator = Teuchos::rcp(new EvaluatorVolFracDivVel<nsd, nen>(assembler, -1));
-          evaluator_volfrac->AddEvaluator(tmpevaluator);
+          evaluator_volfrac->add_evaluator(tmpevaluator);
         }
 
         // diffusive term
         assembler = Teuchos::rcp(new AssembleStandard(-1, inittimederiv));
         tmpevaluator = Teuchos::rcp(new EvaluatorVolFracDiff<nsd, nen>(assembler, -1));
-        evaluator_volfrac->AddEvaluator(tmpevaluator);
+        evaluator_volfrac->add_evaluator(tmpevaluator);
 
         // reactive term
         assembler = Teuchos::rcp(new AssembleStandard(-1, inittimederiv));
         tmpevaluator = Teuchos::rcp(new EvaluatorVolFracReac<nsd, nen>(assembler, -1));
-        evaluator_volfrac->AddEvaluator(tmpevaluator);
+        evaluator_volfrac->add_evaluator(tmpevaluator);
 
         // additional flux term
         assembler = Teuchos::rcp(new AssembleStandard(-1, inittimederiv));
         tmpevaluator = Teuchos::rcp(new EvaluatorVolFracAddFlux<nsd, nen>(assembler, -1));
-        evaluator_volfrac->AddEvaluator(tmpevaluator);
+        evaluator_volfrac->add_evaluator(tmpevaluator);
 
         // 2) volume fraction pressure terms
         // -------------------------------------------------------- diffusive term
         assembler = Teuchos::rcp(new AssembleStandard(-1, inittimederiv));
         tmpevaluator = Teuchos::rcp(new EvaluatorVolFracPressureDiff<nsd, nen>(assembler, -1));
-        evaluator_volfrac->AddEvaluator(tmpevaluator);
+        evaluator_volfrac->add_evaluator(tmpevaluator);
 
         // reactive term
         assembler = Teuchos::rcp(new AssembleStandard(-1, inittimederiv));
         tmpevaluator = Teuchos::rcp(new EvaluatorVolFracPressureReac<nsd, nen>(assembler, -1));
-        evaluator_volfrac->AddEvaluator(tmpevaluator);
+        evaluator_volfrac->add_evaluator(tmpevaluator);
 
         // add the evaluator of the volfractions to the multiphase evaluator
-        evaluator_multiphase->AddEvaluator(evaluator_volfrac);
+        evaluator_multiphase->add_evaluator(evaluator_volfrac);
       }
 
       evaluator = evaluator_multiphase;
@@ -316,7 +316,7 @@ Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::CreateEvalu
         assembler = Teuchos::rcp(new AssembleStandard(iphase, false));
         tmpevaluator =
             Teuchos::rcp(new EvaluatorPressureAndSaturation<nsd, nen>(assembler, iphase));
-        evaluator_multiphase->AddEvaluator(tmpevaluator);
+        evaluator_multiphase->add_evaluator(tmpevaluator);
       }
       evaluator = evaluator_multiphase;
 
@@ -350,14 +350,14 @@ Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::CreateEvalu
 
       assembler = Teuchos::rcp(new AssembleStandard(-1, false));
       tmpevaluator = Teuchos::rcp(new ReconstructFluxLinearization<nsd, nen>(assembler, -1));
-      evaluator_multiphase->AddEvaluator(tmpevaluator);
+      evaluator_multiphase->add_evaluator(tmpevaluator);
 
       // build evaluators for all fluid phases
       for (int iphase = 0; iphase < numfluidphases; iphase++)
       {
         assembler = Teuchos::rcp(new AssembleStandard(iphase, false));
         tmpevaluator = Teuchos::rcp(new ReconstructFluxRHS<nsd, nen>(assembler, iphase));
-        evaluator_multiphase->AddEvaluator(tmpevaluator);
+        evaluator_multiphase->add_evaluator(tmpevaluator);
       }
       evaluator = evaluator_multiphase;
 
@@ -376,8 +376,8 @@ Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::CreateEvalu
       {
         assembler = Teuchos::rcp(new AssembleStandard(iphase, false));
         tmpevaluator =
-            Teuchos::rcp(new EvaluatorPhaseVelocities<nsd, nen>(assembler, iphase, para.IsAle()));
-        evaluator_multiphase->AddEvaluator(tmpevaluator);
+            Teuchos::rcp(new EvaluatorPhaseVelocities<nsd, nen>(assembler, iphase, para.is_ale()));
+        evaluator_multiphase->add_evaluator(tmpevaluator);
       }
       evaluator = evaluator_multiphase;
 
@@ -393,10 +393,10 @@ Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::CreateEvalu
     case POROFLUIDMULTIPHASE::calc_domain_integrals:
     {
       int numscal = 0;
-      if (para.HasScalar()) numscal = phasemanager.NumScal();
+      if (para.has_scalar()) numscal = phasemanager.num_scal();
       Teuchos::RCP<AssembleInterface> assembler = Teuchos::rcp(new AssembleStandard(-1, false));
       evaluator = Teuchos::rcp(new EvaluatorDomainIntegrals<nsd, nen>(
-          assembler, -1, para.DomainIntFunctions(), numscal));
+          assembler, -1, para.domain_int_functions(), numscal));
       break;
     }
     default:
@@ -431,7 +431,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::saturation_
       {
         const int fui = ui * numdofpernode + idof;
 
-        mymat(fvi, fui) += vfunct * phasemanager.SaturationDeriv(curphase, idof);
+        mymat(fvi, fui) += vfunct * phasemanager.saturation_deriv(curphase, idof);
       }
     }
   }
@@ -459,7 +459,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::porosity_li
       {
         const int fui = ui * numdofpernode + idof;
 
-        mymat(fvi, fui) += vfunct * phasemanager.PorosityDeriv(idof);
+        mymat(fvi, fui) += vfunct * phasemanager.porosity_deriv(idof);
       }
     }
   }
@@ -834,7 +834,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorConv<nsd, nen>::evaluate_ma
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numfluidphases = phasemanager.num_fluid_phases();
 
   // convective term in convective form
   /*
@@ -860,7 +860,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorConv<nsd, nen>::evaluate_ma
       {
         const int fui = ui * numdofpernode + idof;
 
-        mymat(fvi, fui) += v * conv(ui) * phasemanager.SaturationDeriv(curphase, idof);
+        mymat(fvi, fui) += v * conv(ui) * phasemanager.saturation_deriv(curphase, idof);
       }
   }
   return;
@@ -881,13 +881,13 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorConv<nsd, nen>::evaluate_ve
   // get matrix to fill
   Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numfluidphases = phasemanager.num_fluid_phases();
   double conv_sat = 0.0;
   for (int idof = 0; idof < numfluidphases; ++idof)
   {
     // convective term
     const double conv_phi = variablemanager.ConVelnp()->Dot((*variablemanager.GradPhinp())[idof]);
-    conv_sat += rhsfac * phasemanager.SaturationDeriv(curphase, idof) * conv_phi;
+    conv_sat += rhsfac * phasemanager.saturation_deriv(curphase, idof) * conv_phi;
   }
   for (int vi = 0; vi < nen; ++vi)
   {
@@ -968,7 +968,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDivVel<nsd, nen>::evaluate_
   // get matrix to fill
   Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
-  double vrhs = rhsfac * variablemanager.DivConVelnp();
+  double vrhs = rhsfac * variablemanager.div_con_velnp();
 
   for (int vi = 0; vi < nen; ++vi)
   {
@@ -998,7 +998,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDivVel<nsd,
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   static Core::LinAlg::Matrix<nsd, nsd> gridvelderiv(true);
-  gridvelderiv.multiply_nt(*(variablemanager.EConVelnp()), deriv);
+  gridvelderiv.multiply_nt(*(variablemanager.e_con_velnp()), deriv);
 
   // OD mesh - div vel term
   EvaluatorBase<nsd, nen>::calc_div_vel_od_mesh(mymat, funct, deriv, derxy, xjm, gridvelderiv,
@@ -1046,11 +1046,11 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
   // no linearization needed in case of initial time derivative calculation
   if (!inittimederiv)
   {
-    const int numfluidphases = phasemanager.NumFluidPhases();
+    const int numfluidphases = phasemanager.num_fluid_phases();
     // get matrix to fill
     Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-    const double consfac = timefacfac * variablemanager.DivConVelnp();
+    const double consfac = timefacfac * variablemanager.div_con_velnp();
 
     // call base class for saturation linearization
     EvaluatorBase<nsd, nen>::saturation_linearization_fluid(
@@ -1075,7 +1075,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
   // call base class with scaled factors
   EvaluatorDivVel<nsd, nen>::evaluate_vector_and_assemble(elevec, funct, derxy, xyze, curphase,
       phasetoadd, numdofpernode, phasemanager, variablemanager,
-      phasemanager.Saturation(curphase) * rhsfac, phasemanager.Saturation(curphase) * fac,
+      phasemanager.saturation(curphase) * rhsfac, phasemanager.saturation(curphase) * fac,
       inittimederiv);
 
   return;
@@ -1098,7 +1098,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
   // call base class with scaled factors
   EvaluatorDivVel<nsd, nen>::evaluate_matrix_od_struct_and_assemble(elemat, funct, deriv, derxy,
       xjm, curphase, phasetoadd, numdofpernode, phasemanager, variablemanager,
-      phasemanager.Saturation(curphase) * timefacfac, phasemanager.Saturation(curphase) * fac, det);
+      phasemanager.saturation(curphase) * timefacfac, phasemanager.saturation(curphase) * fac, det);
 
   return;
 }
@@ -1213,9 +1213,9 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ma
     // get matrix to fill
     Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-    const int numfluidphases = phasemanager.NumFluidPhases();
+    const int numfluidphases = phasemanager.num_fluid_phases();
 
-    const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
+    const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.grad_phinp();
 
     // current pressure gradient
     static Core::LinAlg::Matrix<nsd, 1> gradpres(true);
@@ -1223,7 +1223,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ma
 
     // compute the pressure gradient from the phi gradients
     for (int idof = 0; idof < numfluidphases; ++idof)
-      gradpres.update(phasemanager.PressureDeriv(curphase, idof), gradphi[idof], 1.0);
+      gradpres.update(phasemanager.pressure_deriv(curphase, idof), gradphi[idof], 1.0);
 
     double abspressgrad = 0.0;
     for (int i = 0; i < nsd; i++) abspressgrad += gradpres(i) * gradpres(i);
@@ -1231,12 +1231,12 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ma
 
     // permeability tensor
     static Core::LinAlg::Matrix<nsd, nsd> permeabilitytensor(true);
-    phasemanager.PermeabilityTensor(curphase, permeabilitytensor);
+    phasemanager.permeability_tensor(curphase, permeabilitytensor);
 
     static Core::LinAlg::Matrix<nsd, nen> diffflux(true);
     diffflux.multiply(permeabilitytensor, derxy);
-    diffflux.scale(
-        phasemanager.RelPermeability(curphase) / phasemanager.DynViscosity(curphase, abspressgrad));
+    diffflux.scale(phasemanager.rel_permeability(curphase) /
+                   phasemanager.dyn_viscosity(curphase, abspressgrad));
 
     // helper variable for linearization
     static Core::LinAlg::Matrix<nsd, 1> diffflux_relpermeability(true);
@@ -1245,7 +1245,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ma
     {
       diffflux_relpermeability.multiply(permeabilitytensor, gradpres);
       diffflux_relpermeability.scale(phasemanager.rel_permeability_deriv(curphase) /
-                                     phasemanager.DynViscosity(curphase, abspressgrad));
+                                     phasemanager.dyn_viscosity(curphase, abspressgrad));
     }
     else
       diffflux_relpermeability.put_scalar(0.0);
@@ -1270,9 +1270,9 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ma
         for (int idof = 0; idof < numfluidphases; ++idof)
         {
           const int fui = ui * numdofpernode + idof;
-          mymat(fvi, fui) += timefacfac * (laplawf * phasemanager.PressureDeriv(curphase, idof) +
+          mymat(fvi, fui) += timefacfac * (laplawf * phasemanager.pressure_deriv(curphase, idof) +
                                               funct(ui) * laplawf_relpermeability *
-                                                  phasemanager.SaturationDeriv(curphase, idof));
+                                                  phasemanager.saturation_deriv(curphase, idof));
         }
       }
     }
@@ -1292,10 +1292,10 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ma
       static Core::LinAlg::Matrix<nsd, 1> diffflux2(true);
       diffflux2.multiply(permeabilitytensor, gradpres);
       // d (1/visc) / d abspressgrad = -1.0 * visc^(-2) * d visc / d abspressgrad
-      diffflux2.scale(-1.0 * phasemanager.RelPermeability(curphase) /
-                      phasemanager.DynViscosity(curphase, abspressgrad) /
-                      phasemanager.DynViscosity(curphase, abspressgrad) *
-                      phasemanager.DynViscosityDeriv(curphase, abspressgrad));
+      diffflux2.scale(-1.0 * phasemanager.rel_permeability(curphase) /
+                      phasemanager.dyn_viscosity(curphase, abspressgrad) /
+                      phasemanager.dyn_viscosity(curphase, abspressgrad) *
+                      phasemanager.dyn_viscosity_deriv(curphase, abspressgrad));
 
       for (int vi = 0; vi < nen; ++vi)
       {
@@ -1314,7 +1314,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ma
             //                        d x) = = d abspressgrad / d gradp * derxy * d p / d phi
             // Note: FD-Check might fail here due to kink in formulation of cell-adherence model-law
             mymat(fvi, fui) +=
-                timefacfac * laplawf * phasemanager.PressureDeriv(curphase, idof) * gradpderxy;
+                timefacfac * laplawf * phasemanager.pressure_deriv(curphase, idof) * gradpderxy;
           }
         }
       }
@@ -1339,9 +1339,9 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ve
   // get matrix to fill
   Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numfluidphases = phasemanager.num_fluid_phases();
 
-  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
+  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.grad_phinp();
 
   // current pressure gradient
   static Core::LinAlg::Matrix<nsd, 1> gradpres(true);
@@ -1349,7 +1349,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ve
 
   // compute the pressure gradient from the phi gradients
   for (int idof = 0; idof < numfluidphases; ++idof)
-    gradpres.update(phasemanager.PressureDeriv(curphase, idof), gradphi[idof], 1.0);
+    gradpres.update(phasemanager.pressure_deriv(curphase, idof), gradphi[idof], 1.0);
 
   double abspressgrad = 0.0;
   for (int i = 0; i < nsd; i++) abspressgrad += gradpres(i) * gradpres(i);
@@ -1357,9 +1357,9 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ve
 
   // diffusion tensor
   static Core::LinAlg::Matrix<nsd, nsd> difftensor(true);
-  phasemanager.PermeabilityTensor(curphase, difftensor);
+  phasemanager.permeability_tensor(curphase, difftensor);
   difftensor.scale(
-      phasemanager.RelPermeability(curphase) / phasemanager.DynViscosity(curphase, abspressgrad));
+      phasemanager.rel_permeability(curphase) / phasemanager.dyn_viscosity(curphase, abspressgrad));
 
   static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
   diffflux.multiply(difftensor, gradpres);
@@ -1394,9 +1394,9 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numfluidphases = phasemanager.num_fluid_phases();
 
-  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
+  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.grad_phinp();
 
   // current pressure gradient
   static Core::LinAlg::Matrix<nsd, 1> gradpres(true);
@@ -1404,7 +1404,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd,
 
   // compute the pressure gradient from the phi gradients
   for (int idof = 0; idof < numfluidphases; ++idof)
-    gradpres.update(phasemanager.PressureDeriv(curphase, idof), gradphi[idof], 1.0);
+    gradpres.update(phasemanager.pressure_deriv(curphase, idof), gradphi[idof], 1.0);
 
   double abspressgrad = 0.0;
   for (int i = 0; i < nsd; i++) abspressgrad += gradpres(i) * gradpres(i);
@@ -1412,9 +1412,9 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd,
 
   // diffusion tensor
   static Core::LinAlg::Matrix<nsd, nsd> difftensor(true);
-  phasemanager.PermeabilityTensor(curphase, difftensor);
+  phasemanager.permeability_tensor(curphase, difftensor);
   difftensor.scale(
-      phasemanager.RelPermeability(curphase) / phasemanager.DynViscosity(curphase, abspressgrad));
+      phasemanager.rel_permeability(curphase) / phasemanager.dyn_viscosity(curphase, abspressgrad));
 
   // TODO: anisotropic difftensor and
   //       non-constant viscosity (because of pressure gradient, probably not really necessary)
@@ -1435,7 +1435,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd,
 
   // compute the pressure gradient from the phi gradients
   for (int idof = 0; idof < numfluidphases; ++idof)
-    refgradpres.update(phasemanager.PressureDeriv(curphase, idof), refgradphi[idof], 1.0);
+    refgradpres.update(phasemanager.pressure_deriv(curphase, idof), refgradphi[idof], 1.0);
 
   // OD mesh - diffusive term
   EvaluatorBase<nsd, nen>::calc_diff_od_mesh(mymat, deriv, derxy, xjm, diffflux, refgradpres,
@@ -1483,7 +1483,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd, nen>::evaluate_ma
     Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
     // TODO a constant density is assumed here
-    double scaledtimefacfac = timefacfac / phasemanager.Density(curphase);
+    double scaledtimefacfac = timefacfac / phasemanager.density(curphase);
 
     //----------------------------------------------------------------
     // reaction terms
@@ -1501,7 +1501,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd, nen>::evaluate_ma
           const int fui = ui * numdofpernode + idof;
 
           // rhs ---> -
-          mymat(fvi, fui) -= vfunct * phasemanager.ReacDeriv(curphase, idof);
+          mymat(fvi, fui) -= vfunct * phasemanager.reac_deriv(curphase, idof);
         }
       }
     }
@@ -1525,12 +1525,12 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd, nen>::evaluate_ve
   // get matrix to fill
   Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
-  if (not phasemanager.IsReactive(curphase)) return;
+  if (not phasemanager.is_reactive(curphase)) return;
 
   // TODO a constant density is assumed here
-  double scale = 1.0 / phasemanager.Density(curphase);
+  double scale = 1.0 / phasemanager.density(curphase);
 
-  double vrhs = scale * rhsfac * phasemanager.ReacTerm(curphase);
+  double vrhs = scale * rhsfac * phasemanager.reac_term(curphase);
 
   for (int vi = 0; vi < nen; ++vi)
   {
@@ -1558,11 +1558,11 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-  if (not phasemanager.IsReactive(curphase)) return;
+  if (not phasemanager.is_reactive(curphase)) return;
 
   // TODO a constant density is assumed here
-  double scale = 1.0 / phasemanager.Density(curphase);
-  double vrhs = scale * timefacfac * phasemanager.ReacTerm(curphase);
+  double scale = 1.0 / phasemanager.density(curphase);
+  double vrhs = scale * timefacfac * phasemanager.reac_term(curphase);
 
   // linearization of porosity (may appear in reaction term)
   //-------------dreac/dd = dreac/dporosity * dporosity/dd = dreac/dporosity * dporosity/dJ * dJ/dd
@@ -1572,8 +1572,8 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd,
 
   if (phasemanager.porosity_depends_on_struct())
   {
-    vrhs += timefacfac * scale * phasemanager.ReacDerivPorosity(curphase) *
-            phasemanager.JacobianDefGrad() * phasemanager.porosity_deriv_wrt_jacobian_def_grad();
+    vrhs += timefacfac * scale * phasemanager.reac_deriv_porosity(curphase) *
+            phasemanager.jacobian_def_grad() * phasemanager.porosity_deriv_wrt_jacobian_def_grad();
   }
 
   // linearization of mesh motion (Jacobian)
@@ -1602,11 +1602,11 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-  if (not phasemanager.IsReactive(curphase)) return;
+  if (not phasemanager.is_reactive(curphase)) return;
 
-  const int numscal = phasemanager.NumScal();
+  const int numscal = phasemanager.num_scal();
 
-  double vrhs = 1.0 / phasemanager.Density(curphase) * timefacfac;
+  double vrhs = 1.0 / phasemanager.density(curphase) * timefacfac;
 
   // linearization of reaction term w.r.t scalars
   for (int vi = 0; vi < nen; ++vi)
@@ -1621,7 +1621,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd,
       {
         const int fui = ui * numscal + iscal;
         // rhs ---> -
-        mymat(fvi, fui) -= vfunct * phasemanager.ReacDerivScalar(curphase, iscal);
+        mymat(fvi, fui) -= vfunct * phasemanager.reac_deriv_scalar(curphase, iscal);
       }
     }
   }
@@ -1647,19 +1647,19 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
   // in case of an incompressible fluid phase 'curphase' (1/K = 0) the term cancels out
   if (phasemanager.incompressible_fluid_phase(curphase)) return;
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numfluidphases = phasemanager.num_fluid_phases();
 
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   // saturation
-  const double saturation = phasemanager.Saturation(curphase);
+  const double saturation = phasemanager.saturation(curphase);
 
   // inverse bulk modulus of phase (compressibility)
-  const double invbulkmodulus = phasemanager.InvBulkmodulus(curphase);
+  const double invbulkmodulus = phasemanager.inv_bulkmodulus(curphase);
 
   // pre factor
-  const double facfacmass = fac * phasemanager.Porosity() * saturation * invbulkmodulus;
+  const double facfacmass = fac * phasemanager.porosity() * saturation * invbulkmodulus;
   //----------------------------------------------------------------
   // standard Galerkin transient term
   //----------------------------------------------------------------
@@ -1675,7 +1675,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
       {
         const int fui = ui * numdofpernode + idof;
 
-        mymat(fvi, fui) += vfunct * phasemanager.PressureDeriv(curphase, idof);
+        mymat(fvi, fui) += vfunct * phasemanager.pressure_deriv(curphase, idof);
       }
     }
   }
@@ -1688,22 +1688,22 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
     // linearization of saturation w.r.t. dof
     //----------------------------------------------------------------
     {
-      const std::vector<double>& phinp = *variablemanager.Phinp();
+      const std::vector<double>& phinp = *variablemanager.phinp();
       double hist = 0.0;
       // if(curphase==phasetoadd) // bug fix??
-      hist = (*variablemanager.Hist())[phasetoadd];
+      hist = (*variablemanager.hist())[phasetoadd];
 
       double facfacmass2 =
-          fac * phasemanager.PressureDeriv(curphase, phasetoadd) * (phinp[phasetoadd] - hist);
+          fac * phasemanager.pressure_deriv(curphase, phasetoadd) * (phinp[phasetoadd] - hist);
 
       for (int idof = 0; idof < numfluidphases; ++idof)
       {
         if (idof != phasetoadd)
-          facfacmass2 += timefacfac * phasemanager.PressureDeriv(curphase, idof) *
-                         (*variablemanager.Phidtnp())[idof];
+          facfacmass2 += timefacfac * phasemanager.pressure_deriv(curphase, idof) *
+                         (*variablemanager.phidtnp())[idof];
       }
 
-      facfacmass2 *= phasemanager.Porosity() * invbulkmodulus;
+      facfacmass2 *= phasemanager.porosity() * invbulkmodulus;
 
       // call base class for saturation linearization
       EvaluatorBase<nsd, nen>::saturation_linearization_fluid(mymat, funct, facfacmass2,
@@ -1715,19 +1715,19 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
     //----------------------------------------------------------------
     if (phasemanager.porosity_depends_on_fluid())
     {
-      const std::vector<double>& phinp = *variablemanager.Phinp();
+      const std::vector<double>& phinp = *variablemanager.phinp();
       double hist = 0.0;
       // if(curphase==phasetoadd)  //bugfix??
-      hist = (*variablemanager.Hist())[phasetoadd];
+      hist = (*variablemanager.hist())[phasetoadd];
 
       double facfacmass =
-          fac * phasemanager.PressureDeriv(curphase, phasetoadd) * (phinp[phasetoadd] - hist);
+          fac * phasemanager.pressure_deriv(curphase, phasetoadd) * (phinp[phasetoadd] - hist);
 
       for (int idof = 0; idof < numfluidphases; ++idof)
       {
         if (idof != phasetoadd)
-          facfacmass += timefacfac * phasemanager.PressureDeriv(curphase, idof) *
-                        (*variablemanager.Phidtnp())[idof];
+          facfacmass += timefacfac * phasemanager.pressure_deriv(curphase, idof) *
+                        (*variablemanager.phidtnp())[idof];
       }
 
       facfacmass *= saturation * invbulkmodulus;
@@ -1806,7 +1806,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
   // scale it with 1.0/porosity here
 
   if (phasemanager.porosity_depends_on_struct())
-    vtrans += vtrans * 1.0 / phasemanager.Porosity() * phasemanager.JacobianDefGrad() *
+    vtrans += vtrans * 1.0 / phasemanager.porosity() * phasemanager.jacobian_def_grad() *
               phasemanager.porosity_deriv_wrt_jacobian_def_grad();
 
   // linearization of mesh motion (Jacobian)
@@ -1845,30 +1845,30 @@ double Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd, nen>::g
     const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac)
 {
-  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numfluidphases = phasemanager.num_fluid_phases();
   // read data from managers
   double hist = 0.0;
   // if(curphase==phasetoadd) //bugfix??
-  hist = (*variablemanager.Hist())[phasetoadd];
+  hist = (*variablemanager.hist())[phasetoadd];
   // std::cout << "hist = " << hist << std::endl;
-  const double porosity = phasemanager.Porosity();
-  const std::vector<double>& phinp = *variablemanager.Phinp();
-  const std::vector<double>& phidtnp = *variablemanager.Phidtnp();
+  const double porosity = phasemanager.porosity();
+  const std::vector<double>& phinp = *variablemanager.phinp();
+  const std::vector<double>& phidtnp = *variablemanager.phidtnp();
 
   // saturation
-  const double saturation = phasemanager.Saturation(curphase);
+  const double saturation = phasemanager.saturation(curphase);
 
   // inverse bulk modulus of phase (compressibility)
-  const double invbulkmodulus = phasemanager.InvBulkmodulus(curphase);
+  const double invbulkmodulus = phasemanager.inv_bulkmodulus(curphase);
 
   double vtrans = 0.0;
 
   // TODO check for Genalpha
   // compute scalar at integration point
-  vtrans = fac * phasemanager.PressureDeriv(curphase, phasetoadd) * (phinp[phasetoadd] - hist);
+  vtrans = fac * phasemanager.pressure_deriv(curphase, phasetoadd) * (phinp[phasetoadd] - hist);
   for (int idof = 0; idof < numfluidphases; ++idof)
     if (idof != phasetoadd)
-      vtrans += rhsfac * phasemanager.PressureDeriv(curphase, idof) * phidtnp[idof];
+      vtrans += rhsfac * phasemanager.pressure_deriv(curphase, idof) * phidtnp[idof];
 
   vtrans *= porosity * saturation * invbulkmodulus;
 
@@ -1891,22 +1891,22 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
     double fac, bool inittimederiv)
 {
   // in case of an incompressible solid (1/K_s = 0) the term cancels out
-  if (phasemanager.IncompressibleSolid()) return;
+  if (phasemanager.incompressible_solid()) return;
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numfluidphases = phasemanager.num_fluid_phases();
 
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   //  get inverse bulkmodulus (=compressiblity)
   // TODO linearization of bulkmodulus
-  const double invsolidbulkmodulus = phasemanager.InvBulkmodulusSolid();
+  const double invsolidbulkmodulus = phasemanager.inv_bulkmodulus_solid();
 
   //----------------------------------------------------------------
   // standard Galerkin transient term
   //----------------------------------------------------------------
   {
-    const double facfacmass = fac * (1.0 - phasemanager.Porosity()) * invsolidbulkmodulus;
+    const double facfacmass = fac * (1.0 - phasemanager.porosity()) * invsolidbulkmodulus;
     for (int vi = 0; vi < nen; ++vi)
     {
       const double v = facfacmass * funct(vi);
@@ -1919,7 +1919,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
         {
           const int fui = ui * numdofpernode + idof;
 
-          mymat(fvi, fui) += vfunct * phasemanager.SolidPressureDeriv(idof);
+          mymat(fvi, fui) += vfunct * phasemanager.solid_pressure_deriv(idof);
         }
       }
     }
@@ -1933,13 +1933,13 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
     // linearization of solid pressure derivative w.r.t. dof
     //----------------------------------------------------------------
     {
-      const std::vector<double>& phinp = *variablemanager.Phinp();
-      const std::vector<double>& phidtnp = *variablemanager.Phidtnp();
+      const std::vector<double>& phinp = *variablemanager.phinp();
+      const std::vector<double>& phidtnp = *variablemanager.phidtnp();
       double hist = 0.0;
       // if(curphase==phasetoadd) //bugfix??
-      hist = (*variablemanager.Hist())[phasetoadd];
+      hist = (*variablemanager.hist())[phasetoadd];
 
-      double facfacmass3 = (1.0 - phasemanager.Porosity()) * invsolidbulkmodulus;
+      double facfacmass3 = (1.0 - phasemanager.porosity()) * invsolidbulkmodulus;
 
       std::vector<double> val(numfluidphases, 0.0);
 
@@ -1978,11 +1978,11 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
     //----------------------------------------------------------------
     if (phasemanager.porosity_depends_on_fluid())
     {
-      const std::vector<double>& phinp = *variablemanager.Phinp();
-      const std::vector<double>& phidtnp = *variablemanager.Phidtnp();
+      const std::vector<double>& phinp = *variablemanager.phinp();
+      const std::vector<double>& phidtnp = *variablemanager.phidtnp();
       double hist = 0.0;
       // if(curphase==phasetoadd) //bugfix??
-      hist = (*variablemanager.Hist())[phasetoadd];
+      hist = (*variablemanager.hist())[phasetoadd];
 
       double facfacmass3 = -1.0 * invsolidbulkmodulus;
 
@@ -1990,14 +1990,14 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
 
       for (int idof = 0; idof < numfluidphases; ++idof)
       {
-        const double solidpressurederiv = phasemanager.SolidPressureDeriv(idof);
+        const double solidpressurederiv = phasemanager.solid_pressure_deriv(idof);
         if (idof == phasetoadd)
           for (int jdof = 0; jdof < numdofpernode; ++jdof)
             val[jdof] +=
-                fac * solidpressurederiv * phasemanager.PorosityDeriv(jdof) * (phinp[idof] - hist);
+                fac * solidpressurederiv * phasemanager.porosity_deriv(jdof) * (phinp[idof] - hist);
         else
           for (int jdof = 0; jdof < numdofpernode; ++jdof)
-            val[jdof] += timefacfac * solidpressurederiv * phasemanager.PorosityDeriv(jdof) *
+            val[jdof] += timefacfac * solidpressurederiv * phasemanager.porosity_deriv(jdof) *
                          (phidtnp[idof]);
       }
 
@@ -2035,7 +2035,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
     double fac, bool inittimederiv)
 {
   // in case of an incompressible solid (1/K_s = 0) the term cancels out
-  if (phasemanager.IncompressibleSolid()) return;
+  if (phasemanager.incompressible_solid()) return;
 
   // for the initial time derivative calculation no transient terms enter the rhs
   if (!inittimederiv)
@@ -2072,7 +2072,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
     double fac, double det)
 {
   // in case of an incompressible solid (1/K_s = 0) the term cancels out
-  if (phasemanager.IncompressibleSolid()) return;
+  if (phasemanager.incompressible_solid()) return;
 
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
@@ -2088,7 +2088,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
   // --> scale it with 1.0/(1.0-porosity) here
 
   if (phasemanager.porosity_depends_on_struct())
-    vtrans += vtrans * (-1.0) / (1.0 - phasemanager.Porosity()) * phasemanager.JacobianDefGrad() *
+    vtrans += vtrans * (-1.0) / (1.0 - phasemanager.porosity()) * phasemanager.jacobian_def_grad() *
               phasemanager.porosity_deriv_wrt_jacobian_def_grad();
 
   // linearization of mesh motion (Jacobian)
@@ -2127,27 +2127,27 @@ double Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd, ne
     const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac)
 {
-  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numfluidphases = phasemanager.num_fluid_phases();
   // read data from managers
   double hist = 0.0;
   // if(curphase==phasetoadd) //bugfix??
-  hist = (*variablemanager.Hist())[phasetoadd];
-  const double porosity = phasemanager.Porosity();
-  const std::vector<double>& phinp = *variablemanager.Phinp();
-  const std::vector<double>& phidtnp = *variablemanager.Phidtnp();
+  hist = (*variablemanager.hist())[phasetoadd];
+  const double porosity = phasemanager.porosity();
+  const std::vector<double>& phinp = *variablemanager.phinp();
+  const std::vector<double>& phidtnp = *variablemanager.phidtnp();
 
   //  get inverse bulkmodulus (=compressiblity)
-  const double invsolidbulkmodulus = phasemanager.InvBulkmodulusSolid();
+  const double invsolidbulkmodulus = phasemanager.inv_bulkmodulus_solid();
 
   // TODO check genalpha
   // compute scalar at integration point
-  double vtrans = fac * phasemanager.SolidPressureDeriv(phasetoadd) * (phinp[phasetoadd] - hist);
+  double vtrans = fac * phasemanager.solid_pressure_deriv(phasetoadd) * (phinp[phasetoadd] - hist);
 
   for (int idof = 0; idof < numfluidphases; ++idof)
   {
     if (idof != phasetoadd)
     {
-      vtrans += rhsfac * phasemanager.SolidPressureDeriv(idof) * phidtnp[idof];
+      vtrans += rhsfac * phasemanager.solid_pressure_deriv(idof) * phidtnp[idof];
     }
   }
 
@@ -2174,41 +2174,41 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
   // call base class with scaled factors
   EvaluatorMassSolidPressure<nsd, nen>::evaluate_matrix_and_assemble(elemat, funct, derxy, curphase,
       phasetoadd, numdofpernode, phasemanager, variablemanager,
-      phasemanager.Saturation(curphase) * timefacfac, phasemanager.Saturation(curphase) * fac,
+      phasemanager.saturation(curphase) * timefacfac, phasemanager.saturation(curphase) * fac,
       inittimederiv);
 
   // for the initial time derivative calculation we only need the standard Galerkin transient term
   // and no additional linearizations
   if (!inittimederiv)
   {
-    const int numfluidphases = phasemanager.NumFluidPhases();
+    const int numfluidphases = phasemanager.num_fluid_phases();
     // get matrix to fill
     Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
     //  get inverse bulkmodulus (=compressiblity)
     // TODO linearization of bulkmodulus
-    const double invsolidbulkmodulus = phasemanager.InvBulkmodulusSolid();
+    const double invsolidbulkmodulus = phasemanager.inv_bulkmodulus_solid();
 
     //----------------------------------------------------------------
     // linearization of saturation w.r.t. dof
     //----------------------------------------------------------------
     {
-      const std::vector<double>& phinp = *variablemanager.Phinp();
-      const std::vector<double>& phidtnp = *variablemanager.Phidtnp();
+      const std::vector<double>& phinp = *variablemanager.phinp();
+      const std::vector<double>& phidtnp = *variablemanager.phidtnp();
       double hist = 0.0;
       // if(curphase==phasetoadd) //bugfix??
-      hist = (*variablemanager.Hist())[phasetoadd];
+      hist = (*variablemanager.hist())[phasetoadd];
 
       double facfacmass =
-          fac * phasemanager.SolidPressureDeriv(phasetoadd) * (phinp[phasetoadd] - hist);
+          fac * phasemanager.solid_pressure_deriv(phasetoadd) * (phinp[phasetoadd] - hist);
 
       for (int idof = 0; idof < numfluidphases; ++idof)
       {
         if (idof != phasetoadd)
-          facfacmass += timefacfac * phasemanager.SolidPressureDeriv(idof) * phidtnp[idof];
+          facfacmass += timefacfac * phasemanager.solid_pressure_deriv(idof) * phidtnp[idof];
       }
 
-      facfacmass *= (1.0 - phasemanager.Porosity()) * invsolidbulkmodulus;
+      facfacmass *= (1.0 - phasemanager.porosity()) * invsolidbulkmodulus;
 
       // call base class for saturation linearization
       EvaluatorBase<nsd, nen>::saturation_linearization_fluid(mymat, funct, facfacmass,
@@ -2234,7 +2234,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
   // call base class with scaled factors
   EvaluatorMassSolidPressure<nsd, nen>::evaluate_vector_and_assemble(elevec, funct, derxy, xyze,
       curphase, phasetoadd, numdofpernode, phasemanager, variablemanager,
-      phasemanager.Saturation(curphase) * rhsfac, phasemanager.Saturation(curphase) * fac,
+      phasemanager.saturation(curphase) * rhsfac, phasemanager.saturation(curphase) * fac,
       inittimederiv);
 
   return;
@@ -2257,7 +2257,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
   // call base class with scaled factors
   EvaluatorMassSolidPressure<nsd, nen>::evaluate_matrix_od_struct_and_assemble(elemat, funct, deriv,
       derxy, xjm, curphase, phasetoadd, numdofpernode, phasemanager, variablemanager,
-      phasemanager.Saturation(curphase) * timefacfac, phasemanager.Saturation(curphase) * fac, det);
+      phasemanager.saturation(curphase) * timefacfac, phasemanager.saturation(curphase) * fac, det);
 
   return;
 }
@@ -2297,13 +2297,13 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numfluidphases = phasemanager.num_fluid_phases();
 
   //----------------------------------------------------------------
   // linearization of saturation w.r.t. dof
   //----------------------------------------------------------------
   {
-    const double facfacmass = fac * phasemanager.Porosity();
+    const double facfacmass = fac * phasemanager.porosity();
     // call base class for saturation linearization
     EvaluatorBase<nsd, nen>::saturation_linearization_fluid(mymat, funct, facfacmass, numdofpernode,
         numfluidphases, curphase, phasetoadd, phasemanager);
@@ -2321,18 +2321,18 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
       // read data from manager
       double hist = 0.0;
       // if(curphase==phasetoadd) //bugfix??
-      hist = (*variablemanager.Hist())[phasetoadd];
-      const std::vector<double>& phinp = *variablemanager.Phinp();
-      const std::vector<double>& phidtnp = *variablemanager.Phidtnp();
+      hist = (*variablemanager.hist())[phasetoadd];
+      const std::vector<double>& phinp = *variablemanager.phinp();
+      const std::vector<double>& phidtnp = *variablemanager.phidtnp();
 
       // TODO genalpha
       // compute scalar at integration point
       double facfacmass =
-          fac * phasemanager.SaturationDeriv(curphase, phasetoadd) * (phinp[phasetoadd] - hist);
+          fac * phasemanager.saturation_deriv(curphase, phasetoadd) * (phinp[phasetoadd] - hist);
 
       for (int idof = 0; idof < numfluidphases; ++idof)
         if (phasetoadd != idof)
-          facfacmass += timefacfac * phasemanager.SaturationDeriv(curphase, idof) * phidtnp[idof];
+          facfacmass += timefacfac * phasemanager.saturation_deriv(curphase, idof) * phidtnp[idof];
 
       // call base class:
       EvaluatorBase<nsd, nen>::porosity_linearization_fluid(
@@ -2345,9 +2345,9 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
     {
       // read data from manager
       double hist = 0.0;
-      hist = (*variablemanager.Hist())[phasetoadd];
-      const std::vector<double>& phinp = *variablemanager.Phinp();
-      const std::vector<double>& phidtnp = *variablemanager.Phidtnp();
+      hist = (*variablemanager.hist())[phasetoadd];
+      const std::vector<double>& phinp = *variablemanager.phinp();
+      const std::vector<double>& phidtnp = *variablemanager.phidtnp();
 
       /*for (int iphase=0; iphase < numdofpernode; iphase++)
       {
@@ -2370,7 +2370,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
 
         for (int ui = 0; ui < nen; ++ui)
         {
-          const double vfunct = v * funct(ui) * phasemanager.Porosity();
+          const double vfunct = v * funct(ui) * phasemanager.porosity();
           for (int idof = 0; idof < numfluidphases; ++idof)
           {
             if (idof == phasetoadd)
@@ -2462,7 +2462,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
   // scale it with 1.0/porosity here
 
   if (phasemanager.porosity_depends_on_struct())
-    vtrans += vtrans * 1.0 / phasemanager.Porosity() * phasemanager.JacobianDefGrad() *
+    vtrans += vtrans * 1.0 / phasemanager.porosity() * phasemanager.jacobian_def_grad() *
               phasemanager.porosity_deriv_wrt_jacobian_def_grad();
 
   // linearization of mesh motion (Jacobian)
@@ -2501,24 +2501,24 @@ double Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd, nen>:
     const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac)
 {
-  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numfluidphases = phasemanager.num_fluid_phases();
   // read data from manager
   double hist = 0.0;
   // if(curphase==phasetoadd) //bugfix??
-  hist = (*variablemanager.Hist())[phasetoadd];
+  hist = (*variablemanager.hist())[phasetoadd];
 
-  const double porosity = phasemanager.Porosity();
-  const std::vector<double>& phinp = *variablemanager.Phinp();
-  const std::vector<double>& phidtnp = *variablemanager.Phidtnp();
+  const double porosity = phasemanager.porosity();
+  const std::vector<double>& phinp = *variablemanager.phinp();
+  const std::vector<double>& phidtnp = *variablemanager.phidtnp();
 
   // TODO genalpha
   // compute scalar at integration point
   double vtrans =
-      fac * phasemanager.SaturationDeriv(curphase, phasetoadd) * (phinp[phasetoadd] - hist);
+      fac * phasemanager.saturation_deriv(curphase, phasetoadd) * (phinp[phasetoadd] - hist);
 
   for (int idof = 0; idof < numfluidphases; ++idof)
     if (phasetoadd != idof)
-      vtrans += rhsfac * phasemanager.SaturationDeriv(curphase, idof) * phidtnp[idof];
+      vtrans += rhsfac * phasemanager.saturation_deriv(curphase, idof) * phidtnp[idof];
   // note: for one-step theta: rhsfac*phidtnp = theta*dt*(phinp-phin)/theta/dt+(1-theta)*phidtn
   //                                          = phinp - hist
   vtrans *= porosity;
@@ -2565,8 +2565,8 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
   // counter
   Core::LinAlg::SerialDenseVector& counter = *elevec[2];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
   // FLUID Phases:
   if (curphase < numfluidphases)
@@ -2575,10 +2575,10 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
     {
       // save the pressure value
       pressure[inode * numdofpernode + curphase] +=
-          fac * funct(inode) * phasemanager.Pressure(curphase);
+          fac * funct(inode) * phasemanager.pressure(curphase);
       // save the saturation value
       saturation[inode * numdofpernode + curphase] +=
-          fac * funct(inode) * phasemanager.Saturation(curphase);
+          fac * funct(inode) * phasemanager.saturation(curphase);
       // mark the evaluated node
       counter[inode * numdofpernode + curphase] += fac * funct(inode);
     }
@@ -2607,7 +2607,8 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
     {
       // save the pressure value
       pressure[inode * numdofpernode + curphase] +=
-          fac * funct(inode) * phasemanager.VolFracPressure(curphase - numfluidphases - numvolfrac);
+          fac * funct(inode) *
+          phasemanager.vol_frac_pressure(curphase - numfluidphases - numvolfrac);
       // save the saturation value
       saturation[inode * numdofpernode + curphase] += fac * funct(inode) * (-1.0);
       // mark the evaluated node
@@ -2691,7 +2692,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSolidPressure<nsd,
   for (int inode = 0; inode < nen; inode++)
   {
     // save the pressure value
-    solidpressure[inode] += fac * funct(inode) * (phasemanager.SolidPressure());
+    solidpressure[inode] += fac * funct(inode) * (phasemanager.solid_pressure());
     // mark the evaluated node
     counter[inode] += fac * funct(inode);
   }
@@ -2763,8 +2764,8 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
     const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
   Core::LinAlg::SerialDenseVector& valid_volfracpress = *elevec[1];
   Core::LinAlg::SerialDenseVector& valid_volfracspec = *elevec[2];
@@ -2862,7 +2863,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPorosity<nsd,
   for (int inode = 0; inode < nen; inode++)
   {
     // save the porosity value
-    porosity[inode] += fac * funct(inode) * phasemanager.Porosity();
+    porosity[inode] += fac * funct(inode) * phasemanager.porosity();
     // mark the evaluated node
     counter[inode] += fac * funct(inode);
   }
@@ -2936,8 +2937,8 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
   // get vector to fill
   Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
   // get the variables + constants
   std::vector<std::pair<std::string, double>> constants;
@@ -2953,26 +2954,27 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
   {
     std::ostringstream temp;
     temp << k + 1;
-    constants.push_back(std::pair<std::string, double>("p" + temp.str(), phasemanager.Pressure(k)));
+    constants.push_back(std::pair<std::string, double>("p" + temp.str(), phasemanager.pressure(k)));
     constants.push_back(
-        std::pair<std::string, double>("S" + temp.str(), phasemanager.Saturation(k)));
+        std::pair<std::string, double>("S" + temp.str(), phasemanager.saturation(k)));
     constants.push_back(
-        std::pair<std::string, double>("DENS" + temp.str(), phasemanager.Density(k)));
+        std::pair<std::string, double>("DENS" + temp.str(), phasemanager.density(k)));
   }
 
   // set porosity value as constant
-  constants.push_back(std::pair<std::string, double>("porosity", phasemanager.Porosity()));
+  constants.push_back(std::pair<std::string, double>("porosity", phasemanager.porosity()));
 
   // set volfrac, volfrac pressure and volfrac density values as constants
   for (int k = 0; k < numvolfrac; k++)
   {
     std::ostringstream temp;
     temp << k + 1;
-    constants.push_back(std::pair<std::string, double>("VF" + temp.str(), phasemanager.VolFrac(k)));
     constants.push_back(
-        std::pair<std::string, double>("VFP" + temp.str(), phasemanager.VolFracPressure(k)));
+        std::pair<std::string, double>("VF" + temp.str(), phasemanager.vol_frac(k)));
     constants.push_back(
-        std::pair<std::string, double>("VFDENS" + temp.str(), phasemanager.VolFracDensity(k)));
+        std::pair<std::string, double>("VFP" + temp.str(), phasemanager.vol_frac_pressure(k)));
+    constants.push_back(
+        std::pair<std::string, double>("VFDENS" + temp.str(), phasemanager.vol_frac_density(k)));
   }
 
   // set scalar values as constants
@@ -2981,7 +2983,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
     std::ostringstream temp;
     temp << k + 1;
     constants.push_back(
-        std::pair<std::string, double>("phi" + temp.str(), variablemanager.Scalarnp()->at(k)));
+        std::pair<std::string, double>("phi" + temp.str(), variablemanager.scalarnp()->at(k)));
   }
 
   // calculate the coordinates of the gauss point
@@ -3015,8 +3017,8 @@ Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd, nen>::funct
     int functnum) const
 {
   const auto& funct =
-      Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfAnything>(functnum);
-  if (funct.NumberComponents() != 1)
+      Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfAnything>(functnum);
+  if (funct.number_components() != 1)
     FOUR_C_THROW("only one component allowed for domain integral functions");
   return funct;
 };
@@ -3154,9 +3156,9 @@ void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
   // get matrixes to fill
   Core::LinAlg::SerialDenseMatrix& rhs = *elemat[1];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numfluidphases = phasemanager.num_fluid_phases();
 
-  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
+  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.grad_phinp();
 
   // current pressure gradient
   Core::LinAlg::Matrix<nsd, 1> gradpres(true);
@@ -3164,7 +3166,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
 
   // compute the pressure gradient from the phi gradients
   for (int idof = 0; idof < numfluidphases; ++idof)
-    gradpres.update(phasemanager.PressureDeriv(curphase, idof), gradphi[idof], 1.0);
+    gradpres.update(phasemanager.pressure_deriv(curphase, idof), gradphi[idof], 1.0);
 
   double abspressgrad = 0.0;
   for (int i = 0; i < nsd; i++) abspressgrad += gradpres(i) * gradpres(i);
@@ -3172,9 +3174,9 @@ void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
 
   // diffusion tensor
   Core::LinAlg::Matrix<nsd, nsd> difftensor(true);
-  phasemanager.PermeabilityTensor(curphase, difftensor);
+  phasemanager.permeability_tensor(curphase, difftensor);
   difftensor.scale(
-      phasemanager.RelPermeability(curphase) / phasemanager.DynViscosity(curphase, abspressgrad));
+      phasemanager.rel_permeability(curphase) / phasemanager.dyn_viscosity(curphase, abspressgrad));
 
   // diffusive flux
   static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
@@ -3258,19 +3260,19 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPhaseVelocities<nsd,
 {
   Core::LinAlg::SerialDenseVector& phase_velocity = *elevec[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
-  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradient_phi = *variablemanager.GradPhinp();
+  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradient_phi = *variablemanager.grad_phinp();
 
   Core::LinAlg::Matrix<nsd, 1> structure_velocity(0.0);
-  if (is_ale_) structure_velocity = *variablemanager.ConVelnp();
+  if (is_ale_) structure_velocity = *variablemanager.con_velnp();
 
   // FLUID phases
   if (curphase < numfluidphases)
   {
     const double phase_volume_fraction =
-        phasemanager.Porosity() * phasemanager.Saturation(curphase);
+        phasemanager.porosity() * phasemanager.saturation(curphase);
 
     for (int j = 0; j < nsd; j++)
     {
@@ -3287,12 +3289,12 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPhaseVelocities<nsd,
         Core::LinAlg::Matrix<nsd, 1> pressure_gradient(true);
         pressure_gradient.clear();
         for (int i = 0; i < numfluidphases; ++i)
-          pressure_gradient.update(phasemanager.PressureDeriv(curphase, i), gradient_phi[i], 1.0);
+          pressure_gradient.update(phasemanager.pressure_deriv(curphase, i), gradient_phi[i], 1.0);
 
         Core::LinAlg::Matrix<nsd, nsd> diffusion_tensor(true);
-        phasemanager.PermeabilityTensor(curphase, diffusion_tensor);
-        diffusion_tensor.scale(phasemanager.RelPermeability(curphase) /
-                               phasemanager.DynViscosity(curphase, pressure_gradient.norm2()));
+        phasemanager.permeability_tensor(curphase, diffusion_tensor);
+        diffusion_tensor.scale(phasemanager.rel_permeability(curphase) /
+                               phasemanager.dyn_viscosity(curphase, pressure_gradient.norm2()));
 
         static Core::LinAlg::Matrix<nsd, 1> diffusive_velocity(true);
         diffusive_velocity.multiply(
@@ -3314,7 +3316,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPhaseVelocities<nsd,
   else if (curphase < numdofpernode)
   {
     const int i_volfrac_pressure = curphase - numfluidphases - numvolfrac;
-    const double phase_volume_fraction = phasemanager.VolFrac(i_volfrac_pressure);
+    const double phase_volume_fraction = phasemanager.vol_frac(i_volfrac_pressure);
 
     for (int j = 0; j < nsd; j++)
     {
@@ -3362,8 +3364,8 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
 {
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
   //----------------------------------------------------------------
   // 1) standard Galerkin transient term
@@ -3391,10 +3393,10 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
   //----------------------------------------------------------------
   // 2) - sum_volfrac porosity_volfrac/K_s * d p_s / d t
   //----------------------------------------------------------------
-  if (not phasemanager.IncompressibleSolid())
+  if (not phasemanager.incompressible_solid())
   {
-    const double invsolidbulkmodulus = phasemanager.InvBulkmodulusSolid();
-    const double sumaddvolfrac = phasemanager.SumAddVolFrac();
+    const double invsolidbulkmodulus = phasemanager.inv_bulkmodulus_solid();
+    const double sumaddvolfrac = phasemanager.sum_add_vol_frac();
 
     //----------------------------------------------------------------
     // standard Galerkin transient term
@@ -3413,7 +3415,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
           {
             const int fui = ui * numdofpernode + idof;
 
-            mymat(fvi, fui) += vfunct * phasemanager.SolidPressureDeriv(idof);
+            mymat(fvi, fui) += vfunct * phasemanager.solid_pressure_deriv(idof);
           }
         }
       }
@@ -3425,13 +3427,13 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
       // linearization of solid pressure derivative w.r.t. dof
       //----------------------------------------------------------------
       {
-        const std::vector<double>& phinp = *variablemanager.Phinp();
-        const std::vector<double>& phidtnp = *variablemanager.Phidtnp();
+        const std::vector<double>& phinp = *variablemanager.phinp();
+        const std::vector<double>& phidtnp = *variablemanager.phidtnp();
         double hist = 0.0;
         // if(curphase==phasetoadd) //bugfix??
-        hist = (*variablemanager.Hist())[phasetoadd];
+        hist = (*variablemanager.hist())[phasetoadd];
 
-        const double sumaddvolfrac = phasemanager.SumAddVolFrac();
+        const double sumaddvolfrac = phasemanager.sum_add_vol_frac();
 
         double facfacmass3 = -sumaddvolfrac * invsolidbulkmodulus;
 
@@ -3471,20 +3473,20 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
       //----------------------------------------------------------------
       double hist = 0.0;
       // if(curphase==phasetoadd) //bugfix??
-      hist = (*variablemanager.Hist())[phasetoadd];
-      const std::vector<double>& phinp = *variablemanager.Phinp();
-      const std::vector<double>& phidtnp = *variablemanager.Phidtnp();
+      hist = (*variablemanager.hist())[phasetoadd];
+      const std::vector<double>& phinp = *variablemanager.phinp();
+      const std::vector<double>& phidtnp = *variablemanager.phidtnp();
 
       // TODO check genalpha
       // compute scalar at integration point
       double vtrans =
-          fac * phasemanager.SolidPressureDeriv(phasetoadd) * (phinp[phasetoadd] - hist);
+          fac * phasemanager.solid_pressure_deriv(phasetoadd) * (phinp[phasetoadd] - hist);
 
       for (int idof = 0; idof < numfluidphases; ++idof)
       {
         if (idof != phasetoadd)
         {
-          vtrans += timefacfac * phasemanager.SolidPressureDeriv(idof) * phidtnp[idof];
+          vtrans += timefacfac * phasemanager.solid_pressure_deriv(idof) * phidtnp[idof];
         }
       }
       vtrans *= -invsolidbulkmodulus;
@@ -3596,10 +3598,10 @@ double Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd
     const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac)
 {
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
-  const std::vector<double>& phidtnp = *variablemanager.Phidtnp();
+  const std::vector<double>& phidtnp = *variablemanager.phidtnp();
 
   double vrhs = 0.0;
 
@@ -3608,29 +3610,30 @@ double Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd
     vrhs -= rhsfac * phidtnp[ivolfrac];
 
   // \frac{-\sum^volfrac \phi_volfrac) }{K_s} \frac{\partial p^s}{\partial t}
-  if (not phasemanager.IncompressibleSolid())
+  if (not phasemanager.incompressible_solid())
   {
     double hist = 0.0;
     // if(curphase==phasetoadd) //bugfix??
-    hist = (*variablemanager.Hist())[phasetoadd];
-    const std::vector<double>& phinp = *variablemanager.Phinp();
+    hist = (*variablemanager.hist())[phasetoadd];
+    const std::vector<double>& phinp = *variablemanager.phinp();
 
     //  get inverse bulkmodulus (=compressiblity)
-    const double invsolidbulkmodulus = phasemanager.InvBulkmodulusSolid();
+    const double invsolidbulkmodulus = phasemanager.inv_bulkmodulus_solid();
 
     // TODO check genalpha
     // compute scalar at integration point
-    double vtrans = fac * phasemanager.SolidPressureDeriv(phasetoadd) * (phinp[phasetoadd] - hist);
+    double vtrans =
+        fac * phasemanager.solid_pressure_deriv(phasetoadd) * (phinp[phasetoadd] - hist);
 
     for (int idof = 0; idof < numfluidphases; ++idof)
     {
       if (idof != phasetoadd)
       {
-        vtrans += rhsfac * phasemanager.SolidPressureDeriv(idof) * phidtnp[idof];
+        vtrans += rhsfac * phasemanager.solid_pressure_deriv(idof) * phidtnp[idof];
       }
     }
     vtrans *= -invsolidbulkmodulus;
-    const double sumaddvolfrac = phasemanager.SumAddVolFrac();
+    const double sumaddvolfrac = phasemanager.sum_add_vol_frac();
     vrhs += vtrans * sumaddvolfrac;
   }
 
@@ -3657,14 +3660,14 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
   {
     // get matrix to fill
     Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
-    const int numfluidphases = phasemanager.NumFluidPhases();
-    const int numvolfrac = phasemanager.NumVolFrac();
+    const int numfluidphases = phasemanager.num_fluid_phases();
+    const int numvolfrac = phasemanager.num_vol_frac();
 
     //----------------------------------------------------------------
     // - sum_volfrac porosity_volfrac * div v_s
     //----------------------------------------------------------------
     {
-      const double prefac = -timefacfac * variablemanager.DivConVelnp();
+      const double prefac = -timefacfac * variablemanager.div_con_velnp();
       for (int vi = 0; vi < nen; ++vi)
       {
         const double v = prefac * funct(vi);
@@ -3702,7 +3705,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
   // get vector to fill
   Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
-  const double vrhs = -rhsfac * phasemanager.SumAddVolFrac() * variablemanager.DivConVelnp();
+  const double vrhs = -rhsfac * phasemanager.sum_add_vol_frac() * variablemanager.div_con_velnp();
 
   for (int vi = 0; vi < nen; ++vi)
   {
@@ -3731,10 +3734,10 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-  const double sumaddvolfrac = phasemanager.SumAddVolFrac();
+  const double sumaddvolfrac = phasemanager.sum_add_vol_frac();
 
   Core::LinAlg::Matrix<nsd, nsd> gridvelderiv(true);
-  gridvelderiv.multiply_nt(*(variablemanager.EConVelnp()), deriv);
+  gridvelderiv.multiply_nt(*(variablemanager.e_con_velnp()), deriv);
 
   // OD mesh - div vel term
   EvaluatorBase<nsd, nen>::calc_div_vel_od_mesh(mymat, funct, deriv, derxy, xjm, gridvelderiv,
@@ -3779,13 +3782,13 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<ns
   // call base class with scaled factors
   EvaluatorVolFracAddInstatTerms<nsd, nen>::evaluate_matrix_and_assemble(elemat, funct, derxy,
       curphase, phasetoadd, numdofpernode, phasemanager, variablemanager,
-      timefacfac * phasemanager.Saturation(curphase), fac * phasemanager.Saturation(curphase),
+      timefacfac * phasemanager.saturation(curphase), fac * phasemanager.saturation(curphase),
       inittimederiv);
 
   // we do not need additional linearizations if we calculate the initial time derivative
   if (!inittimederiv)
   {
-    const int numfluidphases = phasemanager.NumFluidPhases();
+    const int numfluidphases = phasemanager.num_fluid_phases();
     // get matrix to fill
     Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
@@ -3820,7 +3823,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<ns
   // call base class with scaled factors
   EvaluatorVolFracAddInstatTerms<nsd, nen>::evaluate_vector_and_assemble(elevec, funct, derxy, xyze,
       curphase, phasetoadd, numdofpernode, phasemanager, variablemanager,
-      phasemanager.Saturation(curphase) * rhsfac, phasemanager.Saturation(curphase) * fac,
+      phasemanager.saturation(curphase) * rhsfac, phasemanager.saturation(curphase) * fac,
       inittimederiv);
 
   return;
@@ -3843,7 +3846,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<ns
   // call base class with scaled factors
   EvaluatorVolFracAddInstatTerms<nsd, nen>::evaluate_matrix_od_struct_and_assemble(elemat, funct,
       deriv, derxy, xjm, curphase, phasetoadd, numdofpernode, phasemanager, variablemanager,
-      phasemanager.Saturation(curphase) * timefacfac, phasemanager.Saturation(curphase) * fac, det);
+      phasemanager.saturation(curphase) * timefacfac, phasemanager.saturation(curphase) * fac, det);
 
   return;
 }
@@ -3883,17 +3886,18 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd
   // call base class with scaled factors
   EvaluatorVolFracAddDivVelTerm<nsd, nen>::evaluate_matrix_and_assemble(elemat, funct, derxy,
       curphase, phasetoadd, numdofpernode, phasemanager, variablemanager,
-      timefacfac * phasemanager.Saturation(curphase), fac * phasemanager.Saturation(curphase),
+      timefacfac * phasemanager.saturation(curphase), fac * phasemanager.saturation(curphase),
       inittimederiv);
 
   // we do not need additional linearizations if we calculate the initial time derivative
   if (!inittimederiv)
   {
-    const int numfluidphases = phasemanager.NumFluidPhases();
+    const int numfluidphases = phasemanager.num_fluid_phases();
     // get matrix to fill
     Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-    const double vrhs = -timefacfac * phasemanager.SumAddVolFrac() * variablemanager.DivConVelnp();
+    const double vrhs =
+        -timefacfac * phasemanager.sum_add_vol_frac() * variablemanager.div_con_velnp();
 
     // call base class for saturation linearization
     EvaluatorBase<nsd, nen>::saturation_linearization_fluid(
@@ -3918,7 +3922,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd
   // call base class with scaled factors
   EvaluatorVolFracAddDivVelTerm<nsd, nen>::evaluate_vector_and_assemble(elevec, funct, derxy, xyze,
       curphase, phasetoadd, numdofpernode, phasemanager, variablemanager,
-      phasemanager.Saturation(curphase) * rhsfac, phasemanager.Saturation(curphase) * fac,
+      phasemanager.saturation(curphase) * rhsfac, phasemanager.saturation(curphase) * fac,
       inittimederiv);
 
   return;
@@ -3941,7 +3945,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd
   // call base class with scaled factors
   EvaluatorVolFracAddDivVelTerm<nsd, nen>::evaluate_matrix_od_struct_and_assemble(elemat, funct,
       deriv, derxy, xjm, curphase, phasetoadd, numdofpernode, phasemanager, variablemanager,
-      phasemanager.Saturation(curphase) * timefacfac, phasemanager.Saturation(curphase) * fac, det);
+      phasemanager.saturation(curphase) * timefacfac, phasemanager.saturation(curphase) * fac, det);
 
   return;
 }
@@ -3981,8 +3985,8 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
   // loop over all volume fractions
   for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
@@ -4031,14 +4035,14 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
     // get vector to fill
     Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
-    const int numfluidphases = phasemanager.NumFluidPhases();
-    const int numvolfrac = phasemanager.NumVolFrac();
+    const int numfluidphases = phasemanager.num_fluid_phases();
+    const int numvolfrac = phasemanager.num_vol_frac();
 
     // loop over all volume fractions
     for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
     {
-      const double hist = (*variablemanager.Hist())[ivolfrac];
-      const double phinp = phasemanager.VolFrac(ivolfrac - numfluidphases);
+      const double hist = (*variablemanager.hist())[ivolfrac];
+      const double phinp = phasemanager.vol_frac(ivolfrac - numfluidphases);
       const double vtrans = fac * (phinp - hist);
 
       const bool evaluatevolfracpress =
@@ -4075,14 +4079,14 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
   // loop over all volume fractions
   for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
-    const double hist = (*variablemanager.Hist())[ivolfrac];
-    const double phinp = phasemanager.VolFrac(ivolfrac - numfluidphases);
+    const double hist = (*variablemanager.hist())[ivolfrac];
+    const double phinp = phasemanager.vol_frac(ivolfrac - numfluidphases);
     const double vtrans = fac * (phinp - hist);
 
     const bool evaluatevolfracpress =
@@ -4153,12 +4157,12 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
   // no linearization needed in case of initial time derivative calculation
   if (!inittimederiv)
   {
-    const int numfluidphases = phasemanager.NumFluidPhases();
-    const int numvolfrac = phasemanager.NumVolFrac();
+    const int numfluidphases = phasemanager.num_fluid_phases();
+    const int numvolfrac = phasemanager.num_vol_frac();
     // get matrix to fill
     Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-    const double consfac = timefacfac * variablemanager.DivConVelnp();
+    const double consfac = timefacfac * variablemanager.div_con_velnp();
 
     // loop over all volume fractions
     for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
@@ -4201,15 +4205,15 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
-  double vrhs = rhsfac * variablemanager.DivConVelnp();
+  double vrhs = rhsfac * variablemanager.div_con_velnp();
 
   // loop over all volume fractions
   for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
-    const double v = vrhs * phasemanager.VolFrac(ivolfrac - numfluidphases);
+    const double v = vrhs * phasemanager.vol_frac(ivolfrac - numfluidphases);
     const bool evaluatevolfracpress =
         variablemanager.element_has_valid_vol_frac_pressure(ivolfrac - numfluidphases);
 
@@ -4243,8 +4247,8 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
   // loop over all volume fractions
   for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
@@ -4252,7 +4256,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
     const bool evaluatevolfracpress =
         variablemanager.element_has_valid_vol_frac_pressure(ivolfrac - numfluidphases);
 
-    const double vrhs = fac * phasemanager.VolFrac(ivolfrac - numfluidphases);
+    const double vrhs = fac * phasemanager.vol_frac(ivolfrac - numfluidphases);
     // d (div v_s)/d d_n+1 = derxy * 1.0/theta/dt * d_n+1
     // prefactor is fac since timefacfac/theta/dt = fac
     for (int vi = 0; vi < nen; ++vi)
@@ -4275,7 +4279,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
 
     // shapederivatives see fluid_ele_calc_poro.cpp
     Core::LinAlg::Matrix<nsd, nsd> gridvelderiv(true);
-    gridvelderiv.multiply_nt(*(variablemanager.EConVelnp()), deriv);
+    gridvelderiv.multiply_nt(*(variablemanager.e_con_velnp()), deriv);
 
     if (nsd == 3)
     {
@@ -4322,7 +4326,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
           const int fvi_volfracpress = vi * numdofpernode + numvolfrac + ivolfrac;
 
           const double v =
-              timefacfac / det * funct(vi) * phasemanager.VolFrac(ivolfrac - numfluidphases);
+              timefacfac / det * funct(vi) * phasemanager.vol_frac(ivolfrac - numfluidphases);
 
           mymat(fvi_volfrac, ui * 3 + 0) += v * v0;
           if (evaluatevolfracpress) mymat(fvi_volfracpress, ui * 3 + 0) += v * v0;
@@ -4348,7 +4352,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
         const int fvi_volfracpress = vi * numdofpernode + numvolfrac + ivolfrac;
 
         const double v =
-            timefacfac / det * funct(vi) * phasemanager.VolFrac(ivolfrac - numfluidphases);
+            timefacfac / det * funct(vi) * phasemanager.vol_frac(ivolfrac - numfluidphases);
 
         for (int ui = 0; ui < nen; ++ui)
         {
@@ -4410,15 +4414,15 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
     // get matrix to fill
     Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-    const int numfluidphases = phasemanager.NumFluidPhases();
-    const int numvolfrac = phasemanager.NumVolFrac();
+    const int numfluidphases = phasemanager.num_fluid_phases();
+    const int numvolfrac = phasemanager.num_vol_frac();
 
     // loop over all volume fractions
     for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
     {
       // get difftensor and diffusive flux
       Core::LinAlg::Matrix<nsd, nsd> difftensor(true);
-      phasemanager.DiffTensorVolFrac(ivolfrac - numfluidphases, difftensor);
+      phasemanager.diff_tensor_vol_frac(ivolfrac - numfluidphases, difftensor);
 
       static Core::LinAlg::Matrix<nsd, nen> diffflux(true);
       diffflux.multiply(difftensor, derxy);
@@ -4459,17 +4463,17 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
-  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
+  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.grad_phinp();
 
   // loop over all volume fractions
   for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
     // diffusion tensor
     Core::LinAlg::Matrix<nsd, nsd> difftensor(true);
-    phasemanager.DiffTensorVolFrac(ivolfrac - numfluidphases, difftensor);
+    phasemanager.diff_tensor_vol_frac(ivolfrac - numfluidphases, difftensor);
 
     static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
     diffflux.multiply(difftensor, gradphi[ivolfrac]);
@@ -4505,17 +4509,17 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
-  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
+  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.grad_phinp();
 
   // loop over all volume fractions
   for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
     // diffusion tensor
     Core::LinAlg::Matrix<nsd, nsd> difftensor(true);
-    phasemanager.DiffTensorVolFrac(ivolfrac - numfluidphases, difftensor);
+    phasemanager.diff_tensor_vol_frac(ivolfrac - numfluidphases, difftensor);
 
     static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
     diffflux.multiply(difftensor, gradphi[ivolfrac]);
@@ -4572,16 +4576,16 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
     // get matrix to fill
     Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-    const int numfluidphases = phasemanager.NumFluidPhases();
-    const int numvolfrac = phasemanager.NumVolFrac();
+    const int numfluidphases = phasemanager.num_fluid_phases();
+    const int numvolfrac = phasemanager.num_vol_frac();
 
     // loop over all volume fractions
     for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
     {
-      if (phasemanager.IsReactive(ivolfrac))
+      if (phasemanager.is_reactive(ivolfrac))
       {
         double scaledtimefacfac =
-            timefacfac / phasemanager.VolFracDensity(ivolfrac - numfluidphases);
+            timefacfac / phasemanager.vol_frac_density(ivolfrac - numfluidphases);
         //----------------------------------------------------------------
         // reaction terms
         //----------------------------------------------------------------
@@ -4598,7 +4602,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
               const int fui = ui * numdofpernode + idof;
 
               // rhs ---> -
-              mymat(fvi, fui) -= vfunct * phasemanager.ReacDeriv(ivolfrac, idof);
+              mymat(fvi, fui) -= vfunct * phasemanager.reac_deriv(ivolfrac, idof);
             }
           }
         }
@@ -4624,17 +4628,17 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
   // loop over all volume fractions
   for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
-    if (phasemanager.IsReactive(ivolfrac))
+    if (phasemanager.is_reactive(ivolfrac))
     {
-      double scale = 1.0 / phasemanager.VolFracDensity(ivolfrac - numfluidphases);
+      double scale = 1.0 / phasemanager.vol_frac_density(ivolfrac - numfluidphases);
 
-      double vrhs = scale * rhsfac * phasemanager.ReacTerm(ivolfrac);
+      double vrhs = scale * rhsfac * phasemanager.reac_term(ivolfrac);
 
       for (int vi = 0; vi < nen; ++vi)
       {
@@ -4665,18 +4669,18 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
   // loop over all volume fractions
   for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
-    if (phasemanager.IsReactive(ivolfrac))
+    if (phasemanager.is_reactive(ivolfrac))
     {
       // TODO a constant density is assumed here
-      double scale = 1.0 / phasemanager.VolFracDensity(ivolfrac - numfluidphases);
+      double scale = 1.0 / phasemanager.vol_frac_density(ivolfrac - numfluidphases);
 
-      double vrhs = scale * timefacfac * phasemanager.ReacTerm(ivolfrac);
+      double vrhs = scale * timefacfac * phasemanager.reac_term(ivolfrac);
 
       // linearization of porosity (may appear in reaction term)
       //-------------dreac/dd = dreac/dporosity * dporosity/dd = dreac/dporosity * dporosity/dJ *
@@ -4686,8 +4690,8 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
 
       if (phasemanager.porosity_depends_on_struct())
       {
-        vrhs += timefacfac * scale * phasemanager.ReacDerivPorosity(ivolfrac) *
-                phasemanager.JacobianDefGrad() *
+        vrhs += timefacfac * scale * phasemanager.reac_deriv_porosity(ivolfrac) *
+                phasemanager.jacobian_def_grad() *
                 phasemanager.porosity_deriv_wrt_jacobian_def_grad();
       }
 
@@ -4718,16 +4722,16 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
-  const int numscal = phasemanager.NumScal();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
+  const int numscal = phasemanager.num_scal();
 
   // loop over all volume fractions
   for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
-    if (phasemanager.IsReactive(ivolfrac))
+    if (phasemanager.is_reactive(ivolfrac))
     {
-      double vrhs = 1.0 / phasemanager.VolFracDensity(ivolfrac - numfluidphases) * timefacfac;
+      double vrhs = 1.0 / phasemanager.vol_frac_density(ivolfrac - numfluidphases) * timefacfac;
 
       // linearization of reaction term w.r.t scalars
       for (int vi = 0; vi < nen; ++vi)
@@ -4742,7 +4746,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
           {
             const int fui = ui * numscal + iscal;
             // rhs ---> -
-            mymat(fvi, fui) -= vfunct * phasemanager.ReacDerivScalar(ivolfrac, iscal);
+            mymat(fvi, fui) -= vfunct * phasemanager.reac_deriv_scalar(ivolfrac, iscal);
           }
         }
       }
@@ -4773,8 +4777,8 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
     // get matrix to fill
     Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-    const int numfluidphases = phasemanager.NumFluidPhases();
-    const int numvolfrac = phasemanager.NumVolFrac();
+    const int numfluidphases = phasemanager.num_fluid_phases();
+    const int numvolfrac = phasemanager.num_vol_frac();
 
     // loop over all volume fractions
     for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
@@ -4782,9 +4786,9 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
       if (phasemanager.has_add_scalar_dependent_flux(ivolfrac - numfluidphases))
       {
         // only in case of additional flux we have access to numscal
-        const int numscal = phasemanager.NumScal();
+        const int numscal = phasemanager.num_scal();
         const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradscalarnp =
-            *variablemanager.GradScalarnp();
+            *variablemanager.grad_scalarnp();
 
         // loop over scalars
         for (int iscal = 0; iscal < numscal; iscal++)
@@ -4794,7 +4798,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
             // diffusion tensor and diffusive flux
             Core::LinAlg::Matrix<nsd, nsd> difftensoraddflux(true);
             for (int i = 0; i < nsd; i++)
-              difftensoraddflux(i, i) = phasemanager.ScalarDiff(ivolfrac - numfluidphases, iscal);
+              difftensoraddflux(i, i) = phasemanager.scalar_diff(ivolfrac - numfluidphases, iscal);
 
             static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
             diffflux.multiply(difftensoraddflux, gradscalarnp[iscal]);
@@ -4813,25 +4817,26 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
                   const int fui = ui * numdofpernode + idof;
 
                   // chemotaxis
-                  if (phasemanager.ScalarToPhase(iscal).species_type ==
+                  if (phasemanager.scalar_to_phase(iscal).species_type ==
                       Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid)
                   {
-                    if (phasemanager.ScalarToPhase(iscal).phaseID > phasemanager.NumFluidPhases())
+                    if (phasemanager.scalar_to_phase(iscal).phaseID >
+                        phasemanager.num_fluid_phases())
                       FOUR_C_THROW("Wrong PhaseID");
                     // 1) saturation deriv
                     // 2) porosity deriv
                     mymat(fvi, fui) +=
-                        vfunct *
-                        (phasemanager.SaturationDeriv(
-                             phasemanager.ScalarToPhase(iscal).phaseID, idof) *
-                                phasemanager.VolFrac(ivolfrac - numfluidphases) *
-                                phasemanager.Porosity() +
-                            phasemanager.PorosityDeriv(idof) *
-                                phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID) *
-                                phasemanager.VolFrac(ivolfrac - numfluidphases));
+                        vfunct * (phasemanager.saturation_deriv(
+                                      phasemanager.scalar_to_phase(iscal).phaseID, idof) *
+                                         phasemanager.vol_frac(ivolfrac - numfluidphases) *
+                                         phasemanager.porosity() +
+                                     phasemanager.porosity_deriv(idof) *
+                                         phasemanager.saturation(
+                                             phasemanager.scalar_to_phase(iscal).phaseID) *
+                                         phasemanager.vol_frac(ivolfrac - numfluidphases));
                   }
                   // haptotaxis
-                  else if (phasemanager.ScalarToPhase(iscal).species_type ==
+                  else if (phasemanager.scalar_to_phase(iscal).species_type ==
                            Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid)
                     // derivative of solid phase volume fraction w.r.t. all fluid phases = 0
                     break;
@@ -4844,30 +4849,31 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
                 {
                   const int fui = ui * numdofpernode + jvolfrac;
                   // haptotaxis
-                  if (phasemanager.ScalarToPhase(iscal).species_type ==
+                  if (phasemanager.scalar_to_phase(iscal).species_type ==
                       Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid)
                   {
                     // 1) derivative w.r.t. current volume fraction ivolfrac
                     if (ivolfrac == jvolfrac)
-                      mymat(fvi, fui) +=
-                          vfunct * (1.0 - phasemanager.Porosity() - phasemanager.SumAddVolFrac());
+                      mymat(fvi, fui) += vfunct * (1.0 - phasemanager.porosity() -
+                                                      phasemanager.sum_add_vol_frac());
                     // 2) derivative of solid phase volume fraction w.r.t. all volume fractions = 0
                   }
                   // chemotaxis
-                  else if (phasemanager.ScalarToPhase(iscal).species_type ==
+                  else if (phasemanager.scalar_to_phase(iscal).species_type ==
                            Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid)
                   {
                     // 1) derivative w.r.t. current volume fraction ivolfrac
                     if (ivolfrac == jvolfrac)
-                      mymat(fvi, fui) += vfunct * (phasemanager.Saturation(
-                                                       phasemanager.ScalarToPhase(iscal).phaseID) *
-                                                      phasemanager.Porosity());
+                      mymat(fvi, fui) +=
+                          vfunct *
+                          (phasemanager.saturation(phasemanager.scalar_to_phase(iscal).phaseID) *
+                              phasemanager.porosity());
                     // 2) porosity deriv w.r.t. all volume fractions
                     mymat(fvi, fui) +=
                         vfunct *
-                        (phasemanager.PorosityDeriv(jvolfrac) *
-                            phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID) *
-                            phasemanager.VolFrac(ivolfrac - numfluidphases));
+                        (phasemanager.porosity_deriv(jvolfrac) *
+                            phasemanager.saturation(phasemanager.scalar_to_phase(iscal).phaseID) *
+                            phasemanager.vol_frac(ivolfrac - numfluidphases));
                   }
                   else
                     FOUR_C_THROW(
@@ -4899,8 +4905,8 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
   // loop over all volume fractions
   for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
@@ -4908,9 +4914,9 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
     if (phasemanager.has_add_scalar_dependent_flux(ivolfrac - numfluidphases))
     {
       // only in case of additional flux we have access to numscal
-      const int numscal = phasemanager.NumScal();
+      const int numscal = phasemanager.num_scal();
       const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradscalarnp =
-          *variablemanager.GradScalarnp();
+          *variablemanager.grad_scalarnp();
 
       // loop over scalars
       for (int iscal = 0; iscal < numscal; iscal++)
@@ -4920,22 +4926,23 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
           // diffusion tensor
           Core::LinAlg::Matrix<nsd, nsd> difftensoraddflux(true);
           for (int i = 0; i < nsd; i++)
-            difftensoraddflux(i, i) = phasemanager.ScalarDiff(ivolfrac - numfluidphases, iscal);
+            difftensoraddflux(i, i) = phasemanager.scalar_diff(ivolfrac - numfluidphases, iscal);
 
           // haptotaxis: scale with volfrac * (1 - porosity - sumaddvolfrac)
-          if (phasemanager.ScalarToPhase(iscal).species_type ==
+          if (phasemanager.scalar_to_phase(iscal).species_type ==
               Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid)
           {
-            difftensoraddflux.scale(phasemanager.VolFrac(ivolfrac - numfluidphases) *
-                                    (1.0 - phasemanager.Porosity() - phasemanager.SumAddVolFrac()));
+            difftensoraddflux.scale(
+                phasemanager.vol_frac(ivolfrac - numfluidphases) *
+                (1.0 - phasemanager.porosity() - phasemanager.sum_add_vol_frac()));
           }
           // chemotaxis: scale with volfrac * S * porosity
-          else if (phasemanager.ScalarToPhase(iscal).species_type ==
+          else if (phasemanager.scalar_to_phase(iscal).species_type ==
                    Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid)
           {
             difftensoraddflux.scale(
-                phasemanager.VolFrac(ivolfrac - numfluidphases) * phasemanager.Porosity() *
-                phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID));
+                phasemanager.vol_frac(ivolfrac - numfluidphases) * phasemanager.porosity() *
+                phasemanager.saturation(phasemanager.scalar_to_phase(iscal).phaseID));
           }
           else
             FOUR_C_THROW("AddScalarDependentFlux only possible for species in fluid or solid!");
@@ -4975,8 +4982,8 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
   // loop over all volume fractions
   for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
@@ -4984,9 +4991,9 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
     if (phasemanager.has_add_scalar_dependent_flux(ivolfrac - numfluidphases))
     {
       // only in case of additional flux we have access to numscal
-      const int numscal = phasemanager.NumScal();
+      const int numscal = phasemanager.num_scal();
       const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradscalarnp =
-          *variablemanager.GradScalarnp();
+          *variablemanager.grad_scalarnp();
 
       // loop over all scalars
       for (int iscal = 0; iscal < numscal; iscal++)
@@ -4996,24 +5003,24 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
           // diffusion tensor
           Core::LinAlg::Matrix<nsd, nsd> difftensoraddflux(true);
           for (int i = 0; i < nsd; i++)
-            difftensoraddflux(i, i) = phasemanager.ScalarDiff(ivolfrac - numfluidphases, iscal);
+            difftensoraddflux(i, i) = phasemanager.scalar_diff(ivolfrac - numfluidphases, iscal);
 
           static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
           // haptotaxis: scale with volfrac * (1 - porosity - sumaddvolfrac)
-          if (phasemanager.ScalarToPhase(iscal).species_type ==
+          if (phasemanager.scalar_to_phase(iscal).species_type ==
               Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid)
           {
-            diffflux.multiply(phasemanager.VolFrac(ivolfrac - numfluidphases) *
-                                  (1 - phasemanager.Porosity() - phasemanager.SumAddVolFrac()),
+            diffflux.multiply(phasemanager.vol_frac(ivolfrac - numfluidphases) *
+                                  (1 - phasemanager.porosity() - phasemanager.sum_add_vol_frac()),
                 difftensoraddflux, gradscalarnp[iscal]);
           }
           // chemotaxis: scale with volfrac * S * porosity
-          else if (phasemanager.ScalarToPhase(iscal).species_type ==
+          else if (phasemanager.scalar_to_phase(iscal).species_type ==
                    Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid)
           {
             diffflux.multiply(
-                phasemanager.VolFrac(ivolfrac - numfluidphases) * phasemanager.Porosity() *
-                    phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID),
+                phasemanager.vol_frac(ivolfrac - numfluidphases) * phasemanager.porosity() *
+                    phasemanager.saturation(phasemanager.scalar_to_phase(iscal).phaseID),
                 difftensoraddflux, gradscalarnp[iscal]);
           }
           else
@@ -5022,20 +5029,20 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
           double v(0.0);
           // TODO: anisotropic difftensor
           // haptotaxis: scale with volfrac * (1 - porosity - sumaddvolfrac)
-          if (phasemanager.ScalarToPhase(iscal).species_type ==
+          if (phasemanager.scalar_to_phase(iscal).species_type ==
               Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid)
           {
             v = difftensoraddflux(0, 0) * timefacfac / det *
-                phasemanager.VolFrac(ivolfrac - numfluidphases) *
-                (1 - phasemanager.Porosity() - phasemanager.SumAddVolFrac());
+                phasemanager.vol_frac(ivolfrac - numfluidphases) *
+                (1 - phasemanager.porosity() - phasemanager.sum_add_vol_frac());
           }
           // chemotaxis: scale with volfrac * S * porosity
-          else if (phasemanager.ScalarToPhase(iscal).species_type ==
+          else if (phasemanager.scalar_to_phase(iscal).species_type ==
                    Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid)
           {
             v = difftensoraddflux(0, 0) * timefacfac / det *
-                phasemanager.VolFrac(ivolfrac - numfluidphases) * phasemanager.Porosity() *
-                phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID);
+                phasemanager.vol_frac(ivolfrac - numfluidphases) * phasemanager.porosity() *
+                phasemanager.saturation(phasemanager.scalar_to_phase(iscal).phaseID);
           }
           else
             FOUR_C_THROW("AddScalarDependentFlux only possible for species in fluid or solid!");
@@ -5063,22 +5070,22 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
             static Core::LinAlg::Matrix<nsd, 1> diffflux2(true);
 
             // haptotaxis
-            if (phasemanager.ScalarToPhase(iscal).species_type ==
+            if (phasemanager.scalar_to_phase(iscal).species_type ==
                 Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid)
             {
-              diffflux2.multiply(phasemanager.VolFrac(ivolfrac - numfluidphases) * (-1.0) *
-                                     phasemanager.JacobianDefGrad() *
+              diffflux2.multiply(phasemanager.vol_frac(ivolfrac - numfluidphases) * (-1.0) *
+                                     phasemanager.jacobian_def_grad() *
                                      phasemanager.porosity_deriv_wrt_jacobian_def_grad(),
                   difftensoraddflux, gradscalarnp[iscal]);
             }
             // chemotaxis
-            else if (phasemanager.ScalarToPhase(iscal).species_type ==
+            else if (phasemanager.scalar_to_phase(iscal).species_type ==
                      Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid)
             {
               diffflux2.multiply(
-                  phasemanager.VolFrac(ivolfrac - numfluidphases) *
-                      phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID) *
-                      phasemanager.JacobianDefGrad() *
+                  phasemanager.vol_frac(ivolfrac - numfluidphases) *
+                      phasemanager.saturation(phasemanager.scalar_to_phase(iscal).phaseID) *
+                      phasemanager.jacobian_def_grad() *
                       phasemanager.porosity_deriv_wrt_jacobian_def_grad(),
                   difftensoraddflux, gradscalarnp[iscal]);
             }
@@ -5126,15 +5133,15 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
   // loop over all volume fractions
   for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
     if (phasemanager.has_add_scalar_dependent_flux(ivolfrac - numfluidphases))
     {
-      const int numscal = phasemanager.NumScal();
+      const int numscal = phasemanager.num_scal();
       // loop over all scalars
       for (int iscal = 0; iscal < numscal; iscal++)
       {
@@ -5143,19 +5150,20 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
           // diffusion tensor
           Core::LinAlg::Matrix<nsd, nsd> difftensoraddflux(true);
           for (int i = 0; i < nsd; i++)
-            difftensoraddflux(i, i) = phasemanager.ScalarDiff(ivolfrac - numfluidphases, iscal);
+            difftensoraddflux(i, i) = phasemanager.scalar_diff(ivolfrac - numfluidphases, iscal);
 
           // haptotaxis: scale with volfrac * (1 - porosity - sumaddvolfrac)
-          if (phasemanager.ScalarToPhase(iscal).species_type ==
+          if (phasemanager.scalar_to_phase(iscal).species_type ==
               Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid)
-            difftensoraddflux.scale(phasemanager.VolFrac(ivolfrac - numfluidphases) *
-                                    (1.0 - phasemanager.Porosity() - phasemanager.SumAddVolFrac()));
+            difftensoraddflux.scale(
+                phasemanager.vol_frac(ivolfrac - numfluidphases) *
+                (1.0 - phasemanager.porosity() - phasemanager.sum_add_vol_frac()));
           // chemotaxis: scale with volfrac * S * porosity
-          else if (phasemanager.ScalarToPhase(iscal).species_type ==
+          else if (phasemanager.scalar_to_phase(iscal).species_type ==
                    Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid)
             difftensoraddflux.scale(
-                phasemanager.VolFrac(ivolfrac - numfluidphases) * phasemanager.Porosity() *
-                phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID));
+                phasemanager.vol_frac(ivolfrac - numfluidphases) * phasemanager.porosity() *
+                phasemanager.saturation(phasemanager.scalar_to_phase(iscal).phaseID));
           else
             FOUR_C_THROW("AddScalarDependentFlux only possible for species in fluid or solid!");
 
@@ -5181,15 +5189,16 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
           if (phasemanager.has_receptor_kinetic_law(ivolfrac - numfluidphases, iscal))
           {
             // get scalars
-            const std::vector<double> scalars = *variablemanager.Scalarnp();
+            const std::vector<double> scalars = *variablemanager.scalarnp();
             const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradscalarnp =
-                *variablemanager.GradScalarnp();
+                *variablemanager.grad_scalarnp();
 
             // corrrectly scale difftensor
             // d diff / d omega = D_0*(-1.0)*w_half/(w_half+w)^2
             //                    value from above * (-1.0)/(w_half+w)
             difftensoraddflux.scale(
-                -1.0 / (phasemanager.OmegaHalf(ivolfrac - numfluidphases, iscal) + scalars[iscal]));
+                -1.0 /
+                (phasemanager.omega_half(ivolfrac - numfluidphases, iscal) + scalars[iscal]));
 
             static Core::LinAlg::Matrix<nsd, 1> diffflux2(true);
             diffflux2.multiply(difftensoraddflux, gradscalarnp[iscal]);
@@ -5236,8 +5245,8 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
     // get matrix to fill
     Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-    const int numfluidphases = phasemanager.NumFluidPhases();
-    const int numvolfrac = phasemanager.NumVolFrac();
+    const int numfluidphases = phasemanager.num_fluid_phases();
+    const int numvolfrac = phasemanager.num_vol_frac();
 
     // loop over all volume fraction pressures
     for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode;
@@ -5301,10 +5310,10 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
-  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
+  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.grad_phinp();
 
   // loop over all volume fractions
   for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode;
@@ -5363,10 +5372,10 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
-  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
+  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.grad_phinp();
 
   // loop over all volume fractions
   for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode;
@@ -5441,8 +5450,8 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
     // get matrix to fill
     Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-    const int numfluidphases = phasemanager.NumFluidPhases();
-    const int numvolfrac = phasemanager.NumVolFrac();
+    const int numfluidphases = phasemanager.num_fluid_phases();
+    const int numvolfrac = phasemanager.num_vol_frac();
 
     // loop over all volume fractions
     for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode;
@@ -5452,10 +5461,10 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
           ivolfracpress - numvolfrac - numfluidphases);
 
 
-      if (phasemanager.IsReactive(ivolfracpress) && evaluatevolfracpress)
+      if (phasemanager.is_reactive(ivolfracpress) && evaluatevolfracpress)
       {
         double scaledtimefacfac =
-            timefacfac / phasemanager.VolFracDensity(ivolfracpress - numfluidphases - numvolfrac);
+            timefacfac / phasemanager.vol_frac_density(ivolfracpress - numfluidphases - numvolfrac);
         //----------------------------------------------------------------
         // reaction terms
         //----------------------------------------------------------------
@@ -5472,7 +5481,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
               const int fui = ui * numdofpernode + idof;
 
               // rhs ---> -
-              mymat(fvi, fui) -= vfunct * phasemanager.ReacDeriv(ivolfracpress, idof);
+              mymat(fvi, fui) -= vfunct * phasemanager.reac_deriv(ivolfracpress, idof);
             }
           }
         }
@@ -5498,8 +5507,8 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
   // loop over all volume fractions
   for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode;
@@ -5509,11 +5518,12 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
         ivolfracpress - numvolfrac - numfluidphases);
 
 
-    if (phasemanager.IsReactive(ivolfracpress) && evaluatevolfracpress)
+    if (phasemanager.is_reactive(ivolfracpress) && evaluatevolfracpress)
     {
-      double scale = 1.0 / phasemanager.VolFracDensity(ivolfracpress - numfluidphases - numvolfrac);
+      double scale =
+          1.0 / phasemanager.vol_frac_density(ivolfracpress - numfluidphases - numvolfrac);
 
-      double vrhs = scale * rhsfac * phasemanager.ReacTerm(ivolfracpress);
+      double vrhs = scale * rhsfac * phasemanager.reac_term(ivolfracpress);
 
       for (int vi = 0; vi < nen; ++vi)
       {
@@ -5544,8 +5554,8 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
 
   // loop over all volume fractions
   for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode;
@@ -5555,12 +5565,13 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
         ivolfracpress - numvolfrac - numfluidphases);
 
 
-    if (phasemanager.IsReactive(ivolfracpress) && evaluatevolfracpress)
+    if (phasemanager.is_reactive(ivolfracpress) && evaluatevolfracpress)
     {
       // TODO a constant density is assumed here
-      double scale = 1.0 / phasemanager.VolFracDensity(ivolfracpress - numfluidphases - numvolfrac);
+      double scale =
+          1.0 / phasemanager.vol_frac_density(ivolfracpress - numfluidphases - numvolfrac);
 
-      double vrhs = scale * timefacfac * phasemanager.ReacTerm(ivolfracpress);
+      double vrhs = scale * timefacfac * phasemanager.reac_term(ivolfracpress);
 
       // linearization of porosity (may appear in reaction term)
       //-------------dreac/dd = dreac/dporosity * dporosity/dd = dreac/dporosity * dporosity/dJ *
@@ -5570,8 +5581,8 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
 
       if (phasemanager.porosity_depends_on_struct())
       {
-        vrhs += timefacfac * scale * phasemanager.ReacDerivPorosity(ivolfracpress) *
-                phasemanager.JacobianDefGrad() *
+        vrhs += timefacfac * scale * phasemanager.reac_deriv_porosity(ivolfracpress) *
+                phasemanager.jacobian_def_grad() *
                 phasemanager.porosity_deriv_wrt_jacobian_def_grad();
       }
 
@@ -5602,9 +5613,9 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-  const int numfluidphases = phasemanager.NumFluidPhases();
-  const int numvolfrac = phasemanager.NumVolFrac();
-  const int numscal = phasemanager.NumScal();
+  const int numfluidphases = phasemanager.num_fluid_phases();
+  const int numvolfrac = phasemanager.num_vol_frac();
+  const int numscal = phasemanager.num_scal();
 
   // loop over all volume fractions
   for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode;
@@ -5613,9 +5624,10 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
     const bool evaluatevolfracpress = variablemanager.element_has_valid_vol_frac_pressure(
         ivolfracpress - numvolfrac - numfluidphases);
 
-    if (phasemanager.IsReactive(ivolfracpress) && evaluatevolfracpress)
+    if (phasemanager.is_reactive(ivolfracpress) && evaluatevolfracpress)
     {
-      double vrhs = 1.0 / phasemanager.VolFracDensity(ivolfracpress - numfluidphases - numvolfrac) *
+      double vrhs = 1.0 /
+                    phasemanager.vol_frac_density(ivolfracpress - numfluidphases - numvolfrac) *
                     timefacfac;
 
       // linearization of reaction term w.r.t scalars
@@ -5631,7 +5643,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
           {
             const int fui = ui * numscal + iscal;
             // rhs ---> -
-            mymat(fvi, fui) -= vfunct * phasemanager.ReacDerivScalar(ivolfracpress, iscal);
+            mymat(fvi, fui) -= vfunct * phasemanager.reac_deriv_scalar(ivolfracpress, iscal);
           }
         }
       }

@@ -151,9 +151,9 @@ namespace Discret::ELEMENTS
     {
       for (int d = 0; d < DETAIL::num_dim<celltype>; ++d)
       {
-        element_nodes.reference_coordinates(i, d) = ele.Nodes()[i]->X()[d];
+        element_nodes.reference_coordinates(i, d) = ele.nodes()[i]->x()[d];
         element_nodes.current_coordinates(i, d) =
-            ele.Nodes()[i]->X()[d] + disp[i * DETAIL::num_dim<celltype> + d];
+            ele.nodes()[i]->x()[d] + disp[i * DETAIL::num_dim<celltype> + d];
         element_nodes.displacements(i, d) = disp[i * DETAIL::num_dim<celltype> + d];
       }
     }
@@ -172,7 +172,7 @@ namespace Discret::ELEMENTS
   ElementNodes<celltype> evaluate_element_nodes(const Core::Elements::Element& ele,
       const Core::FE::Discretization& discretization, const std::vector<int>& lm)
   {
-    const Epetra_Vector& displacements = *discretization.GetState("displacement");
+    const Epetra_Vector& displacements = *discretization.get_state("displacement");
 
     std::vector<double> mydisp(lm.size());
     Core::FE::ExtractMyValues(displacements, mydisp, lm);
@@ -206,7 +206,7 @@ namespace Discret::ELEMENTS
       const Core::FE::GaussIntegration& intpoints, const int gp)
   {
     Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> xi;
-    for (int d = 0; d < DETAIL::num_dim<celltype>; ++d) xi(d) = intpoints.Point(gp)[d];
+    for (int d = 0; d < DETAIL::num_dim<celltype>; ++d) xi(d) = intpoints.point(gp)[d];
 
     return xi;
   }
@@ -939,7 +939,7 @@ namespace Discret::ELEMENTS
   inline void ForEachGaussPoint(const ElementNodes<celltype>& nodal_coordinates,
       const Core::FE::GaussIntegration& integration, GaussPointEvaluator gp_evaluator)
   {
-    for (int gp = 0; gp < integration.NumPoints(); ++gp)
+    for (int gp = 0; gp < integration.num_points(); ++gp)
     {
       const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> xi =
           EvaluateParameterCoordinate<celltype>(integration, gp);
@@ -950,7 +950,7 @@ namespace Discret::ELEMENTS
       const JacobianMapping<celltype> jacobian_mapping =
           EvaluateJacobianMapping(shape_functions, nodal_coordinates);
 
-      const double integration_factor = jacobian_mapping.determinant_ * integration.Weight(gp);
+      const double integration_factor = jacobian_mapping.determinant_ * integration.weight(gp);
 
       gp_evaluator(xi, shape_functions, jacobian_mapping, integration_factor, gp);
     }
@@ -1006,7 +1006,7 @@ namespace Discret::ELEMENTS
       const Core::FE::GaussIntegration& stiffness_matrix_integration,
       const Core::Elements::Element& ele, Teuchos::ParameterList& params)
   {
-    if (Core::Nodes::HaveNodalFibers<celltype>(ele.Nodes()))
+    if (Core::Nodes::HaveNodalFibers<celltype>(ele.nodes()))
     {
       // This element has fiber nodes.
       // Interpolate fibers to the Gauss points and add them to the parameter list
@@ -1017,11 +1017,11 @@ namespace Discret::ELEMENTS
               [&]
               {
                 std::vector<Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, 1>> shapefcns(
-                    stiffness_matrix_integration.NumPoints());
-                for (int gp = 0; gp < stiffness_matrix_integration.NumPoints(); ++gp)
+                    stiffness_matrix_integration.num_points());
+                for (int gp = 0; gp < stiffness_matrix_integration.num_points(); ++gp)
                 {
                   Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> xi(
-                      stiffness_matrix_integration.Point(gp), true);
+                      stiffness_matrix_integration.point(gp), true);
                   Core::FE::shape_function<celltype>(xi, shapefcns[gp]);
                 }
                 return shapefcns;
@@ -1031,7 +1031,7 @@ namespace Discret::ELEMENTS
       Core::Nodes::NodalFiberHolder fiberHolder;
 
       // Do the interpolation
-      Core::Nodes::ProjectFibersToGaussPoints<celltype>(ele.Nodes(), shapefcts, fiberHolder);
+      Core::Nodes::ProjectFibersToGaussPoints<celltype>(ele.nodes(), shapefcts, fiberHolder);
 
       params.set("fiberholder", fiberHolder);
     }

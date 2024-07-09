@@ -102,7 +102,7 @@ namespace Core::Conditions
      * nodenormals my remain empty. It is only required for
      * calc_rotation_vector_for_normal_system().
      */
-    void Update(double time, std::vector<Teuchos::RCP<Epetra_Vector>> nodenormals,
+    void update(double time, std::vector<Teuchos::RCP<Epetra_Vector>> nodenormals,
         const Core::UTILS::FunctionManager& function_manager);
 
     /*!
@@ -115,7 +115,7 @@ namespace Core::Conditions
      * \brief Get Epetra communicator
      *
      */
-    inline const Epetra_Comm& Comm() const;
+    inline const Epetra_Comm& get_comm() const;
 
     //! @name Access methods
 
@@ -123,25 +123,25 @@ namespace Core::Conditions
      * \brief Get discretization
      *
      */
-    inline Core::FE::Discretization& Discret() const { return discret_; };
+    inline Core::FE::Discretization& discret() const { return discret_; };
 
     /*!
      * \brief Get problem dimension
      *
      */
-    inline const int& Dim() { return dim_; };
+    inline const int& n_dim() { return dim_; };
 
     /*!
      * \brief Get local system conditions
      *
      */
-    inline std::vector<Core::Conditions::Condition*> Conditions() const { return locsysconds_; };
+    inline std::vector<Core::Conditions::Condition*> conditions() const { return locsysconds_; };
 
     /*!
      * \brief Get a specific local system condition
      *
      */
-    inline Core::Conditions::Condition* Conditions(int k) const
+    inline Core::Conditions::Condition* conditions(int k) const
     {
       if (k >= numlocsys_)
       {
@@ -158,19 +158,19 @@ namespace Core::Conditions
      * \brief Get number of local system conditions
      *
      */
-    inline int NumLocsys() const { return numlocsys_; };
+    inline int num_locsys() const { return numlocsys_; };
 
     /*!
      * \brief Get types of local system conditions
      *
      */
-    inline std::vector<Core::Conditions::ConditionType> TypeLocsys() const { return typelocsys_; };
+    inline std::vector<Core::Conditions::ConditionType> type_locsys() const { return typelocsys_; };
 
     /*!
      * \brief Get type of a specific local system condition
      *
      */
-    inline Core::Conditions::ConditionType TypeLocsys(int k) const
+    inline Core::Conditions::ConditionType type_locsys(int k) const
     {
       if (k >= numlocsys_) FOUR_C_THROW("Invalid vector index");
       return typelocsys_[k];
@@ -180,7 +180,7 @@ namespace Core::Conditions
      * \brief Retrieve the global transformation matrix
      *
      */
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> Trafo() const { return trafo_; }
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> trafo() const { return trafo_; }
 
     //@}
 
@@ -197,7 +197,7 @@ namespace Core::Conditions
      * The similar thing is done for the right-hand-side vector:
      *   \f[ \tilde{R} = Q \cdot R \f]
      */
-    void RotateGlobalToLocal(
+    void rotate_global_to_local(
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat,  ///< systemmatrix, will be transformed
         Teuchos::RCP<Epetra_Vector> rhs  ///< right-hand-side vector, will be transformed
     ) const;
@@ -206,32 +206,32 @@ namespace Core::Conditions
      * \brief Apply forward transformation of a single matrix
      *
      */
-    void RotateGlobalToLocal(Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat) const;
+    void rotate_global_to_local(Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat) const;
 
     /*!
      * \brief Apply forward transformation of a single vector
      *
      */
-    void RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> vec, bool offset = false) const;
+    void rotate_global_to_local(Teuchos::RCP<Epetra_Vector> vec, bool offset = false) const;
 
     /*!
      * \brief Apply backward transformation of result and linear system of equations
      *
      */
-    void RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> result,
+    void rotate_local_to_global(Teuchos::RCP<Epetra_Vector> result,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat, Teuchos::RCP<Epetra_Vector> rhs) const;
 
     /*!
      * \brief Apply backward transformation of a single vector
      *
      */
-    void RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> vec, bool offset = false) const;
+    void rotate_local_to_global(Teuchos::RCP<Epetra_Vector> vec, bool offset = false) const;
 
     /*!
      * \brief Apply backward transformation of a matrix
      *
      */
-    void RotateLocalToGlobal(Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat) const;
+    void rotate_local_to_global(Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat) const;
 
     /*!
      * \brief Calculate rotation vector for (mass-consistent) normal system

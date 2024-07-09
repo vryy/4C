@@ -34,7 +34,7 @@ namespace Discret
     {
      public:
       //! singleton access method
-      static ScaTraEleCalcElchDiffCondSTIThermo<distype>* Instance(
+      static ScaTraEleCalcElchDiffCondSTIThermo<distype>* instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
 
@@ -54,7 +54,7 @@ namespace Discret
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action for off-diagonal system matrix block
-      int EvaluateActionOD(Core::Elements::Element* ele,    //!< current element
+      int evaluate_action_od(Core::Elements::Element* ele,  //!< current element
           Teuchos::ParameterList& params,                   //!< parameter list
           Core::FE::Discretization& discretization,         //!< discretization
           const ScaTra::Action& action,                     //!< action parameter
@@ -170,12 +170,12 @@ namespace Discret
       }
 
       //! set factor F/RT
-      void SetFRT() override
+      void set_frt() override
       {
         vmelch::frt_ =
-            Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday() /
-            (Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant() *
-                vmthermo::Temp());
+            Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday() /
+            (Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->gas_constant() *
+                vmthermo::temp());
       }
     };  // class ScaTraEleInternalVariableManagerElchDiffCondSTIThermo
   }     // namespace ELEMENTS

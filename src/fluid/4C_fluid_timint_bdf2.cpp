@@ -49,7 +49,7 @@ void FLD::TimIntBDF2::init()
 
   set_element_time_parameter();
 
-  CompleteGeneralInit();
+  complete_general_init();
 
   return;
 }
@@ -72,7 +72,7 @@ void FLD::TimIntBDF2::print_time_step_info()
 /*----------------------------------------------------------------------*
 | calculate pseudo-theta for startalgo_                        bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntBDF2::SetTheta()
+void FLD::TimIntBDF2::set_theta()
 {
   // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
 
@@ -109,7 +109,7 @@ void FLD::TimIntBDF2::set_old_part_of_righthandside()
 /*----------------------------------------------------------------------*
 | set integration-scheme-specific state                        bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntBDF2::SetStateTimInt()
+void FLD::TimIntBDF2::set_state_tim_int()
 {
   discret_->set_state("velaf", velnp_);
 
@@ -149,7 +149,7 @@ void FLD::TimIntBDF2::calculate_acceleration(const Teuchos::RCP<const Epetra_Vec
 /*----------------------------------------------------------------------*
 | set gamma                                                    bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntBDF2::SetGamma(Teuchos::ParameterList& eleparams)
+void FLD::TimIntBDF2::set_gamma(Teuchos::ParameterList& eleparams)
 {
   eleparams.set("gamma", 1.0);
   return;
@@ -158,16 +158,16 @@ void FLD::TimIntBDF2::SetGamma(Teuchos::ParameterList& eleparams)
 /*----------------------------------------------------------------------*
 | scale separation                                             bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntBDF2::Sep_Multiply()
+void FLD::TimIntBDF2::sep_multiply()
 {
-  Sep_->Multiply(false, *velnp_, *fsvelaf_);
+  Sep_->multiply(false, *velnp_, *fsvelaf_);
   return;
 }
 
 /*----------------------------------------------------------------------*
  | paraview output of filtered velocity                  rasthofer 02/11|
  *----------------------------------------------------------------------*/
-void FLD::TimIntBDF2::OutputofFilteredVel(
+void FLD::TimIntBDF2::outputof_filtered_vel(
     Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
@@ -176,7 +176,7 @@ void FLD::TimIntBDF2::OutputofFilteredVel(
 
   // get fine scale velocity
   if (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator)
-    Sep_->Multiply(false, *velnp_, *row_finescaleveltmp);
+    Sep_->multiply(false, *velnp_, *row_finescaleveltmp);
   else
     FOUR_C_THROW("Unknown separation type!");
 

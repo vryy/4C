@@ -37,7 +37,7 @@ Teuchos::RCP<FPSI::Utils> FPSI::Utils::instance_;
 /*----------------------------------------------------------------------/
 | Instance method for singleton class                            rauch  |
 /----------------------------------------------------------------------*/
-Teuchos::RCP<FPSI::Utils> FPSI::Utils::Instance()
+Teuchos::RCP<FPSI::Utils> FPSI::Utils::instance()
 {
   if (instance_ == Teuchos::null) instance_ = Teuchos::rcp(new Utils());
 
@@ -50,19 +50,19 @@ Teuchos::RCP<FPSI::Utils> FPSI::Utils::Instance()
 Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Comm& comm,
     const Teuchos::ParameterList& fpsidynparams, const Teuchos::ParameterList& poroelastdynparams)
 {
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
   fluid_poro_fluid_interface_map_ = Teuchos::rcp(new std::map<int, int>);
   poro_fluid_fluid_interface_map_ = Teuchos::rcp(new std::map<int, int>);
 
   // 1.-Initialization.
-  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis("structure");
   if (structdis == Teuchos::null) FOUR_C_THROW(" !!! structdis empty !!! Awwww MAAAAN !!!");
-  Teuchos::RCP<Core::FE::Discretization> porofluiddis = problem->GetDis("porofluid");
+  Teuchos::RCP<Core::FE::Discretization> porofluiddis = problem->get_dis("porofluid");
   if (porofluiddis == Teuchos::null) FOUR_C_THROW(" !!! porofluiddis empty !!! Awwww MAAAAN !!!");
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis("fluid");
   if (fluiddis == Teuchos::null) FOUR_C_THROW(" !!! fluiddis empty !!! Awwww MAAAAN !!!");
-  Teuchos::RCP<Core::FE::Discretization> aledis = problem->GetDis("ale");
+  Teuchos::RCP<Core::FE::Discretization> aledis = problem->get_dis("ale");
   if (aledis == Teuchos::null) FOUR_C_THROW(" !!! aledis empty !!! Awwww MAAAAN !!!");
 
   /*
@@ -115,7 +115,7 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
   // setup of the discretizations, including clone strategy
 
   // choose cloning strategy depending on poroelast or scatra poroelast problem type
-  if (problem->GetProblemType() == Core::ProblemType::fps3i)
+  if (problem->get_problem_type() == Core::ProblemType::fps3i)
   {
     PoroElast::UTILS::SetupPoro<PoroElastScaTra::UTILS::PoroelastCloneStrategyforScatraElements>();
   }
@@ -129,10 +129,10 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
   aledis->fill_complete(true, true, true);
 
   // 3.- Create ALE elements if the ale discretization is empty
-  if (aledis->NumGlobalNodes() == 0)  // ALE discretization still empty
+  if (aledis->num_global_nodes() == 0)  // ALE discretization still empty
   {
     Core::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
-        fluiddis, aledis, Global::Problem::Instance()->CloningMaterialMap());
+        fluiddis, aledis, Global::Problem::instance()->cloning_material_map());
     aledis->fill_complete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
@@ -148,7 +148,7 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
           "Use the ALE cloning functionality or ensure non-overlapping node numbering!");
   }
 
-  SetupInterfaceMap(comm, structdis, porofluiddis, fluiddis, aledis);
+  setup_interface_map(comm, structdis, porofluiddis, fluiddis, aledis);
 
   // 4.- get coupling algorithm
   Teuchos::RCP<FPSI::FpsiBase> fpsi_algo = Teuchos::null;
@@ -194,33 +194,33 @@ void FPSI::Utils::setup_local_interface_facing_element_map(Core::FE::Discretizat
     const Core::FE::Discretization& slavedis, const std::string& condname,
     std::map<int, int>& interfacefacingelementmap)
 {
-  Global::Problem* problem = Global::Problem::Instance();
-  const Epetra_Comm& mastercomm = problem->GetDis(masterdis.Name())->Comm();
+  Global::Problem* problem = Global::Problem::instance();
+  const Epetra_Comm& mastercomm = problem->get_dis(masterdis.name())->get_comm();
 
   bool condition_exists = true;
 
-  Core::Conditions::Condition* slavecond = slavedis.GetCondition(condname);
+  Core::Conditions::Condition* slavecond = slavedis.get_condition(condname);
   if (slavecond == nullptr)
   {
     condition_exists = false;
     std::cout << "WARNING: Condition <" << condname << "> does not exist on discretisation <"
-              << slavedis.Name() << ">! (OK if no " << condname << "-Interface is wanted)"
+              << slavedis.name() << ">! (OK if no " << condname << "-Interface is wanted)"
               << std::endl;
   }
 
-  Core::Conditions::Condition* mastercond = masterdis.GetCondition(condname);
+  Core::Conditions::Condition* mastercond = masterdis.get_condition(condname);
   if (mastercond == nullptr)
   {
     condition_exists = false;
     std::cout << "WARNING: Condition <" << condname << "> does not exist on discretisation <"
-              << masterdis.Name() << ">! (OK if no " << condname << "-Interface is wanted)"
+              << masterdis.name() << ">! (OK if no " << condname << "-Interface is wanted)"
               << std::endl;
   }
 
   if (!condition_exists) return;
 
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>& slavegeom = slavecond->Geometry();
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>& mastergeom = mastercond->Geometry();
+  std::map<int, Teuchos::RCP<Core::Elements::Element>>& slavegeom = slavecond->geometry();
+  std::map<int, Teuchos::RCP<Core::Elements::Element>>& mastergeom = mastercond->geometry();
 
   std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
   std::multimap<int, double> slaveinterfaceelementidentificationmap;
@@ -244,7 +244,7 @@ void FPSI::Utils::setup_local_interface_facing_element_map(Core::FE::Discretizat
 
     //       std::cout<<"Current Slave Interface Element ID: "<<curr->second->Id()<<endl;
 
-    if (slavedis.HaveDofs() == false)
+    if (slavedis.have_dofs() == false)
     {
       FOUR_C_THROW("No degrees of freedom have been assigned to discretization");
     }
@@ -252,13 +252,13 @@ void FPSI::Utils::setup_local_interface_facing_element_map(Core::FE::Discretizat
     // do for every interface slave node
     for (int nodenum = 0; nodenum < curr->second->num_node(); nodenum++)
     {
-      const Core::Nodes::Node* const* currslavenode = curr->second->Nodes();
+      const Core::Nodes::Node* const* currslavenode = curr->second->nodes();
 
       std::vector<double> temploc;
       temploc.assign(3, 0.0);
-      temploc[0] = currslavenode[nodenum]->X()[0];
-      temploc[1] = currslavenode[nodenum]->X()[1];
-      temploc[2] = currslavenode[nodenum]->X()[2];
+      temploc[0] = currslavenode[nodenum]->x()[0];
+      temploc[1] = currslavenode[nodenum]->x()[1];
+      temploc[2] = currslavenode[nodenum]->x()[2];
       for (int dim = 0; dim < 3; dim++)
       {
         slaveloc[dim] = slaveloc[dim] + temploc[dim];
@@ -266,11 +266,11 @@ void FPSI::Utils::setup_local_interface_facing_element_map(Core::FE::Discretizat
     }  // for every slave node
 
     slaveinterfaceelementidentificationmap.insert(
-        std::pair<int, double>(curr->second->Id(), slaveloc[0]));
+        std::pair<int, double>(curr->second->id(), slaveloc[0]));
     slaveinterfaceelementidentificationmap.insert(
-        std::pair<int, double>(curr->second->Id(), slaveloc[1]));
+        std::pair<int, double>(curr->second->id(), slaveloc[1]));
     slaveinterfaceelementidentificationmap.insert(
-        std::pair<int, double>(curr->second->Id(), slaveloc[2]));
+        std::pair<int, double>(curr->second->id(), slaveloc[2]));
 
   }  // do for every global slave element
 
@@ -337,7 +337,7 @@ void FPSI::Utils::setup_local_interface_facing_element_map(Core::FE::Discretizat
       std::vector<double> masterloc;
       masterloc.assign(3, 0.0);
 
-      if (masterdis.HaveDofs() == false)
+      if (masterdis.have_dofs() == false)
       {
         FOUR_C_THROW("No degrees of freedom have been assigned to discretization, DaFUQ?!?!?");
       }
@@ -349,13 +349,13 @@ void FPSI::Utils::setup_local_interface_facing_element_map(Core::FE::Discretizat
 
         for (int nodenum = 0; nodenum < numnode; nodenum++)
         {
-          const Core::Nodes::Node* const* currmasternode = curr->second->Nodes();
+          const Core::Nodes::Node* const* currmasternode = curr->second->nodes();
 
           std::vector<double> temploc;
           temploc.assign(3, 0.0);
-          temploc[0] = currmasternode[nodenum]->X()[0];
-          temploc[1] = currmasternode[nodenum]->X()[1];
-          temploc[2] = currmasternode[nodenum]->X()[2];
+          temploc[0] = currmasternode[nodenum]->x()[0];
+          temploc[1] = currmasternode[nodenum]->x()[1];
+          temploc[2] = currmasternode[nodenum]->x()[2];
           for (int dim = 0; dim < 3; dim++)
           {
             masterloc[dim] = masterloc[dim] + temploc[dim];
@@ -365,9 +365,9 @@ void FPSI::Utils::setup_local_interface_facing_element_map(Core::FE::Discretizat
 
         Teuchos::RCP<Core::Elements::FaceElement> bele =
             Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(curr->second);
-        parenteleid = bele->parent_element()->Id();
+        parenteleid = bele->parent_element()->id();
         if (parenteleid == -1) FOUR_C_THROW("Couldn't get master parent element Id() ...");
-        parenteleowner = bele->parent_element()->Owner();
+        parenteleowner = bele->parent_element()->owner();
         if (parenteleowner == -1) FOUR_C_THROW("Couldn't get master parent element Owner() ...");
       }
 
@@ -385,7 +385,7 @@ void FPSI::Utils::setup_local_interface_facing_element_map(Core::FE::Discretizat
            scurr != slavegeom.end(); ++scurr)
       {
         std::pair<std::multimap<int, double>::iterator, std::multimap<int, double>::iterator> range;
-        range = slaveinterfaceelementidentificationmap.equal_range(scurr->second->Id());
+        range = slaveinterfaceelementidentificationmap.equal_range(scurr->second->id());
 
         int dim = 0;
         match = 0;
@@ -421,7 +421,7 @@ void FPSI::Utils::setup_local_interface_facing_element_map(Core::FE::Discretizat
           if (matchcurr != Teuchos::null)
           {
             // slave interface element is unique => key
-            interfacefacingelementmap.insert(std::pair<int, int>(matchcurr->Id(), parenteleid));
+            interfacefacingelementmap.insert(std::pair<int, int>(matchcurr->id(), parenteleid));
           }
         }
       }
@@ -446,8 +446,8 @@ void FPSI::Utils::setup_local_interface_facing_element_map(Core::FE::Discretizat
   mastercomm.SumAll(&mymatchedelements, &globalmatchedelements, 1);
 
   if (mastercomm.MyPID() == 0)
-    std::cout << "Could match " << globalmatchedelements << " " << slavedis.Name()
-              << " interface elements to " << masterdis.Name() << " bulk elements." << std::endl;
+    std::cout << "Could match " << globalmatchedelements << " " << slavedis.name()
+              << " interface elements to " << masterdis.name() << " bulk elements." << std::endl;
 
   mastercomm.Barrier();  // wait for procs
 
@@ -478,8 +478,8 @@ void FPSI::Utils::redistribute_interface(Teuchos::RCP<Core::FE::Discretization> 
   std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator masterelecurr;
   Core::Elements::Element* masterele = nullptr;
 
-  Global::Problem* problem = Global::Problem::Instance();
-  const Epetra_Comm& comm = problem->GetDis(masterdis->Name())->Comm();
+  Global::Problem* problem = Global::Problem::instance();
+  const Epetra_Comm& comm = problem->get_dis(masterdis->name())->get_comm();
   Teuchos::RCP<Epetra_Comm> rcpcomm = Teuchos::rcp(comm.Clone());
 
   int mymapsize = interfacefacingelementmap.size();
@@ -521,12 +521,12 @@ void FPSI::Utils::redistribute_interface(Teuchos::RCP<Core::FE::Discretization> 
       comm.Broadcast(&mastereleid, 1, proc);
       comm.Broadcast(&slaveeleid, 1, proc);
 
-      if (masterdis->HaveGlobalElement(mastereleid))
+      if (masterdis->have_global_element(mastereleid))
       {
-        masterele = masterdis->gElement(mastereleid);
-        mastereleowner = masterele->Owner();
+        masterele = masterdis->g_element(mastereleid);
+        mastereleowner = masterele->owner();
 
-        if (masterele->Owner() != comm.MyPID())
+        if (masterele->owner() != comm.MyPID())
         {
           masterele = nullptr;
           mastereleowner = -1;
@@ -541,12 +541,12 @@ void FPSI::Utils::redistribute_interface(Teuchos::RCP<Core::FE::Discretization> 
       }  // now every processor knows the mastereleowner
 
       std::vector<int> procHasMasterEle(comm.NumProc());
-      HasMasterEle = masterdis->HaveGlobalElement(mastereleid);
+      HasMasterEle = masterdis->have_global_element(mastereleid);
       comm.GatherAll(&HasMasterEle, procHasMasterEle.data(), 1);
 
       // ghost parent master element on master discretization of proc owning the matching slave
       // interface element
-      const Epetra_Map colcopy = *(masterdis->ElementColMap());
+      const Epetra_Map colcopy = *(masterdis->element_col_map());
       int myglobalelementsize = colcopy.NumMyElements();
       std::vector<int> myglobalelements(myglobalelementsize);
       colcopy.MyGlobalElements(myglobalelements.data());
@@ -583,15 +583,15 @@ void FPSI::Utils::redistribute_interface(Teuchos::RCP<Core::FE::Discretization> 
         {
           // std::cout<<counter<<" --Before: Have GID "<<mastereleid<<" =
           // "<<masterdis->HaveGlobalElement(mastereleid)<<" on proc "<<slaveeleowner<<endl;
-          before = masterdis->HaveGlobalElement(mastereleid);
+          before = masterdis->have_global_element(mastereleid);
         }
         comm.Barrier();
-        masterdis->ExtendedGhosting(*newelecolmap, true, false, true, true);
+        masterdis->extended_ghosting(*newelecolmap, true, false, true, true);
         if (comm.MyPID() == proc)
         {
           // std::cout<<counter<<" --After: Have GID "<<mastereleid<<" =
           // "<<masterdis->HaveGlobalElement(mastereleid)<<" on proc "<<slaveeleowner<<endl;
-          after = masterdis->HaveGlobalElement(mastereleid);
+          after = masterdis->have_global_element(mastereleid);
           if (after == 0 and before == 0)
             FOUR_C_THROW("Element with gid=%d has not been redistributed ! ", mastereleid);
         }
@@ -619,7 +619,7 @@ void FPSI::Utils::redistribute_interface(Teuchos::RCP<Core::FE::Discretization> 
 /*---------------------------------------------------------------------------/
 | Setup Interface Map (for parallel distr.)                           rauch  |
 /---------------------------------------------------------------------------*/
-void FPSI::Utils::SetupInterfaceMap(const Epetra_Comm& comm,
+void FPSI::Utils::setup_interface_map(const Epetra_Comm& comm,
     Teuchos::RCP<Core::FE::Discretization> structdis,
     Teuchos::RCP<Core::FE::Discretization> porofluiddis,
     Teuchos::RCP<Core::FE::Discretization> fluiddis, Teuchos::RCP<Core::FE::Discretization> aledis)
@@ -640,14 +640,14 @@ void FPSI::Utils::SetupInterfaceMap(const Epetra_Comm& comm,
 void FPSI::UTILS::MapExtractor::setup(
     const Core::FE::Discretization& dis, bool withpressure, bool overlapping)
 {
-  const int ndim = Global::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::instance()->n_dim();
   Core::Conditions::MultiConditionSelector mcs;
-  mcs.SetOverlapping(overlapping);  // defines if maps can overlap
-  mcs.AddSelector(Teuchos::rcp(
+  mcs.set_overlapping(overlapping);  // defines if maps can overlap
+  mcs.add_selector(Teuchos::rcp(
       new Core::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim + withpressure)));
-  mcs.AddSelector(Teuchos::rcp(
+  mcs.add_selector(Teuchos::rcp(
       new Core::Conditions::NDimConditionSelector(dis, "fpsi_coupling", 0, ndim + withpressure)));
-  mcs.SetupExtractor(dis, *dis.dof_row_map(), *this);
+  mcs.setup_extractor(dis, *dis.dof_row_map(), *this);
 }
 
 /*----------------------------------------------------------------------*/

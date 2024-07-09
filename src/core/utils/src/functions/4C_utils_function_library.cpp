@@ -57,7 +57,7 @@ namespace
 
       // csv file needs to be placed in same folder as input file
       std::filesystem::path input_file_path =
-          Global::Problem::Instance()->OutputControlFile()->input_file_name();
+          Global::Problem::instance()->output_control_file()->input_file_name();
       const auto csv_file_path = input_file_path.replace_filename(csv_file);
 
       return Teuchos::rcp(new Core::UTILS::CubicSplineFromCSV(csv_file_path.string()));
@@ -100,10 +100,10 @@ double Core::UTILS::FastPolynomialFunction::evaluate(const double argument) cons
   return mypoly_.evaluate(argument);
 }
 
-double Core::UTILS::FastPolynomialFunction::EvaluateDerivative(
+double Core::UTILS::FastPolynomialFunction::evaluate_derivative(
     const double argument, const int deriv_order) const
 {
-  return mypoly_.EvaluateDerivative(argument, deriv_order);
+  return mypoly_.evaluate_derivative(argument, deriv_order);
 }
 
 
@@ -122,10 +122,10 @@ double Core::UTILS::CubicSplineFromCSV::evaluate(const double scalar) const
 }
 
 
-double Core::UTILS::CubicSplineFromCSV::EvaluateDerivative(
+double Core::UTILS::CubicSplineFromCSV::evaluate_derivative(
     const double scalar, const int deriv_order) const
 {
-  return cubic_spline_->EvaluateDerivative(scalar, deriv_order);
+  return cubic_spline_->evaluate_derivative(scalar, deriv_order);
 }
 
 FOUR_C_NAMESPACE_CLOSE

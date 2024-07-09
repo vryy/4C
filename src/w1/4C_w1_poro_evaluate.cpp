@@ -33,26 +33,26 @@ void Discret::ELEMENTS::Wall1Poro<distype>::pre_evaluate(Teuchos::ParameterList&
 {
   if (scatra_coupling_)
   {
-    if (la.Size() > 2)
+    if (la.size() > 2)
     {
-      if (discretization.HasState(2, "scalar"))
+      if (discretization.has_state(2, "scalar"))
       {
         // check if you can get the scalar state
-        Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.GetState(2, "scalar");
+        Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.get_state(2, "scalar");
 
         // extract local values of the global vectors
         std::vector<double> myscalar(la[2].lm_.size());
         Core::FE::ExtractMyValues(*scalarnp, myscalar, la[2].lm_);
 
-        if (NumMaterial() < 3) FOUR_C_THROW("no third material defined for Wall poro element!");
-        Teuchos::RCP<Core::Mat::Material> scatramat = Material(2);
+        if (num_material() < 3) FOUR_C_THROW("no third material defined for Wall poro element!");
+        Teuchos::RCP<Core::Mat::Material> scatramat = material(2);
 
         int numscal = 1;
-        if (scatramat->MaterialType() == Core::Materials::m_matlist or
-            scatramat->MaterialType() == Core::Materials::m_matlist_reactions)
+        if (scatramat->material_type() == Core::Materials::m_matlist or
+            scatramat->material_type() == Core::Materials::m_matlist_reactions)
         {
           Teuchos::RCP<Mat::MatList> matlist = Teuchos::rcp_dynamic_cast<Mat::MatList>(scatramat);
-          numscal = matlist->NumMat();
+          numscal = matlist->num_mat();
         }
 
         Teuchos::RCP<std::vector<double>> scalar =
@@ -82,7 +82,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::evaluate(Teuchos::ParameterList& para
   this->set_params_interface_ptr(params);
   Core::Elements::ActionType act = Core::Elements::none;
 
-  if (this->IsParamsInterface())
+  if (this->is_params_interface())
   {
     act = this->params_interface().get_action_type();
   }
@@ -148,7 +148,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
   this->set_params_interface_ptr(params);
   Core::Elements::ActionType act = Core::Elements::none;
 
-  if (this->IsParamsInterface())
+  if (this->is_params_interface())
   {
     act = this->params_interface().get_action_type();
   }
@@ -174,7 +174,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
 
   // --------------------------------------------------
   // Now do the nurbs specific stuff
-  if (Shape() == Core::FE::CellType::nurbs4 || Shape() == Core::FE::CellType::nurbs9)
+  if (shape() == Core::FE::CellType::nurbs4 || shape() == Core::FE::CellType::nurbs9)
   {
     myknots_.resize(2);
 
@@ -189,7 +189,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
       {
         auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
-        bool zero_sized = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots_, Id());
+        bool zero_sized = (*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots_, id());
 
         // skip zero sized elements in knot span --- they correspond to interpolated nodes
         if (zero_sized)
@@ -234,9 +234,9 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
       Core::LinAlg::Matrix<numdof_, numdof_>* matptr2 = nullptr;
       if (elemat2.is_initialized() and (damping == Inpar::Solid::damp_material)) matptr2 = &elemat2;
 
-      if (la.Size() > 1)
+      if (la.size() > 1)
       {
-        if (discretization.HasState(1, "fluidvel"))
+        if (discretization.has_state(1, "fluidvel"))
         {
           // need current fluid state,
           // call the fluid discretization: fluid equates 2nd dofset
@@ -245,7 +245,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
           Core::LinAlg::Matrix<numdim_, numnod_> myfluidvel(true);
           Core::LinAlg::Matrix<numnod_, 1> myepreaf(true);
 
-          if (discretization.HasState(0, "velocity"))
+          if (discretization.has_state(0, "velocity"))
             extract_values_from_global_vector(
                 discretization, 0, la[0].lm_, &myvel, nullptr, "velocity");
 
@@ -257,14 +257,14 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
           nonlinear_stiffness_poroelast(
               lm, mydisp, myvel, myfluidvel, myepreaf, matptr, matptr2, &elevec1, params);
         }
-        else if (la.Size() > 2)
+        else if (la.size() > 2)
         {
-          if (discretization.HasState(1, "porofluid"))
+          if (discretization.has_state(1, "porofluid"))
           {
             // get primary variables of multiphase porous medium flow
-            std::vector<double> myephi(la[1].Size());
+            std::vector<double> myephi(la[1].size());
             Teuchos::RCP<const Epetra_Vector> matrix_state =
-                discretization.GetState(1, "porofluid");
+                discretization.get_state(1, "porofluid");
             Core::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
 
             // calculate tangent stiffness matrix
@@ -302,7 +302,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
       // this can happen during setup of the time integrator or restart
       // there might be a better way. For instance do not evaluate
       // before the setup of the multiphysics problem is completed.
-      if (la.Size() > 1 and NumMaterial() > 1)
+      if (la.size() > 1 and num_material() > 1)
       {
         // need current fluid state,
         // call the fluid discretization: fluid equates 2nd dofset
@@ -312,13 +312,13 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
         Core::LinAlg::Matrix<numdim_, numnod_> myfluidvel(true);
         Core::LinAlg::Matrix<numnod_, 1> myepreaf(true);
 
-        if (discretization.HasState(0, "velocity"))
+        if (discretization.has_state(0, "velocity"))
           extract_values_from_global_vector(
               discretization, 0, la[0].lm_, &myvel, nullptr, "velocity");
 
         // this is kind of a hack. Find a better way! (e.g. move the pressure based variant
         // into own element)
-        if (discretization.HasState(1, "fluidvel"))
+        if (discretization.has_state(1, "fluidvel"))
         {
           // extract local values of the global vectors
           extract_values_from_global_vector(
@@ -327,14 +327,14 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
           nonlinear_stiffness_poroelast(
               lm, mydisp, myvel, myfluidvel, myepreaf, matptr, nullptr, &elevec1, params);
         }
-        else if (la.Size() > 2)
+        else if (la.size() > 2)
         {
-          if (discretization.HasState(1, "porofluid"))
+          if (discretization.has_state(1, "porofluid"))
           {
             // get primary variables of multiphase porous medium flow
-            std::vector<double> myephi(la[1].Size());
+            std::vector<double> myephi(la[1].size());
             Teuchos::RCP<const Epetra_Vector> matrix_state =
-                discretization.GetState(1, "porofluid");
+                discretization.get_state(1, "porofluid");
             Core::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
 
             // calculate tangent stiffness matrix
@@ -364,7 +364,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
       // need current fluid state,
       // call the fluid discretization: fluid equates 2nd dofset
       // disassemble velocities and pressures
-      if (discretization.HasState(1, "fluidvel"))
+      if (discretization.has_state(1, "fluidvel"))
       {
         Core::LinAlg::Matrix<numdim_, numnod_> myvel(true);
         Core::LinAlg::Matrix<numdim_, numnod_> myfluidvel(true);
@@ -374,7 +374,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
         extract_values_from_global_vector(
             discretization, 0, la[0].lm_, &mydisp, nullptr, "displacement");
 
-        if (discretization.HasState(0, "velocity"))
+        if (discretization.has_state(0, "velocity"))
           extract_values_from_global_vector(
               discretization, 0, la[0].lm_, &myvel, nullptr, "velocity");
 
@@ -385,13 +385,13 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
         coupling_poroelast(
             lm, mydisp, myvel, myfluidvel, myepreaf, matptr, nullptr, nullptr, params);
       }
-      else if (la.Size() > 2)
+      else if (la.size() > 2)
       {
-        if (discretization.HasState(1, "porofluid"))
+        if (discretization.has_state(1, "porofluid"))
         {
           // get primary variables of multiphase porous medium flow
-          std::vector<double> myephi(la[1].Size());
-          Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "porofluid");
+          std::vector<double> myephi(la[1].size());
+          Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(1, "porofluid");
           Core::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
 
           Core::LinAlg::Matrix<numdim_, numnod_> mydisp(true);
@@ -425,7 +425,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
       // need current fluid state,
       // call the fluid discretization: fluid equates 2nd dofset
       // disassemble velocities and pressures
-      if (discretization.HasState(1, "fluidvel"))
+      if (discretization.has_state(1, "fluidvel"))
       {
         // extract local values of the global vectors
         Core::LinAlg::Matrix<numdim_, numnod_> myfluidvel(true);
@@ -441,13 +441,13 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
         nonlinear_stiffness_poroelast(
             lm, mydisp, myvel, myfluidvel, myepreaf, nullptr, nullptr, &elevec1, params);
       }
-      else if (la.Size() > 2)
+      else if (la.size() > 2)
       {
-        if (discretization.HasState(1, "porofluid"))
+        if (discretization.has_state(1, "porofluid"))
         {
           // get primary variables of multiphase porous medium flow
-          std::vector<double> myephi(la[1].Size());
-          Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "porofluid");
+          std::vector<double> myephi(la[1].size());
+          Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(1, "porofluid");
           Core::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
 
           // calculate tangent stiffness matrix
@@ -488,7 +488,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
       // need current fluid state,
       // call the fluid discretization: fluid equates 2nd dofset
       // disassemble velocities and pressures
-      if (discretization.HasState(1, "fluidvel"))
+      if (discretization.has_state(1, "fluidvel"))
       {
         // extract local values of the global vectors
         Core::LinAlg::Matrix<numdim_, numnod_> myfluidvel(true);
@@ -499,9 +499,9 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
         coupling_stress_poroelast(
             mydisp, myfluidvel, myepreaf, &couplstress, nullptr, params, iocouplstress);
       }
-      else if (la.Size() > 2)
+      else if (la.size() > 2)
       {
-        if (discretization.HasState(1, "porofluid"))
+        if (discretization.has_state(1, "porofluid"))
           FOUR_C_THROW("coupl stress poroelast not yet implemented for pressure-based variant");
       }
 
@@ -541,10 +541,10 @@ void Discret::ELEMENTS::Wall1Poro<distype>::nonlinear_stiffness_poroelast(
   Core::LinAlg::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   Core::LinAlg::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  Core::Nodes::Node** nodes = Nodes();
+
   for (int i = 0; i < numnod_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -585,10 +585,10 @@ void Discret::ELEMENTS::Wall1Poro<distype>::nonlinear_stiffness_poroelast_pressu
   Core::LinAlg::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   Core::LinAlg::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  Core::Nodes::Node** nodes = Nodes();
+
   for (int i = 0; i < numnod_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -620,9 +620,9 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop(Teuchos::ParameterL
   {
     for (int inode = 0; inode < numnod_; ++inode)
     {
-      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
+      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
 
-      weights_(inode) = cp->W();
+      weights_(inode) = cp->w();
     }
   }
 
@@ -725,7 +725,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop(Teuchos::ParameterL
         params, press, volchange, gp, shapefct, porosity_dof, dvolchange_dus, porosity, dphi_dus);
 
     // **********************evaluate stiffness matrix and force vector**********************
-    if (fluid_mat_->Type() == Mat::PAR::darcy_brinkman)
+    if (fluid_mat_->type() == Mat::PAR::darcy_brinkman)
     {
       fill_matrix_and_vectors_brinkman(gp, J, porosity, fvelder, defgrd_inv, bop, C_inv, dphi_dus,
           dJ_dus, dCinv_dus, dFinvTdus, stiffmatrix, force, fstress);
@@ -749,9 +749,9 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop_pressure_based(
   {
     for (int inode = 0; inode < numnod_; ++inode)
     {
-      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
+      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
 
-      weights_(inode) = cp->W();
+      weights_(inode) = cp->w();
     }
   }
 
@@ -772,9 +772,9 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop_pressure_based(
   Core::LinAlg::Matrix<numstr_, 1> fstress(true);
 
   // Initialize
-  const int totalnumdofpernode = fluidmulti_mat_->NumMat();
-  const int numfluidphases = fluidmulti_mat_->NumFluidPhases();
-  const int numvolfrac = fluidmulti_mat_->NumVolFrac();
+  const int totalnumdofpernode = fluidmulti_mat_->num_mat();
+  const int numfluidphases = fluidmulti_mat_->num_fluid_phases();
+  const int numvolfrac = fluidmulti_mat_->num_vol_frac();
   const bool hasvolfracs = (totalnumdofpernode > numfluidphases);
   std::vector<double> phiAtGP(totalnumdofpernode);
 
@@ -905,7 +905,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors(const int& g
     reafvel.multiply(reatensor, fvelint);
   }
 
-  const double detJ_w = detJ_[gp] * intpoints_.Weight(gp) * thickness_;
+  const double detJ_w = detJ_[gp] * intpoints_.weight(gp) * thickness_;
 
   {
     for (int k = 0; k < numnod_; k++)
@@ -1067,7 +1067,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors_pressure_bas
     const Core::LinAlg::Matrix<1, numdof_>& dps_dus,
     Core::LinAlg::Matrix<numdof_, numdof_>* stiffmatrix, Core::LinAlg::Matrix<numdof_, 1>* force)
 {
-  const double detJ_w = detJ_[gp] * intpoints_.Weight(gp) * thickness_;
+  const double detJ_w = detJ_[gp] * intpoints_.weight(gp) * thickness_;
 
   // inverse Right Cauchy-Green tensor as vector
   static Core::LinAlg::Matrix<numstr_, 1> C_inv_vec;
@@ -1140,9 +1140,9 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors_brinkman(con
     Core::LinAlg::Matrix<numdof_, numdof_>* stiffmatrix, Core::LinAlg::Matrix<numdof_, 1>* force,
     Core::LinAlg::Matrix<numstr_, 1>& fstress)
 {
-  const double detJ_w = detJ_[gp] * intpoints_.Weight(gp) * thickness_;
+  const double detJ_w = detJ_[gp] * intpoints_.weight(gp) * thickness_;
 
-  const double visc = fluid_mat_->Viscosity();
+  const double visc = fluid_mat_->viscosity();
   Core::LinAlg::Matrix<numdim_, numdim_> CinvFvel;
   Core::LinAlg::Matrix<numdim_, numdim_> tmp;
   CinvFvel.multiply(C_inv, fvelder);
@@ -1234,10 +1234,10 @@ void Discret::ELEMENTS::Wall1Poro<distype>::coupling_poroelast(
   Core::LinAlg::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   Core::LinAlg::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  Core::Nodes::Node** nodes = Nodes();
+
   for (int i = 0; i < numnod_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -1268,10 +1268,10 @@ void Discret::ELEMENTS::Wall1Poro<distype>::coupling_poroelast_pressure_based(
   Core::LinAlg::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   Core::LinAlg::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  Core::Nodes::Node** nodes = Nodes();
+
   for (int i = 0; i < numnod_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -1302,9 +1302,9 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop_od(Teuchos::Paramet
   {
     for (int inode = 0; inode < numnod_; ++inode)
     {
-      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
+      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
 
-      weights_(inode) = cp->W();
+      weights_(inode) = cp->w();
     }
   }
 
@@ -1384,7 +1384,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop_od(Teuchos::Paramet
     fill_matrix_and_vectors_od(gp, shapefct, N_XYZ, J, porosity, dphi_dp, velint, fvelint,
         defgrd_inv, Gradp, bop, C_inv, ecoupl);
 
-    if (fluid_mat_->Type() == Mat::PAR::darcy_brinkman)
+    if (fluid_mat_->type() == Mat::PAR::darcy_brinkman)
     {
       fill_matrix_and_vectors_brinkman_od(
           gp, shapefct, N_XYZ, J, porosity, dphi_dp, fvelder, defgrd_inv, bop, C_inv, ecoupl);
@@ -1404,9 +1404,9 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop_od_pressure_based(
   {
     for (int inode = 0; inode < numnod_; ++inode)
     {
-      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
+      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
 
-      weights_(inode) = cp->W();
+      weights_(inode) = cp->w();
     }
   }
 
@@ -1424,9 +1424,9 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop_od_pressure_based(
       true);  //  first derivatives at gausspoint w.r.t. r,s,t
 
   // Initialize
-  const int numfluidphases = fluidmulti_mat_->NumFluidPhases();
-  const int totalnumdofpernode = fluidmulti_mat_->NumMat();
-  const int numvolfrac = fluidmulti_mat_->NumVolFrac();
+  const int numfluidphases = fluidmulti_mat_->num_fluid_phases();
+  const int totalnumdofpernode = fluidmulti_mat_->num_mat();
+  const int numvolfrac = fluidmulti_mat_->num_vol_frac();
   const bool hasvolfracs = (totalnumdofpernode - numfluidphases);
   std::vector<double> phiAtGP(totalnumdofpernode);
   std::vector<double> solpressderiv(totalnumdofpernode);
@@ -1514,7 +1514,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors_od(const int
     reafvel.multiply(reatensor, fvelint);
   }
 
-  const double detJ_w = detJ_[gp] * intpoints_.Weight(gp) * thickness_;
+  const double detJ_w = detJ_[gp] * intpoints_.weight(gp) * thickness_;
 
   // inverse Right Cauchy-Green tensor as vector
   Core::LinAlg::Matrix<numstr_, 1> C_inv_vec;
@@ -1603,7 +1603,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors_od_pressure_
     const Core::LinAlg::Matrix<numdim_, numdim_>& C_inv, const std::vector<double>& solpressderiv,
     Core::LinAlg::SerialDenseMatrix& couplmat)
 {
-  const double detJ_w = detJ_[gp] * intpoints_.Weight(gp) * thickness_;
+  const double detJ_w = detJ_[gp] * intpoints_.weight(gp) * thickness_;
 
   // inverse Right Cauchy-Green tensor as vector
   Core::LinAlg::Matrix<numstr_, 1> C_inv_vec;
@@ -1615,7 +1615,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors_od_pressure_
   Core::LinAlg::Matrix<numdof_, 1> cinvb(true);
   cinvb.multiply_tn(bop, C_inv_vec);
 
-  const int totalnumdofpernode = fluidmulti_mat_->NumMat();
+  const int totalnumdofpernode = fluidmulti_mat_->num_mat();
 
   {
     for (int i = 0; i < numnod_; i++)
@@ -1652,8 +1652,8 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors_brinkman_od(
     const Core::LinAlg::Matrix<numdim_, numdim_>& C_inv,
     Core::LinAlg::Matrix<numdof_, (numdim_ + 1) * numnod_>& ecoupl)
 {
-  const double detJ_w = detJ_[gp] * intpoints_.Weight(gp) * thickness_;
-  const double visc = fluid_mat_->Viscosity();
+  const double detJ_w = detJ_[gp] * intpoints_.weight(gp) * thickness_;
+  const double visc = fluid_mat_->viscosity();
 
   Core::LinAlg::Matrix<numstr_, 1> fstress;
 
@@ -1737,10 +1737,10 @@ void Discret::ELEMENTS::Wall1Poro<distype>::coupling_stress_poroelast(
   Core::LinAlg::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   Core::LinAlg::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  Core::Nodes::Node** nodes = Nodes();
+
   for (int i = 0; i < numnod_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -1753,8 +1753,8 @@ void Discret::ELEMENTS::Wall1Poro<distype>::coupling_stress_poroelast(
   Core::LinAlg::Matrix<numdim_, numnod_> deriv;
 
   // get structure material
-  Teuchos::RCP<Mat::StructPoro> structmat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(Material());
-  if (structmat->MaterialType() != Core::Materials::m_structporo)
+  Teuchos::RCP<Mat::StructPoro> structmat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(material());
+  if (structmat->material_type() != Core::Materials::m_structporo)
     FOUR_C_THROW("invalid structure material for poroelasticity");
 
   for (int gp = 0; gp < numgpt_; ++gp)
@@ -1771,7 +1771,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::coupling_stress_poroelast(
 
     Core::LinAlg::Matrix<Wall1::numstr_, 1> couplstress(true);
 
-    structmat->CouplStress(defgrd, press, couplstress);
+    structmat->coupl_stress(defgrd, press, couplstress);
 
     // return gp stresses
     switch (iostress)
@@ -1807,15 +1807,13 @@ void Discret::ELEMENTS::Wall1Poro<distype>::coupling_stress_poroelast(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1Poro<distype>::InitElement()
+void Discret::ELEMENTS::Wall1Poro<distype>::init_element()
 {
   Core::LinAlg::Matrix<numdim_, numnod_> deriv;
   Core::LinAlg::Matrix<numnod_, numdim_> xrefe;
   for (int i = 0; i < numnod_; ++i)
   {
-    Core::Nodes::Node** nodes = Nodes();
-    if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
-    for (int j = 0; j < numdim_; ++j) xrefe(i, j) = Nodes()[i]->X()[j];
+    for (int j = 0; j < numdim_; ++j) xrefe(i, j) = nodes()[i]->x()[j];
   }
   invJ_.resize(numgpt_);
   detJ_.resize(numgpt_);
@@ -1823,7 +1821,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::InitElement()
 
   for (int gp = 0; gp < numgpt_; ++gp)
   {
-    const double* gpcoord = intpoints_.Point(gp);
+    const double* gpcoord = intpoints_.point(gp);
     for (int idim = 0; idim < numdim_; idim++)
     {
       xsi_[gp](idim) = gpcoord[idim];
@@ -1844,7 +1842,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::InitElement()
 
   scatra_coupling_ = false;
 
-  Core::ProblemType probtype = Global::Problem::Instance()->GetProblemType();
+  Core::ProblemType probtype = Global::Problem::instance()->get_problem_type();
   if (probtype == Core::ProblemType::poroscatra) scatra_coupling_ = true;
 
   init_ = true;
@@ -2022,10 +2020,8 @@ void Discret::ELEMENTS::Wall1Poro<distype>::compute_shape_functions_and_derivati
     Core::LinAlg::Matrix<numnod_, numdim_> xrefe;
     for (int i = 0; i < numnod_; ++i)
     {
-      Core::Nodes::Node** nodes = Nodes();
-      if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
-      xrefe(i, 0) = Nodes()[i]->X()[0];
-      xrefe(i, 1) = Nodes()[i]->X()[1];
+      xrefe(i, 0) = nodes()[i]->x()[0];
+      xrefe(i, 1) = nodes()[i]->x()[1];
     }
     invJ_[gp].multiply(deriv, xrefe);
     detJ_[gp] = invJ_[gp].invert();
@@ -2204,13 +2200,13 @@ void Discret::ELEMENTS::Wall1Poro<distype>::compute_sol_pressure_deriv(
   std::vector<double> fluidphi(phiAtGP.data(), phiAtGP.data() + numfluidphases);
 
   // evaluate the pressures
-  fluidmulti_mat_->EvaluateGenPressure(genpress, fluidphi);
+  fluidmulti_mat_->evaluate_gen_pressure(genpress, fluidphi);
 
   // transform generalized pressures to true pressure values
   fluidmulti_mat_->transform_gen_pres_to_true_pres(genpress, press);
 
   // explicit evaluation of saturation
-  fluidmulti_mat_->EvaluateSaturation(sat, fluidphi, press);
+  fluidmulti_mat_->evaluate_saturation(sat, fluidphi, press);
 
   // calculate the derivative of the pressure (actually first its inverse)
   fluidmulti_mat_->evaluate_deriv_of_dof_wrt_pressure(pressderiv, fluidphi);
@@ -2320,13 +2316,13 @@ double Discret::ELEMENTS::Wall1Poro<distype>::compute_sol_pressure_at_gp(
   std::vector<double> fluidphi(phiAtGP.data(), phiAtGP.data() + numfluidphases);
 
   // evaluate the pressures
-  fluidmulti_mat_->EvaluateGenPressure(genpress, fluidphi);
+  fluidmulti_mat_->evaluate_gen_pressure(genpress, fluidphi);
 
   // transform generalized pressures to true pressure values
   fluidmulti_mat_->transform_gen_pres_to_true_pres(genpress, press);
 
   // explicit evaluation of saturation
-  fluidmulti_mat_->EvaluateSaturation(sat, fluidphi, press);
+  fluidmulti_mat_->evaluate_saturation(sat, fluidphi, press);
 
   // solid pressure = sum (S_i*p_i)
   const double solidpressure = std::inner_product(sat.begin(), sat.end(), press.begin(), 0.0);
@@ -2390,10 +2386,10 @@ void Discret::ELEMENTS::Wall1Poro<distype>::extract_values_from_global_vector(
 {
   // put on higher level
   // get state of the global vector
-  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(dofset, state);
+  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(dofset, state);
   if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
-  const int numdofpernode = discretization.NumDof(dofset, Nodes()[0]);
+  const int numdofpernode = discretization.num_dof(dofset, nodes()[0]);
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());

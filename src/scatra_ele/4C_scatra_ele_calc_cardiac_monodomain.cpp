@@ -42,7 +42,7 @@ Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::ScaTraEleCa
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Instance(
+Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -52,7 +52,7 @@ Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Instance(
             new ScaTraEleCalcCardiacMonodomain<distype, probdim>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -73,15 +73,15 @@ void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::materi
 )
 {
   // safety check
-  if (material->MaterialType() != Core::Materials::m_myocard)
+  if (material->material_type() != Core::Materials::m_myocard)
     FOUR_C_THROW("Material type is not supported");
 
   // safety check
   Teuchos::RCP<Mat::Myocard> actmat = Teuchos::rcp_dynamic_cast<Mat::Myocard>(
       Teuchos::rcp_const_cast<Core::Mat::Material>(material));
-  if (actmat->GetNumberOfGP() != 1 and not my::scatrapara_->MatGP())
+  if (actmat->get_number_of_gp() != 1 and not my::scatrapara_->mat_gp())
   {
-    actmat->SetGP(1);
+    actmat->set_gp(1);
     actmat->resize_internal_state_variables();
   }
   mat_myocard(material, k, densn, densnp, densam, visc, iquad);
@@ -117,35 +117,35 @@ void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::mat_my
 
   // get constant diffusivity
   Core::LinAlg::Matrix<nsd_, nsd_> difftensor(true);
-  actmat->Diffusivity(difftensor);
+  actmat->diffusivity(difftensor);
 
-  diffmanageraniso->SetAnisotropicDiff(difftensor, k);
+  diffmanageraniso->set_anisotropic_diff(difftensor, k);
 
   // clear
-  advreamanager->Clear(my::numscal_);
+  advreamanager->clear(my::numscal_);
 
-  if (my::scatrapara_->SemiImplicit())
+  if (my::scatrapara_->semi_implicit())
   {
     // get membrane potential at n at integration point
-    const double phin = my::scatravarmanager_->Phin(k);
-    const double phinp = my::scatravarmanager_->Phinp(k);
+    const double phin = my::scatravarmanager_->phin(k);
+    const double phinp = my::scatravarmanager_->phinp(k);
     // get reaction coefficient
-    double react = -actmat->ReaCoeffN(phin, my::scatraparatimint_->Dt(), iquad);
-    if (my::scatraparatimint_->IsGenAlpha())
-      react *= my::scatraparatimint_->Dt() / my::scatraparatimint_->TimeFac();
-    advreamanager->AddToReaBodyForce(react, k);
+    double react = -actmat->rea_coeff_n(phin, my::scatraparatimint_->dt(), iquad);
+    if (my::scatraparatimint_->is_gen_alpha())
+      react *= my::scatraparatimint_->dt() / my::scatraparatimint_->time_fac();
+    advreamanager->add_to_rea_body_force(react, k);
     advreamanager->add_to_rea_body_force_deriv_matrix(0.0, k, k);
-    actmat->ReaCoeff(phinp, my::scatraparatimint_->Dt(), iquad);
+    actmat->rea_coeff(phinp, my::scatraparatimint_->dt(), iquad);
   }
   else
   {
     // get membrane potential at n+1 or n+alpha_F at integration point
-    const double phinp = my::scatravarmanager_->Phinp(k);
+    const double phinp = my::scatravarmanager_->phinp(k);
     // get reaction coefficient
-    advreamanager->AddToReaBodyForce(
-        -actmat->ReaCoeff(phinp, my::scatraparatimint_->Dt(), iquad), k);
+    advreamanager->add_to_rea_body_force(
+        -actmat->rea_coeff(phinp, my::scatraparatimint_->dt(), iquad), k);
     advreamanager->add_to_rea_body_force_deriv_matrix(
-        -actmat->ReaCoeffDeriv(phinp, my::scatraparatimint_->Dt(), iquad), k, k);
+        -actmat->rea_coeff_deriv(phinp, my::scatraparatimint_->dt(), iquad), k, k);
   }
 
   return;
@@ -174,7 +174,7 @@ void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat
   double visc(0.0);
 
   // calculation of material parameter at element center
-  if (not my::scatrapara_->MatGP())
+  if (not my::scatrapara_->mat_gp())
   {
     advreac::eval_shape_func_and_derivs_at_ele_center();
     // set Gauss point variables needed for evaluation of mat and rhs
@@ -185,15 +185,15 @@ void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat
   else
   {
     int deg = 0;
-    if (ele->Degree() == 1)
-      deg = 4 * ele->Degree();
+    if (ele->degree() == 1)
+      deg = 4 * ele->degree();
     else
-      deg = 3 * ele->Degree();
+      deg = 3 * ele->degree();
     const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
         ScaTra::DisTypeToMatGaussRule<distype>::get_gauss_rule(deg));
 
     // loop over integration points
-    for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+    for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
     {
       const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -210,10 +210,10 @@ void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat
         advreac::get_rhs_int(rhsint, densnp[k], k);
 
         Core::LinAlg::Matrix<nen_, 1> dummy(true);
-        const double timefacfac = my::scatraparatimint_->TimeFac() * fac;
+        const double timefacfac = my::scatraparatimint_->time_fac() * fac;
 
         // reactive terms on integration point on rhs
-        my::compute_rhs_int(rhsint, densam[k], densnp[k], my::scatravarmanager_->Hist(k));
+        my::compute_rhs_int(rhsint, densam[k], densnp[k], my::scatravarmanager_->hist(k));
 
         // standard Galerkin transient, old part of rhs and bodyforce term
         my::calc_rhs_hist_and_source(erhs, k, fac, rhsint);
@@ -231,7 +231,7 @@ void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -246,7 +246,7 @@ void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat
       advreac::get_rhs_int(rhsint, densnp[k], k);
 
       // integration factors
-      const double timefacfac = my::scatraparatimint_->TimeFac() * fac;
+      const double timefacfac = my::scatraparatimint_->time_fac() * fac;
 
       //----------------------------------------------------------------
       // 1) element matrix: stationary terms
@@ -259,14 +259,14 @@ void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat
       // 2) element matrix: instationary terms
       //----------------------------------------------------------------
 
-      if (not my::scatraparatimint_->IsStationary()) my::calc_mat_mass(emat, k, fac, densam[k]);
+      if (not my::scatraparatimint_->is_stationary()) my::calc_mat_mass(emat, k, fac, densam[k]);
 
       //----------------------------------------------------------------
       // 3) element matrix: reactive term
       //----------------------------------------------------------------
 
       Core::LinAlg::Matrix<nen_, 1> dummy(true);
-      if (not my::scatrapara_->MatGP())
+      if (not my::scatrapara_->mat_gp())
         advreac::calc_mat_react(emat, k, timefacfac, 0., 0., densnp[k], dummy, dummy);
 
       //----------------------------------------------------------------
@@ -278,15 +278,15 @@ void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat
       // term (if required) on right hand side depending on respective
       // (non-)incremental stationary or time-integration scheme
       //----------------------------------------------------------------
-      double rhsfac = my::scatraparatimint_->TimeFacRhs() * fac;
+      double rhsfac = my::scatraparatimint_->time_fac_rhs() * fac;
 
-      if (my::scatraparatimint_->IsIncremental() and not my::scatraparatimint_->IsStationary())
+      if (my::scatraparatimint_->is_incremental() and not my::scatraparatimint_->is_stationary())
         my::calc_rhs_lin_mass(erhs, k, rhsfac, fac, densam[k], densnp[k]);
 
 
-      if (not my::scatrapara_->MatGP())
+      if (not my::scatrapara_->mat_gp())
       {
-        my::compute_rhs_int(rhsint, densam[k], densnp[k], my::scatravarmanager_->Hist(k));
+        my::compute_rhs_int(rhsint, densam[k], densnp[k], my::scatravarmanager_->hist(k));
         // standard Galerkin transient, old part of rhs and bodyforce term
         my::calc_rhs_hist_and_source(erhs, k, fac, rhsint);
       }
@@ -317,7 +317,7 @@ void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,
   my::extract_element_and_node_values(ele, params, discretization, la);
 
   // extract additional local values from global vector
-  Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
+  Teuchos::RCP<const Epetra_Vector> phin = discretization.get_state("phin");
   if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
   Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phin, my::ephin_, la[0].lm_);
 }

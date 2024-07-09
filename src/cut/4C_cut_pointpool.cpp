@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------*
  * If a point with the coordinates "x" does not exists, it creates a new point correspondingly
  *-----------------------------------------------------------------------------------------*/
-Core::Geo::Cut::Point* Core::Geo::Cut::OctTreeNode::NewPoint(const double* x, Edge* cut_edge,
+Core::Geo::Cut::Point* Core::Geo::Cut::OctTreeNode::new_point(const double* x, Edge* cut_edge,
     Side* cut_side, double tolerance, PointpoolMergeStrategy merge_strategy)
 {
   // check if the point already exists
@@ -29,7 +29,7 @@ Core::Geo::Cut::Point* Core::Geo::Cut::OctTreeNode::NewPoint(const double* x, Ed
 #endif
   Core::LinAlg::Matrix<3, 1> px(x);
 
-  Point* p = GetPoint(x, cut_edge, cut_side, tolerance, merge_strategy);
+  Point* p = get_point(x, cut_edge, cut_side, tolerance, merge_strategy);
 
   if (p == nullptr)
   {
@@ -54,7 +54,7 @@ Core::Geo::Cut::Point* Core::Geo::Cut::OctTreeNode::NewPoint(const double* x, Ed
     info << "// Initial coordinates" << std::setprecision(15) << px << std::endl;
     // merged_to point coordinates
     Core::LinAlg::Matrix<3, 1> nx;
-    p->Coordinates(nx.data());
+    p->coordinates(nx.data());
     px.update(-1, nx, 1);
     info << "// Merged with tolerance of " << std::setprecision(15) << px.norm2() << std::endl;
     p->AddAdditionalCreationInfo(info.str());
@@ -73,18 +73,18 @@ Core::Geo::Cut::Point* Core::Geo::Cut::OctTreeNode::NewPoint(const double* x, Ed
 /*-----------------------------------------------------------------------------------------*
  * Get the point with the specified coordinates "x" from the pointpool
  *-----------------------------------------------------------------------------------------*/
-Core::Geo::Cut::Point* Core::Geo::Cut::OctTreeNode::GetPoint(const double* x, Edge* cut_edge,
+Core::Geo::Cut::Point* Core::Geo::Cut::OctTreeNode::get_point(const double* x, Edge* cut_edge,
     Side* cut_side, double tolerance, PointpoolMergeStrategy merge_strategy)
 {
   // try to find the point in all of the 8 children nodes
-  if (not IsLeaf())
+  if (not is_leaf())
   {
     // stop finding the point when point is not included in the current bounding box
-    if (!bb_->Within(1.0, x)) return nullptr;
+    if (!bb_->within(1.0, x)) return nullptr;
 
     for (int i = 0; i < 8; ++i)
     {
-      Point* p = nodes_[i]->GetPoint(x, cut_edge, cut_side, tolerance, merge_strategy);
+      Point* p = nodes_[i]->get_point(x, cut_edge, cut_side, tolerance, merge_strategy);
       if (p != nullptr)
       {
         return p;
@@ -140,7 +140,7 @@ Core::Geo::Cut::Point* Core::Geo::Cut::OctTreeNode::GetPoint(const double* x, Ed
     {
       Point* p = &**i;
 
-      p->Coordinates(nx.data());
+      p->coordinates(nx.data());
       nx.update(-1, px, 1);
       if (nx.norm2() <= tol)
       {
@@ -163,7 +163,7 @@ Core::Geo::Cut::Point* Core::Geo::Cut::OctTreeNode::GetPoint(const double* x, Ed
         // if this point was cut but same side and edge.
         // can happen if this edge is shared between multiple sides, we want the intersection point
         // to be consistent and not to merged somewhere else, as then it will cause problem
-        if (merge_candidates[i]->IsCut(cut_side, cut_edge))
+        if (merge_candidates[i]->is_cut(cut_side, cut_edge))
         {
           topological_candidates.push_back(merge_candidates[i]);
           mymerge = merge_candidates[i];
@@ -225,7 +225,7 @@ Core::Geo::Cut::Point* Core::Geo::Cut::OctTreeNode::GetPoint(const double* x, Ed
         // For now we just merge into the closest one
         // Otherwise One possible idea is is would be to
         // merge into the point that is "the most close". To do this we just need to find minimum
-        // merge_candidates[i] ->Coordinates( nx.data() )
+        // merge_candidates[i] ->coordinates( nx.data() )
         // min (nx  - px).norm2()  and merge into that one.
         if (merge_candidates.size() > 1)
         {
@@ -261,16 +261,16 @@ Core::Geo::Cut::Point* Core::Geo::Cut::OctTreeNode::GetPoint(const double* x, Ed
       if (mymerge != nullptr)
       {  // just a safety check
 
-        mymerge->Coordinates(nx.data());
+        mymerge->coordinates(nx.data());
         nx.update(-1, px, 1);
-        if (not mymerge->IsCut(cut_side, cut_edge))
+        if (not mymerge->is_cut(cut_side, cut_edge))
         {
           if (cut_edge != nullptr)
           {
             // Here we need to set this point local coordinates on the edge, based on the unmerged
             // point, that it why "t" is called explicitely before AddEdge
             mymerge->t(cut_edge, px);
-            mymerge->AddEdge(cut_edge);
+            mymerge->add_edge(cut_edge);
           }
           if (cut_side != nullptr)
           {
@@ -278,7 +278,7 @@ Core::Geo::Cut::Point* Core::Geo::Cut::OctTreeNode::GetPoint(const double* x, Ed
           }
           if ((cut_side != nullptr) && (cut_edge != nullptr))
           {
-            mymerge->AddPair(cut_side, cut_edge);
+            mymerge->add_pair(cut_side, cut_edge);
 #if CUT_CREATION_INFO
             std::pair<Side*, Edge*> int_pair = std::make_pair(cut_side, cut_edge);
             mymerge->AddMergedPair(int_pair, &px);
@@ -289,7 +289,7 @@ Core::Geo::Cut::Point* Core::Geo::Cut::OctTreeNode::GetPoint(const double* x, Ed
         // This is done because we want to merge cut_mesh into the normal mesh first
         if (merge_strategy == PointpoolMergeStrategy::InitialLoad)
         {
-          mymerge->MovePoint(x);
+          mymerge->move_point(x);
         }
         return mymerge;
       }
@@ -305,19 +305,19 @@ Core::Geo::Cut::Point* Core::Geo::Cut::OctTreeNode::GetPoint(const double* x, Ed
 Teuchos::RCP<Core::Geo::Cut::Point> Core::Geo::Cut::OctTreeNode::create_point(
     unsigned newid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance)
 {
-  if (not IsLeaf())
+  if (not is_leaf())
   {
     // call recursively create_point for the child where the Point shall lie in
     Teuchos::RCP<Point> p = leaf(x)->create_point(newid, x, cut_edge, cut_side, tolerance);
     // add the pointer not only in the leaf but also on the current level
-    AddPoint(x, p);
+    add_point(x, p);
     return p;
   }
   else
   {
     // create a new point and add the point at the lowest level
     Teuchos::RCP<Point> p = Core::Geo::Cut::create_point(newid, x, cut_edge, cut_side, tolerance);
-    AddPoint(x, p);
+    add_point(x, p);
     return p;
   }
 }
@@ -326,10 +326,10 @@ Teuchos::RCP<Core::Geo::Cut::Point> Core::Geo::Cut::OctTreeNode::create_point(
 /*-----------------------------------------------------------------------------------------*
  * Simply insert p into the pointpool and correspondingly modify the boundingbox size
  *-----------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::OctTreeNode::AddPoint(const double* x, Teuchos::RCP<Point> p)
+void Core::Geo::Cut::OctTreeNode::add_point(const double* x, Teuchos::RCP<Point> p)
 {
   points_.insert(p);  // insert the point in the pointpool
-  bb_->AddPoint(x);   // modify the boundingbox size
+  bb_->add_point(x);  // modify the boundingbox size
 }
 
 
@@ -383,11 +383,11 @@ void Core::Geo::Cut::OctTreeNode::split(int level)
       if (first)
       {
         first = false;
-        p->Coordinates(splitpoint_.data());
+        p->coordinates(splitpoint_.data());
       }
       else
       {
-        p->Coordinates(x.data());
+        p->coordinates(x.data());
         splitpoint_.update(1, x, 1);
       }
     }
@@ -403,20 +403,20 @@ void Core::Geo::Cut::OctTreeNode::split(int level)
     for (int i = 0; i < 8; ++i)
     {
       // always have the split point in all boxes
-      nodes_[i]->bb_->AddPoint(splitpoint_);
+      nodes_[i]->bb_->add_point(splitpoint_);
 
       // always have the outmost point in each box
       double x[3];
-      bb_->CornerPoint(i, x);
-      leaf(x)->bb_->AddPoint(x);
+      bb_->corner_point(i, x);
+      leaf(x)->bb_->add_point(x);
     }
 
     for (RCPPointSet::iterator i = points_.begin(); i != points_.end(); ++i)
     {
       Teuchos::RCP<Point> p = *i;
       double x[3];
-      p->Coordinates(x);
-      leaf(x)->AddPoint(x, p);
+      p->coordinates(x);
+      leaf(x)->add_point(x, p);
     }
 
     for (int i = 0; i < 8; ++i)
@@ -430,32 +430,32 @@ void Core::Geo::Cut::OctTreeNode::split(int level)
 /*-----------------------------------------------------------------------------------------*
  * collect all edges
  *-----------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::OctTreeNode::CollectEdges(const BoundingBox& edgebox, plain_edge_set& edges)
+void Core::Geo::Cut::OctTreeNode::collect_edges(const BoundingBox& edgebox, plain_edge_set& edges)
 {
-  if (not IsLeaf())
+  if (not is_leaf())
   {
-    if (edgebox.Within(norm_, *bb_))
+    if (edgebox.within(norm_, *bb_))
     {
       for (int i = 0; i < 8; ++i)
       {
-        nodes_[i]->CollectEdges(edgebox, edges);
+        nodes_[i]->collect_edges(edgebox, edges);
       }
     }
   }
   else
   {
-    Teuchos::RCP<BoundingBox> sbox = Teuchos::rcp(BoundingBox::Create());
+    Teuchos::RCP<BoundingBox> sbox = Teuchos::rcp(BoundingBox::create());
     for (RCPPointSet::iterator i = points_.begin(); i != points_.end(); ++i)
     {
       Point* p = &**i;
-      const plain_edge_set& sds = p->CutEdges();
+      const plain_edge_set& sds = p->cut_edges();
       for (plain_edge_set::const_iterator i = sds.begin(); i != sds.end(); ++i)
       {
         Edge* s = *i;
         if (edges.count(s) == 0)
         {
-          sbox->Assign(*s);
-          if (sbox->Within(norm_, edgebox))
+          sbox->assign(*s);
+          if (sbox->within(norm_, edgebox))
           {
             edges.insert(s);
           }
@@ -469,32 +469,32 @@ void Core::Geo::Cut::OctTreeNode::CollectEdges(const BoundingBox& edgebox, plain
 /*-----------------------------------------------------------------------------------------*
  * collect all sides
  *-----------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::OctTreeNode::CollectSides(const BoundingBox& sidebox, plain_side_set& sides)
+void Core::Geo::Cut::OctTreeNode::collect_sides(const BoundingBox& sidebox, plain_side_set& sides)
 {
-  if (not IsLeaf())
+  if (not is_leaf())
   {
-    if (sidebox.Within(norm_, *bb_))
+    if (sidebox.within(norm_, *bb_))
     {
       for (int i = 0; i < 8; ++i)
       {
-        nodes_[i]->CollectSides(sidebox, sides);
+        nodes_[i]->collect_sides(sidebox, sides);
       }
     }
   }
   else
   {
-    Teuchos::RCP<BoundingBox> sbox = Teuchos::rcp(BoundingBox::Create());
+    Teuchos::RCP<BoundingBox> sbox = Teuchos::rcp(BoundingBox::create());
     for (RCPPointSet::iterator i = points_.begin(); i != points_.end(); ++i)
     {
       Point* p = &**i;
-      const plain_side_set& sds = p->CutSides();
+      const plain_side_set& sds = p->cut_sides();
       for (plain_side_set::const_iterator i = sds.begin(); i != sds.end(); ++i)
       {
         Side* s = *i;
         if (sides.count(s) == 0)
         {
-          sbox->Assign(*s);
-          if (sbox->Within(norm_, sidebox))
+          sbox->assign(*s);
+          if (sbox->within(norm_, sidebox))
           {
             sides.insert(s);
           }
@@ -510,7 +510,7 @@ void Core::Geo::Cut::OctTreeNode::CollectSides(const BoundingBox& sidebox, plain
  * (unused, does not work properly when there is no point adjacent to elements in a tree's leaf,
  * e.g. when side lies within an element)
  *-----------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::OctTreeNode::CollectElements(
+void Core::Geo::Cut::OctTreeNode::collect_elements(
     const BoundingBox& sidebox, plain_element_set& elements)
 {
   // see REMARK in cut_mesh.cpp
@@ -518,24 +518,24 @@ void Core::Geo::Cut::OctTreeNode::CollectElements(
       "collecting elements via the OctTreeNode does not find all possible element-side "
       "intersections");
 
-  if (not IsLeaf())
+  if (not is_leaf())
   {
-    if (sidebox.Within(
+    if (sidebox.within(
             norm_, *bb_))  // within check is a check of overlap between the 2 bounding boxes
     {
       for (int i = 0; i < 8; ++i)
       {
-        nodes_[i]->CollectElements(sidebox, elements);
+        nodes_[i]->collect_elements(sidebox, elements);
       }
     }
   }
   else
   {
-    Teuchos::RCP<BoundingBox> elementbox = Teuchos::rcp(BoundingBox::Create());
+    Teuchos::RCP<BoundingBox> elementbox = Teuchos::rcp(BoundingBox::create());
     for (RCPPointSet::iterator i = points_.begin(); i != points_.end(); ++i)
     {
       Point* p = &**i;
-      const plain_element_set& els = p->Elements();
+      const plain_element_set& els = p->elements();
 
       // add all elements adjacent to the current point
       // REMARK: this does not find all elements that have an overlap with the sidebox!!!
@@ -544,8 +544,8 @@ void Core::Geo::Cut::OctTreeNode::CollectElements(
         Element* e = *i;
         if (elements.count(e) == 0)
         {
-          elementbox->Assign(*e);
-          if (elementbox->Within(norm_, sidebox))
+          elementbox->assign(*e);
+          if (elementbox->within(norm_, sidebox))
           {
             elements.insert(e);
           }
@@ -559,14 +559,14 @@ void Core::Geo::Cut::OctTreeNode::CollectElements(
 /*-----------------------------------------------------------------------------------------*
  * reset the Point::Position of outside points
  *-----------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::OctTreeNode::ResetOutsidePoints()
+void Core::Geo::Cut::OctTreeNode::reset_outside_points()
 {
   for (RCPPointSet::iterator i = points_.begin(); i != points_.end(); ++i)
   {
     Point* p = &**i;
-    if (p->Position() == Point::outside)
+    if (p->position() == Point::outside)
     {
-      p->Position(Point::undecided);
+      p->position(Point::undecided);
     }
   }
 }
@@ -577,7 +577,7 @@ void Core::Geo::Cut::OctTreeNode::ResetOutsidePoints()
  *-----------------------------------------------------------------------------------------*/
 void Core::Geo::Cut::OctTreeNode::print(int level, std::ostream& stream)
 {
-  if (not IsLeaf())
+  if (not is_leaf())
   {
     for (int i = 0; i < 8; ++i)
     {
@@ -589,7 +589,7 @@ void Core::Geo::Cut::OctTreeNode::print(int level, std::ostream& stream)
     for (RCPPointSet::iterator i = points_.begin(); i != points_.end(); ++i)
     {
       Point* p = &**i;
-      p->Plot(stream);
+      p->plot(stream);
     }
     stream << "\n";
   }
@@ -598,24 +598,24 @@ void Core::Geo::Cut::OctTreeNode::print(int level, std::ostream& stream)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Core::Geo::Cut::PointPool::PointPool(double norm)
-    : tree_(norm), probdim_(Global::Problem::Instance()->NDim())
+    : tree_(norm), probdim_(Global::Problem::instance()->n_dim())
 {
 }
 
 
 // find node of the octree where current point resides, search start from "this" node and goes
 // downwards
-Core::Geo::Cut::OctTreeNode* Core::Geo::Cut::OctTreeNode::FindNode(const double* coord, Point* p)
+Core::Geo::Cut::OctTreeNode* Core::Geo::Cut::OctTreeNode::find_node(const double* coord, Point* p)
 {
   if (p)
   {
-    if (not IsLeaf())
+    if (not is_leaf())
     {
       // stop finding the point when point is not included in the current bounding box
-      if (!bb_->Within(1.0, coord)) return nullptr;
+      if (!bb_->within(1.0, coord)) return nullptr;
       for (int i = 0; i < 8; ++i)
       {
-        Core::Geo::Cut::OctTreeNode* node = (nodes_[i]->FindNode(coord, p));
+        Core::Geo::Cut::OctTreeNode* node = (nodes_[i]->find_node(coord, p));
         if (node != nullptr)
         {
           return node;

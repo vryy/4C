@@ -21,9 +21,9 @@ using namespace Core::FE;
 
 Discret::ELEMENTS::RedAcinusType Discret::ELEMENTS::RedAcinusType::instance_;
 
-Discret::ELEMENTS::RedAcinusType& Discret::ELEMENTS::RedAcinusType::Instance() { return instance_; }
+Discret::ELEMENTS::RedAcinusType& Discret::ELEMENTS::RedAcinusType::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::RedAcinusType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::RedAcinusType::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::RedAcinus* object = new Discret::ELEMENTS::RedAcinus(-1, -1);
@@ -32,7 +32,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::RedAcinusType::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedAcinusType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedAcinusType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "RED_ACINUS")
@@ -45,7 +45,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedAcinusType::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedAcinusType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedAcinusType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -114,7 +114,7 @@ Discret::ELEMENTS::RedAcinus::RedAcinus(const Discret::ELEMENTS::RedAcinus& old)
  |  to it                                                      (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::RedAcinus::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::RedAcinus::clone() const
 {
   Discret::ELEMENTS::RedAcinus* newelement = new Discret::ELEMENTS::RedAcinus(*this);
   return newelement;
@@ -125,7 +125,7 @@ Core::Elements::Element* Discret::ELEMENTS::RedAcinus::Clone() const
  |                                                             (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::RedAcinus::Shape() const
+Core::FE::CellType Discret::ELEMENTS::RedAcinus::shape() const
 {
   switch (num_node())
   {
@@ -149,7 +149,7 @@ void Discret::ELEMENTS::RedAcinus::pack(Core::Communication::PackBuffer& data) c
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // add base class Element
@@ -176,7 +176,7 @@ void Discret::ELEMENTS::RedAcinus::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -216,12 +216,12 @@ void Discret::ELEMENTS::RedAcinus::print(std::ostream& os) const
 std::vector<double> Discret::ELEMENTS::RedAcinus::element_center_refe_coords()
 {
   //  // update element geometry
-  Core::Nodes::Node** nodes = Nodes();
+  Core::Nodes::Node** nodes = RedAcinus::nodes();
 
   Core::LinAlg::SerialDenseMatrix mat(num_node(), 3, false);
   for (int i = 0; i < num_node(); ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes[i]->x();
     mat(i, 0) = x[0];
     mat(i, 1) = x[1];
     mat(i, 2) = x[2];
@@ -244,40 +244,40 @@ std::vector<double> Discret::ELEMENTS::RedAcinus::element_center_refe_coords()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data                     ismail 01/10 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedAcinus::VisNames(std::map<std::string, int>& names)
+void Discret::ELEMENTS::RedAcinus::vis_names(std::map<std::string, int>& names)
 {
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
-  // cast to specific material, because general material does not have VisNames/VisData
+  // cast to specific material, because general material does not have vis_names/vis_data
   Teuchos::RCP<Mat::Maxwell0dAcinus> mxwll_0d_acin =
-      Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(Material());
-  mxwll_0d_acin->VisNames(names);
+      Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(material());
+  mxwll_0d_acin->vis_names(names);
 }
 
 
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                     ismail 02/10 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedAcinus::VisData(const std::string& name, std::vector<double>& data)
+bool Discret::ELEMENTS::RedAcinus::vis_data(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (Core::Elements::Element::VisData(name, data)) return true;
+  if (Core::Elements::Element::vis_data(name, data)) return true;
 
-  // cast to specific material, because general material does not have VisNames/VisData
+  // cast to specific material, because general material does not have vis_names/vis_data
   Teuchos::RCP<Mat::Maxwell0dAcinus> mxwll_0d_acin =
-      Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(Material());
+      Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(material());
 
-  return mxwll_0d_acin->VisData(name, data, this->Id());
+  return mxwll_0d_acin->vis_data(name, data, this->id());
 }
 
 
-void Discret::ELEMENTS::RedAcinus::UpdateRelaxedVolume(double newVol)
+void Discret::ELEMENTS::RedAcinus::update_relaxed_volume(double newVol)
 {
   acinus_params_.volume_relaxed = newVol;
 }
 
 
-const Discret::ReducedLung::AcinusParams& Discret::ELEMENTS::RedAcinus::GetAcinusParams() const
+const Discret::ReducedLung::AcinusParams& Discret::ELEMENTS::RedAcinus::get_acinus_params() const
 {
   return acinus_params_;
 }
@@ -285,9 +285,9 @@ const Discret::ReducedLung::AcinusParams& Discret::ELEMENTS::RedAcinus::GetAcinu
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)              ismail  02/13|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::RedAcinus::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::RedAcinus::lines()
 {
-  FOUR_C_ASSERT(NumLine() == 1, "RED_AIRWAY element must have one and only one line");
+  FOUR_C_ASSERT(num_line() == 1, "RED_AIRWAY element must have one and only one line");
 
   return {Teuchos::rcpFromRef(*this)};
 }

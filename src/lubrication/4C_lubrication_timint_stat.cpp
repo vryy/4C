@@ -120,7 +120,7 @@ void LUBRICATION::TimIntStationary::update(const int num)
 void LUBRICATION::TimIntStationary::read_restart(int step)
 {
   Core::IO::DiscretizationReader reader(
-      discret_, Global::Problem::Instance()->InputControlFile(), step);
+      discret_, Global::Problem::instance()->input_control_file(), step);
   time_ = reader.read_double("time");
   step_ = reader.read_int("step");
 

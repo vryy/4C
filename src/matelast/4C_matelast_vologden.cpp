@@ -24,7 +24,7 @@ Mat::Elastic::PAR::VolOgden::VolOgden(const Core::Mat::PAR::Parameter::Data& mat
 
 Mat::Elastic::VolOgden::VolOgden(Mat::Elastic::PAR::VolOgden* params) : params_(params) {}
 
-void Mat::Elastic::VolOgden::AddStrainEnergy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
+void Mat::Elastic::VolOgden::add_strain_energy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
     const Core::LinAlg::Matrix<3, 1>& modinv, const Core::LinAlg::Matrix<6, 1>& glstrain,
     const int gp, const int eleGID)
 {
@@ -60,7 +60,7 @@ void Mat::Elastic::VolOgden::add_derivatives_modified(Core::LinAlg::Matrix<3, 1>
   }
 }
 
-void Mat::Elastic::VolOgden::Add3rdVolDeriv(
+void Mat::Elastic::VolOgden::add3rd_vol_deriv(
     const Core::LinAlg::Matrix<3, 1>& modinv, double& d3PsiVolDJ3)
 {
   const double kappa = params_->kappa_;

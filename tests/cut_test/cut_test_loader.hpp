@@ -19,19 +19,19 @@ using namespace FourC;
 class MeshLoader
 {
  public:
-  void GetCutNode(int nid, double x, double y, double z, double lsv);
+  void get_cut_node(int nid, double x, double y, double z, double lsv);
 
-  void GetNode(int nid, double x, double y, double z, double lsv);
+  void get_node(int nid, double x, double y, double z, double lsv);
 
   void create_side(int sid, int nid1, int nid2, int nid3, int nid4, Core::FE::CellType shape);
 
   void create_element(int eid, int nid1, int nid2, int nid3, int nid4, int nid5, int nid6, int nid7,
       int nid8, Core::FE::CellType);
 
-  void CutTest_Cut(bool include_inner, bool do_Cut_Positions_Dofsets = false)
+  void cut_test_cut(bool include_inner, bool do_Cut_Positions_Dofsets = false)
   {
-    mesh_.GetOptions().Init_for_Cuttests();  // use full cln
-    mesh_.CutTest_Cut(include_inner, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
+    mesh_.get_options().init_for_cuttests();  // use full cln
+    mesh_.cut_test_cut(include_inner, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
         Core::Geo::Cut::BCellGaussPts_Tessellation, true, true, do_Cut_Positions_Dofsets);
     mesh_.print_cell_stats();
   }

@@ -64,7 +64,7 @@ void FLD::TimIntGenAlpha::init()
 
   set_element_time_parameter();
 
-  CompleteGeneralInit();
+  complete_general_init();
 
   return;
 }
@@ -104,7 +104,7 @@ void FLD::TimIntGenAlpha::print_time_step_info()
 /*----------------------------------------------------------------------*
 | calculate pseudo-theta for startalgo_                        bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntGenAlpha::SetTheta()
+void FLD::TimIntGenAlpha::set_theta()
 {
   // -------------------------------------------------------------------
   //  For af-generalized-alpha time-integration scheme:
@@ -305,7 +305,7 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values(
 /*----------------------------------------------------------------------*
 | set integration-scheme-specific state                        bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntGenAlpha::SetStateTimInt()
+void FLD::TimIntGenAlpha::set_state_tim_int()
 {
   discret_->set_state("velaf", velaf_);
   discret_->set_state("velam", velam_);
@@ -328,7 +328,7 @@ void FLD::TimIntGenAlpha::treat_turbulence_models(Teuchos::ParameterList& elepar
 /*----------------------------------------------------------------------*
 | return alphaF_                                               bk 12/13 |
 *-----------------------------------------------------------------------*/
-double FLD::TimIntGenAlpha::SetTimeFac() { return alphaF_; }
+double FLD::TimIntGenAlpha::set_time_fac() { return alphaF_; }
 
 
 /*----------------------------------------------------------------------*
@@ -347,7 +347,7 @@ void FLD::TimIntGenAlpha::calculate_acceleration(const Teuchos::RCP<const Epetra
 /*----------------------------------------------------------------------*
 | set gamma                                                    bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntGenAlpha::SetGamma(Teuchos::ParameterList& eleparams)
+void FLD::TimIntGenAlpha::set_gamma(Teuchos::ParameterList& eleparams)
 {
   eleparams.set("gamma", gamma_);
   return;
@@ -357,9 +357,9 @@ void FLD::TimIntGenAlpha::SetGamma(Teuchos::ParameterList& eleparams)
 /*----------------------------------------------------------------------*
 | scale separation                                             bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntGenAlpha::Sep_Multiply()
+void FLD::TimIntGenAlpha::sep_multiply()
 {
-  Sep_->Multiply(false, *velaf_, *fsvelaf_);
+  Sep_->multiply(false, *velaf_, *fsvelaf_);
   return;
 }
 
@@ -367,7 +367,7 @@ void FLD::TimIntGenAlpha::Sep_Multiply()
 /*----------------------------------------------------------------------*
 | update velaf_                                                bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntGenAlpha::UpdateVelafGenAlpha()
+void FLD::TimIntGenAlpha::update_velaf_gen_alpha()
 {
   velaf_->Update((alphaF_), *velnp_, (1.0 - alphaF_), *veln_, 0.0);
   return;
@@ -377,7 +377,7 @@ void FLD::TimIntGenAlpha::UpdateVelafGenAlpha()
 /*----------------------------------------------------------------------*
  | paraview output of filtered velocity                  rasthofer 02/11|
  *----------------------------------------------------------------------*/
-void FLD::TimIntGenAlpha::OutputofFilteredVel(
+void FLD::TimIntGenAlpha::outputof_filtered_vel(
     Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
@@ -386,7 +386,7 @@ void FLD::TimIntGenAlpha::OutputofFilteredVel(
 
   // get fine scale velocity
   if (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator)
-    Sep_->Multiply(false, *velaf_, *row_finescaleveltmp);
+    Sep_->multiply(false, *velaf_, *row_finescaleveltmp);
   else
     FOUR_C_THROW("Unknown separation type!");
 
@@ -438,10 +438,10 @@ void FLD::TimIntGenAlpha::set_element_time_parameter()
 /*----------------------------------------------------------------------*
 | extrapolate end point                                        bk 12/13 |
 *-----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::TimIntGenAlpha::ExtrapolateEndPoint(
+Teuchos::RCP<Epetra_Vector> FLD::TimIntGenAlpha::extrapolate_end_point(
     Teuchos::RCP<Epetra_Vector> vecn, Teuchos::RCP<Epetra_Vector> vecm)
 {
-  Teuchos::RCP<Epetra_Vector> vecnp = FluidImplicitTimeInt::ExtrapolateEndPoint(vecn, vecm);
+  Teuchos::RCP<Epetra_Vector> vecnp = FluidImplicitTimeInt::extrapolate_end_point(vecn, vecm);
 
   // For gen-alpha extrapolate mid-point quantities to end-point.
   // Otherwise, equilibrium time level is already end-point.

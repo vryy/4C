@@ -36,13 +36,13 @@ namespace Core::Geo
   {
     const int numnode = ele->num_node();
 
-    const Core::Nodes::Node* const* nodes = ele->Nodes();
+    const Core::Nodes::Node* const* nodes = ele->nodes();
     FOUR_C_ASSERT(nodes != nullptr,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
     for (int inode = 0; inode < numnode; inode++)
     {
-      const auto& x = nodes[inode]->X();
+      const auto& x = nodes[inode]->x();
       xyze(0, inode) = x[0];
       xyze(1, inode) = x[1];
       xyze(2, inode) = x[2];
@@ -63,16 +63,16 @@ namespace Core::Geo
   template <Core::FE::CellType distype, class M>
   void fillInitialPositionArray(const Core::Elements::Element* const ele, M& xyze)
   {
-    FOUR_C_ASSERT(distype == ele->Shape(), "mismatch in distype");
+    FOUR_C_ASSERT(distype == ele->shape(), "mismatch in distype");
     const int numnode = Core::FE::num_nodes<distype>;
 
-    const Core::Nodes::Node* const* nodes = ele->Nodes();
+    const Core::Nodes::Node* const* nodes = ele->nodes();
     FOUR_C_ASSERT(nodes != nullptr,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
     for (int inode = 0; inode < numnode; inode++)
     {
-      const auto& x = nodes[inode]->X();
+      const auto& x = nodes[inode]->x();
       xyze(0, inode) = x[0];
       xyze(1, inode) = x[1];
       xyze(2, inode) = x[2];
@@ -94,10 +94,10 @@ namespace Core::Geo
   template <Core::FE::CellType distype, int dim, class M>
   void fillInitialPositionArray(const Core::Elements::Element* const ele, M& xyze)
   {
-    FOUR_C_ASSERT(distype == ele->Shape(), "mismatch in distype");
+    FOUR_C_ASSERT(distype == ele->shape(), "mismatch in distype");
     const int numnode = Core::FE::num_nodes<distype>;
 
-    const Core::Nodes::Node* const* nodes = ele->Nodes();
+    const Core::Nodes::Node* const* nodes = ele->nodes();
     FOUR_C_ASSERT(nodes != nullptr,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
@@ -105,12 +105,12 @@ namespace Core::Geo
 
     for (int inode = 0; inode < numnode; inode++)
     {
-      const double* x = nodes[inode]->X().data();
+      const double* x = nodes[inode]->x().data();
       // copy the values in the current column
       std::copy(x, x + dim, &xyze(0, inode));
       // fill the remaining entries of the column with zeros, if the given matrix has
       // the wrong row dimension (this is primarily for safety reasons)
-      std::fill(&xyze(0, inode) + dim, &xyze(0, inode) + xyze.numRows(), 0.0);
+      std::fill(&xyze(0, inode) + dim, &xyze(0, inode) + xyze.num_rows(), 0.0);
     }
   }
 

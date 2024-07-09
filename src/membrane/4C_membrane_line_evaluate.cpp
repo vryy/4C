@@ -55,8 +55,8 @@ int Discret::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::Paramete
   */
   // find out whether we will use a time curve
   double time = -1.0;
-  if (parent_element()->IsParamsInterface())
-    time = parent_element()->ParamsInterfacePtr()->get_total_time();
+  if (parent_element()->is_params_interface())
+    time = parent_element()->params_interface_ptr()->get_total_time();
   else
     time = params.get("total time", -1.0);
 
@@ -75,9 +75,9 @@ int Discret::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::Paramete
   Core::LinAlg::Matrix<numnod_line_, noddof_> x(true);
   for (int i = 0; i < numnod_line_; ++i)
   {
-    x(i, 0) = Nodes()[i]->X()[0];
-    x(i, 1) = Nodes()[i]->X()[1];
-    x(i, 2) = Nodes()[i]->X()[2];
+    x(i, 0) = nodes()[i]->x()[0];
+    x(i, 1) = nodes()[i]->x()[1];
+    x(i, 2) = nodes()[i]->x()[2];
   }
 
   // allocate vector for shape functions and matrix for derivatives at gp
@@ -94,8 +94,8 @@ int Discret::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::Paramete
     double gpweight = intpointsline_.qwgt[gp];
 
     // get shape functions and derivatives in the plane of the element
-    Core::FE::shape_function_1D(shapefcts, xi_gp, Shape());
-    Core::FE::shape_function_1D_deriv1(derivs, xi_gp, Shape());
+    Core::FE::shape_function_1D(shapefcts, xi_gp, shape());
+    Core::FE::shape_function_1D_deriv1(derivs, xi_gp, shape());
 
     switch (ltype)
     {
@@ -136,8 +136,8 @@ int Discret::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::Paramete
               const double* coordgpref = gp_coord2;  // needed for function evaluation
 
               // evaluate function at current gauss point
-              functfac = Global::Problem::Instance()
-                             ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+              functfac = Global::Problem::instance()
+                             ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                              .evaluate(coordgpref, time, i);
             }
 

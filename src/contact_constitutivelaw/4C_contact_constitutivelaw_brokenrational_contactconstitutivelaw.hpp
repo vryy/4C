@@ -40,11 +40,11 @@ namespace CONTACT
       /// @name get-functions for the Constitutive Law parameters of a broken rational function
       //@{
       /// Get the scaling factor
-      double Getdata() { return a_; };
+      double getdata() { return a_; };
       /// Get the asymptote
-      double GetB() { return b_; };
+      double get_b() { return b_; };
       /// get the y intercept
-      double GetC() { return c_; };
+      double get_c() { return c_; };
       //@}
 
      private:
@@ -79,14 +79,14 @@ namespace CONTACT
       }
 
       /// Get scaling factor of the broken rational function
-      double Getdata() { return params_->Getdata(); }
+      double getdata() { return params_->getdata(); }
       /// Get asymptote of the broken rational function
-      double GetB() { return params_->GetB(); }
+      double get_b() { return params_->get_b(); }
       /// Get Y intercept of the broken rational function
-      double GetC() { return params_->GetC(); }
+      double get_c() { return params_->get_c(); }
 
       /// Return quick accessible mcontact constitutive law parameter data
-      CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const override { return params_; }
+      CONTACT::CONSTITUTIVELAW::Parameter* parameter() const override { return params_; }
 
       //@}
 
@@ -95,7 +95,7 @@ namespace CONTACT
       /// evaluate the constitutive law
       double evaluate(double gap, CONTACT::Node* cnode) override;
       /// Evaluate derivative of the constitutive law
-      double EvaluateDeriv(double gap, CONTACT::Node* cnode) override;
+      double evaluate_deriv(double gap, CONTACT::Node* cnode) override;
       //@}
 
      private:

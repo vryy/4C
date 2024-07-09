@@ -50,7 +50,7 @@ namespace
   {
     Mat::MuscleCombo::ActivationEvaluatorVariant operator()(const int function_id) const
     {
-      return &Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
+      return &Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
           function_id - 1);
     }
 
@@ -139,7 +139,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::MuscleCombo::create_material()
 
 Mat::MuscleComboType Mat::MuscleComboType::instance_;
 
-Core::Communication::ParObject* Mat::MuscleComboType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MuscleComboType::create(const std::vector<char>& data)
 {
   auto* muscle_combo = new Mat::MuscleCombo();
   muscle_combo->unpack(data);
@@ -183,12 +183,12 @@ void Mat::MuscleCombo::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 
   anisotropy_extension_.pack_anisotropy(data);
@@ -198,7 +198,7 @@ void Mat::MuscleCombo::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // make sure we have a pristine material
   params_ = nullptr;
@@ -207,21 +207,21 @@ void Mat::MuscleCombo::unpack(const std::vector<char>& data)
   int matid;
   extract_from_pack(position, data, matid);
 
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
   {
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
       {
         params_ = static_cast<Mat::PAR::MuscleCombo*>(mat);
         activation_evaluator_ = std::visit(ActivationParamsVisitor(), params_->activationParams_);
       }
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
   }
 

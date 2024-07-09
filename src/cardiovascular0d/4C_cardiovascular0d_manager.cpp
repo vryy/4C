@@ -46,7 +46,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
     Teuchos::ParameterList strparams, Teuchos::ParameterList cv0dparams,
     Core::LinAlg::Solver& solver, Teuchos::RCP<ModelOrderRed::ProperOrthogonalDecomposition> mor)
     : actdisc_(discr),
-      myrank_(actdisc_->Comm().MyPID()),
+      myrank_(actdisc_->get_comm().MyPID()),
       dbcmaps_(Teuchos::rcp(new Core::LinAlg::MapExtractor())),
       cardiovascular0ddofset_full_(Teuchos::null),
       cardiovascular0dmap_full_(Teuchos::null),
@@ -130,7 +130,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
       break;
     case Inpar::Solid::int_old:
       // setup solver
-      SolverSetup(solver, strparams);
+      solver_setup(solver, strparams);
       break;
     default:
       FOUR_C_THROW("Unknown integration strategy!");
@@ -143,7 +143,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
     const double time = 0.0;
     p.set("total time", time);
     p.set<const Core::UTILS::FunctionManager*>(
-        "function_manager", &Global::Problem::Instance()->FunctionManager());
+        "function_manager", &Global::Problem::instance()->function_manager());
     actdisc_->evaluate_dirichlet(p, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
   }
@@ -175,7 +175,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
   {
     cardvasc0d_model_ = cardvascrespir0d_syspulperiphcirculation_;
     // set number of degrees of freedom
-    switch (cardvasc0d_model_->GetRespiratoryModel())
+    switch (cardvasc0d_model_->get_respiratory_model())
     {
       case Inpar::CARDIOVASCULAR0D::resp_none:
         num_cardiovascular0_did_ = 34;
@@ -191,7 +191,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
 
   // are we using model order reduction?
   if (mor_ != Teuchos::null)
-    if (mor_->HaveMOR()) have_mor_ = true;
+    if (mor_->have_mor()) have_mor_ = true;
 
   if (cardvasc0d_4elementwindkessel_->have_cardiovascular0_d() or
       cardvasc0d_arterialproxdist_->have_cardiovascular0_d() or
@@ -203,7 +203,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
     cardiovascular0ddofset_full_ = Teuchos::rcp(new Cardiovascular0DDofSet());
     cardiovascular0ddofset_full_->assign_degrees_of_freedom(
         actdisc_, num_cardiovascular0_did_, 0, Teuchos::null);
-    offset_id_ = cardiovascular0ddofset_->FirstGID();
+    offset_id_ = cardiovascular0ddofset_->first_gid();
 
     cardiovascular0dmap_full_ =
         Teuchos::rcp(new Epetra_Map(*(cardiovascular0ddofset_full_->dof_row_map())));
@@ -245,7 +245,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
       FOUR_C_THROW("theta for 0D cardiovascular model time integration out of range (0.0,1.0] !");
 
     // Initialize vectors
-    actdisc_->ClearState();
+    actdisc_->clear_state();
 
     cv0ddofincrement_->PutScalar(0.0);
 
@@ -268,7 +268,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
     cv0ddof_t_n_->PutScalar(0.0);
     cv0ddof_t_np_->PutScalar(0.0);
 
-    cardiovascular0dstiffness_->Zero();
+    cardiovascular0dstiffness_->zero();
 
     p.set("total time", time);
     p.set("OffsetID", offset_id_);
@@ -327,7 +327,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
         Teuchos::rcp(new Cardiovascular0DResultTest(*this, actdisc_));
 
     // Resulttest for 0D problem
-    Global::Problem::Instance()->AddFieldTest(resulttest);
+    Global::Problem::instance()->add_field_test(resulttest);
   }
 
   return;
@@ -349,9 +349,9 @@ void UTILS::Cardiovascular0DManager::evaluate_force_stiff(const double time,
   Teuchos::ParameterList p;
   const Epetra_Map* dofrowmap = actdisc_->dof_row_map();
 
-  cardiovascular0dstiffness_->Zero();
-  mat_dcardvasc0d_dd_->Zero();
-  mat_dstruct_dcv0ddof_->Zero();
+  cardiovascular0dstiffness_->zero();
+  mat_dcardvasc0d_dd_->zero();
+  mat_dstruct_dcv0ddof_->zero();
 
   // other parameters that might be needed by the elements
   p.set("total time", time);
@@ -372,7 +372,7 @@ void UTILS::Cardiovascular0DManager::evaluate_force_stiff(const double time,
   Teuchos::RCP<Epetra_Vector> cardvasc0d_f_np_red =
       Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
 
-  actdisc_->ClearState();
+  actdisc_->clear_state();
   actdisc_->set_state("displacement", disp);
 
   // evaluate current 3D volume only
@@ -416,9 +416,9 @@ void UTILS::Cardiovascular0DManager::evaluate_force_stiff(const double time,
   cardvasc0d_res_m_->Update(1., *cardvasc0d_df_m_, 1., *cardvasc0d_f_m_, 0.0);
 
   // Complete matrices
-  cardiovascular0dstiffness_->Complete(*cardiovascular0dmap_, *cardiovascular0dmap_);
-  mat_dcardvasc0d_dd_->Complete(*cardiovascular0dmap_, *dofrowmap);
-  mat_dstruct_dcv0ddof_->Complete(*cardiovascular0dmap_, *dofrowmap);
+  cardiovascular0dstiffness_->complete(*cardiovascular0dmap_, *cardiovascular0dmap_);
+  mat_dcardvasc0d_dd_->complete(*cardiovascular0dmap_, *dofrowmap);
+  mat_dstruct_dcv0ddof_->complete(*cardiovascular0dmap_, *dofrowmap);
 
   // ATTENTION: We necessarily need the end-point and NOT the generalized mid-point pressure here
   // since fint will be set to the generalized mid-point by the respective structural
@@ -429,12 +429,12 @@ void UTILS::Cardiovascular0DManager::evaluate_force_stiff(const double time,
   return;
 }
 
-void UTILS::Cardiovascular0DManager::UpdateTimeStep()
+void UTILS::Cardiovascular0DManager::update_time_step()
 {
   if (t_period_ > 0.0 and modulo_is_realtive_zero(totaltime_, t_period_, totaltime_))
   {
     cv0ddof_t_np_->Update(1.0, *cv0ddof_np_, 0.0);
-    CheckPeriodic();
+    check_periodic();
     cv0ddof_t_n_->Update(1.0, *cv0ddof_t_np_, 0.0);
   }
 
@@ -448,14 +448,14 @@ void UTILS::Cardiovascular0DManager::UpdateTimeStep()
 
   if (is_periodic_)
   {
-    if (actdisc_->Comm().MyPID() == 0)
+    if (actdisc_->get_comm().MyPID() == 0)
       std::cout << "============ PERIODIC STATE REACHED ! ============" << std::endl;
   }
 
   return;
 }
 
-void UTILS::Cardiovascular0DManager::CheckPeriodic()  // not yet thoroughly tested!
+void UTILS::Cardiovascular0DManager::check_periodic()  // not yet thoroughly tested!
 {
   Teuchos::RCP<Epetra_Vector> cv0ddof_T_N_red =
       Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
@@ -489,7 +489,7 @@ void UTILS::Cardiovascular0DManager::CheckPeriodic()  // not yet thoroughly test
 /*----------------------------------------------------------------------*
  | Compare if two doubles are relatively equal               Thon 08/15 |
  *----------------------------------------------------------------------*/
-bool UTILS::Cardiovascular0DManager::IsRealtiveEqualTo(
+bool UTILS::Cardiovascular0DManager::is_realtive_equal_to(
     const double A, const double B, const double Ref)
 {
   return ((fabs(A - B) / Ref) < 1e-12);
@@ -501,7 +501,7 @@ bool UTILS::Cardiovascular0DManager::IsRealtiveEqualTo(
 bool UTILS::Cardiovascular0DManager::modulo_is_realtive_zero(
     const double value, const double modulo, const double Ref)
 {
-  return IsRealtiveEqualTo(fmod(value + modulo / 2, modulo) - modulo / 2, 0.0, Ref);
+  return is_realtive_equal_to(fmod(value + modulo / 2, modulo) - modulo / 2, 0.0, Ref);
 }
 
 
@@ -519,7 +519,7 @@ void UTILS::Cardiovascular0DManager::reset_step()
 
 /*----------------------------------------------------------------------*/
 /* iterative iteration update of state */
-void UTILS::Cardiovascular0DManager::UpdateCv0DDof(Teuchos::RCP<Epetra_Vector> cv0ddofincrement)
+void UTILS::Cardiovascular0DManager::update_cv0_d_dof(Teuchos::RCP<Epetra_Vector> cv0ddofincrement)
 {
   // new end-point solution
   // cv0ddof_{n+1}^{i+1} := cv0ddof_{n+1}^{i} + Inccv0ddof_{n+1}^{i}
@@ -537,7 +537,7 @@ void UTILS::Cardiovascular0DManager::read_restart(
 {
   // check if restart from non-Cardiovascular0D simulation is desired
   const bool restartwithcardiovascular0d =
-      Core::UTILS::IntegralValue<int>(Cardvasc0DParams(), "RESTART_WITH_CARDVASC0D");
+      Core::UTILS::IntegralValue<int>(cardvasc0_d_params(), "RESTART_WITH_CARDVASC0D");
 
   if (!restartwithcardiovascular0d)
   {
@@ -545,19 +545,19 @@ void UTILS::Cardiovascular0DManager::read_restart(
     Teuchos::RCP<Epetra_Vector> tempvec = Core::LinAlg::CreateVector(*cardvasc0d, true);
     // old rhs contributions
     reader.read_vector(tempvec, "cv0d_df_np");
-    Set0D_df_n(tempvec);
+    set0_d_df_n(tempvec);
     reader.read_vector(tempvec, "cv0d_f_np");
-    Set0D_f_n(tempvec);
+    set0_d_f_n(tempvec);
     // old dof and vol vector
     reader.read_vector(tempvec, "cv0d_dof_np");
-    Set0D_dof_n(tempvec);
+    set0_d_dof_n(tempvec);
     reader.read_vector(tempvec, "vol_np");
-    Set0D_v_n(tempvec);
+    set0_d_v_n(tempvec);
   }
 
   totaltime_ = time;
 
-  if (restartwithcardiovascular0d) PrintPresFlux(true);
+  if (restartwithcardiovascular0d) print_pres_flux(true);
 
   return;
 }
@@ -575,11 +575,11 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
   std::vector<Core::Conditions::Condition*> cardvasc0dstructcoupcond;
   std::vector<int> tmp;
   Teuchos::RCP<Core::FE::Discretization> structdis =
-      Global::Problem::Instance()->GetDis("structure");
+      Global::Problem::instance()->get_dis("structure");
   if (structdis == Teuchos::null) FOUR_C_THROW("No structure discretization available!");
 
   // get all coupling conditions on structure
-  structdis->GetCondition("SurfaceNeumannCardiovascular0D", cardvasc0dstructcoupcond);
+  structdis->get_condition("SurfaceNeumannCardiovascular0D", cardvasc0dstructcoupcond);
   unsigned int numcoupcond = cardvasc0dstructcoupcond.size();
   if (numcoupcond == 0) FOUR_C_THROW("No coupling conditions found!");
 
@@ -644,7 +644,7 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
         }
       }
     }
-    if (assvec) coupcond->parameters().Add("val", newval);
+    if (assvec) coupcond->parameters().add("val", newval);
 
 
     Teuchos::RCP<const Epetra_Vector> disp =
@@ -653,7 +653,7 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
 
     Core::LinAlg::SerialDenseVector elevector;
     Core::LinAlg::SerialDenseMatrix elematrix;
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = coupcond->Geometry();
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = coupcond->geometry();
 
     std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
@@ -662,7 +662,7 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
       std::vector<int> lm;
       std::vector<int> lmowner;
       std::vector<int> lmstride;
-      curr->second->LocationVector(*actdisc_, lm, lmowner, lmstride);
+      curr->second->location_vector(*actdisc_, lm, lmowner, lmstride);
       elevector.size((int)lm.size());
 
       const int size = (int)lm.size();
@@ -677,7 +677,7 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
       // plus sign here since evaluate_neumann already assumes that an fext vector enters, and thus
       // puts a minus infront of the load linearization matrix !!
       // elematrix.Scale(1.0);
-      if (assmat) systemmatrix->Assemble(curr->second->Id(), lmstride, elematrix, lm, lmowner);
+      if (assmat) systemmatrix->assemble(curr->second->id(), lmstride, elematrix, lm, lmowner);
     }
   }
 
@@ -685,7 +685,7 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
 }
 
 
-void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
+void UTILS::Cardiovascular0DManager::print_pres_flux(bool init) const
 {
   // prepare stuff for printing to screen
   // ATTENTION: we print the mid-point pressure (NOT the end-point pressure at t_{n+1}),
@@ -822,7 +822,7 @@ void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
       printf("V_cap_pul: %10.16e \n", (*v_m_red)[30]);
       printf("V_ven_pul: %10.16e \n", (*v_m_red)[32]);
 
-      if (cardvasc0d_model_->GetRespiratoryModel())
+      if (cardvasc0d_model_->get_respiratory_model())
       {
         // 0D lung
         printf("V_alv: %10.16e \n", (*cv0ddof_m_red)[34]);
@@ -894,7 +894,7 @@ void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
 /*----------------------------------------------------------------------*
  |  set-up (public)                                            mhv 11/13|
  *----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DManager::SolverSetup(
+void UTILS::Cardiovascular0DManager::solver_setup(
     Core::LinAlg::Solver& solver, Teuchos::ParameterList params)
 {
   solver_ = Teuchos::rcp(&solver, false);
@@ -913,12 +913,12 @@ void UTILS::Cardiovascular0DManager::SolverSetup(
 
 
 
-int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_structstiff,
+int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_structstiff,
     Teuchos::RCP<Epetra_Vector> dispinc, const Teuchos::RCP<Epetra_Vector> rhsstruct,
     const double k_ptc)
 {
   // create old style dirichtoggle vector (supposed to go away)
-  dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->FullMap())));
+  dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->full_map())));
   Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->cond_map())));
   temp->PutScalar(1.0);
   Core::LinAlg::Export(*temp, *dirichtoggle_);
@@ -931,7 +931,7 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_cardvasc0dstiff =
       (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(get_cardiovascular0_d_stiffness()));
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_dcardvasc0d_dd =
-      (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(GetMatDcardvasc0dDd()));
+      (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(get_mat_dcardvasc0d_dd()));
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_dstruct_dcv0ddof =
       (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(get_mat_dstruct_dcv0ddof()));
 
@@ -940,11 +940,11 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
 
 
   // apply DBC to additional offdiagonal coupling matrices
-  mat_dcardvasc0d_dd->ApplyDirichlet(*(dbcmaps_->cond_map()), false);
-  mat_dstruct_dcv0ddof->ApplyDirichlet(*(dbcmaps_->cond_map()), false);
+  mat_dcardvasc0d_dd->apply_dirichlet(*(dbcmaps_->cond_map()), false);
+  mat_dstruct_dcv0ddof->apply_dirichlet(*(dbcmaps_->cond_map()), false);
 
   // define maps of standard dofs and additional pressures
-  Teuchos::RCP<Epetra_Map> standrowmap = Teuchos::rcp(new Epetra_Map(mat_structstiff->RowMap()));
+  Teuchos::RCP<Epetra_Map> standrowmap = Teuchos::rcp(new Epetra_Map(mat_structstiff->row_map()));
   Teuchos::RCP<Epetra_Map> cardvasc0drowmap =
       Teuchos::rcp(new Epetra_Map(*cardiovascular0dmap_full_));
 
@@ -953,11 +953,11 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
   {
     // PTC on structural matrix
     Teuchos::RCP<Epetra_Vector> tmp3D =
-        Core::LinAlg::CreateVector(mat_structstiff->RowMap(), false);
+        Core::LinAlg::CreateVector(mat_structstiff->row_map(), false);
     tmp3D->PutScalar(k_ptc);
     Teuchos::RCP<Epetra_Vector> diag3D =
-        Core::LinAlg::CreateVector(mat_structstiff->RowMap(), false);
-    mat_structstiff->ExtractDiagonalCopy(*diag3D);
+        Core::LinAlg::CreateVector(mat_structstiff->row_map(), false);
+    mat_structstiff->extract_diagonal_copy(*diag3D);
     diag3D->Update(1.0, *tmp3D, 1.0);
     mat_structstiff->replace_diagonal_values(*diag3D);
 
@@ -994,19 +994,19 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
   {
     // reduce linear system
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_structstiff_R =
-        mor_->ReduceDiagnoal(mat_structstiff);
+        mor_->reduce_diagnoal(mat_structstiff);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_dcardvasc0d_dd_R =
-        mor_->ReduceOffDiagonal(mat_dcardvasc0d_dd);
+        mor_->reduce_off_diagonal(mat_dcardvasc0d_dd);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_dstruct_dcv0ddof_R =
-        mor_->ReduceOffDiagonal(mat_dstruct_dcv0ddof);
-    Teuchos::RCP<Epetra_MultiVector> rhsstruct_R = mor_->ReduceRHS(rhsstruct);
+        mor_->reduce_off_diagonal(mat_dstruct_dcv0ddof);
+    Teuchos::RCP<Epetra_MultiVector> rhsstruct_R = mor_->reduce_rhs(rhsstruct);
 
     // define maps of reduced standard dofs and additional pressures
     Teuchos::RCP<Epetra_Map> structmap_R =
-        Teuchos::rcp(new Epetra_Map(mor_->GetRedDim(), 0, actdisc_->Comm()));
+        Teuchos::rcp(new Epetra_Map(mor_->get_red_dim(), 0, actdisc_->get_comm()));
     Teuchos::RCP<Epetra_Map> standrowmap_R = Teuchos::rcp(new Epetra_Map(*structmap_R));
     Teuchos::RCP<Epetra_Map> cardvasc0drowmap_R =
-        Teuchos::rcp(new Epetra_Map(mat_cardvasc0dstiff->RowMap()));
+        Teuchos::rcp(new Epetra_Map(mat_cardvasc0dstiff->row_map()));
 
     // merge maps of reduced standard dofs and additional pressures to one large map
     Teuchos::RCP<Epetra_Map> mergedmap_R =
@@ -1025,11 +1025,11 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
     mergedsol = Teuchos::rcp(new Epetra_Vector(*mergedmap_R));
 
     // use BlockMatrix
-    blockmat->Assign(0, 0, Core::LinAlg::View, *mat_structstiff_R);
-    blockmat->Assign(1, 0, Core::LinAlg::View, *mat_dcardvasc0d_dd_R);
-    blockmat->Assign(0, 1, Core::LinAlg::View, *mat_dstruct_dcv0ddof_R->Transpose());
-    blockmat->Assign(1, 1, Core::LinAlg::View, *mat_cardvasc0dstiff);
-    blockmat->Complete();
+    blockmat->assign(0, 0, Core::LinAlg::View, *mat_structstiff_R);
+    blockmat->assign(1, 0, Core::LinAlg::View, *mat_dcardvasc0d_dd_R);
+    blockmat->assign(0, 1, Core::LinAlg::View, *mat_dstruct_dcv0ddof_R->transpose());
+    blockmat->assign(1, 1, Core::LinAlg::View, *mat_cardvasc0dstiff);
+    blockmat->complete();
 
     // export 0D part of rhs
     Core::LinAlg::Export(*rhscardvasc0d, *mergedrhs);
@@ -1049,11 +1049,11 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
     mergedsol = Teuchos::rcp(new Epetra_Vector(*mergedmap));
 
     // use BlockMatrix
-    blockmat->Assign(0, 0, Core::LinAlg::View, *mat_structstiff);
-    blockmat->Assign(1, 0, Core::LinAlg::View, *mat_dcardvasc0d_dd->Transpose());
-    blockmat->Assign(0, 1, Core::LinAlg::View, *mat_dstruct_dcv0ddof);
-    blockmat->Assign(1, 1, Core::LinAlg::View, *mat_cardvasc0dstiff);
-    blockmat->Complete();
+    blockmat->assign(0, 0, Core::LinAlg::View, *mat_structstiff);
+    blockmat->assign(1, 0, Core::LinAlg::View, *mat_dcardvasc0d_dd->transpose());
+    blockmat->assign(0, 1, Core::LinAlg::View, *mat_dstruct_dcv0ddof);
+    blockmat->assign(1, 1, Core::LinAlg::View, *mat_cardvasc0dstiff);
+    blockmat->complete();
 
     // export 0D part of rhs
     Core::LinAlg::Export(*rhscardvasc0d, *mergedrhs);
@@ -1071,15 +1071,15 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
 
 
   Teuchos::ParameterList sfparams =
-      solver_->Params();  // save copy of original solver parameter list
+      solver_->params();  // save copy of original solver parameter list
   const Teuchos::ParameterList& cardvasc0dstructparams =
-      Global::Problem::Instance()->cardiovascular0_d_structural_params();
+      Global::Problem::instance()->cardiovascular0_d_structural_params();
   const int linsolvernumber = cardvasc0dstructparams.get<int>("LINEAR_COUPLED_SOLVER");
-  solver_->Params() = Core::LinAlg::Solver::translate_solver_parameters(
-      Global::Problem::Instance()->SolverParams(linsolvernumber),
-      Global::Problem::Instance()->solver_params_callback(),
+  solver_->params() = Core::LinAlg::Solver::translate_solver_parameters(
+      Global::Problem::instance()->solver_params(linsolvernumber),
+      Global::Problem::instance()->solver_params_callback(),
       Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::Instance()->IOParams(), "VERBOSITY"));
+          Global::Problem::instance()->io_params(), "VERBOSITY"));
   switch (algochoice_)
   {
     case Inpar::CARDIOVASCULAR0D::cardvasc0dsolve_direct:
@@ -1087,7 +1087,7 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
     case Inpar::CARDIOVASCULAR0D::cardvasc0dsolve_simple:
     {
       const auto prec = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
-          Global::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
+          Global::Problem::instance()->solver_params(linsolvernumber), "AZPREC");
       switch (prec)
       {
         case Core::LinearSolver::PreconditionerType::cheap_simple:
@@ -1095,18 +1095,18 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
           // add Inverse1 block for "velocity" dofs
           // tell Inverse1 block about nodal_block_information
           Teuchos::ParameterList& inv1 =
-              solver_->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
+              solver_->params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
           inv1.sublist("nodal_block_information") =
-              solver_->Params().sublist("nodal_block_information");
+              solver_->params().sublist("nodal_block_information");
 
           // calculate null space information
           actdisc_->compute_null_space_if_necessary(
-              solver_->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"), true);
+              solver_->params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"), true);
           actdisc_->compute_null_space_if_necessary(
-              solver_->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse2"), true);
+              solver_->params().sublist("CheapSIMPLE Parameters").sublist("Inverse2"), true);
 
-          solver_->Params().sublist("CheapSIMPLE Parameters").set("Prec Type", "CheapSIMPLE");
-          solver_->Params().set("CONSTRAINT", true);
+          solver_->params().sublist("CheapSIMPLE Parameters").set("Prec Type", "CheapSIMPLE");
+          solver_->params().set("CONSTRAINT", true);
         }
         break;
         default:
@@ -1117,15 +1117,15 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
     break;
     case Inpar::CARDIOVASCULAR0D::cardvasc0dsolve_AMGnxn:
     {
-      solver_->Params().sublist("Inverse1").sublist("Belos Parameters");
-      solver_->Params().sublist("Inverse1").sublist("MueLu Parameters");
-      actdisc_->compute_null_space_if_necessary(solver_->Params().sublist("Inverse1"), true);
+      solver_->params().sublist("Inverse1").sublist("Belos Parameters");
+      solver_->params().sublist("Inverse1").sublist("MueLu Parameters");
+      actdisc_->compute_null_space_if_necessary(solver_->params().sublist("Inverse1"), true);
 
       // this does not make sense: nullspace for 0D-block is calculated from structural
       // discretization
-      solver_->Params().sublist("Inverse2").sublist("Belos Parameters");
-      solver_->Params().sublist("Inverse2").sublist("MueLu Parameters");
-      actdisc_->compute_null_space_if_necessary(solver_->Params().sublist("Inverse2"), true);
+      solver_->params().sublist("Inverse2").sublist("Belos Parameters");
+      solver_->params().sublist("Inverse2").sublist("MueLu Parameters");
+      actdisc_->compute_null_space_if_necessary(solver_->params().sublist("Inverse2"), true);
     }
     break;
     default:
@@ -1152,8 +1152,8 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
   // solve with BlockMatrix
   solver_params.refactor = true;
   solver_params.reset = counter_ == 0;
-  linsolveerror_ = solver_->Solve(blockmat, mergedsol, mergedrhs, solver_params);
-  solver_->ResetTolerance();
+  linsolveerror_ = solver_->solve(blockmat, mergedsol, mergedrhs, solver_params);
+  solver_->reset_tolerance();
 
   // initialize mergedsol_full to keep it in scope after the following if-condition
   Teuchos::RCP<Epetra_Vector> mergedsol_full = Teuchos::rcp(new Epetra_Vector(*mergedmap));
@@ -1170,7 +1170,7 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
     cv0ddof->ReplaceMap(*cardvasc0drowmap);
 
     // extend reduced displacement dofs to high dimension
-    Teuchos::RCP<Epetra_Vector> disp_full = mor_->ExtendSolution(disp_R);
+    Teuchos::RCP<Epetra_Vector> disp_full = mor_->extend_solution(disp_R);
 
     // assemble displacement and pressure dofs
     mergedsol_full = mapext.insert_vector(disp_full, 0);
@@ -1188,7 +1188,7 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
   counter_++;
 
   // update 0D cardiovascular dofs
-  UpdateCv0DDof(cv0ddofincr);
+  update_cv0_d_dof(cv0ddofincr);
 
   return linsolveerror_;
 }

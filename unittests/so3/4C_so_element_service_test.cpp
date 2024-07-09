@@ -90,10 +90,10 @@ namespace
         Teuchos::rcp(new Core::FE::CollectedGaussPoints);
 
     std::array<double, nsd> xi{};
-    for (int i = 0; i < intpoints.IP().nquad; ++i)
+    for (int i = 0; i < intpoints.ip().nquad; ++i)
     {
-      for (int d = 0; d < nsd; ++d) xi[d] = intpoints.IP().qxg[i][d];
-      gp->Append(xi[0], xi[1], xi[2], intpoints.IP().qwgt[i]);
+      for (int d = 0; d < nsd; ++d) xi[d] = intpoints.ip().qxg[i][d];
+      gp->append(xi[0], xi[1], xi[2], intpoints.ip().qwgt[i]);
     }
 
     // save default integration rule

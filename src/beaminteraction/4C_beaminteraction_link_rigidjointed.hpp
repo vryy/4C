@@ -50,9 +50,9 @@ namespace BEAMINTERACTION
   class BeamLinkRigidJointedType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "BeamLinkRigidJointedType"; };
+    std::string name() const override { return "BeamLinkRigidJointedType"; };
 
-    static BeamLinkRigidJointedType& Instance() { return instance_; };
+    static BeamLinkRigidJointedType& instance() { return instance_; };
 
    private:
     static BeamLinkRigidJointedType instance_;
@@ -93,7 +93,7 @@ namespace BEAMINTERACTION
     Every class implementing ParObject needs a unique id defined at the
     top of parobject.H
     */
-    int UniqueParObjectId() const override = 0;
+    int unique_par_object_id() const override = 0;
 
     /*!
     \brief Pack this class so it can be communicated
@@ -128,7 +128,7 @@ namespace BEAMINTERACTION
     }
 
     //! get force in first or second binding spot
-    void GetBindingSpotForce(
+    void get_binding_spot_force(
         int bspotid, Core::LinAlg::SerialDenseVector& bspotforce) const override
     {
       FOUR_C_THROW(" needs to be implemented in derived classes.");
@@ -163,11 +163,11 @@ namespace BEAMINTERACTION
     /*
     \brief Update position and triad of both connection sites (a.k.a. binding spots)
     */
-    void ResetState(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
+    void reset_state(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
         std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad) override;
 
     //! return appropriate instance of the desired class (acts as a simple factory)
-    static Teuchos::RCP<BeamLinkRigidJointed> Create();
+    static Teuchos::RCP<BeamLinkRigidJointed> create();
     void print(std::ostream& out) const;
     //@}
 

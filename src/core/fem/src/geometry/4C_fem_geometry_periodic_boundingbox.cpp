@@ -149,15 +149,15 @@ void Core::Geo::MeshFree::BoundingBox::setup(const Teuchos::ParameterList& io_pa
   // initialize bounding box discretization
   setup_bounding_box_discretization(boundingbox_dis, comm, n_dim);
 
-  if (boxdiscret_->GetCondition("Dirichlet") != nullptr) havedirichletbc_ = true;
+  if (boxdiscret_->get_condition("Dirichlet") != nullptr) havedirichletbc_ = true;
 
   // displacement vector in row and col format
   disn_row_ = Core::LinAlg::CreateVector(*boxdiscret_->dof_row_map(), true);
-  disn_col_ = Core::LinAlg::CreateVector(*boxdiscret_->DofColMap(), true);
+  disn_col_ = Core::LinAlg::CreateVector(*boxdiscret_->dof_col_map(), true);
 
   // initialize bounding box runtime output
   if (io_params.sublist("RUNTIME VTK OUTPUT").get<int>("INTERVAL_STEPS") != -1)
-    InitRuntimeOutput(io_params, output_control);
+    init_runtime_output(io_params, output_control);
 
   issetup_ = true;
 }
@@ -173,22 +173,22 @@ void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization(
   {
     boxdiscret_ = boundingbox_dis;
 
-    if (boxdiscret_->Filled() == false) boxdiscret_->fill_complete(true, false, false);
+    if (boxdiscret_->filled() == false) boxdiscret_->fill_complete(true, false, false);
 
     // create fully overlapping boundingbox discret
     Teuchos::RCP<Epetra_Map> rednodecolmap =
-        Core::LinAlg::AllreduceEMap(*boxdiscret_->NodeRowMap());
+        Core::LinAlg::AllreduceEMap(*boxdiscret_->node_row_map());
     Teuchos::RCP<Epetra_Map> redelecolmap =
-        Core::LinAlg::AllreduceEMap(*boxdiscret_->ElementRowMap());
+        Core::LinAlg::AllreduceEMap(*boxdiscret_->element_row_map());
 
     // do the fully overlapping ghosting of the bounding box element to have everything redundant
-    boxdiscret_->ExportColumnNodes(*rednodecolmap);
+    boxdiscret_->export_column_nodes(*rednodecolmap);
     boxdiscret_->export_column_elements(*redelecolmap);
 
     boxdiscret_->fill_complete(true, false, false);
   }
 
-  if (boundingbox_dis == Teuchos::null or boxdiscret_->NumMyColElements() == 0)
+  if (boundingbox_dis == Teuchos::null or boxdiscret_->num_my_col_elements() == 0)
   {
     if (boundingbox_dis == Teuchos::null)
     {
@@ -211,27 +211,27 @@ void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization(
 
       Teuchos::RCP<Core::Nodes::Node> newnode =
           Teuchos::rcp(new Core::Nodes::Node(corner_i, cornerpos, 0));
-      boxdiscret_->AddNode(newnode);
+      boxdiscret_->add_node(newnode);
     }
 
     // assign nodes to element
     Teuchos::RCP<Core::Elements::Element> newele =
         Core::Communication::Factory("VELE3", "Polynomial", 0, 0);
-    newele->SetNodeIds(8, node_ids);
+    newele->set_node_ids(8, node_ids);
     boxdiscret_->add_element(newele);
   }
 
   // build independent dof set
   Teuchos::RCP<Core::DOFSets::IndependentDofSet> independentdofset =
       Teuchos::rcp(new Core::DOFSets::IndependentDofSet(true));
-  boxdiscret_->ReplaceDofSet(independentdofset);
+  boxdiscret_->replace_dof_set(independentdofset);
   boxdiscret_->fill_complete();
 }
 
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-bool Core::Geo::MeshFree::BoundingBox::Shift3D(
+bool Core::Geo::MeshFree::BoundingBox::shift3_d(
     Core::LinAlg::Matrix<3, 1>& d, Core::LinAlg::Matrix<3, 1> const X) const
 {
   throw_if_not_init();
@@ -289,8 +289,8 @@ void Core::Geo::MeshFree::BoundingBox::get_xi_of_intersection3_d(
 
   // check which points resides within in which direction
   std::vector<bool> x1_within_in_dir(3, true), x2_within_in_dir(3, true);
-  Within(box, x1_ud, x1_within_in_dir);
-  Within(box, x2_ud, x2_within_in_dir);
+  within(box, x1_ud, x1_within_in_dir);
+  within(box, x2_ud, x2_within_in_dir);
 
   for (unsigned int dim = 0; dim < 3; ++dim)
   {
@@ -341,7 +341,7 @@ void Core::Geo::MeshFree::BoundingBox::get_xi_of_intersection3_d(
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::UnShift3D(Core::LinAlg::Matrix<3, 1>& d,
+void Core::Geo::MeshFree::BoundingBox::un_shift3_d(Core::LinAlg::Matrix<3, 1>& d,
     Core::LinAlg::Matrix<3, 1> const& ref, Core::LinAlg::Matrix<3, 1> const X) const
 {
   throw_if_not_init();
@@ -470,14 +470,14 @@ bool Core::Geo::MeshFree::BoundingBox::in_between(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::RandomPosWithin(
+void Core::Geo::MeshFree::BoundingBox::random_pos_within(
     Core::LinAlg::Matrix<3, 1>& randpos, Core::UTILS::Random* random) const
 {
   throw_if_not_init();
 
-  random->SetRandRange(0.0, 1.0);
+  random->set_rand_range(0.0, 1.0);
   std::vector<double> randuni;
-  random->Uni(randuni, 3);
+  random->uni(randuni, 3);
 
   Core::LinAlg::Matrix<3, 1> randpos_ud(true);
   for (int dim = 0; dim < 3; ++dim)
@@ -488,7 +488,7 @@ void Core::Geo::MeshFree::BoundingBox::RandomPosWithin(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::AddPoint(const double* x)
+void Core::Geo::MeshFree::BoundingBox::add_point(const double* x)
 {
   FOUR_C_THROW("Check before use.");
   if (empty_)
@@ -511,7 +511,7 @@ void Core::Geo::MeshFree::BoundingBox::AddPoint(const double* x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::MeshFree::BoundingBox::Within(BoundingBox const& b) const
+bool Core::Geo::MeshFree::BoundingBox::within(BoundingBox const& b) const
 {
   FOUR_C_THROW("Check before use.");
   if (empty_) return true;
@@ -522,7 +522,7 @@ bool Core::Geo::MeshFree::BoundingBox::Within(BoundingBox const& b) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::MeshFree::BoundingBox::Within(
+bool Core::Geo::MeshFree::BoundingBox::within(
     const double* x, std::vector<bool>& within_in_dir) const
 {
   throw_if_not_init();
@@ -537,7 +537,7 @@ bool Core::Geo::MeshFree::BoundingBox::Within(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::MeshFree::BoundingBox::Within(
+bool Core::Geo::MeshFree::BoundingBox::within(
     Core::LinAlg::Matrix<3, 1> const& x, std::vector<bool>& within_in_dir) const
 {
   throw_if_not_init();
@@ -552,7 +552,7 @@ bool Core::Geo::MeshFree::BoundingBox::Within(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::MeshFree::BoundingBox::Within(Core::LinAlg::Matrix<3, 2> const& box,
+bool Core::Geo::MeshFree::BoundingBox::within(Core::LinAlg::Matrix<3, 2> const& box,
     Core::LinAlg::Matrix<3, 1> const& x, std::vector<bool>& within_in_dir) const
 {
   throw_if_not_init();
@@ -567,16 +567,16 @@ bool Core::Geo::MeshFree::BoundingBox::Within(Core::LinAlg::Matrix<3, 2> const& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::MeshFree::BoundingBox::Within(const Core::LinAlg::SerialDenseMatrix& xyz) const
+bool Core::Geo::MeshFree::BoundingBox::within(const Core::LinAlg::SerialDenseMatrix& xyz) const
 {
   FOUR_C_THROW("Check before use.");
   BoundingBox bb;
   int numnode = xyz.numCols();
   for (int i = 0; i < numnode; ++i)
   {
-    bb.AddPoint(&xyz(0, i));
+    bb.add_point(&xyz(0, i));
   }
-  return Within(bb);
+  return within(bb);
 }
 
 /*----------------------------------------------------------------------------*
@@ -596,7 +596,7 @@ void Core::Geo::MeshFree::BoundingBox::print()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::ApplyDirichlet(
+void Core::Geo::MeshFree::BoundingBox::apply_dirichlet(
     const double timen, const Core::UTILS::FunctionManager& function_manager)
 {
   throw_if_not_init_or_setup();
@@ -606,10 +606,10 @@ void Core::Geo::MeshFree::BoundingBox::ApplyDirichlet(
   p.set<const Core::UTILS::FunctionManager*>("function_manager", &function_manager);
 
   // disn_ then also holds prescribed new Dirichlet displacements
-  boxdiscret_->ClearState();
+  boxdiscret_->clear_state();
   boxdiscret_->evaluate_dirichlet(
       p, disn_row_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-  boxdiscret_->ClearState();
+  boxdiscret_->clear_state();
 
   // export to col format
   Core::LinAlg::Export(*disn_row_, *disn_col_);
@@ -617,7 +617,7 @@ void Core::Geo::MeshFree::BoundingBox::ApplyDirichlet(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::InitRuntimeOutput(
+void Core::Geo::MeshFree::BoundingBox::init_runtime_output(
     const Teuchos::ParameterList& io_params, const Core::IO::OutputControl& output_control)
 {
   // TODO This does not work for restarted simulations as the time is obviously wrong. However, this
@@ -646,7 +646,7 @@ void Core::Geo::MeshFree::BoundingBox::runtime_output_step_state(double timen, i
       disn_col_, 3, 0, "displacement");
 
   // finalize everything and write all required VTU files to filesystem
-  visualization_output_writer_ptr_->WriteToDisk(timen, stepn);
+  visualization_output_writer_ptr_->write_to_disk(timen, stepn);
 }
 
 /*----------------------------------------------------------------------------*
@@ -656,10 +656,10 @@ Core::LinAlg::Matrix<3, 1> Core::Geo::MeshFree::BoundingBox::reference_pos_of_co
 {
   // dof gids of node i (note: each proc just has one element and eight nodes,
   // therefore local numbering from 0 to 7 on each proc)
-  Core::Nodes::Node* node_i = boxdiscret_->lColNode(i);
+  Core::Nodes::Node* node_i = boxdiscret_->l_col_node(i);
 
   Core::LinAlg::Matrix<3, 1> x(true);
-  for (int dim = 0; dim < 3; ++dim) x(dim) = node_i->X()[dim];
+  for (int dim = 0; dim < 3; ++dim) x(dim) = node_i->x()[dim];
 
   return x;
 }
@@ -674,11 +674,11 @@ Core::LinAlg::Matrix<3, 1> Core::Geo::MeshFree::BoundingBox::current_position_of
   Core::LinAlg::Matrix<3, 1> x(true);
   if (boxdiscret_ != Teuchos::null)
   {
-    Core::Nodes::Node* node_i = boxdiscret_->lColNode(i);
-    std::vector<int> dofnode = boxdiscret_->Dof(node_i);
+    Core::Nodes::Node* node_i = boxdiscret_->l_col_node(i);
+    std::vector<int> dofnode = boxdiscret_->dof(node_i);
 
     for (int dim = 0; dim < 3; ++dim)
-      x(dim) = node_i->X()[dim] + (*disn_col_)[disn_col_->Map().LID(dofnode[dim])];
+      x(dim) = node_i->x()[dim] + (*disn_col_)[disn_col_->Map().LID(dofnode[dim])];
   }
   else
   {
@@ -764,7 +764,7 @@ void Core::Geo::MeshFree::BoundingBox::transform_from_undeformed_bounding_box_sy
 {
   throw_if_not_init_or_setup();
 
-  Core::Nodes::Node** mynodes = boxdiscret_->lColElement(0)->Nodes();
+  Core::Nodes::Node** mynodes = boxdiscret_->l_col_element(0)->nodes();
   if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
   // reset globcoord variable

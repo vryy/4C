@@ -63,7 +63,7 @@ Discret::ELEMENTS::So3Scatra<So3Ele, distype>::So3Scatra(
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-Core::Elements::Element* Discret::ELEMENTS::So3Scatra<So3Ele, distype>::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::So3Scatra<So3Ele, distype>::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::So3Scatra<So3Ele, distype>(*this);
   return newelement;
@@ -80,7 +80,7 @@ void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::pack(
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   So3Ele::add_to_pack(data, type);
 
   // pack scalar transport impltype
@@ -113,7 +113,7 @@ void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::unpack(const std::vector<cha
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract scalar transport impltype_
   impltype_ = static_cast<Inpar::ScaTra::ImplType>(So3Ele::extract_int(position, data));
@@ -159,10 +159,10 @@ void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::print(std::ostream& os) cons
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-bool Discret::ELEMENTS::So3Scatra<So3Ele, distype>::ReadElement(
+bool Discret::ELEMENTS::So3Scatra<So3Ele, distype>::read_element(
     const std::string& eletype, const std::string& eledistype, Input::LineDefinition* linedef)
 {
-  So3Ele::ReadElement(eletype, eledistype, linedef);
+  So3Ele::read_element(eletype, eledistype, linedef);
 
   // read scalar transport implementation type
   std::string impltype;
@@ -197,9 +197,9 @@ bool Discret::ELEMENTS::So3Scatra<So3Ele, distype>::ReadElement(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-inline Core::Nodes::Node** Discret::ELEMENTS::So3Scatra<So3Ele, distype>::Nodes()
+inline Core::Nodes::Node** Discret::ELEMENTS::So3Scatra<So3Ele, distype>::nodes()
 {
-  return So3Ele::Nodes();
+  return So3Ele::nodes();
 }
 
 /*----------------------------------------------------------------------*/
@@ -208,7 +208,7 @@ template <class So3Ele, Core::FE::CellType distype>
 inline Teuchos::RCP<Core::Mat::Material> Discret::ELEMENTS::So3Scatra<So3Ele, distype>::material()
     const
 {
-  return So3Ele::Material();
+  return So3Ele::material();
 }
 
 /*----------------------------------------------------------------------*/
@@ -216,7 +216,7 @@ inline Teuchos::RCP<Core::Mat::Material> Discret::ELEMENTS::So3Scatra<So3Ele, di
 template <class So3Ele, Core::FE::CellType distype>
 inline int Discret::ELEMENTS::So3Scatra<So3Ele, distype>::id() const
 {
-  return So3Ele::Id();
+  return So3Ele::id();
 }
 
 
@@ -224,25 +224,25 @@ inline int Discret::ELEMENTS::So3Scatra<So3Ele, distype>::id() const
  | set the material  (public)                                 schmidt 10/17 |
  *                                                                          */
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::SetMaterial(
+void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::set_material(
     int matnum, Teuchos::RCP<Core::Mat::Material> mat)
 {
   // call base class
-  So3Ele::SetMaterial(0, mat);
+  So3Ele::set_material(0, mat);
 
   // get the scatra structure control parameter list
-  const Teuchos::ParameterList& ssicontrol = Global::Problem::Instance()->SSIControlParams();
+  const Teuchos::ParameterList& ssicontrol = Global::Problem::instance()->ssi_control_params();
 
   if ((Teuchos::getIntegralValue<Inpar::SSI::SolutionSchemeOverFields>(ssicontrol, "COUPALGO") ==
           Inpar::SSI::SolutionSchemeOverFields::ssi_Monolithic) and
-      (mat->MaterialType() != Core::Materials::m_multiplicative_split_defgrad_elasthyper))
+      (mat->material_type() != Core::Materials::m_multiplicative_split_defgrad_elasthyper))
     FOUR_C_THROW(
         "When you use the 'COUPALGO' 'ssi_Monolithic' from the 'SSI CONTROL' section,"
         " you need to use the material 'MAT_MultiplicativeSplitDefgradElastHyper'! If you want to "
         "use another material feel free to implement it! ;-)");
 
   // call base class
-  So3Ele::SetMaterial(0, mat);
+  So3Ele::set_material(0, mat);
 
   return;
 }

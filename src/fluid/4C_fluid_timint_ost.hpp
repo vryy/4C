@@ -74,7 +74,7 @@ namespace FLD
     \brief Set states in the time integration schemes: differs between GenAlpha and the others
 
     */
-    void SetStateTimInt() override;
+    void set_state_tim_int() override;
 
     /*!
     \brief Calculate time derivatives for
@@ -92,19 +92,19 @@ namespace FLD
     \brief Set gamma to a value
 
     */
-    void SetGamma(Teuchos::ParameterList& eleparams) override;
+    void set_gamma(Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief Scale separation
 
     */
-    void Sep_Multiply() override;
+    void sep_multiply() override;
 
     /*!
     \brief Output of filtered velocity
 
     */
-    void OutputofFilteredVel(
+    void outputof_filtered_vel(
         Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec) override;
 
     /*!
@@ -120,13 +120,13 @@ namespace FLD
     \brief set theta if starting algorithm is chosen.
 
     */
-    void SetTheta() override;
+    void set_theta() override;
 
     /*!
     \brief return scheme-specific time integration parameter
 
     */
-    double TimIntParam() const override { return 0.0; }
+    double tim_int_param() const override { return 0.0; }
 
     /*!
     \brief return scaling factor for the residual
@@ -150,7 +150,7 @@ namespace FLD
     \ apply external forces to the fluid
 
     */
-    void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext) override;
+    void apply_external_forces(Teuchos::RCP<Epetra_MultiVector> fext) override;
 
     /*!
     \output of external forces for restart

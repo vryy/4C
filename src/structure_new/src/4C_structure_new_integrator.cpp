@@ -116,13 +116,13 @@ void Solid::Integrator::set_initial_displacement(
       const Epetra_Map* dofrowmap = global_state().get_discret()->dof_row_map();
 
       // loop all nodes on the processor
-      for (int lnodeid = 0; lnodeid < global_state().get_discret()->NumMyRowNodes(); lnodeid++)
+      for (int lnodeid = 0; lnodeid < global_state().get_discret()->num_my_row_nodes(); lnodeid++)
       {
         // get the processor local node
-        const Core::Nodes::Node* lnode = global_state().get_discret()->lRowNode(lnodeid);
+        const Core::Nodes::Node* lnode = global_state().get_discret()->l_row_node(lnodeid);
 
         // the set of degrees of freedom associated with the node
-        const std::vector<int> nodedofset = global_state().get_discret()->Dof(0, lnode);
+        const std::vector<int> nodedofset = global_state().get_discret()->dof(0, lnode);
 
         // loop nodal dofs
         for (unsigned int d = 0; d < nodedofset.size(); ++d)
@@ -132,9 +132,9 @@ void Solid::Integrator::set_initial_displacement(
 
           // evaluate component k of spatial function
           const double initialval =
-              Global::Problem::Instance()
-                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                  .evaluate(lnode->X().data(), global_state().get_time_n(), d);
+              Global::Problem::instance()
+                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                  .evaluate(lnode->x().data(), global_state().get_time_n(), d);
 
           const int err = global_state().get_dis_n()->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
@@ -238,8 +238,8 @@ void Solid::Integrator::equilibrate_initial_state()
    * This is necessary since we need the original mass matrix (without blanked
    * rows) on the Dirichlet DoFs in order to calculate correct reaction
    * forces.*/
-  stiff_ptr->Add(*global_state().get_mass_matrix(), false, 1.0, 0.0);
-  stiff_ptr->Complete();
+  stiff_ptr->add(*global_state().get_mass_matrix(), false, 1.0, 0.0);
+  stiff_ptr->complete();
 
   // treatment of elements with special element technology (e.g. pressure DOFs)
   global_state().apply_element_technology_to_acceleration_system(*stiff_ptr, *rhs_ptr);
@@ -250,10 +250,10 @@ void Solid::Integrator::equilibrate_initial_state()
   // get the structural linear solver
   std::map<enum NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>> str_linsolver;
   str_linsolver[NOX::Nln::sol_structure] =
-      tim_int().get_data_sdyn().GetLinSolvers().at(Inpar::Solid::model_structure);
+      tim_int().get_data_sdyn().get_lin_solvers().at(Inpar::Solid::model_structure);
 
   // copy the nox parameter-list
-  Teuchos::ParameterList p_nox = tim_int().get_data_sdyn().GetNoxParams();
+  Teuchos::ParameterList p_nox = tim_int().get_data_sdyn().get_nox_params();
   NOX::Nln::Aux::set_printing_parameters(p_nox, global_state().get_comm());
 
   // create a copy of the initial displacement vector
@@ -401,11 +401,11 @@ double Solid::Integrator::get_total_mid_time_str_energy(const Epetra_Vector& x)
       dynamic_cast<Solid::MODELEVALUATOR::Structure&>(evaluator(Inpar::Solid::model_structure));
 
   Teuchos::RCP<const Epetra_Vector> dis_avg =
-      mt_energy_.Average(disnp, *global_state().get_dis_n(), get_int_param());
+      mt_energy_.average(disnp, *global_state().get_dis_n(), get_int_param());
   Teuchos::RCP<const Epetra_Vector> vel_avg =
-      mt_energy_.Average(velnp, *global_state().get_vel_n(), get_int_param());
+      mt_energy_.average(velnp, *global_state().get_vel_n(), get_int_param());
 
-  str_model.DetermineEnergy(*dis_avg, vel_avg.get(), true);
+  str_model.determine_energy(*dis_avg, vel_avg.get(), true);
   mt_energy_.int_energy_np_ = eval_data().get_energy_data(Solid::internal_energy);
   mt_energy_.kin_energy_np_ = eval_data().get_energy_data(Solid::kinetic_energy);
   global_state().get_fext_np()->Dot(*dis_avg, &mt_energy_.ext_energy_np_);
@@ -423,7 +423,7 @@ void Solid::Integrator::update_structural_energy()
   if (not mt_energy_.store_energy_n()) return;
 
   get_total_mid_time_str_energy(*global_state().get_dis_np());
-  mt_energy_.CopyNpToN();
+  mt_energy_.copy_np_to_n();
 }
 
 /*----------------------------------------------------------------------------*
@@ -458,7 +458,7 @@ void Solid::Integrator::output_step_state(Core::IO::DiscretizationWriter& iowrit
  *----------------------------------------------------------------------------*/
 void Solid::Integrator::monitor_dbc(Core::IO::DiscretizationWriter& writer) const
 {
-  monitor_dbc_ptr_->Execute(writer);
+  monitor_dbc_ptr_->execute(writer);
 }
 
 /*----------------------------------------------------------------------------*
@@ -766,7 +766,7 @@ double Solid::Integrator::MidTimeEnergy::get_total() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> Solid::Integrator::MidTimeEnergy::Average(
+Teuchos::RCP<const Epetra_Vector> Solid::Integrator::MidTimeEnergy::average(
     const Epetra_Vector& state_np, const Epetra_Vector& state_n, const double fac_n) const
 {
   const double fac_np = 1.0 - fac_n;
@@ -790,7 +790,7 @@ Teuchos::RCP<const Epetra_Vector> Solid::Integrator::MidTimeEnergy::Average(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Integrator::MidTimeEnergy::CopyNpToN()
+void Solid::Integrator::MidTimeEnergy::copy_np_to_n()
 {
   kin_energy_n_ = kin_energy_np_;
   int_energy_n_ = int_energy_np_;

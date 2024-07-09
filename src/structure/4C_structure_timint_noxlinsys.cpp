@@ -58,7 +58,7 @@ NOX::Solid::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
 
   // Jacobian operator is supplied.
   // get type of it
-  jacType_ = getOperatorType(*jacPtr_);
+  jacType_ = get_operator_type(*jacPtr_);
 
   reset(linearSolverParams);
 }
@@ -67,7 +67,7 @@ NOX::Solid::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::Solid::LinearSystem::OperatorType NOX::Solid::LinearSystem::getOperatorType(
+NOX::Solid::LinearSystem::OperatorType NOX::Solid::LinearSystem::get_operator_type(
     const Epetra_Operator& Op)
 {
   // check per dynamik cast, which type of Jacobian was broadcast
@@ -149,7 +149,7 @@ bool NOX::Solid::LinearSystem::applyJacobianInverse(
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = callcount_ == 0;
-    structureSolver_->Solve(J->EpetraMatrix(), disi, fres, solver_params);
+    structureSolver_->solve(J->epetra_matrix(), disi, fres, solver_params);
     callcount_ += 1;
   }
   else
@@ -287,7 +287,7 @@ void NOX::Solid::LinearSystem::setJacobianOperatorForSolve(
     const Teuchos::RCP<const Epetra_Operator>& solveJacOp)
 {
   jacPtr_ = Teuchos::rcp_const_cast<Epetra_Operator>(solveJacOp);
-  jacType_ = getOperatorType(*solveJacOp);
+  jacType_ = get_operator_type(*solveJacOp);
 }
 
 

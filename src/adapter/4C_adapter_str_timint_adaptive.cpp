@@ -32,19 +32,19 @@ Adapter::StructureTimIntAda::StructureTimIntAda(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Adapter::StructureTimIntAda::Integrate() { return sta_->Integrate(); }
+int Adapter::StructureTimIntAda::integrate() { return sta_->integrate(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::StructureTimIntAda::prepare_output(bool force_prepare)
 {
-  sta_->PrepareOutputPeriod(force_prepare);
+  sta_->prepare_output_period(force_prepare);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::StructureTimIntAda::output() { sta_->OutputPeriod(); }
+void Adapter::StructureTimIntAda::output() { sta_->output_period(); }
 
 
 /*----------------------------------------------------------------------*/

@@ -33,28 +33,28 @@ namespace Discret
     {
      public:
       //! singleton access method
-      static LubricationEleParameter* Instance(
+      static LubricationEleParameter* instance(
           const std::string& disname  //!< name of discretization
       );
 
       //! set parameters
-      void SetTimeParameters(Teuchos::ParameterList& parameters  //!< parameter list
+      void set_time_parameters(Teuchos::ParameterList& parameters  //!< parameter list
       );
 
       //! set parameters
       void set_general_parameters(Teuchos::ParameterList& parameters  //!< parameter list
       );
 
-      double Time() const { return time_; };
+      double time() const { return time_; };
 
       /// return function for the modified reynolds equation flag
-      bool ModifiedReynolds() const { return modified_reynolds_; };
+      bool modified_reynolds() const { return modified_reynolds_; };
       /// return function for the Add squeeze term in reynolds equ. flag
-      bool AddSqz() const { return addsqz_; };
+      bool add_sqz() const { return addsqz_; };
       /// return function for the pure lubrication reynolds equ. flag
-      bool PureLub() const { return purelub_; };
+      bool pure_lub() const { return purelub_; };
       /// return function for surface roughness value in modified reynolds equ.
-      double RoughnessDeviation() const { return roughness_deviation_; };
+      double roughness_deviation() const { return roughness_deviation_; };
 
      private:
       //! private constructor for singletons

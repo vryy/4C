@@ -26,7 +26,7 @@ namespace Discret::ELEMENTS
       const Core::FE::GaussIntegration& integration_b)
   {
     // currently this simple check is sufficient as we only use the same type of gauss integrations.
-    return integration_a.NumPoints() == integration_b.NumPoints();
+    return integration_a.num_points() == integration_b.num_points();
   }
 
   /*!
@@ -76,10 +76,10 @@ namespace Discret::ELEMENTS
         Teuchos::rcp(new Core::FE::CollectedGaussPoints);
 
     std::array<double, 3> xi = {0., 0., 0.};
-    for (int i = 0; i < intpoints.IP().nquad; ++i)
+    for (int i = 0; i < intpoints.ip().nquad; ++i)
     {
-      for (int d = 0; d < Core::FE::dim<celltype>; ++d) xi[d] = intpoints.IP().qxg[i][d];
-      gp->Append(xi[0], xi[1], xi[2], intpoints.IP().qwgt[i]);
+      for (int d = 0; d < Core::FE::dim<celltype>; ++d) xi[d] = intpoints.ip().qxg[i][d];
+      gp->append(xi[0], xi[1], xi[2], intpoints.ip().qwgt[i]);
     }
 
     return Core::FE::GaussIntegration(gp);

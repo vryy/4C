@@ -81,7 +81,7 @@ namespace FSI
 
     //! setup of the monolithic XFSI system, setup a new combined block row map and a new block
     //! matrix
-    void SetupSystem() override;
+    void setup_system() override;
 
     virtual void create_system_matrix();
     //@}
@@ -111,7 +111,7 @@ namespace FSI
     //! @name Time loop building blocks
 
     //! time loop of the monolithic system
-    void Timeloop() override;
+    void timeloop() override;
 
     //! prepare the time step for fluid and structure
     void prepare_time_step() override;
@@ -137,7 +137,7 @@ namespace FSI
     //! @name dof_row_map access methods
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return extractor().FullMap(); }
+    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return extractor().full_map(); }
 
     //! extractor to communicate between full monolithic map and block maps of single fields
     const Core::LinAlg::MultiMapExtractor& extractor() const { return blockrowdofmap_; }

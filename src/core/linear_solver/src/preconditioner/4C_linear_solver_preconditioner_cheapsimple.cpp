@@ -55,7 +55,7 @@ Core::LinearSolver::CheapSimpleBlockPreconditioner::CheapSimpleBlockPrecondition
       alpha_(SIMPLER_ALPHA),
       vdw_(false),
       pdw_(false),
-      label_(SetupLabel())
+      label_(setup_label())
 {
   // remove the SIMPLER sublist from the predictSolver_list_,
   // otherwise it will try to recursively create a SIMPLE
@@ -107,8 +107,8 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::setup(Teuchos::RCP<Epet
     // Make a shallow copy of the block matrix as the preconditioners on the
     // blocks will be reused and the next assembly will replace the block
     // matrices.
-    a_ = a_->Clone(Core::LinAlg::View);
-    mmex_ = a_->RangeExtractor();
+    a_ = a_->clone(Core::LinAlg::View);
+    mmex_ = a_->range_extractor();
   }
 
   // if the MESHTYING, CONTACT or CONSTRAINT flag is set,
@@ -128,10 +128,10 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::setup(Teuchos::RCP<Epet
   //-------------------------------------------------------------------------
   {
     Epetra_Vector diag(*mmex_.Map(0), false);
-    Teuchos::RCP<Epetra_CrsMatrix> A00 = (*a_)(0, 0).EpetraMatrix();
+    Teuchos::RCP<Epetra_CrsMatrix> A00 = (*a_)(0, 0).epetra_matrix();
     A00->InvRowSums(diag);
     diag_ainv_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(diag));
-    diag_ainv_->Complete(*mmex_.Map(0), *mmex_.Map(0));
+    diag_ainv_->complete(*mmex_.Map(0), *mmex_.Map(0));
   }
 #else
   //-------------------------------------------------------------------------
@@ -171,11 +171,11 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::setup(Teuchos::RCP<Epet
     if (!myrank && SIMPLER_TIMING)
       printf("*** S = A(1,0) * S (ML)   %10.3E\n", ltime.totalElapsedTime(true));
     ltime.reset();
-    s_->Add((*a_)(1, 1), false, 1.0, -1.0);
+    s_->add((*a_)(1, 1), false, 1.0, -1.0);
     if (!myrank && SIMPLER_TIMING)
       printf("*** S = A(1,1) - S        %10.3E\n", ltime.totalElapsedTime(true));
     ltime.reset();
-    s_->Complete((*a_)(1, 1).DomainMap(), (*a_)(1, 1).RangeMap());
+    s_->complete((*a_)(1, 1).domain_map(), (*a_)(1, 1).range_map());
     if (!myrank && SIMPLER_TIMING)
       printf("*** S complete            %10.3E\n", ltime.totalElapsedTime(true));
     ltime.reset();
@@ -188,8 +188,8 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::setup(Teuchos::RCP<Epet
   {
     Epetra_CrsMatrix* A00 = nullptr;
     Epetra_CrsMatrix* A11 = nullptr;
-    A00 = (*a_)(0, 0).EpetraMatrix().get();
-    A11 = s_->EpetraMatrix().get();
+    A00 = (*a_)(0, 0).epetra_matrix().get();
+    A11 = s_->epetra_matrix().get();
 
     //-------------------------------------------------------------------------
     // Allocate preconditioner for pressure and velocity
@@ -503,9 +503,9 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::cheap_simple(Core::LinA
   //------------------------------------------------------------ L-solve
   if (vdw_)
   {
-    vdwind_->Permute(&vb, &*vdwin_);
+    vdwind_->permute(&vb, &*vdwin_);
     ppredict_->ApplyInverse(*vdwin_, *vdwout_);
-    vdwind_->InvPermute(&*vdwout_, &*vwork1_);
+    vdwind_->inv_permute(&*vdwout_, &*vwork1_);
   }
   else
     ppredict_->ApplyInverse(vb, *vwork1_);
@@ -514,9 +514,9 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::cheap_simple(Core::LinA
 
   if (pdw_)
   {
-    pdwind_->Permute(&*pwork1_, &*pdwin_);
+    pdwind_->permute(&*pwork1_, &*pdwin_);
     pschur_->ApplyInverse(*pdwin_, *pdwout_);
-    pdwind_->InvPermute(&*pdwout_, &px);
+    pdwind_->inv_permute(&*pdwout_, &px);
   }
   else
     pschur_->ApplyInverse(*pwork1_, px);

@@ -26,64 +26,64 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  impl. for aux.-plane based projection                    farah 01/14|
  *----------------------------------------------------------------------*/
-Mortar::Projector* Mortar::Projector::Impl(Mortar::Element& ele)
+Mortar::Projector* Mortar::Projector::impl(Mortar::Element& ele)
 {
-  switch (ele.Shape())
+  switch (ele.shape())
   {
     case Core::FE::CellType::quad4:
     {
-      return ProjectorCalc<Core::FE::CellType::quad4>::Instance();
+      return ProjectorCalc<Core::FE::CellType::quad4>::instance();
     }
     case Core::FE::CellType::quad8:
     {
-      return ProjectorCalc<Core::FE::CellType::quad8>::Instance();
+      return ProjectorCalc<Core::FE::CellType::quad8>::instance();
     }
     case Core::FE::CellType::quad9:
     {
-      return ProjectorCalc<Core::FE::CellType::quad9>::Instance();
+      return ProjectorCalc<Core::FE::CellType::quad9>::instance();
     }
     case Core::FE::CellType::tri3:
     {
-      return ProjectorCalc<Core::FE::CellType::tri3>::Instance();
+      return ProjectorCalc<Core::FE::CellType::tri3>::instance();
     }
     case Core::FE::CellType::tri6:
     {
-      return ProjectorCalc<Core::FE::CellType::tri6>::Instance();
+      return ProjectorCalc<Core::FE::CellType::tri6>::instance();
     }
     case Core::FE::CellType::line2:
     {
-      return ProjectorCalc<Core::FE::CellType::line2>::Instance();
+      return ProjectorCalc<Core::FE::CellType::line2>::instance();
     }
     case Core::FE::CellType::line3:
     {
-      return ProjectorCalc<Core::FE::CellType::line3>::Instance();
+      return ProjectorCalc<Core::FE::CellType::line3>::instance();
     }
       //==================================================
       //                     NURBS
       //==================================================
     case Core::FE::CellType::nurbs2:
     {
-      return ProjectorCalc<Core::FE::CellType::nurbs2>::Instance();
+      return ProjectorCalc<Core::FE::CellType::nurbs2>::instance();
     }
     case Core::FE::CellType::nurbs3:
     {
-      return ProjectorCalc<Core::FE::CellType::nurbs3>::Instance();
+      return ProjectorCalc<Core::FE::CellType::nurbs3>::instance();
     }
     case Core::FE::CellType::nurbs4:
     {
-      return ProjectorCalc<Core::FE::CellType::nurbs4>::Instance();
+      return ProjectorCalc<Core::FE::CellType::nurbs4>::instance();
     }
     case Core::FE::CellType::nurbs8:
     {
-      return ProjectorCalc<Core::FE::CellType::nurbs8>::Instance();
+      return ProjectorCalc<Core::FE::CellType::nurbs8>::instance();
     }
     case Core::FE::CellType::nurbs9:
     {
-      return ProjectorCalc<Core::FE::CellType::nurbs9>::Instance();
+      return ProjectorCalc<Core::FE::CellType::nurbs9>::instance();
     }
     default:
       FOUR_C_THROW(
-          "Element shape %d (%d nodes) not activated. Just do it.", ele.Shape(), ele.num_node());
+          "Element shape %d (%d nodes) not activated. Just do it.", ele.shape(), ele.num_node());
       break;
   }
   return nullptr;
@@ -92,43 +92,43 @@ Mortar::Projector* Mortar::Projector::Impl(Mortar::Element& ele)
 /*----------------------------------------------------------------------*
  |  impl. for element based projection                       farah 04/14|
  *----------------------------------------------------------------------*/
-Mortar::Projector* Mortar::Projector::Impl(Mortar::Element& sele, Mortar::Element& mele)
+Mortar::Projector* Mortar::Projector::impl(Mortar::Element& sele, Mortar::Element& mele)
 {
-  switch (sele.Shape())
+  switch (sele.shape())
   {
     case Core::FE::CellType::quad4:
     {
-      switch (mele.Shape())
+      switch (mele.shape())
       {
         case Core::FE::CellType::quad4:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::quad4,
-              Core::FE::CellType::quad4>::Instance();
+              Core::FE::CellType::quad4>::instance();
         }
         case Core::FE::CellType::quad8:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::quad4,
-              Core::FE::CellType::quad8>::Instance();
+              Core::FE::CellType::quad8>::instance();
         }
         case Core::FE::CellType::quad9:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::quad4,
-              Core::FE::CellType::quad9>::Instance();
+              Core::FE::CellType::quad9>::instance();
         }
         case Core::FE::CellType::tri3:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::quad4,
-              Core::FE::CellType::tri3>::Instance();
+              Core::FE::CellType::tri3>::instance();
         }
         case Core::FE::CellType::tri6:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::quad4,
-              Core::FE::CellType::tri6>::Instance();
+              Core::FE::CellType::tri6>::instance();
         }
         case Core::FE::CellType::nurbs9:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::quad4,
-              Core::FE::CellType::nurbs9>::Instance();
+              Core::FE::CellType::nurbs9>::instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -138,32 +138,32 @@ Mortar::Projector* Mortar::Projector::Impl(Mortar::Element& sele, Mortar::Elemen
     }
     case Core::FE::CellType::quad8:
     {
-      switch (mele.Shape())
+      switch (mele.shape())
       {
         case Core::FE::CellType::quad4:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::quad8,
-              Core::FE::CellType::quad4>::Instance();
+              Core::FE::CellType::quad4>::instance();
         }
         case Core::FE::CellType::quad8:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::quad8,
-              Core::FE::CellType::quad8>::Instance();
+              Core::FE::CellType::quad8>::instance();
         }
         case Core::FE::CellType::quad9:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::quad8,
-              Core::FE::CellType::quad9>::Instance();
+              Core::FE::CellType::quad9>::instance();
         }
         case Core::FE::CellType::tri3:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::quad8,
-              Core::FE::CellType::tri3>::Instance();
+              Core::FE::CellType::tri3>::instance();
         }
         case Core::FE::CellType::tri6:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::quad8,
-              Core::FE::CellType::tri6>::Instance();
+              Core::FE::CellType::tri6>::instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -173,32 +173,32 @@ Mortar::Projector* Mortar::Projector::Impl(Mortar::Element& sele, Mortar::Elemen
     }
     case Core::FE::CellType::quad9:
     {
-      switch (mele.Shape())
+      switch (mele.shape())
       {
         case Core::FE::CellType::quad4:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::quad9,
-              Core::FE::CellType::quad4>::Instance();
+              Core::FE::CellType::quad4>::instance();
         }
         case Core::FE::CellType::quad8:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::quad9,
-              Core::FE::CellType::quad8>::Instance();
+              Core::FE::CellType::quad8>::instance();
         }
         case Core::FE::CellType::quad9:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::quad9,
-              Core::FE::CellType::quad9>::Instance();
+              Core::FE::CellType::quad9>::instance();
         }
         case Core::FE::CellType::tri3:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::quad9,
-              Core::FE::CellType::tri3>::Instance();
+              Core::FE::CellType::tri3>::instance();
         }
         case Core::FE::CellType::tri6:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::quad9,
-              Core::FE::CellType::tri6>::Instance();
+              Core::FE::CellType::tri6>::instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -208,32 +208,32 @@ Mortar::Projector* Mortar::Projector::Impl(Mortar::Element& sele, Mortar::Elemen
     }
     case Core::FE::CellType::tri3:
     {
-      switch (mele.Shape())
+      switch (mele.shape())
       {
         case Core::FE::CellType::quad4:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::tri3,
-              Core::FE::CellType::quad4>::Instance();
+              Core::FE::CellType::quad4>::instance();
         }
         case Core::FE::CellType::quad8:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::tri3,
-              Core::FE::CellType::quad8>::Instance();
+              Core::FE::CellType::quad8>::instance();
         }
         case Core::FE::CellType::quad9:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::tri3,
-              Core::FE::CellType::quad9>::Instance();
+              Core::FE::CellType::quad9>::instance();
         }
         case Core::FE::CellType::tri3:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::tri3,
-              Core::FE::CellType::tri3>::Instance();
+              Core::FE::CellType::tri3>::instance();
         }
         case Core::FE::CellType::tri6:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::tri3,
-              Core::FE::CellType::tri6>::Instance();
+              Core::FE::CellType::tri6>::instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -243,32 +243,32 @@ Mortar::Projector* Mortar::Projector::Impl(Mortar::Element& sele, Mortar::Elemen
     }
     case Core::FE::CellType::tri6:
     {
-      switch (mele.Shape())
+      switch (mele.shape())
       {
         case Core::FE::CellType::quad4:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::tri6,
-              Core::FE::CellType::quad4>::Instance();
+              Core::FE::CellType::quad4>::instance();
         }
         case Core::FE::CellType::quad8:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::tri6,
-              Core::FE::CellType::quad8>::Instance();
+              Core::FE::CellType::quad8>::instance();
         }
         case Core::FE::CellType::quad9:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::tri6,
-              Core::FE::CellType::quad9>::Instance();
+              Core::FE::CellType::quad9>::instance();
         }
         case Core::FE::CellType::tri3:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::tri6,
-              Core::FE::CellType::tri3>::Instance();
+              Core::FE::CellType::tri3>::instance();
         }
         case Core::FE::CellType::tri6:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::tri6,
-              Core::FE::CellType::tri6>::Instance();
+              Core::FE::CellType::tri6>::instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -278,17 +278,17 @@ Mortar::Projector* Mortar::Projector::Impl(Mortar::Element& sele, Mortar::Elemen
     }
     case Core::FE::CellType::line2:
     {
-      switch (mele.Shape())
+      switch (mele.shape())
       {
         case Core::FE::CellType::line2:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::line2,
-              Core::FE::CellType::line2>::Instance();
+              Core::FE::CellType::line2>::instance();
         }
         case Core::FE::CellType::line3:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::line2,
-              Core::FE::CellType::line3>::Instance();
+              Core::FE::CellType::line3>::instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -298,17 +298,17 @@ Mortar::Projector* Mortar::Projector::Impl(Mortar::Element& sele, Mortar::Elemen
     }
     case Core::FE::CellType::line3:
     {
-      switch (mele.Shape())
+      switch (mele.shape())
       {
         case Core::FE::CellType::line2:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::line3,
-              Core::FE::CellType::line2>::Instance();
+              Core::FE::CellType::line2>::instance();
         }
         case Core::FE::CellType::line3:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::line3,
-              Core::FE::CellType::line3>::Instance();
+              Core::FE::CellType::line3>::instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -321,17 +321,17 @@ Mortar::Projector* Mortar::Projector::Impl(Mortar::Element& sele, Mortar::Elemen
       //==================================================
     case Core::FE::CellType::nurbs2:
     {
-      switch (mele.Shape())
+      switch (mele.shape())
       {
         case Core::FE::CellType::nurbs2:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::nurbs2,
-              Core::FE::CellType::nurbs2>::Instance();
+              Core::FE::CellType::nurbs2>::instance();
         }
         case Core::FE::CellType::nurbs3:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::nurbs2,
-              Core::FE::CellType::nurbs3>::Instance();
+              Core::FE::CellType::nurbs3>::instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -341,17 +341,17 @@ Mortar::Projector* Mortar::Projector::Impl(Mortar::Element& sele, Mortar::Elemen
     }
     case Core::FE::CellType::nurbs3:
     {
-      switch (mele.Shape())
+      switch (mele.shape())
       {
         case Core::FE::CellType::nurbs2:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::nurbs3,
-              Core::FE::CellType::nurbs2>::Instance();
+              Core::FE::CellType::nurbs2>::instance();
         }
         case Core::FE::CellType::nurbs3:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::nurbs3,
-              Core::FE::CellType::nurbs3>::Instance();
+              Core::FE::CellType::nurbs3>::instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -361,22 +361,22 @@ Mortar::Projector* Mortar::Projector::Impl(Mortar::Element& sele, Mortar::Elemen
     }
     case Core::FE::CellType::nurbs4:
     {
-      switch (mele.Shape())
+      switch (mele.shape())
       {
         case Core::FE::CellType::nurbs4:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::nurbs4,
-              Core::FE::CellType::nurbs4>::Instance();
+              Core::FE::CellType::nurbs4>::instance();
         }
         case Core::FE::CellType::nurbs8:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::nurbs4,
-              Core::FE::CellType::nurbs8>::Instance();
+              Core::FE::CellType::nurbs8>::instance();
         }
         case Core::FE::CellType::nurbs9:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::nurbs4,
-              Core::FE::CellType::nurbs9>::Instance();
+              Core::FE::CellType::nurbs9>::instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -386,22 +386,22 @@ Mortar::Projector* Mortar::Projector::Impl(Mortar::Element& sele, Mortar::Elemen
     }
     case Core::FE::CellType::nurbs8:
     {
-      switch (mele.Shape())
+      switch (mele.shape())
       {
         case Core::FE::CellType::nurbs4:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::nurbs8,
-              Core::FE::CellType::nurbs4>::Instance();
+              Core::FE::CellType::nurbs4>::instance();
         }
         case Core::FE::CellType::nurbs8:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::nurbs8,
-              Core::FE::CellType::nurbs8>::Instance();
+              Core::FE::CellType::nurbs8>::instance();
         }
         case Core::FE::CellType::nurbs9:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::nurbs8,
-              Core::FE::CellType::nurbs9>::Instance();
+              Core::FE::CellType::nurbs9>::instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -411,27 +411,27 @@ Mortar::Projector* Mortar::Projector::Impl(Mortar::Element& sele, Mortar::Elemen
     }
     case Core::FE::CellType::nurbs9:
     {
-      switch (mele.Shape())
+      switch (mele.shape())
       {
         case Core::FE::CellType::nurbs4:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::nurbs9,
-              Core::FE::CellType::nurbs4>::Instance();
+              Core::FE::CellType::nurbs4>::instance();
         }
         case Core::FE::CellType::nurbs8:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::nurbs9,
-              Core::FE::CellType::nurbs8>::Instance();
+              Core::FE::CellType::nurbs8>::instance();
         }
         case Core::FE::CellType::nurbs9:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::nurbs9,
-              Core::FE::CellType::nurbs9>::Instance();
+              Core::FE::CellType::nurbs9>::instance();
         }
         case Core::FE::CellType::quad4:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::nurbs9,
-              Core::FE::CellType::quad4>::Instance();
+              Core::FE::CellType::quad4>::instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -441,7 +441,7 @@ Mortar::Projector* Mortar::Projector::Impl(Mortar::Element& sele, Mortar::Elemen
     }
     default:
       FOUR_C_THROW(
-          "Element shape %d (%d nodes) not activated. Just do it.", sele.Shape(), sele.num_node());
+          "Element shape %d (%d nodes) not activated. Just do it.", sele.shape(), sele.num_node());
       break;
   }
   return nullptr;
@@ -466,7 +466,7 @@ Mortar::ProjectorCalcEleBased<distype_s, distype_m>::ProjectorCalcEleBased()
 }
 
 template <Core::FE::CellType distype>
-Mortar::ProjectorCalc<distype>* Mortar::ProjectorCalc<distype>::Instance(
+Mortar::ProjectorCalc<distype>* Mortar::ProjectorCalc<distype>::instance(
     Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
@@ -475,12 +475,12 @@ Mortar::ProjectorCalc<distype>* Mortar::ProjectorCalc<distype>::Instance(
             new Mortar::ProjectorCalc<distype>());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 Mortar::ProjectorCalcEleBased<distype_s, distype_m>*
-Mortar::ProjectorCalcEleBased<distype_s, distype_m>::Instance(Core::UTILS::SingletonAction action)
+Mortar::ProjectorCalcEleBased<distype_s, distype_m>::instance(Core::UTILS::SingletonAction action)
 {
   static Core::UTILS::SingletonOwner<Mortar::ProjectorCalcEleBased<distype_s, distype_m>>
       singleton_owner(
@@ -490,7 +490,7 @@ Mortar::ProjectorCalcEleBased<distype_s, distype_m>::Instance(Core::UTILS::Singl
                 new Mortar::ProjectorCalcEleBased<distype_s, distype_m>());
           });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 
@@ -498,7 +498,7 @@ Mortar::ProjectorCalcEleBased<distype_s, distype_m>::Instance(Core::UTILS::Singl
  |  Project a node along its nodal normal (public)            popp 01/08|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Mortar::ProjectorCalc<distype>::ProjectNodalNormal(
+bool Mortar::ProjectorCalc<distype>::project_nodal_normal(
     Mortar::Node& node, Mortar::Element& ele, double* xi)
 {
   bool ok = true;
@@ -623,7 +623,7 @@ bool Mortar::ProjectorCalc<distype>::project_element_normal(
  |  Project a Gauss point along its normal (public)           popp 01/08|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::ProjectGaussPoint2D(
+bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::project_gauss_point2_d(
     Mortar::Element& gpele, const double* gpeta, Mortar::Element& ele, double* xi)
 {
   bool ok = true;
@@ -632,7 +632,7 @@ bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::ProjectGaussPoint2D(
     Core::LinAlg::Matrix<ns_, 1> val;
     Core::LinAlg::Matrix<ndim_, ns_> coord;
 
-    Core::Nodes::Node** mynodes = gpele.Nodes();
+    Core::Nodes::Node** mynodes = gpele.nodes();
     if (!mynodes) FOUR_C_THROW("ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
@@ -662,7 +662,7 @@ bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::ProjectGaussPoint2D(
 
       for (int j = 0; j < ndim_; ++j)
       {
-        gpn[j] += val(i) * mymrtrnode->MoData().n()[j];
+        gpn[j] += val(i) * mymrtrnode->mo_data().n()[j];
 
         coord(j, i) = mymrtrnode->xspatial()[j];
 
@@ -714,15 +714,15 @@ template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::check_projection4_auxplane(
     Mortar::Element& ele, double* ngp, double* globgp)
 {
-  if (ele.Shape() == Core::FE::CellType::tri3) FOUR_C_THROW("ELEMENT SHAPE TRI3 -- NO WARPING");
+  if (ele.shape() == Core::FE::CellType::tri3) FOUR_C_THROW("ELEMENT SHAPE TRI3 -- NO WARPING");
 
-  if (ele.Shape() != Core::FE::CellType::quad4)
+  if (ele.shape() != Core::FE::CellType::quad4)
   {
     return true;
   }
 
   int nnode = ele.num_node();
-  Core::Nodes::Node** mynodes = ele.Nodes();
+  Core::Nodes::Node** mynodes = ele.nodes();
   if (!mynodes) FOUR_C_THROW("Project: Null pointer!");
 
   // compute base-vectors
@@ -868,7 +868,7 @@ bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::check_projection4_auxp
  |  Project a Gauss point along its normal (3D)               popp 11/08|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::ProjectGaussPoint3D(
+bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::project_gauss_point3_d(
     Mortar::Element& gpele, const double* gpeta, Mortar::Element& ele, double* xi, double& par)
 {
   if (ndim_ == 3)
@@ -877,8 +877,8 @@ bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::ProjectGaussPoint3D(
     Core::LinAlg::Matrix<ndim_, ns_> coord;
     coord.clear();
 
-    Core::Nodes::Node** mypoints = gpele.Points();
-    Core::Nodes::Node** mynodes = gpele.Nodes();
+    Core::Nodes::Node** mypoints = gpele.points();
+    Core::Nodes::Node** mynodes = gpele.nodes();
     if (!mypoints) FOUR_C_THROW("ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
@@ -922,12 +922,12 @@ bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::ProjectGaussPoint3D(
       Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
       for (int j = 0; j < ndim_; ++j)
       {
-        gpn[j] += val(i) * mymrtrnode->MoData().n()[j];
+        gpn[j] += val(i) * mymrtrnode->mo_data().n()[j];
       }
     }
 
     // start in the element center
-    Core::FE::CellType dt = ele.Shape();
+    Core::FE::CellType dt = ele.shape();
     double eta[2] = {0.0, 0.0};
 
     if (dt == Core::FE::CellType::tri3 || dt == Core::FE::CellType::tri6)
@@ -1018,7 +1018,7 @@ bool Mortar::ProjectorCalc<distype>::project_gauss_point_auxn3_d(
   if (ndim_ == 3)
   {
     // start in the element center
-    Core::FE::CellType dt = ele.Shape();
+    Core::FE::CellType dt = ele.shape();
     double eta[2] = {0.0, 0.0};
 
     switch (dt)
@@ -1187,7 +1187,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal3_d(
 
     for (int i = 0; i < n_; ++i)
     {
-      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[i]);
+      Node* mymnode = dynamic_cast<Node*>(mele.nodes()[i]);
       if (!mymnode) FOUR_C_THROW("Null pointer!");
       for (int d = 0; d < 3; ++d)
       {
@@ -1350,7 +1350,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal3_d_lin(Mortar::N
 
     for (int i = 0; i < n_; ++i)
     {
-      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[i]);
+      Node* mymnode = dynamic_cast<Node*>(mele.nodes()[i]);
       if (!mymnode) FOUR_C_THROW("Null pointer!");
       for (int d = 0; d < 3; ++d)
       {
@@ -1478,7 +1478,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(Mor
     // calc xmaster
     for (int j = 0; j < n_; ++j)
     {
-      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
+      Node* mymnode = dynamic_cast<Node*>(mele.nodes()[j]);
       if (!mymnode) FOUR_C_THROW("Null pointer!");
       for (int i = 0; i < 3; ++i)
       {
@@ -1492,11 +1492,11 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(Mor
     // calc normal part
     for (int j = 0; j < n_; ++j)
     {
-      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
+      Node* mymnode = dynamic_cast<Node*>(mele.nodes()[j]);
       if (!mymnode) FOUR_C_THROW("Null pointer!");
       for (int i = 0; i < 3; ++i)
       {
-        normalnewton[i] += mval(j) * mymnode->MoData().n()[i];
+        normalnewton[i] += mval(j) * mymnode->mo_data().n()[i];
       }
     }
 
@@ -1520,7 +1520,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(Mor
     // calc xmaster
     for (int j = 0; j < n_; ++j)
     {
-      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
+      Node* mymnode = dynamic_cast<Node*>(mele.nodes()[j]);
       if (!mymnode) FOUR_C_THROW("Null pointer!");
       for (int i = 0; i < 3; ++i)
       {
@@ -1535,13 +1535,13 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(Mor
     // calc normal part
     for (int j = 0; j < n_; ++j)
     {
-      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
+      Node* mymnode = dynamic_cast<Node*>(mele.nodes()[j]);
       if (!mymnode) FOUR_C_THROW("Null pointer!");
 
       for (int i = 0; i < 3; ++i)
       {
-        n_0[i] += mderiv(0, j) * mymnode->MoData().n()[i];
-        n_1[i] += mderiv(1, j) * mymnode->MoData().n()[i];
+        n_0[i] += mderiv(0, j) * mymnode->mo_data().n()[i];
+        n_1[i] += mderiv(1, j) * mymnode->mo_data().n()[i];
       }
     }
 
@@ -1593,12 +1593,12 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(Mor
   normal[2] = 0.0;
   for (int j = 0; j < n_; ++j)
   {
-    Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
+    Node* mymnode = dynamic_cast<Node*>(mele.nodes()[j]);
     if (!mymnode) FOUR_C_THROW("Null pointer!");
 
     for (int i = 0; i < 3; ++i)
     {
-      normal[i] += mval(j) * mymnode->MoData().n()[i];
+      normal[i] += mval(j) * mymnode->mo_data().n()[i];
     }
   }
 
@@ -1612,10 +1612,10 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(Mor
   int linsize = 0;
   for (int i = 0; i < n_; ++i)
   {
-    Core::Nodes::Node* node = mele.Nodes()[i];
+    Core::Nodes::Node* node = mele.nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
-    linsize += mnode->GetLinsize();
+    linsize += mnode->get_linsize();
   }
 
   std::vector<Core::Gen::Pairedvector<int, double>> xmLin(3, n_);  // nnode entry per dimension
@@ -1635,11 +1635,11 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(Mor
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    Core::Nodes::Node* node = mele.Nodes()[i];
+    Core::Nodes::Node* node = mele.nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     Node* mnode = dynamic_cast<Node*>(node);
 
-    for (int k = 0; k < 3; ++k) (xmLin[k])[mnode->Dofs()[k]] += mval(i);
+    for (int k = 0; k < 3; ++k) (xmLin[k])[mnode->dofs()[k]] += mval(i);
   }
 
   //--------------------------
@@ -1647,14 +1647,14 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(Mor
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    Core::Nodes::Node* node = mele.Nodes()[i];
+    Core::Nodes::Node* node = mele.nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
 
     for (int k = 0; k < 3; ++k)
     {
-      for (_CI p = mnode->Data().GetDerivN()[k].begin(); p != mnode->Data().GetDerivN()[k].end();
-           ++p)
+      for (_CI p = mnode->data().get_deriv_n()[k].begin();
+           p != mnode->data().get_deriv_n()[k].end(); ++p)
       {
         (auxnormalLin[k])[p->first] += mval(i) * (p->second);
       }
@@ -1670,7 +1670,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(Mor
 
   //--------------------------
   // slave part:
-  for (int k = 0; k < 3; ++k) (xsLin[k])[snode.Dofs()[k]] += 1.0;
+  for (int k = 0; k < 3; ++k) (xsLin[k])[snode.dofs()[k]] += 1.0;
 
   // All terms:
   for (int j = 0; j < 3; ++j)
@@ -1704,29 +1704,32 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(Mor
   for (int k = 0; k < n_; ++k)
   {
     // get master node
-    Core::Nodes::Node* node = mele.Nodes()[k];
+    Core::Nodes::Node* node = mele.nodes()[k];
     if (!node) FOUR_C_THROW("Cannot find master node");
     CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
 
     for (_CI p = etaLin[0].begin(); p != etaLin[0].end(); ++p)
     {
-      (n_eta0_deriv[0])[p->first] += mderiv(0, k) * (p->second) * mnode->MoData().n()[0];
-      (n_eta0_deriv[1])[p->first] += mderiv(0, k) * (p->second) * mnode->MoData().n()[1];
-      (n_eta0_deriv[2])[p->first] += mderiv(0, k) * (p->second) * mnode->MoData().n()[2];
+      (n_eta0_deriv[0])[p->first] += mderiv(0, k) * (p->second) * mnode->mo_data().n()[0];
+      (n_eta0_deriv[1])[p->first] += mderiv(0, k) * (p->second) * mnode->mo_data().n()[1];
+      (n_eta0_deriv[2])[p->first] += mderiv(0, k) * (p->second) * mnode->mo_data().n()[2];
     }
 
     for (_CI p = etaLin[1].begin(); p != etaLin[1].end(); ++p)
     {
-      (n_eta1_deriv[0])[p->first] += mderiv(1, k) * (p->second) * mnode->MoData().n()[0];
-      (n_eta1_deriv[1])[p->first] += mderiv(1, k) * (p->second) * mnode->MoData().n()[1];
-      (n_eta1_deriv[2])[p->first] += mderiv(1, k) * (p->second) * mnode->MoData().n()[2];
+      (n_eta1_deriv[0])[p->first] += mderiv(1, k) * (p->second) * mnode->mo_data().n()[0];
+      (n_eta1_deriv[1])[p->first] += mderiv(1, k) * (p->second) * mnode->mo_data().n()[1];
+      (n_eta1_deriv[2])[p->first] += mderiv(1, k) * (p->second) * mnode->mo_data().n()[2];
     }
 
-    for (_CI p = mnode->Data().GetDerivN()[0].begin(); p != mnode->Data().GetDerivN()[0].end(); ++p)
+    for (_CI p = mnode->data().get_deriv_n()[0].begin(); p != mnode->data().get_deriv_n()[0].end();
+         ++p)
       (n_n_deriv[0])[p->first] += mval(k) * (p->second);
-    for (_CI p = mnode->Data().GetDerivN()[1].begin(); p != mnode->Data().GetDerivN()[1].end(); ++p)
+    for (_CI p = mnode->data().get_deriv_n()[1].begin(); p != mnode->data().get_deriv_n()[1].end();
+         ++p)
       (n_n_deriv[1])[p->first] += mval(k) * (p->second);
-    for (_CI p = mnode->Data().GetDerivN()[2].begin(); p != mnode->Data().GetDerivN()[2].end(); ++p)
+    for (_CI p = mnode->data().get_deriv_n()[2].begin(); p != mnode->data().get_deriv_n()[2].end();
+         ++p)
       (n_n_deriv[2])[p->first] += mval(k) * (p->second);
   }
 
@@ -1793,7 +1796,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(Mor
     // calc xmaster
     for (int j = 0; j < n_; ++j)
     {
-      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
+      Node* mymnode = dynamic_cast<Node*>(mele.nodes()[j]);
       if (!mymnode) FOUR_C_THROW("Null pointer!");
       for (int i = 0; i < 2; ++i)
       {
@@ -1807,11 +1810,11 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(Mor
     // calc normal part
     for (int j = 0; j < n_; ++j)
     {
-      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
+      Node* mymnode = dynamic_cast<Node*>(mele.nodes()[j]);
       if (!mymnode) FOUR_C_THROW("Null pointer!");
       for (int i = 0; i < 2; ++i)
       {
-        normalnewton[i] += mval(j) * mymnode->MoData().n()[i];
+        normalnewton[i] += mval(j) * mymnode->mo_data().n()[i];
       }
     }
 
@@ -1834,7 +1837,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(Mor
     // calc xmaster
     for (int j = 0; j < n_; ++j)
     {
-      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
+      Node* mymnode = dynamic_cast<Node*>(mele.nodes()[j]);
       if (!mymnode) FOUR_C_THROW("Null pointer!");
       for (int i = 0; i < 2; ++i)
       {
@@ -1847,12 +1850,12 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(Mor
     // calc normal part
     for (int j = 0; j < n_; ++j)
     {
-      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
+      Node* mymnode = dynamic_cast<Node*>(mele.nodes()[j]);
       if (!mymnode) FOUR_C_THROW("Null pointer!");
 
       for (int i = 0; i < 2; ++i)
       {
-        n_0[i] += mderiv(0, j) * mymnode->MoData().n()[i];
+        n_0[i] += mderiv(0, j) * mymnode->mo_data().n()[i];
       }
     }
 
@@ -1902,12 +1905,12 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(Mor
   normal[2] = 0.0;
   for (int j = 0; j < n_; ++j)
   {
-    Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[j]);
+    Node* mymnode = dynamic_cast<Node*>(mele.nodes()[j]);
     if (!mymnode) FOUR_C_THROW("Null pointer!");
 
     for (int i = 0; i < 2; ++i)
     {
-      normal[i] += mval(j) * mymnode->MoData().n()[i];
+      normal[i] += mval(j) * mymnode->mo_data().n()[i];
     }
   }
 
@@ -1928,11 +1931,11 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(Mor
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    Core::Nodes::Node* node = mele.Nodes()[i];
+    Core::Nodes::Node* node = mele.nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     Node* mnode = dynamic_cast<Node*>(node);
 
-    for (int k = 0; k < 2; ++k) (xmLin[k])[mnode->Dofs()[k]] += mval(i);
+    for (int k = 0; k < 2; ++k) (xmLin[k])[mnode->dofs()[k]] += mval(i);
   }
 
   //--------------------------
@@ -1944,14 +1947,14 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(Mor
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    Core::Nodes::Node* node = mele.Nodes()[i];
+    Core::Nodes::Node* node = mele.nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
 
     for (int k = 0; k < 3; ++k)
     {
-      for (_CI p = mnode->Data().GetDerivN()[k].begin(); p != mnode->Data().GetDerivN()[k].end();
-           ++p)
+      for (_CI p = mnode->data().get_deriv_n()[k].begin();
+           p != mnode->data().get_deriv_n()[k].end(); ++p)
       {
         (auxnormalLin[k])[p->first] += mval(i) * (p->second);
       }
@@ -1967,7 +1970,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(Mor
 
   //--------------------------
   // slave part:
-  for (int k = 0; k < 2; ++k) (xsLin[k])[snode.Dofs()[k]] += 1.0;
+  for (int k = 0; k < 2; ++k) (xsLin[k])[snode.dofs()[k]] += 1.0;
 
   // All terms:
   for (int j = 0; j < 3; ++j)
@@ -2000,22 +2003,25 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(Mor
   for (int k = 0; k < n_; ++k)
   {
     // get master node
-    Core::Nodes::Node* node = mele.Nodes()[k];
+    Core::Nodes::Node* node = mele.nodes()[k];
     if (!node) FOUR_C_THROW("Cannot find master node");
     CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
 
     for (_CI p = etaLin[0].begin(); p != etaLin[0].end(); ++p)
     {
-      (n_eta0_deriv[0])[p->first] += mderiv(0, k) * (p->second) * mnode->MoData().n()[0];
-      (n_eta0_deriv[1])[p->first] += mderiv(0, k) * (p->second) * mnode->MoData().n()[1];
-      (n_eta0_deriv[2])[p->first] += mderiv(0, k) * (p->second) * mnode->MoData().n()[2];
+      (n_eta0_deriv[0])[p->first] += mderiv(0, k) * (p->second) * mnode->mo_data().n()[0];
+      (n_eta0_deriv[1])[p->first] += mderiv(0, k) * (p->second) * mnode->mo_data().n()[1];
+      (n_eta0_deriv[2])[p->first] += mderiv(0, k) * (p->second) * mnode->mo_data().n()[2];
     }
 
-    for (_CI p = mnode->Data().GetDerivN()[0].begin(); p != mnode->Data().GetDerivN()[0].end(); ++p)
+    for (_CI p = mnode->data().get_deriv_n()[0].begin(); p != mnode->data().get_deriv_n()[0].end();
+         ++p)
       (n_n_deriv[0])[p->first] += mval(k) * (p->second);
-    for (_CI p = mnode->Data().GetDerivN()[1].begin(); p != mnode->Data().GetDerivN()[1].end(); ++p)
+    for (_CI p = mnode->data().get_deriv_n()[1].begin(); p != mnode->data().get_deriv_n()[1].end();
+         ++p)
       (n_n_deriv[1])[p->first] += mval(k) * (p->second);
-    for (_CI p = mnode->Data().GetDerivN()[2].begin(); p != mnode->Data().GetDerivN()[2].end(); ++p)
+    for (_CI p = mnode->data().get_deriv_n()[2].begin(); p != mnode->data().get_deriv_n()[2].end();
+         ++p)
       (n_n_deriv[2])[p->first] += mval(k) * (p->second);
   }
 
@@ -2110,7 +2116,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal2_d(
 
     for (int i = 0; i < n_; ++i)
     {
-      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[i]);
+      Node* mymnode = dynamic_cast<Node*>(mele.nodes()[i]);
       if (!mymnode) FOUR_C_THROW("Null pointer!");
       for (int d = 0; d < 3; ++d) meta00[d] += secderiv(0, i) * mymnode->xspatial()[d];
     }
@@ -2261,7 +2267,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(Mortar::N
 
     for (int i = 0; i < n_; ++i)
     {
-      Node* mymnode = dynamic_cast<Node*>(mele.Nodes()[i]);
+      Node* mymnode = dynamic_cast<Node*>(mele.nodes()[i]);
       if (!mymnode) FOUR_C_THROW("Null pointer!");
       for (int d = 0; d < 3; ++d) meta00[d] += secderiv(0, i) * mymnode->xspatial()[d];
     }
@@ -2355,11 +2361,11 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(Mortar::N
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    Core::Nodes::Node* node = mele.Nodes()[i];
+    Core::Nodes::Node* node = mele.nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     Node* mnode = dynamic_cast<Node*>(node);
 
-    for (int k = 0; k < 2; ++k) (xmLin[k])[mnode->Dofs()[k]] += val(i);
+    for (int k = 0; k < 2; ++k) (xmLin[k])[mnode->dofs()[k]] += val(i);
   }
 
   //--------------------------
@@ -2373,11 +2379,11 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(Mortar::N
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    Core::Nodes::Node* node = mele.Nodes()[i];
+    Core::Nodes::Node* node = mele.nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     Node* mnode = dynamic_cast<Node*>(node);
 
-    for (int k = 0; k < 2; ++k) (x_0Lin[k])[mnode->Dofs()[k]] += deriv1(i);
+    for (int k = 0; k < 2; ++k) (x_0Lin[k])[mnode->dofs()[k]] += deriv1(i);
   }
 
   // cross product linearization
@@ -2427,7 +2433,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(Mortar::N
 
   //--------------------------
   // slave part:
-  for (int k = 0; k < 2; ++k) (xsLin[k])[snode.Dofs()[k]] += 1.0;
+  for (int k = 0; k < 2; ++k) (xsLin[k])[snode.dofs()[k]] += 1.0;
 
   // All terms:
   for (int j = 0; j < 3; ++j)
@@ -2464,11 +2470,11 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(Mortar::N
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    Core::Nodes::Node* node = mele.Nodes()[i];
+    Core::Nodes::Node* node = mele.nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     Node* mnode = dynamic_cast<Node*>(node);
 
-    for (int k = 0; k < 2; ++k) (x_0Linnew[k])[mnode->Dofs()[k]] += deriv(i);
+    for (int k = 0; k < 2; ++k) (x_0Linnew[k])[mnode->dofs()[k]] += deriv(i);
 
     for (int k = 0; k < 2; ++k)
     {
@@ -2613,7 +2619,7 @@ double Mortar::ProjectorCalc<distype>::evaluate_f_nodal_normal(
   for (int i = 0; i < ndim_; ++i) nx[i] -= node.xspatial()[i];
 
   // calculate F
-  fval = nx[0] * node.MoData().n()[1] - nx[1] * node.MoData().n()[0];
+  fval = nx[0] * node.mo_data().n()[1] - nx[1] * node.mo_data().n()[0];
 
   return fval;
 }
@@ -2640,7 +2646,7 @@ double Mortar::ProjectorCalc<distype>::evaluate_grad_f_nodal_normal(
   Mortar::UTILS::LocalToGlobal<distype>(ele, eta, nxeta, 1);
 
   // calculate GradF
-  fgrad = nxeta[0] * node.MoData().n()[1] - nxeta[1] * node.MoData().n()[0];
+  fgrad = nxeta[0] * node.mo_data().n()[1] - nxeta[1] * node.mo_data().n()[0];
 
   return fgrad;
 }
@@ -2663,7 +2669,7 @@ double Mortar::ProjectorCalc<distype>::evaluate_f_element_normal(
   double fval = 0.0;
 
   // collect necessary data (slave side)
-  Core::Nodes::Node** mynodes = ele.Nodes();
+  Core::Nodes::Node** mynodes = ele.nodes();
   if (!mynodes) FOUR_C_THROW("evaluate_f_element_normal: Null pointer!");
 
   Core::LinAlg::Matrix<n_, 1> val;
@@ -2696,7 +2702,7 @@ double Mortar::ProjectorCalc<distype>::evaluate_f_element_normal(
 
     for (int j = 0; j < ndim_; ++j)
     {
-      nn[j] += val(i) * mymrtrnode->MoData().n()[j];
+      nn[j] += val(i) * mymrtrnode->mo_data().n()[j];
 
       coord(j, i) = mymrtrnode->xspatial()[j];
 
@@ -2740,7 +2746,7 @@ double Mortar::ProjectorCalc<distype>::evaluate_grad_f_element_normal(
   Core::LinAlg::Matrix<ndim_ - 1, n_> deriv;
   Core::LinAlg::Matrix<ndim_, n_> coord;
 
-  Core::Nodes::Node** mynodes = ele.Nodes();
+  Core::Nodes::Node** mynodes = ele.nodes();
   if (!mynodes) FOUR_C_THROW("evaluate_grad_f_element_normal: Null pointer!");
 
   // get shape function values and derivatives at gpeta
@@ -2781,8 +2787,8 @@ double Mortar::ProjectorCalc<distype>::evaluate_grad_f_element_normal(
 
     for (int j = 0; j < ndim_; ++j)
     {
-      nn[j] += val(i) * mymrtrnode->MoData().n()[j];
-      nneta[j] += deriv(0, i) * mymrtrnode->MoData().n()[j];
+      nn[j] += val(i) * mymrtrnode->mo_data().n()[j];
+      nneta[j] += deriv(0, i) * mymrtrnode->mo_data().n()[j];
       coord(j, i) = mymrtrnode->xspatial()[j];
       nx[j] += val(i) * coord(j, i);
       nxeta[j] += deriv(0, i) * coord(j, i);

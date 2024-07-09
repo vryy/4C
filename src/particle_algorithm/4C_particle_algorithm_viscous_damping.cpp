@@ -38,14 +38,14 @@ void PARTICLEALGORITHM::ViscousDampingHandler::setup(
   particleengineinterface_ = particleengineinterface;
 }
 
-void PARTICLEALGORITHM::ViscousDampingHandler::ApplyViscousDamping()
+void PARTICLEALGORITHM::ViscousDampingHandler::apply_viscous_damping()
 {
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
       particleengineinterface_->get_particle_container_bundle();
 
   // iterate over particle types
-  for (const auto& type : particlecontainerbundle->GetParticleTypes())
+  for (const auto& type : particlecontainerbundle->get_particle_types())
   {
     // no viscous damping contribution for boundary or rigid particles
     if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
@@ -55,7 +55,7 @@ void PARTICLEALGORITHM::ViscousDampingHandler::ApplyViscousDamping()
         particlecontainerbundle->get_specific_container(type, PARTICLEENGINE::Owned);
 
     // apply viscous damping contribution
-    container->UpdateState(
+    container->update_state(
         1.0, PARTICLEENGINE::Acceleration, -viscdampfac_, PARTICLEENGINE::Velocity);
   }
 }

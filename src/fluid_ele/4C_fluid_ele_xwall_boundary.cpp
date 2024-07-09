@@ -19,14 +19,14 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::FluidXWallBoundaryType Discret::ELEMENTS::FluidXWallBoundaryType::instance_;
 
-Discret::ELEMENTS::FluidXWallBoundaryType& Discret::ELEMENTS::FluidXWallBoundaryType::Instance()
+Discret::ELEMENTS::FluidXWallBoundaryType& Discret::ELEMENTS::FluidXWallBoundaryType::instance()
 {
   return instance_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidXWallBoundaryType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidXWallBoundaryType::create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -58,7 +58,7 @@ Discret::ELEMENTS::FluidXWallBoundary::FluidXWallBoundary(
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::FluidXWallBoundary::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::FluidXWallBoundary::clone() const
 {
   Discret::ELEMENTS::FluidXWallBoundary* newelement =
       new Discret::ELEMENTS::FluidXWallBoundary(*this);
@@ -79,7 +79,7 @@ void Discret::ELEMENTS::FluidXWallBoundary::print(std::ostream& os) const
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidXWallBoundary::LocationVector(const Core::FE::Discretization& dis,
+void Discret::ELEMENTS::FluidXWallBoundary::location_vector(const Core::FE::Discretization& dis,
     LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {
@@ -98,7 +98,7 @@ void Discret::ELEMENTS::FluidXWallBoundary::LocationVector(const Core::FE::Discr
       // the inner dofs of its parent element
       // note: using these actions, the element will get the parent location vector
       //       as input in the respective evaluate routines
-      parent_element()->LocationVector(dis, la, doDirichlet);
+      parent_element()->location_vector(dis, la, doDirichlet);
       break;
     case FLD::ba_none:
       FOUR_C_THROW("No action supplied");
@@ -106,12 +106,12 @@ void Discret::ELEMENTS::FluidXWallBoundary::LocationVector(const Core::FE::Discr
     default:
       // standard case: element assembles into its own dofs only
       const int numnode = num_node();
-      const Core::Nodes::Node* const* nodes = Nodes();
+      const Core::Nodes::Node* const* nodes = FluidXWallBoundary::nodes();
 
       la.clear();
 
       // we need to look at all DofSets of our discretization
-      for (int dofset = 0; dofset < la.Size(); ++dofset)
+      for (int dofset = 0; dofset < la.size(); ++dofset)
       {
         std::vector<int>& lm = la[dofset].lm_;
         std::vector<int>& lmdirich = la[dofset].lmdirich_;
@@ -125,9 +125,9 @@ void Discret::ELEMENTS::FluidXWallBoundary::LocationVector(const Core::FE::Discr
           {
             const Core::Nodes::Node* node = nodes[i];
 
-            const int owner = node->Owner();
+            const int owner = node->owner();
             std::vector<int> dofx;
-            dis.Dof(dofx, node, dofset, 0, this);
+            dis.dof(dofx, node, dofset, 0, this);
             std::vector<int> dof;
             // only take the first four dofs (the real dofs, but not the enriched ones)
             dof.push_back(dofx.at(0));
@@ -145,13 +145,13 @@ void Discret::ELEMENTS::FluidXWallBoundary::LocationVector(const Core::FE::Discr
             if (doDirichlet)
             {
               const std::vector<int>* flag = nullptr;
-              Core::Conditions::Condition* dirich = node->GetCondition("Dirichlet");
+              Core::Conditions::Condition* dirich = node->get_condition("Dirichlet");
               if (dirich)
               {
-                if (dirich->Type() != Core::Conditions::PointDirichlet &&
-                    dirich->Type() != Core::Conditions::LineDirichlet &&
-                    dirich->Type() != Core::Conditions::SurfaceDirichlet &&
-                    dirich->Type() != Core::Conditions::VolumeDirichlet)
+                if (dirich->type() != Core::Conditions::PointDirichlet &&
+                    dirich->type() != Core::Conditions::LineDirichlet &&
+                    dirich->type() != Core::Conditions::SurfaceDirichlet &&
+                    dirich->type() != Core::Conditions::VolumeDirichlet)
                   FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
                 flag = &dirich->parameters().get<std::vector<int>>("onoff");
               }
@@ -168,7 +168,7 @@ void Discret::ELEMENTS::FluidXWallBoundary::LocationVector(const Core::FE::Discr
 
         // fill the vector with element dofs
         //      const int owner = Owner();
-        std::vector<int> dofx = dis.Dof(dofset, this);
+        std::vector<int> dofx = dis.dof(dofset, this);
         if (dofx.size()) FOUR_C_THROW("no element dofs expected");
         //      std::vector<int> dof;
         //      if(dofx.size())

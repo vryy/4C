@@ -79,7 +79,7 @@ Mat::PAR::ConstraintMixture::ConstraintMixture(const Core::Mat::PAR::Parameter::
       storehistory_(matdata.parameters.get<bool>("STOREHISTORY")),
       degtol_(1.0e-6)
 {
-  Epetra_Map dummy_map(1, 1, 0, *(Global::Problem::Instance()->GetCommunicators()->LocalComm()));
+  Epetra_Map dummy_map(1, 1, 0, *(Global::Problem::instance()->get_communicators()->local_comm()));
   for (int i = first; i <= last; i++)
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
@@ -96,7 +96,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ConstraintMixture::create_material()
 
 Mat::ConstraintMixtureType Mat::ConstraintMixtureType::instance_;
 
-Core::Communication::ParObject* Mat::ConstraintMixtureType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ConstraintMixtureType::create(const std::vector<char>& data)
 {
   Mat::ConstraintMixture* comix = new Mat::ConstraintMixture();
   comix->unpack(data);
@@ -122,12 +122,12 @@ void Mat::ConstraintMixture::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 
   int numgp;
@@ -182,23 +182,23 @@ void Mat::ConstraintMixture::unpack(const std::vector<char>& data)
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::ConstraintMixture*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   int numgp;
@@ -377,7 +377,7 @@ void Mat::ConstraintMixture::setup(int numgp, Input::LineDefinition* linedef)
   deletemass_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(0));
 
   // history
-  ResetAll(numgp);
+  reset_all(numgp);
 
   // fiber vectors
   a1_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
@@ -437,7 +437,7 @@ void Mat::ConstraintMixture::setup(int numgp, Input::LineDefinition* linedef)
 /*----------------------------------------------------------------------*
  |  ResetAll                                      (public)         03/11|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixture::ResetAll(const int numgp)
+void Mat::ConstraintMixture::reset_all(const int numgp)
 {
   // homeostatic variables
   for (int gp = 0; gp < numgp; gp++)
@@ -465,7 +465,7 @@ void Mat::ConstraintMixture::ResetAll(const int numgp)
 
   // history
   const Teuchos::ParameterList& timeintegr =
-      Global::Problem::Instance()->structural_dynamic_params();
+      Global::Problem::instance()->structural_dynamic_params();
   double dt = timeintegr.get<double>("TIMESTEP");
   int firstiter = 0;
   if (params_->integration_ == "Explicit") firstiter = 1;
@@ -487,9 +487,9 @@ void Mat::ConstraintMixture::ResetAll(const int numgp)
 
   {
     const Inpar::Solid::PreStress pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
-        Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
+        Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
     const double pstime =
-        Global::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
+        Global::Problem::instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
 
     const double currentTime = params_->starttime_ + dt;
     // prestress time
@@ -743,8 +743,8 @@ void Mat::ConstraintMixture::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 {
   // map in GetParameter can now calculate LID, so we do not need it here   05/2017 birzle
   // get element lID incase we have element specific material parameters
-  // int eleID = Global::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
-  const double growthfactor = params_->GetParameter(params_->growthfactor, eleGID);
+  // int eleID = Global::Problem::instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
+  const double growthfactor = params_->get_parameter(params_->growthfactor, eleGID);
 
   // get variables from params
   double dt = params.get<double>("delta time", -1.0);
@@ -787,7 +787,7 @@ void Mat::ConstraintMixture::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     }
   }
   if (params_->elastindegrad_ == "InvEla")
-    elastin_survival = params_->GetParameter(params_->elastin_survival, eleGID);
+    elastin_survival = params_->get_parameter(params_->elastin_survival, eleGID);
 
   // stuff for collagen damage
   deletemass_->resize(0);
@@ -982,8 +982,8 @@ void Mat::ConstraintMixture::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
       double curvefac = 1.0;
       // numbering starts from zero here, thus use curvenum-1
       if (curvenum)
-        curvefac = Global::Problem::Instance()
-                       ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum - 1)
+        curvefac = Global::Problem::instance()
+                       ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum - 1)
                        .evaluate(time);
       if (curvefac > (1.0 + eps) || curvefac < (0.0 - eps))
         FOUR_C_THROW("correct your time curve for prestretch, just values in [0,1] are allowed %f",
@@ -1457,8 +1457,8 @@ void Mat::ConstraintMixture::evaluate_elastin(const Core::LinAlg::Matrix<NUM_STR
     double curvefac = 1.0;
     // numbering starts from zero here, thus use curvenum-1
     if (curvenum)
-      curvefac = Global::Problem::Instance()
-                     ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum - 1)
+      curvefac = Global::Problem::instance()
+                     ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum - 1)
                      .evaluate(time);
     if (curvefac > 1.0 || curvefac < 0.0)
       FOUR_C_THROW(
@@ -2351,11 +2351,11 @@ void Mat::ConstraintMixture::evaluate_implicit_all(Core::LinAlg::Matrix<3, 3> de
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> increment(true);
     // solve A.X=B
     Core::LinAlg::FixedSizeSerialDenseSolver<NUM_STRESS_3D, NUM_STRESS_3D, 1> solver;
-    solver.SetMatrix(DResidual);             // set A=DResidual
-    solver.SetVectors(increment, Residual);  // set X=increment, B=Residual
-    solver.factor_with_equilibration(true);  // "some easy type of preconditioning" (Michael)
-    int err2 = solver.Factor();              // ?
-    int err = solver.Solve();                // X = A^-1 B
+    solver.set_matrix(DResidual);             // set A=DResidual
+    solver.set_vectors(increment, Residual);  // set X=increment, B=Residual
+    solver.factor_with_equilibration(true);   // "some easy type of preconditioning" (Michael)
+    int err2 = solver.factor();               // ?
+    int err = solver.solve();                 // X = A^-1 B
     if ((err != 0) || (err2 != 0))
       FOUR_C_THROW(
           "solving linear system in Newton-Raphson method for implicit integration failed");
@@ -2466,11 +2466,11 @@ void Mat::ConstraintMixture::evaluate_implicit_all(Core::LinAlg::Matrix<3, 3> de
   // solve linear system of equations: A.X=B
   //----------------------------------------------------
   Core::LinAlg::FixedSizeSerialDenseSolver<NUM_STRESS_3D, NUM_STRESS_3D, NUM_STRESS_3D> solver;
-  solver.SetMatrix(LM);                    // set A=LM
-  solver.SetVectors(*cmat, RHS);           // set X=increment, B=RHS
+  solver.set_matrix(LM);                   // set A=LM
+  solver.set_vectors(*cmat, RHS);          // set X=increment, B=RHS
   solver.factor_with_equilibration(true);  // "some easy type of preconditioning" (Michael)
-  int err2 = solver.Factor();              // ?
-  int err = solver.Solve();                // X = A^-1 B
+  int err2 = solver.factor();              // ?
+  int err = solver.solve();                // X = A^-1 B
   if ((err != 0) || (err2 != 0)) FOUR_C_THROW("solving linear system for cmat failed");
 
   vismassstress_->at(gp)(0) = massstress(0);
@@ -2627,11 +2627,11 @@ void Mat::ConstraintMixture::evaluate_implicit_single(Core::LinAlg::Matrix<3, 3>
       Core::LinAlg::Matrix<NUM_STRESS_3D, 1> increment(true);
       // solve A.X=B
       Core::LinAlg::FixedSizeSerialDenseSolver<NUM_STRESS_3D, NUM_STRESS_3D, 1> solver;
-      solver.SetMatrix(DResidual);             // set A=DResidual
-      solver.SetVectors(increment, Residual);  // set X=increment, B=Residual
-      solver.factor_with_equilibration(true);  // "some easy type of preconditioning" (Michael)
-      int err2 = solver.Factor();              // ?
-      int err = solver.Solve();                // X = A^-1 B
+      solver.set_matrix(DResidual);             // set A=DResidual
+      solver.set_vectors(increment, Residual);  // set X=increment, B=Residual
+      solver.factor_with_equilibration(true);   // "some easy type of preconditioning" (Michael)
+      int err2 = solver.factor();               // ?
+      int err = solver.solve();                 // X = A^-1 B
       if ((err != 0) || (err2 != 0))
         FOUR_C_THROW(
             "solving linear system in Newton-Raphson method for implicit integration failed");
@@ -2716,11 +2716,11 @@ void Mat::ConstraintMixture::evaluate_implicit_single(Core::LinAlg::Matrix<3, 3>
     // solve linear system of equations: A.X=B
     //----------------------------------------------------
     Core::LinAlg::FixedSizeSerialDenseSolver<NUM_STRESS_3D, NUM_STRESS_3D, NUM_STRESS_3D> solver;
-    solver.SetMatrix(LM);                    // set A=LM
-    solver.SetVectors(cmatfiber, RHS);       // set X=increment, B=RHS
+    solver.set_matrix(LM);                   // set A=LM
+    solver.set_vectors(cmatfiber, RHS);      // set X=increment, B=RHS
     solver.factor_with_equilibration(true);  // "some easy type of preconditioning" (Michael)
-    int err2 = solver.Factor();              // ?
-    int err = solver.Solve();                // X = A^-1 B
+    int err2 = solver.factor();              // ?
+    int err = solver.solve();                // X = A^-1 B
     if ((err != 0) || (err2 != 0)) FOUR_C_THROW("solving linear system for cmat failed");
 
     (*stress) += stressfiber;
@@ -2888,7 +2888,7 @@ void Mat::ConstraintMixture::grad_mass_d_stretch(Core::LinAlg::Matrix<NUM_STRESS
 /*----------------------------------------------------------------------*
  |  EvaluateFiberVecs                             (public)         02/11|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixture::EvaluateFiberVecs(const int gp,
+void Mat::ConstraintMixture::evaluate_fiber_vecs(const int gp,
     const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
   // locsys holds the principal directions
@@ -2943,7 +2943,7 @@ void Mat::ConstraintMixture::EvaluateFiberVecs(const int gp,
 /*----------------------------------------------------------------------*
  |  Return names of visualization data            (public)         03/13|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixture::VisNames(std::map<std::string, int>& names)
+void Mat::ConstraintMixture::vis_names(std::map<std::string, int>& names)
 {
   std::string fiber = "MassStress";
   names[fiber] = 3;
@@ -2970,7 +2970,7 @@ void Mat::ConstraintMixture::VisNames(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data                     (public)         03/13|
  *----------------------------------------------------------------------*/
-bool Mat::ConstraintMixture::VisData(
+bool Mat::ConstraintMixture::vis_data(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "MassStress")
@@ -3018,7 +3018,7 @@ bool Mat::ConstraintMixture::VisData(
   {
     if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
     Core::LinAlg::Matrix<3, 1> temp(true);
-    for (int iter = 0; iter < numgp; iter++) temp.update(1.0, GetPrestretch(iter), 1.0);
+    for (int iter = 0; iter < numgp; iter++) temp.update(1.0, get_prestretch(iter), 1.0);
     data[0] = temp(0) / numgp;
     data[1] = temp(1) / numgp;
     data[2] = temp(2) / numgp;
@@ -3027,7 +3027,7 @@ bool Mat::ConstraintMixture::VisData(
   {
     if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
     Core::LinAlg::Matrix<3, 1> temp(true);
-    for (int iter = 0; iter < numgp; iter++) temp.update(1.0, GetHomstress(iter), 1.0);
+    for (int iter = 0; iter < numgp; iter++) temp.update(1.0, get_homstress(iter), 1.0);
     data[0] = temp(0) / numgp;
     data[1] = temp(1) / numgp;
     data[2] = temp(2) / numgp;
@@ -3053,31 +3053,31 @@ bool Mat::ConstraintMixture::VisData(
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
-    // int eleLID = Global::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleID);
-    data[0] = params_->GetParameter(params_->growthfactor, eleID);
+    // int eleLID = Global::Problem::instance()->GetDis("structure")->ElementColMap()->LID(eleID);
+    data[0] = params_->get_parameter(params_->growthfactor, eleID);
   }
   else if (name == "elastin_survival")
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
-    // int eleLID = Global::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleID);
+    // int eleLID = Global::Problem::instance()->GetDis("structure")->ElementColMap()->LID(eleID);
     if (params_->elastindegrad_ == "InvEla")
-      data[0] = params_->GetParameter(params_->elastin_survival, eleID);
+      data[0] = params_->get_parameter(params_->elastin_survival, eleID);
     else if (params_->elastindegrad_ == "Rectangle" ||
              params_->elastindegrad_ == "RectanglePlate" || params_->elastindegrad_ == "Wedge" ||
              params_->elastindegrad_ == "Circles")
     {
       Core::Elements::Element* myele =
-          Global::Problem::Instance()->GetDis("structure")->gElement(eleID);
-      Core::Nodes::Node** mynodes = myele->Nodes();
+          Global::Problem::instance()->get_dis("structure")->g_element(eleID);
+      Core::Nodes::Node** mynodes = myele->nodes();
       for (int idnodes = 0; idnodes < myele->num_node(); idnodes++)
       {
         Core::Nodes::Node* locnode = mynodes[idnodes];
         double elastin_survival = 0.0;
         Core::LinAlg::Matrix<3, 1> point_refe;
-        point_refe(0) = locnode->X()[0];
-        point_refe(1) = locnode->X()[1];
-        point_refe(2) = locnode->X()[2];
+        point_refe(0) = locnode->x()[0];
+        point_refe(1) = locnode->x()[1];
+        point_refe(2) = locnode->x()[2];
         elastin_degradation(point_refe, elastin_survival);
         data[0] += elastin_survival;
       }
@@ -3106,7 +3106,7 @@ bool Mat::ConstraintMixture::VisData(
 void Mat::ConstraintMixtureOutputToGmsh(
     const Teuchos::RCP<Core::FE::Discretization> dis, const int timestep, const int iter)
 {
-  const std::string filebase = Global::Problem::Instance()->OutputControlFile()->file_name();
+  const std::string filebase = Global::Problem::instance()->output_control_file()->file_name();
   // file for stress
   std::stringstream filename;
   filename << filebase << "_massdensity" << std::setw(3) << std::setfill('0') << timestep
@@ -3126,24 +3126,24 @@ void Mat::ConstraintMixtureOutputToGmsh(
   gmshfilecontent_pre.precision(10);
 
 
-  for (int iele = 0; iele < dis->NumMyColElements(); ++iele)
+  for (int iele = 0; iele < dis->num_my_col_elements(); ++iele)
   {
-    const Core::Elements::Element* actele = dis->lColElement(iele);
+    const Core::Elements::Element* actele = dis->l_col_element(iele);
 
     // build current configuration
     std::vector<int> lm;
     std::vector<int> lmowner;
     std::vector<int> lmstride;
-    actele->LocationVector(*dis, lm, lmowner, lmstride);
-    Teuchos::RCP<const Epetra_Vector> disp = dis->GetState("displacement");
+    actele->location_vector(*dis, lm, lmowner, lmstride);
+    Teuchos::RCP<const Epetra_Vector> disp = dis->get_state("displacement");
     std::vector<double> mydisp(lm.size(), 0);
     Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
-    Teuchos::RCP<Core::Mat::Material> mat = actele->Material();
+    Teuchos::RCP<Core::Mat::Material> mat = actele->material();
     Mat::ConstraintMixture* grow = static_cast<Mat::ConstraintMixture*>(mat.get());
 
     // material plot at gauss points
-    int ngp = grow->Geta1()->size();
+    int ngp = grow->geta1()->size();
 
     // update element geometry
     const int numnode = actele->num_node();
@@ -3151,11 +3151,11 @@ void Mat::ConstraintMixtureOutputToGmsh(
     Core::LinAlg::SerialDenseMatrix xcurr(numnode, 3);  // material coord. of element
     for (int i = 0; i < numnode; ++i)
     {
-      xcurr(i, 0) = actele->Nodes()[i]->X()[0] + mydisp[i * numdof + 0];
-      xcurr(i, 1) = actele->Nodes()[i]->X()[1] + mydisp[i * numdof + 1];
-      xcurr(i, 2) = actele->Nodes()[i]->X()[2] + mydisp[i * numdof + 2];
+      xcurr(i, 0) = actele->nodes()[i]->x()[0] + mydisp[i * numdof + 0];
+      xcurr(i, 1) = actele->nodes()[i]->x()[1] + mydisp[i * numdof + 1];
+      xcurr(i, 2) = actele->nodes()[i]->x()[2] + mydisp[i * numdof + 2];
     }
-    const Core::FE::CellType distype = actele->Shape();
+    const Core::FE::CellType distype = actele->shape();
     Core::LinAlg::SerialDenseVector funct(numnode);
 
     // define gauss rule
@@ -3196,7 +3196,7 @@ void Mat::ConstraintMixtureOutputToGmsh(
 
       // write mandel stress
       // Core::LinAlg::Matrix<3,1> mandelgp = grow->GetHomstress(gp);
-      double mandelgp = grow->GetMassDensity(gp);
+      double mandelgp = grow->get_mass_density(gp);
       gmshfilecontent << "SP(" << std::scientific << point(0, 0) << ",";
       gmshfilecontent << std::scientific << point(0, 1) << ",";
       gmshfilecontent << std::scientific << point(0, 2) << ")";

@@ -125,13 +125,13 @@ Core::LinAlg::Matrix<parent_ele_dim, 1> Core::FE::CalculateParentGPFromFaceEleme
   }
   const double dummy_gp_wgt(0.0);
   Core::FE::CollectedGaussPoints intpoints;
-  intpoints.Append(xi, dummy_gp_wgt);
+  intpoints.append(xi, dummy_gp_wgt);
 
   // get coordinates of gauss point w.r.t. local parent coordinate system
   Core::LinAlg::SerialDenseMatrix pqxg(1, parent_ele_dim);
   Core::LinAlg::Matrix<parent_ele_dim, parent_ele_dim> derivtrafo(true);
   Core::FE::BoundaryGPToParentGP<parent_ele_dim>(pqxg, derivtrafo, intpoints,
-      faceele->parent_element()->Shape(), faceele->Shape(), faceele->FaceParentNumber());
+      faceele->parent_element()->shape(), faceele->shape(), faceele->face_parent_number());
 
   Core::LinAlg::Matrix<parent_ele_dim, 1> xi_parent(true);
   for (auto i = 0; i < parent_ele_dim; ++i)
@@ -198,7 +198,7 @@ void Core::FE::LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints&
         */
         for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
-          pqxg(iquad, 0) = intpoints.Point(iquad)[0];
+          pqxg(iquad, 0) = intpoints.point(iquad)[0];
           pqxg(iquad, 1) = -1.0;
         }
         derivtrafo(0, 0) = 1.0;
@@ -241,7 +241,7 @@ void Core::FE::LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints&
         for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
           pqxg(iquad, 0) = 1.0;
-          pqxg(iquad, 1) = intpoints.Point(iquad)[0];
+          pqxg(iquad, 1) = intpoints.point(iquad)[0];
         }
         derivtrafo(0, 1) = 1.0;
         derivtrafo(1, 0) = 1.0;
@@ -280,7 +280,7 @@ void Core::FE::LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints&
 
         for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
-          pqxg(iquad, 0) = -intpoints.Point(iquad)[0];
+          pqxg(iquad, 0) = -intpoints.point(iquad)[0];
           pqxg(iquad, 1) = 1.0;
         }
         derivtrafo(0, 0) = -1.0;
@@ -323,7 +323,7 @@ void Core::FE::LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints&
         for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
           pqxg(iquad, 0) = -1.0;
-          pqxg(iquad, 1) = -intpoints.Point(iquad)[0];
+          pqxg(iquad, 1) = -intpoints.point(iquad)[0];
         }
         derivtrafo(0, 1) = -1.0;
         derivtrafo(1, 0) = -1.0;
@@ -352,7 +352,7 @@ void Core::FE::LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints&
         */
         for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
-          pqxg(iquad, 0) = intpoints.Point(iquad)[0];
+          pqxg(iquad, 0) = intpoints.point(iquad)[0];
           pqxg(iquad, 1) = -1.0;
         }
         derivtrafo(0, 0) = 1.0;
@@ -377,7 +377,7 @@ void Core::FE::LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints&
         for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
           pqxg(iquad, 0) = 1.0;
-          pqxg(iquad, 1) = intpoints.Point(iquad)[0];
+          pqxg(iquad, 1) = intpoints.point(iquad)[0];
         }
         derivtrafo(0, 1) = 1.0;
         derivtrafo(1, 0) = 1.0;
@@ -398,7 +398,7 @@ void Core::FE::LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints&
 
         for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
-          pqxg(iquad, 0) = intpoints.Point(iquad)[0];
+          pqxg(iquad, 0) = intpoints.point(iquad)[0];
           pqxg(iquad, 1) = 1.0;
         }
         derivtrafo(0, 0) = 1.0;
@@ -423,7 +423,7 @@ void Core::FE::LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints&
         for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
           pqxg(iquad, 0) = -1.0;
-          pqxg(iquad, 1) = intpoints.Point(iquad)[0];
+          pqxg(iquad, 1) = intpoints.point(iquad)[0];
         }
         derivtrafo(1, 0) = -1.0;
         derivtrafo(0, 1) = 1.0;
@@ -458,7 +458,7 @@ void Core::FE::LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints&
 
         for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
-          pqxg(iquad, 0) = 0.5 + 0.5 * intpoints.Point(iquad)[0];
+          pqxg(iquad, 0) = 0.5 + 0.5 * intpoints.point(iquad)[0];
           pqxg(iquad, 1) = 0.0;
         }
         break;
@@ -468,8 +468,8 @@ void Core::FE::LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints&
         // 1-r-s=0
         for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
-          pqxg(iquad, 0) = 0.5 - 0.5 * intpoints.Point(iquad)[0];
-          pqxg(iquad, 1) = 0.5 + 0.5 * intpoints.Point(iquad)[0];
+          pqxg(iquad, 0) = 0.5 - 0.5 * intpoints.point(iquad)[0];
+          pqxg(iquad, 1) = 0.5 + 0.5 * intpoints.point(iquad)[0];
         }
         break;
       }
@@ -479,7 +479,7 @@ void Core::FE::LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints&
         for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
           pqxg(iquad, 0) = 0.0;
-          pqxg(iquad, 1) = 0.5 - 0.5 * intpoints.Point(iquad)[0];
+          pqxg(iquad, 1) = 0.5 - 0.5 * intpoints.point(iquad)[0];
         }
         break;
       }
@@ -510,10 +510,10 @@ void Core::FE::BoundaryGPToParentGP<3>(Core::LinAlg::SerialDenseMatrix& pqxg,
     const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid)
 {
   // resize output array
-  pqxg.shape(intpoints.IP().nquad, 3);
+  pqxg.shape(intpoints.ip().nquad, 3);
   if (derivtrafo.numRows() != 3 || derivtrafo.numCols() != 3) derivtrafo.shape(3, 3);
 
-  Core::FE::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints.IP(), pdistype, distype, surfaceid);
+  Core::FE::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints.ip(), pdistype, distype, surfaceid);
   return;
 }
 
@@ -524,10 +524,10 @@ void Core::FE::BoundaryGPToParentGP<2>(Core::LinAlg::SerialDenseMatrix& pqxg,
     const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid)
 {
   // resize output array
-  pqxg.shape(intpoints.IP().nquad, 2);
+  pqxg.shape(intpoints.ip().nquad, 2);
   if (derivtrafo.numRows() != 2 || derivtrafo.numCols() != 2) derivtrafo.shape(2, 2);
 
-  Core::FE::LineGPToParentGP(pqxg, derivtrafo, intpoints.IP(), pdistype, distype, surfaceid);
+  Core::FE::LineGPToParentGP(pqxg, derivtrafo, intpoints.ip(), pdistype, distype, surfaceid);
   return;
 }
 
@@ -538,10 +538,10 @@ void Core::FE::BoundaryGPToParentGP<3>(Core::LinAlg::SerialDenseMatrix& pqxg,
     const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid)
 {
   // resize output array
-  pqxg.shape(intpoints.IP().nquad, 3);
+  pqxg.shape(intpoints.ip().nquad, 3);
   derivtrafo.clear();
 
-  Core::FE::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints.IP(), pdistype, distype, surfaceid);
+  Core::FE::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints.ip(), pdistype, distype, surfaceid);
   return;
 }
 
@@ -552,10 +552,10 @@ void Core::FE::BoundaryGPToParentGP<2>(Core::LinAlg::SerialDenseMatrix& pqxg,
     const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid)
 {
   // resize output array
-  pqxg.shape(intpoints.IP().nquad, 2);
+  pqxg.shape(intpoints.ip().nquad, 2);
   derivtrafo.clear();
 
-  Core::FE::LineGPToParentGP(pqxg, derivtrafo, intpoints.IP(), pdistype, distype, surfaceid);
+  Core::FE::LineGPToParentGP(pqxg, derivtrafo, intpoints.ip(), pdistype, distype, surfaceid);
   return;
 }
 
@@ -567,7 +567,7 @@ void Core::FE::BoundaryGPToParentGP<3>(Core::LinAlg::SerialDenseMatrix& pqxg,
     const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid)
 {
   // resize output array
-  pqxg.shape(intpoints.NumPoints(), 3);
+  pqxg.shape(intpoints.num_points(), 3);
   if (derivtrafo.numRows() != 3 || derivtrafo.numCols() != 3) derivtrafo.shape(3, 3);
 
   Core::FE::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);
@@ -581,7 +581,7 @@ void Core::FE::BoundaryGPToParentGP<2>(Core::LinAlg::SerialDenseMatrix& pqxg,
     const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid)
 {
   // resize output array
-  pqxg.shape(intpoints.NumPoints(), 2);
+  pqxg.shape(intpoints.num_points(), 2);
   if (derivtrafo.numRows() != 2 || derivtrafo.numCols() != 2) derivtrafo.shape(2, 2);
 
   Core::FE::LineGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);
@@ -595,7 +595,7 @@ void Core::FE::BoundaryGPToParentGP<3>(Core::LinAlg::SerialDenseMatrix& pqxg,
     const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid)
 {
   // resize output array
-  pqxg.shape(intpoints.NumPoints(), 3);
+  pqxg.shape(intpoints.num_points(), 3);
   derivtrafo.clear();
 
   Core::FE::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);
@@ -609,7 +609,7 @@ void Core::FE::BoundaryGPToParentGP<2>(Core::LinAlg::SerialDenseMatrix& pqxg,
     const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid)
 {
   // resize output array
-  pqxg.shape(intpoints.NumPoints(), 2);
+  pqxg.shape(intpoints.num_points(), 2);
   derivtrafo.clear();
 
   Core::FE::LineGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);

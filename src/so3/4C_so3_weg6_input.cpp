@@ -14,15 +14,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoWeg6::ReadElement(
+bool Discret::ELEMENTS::SoWeg6::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  SetMaterial(0, Mat::Factory(material));
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  set_material(0, Mat::Factory(material_id));
 
-  SolidMaterial()->setup(NUMGPT_WEG6, linedef);
+  solid_material()->setup(NUMGPT_WEG6, linedef);
 
   std::string buffer;
   linedef->extract_string("KINEM", buffer);
@@ -39,10 +39,10 @@ bool Discret::ELEMENTS::SoWeg6::ReadElement(
     FOUR_C_THROW("Reading SO_WEG6 element failed KINEM unknwon");
 
   // check if material kinematics is compatible to element kinematics
-  SolidMaterial()->ValidKinematics(kintype_);
+  solid_material()->valid_kinematics(kintype_);
 
   // Validate that materials doesn't use extended update call.
-  if (SolidMaterial()->UsesExtendedUpdate())
+  if (solid_material()->uses_extended_update())
     FOUR_C_THROW("This element currently does not support the extended update call.");
 
   return true;

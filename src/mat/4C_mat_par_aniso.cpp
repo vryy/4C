@@ -29,7 +29,7 @@ Mat::PAR::ParameterAniso::ParameterAniso(const Core::Mat::PAR::Parameter::Data& 
   int mat_id_structural_tensor = matdata.parameters.get<int>("STR_TENS_ID");
   // get pointer to material
   auto* mat_str_tens =
-      Global::Problem::Instance()->Materials()->ParameterById(mat_id_structural_tensor);
+      Global::Problem::instance()->materials()->parameter_by_id(mat_id_structural_tensor);
   // construct parameter class
   auto* params = static_cast<Mat::Elastic::PAR::StructuralTensorParameter*>(mat_str_tens);
   // get type of strategy

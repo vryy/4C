@@ -40,22 +40,22 @@ namespace CONTACT
       /// @name get-functions for the Constitutive Law parameters of a mirco function
       //@{
 
-      int GetFirstMatID() const { return firstmatid_; };
-      int GetSecondMatID() const { return secondmatid_; };
-      double GetLateralLength() const { return lateral_length_; };
+      int get_first_mat_id() const { return firstmatid_; };
+      int get_second_mat_id() const { return secondmatid_; };
+      double get_lateral_length() const { return lateral_length_; };
       bool get_pressure_green_fun_flag() const { return pressure_green_fun_flag_; };
-      double GetTolerance() const { return tolerance_; };
-      double GetMaxIteration() const { return max_iteration_; };
-      bool GetWarmStartingFlag() const { return warm_starting_flag_; };
-      double GetCompositeYoungs() const { return composite_youngs_; };
+      double get_tolerance() const { return tolerance_; };
+      double get_max_iteration() const { return max_iteration_; };
+      bool get_warm_starting_flag() const { return warm_starting_flag_; };
+      double get_composite_youngs() const { return composite_youngs_; };
       double get_composite_poissons_ratio() const { return composite_poissons_ratio_; };
-      double GetGridSize() const { return grid_size_; };
+      double get_grid_size() const { return grid_size_; };
       double get_compliance_correction() const { return elastic_compliance_correction_; };
       double get_finite_difference_fraction() const { return finite_difference_fraction_; };
       double get_active_gap_tolerance() const { return active_gap_tolerance_; };
-      Teuchos::Ptr<std::vector<double>> GetMeshGrid() const { return meshgrid_; };
+      Teuchos::Ptr<std::vector<double>> get_mesh_grid() const { return meshgrid_; };
 
-      void SetParameters();
+      void set_parameters();
 
      private:
       /// @name Constitutive Law parameters of a mirco function
@@ -102,7 +102,7 @@ namespace CONTACT
       }
 
       /// Return quick accessible contact constitutive law parameter data
-      CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const override { return params_; }
+      CONTACT::CONSTITUTIVELAW::Parameter* parameter() const override { return params_; }
 
       //! @name Evaluation methods
       //@{
@@ -125,7 +125,7 @@ namespace CONTACT
        * \param gap contact gap at the mortar node
        * \return Derivative of the pressure responses from MIRCO
        */
-      double EvaluateDeriv(double gap, CONTACT::Node* cnode) override;
+      double evaluate_deriv(double gap, CONTACT::Node* cnode) override;
       //@}
 
      private:

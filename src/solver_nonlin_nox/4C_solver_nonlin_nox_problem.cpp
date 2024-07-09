@@ -149,7 +149,7 @@ void NOX::Nln::Problem::create_outer_status_test(
   Teuchos::ParameterList& oParams =
       p.sublist("Status Test", true).sublist("Outer Status Test", true);
   outerTests =
-      NOX::Nln::StatusTest::build_outer_status_tests(oParams, noxNlnGlobalData_->get_NOX_utils());
+      NOX::Nln::StatusTest::build_outer_status_tests(oParams, noxNlnGlobalData_->get_nox_utils());
 }
 
 /*----------------------------------------------------------------------------*
@@ -167,7 +167,7 @@ void NOX::Nln::Problem::create_status_tests(Teuchos::RCP<::NOX::StatusTest::Gene
   {
     Teuchos::ParameterList& iParams = p.sublist("Status Test", true).sublist("Inner Status Test");
     innerTest = NOX::Nln::Inner::StatusTest::build_inner_status_tests(
-        iParams, noxNlnGlobalData_->get_NOX_utils());
+        iParams, noxNlnGlobalData_->get_nox_utils());
   }
 
   return;

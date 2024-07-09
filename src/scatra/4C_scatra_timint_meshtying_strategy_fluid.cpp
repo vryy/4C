@@ -40,14 +40,14 @@ const Epetra_Map& ScaTra::MeshtyingStrategyFluid::dof_row_map() const
 /*----------------------------------------------------------------------*
  | evaluate fluid-fluid meshtying                            fang 12/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyFluid::EvaluateMeshtying()
+void ScaTra::MeshtyingStrategyFluid::evaluate_meshtying()
 {
   // need to complete system matrix due to subsequent matrix-matrix multiplications
-  scatratimint_->system_matrix_operator()->Complete();
+  scatratimint_->system_matrix_operator()->complete();
 
   // evaluate fluid-fluid meshtying
   meshtying_->prepare_meshtying_system(
-      scatratimint_->system_matrix_operator(), scatratimint_->Residual(), scatratimint_->Phinp());
+      scatratimint_->system_matrix_operator(), scatratimint_->residual(), scatratimint_->phinp());
 
   return;
 }  // ScaTra::MeshtyingStrategyFluid::evaluate_meshtying
@@ -58,7 +58,7 @@ void ScaTra::MeshtyingStrategyFluid::EvaluateMeshtying()
  *----------------------------------------------------------------------*/
 void ScaTra::MeshtyingStrategyFluid::include_dirichlet_in_condensation() const
 {
-  meshtying_->include_dirichlet_in_condensation(scatratimint_->Phinp(), scatratimint_->Phin());
+  meshtying_->include_dirichlet_in_condensation(scatratimint_->phinp(), scatratimint_->phin());
 
   return;
 }  // ScaTra::MeshtyingStrategyFluid::include_dirichlet_in_condensation()
@@ -70,11 +70,11 @@ void ScaTra::MeshtyingStrategyFluid::include_dirichlet_in_condensation() const
 void ScaTra::MeshtyingStrategyFluid::setup_meshtying()
 {
   // safety check
-  if (scatratimint_->NumScal() < 1)
+  if (scatratimint_->num_scal() < 1)
     FOUR_C_THROW("Number of transported scalars not correctly set!");
 
   // define coupling and initialize system matrix
-  std::vector<int> coupleddof(scatratimint_->NumScal(), 1);
+  std::vector<int> coupleddof(scatratimint_->num_scal(), 1);
 
   meshtying_->setup_meshtying(coupleddof);
 }  // ScaTra::MeshtyingStrategyFluid::setup_meshtying
@@ -83,7 +83,7 @@ void ScaTra::MeshtyingStrategyFluid::setup_meshtying()
 /*----------------------------------------------------------------------*
  | perform init of fluid-fluid meshtying                    rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyFluid::InitMeshtying()
+void ScaTra::MeshtyingStrategyFluid::init_meshtying()
 {
   // instantiate strategy for Newton-Raphson convergence check
   init_conv_check_strategy();
@@ -91,7 +91,7 @@ void ScaTra::MeshtyingStrategyFluid::InitMeshtying()
   // Important: Meshtying for scalar transport is not well tested!
   // get meshtying type
   type_ = Core::UTILS::IntegralValue<Inpar::FLUID::MeshTying>(
-      *(scatratimint_->ScatraParameterList()), "MESHTYING");
+      *(scatratimint_->scatra_parameter_list()), "MESHTYING");
 
   // safety checks
   if (type_ == Inpar::FLUID::condensed_bmat)
@@ -101,7 +101,7 @@ void ScaTra::MeshtyingStrategyFluid::InitMeshtying()
 
   // setup meshtying
   meshtying_ = Teuchos::rcp(new FLD::Meshtying(scatratimint_->discretization(),
-      *(scatratimint_->Solver()), type_, Global::Problem::Instance()->NDim()));
+      *(scatratimint_->solver()), type_, Global::Problem::instance()->n_dim()));
 
   return;
 }  // ScaTra::MeshtyingStrategyFluid::InitMeshtying
@@ -120,7 +120,7 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTra::MeshtyingStrategyFluid::init_
 /*-------------------------------------------------------------------------*
  | solve linear system of equations for fluid-fluid meshtying   fang 12/14 |
  *-------------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyFluid::Solve(
+void ScaTra::MeshtyingStrategyFluid::solve(
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,                //!< solver
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
     const Teuchos::RCP<Epetra_Vector>& increment,                    //!< increment vector
@@ -129,7 +129,7 @@ void ScaTra::MeshtyingStrategyFluid::Solve(
     const int iteration,  //!< number of current Newton-Raphson iteration
     Core::LinAlg::SolverParams& solver_params) const
 {
-  meshtying_->SolveMeshtying(
+  meshtying_->solve_meshtying(
       *solver, systemmatrix, increment, residual, phinp, iteration, solver_params);
 
   return;
@@ -139,10 +139,10 @@ void ScaTra::MeshtyingStrategyFluid::Solve(
 /*-------------------------------------------------------------------------*
  | return linear solver for global system of linear equations   fang 01/18 |
  *-------------------------------------------------------------------------*/
-const Core::LinAlg::Solver& ScaTra::MeshtyingStrategyFluid::Solver() const
+const Core::LinAlg::Solver& ScaTra::MeshtyingStrategyFluid::solver() const
 {
-  if (scatratimint_->Solver() == Teuchos::null) FOUR_C_THROW("Invalid linear solver!");
-  return *scatratimint_->Solver();
+  if (scatratimint_->solver() == Teuchos::null) FOUR_C_THROW("Invalid linear solver!");
+  return *scatratimint_->solver();
 }
 
 
@@ -151,8 +151,8 @@ const Core::LinAlg::Solver& ScaTra::MeshtyingStrategyFluid::Solver() const
  *------------------------------------------------------------------------*/
 void ScaTra::MeshtyingStrategyFluid::init_conv_check_strategy()
 {
-  convcheckstrategy_ = Teuchos::rcp(
-      new ScaTra::ConvCheckStrategyStd(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+  convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyStd(
+      scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
 
   return;
 }  // ScaTra::MeshtyingStrategyFluid::init_conv_check_strategy

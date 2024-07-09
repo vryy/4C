@@ -47,7 +47,7 @@ bool SSI::SsiMono::ConvCheckStrategyBase::exit_newton_raphson(const SSI::SsiMono
 
   print_newton_iteration_information(ssi_mono, converged, exit, norms);
 
-  if (exit and !converged) non_converged_steps_.insert(ssi_mono.Step());
+  if (exit and !converged) non_converged_steps_.insert(ssi_mono.step());
 
   return exit;
 }
@@ -57,7 +57,7 @@ bool SSI::SsiMono::ConvCheckStrategyBase::exit_newton_raphson(const SSI::SsiMono
 bool SSI::SsiMono::ConvCheckStrategyBase::compute_exit(
     const SSI::SsiMono& ssi_mono, const bool converged) const
 {
-  return (converged or ssi_mono.IterationCount() == itermax_);
+  return (converged or ssi_mono.iteration_count() == itermax_);
 }
 
 /*----------------------------------------------------------------------*
@@ -78,17 +78,17 @@ void SSI::SsiMono::ConvCheckStrategyBase::check_l2_norm(
 void SSI::SsiMono::ConvCheckStrategyBase::get_and_check_l2_norm_structure(
     const SSI::SsiMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
 {
-  ssi_mono.MapsSubProblems()
-      ->extract_vector(ssi_mono.ssi_vectors_->Increment(),
-          UTILS::SSIMaps::GetProblemPosition(Subproblem::structure))
+  ssi_mono.maps_sub_problems()
+      ->extract_vector(ssi_mono.ssi_vectors_->increment(),
+          UTILS::SSIMaps::get_problem_position(Subproblem::structure))
       ->Norm2(&incnorm);
 
-  ssi_mono.MapsSubProblems()
-      ->extract_vector(ssi_mono.ssi_vectors_->Residual(),
-          UTILS::SSIMaps::GetProblemPosition(Subproblem::structure))
+  ssi_mono.maps_sub_problems()
+      ->extract_vector(ssi_mono.ssi_vectors_->residual(),
+          UTILS::SSIMaps::get_problem_position(Subproblem::structure))
       ->Norm2(&resnorm);
 
-  ssi_mono.structure_field()->Dispnp()->Norm2(&dofnorm);
+  ssi_mono.structure_field()->dispnp()->Norm2(&dofnorm);
 
   check_l2_norm(incnorm, resnorm, dofnorm);
 }
@@ -114,17 +114,17 @@ void SSI::SsiMono::ConvCheckStrategyBase::print_non_converged_steps(const int pi
 void SSI::SsiMono::ConvCheckStrategyStd::get_and_check_l2_norm_sca_tra(
     const SSI::SsiMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
 {
-  ssi_mono.MapsSubProblems()
-      ->extract_vector(ssi_mono.ssi_vectors_->Increment(),
-          UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport))
+  ssi_mono.maps_sub_problems()
+      ->extract_vector(ssi_mono.ssi_vectors_->increment(),
+          UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport))
       ->Norm2(&incnorm);
 
-  ssi_mono.MapsSubProblems()
-      ->extract_vector(ssi_mono.ssi_vectors_->Residual(),
-          UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport))
+  ssi_mono.maps_sub_problems()
+      ->extract_vector(ssi_mono.ssi_vectors_->residual(),
+          UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport))
       ->Norm2(&resnorm);
 
-  ssi_mono.ScaTraField()->Phinp()->Norm2(&dofnorm);
+  ssi_mono.sca_tra_field()->phinp()->Norm2(&dofnorm);
 
   check_l2_norm(incnorm, resnorm, dofnorm);
 }
@@ -152,7 +152,7 @@ std::map<SSI::L2norm, double> SSI::SsiMono::ConvCheckStrategyStd::compute_norms(
 bool SSI::SsiMono::ConvCheckStrategyStd::check_convergence(
     const SSI::SsiMono& ssi_mono, const std::map<L2norm, double>& norms) const
 {
-  if (ssi_mono.IterationCount() > 1 and norms.at(L2norm::scatraresnorm) <= itertol_ and
+  if (ssi_mono.iteration_count() > 1 and norms.at(L2norm::scatraresnorm) <= itertol_ and
       norms.at(L2norm::structureresnorm) <= itertol_ and
       norms.at(L2norm::scatraincnorm) / norms.at(L2norm::scatradofnorm) <= itertol_ and
       norms.at(L2norm::structureincnorm) / norms.at(L2norm::structuredofnorm) <= itertol_)
@@ -170,9 +170,9 @@ void SSI::SsiMono::ConvCheckStrategyStd::print_newton_iteration_information(
     const SSI::SsiMono& ssi_mono, const bool converged, const bool exit,
     const std::map<L2norm, double>& norms) const
 {
-  if (ssi_mono.Comm().MyPID() != 0) return;
+  if (ssi_mono.get_comm().MyPID() != 0) return;
 
-  if (ssi_mono.IterationCount() == 1)
+  if (ssi_mono.iteration_count() == 1)
   {
     // print header of convergence table to screen
     std::cout << "+------------+-------------------+--------------+--------------+--------------+"
@@ -184,7 +184,7 @@ void SSI::SsiMono::ConvCheckStrategyStd::print_newton_iteration_information(
 
     // print first line of convergence table to screen
     // solution increment not yet available during first Newton-Raphson iteration
-    std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
+    std::cout << "|  " << std::setw(3) << ssi_mono.iteration_count() << "/" << std::setw(3)
               << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
               << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
               << std::scientific << norms.at(L2norm::scatraresnorm) << "   |      --      | "
@@ -195,7 +195,7 @@ void SSI::SsiMono::ConvCheckStrategyStd::print_newton_iteration_information(
   }
   else
   {
-    std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
+    std::cout << "|  " << std::setw(3) << ssi_mono.iteration_count() << "/" << std::setw(3)
               << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
               << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
               << std::scientific << norms.at(L2norm::scatraresnorm) << "   | " << std::setw(10)
@@ -235,23 +235,23 @@ void SSI::SsiMono::ConvCheckStrategyStd::print_newton_iteration_information(
 void SSI::SsiMono::ConvCheckStrategyElch::get_and_check_l2_norm_conc(
     const SSI::SsiMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
 {
-  ssi_mono.ScaTraField()
-      ->Splitter()
+  ssi_mono.sca_tra_field()
+      ->splitter()
       ->extract_other_vector(
-          ssi_mono.MapsSubProblems()->extract_vector(ssi_mono.ssi_vectors_->Increment(),
-              UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport)))
+          ssi_mono.maps_sub_problems()->extract_vector(ssi_mono.ssi_vectors_->increment(),
+              UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport)))
       ->Norm2(&incnorm);
 
-  ssi_mono.ScaTraField()
-      ->Splitter()
+  ssi_mono.sca_tra_field()
+      ->splitter()
       ->extract_other_vector(
-          ssi_mono.MapsSubProblems()->extract_vector(ssi_mono.ssi_vectors_->Residual(),
-              UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport)))
+          ssi_mono.maps_sub_problems()->extract_vector(ssi_mono.ssi_vectors_->residual(),
+              UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport)))
       ->Norm2(&resnorm);
 
-  ssi_mono.ScaTraField()
-      ->Splitter()
-      ->extract_other_vector(ssi_mono.ScaTraField()->Phinp())
+  ssi_mono.sca_tra_field()
+      ->splitter()
+      ->extract_other_vector(ssi_mono.sca_tra_field()->phinp())
       ->Norm2(&dofnorm);
 
   check_l2_norm(incnorm, resnorm, dofnorm);
@@ -262,23 +262,23 @@ void SSI::SsiMono::ConvCheckStrategyElch::get_and_check_l2_norm_conc(
 void SSI::SsiMono::ConvCheckStrategyElch::get_and_check_l2_norm_pot(
     const SSI::SsiMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
 {
-  ssi_mono.ScaTraField()
-      ->Splitter()
+  ssi_mono.sca_tra_field()
+      ->splitter()
       ->extract_cond_vector(
-          ssi_mono.MapsSubProblems()->extract_vector(ssi_mono.ssi_vectors_->Increment(),
-              UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport)))
+          ssi_mono.maps_sub_problems()->extract_vector(ssi_mono.ssi_vectors_->increment(),
+              UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport)))
       ->Norm2(&incnorm);
 
-  ssi_mono.ScaTraField()
-      ->Splitter()
+  ssi_mono.sca_tra_field()
+      ->splitter()
       ->extract_cond_vector(
-          ssi_mono.MapsSubProblems()->extract_vector(ssi_mono.ssi_vectors_->Residual(),
-              UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport)))
+          ssi_mono.maps_sub_problems()->extract_vector(ssi_mono.ssi_vectors_->residual(),
+              UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport)))
       ->Norm2(&resnorm);
 
-  ssi_mono.ScaTraField()
-      ->Splitter()
-      ->extract_cond_vector(ssi_mono.ScaTraField()->Phinp())
+  ssi_mono.sca_tra_field()
+      ->splitter()
+      ->extract_cond_vector(ssi_mono.sca_tra_field()->phinp())
       ->Norm2(&dofnorm);
 
   check_l2_norm(incnorm, resnorm, dofnorm);
@@ -315,7 +315,7 @@ std::map<SSI::L2norm, double> SSI::SsiMono::ConvCheckStrategyElch::compute_norms
 bool SSI::SsiMono::ConvCheckStrategyElch::check_convergence(
     const SSI::SsiMono& ssi_mono, const std::map<L2norm, double>& norms) const
 {
-  if (ssi_mono.IterationCount() > 1 and norms.at(SSI::L2norm::concresnorm) <= itertol_ and
+  if (ssi_mono.iteration_count() > 1 and norms.at(SSI::L2norm::concresnorm) <= itertol_ and
       norms.at(SSI::L2norm::potresnorm) <= itertol_ and
       norms.at(SSI::L2norm::structureresnorm) <= itertol_ and
       norms.at(SSI::L2norm::concincnorm) / norms.at(SSI::L2norm::concdofnorm) <= itertol_ and
@@ -337,9 +337,9 @@ void SSI::SsiMono::ConvCheckStrategyElch::print_newton_iteration_information(
     const SSI::SsiMono& ssi_mono, const bool converged, const bool exit,
     const std::map<L2norm, double>& norms) const
 {
-  if (ssi_mono.Comm().MyPID() != 0) return;
+  if (ssi_mono.get_comm().MyPID() != 0) return;
 
-  if (ssi_mono.IterationCount() == 1)
+  if (ssi_mono.iteration_count() == 1)
   {
     // print header of convergence table to screen
     std::cout << "+------------+-------------------+--------------+--------------+--------------+"
@@ -351,7 +351,7 @@ void SSI::SsiMono::ConvCheckStrategyElch::print_newton_iteration_information(
 
     // print first line of convergence table to screen
     // solution increment not yet available during first Newton-Raphson iteration
-    std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
+    std::cout << "|  " << std::setw(3) << ssi_mono.iteration_count() << "/" << std::setw(3)
               << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
               << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
               << std::scientific << norms.at(SSI::L2norm::concresnorm) << "   |      --      | "
@@ -364,7 +364,7 @@ void SSI::SsiMono::ConvCheckStrategyElch::print_newton_iteration_information(
   }
   else
   {
-    std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
+    std::cout << "|  " << std::setw(3) << ssi_mono.iteration_count() << "/" << std::setw(3)
               << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
               << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
               << std::scientific << norms.at(SSI::L2norm::concresnorm) << "   | " << std::setw(10)
@@ -411,16 +411,16 @@ bool SSI::SsiMono::ConvCheckStrategyElch::exit_newton_raphson_init_pot_calc(
 {
   const auto norms = compute_norms(ssi_mono);
   const bool converged =
-      (ssi_mono.IterationCount() > 1 and
+      (ssi_mono.iteration_count() > 1 and
           (norms.at(SSI::L2norm::potresnorm) <= itertol_ and
               norms.at(SSI::L2norm::potincnorm) / norms.at(SSI::L2norm::potdofnorm) <= itertol_)) or
       norms.at(SSI::L2norm::potresnorm) < restol_;
   const bool exit = compute_exit(ssi_mono, converged);
-  if (exit and !converged) non_converged_steps_.insert(ssi_mono.Step());
+  if (exit and !converged) non_converged_steps_.insert(ssi_mono.step());
 
-  if (ssi_mono.Comm().MyPID() == 0)
+  if (ssi_mono.get_comm().MyPID() == 0)
   {
-    if (ssi_mono.IterationCount() == 1)
+    if (ssi_mono.iteration_count() == 1)
     {
       // print header
       std::cout << "Calculating initial field for electric potential" << std::endl;
@@ -428,7 +428,7 @@ bool SSI::SsiMono::ConvCheckStrategyElch::exit_newton_raphson_init_pot_calc(
       std::cout << "|- step/max -|- tol      [norm] -|-- pot-res ---|-- pot-inc ---|" << std::endl;
 
       // print only norm of residuals
-      std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
+      std::cout << "|  " << std::setw(3) << ssi_mono.iteration_count() << "/" << std::setw(3)
                 << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
                 << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
                 << std::scientific << norms.at(SSI::L2norm::potresnorm)
@@ -438,7 +438,7 @@ bool SSI::SsiMono::ConvCheckStrategyElch::exit_newton_raphson_init_pot_calc(
 
     else
     {
-      std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
+      std::cout << "|  " << std::setw(3) << ssi_mono.iteration_count() << "/" << std::setw(3)
                 << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
                 << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
                 << std::scientific << norms.at(SSI::L2norm::potresnorm) << "   | " << std::setw(10)
@@ -470,23 +470,23 @@ bool SSI::SsiMono::ConvCheckStrategyElch::exit_newton_raphson_init_pot_calc(
 void SSI::SsiMono::ConvCheckStrategyElchScaTraManifold::get_and_check_l2_norm_sca_tra_manifold_conc(
     const SSI::SsiMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
 {
-  ssi_mono.ScaTraManifold()
-      ->Splitter()
+  ssi_mono.sca_tra_manifold()
+      ->splitter()
       ->extract_other_vector(
-          ssi_mono.MapsSubProblems()->extract_vector(ssi_mono.ssi_vectors_->Increment(),
-              UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold)))
+          ssi_mono.maps_sub_problems()->extract_vector(ssi_mono.ssi_vectors_->increment(),
+              UTILS::SSIMaps::get_problem_position(Subproblem::manifold)))
       ->Norm2(&incnorm);
 
-  ssi_mono.ScaTraManifold()
-      ->Splitter()
+  ssi_mono.sca_tra_manifold()
+      ->splitter()
       ->extract_other_vector(
-          ssi_mono.MapsSubProblems()->extract_vector(ssi_mono.ssi_vectors_->Residual(),
-              UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold)))
+          ssi_mono.maps_sub_problems()->extract_vector(ssi_mono.ssi_vectors_->residual(),
+              UTILS::SSIMaps::get_problem_position(Subproblem::manifold)))
       ->Norm2(&resnorm);
 
-  ssi_mono.ScaTraManifold()
-      ->Splitter()
-      ->extract_other_vector(ssi_mono.ScaTraManifold()->Phinp())
+  ssi_mono.sca_tra_manifold()
+      ->splitter()
+      ->extract_other_vector(ssi_mono.sca_tra_manifold()->phinp())
       ->Norm2(&dofnorm);
 
   check_l2_norm(incnorm, resnorm, dofnorm);
@@ -497,23 +497,23 @@ void SSI::SsiMono::ConvCheckStrategyElchScaTraManifold::get_and_check_l2_norm_sc
 void SSI::SsiMono::ConvCheckStrategyElchScaTraManifold::get_and_check_l2_norm_sca_tra_manifold_pot(
     const SSI::SsiMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
 {
-  ssi_mono.ScaTraManifold()
-      ->Splitter()
+  ssi_mono.sca_tra_manifold()
+      ->splitter()
       ->extract_cond_vector(
-          ssi_mono.MapsSubProblems()->extract_vector(ssi_mono.ssi_vectors_->Increment(),
-              UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold)))
+          ssi_mono.maps_sub_problems()->extract_vector(ssi_mono.ssi_vectors_->increment(),
+              UTILS::SSIMaps::get_problem_position(Subproblem::manifold)))
       ->Norm2(&incnorm);
 
-  ssi_mono.ScaTraManifold()
-      ->Splitter()
+  ssi_mono.sca_tra_manifold()
+      ->splitter()
       ->extract_cond_vector(
-          ssi_mono.MapsSubProblems()->extract_vector(ssi_mono.ssi_vectors_->Residual(),
-              UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold)))
+          ssi_mono.maps_sub_problems()->extract_vector(ssi_mono.ssi_vectors_->residual(),
+              UTILS::SSIMaps::get_problem_position(Subproblem::manifold)))
       ->Norm2(&resnorm);
 
-  ssi_mono.ScaTraManifold()
-      ->Splitter()
-      ->extract_cond_vector(ssi_mono.ScaTraManifold()->Phinp())
+  ssi_mono.sca_tra_manifold()
+      ->splitter()
+      ->extract_cond_vector(ssi_mono.sca_tra_manifold()->phinp())
       ->Norm2(&dofnorm);
 
   check_l2_norm(incnorm, resnorm, dofnorm);
@@ -563,7 +563,7 @@ std::map<SSI::L2norm, double> SSI::SsiMono::ConvCheckStrategyElchScaTraManifold:
 bool SSI::SsiMono::ConvCheckStrategyElchScaTraManifold::check_convergence(
     const SSI::SsiMono& ssi_mono, const std::map<L2norm, double>& norms) const
 {
-  if (ssi_mono.IterationCount() > 1 and norms.at(SSI::L2norm::concresnorm) <= itertol_ and
+  if (ssi_mono.iteration_count() > 1 and norms.at(SSI::L2norm::concresnorm) <= itertol_ and
       norms.at(SSI::L2norm::potresnorm) <= itertol_ and
       norms.at(SSI::L2norm::structureresnorm) <= itertol_ and
       norms.at(SSI::L2norm::concincnorm) / norms.at(SSI::L2norm::concdofnorm) <= itertol_ and
@@ -594,9 +594,9 @@ void SSI::SsiMono::ConvCheckStrategyElchScaTraManifold::print_newton_iteration_i
     const SSI::SsiMono& ssi_mono, const bool converged, const bool exit,
     const std::map<L2norm, double>& norms) const
 {
-  if (ssi_mono.Comm().MyPID() != 0) return;
+  if (ssi_mono.get_comm().MyPID() != 0) return;
 
-  if (ssi_mono.IterationCount() == 1)
+  if (ssi_mono.iteration_count() == 1)
   {
     // print header of convergence table to screen
     std::cout << "+------------+-------------------+--------------+--------------+--------------+"
@@ -616,7 +616,7 @@ void SSI::SsiMono::ConvCheckStrategyElchScaTraManifold::print_newton_iteration_i
 
     // print first line of convergence table to screen
     // solution increment not yet available during first Newton-Raphson iteration
-    std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
+    std::cout << "|  " << std::setw(3) << ssi_mono.iteration_count() << "/" << std::setw(3)
               << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
               << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
               << std::scientific << norms.at(SSI::L2norm::concresnorm) << "   |      --      | "
@@ -631,7 +631,7 @@ void SSI::SsiMono::ConvCheckStrategyElchScaTraManifold::print_newton_iteration_i
   }
   else
   {
-    std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
+    std::cout << "|  " << std::setw(3) << ssi_mono.iteration_count() << "/" << std::setw(3)
               << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
               << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
               << std::scientific << norms.at(SSI::L2norm::concresnorm) << "   | " << std::setw(10)
@@ -695,7 +695,7 @@ bool SSI::SsiMono::ConvCheckStrategyElchScaTraManifold::exit_newton_raphson_init
 {
   const auto norms = compute_norms(ssi_mono);
   const bool converged =
-      (ssi_mono.IterationCount() > 1 and norms.at(SSI::L2norm::potresnorm) <= itertol_ and
+      (ssi_mono.iteration_count() > 1 and norms.at(SSI::L2norm::potresnorm) <= itertol_ and
           norms.at(SSI::L2norm::potincnorm) / norms.at(SSI::L2norm::potdofnorm) <= itertol_ and
           norms.at(SSI::L2norm::manifoldpotresnorm) <= itertol_ and
           norms.at(SSI::L2norm::manifoldpotincnorm) / norms.at(SSI::L2norm::manifoldpotdofnorm) <=
@@ -703,11 +703,11 @@ bool SSI::SsiMono::ConvCheckStrategyElchScaTraManifold::exit_newton_raphson_init
       (norms.at(SSI::L2norm::potresnorm) < restol_ and
           norms.at(SSI::L2norm::manifoldpotresnorm) < restol_);
   const bool exit = compute_exit(ssi_mono, converged);
-  if (exit and !converged) non_converged_steps_.insert(ssi_mono.Step());
+  if (exit and !converged) non_converged_steps_.insert(ssi_mono.step());
 
-  if (ssi_mono.Comm().MyPID() == 0)
+  if (ssi_mono.get_comm().MyPID() == 0)
   {
-    if (ssi_mono.IterationCount() == 1)
+    if (ssi_mono.iteration_count() == 1)
     {
       // print header
       std::cout << "Calculating initial field for electric potential" << std::endl;
@@ -723,7 +723,7 @@ bool SSI::SsiMono::ConvCheckStrategyElchScaTraManifold::exit_newton_raphson_init
                 << std::endl;
 
       // print only norm of residuals
-      std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
+      std::cout << "|  " << std::setw(3) << ssi_mono.iteration_count() << "/" << std::setw(3)
                 << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
                 << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
                 << std::scientific << norms.at(SSI::L2norm::potresnorm) << "   |      --      | "
@@ -734,7 +734,7 @@ bool SSI::SsiMono::ConvCheckStrategyElchScaTraManifold::exit_newton_raphson_init
     }
     else
     {
-      std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
+      std::cout << "|  " << std::setw(3) << ssi_mono.iteration_count() << "/" << std::setw(3)
                 << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
                 << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
                 << std::scientific << norms.at(SSI::L2norm::potresnorm) << "   | " << std::setw(10)

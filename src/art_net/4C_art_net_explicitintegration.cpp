@@ -75,16 +75,16 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
   TimInt::init(globaltimeparams, arteryparams, scatra_disname);
 
   // ensure that degrees of freedom in the discretization have been set
-  if (!discret_->Filled() || !discret_->HaveDofs()) discret_->fill_complete();
+  if (!discret_->filled() || !discret_->have_dofs()) discret_->fill_complete();
 
   // -------------------------------------------------------------------
   // Force the reducesd 1d arterial network discretization to run on
   // and only one cpu
   // -------------------------------------------------------------------
   // reduce the node row map into processor 0
-  const Epetra_Map noderowmap_1_proc = *Core::LinAlg::AllreduceEMap(*discret_->NodeRowMap(), 0);
+  const Epetra_Map noderowmap_1_proc = *Core::LinAlg::AllreduceEMap(*discret_->node_row_map(), 0);
   // update the discetization by redistributing the new row map
-  discret_->Redistribute(noderowmap_1_proc, noderowmap_1_proc);
+  discret_->redistribute(noderowmap_1_proc, noderowmap_1_proc);
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -100,7 +100,7 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
   // vectors and matrices
   //                 local <-> global node numbering
   // -------------------------------------------------------------------
-  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+  const Epetra_Map* noderowmap = discret_->node_row_map();
 
 
   // -------------------------------------------------------------------
@@ -173,7 +173,7 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
   // and the volumetric flow rate to 0
   // ---------------------------------------------------------------------------------------
   Teuchos::ParameterList eleparams;
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("qanp", qanp_);
 
   // loop all elements on this proc (including ghosted ones)
@@ -202,17 +202,17 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
   // Fill the NodeId vector
-  for (int nele = 0; nele < discret_->NumMyColElements(); ++nele)
+  for (int nele = 0; nele < discret_->num_my_col_elements(); ++nele)
   {
     // get the element
-    Core::Elements::Element* ele = discret_->lColElement(nele);
+    Core::Elements::Element* ele = discret_->l_col_element(nele);
 
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;
     std::vector<int> lmstride;
     // vector<int> lmowner;
     Teuchos::RCP<std::vector<int>> lmowner = Teuchos::rcp(new std::vector<int>);
-    ele->LocationVector(*discret_, lm, *lmowner, lmstride);
+    ele->location_vector(*discret_, lm, *lmowner, lmstride);
 
     // loop all nodes of this element, add values to the global vectors
 
@@ -269,7 +269,7 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
 /*----------------------------------------------------------------------*
  | the solver for artery                                   ismail 06/09 |
  *----------------------------------------------------------------------*/
-void Arteries::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
+void Arteries::ArtNetExplicitTimeInt::solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   // time measurement: Artery
   if (!coupledTo3D_)
@@ -292,7 +292,7 @@ void Arteries::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList>
     }
 
     // set both system matrix and rhs vector to zero
-    sysmat_->Zero();
+    sysmat_->zero();
     rhs_->PutScalar(0.0);
 
 
@@ -307,16 +307,16 @@ void Arteries::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList>
     eleparams.set("total time", time_);
 
     // set vector values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state("qanp", qanp_);
 
 
     // call standard loop over all elements
     discret_->evaluate(eleparams, sysmat_, rhs_);
-    discret_->ClearState();
+    discret_->clear_state();
 
     // finalize the complete matrix
-    sysmat_->Complete();
+    sysmat_->complete();
   }
   // end time measurement for element
 
@@ -331,7 +331,7 @@ void Arteries::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList>
     eleparams.set<int>("action", Arteries::solve_riemann_problem);
 
     // set vecotr values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state("qanp", qanp_);
 
     eleparams.set("time step size", dta_);
@@ -360,7 +360,7 @@ void Arteries::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList>
     eleparams.set<int>("action", Arteries::set_term_bc);
 
     // set vecotr values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state("qanp", qanp_);
 
     eleparams.set("time step size", dta_);
@@ -377,7 +377,7 @@ void Arteries::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList>
     eleparams.set("coupling with 3D fluid params", CouplingTo3DParams);
 
     // solve junction boundary conditions
-    artjun_->Solve(eleparams);
+    artjun_->solve(eleparams);
 
     // call standard loop over all elements
     discret_->evaluate(eleparams, sysmat_, rhs_);
@@ -410,7 +410,7 @@ void Arteries::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList>
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = true;
-    solver_->Solve(sysmat_->EpetraOperator(), qanp_, rhs_, solver_params);
+    solver_->solve(sysmat_->epetra_operator(), qanp_, rhs_, solver_params);
   }
   // end time measurement for solver
   dtsolve_ = Teuchos::Time::wallTime() - tcpusolve;
@@ -426,7 +426,7 @@ void Arteries::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList>
     eleparams.set<int>("action", Arteries::evaluate_wf_wb);
 
     // set vecotr values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state("qanp", qanp_);
 
     eleparams.set("time step size", dta_);
@@ -440,7 +440,7 @@ void Arteries::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList>
 }  // ArtNetExplicitTimeInt:Solve
 
 
-void Arteries::ArtNetExplicitTimeInt::SolveScatra()
+void Arteries::ArtNetExplicitTimeInt::solve_scatra()
 {
   {
     scatraO2np_->PutScalar(0.0);
@@ -451,7 +451,7 @@ void Arteries::ArtNetExplicitTimeInt::SolveScatra()
     eleparams.set<int>("action", Arteries::evaluate_scatra_analytically);
 
     // set vecotr values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
 
     eleparams.set<Teuchos::RCP<Epetra_Vector>>("Wfn", Wfn_);
     eleparams.set<Teuchos::RCP<Epetra_Vector>>("Wbn", Wbn_);
@@ -475,7 +475,7 @@ void Arteries::ArtNetExplicitTimeInt::SolveScatra()
     eleparams.set<int>("action", Arteries::set_scatra_term_bc);
 
     // set vecotr values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state("qanp", qanp_);
 
     eleparams.set("time step size", dta_);
@@ -497,7 +497,7 @@ void Arteries::ArtNetExplicitTimeInt::SolveScatra()
  |                                                                      |
  |                                                          ismail 06/09|
  *----------------------------------------------------------------------*/
-void Arteries::ArtNetExplicitTimeInt::TimeUpdate()
+void Arteries::ArtNetExplicitTimeInt::time_update()
 {
   // Volumetric Flow rate/Cross-sectional area of this step become most recent
   qanm_->Update(1.0, *qan_, 0.0);
@@ -524,7 +524,7 @@ void Arteries::ArtNetExplicitTimeInt::TimeUpdate()
  |                                                                      |
  |                                                          ismail 04/14|
  *----------------------------------------------------------------------*/
-void Arteries::ArtNetExplicitTimeInt::InitSaveState()
+void Arteries::ArtNetExplicitTimeInt::init_save_state()
 {
   // get the discretizations DOF row map
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
@@ -563,7 +563,7 @@ void Arteries::ArtNetExplicitTimeInt::InitSaveState()
  |                                                                      |
  |                                                          ismail 04/14|
  *----------------------------------------------------------------------*/
-void Arteries::ArtNetExplicitTimeInt::SaveState()
+void Arteries::ArtNetExplicitTimeInt::save_state()
 {
   // Volumetric Flow rate/Cross-sectional area of this step become most recent
   saved_qanp_->Update(1.0, *qanp_, 0.0);
@@ -599,7 +599,7 @@ void Arteries::ArtNetExplicitTimeInt::SaveState()
  |                                                                      |
  |                                                          ismail 04/14|
  *----------------------------------------------------------------------*/
-void Arteries::ArtNetExplicitTimeInt::LoadState()
+void Arteries::ArtNetExplicitTimeInt::load_state()
 {
   // Volumetric Flow rate/Cross-sectional area of this step become most recent
   qanp_->Update(1.0, *saved_qanp_, 0.0);
@@ -777,7 +777,7 @@ void Arteries::ArtNetExplicitTimeInt::read_restart(int step, bool coupledTo3D)
 {
   coupledTo3D_ = coupledTo3D;
   Core::IO::DiscretizationReader reader(
-      discret_, Global::Problem::Instance()->InputControlFile(), step);
+      discret_, Global::Problem::instance()->input_control_file(), step);
 
   time_ = reader.read_double("time");
 
@@ -809,7 +809,7 @@ void Arteries::ArtNetExplicitTimeInt::calc_postprocessing_values()
   eleparams.set<int>("action", Arteries::calc_postpro_vals);
 
   // set vecotr values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro setting qanp"<<std::endl;
   discret_->set_state("qanp", qanp_);
   //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro setting wfnp"<<std::endl;
@@ -842,7 +842,7 @@ void Arteries::ArtNetExplicitTimeInt::calc_scatra_from_scatra_fw(
   eleparams.set<int>("action", Arteries::calc_scatra_from_scatra_fb);
 
   // set vecotr values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   eleparams.set("scatra", scatra);
   eleparams.set("scatra_fb", scatra_fb);
 
@@ -851,17 +851,17 @@ void Arteries::ArtNetExplicitTimeInt::calc_scatra_from_scatra_fw(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
-void Arteries::ArtNetExplicitTimeInt::TestResults()
+void Arteries::ArtNetExplicitTimeInt::test_results()
 {
-  Teuchos::RCP<Core::UTILS::ResultTest> resulttest = CreateFieldTest();
-  Global::Problem::Instance()->AddFieldTest(resulttest);
-  Global::Problem::Instance()->TestAll(discret_->Comm());
+  Teuchos::RCP<Core::UTILS::ResultTest> resulttest = create_field_test();
+  Global::Problem::instance()->add_field_test(resulttest);
+  Global::Problem::instance()->test_all(discret_->get_comm());
 }
 
 /*----------------------------------------------------------------------*
  | create result test for this field                   kremheller 03/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> Arteries::ArtNetExplicitTimeInt::CreateFieldTest()
+Teuchos::RCP<Core::UTILS::ResultTest> Arteries::ArtNetExplicitTimeInt::create_field_test()
 {
   return Teuchos::rcp(new Arteries::ArteryResultTest(*(this)));
 }

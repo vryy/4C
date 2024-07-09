@@ -28,7 +28,7 @@ Core::LinearSolver::KrylovProjectionPreconditioner::KrylovProjectionPrecondition
 void Core::LinearSolver::KrylovProjectionPreconditioner::setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
-  projector_->ApplyPT(*b);
+  projector_->apply_pt(*b);
 
   // setup wrapped preconditioner
   preconditioner_->setup(create, matrix, x, b);
@@ -40,7 +40,7 @@ void Core::LinearSolver::KrylovProjectionPreconditioner::setup(
       new Core::LinAlg::LinalgProjectedOperator(Teuchos::rcp(matrix, false), true, projector_));
 
   p_ = Teuchos::rcp(
-      new Core::LinAlg::LinalgPrecondOperator(preconditioner_->PrecOperator(), true, projector_));
+      new Core::LinAlg::LinalgPrecondOperator(preconditioner_->prec_operator(), true, projector_));
 }
 
 FOUR_C_NAMESPACE_CLOSE

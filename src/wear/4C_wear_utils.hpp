@@ -72,7 +72,7 @@ namespace Wear
       // spatial configuration of this element!
       for (int k = 0; k < numnod; ++k)
         for (int j = 0; j < ndim; ++j)
-          xcure(j, k) = ele->Nodes()[k]->X()[j] + mydisp_source[k * ndim + j];
+          xcure(j, k) = ele->nodes()[k]->x()[j] + mydisp_source[k * ndim + j];
 
       // first estimation for parameter space coordinates
       for (int p = 0; p < 3; ++p) e[p] = 0.0;
@@ -172,7 +172,7 @@ namespace Wear
 
       for (int k = 0; k < numnod; ++k)
         for (int p = 0; p < ndim; ++p)
-          xmat[p] += funct(k) * (ele->Nodes()[k]->X()[p] + mydisp_target[k * ndim + p]);
+          xmat[p] += funct(k) * (ele->nodes()[k]->x()[p] + mydisp_target[k * ndim + p]);
 
       for (int p = 0; p < ndim; ++p) Xtarget[p] = xmat[p];
 

@@ -39,26 +39,26 @@ void PaSI::PasiPartOneWayCoup::setup()
 
     // get wall data state container
     std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
-        particlewallinterface->GetWallDataState();
+        particlewallinterface->get_wall_data_state();
 
-    if (walldatastate->GetDispRow() == Teuchos::null or
-        walldatastate->GetDispCol() == Teuchos::null)
+    if (walldatastate->get_disp_row() == Teuchos::null or
+        walldatastate->get_disp_col() == Teuchos::null)
       FOUR_C_THROW("wall displacements not initialized!");
-    if (walldatastate->GetVelCol() == Teuchos::null)
+    if (walldatastate->get_vel_col() == Teuchos::null)
       FOUR_C_THROW("wall velocities not initialized!");
-    if (walldatastate->GetAccCol() == Teuchos::null)
+    if (walldatastate->get_acc_col() == Teuchos::null)
       FOUR_C_THROW("wall accelerations not initialized!");
   }
 }
 
-void PaSI::PasiPartOneWayCoup::Timeloop()
+void PaSI::PasiPartOneWayCoup::timeloop()
 {
   // safety checks
   check_is_init();
   check_is_setup();
 
   // time loop
-  while (NotFinished())
+  while (not_finished())
   {
     // prepare time step
     prepare_time_step();

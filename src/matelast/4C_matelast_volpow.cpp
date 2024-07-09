@@ -22,7 +22,7 @@ Mat::Elastic::PAR::VolPow::VolPow(const Core::Mat::PAR::Parameter::Data& matdata
 
 Mat::Elastic::VolPow::VolPow(Mat::Elastic::PAR::VolPow* params) : params_(params) {}
 
-void Mat::Elastic::VolPow::AddStrainEnergy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
+void Mat::Elastic::VolPow::add_strain_energy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
     const Core::LinAlg::Matrix<3, 1>& modinv, const Core::LinAlg::Matrix<6, 1>& glstrain,
     const int gp, const int eleGID)
 {
@@ -46,7 +46,7 @@ void Mat::Elastic::VolPow::add_derivatives_modified(Core::LinAlg::Matrix<3, 1>& 
   ddPmodII(2) += expon * a * std::pow(modinv(2), -(expon + 1.));
 }
 
-void Mat::Elastic::VolPow::Add3rdVolDeriv(
+void Mat::Elastic::VolPow::add3rd_vol_deriv(
     const Core::LinAlg::Matrix<3, 1>& modinv, double& d3PsiVolDJ3)
 {
   const double a = params_->a_;

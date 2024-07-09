@@ -87,7 +87,7 @@ void ScaTra::TimIntBDF2::setup()
     {
       homisoturb_forcing_ = Teuchos::rcp(new ScaTra::HomIsoTurbScalarForcing(this));
       // initialize forcing algorithm
-      homisoturb_forcing_->SetInitialSpectrum(
+      homisoturb_forcing_->set_initial_spectrum(
           Core::UTILS::IntegralValue<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"));
     }
   }
@@ -112,7 +112,7 @@ void ScaTra::TimIntBDF2::set_element_time_parameter(bool forcedincrementalsolver
   eleparams.set<double>("total time", time_);
   eleparams.set<double>("time factor", theta_ * dta_);
   eleparams.set<double>("alpha_F", 1.0);
-  if (Step() == 1)
+  if (step() == 1)
     eleparams.set<double>("time derivative factor", 1.0 / dta_);
   else
     eleparams.set<double>("time derivative factor", 3.0 / (2.0 * dta_));
@@ -192,7 +192,7 @@ void ScaTra::TimIntBDF2::av_m3_separation()
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
 
   // AVM3 separation
-  Sep_->Multiply(false, *phinp_, *fsphinp_);
+  Sep_->multiply(false, *phinp_, *fsphinp_);
 
   // set fine-scale vector
   discret_->set_state("fsphinp", fsphinp_);
@@ -208,7 +208,7 @@ void ScaTra::TimIntBDF2::dynamic_computation_of_cs()
     // compute averaged values for LkMk and MkMk
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = dirichlet_toggle();
     DynSmag_->apply_filter_for_dynamic_computation_of_prt(
-        phinp_, 0.0, dirichtoggle, *extraparams_, NdsVel());
+        phinp_, 0.0, dirichtoggle, *extraparams_, nds_vel());
   }
 }
 
@@ -220,7 +220,7 @@ void ScaTra::TimIntBDF2::dynamic_computation_of_cv()
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = dirichlet_toggle();
     Vrem_->apply_filter_for_dynamic_computation_of_dt(
-        phinp_, 0.0, dirichtoggle, *extraparams_, NdsVel());
+        phinp_, 0.0, dirichtoggle, *extraparams_, nds_vel());
   }
 }
 
@@ -277,7 +277,7 @@ void ScaTra::TimIntBDF2::update()
   if (calcflux_domain_ != Inpar::ScaTra::flux_none or
       calcflux_boundary_ != Inpar::ScaTra::flux_none)
   {
-    if (IsResultStep() or do_boundary_flux_statistics()) CalcFlux(true);
+    if (is_result_step() or do_boundary_flux_statistics()) calc_flux(true);
   }
 
   // solution of this step becomes most recent solution of the last step
@@ -285,7 +285,7 @@ void ScaTra::TimIntBDF2::update()
   phin_->Update(1.0, *phinp_, 0.0);
 
   // call time update of forcing routine
-  if (homisoturb_forcing_ != Teuchos::null) homisoturb_forcing_->TimeUpdateForcing();
+  if (homisoturb_forcing_ != Teuchos::null) homisoturb_forcing_->time_update_forcing();
 }
 
 /*----------------------------------------------------------------------*
@@ -311,7 +311,7 @@ void ScaTra::TimIntBDF2::read_restart(const int step, Teuchos::RCP<Core::IO::Inp
   if (input == Teuchos::null)
   {
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
-        discret_, Global::Problem::Instance()->InputControlFile(), step));
+        discret_, Global::Problem::instance()->input_control_file(), step));
   }
   else
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));

@@ -41,7 +41,7 @@ namespace
   {
    public:
     static constexpr double theta = 0.5;
-    static inline T GetResiduum(const IntegrationState<2, T>& state, const T dt)
+    static inline T get_residuum(const IntegrationState<2, T>& state, const T dt)
     {
       return state.x[1] - state.x[0] - dt * ((1.0 - theta) * state.f[0] + theta * state.f[1]);
     }
@@ -65,7 +65,7 @@ namespace
   class ExplicitIntegration<2, T>
   {
    public:
-    static T Integrate(const IntegrationState<2, T>& state, const T dt)
+    static T integrate(const IntegrationState<2, T>& state, const T dt)
     {
       return state.x[0] + dt * state.f[0];
     }
@@ -233,8 +233,8 @@ Core::LinAlg::Matrix<2, 2, T> MIXTURE::Implementation::RemodelFiberImplementatio
           return remodel_state;
         });
 
-    T residuum_growth = ImplicitIntegration<numstates, T>::GetResiduum(growth_state, dt);
-    T residuum_remodel = ImplicitIntegration<numstates, T>::GetResiduum(remodel_state, dt);
+    T residuum_growth = ImplicitIntegration<numstates, T>::get_residuum(growth_state, dt);
+    T residuum_remodel = ImplicitIntegration<numstates, T>::get_residuum(remodel_state, dt);
 
     Core::LinAlg::Matrix<2, 1, T> residuum(false);
     residuum(0, 0) = residuum_growth;
@@ -329,8 +329,8 @@ void MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 
 
   // Update state
-  states_.back().growth_scalar = ExplicitIntegration<numstates, T>::Integrate(growth_state, dt);
-  states_.back().lambda_r = ExplicitIntegration<numstates, T>::Integrate(remodel_state, dt);
+  states_.back().growth_scalar = ExplicitIntegration<numstates, T>::integrate(growth_state, dt);
+  states_.back().lambda_r = ExplicitIntegration<numstates, T>::integrate(remodel_state, dt);
 }
 
 

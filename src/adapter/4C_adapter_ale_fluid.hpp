@@ -55,10 +55,10 @@ namespace Adapter
     //@}
 
     //! communicate object at the interface
-    Teuchos::RCP<const ALE::UTILS::MapExtractor> Interface() const;
+    Teuchos::RCP<const ALE::UTILS::MapExtractor> interface() const;
 
     //! solve
-    int Solve() override;
+    int solve() override;
 
     //! apply displacements at the free surface nodes
     void apply_free_surface_displacements(Teuchos::RCP<const Epetra_Vector> fsdisp);

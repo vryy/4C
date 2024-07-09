@@ -70,7 +70,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra) = 0;
 
       /// Internal implementation class for ElemagBoundary elements
-      static ElemagBoundaryImplInterface* Impl(const Core::Elements::Element* ele);
+      static ElemagBoundaryImplInterface* impl(const Core::Elements::Element* ele);
 
     };  // class ElemagBoundaryImplInterface
 
@@ -80,7 +80,7 @@ namespace Discret
     {
      public:
       /// Singleton access method
-      static ElemagBoundaryImpl<distype>* Instance(
+      static ElemagBoundaryImpl<distype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       /// Constructor

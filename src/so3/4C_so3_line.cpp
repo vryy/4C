@@ -16,12 +16,12 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::StructuralLineType Discret::ELEMENTS::StructuralLineType::instance_;
 
-Discret::ELEMENTS::StructuralLineType& Discret::ELEMENTS::StructuralLineType::Instance()
+Discret::ELEMENTS::StructuralLineType& Discret::ELEMENTS::StructuralLineType::instance()
 {
   return instance_;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::StructuralLineType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::StructuralLineType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new StructuralLine( id, owner ) );
@@ -36,11 +36,11 @@ Discret::ELEMENTS::StructuralLine::StructuralLine(int id, int owner, int nnode, 
     Core::Nodes::Node** nodes, Core::Elements::Element* parent, const int lline)
     : Core::Elements::FaceElement(id, owner)
 {
-  SetNodeIds(nnode, nodeids);
-  BuildNodalPointers(nodes);
+  set_node_ids(nnode, nodeids);
+  build_nodal_pointers(nodes);
   set_parent_master_element(parent, lline);
   // type of gaussian integration
-  switch (Shape())
+  switch (shape())
   {
     case Core::FE::CellType::line2:
       gaussrule_ = Core::FE::GaussRule1D::line_2point;
@@ -66,7 +66,7 @@ Discret::ELEMENTS::StructuralLine::StructuralLine(const Discret::ELEMENTS::Struc
 /*----------------------------------------------------------------------*
  |  Deep copy this instance return pointer to it               gee 04/08|
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::StructuralLine::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::StructuralLine::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::StructuralLine(*this);
   return newelement;
@@ -75,7 +75,7 @@ Core::Elements::Element* Discret::ELEMENTS::StructuralLine::Clone() const
 /*----------------------------------------------------------------------*
  |                                                             gee 04/08|
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::StructuralLine::Shape() const
+Core::FE::CellType Discret::ELEMENTS::StructuralLine::shape() const
 {
   switch (num_node())
   {

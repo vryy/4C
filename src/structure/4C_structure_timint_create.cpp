@@ -67,7 +67,7 @@ Teuchos::RCP<Solid::TimIntImpl> Solid::TimIntImplCreate(const Teuchos::Parameter
 
   // check if we have a problem that needs to be prestressed
   if (Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
-          Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS") !=
+          Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS") !=
       Inpar::Solid::PreStress::none)
   {
     sti = Teuchos::rcp(new Solid::TimIntPrestress(
@@ -125,7 +125,7 @@ Teuchos::RCP<Solid::TimIntExpl> Solid::TimIntExplCreate(const Teuchos::Parameter
   Teuchos::RCP<Solid::TimIntExpl> sti = Teuchos::null;
 
   // what's the current problem type?
-  Core::ProblemType probtype = Global::Problem::Instance()->GetProblemType();
+  Core::ProblemType probtype = Global::Problem::instance()->get_problem_type();
 
   if (probtype == Core::ProblemType::fsi or probtype == Core::ProblemType::fsi_redmodels or
       probtype == Core::ProblemType::fsi_lung or probtype == Core::ProblemType::gas_fsi or

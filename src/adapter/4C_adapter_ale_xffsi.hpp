@@ -64,7 +64,7 @@ namespace Adapter
      *  dirichlet and we solve the ALE again to find the real ALE
      *  displacement.
      */
-    int Solve() override;
+    int solve() override;
 
    private:
     /// map extractor for the fluid-fluid interface dof

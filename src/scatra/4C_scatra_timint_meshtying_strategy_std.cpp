@@ -39,7 +39,7 @@ const Epetra_Map& ScaTra::MeshtyingStrategyStd::dof_row_map() const
 /*----------------------------------------------------------------------*
  | dummy meshtying evaluate for standard scalar transport    fang 12/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyStd::EvaluateMeshtying()
+void ScaTra::MeshtyingStrategyStd::evaluate_meshtying()
 {
   return;
 }  // ScaTra::MeshtyingStrategyStd::evaluate_meshtying
@@ -54,7 +54,7 @@ void ScaTra::MeshtyingStrategyStd::setup_meshtying() { return; }
 /*----------------------------------------------------------------------*
  | init meshtying objects                                   rauch 09/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyStd::InitMeshtying()
+void ScaTra::MeshtyingStrategyStd::init_meshtying()
 {
   // instantiate strategy for Newton-Raphson convergence check
   init_conv_check_strategy();
@@ -64,7 +64,7 @@ void ScaTra::MeshtyingStrategyStd::InitMeshtying()
 /*-----------------------------------------------------------------------------*
  | solve linear system of equations for standard scalar transport   fang 12/14 |
  *-----------------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyStd::Solve(
+void ScaTra::MeshtyingStrategyStd::solve(
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,                //!< solver
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
     const Teuchos::RCP<Epetra_Vector>& increment,                    //!< increment vector
@@ -75,7 +75,7 @@ void ScaTra::MeshtyingStrategyStd::Solve(
 {
   solver_params.refactor = true;
   solver_params.reset = iteration == 1;
-  solver->Solve(systemmatrix->EpetraOperator(), increment, residual, solver_params);
+  solver->solve(systemmatrix->epetra_operator(), increment, residual, solver_params);
 
   return;
 }  // ScaTra::MeshtyingStrategyStd::Solve
@@ -84,10 +84,10 @@ void ScaTra::MeshtyingStrategyStd::Solve(
 /*-------------------------------------------------------------------------*
  | return linear solver for global system of linear equations   fang 01/18 |
  *-------------------------------------------------------------------------*/
-const Core::LinAlg::Solver& ScaTra::MeshtyingStrategyStd::Solver() const
+const Core::LinAlg::Solver& ScaTra::MeshtyingStrategyStd::solver() const
 {
-  if (scatratimint_->Solver() == Teuchos::null) FOUR_C_THROW("Invalid linear solver!");
-  return *scatratimint_->Solver();
+  if (scatratimint_->solver() == Teuchos::null) FOUR_C_THROW("Invalid linear solver!");
+  return *scatratimint_->solver();
 }  // ScaTra::MeshtyingStrategyStd::Solver()
 
 
@@ -96,15 +96,16 @@ const Core::LinAlg::Solver& ScaTra::MeshtyingStrategyStd::Solver() const
  *------------------------------------------------------------------------*/
 void ScaTra::MeshtyingStrategyStd::init_conv_check_strategy()
 {
-  if (scatratimint_->MicroScale())
+  if (scatratimint_->micro_scale())
     convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyStdMicroScale(
-        scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
-  else if (Global::Problem::Instance()->GetProblemType() == Core::ProblemType::poromultiphasescatra)
+        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
+  else if (Global::Problem::instance()->get_problem_type() ==
+           Core::ProblemType::poromultiphasescatra)
     convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyPoroMultiphaseScatra(
-        scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
   else
     convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyStd(
-        scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
 
   return;
 }  // ScaTra::MeshtyingStrategyStd::init_conv_check_strategy

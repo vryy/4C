@@ -36,25 +36,25 @@ Core::FE::AssembleStrategy::AssembleStrategy(int firstdofset, int seconddofset,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::AssembleStrategy::Zero()
+void Core::FE::AssembleStrategy::zero()
 {
-  if (Assemblemat1())
+  if (assemblemat1())
   {
-    systemmatrix1_->Zero();
+    systemmatrix1_->zero();
   }
-  if (Assemblemat2())
+  if (assemblemat2())
   {
-    systemmatrix1_->Zero();
+    systemmatrix1_->zero();
   }
-  if (Assemblevec1())
+  if (assemblevec1())
   {
     systemvector1_->PutScalar(0.0);
   }
-  if (Assemblevec2())
+  if (assemblevec2())
   {
     systemvector2_->PutScalar(0.0);
   }
-  if (Assemblevec3())
+  if (assemblevec3())
   {
     systemvector3_->PutScalar(0.0);
   }
@@ -62,51 +62,51 @@ void Core::FE::AssembleStrategy::Zero()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::AssembleStrategy::Complete()
+void Core::FE::AssembleStrategy::complete()
 {
-  if (Assemblemat1())
+  if (assemblemat1())
   {
-    systemmatrix1_->Complete();
+    systemmatrix1_->complete();
   }
-  if (Assemblemat2())
+  if (assemblemat2())
   {
-    systemmatrix2_->Complete();
+    systemmatrix2_->complete();
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::AssembleStrategy::ClearElementStorage(int rdim, int cdim)
+void Core::FE::AssembleStrategy::clear_element_storage(int rdim, int cdim)
 {
-  if (Assemblemat1())
+  if (assemblemat1())
   {
     if (elematrix1_.numRows() != rdim or elematrix1_.numCols() != cdim)
       elematrix1_.shape(rdim, cdim);
     else
       elematrix1_.putScalar(0.0);
   }
-  if (Assemblemat2())
+  if (assemblemat2())
   {
     if (elematrix2_.numRows() != rdim or elematrix2_.numCols() != cdim)
       elematrix2_.shape(rdim, cdim);
     else
       elematrix2_.putScalar(0.0);
   }
-  if (Assemblevec1())
+  if (assemblevec1())
   {
     if (elevector1_.length() != rdim)
       elevector1_.size(rdim);
     else
       elevector1_.putScalar(0.0);
   }
-  if (Assemblevec2())
+  if (assemblevec2())
   {
     if (elevector2_.length() != rdim)
       elevector2_.size(rdim);
     else
       elevector2_.putScalar(0.0);
   }
-  if (Assemblevec3())
+  if (assemblevec3())
   {
     if (elevector3_.length() != rdim)
       elevector3_.size(rdim);
@@ -118,36 +118,36 @@ void Core::FE::AssembleStrategy::ClearElementStorage(int rdim, int cdim)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::AssembleStrategy::Assemble(LinAlg::SparseOperator& sysmat, int eid,
+void Core::FE::AssembleStrategy::assemble(LinAlg::SparseOperator& sysmat, int eid,
     const std::vector<int>& lmstride, const LinAlg::SerialDenseMatrix& Aele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
-  sysmat.Assemble(eid, lmstride, Aele, lm, lmowner);
+  sysmat.assemble(eid, lmstride, Aele, lm, lmowner);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::AssembleStrategy::Assemble(LinAlg::SparseOperator& sysmat, int eid,
+void Core::FE::AssembleStrategy::assemble(LinAlg::SparseOperator& sysmat, int eid,
     const std::vector<int>& lmstride, const LinAlg::SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
 {
-  sysmat.Assemble(eid, lmstride, Aele, lmrow, lmrowowner, lmcol);
+  sysmat.assemble(eid, lmstride, Aele, lmrow, lmrowowner, lmcol);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::AssembleStrategy::Assemble(
+void Core::FE::AssembleStrategy::assemble(
     LinAlg::SparseOperator& sysmat, double val, int rgid, int cgid)
 {
-  sysmat.Assemble(val, rgid, cgid);
+  sysmat.assemble(val, rgid, cgid);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::AssembleStrategy::Assemble(Epetra_Vector& V, const LinAlg::SerialDenseVector& Vele,
+void Core::FE::AssembleStrategy::assemble(Epetra_Vector& V, const LinAlg::SerialDenseVector& Vele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
   LinAlg::Assemble(V, Vele, lm, lmowner);
@@ -155,7 +155,7 @@ void Core::FE::AssembleStrategy::Assemble(Epetra_Vector& V, const LinAlg::Serial
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::AssembleStrategy::Assemble(Epetra_MultiVector& V, const int n,
+void Core::FE::AssembleStrategy::assemble(Epetra_MultiVector& V, const int n,
     const LinAlg::SerialDenseVector& Vele, const std::vector<int>& lm,
     const std::vector<int>& lmowner)
 {

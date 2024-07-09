@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Perform the cut and fill state container               schott 01/15 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
+Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::create(
     const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,  //!< xfluid background discretization
     Teuchos::RCP<const Epetra_Vector>
         back_disp_col,  //!< col vector holding background ALE displacements for backdis
@@ -60,13 +60,13 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
       Teuchos::rcp(new Epetra_Map(*xdiscret->dof_row_map()));
 
   Teuchos::RCP<const Epetra_Map> xfluiddofcolmap =
-      Teuchos::rcp(new Epetra_Map(*xdiscret->DofColMap()));
+      Teuchos::rcp(new Epetra_Map(*xdiscret->dof_col_map()));
 
   Teuchos::RCP<XFluidState> state = Teuchos::rcp(
       new FLD::XFluidState(condition_manager_, wizard, dofset, xfluiddofrowmap, xfluiddofcolmap));
 
   //--------------------------------------------------------------------------------------
-  state->SetupMapExtractors(xdiscret, time);
+  state->setup_map_extractors(xdiscret, time);
 
   return state;
 }
@@ -75,7 +75,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
 /*----------------------------------------------------------------------*
  |  Perform the cut and fill state container                kruse 08/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::Create(
+Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::create(
     const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,  //!< xfluid background discretization
     const Teuchos::RCP<Core::FE::Discretization>&
         embfluiddiscret,  //!< embedded fluid discretization
@@ -104,7 +104,7 @@ Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::Create(
       Teuchos::rcp(new Epetra_Map(*xdiscret->dof_row_map()));
 
   Teuchos::RCP<const Epetra_Map> xfluiddofcolmap =
-      Teuchos::rcp(new Epetra_Map(*xdiscret->DofColMap()));
+      Teuchos::rcp(new Epetra_Map(*xdiscret->dof_col_map()));
 
   Teuchos::RCP<const Epetra_Map> embfluiddofrowmap =
       Teuchos::rcp(new Epetra_Map(*embfluiddiscret->dof_row_map()));
@@ -113,7 +113,7 @@ Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::Create(
       condition_manager_, wizard, dofset, xfluiddofrowmap, xfluiddofcolmap, embfluiddofrowmap));
 
   //--------------------------------------------------------------------------------------
-  state->SetupMapExtractors(xdiscret, embfluiddiscret, time);
+  state->setup_map_extractors(xdiscret, embfluiddiscret, time);
 
   return state;
 }
@@ -136,14 +136,14 @@ void FLD::XFluidStateCreator::create_new_cut_state(
   // new wizard using information about cutting sides from the condition_manager
   wizard = Teuchos::rcp(new Core::Geo::CutWizard(xdiscret,
       [xdiscret](const Core::Nodes::Node& node, std::vector<int>& lm)
-      { xdiscret->InitialDof(&node, lm); }));
+      { xdiscret->initial_dof(&node, lm); }));
 
   // Set options for the cut wizard
-  wizard->SetOptions(Global::Problem::Instance()->CutGeneralParams(),
+  wizard->set_options(Global::Problem::instance()->cut_general_params(),
       nodal_dofset_strategy_,       // strategy for nodal dofset management
       volume_cell_gauss_point_by_,  // how to create volume cell Gauss points?
       bound_cell_gauss_point_by_,   // how to create boundary cell Gauss points?
-      Global::Problem::Instance()->OutputControlFile()->file_name(),
+      Global::Problem::instance()->output_control_file()->file_name(),
       gmsh_cut_out_,  // gmsh output for cut library
       true,           // find point positions
       false,          // generate only tet cells
@@ -154,46 +154,46 @@ void FLD::XFluidStateCreator::create_new_cut_state(
   // set state for all mesh cutting
 
   // loop all mesh coupling objects
-  for (int mc_idx = 0; mc_idx < condition_manager_->NumMeshCoupling(); mc_idx++)
+  for (int mc_idx = 0; mc_idx < condition_manager_->num_mesh_coupling(); mc_idx++)
   {
-    Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(mc_idx);
+    Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->get_mesh_coupling(mc_idx);
 
-    if (!mc_coupl->CutGeometry()) continue;  // If don't cut the background mesh.
+    if (!mc_coupl->cut_geometry()) continue;  // If don't cut the background mesh.
 
-    wizard->AddCutterState(mc_idx, mc_coupl->GetCutterDis(), mc_coupl->GetCutterDispCol(),
+    wizard->add_cutter_state(mc_idx, mc_coupl->get_cutter_dis(), mc_coupl->get_cutter_disp_col(),
         condition_manager_->get_mesh_coupling_start_gid(mc_idx));
   }
 
   //--------------------------------------------------------------------------------------
   // set background state (background mesh displacements and level-set values)
 
-  wizard->SetBackgroundState(
+  wizard->set_background_state(
       back_disp_col,  //!< col vector holding background ALE displacements for backdis
-      condition_manager_
-          ->GetLevelSetFieldCol(),  //!< col vector holding nodal level-set values based on backdis
+      condition_manager_->get_level_set_field_col(),  //!< col vector holding nodal level-set values
+                                                      //!< based on backdis
       condition_manager_->get_level_set_coupling_gid()  //!< global side id for level-set coupling
   );
 
   //--------------------------------------------------------------------------------------
   // Initialize cut objects into the cut
-  wizard->Prepare();
+  wizard->prepare();
 
   // Loop all mesh coupling objects:
   // -- Find corresponding marked surfaces loaded into the cut.
-  for (int mc_idx = 0; mc_idx < condition_manager_->NumMeshCoupling(); mc_idx++)
+  for (int mc_idx = 0; mc_idx < condition_manager_->num_mesh_coupling(); mc_idx++)
   {
-    Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(mc_idx);
+    Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->get_mesh_coupling(mc_idx);
 
-    if (mc_coupl->IsMarkedGeometry())
+    if (mc_coupl->is_marked_geometry())
     {
       wizard->set_marked_condition_sides(
-          mc_coupl->GetCutterDis(), condition_manager_->get_mesh_coupling_start_gid(mc_idx));
+          mc_coupl->get_cutter_dis(), condition_manager_->get_mesh_coupling_start_gid(mc_idx));
     }
   }
 
   //--------------------------------------------------------------------------------------
   // performs the "CUT"
-  wizard->Cut(include_inner_);
+  wizard->cut(include_inner_);
 
   //--------------------------------------------------------------------------------------
   // set the new dofset after cut
@@ -202,16 +202,16 @@ void FLD::XFluidStateCreator::create_new_cut_state(
   // create a new XFEM-dofset
   dofset = Teuchos::rcp(new XFEM::XFEMDofSet(*wizard, maxNumMyReservedDofsperNode, *xdiscret));
 
-  const int restart = Global::Problem::Instance()->restart();
+  const int restart = Global::Problem::instance()->restart();
   if ((step < 1) or restart) minnumdofsets_ = xdiscret->dof_row_map()->MinAllGID();
 
-  dofset->SetMinGID(minnumdofsets_);         // set the minimal GID of xfem dis
-  xdiscret->ReplaceDofSet(0, dofset, true);  // fluid dofset has nds = 0
+  dofset->set_min_gid(minnumdofsets_);         // set the minimal GID of xfem dis
+  xdiscret->replace_dof_set(0, dofset, true);  // fluid dofset has nds = 0
 
   xdiscret->fill_complete(true, false, false);
 
   // print all dofsets
-  xdiscret->GetDofSetProxy()->PrintAllDofsets(xdiscret->Comm());
+  xdiscret->get_dof_set_proxy()->print_all_dofsets(xdiscret->get_comm());
 
   //--------------------------------------------------------------------------------------
   // recompute nullspace based on new number of dofs per node

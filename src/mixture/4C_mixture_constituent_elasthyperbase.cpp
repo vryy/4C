@@ -52,7 +52,7 @@ MIXTURE::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
   // Create summands
   for (const auto& matid : params_->matids_)
   {
-    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(matid);
+    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to read elastic summand.");
     potsum_.push_back(sum);
   }
@@ -74,7 +74,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::pack_constituent(
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   Core::Communication::ParObject::add_to_pack(data, matid);
   summand_properties_.pack(data);
 
@@ -87,7 +87,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::pack_constituent(
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
-    for (const auto& p : potsum_) p->PackSummand(data);
+    for (const auto& p : potsum_) p->pack_summand(data);
   }
 }
 
@@ -105,20 +105,21 @@ void MIXTURE::MixtureConstituentElastHyperBase::unpack_constituent(
   int matid;
   Core::Communication::ParObject::extract_from_pack(position, data, matid);
 
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
   {
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const unsigned int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const unsigned int probinst =
+          Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == material_type())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
       {
         params_ = dynamic_cast<MIXTURE::PAR::MixtureConstituentElastHyperBase*>(mat);
       }
       else
       {
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
             material_type());
       }
     }
@@ -146,13 +147,13 @@ void MIXTURE::MixtureConstituentElastHyperBase::unpack_constituent(
     for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
     {
       const int summatid = *m;
-      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(summatid);
+      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(summatid);
       if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       potsum_.push_back(sum);
     }
 
     // loop map of associated potential summands
-    for (auto& summand : potsum_) summand->UnpackSummand(data, position);
+    for (auto& summand : potsum_) summand->unpack_summand(data, position);
   }
 }
 

@@ -30,7 +30,7 @@ namespace Core::FE
   struct ShapeValuesInteriorOnFace
   {
     // shape function
-    void Shape(int numrows, int numcols)
+    void shape(int numrows, int numcols)
     {
       matrix_.shape(numrows, numcols);
       isNonzero_.resize(numrows);
@@ -43,7 +43,7 @@ namespace Core::FE
     // for analog usage as a pure matrix
     double operator()(const int row, const int col) const { return matrix_(row, col); }
 
-    bool NonzeroOnFace(const int index) const { return isNonzero_[index]; }
+    bool nonzero_on_face(const int index) const { return isNonzero_[index]; }
 
     Core::LinAlg::SerialDenseMatrix matrix_;
     std::vector<bool> isNonzero_;
@@ -70,7 +70,7 @@ namespace Core::FE
 
     /// convert the data structure to integers to simplify comparisons
     /// (rather than implementing operator < with many if statements)
-    std::size_t ToInt() const
+    std::size_t to_int() const
     {
       FOUR_C_ASSERT(degree_ < 32, "Not implemented");
       FOUR_C_ASSERT(quadraturedegree_ < 64, "Not implemented");
@@ -203,7 +203,7 @@ namespace Core::FE
     \brief Compute element-dependent data on faces, like integration weights, normal vectors,
     correctly oriented trace variables
     */
-    void EvaluateFace(const Core::Elements::Element &ele, const unsigned int face,
+    void evaluate_face(const Core::Elements::Element &ele, const unsigned int face,
         const std::vector<double> &aleDis = {});
 
     /*!
@@ -290,10 +290,10 @@ namespace Core::FE
   {
    public:
     /// return instance
-    static ShapeValuesFaceCache<distype> &Instance();
+    static ShapeValuesFaceCache<distype> &instance();
 
     /// give pointer to corresponding shape values face
-    Teuchos::RCP<ShapeValuesFace<distype>> Create(ShapeValuesFaceParams params);
+    Teuchos::RCP<ShapeValuesFace<distype>> create(ShapeValuesFaceParams params);
 
    private:
     ShapeValuesFaceCache() = default;
@@ -312,10 +312,10 @@ namespace Core::FE
   {
    public:
     /// return instance
-    static ShapeValuesInteriorOnFaceCache &Instance();
+    static ShapeValuesInteriorOnFaceCache &instance();
 
     /// give pointer to corresponding shape values face
-    Teuchos::RCP<ShapeValuesInteriorOnFace> Create(ShapeValuesFaceParams params);
+    Teuchos::RCP<ShapeValuesInteriorOnFace> create(ShapeValuesFaceParams params);
 
    private:
     ShapeValuesInteriorOnFaceCache() = default;

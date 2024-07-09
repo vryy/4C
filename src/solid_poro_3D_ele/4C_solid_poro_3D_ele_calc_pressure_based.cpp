@@ -29,7 +29,7 @@ template <Core::FE::CellType celltype>
 void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::poro_setup(
     Mat::StructPoro& porostructmat, Input::LineDefinition* linedef)
 {
-  porostructmat.poro_setup(gauss_integration_.NumPoints(), linedef);
+  porostructmat.poro_setup(gauss_integration_.num_points(), linedef);
 }
 
 template <Core::FE::CellType celltype>
@@ -47,14 +47,14 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlin
   if (force_vector != nullptr) force.emplace(*force_vector, true);
 
   // get primary variables of multiphase porous medium flow
-  std::vector<double> fluidmultiphase_ephi(la[1].Size());
-  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "porofluid");
+  std::vector<double> fluidmultiphase_ephi(la[1].size());
+  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(1, "porofluid");
   Core::FE::ExtractMyValues(*matrix_state, fluidmultiphase_ephi, la[1].lm_);
 
   // Initialize variables of multiphase porous medium flow
-  const int nummultifluiddofpernode = porofluidmat.NumMat();
-  const int numfluidphases = porofluidmat.NumFluidPhases();
-  const int numvolfrac = porofluidmat.NumVolFrac();
+  const int nummultifluiddofpernode = porofluidmat.num_mat();
+  const int numfluidphases = porofluidmat.num_fluid_phases();
+  const int numvolfrac = porofluidmat.num_vol_frac();
   const bool hasvolfracs = (nummultifluiddofpernode > numfluidphases);
 
   // get nodal coordinates current and reference
@@ -163,14 +163,14 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroel
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix& stiffness_matrix)
 {
   // get primary variables of multiphase porous medium flow
-  std::vector<double> fluidmultiphase_ephi(la[1].Size());
-  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "porofluid");
+  std::vector<double> fluidmultiphase_ephi(la[1].size());
+  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(1, "porofluid");
   Core::FE::ExtractMyValues(*matrix_state, fluidmultiphase_ephi, la[1].lm_);
 
   // Initialize variables of multiphase porous medium flow
-  const int nummultifluiddofpernode = porofluidmat.NumMat();
-  const int numfluidphases = porofluidmat.NumFluidPhases();
-  const int numvolfrac = porofluidmat.NumVolFrac();
+  const int nummultifluiddofpernode = porofluidmat.num_mat();
+  const int numfluidphases = porofluidmat.num_fluid_phases();
+  const int numvolfrac = porofluidmat.num_vol_frac();
   const bool hasvolfracs = (nummultifluiddofpernode > numfluidphases);
 
   // get nodal coordinates current and reference
@@ -218,7 +218,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroel
               numfluidphases, numvolfrac, solidpressure, porosity, solidpressurederiv);
         }
 
-        const double detJ_w = jacobian_mapping.determinant_ * gauss_integration_.Weight(gp);
+        const double detJ_w = jacobian_mapping.determinant_ * gauss_integration_.weight(gp);
 
         // inverse Right Cauchy-Green tensor as vector in voigt notation
         Core::LinAlg::Matrix<num_str_, 1> C_inv_vec(false);

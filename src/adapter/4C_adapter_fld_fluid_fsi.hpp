@@ -65,23 +65,23 @@ namespace Adapter
     Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override;
 
     /// Velocity-displacement conversion at the fsi interface
-    double TimeScaling() const override;
+    double time_scaling() const override;
 
     /// take current results for converged and save for next time step
     void update() override;
 
     /// get the linear solver object used for this field
-    Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override;
+    Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override;
 
-    Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) override;
+    Teuchos::RCP<Epetra_Vector> relaxation_solve(Teuchos::RCP<Epetra_Vector> ivel) override;
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override { return interface_; }
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const override { return interface_; }
 
     /// update slave dofs for multifield simulations with fluid mesh tying
-    virtual void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f);
+    virtual void update_slave_dof(Teuchos::RCP<Epetra_Vector>& f);
 
-    Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap() override;
+    Teuchos::RCP<const Epetra_Map> inner_velocity_row_map() override;
 
     Teuchos::RCP<Epetra_Vector> extract_interface_forces() override;
 
@@ -101,16 +101,16 @@ namespace Adapter
     void apply_mesh_displacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) override;
 
     /// Update fluid griv velocity via FD approximation
-    void UpdateGridv();
+    void update_gridv();
 
     void apply_mesh_displacement_increment(Teuchos::RCP<const Epetra_Vector> dispstepinc) override
     {
       FOUR_C_THROW("not implemented!");
     };
 
-    void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel) override;
+    void apply_mesh_velocity(Teuchos::RCP<const Epetra_Vector> gridvel) override;
 
-    void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0) override;
+    void set_mesh_map(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0) override;
 
     //! @name Conversion between displacement and velocity at interface
 
@@ -152,13 +152,13 @@ namespace Adapter
      *
      *  \author mayr.mt \date  06/2012
      */
-    void ProjVelToDivZero();
+    void proj_vel_to_div_zero();
 
     /// reset state vectors
     void reset(bool completeReset = false, int numsteps = 1, int iter = -1) override;
 
     /// calculate error in comparison to analytical solution
-    void CalculateError() override;
+    void calculate_error() override;
 
     //! @name Time step size adaptivity in monolithic FSI
     //@{
@@ -177,7 +177,7 @@ namespace Adapter
      *
      *  \author mayr.mt \date 12/2013
      */
-    void IndicateErrorNorms(
+    void indicate_error_norms(
         double& err,       ///< L2-norm of temporal discretization error based on all DOFs
         double& errcond,   ///< L2-norm of temporal discretization error based on interface DOFs
         double& errother,  ///< L2-norm of temporal discretization error based on interior DOFs
@@ -191,13 +191,13 @@ namespace Adapter
      *
      *  \author mayr.mt \date 04/2015
      */
-    double GetTimAdaErrOrder() const;
+    double get_tim_ada_err_order() const;
 
     /*! \brief Name of auxiliary time integrator
      *
      *  \author mayr.mt \date 04/2015
      */
-    std::string GetTimAdaMethodName() const;
+    std::string get_tim_ada_method_name() const;
 
     //! Type of adaptivity algorithm
     enum ETimAdaAux

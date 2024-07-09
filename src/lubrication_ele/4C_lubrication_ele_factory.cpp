@@ -19,12 +19,12 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------------*
  |                                                     (public) wirtz 10/15 |
  *--------------------------------------------------------------------------*/
-Discret::ELEMENTS::LubricationEleInterface* Discret::ELEMENTS::LubricationFactory::ProvideImpl(
+Discret::ELEMENTS::LubricationEleInterface* Discret::ELEMENTS::LubricationFactory::provide_impl(
     Core::FE::CellType distype, const std::string& disname)
 {
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
-  static const int ndim = Global::Problem::Instance()->NDim();
+  static const int ndim = Global::Problem::instance()->n_dim();
 
   switch (distype)
   {
@@ -117,7 +117,7 @@ template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::LubricationEleInterface*
 Discret::ELEMENTS::LubricationFactory::define_problem_type(const std::string& disname)
 {
-  return Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::Instance(disname);
+  return Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::instance(disname);
 }
 
 FOUR_C_NAMESPACE_CLOSE

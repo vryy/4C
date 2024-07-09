@@ -29,13 +29,13 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::SoPyramid5Type Discret::ELEMENTS::SoPyramid5Type::instance_;
 
-Discret::ELEMENTS::SoPyramid5Type& Discret::ELEMENTS::SoPyramid5Type::Instance()
+Discret::ELEMENTS::SoPyramid5Type& Discret::ELEMENTS::SoPyramid5Type::instance()
 {
   return instance_;
 }
 
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoPyramid5Type::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::SoPyramid5Type::create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoPyramid5(-1, -1);
@@ -44,7 +44,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoPyramid5Type::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoPyramid5Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoPyramid5Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -57,7 +57,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoPyramid5Type::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoPyramid5Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoPyramid5Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -74,7 +74,7 @@ void Discret::ELEMENTS::SoPyramid5Type::nodal_block_information(
   nv = 3;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoPyramid5Type::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoPyramid5Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
@@ -113,14 +113,14 @@ Discret::ELEMENTS::SoPyramid5::SoPyramid5(int id, int owner)
   detJ_.resize(NUMGPT_SOP5, 0.0);
 
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      Global::Problem::Instance()->getParameterList();
+      Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
     pstype_ = Prestress::GetType();
     pstime_ = Prestress::GetPrestressTime();
 
     Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+        Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
   if (Prestress::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOP5, NUMGPT_SOP5));
@@ -156,7 +156,7 @@ Discret::ELEMENTS::SoPyramid5::SoPyramid5(const Discret::ELEMENTS::SoPyramid5& o
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoPyramid5::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SoPyramid5::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::SoPyramid5(*this);
   return newelement;
@@ -165,7 +165,7 @@ Core::Elements::Element* Discret::ELEMENTS::SoPyramid5::Clone() const
 /*----------------------------------------------------------------------*
  |                                                             (public) |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::SoPyramid5::Shape() const
+Core::FE::CellType Discret::ELEMENTS::SoPyramid5::shape() const
 {
   return Core::FE::CellType::pyramid5;
 }
@@ -178,7 +178,7 @@ void Discret::ELEMENTS::SoPyramid5::pack(Core::Communication::PackBuffer& data) 
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   Element::pack(data);
@@ -213,7 +213,7 @@ void Discret::ELEMENTS::SoPyramid5::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -301,7 +301,7 @@ void Discret::ELEMENTS::SoPyramid5::print(std::ostream& os) const
 |  get vector of surfaces (public)                                      |
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoPyramid5::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoPyramid5::surfaces()
 {
   return Core::Communication::ElementBoundaryFactory<StructuralSurface>(
       Core::Communication::buildSurfaces, *this);
@@ -310,7 +310,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoPyramid5
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoPyramid5::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoPyramid5::lines()
 {
   return Core::Communication::ElementBoundaryFactory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
@@ -319,21 +319,21 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoPyramid5
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                         |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoPyramid5::VisNames(std::map<std::string, int>& names)
+void Discret::ELEMENTS::SoPyramid5::vis_names(std::map<std::string, int>& names)
 {
-  SolidMaterial()->VisNames(names);
+  solid_material()->vis_names(names);
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                                  |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoPyramid5::VisData(const std::string& name, std::vector<double>& data)
+bool Discret::ELEMENTS::SoPyramid5::vis_data(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (Core::Elements::Element::VisData(name, data)) return true;
+  if (Core::Elements::Element::vis_data(name, data)) return true;
 
-  return SolidMaterial()->VisData(name, data, NUMGPT_SOP5, this->Id());
+  return solid_material()->vis_data(name, data, NUMGPT_SOP5, this->id());
 }
 
 FOUR_C_NAMESPACE_CLOSE

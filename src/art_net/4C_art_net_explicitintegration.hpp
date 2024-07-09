@@ -66,16 +66,16 @@ namespace Arteries
         const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) override;
 
     // create field test
-    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
 
 
     /*!
     \brief solve linearised artery and bifurcation
 
     */
-    void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams) override;
+    void solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams) override;
 
-    void SolveScatra() override;
+    void solve_scatra() override;
 
     /*!
       \brief build linear system matrix and rhs
@@ -90,22 +90,22 @@ namespace Arteries
            iteration. Current solution becomes old solution of next
            timestep.
     */
-    void TimeUpdate() override;
+    void time_update() override;
 
     /*!
     \brief Initialize the saving state vectors
     */
-    void InitSaveState() override;
+    void init_save_state() override;
 
     /*!
     \brief Save the current vectors into the saving state vectors
     */
-    void SaveState() override;
+    void save_state() override;
 
     /*!
     \brief Load the currently saved state vectors into the currently used vectors
     */
-    void LoadState() override;
+    void load_state() override;
 
     /*!
     \brief update configuration and output to file/screen
@@ -117,7 +117,7 @@ namespace Arteries
     \brief Test results
 
     */
-    void TestResults() override;
+    void test_results() override;
 
     /*!
     \brief calculate values that could be used for postprocessing
@@ -139,33 +139,33 @@ namespace Arteries
 
     //  Teuchos::RCP<Epetra_Vector> Residual() { return residual_; } //This variable might be needed
     //  in future!
-    Teuchos::RCP<Epetra_Vector> Qnp() { return qnp_; }
-    Teuchos::RCP<Epetra_Vector> QAnp() { return qanp_; }
-    Teuchos::RCP<Epetra_Vector> Areanp() { return areanp_; }
+    Teuchos::RCP<Epetra_Vector> qnp() { return qnp_; }
+    Teuchos::RCP<Epetra_Vector> q_anp() { return qanp_; }
+    Teuchos::RCP<Epetra_Vector> areanp() { return areanp_; }
     // Teuchos::RCP<Epetra_Vector> Presnp() { return presnp_; }
-    Teuchos::RCP<Epetra_Vector> Qn() { return qn_; }
-    Teuchos::RCP<Epetra_Vector> QAn() { return qan_; }
-    Teuchos::RCP<Epetra_Vector> Arean() { return arean_; }
+    Teuchos::RCP<Epetra_Vector> qn() { return qn_; }
+    Teuchos::RCP<Epetra_Vector> q_an() { return qan_; }
+    Teuchos::RCP<Epetra_Vector> arean() { return arean_; }
     // Teuchos::RCP<Epetra_Vector> Presn()  { return presn_; }
 
     /// provide access to the Dirichlet map
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> DirichMaps() { return dbcmaps_; }
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> dirich_maps() { return dbcmaps_; }
 
     /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
     ///
     /// This method provides backward compatability only. Formerly, the Dirichlet conditions
     /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-    const Teuchos::RCP<const Epetra_Vector> Dirichlet();
+    const Teuchos::RCP<const Epetra_Vector> dirichlet();
 
     /// Extract the Inverse Dirichlet toggle vector based on Dirichlet BC maps
     ///
     /// This method provides backward compatability only. Formerly, the Dirichlet conditions
     /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-    const Teuchos::RCP<const Epetra_Vector> InvDirichlet();
+    const Teuchos::RCP<const Epetra_Vector> inv_dirichlet();
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> MassMatrix()
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> mass_matrix()
     {
       return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(massmat_);
     }

@@ -234,7 +234,7 @@ namespace Core::IO
     Level(Pstream* pstream) : pstream_(pstream), level_(undef) {}
 
     /// set verbosity level for data to be written
-    Level& SetLevel(const Verbositylevel level)
+    Level& set_level(const Verbositylevel level)
     {
       level_ = level;
       return *this;

@@ -59,7 +59,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* print tea time logo */
-void Solid::TimInt::Logo()
+void Solid::TimInt::logo()
 {
   Core::IO::cout << "Welcome to Structural Time Integration " << Core::IO::endl;
   Core::IO::cout << "     __o__                          __o__" << Core::IO::endl;
@@ -81,7 +81,7 @@ Solid::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : discret_(actdis),
       facediscret_(Teuchos::null),
-      myrank_(actdis->Comm().MyPID()),
+      myrank_(actdis->get_comm().MyPID()),
       solver_(solver),
       contactsolver_(contactsolver),
       solveradapttol_(Core::UTILS::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1),
@@ -187,11 +187,11 @@ void Solid::TimInt::init(const Teuchos::ParameterList& timeparams,
   // welcome user
   if ((printlogo_) and (myrank_ == 0))
   {
-    Logo();
+    logo();
   }
 
   // check whether discretisation has been completed
-  if (not discret_->Filled() || not actdis->HaveDofs())
+  if (not discret_->filled() || not actdis->have_dofs())
   {
     FOUR_C_THROW("Discretisation is not complete or has no dofs!");
   }
@@ -206,14 +206,14 @@ void Solid::TimInt::init(const Teuchos::ParameterList& timeparams,
   stepn_ = step_ + 1;
 
   // output file for energy
-  if ((writeenergyevery_ != 0) and (myrank_ == 0)) AttachEnergyFile();
+  if ((writeenergyevery_ != 0) and (myrank_ == 0)) attach_energy_file();
 
   // initialize constraint manager
   conman_ = Teuchos::rcp(new CONSTRAINTS::ConstrManager());
   conman_->init(discret_, sdynparams_);
 
   // create stiffness, mass matrix and other fields
-  CreateFields();
+  create_fields();
 
   // stay with us
 
@@ -232,10 +232,10 @@ void Solid::TimInt::setup()
   create_all_solution_vectors();
 
   // create stiffness, mass matrix and other fields
-  CreateFields();
+  create_fields();
 
   // set initial fields
-  SetInitialFields();
+  set_initial_fields();
 
   // setup constraint manager
   conman_->setup((*dis_)(0), sdynparams_);
@@ -246,14 +246,14 @@ void Solid::TimInt::setup()
   // initialize 0D cardiovascular manager
   cardvasc0dman_ =
       Teuchos::rcp(new FourC::UTILS::Cardiovascular0DManager(discret_, (*dis_)(0), sdynparams_,
-          Global::Problem::Instance()->cardiovascular0_d_structural_params(), *solver_, mor_));
+          Global::Problem::instance()->cardiovascular0_d_structural_params(), *solver_, mor_));
 
   // initialize spring dashpot manager
   springman_ = Teuchos::rcp(new CONSTRAINTS::SpringDashpotManager(discret_));
 
 
   // initialize constraint solver if constraints are defined
-  if (conman_->HaveConstraint())
+  if (conman_->have_constraint())
   {
     consolv_ =
         Teuchos::rcp(new CONSTRAINTS::ConstraintSolver(discret_, *solver_, dbcmaps_, sdynparams_));
@@ -264,7 +264,7 @@ void Solid::TimInt::setup()
     // If beam contact (no statistical mechanics) is chosen in the input file, then a
     // corresponding manager object stored via #beamcman_ is created and all relevant
     // stuff is initialized. Else, #beamcman_ remains a Teuchos::null pointer.
-    PrepareBeamContact(sdynparams_);
+    prepare_beam_contact(sdynparams_);
   }
   // check for mortar contact or meshtying
   {
@@ -278,14 +278,14 @@ void Solid::TimInt::setup()
   // after checking
   {
     std::vector<Core::Conditions::Condition*> locsysconditions(0);
-    discret_->GetCondition("Locsys", locsysconditions);
+    discret_->get_condition("Locsys", locsysconditions);
     if (locsysconditions.size())
     {
       locsysman_ = Teuchos::rcp(
-          new Core::Conditions::LocsysManager(*discret_, Global::Problem::Instance()->NDim()));
+          new Core::Conditions::LocsysManager(*discret_, Global::Problem::instance()->n_dim()));
       // in case we have no time dependent locsys conditions in our problem,
       // this is the only time where the whole setup routine is conducted.
-      locsysman_->Update(-1.0, {}, Global::Problem::Instance()->FunctionManager());
+      locsysman_->update(-1.0, {}, Global::Problem::instance()->function_manager());
     }
   }
 
@@ -294,16 +294,16 @@ void Solid::TimInt::setup()
   {
     int locnumsosh8p8 = 0;
     // Loop through all elements on processor
-    for (int i = 0; i < discret_->NumMyColElements(); ++i)
+    for (int i = 0; i < discret_->num_my_col_elements(); ++i)
     {
       // get the actual element
 
-      if (discret_->lColElement(i)->ElementType() == Discret::ELEMENTS::SoSh8p8Type::Instance())
+      if (discret_->l_col_element(i)->element_type() == Discret::ELEMENTS::SoSh8p8Type::instance())
         locnumsosh8p8 += 1;
     }
     // Was at least one SoSh8P8 found on one processor?
     int glonumsosh8p8 = 0;
-    discret_->Comm().MaxAll(&locnumsosh8p8, &glonumsosh8p8, 1);
+    discret_->get_comm().MaxAll(&locnumsosh8p8, &glonumsosh8p8, 1);
     // Yes, it was. Go ahead for all processors (even if they do not carry any SoSh8P8 elements)
     if (glonumsosh8p8 > 0)
     {
@@ -315,11 +315,11 @@ void Solid::TimInt::setup()
 
   // check if we have elements with a micro-material
   havemicromat_ = false;
-  for (int i = 0; i < discret_->NumMyColElements(); i++)
+  for (int i = 0; i < discret_->num_my_col_elements(); i++)
   {
-    Core::Elements::Element* actele = discret_->lColElement(i);
-    Teuchos::RCP<Core::Mat::Material> mat = actele->Material();
-    if (mat != Teuchos::null && mat->MaterialType() == Core::Materials::m_struct_multiscale)
+    Core::Elements::Element* actele = discret_->l_col_element(i);
+    Teuchos::RCP<Core::Mat::Material> mat = actele->material();
+    if (mat != Teuchos::null && mat->material_type() == Core::Materials::m_struct_multiscale)
     {
       havemicromat_ = true;
       break;
@@ -350,8 +350,8 @@ void Solid::TimInt::create_all_solution_vectors()
   // displacements D_{n+1} at t_{n+1}
   disn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
-  if ((Global::Problem::Instance()->GetProblemType() == Core::ProblemType::struct_ale and
-          (Global::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0))
+  if ((Global::Problem::instance()->get_problem_type() == Core::ProblemType::struct_ale and
+          (Global::Problem::instance()->wear_params()).get<double>("WEARCOEFF") > 0.0))
   {
     // material displacements Dm_{n+1} at t_{n+1}
     dismatn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
@@ -372,7 +372,7 @@ void Solid::TimInt::create_all_solution_vectors()
 /*-------------------------------------------------------------------------------------------*
  * Create matrices when setting up time integrator
  *-------------------------------------------------------------------------------------------*/
-void Solid::TimInt::CreateFields()
+void Solid::TimInt::create_fields()
 {
   // a zero vector of full length
   zeros_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
@@ -382,8 +382,8 @@ void Solid::TimInt::CreateFields()
     Teuchos::ParameterList p;
     p.set("total time", timen_);
     p.set<const Core::UTILS::FunctionManager*>(
-        "function_manager", &Global::Problem::Instance()->FunctionManager());
-    p.sublist("solver_params") = Global::Problem::Instance()->UMFPACKSolverParams();
+        "function_manager", &Global::Problem::instance()->function_manager());
+    p.sublist("solver_params") = Global::Problem::instance()->umfpack_solver_params();
 
     discret_->evaluate_dirichlet(p, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
@@ -394,7 +394,7 @@ void Solid::TimInt::CreateFields()
   mass_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, false, true));
   if (damping_ != Inpar::Solid::damp_none)
   {
-    if (HaveNonlinearMass() == Inpar::Solid::ml_none)
+    if (have_nonlinear_mass() == Inpar::Solid::ml_none)
     {
       damp_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, false, true));
     }
@@ -410,7 +410,7 @@ void Solid::TimInt::CreateFields()
 
 /*----------------------------------------------------------------------*/
 /* Set intitial fields in structure (e.g. initial velocities */
-void Solid::TimInt::SetInitialFields()
+void Solid::TimInt::set_initial_fields()
 {
   //***************************************************
   // Data that needs to be handed into discretization:
@@ -425,29 +425,29 @@ void Solid::TimInt::SetInitialFields()
   localdofs.push_back(1);
   localdofs.push_back(2);
   discret_->evaluate_initial_field(
-      Global::Problem::Instance()->FunctionManager(), field, (*vel_)(0), localdofs);
+      Global::Problem::instance()->function_manager(), field, (*vel_)(0), localdofs);
 
   // set initial porosity field if existing
   const std::string porosityfield = "Porosity";
   std::vector<int> porositylocaldofs;
-  porositylocaldofs.push_back(Global::Problem::Instance()->NDim());
+  porositylocaldofs.push_back(Global::Problem::instance()->n_dim());
 
-  discret_->evaluate_initial_field(
-      Global::Problem::Instance()->FunctionManager(), porosityfield, (*dis_)(0), porositylocaldofs);
+  discret_->evaluate_initial_field(Global::Problem::instance()->function_manager(), porosityfield,
+      (*dis_)(0), porositylocaldofs);
 }
 
 /*----------------------------------------------------------------------*/
 /* Check for beam contact and do preparations */
-void Solid::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
+void Solid::TimInt::prepare_beam_contact(const Teuchos::ParameterList& sdynparams)
 {
   // some parameters
-  const Teuchos::ParameterList& beamcontact = Global::Problem::Instance()->beam_contact_params();
+  const Teuchos::ParameterList& beamcontact = Global::Problem::instance()->beam_contact_params();
   Inpar::BEAMCONTACT::Strategy strategy =
       Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::Strategy>(beamcontact, "BEAMS_STRATEGY");
 
   // conditions for potential-based beam interaction
   std::vector<Core::Conditions::Condition*> beampotconditions(0);
-  discret_->GetCondition("BeamPotentialLineCharge", beampotconditions);
+  discret_->get_condition("BeamPotentialLineCharge", beampotconditions);
 
   // only continue if beam contact unmistakably chosen in input file or beam potential conditions
   // applied
@@ -458,7 +458,7 @@ void Solid::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
     // (note that we want to hand in theta in the OST case, which
     // is defined just the other way round as alphaf in GenAlpha schemes.
     // Thus, we have to hand in 1.0-theta for OST!!!)
-    double alphaf = TimIntParam();
+    double alphaf = tim_int_param();
 
     // create beam contact manager
     beamcman_ = Teuchos::rcp(new CONTACT::Beam3cmanager(*discret_, alphaf));
@@ -477,8 +477,8 @@ void Solid::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdyn
   TEUCHOS_FUNC_TIME_MONITOR("Solid::TimInt::prepare_contact_meshtying");
 
   // some parameters
-  const Teuchos::ParameterList& smortar = Global::Problem::Instance()->mortar_coupling_params();
-  const Teuchos::ParameterList& scontact = Global::Problem::Instance()->contact_dynamic_params();
+  const Teuchos::ParameterList& smortar = Global::Problem::instance()->mortar_coupling_params();
+  const Teuchos::ParameterList& scontact = Global::Problem::instance()->contact_dynamic_params();
   Inpar::Mortar::ShapeFcn shapefcn =
       Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(smortar, "LM_SHAPEFCN");
   Inpar::CONTACT::SolvingStrategy soltype =
@@ -492,8 +492,8 @@ void Solid::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdyn
   std::vector<Core::Conditions::Condition*> mortarconditions(0);
   std::vector<Core::Conditions::Condition*> contactconditions(0);
 
-  discret_->GetCondition("Mortar", mortarconditions);
-  discret_->GetCondition("Contact", contactconditions);
+  discret_->get_condition("Mortar", mortarconditions);
+  discret_->get_condition("Contact", contactconditions);
 
   // double-check for contact/meshtying conditions
   if (mortarconditions.size() == 0 and contactconditions.size() == 0) return;
@@ -515,7 +515,7 @@ void Solid::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdyn
   // Thus, we have to hand in 1-theta for OST!!!)
   double time_integration_factor = 0.0;
   const bool do_endtime = Core::UTILS::IntegralValue<int>(scontact, "CONTACTFORCE_ENDTIME");
-  if (!do_endtime) time_integration_factor = TimIntParam();
+  if (!do_endtime) time_integration_factor = tim_int_param();
 
   // create instance for meshtying contact bridge
   cmtbridge_ = Teuchos::rcp(new CONTACT::MeshtyingContactBridge(
@@ -525,12 +525,12 @@ void Solid::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdyn
   cmtbridge_->set_state(zeros_);
 
   // contact and constraints together not yet implemented
-  if (conman_->HaveConstraint())
+  if (conman_->have_constraint())
     FOUR_C_THROW("Constraints and contact cannot be treated at the same time yet");
 
   // print messages for multifield problems (e.g FSI)
-  const Core::ProblemType probtype = Global::Problem::Instance()->GetProblemType();
-  const std::string probname = Global::Problem::Instance()->ProblemName();
+  const Core::ProblemType probtype = Global::Problem::instance()->get_problem_type();
+  const std::string probname = Global::Problem::instance()->problem_name();
   if (probtype != Core::ProblemType::structure && !myrank_)
   {
     // warnings
@@ -544,22 +544,22 @@ void Solid::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdyn
   }
 
   // initialization of meshtying
-  if (cmtbridge_->HaveMeshtying())
+  if (cmtbridge_->have_meshtying())
   {
     // FOR MESHTYING (ONLY ONCE), NO FUNCTIONALITY FOR CONTACT CASES
     // (1) do mortar coupling in reference configuration
-    cmtbridge_->MtManager()->GetStrategy().mortar_coupling(zeros_);
+    cmtbridge_->mt_manager()->get_strategy().mortar_coupling(zeros_);
 
     // perform mesh initialization if required by input parameter MESH_RELOCATION
     auto mesh_relocation_parameter = Core::UTILS::IntegralValue<Inpar::Mortar::MeshRelocation>(
-        Global::Problem::Instance()->mortar_coupling_params(), "MESH_RELOCATION");
+        Global::Problem::instance()->mortar_coupling_params(), "MESH_RELOCATION");
 
     if (mesh_relocation_parameter == Inpar::Mortar::relocation_initial)
     {
       // (2) perform mesh initialization for rotational invariance (interface)
       // and return the modified slave node positions in vector Xslavemod
       Teuchos::RCP<const Epetra_Vector> Xslavemod =
-          cmtbridge_->MtManager()->GetStrategy().mesh_initialization();
+          cmtbridge_->mt_manager()->get_strategy().mesh_initialization();
 
       // (3) apply result of mesh initialization to underlying problem discretization
       apply_mesh_initialization(Xslavemod);
@@ -573,21 +573,21 @@ void Solid::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdyn
   }
 
   // initialization of contact
-  if (cmtbridge_->HaveContact())
+  if (cmtbridge_->have_contact())
   {
     // FOR PENALTY CONTACT (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
     // (1) Explicitly store gap-scaling factor kappa
-    cmtbridge_->ContactManager()->GetStrategy().save_reference_state(zeros_);
+    cmtbridge_->contact_manager()->get_strategy().save_reference_state(zeros_);
 
     // FOR CONTACT FORMULATIONS (ONLY ONCE)
     // (1) Evaluate reference state for friction and initialize gap
-    cmtbridge_->ContactManager()->GetStrategy().evaluate_reference_state();
+    cmtbridge_->contact_manager()->get_strategy().evaluate_reference_state();
   }
 
   // visualization of initial configuration
 #ifdef MORTARGMSH3
   bool gmsh =
-      Core::UTILS::IntegralValue<int>(Global::Problem::Instance()->IOParams(), "OUTPUT_GMSH");
+      Core::UTILS::IntegralValue<int>(Global::Problem::instance()->IOParams(), "OUTPUT_GMSH");
   if (gmsh) cmtbridge_->VisualizeGmsh(0);
 #endif  // #ifdef MORTARGMSH3
 
@@ -912,16 +912,17 @@ void Solid::TimInt::apply_mesh_initialization(Teuchos::RCP<const Epetra_Vector> 
   if (Xslavemod == Teuchos::null) return;
 
   // create fully overlapping slave node map
-  Teuchos::RCP<Epetra_Map> slavemap = cmtbridge_->MtManager()->GetStrategy().slave_row_nodes_ptr();
+  Teuchos::RCP<Epetra_Map> slavemap =
+      cmtbridge_->mt_manager()->get_strategy().slave_row_nodes_ptr();
   Teuchos::RCP<Epetra_Map> allreduceslavemap = Core::LinAlg::AllreduceEMap(*slavemap);
 
   // export modified node positions to column map of problem discretization
   Teuchos::RCP<Epetra_Vector> Xslavemodcol =
-      Core::LinAlg::CreateVector(*discret_->DofColMap(), false);
+      Core::LinAlg::CreateVector(*discret_->dof_col_map(), false);
   Core::LinAlg::Export(*Xslavemod, *Xslavemodcol);
 
   const int numnode = allreduceslavemap->NumMyElements();
-  const int numdim = Global::Problem::Instance()->NDim();
+  const int numdim = Global::Problem::instance()->n_dim();
   const Epetra_Vector& gvector = *Xslavemodcol;
 
   // loop over all slave nodes (for all procs)
@@ -930,13 +931,13 @@ void Solid::TimInt::apply_mesh_initialization(Teuchos::RCP<const Epetra_Vector> 
     int gid = allreduceslavemap->GID(index);
 
     // only do someting for nodes in my column map
-    int ilid = discret_->NodeColMap()->LID(gid);
+    int ilid = discret_->node_col_map()->LID(gid);
     if (ilid < 0) continue;
 
-    Core::Nodes::Node* mynode = discret_->gNode(gid);
+    Core::Nodes::Node* mynode = discret_->g_node(gid);
 
     // get degrees of freedom associated with this fluid/structure node
-    std::vector<int> nodedofs = discret_->Dof(0, mynode);
+    std::vector<int> nodedofs = discret_->dof(0, mynode);
     std::vector<double> nvector(3, 0.0);
 
     // create new position vector
@@ -952,33 +953,33 @@ void Solid::TimInt::apply_mesh_initialization(Teuchos::RCP<const Epetra_Vector> 
     }
 
     // set new reference position
-    mynode->SetPos(nvector);
+    mynode->set_pos(nvector);
   }
 
   // re-initialize finite elements
-  Core::Communication::ParObjectFactory::Instance().initialize_elements(*discret_);
+  Core::Communication::ParObjectFactory::instance().initialize_elements(*discret_);
 }
 
 /*----------------------------------------------------------------------*/
 /* Prepare contact for new time step */
-void Solid::TimInt::PrepareStepContact()
+void Solid::TimInt::prepare_step_contact()
 {
   // just do something here if contact is present
   if (have_contact_meshtying())
   {
-    if (cmtbridge_->HaveContact())
+    if (cmtbridge_->have_contact())
     {
-      cmtbridge_->GetStrategy().Inttime_init();
-      cmtbridge_->GetStrategy().redistribute_contact((*dis_)(0), (*vel_)(0));
+      cmtbridge_->get_strategy().inttime_init();
+      cmtbridge_->get_strategy().redistribute_contact((*dis_)(0), (*vel_)(0));
     }
   }
 }
 
 /*----------------------------------------------------------------------*/
 /* things that should be done after the actual time loop is finished */
-void Solid::TimInt::PostTimeLoop()
+void Solid::TimInt::post_time_loop()
 {
-  if (HaveMicroMat())
+  if (have_micro_mat())
   {
     // stop supporting processors in multi scale simulations
     MultiScale::stop_np_multiscale();
@@ -1000,8 +1001,8 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
       Core::LinAlg::CreateVector(*dof_row_map_view(), true);  // internal force
 
   // initialise matrices
-  stiff_->Zero();
-  mass_->Zero();
+  stiff_->zero();
+  mass_->zero();
 
   // auxiliary vector in order to store accelerations of inhomogeneous Dirichilet-DoFs
   // Meier 2015: This contribution is necessary in order to determine correct initial
@@ -1019,7 +1020,7 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
   // get initial internal force and stiffness and mass
   {
     // compute new inner radius
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state(0, "displacement", (*dis_)(0));
 
     // for structure ale
@@ -1044,7 +1045,7 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
     }
 
     // set vector values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     // extended set_state(0,...) in case of multiple dofsets (e.g. TSI)
     discret_->set_state(0, "residual displacement", zeros_);
     discret_->set_state(0, "displacement", (*dis_)(0));
@@ -1061,21 +1062,21 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
     if (dismat_ != Teuchos::null) discret_->set_state(0, "material_displacement", (*dismat_)(0));
 
     discret_->evaluate(p, stiff_, mass_, fint, Teuchos::null, fintn_str_);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 
   // finish mass matrix
-  mass_->Complete();
+  mass_->complete();
 
   // close stiffness matrix
-  stiff_->Complete();
+  stiff_->complete();
 
   // build Rayleigh damping matrix if desired
   if (damping_ == Inpar::Solid::damp_rayleigh)
   {
-    damp_->Add(*stiff_, false, dampk_, 0.0);
-    damp_->Add(*mass_, false, dampm_, 1.0);
-    damp_->Complete();
+    damp_->add(*stiff_, false, dampk_, 0.0);
+    damp_->add(*mass_, false, dampm_, 1.0);
+    damp_->complete();
   }
 
   // in case of C0 pressure field, we need to get rid of
@@ -1085,7 +1086,7 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
   // constant matrix mass_ later on. This is necessary since we need the original mass matrix mass_
   // (without blanked rows) on the Dirichlet DoFs in order to calculate correct reaction forces
   // (Christoph Meier)
-  mass = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*MassMatrix(), Core::LinAlg::Copy));
+  mass = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*mass_matrix(), Core::LinAlg::Copy));
 
   /* calculate consistent initial accelerations
    * WE MISS:
@@ -1097,7 +1098,7 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
     // Contribution to rhs due to damping forces
     if (damping_ == Inpar::Solid::damp_rayleigh)
     {
-      damp_->Multiply(false, (*vel_)[0], *rhs);
+      damp_->multiply(false, (*vel_)[0], *rhs);
     }
 
     // add initial forces due to 0D cardiovascular for consistent initial acceleration calculation!
@@ -1114,7 +1115,7 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
 
     // Contribution to rhs due to beam contact
-    if (HaveBeamContact())
+    if (have_beam_contact())
     {
       // create empty parameter list
       Teuchos::ParameterList beamcontactparams;
@@ -1127,7 +1128,7 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
     // Contribution to rhs due to inertia forces of inhomogeneous Dirichlet conditions
     Teuchos::RCP<Epetra_Vector> finert0 = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
     finert0->PutScalar(0.0);
-    mass_->Multiply(false, *acc_aux, *finert0);
+    mass_->multiply(false, *acc_aux, *finert0);
     rhs->Update(-1.0, *finert0, 1.0);
 
     // blank RHS and system matrix on DBC DOFs
@@ -1135,17 +1136,17 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
 
     // Apply Dirichlet conditions also to mass matrix (which represents the system matrix of
     // the considered linear system of equations)
-    mass->ApplyDirichlet(*(dbcmaps_->cond_map()));
+    mass->apply_dirichlet(*(dbcmaps_->cond_map()));
 
     if (pressure_ != Teuchos::null)
     {
       pressure_->insert_cond_vector(pressure_->extract_cond_vector(zeros_), rhs);
-      mass->ApplyDirichlet(*(pressure_->cond_map()));
+      mass->apply_dirichlet(*(pressure_->cond_map()));
     }
     if (porositysplitter_ != Teuchos::null)
     {
       porositysplitter_->insert_cond_vector(porositysplitter_->extract_cond_vector(zeros_), rhs);
-      mass->ApplyDirichlet(*(porositysplitter_->cond_map()));
+      mass->apply_dirichlet(*(porositysplitter_->cond_map()));
     }
 
     // Meier 2015: Due to the Dirichlet conditions applied to the mass matrix, we solely solve
@@ -1155,7 +1156,7 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = true;
-    solver_->Solve(mass->EpetraOperator(), (*acc_)(0), rhs, solver_params);
+    solver_->solve(mass->epetra_operator(), (*acc_)(0), rhs, solver_params);
 
     //*) Add contributions of inhomogeneous DBCs
     (*acc_)(0)->Update(1.0, *acc_aux, 1.0);
@@ -1169,7 +1170,7 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Solid::TimInt::DetermineMass()
+void Solid::TimInt::determine_mass()
 {
   FOUR_C_THROW(
       "(Re-)Evaluation of only the mass matrix and intertial forces is "
@@ -1186,9 +1187,9 @@ void Solid::TimInt::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Ve
   // --------------------------------------------------------------------------------
   if (locsysman_ != Teuchos::null)
   {
-    if (dis != Teuchos::null) locsysman_->RotateGlobalToLocal(dis, true);
-    if (vel != Teuchos::null) locsysman_->RotateGlobalToLocal(vel);
-    if (acc != Teuchos::null) locsysman_->RotateGlobalToLocal(acc);
+    if (dis != Teuchos::null) locsysman_->rotate_global_to_local(dis, true);
+    if (vel != Teuchos::null) locsysman_->rotate_global_to_local(vel);
+    if (acc != Teuchos::null) locsysman_->rotate_global_to_local(acc);
   }
 
   // Apply DBCs
@@ -1197,12 +1198,12 @@ void Solid::TimInt::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Ve
   Teuchos::ParameterList p;
   p.set("total time", time);  // target time
   p.set<const Core::UTILS::FunctionManager*>(
-      "function_manager", &Global::Problem::Instance()->FunctionManager());
-  p.sublist("solver_params") = Global::Problem::Instance()->UMFPACKSolverParams();
+      "function_manager", &Global::Problem::instance()->function_manager());
+  p.sublist("solver_params") = Global::Problem::instance()->umfpack_solver_params();
 
   // predicted Dirichlet values
   // \c dis then also holds prescribed new Dirichlet displacements
-  discret_->ClearState();
+  discret_->clear_state();
   if (recreatemap)
   {
     discret_->evaluate_dirichlet(p, dis, vel, acc, Teuchos::null, dbcmaps_);
@@ -1211,25 +1212,25 @@ void Solid::TimInt::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Ve
   {
     discret_->evaluate_dirichlet(p, dis, vel, acc, Teuchos::null, Teuchos::null);
   }
-  discret_->ClearState();
+  discret_->clear_state();
 
   // In the case of local coordinate systems, we have to rotate back into global Cartesian frame
   // --------------------------------------------------------------------------------
   if (locsysman_ != Teuchos::null)
   {
-    if (dis != Teuchos::null) locsysman_->RotateLocalToGlobal(dis, true);
-    if (vel != Teuchos::null) locsysman_->RotateLocalToGlobal(vel);
-    if (acc != Teuchos::null) locsysman_->RotateLocalToGlobal(acc);
+    if (dis != Teuchos::null) locsysman_->rotate_local_to_global(dis, true);
+    if (vel != Teuchos::null) locsysman_->rotate_local_to_global(vel);
+    if (acc != Teuchos::null) locsysman_->rotate_local_to_global(acc);
   }
 }
 
 /*----------------------------------------------------------------------*/
 /* Update time and step counter */
-void Solid::TimInt::UpdateStepTime()
+void Solid::TimInt::update_step_time()
 {
   // update time and step
-  time_->UpdateSteps(timen_);  // t_{n} := t_{n+1}, etc
-  step_ = stepn_;              // n := n+1
+  time_->update_steps(timen_);  // t_{n} := t_{n+1}, etc
+  step_ = stepn_;               // n := n+1
   //
   timen_ += (*dt_)[0];
   stepn_ += 1;
@@ -1241,10 +1242,10 @@ void Solid::TimInt::update_step_contact_meshtying()
 {
   if (have_contact_meshtying())
   {
-    cmtbridge_->Update(disn_);
+    cmtbridge_->update(disn_);
 #ifdef MORTARGMSH1
     bool gmsh =
-        Core::UTILS::IntegralValue<int>(Global::Problem::Instance()->IOParams(), "OUTPUT_GMSH");
+        Core::UTILS::IntegralValue<int>(Global::Problem::instance()->IOParams(), "OUTPUT_GMSH");
     if (gmsh) cmtbridge_->VisualizeGmsh(stepn_);
 #endif  // #ifdef MORTARGMSH1
   }
@@ -1254,7 +1255,7 @@ void Solid::TimInt::update_step_contact_meshtying()
 /* Update beam contact */
 void Solid::TimInt::update_step_beam_contact()
 {
-  if (HaveBeamContact()) beamcman_->update(*disn_, stepn_, 99);
+  if (have_beam_contact()) beamcman_->update(*disn_, stepn_, 99);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1264,7 +1265,7 @@ void Solid::TimInt::update_step_contact_vum()
   if (have_contact_meshtying())
   {
     bool do_vum =
-        Core::UTILS::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "VELOCITY_UPDATE");
+        Core::UTILS::IntegralValue<int>(cmtbridge_->get_strategy().params(), "VELOCITY_UPDATE");
 
     //********************************************************************
     // VELOCITY UPDATE METHOD
@@ -1272,12 +1273,12 @@ void Solid::TimInt::update_step_contact_vum()
     if (do_vum)
     {
       // check for actual contact and leave if active set empty
-      bool isincontact = cmtbridge_->GetStrategy().is_in_contact();
+      bool isincontact = cmtbridge_->get_strategy().is_in_contact();
       if (!isincontact) return;
 
       // check for contact force evaluation
       bool do_end = Core::UTILS::IntegralValue<int>(
-          cmtbridge_->GetStrategy().Params(), "CONTACTFORCE_ENDTIME");
+          cmtbridge_->get_strategy().params(), "CONTACTFORCE_ENDTIME");
       if (do_end == false)
       {
         FOUR_C_THROW(
@@ -1288,7 +1289,7 @@ void Solid::TimInt::update_step_contact_vum()
 
       // parameter list
       const Teuchos::ParameterList& sdynparams =
-          Global::Problem::Instance()->structural_dynamic_params();
+          Global::Problem::instance()->structural_dynamic_params();
 
       // time integration parameter
       double alpham = 0.0;
@@ -1298,9 +1299,9 @@ void Solid::TimInt::update_step_contact_vum()
           Inpar::Solid::dyna_genalpha)
       {
         auto genAlpha = dynamic_cast<Solid::TimIntGenAlpha*>(this);
-        alpham = genAlpha->TimIntParamAlpham();
-        beta = genAlpha->TimIntParamBeta();
-        gamma = genAlpha->TimIntParamGamma();
+        alpham = genAlpha->tim_int_param_alpham();
+        beta = genAlpha->tim_int_param_beta();
+        gamma = genAlpha->tim_int_param_gamma();
       }
       else
       {
@@ -1316,12 +1317,12 @@ void Solid::TimInt::update_step_contact_vum()
 
       // maps
       const Epetra_Map* dofmap = discret_->dof_row_map();
-      Teuchos::RCP<Epetra_Map> activenodemap = cmtbridge_->GetStrategy().active_row_nodes();
-      Teuchos::RCP<Epetra_Map> slavenodemap = cmtbridge_->GetStrategy().slave_row_nodes_ptr();
+      Teuchos::RCP<Epetra_Map> activenodemap = cmtbridge_->get_strategy().active_row_nodes();
+      Teuchos::RCP<Epetra_Map> slavenodemap = cmtbridge_->get_strategy().slave_row_nodes_ptr();
       Teuchos::RCP<Epetra_Map> notredistslavedofmap =
-          cmtbridge_->GetStrategy().non_redist_slave_row_dofs();
+          cmtbridge_->get_strategy().non_redist_slave_row_dofs();
       Teuchos::RCP<Epetra_Map> notredistmasterdofmap =
-          cmtbridge_->GetStrategy().non_redist_master_row_dofs();
+          cmtbridge_->get_strategy().non_redist_master_row_dofs();
       Teuchos::RCP<Epetra_Map> notactivenodemap =
           Core::LinAlg::SplitMap(*slavenodemap, *activenodemap);
 
@@ -1337,11 +1338,11 @@ void Solid::TimInt::update_step_contact_vum()
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*Mass));
       Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(*dofmap, true);
       int err = 0;
-      Minv->ExtractDiagonalCopy(*diag);
+      Minv->extract_diagonal_copy(*diag);
       err = diag->Reciprocal(*diag);
       if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
       err = Minv->replace_diagonal_values(*diag);
-      Minv->Complete(*dofmap, *dofmap);
+      Minv->complete(*dofmap, *dofmap);
 
       // displacement increment Dd
       Teuchos::RCP<Epetra_Vector> Dd = Core::LinAlg::CreateVector(*dofmap, true);
@@ -1349,9 +1350,9 @@ void Solid::TimInt::update_step_contact_vum()
       Dd->Update(-1.0, (*dis_)[0], 1.0);
 
       // mortar operator Bc
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> Mmat = cmtbridge_->GetStrategy().m_matrix();
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> Dmat = cmtbridge_->GetStrategy().d_matrix();
-      Teuchos::RCP<Epetra_Map> slavedofmap = Teuchos::rcp(new Epetra_Map(Dmat->RangeMap()));
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> Mmat = cmtbridge_->get_strategy().m_matrix();
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> Dmat = cmtbridge_->get_strategy().d_matrix();
+      Teuchos::RCP<Epetra_Map> slavedofmap = Teuchos::rcp(new Epetra_Map(Dmat->range_map()));
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Bc =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofmap, 10));
       Teuchos::RCP<Core::LinAlg::SparseMatrix> M =
@@ -1359,7 +1360,7 @@ void Solid::TimInt::update_step_contact_vum()
       Teuchos::RCP<Core::LinAlg::SparseMatrix> D =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*slavedofmap, 10));
       if (Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(
-              cmtbridge_->GetStrategy().Params().sublist("PARALLEL REDISTRIBUTION"),
+              cmtbridge_->get_strategy().params().sublist("PARALLEL REDISTRIBUTION"),
               "PARALLEL_REDIST") != Inpar::Mortar::ParallelRedist::redist_none)
       {
         M = Mortar::MatrixColTransform(Mmat, notredistmasterdofmap);
@@ -1370,20 +1371,20 @@ void Solid::TimInt::update_step_contact_vum()
         M = Mmat;
         D = Dmat;
       }
-      Bc->Add(*M, true, -1.0, 1.0);
-      Bc->Add(*D, true, 1.0, 1.0);
-      Bc->Complete(*slavedofmap, *dofmap);
-      Bc->ApplyDirichlet(*(dbcmaps_->cond_map()), false);
+      Bc->add(*M, true, -1.0, 1.0);
+      Bc->add(*D, true, 1.0, 1.0);
+      Bc->complete(*slavedofmap, *dofmap);
+      Bc->apply_dirichlet(*(dbcmaps_->cond_map()), false);
 
       // matrix of the normal vectors
       Teuchos::RCP<Core::LinAlg::SparseMatrix> N =
-          cmtbridge_->GetStrategy().evaluate_normals(disn_);
+          cmtbridge_->get_strategy().evaluate_normals(disn_);
 
       // lagrange multiplier z
-      Teuchos::RCP<Epetra_Vector> LM = cmtbridge_->GetStrategy().lagrange_multiplier();
+      Teuchos::RCP<Epetra_Vector> LM = cmtbridge_->get_strategy().lagrange_multiplier();
       Teuchos::RCP<Epetra_Vector> Z = Core::LinAlg::CreateVector(*slavenodemap, true);
       Teuchos::RCP<Epetra_Vector> z = Core::LinAlg::CreateVector(*activenodemap, true);
-      N->Multiply(false, *LM, *Z);
+      N->multiply(false, *LM, *Z);
       Core::LinAlg::Export(*Z, *z);
 
       // auxiliary operator BN = Bc * N
@@ -1399,14 +1400,14 @@ void Solid::TimInt::update_step_contact_vum()
           Core::LinAlg::MLMultiply(*BN, true, *Minv, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Atemp2 =
           Core::LinAlg::MLMultiply(*Atemp1, false, *BN, false, false, false, true);
-      Atemp2->Scale(R4);
+      Atemp2->scale(R4);
       Core::LinAlg::SplitMatrix2x2(Atemp2, notactivenodemap, activenodemap, notactivenodemap,
           activenodemap, tempmtx1, tempmtx2, tempmtx3, A);
-      A->Complete(*activenodemap, *activenodemap);
+      A->complete(*activenodemap, *activenodemap);
 
       // diagonal of A
       Teuchos::RCP<Epetra_Vector> AD = Core::LinAlg::CreateVector(*activenodemap, true);
-      A->ExtractDiagonalCopy(*AD);
+      A->extract_diagonal_copy(*AD);
 
       // operator b
       Teuchos::RCP<Epetra_Vector> btemp1 = Core::LinAlg::CreateVector(*dofmap, true);
@@ -1415,13 +1416,13 @@ void Solid::TimInt::update_step_contact_vum()
       btemp1->Update(R1, *Dd, 0.0);
       btemp1->Update(R2, (*vel_)[0], 1.0);
       btemp1->Update(R3, (*acc_)[0], 1.0);
-      BN->Multiply(true, *btemp1, *btemp2);
+      BN->multiply(true, *btemp1, *btemp2);
       Core::LinAlg::Export(*btemp2, *b);
 
       // operatior c
       Teuchos::RCP<Epetra_Vector> ctemp = Core::LinAlg::CreateVector(*slavenodemap, true);
       Teuchos::RCP<Epetra_Vector> c = Core::LinAlg::CreateVector(*activenodemap, true);
-      BN->Multiply(true, *Dd, *ctemp);
+      BN->multiply(true, *Dd, *ctemp);
       Core::LinAlg::Export(*ctemp, *c);
 
       // contact work wc
@@ -1551,7 +1552,7 @@ void Solid::TimInt::update_step_contact_vum()
       for (int i = 0; i < activenodemap->NumMyElements(); ++i)
       {
         x->PutScalar(0.0);
-        (A->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
+        (A->epetra_matrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
         x->ReplaceMyValues(NumEntries, Values, Indices);
         (*f)[i] = (*b)[i] * (*p)[i] + (*w)[i];
         for (int j = 0; j < activenodemap->NumMyElements(); ++j)
@@ -1568,7 +1569,7 @@ void Solid::TimInt::update_step_contact_vum()
       for (int i = 0; i < activenodemap->NumMyElements(); ++i)
       {
         x->PutScalar(0.0);
-        (A->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
+        (A->epetra_matrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
         x->ReplaceMyValues(NumEntries, Values, Indices);
         for (int k = 0; k < activenodemap->NumMyElements(); ++k)
         {
@@ -1579,13 +1580,13 @@ void Solid::TimInt::update_step_contact_vum()
             {
               dfik += (*x)[j] * (*p)[j];
             }
-            DF->Assemble(dfik, activenodemap->GID(i), activenodemap->GID(k));
+            DF->assemble(dfik, activenodemap->GID(i), activenodemap->GID(k));
           }
           else
-            DF->Assemble((*x)[k] * (*p)[i], activenodemap->GID(i), activenodemap->GID(k));
+            DF->assemble((*x)[k] * (*p)[i], activenodemap->GID(i), activenodemap->GID(k));
         }
       }
-      DF->Complete(*activenodemap, *activenodemap);
+      DF->complete(*activenodemap, *activenodemap);
 
       // (3) Newton-Iteration
       Teuchos::RCP<Epetra_Vector> mf = Core::LinAlg::CreateVector(*activenodemap, true);
@@ -1600,7 +1601,7 @@ void Solid::TimInt::update_step_contact_vum()
         mf->Update(-1.0, *f, 0.0);
         Core::LinAlg::SolverParams solver_params;
         solver_params.refactor = true;
-        solver_->Solve(DF->EpetraOperator(), dp, mf, solver_params);
+        solver_->solve(DF->epetra_operator(), dp, mf, solver_params);
 
         // Update solution p_n = p_n-1 + dp
         p->Update(1.0, *dp, 1.0);
@@ -1609,7 +1610,7 @@ void Solid::TimInt::update_step_contact_vum()
         for (int i = 0; i < activenodemap->NumMyElements(); ++i)
         {
           x->PutScalar(0.0);
-          (A->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
+          (A->epetra_matrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
           x->ReplaceMyValues(NumEntries, Values, Indices);
           (*f)[i] = (*b)[i] * (*p)[i] + (*w)[i];
           for (int j = 0; j < activenodemap->NumMyElements(); ++j)
@@ -1623,11 +1624,11 @@ void Solid::TimInt::update_step_contact_vum()
         res /= initres;
 
         // jacobian DF
-        DF->PutScalar(0.0);
+        DF->put_scalar(0.0);
         for (int i = 0; i < activenodemap->NumMyElements(); ++i)
         {
           x->PutScalar(0.0);
-          (A->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
+          (A->epetra_matrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
           x->ReplaceMyValues(NumEntries, Values, Indices);
           for (int k = 0; k < activenodemap->NumMyElements(); ++k)
           {
@@ -1638,10 +1639,10 @@ void Solid::TimInt::update_step_contact_vum()
               {
                 dfik += (*x)[j] * (*p)[j];
               }
-              DF->Assemble(dfik, activenodemap->GID(i), activenodemap->GID(k));
+              DF->assemble(dfik, activenodemap->GID(i), activenodemap->GID(k));
             }
             else
-              DF->Assemble((*x)[k] * (*p)[i], activenodemap->GID(i), activenodemap->GID(k));
+              DF->assemble((*x)[k] * (*p)[i], activenodemap->GID(i), activenodemap->GID(k));
           }
         }
 
@@ -1660,8 +1661,8 @@ void Solid::TimInt::update_step_contact_vum()
       Teuchos::RCP<Epetra_Vector> ptemp2 = Core::LinAlg::CreateVector(*dofmap, true);
       Teuchos::RCP<Epetra_Vector> VU = Core::LinAlg::CreateVector(*dofmap, true);
       Core::LinAlg::Export(*p, *ptemp1);
-      BN->Multiply(false, *ptemp1, *ptemp2);
-      Minv->Multiply(false, *ptemp2, *VU);
+      BN->multiply(false, *ptemp1, *ptemp2);
+      Minv->multiply(false, *ptemp2, *VU);
       veln_->Update(1.0, *VU, 1.0);
     }
   }
@@ -1685,7 +1686,7 @@ void Solid::TimInt::reset_step()
     // go to elements
     discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 
   // reset 0D cardiovascular model if we have monolithic 0D cardiovascular-structure coupling (mhv
@@ -1698,7 +1699,7 @@ void Solid::TimInt::reset_step()
 void Solid::TimInt::read_restart(const int step)
 {
   Core::IO::DiscretizationReader reader(
-      discret_, Global::Problem::Instance()->InputControlFile(), step);
+      discret_, Global::Problem::instance()->input_control_file(), step);
   if (step != reader.read_int("step")) FOUR_C_THROW("Time step on file not equal to given step");
 
   step_ = step;
@@ -1706,7 +1707,7 @@ void Solid::TimInt::read_restart(const int step)
   time_ = Teuchos::rcp(new TimeStepping::TimIntMStep<double>(0, 0, reader.read_double("time")));
   timen_ = (*time_)[0] + (*dt_)[0];
 
-  ReadRestartState();
+  read_restart_state();
 
   read_restart_constraint();
   read_restart_cardiovascular0_d();
@@ -1715,7 +1716,7 @@ void Solid::TimInt::read_restart(const int step)
   read_restart_multi_scale();
   read_restart_spring_dashpot();
 
-  ReadRestartForce();
+  read_restart_force();
 }
 
 /*----------------------------------------------------------------------*/
@@ -1729,14 +1730,14 @@ void Solid::TimInt::set_restart(int step, double time, Teuchos::RCP<Epetra_Vecto
   time_ = Teuchos::rcp(new TimeStepping::TimIntMStep<double>(0, 0, time));
   timen_ = (*time_)[0] + (*dt_)[0];
 
-  SetRestartState(disn, veln, accn, elementdata, nodedata);
+  set_restart_state(disn, veln, accn, elementdata, nodedata);
 
   // ---------------------------------------------------------------------------
   // set restart is only for simple structure problems
   // hence we put some security measures in place
 
   // constraints
-  if (conman_->HaveConstraint()) FOUR_C_THROW("Set restart not implemented for constraints");
+  if (conman_->have_constraint()) FOUR_C_THROW("Set restart not implemented for constraints");
 
   // Cardiovascular0D
   if (cardvasc0dman_->have_cardiovascular0_d())
@@ -1746,68 +1747,68 @@ void Solid::TimInt::set_restart(int step, double time, Teuchos::RCP<Epetra_Vecto
   if (have_contact_meshtying()) FOUR_C_THROW("Set restart not implemented for contact / meshtying");
 
   // beam contact
-  if (HaveBeamContact()) FOUR_C_THROW("Set restart not implemented for beam contact");
+  if (have_beam_contact()) FOUR_C_THROW("Set restart not implemented for beam contact");
 
   // biofilm growth
-  if (HaveBiofilmGrowth()) FOUR_C_THROW("Set restart not implemented for biofilm growth");
+  if (have_biofilm_growth()) FOUR_C_THROW("Set restart not implemented for biofilm growth");
 }
 
 /*----------------------------------------------------------------------*/
 /* Read and set restart state */
-void Solid::TimInt::ReadRestartState()
+void Solid::TimInt::read_restart_state()
 {
   Core::IO::DiscretizationReader reader(
-      discret_, Global::Problem::Instance()->InputControlFile(), step_);
+      discret_, Global::Problem::instance()->input_control_file(), step_);
 
   reader.read_vector(disn_, "displacement");
-  dis_->UpdateSteps(*disn_);
+  dis_->update_steps(*disn_);
 
   if ((dismatn_ != Teuchos::null))
   {
     reader.read_vector(dismatn_, "material_displacement");
-    dismat_->UpdateSteps(*dismatn_);
+    dismat_->update_steps(*dismatn_);
   }
 
   reader.read_vector(veln_, "velocity");
-  vel_->UpdateSteps(*veln_);
+  vel_->update_steps(*veln_);
   reader.read_vector(accn_, "acceleration");
-  acc_->UpdateSteps(*accn_);
+  acc_->update_steps(*accn_);
   reader.read_history_data(step_);
 }
 
 /*----------------------------------------------------------------------*/
 /* Read and set restart state */
-void Solid::TimInt::SetRestartState(Teuchos::RCP<Epetra_Vector> disn,
+void Solid::TimInt::set_restart_state(Teuchos::RCP<Epetra_Vector> disn,
     Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> accn,
     Teuchos::RCP<std::vector<char>> elementdata, Teuchos::RCP<std::vector<char>> nodedata
 
 )
 {
-  dis_->UpdateSteps(*disn);
-  vel_->UpdateSteps(*veln);
-  acc_->UpdateSteps(*accn);
+  dis_->update_steps(*disn);
+  vel_->update_steps(*veln);
+  acc_->update_steps(*accn);
 
   // the following is copied from read_mesh()
   // before we unpack nodes/elements we store a copy of the nodal row/col map
-  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*discret_->NodeRowMap()));
-  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(*discret_->NodeColMap()));
+  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*discret_->node_row_map()));
+  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(*discret_->node_col_map()));
 
   // unpack nodes and elements
   // so everything should be OK
-  discret_->UnPackMyNodes(nodedata);
-  discret_->UnPackMyElements(elementdata);
-  discret_->Redistribute(*noderowmap, *nodecolmap);
+  discret_->un_pack_my_nodes(nodedata);
+  discret_->un_pack_my_elements(elementdata);
+  discret_->redistribute(*noderowmap, *nodecolmap);
 }
 /*----------------------------------------------------------------------*/
 /* Read and set restart values for constraints */
 void Solid::TimInt::read_restart_constraint()
 {
-  if (conman_->HaveConstraint())
+  if (conman_->have_constraint())
   {
     Core::IO::DiscretizationReader reader(
-        discret_, Global::Problem::Instance()->InputControlFile(), step_);
+        discret_, Global::Problem::instance()->input_control_file(), step_);
     double uzawatemp = reader.read_double("uzawaparameter");
-    consolv_->SetUzawaParameter(uzawatemp);
+    consolv_->set_uzawa_parameter(uzawatemp);
 
     conman_->read_restart(reader, (*time_)[0]);
   }
@@ -1820,7 +1821,7 @@ void Solid::TimInt::read_restart_cardiovascular0_d()
   if (cardvasc0dman_->have_cardiovascular0_d())
   {
     Core::IO::DiscretizationReader reader(
-        discret_, Global::Problem::Instance()->InputControlFile(), step_);
+        discret_, Global::Problem::instance()->input_control_file(), step_);
     cardvasc0dman_->read_restart(reader, (*time_)[0]);
   }
 }
@@ -1829,10 +1830,10 @@ void Solid::TimInt::read_restart_cardiovascular0_d()
 /* Read and set restart values for spring dashpot */
 void Solid::TimInt::read_restart_spring_dashpot()
 {
-  if (springman_->HaveSpringDashpot())
+  if (springman_->have_spring_dashpot())
   {
     Core::IO::DiscretizationReader reader(
-        discret_, Global::Problem::Instance()->InputControlFile(), step_);
+        discret_, Global::Problem::instance()->input_control_file(), step_);
     springman_->read_restart(reader, (*time_)[0]);
   }
 }
@@ -1850,7 +1851,7 @@ void Solid::TimInt::read_restart_contact_meshtying()
   // in and contact / meshtying managers choose the correct state.
   //**********************************************************************
   Core::IO::DiscretizationReader reader(
-      discret_, Global::Problem::Instance()->InputControlFile(), step_);
+      discret_, Global::Problem::instance()->input_control_file(), step_);
 
   if (have_contact_meshtying()) cmtbridge_->read_restart(reader, (*dis_)(0), zeros_);
 }
@@ -1859,10 +1860,10 @@ void Solid::TimInt::read_restart_contact_meshtying()
 /* Read and set restart values for beam contact */
 void Solid::TimInt::read_restart_beam_contact()
 {
-  if (HaveBeamContact())
+  if (have_beam_contact())
   {
     Core::IO::DiscretizationReader reader(
-        discret_, Global::Problem::Instance()->InputControlFile(), step_);
+        discret_, Global::Problem::instance()->input_control_file(), step_);
     beamcman_->read_restart(reader);
   }
 }
@@ -1871,19 +1872,19 @@ void Solid::TimInt::read_restart_beam_contact()
 /* Read and set restart values for multi-scale */
 void Solid::TimInt::read_restart_multi_scale()
 {
-  Teuchos::RCP<Mat::PAR::Bundle> materials = Global::Problem::Instance()->Materials();
+  Teuchos::RCP<Mat::PAR::Bundle> materials = Global::Problem::instance()->materials();
 
-  if (std::any_of(materials->Map().begin(), materials->Map().end(),
+  if (std::any_of(materials->map().begin(), materials->map().end(),
           [](const auto& item)
-          { return item.second->Type() == Core::Materials::m_struct_multiscale; }))
+          { return item.second->type() == Core::Materials::m_struct_multiscale; }))
   {
-    int my_pid = Global::Problem::Instance()->GetDis("structure")->Comm().MyPID();
+    int my_pid = Global::Problem::instance()->get_dis("structure")->get_comm().MyPID();
     // set dummy displacements
     discret_->set_state("displacement", zeros_);
-    Core::Elements::Element::LocationArray la(discret_->NumDofSets());
-    for (const auto* ele : discret_->MyColElementRange())
+    Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
+    for (const auto* ele : discret_->my_col_element_range())
     {
-      ele->LocationVector(*discret_, la, false);
+      ele->location_vector(*discret_, la, false);
 
       const auto* solid_ele = dynamic_cast<const Discret::ELEMENTS::Solid*>(ele);
       FOUR_C_THROW_UNLESS(solid_ele,
@@ -1892,12 +1893,12 @@ void Solid::TimInt::read_restart_multi_scale()
       solid_ele->for_each_gauss_point(*discret_, la[0].lm_,
           [&](Mat::So3Material& solid_material, double integration_factor, int gp)
           {
-            if (solid_material.MaterialType() == Core::Materials::m_struct_multiscale)
+            if (solid_material.material_type() == Core::Materials::m_struct_multiscale)
             {
               auto& micro = dynamic_cast<Mat::MicroMaterial&>(solid_material);
-              const bool eleowner = my_pid == ele->Owner();
+              const bool eleowner = my_pid == ele->owner();
 
-              micro.read_restart(gp, ele->Id(), eleowner);
+              micro.read_restart(gp, ele->id(), eleowner);
             }
           });
     }
@@ -1909,15 +1910,15 @@ void Solid::TimInt::read_restart_multi_scale()
 void Solid::TimInt::prepare_output(bool force_prepare_timestep)
 {
   determine_stress_strain();
-  DetermineEnergy();
+  determine_energy();
   determine_optional_quantity();
-  if (havemicromat_) PrepareOutputMicro();
+  if (havemicromat_) prepare_output_micro();
 }
 
 /*----------------------------------------------------------------------*
  *   Write Output while the Newton Iteration         by hiermeier 09/13 *
  *   (useful for debugging purposes)                                    */
-void Solid::TimInt::OutputEveryIter(bool nw, bool ls)
+void Solid::TimInt::output_every_iter(bool nw, bool ls)
 {
   // prevents repeated initialization of output writer
   bool datawritten = false;
@@ -1967,12 +1968,12 @@ void Solid::TimInt::OutputEveryIter(bool nw, bool ls)
 /*----------------------------------------------------------------------*/
 /* output to file
  * originally by mwgee 03/07 */
-void Solid::TimInt::OutputStep(const bool forced_writerestart)
+void Solid::TimInt::output_step(const bool forced_writerestart)
 {
   // print iterations instead of steps
   if (outputeveryiter_)
   {
-    OutputEveryIter();
+    output_every_iter();
     return;
   }
 
@@ -1983,7 +1984,7 @@ void Solid::TimInt::OutputStep(const bool forced_writerestart)
     reset_step();
     // restart has already been written or simulation has just started
     if ((writerestartevery_ and (step_ % writerestartevery_ == 0)) or
-        step_ == Global::Problem::Instance()->restart())
+        step_ == Global::Problem::instance()->restart())
       return;
     // if state already exists, add restart information
     if (writeresultsevery_ and (step_ % writeresultsevery_ == 0))
@@ -2002,7 +2003,7 @@ void Solid::TimInt::OutputStep(const bool forced_writerestart)
   // write restart step
   if ((writerestartevery_ and (step_ % writerestartevery_ == 0) and step_ != 0) or
       forced_writerestart or
-      Global::Problem::Instance()->RestartManager()->restart(step_, discret_->Comm()))
+      Global::Problem::instance()->restart_manager()->restart(step_, discret_->get_comm()))
   {
     output_restart(datawritten);
     lastwrittenresultsstep_ = step_;
@@ -2037,19 +2038,19 @@ void Solid::TimInt::OutputStep(const bool forced_writerestart)
   if (writeresultsevery_ and (writeoptquantity_ != Inpar::Solid::optquantity_none) and
       (step_ % writeresultsevery_ == 0))
   {
-    OutputOptQuantity(datawritten);
+    output_opt_quantity(datawritten);
   }
 
   // output active set, energies and momentum for contact
-  OutputContact();
+  output_contact();
 
-  OutputVolumeMass();
+  output_volume_mass();
 
   // output of nodal positions in current configuration
   output_nodal_positions();
 
   // write output on micro-scale (multi-scale analysis)
-  if (havemicromat_) OutputMicro();
+  if (havemicromat_) output_micro();
 }
 
 /*-----------------------------------------------------------------------------*
@@ -2060,14 +2061,14 @@ void Solid::TimInt::write_gmsh_struc_output_step()
   if (not gmsh_out_) return;
 
   const std::string filename = Core::IO::Gmsh::GetFileName(
-      "struct", discret_->Writer()->output()->file_name(), stepn_, false, myrank_);
+      "struct", discret_->writer()->output()->file_name(), stepn_, false, myrank_);
   std::ofstream gmshfilecontent(filename.c_str());
 
   // add 'View' to Gmsh postprocessing file
   gmshfilecontent << "View \" "
                   << "struct displacement \" {" << std::endl;
   // draw vector field 'struct displacement' for every element
-  Core::IO::Gmsh::VectorFieldDofBasedToGmsh(discret_, Dispn(), gmshfilecontent, 0, true);
+  Core::IO::Gmsh::VectorFieldDofBasedToGmsh(discret_, dispn(), gmshfilecontent, 0, true);
   gmshfilecontent << "};" << std::endl;
 }
 
@@ -2090,24 +2091,24 @@ void Solid::TimInt::get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<double
   *disn = *disn_;
   *veln = *veln_;
   *accn = *accn_;
-  *elementdata = *(discret_->PackMyElements());
-  *nodedata = *(discret_->PackMyNodes());
+  *elementdata = *(discret_->pack_my_elements());
+  *nodedata = *(discret_->pack_my_nodes());
 
   // get restart data is only for simple structure problems
   // hence
 
   // constraints
-  if (conman_->HaveConstraint()) FOUR_C_THROW("Get restart data not implemented for constraints");
+  if (conman_->have_constraint()) FOUR_C_THROW("Get restart data not implemented for constraints");
 
   // contact / meshtying
   if (have_contact_meshtying())
     FOUR_C_THROW("Get restart data not implemented for contact / meshtying");
 
   // beam contact
-  if (HaveBeamContact()) FOUR_C_THROW("Get restart data not implemented for beam contact");
+  if (have_beam_contact()) FOUR_C_THROW("Get restart data not implemented for beam contact");
 
   // biofilm growth
-  if (HaveBiofilmGrowth()) FOUR_C_THROW("Get restart data not implemented for biofilm growth");
+  if (have_biofilm_growth()) FOUR_C_THROW("Get restart data not implemented for biofilm growth");
 }
 /*----------------------------------------------------------------------*/
 /* write restart
@@ -2126,26 +2127,26 @@ void Solid::TimInt::output_restart(bool& datawritten)
   output_->write_vector("acceleration", (*acc_)(0));
   output_->write_element_data(firstoutputofrun_);
   output_->write_node_data(firstoutputofrun_);
-  WriteRestartForce(output_);
+  write_restart_force(output_);
   // owner of elements is just written once because it does not change during simulation (so far)
   firstoutputofrun_ = false;
 
   // constraints
-  if (conman_->HaveConstraint())
+  if (conman_->have_constraint())
   {
-    output_->write_double("uzawaparameter", consolv_->GetUzawaParameter());
-    output_->write_vector("lagrmultiplier", conman_->GetLagrMultVector());
-    output_->write_vector("refconval", conman_->GetRefBaseValues());
+    output_->write_double("uzawaparameter", consolv_->get_uzawa_parameter());
+    output_->write_vector("lagrmultiplier", conman_->get_lagr_mult_vector());
+    output_->write_vector("refconval", conman_->get_ref_base_values());
   }
 
   // 0D cardiovascular models
   if (cardvasc0dman_->have_cardiovascular0_d())
   {
-    output_->write_vector("cv0d_df_np", cardvasc0dman_->Get0D_df_np());
-    output_->write_vector("cv0d_f_np", cardvasc0dman_->Get0D_f_np());
+    output_->write_vector("cv0d_df_np", cardvasc0dman_->get0_d_df_np());
+    output_->write_vector("cv0d_f_np", cardvasc0dman_->get0_d_f_np());
 
-    output_->write_vector("cv0d_dof_np", cardvasc0dman_->Get0D_dof_np());
-    output_->write_vector("vol_np", cardvasc0dman_->Get0D_vol_np());
+    output_->write_vector("cv0d_dof_np", cardvasc0dman_->get0_d_dof_np());
+    output_->write_vector("vol_np", cardvasc0dman_->get0_d_vol_np());
   }
 
   // contact and meshtying
@@ -2165,24 +2166,24 @@ void Solid::TimInt::output_restart(bool& datawritten)
   }
 
   // beam contact
-  if (HaveBeamContact())
+  if (have_beam_contact())
   {
     beamcman_->write_restart(output_);
   }
 
   // biofilm growth
-  if (HaveBiofilmGrowth())
+  if (have_biofilm_growth())
   {
     output_->write_vector("str_growth_displ", strgrdisp_);
   }
 
   // springdashpot output
-  if (springman_->HaveSpringDashpot()) springman_->output_restart(output_, discret_, disn_);
+  if (springman_->have_spring_dashpot()) springman_->output_restart(output_, discret_, disn_);
 
   // info dedicated to user's eyes staring at standard out
-  if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
+  if ((myrank_ == 0) and printscreen_ and (step_old() % printscreen_ == 0))
   {
-    Core::IO::cout << "====== Restart for field '" << discret_->Name() << "' written in step "
+    Core::IO::cout << "====== Restart for field '" << discret_->name() << "' written in step "
                    << step_ << Core::IO::endl;
   }
 }
@@ -2218,7 +2219,7 @@ void Solid::TimInt::output_state(bool& datawritten)
   }
 
   // biofilm growth
-  if (HaveBiofilmGrowth())
+  if (have_biofilm_growth())
   {
     output_->write_vector("str_growth_displ", strgrdisp_);
   }
@@ -2250,7 +2251,7 @@ void Solid::TimInt::output_state(bool& datawritten)
   }
 
   // springdashpot output
-  if (springman_->HaveSpringDashpot()) springman_->output(output_, discret_, disn_);
+  if (springman_->have_spring_dashpot()) springman_->output(output_, discret_, disn_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -2264,28 +2265,28 @@ void Solid::TimInt::add_restart_to_output_state()
     output_->write_vector("acceleration", (*acc_)(0));
   }
 
-  WriteRestartForce(output_);
+  write_restart_force(output_);
 
   // constraints
-  if (conman_->HaveConstraint())
+  if (conman_->have_constraint())
   {
-    output_->write_double("uzawaparameter", consolv_->GetUzawaParameter());
-    output_->write_vector("lagrmultiplier", conman_->GetLagrMultVector());
-    output_->write_vector("refconval", conman_->GetRefBaseValues());
+    output_->write_double("uzawaparameter", consolv_->get_uzawa_parameter());
+    output_->write_vector("lagrmultiplier", conman_->get_lagr_mult_vector());
+    output_->write_vector("refconval", conman_->get_ref_base_values());
   }
 
   // 0D cardiovascular models
   if (cardvasc0dman_->have_cardiovascular0_d())
   {
-    output_->write_vector("cv0d_df_np", cardvasc0dman_->Get0D_df_np());
-    output_->write_vector("cv0d_f_np", cardvasc0dman_->Get0D_f_np());
+    output_->write_vector("cv0d_df_np", cardvasc0dman_->get0_d_df_np());
+    output_->write_vector("cv0d_f_np", cardvasc0dman_->get0_d_f_np());
 
-    output_->write_vector("cv0d_dof_np", cardvasc0dman_->Get0D_dof_np());
-    output_->write_vector("vol_np", cardvasc0dman_->Get0D_vol_np());
+    output_->write_vector("cv0d_dof_np", cardvasc0dman_->get0_d_dof_np());
+    output_->write_vector("vol_np", cardvasc0dman_->get0_d_vol_np());
   }
 
   // springdashpot output
-  if (springman_->HaveSpringDashpot()) springman_->output_restart(output_, discret_, disn_);
+  if (springman_->have_spring_dashpot()) springman_->output_restart(output_, discret_, disn_);
 
   // contact/meshtying
   if (have_contact_meshtying()) cmtbridge_->write_restart(output_, true);
@@ -2293,16 +2294,16 @@ void Solid::TimInt::add_restart_to_output_state()
   // TODO: add missing restart data for surface stress and contact/meshtying here
 
   // beam contact
-  if (HaveBeamContact()) beamcman_->write_restart(output_);
+  if (have_beam_contact()) beamcman_->write_restart(output_);
 
 
   // finally add the missing mesh information, order is important here
   output_->write_mesh(step_, (*time_)[0]);
 
   // info dedicated to user's eyes staring at standard out
-  if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
+  if ((myrank_ == 0) and printscreen_ and (step_old() % printscreen_ == 0))
   {
-    Core::IO::cout << "====== Restart for field '" << discret_->Name() << "' written in step "
+    Core::IO::cout << "====== Restart for field '" << discret_->name() << "' written in step "
                    << step_ << Core::IO::endl;
   }
 }
@@ -2351,7 +2352,7 @@ void Solid::TimInt::determine_stress_strain()
     p.set("rotation", rotdata_);
 
     // set vector values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     // extended set_state(0,...) in case of multiple dofsets (e.g. TSI)
     discret_->set_state(0, "residual displacement", zeros_);
     discret_->set_state(0, "displacement", disn_);
@@ -2361,14 +2362,14 @@ void Solid::TimInt::determine_stress_strain()
     Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix = Teuchos::null;
     Teuchos::RCP<Epetra_Vector> system_vector = Teuchos::null;
     Core::FE::UTILS::evaluate(
-        *discret_, p, system_matrix, system_vector, discret_->ElementRowMap());
-    discret_->ClearState();
+        *discret_, p, system_matrix, system_vector, discret_->element_row_map());
+    discret_->clear_state();
   }
 }
 
 /*----------------------------------------------------------------------*/
 /* Calculation of internal, external and kinetic energy */
-void Solid::TimInt::DetermineEnergy()
+void Solid::TimInt::determine_energy()
 {
   if (writeenergyevery_ and (stepn_ % writeenergyevery_ == 0))
   {
@@ -2380,13 +2381,13 @@ void Solid::TimInt::DetermineEnergy()
       p.set("action", "calc_struct_energy");
 
       // set vector values needed by elements
-      discret_->ClearState();
+      discret_->clear_state();
       discret_->set_state("displacement", disn_);
       // get energies
       Teuchos::RCP<Core::LinAlg::SerialDenseVector> energies =
           Teuchos::rcp(new Core::LinAlg::SerialDenseVector(1));
-      discret_->EvaluateScalars(p, energies);
-      discret_->ClearState();
+      discret_->evaluate_scalars(p, energies);
+      discret_->clear_state();
       intergy_ = (*energies)(0);
     }
 
@@ -2394,7 +2395,7 @@ void Solid::TimInt::DetermineEnergy()
     kinergy_ = 0.0;  // total kinetic energy
     {
       Teuchos::RCP<Epetra_Vector> linmom = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
-      mass_->Multiply(false, *veln_, *linmom);
+      mass_->multiply(false, *veln_, *linmom);
       linmom->Dot(*veln_, &kinergy_);
       kinergy_ *= 0.5;
     }
@@ -2404,7 +2405,7 @@ void Solid::TimInt::DetermineEnergy()
     {
       // WARNING: This will only work with dead loads and implicit time
       // integration (otherwise there is no fextn_)!!!
-      Teuchos::RCP<Epetra_Vector> fext = FextNew();
+      Teuchos::RCP<Epetra_Vector> fext = fext_new();
       fext->Dot(*disn_, &extergy_);
     }
   }
@@ -2436,7 +2437,7 @@ void Solid::TimInt::determine_optional_quantity()
     p.set<int>("iooptquantity", writeoptquantity_);
 
     // set vector values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     // extended set_state(0,...) in case of multiple dofsets (e.g. TSI)
     discret_->set_state(0, "residual displacement", zeros_);
     discret_->set_state(0, "displacement", disn_);
@@ -2445,7 +2446,7 @@ void Solid::TimInt::determine_optional_quantity()
 
     discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 }
 
@@ -2476,7 +2477,7 @@ void Solid::TimInt::output_stress_strain(bool& datawritten)
     {
       FOUR_C_THROW("requested stress type not supported");
     }
-    output_->write_vector(stresstext, *stressdata_, *(discret_->ElementRowMap()));
+    output_->write_vector(stresstext, *stressdata_, *(discret_->element_row_map()));
     // we don't need this anymore
     stressdata_ = Teuchos::null;
   }
@@ -2497,7 +2498,7 @@ void Solid::TimInt::output_stress_strain(bool& datawritten)
     {
       FOUR_C_THROW("requested stress type not supported");
     }
-    output_->write_vector(couplstresstext, *couplstressdata_, *(discret_->ElementRowMap()));
+    output_->write_vector(couplstresstext, *couplstressdata_, *(discret_->element_row_map()));
     // we don't need this anymore
     couplstressdata_ = Teuchos::null;
   }
@@ -2522,7 +2523,7 @@ void Solid::TimInt::output_stress_strain(bool& datawritten)
     {
       FOUR_C_THROW("requested strain type not supported");
     }
-    output_->write_vector(straintext, *straindata_, *(discret_->ElementRowMap()));
+    output_->write_vector(straintext, *straindata_, *(discret_->element_row_map()));
     // we don't need this anymore
     straindata_ = Teuchos::null;
   }
@@ -2543,13 +2544,13 @@ void Solid::TimInt::output_stress_strain(bool& datawritten)
     {
       FOUR_C_THROW("requested plastic strain type not supported");
     }
-    output_->write_vector(plstraintext, *plstraindata_, *(discret_->ElementRowMap()));
+    output_->write_vector(plstraintext, *plstraindata_, *(discret_->element_row_map()));
     // we don't need this anymore
     plstraindata_ = Teuchos::null;
   }
 
   // write structural rotation tensor
-  if (writerotation_) output_->write_vector("rotation", *rotdata_, *(discret_->ElementRowMap()));
+  if (writerotation_) output_->write_vector("rotation", *rotdata_, *(discret_->element_row_map()));
 }
 
 /*----------------------------------------------------------------------*/
@@ -2570,7 +2571,7 @@ void Solid::TimInt::output_energy()
 
 /*----------------------------------------------------------------------*/
 /* stress calculation and output */
-void Solid::TimInt::OutputOptQuantity(bool& datawritten)
+void Solid::TimInt::output_opt_quantity(bool& datawritten)
 {
   // Make new step
   if (not datawritten)
@@ -2588,7 +2589,7 @@ void Solid::TimInt::OutputOptQuantity(bool& datawritten)
     else
       FOUR_C_THROW("requested optional quantity type not supported");
 
-    output_->write_vector(optquantitytext, *optquantitydata_, *(discret_->ElementRowMap()));
+    output_->write_vector(optquantitytext, *optquantitydata_, *(discret_->element_row_map()));
     // we don't need this anymore
     optquantitydata_ = Teuchos::null;
   }
@@ -2596,17 +2597,17 @@ void Solid::TimInt::OutputOptQuantity(bool& datawritten)
 
 /*----------------------------------------------------------------------*/
 /* output active set, energies and momentum for contact */
-void Solid::TimInt::OutputContact()
+void Solid::TimInt::output_contact()
 {
   // only for contact / meshtying simulations
   if (have_contact_meshtying())
   {
     // print active set
-    cmtbridge_->GetStrategy().print_active_set();
+    cmtbridge_->get_strategy().print_active_set();
 
     // check chosen output option
     Inpar::CONTACT::EmOutputType emtype = Core::UTILS::IntegralValue<Inpar::CONTACT::EmOutputType>(
-        cmtbridge_->GetStrategy().Params(), "EMOUTPUT");
+        cmtbridge_->get_strategy().params(), "EMOUTPUT");
 
     // get out of here if no energy/momentum output wanted
     if (emtype == Inpar::CONTACT::output_none) return;
@@ -2614,11 +2615,11 @@ void Solid::TimInt::OutputContact()
     // get some parameters from parameter list
     double timen = (*time_)[0];
     double dt = (*dt_)[0];
-    int dim = cmtbridge_->GetStrategy().Dim();
+    int dim = cmtbridge_->get_strategy().n_dim();
 
     // global linear momentum (M*v)
     Teuchos::RCP<Epetra_Vector> mv = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
-    mass_->Multiply(false, (*vel_)[0], *mv);
+    mass_->multiply(false, (*vel_)[0], *mv);
 
     // linear / angular momentum
     std::vector<double> sumlinmom(3);
@@ -2632,19 +2633,19 @@ void Solid::TimInt::OutputContact()
     std::vector<double> position(3);
 
     // loop over all nodes belonging to the respective processor
-    for (int k = 0; k < (discret_->NodeRowMap())->NumMyElements(); ++k)
+    for (int k = 0; k < (discret_->node_row_map())->NumMyElements(); ++k)
     {
       // get current node
-      int gid = (discret_->NodeRowMap())->GID(k);
-      Core::Nodes::Node* mynode = discret_->gNode(gid);
-      std::vector<int> globaldofs = discret_->Dof(mynode);
+      int gid = (discret_->node_row_map())->GID(k);
+      Core::Nodes::Node* mynode = discret_->g_node(gid);
+      std::vector<int> globaldofs = discret_->dof(mynode);
 
       // loop over all DOFs comprised by this node
       for (int i = 0; i < dim; i++)
       {
         nodelinmom[i] = (*mv)[mv->Map().LID(globaldofs[i])];
         sumlinmom[i] += nodelinmom[i];
-        position[i] = (mynode->X())[i] + ((*dis_)[0])[mv->Map().LID(globaldofs[i])];
+        position[i] = (mynode->x())[i] + ((*dis_)[0])[mv->Map().LID(globaldofs[i])];
       }
 
       // calculate vector product position x linmom
@@ -2659,8 +2660,8 @@ void Solid::TimInt::OutputContact()
     // global quantities (sum over all processors)
     for (int i = 0; i < 3; ++i)
     {
-      cmtbridge_->Comm().SumAll(&sumangmom[i], &angmom[i], 1);
-      cmtbridge_->Comm().SumAll(&sumlinmom[i], &linmom[i], 1);
+      cmtbridge_->get_comm().SumAll(&sumangmom[i], &angmom[i], 1);
+      cmtbridge_->get_comm().SumAll(&sumlinmom[i], &linmom[i], 1);
     }
 
     //--------------------------Calculation of total kinetic energy
@@ -2679,13 +2680,13 @@ void Solid::TimInt::OutputContact()
     double inten = 0.0;
     Teuchos::ParameterList p;
     p.set("action", "calc_struct_energy");
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state("displacement", (*dis_)(0));
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> energies =
         Teuchos::rcp(new Core::LinAlg::SerialDenseVector(1));
     energies->putScalar(0.0);
-    discret_->EvaluateScalars(p, energies);
-    discret_->ClearState();
+    discret_->evaluate_scalars(p, energies);
+    discret_->clear_state();
     inten = (*energies)(0);
 
     //-------------------------Calculation of total external energy
@@ -2701,7 +2702,8 @@ void Solid::TimInt::OutputContact()
       {
         // path and filename
         std::ostringstream filename;
-        const std::string filebase = Global::Problem::Instance()->OutputControlFile()->file_name();
+        const std::string filebase =
+            Global::Problem::instance()->output_control_file()->file_name();
         filename << filebase << ".energymomentum";
 
         // open file
@@ -2765,15 +2767,15 @@ void Solid::TimInt::OutputContact()
     }
 
     //-------------------------- Compute and output interface forces
-    cmtbridge_->GetStrategy().interface_forces(true);
+    cmtbridge_->get_strategy().interface_forces(true);
   }
 }
 
 /*----------------------------------------------------------------------*/
 /* output volume and mass */
-void Solid::TimInt::OutputVolumeMass()
+void Solid::TimInt::output_volume_mass()
 {
-  const Teuchos::ParameterList& listwear = Global::Problem::Instance()->WearParams();
+  const Teuchos::ParameterList& listwear = Global::Problem::instance()->wear_params();
   bool massvol = Core::UTILS::IntegralValue<int>(listwear, "VOLMASS_OUTPUT");
   if (!massvol) return;
 
@@ -2785,11 +2787,11 @@ void Solid::TimInt::OutputVolumeMass()
   // call discretization to evaluate error norms
   Teuchos::ParameterList p;
   p.set("action", "calc_struct_mass_volume");
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("displacement", (*dis_)(0));
   if ((dismatn_ != Teuchos::null)) discret_->set_state(0, "material_displacement", dismatn_);
-  discret_->EvaluateScalars(p, norms);
-  discret_->ClearState();
+  discret_->evaluate_scalars(p, norms);
+  discret_->clear_state();
 
   // proc 0 writes output to screen
   if (!myrank_)
@@ -2813,13 +2815,13 @@ void Solid::TimInt::OutputVolumeMass()
 
 /*----------------------------------------------------------------------*/
 /* output on micro-scale */
-void Solid::TimInt::OutputMicro()
+void Solid::TimInt::output_micro()
 {
-  for (int i = 0; i < discret_->NumMyRowElements(); i++)
+  for (int i = 0; i < discret_->num_my_row_elements(); i++)
   {
-    Core::Elements::Element* actele = discret_->lRowElement(i);
-    Teuchos::RCP<Core::Mat::Material> mat = actele->Material();
-    if (mat->MaterialType() == Core::Materials::m_struct_multiscale)
+    Core::Elements::Element* actele = discret_->l_row_element(i);
+    Teuchos::RCP<Core::Mat::Material> mat = actele->material();
+    if (mat->material_type() == Core::Materials::m_struct_multiscale)
     {
       Mat::MicroMaterial* micro = static_cast<Mat::MicroMaterial*>(mat.get());
       micro->output();
@@ -2829,14 +2831,14 @@ void Solid::TimInt::OutputMicro()
 
 /*----------------------------------------------------------------------*/
 /* calculate stresses and strains on micro-scale */
-void Solid::TimInt::PrepareOutputMicro()
+void Solid::TimInt::prepare_output_micro()
 {
-  for (int i = 0; i < discret_->NumMyRowElements(); i++)
+  for (int i = 0; i < discret_->num_my_row_elements(); i++)
   {
-    Core::Elements::Element* actele = discret_->lRowElement(i);
+    Core::Elements::Element* actele = discret_->l_row_element(i);
 
-    Teuchos::RCP<Core::Mat::Material> mat = actele->Material();
-    if (mat->MaterialType() == Core::Materials::m_struct_multiscale)
+    Teuchos::RCP<Core::Mat::Material> mat = actele->material();
+    if (mat->material_type() == Core::Materials::m_struct_multiscale)
     {
       Mat::MicroMaterial* micro = static_cast<Mat::MicroMaterial*>(mat.get());
       micro->prepare_output();
@@ -2925,10 +2927,10 @@ void Solid::TimInt::apply_force_external(const double time, const Teuchos::RCP<E
   // other parameters needed by the elements
   p.set("total time", time);
   p.set<const Core::UTILS::FunctionManager*>(
-      "function_manager", &Global::Problem::Instance()->FunctionManager());
+      "function_manager", &Global::Problem::instance()->function_manager());
 
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state(0, "displacement", dis);
   discret_->set_state(0, "displacement new", disn);
 
@@ -2939,9 +2941,9 @@ void Solid::TimInt::apply_force_external(const double time, const Teuchos::RCP<E
 
 /*----------------------------------------------------------------------*/
 /* check whether we have nonlinear inertia forces or not */
-int Solid::TimInt::HaveNonlinearMass() const
+int Solid::TimInt::have_nonlinear_mass() const
 {
-  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
   int masslin = Core::UTILS::IntegralValue<Inpar::Solid::MassLin>(sdyn, "MASSLIN");
 
   return masslin;
@@ -2984,7 +2986,7 @@ void Solid::TimInt::nonlinear_mass_sanity_check(Teuchos::RCP<const Epetra_Vector
         dispnorm, velnorm, accnorm);
   }
 
-  if (HaveNonlinearMass() == Inpar::Solid::ml_rotations and
+  if (have_nonlinear_mass() == Inpar::Solid::ml_rotations and
       Core::UTILS::IntegralValue<Inpar::Solid::PredEnum>(*sdynparams, "PREDICT") !=
           Inpar::Solid::pred_constdis)
   {
@@ -2995,7 +2997,7 @@ void Solid::TimInt::nonlinear_mass_sanity_check(Teuchos::RCP<const Epetra_Vector
 
   if (sdynparams != nullptr)
   {
-    if (HaveNonlinearMass() == Inpar::Solid::ml_rotations and
+    if (have_nonlinear_mass() == Inpar::Solid::ml_rotations and
         Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(*sdynparams, "DYNAMICTYP") !=
             Inpar::Solid::dyna_genalpha)
       FOUR_C_THROW(
@@ -3022,7 +3024,7 @@ void Solid::TimInt::apply_force_internal(const double time, const double dt,
 
   if (pressure_ != Teuchos::null) p.set("volume", 0.0);
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("residual displacement", disi);  // these are incremental
   discret_->set_state("displacement", dis);
 
@@ -3030,11 +3032,11 @@ void Solid::TimInt::apply_force_internal(const double time, const double dt,
   // fintn_->PutScalar(0.0);  // initialise internal force vector
   discret_->evaluate(p, Teuchos::null, Teuchos::null, fint, Teuchos::null, Teuchos::null);
 
-  discret_->ClearState();
+  discret_->clear_state();
 }
 
 /*----------------------------------------------------------------------*/
-Inpar::Solid::ConvergenceStatus Solid::TimInt::PerformErrorAction(
+Inpar::Solid::ConvergenceStatus Solid::TimInt::perform_error_action(
     Inpar::Solid::ConvergenceStatus nonlinsoldiv)
 {
   // what to do when nonlinear solver does not converge
@@ -3129,8 +3131,8 @@ Inpar::Solid::ConvergenceStatus Solid::TimInt::PerformErrorAction(
       double proc_randnum_get = ((double)rand() / (double)RAND_MAX);
       double proc_randnum = proc_randnum_get;
       double randnum = 1.0;
-      discret_->Comm().SumAll(&proc_randnum, &randnum, 1);
-      const double numproc = discret_->Comm().NumProc();
+      discret_->get_comm().SumAll(&proc_randnum, &randnum, 1);
+      const double numproc = discret_->get_comm().NumProc();
       randnum /= numproc;
       if (rand_tsfac_ > 1.0)
         rand_tsfac_ = randnum * 0.49 + 0.51;
@@ -3159,7 +3161,7 @@ Inpar::Solid::ConvergenceStatus Solid::TimInt::PerformErrorAction(
       // adapt penalty and search parameter
       if (have_contact_meshtying())
       {
-        cmtbridge_->GetStrategy().modify_penalty();
+        cmtbridge_->get_strategy().modify_penalty();
       }
     }
     break;
@@ -3193,12 +3195,12 @@ Inpar::Solid::ConvergenceStatus Solid::TimInt::PerformErrorAction(
       {
         if (myrank_ == 0)
         {
-          if (cardvasc0dman_->Get_k_ptc() == 0.0)
+          if (cardvasc0dman_->get_k_ptc() == 0.0)
           {
             Core::IO::cout << "Nonlinear solver failed to converge at time t= " << timen_
                            << ". Increase PTC parameter. "
-                           << "Old PTC parameter: " << cardvasc0dman_->Get_k_ptc() << Core::IO::endl
-                           << "New PTC parameter: " << sum + cardvasc0dman_->Get_k_ptc()
+                           << "Old PTC parameter: " << cardvasc0dman_->get_k_ptc() << Core::IO::endl
+                           << "New PTC parameter: " << sum + cardvasc0dman_->get_k_ptc()
                            << Core::IO::endl
                            << Core::IO::endl;
           }
@@ -3206,14 +3208,14 @@ Inpar::Solid::ConvergenceStatus Solid::TimInt::PerformErrorAction(
           {
             Core::IO::cout << "Nonlinear solver failed to converge at time t= " << timen_
                            << ". Increase PTC parameter. "
-                           << "Old PTC parameter: " << cardvasc0dman_->Get_k_ptc() << Core::IO::endl
-                           << "New PTC parameter: " << fac * cardvasc0dman_->Get_k_ptc()
+                           << "Old PTC parameter: " << cardvasc0dman_->get_k_ptc() << Core::IO::endl
+                           << "New PTC parameter: " << fac * cardvasc0dman_->get_k_ptc()
                            << Core::IO::endl
                            << Core::IO::endl;
           }
         }
         // increase PTC factor
-        cardvasc0dman_->Modify_k_ptc(sum, fac);
+        cardvasc0dman_->modify_k_ptc(sum, fac);
 
         // adapt penalty parameter
         if (have_contact_meshtying() and divconrefinementlevel_ > adapt_penaltycontact_after)
@@ -3226,7 +3228,7 @@ Inpar::Solid::ConvergenceStatus Solid::TimInt::PerformErrorAction(
                 << Core::IO::endl;
           }
 
-          cmtbridge_->GetStrategy().modify_penalty();
+          cmtbridge_->get_strategy().modify_penalty();
         }
 
         divconrefinementlevel_++;
@@ -3255,7 +3257,7 @@ Inpar::Solid::ConvergenceStatus Solid::TimInt::PerformErrorAction(
 /*----------------------------------------------------------------------*/
 /* Set forces due to interface with fluid,
  * the force is expected external-force-like */
-void Solid::TimInt::SetForceInterface(
+void Solid::TimInt::set_force_interface(
     Teuchos::RCP<Epetra_MultiVector> iforce  ///< the force on interface
 )
 {
@@ -3264,7 +3266,7 @@ void Solid::TimInt::SetForceInterface(
 
 /*----------------------------------------------------------------------*/
 /* apply the new material_displacements        mgit 05/11 / rauch 01/16 */
-void Solid::TimInt::ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat)
+void Solid::TimInt::apply_dis_mat(Teuchos::RCP<Epetra_Vector> dismat)
 {
   // The values in dismatn_ are replaced, because the new absolute material
   // displacement is provided in the argument (not an increment)
@@ -3273,12 +3275,12 @@ void Solid::TimInt::ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat)
 
 /*----------------------------------------------------------------------*/
 /* Attach file handle for energy file #energyfile_                      */
-void Solid::TimInt::AttachEnergyFile()
+void Solid::TimInt::attach_energy_file()
 {
   if (energyfile_.is_null())
   {
     std::string energyname =
-        Global::Problem::Instance()->OutputControlFile()->file_name() + ".energy";
+        Global::Problem::instance()->output_control_file()->file_name() + ".energy";
     energyfile_ = Teuchos::rcp(new std::ofstream(energyname.c_str()));
     (*energyfile_) << "# timestep time total_energy"
                    << " kinetic_energy internal_energy external_energy" << std::endl;
@@ -3289,7 +3291,7 @@ void Solid::TimInt::AttachEnergyFile()
 /* Return (rotatory) transformation matrix of local co-ordinate systems */
 Teuchos::RCP<const Core::LinAlg::SparseMatrix> Solid::TimInt::get_loc_sys_trafo() const
 {
-  if (locsysman_ != Teuchos::null) return locsysman_->Trafo();
+  if (locsysman_ != Teuchos::null) return locsysman_->trafo();
 
   return Teuchos::null;
 }
@@ -3310,7 +3312,7 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Solid::TimInt::block_system_ma
 
 /*----------------------------------------------------------------------*/
 /* Return sparse mass matrix                                            */
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimInt::MassMatrix()
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimInt::mass_matrix()
 {
   return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mass_);
 }
@@ -3318,11 +3320,11 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimInt::MassMatrix()
 
 /*----------------------------------------------------------------------*/
 /* Return domain map of mass matrix                                     */
-const Epetra_Map& Solid::TimInt::DomainMap() const { return mass_->DomainMap(); }
+const Epetra_Map& Solid::TimInt::domain_map() const { return mass_->domain_map(); }
 
 /*----------------------------------------------------------------------*/
 /* Creates the field test                                               */
-Teuchos::RCP<Core::UTILS::ResultTest> Solid::TimInt::CreateFieldTest()
+Teuchos::RCP<Core::UTILS::ResultTest> Solid::TimInt::create_field_test()
 {
   return Teuchos::rcp(new StruResultTest(*this));
 }
@@ -3372,12 +3374,12 @@ void Solid::TimInt::reset()
   fifc_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
   // set initial fields
-  SetInitialFields();
+  set_initial_fields();
 }
 
 /*----------------------------------------------------------------------*/
 /* set structure displacement vector due to biofilm growth              */
-void Solid::TimInt::SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp)
+void Solid::TimInt::set_str_gr_disp(Teuchos::RCP<Epetra_Vector> struct_growth_disp)
 {
   strgrdisp_ = struct_growth_disp;
 }
@@ -3391,19 +3393,19 @@ void Solid::TimInt::resize_m_step_tim_ada()
   check_is_setup();
 
   // resize time and stepsize fields
-  time_->Resize(-1, 0, (*time_)[0]);
-  dt_->Resize(-1, 0, (*dt_)[0]);
+  time_->resize(-1, 0, (*time_)[0]);
+  dt_->resize(-1, 0, (*dt_)[0]);
 
   // resize state vectors, AB2 is a 2-step method, thus we need two
   // past steps at t_{n} and t_{n-1}
-  dis_->Resize(-1, 0, dof_row_map_view(), true);
-  vel_->Resize(-1, 0, dof_row_map_view(), true);
-  acc_->Resize(-1, 0, dof_row_map_view(), true);
+  dis_->resize(-1, 0, dof_row_map_view(), true);
+  vel_->resize(-1, 0, dof_row_map_view(), true);
+  acc_->resize(-1, 0, dof_row_map_view(), true);
 }
 
 /*----------------------------------------------------------------------*/
 /* Expand the dbc map by dofs provided in Epetra_Map maptoadd.          */
-void Solid::TimInt::AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
+void Solid::TimInt::add_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
   condmaps.push_back(maptoadd);
@@ -3414,7 +3416,7 @@ void Solid::TimInt::AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
 
 /*----------------------------------------------------------------------*/
 /* Contract the dbc map by dofs provided in Epetra_Map maptoremove.     */
-void Solid::TimInt::RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove)
+void Solid::TimInt::remove_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoremove)
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
   othermaps.push_back(maptoremove);

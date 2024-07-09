@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>*
-Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Instance(
+Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -30,7 +30,7 @@ Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Instance(
             new ScaTraEleCalcElchElectrodeSTIThermo<distype>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -62,11 +62,11 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::get_materi
 {
   // Set GP values to mat_electrode
   myelectrode::utils()->mat_electrode(
-      ele->Material(), var_manager()->Phinp(0), var_manager()->Temp(), myelectrode::diff_manager());
+      ele->material(), var_manager()->phinp(0), var_manager()->temp(), myelectrode::diff_manager());
 
   // get parameters of secondary, thermodynamic electrolyte material
-  Teuchos::RCP<const Core::Mat::Material> material = ele->Material(1);
-  materialtype_ = material->MaterialType();
+  Teuchos::RCP<const Core::Mat::Material> material = ele->material(1);
+  materialtype_ = material->material_type();
   if (materialtype_ == Core::Materials::m_soret) mythermo::mat_soret(material);
 }  // Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::get_material_params
 
@@ -89,13 +89,13 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::calc_mat_a
   if (materialtype_ == Core::Materials::m_soret)
   {
     // matrix and vector contributions arising from additional, thermodynamic term for Soret effect
-    mythermo::calc_mat_soret(emat, timefacfac, var_manager()->Phinp(0),
-        myelectrode::diff_manager()->GetIsotropicDiff(0),
-        myelectrode::diff_manager()->get_conc_deriv_iso_diff_coef(0, 0), var_manager()->Temp(),
-        var_manager()->GradTemp(), my::funct_, my::derxy_);
-    mythermo::calc_rhs_soret(erhs, var_manager()->Phinp(0),
-        myelectrode::diff_manager()->GetIsotropicDiff(0), rhsfac, var_manager()->Temp(),
-        var_manager()->GradTemp(), my::derxy_);
+    mythermo::calc_mat_soret(emat, timefacfac, var_manager()->phinp(0),
+        myelectrode::diff_manager()->get_isotropic_diff(0),
+        myelectrode::diff_manager()->get_conc_deriv_iso_diff_coef(0, 0), var_manager()->temp(),
+        var_manager()->grad_temp(), my::funct_, my::derxy_);
+    mythermo::calc_rhs_soret(erhs, var_manager()->phinp(0),
+        myelectrode::diff_manager()->get_isotropic_diff(0), rhsfac, var_manager()->temp(),
+        var_manager()->grad_temp(), my::derxy_);
   }
 }
 
@@ -104,7 +104,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::calc_mat_a
  | evaluate action for off-diagonal system matrix block      fang 11/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::EvaluateActionOD(
+int Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::evaluate_action_od(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, const ScaTra::Action& action,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -126,8 +126,8 @@ int Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::EvaluateAct
     default:
     {
       // call base class routine
-      my::EvaluateActionOD(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
-          elevec1_epetra, elevec2_epetra, elevec3_epetra);
+      my::evaluate_action_od(ele, params, discretization, action, la, elemat1_epetra,
+          elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
       break;
     }
@@ -149,14 +149,14 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::sysmat_od_
   Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     // evaluate shape functions, their derivatives, and domain integration factor at current
     // integration point
     const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // evaluate overall integration factor
-    const double timefacfac = my::scatraparatimint_->TimeFac() * fac;
+    const double timefacfac = my::scatraparatimint_->time_fac() * fac;
 
     // evaluate internal variables at current integration point
     set_internal_variables_for_mat_and_rhs();
@@ -168,18 +168,18 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::sysmat_od_
 
     // calculating the off diagonal for the temperature derivative of concentration and electric
     // potential
-    mythermo::calc_mat_diff_thermo_od(emat, my::numdofpernode_, timefacfac, var_manager()->InvF(),
-        var_manager()->GradPhi(0), var_manager()->GradPot(),
+    mythermo::calc_mat_diff_thermo_od(emat, my::numdofpernode_, timefacfac, var_manager()->inv_f(),
+        var_manager()->grad_phi(0), var_manager()->grad_pot(),
         myelectrode::diff_manager()->get_temp_deriv_iso_diff_coef(0, 0),
-        myelectrode::diff_manager()->GetTempDerivCond(0), my::funct_, my::derxy_, 1.);
+        myelectrode::diff_manager()->get_temp_deriv_cond(0), my::funct_, my::derxy_, 1.);
 
     if (materialtype_ == Core::Materials::m_soret)
     {
       // provide element matrix with linearizations of Soret term in discrete scatra residuals
       // w.r.t. thermo dofs
-      mythermo::calc_mat_soret_od(emat, timefacfac, var_manager()->Phinp(0),
-          myelectrode::diff_manager()->GetIsotropicDiff(0), var_manager()->Temp(),
-          var_manager()->GradTemp(), my::funct_, my::derxy_);
+      mythermo::calc_mat_soret_od(emat, timefacfac, var_manager()->phinp(0),
+          myelectrode::diff_manager()->get_isotropic_diff(0), var_manager()->temp(),
+          var_manager()->grad_temp(), my::funct_, my::derxy_);
     }
   }
 }

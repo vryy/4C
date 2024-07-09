@@ -64,9 +64,9 @@ void FSI::BlockMonolithic::redistribute_monolithic_graph(
 
   // access the discretizations
   Teuchos::RCP<Core::FE::Discretization> structuredis =
-      Global::Problem::Instance()->GetDis("structure");
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = Global::Problem::Instance()->GetDis("fluid");
-  Teuchos::RCP<Core::FE::Discretization> aledis = Global::Problem::Instance()->GetDis("ale");
+      Global::Problem::instance()->get_dis("structure");
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = Global::Problem::instance()->get_dis("fluid");
+  Teuchos::RCP<Core::FE::Discretization> aledis = Global::Problem::instance()->get_dis("ale");
 
   // Fill maps based on condition for master side (masterdis != slavedis)
   Core::Conditions::FindConditionObjects(
@@ -114,8 +114,8 @@ void FSI::BlockMonolithic::redistribute_monolithic_graph(
   /***************************/
 
   // create nodal graphs and maps of structure and fluid field
-  Teuchos::RCP<const Epetra_CrsGraph> structureGraph = structuredis->BuildNodeGraph();
-  Teuchos::RCP<const Epetra_CrsGraph> fluidGraph = fluiddis->BuildNodeGraph();
+  Teuchos::RCP<const Epetra_CrsGraph> structureGraph = structuredis->build_node_graph();
+  Teuchos::RCP<const Epetra_CrsGraph> fluidGraph = fluiddis->build_node_graph();
   const Epetra_Map& structureGraph_map = (Epetra_Map&)structureGraph->RowMap();
   const Epetra_Map& fluidGraph_map = (Epetra_Map&)fluidGraph->RowMap();
 
@@ -176,7 +176,7 @@ void FSI::BlockMonolithic::redistribute_monolithic_graph(
   Teuchos::RCP<Epetra_Vector> crs_hge_weights = Teuchos::rcp(new Epetra_Vector(monolithicMap));
   crs_hge_weights->PutScalar(1.0);
 
-  Teuchos::RCP<Epetra_CrsGraph> bal_graph = CallPartitioner(monolithicGraph, "HYPERGRAPH", 0);
+  Teuchos::RCP<Epetra_CrsGraph> bal_graph = call_partitioner(monolithicGraph, "HYPERGRAPH", 0);
 
   if (myrank == 0) std::cout << "... returned from Partitioner." << std::endl;
 
@@ -201,10 +201,10 @@ void FSI::BlockMonolithic::redistribute_monolithic_graph(
   // get fluid and structure row maps with inserted fluid interface nodes (final rowmaps)
 
   Teuchos::RCP<Epetra_Map> structureRowmap =
-      GetRedistRowMap(structureGraph_map, monolithicRownodes, fluidToStructureMap);
+      get_redist_row_map(structureGraph_map, monolithicRownodes, fluidToStructureMap);
 
   Teuchos::RCP<Epetra_Map> fluidRowmap =
-      GetRedistRowMap(fluidGraph_map, monolithicRownodes, fluidToStructureMap, true);
+      get_redist_row_map(fluidGraph_map, monolithicRownodes, fluidToStructureMap, true);
 
   // Now create structure and fluid graph with inserted / removed edges such that the final column
   // maps can be extracted
@@ -238,32 +238,32 @@ void FSI::BlockMonolithic::redistribute_monolithic_graph(
    */
 
   // redistribute nodes to procs
-  structuredis->Redistribute(*structureRowmap, *structureColmap);
-  fluiddis->Redistribute(*fluidRowmap, *fluidColmap);
-  aledis->Redistribute(*fluidRowmap, *fluidColmap);
+  structuredis->redistribute(*structureRowmap, *structureColmap);
+  fluiddis->redistribute(*fluidRowmap, *fluidColmap);
+  aledis->redistribute(*fluidRowmap, *fluidColmap);
 
   // Distribute dofs in time integration vectors to right procs by creating time integrators new.
   // The Control File has to be rewritten as well.
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
   Teuchos::RCP<Teuchos::ParameterList> ioflags =
-      Teuchos::rcp(new Teuchos::ParameterList(problem->IOParams()));
-  Teuchos::RCP<Core::IO::DiscretizationWriter> structureoutput = structuredis->Writer();
-  Teuchos::RCP<Core::IO::DiscretizationWriter> fluidoutput = fluiddis->Writer();
-  Teuchos::RCP<Core::IO::DiscretizationWriter> aleoutput = aledis->Writer();
+      Teuchos::rcp(new Teuchos::ParameterList(problem->io_params()));
+  Teuchos::RCP<Core::IO::DiscretizationWriter> structureoutput = structuredis->writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> fluidoutput = fluiddis->writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> aleoutput = aledis->writer();
 
-  const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
 
   fluidoutput->overwrite_result_file();
   aleoutput->overwrite_result_file();
   structureoutput->overwrite_result_file();
   create_structure_time_integrator(fsidyn, structuredis);
-  SetLambda();
+  set_lambda();
 
   fluidoutput->overwrite_result_file();
   aleoutput->overwrite_result_file();
   structureoutput->overwrite_result_file();
   create_fluid_and_ale_time_integrator(fsidyn, fluiddis, aledis);
-  SetLambda();
+  set_lambda();
 
 
   /*
@@ -281,7 +281,7 @@ void FSI::BlockMonolithic::redistribute_monolithic_graph(
   aleoutput->write_mesh(0, 0.0);
 
   // setup has do be done again
-  SetNotSetup();
+  set_not_setup();
 
   // just to be safe
   comm.Barrier();
@@ -317,9 +317,9 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const Inpar::FSI::R
 
   // access the discretizations
   Teuchos::RCP<Core::FE::Discretization> structuredis =
-      Global::Problem::Instance()->GetDis("structure");
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = Global::Problem::Instance()->GetDis("fluid");
-  Teuchos::RCP<Core::FE::Discretization> aledis = Global::Problem::Instance()->GetDis("ale");
+      Global::Problem::instance()->get_dis("structure");
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = Global::Problem::instance()->get_dis("fluid");
+  Teuchos::RCP<Core::FE::Discretization> aledis = Global::Problem::instance()->get_dis("ale");
 
   // Fill maps based on condition for master side (masterdis != slavedis)
   Core::Conditions::FindConditionObjects(
@@ -374,7 +374,7 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const Inpar::FSI::R
     dis = fluiddis;
 
   // create nodal graph of master field
-  Teuchos::RCP<const Epetra_CrsGraph> initgraph = dis->BuildNodeGraph();
+  Teuchos::RCP<const Epetra_CrsGraph> initgraph = dis->build_node_graph();
   const Epetra_Map& initgraph_map = (Epetra_Map&)initgraph->RowMap();
 
   Teuchos::RCP<Epetra_CrsMatrix> crs_ge_weights =
@@ -386,14 +386,14 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const Inpar::FSI::R
   std::map<int, std::list<int>> deletedEdges;
   std::map<int, std::list<int>>* deletedEdgesPtr = &deletedEdges;
 
-  BuildWeightedGraph(crs_ge_weights, initgraph_manip, initgraph, inputWeight1, inputWeight2,
+  build_weighted_graph(crs_ge_weights, initgraph_manip, initgraph, inputWeight1, inputWeight2,
       nodeOwnerPtr, inverseNodeOwnerPtr, deletedEdgesPtr, comm);
 
   /******************/
   /* redistribution */
   /******************/
 
-  Teuchos::RCP<Epetra_CrsGraph> bal_graph = CallPartitioner(initgraph_manip, "GRAPH", 0);
+  Teuchos::RCP<Epetra_CrsGraph> bal_graph = call_partitioner(initgraph_manip, "GRAPH", 0);
 
   bal_graph->FillComplete();
   bal_graph->OptimizeStorage();
@@ -414,7 +414,7 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const Inpar::FSI::R
    */
 
   Teuchos::RCP<Epetra_CrsGraph> switched_bal_graph =
-      SwitchDomains(rownodes, nodeOwnerPtr, bal_graph, comm);
+      switch_domains(rownodes, nodeOwnerPtr, bal_graph, comm);
 
   // Extract row map from the final graph. Column map will be done in a while, after we insert the
   // deleted edges from above.
@@ -440,7 +440,7 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const Inpar::FSI::R
   int err = final_graph->Export(*initgraph, exporter, Insert);
   if (err) FOUR_C_THROW("Export not successful, error code %d!", err);
 
-  InsertDeletedEdges(deletedEdgesPtr, switched_rownodes, final_graph);
+  insert_deleted_edges(deletedEdgesPtr, switched_rownodes, final_graph);
 
   // Now extract column map from the final graph.
   Teuchos::RCP<Epetra_Map> switched_colnodes;
@@ -458,23 +458,23 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const Inpar::FSI::R
    */
 
   // redistribute nodes to procs
-  dis->Redistribute(*switched_rownodes, *switched_colnodes);
+  dis->redistribute(*switched_rownodes, *switched_colnodes);
 
   if (domain == Inpar::FSI::Redistribute_fluid)
   {
-    aledis->Redistribute(*switched_rownodes, *switched_colnodes);
+    aledis->redistribute(*switched_rownodes, *switched_colnodes);
   }
 
   // Distribute dofs in time integration vectors to right procs by creating time integrators new.
   // The Control File has to be rewritten as well.
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
   Teuchos::RCP<Teuchos::ParameterList> ioflags =
-      Teuchos::rcp(new Teuchos::ParameterList(problem->IOParams()));
-  Teuchos::RCP<Core::IO::DiscretizationWriter> structureoutput = structuredis->Writer();
-  Teuchos::RCP<Core::IO::DiscretizationWriter> fluidoutput = fluiddis->Writer();
-  Teuchos::RCP<Core::IO::DiscretizationWriter> aleoutput = aledis->Writer();
+      Teuchos::rcp(new Teuchos::ParameterList(problem->io_params()));
+  Teuchos::RCP<Core::IO::DiscretizationWriter> structureoutput = structuredis->writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> fluidoutput = fluiddis->writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> aleoutput = aledis->writer();
 
-  const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
 
   if (domain == Inpar::FSI::Redistribute_structure)
   {
@@ -482,7 +482,7 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const Inpar::FSI::R
     aleoutput->overwrite_result_file();
     structureoutput->overwrite_result_file();
     create_structure_time_integrator(fsidyn, structuredis);
-    SetLambda();
+    set_lambda();
   }
   else if (domain == Inpar::FSI::Redistribute_fluid)
   {
@@ -490,7 +490,7 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const Inpar::FSI::R
     aleoutput->overwrite_result_file();
     structureoutput->overwrite_result_file();
     create_fluid_and_ale_time_integrator(fsidyn, fluiddis, aledis);
-    SetLambda();
+    set_lambda();
   }
 
   /*
@@ -538,7 +538,7 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const Inpar::FSI::R
 
 
   // setup has do be done again
-  SetNotSetup();
+  set_not_setup();
 
   comm.Barrier();
 
@@ -546,7 +546,7 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const Inpar::FSI::R
 }
 
 /*----------------------------------------------------------------------------*/
-void FSI::BlockMonolithic::BuildWeightedGraph(Teuchos::RCP<Epetra_CrsMatrix> crs_ge_weights,
+void FSI::BlockMonolithic::build_weighted_graph(Teuchos::RCP<Epetra_CrsMatrix> crs_ge_weights,
     Teuchos::RCP<Epetra_CrsGraph> initgraph_manip, Teuchos::RCP<const Epetra_CrsGraph> initgraph,
     const double inputWeight1, const double inputWeight2, std::map<int, int>* nodeOwner,
     std::map<int, std::list<int>>* inverseNodeOwner, std::map<int, std::list<int>>* deletedEdges,
@@ -791,7 +791,7 @@ void FSI::BlockMonolithic::BuildWeightedGraph(Teuchos::RCP<Epetra_CrsMatrix> crs
 }
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::CallPartitioner(
+Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::call_partitioner(
     Teuchos::RCP<const Epetra_CrsGraph> initgraph_manip, std::string partitioningMethod,
     int unbalance)
 {
@@ -802,7 +802,7 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::CallPartitioner(
 
   // Set imbalance tolerance for relative subdomain sizes to avoid empty procs
   const Teuchos::ParameterList& fsimono =
-      Global::Problem::Instance()->FSIDynamicParams().sublist("MONOLITHIC SOLVER");
+      Global::Problem::instance()->fsi_dynamic_params().sublist("MONOLITHIC SOLVER");
   const double imbalance_tol = fsimono.get<double>("HYBRID_IMBALANCE_TOL");
   paramlist.set("IMBALANCE_TOL", imbalance_tol);
 
@@ -813,8 +813,9 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::CallPartitioner(
 
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::SwitchDomains(Teuchos::RCP<Epetra_Map> rownodes,
-    std::map<int, int>* nodeOwner, Teuchos::RCP<Epetra_CrsGraph> bal_graph, const Epetra_Comm& comm)
+Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::switch_domains(
+    Teuchos::RCP<Epetra_Map> rownodes, std::map<int, int>* nodeOwner,
+    Teuchos::RCP<Epetra_CrsGraph> bal_graph, const Epetra_Comm& comm)
 {
   /******************/
   /* switch domains */
@@ -1242,7 +1243,7 @@ void FSI::BlockMonolithic::restore_redist_struct_fluid_graph(
 }
 
 /*----------------------------------------------------------------------------*/
-void FSI::BlockMonolithic::InsertDeletedEdges(std::map<int, std::list<int>>* deletedEdges,
+void FSI::BlockMonolithic::insert_deleted_edges(std::map<int, std::list<int>>* deletedEdges,
     Teuchos::RCP<Epetra_Map> switched_rownodes, Teuchos::RCP<Epetra_CrsGraph> switched_bal_graph)
 {
   // Insert deleted edges
@@ -1284,13 +1285,13 @@ void FSI::BlockMonolithic::find_node_related_to_dof(std::map<int, Core::Nodes::N
 
   for (nodeiterator = nodes->begin(); nodeiterator != nodes->end(); nodeiterator++)
   {
-    discretization->Dof((const Core::Nodes::Node*)nodeiterator->second, dofs);
+    discretization->dof((const Core::Nodes::Node*)nodeiterator->second, dofs);
     for (int i = 0; i < (int)dofs.size(); ++i)
     {
       if (dofs[i] == gdofid)
       {
         re[0] = nodeiterator->first;
-        re[1] = nodeiterator->second->Owner();
+        re[1] = nodeiterator->second->owner();
         breakout = true;
         break;
       }
@@ -1312,8 +1313,8 @@ void FSI::BlockMonolithic::build_monolithic_graph(Teuchos::RCP<Epetra_CrsGraph> 
 
   // create nodal graphs and maps of structure and fluid field
 
-  Teuchos::RCP<const Epetra_CrsGraph> structureGraph = structuredis->BuildNodeGraph();
-  Teuchos::RCP<const Epetra_CrsGraph> fluidGraph = fluiddis->BuildNodeGraph();
+  Teuchos::RCP<const Epetra_CrsGraph> structureGraph = structuredis->build_node_graph();
+  Teuchos::RCP<const Epetra_CrsGraph> fluidGraph = fluiddis->build_node_graph();
   const Epetra_Map& structureGraph_map = (Epetra_Map&)structureGraph->RowMap();
   const Epetra_Map& fluidGraph_map = (Epetra_Map&)fluidGraph->RowMap();
   //
@@ -1871,7 +1872,7 @@ void FSI::BlockMonolithic::build_monolithic_graph(Teuchos::RCP<Epetra_CrsGraph> 
 //}
 
 
-Teuchos::RCP<Epetra_Map> FSI::BlockMonolithic::GetRedistRowMap(const Epetra_Map& oldMap,
+Teuchos::RCP<Epetra_Map> FSI::BlockMonolithic::get_redist_row_map(const Epetra_Map& oldMap,
     Teuchos::RCP<Epetra_Map> monolithicRownodes,
     std::map<int, std::vector<int>>& fluidToStructureMap, bool fluid)
 {

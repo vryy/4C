@@ -49,7 +49,7 @@ int Discret::ELEMENTS::Bele3Line::evaluate(Teuchos::ParameterList& params,
 
       //      if (parent_->IsMoving())
       {
-        dispnp = discretization.GetState("dispnp");
+        dispnp = discretization.get_state("dispnp");
         if (dispnp != Teuchos::null)
         {
           mydispnp.resize(lm.size());
@@ -101,7 +101,7 @@ int Discret::ELEMENTS::Bele3Line::evaluate_neumann(Teuchos::ParameterList& param
   // set number of nodes
   const size_t iel = this->num_node();
 
-  const Core::FE::CellType distype = this->Shape();
+  const Core::FE::CellType distype = this->shape();
 
   // gaussian points
   const Core::FE::GaussRule1D gaussrule = get_optimal_gaussrule(distype);
@@ -118,8 +118,8 @@ int Discret::ELEMENTS::Bele3Line::evaluate_neumann(Teuchos::ParameterList& param
   // get node coordinates
   for (size_t i = 0; i < iel; ++i)
   {
-    xye(0, i) = this->Nodes()[i]->X()[0];
-    xye(1, i) = this->Nodes()[i]->X()[1];
+    xye(0, i) = this->nodes()[i]->x()[0];
+    xye(1, i) = this->nodes()[i]->x()[1];
   }
 
 
@@ -166,8 +166,8 @@ int Discret::ELEMENTS::Bele3Line::evaluate_neumann(Teuchos::ParameterList& param
         {
           if (functnum > 0)
             // evaluate function at current gauss point (3D position vector required!)
-            functionfac = Global::Problem::Instance()
-                              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+            functionfac = Global::Problem::instance()
+                              ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .evaluate(coordgpref, time, dim);
           else
             functionfac = 1.0;
@@ -237,7 +237,7 @@ void Discret::ELEMENTS::Bele3Line::integrate_shape_function(Teuchos::ParameterLi
   const size_t iel = this->num_node();
 
   // gaussian points
-  const Core::FE::CellType distype = this->Shape();
+  const Core::FE::CellType distype = this->shape();
   const Core::FE::GaussRule1D gaussrule = get_optimal_gaussrule(distype);
   const Core::FE::IntegrationPoints1D intpoints(gaussrule);
 
@@ -251,8 +251,8 @@ void Discret::ELEMENTS::Bele3Line::integrate_shape_function(Teuchos::ParameterLi
   // get node coordinates
   for (size_t i = 0; i < iel; ++i)
   {
-    xye(0, i) = this->Nodes()[i]->X()[0];
-    xye(1, i) = this->Nodes()[i]->X()[1];
+    xye(0, i) = this->nodes()[i]->x()[0];
+    xye(1, i) = this->nodes()[i]->x()[1];
   }
 
   //  if (parent_->IsMoving())

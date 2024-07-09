@@ -101,10 +101,10 @@ namespace Core::LinearSolver
         Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
         Teuchos::RCP<Core::LinAlg::KrylovProjector> projector) = 0;
 
-    virtual int Solve() = 0;
+    virtual int solve() = 0;
 
     /// return number of iterations performed by solver
-    virtual int getNumIters() const
+    virtual int get_num_iters() const
     {
       FOUR_C_THROW("Not implemented in base class!");
       return -1;

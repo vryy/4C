@@ -46,26 +46,26 @@ Mortar::StrategyBase::StrategyBase(const Teuchos::RCP<Mortar::StratDataContainer
     const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
     const Teuchos::ParameterList& params, const int spatialDim,
     const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
-    : probdofs_(data_ptr->ProbDofsPtr()),
-      probnodes_(data_ptr->ProbNodesPtr()),
-      comm_(data_ptr->CommPtr()),
-      scontact_(data_ptr->SContact()),
-      dim_(data_ptr->Dim()),
-      alphaf_(data_ptr->AlphaF()),
-      parredist_(data_ptr->IsParRedist()),
-      maxdof_(data_ptr->MaxDof()),
-      systype_(data_ptr->SysType()),
+    : probdofs_(data_ptr->prob_dofs_ptr()),
+      probnodes_(data_ptr->prob_nodes_ptr()),
+      comm_(data_ptr->comm_ptr()),
+      scontact_(data_ptr->s_contact()),
+      dim_(data_ptr->n_dim()),
+      alphaf_(data_ptr->alpha_f()),
+      parredist_(data_ptr->is_par_redist()),
+      maxdof_(data_ptr->max_dof()),
+      systype_(data_ptr->sys_type()),
       data_ptr_(data_ptr)
 {
   // *** set data container variables
-  data().ProbDofsPtr() = Teuchos::rcp(new Epetra_Map(*(dof_row_map)));
-  data().ProbNodesPtr() = Teuchos::rcp(new Epetra_Map(*(NodeRowMap)));
-  data().CommPtr() = comm;
-  data().SContact() = params;
-  data().Dim() = spatialDim;
-  data().AlphaF() = alphaf;
-  data().MaxDof() = maxdof;
-  data().SysType() = Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(scontact_, "SYSTEM");
+  data().prob_dofs_ptr() = Teuchos::rcp(new Epetra_Map(*(dof_row_map)));
+  data().prob_nodes_ptr() = Teuchos::rcp(new Epetra_Map(*(NodeRowMap)));
+  data().comm_ptr() = comm;
+  data().s_contact() = params;
+  data().n_dim() = spatialDim;
+  data().alpha_f() = alphaf;
+  data().max_dof() = maxdof;
+  data().sys_type() = Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(scontact_, "SYSTEM");
 }
 
 /*----------------------------------------------------------------------*
@@ -75,15 +75,15 @@ void Mortar::StrategyBase::set_time_integration_info(
 {
   // Get weight for contribution from last time step
 
-  data().SetDynType(dyntype);
+  data().set_dyn_type(dyntype);
   switch (dyntype)
   {
     case Inpar::Solid::dyna_statics:
-      data().SetDynParameterN(0.0);
+      data().set_dyn_parameter_n(0.0);
       break;
     case Inpar::Solid::dyna_genalpha:
     case Inpar::Solid::dyna_onesteptheta:
-      data().SetDynParameterN(time_fac);
+      data().set_dyn_parameter_n(time_fac);
       break;
     default:
       FOUR_C_THROW(
@@ -92,11 +92,11 @@ void Mortar::StrategyBase::set_time_integration_info(
   }
 
   // Check if we only want to compute the contact force at the time endpoint
-  if (Core::UTILS::IntegralValue<int>(data().SContact(), "CONTACTFORCE_ENDTIME"))
+  if (Core::UTILS::IntegralValue<int>(data().s_contact(), "CONTACTFORCE_ENDTIME"))
     alphaf_ = 0.0;
   else
   {
-    alphaf_ = data().GetDynParameterN();
+    alphaf_ = data().get_dyn_parameter_n();
   }
 }
 

@@ -126,15 +126,15 @@ namespace Solid
 
 
     //! Resize \p TimIntMStep<T> multi-step quantities
-    void ResizeMStep() override = 0;
+    void resize_m_step() override = 0;
 
     //! return time integration factor
-    double TimIntParam() const override = 0;
+    double tim_int_param() const override = 0;
 
     //@}
 
     //! Do time integration of single step
-    int IntegrateStep() override;
+    int integrate_step() override;
 
     //! Create Edges of for discrete shell elements
     void initialize_edge_elements();
@@ -143,7 +143,7 @@ namespace Solid
     //@{
 
     //! Predict target solution and identify residual
-    void Predict();
+    void predict();
 
     //! Identify residual
     //! This method does not predict the target solution but
@@ -155,7 +155,7 @@ namespace Solid
 
     //! Check if line search is applied in combination with elements
     //! that perform a local condensation (e.g. EAS)
-    void PrepareLineSearch();
+    void prepare_line_search();
 
     //! Predict constant displacements, velocities and accelerations,
     //! i.e. the initial guess is equal to the last converged step
@@ -182,7 +182,7 @@ namespace Solid
     //! afterwards.
     //! This method has to be implemented by the individual time
     //! integrator.
-    virtual void PredictConstAcc() = 0;
+    virtual void predict_const_acc() = 0;
 
     //! Predict displacements which satisfy exactly the Dirichlet BCs
     //! and the linearised system at the previously converged state.
@@ -361,12 +361,12 @@ namespace Solid
     //! determine characteristic norms for relative
     //! error checks of residual forces
     //! \author lw  \date 12/07
-    virtual double CalcRefNormForce() = 0;
+    virtual double calc_ref_norm_force() = 0;
 
     //! Is convergence reached of iterative solution technique?
     //! Keep your fingers crossed...
     //! \author lw  \date 12/07
-    bool Converged();
+    bool converged();
 
     /*!
     \brief Solve nonlinear dynamic equilibrium
@@ -377,21 +377,21 @@ namespace Solid
 
     \return Enum to indicate convergence status or failure
     */
-    Inpar::Solid::ConvergenceStatus Solve() final;
+    Inpar::Solid::ConvergenceStatus solve() final;
 
     //! Do full Newton-Raphson iteration
     //!
     //! This routines expects a prepared negative residual force #fres_
     //! and associated effective stiffness matrix #stiff_
     // void NewtonFull();
-    int NewtonFull();
+    int newton_full();
 
     //! check for success of element evaluation in that no negative Jacobian
     //! determinant occured, otherwise return error code
-    int ElementErrorCheck(bool evalerr);
+    int element_error_check(bool evalerr);
 
     //! check for success of linear solve otherwise return error code
-    int LinSolveErrorCheck(int linerror);
+    int lin_solve_error_check(int linerror);
 
     //! check for success of nonlinear solve otherwise return error code
     int newton_full_error_check(int linerror, int eleerror);
@@ -399,16 +399,16 @@ namespace Solid
     //! Do (so-called) modified Newton-Raphson iteration in which
     //! the initial tangent is kept and not adapted to the current
     //! state of the displacement solution
-    void NewtonModified() { FOUR_C_THROW("Not impl."); }
+    void newton_modified() { FOUR_C_THROW("Not impl."); }
 
     //! Do Line search iteration
     //!
     //! This routines expects a prepared negative residual force #fres_
     //! and associated effective stiffness matrix #stiff_
-    int NewtonLS();
+    int newton_ls();
 
     //! Solver call (line search)
-    int LsSolveNewtonStep();
+    int ls_solve_newton_step();
 
     //! Update structural RHS and stiffness matrix (line search)
     void ls_update_structural_rh_sand_stiff(bool& isexcept, double& merit_fct);
@@ -418,20 +418,20 @@ namespace Solid
     //! However, to incorporate contact problems more easily the
     //! evaluation of the merit function is performed here.)
     //! return 0 if successful
-    int LsEvalMeritFct(double& merit_fct);
+    int ls_eval_merit_fct(double& merit_fct);
 
     //! Check the inner linesearch loop for convergence (line search)
-    bool LsConverged(double* mf_value, double step_red);
+    bool ls_converged(double* mf_value, double step_red);
 
     //! Print information concerning the last line search step (line search)
     void ls_print_line_search_iter(double* mf_value, int iter_ls, double step_red);
 
     //! Contains text to ls_print_line_search_iter
-    void LsPrintLsIterText(FILE* ofile  //!< output file handle
+    void ls_print_ls_iter_text(FILE* ofile  //!< output file handle
     );
 
     //! Contains header to ls_print_line_search_iter
-    void LsPrintLsIterHeader(FILE* ofile  //!< output file handle
+    void ls_print_ls_iter_header(FILE* ofile  //!< output file handle
     );
 
     //! Do classical augmented lagrange for volume constraint
@@ -463,12 +463,12 @@ namespace Solid
     //! and/or can do larger time steps
     //!
     //! \author mwgee (originally) \date 03/12
-    int PTC();
+    int ptc();
 
     //! Do nonlinear iteration for contact / meshtying
     //!
     //! \author popp (originally) \date 03/10
-    int CmtNonlinearSolve();
+    int cmt_nonlinear_solve();
 
     /*! \brief Call linear solver for contact / meshtying
      *
@@ -500,7 +500,7 @@ namespace Solid
      * meshtying contributions will be condensed. Hence, the solver choice only depends on the
      * contact status. For details, see the section about solvers for contact problems.
      */
-    void CmtLinearSolve();
+    void cmt_linear_solve();
 
     int cmt_windk_constr_nonlinear_solve();
     int cmt_windk_constr_linear_solve(const double k_ptc);
@@ -515,13 +515,13 @@ namespace Solid
     //! @name STC business
     //@{
     //! Precondition system and return operator
-    void STCPreconditioning();
+    void stc_preconditioning();
 
     //! Build up STC Matrix
-    void ComputeSTCMatrix();
+    void compute_stc_matrix();
 
     //! recover standard solution
-    void RecoverSTCSolution();
+    void recover_stc_solution();
     //@}
 
     //! @name NOX solution
@@ -582,14 +582,14 @@ namespace Solid
         ) override;
 
     //! Setup for solution with NOX
-    void NoxSetup();
+    void nox_setup();
 
     //! Setup for solution with NOX
-    void NoxSetup(const Teuchos::ParameterList& noxparams  //!< NOX parameters from read-in
+    void nox_setup(const Teuchos::ParameterList& noxparams  //!< NOX parameters from read-in
     );
 
     //! Create status test for non-linear solution with NOX
-    Teuchos::RCP<::NOX::StatusTest::Combo> NoxCreateStatusTest(
+    Teuchos::RCP<::NOX::StatusTest::Combo> nox_create_status_test(
         Teuchos::RCP<::NOX::Abstract::Group> grp  //!< NOX group
     );
 
@@ -609,10 +609,10 @@ namespace Solid
     );
 
     //! Do non-linear solve with NOX
-    int NoxSolve();
+    int nox_solve();
 
     //! check for success of nonlinear solve otherwise return error code
-    int NoxErrorCheck(
+    int nox_error_check(
         ::NOX::StatusTest::StatusType status, Teuchos::RCP<::NOX::Solver::Generic> solver);
     //@}
 
@@ -624,7 +624,7 @@ namespace Solid
     //! This handles the iterative update of the current
     //! displacements \f$D_{n+1}\f$ with the residual displacements
     //! The velocities and accelerations follow on par.
-    void UpdateIter(const int iter  //!< iteration counter
+    void update_iter(const int iter  //!< iteration counter
     );
 
     //! Update iteration incrementally
@@ -662,10 +662,10 @@ namespace Solid
     //! Thus the 'last' converged state is lost and a reset
     //! of the time step becomes impossible.
     //! We are ready and keen awaiting the next time step.
-    void UpdateStepState() override = 0;
+    void update_step_state() override = 0;
 
     //! Update Element
-    void UpdateStepElement() override = 0;
+    void update_step_element() override = 0;
 
     //! Update step for constraints
     void update_step_constraint();
@@ -686,14 +686,14 @@ namespace Solid
     //@{
 
     //! Return time integrator name
-    enum Inpar::Solid::DynamicType MethodName() const override = 0;
+    enum Inpar::Solid::DynamicType method_name() const override = 0;
 
     //! These time integrators are all implicit (mark their name)
-    bool MethodImplicit() override { return true; }
+    bool method_implicit() override { return true; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    int MethodSteps() const override = 0;
+    int method_steps() const override = 0;
 
     //! Give local order of accuracy of displacement part
     int method_order_of_accuracy_dis() const override = 0;
@@ -708,13 +708,13 @@ namespace Solid
     double method_lin_err_coeff_vel() const override = 0;
 
     //! Return bool indicating if constraints are defined
-    bool HaveConstraint() override;
+    bool have_constraint() override;
 
     //! Return bool indicating if Cardiovascular0D bcs are defined
     bool have_cardiovascular0_d();
 
     //! Return bool indicating if spring dashpot BCs are defined
-    bool HaveSpringDashpot() override;
+    bool have_spring_dashpot() override;
 
     //! Return Teuchos::rcp to ConstraintManager conman_
     Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override { return conman_; }
@@ -737,7 +737,7 @@ namespace Solid
     //! Access to scaling matrix for STC
     Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override
     {
-      if (!stccompl_) ComputeSTCMatrix();
+      if (!stccompl_) compute_stc_matrix();
       stccompl_ = true;
       return stcmat_;
     }
@@ -793,10 +793,10 @@ namespace Solid
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext() override = 0;
+    Teuchos::RCP<Epetra_Vector> fext() override = 0;
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Epetra_Vector> FextNew() override = 0;
+    Teuchos::RCP<Epetra_Vector> fext_new() override = 0;
 
     /*! \brief Return reaction forces
      *
@@ -811,10 +811,10 @@ namespace Solid
     Teuchos::RCP<Epetra_Vector> freact() override { return freact_; }
 
     //! Read and set external forces from file
-    void ReadRestartForce() override = 0;
+    void read_restart_force() override = 0;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override = 0;
+    void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override = 0;
 
     //! FORMERLY: Return residual displacements \f$\Delta D_{n+1}^{<k>}\f$
     //! Called from the previous adapters as initial_guess()
@@ -846,28 +846,28 @@ namespace Solid
     //! Update routine for coupled problems with monolithic approach
     void update() override
     {
-      PreUpdate();
-      UpdateStepState();
-      UpdateStepTime();
-      UpdateStepElement();
+      pre_update();
+      update_step_state();
+      update_step_time();
+      update_step_element();
       post_update();
       return;
     }
 
     //! Update routine for coupled problems with monolithic approach with time adaptivity
-    void Update(const double endtime) override
+    void update(const double endtime) override
     {
-      PreUpdate();
-      UpdateStepState();
+      pre_update();
+      update_step_state();
 
       timen_ = endtime;
 
       // Update
-      time_->UpdateSteps(timen_);
+      time_->update_steps(timen_);
       step_ = stepn_;
       stepn_ += 1;
 
-      UpdateStepElement();
+      update_step_element();
       post_update();
       return;
     }
@@ -877,7 +877,7 @@ namespace Solid
         ) override;
 
     //! Set residual displacements \f$\Delta D_{n+1}^{<k>}\f$
-    void SetDisResidual(
+    void set_dis_residual(
         const Teuchos::RCP<const Epetra_Vector> disi  //!< input residual displacements
     )
     {
@@ -885,7 +885,7 @@ namespace Solid
     }
 
     //! Return the rhs-vector (negative sign for Newton is already included.)
-    Teuchos::RCP<const Epetra_Vector> RHS() override { return fres_; }
+    Teuchos::RCP<const Epetra_Vector> rhs() override { return fres_; }
 
     //@}
 

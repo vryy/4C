@@ -21,12 +21,12 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::LubricationType Discret::ELEMENTS::LubricationType::instance_;
 
-Discret::ELEMENTS::LubricationType& Discret::ELEMENTS::LubricationType::Instance()
+Discret::ELEMENTS::LubricationType& Discret::ELEMENTS::LubricationType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::LubricationType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::LubricationType::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Lubrication* object = new Discret::ELEMENTS::Lubrication(-1, -1);
@@ -35,7 +35,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::LubricationType::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::LubricationType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::LubricationType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "LUBRICATION")
@@ -48,7 +48,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::LubricationType::Create
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::LubricationType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::LubricationType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -60,12 +60,12 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::LubricationType::Create
 void Discret::ELEMENTS::LubricationType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
+  numdf = dwele->num_dof_per_node(*(dwele->nodes()[0]));
   dimns = numdf;
   nv = numdf;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::LubricationType::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::LubricationType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
@@ -104,12 +104,12 @@ void Discret::ELEMENTS::LubricationType::setup_element_definition(
 
 Discret::ELEMENTS::LubricationBoundaryType Discret::ELEMENTS::LubricationBoundaryType::instance_;
 
-Discret::ELEMENTS::LubricationBoundaryType& Discret::ELEMENTS::LubricationBoundaryType::Instance()
+Discret::ELEMENTS::LubricationBoundaryType& Discret::ELEMENTS::LubricationBoundaryType::instance()
 {
   return instance_;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::LubricationBoundaryType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::LubricationBoundaryType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new LubricationBoundary( id, owner ) );
@@ -139,7 +139,7 @@ Discret::ELEMENTS::Lubrication::Lubrication(const Discret::ELEMENTS::Lubrication
  |  Deep copy this instance of Lubrication and return pointer to it        |
  |                                                 (public) wirtz 10/15 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Lubrication::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Lubrication::clone() const
 {
   Discret::ELEMENTS::Lubrication* newelement = new Discret::ELEMENTS::Lubrication(*this);
   return newelement;
@@ -149,7 +149,7 @@ Core::Elements::Element* Discret::ELEMENTS::Lubrication::Clone() const
  |  Return the shape of a Lubrication element                     (public) |
  |                                                          wirtz 10/15 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Lubrication::Shape() const { return distype_; }
+Core::FE::CellType Discret::ELEMENTS::Lubrication::shape() const { return distype_; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
@@ -160,7 +160,7 @@ void Discret::ELEMENTS::Lubrication::pack(Core::Communication::PackBuffer& data)
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // add base class Element
@@ -181,7 +181,7 @@ void Discret::ELEMENTS::Lubrication::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -200,7 +200,7 @@ void Discret::ELEMENTS::Lubrication::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Return number of lines of this element (public)         wirtz 10/15 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Lubrication::NumLine() const
+int Discret::ELEMENTS::Lubrication::num_line() const
 {
   return Core::FE::getNumberOfElementLines(distype_);
 }
@@ -209,7 +209,7 @@ int Discret::ELEMENTS::Lubrication::NumLine() const
 /*----------------------------------------------------------------------*
  |  Return number of surfaces of this element (public)      wirtz 10/15 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Lubrication::NumSurface() const
+int Discret::ELEMENTS::Lubrication::num_surface() const
 {
   return Core::FE::getNumberOfElementSurfaces(distype_);
 }
@@ -218,7 +218,7 @@ int Discret::ELEMENTS::Lubrication::NumSurface() const
 /*----------------------------------------------------------------------*
  | Return number of volumes of this element (public)        wirtz 10/15 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Lubrication::NumVolume() const
+int Discret::ELEMENTS::Lubrication::num_volume() const
 {
   return Core::FE::getNumberOfElementVolumes(distype_);
 }
@@ -242,7 +242,7 @@ void Discret::ELEMENTS::Lubrication::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines            (public)                 wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Lubrication::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Lubrication::lines()
 {
   return Core::Communication::GetElementLines<LubricationBoundary, Lubrication>(*this);
 }
@@ -251,7 +251,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Lubricatio
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                         wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Lubrication::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Lubrication::surfaces()
 {
   return Core::Communication::GetElementSurfaces<LubricationBoundary, Lubrication>(*this);
 }
@@ -259,16 +259,16 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Lubricatio
 /*----------------------------------------------------------------------*
  | read element input                                       wirtz 10/15 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Lubrication::ReadElement(
+bool Discret::ELEMENTS::Lubrication::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  SetMaterial(0, Mat::Factory(material));
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  set_material(0, Mat::Factory(material_id));
 
   // set discretization type
-  SetDisType(Core::FE::StringToCellType(distype));
+  set_dis_type(Core::FE::StringToCellType(distype));
 
   return true;
 }
@@ -288,8 +288,8 @@ Discret::ELEMENTS::LubricationBoundary::LubricationBoundary(int id, int owner, i
     const int lsurface)
     : Core::Elements::FaceElement(id, owner)
 {
-  SetNodeIds(nnode, nodeids);
-  BuildNodalPointers(nodes);
+  set_node_ids(nnode, nodeids);
+  build_nodal_pointers(nodes);
   set_parent_master_element(parent, lsurface);
   return;
 }
@@ -307,7 +307,7 @@ Discret::ELEMENTS::LubricationBoundary::LubricationBoundary(
 /*----------------------------------------------------------------------*
  |  Deep copy this instance return pointer to it   (public) wirtz 10/15 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::LubricationBoundary::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::LubricationBoundary::clone() const
 {
   Discret::ELEMENTS::LubricationBoundary* newelement =
       new Discret::ELEMENTS::LubricationBoundary(*this);
@@ -317,9 +317,9 @@ Core::Elements::Element* Discret::ELEMENTS::LubricationBoundary::Clone() const
 /*----------------------------------------------------------------------*
  |  Return shape of this element                   (public) wirtz 10/15 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::LubricationBoundary::Shape() const
+Core::FE::CellType Discret::ELEMENTS::LubricationBoundary::shape() const
 {
-  return Core::FE::getShapeOfBoundaryElement(num_node(), parent_element()->Shape());
+  return Core::FE::getShapeOfBoundaryElement(num_node(), parent_element()->shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -351,7 +351,7 @@ void Discret::ELEMENTS::LubricationBoundary::print(std::ostream& os) const
   os << "LubricationBoundary element";
   Element::print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(Shape()) << std::endl;
+  std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(shape()) << std::endl;
   std::cout << std::endl;
   return;
 }
@@ -359,23 +359,23 @@ void Discret::ELEMENTS::LubricationBoundary::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | Return number of lines of boundary element (public)      wirtz 10/15 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::LubricationBoundary::NumLine() const
+int Discret::ELEMENTS::LubricationBoundary::num_line() const
 {
-  return Core::FE::getNumberOfElementLines(Shape());
+  return Core::FE::getNumberOfElementLines(shape());
 }
 
 /*----------------------------------------------------------------------*
  |  Return number of surfaces of boundary element (public)  wirtz 10/15 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::LubricationBoundary::NumSurface() const
+int Discret::ELEMENTS::LubricationBoundary::num_surface() const
 {
-  return Core::FE::getNumberOfElementSurfaces(Shape());
+  return Core::FE::getNumberOfElementSurfaces(shape());
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                            wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::LubricationBoundary::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::LubricationBoundary::lines()
 {
   FOUR_C_THROW("Lines of LubricationBoundary not implemented");
 }
@@ -384,7 +384,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Lubricatio
  |  get vector of lines (public)                            wirtz 10/15 |
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>>
-Discret::ELEMENTS::LubricationBoundary::Surfaces()
+Discret::ELEMENTS::LubricationBoundary::surfaces()
 {
   FOUR_C_THROW("Surfaces of LubricationBoundary not implemented");
 }

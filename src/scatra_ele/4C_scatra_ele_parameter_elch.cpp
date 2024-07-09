@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ScaTraEleParameterElch* Discret::ELEMENTS::ScaTraEleParameterElch::Instance(
+Discret::ELEMENTS::ScaTraEleParameterElch* Discret::ELEMENTS::ScaTraEleParameterElch::instance(
     const std::string& disname  //!< name of discretization
 )
 {
@@ -33,7 +33,7 @@ Discret::ELEMENTS::ScaTraEleParameterElch* Discret::ELEMENTS::ScaTraEleParameter
       Core::UTILS::MakeSingletonMap<std::string>([](const std::string& disname)
           { return std::unique_ptr<ScaTraEleParameterElch>(new ScaTraEleParameterElch(disname)); });
 
-  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, disname);
 }
 
 
@@ -57,7 +57,7 @@ Discret::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterElch::SetParameters(Teuchos::ParameterList& parameters)
+void Discret::ELEMENTS::ScaTraEleParameterElch::set_parameters(Teuchos::ParameterList& parameters)
 {
   // coupling of lithium-ion flux density and electric current density at Dirichlet and Neumann
   // boundaries

@@ -26,7 +26,7 @@ Core::Conditions::ConditionSelector::ConditionSelector(
     const Core::FE::Discretization& dis, std::string condname)
     : dis_(dis)
 {
-  dis.GetCondition(condname, conds_);
+  dis.get_condition(condname, conds_);
   std::sort(conds_.begin(), conds_.end());
 }
 
@@ -46,19 +46,19 @@ Core::Conditions::ConditionSelector::ConditionSelector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Core::Conditions::ConditionSelector::SelectDofs(
+bool Core::Conditions::ConditionSelector::select_dofs(
     Core::Nodes::Node* node, std::set<int>& conddofset)
 {
   bool found = false;
 
   // put all conditioned dofs into conddofset
-  if (ContainsNode(node->Id()))
+  if (contains_node(node->id()))
   {
-    std::vector<int> dof = discretization().Dof(0, node);
+    std::vector<int> dof = discretization().dof(0, node);
     for (unsigned k = 0; k < dof.size(); ++k)
     {
       // test for dof position
-      if (ContainsDof(dof[k], k))
+      if (contains_dof(dof[k], k))
       {
         conddofset.insert(dof[k]);
         found = true;
@@ -70,11 +70,11 @@ bool Core::Conditions::ConditionSelector::SelectDofs(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Core::Conditions::ConditionSelector::ContainsNode(int ngid)
+bool Core::Conditions::ConditionSelector::contains_node(int ngid)
 {
   for (const auto& cond : conds_)
   {
-    if (cond->ContainsNode(ngid))
+    if (cond->contains_node(ngid))
     {
       return true;
     }
@@ -88,7 +88,7 @@ Core::Conditions::MultiConditionSelector::MultiConditionSelector() : overlapping
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Conditions::MultiConditionSelector::SetupExtractor(const Core::FE::Discretization& dis,
+void Core::Conditions::MultiConditionSelector::setup_extractor(const Core::FE::Discretization& dis,
     const Epetra_Map& fullmap, Core::LinAlg::MultiMapExtractor& extractor)
 {
   setup_cond_dof_sets(dis);
@@ -112,10 +112,10 @@ void Core::Conditions::MultiConditionSelector::SetupExtractor(const Core::FE::Di
   std::vector<Teuchos::RCP<const Epetra_Map>> maps;
   maps.reserve(conddofset_.size() + 1);
 
-  maps.emplace_back(Core::LinAlg::CreateMap(otherdofset, dis.Comm()));
+  maps.emplace_back(Core::LinAlg::CreateMap(otherdofset, dis.get_comm()));
   for (auto& conddofset : conddofset_)
   {
-    maps.emplace_back(Core::LinAlg::CreateMap(conddofset, dis.Comm()));
+    maps.emplace_back(Core::LinAlg::CreateMap(conddofset, dis.get_comm()));
   }
 
   // MultiMapExtractor setup
@@ -134,10 +134,10 @@ void Core::Conditions::MultiConditionSelector::setup_cond_dof_sets(
   conddofset_.resize(selectors_.size());
 
   // for each owned node
-  int numrownodes = dis.NumMyRowNodes();
+  int numrownodes = dis.num_my_row_nodes();
   for (int i = 0; i < numrownodes; ++i)
   {
-    Core::Nodes::Node* node = dis.lRowNode(i);
+    Core::Nodes::Node* node = dis.l_row_node(i);
 
     // test each selector
     for (unsigned j = 0; j < selectors_.size(); ++j)
@@ -145,7 +145,7 @@ void Core::Conditions::MultiConditionSelector::setup_cond_dof_sets(
       ConditionSelector& conds = *selectors_[j];
 
       // if the selector applies, we are done
-      if (conds.SelectDofs(node, conddofset_[j]))
+      if (conds.select_dofs(node, conddofset_[j]))
         if (!overlapping_) break;
     }
   }

@@ -36,24 +36,24 @@ namespace Discret
     {
      public:
       /// Type name
-      std::string Name() const override { return "ElemagDiffType"; }
+      std::string name() const override { return "ElemagDiffType"; }
 
       // Instance
-      static ElemagDiffType& Instance();
+      static ElemagDiffType& instance();
       /// Create
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
       /// Create
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
       /// Create
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       /// Nodal block information
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       /// Null space computation
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       /// Element definition
@@ -93,27 +93,27 @@ namespace Discret
       /*!
       \brief Deep copy this instance and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Get Teuchos::RCP to the internal face adjacent to this element as master element and
       the parent_slave element
       */
-      Teuchos::RCP<Core::Elements::Element> CreateFaceElement(
+      Teuchos::RCP<Core::Elements::Element> create_face_element(
           Core::Elements::Element* parent_slave,  //!< parent slave element
           int nnode,                              //!< number of surface nodes
           const int* nodeids,                     //!< node ids of surface element
@@ -129,9 +129,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return ElemagDiffType::Instance().UniqueParObjectId();
+        return ElemagDiffType::instance().unique_par_object_id();
       }
 
       //@}
@@ -147,9 +147,9 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return ElemagDiffType::Instance();
+        return ElemagDiffType::instance();
       }
 
       /// Element location data
@@ -166,11 +166,11 @@ namespace Discret
     {
      public:
       /// Type name
-      std::string Name() const override { return "ElemagDiffBoundaryType"; }
+      std::string name() const override { return "ElemagDiffBoundaryType"; }
       // Instance
-      static ElemagDiffBoundaryType& Instance();
+      static ElemagDiffBoundaryType& instance();
       // Create
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
      private:
       /// Instance
@@ -209,11 +209,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of an element and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -221,9 +221,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return ElemagDiffBoundaryType::Instance().UniqueParObjectId();
+        return ElemagDiffBoundaryType::instance().unique_par_object_id();
       }
 
       /*!
@@ -256,9 +256,9 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override
+      int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
-        return parent_element()->NumDofPerNode(node);
+        return parent_element()->num_dof_per_node(node);
       }
 
       /*!
@@ -267,9 +267,9 @@ namespace Discret
       void print(std::ostream& os) const override;
 
       /// Return the instance of the element type
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return ElemagDiffBoundaryType::Instance();
+        return ElemagDiffBoundaryType::instance();
       }
 
       //@}
@@ -336,7 +336,7 @@ namespace Discret
       \param condstring (in): Name of condition to be evaluated
       \param condstring (in):  List of parameters for use at element level
       */
-      void LocationVector(const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet,
+      void location_vector(const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet,
           const std::string& condstring, Teuchos::ParameterList& params) const override;
 
      private:
@@ -350,20 +350,20 @@ namespace Discret
     {
      public:
       /// Name of the element type
-      std::string Name() const override { return "ElemagDiffIntFaceType"; }
+      std::string name() const override { return "ElemagDiffIntFaceType"; }
 
       /// Instance
-      static ElemagDiffIntFaceType& Instance();
+      static ElemagDiffIntFaceType& instance();
 
       /// Create
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       /// Nodal block information
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override{};
 
       /// Null space
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -414,11 +414,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of an element and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -426,9 +426,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return ElemagDiffIntFaceType::Instance().UniqueParObjectId();
+        return ElemagDiffIntFaceType::instance().unique_par_object_id();
       }
 
       //@}
@@ -441,7 +441,7 @@ namespace Discret
       \note All dofs shared by master and slave element are contained only once. Dofs from interface
       nodes are also included.
       */
-      void PatchLocationVector(Core::FE::Discretization& discretization,  ///< discretization
+      void patch_location_vector(Core::FE::Discretization& discretization,  ///< discretization
           std::vector<int>& nds_master,        ///< nodal dofset w.r.t master parent element
           std::vector<int>& nds_slave,         ///< nodal dofset w.r.t slave parent element
           std::vector<int>& patchlm,           ///< local map for gdof ids for patch of elements
@@ -461,9 +461,9 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return ElemagDiffIntFaceType::Instance();
+        return ElemagDiffIntFaceType::instance();
       }
 
       //@}
@@ -473,7 +473,8 @@ namespace Discret
       */
       Discret::ELEMENTS::ElemagDiff* ParentMasterElement() const
       {
-        Core::Elements::Element* parent = this->Core::Elements::FaceElement::ParentMasterElement();
+        Core::Elements::Element* parent =
+            this->Core::Elements::FaceElement::parent_master_element();
         // make sure the static cast below is really valid
         FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::ElemagDiff*>(parent) != nullptr,
             "Master element is no elemag_diff element");
@@ -485,7 +486,7 @@ namespace Discret
       */
       Discret::ELEMENTS::ElemagDiff* ParentSlaveElement() const
       {
-        Core::Elements::Element* parent = this->Core::Elements::FaceElement::ParentSlaveElement();
+        Core::Elements::Element* parent = this->Core::Elements::FaceElement::parent_slave_element();
         // make sure the static cast below is really valid
         FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::ElemagDiff*>(parent) != nullptr,
             "Slave element is no elemag_diff element");

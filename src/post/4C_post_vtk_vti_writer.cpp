@@ -84,7 +84,7 @@ const std::vector<std::string>& PostVtiWriter::writer_p_piece_tags() const
   tags.clear();
 
   std::vector<int> allextents(numproc_ * 6);
-  field_->problem()->comm()->GatherAll((int*)localextent_, allextents.data(), 6);
+  field_->problem()->get_comm()->GatherAll((int*)localextent_, allextents.data(), 6);
 
   if (myrank_ == 0)
   {
@@ -144,7 +144,7 @@ void PostVtiWriter::write_dof_result_step(std::ofstream& file,
 
   // Here is the only thing we need to do for parallel computations: We need read access to all dofs
   // on the row elements, so need to get the DofColMap to have this access
-  const Epetra_Map* colmap = dis->DofColMap(0);
+  const Epetra_Map* colmap = dis->dof_col_map(0);
   const Epetra_BlockMap& vecmap = data->Map();
 
   // TODO: wic, once the vtu pressure writer is fixed, apply the same solution here.
@@ -173,20 +173,20 @@ void PostVtiWriter::write_dof_result_step(std::ofstream& file,
                                       (localextent_[5] - localextent_[4] + 1)));
 
   std::vector<int> nodedofs;
-  for (int e = 0; e < dis->NumMyColElements(); ++e)
+  for (int e = 0; e < dis->num_my_col_elements(); ++e)
   {
-    const Core::Elements::Element* ele = dis->lColElement(e);
+    const Core::Elements::Element* ele = dis->l_col_element(e);
 
     for (int n = 0; n < ele->num_node(); ++n)
     {
       nodedofs.clear();
 
       // node gid for insertion in solution
-      const int ngid = ele->Nodes()[n]->Id();
+      const int ngid = ele->nodes()[n]->id();
       const int inpos = ncomponents * idmapping_.find(ngid)->second;
 
       // local storage position of desired dof gid
-      dis->Dof(ele->Nodes()[n], nodedofs);
+      dis->dof(ele->nodes()[n], nodedofs);
 
       for (int d = 0; d < numdf; ++d)
       {
@@ -239,7 +239,7 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
 
   // Here is the only thing we need to do for parallel computations: We need read access to all dofs
   // on the row elements, so need to get the NodeColMap to have this access
-  const Epetra_Map* colmap = dis->NodeColMap();
+  const Epetra_Map* colmap = dis->node_col_map();
   const Epetra_BlockMap& vecmap = data->Map();
 
   FOUR_C_ASSERT(
@@ -261,13 +261,13 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
                                                  (localextent_[3] - localextent_[2] + 1) *
                                                  (localextent_[5] - localextent_[4] + 1)));
 
-  for (int e = 0; e < dis->NumMyColElements(); ++e)
+  for (int e = 0; e < dis->num_my_col_elements(); ++e)
   {
-    const Core::Elements::Element* ele = dis->lColElement(e);
+    const Core::Elements::Element* ele = dis->l_col_element(e);
 
     for (int n = 0; n < ele->num_node(); ++n)
     {
-      const int gid = ele->Nodes()[n]->Id();
+      const int gid = ele->nodes()[n]->id();
       const int inpos = ncomponents * idmapping_.find(gid)->second;
 
       for (int idf = 0; idf < numdf; ++idf)
@@ -335,19 +335,19 @@ void PostVtiWriter::write_element_result_step(std::ofstream& file,
     FOUR_C_THROW("violated column range of Epetra_MultiVector: %d", numcol);
 
   Teuchos::RCP<Epetra_MultiVector> importedData;
-  if (dis->ElementColMap()->SameAs(data->Map()))
+  if (dis->element_col_map()->SameAs(data->Map()))
     importedData = data;
   else
   {
     importedData =
-        Teuchos::rcp(new Epetra_MultiVector(*dis->ElementColMap(), data->NumVectors(), false));
+        Teuchos::rcp(new Epetra_MultiVector(*dis->element_col_map(), data->NumVectors(), false));
     Core::LinAlg::Export(*data, *importedData);
   }
 
-  for (int e = 0; e < dis->NumMyColElements(); ++e)
+  for (int e = 0; e < dis->num_my_col_elements(); ++e)
   {
-    const Core::Elements::Element* ele = dis->lColElement(e);
-    const int egid = ele->Id();
+    const Core::Elements::Element* ele = dis->l_col_element(e);
+    const int egid = ele->id();
     const int inpos = ncomponents * (eidmapping_.find(egid)->second);
     for (int d = 0; d < numdf; ++d)
     {
@@ -396,9 +396,9 @@ void PostVtiWriter::writer_prep_timestep()
   // collect all possible values of the x-, y- and z-coordinate
   typedef std::set<double, LessTol<double>> set_tol;
   set_tol collected_coords[3];
-  for (int n = 0; n < dis->NumMyColNodes(); ++n)
+  for (int n = 0; n < dis->num_my_col_nodes(); ++n)
   {
-    const auto& coord = dis->lColNode(n)->X();
+    const auto& coord = dis->l_col_node(n)->x();
     for (int i = 0; i < 3; ++i) collected_coords[i].insert(coord[i]);
   }
 
@@ -409,8 +409,10 @@ void PostVtiWriter::writer_prep_timestep()
     lorigin[i] = *collected_coords[i].begin();
     lextent[i] = *collected_coords[i].rbegin();
   }
-  field_->discretization()->Comm().MinAll(lorigin, gorigin, sizeof(lorigin) / sizeof(lorigin[0]));
-  field_->discretization()->Comm().MaxAll(lextent, gextent, sizeof(lextent) / sizeof(lextent[0]));
+  field_->discretization()->get_comm().MinAll(
+      lorigin, gorigin, sizeof(lorigin) / sizeof(lorigin[0]));
+  field_->discretization()->get_comm().MaxAll(
+      lextent, gextent, sizeof(lextent) / sizeof(lextent[0]));
 
   // determine spacing and check whether it is consistent for ImageData
   for (int i = 0; i < 3; ++i)
@@ -441,27 +443,27 @@ void PostVtiWriter::writer_prep_timestep()
   int nx = localextent_[1] - localextent_[0] + 1;
   int ny = localextent_[3] - localextent_[2] + 1;
   idmapping_.clear();
-  for (int n = 0; n < dis->NumMyColNodes(); ++n)
+  for (int n = 0; n < dis->num_my_col_nodes(); ++n)
   {
-    const auto& coord = dis->lColNode(n)->X();
+    const auto& coord = dis->l_col_node(n)->x();
     int i = round((coord[0] - lorigin[0]) / spacing_[0]);
     int j = round((coord[1] - lorigin[1]) / spacing_[1]);
     int k = round((coord[2] - lorigin[2]) / spacing_[2]);
-    idmapping_[dis->NodeColMap()->GID(n)] = (k * ny + j) * nx + i;
+    idmapping_[dis->node_col_map()->GID(n)] = (k * ny + j) * nx + i;
   }
 
   // create element id mapping by the coordinates of the lowest node coordinate
   nx = localextent_[1] - localextent_[0];
   ny = localextent_[3] - localextent_[2];
   eidmapping_.clear();
-  for (int e = 0; e < dis->NumMyColElements(); ++e)
+  for (int e = 0; e < dis->num_my_col_elements(); ++e)
   {
-    const Core::Elements::Element* ele = dis->lColElement(e);
+    const Core::Elements::Element* ele = dis->l_col_element(e);
     double mincoord[] = {std::numeric_limits<double>::max(), std::numeric_limits<double>::max(),
         std::numeric_limits<double>::max()};
     for (int n = 0; n < ele->num_node(); ++n)
     {
-      const auto& coord = ele->Nodes()[n]->X();
+      const auto& coord = ele->nodes()[n]->x();
       mincoord[0] = std::min(mincoord[0], coord[0]);
       mincoord[1] = std::min(mincoord[1], coord[1]);
       mincoord[2] = std::min(mincoord[2], coord[2]);
@@ -469,7 +471,7 @@ void PostVtiWriter::writer_prep_timestep()
     int i = round((mincoord[0] - lorigin[0]) / spacing_[0]);
     int j = round((mincoord[1] - lorigin[1]) / spacing_[1]);
     int k = round((mincoord[2] - lorigin[2]) / spacing_[2]);
-    eidmapping_[dis->ElementColMap()->GID(e)] = (k * ny + j) * nx + i;
+    eidmapping_[dis->element_col_map()->GID(e)] = (k * ny + j) * nx + i;
   }
   return;
 }

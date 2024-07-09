@@ -60,9 +60,9 @@ namespace BEAMINTERACTION
       bool beameles = false;
       bool othereles = false;
 
-      for (int i = 0; i < static_cast<int>(node.NumElement()); ++i)
+      for (int i = 0; i < static_cast<int>(node.num_element()); ++i)
       {
-        if (IsBeamElement(*(node.Elements())[i]))
+        if (IsBeamElement(*(node.elements())[i]))
           beameles = true;
         else
           othereles = true;
@@ -83,12 +83,12 @@ namespace BEAMINTERACTION
       bool beamclnode = false;
 
       // TODO: actually we would have to check all elements of all processors!!! Gather?
-      for (int i = 0; i < static_cast<int>(node.NumElement()); ++i)
+      for (int i = 0; i < static_cast<int>(node.num_element()); ++i)
       {
         const Discret::ELEMENTS::Beam3Base* beamele =
-            dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(node.Elements()[i]);
+            dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(node.elements()[i]);
 
-        if (beamele != nullptr and beamele->IsCenterlineNode(node)) beamclnode = true;
+        if (beamele != nullptr and beamele->is_centerline_node(node)) beamclnode = true;
       }
       return beamclnode;
     }
@@ -101,9 +101,9 @@ namespace BEAMINTERACTION
       bool othereles = false;
 
       // TODO: actually we would have to check all elements of all processors!!! Gather?
-      for (int i = 0; i < node.NumElement(); ++i)
+      for (int i = 0; i < node.num_element(); ++i)
       {
-        if (IsRigidSphereElement(*(node.Elements())[i]))
+        if (IsRigidSphereElement(*(node.elements())[i]))
           sphereele = true;
         else
           othereles = true;
@@ -127,13 +127,13 @@ namespace BEAMINTERACTION
       Core::LinAlg::Matrix<3, 1> X;
       int doflid[3];
 
-      for (int i = 0; i < discret->NumMyRowNodes(); ++i)
+      for (int i = 0; i < discret->num_my_row_nodes(); ++i)
       {
         d.clear();
         X.clear();
 
         // get a pointer at i-th row node
-        Core::Nodes::Node* node = discret->lRowNode(i);
+        Core::Nodes::Node* node = discret->l_row_node(i);
 
         /* Hermite Interpolation: Check whether node is a beam node which is NOT
          * used for centerline interpolation if so, we simply skip it because
@@ -141,16 +141,16 @@ namespace BEAMINTERACTION
         if (IsBeamNode(*node) and not IsBeamCenterlineNode(*node)) continue;
 
         // get GIDs of this node's degrees of freedom
-        std::vector<int> dofnode = discret->Dof(node);
+        std::vector<int> dofnode = discret->dof(node);
 
         for (int dim = 0; dim < 3; ++dim)
         {
           doflid[dim] = dis->Map().LID(dofnode[dim]);
           d(dim) = (*dis)[doflid[dim]];
-          X(dim) = node->X()[dim];
+          X(dim) = node->x()[dim];
         }
         // shift
-        pbb->Shift3D(d, X);
+        pbb->shift3_d(d, X);
 
         for (int dim = 0; dim < 3; ++dim)
         {
@@ -166,7 +166,7 @@ namespace BEAMINTERACTION
       // auxiliary variable
       int j = 0;
 
-      Global::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
+      Global::Problem::instance()->random()->set_rand_range(0.0, 1.0);
 
       // result vector initialized with ordered numbers from 0 to N-1
       std::vector<int> randorder(number, 0);
@@ -175,7 +175,7 @@ namespace BEAMINTERACTION
       for (int i = 0; i < number; ++i)
       {
         // generate random number between 0 and i
-        j = (int)floor((i + 1.0) * Global::Problem::Instance()->Random()->Uni());
+        j = (int)floor((i + 1.0) * Global::Problem::instance()->random()->uni());
 
         /*exchange values at positions i and j (note: value at position i is i due to above
          *initialization and because so far only positions <=i have been changed*/
@@ -197,7 +197,7 @@ namespace BEAMINTERACTION
 
       std::vector<int> lm, lmowner, lmstride;
 
-      ele->LocationVector(discret, lm, lmowner, lmstride);
+      ele->location_vector(discret, lm, lmowner, lmstride);
       Core::FE::ExtractMyValues(*ia_discolnp, eledisp, lm);
     }
 
@@ -216,7 +216,7 @@ namespace BEAMINTERACTION
       // so far, only beam elements can be cut by a periodic boundary
       if (beamele == nullptr) return;
 
-      beamele->UnShiftNodePosition(eledisp, pbb);
+      beamele->un_shift_node_position(eledisp, pbb);
     }
 
     /*----------------------------------------------------------------------*
@@ -235,17 +235,17 @@ namespace BEAMINTERACTION
 
       // get pointers to all filament number conditions set
       std::vector<Core::Conditions::Condition*> filamentconditions(0);
-      discret->GetCondition("BeamLineFilamentCondition", filamentconditions);
+      discret->get_condition("BeamLineFilamentCondition", filamentconditions);
 
       // compute number of linker types
-      std::vector<Inpar::BEAMINTERACTION::CrosslinkerType> linkertypes = params->LinkerTypes();
+      std::vector<Inpar::BEAMINTERACTION::CrosslinkerType> linkertypes = params->linker_types();
 
       // loop over all relevant (on myrank) filaments
       for (auto const& filiter : relevantfilaments)
       {
         // loop over all nodes of current filament, sort elements and calculate total filament
         // length
-        std::vector<int> const* nodeids = filamentconditions[filiter]->GetNodes();
+        std::vector<int> const* nodeids = filamentconditions[filiter]->get_nodes();
         std::vector<Core::Elements::Element*> sortedfilamenteles(0);
         double filreflength = 0.0;
         ComputeFilamentLengthAndSortItsElements(sortedfilamenteles, nodeids, filreflength, discret);
@@ -331,21 +331,21 @@ namespace BEAMINTERACTION
       // elements of a filament containing at least one node of myrank
       // do communication to gather all elements to temporarily extend ghosting
       std::set<int> coleleset;
-      for (int iproc = 0; iproc < discret->Comm().NumProc(); ++iproc)
+      for (int iproc = 0; iproc < discret->get_comm().NumProc(); ++iproc)
       {
         // myrank == iproc: copy set to vector in order to broadcast data
         std::vector<int> requirednodes(0);
-        if (iproc == discret->Comm().MyPID())
+        if (iproc == discret->get_comm().MyPID())
           requirednodes.insert(requirednodes.begin(), setofnodegidswithrequiredelecloud.begin(),
               setofnodegidswithrequiredelecloud.end());
 
         // proc i tells all procs how many nodegids it has
         int numnodes = requirednodes.size();
-        discret->Comm().Broadcast(&numnodes, 1, iproc);
+        discret->get_comm().Broadcast(&numnodes, 1, iproc);
 
         // proc i actually sends nodegids
         requirednodes.resize(numnodes);
-        discret->Comm().Broadcast(requirednodes.data(), numnodes, iproc);
+        discret->get_comm().Broadcast(requirednodes.data(), numnodes, iproc);
 
         std::set<int> sdata;
         std::set<int> rdata;
@@ -354,27 +354,27 @@ namespace BEAMINTERACTION
         for (int i = 0; i < numnodes; ++i)
         {
           // only if myrank is owner of requested node
-          if (discret->NodeRowMap()->LID(requirednodes[i]) < 0) continue;
+          if (discret->node_row_map()->LID(requirednodes[i]) < 0) continue;
 
           // insert element cloud of current node
-          Core::Nodes::Node* currnode = discret->gNode(requirednodes[i]);
-          for (int j = 0; j < currnode->NumElement(); ++j)
-            sdata.insert(currnode->Elements()[j]->Id());
+          Core::Nodes::Node* currnode = discret->g_node(requirednodes[i]);
+          for (int j = 0; j < currnode->num_element(); ++j)
+            sdata.insert(currnode->elements()[j]->id());
         }
 
         // gather and store information on iproc
-        Core::LinAlg::Gather<int>(sdata, rdata, 1, &iproc, discret->Comm());
-        if (iproc == discret->Comm().MyPID()) coleleset = rdata;
+        Core::LinAlg::Gather<int>(sdata, rdata, 1, &iproc, discret->get_comm());
+        if (iproc == discret->get_comm().MyPID()) coleleset = rdata;
       }
 
       // insert previous ghosting
-      for (int lid = 0; lid < discret->NumMyColElements(); ++lid)
-        coleleset.insert(discret->ElementColMap()->GID(lid));
+      for (int lid = 0; lid < discret->num_my_col_elements(); ++lid)
+        coleleset.insert(discret->element_col_map()->GID(lid));
       std::vector<int> colgids(coleleset.begin(), coleleset.end());
 
       // create new ele col map
-      Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
-          new Epetra_Map(-1, static_cast<int>(colgids.size()), colgids.data(), 0, discret->Comm()));
+      Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(new Epetra_Map(
+          -1, static_cast<int>(colgids.size()), colgids.data(), 0, discret->get_comm()));
 
       // temporarily extend ghosting
       Core::Binstrategy::Utils::ExtendDiscretizationGhosting(
@@ -388,11 +388,11 @@ namespace BEAMINTERACTION
         Teuchos::RCP<Core::FE::Discretization> discret)
     {
       // loop over all row nodes
-      for (int rown = 0; rown < discret->NumMyRowNodes(); ++rown)
+      for (int rown = 0; rown < discret->num_my_row_nodes(); ++rown)
       {
         // get filament number of current node ( requirement: node belongs to only one filament)
         Core::Conditions::Condition* cond =
-            discret->lRowNode(rown)->GetCondition("BeamLineFilamentCondition");
+            discret->l_row_node(rown)->get_condition("BeamLineFilamentCondition");
 
         // in case node (e.g. node of rigid sphere element) does not belong to a filament, go to
         // next node
@@ -408,9 +408,9 @@ namespace BEAMINTERACTION
           relevantfilaments.insert(currfilnum);
 
         // loop over all nodes of current filament and store gids of nodes not owned by myrank
-        std::vector<int> const* nodeids = cond->GetNodes();
+        std::vector<int> const* nodeids = cond->get_nodes();
         for (int i = 0; i < static_cast<int>(nodeids->size()); ++i)
-          if (discret->NodeRowMap()->LID((*nodeids)[i]) < 0)
+          if (discret->node_row_map()->LID((*nodeids)[i]) < 0)
             setofrequirednodes.insert((*nodeids)[i]);
       }
     }
@@ -425,16 +425,16 @@ namespace BEAMINTERACTION
       for (int nodei = 0; nodei < static_cast<int>(nodeids->size()); ++nodei)
       {
         // insert element cloud of current node
-        Core::Nodes::Node* node = discret->gNode((*nodeids)[nodei]);
-        for (int j = 0; j < node->NumElement(); ++j)
+        Core::Nodes::Node* node = discret->g_node((*nodeids)[nodei]);
+        for (int j = 0; j < node->num_element(); ++j)
         {
           // only if element has not yet been added to the filaments elements
           if (std::find(sortedfilamenteles.begin(), sortedfilamenteles.end(),
-                  node->Elements()[j]) != sortedfilamenteles.end())
+                  node->elements()[j]) != sortedfilamenteles.end())
             continue;
 
           Discret::ELEMENTS::Beam3Base* currbeamele =
-              dynamic_cast<Discret::ELEMENTS::Beam3Base*>(node->Elements()[j]);
+              dynamic_cast<Discret::ELEMENTS::Beam3Base*>(node->elements()[j]);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
           if (currbeamele == nullptr)
@@ -442,9 +442,9 @@ namespace BEAMINTERACTION
 #endif
 
           // add element reference length of new element to filament reference length
-          filreflength += currbeamele->RefLength();
+          filreflength += currbeamele->ref_length();
           // add element
-          sortedfilamenteles.push_back(node->Elements()[j]);
+          sortedfilamenteles.push_back(node->elements()[j]);
         }
       }
     }
@@ -471,7 +471,7 @@ namespace BEAMINTERACTION
 
         // get arc parameter range of current element
         elearcinterval =
-            std::make_pair(elearcinterval.second, elearcinterval.second + beamele->RefLength());
+            std::make_pair(elearcinterval.second, elearcinterval.second + beamele->ref_length());
 
         while ((currbspotarcparam > (elearcinterval.first - tol) and
                    currbspotarcparam <= (elearcinterval.second + tol)) and
@@ -479,14 +479,14 @@ namespace BEAMINTERACTION
         {
           // linear mapping from arc pos to xi (local element system)
           double xi = (2.0 * currbspotarcparam - elearcinterval.first - elearcinterval.second) /
-                      beamele->RefLength();
+                      beamele->ref_length();
           xi = (abs(round(xi) - xi) < tol) ? round(xi) : xi;
           bspotposxi.push_back(xi);
 
           // print to screen
           Core::IO::cout(Core::IO::debug) << bspotcounter + 1 << ". binding spot: "
                                           << "xi = " << xi << " on element " << se_iter << " (gid "
-                                          << beamele->Id() << ")" << Core::IO::endl;
+                                          << beamele->id() << ")" << Core::IO::endl;
 
           ++bspotcounter;
           currbspotarcparam += filamentbspotinterval;
@@ -513,7 +513,7 @@ namespace BEAMINTERACTION
 #endif
 
       // get current position at binding spot xi
-      beamele->GetPosOfBindingSpot(bspotpos, eledisp, linkertype, locbspotnum, *pbb);
+      beamele->get_pos_of_binding_spot(bspotpos, eledisp, linkertype, locbspotnum, *pbb);
 
       // get current triad at binding spot xi
       beamele->get_triad_of_binding_spot(bspottriad, eledisp, linkertype, locbspotnum);
@@ -577,8 +577,8 @@ namespace BEAMINTERACTION
       for (unsigned int i = 0; i < 2; ++i)
       {
         // node 0 and 1 are always first and last node, respectively
-        if (beam->NodeIds()[i] == nbbeam->NodeIds()[0] ||
-            beam->NodeIds()[i] == nbbeam->NodeIds()[1])
+        if (beam->node_ids()[i] == nbbeam->node_ids()[0] ||
+            beam->node_ids()[i] == nbbeam->node_ids()[1])
           return true;
       }
 
@@ -596,8 +596,8 @@ namespace BEAMINTERACTION
       // the entries of elevecX  belong to the Dofs of the element with GID elegidX
       // the rows    of elematXY belong to the Dofs of the element with GID elegidX
       // the columns of elematXY belong to the Dofs of the element with GID elegidY
-      const Core::Elements::Element* ele1 = discret.gElement(elegid[0]);
-      const Core::Elements::Element* ele2 = discret.gElement(elegid[1]);
+      const Core::Elements::Element* ele1 = discret.g_element(elegid[0]);
+      const Core::Elements::Element* ele2 = discret.g_element(elegid[1]);
 
       // get element location vector and ownerships
       std::vector<int> lmrow1;
@@ -606,8 +606,8 @@ namespace BEAMINTERACTION
       std::vector<int> lmrowowner2;
       std::vector<int> lmstride;
 
-      ele1->LocationVector(discret, lmrow1, lmrowowner1, lmstride);
-      ele2->LocationVector(discret, lmrow2, lmrowowner2, lmstride);
+      ele1->location_vector(discret, lmrow1, lmrowowner1, lmstride);
+      ele2->location_vector(discret, lmrow2, lmrowowner2, lmstride);
 
       // assemble both element vectors into global system vector
       if (fe_sysvec != Teuchos::null)
@@ -619,10 +619,10 @@ namespace BEAMINTERACTION
       // and finally also assemble stiffness contributions
       if (fe_sysmat != Teuchos::null)
       {
-        fe_sysmat->FEAssemble(elemat[0][0], lmrow1, lmrow1);
-        fe_sysmat->FEAssemble(elemat[0][1], lmrow1, lmrow2);
-        fe_sysmat->FEAssemble(elemat[1][0], lmrow2, lmrow1);
-        fe_sysmat->FEAssemble(elemat[1][1], lmrow2, lmrow2);
+        fe_sysmat->fe_assemble(elemat[0][0], lmrow1, lmrow1);
+        fe_sysmat->fe_assemble(elemat[0][1], lmrow1, lmrow2);
+        fe_sysmat->fe_assemble(elemat[1][0], lmrow2, lmrow1);
+        fe_sysmat->fe_assemble(elemat[1][1], lmrow2, lmrow2);
       }
     }
     /*----------------------------------------------------------------------------*
@@ -673,7 +673,7 @@ namespace BEAMINTERACTION
       std::vector<int> lmrow;
       std::vector<int> lmrowowner;
       std::vector<int> lmstride;
-      ele->LocationVector(discret, lmrow, lmrowowner, lmstride);
+      ele->location_vector(discret, lmrow, lmrowowner, lmstride);
 
       // Get the GIDs of only the centerline DOFs.
       for (unsigned int i_dof = 0; i_dof < n_centerline_dof; i_dof++)
@@ -692,7 +692,7 @@ namespace BEAMINTERACTION
       std::vector<int> lmrow;
       std::vector<int> dummy1, dummy2;
 
-      ele->LocationVector(discret, lmrow, dummy1, dummy2);
+      ele->location_vector(discret, lmrow, dummy1, dummy2);
       num_dof = lmrow.size();
 
       const Discret::ELEMENTS::Beam3Base* beamele =
@@ -723,7 +723,7 @@ namespace BEAMINTERACTION
 
       for (unsigned int iele = 0; iele < 2; ++iele)
       {
-        Core::Elements::Element* ele = discret.gElement(elegid[iele]);
+        Core::Elements::Element* ele = discret.g_element(elegid[iele]);
         GetElementCenterlineDOFIndices(
             discret, ele, ele_centerlinedofindices[iele], numdof_ele[iele]);
       }
@@ -845,7 +845,7 @@ namespace BEAMINTERACTION
         element_posdofvec_absolutevalues = eledispvec;
         for (unsigned int dim = 0; dim < 3; ++dim)
           for (int node = 0; node < ele->num_node(); ++node)
-            element_posdofvec_absolutevalues[3 * node + dim] += ele->Nodes()[node]->X()[dim];
+            element_posdofvec_absolutevalues[3 * node + dim] += ele->nodes()[node]->x()[dim];
       }
     }
 
@@ -889,15 +889,15 @@ namespace BEAMINTERACTION
       // auxiliary transformation matrix, will be resized and reused
       Core::LinAlg::SerialDenseMatrix trafomatrix;
 
-      T1* cast_ele1 = dynamic_cast<T1*>(discret.gElement(elepairptr->GetEleGid(0)));
-      T2* cast_ele2 = dynamic_cast<T2*>(discret.gElement(elepairptr->GetEleGid(1)));
+      T1* cast_ele1 = dynamic_cast<T1*>(discret.g_element(elepairptr->get_ele_gid(0)));
+      T2* cast_ele2 = dynamic_cast<T2*>(discret.g_element(elepairptr->get_ele_gid(1)));
 
       for (unsigned int elei = 0; elei < 2; ++elei)
       {
         // get current element displacements
         std::vector<double> eledisp;
         GetCurrentUnshiftedElementDis(
-            discret, discret.gElement(elepairptr->GetEleGid(elei)), disp_np_col, *pbb, eledisp);
+            discret, discret.g_element(elepairptr->get_ele_gid(elei)), disp_np_col, *pbb, eledisp);
         const int numdof_ele = eledisp.size();
 
         // zero out and set correct size of transformation matrix
@@ -906,13 +906,13 @@ namespace BEAMINTERACTION
         // I_variations
         if (elei == 0)
           cast_ele1->get_generalized_interpolation_matrix_variations_at_xi(trafomatrix,
-              cast_ele1->GetBindingSpotXi(
-                  elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(elei)),
+              cast_ele1->get_binding_spot_xi(
+                  elepairptr->get_linker_type(), elepairptr->get_loc_b_spot_num(elei)),
               eledisp);
         else
           cast_ele2->get_generalized_interpolation_matrix_variations_at_xi(trafomatrix,
-              cast_ele2->GetBindingSpotXi(
-                  elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(elei)),
+              cast_ele2->get_binding_spot_xi(
+                  elepairptr->get_linker_type(), elepairptr->get_loc_b_spot_num(elei)),
               eledisp);
 
         eleforce[elei].size(numdof_ele);
@@ -938,8 +938,8 @@ namespace BEAMINTERACTION
           "Use the combined evaluation method instead!");
 
       // todo: put this in a loop
-      Core::Elements::Element* ele1 = discret.gElement(elepairptr->GetEleGid(0));
-      Core::Elements::Element* ele2 = discret.gElement(elepairptr->GetEleGid(1));
+      Core::Elements::Element* ele1 = discret.g_element(elepairptr->get_ele_gid(0));
+      Core::Elements::Element* ele2 = discret.g_element(elepairptr->get_ele_gid(1));
 
       // get current element displacements
       std::vector<double> ele1disp;
@@ -968,7 +968,8 @@ namespace BEAMINTERACTION
 
         // i) I_variations
         cast_ele1->get_generalized_interpolation_matrix_variations_at_xi(trafomatrix,
-            cast_ele1->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(0)),
+            cast_ele1->get_binding_spot_xi(
+                elepairptr->get_linker_type(), elepairptr->get_loc_b_spot_num(0)),
             ele1disp);
 
         auxmat[0][0].shape(numdof_ele1, 6);
@@ -981,7 +982,8 @@ namespace BEAMINTERACTION
         trafomatrix.shape(6, numdof_ele1);
 
         cast_ele1->get_generalized_interpolation_matrix_increments_at_xi(trafomatrix,
-            cast_ele1->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(0)),
+            cast_ele1->get_binding_spot_xi(
+                elepairptr->get_linker_type(), elepairptr->get_loc_b_spot_num(0)),
             ele1disp);
 
         elestiff[0][0].shape(numdof_ele1, numdof_ele1);
@@ -997,7 +999,8 @@ namespace BEAMINTERACTION
         trafomatrix.shape(6, numdof_ele2);
 
         cast_ele2->get_generalized_interpolation_matrix_variations_at_xi(trafomatrix,
-            cast_ele2->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(1)),
+            cast_ele2->get_binding_spot_xi(
+                elepairptr->get_linker_type(), elepairptr->get_loc_b_spot_num(1)),
             ele2disp);
 
         elestiff[1][0].shape(numdof_ele2, numdof_ele1);
@@ -1010,7 +1013,8 @@ namespace BEAMINTERACTION
         trafomatrix.shape(6, numdof_ele2);
 
         cast_ele2->get_generalized_interpolation_matrix_increments_at_xi(trafomatrix,
-            cast_ele2->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(1)),
+            cast_ele2->get_binding_spot_xi(
+                elepairptr->get_linker_type(), elepairptr->get_loc_b_spot_num(1)),
             ele2disp);
 
         elestiff[0][1].shape(numdof_ele1, numdof_ele2);
@@ -1052,8 +1056,8 @@ namespace BEAMINTERACTION
        * stiffness matrices */
 
       // todo @grill: put this in a loop
-      Core::Elements::Element* ele1 = discret.gElement(elepairptr->GetEleGid(0));
-      Core::Elements::Element* ele2 = discret.gElement(elepairptr->GetEleGid(1));
+      Core::Elements::Element* ele1 = discret.g_element(elepairptr->get_ele_gid(0));
+      Core::Elements::Element* ele2 = discret.g_element(elepairptr->get_ele_gid(1));
 
       // get current element displacements
       std::vector<double> ele1disp;
@@ -1087,7 +1091,8 @@ namespace BEAMINTERACTION
       {
         // i) I_variations
         cast_ele1->get_generalized_interpolation_matrix_variations_at_xi(trafomatrix,
-            cast_ele1->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(0)),
+            cast_ele1->get_binding_spot_xi(
+                elepairptr->get_linker_type(), elepairptr->get_loc_b_spot_num(0)),
             ele1disp);
 
         eleforce[0].size(numdof_ele1);
@@ -1103,7 +1108,8 @@ namespace BEAMINTERACTION
         trafomatrix.shape(6, numdof_ele1);
 
         cast_ele1->get_generalized_interpolation_matrix_increments_at_xi(trafomatrix,
-            cast_ele1->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(0)),
+            cast_ele1->get_binding_spot_xi(
+                elepairptr->get_linker_type(), elepairptr->get_loc_b_spot_num(0)),
             ele1disp);
 
         elestiff[0][0].shape(numdof_ele1, numdof_ele1);
@@ -1119,7 +1125,8 @@ namespace BEAMINTERACTION
 
         cast_ele1->get_stiffmat_resulting_from_generalized_interpolation_matrix_at_xi(
             stiffmat_lin_Ivar,
-            cast_ele1->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(0)),
+            cast_ele1->get_binding_spot_xi(
+                elepairptr->get_linker_type(), elepairptr->get_loc_b_spot_num(0)),
             ele1disp, bspotforce[0]);
 
         Core::LinAlg::Update(1.0, stiffmat_lin_Ivar, 1.0, elestiff[0][0]);
@@ -1131,7 +1138,8 @@ namespace BEAMINTERACTION
         trafomatrix.shape(6, numdof_ele2);
 
         cast_ele2->get_generalized_interpolation_matrix_variations_at_xi(trafomatrix,
-            cast_ele2->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(1)),
+            cast_ele2->get_binding_spot_xi(
+                elepairptr->get_linker_type(), elepairptr->get_loc_b_spot_num(1)),
             ele2disp);
 
         eleforce[1].size(numdof_ele2);
@@ -1147,7 +1155,8 @@ namespace BEAMINTERACTION
         trafomatrix.shape(6, numdof_ele2);
 
         cast_ele2->get_generalized_interpolation_matrix_increments_at_xi(trafomatrix,
-            cast_ele2->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(1)),
+            cast_ele2->get_binding_spot_xi(
+                elepairptr->get_linker_type(), elepairptr->get_loc_b_spot_num(1)),
             ele2disp);
 
         elestiff[0][1].shape(numdof_ele1, numdof_ele2);
@@ -1163,7 +1172,8 @@ namespace BEAMINTERACTION
 
         cast_ele2->get_stiffmat_resulting_from_generalized_interpolation_matrix_at_xi(
             stiffmat_lin_Ivar,
-            cast_ele2->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(1)),
+            cast_ele2->get_binding_spot_xi(
+                elepairptr->get_linker_type(), elepairptr->get_loc_b_spot_num(1)),
             ele2disp, bspotforce[1]);
 
         Core::LinAlg::Update(1.0, stiffmat_lin_Ivar, 1.0, elestiff[1][1]);
@@ -1177,23 +1187,23 @@ namespace BEAMINTERACTION
     {
       std::vector<std::set<int>> eletypeset(3);
 
-      for (int i = 0; i < discret->NumMyRowElements(); ++i)
+      for (int i = 0; i < discret->num_my_row_elements(); ++i)
       {
         // get ele pointer
-        Core::Elements::Element* eleptr = discret->lRowElement(i);
+        Core::Elements::Element* eleptr = discret->l_row_element(i);
 
         if (dynamic_cast<Discret::ELEMENTS::Beam3Base const*>(eleptr) != nullptr)
         {
-          eletypeset[0].insert(eleptr->Id());
+          eletypeset[0].insert(eleptr->id());
         }
         else if (dynamic_cast<Discret::ELEMENTS::Rigidsphere const*>(eleptr) != nullptr)
         {
-          eletypeset[1].insert(eleptr->Id());
+          eletypeset[1].insert(eleptr->id());
         }
         else if (dynamic_cast<Discret::ELEMENTS::SoBase const*>(eleptr) != nullptr ||
                  dynamic_cast<Discret::ELEMENTS::Solid const*>(eleptr) != nullptr)
         {
-          eletypeset[2].insert(eleptr->Id());
+          eletypeset[2].insert(eleptr->id());
         }
         else
         {
@@ -1207,10 +1217,10 @@ namespace BEAMINTERACTION
         std::vector<int> mapvec(eletypeset[i].begin(), eletypeset[i].end());
         eletypeset[i].clear();
         maps[i] =
-            Teuchos::rcp(new Epetra_Map(-1, mapvec.size(), mapvec.data(), 0, discret->Comm()));
+            Teuchos::rcp(new Epetra_Map(-1, mapvec.size(), mapvec.data(), 0, discret->get_comm()));
       }
 
-      eletypeextractor->setup(*discret()->ElementRowMap(), maps);
+      eletypeextractor->setup(*discret()->element_row_map(), maps);
     }
 
     /*----------------------------------------------------------------------------*

@@ -86,7 +86,7 @@ bool Solid::IMPLICIT::Statics::apply_stiff(
   check_init_setup();
   reset_eval_params();
   bool ok = model_eval().apply_stiff(x, jac, 1.0);
-  jac.Complete();
+  jac.complete();
   return ok;
 }
 
@@ -98,7 +98,7 @@ bool Solid::IMPLICIT::Statics::apply_force_stiff(
   check_init_setup();
   reset_eval_params();
   bool ok = model_eval().apply_force_stiff(x, f, jac, 1.0);
-  jac.Complete();
+  jac.complete();
   return ok;
 }
 
@@ -188,7 +188,7 @@ void Solid::IMPLICIT::Statics::pre_update()
   // get the time step size
   const double dt = (*global_state().get_delta_time())[0];
 
-  const Inpar::Solid::PredEnum& pred_type = impl_ptr->Predictor().get_type();
+  const Inpar::Solid::PredEnum& pred_type = impl_ptr->predictor().get_type();
   Teuchos::RCP<Epetra_Vector>& accnp_ptr = global_state().get_acc_np();
   Teuchos::RCP<Epetra_Vector>& velnp_ptr = global_state().get_vel_np();
 

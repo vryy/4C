@@ -27,12 +27,12 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::getXAABBofDis(const Core::FE::Discretizati
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions)
 {
   Core::LinAlg::Matrix<3, 2> XAABB(true);
-  if (dis.NumGlobalElements() == 0) return XAABB;
+  if (dis.num_global_elements() == 0) return XAABB;
 
-  if (dis.NumMyColElements() == 0) return XAABB;
+  if (dis.num_my_col_elements() == 0) return XAABB;
 
   // initialize XAABB as rectangle around the first point of dis
-  const int nodeid = dis.lColElement(0)->Nodes()[0]->Id();
+  const int nodeid = dis.l_col_element(0)->nodes()[0]->id();
   const Core::LinAlg::Matrix<3, 1> pos = currentpositions.find(nodeid)->second;
   for (int dim = 0; dim < 3; ++dim)
   {
@@ -42,16 +42,16 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::getXAABBofDis(const Core::FE::Discretizati
 
   // TODO make more efficient by cahcking nodes
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
-  for (int j = 0; j < dis.NumMyColElements(); ++j)
+  for (int j = 0; j < dis.num_my_col_elements(); ++j)
   {
-    const Core::Elements::Element* element = dis.lColElement(j);
+    const Core::Elements::Element* element = dis.l_col_element(j);
     const Core::LinAlg::SerialDenseMatrix xyze_element(
         Core::Geo::getCurrentNodalPositions(element, currentpositions));
     Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
     Core::Geo::checkRoughGeoType(element, xyze_element, eleGeoType);
 
     const Core::LinAlg::Matrix<3, 2> xaabbEle =
-        Core::Geo::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
+        Core::Geo::computeFastXAABB(element->shape(), xyze_element, eleGeoType);
     XAABB = mergeAABB(XAABB, xaabbEle);
   }
   return XAABB;
@@ -69,7 +69,7 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::getXAABBofEles(
   if (elements.begin() == elements.end()) return XAABB;
 
   // initialize XAABB as rectangle around the first point of the first element
-  const int nodeid = elements.begin()->second->Nodes()[0]->Id();
+  const int nodeid = elements.begin()->second->nodes()[0]->id();
   const Core::LinAlg::Matrix<3, 1> pos = currentpositions.find(nodeid)->second;
   for (int dim = 0; dim < 3; ++dim)
   {
@@ -86,7 +86,7 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::getXAABBofEles(
     Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
     Core::Geo::checkRoughGeoType(currelement, xyze_element, eleGeoType);
     const Core::LinAlg::Matrix<3, 2> xaabbEle =
-        Core::Geo::computeFastXAABB(currelement->Shape(), xyze_element, eleGeoType);
+        Core::Geo::computeFastXAABB(currelement->shape(), xyze_element, eleGeoType);
     XAABB = mergeAABB(XAABB, xaabbEle);
   }
 
@@ -101,14 +101,14 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::getXAABBofDis(const Core::FE::Discretizati
 {
   std::map<int, Core::LinAlg::Matrix<3, 1>> currentpositions;
 
-  for (int lid = 0; lid < dis.NumMyColNodes(); ++lid)
+  for (int lid = 0; lid < dis.num_my_col_nodes(); ++lid)
   {
-    const Core::Nodes::Node* node = dis.lColNode(lid);
+    const Core::Nodes::Node* node = dis.l_col_node(lid);
     Core::LinAlg::Matrix<3, 1> currpos;
-    currpos(0) = node->X()[0];
-    currpos(1) = node->X()[1];
-    currpos(2) = node->X()[2];
-    currentpositions[node->Id()] = currpos;
+    currpos(0) = node->x()[0];
+    currpos(1) = node->x()[1];
+    currpos(2) = node->x()[2];
+    currentpositions[node->id()] = currpos;
   }
 
   return getXAABBofDis(dis, currentpositions);
@@ -164,7 +164,7 @@ std::vector<Core::LinAlg::Matrix<3, 2>> Core::Geo::computeXAABBForLabeledStructu
     Core::LinAlg::Matrix<3, 2> xaabb_label;
     // initialize xaabb_label with box around first point
     const int eleId = *((labelIter->second).begin());
-    const int nodeId = dis.gElement(eleId)->Nodes()[0]->Id();
+    const int nodeId = dis.g_element(eleId)->nodes()[0]->id();
     const Core::LinAlg::Matrix<3, 1> pos = currentpositions.find(nodeId)->second;
     for (int dim = 0; dim < 3; ++dim)
     {
@@ -175,13 +175,13 @@ std::vector<Core::LinAlg::Matrix<3, 2>> Core::Geo::computeXAABBForLabeledStructu
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
          eleIter != (labelIter->second).end(); eleIter++)
     {
-      const Core::Elements::Element* element = dis.gElement(*eleIter);
+      const Core::Elements::Element* element = dis.g_element(*eleIter);
       const Core::LinAlg::SerialDenseMatrix xyze_element(
           Core::Geo::getCurrentNodalPositions(element, currentpositions));
       Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
       Core::Geo::checkRoughGeoType(element, xyze_element, eleGeoType);
       Core::LinAlg::Matrix<3, 2> xaabbEle =
-          Core::Geo::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
+          Core::Geo::computeFastXAABB(element->shape(), xyze_element, eleGeoType);
       xaabb_label = mergeAABB(xaabb_label, xaabbEle);
     }
     XAABBs.push_back(xaabb_label);
@@ -210,9 +210,9 @@ std::map<int, std::set<int>> Core::Geo::getElementsInRadius(const Core::FE::Disc
       for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
            eleIter != (labelIter->second).end(); eleIter++)
       {
-        Core::Elements::Element* element = dis.gElement(*eleIter);
-        for (int i = 0; i < Core::FE::getNumberOfElementCornerNodes(element->Shape()); i++)
-          nodeList[labelIter->first].insert(element->NodeIds()[i]);
+        Core::Elements::Element* element = dis.g_element(*eleIter);
+        for (int i = 0; i < Core::FE::getNumberOfElementCornerNodes(element->shape()); i++)
+          nodeList[labelIter->first].insert(element->node_ids()[i]);
       }
     }
   }
@@ -223,13 +223,13 @@ std::map<int, std::set<int>> Core::Geo::getElementsInRadius(const Core::FE::Disc
          nodeIter != (labelIter->second).end(); nodeIter++)
     {
       double distance = Core::Geo::LARGENUMBER;
-      const Core::Nodes::Node* node = dis.gNode(*nodeIter);
+      const Core::Nodes::Node* node = dis.g_node(*nodeIter);
       Core::Geo::getDistanceToPoint(node, currentpositions, querypoint, distance);
 
       if (distance < (radius + Core::Geo::TOL7))
       {
-        for (int i = 0; i < dis.gNode(*nodeIter)->NumElement(); i++)
-          elementMap[labelIter->first].insert(dis.gNode(*nodeIter)->Elements()[i]->Id());
+        for (int i = 0; i < dis.g_node(*nodeIter)->num_element(); i++)
+          elementMap[labelIter->first].insert(dis.g_node(*nodeIter)->elements()[i]->id());
       }
     }
 
@@ -324,13 +324,13 @@ void Core::Geo::nearest2DObjectInNode(const Teuchos::RCP<Core::FE::Discretizatio
       if (pointFound && distance < min_distance)
       {
         pointFound = false;
-        nearestObject.setLineObjectType(1, *eleIter, labelIter->first, x_surface);
+        nearestObject.set_line_object_type(1, *eleIter, labelIter->first, x_surface);
         min_distance = distance;
       }
 
       // collect nodes
-      for (int i = 0; i < Core::FE::getNumberOfElementCornerNodes(element->Shape()); i++)
-        nodeList[labelIter->first].insert(element->NodeIds()[i]);
+      for (int i = 0; i < Core::FE::getNumberOfElementCornerNodes(element->shape()); i++)
+        nodeList[labelIter->first].insert(element->node_ids()[i]);
     }
 
   // run over all nodes
@@ -339,21 +339,21 @@ void Core::Geo::nearest2DObjectInNode(const Teuchos::RCP<Core::FE::Discretizatio
     for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
          nodeIter != (labelIter->second).end(); nodeIter++)
     {
-      const Core::Nodes::Node* node = dis->gNode(*nodeIter);
+      const Core::Nodes::Node* node = dis->g_node(*nodeIter);
       Core::Geo::getDistanceToPoint(node, currentpositions, point, distance);
       if (distance < min_distance)
       {
         min_distance = distance;
-        nearestObject.setNodeObjectType(
-            *nodeIter, labelIter->first, currentpositions.find(node->Id())->second);
+        nearestObject.set_node_object_type(
+            *nodeIter, labelIter->first, currentpositions.find(node->id())->second);
       }
     }
 
-  if (nearestObject.getObjectType() == Core::Geo::NOTYPE_OBJECT)
+  if (nearestObject.get_object_type() == Core::Geo::NOTYPE_OBJECT)
     FOUR_C_THROW("no nearest object obtained");
 
   // save projection point
-  minDistCoords = nearestObject.getPhysCoord();
+  minDistCoords = nearestObject.get_phys_coord();
 
   return;
 }
@@ -394,12 +394,12 @@ int Core::Geo::nearest3DObjectInNode(const Teuchos::RCP<Core::FE::Discretization
         pointFound = false;
         min_distance = distance;
         nearestObject.set_surface_object_type(*eleIter, labelIter->first, x_surface);
-        surfid = element->Id();
+        surfid = element->id();
       }
 
       // run over all line elements
-      const std::vector<Teuchos::RCP<Core::Elements::Element>> eleLines = element->Lines();
-      for (int i = 0; i < element->NumLine(); i++)
+      const std::vector<Teuchos::RCP<Core::Elements::Element>> eleLines = element->lines();
+      for (int i = 0; i < element->num_line(); i++)
       {
         pointFound = Core::Geo::getDistanceToLine(
             eleLines[i].get(), currentpositions, point, x_surface, distance);
@@ -407,13 +407,13 @@ int Core::Geo::nearest3DObjectInNode(const Teuchos::RCP<Core::FE::Discretization
         {
           pointFound = false;
           min_distance = distance;
-          nearestObject.setLineObjectType(i, *eleIter, labelIter->first, x_surface);
-          surfid = element->Id();
+          nearestObject.set_line_object_type(i, *eleIter, labelIter->first, x_surface);
+          surfid = element->id();
         }
       }
       // collect nodes
-      for (int i = 0; i < Core::FE::getNumberOfElementCornerNodes(element->Shape()); i++)
-        nodeList[labelIter->first].insert(element->NodeIds()[i]);
+      for (int i = 0; i < Core::FE::getNumberOfElementCornerNodes(element->shape()); i++)
+        nodeList[labelIter->first].insert(element->node_ids()[i]);
     }
 
   // run over all nodes
@@ -422,22 +422,22 @@ int Core::Geo::nearest3DObjectInNode(const Teuchos::RCP<Core::FE::Discretization
     for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
          nodeIter != (labelIter->second).end(); nodeIter++)
     {
-      const Core::Nodes::Node* node = dis->gNode(*nodeIter);
+      const Core::Nodes::Node* node = dis->g_node(*nodeIter);
       Core::Geo::getDistanceToPoint(node, currentpositions, point, distance);
       if (distance < min_distance)
       {
         min_distance = distance;
-        nearestObject.setNodeObjectType(
-            *nodeIter, labelIter->first, currentpositions.find(node->Id())->second);
-        surfid = node->Elements()[0]->Id();  // surf id of any of the adjacent elements
+        nearestObject.set_node_object_type(
+            *nodeIter, labelIter->first, currentpositions.find(node->id())->second);
+        surfid = node->elements()[0]->id();  // surf id of any of the adjacent elements
       }
     }
 
-  if (nearestObject.getObjectType() == Core::Geo::NOTYPE_OBJECT)
+  if (nearestObject.get_object_type() == Core::Geo::NOTYPE_OBJECT)
     FOUR_C_THROW("no nearest object obtained");
 
   // save projection point
-  minDistCoords = nearestObject.getPhysCoord();
+  minDistCoords = nearestObject.get_phys_coord();
 
   return surfid;
 }
@@ -462,12 +462,12 @@ Core::Geo::ObjectType Core::Geo::nearest3DObjectOnElement(Core::Elements::Elemen
   {
     pointFound = false;
     min_distance = distance;
-    nearestObject.set_surface_object_type(surfaceelement->Id(), -1, x_surface);
+    nearestObject.set_surface_object_type(surfaceelement->id(), -1, x_surface);
   }
 
   // run over all line elements
-  const std::vector<Teuchos::RCP<Core::Elements::Element>> eleLines = surfaceelement->Lines();
-  for (int i = 0; i < surfaceelement->NumLine(); i++)
+  const std::vector<Teuchos::RCP<Core::Elements::Element>> eleLines = surfaceelement->lines();
+  for (int i = 0; i < surfaceelement->num_line(); i++)
   {
     pointFound = Core::Geo::getDistanceToLine(
         eleLines[i].get(), currentpositions, point, x_surface, distance);
@@ -475,7 +475,7 @@ Core::Geo::ObjectType Core::Geo::nearest3DObjectOnElement(Core::Elements::Elemen
     {
       pointFound = false;
       min_distance = distance;
-      nearestObject.setLineObjectType(i, surfaceelement->Id(), -1, x_surface);
+      nearestObject.set_line_object_type(i, surfaceelement->id(), -1, x_surface);
     }
   }
 
@@ -494,17 +494,17 @@ Core::Geo::ObjectType Core::Geo::nearest3DObjectOnElement(Core::Elements::Elemen
     if (distance <= min_distance)
     {
       min_distance = distance;
-      nearestObject.setNodeObjectType(nodeIter->first, -1, nodeIter->second);
+      nearestObject.set_node_object_type(nodeIter->first, -1, nodeIter->second);
     }
   }
 
-  if (nearestObject.getObjectType() == Core::Geo::NOTYPE_OBJECT)
+  if (nearestObject.get_object_type() == Core::Geo::NOTYPE_OBJECT)
     FOUR_C_THROW("no nearest object obtained");
 
   // save projection point
-  minDistCoords = nearestObject.getPhysCoord();
+  minDistCoords = nearestObject.get_phys_coord();
 
-  return nearestObject.getObjectType();
+  return nearestObject.get_object_type();
 }
 
 /*----------------------------------------------------------------------*
@@ -524,12 +524,12 @@ bool Core::Geo::getDistanceToSurface(const Core::Elements::Element* surfaceEleme
   const Core::LinAlg::SerialDenseMatrix xyze_surfaceElement(
       Core::Geo::getCurrentNodalPositions(surfaceElement, currentpositions));
   Core::Geo::CurrentToSurfaceElementCoordinates(
-      surfaceElement->Shape(), xyze_surfaceElement, point, elecoord);
+      surfaceElement->shape(), xyze_surfaceElement, point, elecoord);
 
-  if (Core::Geo::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->Shape()))
+  if (Core::Geo::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->shape()))
   {
     Core::Geo::elementToCurrentCoordinates(
-        surfaceElement->Shape(), xyze_surfaceElement, elecoord, x_surface_phys);
+        surfaceElement->shape(), xyze_surfaceElement, elecoord, x_surface_phys);
     // normal pointing away from the surface towards point
     distance_vector.update(1.0, point, -1.0, x_surface_phys);
     distance = distance_vector.norm2();
@@ -545,20 +545,20 @@ bool Core::Geo::getDistanceToSurface(const Core::Elements::Element* surfaceEleme
   if (eleGeoType == Core::Geo::HIGHERORDER)
   {
     Core::LinAlg::SerialDenseMatrix eleCoordMatrix =
-        Core::FE::getEleNodeNumbering_nodes_paramspace(surfaceElement->Shape());
+        Core::FE::getEleNodeNumbering_nodes_paramspace(surfaceElement->shape());
     for (int i = 0; i < surfaceElement->num_node(); i++)
     {
       // use nodes as starting values
       for (int j = 0; j < 2; j++) elecoord(j) = eleCoordMatrix(j, i);
 
       Core::Geo::CurrentToSurfaceElementCoordinates(
-          surfaceElement->Shape(), xyze_surfaceElement, point, elecoord);
+          surfaceElement->shape(), xyze_surfaceElement, point, elecoord);
 
-      if (Core::Geo::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->Shape()))
+      if (Core::Geo::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->shape()))
       {
         Core::LinAlg::Matrix<3, 1> physcoord(true);
         Core::Geo::elementToCurrentCoordinates(
-            surfaceElement->Shape(), xyze_surfaceElement, elecoord, physcoord);
+            surfaceElement->shape(), xyze_surfaceElement, elecoord, physcoord);
         // normal pointing away from the surface towards point
         distance_vector.update(1.0, point, -1.0, physcoord);
         distance = distance_vector.norm2();
@@ -591,12 +591,12 @@ bool Core::Geo::getDistanceToLine(const Core::Elements::Element* lineElement,
   const Core::LinAlg::SerialDenseMatrix xyze_lineElement(
       Core::Geo::getCurrentNodalPositions(lineElement, currentpositions));
   Core::Geo::CurrentToLineElementCoordinates(
-      lineElement->Shape(), xyze_lineElement, point, elecoord);
+      lineElement->shape(), xyze_lineElement, point, elecoord);
 
-  if (Core::Geo::checkPositionWithinElementParameterSpace(elecoord, lineElement->Shape()))
+  if (Core::Geo::checkPositionWithinElementParameterSpace(elecoord, lineElement->shape()))
   {
     Core::Geo::elementToCurrentCoordinates(
-        lineElement->Shape(), xyze_lineElement, elecoord, x_line_phys);
+        lineElement->shape(), xyze_lineElement, elecoord, x_line_phys);
     // normal pointing away from the line towards point
     distance_vector.update(1.0, point, -1.0, x_line_phys);
     distance = distance_vector.norm2();
@@ -611,7 +611,7 @@ bool Core::Geo::getDistanceToLine(const Core::Elements::Element* lineElement,
   if (eleGeoType == Core::Geo::HIGHERORDER)
   {
     Core::LinAlg::SerialDenseMatrix eleCoordMatrix =
-        Core::FE::getEleNodeNumbering_nodes_paramspace(lineElement->Shape());
+        Core::FE::getEleNodeNumbering_nodes_paramspace(lineElement->shape());
     // use end nodes as starting values in addition
     for (int i = 0; i < 2; i++)
     {
@@ -619,13 +619,13 @@ bool Core::Geo::getDistanceToLine(const Core::Elements::Element* lineElement,
       elecoord(0) = eleCoordMatrix(0, i);
 
       Core::Geo::CurrentToLineElementCoordinates(
-          lineElement->Shape(), xyze_lineElement, point, elecoord);
+          lineElement->shape(), xyze_lineElement, point, elecoord);
 
-      if (Core::Geo::checkPositionWithinElementParameterSpace(elecoord, lineElement->Shape()))
+      if (Core::Geo::checkPositionWithinElementParameterSpace(elecoord, lineElement->shape()))
       {
         Core::LinAlg::Matrix<3, 1> physcoord(true);
         Core::Geo::elementToCurrentCoordinates(
-            lineElement->Shape(), xyze_lineElement, elecoord, physcoord);
+            lineElement->shape(), xyze_lineElement, elecoord, physcoord);
         // normal pointing away from the line towards point
         distance_vector.update(1.0, point, -1.0, physcoord);
         distance = distance_vector.norm2();
@@ -651,7 +651,7 @@ void Core::Geo::getDistanceToPoint(const Core::Nodes::Node* node,
     const Core::LinAlg::Matrix<3, 1>& point, double& distance)
 {
   // node position in physical coordinates
-  const Core::LinAlg::Matrix<3, 1> x_node = currentpositions.find(node->Id())->second;
+  const Core::LinAlg::Matrix<3, 1> x_node = currentpositions.find(node->id())->second;
 
   Core::LinAlg::Matrix<3, 1> distance_vector;
   // vector pointing away from the node towards physCoord
@@ -700,7 +700,7 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::mergeAABB(
 void Core::Geo::checkRoughGeoType(const Core::Elements::Element* element,
     const Core::LinAlg::SerialDenseMatrix xyze_element, Core::Geo::EleGeoType& eleGeoType)
 {
-  const int order = Core::FE::getOrder(element->Shape());
+  const int order = Core::FE::getOrder(element->shape());
 
   if (order == 1)
     eleGeoType = Core::Geo::LINEAR;  // TODO check for bilinear elements in the tree they count
@@ -721,7 +721,7 @@ void Core::Geo::checkRoughGeoType(const Core::Elements::Element* element,
 void Core::Geo::checkRoughGeoType(const Teuchos::RCP<Core::Elements::Element> element,
     const Core::LinAlg::SerialDenseMatrix xyze_element, Core::Geo::EleGeoType& eleGeoType)
 {
-  const int order = Core::FE::getOrder(element->Shape());
+  const int order = Core::FE::getOrder(element->shape());
 
   if (order == 1)
     eleGeoType = Core::Geo::LINEAR;  // TODO check for bilinear elements in the tree they count

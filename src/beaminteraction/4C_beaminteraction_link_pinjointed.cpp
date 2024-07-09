@@ -71,7 +71,7 @@ void BEAMINTERACTION::BeamLinkPinJointed::pack(Core::Communication::PackBuffer& 
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   BeamLink::pack(data);
@@ -85,7 +85,7 @@ void BEAMINTERACTION::BeamLinkPinJointed::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -100,18 +100,18 @@ void BEAMINTERACTION::BeamLinkPinJointed::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkPinJointed::ResetState(
+void BEAMINTERACTION::BeamLinkPinJointed::reset_state(
     std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
     std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad)
 {
   check_init_setup();
 
-  BeamLink::ResetState(bspotpos, bspottriad);
+  BeamLink::reset_state(bspotpos, bspottriad);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> BEAMINTERACTION::BeamLinkPinJointed::Create(
+Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> BEAMINTERACTION::BeamLinkPinJointed::create(
     Inpar::BEAMINTERACTION::JointType type)
 {
   if (type == Inpar::BEAMINTERACTION::beam3r_line2_pin)

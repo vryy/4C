@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>*
-Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(
+Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::instance(
     const int numdofpernode, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -35,7 +35,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(
             new PoroFluidMultiPhaseEleBoundaryCalc<distype>(numdofpernode, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, disname);
 }
 
@@ -46,7 +46,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::PoroFluidMultiPhaseEleBoundaryCalc(
     const int numdofpernode, const std::string& disname)
-    : params_(Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(disname)),
+    : params_(Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::instance(disname)),
       numdofpernode_(numdofpernode),
       xyze_(true),  // initialize to zero
       edispnp_(true),
@@ -116,12 +116,12 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<
     Core::Elements::Element::LocationArray& la)
 {
   // get additional state vector for ALE case: grid displacement
-  if (params_->IsAle())
+  if (params_->is_ale())
   {
     // get number of dof-set associated with displacement related dofs
-    const int ndsdisp = params_->NdsDisp();
+    const int ndsdisp = params_->nds_disp();
 
-    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state(ndsdisp, "dispnp");
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
@@ -188,7 +188,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neu
       POROFLUIDMULTIPHASE::ElementUtils::DisTypeToOptGaussRule<distype>::rule);
 
   // find out whether we will use a time curve
-  const double time = params_->Time();
+  const double time = params_->time();
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
@@ -203,7 +203,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neu
         "scalars.");
 
   // integration loop
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     double fac = eval_shape_func_and_int_fac(intpoints, iquad);
 
@@ -228,8 +228,8 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neu
         if (functnum > 0)
         {
           // evaluate function at current Gauss point (provide always 3D coordinates!)
-          functfac = Global::Problem::Instance()
-                         ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+          functfac = Global::Problem::instance()
+                         ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                          .evaluate(coordgpref, time, dof);
         }
         else
@@ -257,7 +257,7 @@ double Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::eval_shap
 )
 {
   // coordinates of the current integration point
-  const double* gpcoord = (intpoints.IP().qxg)[iquad];
+  const double* gpcoord = (intpoints.ip().qxg)[iquad];
   for (int idim = 0; idim < nsd_; idim++)
   {
     xsi_(idim) = gpcoord[idim];
@@ -274,7 +274,7 @@ double Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::eval_shap
       xyze_, deriv_, metrictensor_, drs, normalvec);
 
   // return the integration factor
-  return intpoints.IP().qwgt[iquad] * drs;
+  return intpoints.ip().qwgt[iquad] * drs;
 }
 
 /*----------------------------------------------------------------------*

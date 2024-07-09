@@ -200,7 +200,7 @@ namespace XFEM
     \param node (in)        : the node
     \param element (in)     : the element (optionally)
     */
-    void Dof(std::vector<int>& dof, const Core::Nodes::Node* node, unsigned nds,
+    void dof(std::vector<int>& dof, const Core::Nodes::Node* node, unsigned nds,
         unsigned nodaldofset, const Core::Elements::Element* element = nullptr) const override
     {
       if (nds > 1) FOUR_C_THROW("xwall discretization can only handle one dofset at the moment");
@@ -209,14 +209,14 @@ namespace XFEM
       FOUR_C_ASSERT(havedof_, "no dofs assigned");
 
       std::vector<int> totaldof;
-      dofsets_[nds]->Dof(totaldof, node, nodaldofset);
+      dofsets_[nds]->dof(totaldof, node, nodaldofset);
 
-      if (element == nullptr && element->Shape() == Core::FE::CellType::hex8)
+      if (element == nullptr && element->shape() == Core::FE::CellType::hex8)
         FOUR_C_THROW("element required for location vector of hex8 element");
 
       int size;
       if (element != nullptr)
-        size = std::min((int)totaldof.size(), element->NumDofPerNode(*node));
+        size = std::min((int)totaldof.size(), element->num_dof_per_node(*node));
       else
         size = (int)totaldof.size();
       // only take the first dofs that have a meaning for all elements at this node

@@ -14,20 +14,20 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoSh18::ReadElement(
+bool Discret::ELEMENTS::SoSh18::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
-  int material = 0;
-  linedef->extract_int("MAT", material);
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
 
-  SetMaterial(0, Mat::Factory(material));
+  set_material(0, Mat::Factory(material_id));
 
   // set up of materials with GP data (e.g., history variables)
 
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
-  SolidMaterial()->setup(NUMGPT_SOH18, linedef);
+  solid_material()->setup(NUMGPT_SOH18, linedef);
 
   // temporary variable for read-in
   std::string buffer;
@@ -47,7 +47,7 @@ bool Discret::ELEMENTS::SoSh18::ReadElement(
     FOUR_C_THROW("Reading SO_HEX18 element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
-  SolidMaterial()->ValidKinematics(Inpar::Solid::KinemType::nonlinearTotLag);
+  solid_material()->valid_kinematics(Inpar::Solid::KinemType::nonlinearTotLag);
 
   // transverse shear locking
   linedef->extract_string("TSL", buffer);

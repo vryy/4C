@@ -61,7 +61,7 @@ namespace Mat
           ) = 0;
 
       //! return inverse bulkmodulus (=compressibility)
-      virtual double InvBulkModulus() const = 0;
+      virtual double inv_bulk_modulus() const = 0;
     };
 
     /*----------------------------------------------------------------------*/
@@ -108,7 +108,7 @@ namespace Mat
           ) override;
 
       //! return inverse bulkmodulus (=compressibility)
-      double InvBulkModulus() const override { return 1.0 / bulk_modulus_; }
+      double inv_bulk_modulus() const override { return 1.0 / bulk_modulus_; }
 
      private:
       //! @name material parameters
@@ -164,7 +164,7 @@ namespace Mat
           ) override;
 
       //! return inverse bulkmodulus (=compressibility)
-      double InvBulkModulus() const override { return 1.0 / bulk_modulus_; }
+      double inv_bulk_modulus() const override { return 1.0 / bulk_modulus_; }
 
      private:
       //! @name material parameters
@@ -218,7 +218,7 @@ namespace Mat
           ) override;
 
       //! return inverse bulkmodulus (=compressibility)
-      double InvBulkModulus() const override { return 0.0; }
+      double inv_bulk_modulus() const override { return 0.0; }
     };
 
     /*----------------------------------------------------------------------*/
@@ -263,7 +263,7 @@ namespace Mat
           ) override;
 
       //! return inverse bulkmodulus (=compressibility)
-      double InvBulkModulus() const override { return 0.0; }
+      double inv_bulk_modulus() const override { return 0.0; }
     };
 
     /*----------------------------------------------------------------------*/
@@ -308,7 +308,7 @@ namespace Mat
           ) override;
 
       //! return inverse bulkmodulus (=compressibility)
-      double InvBulkModulus() const override { return inv_biot_modulus_; }
+      double inv_bulk_modulus() const override { return inv_biot_modulus_; }
 
      private:
       //! @name material parameters
@@ -363,7 +363,7 @@ namespace Mat
           ) override;
 
       //! return inverse bulkmodulus (=compressibility)
-      double InvBulkModulus() const override;
+      double inv_bulk_modulus() const override;
 
      private:
       //! @name material parameters

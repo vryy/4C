@@ -26,8 +26,8 @@ Adapter::AleXFFsiWrapper::AleXFFsiWrapper(Teuchos::RCP<Ale> ale) : AleFsiWrapper
   // create the FSI interface
   xff_interface_ = Teuchos::rcp(new ALE::UTILS::XFluidFluidMapExtractor);
   xff_interface_->setup(*discretization());
-  SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_x_ff, Interface(), xff_interface_);
-  SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_x_fsi, Interface());
+  setup_dbc_map_ex(ALE::UTILS::MapExtractor::dbc_set_x_ff, interface(), xff_interface_);
+  setup_dbc_map_ex(ALE::UTILS::MapExtractor::dbc_set_x_fsi, interface());
 }
 
 /*----------------------------------------------------------------------------*/
@@ -45,18 +45,18 @@ void Adapter::AleXFFsiWrapper::evaluate(Teuchos::RCP<const Epetra_Vector> stepin
 
   // set dispnp_ of xfem dofs to dispn_
   xff_interface_->insert_xfluid_fluid_cond_vector(
-      xff_interface_->extract_xfluid_fluid_cond_vector(Dispn()), WriteAccessDispnp());
+      xff_interface_->extract_xfluid_fluid_cond_vector(dispn()), write_access_dispnp());
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int Adapter::AleXFFsiWrapper::Solve()
+int Adapter::AleXFFsiWrapper::solve()
 {
   AleFsiWrapper::evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_x_fsi);
 
-  int err = AleFsiWrapper::Solve();
+  int err = AleFsiWrapper::solve();
 
-  UpdateIter();
+  update_iter();
 
   return err;
 }

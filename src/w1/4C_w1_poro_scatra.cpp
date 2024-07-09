@@ -41,7 +41,7 @@ Discret::ELEMENTS::Wall1PoroScatra<distype>::Wall1PoroScatra(
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Core::Elements::Element* Discret::ELEMENTS::Wall1PoroScatra<distype>::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Wall1PoroScatra<distype>::clone() const
 {
   Discret::ELEMENTS::Wall1PoroScatra<distype>* newelement =
       new Discret::ELEMENTS::Wall1PoroScatra<distype>(*this);
@@ -57,7 +57,7 @@ void Discret::ELEMENTS::Wall1PoroScatra<distype>::pack(Core::Communication::Pack
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   my::add_to_pack(data, type);
   // pack scalar transport impltype
   my::add_to_pack(data, impltype_);
@@ -76,7 +76,7 @@ void Discret::ELEMENTS::Wall1PoroScatra<distype>::unpack(const std::vector<char>
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract scalar transport impltype_
   impltype_ = static_cast<Inpar::ScaTra::ImplType>(my::extract_int(position, data));
@@ -108,11 +108,11 @@ void Discret::ELEMENTS::Wall1PoroScatra<distype>::print(std::ostream& os) const
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::Wall1PoroScatra<distype>::ReadElement(
+bool Discret::ELEMENTS::Wall1PoroScatra<distype>::read_element(
     const std::string& eletype, const std::string& eledistype, Input::LineDefinition* linedef)
 {
   // read base element
-  my::ReadElement(eletype, eledistype, linedef);
+  my::read_element(eletype, eledistype, linedef);
 
   // read implementation type
   std::string impltype;

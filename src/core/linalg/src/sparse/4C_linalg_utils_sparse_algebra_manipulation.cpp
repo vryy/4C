@@ -248,8 +248,8 @@ bool Core::LinAlg::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
   SparseMatrix a(A, View);
 
   // split matrix into pieces, where main diagonal blocks are square
-  Ablock = a.Split<DefaultBlockMatrixStrategy>(extractor, extractor);
-  Ablock->Complete();
+  Ablock = a.split<DefaultBlockMatrixStrategy>(extractor, extractor);
+  Ablock->complete();
 
   return true;
 }
@@ -266,10 +266,10 @@ bool Core::LinAlg::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
   SplitMatrix2x2(A, Ablock, A11rowmap, A22rowmap);
 
   // get Epetra objects out of the block matrix (prevents them from dying)
-  A11 = (*Ablock)(0, 0).EpetraMatrix();
-  A12 = (*Ablock)(0, 1).EpetraMatrix();
-  A21 = (*Ablock)(1, 0).EpetraMatrix();
-  A22 = (*Ablock)(1, 1).EpetraMatrix();
+  A11 = (*Ablock)(0, 0).epetra_matrix();
+  A12 = (*Ablock)(0, 1).epetra_matrix();
+  A21 = (*Ablock)(1, 0).epetra_matrix();
+  A22 = (*Ablock)(1, 1).epetra_matrix();
 
   return true;
 }
@@ -286,17 +286,17 @@ bool Core::LinAlg::SplitMatrix2x2(Teuchos::RCP<Core::LinAlg::SparseMatrix> A,
 
   // check and complete input row maps
   if (A11rowmap == Teuchos::null && A22rowmap != Teuchos::null)
-    A11rowmap = Core::LinAlg::SplitMap(A->RowMap(), *A22rowmap);
+    A11rowmap = Core::LinAlg::SplitMap(A->row_map(), *A22rowmap);
   else if (A11rowmap != Teuchos::null && A22rowmap == Teuchos::null)
-    A22rowmap = Core::LinAlg::SplitMap(A->RowMap(), *A11rowmap);
+    A22rowmap = Core::LinAlg::SplitMap(A->row_map(), *A11rowmap);
   else if (A11rowmap == Teuchos::null && A22rowmap == Teuchos::null)
     FOUR_C_THROW("Core::LinAlg::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
 
   // check and complete input domain maps
   if (A11domainmap == Teuchos::null && A22domainmap != Teuchos::null)
-    A11domainmap = Core::LinAlg::SplitMap(A->DomainMap(), *A22domainmap);
+    A11domainmap = Core::LinAlg::SplitMap(A->domain_map(), *A22domainmap);
   else if (A11domainmap != Teuchos::null && A22domainmap == Teuchos::null)
-    A22domainmap = Core::LinAlg::SplitMap(A->DomainMap(), *A11domainmap);
+    A22domainmap = Core::LinAlg::SplitMap(A->domain_map(), *A11domainmap);
   else if (A11rowmap == Teuchos::null && A22rowmap == Teuchos::null)
     FOUR_C_THROW(
         "Core::LinAlg::SplitMatrix2x2: Both A11domainmap and A22domainmap == null on entry");
@@ -308,13 +308,13 @@ bool Core::LinAlg::SplitMatrix2x2(Teuchos::RCP<Core::LinAlg::SparseMatrix> A,
   rangemaps[1] = Teuchos::rcp(new Epetra_Map(*A22rowmap));
   domainmaps[0] = Teuchos::rcp(new Epetra_Map(*A11domainmap));
   domainmaps[1] = Teuchos::rcp(new Epetra_Map(*A22domainmap));
-  Core::LinAlg::MultiMapExtractor range(A->RangeMap(), rangemaps);
-  Core::LinAlg::MultiMapExtractor domain(A->DomainMap(), domainmaps);
+  Core::LinAlg::MultiMapExtractor range(A->range_map(), rangemaps);
+  Core::LinAlg::MultiMapExtractor domain(A->domain_map(), domainmaps);
 
   Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>> Ablock =
-      A->Split<DefaultBlockMatrixStrategy>(domain, range);
+      A->split<DefaultBlockMatrixStrategy>(domain, range);
 
-  Ablock->Complete();
+  Ablock->complete();
   // extract internal data from Ablock in Teuchos::RCP form and let Ablock die
   // (this way, internal data from Ablock will live)
   A11 = Teuchos::rcp(new SparseMatrix((*Ablock)(0, 0), View));
@@ -330,9 +330,9 @@ bool Core::LinAlg::SplitMatrix2x2(Teuchos::RCP<Core::LinAlg::SparseMatrix> A,
 int Core::LinAlg::InsertMyRowDiagonalIntoUnfilledMatrix(
     Core::LinAlg::SparseMatrix& mat, const Epetra_Vector& diag)
 {
-  if (mat.Filled()) return -1;
+  if (mat.filled()) return -1;
 
-  Teuchos::RCP<Epetra_CrsMatrix> dst_mat_ptr = mat.EpetraMatrix();
+  Teuchos::RCP<Epetra_CrsMatrix> dst_mat_ptr = mat.epetra_matrix();
   Epetra_CrsMatrix& dst_mat = *dst_mat_ptr;
 
   const int my_num_entries = diag.Map().NumMyElements();
@@ -593,16 +593,16 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::ComputeDofMapFromNodeMap(
 
   for (int nlid = 0; nlid < my_num_nodes; ++nlid)
   {
-    const Core::Nodes::Node* node = discret.gNode(my_ngids[nlid]);
+    const Core::Nodes::Node* node = discret.g_node(my_ngids[nlid]);
 
-    const int numdofs = discret.NumDof(dofset_id, node);
-    for (int d = 0; d < numdofs; ++d) dof_set.insert(discret.Dof(dofset_id, node, d));
+    const int numdofs = discret.num_dof(dofset_id, node);
+    for (int d = 0; d < numdofs; ++d) dof_set.insert(discret.dof(dofset_id, node, d));
   }
 
   dof_vec.resize(dof_set.size());
   std::copy(dof_set.begin(), dof_set.end(), dof_vec.begin());
 
-  return Teuchos::rcp(new Epetra_Map(-1, dof_vec.size(), dof_vec.data(), 0, discret.Comm()));
+  return Teuchos::rcp(new Epetra_Map(-1, dof_vec.size(), dof_vec.data(), 0, discret.get_comm()));
 }
 
 

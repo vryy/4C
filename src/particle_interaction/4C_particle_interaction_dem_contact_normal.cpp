@@ -64,7 +64,7 @@ void ParticleInteraction::DEMContactNormalLinearSpring::setup(const double& dens
   k_normal_crit_ = k_normal_;
 }
 
-void ParticleInteraction::DEMContactNormalLinearSpring::NormalContactForce(const double& gap,
+void ParticleInteraction::DEMContactNormalLinearSpring::normal_contact_force(const double& gap,
     const double* radius_i, const double* radius_j, const double& v_rel_normal, const double& m_eff,
     double& normalcontactforce) const
 {
@@ -113,7 +113,7 @@ void ParticleInteraction::DEMContactNormalLinearSpringDamp::setup(const double& 
     d_normal_fac_ = 2.0 * std::sqrt(k_normal_);
 }
 
-void ParticleInteraction::DEMContactNormalLinearSpringDamp::NormalContactForce(const double& gap,
+void ParticleInteraction::DEMContactNormalLinearSpringDamp::normal_contact_force(const double& gap,
     const double* radius_i, const double* radius_j, const double& v_rel_normal, const double& m_eff,
     double& normalcontactforce) const
 {
@@ -174,7 +174,7 @@ ParticleInteraction::DEMContactNormalHertz::DEMContactNormalHertz(
   // empty constructor
 }
 
-void ParticleInteraction::DEMContactNormalHertz::NormalContactForce(const double& gap,
+void ParticleInteraction::DEMContactNormalHertz::normal_contact_force(const double& gap,
     const double* radius_i, const double* radius_j, const double& v_rel_normal, const double& m_eff,
     double& normalcontactforce) const
 {
@@ -206,7 +206,7 @@ ParticleInteraction::DEMContactNormalLeeHerrmann::DEMContactNormalLeeHerrmann(
   // empty constructor
 }
 
-void ParticleInteraction::DEMContactNormalLeeHerrmann::NormalContactForce(const double& gap,
+void ParticleInteraction::DEMContactNormalLeeHerrmann::normal_contact_force(const double& gap,
     const double* radius_i, const double* radius_j, const double& v_rel_normal, const double& m_eff,
     double& normalcontactforce) const
 {
@@ -220,7 +220,7 @@ ParticleInteraction::DEMContactNormalKuwabaraKono::DEMContactNormalKuwabaraKono(
   // empty constructor
 }
 
-void ParticleInteraction::DEMContactNormalKuwabaraKono::NormalContactForce(const double& gap,
+void ParticleInteraction::DEMContactNormalKuwabaraKono::normal_contact_force(const double& gap,
     const double* radius_i, const double* radius_j, const double& v_rel_normal, const double& m_eff,
     double& normalcontactforce) const
 {
@@ -235,7 +235,7 @@ ParticleInteraction::DEMContactNormalTsuji::DEMContactNormalTsuji(
   // empty constructor
 }
 
-void ParticleInteraction::DEMContactNormalTsuji::NormalContactForce(const double& gap,
+void ParticleInteraction::DEMContactNormalTsuji::normal_contact_force(const double& gap,
     const double* radius_i, const double* radius_j, const double& v_rel_normal, const double& m_eff,
     double& normalcontactforce) const
 {

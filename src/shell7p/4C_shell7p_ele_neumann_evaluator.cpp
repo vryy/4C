@@ -21,7 +21,7 @@ void Discret::ELEMENTS::Shell::EvaluateNeumannByElement(Core::Elements::Element&
     const std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& element_force_vector,
     Core::LinAlg::SerialDenseMatrix* element_stiffness_matrix, double total_time)
 {
-  switch (ele.Shape())
+  switch (ele.shape())
   {
     case Core::FE::CellType::quad4:
       return evaluate_neumann<Core::FE::CellType::quad4>(ele, discretization, condition,
@@ -150,7 +150,7 @@ void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
 
   // integration loops
   std::array<double, 2> xi_gp;
-  for (int gp = 0; gp < intpoints.NumPoints(); ++gp)
+  for (int gp = 0; gp < intpoints.num_points(); ++gp)
   {
     // get gauss points from integration rule
     xi_gp[0] = intpoints.qxg[gp][0];
@@ -167,9 +167,9 @@ void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
 
     for (int i = 0; i < numnod; ++i)
     {
-      x_refe(i, 0) = ele.Nodes()[i]->X()[0];
-      x_refe(i, 1) = ele.Nodes()[i]->X()[1];
-      x_refe(i, 2) = ele.Nodes()[i]->X()[2];
+      x_refe(i, 0) = ele.nodes()[i]->x()[0];
+      x_refe(i, 1) = ele.nodes()[i]->x()[1];
+      x_refe(i, 2) = ele.nodes()[i]->x()[2];
     }
 
     switch (config)
@@ -185,7 +185,7 @@ void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
       {
         // no linearization needed for load in last converged configuration
         loadlin = false;
-        const Epetra_Vector& disp = *discretization.GetState("displacement");
+        const Epetra_Vector& disp = *discretization.get_state("displacement");
         std::vector<double> displacements(dof_index_array.size());
         Core::FE::ExtractMyValues(disp, displacements, dof_index_array);
 
@@ -196,7 +196,7 @@ void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
       break;
       case config_spatial:
       {
-        const Epetra_Vector& disp = *discretization.GetState("displacement new");
+        const Epetra_Vector& disp = *discretization.get_state("displacement new");
         std::vector<double> displacements(dof_index_array.size());
         Core::FE::ExtractMyValues(disp, displacements, dof_index_array);
 
@@ -240,8 +240,8 @@ void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
         const int function_number = (function_ids != nullptr) ? (*function_ids)[dim] : -1;
         function_scale_factors[dim] =
             (function_number > 0)
-                ? Global::Problem::Instance()
-                      ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(function_number - 1)
+                ? Global::Problem::instance()
+                      ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(function_number - 1)
                       .evaluate(gauss_point_reference_coordinates.data(), total_time, dim)
                 : 1.0;
       }

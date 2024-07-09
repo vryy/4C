@@ -114,7 +114,7 @@ namespace Discret
        * @param params (in) : ParameterList for communication between control routine, elements and
        * materials
        */
-      virtual void Recover(Core::Elements::Element& ele,
+      virtual void recover(Core::Elements::Element& ele,
           const Core::FE::Discretization& discretization, const std::vector<int>& dof_index_array,
           Teuchos::ParameterList& params, Solid::ELEMENTS::ParamsInterface& str_interface) = 0;
 
@@ -164,7 +164,7 @@ namespace Discret
        * @param params (in/[out]) : A ParameterList to pass values from the time integrator to
        * the elements/materials
        */
-      virtual void Update(Core::Elements::Element& ele, Mat::So3Material& solid_material,
+      virtual void update(Core::Elements::Element& ele, Mat::So3Material& solid_material,
           const Core::FE::Discretization& discretization,
           const Core::LinAlg::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) = 0;
@@ -184,7 +184,7 @@ namespace Discret
        * @param name (in):   Name of data that is currently processed for visualization
        * @param data (out):  data to be filled by element if it recognizes the name
        */
-      virtual void VisData(const std::string& name, std::vector<double>& data) = 0;
+      virtual void vis_data(const std::string& name, std::vector<double>& data) = 0;
     };  // class Shell7pEleInterface
   }     // namespace ELEMENTS
 

@@ -80,11 +80,11 @@ namespace Mat
   class SclType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "SclType"; }
+    std::string name() const override { return "SclType"; }
 
-    static SclType& Instance() { return instance_; }
+    static SclType& instance() { return instance_; }
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static SclType instance_;
@@ -109,14 +109,14 @@ namespace Mat
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const override { return SclType::Instance().UniqueParObjectId(); }
+    int unique_par_object_id() const override { return SclType::instance().unique_par_object_id(); }
 
     /*!
       \brief Pack this class so it can be communicated
 
       Resizes the vector data and stores all information of a class in it.
       The first information to be stored in data has to be the
-      unique parobject id delivered by UniqueParObjectId() which will then
+      unique parobject id delivered by unique_par_object_id() which will then
       identify the exact class on the receiving processor.
 
       \param data (in/out): char vector to store class information
@@ -130,7 +130,7 @@ namespace Mat
       exact copy of an instance of a class on a different processor.
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
-      UniqueParObjectId().
+      unique_par_object_id().
 
       \param data (in) : vector storing all data to be unpacked into this
       instance.
@@ -140,16 +140,16 @@ namespace Mat
     //@}
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override { return Core::Materials::m_scl; }
+    Core::Materials::MaterialType material_type() const override { return Core::Materials::m_scl; }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new Scl(*this));
     }
 
     /// valence (= charge number)
-    double Valence() const { return params_->valence_; }
+    double valence() const { return params_->valence_; }
 
     /// computation of the transference number based on the defined curve
     double compute_transference_number(const double cint) const;
@@ -170,10 +170,10 @@ namespace Mat
     double inv_val_valence_faraday_squared() const;
 
     /// Computation of dielectric permittivity based on dieelectric susceptibility
-    double ComputePermittivity() const;
+    double compute_permittivity() const;
 
     /// Returns Value of cation concentration in the neutral bulk (= anion concentration)
-    double BulkConcentration() const { return params_->cbulk_; }
+    double bulk_concentration() const { return params_->cbulk_; }
 
     /// computation of mobility factor in linear onsager ansatz
     double compute_onsager_coefficient(const double concentration, const double temperature) const;
@@ -190,7 +190,7 @@ namespace Mat
     const std::vector<double>& trans_nr_params() const { return params_->transnr_; }
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     /// my material parameters
     Mat::PAR::Scl* params_;

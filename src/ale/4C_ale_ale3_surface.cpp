@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::Ale3SurfaceType Discret::ELEMENTS::Ale3SurfaceType::instance_;
 
-Discret::ELEMENTS::Ale3SurfaceType& Discret::ELEMENTS::Ale3SurfaceType::Instance()
+Discret::ELEMENTS::Ale3SurfaceType& Discret::ELEMENTS::Ale3SurfaceType::instance()
 {
   return instance_;
 }
@@ -28,8 +28,8 @@ Discret::ELEMENTS::Ale3Surface::Ale3Surface(int id, int owner, int nnode, const 
     Core::Nodes::Node** nodes, Discret::ELEMENTS::Ale3* parent, const int lsurface)
     : Core::Elements::FaceElement(id, owner)
 {
-  SetNodeIds(nnode, nodeids);
-  BuildNodalPointers(nodes);
+  set_node_ids(nnode, nodeids);
+  build_nodal_pointers(nodes);
   set_parent_master_element(parent, lsurface);
 }
 
@@ -42,7 +42,7 @@ Discret::ELEMENTS::Ale3Surface::Ale3Surface(const Discret::ELEMENTS::Ale3Surface
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Ale3Surface::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Ale3Surface::clone() const
 {
   Discret::ELEMENTS::Ale3Surface* newelement = new Discret::ELEMENTS::Ale3Surface(*this);
   return newelement;
@@ -50,7 +50,7 @@ Core::Elements::Element* Discret::ELEMENTS::Ale3Surface::Clone() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Ale3Surface::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Ale3Surface::shape() const
 {
   switch (num_node())
   {

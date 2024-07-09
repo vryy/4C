@@ -76,7 +76,7 @@ namespace Core::UTILS
      * to be passed as well. Unfortunately, this is necessary regardless of the @p action flag.
      *
      */
-    T* Instance(SingletonAction action, CreationArgs... args);
+    T* instance(SingletonAction action, CreationArgs... args);
 
    private:
     //! singleton instance
@@ -90,9 +90,9 @@ namespace Core::UTILS
    * @brief Store multiple SingletonOwner objects by a given Key.
    *
    * This class is a useful extension to SingletonOwner in places where multiple differently
-   * parametrized objects of the same Singleton class should be used. This classes Instance() method
+   * parametrized objects of the same Singleton class should be used. This classes instance() method
    * takes an additional Key argument to distinguish between the singletons and apart from this
-   * difference behaves the same as SingletonOwner::Instance().
+   * difference behaves the same as SingletonOwner::instance().
    *
    * @tparam Key The type used to access the different instances.
    * @tparam T The type of the singleton.
@@ -118,7 +118,7 @@ namespace Core::UTILS
     /**
      * Return a SingletonOwner for the given @p key. If it does not exist, one is created the first
      * time this function is called with the @p key. This call is normally directly followed by a
-     * call to SingletonOwner::Instance() e.g.
+     * call to SingletonOwner::instance() e.g.
      *
      * @code
      *   singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, numdofpernode,
@@ -199,7 +199,7 @@ namespace Core::UTILS
 
 
   template <typename T, typename... CreationArgs>
-  T* SingletonOwner<T, CreationArgs...>::Instance(SingletonAction action, CreationArgs... args)
+  T* SingletonOwner<T, CreationArgs...>::instance(SingletonAction action, CreationArgs... args)
   {
     if (action == SingletonAction::create and !instance_)
     {

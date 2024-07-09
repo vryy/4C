@@ -31,7 +31,7 @@ NOX::Nln::MeritFunction::Infeasibility::Infeasibility(
   const std::string& type_name = params.get<std::string>("Type");
   set_type(type_name);
 
-  merit_function_name_ = MeritFuncName2String(Type());
+  merit_function_name_ = MeritFuncName2String(type());
 }
 
 /*----------------------------------------------------------------------------*
@@ -91,7 +91,7 @@ double NOX::Nln::MeritFunction::Infeasibility::computef(const ::NOX::Abstract::G
       dynamic_cast<const NOX::Nln::CONSTRAINT::Group*>(&grp);
   if (not constr_grp_ptr) FOUR_C_THROW("Dynamic cast to NOX::Nln::Constraint::Group failed!");
 
-  return constr_grp_ptr->get_model_value(Type());
+  return constr_grp_ptr->get_model_value(type());
 }
 
 /*----------------------------------------------------------------------------*
@@ -121,7 +121,7 @@ double NOX::Nln::MeritFunction::Infeasibility::computeSlope(
   if (not constr_grp_ptr) FOUR_C_THROW("Dynamic cast to NOX::Nln::Constraint::Group failed!");
 
   // compute the slope
-  return constr_grp_ptr->get_linearized_model_terms(dir, Type(), linorder_first, lin_wrt_all_dofs);
+  return constr_grp_ptr->get_linearized_model_terms(dir, type(), linorder_first, lin_wrt_all_dofs);
 }
 
 /*----------------------------------------------------------------------------*
@@ -151,7 +151,7 @@ const std::string& NOX::Nln::MeritFunction::Infeasibility::name() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum NOX::Nln::MeritFunction::MeritFctName NOX::Nln::MeritFunction::Infeasibility::Type() const
+enum NOX::Nln::MeritFunction::MeritFctName NOX::Nln::MeritFunction::Infeasibility::type() const
 {
   return infeasibility_type_;
 }

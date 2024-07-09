@@ -14,13 +14,13 @@ FOUR_C_NAMESPACE_OPEN
 Discret::ELEMENTS::ConstraintElement3Type Discret::ELEMENTS::ConstraintElement3Type::instance_;
 
 
-Discret::ELEMENTS::ConstraintElement3Type& Discret::ELEMENTS::ConstraintElement3Type::Instance()
+Discret::ELEMENTS::ConstraintElement3Type& Discret::ELEMENTS::ConstraintElement3Type::instance()
 {
   return instance_;
 }
 
 
-Core::Communication::ParObject* Discret::ELEMENTS::ConstraintElement3Type::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::ConstraintElement3Type::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::ConstraintElement3* object = new Discret::ELEMENTS::ConstraintElement3(-1, -1);
@@ -29,7 +29,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::ConstraintElement3Type::Creat
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ConstraintElement3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ConstraintElement3Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "CONSTRELE3")
@@ -42,7 +42,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ConstraintElement3Type:
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ConstraintElement3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ConstraintElement3Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -56,7 +56,7 @@ void Discret::ELEMENTS::ConstraintElement3Type::nodal_block_information(
 {
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::ConstraintElement3Type::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::ConstraintElement3Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   Core::LinAlg::SerialDenseMatrix nullspace;
@@ -84,7 +84,7 @@ Discret::ELEMENTS::ConstraintElement3::ConstraintElement3(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::ConstraintElement3::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::ConstraintElement3::clone() const
 {
   Discret::ELEMENTS::ConstraintElement3* newelement =
       new Discret::ELEMENTS::ConstraintElement3(*this);
@@ -98,7 +98,7 @@ void Discret::ELEMENTS::ConstraintElement3::pack(Core::Communication::PackBuffer
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   Element::pack(data);
@@ -113,7 +113,7 @@ void Discret::ELEMENTS::ConstraintElement3::unpack(const std::vector<char>& data
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);

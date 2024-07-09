@@ -82,8 +82,8 @@ namespace Core::FE
 
           for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
-            pqxg(iquad, 0) = intpoints.Point(iquad)[1];
-            pqxg(iquad, 1) = intpoints.Point(iquad)[0];
+            pqxg(iquad, 0) = intpoints.point(iquad)[1];
+            pqxg(iquad, 1) = intpoints.point(iquad)[0];
             pqxg(iquad, 2) = -1.0;
           }
           derivtrafo(0, 1) = 1.0;
@@ -109,9 +109,9 @@ namespace Core::FE
           */
           for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
-            pqxg(iquad, 0) = intpoints.Point(iquad)[0];
+            pqxg(iquad, 0) = intpoints.point(iquad)[0];
             pqxg(iquad, 1) = -1.0;
-            pqxg(iquad, 2) = intpoints.Point(iquad)[1];
+            pqxg(iquad, 2) = intpoints.point(iquad)[1];
           }
           derivtrafo(0, 0) = 1.0;
           derivtrafo(1, 2) = -1.0;
@@ -137,8 +137,8 @@ namespace Core::FE
           for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = 1.0;
-            pqxg(iquad, 1) = intpoints.Point(iquad)[0];
-            pqxg(iquad, 2) = intpoints.Point(iquad)[1];
+            pqxg(iquad, 1) = intpoints.point(iquad)[0];
+            pqxg(iquad, 2) = intpoints.point(iquad)[1];
           }
           derivtrafo(0, 2) = 1.0;
           derivtrafo(1, 0) = 1.0;
@@ -163,9 +163,9 @@ namespace Core::FE
           */
           for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
-            pqxg(iquad, 0) = -intpoints.Point(iquad)[0];
+            pqxg(iquad, 0) = -intpoints.point(iquad)[0];
             pqxg(iquad, 1) = 1.0;
-            pqxg(iquad, 2) = intpoints.Point(iquad)[1];
+            pqxg(iquad, 2) = intpoints.point(iquad)[1];
           }
           derivtrafo(0, 0) = -1.0;
           derivtrafo(1, 2) = 1.0;
@@ -191,8 +191,8 @@ namespace Core::FE
           for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = -1.0;
-            pqxg(iquad, 1) = intpoints.Point(iquad)[1];
-            pqxg(iquad, 2) = intpoints.Point(iquad)[0];
+            pqxg(iquad, 1) = intpoints.point(iquad)[1];
+            pqxg(iquad, 2) = intpoints.point(iquad)[0];
           }
           derivtrafo(0, 2) = -1.0;
           derivtrafo(1, 1) = 1.0;
@@ -217,8 +217,8 @@ namespace Core::FE
           */
           for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
-            pqxg(iquad, 0) = intpoints.Point(iquad)[0];
-            pqxg(iquad, 1) = intpoints.Point(iquad)[1];
+            pqxg(iquad, 0) = intpoints.point(iquad)[0];
+            pqxg(iquad, 1) = intpoints.point(iquad)[1];
             pqxg(iquad, 2) = 1.0;
           }
           derivtrafo(0, 0) = 1.0;
@@ -251,8 +251,8 @@ namespace Core::FE
           */
           for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
-            pqxg(iquad, 0) = intpoints.Point(iquad)[0];
-            pqxg(iquad, 1) = intpoints.Point(iquad)[1];
+            pqxg(iquad, 0) = intpoints.point(iquad)[0];
+            pqxg(iquad, 1) = intpoints.point(iquad)[1];
             pqxg(iquad, 2) = -1.0;
           }
           derivtrafo(0, 0) = 1.0;
@@ -277,8 +277,8 @@ namespace Core::FE
           */
           for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
-            pqxg(iquad, 0) = intpoints.Point(iquad)[0];
-            pqxg(iquad, 1) = intpoints.Point(iquad)[1];
+            pqxg(iquad, 0) = intpoints.point(iquad)[0];
+            pqxg(iquad, 1) = intpoints.point(iquad)[1];
             pqxg(iquad, 2) = 1.0;
           }
           derivtrafo(0, 0) = 1.0;
@@ -304,9 +304,9 @@ namespace Core::FE
 
           for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
-            pqxg(iquad, 0) = intpoints.Point(iquad)[0];
+            pqxg(iquad, 0) = intpoints.point(iquad)[0];
             pqxg(iquad, 1) = -1.0;
-            pqxg(iquad, 2) = intpoints.Point(iquad)[1];
+            pqxg(iquad, 2) = intpoints.point(iquad)[1];
           }
           derivtrafo(0, 0) = 1.0;
           derivtrafo(1, 2) = -1.0;
@@ -330,9 +330,9 @@ namespace Core::FE
           */
           for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
-            pqxg(iquad, 0) = intpoints.Point(iquad)[0];
+            pqxg(iquad, 0) = intpoints.point(iquad)[0];
             pqxg(iquad, 1) = 1.0;
-            pqxg(iquad, 2) = intpoints.Point(iquad)[1];
+            pqxg(iquad, 2) = intpoints.point(iquad)[1];
           }
           derivtrafo(0, 0) = 1.0;
           derivtrafo(1, 2) = 1.0;
@@ -357,8 +357,8 @@ namespace Core::FE
           for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = 1.0;
-            pqxg(iquad, 1) = intpoints.Point(iquad)[0];
-            pqxg(iquad, 2) = intpoints.Point(iquad)[1];
+            pqxg(iquad, 1) = intpoints.point(iquad)[0];
+            pqxg(iquad, 2) = intpoints.point(iquad)[1];
           }
           derivtrafo(0, 2) = 1.0;
           derivtrafo(1, 0) = 1.0;
@@ -383,8 +383,8 @@ namespace Core::FE
           for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = -1.0;
-            pqxg(iquad, 1) = intpoints.Point(iquad)[0];
-            pqxg(iquad, 2) = intpoints.Point(iquad)[1];
+            pqxg(iquad, 1) = intpoints.point(iquad)[0];
+            pqxg(iquad, 2) = intpoints.point(iquad)[1];
           }
           derivtrafo(0, 2) = 1.0;
           derivtrafo(1, 0) = 1.0;
@@ -405,9 +405,9 @@ namespace Core::FE
           // s=0
           for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
-            pqxg(iquad, 0) = intpoints.Point(iquad)[0];
+            pqxg(iquad, 0) = intpoints.point(iquad)[0];
             pqxg(iquad, 1) = 0.0;
-            pqxg(iquad, 2) = intpoints.Point(iquad)[1];
+            pqxg(iquad, 2) = intpoints.point(iquad)[1];
           }
           derivtrafo(0, 0) = 1.0;
           derivtrafo(1, 2) = -1.0;
@@ -419,9 +419,9 @@ namespace Core::FE
           // r+s+t=1
           for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
-            pqxg(iquad, 0) = 1.0 - intpoints.Point(iquad)[0] - intpoints.Point(iquad)[1];
-            pqxg(iquad, 1) = intpoints.Point(iquad)[0];
-            pqxg(iquad, 2) = intpoints.Point(iquad)[1];
+            pqxg(iquad, 0) = 1.0 - intpoints.point(iquad)[0] - intpoints.point(iquad)[1];
+            pqxg(iquad, 1) = intpoints.point(iquad)[0];
+            pqxg(iquad, 2) = intpoints.point(iquad)[1];
           }
           derivtrafo(0, 0) = -1.0;
           derivtrafo(0, 1) = -1.0;
@@ -438,8 +438,8 @@ namespace Core::FE
           for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = 0.0;
-            pqxg(iquad, 1) = intpoints.Point(iquad)[1];
-            pqxg(iquad, 2) = intpoints.Point(iquad)[0];
+            pqxg(iquad, 1) = intpoints.point(iquad)[1];
+            pqxg(iquad, 2) = intpoints.point(iquad)[0];
           }
           derivtrafo(0, 2) = -1.0;
           derivtrafo(1, 1) = 1.0;
@@ -451,8 +451,8 @@ namespace Core::FE
           // t=0
           for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
-            pqxg(iquad, 0) = intpoints.Point(iquad)[1];
-            pqxg(iquad, 1) = intpoints.Point(iquad)[0];
+            pqxg(iquad, 0) = intpoints.point(iquad)[1];
+            pqxg(iquad, 1) = intpoints.point(iquad)[0];
             pqxg(iquad, 2) = 0.0;
           }
           derivtrafo(0, 1) = 1.0;
@@ -1589,7 +1589,7 @@ namespace Core::FE
     const int bdrynsd = Core::FE::dim<distype>;
 
     // local coordinates of the current integration point
-    const double* gpcoord = (intpoints.IP().qxg)[gpid];
+    const double* gpcoord = (intpoints.ip().qxg)[gpid];
     for (int idim = 0; idim < bdrynsd; ++idim)
     {
       xsi(idim) = gpcoord[idim];
@@ -1615,7 +1615,7 @@ namespace Core::FE
         xyze, deriv, metrictensor, drs, &unitnormal);
 
     // compute integration factor
-    fac = intpoints.IP().qwgt[gpid] * drs;
+    fac = intpoints.ip().qwgt[gpid] * drs;
   };  // EvalShapeFuncAtBouIntPoint
 
   // Calculate mass-consistent node normals for the boundary element
@@ -1646,12 +1646,12 @@ namespace Core::FE
 
     // Number of degrees of freedom per node
     int numdofpernode = nsd + 1;  // standard case is 'fluid'
-    if ((discretization.Name() == "ale") or (discretization.Name() == "structure"))
+    if ((discretization.name() == "ale") or (discretization.name() == "structure"))
       numdofpernode = nsd;
 
     // This functionality has only been tested for types fluid, ale and structure
-    if (not((discretization.Name() == "fluid") or (discretization.Name() == "inflow") or
-            (discretization.Name() == "ale") or (discretization.Name() == "structure")))
+    if (not((discretization.name() == "fluid") or (discretization.name() == "inflow") or
+            (discretization.name() == "ale") or (discretization.name() == "structure")))
     {
       FOUR_C_THROW(
           "ElementNodeNormal: The mass-consistent-node-normal calculation can currently only be "
@@ -1683,7 +1683,7 @@ namespace Core::FE
     /*----------------------------------------------------------------------*
      |               start loop over integration points                     |
      *----------------------------------------------------------------------*/
-    for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+    for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
     {
       // Computation of the integration factor & shape function at the Gauss point & derivative of
       // the shape function at the Gauss point Computation of the unit normal vector at the Gauss

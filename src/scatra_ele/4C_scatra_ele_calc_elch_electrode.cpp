@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::Instance(
+Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -34,7 +34,7 @@ Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::Instance(
             new ScaTraEleCalcElchElectrode<distype, probdim>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -55,7 +55,7 @@ Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::ScaTraEleCalcEl
           my::numscal_, myelch::elchparams_));
 
   // replace elch utility class by utility class for electrodes
-  myelch::utils_ = Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(
+  myelch::utils_ = Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::instance(
       numdofpernode, numscal, disname);
 }
 
@@ -72,7 +72,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calc_mat_a
   // 1) element matrix: instationary terms arising from transport equation
   //----------------------------------------------------------------------
 
-  if (not my::scatraparatimint_->IsStationary())
+  if (not my::scatraparatimint_->is_stationary())
     // 1a) element matrix: standard Galerkin mass term
     my::calc_mat_mass(emat, k, fac, 1.);
 
@@ -85,12 +85,12 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calc_mat_a
 
   // 2b) element matrix: additional term arising from concentration dependency of diffusion
   // coefficient
-  calc_mat_diff_coeff_lin(emat, k, timefacfac, var_manager()->GradPhi(k), 1.);
+  calc_mat_diff_coeff_lin(emat, k, timefacfac, var_manager()->grad_phi(k), 1.);
 
   // 2c) element matrix: conservative part of convective term, needed for deforming electrodes,
   //                     i.e., for scalar-structure interaction
   double vdiv(0.);
-  if (my::scatrapara_->IsConservative())
+  if (my::scatrapara_->is_conservative())
   {
     my::get_divergence(vdiv, my::evelnp_);
     my::calc_mat_conv_add_cons(emat, k, timefacfac, vdiv, 1.);
@@ -103,12 +103,12 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calc_mat_a
 
   // 3a) element rhs: standard Galerkin contributions from non-history part of instationary term if
   // needed
-  if (not my::scatraparatimint_->IsStationary())
+  if (not my::scatraparatimint_->is_stationary())
     my::calc_rhs_lin_mass(erhs, k, rhsfac, fac, 1., 1.);
 
   // 3b) element rhs: standard Galerkin contributions from rhsint vector (contains body force vector
   // and history vector) need to adapt rhsint vector to time integration scheme first
-  my::compute_rhs_int(rhsint, 1., 1., var_manager()->Hist(k));
+  my::compute_rhs_int(rhsint, 1., 1., var_manager()->hist(k));
   my::calc_rhs_hist_and_source(erhs, k, fac, rhsint);
 
   // 3c) element rhs: standard Galerkin diffusion term
@@ -116,7 +116,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calc_mat_a
 
   // 3d) element rhs: conservative part of convective term, needed for deforming electrodes,
   //                  i.e., for scalar-structure interaction
-  if (my::scatrapara_->IsConservative())
+  if (my::scatrapara_->is_conservative())
     calc_rhs_conservative_part_of_convective_term(erhs, k, rhsfac, vdiv);
 
   //----------------------------------------------------------------------------
@@ -140,7 +140,8 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
   //--------------------------------------------------------------------
 
   // element matrix: standard Galerkin terms from potential equation
-  calc_mat_pot_equ_divi_ohm(emat, timefacfac, var_manager()->InvF(), var_manager()->GradPot(), 1.);
+  calc_mat_pot_equ_divi_ohm(
+      emat, timefacfac, var_manager()->inv_f(), var_manager()->grad_pot(), 1.);
 
   //----------------------------------------------------------------------------
   // 5) element right hand side vector (negative residual of nonlinear problem):
@@ -148,7 +149,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
   //----------------------------------------------------------------------------
 
   // element rhs: standard Galerkin terms from potential equation
-  calc_rhs_pot_equ_divi_ohm(erhs, rhsfac, var_manager()->InvF(), var_manager()->GradPot(), 1.);
+  calc_rhs_pot_equ_divi_ohm(erhs, rhsfac, var_manager()->inv_f(), var_manager()->grad_pot(), 1.);
 
   // safety check
   if (my::bodyforce_[my::numscal_].dot(my::funct_) != 0.0)
@@ -174,8 +175,9 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calc_diff_
 
   // call base class routine again to compute linearizations of Ohmic overpotential w.r.t.
   // structural displacements
-  my::calc_diff_od_mesh(emat, 1, ndofpernodemesh, var_manager()->InvF() * diff_manager()->GetCond(),
-      fac, rhsfac, J, var_manager()->GradPot(), convelint, dJ_dmesh);
+  my::calc_diff_od_mesh(emat, 1, ndofpernodemesh,
+      var_manager()->inv_f() * diff_manager()->get_cond(), fac, rhsfac, J,
+      var_manager()->grad_pot(), convelint, dJ_dmesh);
 }
 
 /*----------------------------------------------------------------------*
@@ -222,7 +224,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calc_mat_p
       // (grad w, 1/F kappa D(grad pot))
       //
       emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + my::numscal_) +=
-          scalar * timefacfac * invf * diff_manager()->GetCond() * laplawf;
+          scalar * timefacfac * invf * diff_manager()->get_cond() * laplawf;
 
       for (int iscal = 0; iscal < my::numscal_; ++iscal)
       {
@@ -234,8 +236,8 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calc_mat_p
         // (grad w, 1/F kappa D(grad pot))
         //
         emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + iscal) +=
-            scalar * timefacfac * invf * diff_manager()->GetConcDerivCond(iscal) * my::funct_(ui) *
-            laplawfrhs_gradpot;
+            scalar * timefacfac * invf * diff_manager()->get_conc_deriv_cond(iscal) *
+            my::funct_(ui) * laplawfrhs_gradpot;
       }
     }
   }
@@ -248,7 +250,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
     probdim>::calc_rhs_conservative_part_of_convective_term(Core::LinAlg::SerialDenseVector& erhs,
     const int k, const double rhsfac, const double vdiv)
 {
-  double vrhs = rhsfac * my::scatravarmanager_->Phinp(k) * vdiv;
+  double vrhs = rhsfac * my::scatravarmanager_->phinp(k) * vdiv;
   for (unsigned vi = 0; vi < nen_; ++vi) erhs[vi * my::numdofpernode_ + k] -= vrhs * my::funct_(vi);
 }
 
@@ -265,7 +267,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calc_rhs_p
     my::get_laplacian_weak_form_rhs(laplawfrhs_gradpot, gradpot, vi);
 
     erhs[vi * my::numdofpernode_ + my::numscal_] -=
-        scalar * rhsfac * invf * diff_manager()->GetCond() * laplawfrhs_gradpot;
+        scalar * rhsfac * invf * diff_manager()->get_cond() * laplawfrhs_gradpot;
   }
 }
 
@@ -277,13 +279,13 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::get_materi
     std::vector<double>& densam, double& visc, const int iquad)
 {
   // get material
-  Teuchos::RCP<const Core::Mat::Material> material = ele->Material();
+  Teuchos::RCP<const Core::Mat::Material> material = ele->material();
 
   // evaluate electrode material
-  if (material->MaterialType() == Core::Materials::m_electrode)
+  if (material->material_type() == Core::Materials::m_electrode)
   {
     utils()->mat_electrode(
-        material, var_manager()->Phinp(0), var_manager()->Temperature(), diff_manager());
+        material, var_manager()->phinp(0), var_manager()->temperature(), diff_manager());
   }
   else
     FOUR_C_THROW("Material type not supported!");

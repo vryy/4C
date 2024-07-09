@@ -33,34 +33,36 @@ namespace Core::IO
     {
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       {
-        visualization_data.GetPointCoordinates().push_back(point(i_dim));
+        visualization_data.get_point_coordinates().push_back(point(i_dim));
       }
     }
     for (unsigned int i_point = 0; i_point < point_coordinates.size(); i_point++)
     {
-      visualization_data.GetCellConnectivity().push_back(i_point + n_points_data_old);
+      visualization_data.get_cell_connectivity().push_back(i_point + n_points_data_old);
     }
-    visualization_data.GetCellOffsets().push_back(visualization_data.GetCellConnectivity().size());
+    visualization_data.get_cell_offsets().push_back(
+        visualization_data.get_cell_connectivity().size());
 
     // Add the number of polygons for this cell
-    visualization_data.GetFaceConnectivity().push_back(face_connectivity.size());
+    visualization_data.get_face_connectivity().push_back(face_connectivity.size());
 
     // Add the polygon faces
     for (const auto& polygon : face_connectivity)
     {
       // Set the number of points for this face
-      visualization_data.GetFaceConnectivity().push_back(polygon.size());
+      visualization_data.get_face_connectivity().push_back(polygon.size());
 
       // Set the connectivity
       for (const auto& id : polygon)
-        visualization_data.GetFaceConnectivity().push_back(id + n_points_data_old);
+        visualization_data.get_face_connectivity().push_back(id + n_points_data_old);
     }
 
     // Set the face offset
-    visualization_data.GetFaceOffsets().push_back(visualization_data.GetFaceConnectivity().size());
+    visualization_data.get_face_offsets().push_back(
+        visualization_data.get_face_connectivity().size());
 
     // Set the cell id
-    visualization_data.GetCellTypes().push_back(polyhedron_cell_type);
+    visualization_data.get_cell_types().push_back(polyhedron_cell_type);
   }
 
   //! Explicit template definition

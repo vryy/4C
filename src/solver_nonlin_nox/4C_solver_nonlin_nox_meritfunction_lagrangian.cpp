@@ -28,7 +28,7 @@ NOX::Nln::MeritFunction::Lagrangian::Lagrangian(
     : lagrangian_type_(mrtfct_vague), merit_function_name_()
 {
   set_type(identifier);
-  merit_function_name_ = MeritFuncName2String(Type());
+  merit_function_name_ = MeritFuncName2String(type());
 
   utils_ = u;
 }
@@ -53,7 +53,7 @@ double NOX::Nln::MeritFunction::Lagrangian::computef(const ::NOX::Abstract::Grou
   }
 
   // Get the primary contribution and constraint contributions
-  return constr_grp_ptr->get_model_value(Type());
+  return constr_grp_ptr->get_model_value(type());
 }
 
 /*----------------------------------------------------------------------------*
@@ -75,7 +75,7 @@ double NOX::Nln::MeritFunction::Lagrangian::computeSlope(
     throw_error("computeSlope()", "Dynamic cast to NOX::Nln::Constraint::Group failed!");
 
   // compute the slope
-  return constr_grp_ptr->get_linearized_model_terms(dir, Type(), linorder_first, lin_wrt_all_dofs);
+  return constr_grp_ptr->get_linearized_model_terms(dir, type(), linorder_first, lin_wrt_all_dofs);
 }
 
 /*----------------------------------------------------------------------------*
@@ -98,7 +98,7 @@ double NOX::Nln::MeritFunction::Lagrangian::compute_mixed_2nd_order_terms(
 
   // compute the slope
   return constr_grp_ptr->get_linearized_model_terms(
-      dir, Type(), linorder_second, lin_wrt_mixed_dofs);
+      dir, type(), linorder_second, lin_wrt_mixed_dofs);
 }
 
 /*----------------------------------------------------------------------------*
@@ -132,21 +132,21 @@ double NOX::Nln::MeritFunction::Lagrangian::compute_saddle_point_model(const dou
   // w.r.t the primary degrees of freedom
   // --------------------------------------------
   model += stepPV *
-           constr_grp.get_linearized_model_terms(dir, Type(), linorder_first, lin_wrt_primary_dofs);
+           constr_grp.get_linearized_model_terms(dir, type(), linorder_first, lin_wrt_primary_dofs);
 
   // --------------------------------------------
   // Get the 1-st order linearization terms of the Lagrangian objective model
   // w.r.t the Lagrange multiplier degrees of freedom
   // --------------------------------------------
   model += stepLM * constr_grp.get_linearized_model_terms(
-                        dir, Type(), linorder_first, lin_wrt_lagrange_multiplier_dofs);
+                        dir, type(), linorder_first, lin_wrt_lagrange_multiplier_dofs);
 
   // --------------------------------------------
   // Get the 2-nd order linearization terms of the Lagrangian objective model
   // w.r.t the Lagrange multiplier AND primary degrees of freedom
   // --------------------------------------------
   model += stepLM * stepPV *
-           constr_grp.get_linearized_model_terms(dir, Type(), linorder_second, lin_wrt_mixed_dofs);
+           constr_grp.get_linearized_model_terms(dir, type(), linorder_second, lin_wrt_mixed_dofs);
 
   return model;
 }

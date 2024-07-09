@@ -22,12 +22,12 @@ electrochemistry
 
 FOUR_C_NAMESPACE_OPEN
 
-template <int dim>
+template <int d>
 struct CONTACT::IntegratorNitscheSsiElch::ElementDataBundle
 {
   Mortar::Element* element;
   double* xi;
-  const Core::LinAlg::Matrix<dim, 1>* gp_normal;
+  const Core::LinAlg::Matrix<d, 1>* gp_normal;
   const Core::LinAlg::SerialDenseVector* shape_funct;
   const Core::LinAlg::SerialDenseMatrix* shape_deriv;
   const std::vector<Core::Gen::Pairedvector<int, double>>* d_xi_dd;
@@ -76,18 +76,18 @@ void CONTACT::IntegratorNitscheSsiElch::gpts_forces(Mortar::Element& slave_ele,
     const std::vector<Core::Gen::Pairedvector<int, double>>& d_gp_normal_dd, double* slave_xi,
     double* master_xi)
 {
-  if (slave_ele.Owner() != Comm_.MyPID()) return;
+  if (slave_ele.owner() != Comm_.MyPID()) return;
 
   static const bool do_fast_checks = true;
   // first rough check
   if (do_fast_checks)
   {
     if ((std::abs(theta_) < 1.0e-16) and
-        (gap > std::max(slave_ele.MaxEdgeSize(), master_ele.MaxEdgeSize())))
+        (gap > std::max(slave_ele.max_edge_size(), master_ele.max_edge_size())))
       return;
   }
 
-  FOUR_C_ASSERT(dim == Dim(), "dimension inconsistency");
+  FOUR_C_ASSERT(dim == IntegratorNitscheSsiElch::n_dim(), "dimension inconsistency");
 
   // calculate normals and derivatives
   const Core::LinAlg::Matrix<dim, 1> normal(gp_normal, true);
@@ -96,8 +96,8 @@ void CONTACT::IntegratorNitscheSsiElch::gpts_forces(Mortar::Element& slave_ele,
   std::vector<Core::Gen::Pairedvector<int, double>> d_master_normal_dd(0, 0);
   slave_ele.compute_unit_normal_at_xi(slave_xi, slave_normal.data());
   master_ele.compute_unit_normal_at_xi(master_xi, master_normal.data());
-  slave_ele.DerivUnitNormalAtXi(slave_xi, d_slave_normal_dd);
-  master_ele.DerivUnitNormalAtXi(master_xi, d_master_normal_dd);
+  slave_ele.deriv_unit_normal_at_xi(slave_xi, d_slave_normal_dd);
+  master_ele.deriv_unit_normal_at_xi(master_xi, d_master_normal_dd);
 
   double pen = ppn_;
   double pet = ppt_;
@@ -108,10 +108,11 @@ void CONTACT::IntegratorNitscheSsiElch::gpts_forces(Mortar::Element& slave_ele,
 
   double cauchy_nn_weighted_average(0.0);
   Core::Gen::Pairedvector<int, double> d_cauchy_nn_weighted_average_dd(
-      slave_ele.num_node() * 3 * 12 + slave_ele.MoData().ParentDisp().size() +
-      master_ele.MoData().ParentDisp().size());
+      slave_ele.num_node() * 3 * 12 + slave_ele.mo_data().parent_disp().size() +
+      master_ele.mo_data().parent_disp().size());
   Core::Gen::Pairedvector<int, double> d_cauchy_nn_weighted_average_ds(
-      slave_ele.MoData().ParentScalarDof().size() + master_ele.MoData().ParentScalarDof().size());
+      slave_ele.mo_data().parent_scalar_dof().size() +
+      master_ele.mo_data().parent_scalar_dof().size());
 
   // evaluate cauchy stress components and derivatives
   so_ele_cauchy<dim>(slave_ele, slave_xi, d_slave_xi_dd, gp_wgt, slave_normal, d_slave_normal_dd,
@@ -174,13 +175,13 @@ void CONTACT::IntegratorNitscheSsiElch::integrate_test(const double fac, Mortar:
 
   for (const auto& d_testval_ds : d_test_val_ds)
   {
-    double* row = ele.GetNitscheContainer().Kde(d_testval_ds.first);
+    double* row = ele.get_nitsche_container().kde(d_testval_ds.first);
     for (int s = 0; s < ele.num_node(); ++s)
     {
       for (int d = 0; d < dim; ++d)
       {
         row[Core::FE::getParentNodeNumberFromFaceNodeNumber(
-                ele.parent_element()->Shape(), ele.FaceParentNumber(), s) *
+                ele.parent_element()->shape(), ele.face_parent_number(), s) *
                 dim +
             d] -= fac * jac * wgt * d_testval_ds.second * normal(d) * shape(s);
       }
@@ -200,28 +201,28 @@ double CONTACT::IntegratorNitscheSsiElch::calculate_det_f_of_parent_element(
 
   // calculate defgrad based on element discretization type
   static Core::LinAlg::Matrix<dim, dim> defgrd;
-  switch (electrode_ele->parent_element()->Shape())
+  switch (electrode_ele->parent_element()->shape())
   {
     case Core::FE::CellType::hex8:
     {
       Discret::ELEMENTS::UTILS::compute_deformation_gradient<Core::FE::CellType::hex8, dim>(defgrd,
-          electrode_ele->parent_element()->Nodes(), xi_parent,
-          electrode_ele->MoData().ParentDisp());
+          electrode_ele->parent_element()->nodes(), xi_parent,
+          electrode_ele->mo_data().parent_disp());
 
       break;
     }
     case Core::FE::CellType::tet4:
     {
       Discret::ELEMENTS::UTILS::compute_deformation_gradient<Core::FE::CellType::tet4, dim>(defgrd,
-          electrode_ele->parent_element()->Nodes(), xi_parent,
-          electrode_ele->MoData().ParentDisp());
+          electrode_ele->parent_element()->nodes(), xi_parent,
+          electrode_ele->mo_data().parent_disp());
 
       break;
     }
     default:
     {
       FOUR_C_THROW(
-          "Not implemented for discretization type: %i!", electrode_ele->parent_element()->Shape());
+          "Not implemented for discretization type: %i!", electrode_ele->parent_element()->shape());
       break;
     }
   }
@@ -236,7 +237,7 @@ void CONTACT::IntegratorNitscheSsiElch::calculate_spatial_derivative_of_det_f(co
     Core::Gen::Pairedvector<int, double>& d_detF_dd)
 {
   auto* electrode_ele = electrode_quantities.element;
-  switch (electrode_ele->Shape())
+  switch (electrode_ele->shape())
   {
     case Core::FE::CellType::quad4:
     {
@@ -252,7 +253,7 @@ void CONTACT::IntegratorNitscheSsiElch::calculate_spatial_derivative_of_det_f(co
     }
     default:
     {
-      FOUR_C_THROW("Not implemented for discretization type: %i!", electrode_ele->Shape());
+      FOUR_C_THROW("Not implemented for discretization type: %i!", electrode_ele->shape());
       break;
     }
   }
@@ -274,15 +275,15 @@ void CONTACT::IntegratorNitscheSsiElch::calculate_spatial_derivative_of_det_f(co
       "Number of nodes is not matching discretization type");
 
   static Core::LinAlg::Matrix<num_ele_nodes, dim> xyze;
-  Discret::ELEMENTS::UTILS::EvaluateNodalCoordinates<distype, dim>(electrode_ele->Nodes(), xyze);
+  Discret::ELEMENTS::UTILS::EvaluateNodalCoordinates<distype, dim>(electrode_ele->nodes(), xyze);
 
   static Core::LinAlg::Matrix<ele_dim, num_ele_nodes> deriv;
   for (auto i = 0; i < num_ele_nodes; ++i)
   {
     const auto parent_nodeid = Core::FE::getParentNodeNumberFromFaceNodeNumber(
-        electrode_ele->parent_element()->Shape(), electrode_ele->FaceParentNumber(), i);
+        electrode_ele->parent_element()->shape(), electrode_ele->face_parent_number(), i);
     for (auto j = 0; j < dim; ++j)
-      xyze(i, j) += electrode_ele->MoData().ParentDisp()[parent_nodeid * dim + j];
+      xyze(i, j) += electrode_ele->mo_data().parent_disp()[parent_nodeid * dim + j];
 
     for (auto k = 0; k < ele_dim; ++k) deriv(k, i) = (*electrode_quantities.shape_deriv)(i, k);
   }
@@ -315,19 +316,19 @@ void CONTACT::IntegratorNitscheSsiElch::integrate_ssi_interface_condition(
 {
   if (slave_is_electrode)
   {
-    if (electrode_quantities.element->MoData().ParentScalarDof().empty()) return;
-    if (electrolyte_quantities.element->MoData().ParentScalarDof().empty())
+    if (electrode_quantities.element->mo_data().parent_scalar_dof().empty()) return;
+    if (electrolyte_quantities.element->mo_data().parent_scalar_dof().empty())
       FOUR_C_THROW("Something went wrong!");
   }
   else
   {
-    if (electrolyte_quantities.element->MoData().ParentScalarDof().empty()) return;
-    if (electrode_quantities.element->MoData().ParentScalarDof().empty())
+    if (electrolyte_quantities.element->mo_data().parent_scalar_dof().empty()) return;
+    if (electrode_quantities.element->mo_data().parent_scalar_dof().empty())
       FOUR_C_THROW("Something went wrong!");
   }
 
   // get the scatra-scatra interface kinetic model
-  const int kinetic_model = get_sca_tra_ele_parameter_boundary()->KineticModel();
+  const int kinetic_model = get_sca_tra_ele_parameter_boundary()->kinetic_model();
 
   // perform integration dependent on scatra-scatra interface kinetic model
   switch (kinetic_model)
@@ -338,15 +339,15 @@ void CONTACT::IntegratorNitscheSsiElch::integrate_ssi_interface_condition(
       // access material of parent element for ELCH simulations
       Teuchos::RCP<const Mat::Electrode> electrode_material =
           Teuchos::rcp_dynamic_cast<const Mat::Electrode>(
-              electrode_quantities.element->parent_element()->Material(1));
+              electrode_quantities.element->parent_element()->material(1));
 
       // get the relevant parameter
       const double faraday =
-          Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
-      const double frt = Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT();
+          Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
+      const double frt = Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->frt();
       const double kr = get_sca_tra_ele_parameter_boundary()->charge_transfer_constant();
-      const double alphaa = get_sca_tra_ele_parameter_boundary()->Alphadata();
-      const double alphac = get_sca_tra_ele_parameter_boundary()->AlphaC();
+      const double alphaa = get_sca_tra_ele_parameter_boundary()->alphadata();
+      const double alphac = get_sca_tra_ele_parameter_boundary()->alpha_c();
 
       // calculate the electrode side concentration, potential and their derivatives at the current
       // gauss point
@@ -366,7 +367,7 @@ void CONTACT::IntegratorNitscheSsiElch::integrate_ssi_interface_condition(
           d_electrolyte_pot_dd);
 
       // extract saturation value of intercalated lithium concentration from electrode material
-      const double cmax = electrode_material->CMax();
+      const double cmax = electrode_material->c_max();
       if (cmax < 1.0e-12)
         FOUR_C_THROW("Saturation value c_max of intercalated lithium concentration is too small!");
 
@@ -490,11 +491,11 @@ void CONTACT::IntegratorNitscheSsiElch::integrate_elch_test(const double fac,
   const std::vector<Core::Gen::Pairedvector<int, double>>& d_xi_dd = *ele_data_bundle.d_xi_dd;
 
   // get time integration factors
-  const double time_fac = get_sca_tra_ele_parameter_tim_int()->TimeFac();
-  const double time_fac_rhs = get_sca_tra_ele_parameter_tim_int()->TimeFacRhs();
+  const double time_fac = get_sca_tra_ele_parameter_tim_int()->time_fac();
+  const double time_fac_rhs = get_sca_tra_ele_parameter_tim_int()->time_fac_rhs();
 
   // get number of electrons per charge transfer reaction
-  const int num_electrons = get_sca_tra_ele_parameter_boundary()->NumElectrons();
+  const int num_electrons = get_sca_tra_ele_parameter_boundary()->num_electrons();
 
   // prepare the RHS integration value
   const double val = fac * jac * wgt * test_val;
@@ -509,17 +510,17 @@ void CONTACT::IntegratorNitscheSsiElch::integrate_elch_test(const double fac,
   for (int s = 0; s < ele.num_node(); ++s)
   {
     const int slave_parent = Core::FE::getParentNodeNumberFromFaceNodeNumber(
-        ele.parent_element()->Shape(), ele.FaceParentNumber(), s);
+        ele.parent_element()->shape(), ele.face_parent_number(), s);
     const int slave_parent_conc = slave_parent * numdofpernode_;
     const int slave_parent_pot = slave_parent_conc + 1;
 
-    *ele.GetNitscheContainer().RhsE(slave_parent_conc) -= shape_func(s) * val * time_fac_rhs;
-    *ele.GetNitscheContainer().RhsE(slave_parent_pot) -=
+    *ele.get_nitsche_container().rhs_e(slave_parent_conc) -= shape_func(s) * val * time_fac_rhs;
+    *ele.get_nitsche_container().rhs_e(slave_parent_pot) -=
         num_electrons * shape_func(s) * val * time_fac_rhs;
 
     for (const auto& d_testval_ds : d_test_val_ds)
     {
-      double* row = ele.GetNitscheContainer().Kee(d_testval_ds.first);
+      double* row = ele.get_nitsche_container().kee(d_testval_ds.first);
 
       row[slave_parent_conc] += shape_func(s) * fac * jac * wgt * d_testval_ds.second * time_fac;
       row[slave_parent_pot] +=
@@ -528,7 +529,7 @@ void CONTACT::IntegratorNitscheSsiElch::integrate_elch_test(const double fac,
 
     for (const auto& dval_dd : d_val_dd)
     {
-      double* row = ele.GetNitscheContainer().Ked(dval_dd.first);
+      double* row = ele.get_nitsche_container().ked(dval_dd.first);
 
       row[slave_parent_conc] += shape_func(s) * dval_dd.second * time_fac;
       row[slave_parent_pot] += num_electrons * shape_func(s) * dval_dd.second * time_fac;
@@ -538,7 +539,7 @@ void CONTACT::IntegratorNitscheSsiElch::integrate_elch_test(const double fac,
     {
       for (const auto& d_xi_dd_e : d_xi_dd[e])
       {
-        double* row = ele.GetNitscheContainer().Ked(d_xi_dd_e.first);
+        double* row = ele.get_nitsche_container().ked(d_xi_dd_e.first);
 
         row[slave_parent_conc] += shape_deriv(s, e) * d_xi_dd_e.second * val * time_fac;
         row[slave_parent_pot] +=
@@ -581,15 +582,15 @@ void CONTACT::IntegratorNitscheSsiElch::setup_gp_elch_properties(
   for (int i = 0; i < ele.num_node(); ++i)
   {
     const int iparent = Core::FE::getParentNodeNumberFromFaceNodeNumber(
-        ele.parent_element()->Shape(), ele.FaceParentNumber(), i);
+        ele.parent_element()->shape(), ele.face_parent_number(), i);
     const int iparent_conc = iparent * numdofpernode_;
     const int iparent_pot = iparent_conc + 1;
 
-    ele_conc(i) = ele.MoData().ParentScalar().at(iparent_conc);
-    ele_pot(i) = ele.MoData().ParentScalar().at(iparent_pot);
+    ele_conc(i) = ele.mo_data().parent_scalar().at(iparent_conc);
+    ele_pot(i) = ele.mo_data().parent_scalar().at(iparent_pot);
 
-    d_conc_dc[ele.MoData().ParentScalarDof().at(iparent_conc)] = shape_func(i);
-    d_pot_dpot[ele.MoData().ParentScalarDof().at(iparent_pot)] = shape_func(i);
+    d_conc_dc[ele.mo_data().parent_scalar_dof().at(iparent_conc)] = shape_func(i);
+    d_pot_dpot[ele.mo_data().parent_scalar_dof().at(iparent_pot)] = shape_func(i);
   }
 
   // calculate the Gauss point concentration and potential
@@ -630,10 +631,10 @@ void CONTACT::IntegratorNitscheSsiElch::so_ele_cauchy(Mortar::Element& mortar_el
   so_ele_cauchy_struct<dim>(mortar_ele, gp_coord, d_gp_coord_dd, gp_wgt, gp_normal, d_gp_normal_dd,
       test_dir, d_test_dir_dd, nitsche_wgt, cauchy_nt_wgt, d_cauchy_nt_dd, &d_sigma_nt_de);
 
-  if (!mortar_ele.MoData().ParentScalar().empty())
+  if (!mortar_ele.mo_data().parent_scalar().empty())
   {
     for (int i = 0; i < mortar_ele.parent_element()->num_node(); ++i)
-      d_cauchy_nt_de[mortar_ele.MoData().ParentScalarDof().at(i * numdofpernode_)] +=
+      d_cauchy_nt_de[mortar_ele.mo_data().parent_scalar_dof().at(i * numdofpernode_)] +=
           nitsche_wgt * d_sigma_nt_de(i, 0);
   }
 }
@@ -656,13 +657,13 @@ void CONTACT::IntegratorNitscheSsiElch::assign_electrode_and_electrolyte_quantit
     ElementDataBundle<dim>& electrolyte_quantities)
 {
   Teuchos::RCP<const Mat::Electrode> electrode_material =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(slave_ele.parent_element()->Material(1));
+      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(slave_ele.parent_element()->material(1));
   if (electrode_material == Teuchos::null)
   {
     slave_is_electrode = false;
 
     electrode_material =
-        Teuchos::rcp_dynamic_cast<const Mat::Electrode>(master_ele.parent_element()->Material(1));
+        Teuchos::rcp_dynamic_cast<const Mat::Electrode>(master_ele.parent_element()->material(1));
 
     // safety check
     if (electrode_material == Teuchos::null)

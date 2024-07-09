@@ -109,24 +109,24 @@ Core::Rebalance::RebalanceCoordinates(const Epetra_MultiVector& initialCoordinat
 std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>>
 Core::Rebalance::BuildWeights(const Core::FE::Discretization& dis)
 {
-  const Epetra_Map* noderowmap = dis.NodeRowMap();
+  const Epetra_Map* noderowmap = dis.node_row_map();
 
   Teuchos::RCP<Epetra_CrsMatrix> crs_ge_weights =
       Teuchos::rcp(new Epetra_CrsMatrix(Copy, *noderowmap, 15));
   Teuchos::RCP<Epetra_Vector> vweights = Core::LinAlg::CreateVector(*noderowmap, true);
 
   // loop all row elements and get their cost of evaluation
-  for (int i = 0; i < dis.ElementRowMap()->NumMyElements(); ++i)
+  for (int i = 0; i < dis.element_row_map()->NumMyElements(); ++i)
   {
-    Core::Elements::Element* ele = dis.lRowElement(i);
-    Core::Nodes::Node** nodes = ele->Nodes();
+    Core::Elements::Element* ele = dis.l_row_element(i);
+    Core::Nodes::Node** nodes = ele->nodes();
     const int numnode = ele->num_node();
     std::vector<int> lm(numnode);
     std::vector<int> lmrowowner(numnode);
     for (int n = 0; n < numnode; ++n)
     {
-      lm[n] = nodes[n]->Id();
-      lmrowowner[n] = nodes[n]->Owner();
+      lm[n] = nodes[n]->id();
+      lmrowowner[n] = nodes[n]->owner();
     }
 
     // element vector and matrix for weights of nodes and edges
@@ -134,7 +134,7 @@ Core::Rebalance::BuildWeights(const Core::FE::Discretization& dis)
     Core::LinAlg::SerialDenseVector nodeweights_ele;
 
     // evaluate elements to get their evaluation cost
-    ele->NodalConnectivity(edgeweigths_ele, nodeweights_ele);
+    ele->nodal_connectivity(edgeweigths_ele, nodeweights_ele);
 
     Core::LinAlg::Assemble(*crs_ge_weights, edgeweigths_ele, lm, lmrowowner, lm);
     Core::LinAlg::Assemble(*vweights, nodeweights_ele, lm, lmrowowner);
@@ -148,16 +148,16 @@ Core::Rebalance::BuildWeights(const Core::FE::Discretization& dis)
 Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildGraph(
     Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles)
 {
-  const int myrank = dis->Comm().MyPID();
-  const int numproc = dis->Comm().NumProc();
+  const int myrank = dis->get_comm().MyPID();
+  const int numproc = dis->get_comm().NumProc();
 
   // create a set of all nodes that I have
   std::set<int> mynodes;
   for (int lid = 0; lid < roweles->NumMyElements(); ++lid)
   {
-    Core::Elements::Element* ele = dis->gElement(roweles->GID(lid));
+    Core::Elements::Element* ele = dis->g_element(roweles->GID(lid));
     const int numnode = ele->num_node();
-    const int* nodeids = ele->NodeIds();
+    const int* nodeids = ele->node_ids();
     copy(nodeids, nodeids + numnode, inserter(mynodes, mynodes.begin()));
   }
 
@@ -173,9 +173,9 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildGraph(
       for (fool = mynodes.begin(); fool != mynodes.end(); ++fool) recvnodes.push_back(*fool);
       size = (int)recvnodes.size();
     }
-    dis->Comm().Broadcast(&size, 1, proc);
+    dis->get_comm().Broadcast(&size, 1, proc);
     if (proc != myrank) recvnodes.resize(size);
-    dis->Comm().Broadcast(&recvnodes[0], size, proc);
+    dis->get_comm().Broadcast(&recvnodes[0], size, proc);
     if (proc != myrank)
     {
       for (int i = 0; i < size; ++i)
@@ -187,7 +187,7 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildGraph(
           mynodes.erase(fool);
       }
     }
-    dis->Comm().Barrier();
+    dis->get_comm().Barrier();
   }
 
   Teuchos::RCP<Epetra_Map> rownodes = Teuchos::null;
@@ -198,7 +198,7 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildGraph(
     for (fool = mynodes.begin(); fool != mynodes.end(); ++fool) nodes.push_back(*fool);
     mynodes.clear();
     // create a non-overlapping row map
-    rownodes = Teuchos::rcp(new Epetra_Map(-1, (int)nodes.size(), &nodes[0], 0, dis->Comm()));
+    rownodes = Teuchos::rcp(new Epetra_Map(-1, (int)nodes.size(), &nodes[0], 0, dis->get_comm()));
   }
 
   // start building the graph object
@@ -206,9 +206,9 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildGraph(
   std::map<int, std::set<int>> remotes;
   for (int lid = 0; lid < roweles->NumMyElements(); ++lid)
   {
-    Core::Elements::Element* ele = dis->gElement(roweles->GID(lid));
+    Core::Elements::Element* ele = dis->g_element(roweles->GID(lid));
     const int numnode = ele->num_node();
-    const int* nodeids = ele->NodeIds();
+    const int* nodeids = ele->node_ids();
     for (int i = 0; i < numnode; ++i)
     {
       const int lid = rownodes->LID(nodeids[i]);  // am I owner of this gid?
@@ -242,12 +242,12 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildGraph(
       if (smaxband < (int)fool->second.size()) smaxband = (int)fool->second.size();
     for (fool = remotes.begin(); fool != remotes.end(); ++fool)
       if (smaxband < (int)fool->second.size()) smaxband = (int)fool->second.size();
-    dis->Comm().MaxAll(&smaxband, &maxband, 1);
+    dis->get_comm().MaxAll(&smaxband, &maxband, 1);
   }
 
   Teuchos::RCP<Epetra_CrsGraph> graph =
       Teuchos::rcp(new Epetra_CrsGraph(Copy, *rownodes, maxband, false));
-  dis->Comm().Barrier();
+  dis->get_comm().Barrier();
 
   // fill all local entries into the graph
   {
@@ -266,7 +266,7 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildGraph(
     locals.clear();
   }
 
-  dis->Comm().Barrier();
+  dis->get_comm().Barrier();
 
   // now we need to communicate and add the remote entries
   for (int proc = numproc - 1; proc >= 0; --proc)
@@ -287,9 +287,9 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildGraph(
       }
       size = (int)recvnodes.size();
     }
-    dis->Comm().Broadcast(&size, 1, proc);
+    dis->get_comm().Broadcast(&size, 1, proc);
     if (proc != myrank) recvnodes.resize(size);
-    dis->Comm().Broadcast(&recvnodes[0], size, proc);
+    dis->get_comm().Broadcast(&recvnodes[0], size, proc);
     if (proc != myrank && size)
     {
       int* ptr = &recvnodes[0];
@@ -308,17 +308,17 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildGraph(
           ptr += (num + 1);
       }
     }
-    dis->Comm().Barrier();
+    dis->get_comm().Barrier();
   }
   remotes.clear();
 
-  dis->Comm().Barrier();
+  dis->get_comm().Barrier();
 
   // finish graph
   graph->FillComplete();
   graph->OptimizeStorage();
 
-  dis->Comm().Barrier();
+  dis->get_comm().Barrier();
 
   return graph;
 }
@@ -329,30 +329,30 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildMonolithicNodeGraph(
     const Core::FE::Discretization& dis, const Core::GeometricSearch::GeometricSearchParams& params)
 {
   // 1. Do a global geometric search
-  Epetra_Vector zero_vector = Epetra_Vector(*(dis.DofColMap()), true);
+  Epetra_Vector zero_vector = Epetra_Vector(*(dis.dof_col_map()), true);
 
   std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> bounding_boxes;
-  for (const auto* element : dis.MyRowElementRange())
+  for (const auto* element : dis.my_row_element_range())
   {
     bounding_boxes.emplace_back(
-        std::make_pair(element->Id(), element->GetBoundingVolume(dis, zero_vector, params)));
+        std::make_pair(element->id(), element->get_bounding_volume(dis, zero_vector, params)));
   }
 
   auto result = Core::GeometricSearch::GlobalCollisionSearch(
-      bounding_boxes, bounding_boxes, dis.Comm(), params.verbosity_);
+      bounding_boxes, bounding_boxes, dis.get_comm(), params.verbosity_);
 
   // 2. Set up a multivector which will be populated with all ghosting information,
   // i.e., the nodal connectivity of each element that collides with an element on this rank
   const int n_nodes_per_element_max = 27;  // element with highest node count is hex27
-  Epetra_MultiVector node_information(*dis.ElementRowMap(), n_nodes_per_element_max, true);
+  Epetra_MultiVector node_information(*dis.element_row_map(), n_nodes_per_element_max, true);
 
-  for (int rowele_i = 0; rowele_i < dis.NumMyRowElements(); ++rowele_i)
+  for (int rowele_i = 0; rowele_i < dis.num_my_row_elements(); ++rowele_i)
   {
-    const auto* element = dis.lRowElement(rowele_i);
+    const auto* element = dis.l_row_element(rowele_i);
     for (int i_node = 0; i_node < element->num_node(); ++i_node)
     {
-      const auto* node = element->Nodes()[i_node];
-      node_information.SumIntoMyValue(rowele_i, i_node, node->Id());
+      const auto* node = element->nodes()[i_node];
+      node_information.SumIntoMyValue(rowele_i, i_node, node->id());
     }
     node_information.SumIntoMyValue(rowele_i, element->num_node(), -1);
   }
@@ -368,30 +368,30 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildMonolithicNodeGraph(
   {
     my_colliding_primitives_vec.emplace_back(item);
   }
-  Epetra_Map my_colliding_primitives_map(
-      -1, my_colliding_primitives_vec.size(), my_colliding_primitives_vec.data(), 0, dis.Comm());
+  Epetra_Map my_colliding_primitives_map(-1, my_colliding_primitives_vec.size(),
+      my_colliding_primitives_vec.data(), 0, dis.get_comm());
   Epetra_MultiVector my_colliding_primitives_node_ids(
       my_colliding_primitives_map, n_nodes_per_element_max, false);
   Core::LinAlg::Export(node_information, my_colliding_primitives_node_ids);
 
   // 4. Build and fill the graph with element internal connectivities
-  auto my_graph = Teuchos::rcp(new Epetra_FECrsGraph(Copy, *(dis.NodeRowMap()), 40, false));
+  auto my_graph = Teuchos::rcp(new Epetra_FECrsGraph(Copy, *(dis.node_row_map()), 40, false));
 
-  for (const auto* element : dis.MyRowElementRange())
+  for (const auto* element : dis.my_row_element_range())
   {
     for (int i_node = 0; i_node < element->num_node(); ++i_node)
     {
-      const auto* node_main = element->Nodes()[i_node];
-      int index_main = node_main->Id();
+      const auto* node_main = element->nodes()[i_node];
+      int index_main = node_main->id();
       for (int j_node = 0; j_node < element->num_node(); ++j_node)
       {
-        const auto* node_inner = element->Nodes()[j_node];
-        int index = node_inner->Id();
+        const auto* node_inner = element->nodes()[j_node];
+        int index = node_inner->id();
 
         int err = my_graph->InsertGlobalIndices(1, &index_main, 1, &index);
         if (err < 0)
           FOUR_C_THROW("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d", err,
-              node_main->Id());
+              node_main->id());
       }
     }
   }
@@ -400,21 +400,21 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildMonolithicNodeGraph(
   for (const auto& [predicate_lid, predicate_gid, primitive_lid, primitive_gid, primitive_proc] :
       result)
   {
-    int predicate_lid_discretization = dis.ElementRowMap()->LID(predicate_gid);
+    int predicate_lid_discretization = dis.element_row_map()->LID(predicate_gid);
     if (predicate_lid_discretization < 0)
       FOUR_C_THROW("Could not find lid for predicate with gid %d on rank %d", predicate_gid,
-          dis.Comm().MyPID());
+          dis.get_comm().MyPID());
     if (predicate_lid != predicate_lid_discretization)
       FOUR_C_THROW("The ids dont match from arborx and the discretization");
-    const auto* predicate = dis.gElement(predicate_gid);
+    const auto* predicate = dis.g_element(predicate_gid);
 
     int primitive_lid_in_map = my_colliding_primitives_map.LID(primitive_gid);
     if (primitive_lid_in_map < 0) FOUR_C_THROW("Could not find lid for gid %d", primitive_gid);
 
     for (int i_node = 0; i_node < predicate->num_node(); ++i_node)
     {
-      const auto* node_main = predicate->Nodes()[i_node];
-      int index_main = node_main->Id();
+      const auto* node_main = predicate->nodes()[i_node];
+      int index_main = node_main->id();
       for (int j_node = 0; j_node < n_nodes_per_element_max; ++j_node)
       {
         // Get indices for primitive nodes
@@ -428,7 +428,7 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildMonolithicNodeGraph(
           int err = my_graph->InsertGlobalIndices(1, &index_main, 1, &primitive_node_index);
           if (err < 0)
             FOUR_C_THROW("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d", err,
-                node_main->Id());
+                node_main->id());
         }
       }
     }

@@ -71,7 +71,7 @@ const Epetra_Map& Core::LinAlg::SparseMatrixBase::OperatorRangeMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::SparseMatrixBase::MaxNumEntries() const { return sysmat_->MaxNumEntries(); }
+int Core::LinAlg::SparseMatrixBase::max_num_entries() const { return sysmat_->MaxNumEntries(); }
 
 
 /*----------------------------------------------------------------------*
@@ -81,17 +81,17 @@ double Core::LinAlg::SparseMatrixBase::NormInf() const { return sysmat_->NormInf
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Core::LinAlg::SparseMatrixBase::NormOne() const { return sysmat_->NormOne(); }
+double Core::LinAlg::SparseMatrixBase::norm_one() const { return sysmat_->NormOne(); }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Core::LinAlg::SparseMatrixBase::NormFrobenius() const { return sysmat_->NormFrobenius(); }
+double Core::LinAlg::SparseMatrixBase::norm_frobenius() const { return sysmat_->NormFrobenius(); }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::SparseMatrixBase::Multiply(
+int Core::LinAlg::SparseMatrixBase::multiply(
     bool TransA, const Epetra_Vector& x, Epetra_Vector& y) const
 {
   return sysmat_->Multiply(TransA, x, y);
@@ -100,7 +100,7 @@ int Core::LinAlg::SparseMatrixBase::Multiply(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::SparseMatrixBase::Multiply(
+int Core::LinAlg::SparseMatrixBase::multiply(
     bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   return sysmat_->Multiply(TransA, X, Y);
@@ -109,7 +109,7 @@ int Core::LinAlg::SparseMatrixBase::Multiply(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::SparseMatrixBase::LeftScale(const Epetra_Vector& x)
+int Core::LinAlg::SparseMatrixBase::left_scale(const Epetra_Vector& x)
 {
   return sysmat_->LeftScale(x);
 }
@@ -117,7 +117,7 @@ int Core::LinAlg::SparseMatrixBase::LeftScale(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::SparseMatrixBase::RightScale(const Epetra_Vector& x)
+int Core::LinAlg::SparseMatrixBase::right_scale(const Epetra_Vector& x)
 {
   return sysmat_->RightScale(x);
 }
@@ -125,7 +125,7 @@ int Core::LinAlg::SparseMatrixBase::RightScale(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::SparseMatrixBase::PutScalar(double ScalarConstant)
+int Core::LinAlg::SparseMatrixBase::put_scalar(double ScalarConstant)
 {
   return sysmat_->PutScalar(ScalarConstant);
 }
@@ -133,7 +133,7 @@ int Core::LinAlg::SparseMatrixBase::PutScalar(double ScalarConstant)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::SparseMatrixBase::Scale(double ScalarConstant)
+int Core::LinAlg::SparseMatrixBase::scale(double ScalarConstant)
 {
   return sysmat_->Scale(ScalarConstant);
 }
@@ -148,7 +148,7 @@ int Core::LinAlg::SparseMatrixBase::replace_diagonal_values(const Epetra_Vector&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::SparseMatrixBase::ReplaceRowMap(const Epetra_BlockMap& newmap)
+int Core::LinAlg::SparseMatrixBase::replace_row_map(const Epetra_BlockMap& newmap)
 {
   const int err = sysmat_->ReplaceRowMap(newmap);
   if (err) return err;
@@ -161,7 +161,7 @@ int Core::LinAlg::SparseMatrixBase::ReplaceRowMap(const Epetra_BlockMap& newmap)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::SparseMatrixBase::ExtractDiagonalCopy(Epetra_Vector& Diagonal) const
+int Core::LinAlg::SparseMatrixBase::extract_diagonal_copy(Epetra_Vector& Diagonal) const
 {
   return sysmat_->ExtractDiagonalCopy(Diagonal);
 }
@@ -169,16 +169,16 @@ int Core::LinAlg::SparseMatrixBase::ExtractDiagonalCopy(Epetra_Vector& Diagonal)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::SparseMatrixBase::Add(const Core::LinAlg::SparseOperator& A,
+void Core::LinAlg::SparseMatrixBase::add(const Core::LinAlg::SparseOperator& A,
     const bool transposeA, const double scalarA, const double scalarB)
 {
-  A.AddOther(*this, transposeA, scalarA, scalarB);
+  A.add_other(*this, transposeA, scalarA, scalarB);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::SparseMatrixBase::AddOther(Core::LinAlg::SparseMatrixBase& B,
+void Core::LinAlg::SparseMatrixBase::add_other(Core::LinAlg::SparseMatrixBase& B,
     const bool transposeA, const double scalarA, const double scalarB) const
 {
   // B.Add(*this, transposeA, scalarA, scalarB);
@@ -188,7 +188,7 @@ void Core::LinAlg::SparseMatrixBase::AddOther(Core::LinAlg::SparseMatrixBase& B,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::SparseMatrixBase::AddOther(Core::LinAlg::BlockSparseMatrixBase& B,
+void Core::LinAlg::SparseMatrixBase::add_other(Core::LinAlg::BlockSparseMatrixBase& B,
     const bool transposeA, const double scalarA, const double scalarB) const
 {
   FOUR_C_THROW("BlockSparseMatrix and SparseMatrix cannot be added");
@@ -196,16 +196,16 @@ void Core::LinAlg::SparseMatrixBase::AddOther(Core::LinAlg::BlockSparseMatrixBas
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Core::LinAlg::SparseMatrixBase::IsDbcApplied(
+bool Core::LinAlg::SparseMatrixBase::is_dbc_applied(
     const Epetra_Map& dbcmap, bool diagonalblock, const Core::LinAlg::SparseMatrix* trafo) const
 {
-  if (not Filled()) FOUR_C_THROW("The matrix must be filled!");
+  if (not filled()) FOUR_C_THROW("The matrix must be filled!");
 
   const int numdbcrows = dbcmap.NumMyElements();
   const int* dbcrows = dbcmap.MyGlobalElements();
 
   std::vector<int> gIndices(sysmat_->MaxNumEntries(), 0);
-  std::vector<int> gtIndices((trafo ? trafo->MaxNumEntries() : 0), 0);
+  std::vector<int> gtIndices((trafo ? trafo->max_num_entries() : 0), 0);
 
   bool isdbc = true;
 
@@ -232,18 +232,18 @@ bool Core::LinAlg::SparseMatrixBase::IsDbcApplied(
 
       if (trafo)
       {
-        if (not trafo->Filled()) FOUR_C_THROW("The trafo matrix must be filled!");
+        if (not trafo->filled()) FOUR_C_THROW("The trafo matrix must be filled!");
 
         int tNumEntries = 0;
         double* tValues = nullptr;
         int* tIndices = nullptr;
 
-        const int trafo_rlid = trafo->RowMap().LID(row);
-        trafo->EpetraMatrix()->ExtractMyRowView(trafo_rlid, tNumEntries, tValues, tIndices);
+        const int trafo_rlid = trafo->row_map().LID(row);
+        trafo->epetra_matrix()->ExtractMyRowView(trafo_rlid, tNumEntries, tValues, tIndices);
 
         // get the global indices corresponding to the extracted local indices
         std::fill(gtIndices.begin(), gtIndices.end(), 0.0);
-        for (int c = 0; c < tNumEntries; ++c) gtIndices[c] = trafo->ColMap().GID(tIndices[c]);
+        for (int c = 0; c < tNumEntries; ++c) gtIndices[c] = trafo->col_map().GID(tIndices[c]);
 
         for (int j = 0; j < tNumEntries; ++j)
         {

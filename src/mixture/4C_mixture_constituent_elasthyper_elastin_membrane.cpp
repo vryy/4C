@@ -37,7 +37,7 @@ void MIXTURE::ElastinMembraneAnisotropyExtension::on_global_data_initialized()
     {
       std::array<Core::LinAlg::Matrix<3, 1>, 1> fibers;
 
-      fibers[0].update(get_anisotropy()->get_gp_cylinder_coordinate_system(gp).GetRad());
+      fibers[0].update(get_anisotropy()->get_gp_cylinder_coordinate_system(gp).get_rad());
       Mat::FiberAnisotropyExtension<1>::set_fibers(gp, fibers);
     }
 
@@ -49,7 +49,7 @@ void MIXTURE::ElastinMembraneAnisotropyExtension::on_global_data_initialized()
   {
     std::array<Core::LinAlg::Matrix<3, 1>, 1> fibers;
 
-    fibers[0].update(get_anisotropy()->get_element_cylinder_coordinate_system().GetRad());
+    fibers[0].update(get_anisotropy()->get_element_cylinder_coordinate_system().get_rad());
     FiberAnisotropyExtension<1>::set_fibers(BaseAnisotropyExtension::GPDEFAULT, fibers);
 
     orthogonal_structural_tensor_.resize(1);
@@ -129,7 +129,7 @@ MIXTURE::MixtureConstituentElastHyperElastinMembrane::MixtureConstituentElastHyp
   // Create summands
   for (const auto& matid : params_->matids_membrane_)
   {
-    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(matid);
+    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to read elastic summand.");
 
     Teuchos::RCP<Mat::Elastic::IsoNeoHooke> neoHooke =
@@ -168,7 +168,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::pack_constituent(
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
-    for (const auto& p : potsum_membrane_) p->PackSummand(data);
+    for (const auto& p : potsum_membrane_) p->pack_summand(data);
   }
 }
 
@@ -185,7 +185,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::unpack_constituent(
   anisotropy_extension_.unpack_anisotropy(data, position);
 
   // loop map of associated potential summands
-  for (auto& summand : potsum_membrane_) summand->UnpackSummand(data, position);
+  for (auto& summand : potsum_membrane_) summand->unpack_summand(data, position);
 }
 
 void MIXTURE::MixtureConstituentElastHyperElastinMembrane::register_anisotropy_extensions(
@@ -225,8 +225,8 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::update(
   }
 
   current_reference_growth_[gp] =
-      Global::Problem::Instance()
-          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
+      Global::Problem::instance()
+          ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
           .evaluate(reference_coordinates.data(), totaltime, 0);
 
   MixtureConstituentElastHyperBase::update(defgrd, params, gp, eleGID);
@@ -337,7 +337,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_stress_c_mat
   double mue = 0.0;
   for (const auto& summand : potsum_membrane_)
   {
-    mue += summand->Mue();
+    mue += summand->mue();
   }
 
   // Compute membrane stress

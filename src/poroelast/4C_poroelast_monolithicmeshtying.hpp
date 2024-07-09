@@ -36,7 +36,7 @@ namespace PoroElast
         Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter);
 
     //! Setup the monolithic system
-    void SetupSystem() override;
+    void setup_system() override;
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     void evaluate(
@@ -61,13 +61,13 @@ namespace PoroElast
     }
 
     //! setup meshtying activedof extractors
-    void SetupExtractor();
+    void setup_extractor();
 
     //! decide convergence with additional evaluation of meshtying constraint residuals
-    bool Converged() override;
+    bool converged() override;
 
     //! setup solver with additional residual tolerances for meshtying
-    bool SetupSolver() override;
+    bool setup_solver() override;
 
     //! contains header to print_newton_iter with meshtying solver tolerance
     void print_newton_iter_header_stream(std::ostringstream& oss) override;

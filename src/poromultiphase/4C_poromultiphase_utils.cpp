@@ -34,18 +34,18 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
   //            If an artery discretization with non-matching coupling is present, we first
   //            redistribute
 
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
   // 1.-Initialization.
-  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis(struct_disname);
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis(struct_disname);
 
   // possible interaction partners [artelegid; contelegid_1, ... contelegid_n]
   std::map<int, std::set<int>> nearbyelepairs;
 
-  if (Global::Problem::Instance()->DoesExistDis("artery"))
+  if (Global::Problem::instance()->does_exist_dis("artery"))
   {
     Teuchos::RCP<Core::FE::Discretization> arterydis = Teuchos::null;
-    arterydis = Global::Problem::Instance()->GetDis("artery");
+    arterydis = Global::Problem::instance()->get_dis("artery");
 
     // get coupling method
     auto arterycoupl =
@@ -68,7 +68,7 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
     dofsetaux =
         Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(0, maxnumsegperele, 0, false));
     // add it to artery discretization
-    arterydis->AddDofSet(dofsetaux);
+    arterydis->add_dof_set(dofsetaux);
 
     switch (arterycoupl)
     {
@@ -86,18 +86,18 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
         break;
       }
     }
-    if (!arterydis->Filled()) arterydis->fill_complete();
+    if (!arterydis->filled()) arterydis->fill_complete();
   }
 
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis(fluid_disname);
-  if (!structdis->Filled()) structdis->fill_complete();
-  if (!fluiddis->Filled()) fluiddis->fill_complete();
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis(fluid_disname);
+  if (!structdis->filled()) structdis->fill_complete();
+  if (!fluiddis->filled()) fluiddis->fill_complete();
 
-  if (fluiddis->NumGlobalNodes() == 0)
+  if (fluiddis->num_global_nodes() == 0)
   {
     // fill poro fluid discretization by cloning structure discretization
     Core::FE::CloneDiscretization<POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy>(
-        structdis, fluiddis, Global::Problem::Instance()->CloningMaterialMap());
+        structdis, fluiddis, Global::Problem::instance()->cloning_material_map());
   }
   else
   {
@@ -108,25 +108,25 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
   fluiddis->fill_complete();
 
   // build a proxy of the structure discretization for the scatra field
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> structdofset = structdis->GetDofSetProxy();
+  Teuchos::RCP<Core::DOFSets::DofSetInterface> structdofset = structdis->get_dof_set_proxy();
   // build a proxy of the scatra discretization for the structure field
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
+  Teuchos::RCP<Core::DOFSets::DofSetInterface> fluiddofset = fluiddis->get_dof_set_proxy();
 
   // assign structure dof set to fluid and save the dofset number
-  nds_disp = fluiddis->AddDofSet(structdofset);
+  nds_disp = fluiddis->add_dof_set(structdofset);
   if (nds_disp != 1) FOUR_C_THROW("unexpected dof sets in porofluid field");
   // velocities live on same dofs as displacements
   nds_vel = nds_disp;
 
-  if (structdis->AddDofSet(fluiddofset) != 1)
+  if (structdis->add_dof_set(fluiddofset) != 1)
     FOUR_C_THROW("unexpected dof sets in structure field");
 
   // build auxiliary dofset for postprocessing solid pressures
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
       Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(1, 0, 0, false));
-  nds_solidpressure = fluiddis->AddDofSet(dofsetaux);
+  nds_solidpressure = fluiddis->add_dof_set(dofsetaux);
   // add it also to the solid field
-  structdis->AddDofSet(fluiddis->GetDofSetProxy(nds_solidpressure));
+  structdis->add_dof_set(fluiddis->get_dof_set_proxy(nds_solidpressure));
 
   structdis->fill_complete();
   fluiddis->fill_complete();
@@ -140,10 +140,10 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
 void POROMULTIPHASE::UTILS::assign_material_pointers(
     const std::string& struct_disname, const std::string& fluid_disname)
 {
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
-  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis(struct_disname);
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis(fluid_disname);
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis(struct_disname);
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis(fluid_disname);
 
   PoroElast::UTILS::SetMaterialPointersMatchingGrid(structdis, fluiddis);
 }

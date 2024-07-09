@@ -40,7 +40,7 @@ NOX::Nln::LinSystem::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::Factory::BuildLinearSystem(
+Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::Factory::build_linear_system(
     const NOX::Nln::LinSystem::LinearSystemType& linsystype, NOX::Nln::GlobalData& noxNlnGlobalData,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& jac,
     const Teuchos::RCP<::NOX::Epetra::Vector>& cloneVector,
@@ -144,7 +144,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::BuildLinearSystem
     const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject)
 {
   Factory factory;
-  return factory.BuildLinearSystem(
+  return factory.build_linear_system(
       linsystype, noxNlnGlobalData, jac, cloneVector, precMat, scalingObject);
 }
 

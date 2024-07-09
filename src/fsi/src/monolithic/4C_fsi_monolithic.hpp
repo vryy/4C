@@ -141,7 +141,7 @@ namespace FSI
     void output() override;
 
     /// Write Lagrange multiplier
-    virtual void OutputLambda()
+    virtual void output_lambda()
     {
       FOUR_C_THROW("This function must be implemented in a derived class!");
     };
@@ -306,21 +306,21 @@ namespace FSI
     read_mesh is called), the dofmaps for the blocks might get invalid.
 
     */
-    virtual void SetupSystem();
+    virtual void setup_system();
 
     //! @name Time loop
     //@{
 
     //! prepare time loop
-    void PrepareTimeloop();
+    void prepare_timeloop();
 
     //! outer level FSI time loop
-    void Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
+    void timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
 
     //! do new time step
     //!
     //! return error code that indicates whether the nonlinear solver converged or not
-    virtual void TimeStep(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
+    virtual void time_step(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
 
     //! take current results for converged and save for next time step
     void update() override;
@@ -330,7 +330,7 @@ namespace FSI
     //! Error check for nonlinear solver
     //!
     //! determine the error code that has to be returned by TimeStep()
-    virtual void NonLinErrorCheck();
+    virtual void non_lin_error_check();
 
     //! @name NOX methods
 
@@ -345,7 +345,7 @@ namespace FSI
         Teuchos::ParameterList* precParams = nullptr) override;
 
     /// request NOX convergence from outside (needed for coupled problems)
-    ::NOX::StatusTest::StatusType NoxStatus() const { return noxstatus_; };
+    ::NOX::StatusTest::StatusType nox_status() const { return noxstatus_; };
 
     //@}
 
@@ -374,14 +374,14 @@ namespace FSI
     void unscale_solution(Epetra_Vector& x, Epetra_Vector& b) override {}
 
     /// return Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface
-    virtual Teuchos::RCP<Epetra_Vector> GetLambda()
+    virtual Teuchos::RCP<Epetra_Vector> get_lambda()
     {
       FOUR_C_THROW("GetLambda not implemented in the base class");
       return Teuchos::null;
     };
 
     //! Get number of time step repetitions in case of time step adaptivity
-    int GetNumAdaptSteps() const { return adaptstep_; }
+    int get_num_adapt_steps() const { return adaptstep_; }
 
     //! @name Parallel redistribution for hybrid preconditioner
     //@{
@@ -517,7 +517,7 @@ namespace FSI
     Teuchos::RCP<::NOX::Utils> utils() const { return utils_; }
 
     /// full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return blockrowdofmap_.FullMap(); }
+    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return blockrowdofmap_.full_map(); }
 
     /*! \brief set full monolithic dof row map
      *
@@ -1026,7 +1026,7 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed system matrix from field solvers
-    void setup_system_matrix() override { setup_system_matrix(*SystemMatrix()); }
+    void setup_system_matrix() override { setup_system_matrix(*system_matrix()); }
 
     /// setup composed system matrix from field solvers
     virtual void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) = 0;
@@ -1041,12 +1041,12 @@ namespace FSI
      *  This affects only the main diagonal blocks, not the off-diagonal
      *  coupling blocks.
      */
-    void scale_system(Epetra_Vector& b) override { scale_system(*SystemMatrix(), b); }
+    void scale_system(Epetra_Vector& b) override { scale_system(*system_matrix(), b); }
 
     /// undo infnorm scaling from scaled solution
     void unscale_solution(Epetra_Vector& x, Epetra_Vector& b) override
     {
-      unscale_solution(*SystemMatrix(), x, b);
+      unscale_solution(*system_matrix(), x, b);
     }
 
     /*! \brief Apply infnorm scaling to linear block system
@@ -1065,14 +1065,14 @@ namespace FSI
     //@}
 
     /// the composed system matrix
-    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const = 0;
+    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const = 0;
 
 
     //! Create #lambda_ and #lambdaold_
-    virtual void SetLambda(){};
+    virtual void set_lambda(){};
 
     //! Set #notsetup_ = true after redistribution
-    virtual void SetNotSetup(){};
+    virtual void set_not_setup(){};
 
     //! @name Parallel redistribution for hybrid preconditioner
     //@{
@@ -1169,7 +1169,7 @@ namespace FSI
      *
      *  \sa InsertDeletedEdges()
      */
-    virtual void BuildWeightedGraph(Teuchos::RCP<Epetra_CrsMatrix> crs_ge_weights,
+    virtual void build_weighted_graph(Teuchos::RCP<Epetra_CrsMatrix> crs_ge_weights,
         Teuchos::RCP<Epetra_CrsGraph> initgraph_manip,
         Teuchos::RCP<const Epetra_CrsGraph> initgraph, const double inputWeight1,
         const double inputWeight2, std::map<int, int>* nodeOwner,
@@ -1183,7 +1183,7 @@ namespace FSI
      *  A manipulated graph \c initgraph_manip is passed to the partitioner, that
      *  represents the desired domain decomposition.
      */
-    virtual Teuchos::RCP<Epetra_CrsGraph> CallPartitioner(
+    virtual Teuchos::RCP<Epetra_CrsGraph> call_partitioner(
         Teuchos::RCP<const Epetra_CrsGraph> initgraph_manip,  ///< manipulated graph
         std::string partitioningMethod,                       ///< graph or hypergraph partitioning
         int unbalance);
@@ -1195,7 +1195,7 @@ namespace FSI
      *  processor after the redistribution. This function switches the patches
      *  among the processors in order to achieve this.
      */
-    virtual Teuchos::RCP<Epetra_CrsGraph> SwitchDomains(Teuchos::RCP<Epetra_Map> rownodes,
+    virtual Teuchos::RCP<Epetra_CrsGraph> switch_domains(Teuchos::RCP<Epetra_Map> rownodes,
         std::map<int, int>* nodeOwner, Teuchos::RCP<Epetra_CrsGraph> bal_graph,
         const Epetra_Comm& comm  ///< communicator
     );
@@ -1223,7 +1223,7 @@ namespace FSI
      * (flag \c fluid).
      *
      */
-    virtual Teuchos::RCP<Epetra_Map> GetRedistRowMap(const Epetra_Map& oldMap,
+    virtual Teuchos::RCP<Epetra_Map> get_redist_row_map(const Epetra_Map& oldMap,
         Teuchos::RCP<Epetra_Map> monolithicRownodes,
         std::map<int, std::vector<int>>& fluidToStructureMap, bool fluid = false);
 
@@ -1237,7 +1237,7 @@ namespace FSI
      *
      *  \sa BuildWeightedGraph()
      */
-    virtual void InsertDeletedEdges(std::map<int, std::list<int>>* deletedEdges,
+    virtual void insert_deleted_edges(std::map<int, std::list<int>>* deletedEdges,
         Teuchos::RCP<Epetra_Map> switched_rownodes,
         Teuchos::RCP<Epetra_CrsGraph> switched_bal_graph);
 

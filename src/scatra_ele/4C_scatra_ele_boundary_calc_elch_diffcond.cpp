@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Instance(
+Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -35,7 +35,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Instance
                 numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -78,22 +78,22 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::eval
     case ScaTra::BoundaryAction::calc_elch_boundary_kinetics:
     {
       // access material of parent element
-      Teuchos::RCP<Core::Mat::Material> material = ele->parent_element()->Material();
+      Teuchos::RCP<Core::Mat::Material> material = ele->parent_element()->material();
 
       // extract porosity from material and store in diffusion manager
-      if (material->MaterialType() == Core::Materials::m_elchmat)
+      if (material->material_type() == Core::Materials::m_elchmat)
       {
         const auto* elchmat = static_cast<const Mat::ElchMat*>(material.get());
 
-        for (int iphase = 0; iphase < elchmat->NumPhase(); ++iphase)
+        for (int iphase = 0; iphase < elchmat->num_phase(); ++iphase)
         {
           Teuchos::RCP<const Core::Mat::Material> phase =
-              elchmat->PhaseById(elchmat->PhaseID(iphase));
+              elchmat->phase_by_id(elchmat->phase_id(iphase));
 
-          if (phase->MaterialType() == Core::Materials::m_elchphase)
+          if (phase->material_type() == Core::Materials::m_elchphase)
           {
-            dmedc_->SetPhasePoro(
-                (static_cast<const Mat::ElchPhase*>(phase.get()))->Epsilon(), iphase);
+            dmedc_->set_phase_poro(
+                (static_cast<const Mat::ElchPhase*>(phase.get()))->epsilon(), iphase);
           }
           else
             FOUR_C_THROW("Invalid material!");
@@ -104,8 +104,8 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::eval
         FOUR_C_THROW("Invalid material!");
 
       // process electrode kinetics boundary condition
-      myelch::calc_elch_boundary_kinetics(
-          ele, params, discretization, la, elemat1_epetra, elevec1_epetra, dmedc_->GetPhasePoro(0));
+      myelch::calc_elch_boundary_kinetics(ele, params, discretization, la, elemat1_epetra,
+          elevec1_epetra, dmedc_->get_phase_poro(0));
 
       break;
     }
@@ -134,22 +134,22 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::eval
     const double scalar)
 {
   // get material of parent element
-  Teuchos::RCP<Core::Mat::Material> mat = ele->parent_element()->Material();
+  Teuchos::RCP<Core::Mat::Material> mat = ele->parent_element()->material();
 
-  if (mat->MaterialType() == Core::Materials::m_elchmat)
+  if (mat->material_type() == Core::Materials::m_elchmat)
   {
     const auto* actmat = static_cast<const Mat::ElchMat*>(mat.get());
 
-    for (int iphase = 0; iphase < actmat->NumPhase(); ++iphase)
+    for (int iphase = 0; iphase < actmat->num_phase(); ++iphase)
     {
-      const int phaseid = actmat->PhaseID(iphase);
-      Teuchos::RCP<const Core::Mat::Material> singlemat = actmat->PhaseById(phaseid);
+      const int phaseid = actmat->phase_id(iphase);
+      Teuchos::RCP<const Core::Mat::Material> singlemat = actmat->phase_by_id(phaseid);
 
-      if (singlemat->MaterialType() == Core::Materials::m_elchphase)
+      if (singlemat->material_type() == Core::Materials::m_elchphase)
       {
         const auto* actsinglemat = static_cast<const Mat::ElchPhase*>(singlemat.get());
 
-        dmedc_->SetPhasePoro(actsinglemat->Epsilon(), iphase);
+        dmedc_->set_phase_poro(actsinglemat->epsilon(), iphase);
       }
       else
         FOUR_C_THROW("Invalid material!");
@@ -160,12 +160,12 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::eval
 
   // call base class routine
   my::evaluate_neumann(
-      ele, params, discretization, condition, la, elevec1, dmedc_->GetPhasePoro(0));
+      ele, params, discretization, condition, la, elevec1, dmedc_->get_phase_poro(0));
 
   // add boundary flux contributions to potential equation
   if (myelch::elchparams_->boundary_flux_coupling())
   {
-    switch (myelch::elchparams_->EquPot())
+    switch (myelch::elchparams_->equ_pot())
     {
       case Inpar::ElCh::equpot_divi:
       {
@@ -222,7 +222,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
       nume, stoich, kinetics, pot0, frt, scalar);
 
   // compute matrix and residual contributions arising from closing equation for electric potential
-  switch (myelch::elchparams_->EquPot())
+  switch (myelch::elchparams_->equ_pot())
   {
     case Inpar::ElCh::equpot_enc:
     {
@@ -270,7 +270,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::eva
     Core::LinAlg::SerialDenseMatrix& eslavematrix, Core::LinAlg::SerialDenseMatrix& emastermatrix,
     Core::LinAlg::SerialDenseVector& eslaveresidual)
 {
-  switch (my::scatraparamsboundary_->KineticModel())
+  switch (my::scatraparamsboundary_->kinetic_model())
   {
     case Inpar::S2I::kinetics_nointerfaceflux:
       break;
@@ -299,7 +299,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix)
 {
-  switch (my::scatraparamsboundary_->KineticModel())
+  switch (my::scatraparamsboundary_->kinetic_model())
   {
     case Inpar::S2I::kinetics_nointerfaceflux:
       break;
@@ -331,34 +331,36 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::g
 {
   double valence(0.);
 
-  if (material->MaterialType() == Core::Materials::m_elchmat)
+  if (material->material_type() == Core::Materials::m_elchmat)
   {
     const Teuchos::RCP<const Mat::ElchMat> elchmat =
         Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(material);
 
     // safety check
-    if (elchmat->NumPhase() != 1) FOUR_C_THROW("Only one material phase is allowed at the moment!");
+    if (elchmat->num_phase() != 1)
+      FOUR_C_THROW("Only one material phase is allowed at the moment!");
 
     // loop over phases
-    for (int iphase = 0; iphase < elchmat->NumPhase(); ++iphase)
+    for (int iphase = 0; iphase < elchmat->num_phase(); ++iphase)
     {
       const Teuchos::RCP<const Mat::ElchPhase> phase =
           Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(
-              elchmat->PhaseById(elchmat->PhaseID(iphase)));
+              elchmat->phase_by_id(elchmat->phase_id(iphase)));
 
       // loop over species within phase
-      for (int imat = 0; imat < phase->NumMat(); ++imat)
+      for (int imat = 0; imat < phase->num_mat(); ++imat)
       {
-        const Teuchos::RCP<const Core::Mat::Material> species = phase->MatById(phase->MatID(imat));
+        const Teuchos::RCP<const Core::Mat::Material> species =
+            phase->mat_by_id(phase->mat_id(imat));
 
-        if (species->MaterialType() == Core::Materials::m_newman)
+        if (species->material_type() == Core::Materials::m_newman)
         {
-          valence = Teuchos::rcp_static_cast<const Mat::Newman>(species)->Valence();
+          valence = Teuchos::rcp_static_cast<const Mat::Newman>(species)->valence();
           if (abs(valence) < 1.e-14) FOUR_C_THROW("Received zero valence!");
         }
-        else if (species->MaterialType() == Core::Materials::m_ion)
+        else if (species->material_type() == Core::Materials::m_ion)
         {
-          valence = Teuchos::rcp_static_cast<const Mat::Ion>(species)->Valence();
+          valence = Teuchos::rcp_static_cast<const Mat::Ion>(species)->valence();
           if (abs(valence) < 1.e-14) FOUR_C_THROW("Received zero valence!");
         }
         else

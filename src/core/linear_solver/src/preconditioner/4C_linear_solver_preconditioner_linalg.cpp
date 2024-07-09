@@ -49,10 +49,10 @@ void Core::LinAlg::Preconditioner::setup(Teuchos::RCP<Epetra_Operator> matrix,
   Teuchos::Time timer("", true);
   timer.reset();
 
-  std::string solvertype = solver_->Params().get("solver", "none");
+  std::string solvertype = solver_->params().get("solver", "none");
   if (solvertype == "belos")
   {
-    Teuchos::ParameterList& solverlist = solver_->Params().sublist("Belos Parameters");
+    Teuchos::ParameterList& solverlist = solver_->params().sublist("Belos Parameters");
 
     // see whether Operator is a Epetra_CrsMatrix
     Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(&*matrix);
@@ -60,8 +60,8 @@ void Core::LinAlg::Preconditioner::setup(Teuchos::RCP<Epetra_Operator> matrix,
     // get type of preconditioner and build either Ifpack or ML
     // if we have an ifpack parameter list, we do ifpack
     // if we have an ml parameter list we do ml
-    bool doifpack = solver_->Params().isSublist("IFPACK Parameters");
-    bool doml = solver_->Params().isSublist("ML Parameters");
+    bool doifpack = solver_->params().isSublist("IFPACK Parameters");
+    bool doml = solver_->params().isSublist("ML Parameters");
 
     if (!A)
     {
@@ -79,7 +79,7 @@ void Core::LinAlg::Preconditioner::setup(Teuchos::RCP<Epetra_Operator> matrix,
     if (doifpack)
     {
       prec_ = Teuchos::null;
-      Teuchos::ParameterList& ifpacklist = solver_->Params().sublist("IFPACK Parameters");
+      Teuchos::ParameterList& ifpacklist = solver_->params().sublist("IFPACK Parameters");
       ifpacklist.set<bool>("relaxation: zero starting solution", true);
       // create a copy of the scaled matrix
       // so we can reuse the preconditioner
@@ -98,7 +98,7 @@ void Core::LinAlg::Preconditioner::setup(Teuchos::RCP<Epetra_Operator> matrix,
     // do ml if desired
     if (doml)
     {
-      Teuchos::ParameterList& mllist = solver_->Params().sublist("ML Parameters");
+      Teuchos::ParameterList& mllist = solver_->params().sublist("ML Parameters");
 
       // create a copy of the scaled (and downwinded) matrix
       // so we can reuse the preconditioner several times
@@ -112,11 +112,11 @@ void Core::LinAlg::Preconditioner::setup(Teuchos::RCP<Epetra_Operator> matrix,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator> matrix,
+void Core::LinAlg::Preconditioner::solve(Teuchos::RCP<Epetra_Operator> matrix,
     Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b, bool refactor,
     bool reset)
 {
-  std::string solvertype = solver_->Params().get("solver", "none");
+  std::string solvertype = solver_->params().get("solver", "none");
   if (solvertype == "belos")
   {
     // do just the preconditioner from iterative solver
@@ -145,7 +145,7 @@ void Core::LinAlg::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator> matrix,
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = refactor;
     solver_params.reset = reset;
-    solver_->Solve(matrix, x_, b_, solver_params);
+    solver_->solve(matrix, x_, b_, solver_params);
     x->Update(1.0, *x_, 0.0);
   }
 
@@ -154,7 +154,7 @@ void Core::LinAlg::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator> matrix,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::ParameterList& Core::LinAlg::Preconditioner::Params() { return solver_->Params(); }
+Teuchos::ParameterList& Core::LinAlg::Preconditioner::params() { return solver_->params(); }
 
 
 /*----------------------------------------------------------------------*

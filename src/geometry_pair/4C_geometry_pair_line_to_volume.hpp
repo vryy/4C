@@ -103,7 +103,7 @@ namespace GEOMETRYPAIR
      * \brief Return the pointer to the evaluation data of this pair.
      * @return Pointer to the evaluation data.
      */
-    const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& GetEvaluationData() const
+    const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& get_evaluation_data() const
     {
       return line_to_3d_evaluation_data_;
     }
@@ -117,7 +117,7 @@ namespace GEOMETRYPAIR
      * @param projection_result (out) Flag for the result of the projection.
      * @return
      */
-    void ProjectPointToOther(const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
+    void project_point_to_other(const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
         const ElementData<Volume, ScalarType>& element_data_volume,
         Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result) const;
 

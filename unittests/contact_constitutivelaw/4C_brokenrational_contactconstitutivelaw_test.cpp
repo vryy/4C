@@ -29,13 +29,13 @@ namespace
               "Brokenrational Constitutivelaw"));
 
       // add parameters to container
-      container->Add("A", -2.);
-      container->Add("B", 4.);
-      container->Add("C", -0.5);
-      container->Add("Offset", 0.5);
+      container->add("A", -2.);
+      container->add("B", 4.);
+      container->add("C", -0.5);
+      container->add("Offset", 0.5);
 
       const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> brokenrationalcoconstlaw =
-          CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(container);
+          CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(container);
       coconstlaw_ = brokenrationalcoconstlaw;
     }
 
@@ -58,7 +58,7 @@ namespace
   //! test member function EvaluateDeriv
   TEST_F(BrokenrationalConstitutiveLawTest, TestEvaluateDeriv)
   {
-    EXPECT_NEAR(coconstlaw_->EvaluateDeriv(-2.5, cnode.get()), 0.5, 1.e-15);
-    EXPECT_ANY_THROW(coconstlaw_->EvaluateDeriv(-0.25, cnode.get()));
+    EXPECT_NEAR(coconstlaw_->evaluate_deriv(-2.5, cnode.get()), 0.5, 1.e-15);
+    EXPECT_ANY_THROW(coconstlaw_->evaluate_deriv(-0.25, cnode.get()));
   }
 }  // namespace

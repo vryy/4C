@@ -56,7 +56,7 @@ void Discret::ELEMENTS::Beam3Base::pack(Core::Communication::PackBuffer& data) c
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   Element::pack(data);
@@ -76,7 +76,7 @@ void Discret::ELEMENTS::Beam3Base::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -113,7 +113,7 @@ void Discret::ELEMENTS::Beam3Base::set_brownian_dyn_params_interface_ptr()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::ParamsInterface> Discret::ELEMENTS::Beam3Base::ParamsInterfacePtr()
+Teuchos::RCP<Core::Elements::ParamsInterface> Discret::ELEMENTS::Beam3Base::params_interface_ptr()
 {
   return interface_ptr_;
 }
@@ -128,29 +128,29 @@ Discret::ELEMENTS::Beam3Base::brownian_dyn_params_interface_ptr() const
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-std::vector<int> Discret::ELEMENTS::Beam3Base::GetAdditiveDofGIDs(
+std::vector<int> Discret::ELEMENTS::Beam3Base::get_additive_dof_gi_ds(
     const Core::FE::Discretization& discret, const Core::Nodes::Node& node) const
 {
   std::vector<int> dofgids;
   std::vector<int> dofindices;
 
   // first collect all DoF indices
-  this->PositionDofIndices(dofindices, node);
-  this->TangentDofIndices(dofindices, node);
+  this->position_dof_indices(dofindices, node);
+  this->tangent_dof_indices(dofindices, node);
   this->rotation1_d_dof_indices(dofindices, node);
   this->tangent_length_dof_indices(dofindices, node);
 
   // now ask for the GIDs of the DoFs with collected local indices
   dofgids.reserve(dofindices.size());
   for (unsigned int i = 0; i < dofindices.size(); ++i)
-    dofgids.push_back(discret.Dof(0, &node, dofindices[i]));
+    dofgids.push_back(discret.dof(0, &node, dofindices[i]));
 
   return dofgids;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::vector<int> Discret::ELEMENTS::Beam3Base::GetRotVecDofGIDs(
+std::vector<int> Discret::ELEMENTS::Beam3Base::get_rot_vec_dof_gi_ds(
     const Core::FE::Discretization& discret, const Core::Nodes::Node& node) const
 {
   std::vector<int> dofgids;
@@ -162,7 +162,7 @@ std::vector<int> Discret::ELEMENTS::Beam3Base::GetRotVecDofGIDs(
   // now ask for the GIDs of the DoFs with collected local indices
   dofgids.reserve(dofindices.size());
   for (unsigned int i = 0; i < dofindices.size(); ++i)
-    dofgids.push_back(discret.Dof(0, &node, dofindices[i]));
+    dofgids.push_back(discret.dof(0, &node, dofindices[i]));
 
   return dofgids;
 }
@@ -176,16 +176,16 @@ double Discret::ELEMENTS::Beam3Base::get_circular_cross_section_radius_for_inter
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::GetRefPosAtXi(
+void Discret::ELEMENTS::Beam3Base::get_ref_pos_at_xi(
     Core::LinAlg::Matrix<3, 1>& refpos, const double& xi) const
 {
-  const int numclnodes = this->NumCenterlineNodes();
+  const int numclnodes = this->num_centerline_nodes();
   const int numnodalvalues = this->hermite_centerline_interpolation() ? 2 : 1;
 
   std::vector<double> zerovec;
   zerovec.resize(3 * numnodalvalues * numclnodes);
 
-  this->GetPosAtXi(refpos, xi, zerovec);
+  this->get_pos_at_xi(refpos, xi, zerovec);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -193,9 +193,9 @@ void Discret::ELEMENTS::Beam3Base::GetRefPosAtXi(
 Mat::BeamMaterial& Discret::ELEMENTS::Beam3Base::get_beam_material() const
 {
   // get the material law
-  Teuchos::RCP<Core::Mat::Material> material_ptr = Material();
+  Teuchos::RCP<Core::Mat::Material> material_ptr = material();
 
-  if (material_ptr->MaterialType() != Core::Materials::m_beam_elast_hyper_generic)
+  if (material_ptr->material_type() != Core::Materials::m_beam_elast_hyper_generic)
     FOUR_C_THROW("unknown or improper type of material law! expected beam material law!");
 
   return *static_cast<Mat::BeamMaterial*>(material_ptr.get());
@@ -207,7 +207,7 @@ Mat::BeamMaterial& Discret::ELEMENTS::Beam3Base::get_beam_material() const
 template <typename T>
 Mat::BeamMaterialTemplated<T>& Discret::ELEMENTS::Beam3Base::get_templated_beam_material() const
 {
-  return *Teuchos::rcp_dynamic_cast<Mat::BeamMaterialTemplated<T>>(Material(), true);
+  return *Teuchos::rcp_dynamic_cast<Mat::BeamMaterialTemplated<T>>(material(), true);
 };
 
 
@@ -320,16 +320,16 @@ void Discret::ELEMENTS::Beam3Base::get_background_velocity(
  | space; the shift affects computation on element level within that           |
  | iteration step, only (no change in global variables performed)              |
  *-----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::UnShiftNodePosition(
+void Discret::ELEMENTS::Beam3Base::un_shift_node_position(
     std::vector<double>& disp, Core::Geo::MeshFree::BoundingBox const& periodic_boundingbox) const
 {
   /* get number of degrees of freedom per node; note:
    * the following function assumes the same number of degrees
    * of freedom for each element node*/
-  int numdof = NumDofPerNode(*(Nodes()[0]));
+  int numdof = num_dof_per_node(*(nodes()[0]));
 
   // get number of nodes that are used for centerline interpolation
-  unsigned int nnodecl = NumCenterlineNodes();
+  unsigned int nnodecl = num_centerline_nodes();
 
   // loop through all nodes except for the first node which remains
   // fixed as reference node
@@ -342,11 +342,11 @@ void Discret::ELEMENTS::Beam3Base::UnShiftNodePosition(
     for (int dim = 0; dim < 3; ++dim)
     {
       d(dim) = disp[numdof * i + dim];
-      ref(dim) = Nodes()[0]->X()[dim] + disp[numdof * 0 + dim];
-      X(dim) = Nodes()[i]->X()[dim];
+      ref(dim) = nodes()[0]->x()[dim] + disp[numdof * 0 + dim];
+      X(dim) = nodes()[i]->x()[dim];
     }
 
-    periodic_boundingbox.UnShift3D(d, ref, X);
+    periodic_boundingbox.un_shift3_d(d, ref, X);
 
     for (unsigned int dim = 0; dim < 3; ++dim)
     {
@@ -364,9 +364,9 @@ void Discret::ELEMENTS::Beam3Base::get_directions_of_shifts(std::vector<double>&
   /* get number of degrees of freedom per node; note:
    * the following function assumes the same number of degrees
    * of freedom for each element node*/
-  int numdof = NumDofPerNode(*(Nodes()[0]));
+  int numdof = num_dof_per_node(*(nodes()[0]));
   // get number of nodes that are used for centerline interpolation
-  unsigned int nnodecl = NumCenterlineNodes();
+  unsigned int nnodecl = num_centerline_nodes();
 
   shift_in_dim.clear();
   shift_in_dim.resize(3);
@@ -382,8 +382,8 @@ void Discret::ELEMENTS::Beam3Base::get_directions_of_shifts(std::vector<double>&
     for (int dim = 0; dim < 3; ++dim)
     {
       d(dim) = disp[numdof * i + dim];
-      ref(dim) = Nodes()[0]->X()[dim] + disp[numdof * 0 + dim];
-      X(dim) = Nodes()[i]->X()[dim];
+      ref(dim) = nodes()[0]->x()[dim] + disp[numdof * 0 + dim];
+      X(dim) = nodes()[i]->x()[dim];
     }
 
     periodic_boundingbox.check_if_shift_between_points(d, ref, shift_in_dim, X);
@@ -397,16 +397,16 @@ void Discret::ELEMENTS::Beam3Base::get_directions_of_shifts(std::vector<double>&
 
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::GetPosOfBindingSpot(Core::LinAlg::Matrix<3, 1>& pos,
+void Discret::ELEMENTS::Beam3Base::get_pos_of_binding_spot(Core::LinAlg::Matrix<3, 1>& pos,
     std::vector<double>& disp, Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotlocn,
     Core::Geo::MeshFree::BoundingBox const& periodic_boundingbox) const
 {
   const double xi = bspotposxi_.at(linkertype)[bspotlocn];
   // get position
-  GetPosAtXi(pos, xi, disp);
+  get_pos_at_xi(pos, xi, disp);
 
   // check if pos at xi lies outside the periodic box, if it does, shift it back in
-  periodic_boundingbox.Shift3D(pos);
+  periodic_boundingbox.shift3_d(pos);
 }
 
 /*--------------------------------------------------------------------------------------------*
@@ -417,12 +417,12 @@ void Discret::ELEMENTS::Beam3Base::get_triad_of_binding_spot(Core::LinAlg::Matri
 {
   const double xi = bspotposxi_.at(linkertype)[bspotlocn];
   // get position
-  GetTriadAtXi(triad, xi, disp);
+  get_triad_at_xi(triad, xi, disp);
 }
 
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Beam3Base::GetBoundingVolume(
+Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Beam3Base::get_bounding_volume(
     const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
     const Core::GeometricSearch::GeometricSearchParams& params) const
 {
@@ -440,14 +440,14 @@ Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Beam3Base::GetBoundingV
   for (unsigned int i_point = 0; i_point < n_points; ++i_point)
   {
     const double xi = -1.0 + 2.0 / (n_points - 1) * i_point;
-    this->GetPosAtXi(point, xi, element_posdofvec);
-    bounding_volume.AddPoint(point);
+    this->get_pos_at_xi(point, xi, element_posdofvec);
+    bounding_volume.add_point(point);
   }
 
   // Add the radius times a safety factor.
   const double safety_factor = params.get_beam_bounding_volume_scaling();
   const double radius = get_circular_cross_section_radius_for_interactions();
-  bounding_volume.ExtendBoundaries(radius * safety_factor);
+  bounding_volume.extend_boundaries(radius * safety_factor);
 
   return bounding_volume;
 }

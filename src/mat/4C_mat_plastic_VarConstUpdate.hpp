@@ -50,7 +50,7 @@ namespace Mat
       //@{
 
       /// provide access to material/summand by its ID
-      Teuchos::RCP<const Mat::Elastic::Summand> MaterialById(
+      Teuchos::RCP<const Mat::Elastic::Summand> material_by_id(
           const int id  ///< ID to look for in collection of summands
       ) const;
 
@@ -65,11 +65,11 @@ namespace Mat
   class PlasticElastHyperVCUType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "PlasticElastHyperVCUType"; }
+    std::string name() const override { return "PlasticElastHyperVCUType"; }
 
-    static PlasticElastHyperVCUType& Instance() { return instance_; };
+    static PlasticElastHyperVCUType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static PlasticElastHyperVCUType instance_;
@@ -94,16 +94,16 @@ namespace Mat
     ///
     /// every class implementing ParObject needs a unique id defined at the
     /// top of parobject.H (this file) and should return it in this method.
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return PlasticElastHyperVCUType::Instance().UniqueParObjectId();
+      return PlasticElastHyperVCUType::instance().unique_par_object_id();
     }
 
     /// \brief Pack this class so it can be communicated
     ///
     /// Resizes the vector data and stores all information of a class in it.
     /// The first information to be stored in data has to be the
-    /// unique parobject id delivered by UniqueParObjectId() which will then
+    /// unique parobject id delivered by unique_par_object_id() which will then
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
@@ -115,7 +115,7 @@ namespace Mat
     /// exact copy of an instance of a class on a different processor.
     /// The first entry in data has to be an integer which is the unique
     /// parobject id defined at the top of this file and delivered by
-    /// UniqueParObjectId().
+    /// unique_par_object_id().
     ///
     /// \param data (in) : vector storing all data to be unpacked into this
     ///                    instance.
@@ -124,13 +124,13 @@ namespace Mat
     //@}
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_plelasthyperVCU;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new PlasticElastHyperVCU(*this));
     }
@@ -153,10 +153,11 @@ namespace Mat
     void update() override;
 
     //! return names of visualization data
-    void VisNames(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) override;
 
     //! return visualization data
-    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+    bool vis_data(
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     // ********************************************************* //
     // ** here are some functions we don't need variationally ** //
@@ -167,7 +168,7 @@ namespace Mat
 
     /// evaluate quantities for elastic stiffness matrix
     /// in consideration of plastic history/deformation
-    virtual void EvaluateElast(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    virtual void evaluate_elast(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<3, 3>* deltaLp, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* pk2, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
         const int eleGID)
@@ -186,7 +187,7 @@ namespace Mat
 
     /// evaluate stresses and stiffness contribution
     /// due to thermal expansion
-    virtual void EvaluateCTvol(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    virtual void evaluate_c_tvol(const Core::LinAlg::Matrix<3, 3>* defgrd,
         Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>* cTvol,
         Core::LinAlg::Matrix<6, 6>* dCTvoldE, const int gp, const int eleGID)
     {
@@ -195,7 +196,7 @@ namespace Mat
 
     /// evaluate everything needed for the condensation of the plastic deformation
     /// at element level. (with zero plastic spin)
-    virtual void EvaluatePlast(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+    virtual void evaluate_plast(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< Deformation gradient
         const Core::LinAlg::Matrix<3, 3>* deltaDp,  ///< symmetric part of plastic flow increment
         const double temp,                          ///< current temperature
         Teuchos::ParameterList& params,             ///< Container for additional information
@@ -221,7 +222,7 @@ namespace Mat
 
     /// evaluate everything needed for the condensation of the plastic deformation
     /// at element level. (with plastic spin)
-    virtual void EvaluatePlast(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+    virtual void evaluate_plast(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< Deformation gradient
         const Core::LinAlg::Matrix<3, 3>*
             deltaLp,                          ///< plastic deformation gradient (non-symmetric)
         const double temp,                    ///< current temperature
@@ -247,26 +248,26 @@ namespace Mat
     }
 
     /// update plastic history variables
-    void UpdateGP(const int gp, const Core::LinAlg::Matrix<3, 3>* deltaDp) override
+    void update_gp(const int gp, const Core::LinAlg::Matrix<3, 3>* deltaDp) override
     {
       FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
     }
 
     /// get plastic algorithm parameters
-    void GetParams(double s, double cpl) override
+    void get_params(double s, double cpl) override
     {
       FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
     }
 
     /// is this GP active
-    virtual bool Active(int gp)
+    virtual bool active(int gp)
     {
       FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
       return false;
     }
 
     /// heating at this gp
-    double& HepDiss(int gp) override
+    double& hep_diss(int gp) override
     {
       FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
       static double a = 0.;
@@ -274,7 +275,7 @@ namespace Mat
     }
 
     /// derivative of heating at this gp
-    Core::LinAlg::SerialDenseVector& dHepDissDd(int gp) override
+    Core::LinAlg::SerialDenseVector& d_hep_diss_dd(int gp) override
     {
       FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
       static Core::LinAlg::SerialDenseVector tmp(0);
@@ -282,7 +283,7 @@ namespace Mat
     }
 
     // derivative of heating w.r.t. temperature
-    double& dHepDT(int gp) override
+    double& d_hep_dt(int gp) override
     {
       FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
       static double a = 0.;
@@ -291,7 +292,7 @@ namespace Mat
 
     // derivative of heating at each gp w.r.t. nodal temperature vector
     // (only EAS contribution)
-    Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseVector>> dHepDTeas() override
+    Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseVector>> d_hep_d_teas() override
     {
       FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
       return Teuchos::null;
@@ -355,7 +356,7 @@ namespace Mat
         std::vector<Core::LinAlg::Matrix<3, 3>>& MatrixExp1stDeriv,
         std::vector<std::vector<Core::LinAlg::Matrix<3, 3>>>& MatrixExp2ndDeriv);
 
-    virtual void EvaluatePlast(Core::LinAlg::Matrix<6, 9>& dPK2dFpinvIsoprinc,
+    virtual void evaluate_plast(Core::LinAlg::Matrix<6, 9>& dPK2dFpinvIsoprinc,
         const Core::LinAlg::Matrix<3, 1>& gamma, const Core::LinAlg::Matrix<8, 1>& delta,
         const Core::LinAlg::Matrix<3, 3>& id2, const Core::LinAlg::Matrix<6, 1>& Cpi,
         const Core::LinAlg::Matrix<3, 3>& Fpi, const Core::LinAlg::Matrix<3, 3>& CpiC,
@@ -385,10 +386,10 @@ namespace Mat
 
 
     /// Access to material params
-    Mat::PAR::PlasticElastHyperVCU* MatParams() const override { return params_; }
+    Mat::PAR::PlasticElastHyperVCU* mat_params() const override { return params_; }
 
     /// get dissipation mode
-    Inpar::TSI::DissipationMode DisMode() const override { return Inpar::TSI::pl_flow; }
+    Inpar::TSI::DissipationMode dis_mode() const override { return Inpar::TSI::pl_flow; }
 
     /// inverse plastic deformation gradient for each Gauss point at current state
     std::vector<Core::LinAlg::Matrix<3, 3>> plastic_defgrd_inverse_;

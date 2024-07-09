@@ -25,16 +25,16 @@ namespace Core::FE
    public:
     virtual ~GaussPoints() = default;
     /// number of gauss points
-    virtual int NumPoints() const = 0;
+    virtual int num_points() const = 0;
 
     /// spacial dimension
-    virtual int NumDimension() const = 0;
+    virtual int num_dimension() const = 0;
 
     /// gauss point coordinates
-    virtual const double* Point(int point) const = 0;
+    virtual const double* point(int point) const = 0;
 
     /// gauss weight
-    virtual double Weight(int point) const = 0;
+    virtual double weight(int point) const = 0;
 
     /// debug print
     virtual void print() const = 0;
@@ -46,39 +46,39 @@ namespace Core::FE
    public:
     CollectedGaussPoints(int size = 0) { gp_.reserve(size); }
 
-    void Append(double x, double y, double z, double w)
+    void append(double x, double y, double z, double w)
     {
       // if ( w > 1e-15 )
       gp_.push_back(Entry(x, y, z, w));
     }
 
-    void Append(const Core::LinAlg::Matrix<2, 1>& xi, double w)
+    void append(const Core::LinAlg::Matrix<2, 1>& xi, double w)
     {
       gp_.push_back(Entry(xi(0), xi(1), 0., w));
     }
 
-    void Append(const Core::LinAlg::Matrix<3, 1>& xi, double w)
+    void append(const Core::LinAlg::Matrix<3, 1>& xi, double w)
     {
       gp_.push_back(Entry(xi(0), xi(1), xi(2), w));
     }
 
-    void IncreaseReserved(int size) { gp_.reserve(gp_.size() + size); }
+    void increase_reserved(int size) { gp_.reserve(gp_.size() + size); }
 
-    int NumPoints() const override { return gp_.size(); }
+    int num_points() const override { return gp_.size(); }
 
-    int NumDimension() const override { return 3; }
+    int num_dimension() const override { return 3; }
 
-    const double* Point(int point) const override { return &gp_[point].data[0]; }
+    const double* point(int point) const override { return &gp_[point].data[0]; }
 
-    double Weight(int point) const override { return gp_[point].data[3]; }
+    double weight(int point) const override { return gp_[point].data[3]; }
 
     void print() const override
     {
       std::cout << " collected gauss points:\n";
-      for (int i = 0; i < NumPoints(); ++i)
+      for (int i = 0; i < num_points(); ++i)
       {
         std::cout << "    ";
-        for (int j = 0; j < NumDimension(); ++j) std::cout << gp_[i].data[j] << " ";
+        for (int j = 0; j < num_dimension(); ++j) std::cout << gp_[i].data[j] << " ";
         std::cout << gp_[i].data[3] << "\n";
       }
     }
@@ -108,36 +108,36 @@ namespace Core::FE
    public:
     explicit GaussPointsComposite(int size) { gp_.reserve(size); }
 
-    void Append(Teuchos::RCP<GaussPoints> gp) { gp_.push_back(gp); }
+    void append(Teuchos::RCP<GaussPoints> gp) { gp_.push_back(gp); }
 
     /// number of gauss points
-    int NumPoints() const override
+    int num_points() const override
     {
       int numpoints = 0;
       for (std::vector<Teuchos::RCP<GaussPoints>>::const_iterator i = gp_.begin(); i != gp_.end();
            ++i)
       {
         Teuchos::RCP<GaussPoints> gp = *i;
-        numpoints += gp->NumPoints();
+        numpoints += gp->num_points();
       }
       return numpoints;
     }
 
     /// spacial dimension
-    int NumDimension() const override { return gp_[0]->NumDimension(); }
+    int num_dimension() const override { return gp_[0]->num_dimension(); }
 
     /// gauss point coordinates
-    const double* Point(int point) const override
+    const double* point(int point) const override
     {
       Teuchos::RCP<GaussPoints> gp = find(point);
-      return gp->Point(point);
+      return gp->point(point);
     }
 
     /// gauss weight
-    double Weight(int point) const override
+    double weight(int point) const override
     {
       Teuchos::RCP<GaussPoints> gp = find(point);
-      return gp->Weight(point);
+      return gp->weight(point);
       //     if ( gp_[0]==gp )
       //     {
       //       return gp->Weight( point );
@@ -166,7 +166,7 @@ namespace Core::FE
            ++i)
       {
         Teuchos::RCP<GaussPoints> gp = *i;
-        int numpoints = gp->NumPoints();
+        int numpoints = gp->num_points();
         if (numpoints > point)
         {
           return gp;
@@ -183,9 +183,9 @@ namespace Core::FE
   class GaussPointCache
   {
    public:
-    static GaussPointCache& Instance();
+    static GaussPointCache& instance();
 
-    Teuchos::RCP<GaussPoints> Create(Core::FE::CellType distype, int degree);
+    Teuchos::RCP<GaussPoints> create(Core::FE::CellType distype, int degree);
 
    private:
     /// cache of already created gauss rules
@@ -210,10 +210,10 @@ namespace Core::FE
       void operator++() { point_ += 1; }
 
       /// point coordinates
-      const double* Point() const { return gp_->Point(point_); }
+      const double* point() const { return gp_->point(point_); }
 
       /// gauss weight at point
-      double Weight() const { return gp_->Weight(point_); }
+      double weight() const { return gp_->weight(point_); }
 
       /// actual point we are at
       int operator*() const { return point_; }
@@ -256,28 +256,28 @@ namespace Core::FE
 
     const_iterator begin() const { return GaussPointIterator(&*gp_, 0); }
 
-    iterator end() { return GaussPointIterator(&*gp_, gp_->NumPoints()); }
+    iterator end() { return GaussPointIterator(&*gp_, gp_->num_points()); }
 
-    const_iterator end() const { return GaussPointIterator(&*gp_, gp_->NumPoints()); }
+    const_iterator end() const { return GaussPointIterator(&*gp_, gp_->num_points()); }
 
     /// number of gauss points
-    int NumPoints() const { return gp_->NumPoints(); }
+    int num_points() const { return gp_->num_points(); }
 
     /// spacial dimension
-    int NumDimension() const { return gp_->NumDimension(); }
+    int num_dimension() const { return gp_->num_dimension(); }
 
     /// gauss point coordinates
-    const double* Point(int point) const { return gp_->Point(point); }
+    const double* point(int point) const { return gp_->point(point); }
 
     /// gauss weight
-    double Weight(int point) const { return gp_->Weight(point); }
+    double weight(int point) const { return gp_->weight(point); }
 
     /// debug print
     void print() const { gp_->print(); }
 
-    Teuchos::RCP<GaussPoints> Points() const { return gp_; }
+    Teuchos::RCP<GaussPoints> points() const { return gp_; }
 
-    void SetPoints(Teuchos::RCP<GaussPoints> gp) { gp_ = gp; }
+    void set_points(Teuchos::RCP<GaussPoints> gp) { gp_ = gp; }
 
     /// Create Gauss integration rule of given degree
     template <Core::FE::CellType distype>
@@ -285,9 +285,9 @@ namespace Core::FE
         const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& xie,
         int degree)
     {
-      Teuchos::RCP<GaussPoints> gp = GaussPointCache::Instance().Create(distype, degree);
+      Teuchos::RCP<GaussPoints> gp = GaussPointCache::instance().create(distype, degree);
       Teuchos::RCP<CollectedGaussPoints> cgp =
-          Teuchos::rcp(new CollectedGaussPoints(gp->NumPoints()));
+          Teuchos::rcp(new CollectedGaussPoints(gp->num_points()));
 
       GaussIntegration intpoints(gp);
 
@@ -315,7 +315,7 @@ namespace Core::FE
       for (Core::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
            ++iquad)
       {
-        Core::LinAlg::Matrix<nsd, 1> eta(iquad.Point());
+        Core::LinAlg::Matrix<nsd, 1> eta(iquad.point());
 
         // cell shape functions and their first derivatives
         Core::FE::shape_function<distype>(eta, funct);
@@ -330,7 +330,7 @@ namespace Core::FE
 
         double det = xjm.determinant();
 
-        cgp->Append(xi, iquad.Weight() * det);
+        cgp->append(xi, iquad.weight() * det);
       }
     }
 
@@ -351,12 +351,12 @@ namespace Core::FE
       Core::LinAlg::Matrix<nsd, 1> xi;
 
       Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp =
-          Teuchos::rcp(new Core::FE::CollectedGaussPoints(intpoints.NumPoints()));
+          Teuchos::rcp(new Core::FE::CollectedGaussPoints(intpoints.num_points()));
 
       for (Core::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
            ++iquad)
       {
-        Core::LinAlg::Matrix<nsd, 1> glo(iquad.Point());
+        Core::LinAlg::Matrix<nsd, 1> glo(iquad.point());
 
         bool insideele = Core::Geo::currentToVolumeElementCoordinates(distype, xie, glo, xi);
         if (not insideele && throw_error)
@@ -374,7 +374,7 @@ namespace Core::FE
 
         double det = xjm.determinant();
 
-        cgp->Append(xi, iquad.Weight() / det);
+        cgp->append(xi, iquad.weight() / det);
       }
       return cgp;
     }

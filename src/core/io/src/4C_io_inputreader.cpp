@@ -72,12 +72,12 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  std::string DatFileReader::MyInputfileName() const { return filename_; }
+  std::string DatFileReader::my_inputfile_name() const { return filename_; }
 
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  int DatFileReader::MyOutputFlag() const { return outflag_; }
+  int DatFileReader::my_output_flag() const { return outflag_; }
 
 
   /*----------------------------------------------------------------------*/
@@ -108,7 +108,7 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  bool DatFileReader::ReadSection(std::string name, Teuchos::ParameterList& list)
+  bool DatFileReader::read_section(std::string name, Teuchos::ParameterList& list)
   {
     if (name.length() < 3 or name[0] != '-' or name[1] != '-')
       FOUR_C_THROW("Illegal section name '%s'", name.c_str());
@@ -142,7 +142,7 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  std::vector<const char*> DatFileReader::Section(const std::string& name)
+  std::vector<const char*> DatFileReader::section(const std::string& name)
   {
     // The section name is desired from outside. Thus, we consider it as valid
     knownsections_[name] = true;
@@ -169,7 +169,7 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void DatFileReader::ReadDesign(const std::string& name,
+  void DatFileReader::read_design(const std::string& name,
       std::vector<std::vector<int>>& dobj_fenode,
       const std::function<const Core::FE::Discretization&(const std::string& name)>&
           get_discretization)
@@ -351,9 +351,9 @@ namespace Core::IO
 
           // collect all nodes which are outside the adapted bounding box
           std::set<int> dnodes;
-          for (const auto* node : actdis.MyRowNodeRange())
+          for (const auto* node : actdis.my_row_node_range())
           {
-            const auto& coord = node->X();
+            const auto& coord = node->x();
             std::array<double, 3> coords;
             coords[0] = coord[0];
             coords[1] = coord[1];
@@ -392,7 +392,7 @@ namespace Core::IO
             if ((coords[0] <= bbox[0] || coords[0] >= bbox[3]) &&
                 (coords[1] <= bbox[1] || coords[1] >= bbox[4]) &&
                 (coords[2] <= bbox[2] || coords[2] >= bbox[5]))
-              dnodes.insert(node->Id());
+              dnodes.insert(node->id());
           }
           Core::LinAlg::GatherAll(dnodes, *comm_);
           topology[dobj - 1].insert(dnodes.begin(), dnodes.end());
@@ -425,7 +425,7 @@ namespace Core::IO
   //----------------------------------------------------------------------
   /// read a knotvector section (for isogeometric analysis)
   //----------------------------------------------------------------------
-  void DatFileReader::ReadKnots(
+  void DatFileReader::read_knots(
       const std::string& name, Teuchos::RCP<Core::FE::Nurbs::Knotvector>& disknots)
   {
     // io to shell
@@ -471,7 +471,7 @@ namespace Core::IO
 
     if (myrank == 0)
     {
-      if (!MyOutputFlag())
+      if (!my_output_flag())
       {
         Core::IO::cout << "Reading knot vectors for " << name << " discretization :\n";
         fflush(stdout);
@@ -580,7 +580,7 @@ namespace Core::IO
 
     if (myrank == 0)
     {
-      if (!MyOutputFlag())
+      if (!my_output_flag())
       {
         printf("                        %8d patches", npatches);
         fflush(stdout);
@@ -788,7 +788,7 @@ namespace Core::IO
           {
             for (int rr = 0; rr < nurbs_dim; ++rr)
             {
-              disknots->SetKnots(
+              disknots->set_knots(
                   rr, npatch, degree[rr], n_x_m_x_l[rr], knotvectortype[rr], patch_knots[rr]);
             }
             file >> tmp;
@@ -834,7 +834,7 @@ namespace Core::IO
 
     if (myrank == 0)
     {
-      if (!MyOutputFlag())
+      if (!my_output_flag())
       {
         Core::IO::cout << " in...." << time.totalElapsedTime(true) << " secs\n";
 
@@ -1158,7 +1158,7 @@ namespace Core::IO
         knownsections_.begin(), knownsections_.end(), [](const auto& kv) { return !kv.second; });
 
     // now it's time to create noise on the screen
-    if (printout and (Comm()->MyPID() == 0))
+    if (printout and (get_comm()->MyPID() == 0))
     {
       Core::IO::cout << "\nERROR!"
                      << "\n--------"
@@ -1174,7 +1174,7 @@ namespace Core::IO
     // we wait till all procs are here. Otherwise a hang up might occur where
     // one proc ended with FOUR_C_THROW but other procs were not finished and waited...
     // we also want to have the printing above being finished.
-    Comm()->Barrier();
+    get_comm()->Barrier();
     if (printout)
       FOUR_C_THROW(
           "Unknown sections detected. Correct this! Find hints on these unknown sections above.");

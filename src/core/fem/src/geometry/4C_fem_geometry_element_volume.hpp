@@ -36,10 +36,10 @@ namespace Core::Geo
     double length = 0.0;
 
     // integration loop
-    for (int iquad = 0; iquad < intpoints.NumPoints(); ++iquad)
+    for (int iquad = 0; iquad < intpoints.num_points(); ++iquad)
     {
       // coordinates of the current integration point in element coordinates \xi
-      eleCoord(0) = intpoints.Point(iquad)[0];
+      eleCoord(0) = intpoints.point(iquad)[0];
 
       // shape functions and their first derivatives
       Core::FE::shape_function_1D_deriv1(deriv, eleCoord(0), distype);
@@ -51,7 +51,7 @@ namespace Core::Geo
         for (int i = 0; i < 1; ++i)
           for (int j = 0; j < 3; ++j) xjm(i, j) += deriv(i, inode) * xyze(j, inode);
 
-      const double fac = intpoints.Weight(iquad) * xjm.norm2();
+      const double fac = intpoints.weight(iquad) * xjm.norm2();
 
       length += fac;
     }  // end loop over gauss points
@@ -75,11 +75,11 @@ namespace Core::Geo
     double area = 0.0;
 
     // integration loop
-    for (int iquad = 0; iquad < intpoints.NumPoints(); ++iquad)
+    for (int iquad = 0; iquad < intpoints.num_points(); ++iquad)
     {
       // coordinates of the current integration point in element coordinates \xi
-      eleCoord(0) = intpoints.Point(iquad)[0];
-      eleCoord(1) = intpoints.Point(iquad)[1];
+      eleCoord(0) = intpoints.point(iquad)[0];
+      eleCoord(1) = intpoints.point(iquad)[1];
 
       // shape functions and their first derivatives
       Core::FE::shape_function_2D_deriv1(deriv, eleCoord(0), eleCoord(1), distype);
@@ -94,7 +94,7 @@ namespace Core::Geo
       xjm_xjmt.multiply_nt<3>(xjm, xjm);
 
       const double det = xjm_xjmt.determinant();
-      const double fac = intpoints.Weight(iquad) * std::sqrt(det);
+      const double fac = intpoints.weight(iquad) * std::sqrt(det);
 
       area += fac;
     }  // end loop over gauss points
@@ -119,12 +119,12 @@ namespace Core::Geo
     double vol = 0.0;
 
     // integration loop
-    for (int iquad = 0; iquad < intpoints.NumPoints(); ++iquad)
+    for (int iquad = 0; iquad < intpoints.num_points(); ++iquad)
     {
       // coordinates of the current integration point in element coordinates \xi
-      eleCoord(0) = intpoints.Point(iquad)[0];
-      eleCoord(1) = intpoints.Point(iquad)[1];
-      eleCoord(2) = intpoints.Point(iquad)[2];
+      eleCoord(0) = intpoints.point(iquad)[0];
+      eleCoord(1) = intpoints.point(iquad)[1];
+      eleCoord(2) = intpoints.point(iquad)[2];
 
       // shape functions and their first derivatives
       Core::FE::shape_function_3D_deriv1(deriv, eleCoord(0), eleCoord(1), eleCoord(2), distype);
@@ -137,7 +137,7 @@ namespace Core::Geo
           for (int j = 0; j < 3; ++j) xjm(i, j) += deriv(i, inode) * xyze(j, inode);
 
       const double det = xjm.determinant();
-      const double fac = intpoints.Weight(iquad) * det;
+      const double fac = intpoints.weight(iquad) * det;
 
       if (det <= 0.0) FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT: %g", det);
 

@@ -92,11 +92,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Membrane and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-constructor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       //! number of element nodes
       static constexpr int numnod_ = Core::FE::num_nodes<distype>;
@@ -116,29 +116,29 @@ namespace Discret
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override;
+      int num_line() const override;
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override { return 1; }
+      int num_surface() const override { return 1; }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -146,25 +146,25 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
         switch (distype)
         {
           case Core::FE::CellType::tri3:
           {
-            return MembraneTri3Type::Instance().UniqueParObjectId();
+            return MembraneTri3Type::instance().unique_par_object_id();
           }
           case Core::FE::CellType::tri6:
           {
-            return MembraneTri6Type::Instance().UniqueParObjectId();
+            return MembraneTri6Type::instance().unique_par_object_id();
           }
           case Core::FE::CellType::quad4:
           {
-            return MembraneQuad4Type::Instance().UniqueParObjectId();
+            return MembraneQuad4Type::instance().unique_par_object_id();
           }
           case Core::FE::CellType::quad9:
           {
-            return MembraneQuad9Type::Instance().UniqueParObjectId();
+            return MembraneQuad9Type::instance().unique_par_object_id();
           }
           default:
             FOUR_C_THROW("unknown element type!");
@@ -204,7 +204,7 @@ namespace Discret
 
       \param nummat (in): number of requested material
       */
-      virtual Teuchos::RCP<Mat::So3Material> SolidMaterial(int nummat = 0) const;
+      virtual Teuchos::RCP<Mat::So3Material> solid_material(int nummat = 0) const;
 
       /*!
       \brief Get number of degrees of freedom of a certain node
@@ -215,7 +215,7 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override { return noddof_; }
+      int num_dof_per_node(const Core::Nodes::Node& node) const override { return noddof_; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -235,28 +235,28 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
         switch (distype)
         {
           case Core::FE::CellType::tri3:
           {
-            return MembraneTri3Type::Instance();
+            return MembraneTri3Type::instance();
           }
           break;
           case Core::FE::CellType::tri6:
           {
-            return MembraneTri6Type::Instance();
+            return MembraneTri6Type::instance();
           }
           break;
           case Core::FE::CellType::quad4:
           {
-            return MembraneQuad4Type::Instance();
+            return MembraneQuad4Type::instance();
           }
           break;
           case Core::FE::CellType::quad9:
           {
-            return MembraneQuad9Type::Instance();
+            return MembraneQuad9Type::instance();
           }
           break;
           default:
@@ -264,7 +264,7 @@ namespace Discret
             break;
         }
         // Intel compiler needs a return so
-        return MembraneQuad4Type::Instance();
+        return MembraneQuad4Type::instance();
       };
 
       /*!
@@ -288,7 +288,7 @@ namespace Discret
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      void VisNames(std::map<std::string, int>& names) override;
+      void vis_names(std::map<std::string, int>& names) override;
 
       /*!
       \brief Query data to be visualized using BINIO of a given name
@@ -304,7 +304,7 @@ namespace Discret
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if element recognizes the name
       */
-      bool VisData(const std::string& name, std::vector<double>& data) override;
+      bool vis_data(const std::string& name, std::vector<double>& data) override;
 
       //@}
 
@@ -313,7 +313,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& eledistype,
+      bool read_element(const std::string& eletype, const std::string& eledistype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -397,13 +397,13 @@ namespace Discret
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline bool IsParamsInterface() const override { return (not interface_ptr_.is_null()); }
+      inline bool is_params_interface() const override { return (not interface_ptr_.is_null()); }
 
       /** \brief get access to the parameter interface pointer
        *
        *  \author hiermeier
        *  \date 04/16 */
-      Teuchos::RCP<Core::Elements::ParamsInterface> ParamsInterfacePtr() override;
+      Teuchos::RCP<Core::Elements::ParamsInterface> params_interface_ptr() override;
 
      protected:
       /** \brief get access to the interface
@@ -412,7 +412,7 @@ namespace Discret
        *  \date 04/16 */
       inline Core::Elements::ParamsInterface& params_interface()
       {
-        if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
+        if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
       }
 
@@ -517,18 +517,18 @@ namespace Discret
     class MembraneLine2Type : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "Membrane_line2Type"; }
+      std::string name() const override { return "Membrane_line2Type"; }
 
-      static MembraneLine2Type& Instance();
+      static MembraneLine2Type& instance();
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -546,18 +546,18 @@ namespace Discret
     class MembraneLine3Type : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "Membrane_line3Type"; }
+      std::string name() const override { return "Membrane_line3Type"; }
 
-      static MembraneLine3Type& Instance();
+      static MembraneLine3Type& instance();
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -620,11 +620,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of an element and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -632,17 +632,17 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
         switch (Core::FE::DisTypeToFaceShapeType<distype2>::shape)
         {
           case Core::FE::CellType::line2:
           {
-            return MembraneLine2Type::Instance().UniqueParObjectId();
+            return MembraneLine2Type::instance().unique_par_object_id();
           }
           case Core::FE::CellType::line3:
           {
-            return MembraneLine3Type::Instance().UniqueParObjectId();
+            return MembraneLine3Type::instance().unique_par_object_id();
           }
           default:
             FOUR_C_THROW("unknown line type!");
@@ -677,7 +677,7 @@ namespace Discret
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Get number of degrees of freedom of a certain node
@@ -688,7 +688,7 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
+      int num_dof_per_node(const Core::Nodes::Node& node) const override { return 3; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -720,24 +720,24 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
         switch (Core::FE::DisTypeToFaceShapeType<distype2>::shape)
         {
           case Core::FE::CellType::line2:
           {
-            return MembraneLine2Type::Instance();
+            return MembraneLine2Type::instance();
           }
           case Core::FE::CellType::line3:
           {
-            return MembraneLine3Type::Instance();
+            return MembraneLine3Type::instance();
           }
           default:
             FOUR_C_THROW("unknown line type!");
             break;
         }
         // Intel compiler needs a return so
-        return MembraneLine2Type::Instance();
+        return MembraneLine2Type::instance();
       };
 
       //@}

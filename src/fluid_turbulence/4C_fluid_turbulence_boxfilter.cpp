@@ -104,14 +104,14 @@ FLD::Boxfilter::Boxfilter(
 /*----------------------------------------------------------------------*
  | add some scatra specific parameters                  rasthofer 08/12 |
  * ---------------------------------------------------------------------*/
-void FLD::Boxfilter::AddScatra(Teuchos::RCP<Core::FE::Discretization> scatradis)
+void FLD::Boxfilter::add_scatra(Teuchos::RCP<Core::FE::Discretization> scatradis)
 {
   scatradiscret_ = scatradis;
 
   return;
 }
 
-void FLD::Boxfilter::InitializeVreman()
+void FLD::Boxfilter::initialize_vreman()
 {
   strainrate_ = true;
   expression_ = true;
@@ -136,7 +136,7 @@ void FLD::Boxfilter::initialize_vreman_scatra(Teuchos::RCP<Core::FE::Discretizat
 /*---------------------------------------------------------------------*
  | Perform box filter operation                                        |
  *---------------------------------------------------------------------*/
-void FLD::Boxfilter::ApplyFilter(const Teuchos::RCP<const Epetra_Vector> velocity,
+void FLD::Boxfilter::apply_filter(const Teuchos::RCP<const Epetra_Vector> velocity,
     const Teuchos::RCP<const Epetra_Vector> scalar, const double thermpress,
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle)
 {
@@ -146,7 +146,7 @@ void FLD::Boxfilter::ApplyFilter(const Teuchos::RCP<const Epetra_Vector> velocit
   return;
 }
 
-void FLD::Boxfilter::ApplyFilterScatra(const Teuchos::RCP<const Epetra_Vector> scalar,
+void FLD::Boxfilter::apply_filter_scatra(const Teuchos::RCP<const Epetra_Vector> scalar,
     const double thermpress, const Teuchos::RCP<const Epetra_Vector> dirichtoggle, const int ndsvel)
 {
   // perform filtering depending on the LES model
@@ -175,7 +175,7 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
   filterparams.set("thermpress", thermpress);
 
   // set state vector to pass distributed vector to the element
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("u and p (trial)", velocity);
   discret_->set_state("T (trial)", scalar);
 
@@ -188,7 +188,7 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
 
   // ---------------------------------------------------------------
   // get a vector layout from the discretization to construct
-  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+  const Epetra_Map* noderowmap = discret_->node_row_map();
 
   // alloc an additional vector to store/add up the patch volume
   Teuchos::RCP<Epetra_Vector> patchvol = Teuchos::rcp(new Epetra_Vector(*noderowmap, true));
@@ -233,10 +233,10 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
   // on the element
 
   // loop all elements on this proc (including ghosted ones)
-  for (int nele = 0; nele < discret_->NumMyColElements(); ++nele)
+  for (int nele = 0; nele < discret_->num_my_col_elements(); ++nele)
   {
     // get the element
-    Core::Elements::Element* ele = discret_->lColElement(nele);
+    Core::Elements::Element* ele = discret_->l_col_element(nele);
 
     // provide vectors for filtered quantities
     Teuchos::RCP<std::vector<double>> vel_hat =
@@ -305,13 +305,14 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
     std::vector<int> lm;
     std::vector<int> lmowner;
     std::vector<int> lmstride;
-    ele->LocationVector(*discret_, lm, lmowner, lmstride);
+    ele->location_vector(*discret_, lm, lmowner, lmstride);
 
     // call the element evaluate method to integrate functions
     // against heaviside function element
     int err = ele->evaluate(filterparams, *discret_, lm, emat1, emat2, evec1, evec2, evec2);
     if (err)
-      FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret_->Comm().MyPID(), ele->Id(), err);
+      FOUR_C_THROW(
+          "Proc %d: Element %d returned err=%d", discret_->get_comm().MyPID(), ele->id(), err);
 
     // get contribution to patch volume of this element. Add it up.
     double volume_contribution = filterparams.get<double>("volume_contribution");
@@ -324,16 +325,16 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
     double alpha2_hat = filterparams.get<double>("alpha2_hat");
 
     // loop all nodes of this element, add values to the global vectors
-    Core::Nodes::Node** elenodes = ele->Nodes();
+    Core::Nodes::Node** elenodes = ele->nodes();
     for (int nn = 0; nn < ele->num_node(); ++nn)
     {
       Core::Nodes::Node* node = (elenodes[nn]);
 
       // we are interested only in  row nodes
-      if (node->Owner() == discret_->Comm().MyPID())
+      if (node->owner() == discret_->get_comm().MyPID())
       {
         // now assemble the computed values into the global vector
-        int id = (node->Id());
+        int id = (node->id());
 
         patchvol->SumIntoGlobalValues(1, &volume_contribution, &id);
 
@@ -432,7 +433,7 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
       for (const auto& [master_gid, slave_gids] : *pbcmapmastertoslave)
       {
         // loop only owned nodes
-        if ((discret_->gNode(master_gid))->Owner() != discret_->Comm().MyPID()) continue;
+        if ((discret_->g_node(master_gid))->owner() != discret_->get_comm().MyPID()) continue;
 
         int lid = noderowmap->LID(master_gid);
         if (lid < 0) FOUR_C_THROW("nodelid < 0 ?");
@@ -593,13 +594,13 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
     // loop all nodes on the processor
-    for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
+    for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); ++lnodeid)
     {
       // get the processor local node
-      Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+      Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
 
       // the set of degrees of freedom associated with the node
-      std::vector<int> nodedofset = discret_->Dof(lnode);
+      std::vector<int> nodedofset = discret_->dof(lnode);
 
       // check whether the node is on a wall, i.e. all velocity dofs
       // are Dirichlet constrained
@@ -636,13 +637,13 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
            // get fluid viscosity from material definition                                //  we do
            // not want to multiply the reynolds stress by density
           int id =
-              Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_fluid);
+              Global::Problem::instance()->materials()->first_id_by_type(Core::Materials::m_fluid);
           if (id == -1)
             FOUR_C_THROW("Could not find Newtonian fluid material");
           else
           {
             const Core::Mat::PAR::Parameter* mat =
-                Global::Problem::Instance()->Materials()->ParameterById(id);
+                Global::Problem::instance()->materials()->parameter_by_id(id);
             const Mat::PAR::NewtonianFluid* actmat =
                 static_cast<const Mat::PAR::NewtonianFluid*>(mat);
             // we need the kinematic viscosity here
@@ -773,7 +774,7 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
   // the normalization of the box filter function
 
   // loop all nodes on the processor
-  for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
+  for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); ++lnodeid)
   {
     double thisvol = (*patchvol)[lnodeid];
 
@@ -844,7 +845,7 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
   }    // end loop nodes
 
   // clean up
-  discret_->ClearState();
+  discret_->clear_state();
 
   // calculate fine scale velocities
   if (finescale_velocity_)
@@ -854,14 +855,14 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
       FOUR_C_THROW(
           "filtered velocity is required in the box filter to calculate the fine scale velocity");
     // loop all elements on this proc
-    for (int nid = 0; nid < discret_->NumMyRowNodes(); ++nid)
+    for (int nid = 0; nid < discret_->num_my_row_nodes(); ++nid)
     {
       // get the node
-      Core::Nodes::Node* node = discret_->lRowNode(nid);
+      Core::Nodes::Node* node = discret_->l_row_node(nid);
       // get global ids of all dofs of the node
-      std::vector<int> dofs = discret_->Dof(node);
+      std::vector<int> dofs = discret_->dof(node);
       // we only loop over all velocity dofs
-      for (int d = 0; d < discret_->NumDof(node) - 1; ++d)
+      for (int d = 0; d < discret_->num_dof(node) - 1; ++d)
       {
         // get global id of the dof
         int gid = dofs[d];
@@ -883,7 +884,7 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
   // the communication part: Export from row to column map
 
   // get the column map in order to communicate the result to all ghosted nodes
-  const Epetra_Map* nodecolmap = discret_->NodeColMap();
+  const Epetra_Map* nodecolmap = discret_->node_col_map();
 
   // allocate distributed vectors in col map format to have the filtered
   // quantities available on ghosted nodes
@@ -946,7 +947,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
   filterparams.set("thermpress", thermpress);
 
   // set state vector to pass distributed vector to the element
-  scatradiscret_->ClearState();
+  scatradiscret_->clear_state();
   scatradiscret_->set_state("scalar", scalar);
 
   // dummies
@@ -958,7 +959,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
 
   // ---------------------------------------------------------------
   // get a vector layout from the discretization to construct
-  const Epetra_Map* noderowmap = scatradiscret_->NodeRowMap();
+  const Epetra_Map* noderowmap = scatradiscret_->node_row_map();
 
   // alloc an additional vector to store/add up the patch volume
   Teuchos::RCP<Epetra_Vector> patchvol = Teuchos::rcp(new Epetra_Vector(*noderowmap, true));
@@ -995,10 +996,10 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
   // on the element
 
   // loop all elements on this proc (including ghosted ones)
-  for (int nele = 0; nele < scatradiscret_->NumMyColElements(); ++nele)
+  for (int nele = 0; nele < scatradiscret_->num_my_col_elements(); ++nele)
   {
     // get the element
-    Core::Elements::Element* ele = scatradiscret_->lColElement(nele);
+    Core::Elements::Element* ele = scatradiscret_->l_col_element(nele);
 
     // provide vectors for filtered quantities //declaration necessary even if not used
     Teuchos::RCP<std::vector<double>> vel_hat =
@@ -1043,15 +1044,15 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
     double volume_contribution = 0.0;
 
     // get element location vector, dirichlet flags and ownerships
-    Core::Elements::Element::LocationArray la(scatradiscret_->NumDofSets());
-    ele->LocationVector(*scatradiscret_, la, false);
+    Core::Elements::Element::LocationArray la(scatradiscret_->num_dof_sets());
+    ele->location_vector(*scatradiscret_, la, false);
 
     // call the element evaluate method to integrate functions
     // against heaviside function element
     int err = ele->evaluate(filterparams, *scatradiscret_, la, emat1, emat2, evec1, evec2, evec2);
     if (err)
-      FOUR_C_THROW(
-          "Proc %d: Element %d returned err=%d", scatradiscret_->Comm().MyPID(), ele->Id(), err);
+      FOUR_C_THROW("Proc %d: Element %d returned err=%d", scatradiscret_->get_comm().MyPID(),
+          ele->id(), err);
 
     // get contribution to patch volume of this element. Add it up.
     // double volume_contribution = filterparams.get<double>("volume_contribution");
@@ -1064,16 +1065,16 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
     if (phi2_) phi2_hat = filterparams.get<double>("phi2_hat");
     if (phiexpression_) phiexpression_hat = filterparams.get<double>("phiexpression_hat");
     // loop all nodes of this element, add values to the global vectors
-    Core::Nodes::Node** elenodes = ele->Nodes();
+    Core::Nodes::Node** elenodes = ele->nodes();
     for (int nn = 0; nn < ele->num_node(); ++nn)
     {
       Core::Nodes::Node* node = (elenodes[nn]);
 
       // we are interested only in  row nodes
-      if (node->Owner() == scatradiscret_->Comm().MyPID())
+      if (node->owner() == scatradiscret_->get_comm().MyPID())
       {
         // now assemble the computed values into the global vector
-        int id = (node->Id());
+        int id = (node->id());
 
         patchvol->SumIntoGlobalValues(1, &volume_contribution, &id);
         filtered_dens_->SumIntoGlobalValues(1, &dens_hat, &id);
@@ -1141,7 +1142,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
       for (const auto& [master_gid, slave_gids] : *pbcmapmastertoslave)
       {
         // loop only owned nodes
-        if ((scatradiscret_->gNode(master_gid))->Owner() != scatradiscret_->Comm().MyPID())
+        if ((scatradiscret_->g_node(master_gid))->owner() != scatradiscret_->get_comm().MyPID())
           continue;
 
         int lid = noderowmap->LID(master_gid);
@@ -1281,7 +1282,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
   // ---------------------------------------------------------------
   // extract convective velocity from scatra discretization
   Teuchos::RCP<const Epetra_Vector> convel =
-      scatradiscret_->GetState(ndsvel, "convective velocity field");
+      scatradiscret_->get_state(ndsvel, "convective velocity field");
   if (convel == Teuchos::null) FOUR_C_THROW("Cannot extract convective velocity field");
 
   // replace values at dirichlet nodes
@@ -1291,28 +1292,28 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
 
     // as we want to identify nodes at walls,
     // we have to be sure that fluid and scatra are still matching
-    if (not scatradiscret_->NodeRowMap()->SameAs(*(discret_->NodeRowMap())))
+    if (not scatradiscret_->node_row_map()->SameAs(*(discret_->node_row_map())))
       FOUR_C_THROW("Fluid and ScaTra noderowmaps are NOT identical.");
 
     // loop all nodes on the processor
-    for (int lnodeid = 0; lnodeid < scatradiscret_->NumMyRowNodes(); ++lnodeid)
+    for (int lnodeid = 0; lnodeid < scatradiscret_->num_my_row_nodes(); ++lnodeid)
     {
       // get the processor local node
-      Core::Nodes::Node* lnode = scatradiscret_->lRowNode(lnodeid);
-      std::vector<int> nodedofs = scatradiscret_->Dof(ndsvel, lnode);
+      Core::Nodes::Node* lnode = scatradiscret_->l_row_node(lnodeid);
+      std::vector<int> nodedofs = scatradiscret_->dof(ndsvel, lnode);
       // get the corresponding porcessor local fluid node
-      Core::Nodes::Node* fluidlnode = discret_->lRowNode(lnodeid);
+      Core::Nodes::Node* fluidlnode = discret_->l_row_node(lnodeid);
 
       // do we have a dirichlet boundary conditions in the fluid
       std::vector<Core::Conditions::Condition*> dbccond;
-      fluidlnode->GetCondition("Dirichlet", dbccond);
+      fluidlnode->get_condition("Dirichlet", dbccond);
 
       // yes, we have a dirichlet boundary condition
       if (dbccond.size() > 0)
       {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-        if ((lnode->X()[0] != fluidlnode->X()[0]) or (lnode->X()[1] != fluidlnode->X()[1]) or
-            (lnode->X()[2] != fluidlnode->X()[2]))
+        if ((lnode->x()[0] != fluidlnode->x()[0]) or (lnode->x()[1] != fluidlnode->x()[1]) or
+            (lnode->x()[2] != fluidlnode->x()[2]))
           FOUR_C_THROW("Nodes do not match.");
 #endif
         // we only want to modify nodes at the wall, as the model should vanish there
@@ -1334,7 +1335,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
         {
           // do we also have a temperature dirichlet boundary condition
           // get the set of temperature degrees of freedom associated with the node
-          std::vector<int> nodedofset = scatradiscret_->Dof(0, lnode);
+          std::vector<int> nodedofset = scatradiscret_->dof(0, lnode);
           if (nodedofset.size() > 1)
             FOUR_C_THROW(
                 "Dynamic Smagorinsky or dynamic Vreman currently only implemented for one scalar "
@@ -1449,7 +1450,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
   // the normalization of the box filter function
 
   // loop all nodes on the processor
-  for (int lnodeid = 0; lnodeid < scatradiscret_->NumMyRowNodes(); ++lnodeid)
+  for (int lnodeid = 0; lnodeid < scatradiscret_->num_my_row_nodes(); ++lnodeid)
   {
     double thisvol = (*patchvol)[lnodeid];
 
@@ -1501,13 +1502,13 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
   }  // end loop nodes
 
   // clean up
-  scatradiscret_->ClearState();
+  scatradiscret_->clear_state();
 
   // ----------------------------------------------------------
   // the communication part: Export from row to column map
 
   // get the column map in order to communicate the result to all ghosted nodes
-  const Epetra_Map* nodecolmap = scatradiscret_->NodeColMap();
+  const Epetra_Map* nodecolmap = scatradiscret_->node_col_map();
 
   // allocate distributed vectors in col map format to have the filtered
   // quantities available on ghosted nodes

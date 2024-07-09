@@ -54,14 +54,14 @@ namespace Core::LinAlg
     /*!
     \brief reindex a given matrix
     */
-    Teuchos::RCP<Epetra_CrsMatrix> Permute(Epetra_CrsMatrix* Aorig)
+    Teuchos::RCP<Epetra_CrsMatrix> permute(Epetra_CrsMatrix* Aorig)
     {
       // shallow reindex the matrix
       EpetraExt::CrsMatrix_Reindex reindexer(*ndofrowmap_);
       Epetra_CrsMatrix& reA = reindexer(*Aorig);
       reA.FillComplete();
       Teuchos::RCP<Epetra_CrsMatrix> dwA =
-          Teuchos::rcp(new Epetra_CrsMatrix(::Copy, DownwindRowMap(), reA.MaxNumEntries()));
+          Teuchos::rcp(new Epetra_CrsMatrix(::Copy, downwind_row_map(), reA.MaxNumEntries()));
       dwA->Export(reA, *sexporter_, Insert);
       if (!dwA->Filled()) dwA->FillComplete();
       return dwA;
@@ -70,17 +70,17 @@ namespace Core::LinAlg
     /*!
     \brief reindex a given vector
     */
-    Teuchos::RCP<Epetra_MultiVector> Permute(Epetra_MultiVector* xorig)
+    Teuchos::RCP<Epetra_MultiVector> permute(Epetra_MultiVector* xorig)
     {
-      Epetra_MultiVector* dwx = new Epetra_Vector(DownwindRowMap(), false);
-      Permute(xorig, dwx);
+      Epetra_MultiVector* dwx = new Epetra_Vector(downwind_row_map(), false);
+      permute(xorig, dwx);
       return Teuchos::rcp(dwx);
     }
 
     /*!
     \brief reindex a given vector
     */
-    void Permute(Epetra_MultiVector* xorig, Epetra_MultiVector* dwx)
+    void permute(Epetra_MultiVector* xorig, Epetra_MultiVector* dwx)
     {
       // shallow reindex the vector
       EpetraExt::MultiVector_Reindex reindexer(*ndofrowmap_);
@@ -92,7 +92,7 @@ namespace Core::LinAlg
     /*!
     \brief undo reindexing of a given vector
     */
-    void InvPermute(Epetra_MultiVector* xdw, Epetra_MultiVector* xorig)
+    void inv_permute(Epetra_MultiVector* xdw, Epetra_MultiVector* xorig)
     {
       EpetraExt::MultiVector_Reindex reindex(*ndofrowmap_);
       Epetra_MultiVector& rex = reindex(*xorig);
@@ -103,7 +103,7 @@ namespace Core::LinAlg
     /*!
     \brief Get downwinded row map of problem
     */
-    inline const Epetra_Map& DownwindRowMap() { return *sndofrowmap_; }
+    inline const Epetra_Map& downwind_row_map() { return *sndofrowmap_; }
 
    private:
     // don't want copy-ctor and = operator

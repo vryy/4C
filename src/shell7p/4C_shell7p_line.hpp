@@ -23,18 +23,18 @@ namespace Discret::ELEMENTS
   class Shell7pLineType : public Core::Elements::ElementType
   {
    public:
-    [[nodiscard]] std::string Name() const override { return "Shell7pLineType"; }
+    [[nodiscard]] std::string name() const override { return "Shell7pLineType"; }
 
-    static Shell7pLineType& Instance();
+    static Shell7pLineType& instance();
 
-    Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+    Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
     void nodal_block_information(
         Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
     {
     }
 
-    Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+    Core::LinAlg::SerialDenseMatrix compute_null_space(
         Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
     {
       Teuchos::SerialDenseMatrix<int, double> nullspace;
@@ -91,11 +91,11 @@ namespace Discret::ELEMENTS
     Shell7pLine& operator=(Shell7pLine&& other) noexcept = default;
     //! @}
 
-    [[nodiscard]] Core::Elements::Element* Clone() const override;
+    [[nodiscard]] Core::Elements::Element* clone() const override;
 
-    [[nodiscard]] inline int UniqueParObjectId() const override
+    [[nodiscard]] inline int unique_par_object_id() const override
     {
-      return Shell7pLineType::Instance().UniqueParObjectId();
+      return Shell7pLineType::instance().unique_par_object_id();
     };
 
     void pack(Core::Communication::PackBuffer& data) const override;
@@ -104,9 +104,9 @@ namespace Discret::ELEMENTS
 
     //! @name Access methods
     //! @{
-    [[nodiscard]] Core::FE::CellType Shape() const override;
+    [[nodiscard]] Core::FE::CellType shape() const override;
 
-    [[nodiscard]] int NumDofPerNode(const Core::Nodes::Node& node) const override
+    [[nodiscard]] int num_dof_per_node(const Core::Nodes::Node& node) const override
     {
       return node_dof_;
     }
@@ -125,9 +125,9 @@ namespace Discret::ELEMENTS
 
     void print(std::ostream& os) const override;
 
-    [[nodiscard]] Core::Elements::ElementType& ElementType() const override
+    [[nodiscard]] Core::Elements::ElementType& element_type() const override
     {
-      return Shell7pLineType::Instance();
+      return Shell7pLineType::instance();
     }
     //@}
 
@@ -156,9 +156,9 @@ namespace Discret::ELEMENTS
     {
       for (int i = 0; i < num_node(); ++i)
       {
-        x(i, 0) = Nodes()[i]->X()[0];
-        x(i, 1) = Nodes()[i]->X()[1];
-        x(i, 2) = Nodes()[i]->X()[2];
+        x(i, 0) = nodes()[i]->x()[0];
+        x(i, 1) = nodes()[i]->x()[1];
+        x(i, 2) = nodes()[i]->x()[2];
       }
     }
 

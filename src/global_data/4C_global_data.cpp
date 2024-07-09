@@ -41,7 +41,7 @@ std::vector<Global::Problem*> Global::Problem::instances_;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Global::Problem* Global::Problem::Instance(int num)
+Global::Problem* Global::Problem::instance(int num)
 {
   if (num > static_cast<int>(instances_.size()) - 1)
   {
@@ -54,7 +54,7 @@ Global::Problem* Global::Problem::Instance(int num)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::Problem::Done()
+void Global::Problem::done()
 {
   // destroy singleton objects when the problem object is still alive
   for (auto* instance : instances_)
@@ -93,12 +93,12 @@ Global::Problem::Problem()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::ProblemType Global::Problem::GetProblemType() const { return probtype_; }
+Core::ProblemType Global::Problem::get_problem_type() const { return probtype_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::string Global::Problem::ProblemName() const
+std::string Global::Problem::problem_name() const
 {
   std::map<std::string, Core::ProblemType> map = Inpar::PROBLEMTYPE::StringToProblemTypeMap();
   std::map<std::string, Core::ProblemType>::const_iterator i;
@@ -119,15 +119,15 @@ int Global::Problem::restart() const { return restartstep_; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Global::Problem::NDim() const
+int Global::Problem::n_dim() const
 {
-  const Teuchos::ParameterList& sizeparams = ProblemSizeParams();
+  const Teuchos::ParameterList& sizeparams = problem_size_params();
   return sizeparams.get<int>("DIM");
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Teuchos::ParameterList& Global::Problem::SolverParams(int solverNr) const
+const Teuchos::ParameterList& Global::Problem::solver_params(int solverNr) const
 {
   std::stringstream ss;
   ss << "SOLVER " << solverNr;
@@ -136,12 +136,12 @@ const Teuchos::ParameterList& Global::Problem::SolverParams(int solverNr) const
 
 std::function<const Teuchos::ParameterList&(int)> Global::Problem::solver_params_callback() const
 {
-  return [this](int id) -> const Teuchos::ParameterList& { return this->SolverParams(id); };
+  return [this](int id) -> const Teuchos::ParameterList& { return this->solver_params(id); };
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Teuchos::ParameterList& Global::Problem::UMFPACKSolverParams()
+const Teuchos::ParameterList& Global::Problem::umfpack_solver_params()
 {
   Teuchos::ParameterList& subParams = parameters_->sublist("UMFPACK SOLVER");
   subParams.set("SOLVER", "UMFPACK");
@@ -152,7 +152,7 @@ const Teuchos::ParameterList& Global::Problem::UMFPACKSolverParams()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::Problem::SetCommunicators(
+void Global::Problem::set_communicators(
     Teuchos::RCP<Core::Communication::Communicators> communicators)
 {
   if (communicators_ != Teuchos::null) FOUR_C_THROW("Communicators were already set.");
@@ -161,7 +161,7 @@ void Global::Problem::SetCommunicators(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Communication::Communicators> Global::Problem::GetCommunicators() const
+Teuchos::RCP<Core::Communication::Communicators> Global::Problem::get_communicators() const
 {
   if (communicators_ == Teuchos::null) FOUR_C_THROW("No communicators allocated yet.");
   return communicators_;
@@ -171,7 +171,7 @@ Teuchos::RCP<Core::Communication::Communicators> Global::Problem::GetCommunicato
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::Problem::OpenControlFile(const Epetra_Comm& comm, const std::string& inputfile,
+void Global::Problem::open_control_file(const Epetra_Comm& comm, const std::string& inputfile,
     std::string prefix, const std::string& restartkenner)
 {
   if (restart())
@@ -181,16 +181,16 @@ void Global::Problem::OpenControlFile(const Epetra_Comm& comm, const std::string
     if (restartstep_ < 0)
     {
       int r = Core::IO::get_last_possible_restart_step(*inputcontrol_);
-      SetRestartStep(r);
+      set_restart_step(r);
     }
   }
 
   outputcontrol_ = Teuchos::rcp(
-      new Core::IO::OutputControl(comm, ProblemName(), spatial_approximation_type(), inputfile,
-          restartkenner, std::move(prefix), NDim(), restart(), IOParams().get<int>("FILESTEPS"),
-          Core::UTILS::IntegralValue<bool>(IOParams(), "OUTPUT_BIN"), true));
+      new Core::IO::OutputControl(comm, problem_name(), spatial_approximation_type(), inputfile,
+          restartkenner, std::move(prefix), n_dim(), restart(), io_params().get<int>("FILESTEPS"),
+          Core::UTILS::IntegralValue<bool>(io_params(), "OUTPUT_BIN"), true));
 
-  if (!Core::UTILS::IntegralValue<int>(IOParams(), "OUTPUT_BIN") && comm.MyPID() == 0)
+  if (!Core::UTILS::IntegralValue<int>(io_params(), "OUTPUT_BIN") && comm.MyPID() == 0)
   {
     Core::IO::cout << "==================================================\n"
                    << "=== WARNING: No binary output will be written. ===\n"
@@ -204,7 +204,7 @@ void Global::Problem::OpenControlFile(const Epetra_Comm& comm, const std::string
 /*----------------------------------------------------------------------*/
 void Global::Problem::write_input_parameters()
 {
-  std::string s = OutputControlFile()->file_name();
+  std::string s = output_control_file()->file_name();
   s.append(".parameter");
   std::ofstream stream(s.c_str());
   Input::PrintDatHeader(stream, *parameters_, "", false);
@@ -214,14 +214,14 @@ void Global::Problem::write_input_parameters()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::Problem::setParameterList(Teuchos::RCP<Teuchos::ParameterList> const& parameter_list)
+void Global::Problem::set_parameter_list(Teuchos::RCP<Teuchos::ParameterList> const& parameter_list)
 {
   try
   {
     // Test parameter list against valid parameters, set default values
     // and set validator objects to extract numerical values for string
     // parameters.
-    parameter_list->validateParametersAndSetDefaults(*getValidParameters());
+    parameter_list->validateParametersAndSetDefaults(*get_valid_parameters());
   }
   catch (Teuchos::Exceptions::InvalidParameter& err)
   {
@@ -235,7 +235,7 @@ void Global::Problem::setParameterList(Teuchos::RCP<Teuchos::ParameterList> cons
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Teuchos::ParameterList> Global::Problem::getValidParameters() const
+Teuchos::RCP<const Teuchos::ParameterList> Global::Problem::get_valid_parameters() const
 {
   // call the external method to get the valid parameters
   // this way the parameter configuration is separate from the source
@@ -243,7 +243,7 @@ Teuchos::RCP<const Teuchos::ParameterList> Global::Problem::getValidParameters()
 }
 
 
-Teuchos::RCP<const Teuchos::ParameterList> Global::Problem::getParameterList() const
+Teuchos::RCP<const Teuchos::ParameterList> Global::Problem::get_parameter_list() const
 {
   return parameters_;
 }
@@ -251,25 +251,25 @@ Teuchos::RCP<const Teuchos::ParameterList> Global::Problem::getParameterList() c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::Problem::AddDis(const std::string& name, Teuchos::RCP<Core::FE::Discretization> dis)
+void Global::Problem::add_dis(const std::string& name, Teuchos::RCP<Core::FE::Discretization> dis)
 {
   // safety checks
   if (dis == Teuchos::null) FOUR_C_THROW("Received Teuchos::null.");
-  if (dis->Name().empty()) FOUR_C_THROW("discretization has empty name string.");
+  if (dis->name().empty()) FOUR_C_THROW("discretization has empty name string.");
 
   if (!discretizationmap_.insert(std::make_pair(name, dis)).second)
   {
     // if the same key already exists we have to inform the user since
     // the insert statement did not work in this case
     FOUR_C_THROW("Could not insert discretization '%s' under (duplicate) key '%s'.",
-        dis->Name().c_str(), name.c_str());
+        dis->name().c_str(), name.c_str());
   }
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::Discretization> Global::Problem::GetDis(const std::string& name) const
+Teuchos::RCP<Core::FE::Discretization> Global::Problem::get_dis(const std::string& name) const
 {
   auto iter = discretizationmap_.find(name);
 
@@ -287,9 +287,9 @@ Teuchos::RCP<Core::FE::Discretization> Global::Problem::GetDis(const std::string
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<std::string> Global::Problem::GetDisNames() const
+std::vector<std::string> Global::Problem::get_dis_names() const
 {
-  unsigned mysize = NumFields();
+  unsigned mysize = num_fields();
   std::vector<std::string> vec;
   vec.reserve(mysize);
 
@@ -302,7 +302,7 @@ std::vector<std::string> Global::Problem::GetDisNames() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Global::Problem::DoesExistDis(const std::string& name) const
+bool Global::Problem::does_exist_dis(const std::string& name) const
 {
   auto iter = discretizationmap_.find(name);
   return iter != discretizationmap_.end();
@@ -311,15 +311,15 @@ bool Global::Problem::DoesExistDis(const std::string& name) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::Problem::SetRestartStep(int r) { restartstep_ = r; }
+void Global::Problem::set_restart_step(int r) { restartstep_ = r; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::Problem::SetProblemType(Core::ProblemType targettype) { probtype_ = targettype; }
+void Global::Problem::set_problem_type(Core::ProblemType targettype) { probtype_ = targettype; }
 
 
-void Global::Problem::SetFunctionManager(Core::UTILS::FunctionManager&& function_manager_in)
+void Global::Problem::set_function_manager(Core::UTILS::FunctionManager&& function_manager_in)
 {
   functionmanager_ = std::move(function_manager_in);
 }

@@ -71,7 +71,7 @@ void Solid::MODELEVALUATOR::BeamInteractionOld::reset(const Epetra_Vector& x)
 
   // Zero out force and stiffness contributions
   f_beaminteract_np_ptr_->PutScalar(0.0);
-  stiff_beaminteract_ptr_->Zero();
+  stiff_beaminteract_ptr_->zero();
 }
 
 /*----------------------------------------------------------------------*
@@ -128,12 +128,12 @@ bool Solid::MODELEVALUATOR::BeamInteractionOld::evaluate_force_stiff()
 
   // visualization of current Newton step
 #ifdef GMSHNEWTONSTEPS
-  beamcman_->GmshOutput(*disnp_ptr_, EvalData().GetStepNp(), EvalData().GetNlnIter());
+  beamcman_->GmshOutput(*disnp_ptr_, EvalData().get_step_np(), EvalData().GetNlnIter());
   beamcman_->ConsoleOutput();
 #endif
 
   // update constraint norm
-  beamcman_->UpdateConstrNorm();  // ToDo
+  beamcman_->update_constr_norm();  // ToDo
 
   return true;
 }
@@ -154,9 +154,9 @@ bool Solid::MODELEVALUATOR::BeamInteractionOld::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
-  jac_dd_ptr->Add(*stiff_beaminteract_ptr_, false, timefac_np, 1.0);
+  jac_dd_ptr->add(*stiff_beaminteract_ptr_, false, timefac_np, 1.0);
   // no need to keep it
-  stiff_beaminteract_ptr_->Zero();
+  stiff_beaminteract_ptr_->zero();
 
   return true;
 }

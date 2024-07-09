@@ -78,10 +78,10 @@ namespace FS3I
 
     //! time loop to be defined in inherited classes (structure depends on
     //! considered coupling, i.e. one-way or two-way)
-    void Timeloop() override = 0;
+    void timeloop() override = 0;
 
     //! flag whether time loop should be finished
-    bool NotFinished() const { return ((step_ < numstep_) and ((time_ + 1e-14) < timemax_)); };
+    bool not_finished() const { return ((step_ < numstep_) and ((time_ + 1e-14) < timemax_)); };
 
     //! read and set fields needed for restart
     void read_restart() override;
@@ -95,13 +95,13 @@ namespace FS3I
         Teuchos::RCP<Core::FE::Discretization> slavedis);
 
     //! set-up of FSI and ScaTra systems
-    void SetupSystem() override;
+    void setup_system() override;
 
     //! test results for individual fields
-    void TestResults(const Epetra_Comm& comm) override;
+    void test_results(const Epetra_Comm& comm) override;
 
     //! information transfer FSI -> ScaTra
-    void SetFSISolution();
+    void set_fsi_solution();
 
     /// set scatra solution on structure field
     void set_struct_scatra_solution() const;
@@ -111,10 +111,10 @@ namespace FS3I
     virtual bool scatra_convergence_check(int itnum) = 0;
 
     //! return communicator
-    const Epetra_Comm& Comm() const { return comm_; }
+    const Epetra_Comm& get_comm() const { return comm_; }
 
     /// extract fluid convective and structure convective velocities
-    void ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector>>& vel,
+    void extract_vel(std::vector<Teuchos::RCP<const Epetra_Vector>>& vel,
         std::vector<Teuchos::RCP<const Epetra_Vector>>& convel) const;
 
     void set_velocity_fields() const;
@@ -129,18 +129,18 @@ namespace FS3I
     virtual void set_wall_shear_stresses() const;
 
     /// extract Wall Shear Stresses at the interface
-    void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& wss) const;
+    void extract_wss(std::vector<Teuchos::RCP<const Epetra_Vector>>& wss) const;
 
     Teuchos::ParameterList& manipulate_fsi_time_params(const Teuchos::ParameterList& fs3idyn) const;
 
     //@}
 
     /// transport quantity from fluid to fluid-scalar
-    Teuchos::RCP<const Epetra_Vector> FluidToFluidScalar(
+    Teuchos::RCP<const Epetra_Vector> fluid_to_fluid_scalar(
         const Teuchos::RCP<const Epetra_Vector> fluidvector) const;
 
     /// transport quantity from fluid-scalar to fluid
-    Teuchos::RCP<const Epetra_Vector> FluidScalarToFluid(
+    Teuchos::RCP<const Epetra_Vector> fluid_scalar_to_fluid(
         const Teuchos::RCP<const Epetra_Vector> fluidscalarvector) const;
 
     /// transport quantity from structure to structure-scalar

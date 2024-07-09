@@ -24,25 +24,25 @@ void CONTACT::Interface::round_robin_extend_ghosting(bool firstevaluation)
 {
   std::vector<int> element_GIDs_to_be_ghosted;
   std::vector<int> node_GIDs_to_be_ghosted;
-  for (int k = 0; k < SlaveColElements()->NumMyElements(); ++k)
+  for (int k = 0; k < slave_col_elements()->NumMyElements(); ++k)
   {
-    int gid = SlaveColElements()->GID(k);
-    Core::Elements::Element* ele = Discret().gElement(gid);
+    int gid = slave_col_elements()->GID(k);
+    Core::Elements::Element* ele = discret().g_element(gid);
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     Element* slave_ele = dynamic_cast<Element*>(ele);
 
-    for (int j = 0; j < slave_ele->MoData().NumSearchElements(); ++j)
+    for (int j = 0; j < slave_ele->mo_data().num_search_elements(); ++j)
     {
-      int gid2 = slave_ele->MoData().SearchElements()[j];
-      Core::Elements::Element* ele2 = idiscret_->gElement(gid2);
+      int gid2 = slave_ele->mo_data().search_elements()[j];
+      Core::Elements::Element* ele2 = idiscret_->g_element(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       Element* melement = dynamic_cast<Element*>(ele2);
 
-      element_GIDs_to_be_ghosted.push_back(melement->Id());
+      element_GIDs_to_be_ghosted.push_back(melement->id());
 
       for (int z = 0; z < melement->num_node(); ++z)
       {
-        int gidn = melement->NodeIds()[z];
+        int gidn = melement->node_ids()[z];
         node_GIDs_to_be_ghosted.push_back(gidn);
       }
     }
@@ -50,10 +50,10 @@ void CONTACT::Interface::round_robin_extend_ghosting(bool firstevaluation)
     slave_ele->delete_search_elements();
   }
 
-  Teuchos::RCP<Epetra_Map> currently_ghosted_elements = Teuchos::rcp(new Epetra_Map(
-      -1, (int)element_GIDs_to_be_ghosted.size(), element_GIDs_to_be_ghosted.data(), 0, Comm()));
+  Teuchos::RCP<Epetra_Map> currently_ghosted_elements = Teuchos::rcp(new Epetra_Map(-1,
+      (int)element_GIDs_to_be_ghosted.size(), element_GIDs_to_be_ghosted.data(), 0, get_comm()));
   Teuchos::RCP<Epetra_Map> currently_ghosted_nodes = Teuchos::rcp(new Epetra_Map(
-      -1, (int)node_GIDs_to_be_ghosted.size(), node_GIDs_to_be_ghosted.data(), 0, Comm()));
+      -1, (int)node_GIDs_to_be_ghosted.size(), node_GIDs_to_be_ghosted.data(), 0, get_comm()));
 
   if (firstevaluation)
   {
@@ -86,9 +86,9 @@ void CONTACT::Interface::round_robin_change_ownership()
 
   // change master-side proc ownership
   // some local variables
-  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(Comm().Clone());
-  const int myrank = comm->MyPID();
-  const int numproc = comm->NumProc();
+  Teuchos::RCP<Epetra_Comm> comm_v = Teuchos::rcp(get_comm().Clone());
+  const int myrank = comm_v->MyPID();
+  const int numproc = comm_v->NumProc();
   const int torank = (myrank + 1) % numproc;              // to
   const int fromrank = (myrank + numproc - 1) % numproc;  // from
 
@@ -97,14 +97,15 @@ void CONTACT::Interface::round_robin_change_ownership()
   std::vector<int> ecol, erow;
 
   // create dummy
-  Teuchos::RCP<Epetra_Map> MasterColNodesdummy = Teuchos::rcp(new Epetra_Map(*MasterColNodes()));
-  Teuchos::RCP<Epetra_Map> MasterColelesdummy = Teuchos::rcp(new Epetra_Map(*MasterColElements()));
+  Teuchos::RCP<Epetra_Map> MasterColNodesdummy = Teuchos::rcp(new Epetra_Map(*master_col_nodes()));
+  Teuchos::RCP<Epetra_Map> MasterColelesdummy =
+      Teuchos::rcp(new Epetra_Map(*master_col_elements()));
 
   // create origin maps
-  Teuchos::RCP<Epetra_Map> SCN = Teuchos::rcp(new Epetra_Map(*SlaveColNodes()));
-  Teuchos::RCP<Epetra_Map> SCE = Teuchos::rcp(new Epetra_Map(*SlaveColElements()));
-  Teuchos::RCP<Epetra_Map> SRN = Teuchos::rcp(new Epetra_Map(*SlaveRowNodes()));
-  Teuchos::RCP<Epetra_Map> SRE = Teuchos::rcp(new Epetra_Map(*SlaveRowElements()));
+  Teuchos::RCP<Epetra_Map> SCN = Teuchos::rcp(new Epetra_Map(*slave_col_nodes()));
+  Teuchos::RCP<Epetra_Map> SCE = Teuchos::rcp(new Epetra_Map(*slave_col_elements()));
+  Teuchos::RCP<Epetra_Map> SRN = Teuchos::rcp(new Epetra_Map(*slave_row_nodes()));
+  Teuchos::RCP<Epetra_Map> SRE = Teuchos::rcp(new Epetra_Map(*slave_row_elements()));
 
   // *****************************************
   // Elements
@@ -117,7 +118,7 @@ void CONTACT::Interface::round_robin_change_ownership()
   for (int i = 0; i < numproc; ++i) allproc[i] = i;
 
   // get exporter
-  Core::Communication::Exporter exporter(idiscret_->Comm());
+  Core::Communication::Exporter exporter(idiscret_->get_comm());
 
   // create data buffer
   Core::Communication::PackBuffer dataeles;
@@ -126,14 +127,14 @@ void CONTACT::Interface::round_robin_change_ownership()
   for (int i = 0; i < (int)MasterColelesdummy->NumMyElements(); ++i)
   {
     int gid = MasterColelesdummy->GID(i);
-    Core::Elements::Element* ele = Discret().gElement(gid);
+    Core::Elements::Element* ele = discret().g_element(gid);
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     Mortar::Element* mele = dynamic_cast<Mortar::Element*>(ele);
 
     mele->pack(dataeles);
 
     // check for ghosting
-    const int ghost = (mele->Owner() == myrank) ? 1 : 0;
+    const int ghost = (mele->owner() == myrank) ? 1 : 0;
     Core::Communication::ParObject::add_to_pack(dataeles, ghost);
   }
   std::swap(sdataeles, dataeles());
@@ -142,14 +143,14 @@ void CONTACT::Interface::round_robin_change_ownership()
   for (int i = 0; i < (int)MasterColelesdummy->NumMyElements(); ++i)
   {
     int gid = MasterColelesdummy->GID(i);
-    Core::Elements::Element* ele = Discret().gElement(gid);
+    Core::Elements::Element* ele = discret().g_element(gid);
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     Mortar::Element* mele = dynamic_cast<Mortar::Element*>(ele);
 
     // check for ghosting
-    if (mele->Owner() == myrank)
+    if (mele->owner() == myrank)
     {
-      idiscret_->DeleteElement(mele->Id());
+      idiscret_->delete_element(mele->id());
     }
   }
 
@@ -161,7 +162,7 @@ void CONTACT::Interface::round_robin_change_ownership()
   int length = rdataeles.size();
   int tag = -1;
   int from = -1;
-  exporter.ReceiveAny(from, tag, rdataeles, length);
+  exporter.receive_any(from, tag, rdataeles, length);
   if (tag != 1234 or from != fromrank)
     FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank,
         from, myrank);
@@ -187,23 +188,23 @@ void CONTACT::Interface::round_robin_change_ownership()
       // add whether its a row ele
       if (ghost == 1)
       {
-        ele->SetOwner(myrank);
+        ele->set_owner(myrank);
         idiscret_->add_element(ele);
 
         // to new ele
-        erow.push_back(ele->Id());
-        ecol.push_back(ele->Id());
+        erow.push_back(ele->id());
+        ecol.push_back(ele->id());
       }
       else
       {
-        ecol.push_back(ele->Id());
+        ecol.push_back(ele->id());
       }
     }
   }  // end unpack
 
   // wait for all communication to finish
-  exporter.Wait(request);
-  comm->Barrier();
+  exporter.wait(request);
+  comm_v->Barrier();
 
   // *****************************************
   // NODES
@@ -212,14 +213,14 @@ void CONTACT::Interface::round_robin_change_ownership()
   std::vector<char> rdatanodes;
 
   // get exporter
-  Core::Communication::Exporter exportern(idiscret_->Comm());
+  Core::Communication::Exporter exportern(idiscret_->get_comm());
 
   Core::Communication::PackBuffer datanodes;
 
   for (int i = 0; i < (int)MasterColNodesdummy->NumMyElements(); ++i)
   {
     int gid = MasterColNodesdummy->GID(i);
-    Core::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = discret().g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find ele with gid %i", gid);
 
     // check for ghosting
@@ -230,7 +231,7 @@ void CONTACT::Interface::round_robin_change_ownership()
       Mortar::Node* cnode = dynamic_cast<Mortar::Node*>(node);
       cnode->pack(datanodes);
 
-      if (cnode->Owner() == myrank)
+      if (cnode->owner() == myrank)
         ghost = 1;
       else
         ghost = 0;
@@ -240,7 +241,7 @@ void CONTACT::Interface::round_robin_change_ownership()
       FriNode* cnode = dynamic_cast<FriNode*>(node);
       cnode->pack(datanodes);
 
-      if (cnode->Owner() == myrank)
+      if (cnode->owner() == myrank)
         ghost = 1;
       else
         ghost = 0;
@@ -254,18 +255,18 @@ void CONTACT::Interface::round_robin_change_ownership()
   for (int i = 0; i < (int)MasterColNodesdummy->NumMyElements(); ++i)
   {
     int gid = MasterColNodesdummy->GID(i);
-    Core::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = discret().g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find ele with gid %i", gid);
 
     if (ftype == Inpar::CONTACT::friction_none)
     {
       Mortar::Node* cnode = dynamic_cast<Mortar::Node*>(node);
-      if (cnode->Owner() == myrank) idiscret_->DeleteNode(cnode->Id());
+      if (cnode->owner() == myrank) idiscret_->delete_node(cnode->id());
     }
     else
     {
       FriNode* cnode = dynamic_cast<FriNode*>(node);
-      if (cnode->Owner() == myrank) idiscret_->DeleteNode(cnode->Id());
+      if (cnode->owner() == myrank) idiscret_->delete_node(cnode->id());
     }
   }
 
@@ -277,7 +278,7 @@ void CONTACT::Interface::round_robin_change_ownership()
   int lengthn = rdatanodes.size();
   int tagn = -1;
   int fromn = -1;
-  exportern.ReceiveAny(fromn, tagn, rdatanodes, lengthn);
+  exportern.receive_any(fromn, tagn, rdatanodes, lengthn);
   if (tagn != 1234 or fromn != fromrank)
     FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank,
         fromn, myrank);
@@ -306,16 +307,16 @@ void CONTACT::Interface::round_robin_change_ownership()
 
         if (ghost == 1)
         {
-          node->SetOwner(myrank);
-          idiscret_->AddNode(node);
+          node->set_owner(myrank);
+          idiscret_->add_node(node);
 
-          nrow.push_back(node->Id());
-          ncol.push_back(node->Id());
+          nrow.push_back(node->id());
+          ncol.push_back(node->id());
         }
         else
         {
           // all others to col
-          ncol.push_back(node->Id());
+          ncol.push_back(node->id());
         }
       }
       else  // if friction...
@@ -325,35 +326,35 @@ void CONTACT::Interface::round_robin_change_ownership()
 
         if (ghost == 1)
         {
-          node->SetOwner(myrank);
-          idiscret_->AddNode(node);
+          node->set_owner(myrank);
+          idiscret_->add_node(node);
 
-          nrow.push_back(node->Id());
-          ncol.push_back(node->Id());
+          nrow.push_back(node->id());
+          ncol.push_back(node->id());
         }
         else
         {
           // all others to col
-          ncol.push_back(node->Id());
+          ncol.push_back(node->id());
         }
       }
     }
   }  // end unpack
 
   // wait for all communication to finish
-  exportern.Wait(requestn);
-  comm->Barrier();
+  exportern.wait(requestn);
+  comm_v->Barrier();
 
   // create maps from sending
   Teuchos::RCP<Epetra_Map> noderowmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)nrow.size(), nrow.data(), 0, Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)nrow.size(), nrow.data(), 0, get_comm()));
   Teuchos::RCP<Epetra_Map> nodecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)ncol.size(), ncol.data(), 0, Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)ncol.size(), ncol.data(), 0, get_comm()));
 
   Teuchos::RCP<Epetra_Map> elerowmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)erow.size(), erow.data(), 0, Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)erow.size(), erow.data(), 0, get_comm()));
   Teuchos::RCP<Epetra_Map> elecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)ecol.size(), ecol.data(), 0, Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, (int)ecol.size(), ecol.data(), 0, get_comm()));
 
   // Merge s/m column maps for eles and nodes
   Teuchos::RCP<Epetra_Map> colnodesfull = Core::LinAlg::MergeMap(nodecolmap, SCN, true);
@@ -365,12 +366,12 @@ void CONTACT::Interface::round_robin_change_ownership()
 
   // to discretization
   // export nodes and elements to the row map
-  Discret().ExportRowNodes(*rownodesfull);
-  Discret().ExportRowElements(*rowelesfull);
+  discret().export_row_nodes(*rownodesfull);
+  discret().export_row_elements(*rowelesfull);
 
   // export nodes and elements to the col map
-  Discret().ExportColumnNodes(*colnodesfull);
-  Discret().export_column_elements(*colelesfull);
+  discret().export_column_nodes(*colnodesfull);
+  discret().export_column_elements(*colelesfull);
 
   // ********************************************
   // call the (very) expensive FILLCOMPLETE()!
@@ -388,9 +389,9 @@ void CONTACT::Interface::round_robin_change_ownership()
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::round_robin_detect_ghosting()
 {
-  if (SearchAlg() == Inpar::Mortar::search_bfele)
-    evaluate_search_brute_force(SearchParam());
-  else if (SearchAlg() == Inpar::Mortar::search_binarytree)
+  if (search_alg() == Inpar::Mortar::search_bfele)
+    evaluate_search_brute_force(search_param());
+  else if (search_alg() == Inpar::Mortar::search_binarytree)
     evaluate_search_binarytree();
   else
     FOUR_C_THROW("Invalid search algorithm");
@@ -400,40 +401,40 @@ void CONTACT::Interface::round_robin_detect_ghosting()
 
   // Init Maps
   Teuchos::RCP<Epetra_Map> initial_slave_node_column_map =
-      Teuchos::rcp(new Epetra_Map(*SlaveColNodes()));
+      Teuchos::rcp(new Epetra_Map(*slave_col_nodes()));
   Teuchos::RCP<Epetra_Map> initial_slave_element_column_map =
-      Teuchos::rcp(new Epetra_Map(*SlaveColElements()));
+      Teuchos::rcp(new Epetra_Map(*slave_col_elements()));
   Teuchos::RCP<Epetra_Map> initial_master_node_column_map =
-      Teuchos::rcp(new Epetra_Map(*MasterColNodes()));
+      Teuchos::rcp(new Epetra_Map(*master_col_nodes()));
   Teuchos::RCP<Epetra_Map> initial_master_element_column_map =
-      Teuchos::rcp(new Epetra_Map(*MasterColElements()));
+      Teuchos::rcp(new Epetra_Map(*master_col_elements()));
 
   // *************************************
   // start RR loop for current interface
   // *************************************
   // loop over all procs
-  if (Comm().NumProc() > 1)
-    for (int proc = 0; proc < (int)(Comm().NumProc()); ++proc)
+  if (get_comm().NumProc() > 1)
+    for (int proc = 0; proc < (int)(get_comm().NumProc()); ++proc)
     {
       // status output
-      if (Comm().MyPID() == 0 && proc == 0) std::cout << "Round-Robin-Iteration #" << proc;
-      if (Comm().MyPID() == 0 && proc > 0) std::cout << " #" << proc;
+      if (get_comm().MyPID() == 0 && proc == 0) std::cout << "Round-Robin-Iteration #" << proc;
+      if (get_comm().MyPID() == 0 && proc > 0) std::cout << " #" << proc;
 
       // perform the ownership change
       round_robin_change_ownership();
 
       // build new search tree or do nothing for bruteforce
-      if (SearchAlg() == Inpar::Mortar::search_binarytree)
-        CreateSearchTree();
-      else if (SearchAlg() != Inpar::Mortar::search_bfele)
+      if (search_alg() == Inpar::Mortar::search_binarytree)
+        create_search_tree();
+      else if (search_alg() != Inpar::Mortar::search_bfele)
         FOUR_C_THROW("Invalid search algorithm");
 
       // evaluate interfaces
-      if (proc < (int)(Comm().NumProc() - 1))
+      if (proc < (int)(get_comm().NumProc() - 1))
       {
-        if (SearchAlg() == Inpar::Mortar::search_bfele)
-          evaluate_search_brute_force(SearchParam());
-        else if (SearchAlg() == Inpar::Mortar::search_binarytree)
+        if (search_alg() == Inpar::Mortar::search_bfele)
+          evaluate_search_brute_force(search_param());
+        else if (search_alg() == Inpar::Mortar::search_binarytree)
           evaluate_search_binarytree();
         else
           FOUR_C_THROW("Invalid search algorithm");
@@ -458,8 +459,8 @@ void CONTACT::Interface::round_robin_detect_ghosting()
       Core::LinAlg::MergeMap(nextendedghosting_, initial_master_node_column_map, true);
 
   // finally extend ghosting
-  Discret().export_column_elements(*eextendedghosting_);
-  Discret().ExportColumnNodes(*nextendedghosting_);
+  discret().export_column_elements(*eextendedghosting_);
+  discret().export_column_nodes(*nextendedghosting_);
   fill_complete(true);
 
   // reset extended ghosting maps
@@ -467,13 +468,13 @@ void CONTACT::Interface::round_robin_detect_ghosting()
   nextendedghosting_ = Teuchos::null;
 
   // build new search tree or do nothing for bruteforce
-  if (SearchAlg() == Inpar::Mortar::search_binarytree)
-    CreateSearchTree();
-  else if (SearchAlg() != Inpar::Mortar::search_bfele)
+  if (search_alg() == Inpar::Mortar::search_binarytree)
+    create_search_tree();
+  else if (search_alg() != Inpar::Mortar::search_bfele)
     FOUR_C_THROW("Invalid search algorithm");
 
   // final output for loop
-  if (Comm().MyPID() == 0) std::cout << " Round-Robin loop done!" << std::endl;
+  if (get_comm().MyPID() == 0) std::cout << " Round-Robin loop done!" << std::endl;
 
   return;
 }

@@ -31,7 +31,8 @@ Adapter::PASIStructureWrapper::PASIStructureWrapper(Teuchos::RCP<Structure> stru
   interface_->setup(*discretization(), *discretization()->dof_row_map());
 }
 
-void Adapter::PASIStructureWrapper::ApplyInterfaceForce(Teuchos::RCP<const Epetra_Vector> intfforce)
+void Adapter::PASIStructureWrapper::apply_interface_force(
+    Teuchos::RCP<const Epetra_Vector> intfforce)
 {
   pasi_model_evaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
 

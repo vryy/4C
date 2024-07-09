@@ -32,9 +32,9 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::TransportType Discret::ELEMENTS::TransportType::instance_;
 
-Discret::ELEMENTS::TransportType& Discret::ELEMENTS::TransportType::Instance() { return instance_; }
+Discret::ELEMENTS::TransportType& Discret::ELEMENTS::TransportType::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::TransportType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::TransportType::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Transport* object = new Discret::ELEMENTS::Transport(-1, -1);
@@ -43,7 +43,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::TransportType::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::TransportType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::TransportType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "TRANSP" or eletype == "CONDIF2" or eletype == "CONDIF3")
@@ -56,7 +56,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::TransportType::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::TransportType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::TransportType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -68,11 +68,11 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::TransportType::Create(
 void Discret::ELEMENTS::TransportType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
+  numdf = dwele->num_dof_per_node(*(dwele->nodes()[0]));
   dimns = numdf;
   nv = numdf;
 
-  if (Global::Problem::Instance(0)->GetProblemType() == Core::ProblemType::elch)
+  if (Global::Problem::instance(0)->get_problem_type() == Core::ProblemType::elch)
   {
     if (nv > 1)  // only when we have more than 1 dof per node!
     {
@@ -82,7 +82,7 @@ void Discret::ELEMENTS::TransportType::nodal_block_information(
   }
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::TransportType::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::TransportType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
@@ -246,11 +246,11 @@ void Discret::ELEMENTS::TransportType::setup_element_definition(
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::TransportType::initialize(Core::FE::Discretization& dis)
 {
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
+    if (dis.l_col_element(i)->element_type() != *this) continue;
     Discret::ELEMENTS::Transport* actele =
-        dynamic_cast<Discret::ELEMENTS::Transport*>(dis.lColElement(i));
+        dynamic_cast<Discret::ELEMENTS::Transport*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to Transport element failed");
     actele->initialize();
   }
@@ -260,12 +260,12 @@ int Discret::ELEMENTS::TransportType::initialize(Core::FE::Discretization& dis)
 
 Discret::ELEMENTS::TransportBoundaryType Discret::ELEMENTS::TransportBoundaryType::instance_;
 
-Discret::ELEMENTS::TransportBoundaryType& Discret::ELEMENTS::TransportBoundaryType::Instance()
+Discret::ELEMENTS::TransportBoundaryType& Discret::ELEMENTS::TransportBoundaryType::instance()
 {
   return instance_;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::TransportBoundaryType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::TransportBoundaryType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new TransportBoundary( id, owner ) );
@@ -303,7 +303,7 @@ Discret::ELEMENTS::Transport::Transport(const Discret::ELEMENTS::Transport& old)
  |  Deep copy this instance of Transport and return pointer to it (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Transport::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Transport::clone() const
 {
   Discret::ELEMENTS::Transport* newelement = new Discret::ELEMENTS::Transport(*this);
   return newelement;
@@ -313,42 +313,42 @@ Core::Elements::Element* Discret::ELEMENTS::Transport::Clone() const
 /*----------------------------------------------------------------------*
  |  create material class (public)                            gjb 07/08 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Transport::SetMaterial(
+void Discret::ELEMENTS::Transport::set_material(
     const int index, Teuchos::RCP<Core::Mat::Material> mat)
 {
   // the standard part:
-  Core::Elements::Element::SetMaterial(index, mat);
+  Core::Elements::Element::set_material(index, mat);
 
-  if (mat->MaterialType() == Core::Materials::m_scatra or
-      mat->MaterialType() == Core::Materials::m_scatra_multiscale or
-      mat->MaterialType() == Core::Materials::m_myocard or
-      mat->MaterialType() == Core::Materials::m_sutherland or
-      mat->MaterialType() == Core::Materials::m_ion or
-      mat->MaterialType() == Core::Materials::m_th_fourier_iso or
-      mat->MaterialType() == Core::Materials::m_thermostvenant or
-      mat->MaterialType() == Core::Materials::m_soret or
-      mat->MaterialType() == Core::Materials::m_scatra_multiporo_fluid or
-      mat->MaterialType() == Core::Materials::m_scatra_multiporo_volfrac or
-      mat->MaterialType() == Core::Materials::m_scatra_multiporo_solid or
-      mat->MaterialType() == Core::Materials::m_scatra_multiporo_temperature or
-      (mat->MaterialType() == Core::Materials::m_electrode and
+  if (mat->material_type() == Core::Materials::m_scatra or
+      mat->material_type() == Core::Materials::m_scatra_multiscale or
+      mat->material_type() == Core::Materials::m_myocard or
+      mat->material_type() == Core::Materials::m_sutherland or
+      mat->material_type() == Core::Materials::m_ion or
+      mat->material_type() == Core::Materials::m_th_fourier_iso or
+      mat->material_type() == Core::Materials::m_thermostvenant or
+      mat->material_type() == Core::Materials::m_soret or
+      mat->material_type() == Core::Materials::m_scatra_multiporo_fluid or
+      mat->material_type() == Core::Materials::m_scatra_multiporo_volfrac or
+      mat->material_type() == Core::Materials::m_scatra_multiporo_solid or
+      mat->material_type() == Core::Materials::m_scatra_multiporo_temperature or
+      (mat->material_type() == Core::Materials::m_electrode and
           impltype_ == Inpar::ScaTra::impltype_std))
     numdofpernode_ = 1;  // we only have a single scalar
-  else if (mat->MaterialType() == Core::Materials::m_electrode)
+  else if (mat->material_type() == Core::Materials::m_electrode)
     numdofpernode_ = 2;  // concentration and electric potential
-  else if (mat->MaterialType() == Core::Materials::m_matlist)  // we have a system of scalars
+  else if (mat->material_type() == Core::Materials::m_matlist)  // we have a system of scalars
   {
     const Mat::MatList* actmat = static_cast<const Mat::MatList*>(mat.get());
-    numdofpernode_ = actmat->NumMat();
+    numdofpernode_ = actmat->num_mat();
 
     // for problem type ELCH we have one additional degree of freedom per node
     // for the electric potential
-    if (Global::Problem::Instance()->GetProblemType() == Core::ProblemType::elch)
+    if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::elch)
     {
       for (int ii = 0; ii < numdofpernode_; ++ii)
       {
         // In the context of ELCH the only valid material combination is m_matlist and m_ion
-        if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() != Core::Materials::m_ion)
+        if (actmat->material_by_id(actmat->mat_id(ii))->material_type() != Core::Materials::m_ion)
           FOUR_C_THROW(
               "In the context of ELCH the material Mat_matlist can be only used in combination "
               "with Mat_ion");
@@ -356,39 +356,40 @@ void Discret::ELEMENTS::Transport::SetMaterial(
       numdofpernode_ += 1;
     }
   }
-  else if (mat->MaterialType() ==
+  else if (mat->material_type() ==
            Core::Materials::m_matlist_reactions)  // we have a system of reactive scalars
   {
     // Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in
     // a diamond inheritance structure
     const Mat::MatListReactions* actmat = dynamic_cast<const Mat::MatListReactions*>(mat.get());
-    numdofpernode_ = actmat->NumMat();
+    numdofpernode_ = actmat->num_mat();
 
     for (int ii = 0; ii < numdofpernode_; ++ii)
     {
       // In the context of reactions the only valid material combination is m_matlist and m_scatra
-      if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() != Core::Materials::m_scatra and
-          actmat->MaterialById(actmat->MatID(ii))->MaterialType() !=
+      if (actmat->material_by_id(actmat->mat_id(ii))->material_type() !=
+              Core::Materials::m_scatra and
+          actmat->material_by_id(actmat->mat_id(ii))->material_type() !=
               Core::Materials::m_scatra_multiporo_fluid and
-          actmat->MaterialById(actmat->MatID(ii))->MaterialType() !=
+          actmat->material_by_id(actmat->mat_id(ii))->material_type() !=
               Core::Materials::m_scatra_multiporo_volfrac and
-          actmat->MaterialById(actmat->MatID(ii))->MaterialType() !=
+          actmat->material_by_id(actmat->mat_id(ii))->material_type() !=
               Core::Materials::m_scatra_multiporo_temperature and
-          actmat->MaterialById(actmat->MatID(ii))->MaterialType() !=
+          actmat->material_by_id(actmat->mat_id(ii))->material_type() !=
               Core::Materials::m_scatra_multiporo_solid)
         FOUR_C_THROW(
             "The material Mat_matlist_reaction only supports MAT_scatra and MAT_scatra_multiporo "
             "as valid main Material");
     }
 
-    int numreac = actmat->NumReac();
+    int numreac = actmat->num_reac();
     for (int jj = 0; jj < numreac; ++jj)
     {
       // In the context of reactions the only valid material combination is m_matlist and
       // m_scatra_reaction
-      if (actmat->MaterialById(actmat->ReacID(jj))->MaterialType() !=
+      if (actmat->material_by_id(actmat->reac_id(jj))->material_type() !=
               Core::Materials::m_scatra_reaction and
-          actmat->MaterialById(actmat->ReacID(jj))->MaterialType() !=
+          actmat->material_by_id(actmat->reac_id(jj))->material_type() !=
               Core::Materials::m_scatra_reaction_poroECM)
         FOUR_C_THROW(
             "The material MAT_matlist_reaction only supports MAT_scatra_reaction and "
@@ -397,37 +398,37 @@ void Discret::ELEMENTS::Transport::SetMaterial(
       // some safty check for the MAT_scatra_reaction materials
       const Teuchos::RCP<const Mat::ScatraReactionMat>& reacmat =
           Teuchos::rcp_static_cast<const Mat::ScatraReactionMat>(
-              actmat->MaterialById(actmat->ReacID(jj)));
-      const int stoichlength = reacmat->NumScal();
+              actmat->material_by_id(actmat->reac_id(jj)));
+      const int stoichlength = reacmat->num_scal();
       if (stoichlength != numdofpernode_)
         FOUR_C_THROW(
             "The number of scalars in your MAT_scatra_reaction material with ID %i does not fit to "
             "the number of scalars!",
-            actmat->ReacID(jj));
+            actmat->reac_id(jj));
     }
   }
-  else if (mat->MaterialType() ==
+  else if (mat->material_type() ==
            Core::Materials::m_matlist_chemotaxis)  // we have a system of chemotactic scalars
   {
     // Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in
     // a diamond inheritance structure
     const Mat::MatListChemotaxis* actmat = dynamic_cast<const Mat::MatListChemotaxis*>(mat.get());
-    numdofpernode_ = actmat->NumMat();
+    numdofpernode_ = actmat->num_mat();
 
     for (int ii = 0; ii < numdofpernode_; ++ii)
     {
       // In the context of chemotaxis the only valid material combination is m_matlist and m_scatra
-      if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() != Core::Materials::m_scatra)
+      if (actmat->material_by_id(actmat->mat_id(ii))->material_type() != Core::Materials::m_scatra)
         FOUR_C_THROW(
             "The material Mat_matlist_chemotaxis only supports MAT_scatra as valid main Material");
     }
 
-    int numpair = actmat->NumPair();
+    int numpair = actmat->num_pair();
     for (int jj = 0; jj < numpair; ++jj)
     {
       // In the context of chemotaxis the only valid material combination is m_matlist and
       // m_scatra_chemotaxis
-      if (actmat->MaterialById(actmat->PairID(jj))->MaterialType() !=
+      if (actmat->material_by_id(actmat->pair_id(jj))->material_type() !=
           Core::Materials::m_scatra_chemotaxis)
         FOUR_C_THROW(
             "The material MAT_matlist_chemotaxis only supports MAT_scatra_chemotaxis as valid "
@@ -436,38 +437,38 @@ void Discret::ELEMENTS::Transport::SetMaterial(
       // some safty check for the MAT_scatra_chemotaxis materials
       const Teuchos::RCP<const Mat::ScatraChemotaxisMat>& reacmat =
           Teuchos::rcp_static_cast<const Mat::ScatraChemotaxisMat>(
-              actmat->MaterialById(actmat->PairID(jj)));
-      const int pairlength = reacmat->Pair()->size();
+              actmat->material_by_id(actmat->pair_id(jj)));
+      const int pairlength = reacmat->pair()->size();
       if (pairlength != numdofpernode_)
         FOUR_C_THROW(
             "The number of scalars in your MAT_scatra_chemotaxis material with ID %i does not fit "
             "to the number of scalars!",
-            actmat->PairID(jj));
+            actmat->pair_id(jj));
     }
   }
-  else if (mat->MaterialType() ==
+  else if (mat->material_type() ==
            Core::Materials::m_matlist_chemoreac)  // we have a system of chemotactic scalars
   {
     // Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in
     // a diamond inheritance structure
     const Mat::MatListChemoReac* actmat = dynamic_cast<const Mat::MatListChemoReac*>(mat.get());
-    numdofpernode_ = actmat->NumMat();
+    numdofpernode_ = actmat->num_mat();
 
     for (int ii = 0; ii < numdofpernode_; ++ii)
     {
       // In the context of reactions/chemotaxis the only valid material combination is m_matlist and
       // m_scatra
-      if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() != Core::Materials::m_scatra)
+      if (actmat->material_by_id(actmat->mat_id(ii))->material_type() != Core::Materials::m_scatra)
         FOUR_C_THROW(
             "The material Mat_matlist_chemoreac only supports MAT_scatra as valid main Material");
     }
 
-    int numreac = actmat->NumReac();
+    int numreac = actmat->num_reac();
     for (int jj = 0; jj < numreac; ++jj)
     {
       // In the context of reactions the only valid material combination is m_matlist and
       // m_scatra_reaction
-      if (actmat->MaterialById(actmat->ReacID(jj))->MaterialType() !=
+      if (actmat->material_by_id(actmat->reac_id(jj))->material_type() !=
           Core::Materials::m_scatra_reaction)
         FOUR_C_THROW(
             "The material MAT_matlist_reaction only supports MAT_scatra_reaction as valid reaction "
@@ -476,21 +477,21 @@ void Discret::ELEMENTS::Transport::SetMaterial(
       // some safty check for the MAT_scatra_reaction materials
       const Teuchos::RCP<const Mat::ScatraReactionMat>& reacmat =
           Teuchos::rcp_static_cast<const Mat::ScatraReactionMat>(
-              actmat->MaterialById(actmat->ReacID(jj)));
-      const int stoichlength = reacmat->NumScal();
+              actmat->material_by_id(actmat->reac_id(jj)));
+      const int stoichlength = reacmat->num_scal();
       if (stoichlength != numdofpernode_)
         FOUR_C_THROW(
             "The number of scalars in your MAT_scatra_reaction material with ID %i does not fit to "
             "the number of scalars!",
-            actmat->ReacID(jj));
+            actmat->reac_id(jj));
     }
 
-    int numpair = actmat->NumPair();
+    int numpair = actmat->num_pair();
     for (int jj = 0; jj < numpair; ++jj)
     {
       // In the context of chemotaxis the only valid material combination is m_matlist and
       // m_scatra_chemotaxis
-      if (actmat->MaterialById(actmat->PairID(jj))->MaterialType() !=
+      if (actmat->material_by_id(actmat->pair_id(jj))->material_type() !=
           Core::Materials::m_scatra_chemotaxis)
         FOUR_C_THROW(
             "The material MAT_matlist_chemotaxis only supports MAT_scatra_chemotaxis as valid "
@@ -499,23 +500,23 @@ void Discret::ELEMENTS::Transport::SetMaterial(
       // some safty check for the MAT_scatra_chemotaxis materials
       const Teuchos::RCP<const Mat::ScatraChemotaxisMat>& reacmat =
           Teuchos::rcp_static_cast<const Mat::ScatraChemotaxisMat>(
-              actmat->MaterialById(actmat->PairID(jj)));
-      const int pairlength = reacmat->Pair()->size();
+              actmat->material_by_id(actmat->pair_id(jj)));
+      const int pairlength = reacmat->pair()->size();
       if (pairlength != numdofpernode_)
         FOUR_C_THROW(
             "The number of scalars in your MAT_scatra_chemotaxis material with ID %i does not fit "
             "to the number of scalars!",
-            actmat->PairID(jj));
+            actmat->pair_id(jj));
     }
   }
-  else if (mat->MaterialType() == Core::Materials::m_elchmat)
+  else if (mat->material_type() == Core::Materials::m_elchmat)
   {
     const Mat::ElchMat* actmat = static_cast<const Mat::ElchMat*>(mat.get());
 
-    numdofpernode_ = actmat->NumDOF();
+    numdofpernode_ = actmat->num_dof();
   }
   else
-    FOUR_C_THROW("Transport element got unsupported material type %d", mat->MaterialType());
+    FOUR_C_THROW("Transport element got unsupported material type %d", mat->material_type());
 
   return;
 }
@@ -523,24 +524,24 @@ void Discret::ELEMENTS::Transport::SetMaterial(
 /*----------------------------------------------------------------------*
  |  create material class (public)                            gjb 07/08 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Transport::SetMaterial(int matnum, Core::Elements::Element* oldele)
+void Discret::ELEMENTS::Transport::set_material(int matnum, Core::Elements::Element* oldele)
 {
-  SetMaterial(0, Mat::Factory(matnum));
+  set_material(0, Mat::Factory(matnum));
 
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
-  if (mat->MaterialType() == Core::Materials::m_myocard)
+  if (mat->material_type() == Core::Materials::m_myocard)
   {
     Teuchos::RCP<Mat::Myocard> actmat = Teuchos::rcp_dynamic_cast<Mat::Myocard>(mat);
 
     Teuchos::RCP<Mat::ElastHyper> somat =
-        Teuchos::rcp_dynamic_cast<Mat::ElastHyper>(oldele->Material());
+        Teuchos::rcp_dynamic_cast<Mat::ElastHyper>(oldele->material());
     if (somat == Teuchos::null) FOUR_C_THROW("cast to ElastHyper failed");
 
     // copy fiber information from solid material to scatra material (for now, only one fiber
     // vector)
     std::vector<Core::LinAlg::Matrix<3, 1>> fibervecs(0);
-    somat->GetFiberVecs(fibervecs);
+    somat->get_fiber_vecs(fibervecs);
     actmat->setup(fibervecs[0]);
   }
 }
@@ -549,7 +550,7 @@ void Discret::ELEMENTS::Transport::SetMaterial(int matnum, Core::Elements::Eleme
  |  Return the shape of a Transport element                      (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Transport::Shape() const { return distype_; }
+Core::FE::CellType Discret::ELEMENTS::Transport::shape() const { return distype_; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
@@ -560,7 +561,7 @@ void Discret::ELEMENTS::Transport::pack(Core::Communication::PackBuffer& data) c
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // add base class Element
@@ -583,7 +584,7 @@ void Discret::ELEMENTS::Transport::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -604,7 +605,7 @@ void Discret::ELEMENTS::Transport::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Return number of lines of this element (public)           gjb 07/08 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Transport::NumLine() const
+int Discret::ELEMENTS::Transport::num_line() const
 {
   return Core::FE::getNumberOfElementLines(distype_);
 }
@@ -613,7 +614,7 @@ int Discret::ELEMENTS::Transport::NumLine() const
 /*----------------------------------------------------------------------*
  |  Return number of surfaces of this element (public)        gjb 07/08 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Transport::NumSurface() const
+int Discret::ELEMENTS::Transport::num_surface() const
 {
   return Core::FE::getNumberOfElementSurfaces(distype_);
 }
@@ -622,7 +623,7 @@ int Discret::ELEMENTS::Transport::NumSurface() const
 /*----------------------------------------------------------------------*
  | Return number of volumes of this element (public)          gjb 07/08 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Transport::NumVolume() const
+int Discret::ELEMENTS::Transport::num_volume() const
 {
   return Core::FE::getNumberOfElementVolumes(distype_);
 }
@@ -649,7 +650,7 @@ void Discret::ELEMENTS::Transport::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines            (public)                  g.bau 03/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Transport::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Transport::lines()
 {
   return Core::Communication::GetElementLines<TransportBoundary, Transport>(*this);
 }
@@ -658,7 +659,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Transport:
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          g.bau 03/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Transport::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Transport::surfaces()
 {
   return Core::Communication::GetElementSurfaces<TransportBoundary, Transport>(*this);
 }
@@ -666,7 +667,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Transport:
 /*----------------------------------------------------------------------*
  | set implementation type                                   fang 02/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Transport ::SetImplType(const Inpar::ScaTra::ImplType impltype)
+void Discret::ELEMENTS::Transport ::set_impl_type(const Inpar::ScaTra::ImplType impltype)
 {
   // set implementation type
   impltype_ = impltype;
@@ -677,11 +678,11 @@ void Discret::ELEMENTS::Transport ::SetImplType(const Inpar::ScaTra::ImplType im
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Transport::initialize()
 {
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
   // for now, we only need to do something in case of reactions (for the initialization of functions
   // in case of reactions by function)
-  if (mat->MaterialType() == Core::Materials::m_matlist_reactions or
-      mat->MaterialType() == Core::Materials::m_matlist_chemoreac)
+  if (mat->material_type() == Core::Materials::m_matlist_reactions or
+      mat->material_type() == Core::Materials::m_matlist_chemoreac)
   {
     // Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in
     // a diamond inheritance structure
@@ -689,21 +690,21 @@ int Discret::ELEMENTS::Transport::initialize()
         Teuchos::rcp_dynamic_cast<Mat::MatListReactions>(mat);
     actmat->initialize();
   }
-  else if (mat->MaterialType() == Core::Materials::m_myocard)
+  else if (mat->material_type() == Core::Materials::m_myocard)
   {
     Teuchos::RCP<Mat::Myocard> actmat = Teuchos::rcp_dynamic_cast<Mat::Myocard>(mat);
     int deg = 0;
-    if (this->Degree() == 1)
-      deg = 4 * this->Degree();
+    if (this->degree() == 1)
+      deg = 4 * this->degree();
     else
-      deg = 3 * this->Degree();
+      deg = 3 * this->degree();
     Teuchos::RCP<Core::FE::GaussPoints> quadrature(
-        Core::FE::GaussPointCache::Instance().Create(this->Shape(), deg));
-    int gp = quadrature->NumPoints();
-    if (actmat->Parameter() != nullptr and
-        !actmat->MyocardMat())  // in case we are not in post-process mode
+        Core::FE::GaussPointCache::instance().create(this->shape(), deg));
+    int gp = quadrature->num_points();
+    if (actmat->parameter() != nullptr and
+        !actmat->myocard_mat())  // in case we are not in post-process mode
     {
-      actmat->SetGP(gp);
+      actmat->set_gp(gp);
       actmat->initialize();
     }
   }
@@ -726,8 +727,8 @@ Discret::ELEMENTS::TransportBoundary::TransportBoundary(int id, int owner, int n
     const int lsurface)
     : Core::Elements::FaceElement(id, owner)
 {
-  SetNodeIds(nnode, nodeids);
-  BuildNodalPointers(nodes);
+  set_node_ids(nnode, nodeids);
+  build_nodal_pointers(nodes);
   set_parent_master_element(parent, lsurface);
   return;
 }
@@ -745,7 +746,7 @@ Discret::ELEMENTS::TransportBoundary::TransportBoundary(
 /*----------------------------------------------------------------------*
  |  Deep copy this instance return pointer to it     (public) gjb 01/09 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::TransportBoundary::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::TransportBoundary::clone() const
 {
   Discret::ELEMENTS::TransportBoundary* newelement =
       new Discret::ELEMENTS::TransportBoundary(*this);
@@ -755,9 +756,9 @@ Core::Elements::Element* Discret::ELEMENTS::TransportBoundary::Clone() const
 /*----------------------------------------------------------------------*
  |  Return shape of this element                    (public)  gjb 01/09 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::TransportBoundary::Shape() const
+Core::FE::CellType Discret::ELEMENTS::TransportBoundary::shape() const
 {
-  return Core::FE::getShapeOfBoundaryElement(num_node(), parent_element()->Shape());
+  return Core::FE::getShapeOfBoundaryElement(num_node(), parent_element()->shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -789,7 +790,7 @@ void Discret::ELEMENTS::TransportBoundary::print(std::ostream& os) const
   os << "TransportBoundary element";
   Element::print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(Shape()) << std::endl;
+  std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(shape()) << std::endl;
   std::cout << std::endl;
   return;
 }
@@ -797,23 +798,23 @@ void Discret::ELEMENTS::TransportBoundary::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | Return number of lines of boundary element (public)        gjb 01/09 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::TransportBoundary::NumLine() const
+int Discret::ELEMENTS::TransportBoundary::num_line() const
 {
-  return Core::FE::getNumberOfElementLines(Shape());
+  return Core::FE::getNumberOfElementLines(shape());
 }
 
 /*----------------------------------------------------------------------*
  |  Return number of surfaces of boundary element (public)    gjb 01/09 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::TransportBoundary::NumSurface() const
+int Discret::ELEMENTS::TransportBoundary::num_surface() const
 {
-  return Core::FE::getNumberOfElementSurfaces(Shape());
+  return Core::FE::getNumberOfElementSurfaces(shape());
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              gjb 01/09 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::TransportBoundary::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::TransportBoundary::lines()
 {
   FOUR_C_THROW("Lines of TransportBoundary not implemented");
 }
@@ -821,7 +822,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::TransportB
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              gjb 01/09 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::TransportBoundary::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::TransportBoundary::surfaces()
 {
   FOUR_C_THROW("Surfaces of TransportBoundary not implemented");
 }

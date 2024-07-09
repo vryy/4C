@@ -105,11 +105,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -117,7 +117,7 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override;
+      int unique_par_object_id() const override;
 
       /*!
       \brief Pack this class so it can be communicated
@@ -139,13 +139,13 @@ namespace Discret
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       //! @name Access methods
 
@@ -154,7 +154,7 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override;
+      Core::Elements::ElementType& element_type() const override;
 
       //!@}
 
@@ -163,7 +163,7 @@ namespace Discret
 
       \param double (out): cost to evaluate this element
       */
-      double EvaluationCost() override { return 10000.0; }
+      double evaluation_cost() override { return 10000.0; }
 
       //! @name Evaluation
 
@@ -200,7 +200,7 @@ namespace Discret
 
 
       //! initialize the inverse of the jacobian and its determinant in the material configuration
-      virtual void InitElement();
+      virtual void init_element();
 
       //!@}
 
@@ -230,7 +230,7 @@ namespace Discret
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      void VisNames(std::map<std::string, int>& names) override;
+      void vis_names(std::map<std::string, int>& names) override;
 
       /*!
       \brief Query data to be visualized using BINIO of a given name
@@ -246,12 +246,12 @@ namespace Discret
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if element recognizes the name
       */
-      bool VisData(const std::string& name, std::vector<double>& data) override;
+      bool vis_data(const std::string& name, std::vector<double>& data) override;
 
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& eledistype,
+      bool read_element(const std::string& eletype, const std::string& eledistype,
           Input::LineDefinition* linedef) override;
 
       //!@}
@@ -262,7 +262,7 @@ namespace Discret
           double* dphi_dpp, bool save);
 
       //! compute porosity at gauss point at one face of the element
-      virtual void ComputeSurfPorosity(Teuchos::ParameterList& params, double press, double J,
+      virtual void compute_surf_porosity(Teuchos::ParameterList& params, double press, double J,
           int surfnum, int gp, double& porosity, double* dphi_dp, double* dphi_dJ,
           double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, bool save);
 
@@ -687,7 +687,7 @@ namespace Discret
       std::vector<std::vector<double>> anisotropic_permeability_nodal_coeffs_;
 
       //! get nodes of element
-      Core::Nodes::Node** Nodes() override;
+      Core::Nodes::Node** nodes() override;
 
       //! get material of element
       Teuchos::RCP<Core::Mat::Material> material() const;

@@ -24,9 +24,9 @@ FOUR_C_NAMESPACE_OPEN
 
 void Discret::ELEMENTS::NStet5::nstet5_homog(Teuchos::ParameterList& params)
 {
-  if (Global::Problem::Instance(0)->GetCommunicators()->SubComm()->MyPID() == Owner())
+  if (Global::Problem::instance(0)->get_communicators()->sub_comm()->MyPID() == owner())
   {
-    const double density = Material()->Density(0);
+    const double density = material()->density(0);
 
     double homogdens = V_ * density;
 
@@ -45,14 +45,14 @@ void Discret::ELEMENTS::NStet5::nstet5_read_restart_multi()
 {
   const int gp = 0;  // there is only one Gauss point
 
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
-  if (mat->MaterialType() == Core::Materials::m_struct_multiscale)
+  if (mat->material_type() == Core::Materials::m_struct_multiscale)
   {
     auto* micro = dynamic_cast<Mat::MicroMaterial*>(mat.get());
-    int eleID = Id();
+    int eleID = id();
     bool eleowner = false;
-    if (Global::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner())
+    if (Global::Problem::instance()->get_dis("structure")->get_comm().MyPID() == owner())
       eleowner = true;
 
     micro->read_restart(gp, eleID, eleowner);

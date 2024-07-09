@@ -65,7 +65,7 @@ namespace CONTACT
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int step, const int iter, bool predictor) override;
 
-    void DoReadRestart(Core::IO::DiscretizationReader& reader,
+    void do_read_restart(Core::IO::DiscretizationReader& reader,
         Teuchos::RCP<const Epetra_Vector> dis,
         Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
@@ -80,7 +80,7 @@ namespace CONTACT
      *
      * @param[in] cparams  contact data container
      */
-    virtual void Integrate(const CONTACT::ParamsInterface& cparams);
+    virtual void integrate(const CONTACT::ParamsInterface& cparams);
 
     Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const override;
@@ -106,9 +106,9 @@ namespace CONTACT
     void store_dirichlet_status(Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps) override{
         /* we don't care about dirichlet for now */
     };
-    void Update(Teuchos::RCP<const Epetra_Vector> dis) override;
+    void update(Teuchos::RCP<const Epetra_Vector> dis) override;
     void evaluate_reference_state() override;
-    void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
+    void do_write_restart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
         bool forcedrestart) const override{
         /* nothing stored in nitsche strategy that would need to be written */
     };
@@ -122,7 +122,8 @@ namespace CONTACT
      * @param[in] statename  name of state to be set
      * @param[in] vec        corresponding state vector
      */
-    virtual void SetParentState(const enum Mortar::StateType& statename, const Epetra_Vector& vec);
+    virtual void set_parent_state(
+        const enum Mortar::StateType& statename, const Epetra_Vector& vec);
 
     Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_n(const bool& redist) const override
     {
@@ -149,7 +150,7 @@ namespace CONTACT
     {
       return Teuchos::null;
     };
-    bool IsNitsche() const override { return true; }
+    bool is_nitsche() const override { return true; }
     void print_active_set() const override{};
     bool active_set_semi_smooth_converged() const override { return true; }
     bool active_set_converged() override { return true; }

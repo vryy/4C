@@ -87,13 +87,13 @@ namespace Discret
 
         //! factory method
         static Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface>
-        CreatePhaseManager(const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para, int nsd,
-            Core::Materials::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
-            int totalnumdofpernode, int numfluidphases);
+        create_phase_manager(const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
+            int nsd, Core::Materials::MaterialType mattype,
+            const POROFLUIDMULTIPHASE::Action& action, int totalnumdofpernode, int numfluidphases);
 
         //! factory method
         static Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface>
-        WrapPhaseManager(const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para, int nsd,
+        wrap_phase_manager(const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para, int nsd,
             Core::Materials::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
             Teuchos::RCP<PhaseManagerInterface> corephasemanager);
 
@@ -105,20 +105,20 @@ namespace Discret
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
         //! porofluidmultiphase-element otherwise it has to be explicitly passed from the caller
-        virtual void EvaluateGPState(
+        virtual void evaluate_gp_state(
             double J, const VariableManagerMinAccess& varmanager, const int matnum = 0) = 0;
 
         //! clear the states
-        virtual void ClearGPState() = 0;
+        virtual void clear_gp_state() = 0;
 
         //! check for reactions
-        virtual bool IsReactive(int phasenum) const = 0;
+        virtual bool is_reactive(int phasenum) const = 0;
 
         //! get scalar to phase mapping
-        virtual Mat::ScaTraMatMultiPoro::ScalarToPhaseMap ScalarToPhase(int iscal) const = 0;
+        virtual Mat::ScaTraMatMultiPoro::ScalarToPhaseMap scalar_to_phase(int iscal) const = 0;
 
         //! check if EvaluateGPState() was called
-        virtual void CheckIsEvaluated() const = 0;
+        virtual void check_is_evaluated() const = 0;
 
         //! check if setup() was called
         virtual void check_is_setup() const = 0;
@@ -126,83 +126,83 @@ namespace Discret
         //! @name Access methods
 
         //! get the number of phases
-        virtual int NumFluidPhases() const = 0;
+        virtual int num_fluid_phases() const = 0;
 
         //! get the total number of dofs (number of phases + 2*number of volume fractions)
-        virtual int TotalNumDof() const = 0;
+        virtual int total_num_dof() const = 0;
 
         //! get the total number of volume fractions
-        virtual int NumVolFrac() const = 0;
+        virtual int num_vol_frac() const = 0;
 
         //! get solid pressure
-        virtual double SolidPressure() const = 0;
+        virtual double solid_pressure() const = 0;
 
         //! recalculate solid pressure
         virtual void recalculate_solid_pressure(const double porosity) = 0;
 
         //! get saturation of phase 'phasenum'
-        virtual double Saturation(int phasenum) const = 0;
+        virtual double saturation(int phasenum) const = 0;
 
         //! get pressure of phase 'phasenum'
-        virtual double Pressure(int phasenum) const = 0;
+        virtual double pressure(int phasenum) const = 0;
 
         //! get saturation of all phases
-        virtual const std::vector<double>& Saturation() const = 0;
+        virtual const std::vector<double>& saturation() const = 0;
 
         //! get volfracs of all phases
-        virtual const std::vector<double>& VolFrac() const = 0;
+        virtual const std::vector<double>& vol_frac() const = 0;
 
         //! get volfrac of volfrac 'volfracnum'
-        virtual double VolFrac(int volfracnum) const = 0;
+        virtual double vol_frac(int volfracnum) const = 0;
 
         //! get volfrac pressures of all phases
-        virtual const std::vector<double>& VolFracPressure() const = 0;
+        virtual const std::vector<double>& vol_frac_pressure() const = 0;
 
         //! get volfrac pressure of volfrac 'volfracnum'
-        virtual double VolFracPressure(int volfracnum) const = 0;
+        virtual double vol_frac_pressure(int volfracnum) const = 0;
 
         //! get sum of additional volume fractions
-        virtual double SumAddVolFrac() const = 0;
+        virtual double sum_add_vol_frac() const = 0;
 
         //! get pressure of all phases
-        virtual const std::vector<double>& Pressure() const = 0;
+        virtual const std::vector<double>& pressure() const = 0;
 
         //! get bulk modulus of phase 'phasenum'
-        virtual double InvBulkmodulus(int phasenum) const = 0;
+        virtual double inv_bulkmodulus(int phasenum) const = 0;
 
         //! check if fluid phase 'phasenum' is incompressible (very low compressibility < 1e-14)
         virtual bool incompressible_fluid_phase(int phasenum) const = 0;
 
         //! get inverse bulk modulus of solid phase
-        virtual double InvBulkmodulusSolid() const = 0;
+        virtual double inv_bulkmodulus_solid() const = 0;
 
         //! check if solid is incompressible (either very low compressibility < 1e-14 or
         //! MAT_PoroLawConstant)
-        virtual bool IncompressibleSolid() const = 0;
+        virtual bool incompressible_solid() const = 0;
 
         //! get density of phase 'phasenum'
-        virtual double Density(int phasenum) const = 0;
+        virtual double density(int phasenum) const = 0;
 
         //! get density of phase 'phasenum'
-        virtual double VolFracDensity(int volfracnum) const = 0;
+        virtual double vol_frac_density(int volfracnum) const = 0;
 
         //! get the density of solid phase
-        virtual double SolidDensity() const = 0;
+        virtual double solid_density() const = 0;
 
         //! get the current element the manager was set up with
-        virtual const Core::Elements::Element* Element() const = 0;
+        virtual const Core::Elements::Element* element() const = 0;
 
         //! get porosity
-        virtual double Porosity() const = 0;
+        virtual double porosity() const = 0;
 
         //! get Jacobian of deformation gradient
-        virtual double JacobianDefGrad() const = 0;
+        virtual double jacobian_def_grad() const = 0;
 
         //! get derivative of porosity wrt JacobianDefGrad
         virtual double porosity_deriv_wrt_jacobian_def_grad() const = 0;
 
         //! get derivative of porosity w.r.t. DOF 'doftoderive'
-        virtual double PorosityDeriv(int doftoderive) const = 0;
+        virtual double porosity_deriv(int doftoderive) const = 0;
 
         //! check if porosity depends on fluid (pressure)
         virtual bool porosity_depends_on_fluid() const = 0;
@@ -211,17 +211,17 @@ namespace Discret
         virtual bool porosity_depends_on_struct() const = 0;
 
         //! get derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
-        virtual double SaturationDeriv(int phasenum, int doftoderive) const = 0;
+        virtual double saturation_deriv(int phasenum, int doftoderive) const = 0;
 
         //! get 2nd derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
         virtual double saturation_deriv_deriv(
             int phasenum, int firstdoftoderive, int seconddoftoderive) const = 0;
 
         //! get derivative of pressure of phase 'phasenum' w.r.t. DOF 'doftoderive'
-        virtual double PressureDeriv(int phasenum, int doftoderive) const = 0;
+        virtual double pressure_deriv(int phasenum, int doftoderive) const = 0;
 
         //! get derivative of solid pressure  w.r.t. DOF 'doftoderive'
-        virtual double SolidPressureDeriv(int doftoderive) const = 0;
+        virtual double solid_pressure_deriv(int doftoderive) const = 0;
 
         //! get derivative of pressure of phase 'phasenum'
         //! w.r.t. DOF 'doftoderive' (first derivative)
@@ -229,34 +229,34 @@ namespace Discret
         virtual double solid_pressure_deriv_deriv(int doftoderive, int doftoderive2) const = 0;
 
         //! get the reaction term
-        virtual double ReacTerm(int phasenum) const = 0;
+        virtual double reac_term(int phasenum) const = 0;
 
         //! get the derivative of the reaction term
-        virtual double ReacDeriv(int phasenum, int doftoderive) const = 0;
+        virtual double reac_deriv(int phasenum, int doftoderive) const = 0;
 
         //! get total number of scalars in system
-        virtual int NumScal() const = 0;
+        virtual int num_scal() const = 0;
 
         //! get the derivative of the reaction term w.r.t. scalar 'scaltoderive'
-        virtual double ReacDerivScalar(int phasenum, int scaltoderive) const = 0;
+        virtual double reac_deriv_scalar(int phasenum, int scaltoderive) const = 0;
 
         //! get the derivative of the reaction term w.r.t. porosity
-        virtual double ReacDerivPorosity(int phasenum) const = 0;
+        virtual double reac_deriv_porosity(int phasenum) const = 0;
 
         //! get the diffusion tensor
-        virtual void PermeabilityTensor(
+        virtual void permeability_tensor(
             int phasenum, Core::LinAlg::Matrix<3, 3>& permeabilitytensor) const = 0;
         //! get the diffusion tensor
-        virtual void PermeabilityTensor(
+        virtual void permeability_tensor(
             int phasenum, Core::LinAlg::Matrix<2, 2>& permeabilitytensor) const = 0;
         //! get the diffusion tensor
-        virtual void PermeabilityTensor(
+        virtual void permeability_tensor(
             int phasenum, Core::LinAlg::Matrix<1, 1>& permeabilitytensor) const = 0;
 
         //! check for constant relpermeability
         virtual bool has_constant_rel_permeability(int phasenum) const = 0;
         //! get relative diffusivity of phase
-        virtual double RelPermeability(int phasenum) const = 0;
+        virtual double rel_permeability(int phasenum) const = 0;
         //! get derivative of relative permeability of phase
         virtual double rel_permeability_deriv(int phasenum) const = 0;
 
@@ -266,14 +266,14 @@ namespace Discret
         //! get dynamic viscosity of phase (matnum is the material number of the porofluid-material
         //! on the current element) default is set to zero, if called from a
         //! porofluidmultiphase-element otherwise it has to be explicitly passed from the caller
-        virtual double DynViscosity(int phasenum, double abspressgrad, int matnum = 0) const = 0;
+        virtual double dyn_viscosity(int phasenum, double abspressgrad, int matnum = 0) const = 0;
         //! get dynamic viscosity of phase
-        virtual double DynViscosity(
+        virtual double dyn_viscosity(
             const Core::Mat::Material& material, int phasenum, double abspressgrad) const = 0;
         //! get derivative of dynamic viscosity of phase
-        virtual double DynViscosityDeriv(int phasenum, double abspressgrad) const = 0;
+        virtual double dyn_viscosity_deriv(int phasenum, double abspressgrad) const = 0;
         //! get derivative dynamic viscosity of phase
-        virtual double DynViscosityDeriv(
+        virtual double dyn_viscosity_deriv(
             const Core::Mat::Material& material, int phasenum, double abspressgrad) const = 0;
 
         //! check for constant dynamic viscosity of volume fraction pressure
@@ -295,13 +295,13 @@ namespace Discret
             int volfracpressnum, double abspressgrad) const = 0;
 
         //! get the diffusion tensor
-        virtual void DiffTensorVolFrac(
+        virtual void diff_tensor_vol_frac(
             int volfracnum, Core::LinAlg::Matrix<3, 3>& difftensorvolfrac) const = 0;
         //! get the diffusion tensor
-        virtual void DiffTensorVolFrac(
+        virtual void diff_tensor_vol_frac(
             int volfracnum, Core::LinAlg::Matrix<2, 2>& difftensorvolfrac) const = 0;
         //! get the diffusion tensor
-        virtual void DiffTensorVolFrac(
+        virtual void diff_tensor_vol_frac(
             int volfracnum, Core::LinAlg::Matrix<1, 1>& difftensorvolfrac) const = 0;
 
         //! get the permeability tensor for volume fraction pressures
@@ -326,12 +326,12 @@ namespace Discret
         virtual bool has_receptor_kinetic_law(int volfracnum, int iscal) const = 0;
 
         //! return scalar diffusivity of of scalar 'iscal' of volume fraction 'volfracnum'
-        virtual double ScalarDiff(int volfracnum, int iscal) const = 0;
+        virtual double scalar_diff(int volfracnum, int iscal) const = 0;
 
         //! return omega half of scalar 'iscal' of volume fraction 'volfracnum' for receptor kinetic
         //! law see: Anderson, A. R. A. & Chaplain, M. A. J.
         //       Continuous and discrete mathematical models of tumor-induced angiogenesis
-        virtual double OmegaHalf(int volfracnum, int iscal) const = 0;
+        virtual double omega_half(int volfracnum, int iscal) const = 0;
 
         //@}
       };
@@ -366,88 +366,88 @@ namespace Discret
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
         //! porofluidmultiphase-element otherwise it has to be explicitly passed from the caller
-        void EvaluateGPState(
+        void evaluate_gp_state(
             double J, const VariableManagerMinAccess& varmanager, const int matnum = 0) override;
 
         //! clear the states
-        void ClearGPState() override;
+        void clear_gp_state() override;
 
         //! check for reactions
-        bool IsReactive(int phasenum) const override { return false; };
+        bool is_reactive(int phasenum) const override { return false; };
 
         //! @name Access methods
 
         //! get the number of phases
-        int NumFluidPhases() const override { return numfluidphases_; };
+        int num_fluid_phases() const override { return numfluidphases_; };
 
         //! get the total number of dofs (number of phases + 2*number of volume fractions)
-        int TotalNumDof() const override { return totalnumdofpernode_; };
+        int total_num_dof() const override { return totalnumdofpernode_; };
 
         //! get the number of volume fractions
-        int NumVolFrac() const override { return numvolfrac_; };
+        int num_vol_frac() const override { return numvolfrac_; };
 
         //! get solid pressure
-        double SolidPressure() const override;
+        double solid_pressure() const override;
 
         //! recalculate solid pressure
         void recalculate_solid_pressure(const double porosity) override;
 
         //! get saturation of phase 'phasenum'
-        double Saturation(int phasenum) const override;
+        double saturation(int phasenum) const override;
 
         //! get pressure of phase 'phasenum'
-        double Pressure(int phasenum) const override;
+        double pressure(int phasenum) const override;
 
         //! get saturation of all phases
-        const std::vector<double>& Saturation() const override;
+        const std::vector<double>& saturation() const override;
 
         //! get volfracs of all phases
-        const std::vector<double>& VolFrac() const override;
+        const std::vector<double>& vol_frac() const override;
 
         //! get volfrac of volfrac 'volfracnum'
-        double VolFrac(int volfracnum) const override;
+        double vol_frac(int volfracnum) const override;
 
         //! get volfrac pressures of all volfracs
-        const std::vector<double>& VolFracPressure() const override;
+        const std::vector<double>& vol_frac_pressure() const override;
 
         //! get volfrac pressure of volfrac 'volfracnum'
-        double VolFracPressure(int volfracnum) const override;
+        double vol_frac_pressure(int volfracnum) const override;
 
         //! get sum of additional volume fractions
-        double SumAddVolFrac() const override;
+        double sum_add_vol_frac() const override;
 
         //! get pressure of all phases
-        const std::vector<double>& Pressure() const override;
+        const std::vector<double>& pressure() const override;
 
         //! get bulk modulus of phase 'phasenum'
-        double InvBulkmodulus(int phasenum) const override;
+        double inv_bulkmodulus(int phasenum) const override;
 
         //! check if fluid phase 'phasenum' is incompressible (very low compressibility < 1e-14)
         bool incompressible_fluid_phase(int phasenum) const override;
 
         //! get inverse bulk modulus of solid phase
-        double InvBulkmodulusSolid() const override;
+        double inv_bulkmodulus_solid() const override;
 
         //! check if solid is incompressible (either very low compressibility < 1e-14 or
         //! MAT_PoroLawConstant)
-        bool IncompressibleSolid() const override;
+        bool incompressible_solid() const override;
 
         //! get density of phase 'phasenum'
-        double Density(int phasenum) const override;
+        double density(int phasenum) const override;
 
         //! get density of phase 'phasenum'
-        double VolFracDensity(int volfracnum) const override;
+        double vol_frac_density(int volfracnum) const override;
 
         //! get the density of the solid phase
-        double SolidDensity() const override;
+        double solid_density() const override;
 
         //! get the current element the manager was set up with
-        const Core::Elements::Element* Element() const override { return ele_; };
+        const Core::Elements::Element* element() const override { return ele_; };
 
         //@}
 
         //! check if EvaluateGPState() was called
-        void CheckIsEvaluated() const override
+        void check_is_evaluated() const override
         {
           if (not isevaluated_) FOUR_C_THROW("Gauss point states have not been set!");
         }
@@ -459,14 +459,14 @@ namespace Discret
         }
 
         //! get porosity
-        double Porosity() const override
+        double porosity() const override
         {
           FOUR_C_THROW("Porosity not available for this phase manager!");
           return 0.0;
         };
 
         //! get porosity
-        double JacobianDefGrad() const override
+        double jacobian_def_grad() const override
         {
           FOUR_C_THROW("JacobianDefGrad not available for this phase manager!");
           return 0.0;
@@ -482,7 +482,7 @@ namespace Discret
         };
 
         //! get derivative of porosity w.r.t. DOF 'doftoderive'
-        double PorosityDeriv(int doftoderive) const override
+        double porosity_deriv(int doftoderive) const override
         {
           FOUR_C_THROW("Derivative of porosity not available for this phase manager!");
           return 0.0;
@@ -503,7 +503,7 @@ namespace Discret
         };
 
         //! get derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
-        double SaturationDeriv(int phasenum, int doftoderive) const override
+        double saturation_deriv(int phasenum, int doftoderive) const override
         {
           FOUR_C_THROW("Derivative of saturation not available for this phase manager!");
           return 0.0;
@@ -518,14 +518,14 @@ namespace Discret
         };
 
         //! get derivative of pressure of phase 'phasenum' w.r.t. DOF 'doftoderive'
-        double PressureDeriv(int phasenum, int doftoderive) const override
+        double pressure_deriv(int phasenum, int doftoderive) const override
         {
           FOUR_C_THROW("Derivative of pressure not available for this phase manager!");
           return 0.0;
         };
 
         //! get derivative of solid pressure  w.r.t. DOF 'doftoderive'
-        double SolidPressureDeriv(int doftoderive) const override
+        double solid_pressure_deriv(int doftoderive) const override
         {
           FOUR_C_THROW("Derivative of solid pressure not available for this phase manager!");
           return 0.0;
@@ -541,54 +541,54 @@ namespace Discret
         };
 
         //! get the reaction term
-        double ReacTerm(int phasenum) const override
+        double reac_term(int phasenum) const override
         {
           FOUR_C_THROW("Reaction term not available for this phase manager!");
           return 0.0;
         };
 
         //! get total number of scalars in system
-        int NumScal() const override
+        int num_scal() const override
         {
           FOUR_C_THROW("Number of scalars not available for this phase manager");
           return 0;
         };
 
         //! get the derivative of the reaction term
-        double ReacDeriv(int phasenum, int doftoderive) const override
+        double reac_deriv(int phasenum, int doftoderive) const override
         {
           FOUR_C_THROW("Reaction term derivative not available for this phase manager!");
           return 0.0;
         };
 
         //! get the derivative of the reaction term w.r.t. scalar 'scaltoderive'
-        double ReacDerivScalar(int phasenum, int scaltoderive) const override
+        double reac_deriv_scalar(int phasenum, int scaltoderive) const override
         {
           FOUR_C_THROW("Reaction term derivative (scalar) not available for this phase manager!");
           return 0.0;
         };
 
         //! get the derivative of the reaction term w.r.t. porosity
-        double ReacDerivPorosity(int phasenum) const override
+        double reac_deriv_porosity(int phasenum) const override
         {
           FOUR_C_THROW("Reaction term derivative (porosity) not available for this phase manager!");
           return 0.0;
         };
 
         //! get the diffusion tensor
-        void PermeabilityTensor(
+        void permeability_tensor(
             int phasenum, Core::LinAlg::Matrix<3, 3>& permeabilitytensor) const override
         {
           FOUR_C_THROW("Diffusion tensor (3D) not available for this phase manager!");
         };
         //! get the diffusion tensor
-        void PermeabilityTensor(
+        void permeability_tensor(
             int phasenum, Core::LinAlg::Matrix<2, 2>& permeabilitytensor) const override
         {
           FOUR_C_THROW("Diffusion tensor (2D) not available for this phase manager!");
         };
         //! get the diffusion tensor
-        void PermeabilityTensor(
+        void permeability_tensor(
             int phasenum, Core::LinAlg::Matrix<1, 1>& permeabilitytensor) const override
         {
           FOUR_C_THROW("Diffusion tensor (1D) not available for this phase manager!");
@@ -602,7 +602,7 @@ namespace Discret
           return false;
         };
         //! get relative diffusivity of phase
-        double RelPermeability(int phasenum) const override
+        double rel_permeability(int phasenum) const override
         {
           FOUR_C_THROW("Relative Diffusivity not available for this phase manager!");
           return 0.0;
@@ -622,26 +622,26 @@ namespace Discret
           return false;
         };
         //! get relative diffusivity of phase
-        double DynViscosity(int phasenum, double abspressgrad, int matnum = 0) const override
+        double dyn_viscosity(int phasenum, double abspressgrad, int matnum = 0) const override
         {
           FOUR_C_THROW("Dynamic Viscosity not available for this phase manager!");
           return 0.0;
         };
         //! get dynamic viscosity of phase
-        double DynViscosity(
+        double dyn_viscosity(
             const Core::Mat::Material& material, int phasenum, double abspressgrad) const override
         {
           FOUR_C_THROW("Dynamic Viscosity not available for this phase manager!");
           return 0.0;
         };
         //! get derivative of dynamic viscosity of phase
-        double DynViscosityDeriv(int phasenum, double abspressgrad) const override
+        double dyn_viscosity_deriv(int phasenum, double abspressgrad) const override
         {
           FOUR_C_THROW("Derivative of dynamic Viscosity not available for this phase manager!");
           return 0.0;
         };
         //! get derivative dynamic viscosity of phase
-        double DynViscosityDeriv(
+        double dyn_viscosity_deriv(
             const Core::Mat::Material& material, int phasenum, double abspressgrad) const override
         {
           FOUR_C_THROW("Derivative of dynamic Viscosity not available for this phase manager!");
@@ -690,21 +690,21 @@ namespace Discret
         };
 
         //! get the diffusion tensor
-        void DiffTensorVolFrac(
+        void diff_tensor_vol_frac(
             int volfracnum, Core::LinAlg::Matrix<3, 3>& difftensorvolfrac) const override
         {
           FOUR_C_THROW(
               "Diffusion tensor for volume fractions (3D) not available for this phase manager!");
         };
         //! get the diffusion tensor
-        void DiffTensorVolFrac(
+        void diff_tensor_vol_frac(
             int volfracnum, Core::LinAlg::Matrix<2, 2>& difftensorvolfrac) const override
         {
           FOUR_C_THROW(
               "Diffusion tensor for volume fractions (2D) not available for this phase manager!");
         };
         //! get the diffusion tensor
-        void DiffTensorVolFrac(
+        void diff_tensor_vol_frac(
             int volfracnum, Core::LinAlg::Matrix<1, 1>& difftensorvolfrac) const override
         {
           FOUR_C_THROW(
@@ -760,7 +760,7 @@ namespace Discret
         };
 
         //! return scalar diffusivities of scalar 'iscal' of volume fraction 'volfracnum'
-        double ScalarDiff(int volfracnum, int iscal) const override
+        double scalar_diff(int volfracnum, int iscal) const override
         {
           FOUR_C_THROW("ScalarDiff not available for this phase manager!");
           return 0.0;
@@ -769,14 +769,14 @@ namespace Discret
         //! return omega half of scalar 'iscal' of volume fraction 'volfracnum' for receptor kinetic
         //! law see: Anderson, A. R. A. & Chaplain, M. A. J.
         //       Continuous and discrete mathematical models of tumor-induced angiogenesis
-        double OmegaHalf(int volfracnum, int iscal) const override
+        double omega_half(int volfracnum, int iscal) const override
         {
           FOUR_C_THROW("OmegaHalf not available for this phase manager!");
           return 0.0;
         };
 
         //! get scalar to phase mapping
-        Mat::ScaTraMatMultiPoro::ScalarToPhaseMap ScalarToPhase(int iscal) const override
+        Mat::ScaTraMatMultiPoro::ScalarToPhaseMap scalar_to_phase(int iscal) const override
         {
           FOUR_C_THROW("ScalarToPhase not available for this phase manager!");
           Mat::ScaTraMatMultiPoro::ScalarToPhaseMap null_map;
@@ -858,7 +858,7 @@ namespace Discret
         };
 
         //! check if EvaluateGPState() was called
-        void CheckIsEvaluated() const override { phasemanager_->CheckIsEvaluated(); };
+        void check_is_evaluated() const override { phasemanager_->check_is_evaluated(); };
 
         //! check if setup() was called
         void check_is_setup() const override { phasemanager_->check_is_setup(); };
@@ -866,9 +866,9 @@ namespace Discret
         //! @name Access methods
 
         //! get derivative of porosity w.r.t. DOF 'doftoderive'
-        double PorosityDeriv(int doftoderive) const override
+        double porosity_deriv(int doftoderive) const override
         {
-          return phasemanager_->PorosityDeriv(doftoderive);
+          return phasemanager_->porosity_deriv(doftoderive);
         };
 
         //! check if porosity depends on fluid (pressure)
@@ -884,9 +884,9 @@ namespace Discret
         };
 
         //! get derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
-        double SaturationDeriv(int phasenum, int doftoderive) const override
+        double saturation_deriv(int phasenum, int doftoderive) const override
         {
-          return phasemanager_->SaturationDeriv(phasenum, doftoderive);
+          return phasemanager_->saturation_deriv(phasenum, doftoderive);
         };
 
         //! get 2nd derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
@@ -898,15 +898,15 @@ namespace Discret
         };
 
         //! get derivative of pressure of phase 'phasenum' w.r.t. DOF 'doftoderive'
-        double PressureDeriv(int phasenum, int doftoderive) const override
+        double pressure_deriv(int phasenum, int doftoderive) const override
         {
-          return phasemanager_->PressureDeriv(phasenum, doftoderive);
+          return phasemanager_->pressure_deriv(phasenum, doftoderive);
         };
 
         //! get derivative of solid pressure  w.r.t. DOF 'doftoderive'
-        double SolidPressureDeriv(int doftoderive) const override
+        double solid_pressure_deriv(int doftoderive) const override
         {
-          return phasemanager_->SolidPressureDeriv(doftoderive);
+          return phasemanager_->solid_pressure_deriv(doftoderive);
         };
 
         //! get derivative of pressure of phase 'phasenum'
@@ -918,28 +918,28 @@ namespace Discret
         };
 
         //! check if the current phase is involved in a reaction
-        bool IsReactive(int phasenum) const override
+        bool is_reactive(int phasenum) const override
         {
-          return phasemanager_->IsReactive(phasenum);
+          return phasemanager_->is_reactive(phasenum);
         };
 
         //! get scalar to phase mapping
-        Mat::ScaTraMatMultiPoro::ScalarToPhaseMap ScalarToPhase(int iscal) const override
+        Mat::ScaTraMatMultiPoro::ScalarToPhaseMap scalar_to_phase(int iscal) const override
         {
-          return phasemanager_->ScalarToPhase(iscal);
+          return phasemanager_->scalar_to_phase(iscal);
         }
 
         //! get the number of phases
-        int NumFluidPhases() const override { return phasemanager_->NumFluidPhases(); };
+        int num_fluid_phases() const override { return phasemanager_->num_fluid_phases(); };
 
         //! get the number of dofs (number of phases + 2*number of volfracs)
-        int TotalNumDof() const override { return phasemanager_->TotalNumDof(); };
+        int total_num_dof() const override { return phasemanager_->total_num_dof(); };
 
         //! get the number of volume fractions
-        int NumVolFrac() const override { return phasemanager_->NumVolFrac(); };
+        int num_vol_frac() const override { return phasemanager_->num_vol_frac(); };
 
         //! get solid pressure
-        double SolidPressure() const override { return phasemanager_->SolidPressure(); };
+        double solid_pressure() const override { return phasemanager_->solid_pressure(); };
 
         //! recalculate solid pressure
         void recalculate_solid_pressure(const double porosity) override
@@ -948,51 +948,51 @@ namespace Discret
         };
 
         //! get saturation of phase 'phasenum'
-        double Saturation(int phasenum) const override
+        double saturation(int phasenum) const override
         {
-          return phasemanager_->Saturation(phasenum);
+          return phasemanager_->saturation(phasenum);
         };
 
         //! get pressure of phase 'phasenum'
-        double Pressure(int phasenum) const override { return phasemanager_->Pressure(phasenum); };
+        double pressure(int phasenum) const override { return phasemanager_->pressure(phasenum); };
 
         //! get saturation of all phases
-        const std::vector<double>& Saturation() const override
+        const std::vector<double>& saturation() const override
         {
-          return phasemanager_->Saturation();
+          return phasemanager_->saturation();
         };
 
         //! get volfracs of all phases
-        const std::vector<double>& VolFrac() const override { return phasemanager_->VolFrac(); };
+        const std::vector<double>& vol_frac() const override { return phasemanager_->vol_frac(); };
 
         //! get volfrac of volfrac 'volfracnum'
-        double VolFrac(int volfracnum) const override
+        double vol_frac(int volfracnum) const override
         {
-          return phasemanager_->VolFrac(volfracnum);
+          return phasemanager_->vol_frac(volfracnum);
         };
 
         //! get volfrac pressures of all phases
-        const std::vector<double>& VolFracPressure() const override
+        const std::vector<double>& vol_frac_pressure() const override
         {
-          return phasemanager_->VolFracPressure();
+          return phasemanager_->vol_frac_pressure();
         };
 
         //! get volfrac pressure of volfrac 'volfracnum'
-        double VolFracPressure(int volfracnum) const override
+        double vol_frac_pressure(int volfracnum) const override
         {
-          return phasemanager_->VolFracPressure(volfracnum);
+          return phasemanager_->vol_frac_pressure(volfracnum);
         };
 
         //! get solid pressure
-        double SumAddVolFrac() const override { return phasemanager_->SumAddVolFrac(); };
+        double sum_add_vol_frac() const override { return phasemanager_->sum_add_vol_frac(); };
 
         //! get pressure of all phases
-        const std::vector<double>& Pressure() const override { return phasemanager_->Pressure(); };
+        const std::vector<double>& pressure() const override { return phasemanager_->pressure(); };
 
         //! get bulk modulus of phase 'phasenum'
-        double InvBulkmodulus(int phasenum) const override
+        double inv_bulkmodulus(int phasenum) const override
         {
-          return phasemanager_->InvBulkmodulus(phasenum);
+          return phasemanager_->inv_bulkmodulus(phasenum);
         };
 
         //! check if fluid phase 'phasenum' is incompressible (very low compressibility < 1e-14)
@@ -1002,20 +1002,23 @@ namespace Discret
         };
 
         //! get inverse bulk modulus of solid phase
-        double InvBulkmodulusSolid() const override
+        double inv_bulkmodulus_solid() const override
         {
-          return phasemanager_->InvBulkmodulusSolid();
+          return phasemanager_->inv_bulkmodulus_solid();
         };
 
         //! check if solid is incompressible (either very low compressibility < 1e-14 or
         //! MAT_PoroLawConstant)
-        bool IncompressibleSolid() const override { return phasemanager_->IncompressibleSolid(); };
+        bool incompressible_solid() const override
+        {
+          return phasemanager_->incompressible_solid();
+        };
 
         //! get porosity
-        double Porosity() const override { return phasemanager_->Porosity(); };
+        double porosity() const override { return phasemanager_->porosity(); };
 
         //! get JacobianDefGrad
-        double JacobianDefGrad() const override { return phasemanager_->JacobianDefGrad(); };
+        double jacobian_def_grad() const override { return phasemanager_->jacobian_def_grad(); };
 
         //! get derivative of porosity wrt JacobianDefGrad
         double porosity_deriv_wrt_jacobian_def_grad() const override
@@ -1024,64 +1027,67 @@ namespace Discret
         };
 
         //! get density of phase 'phasenum'
-        double Density(int phasenum) const override { return phasemanager_->Density(phasenum); };
+        double density(int phasenum) const override { return phasemanager_->density(phasenum); };
 
         //! get density of volume fraction 'volfracnum'
-        double VolFracDensity(int volfracnum) const override
+        double vol_frac_density(int volfracnum) const override
         {
-          return phasemanager_->VolFracDensity(volfracnum);
+          return phasemanager_->vol_frac_density(volfracnum);
         };
 
         //! get density of solid phase
-        double SolidDensity() const override { return phasemanager_->SolidDensity(); };
+        double solid_density() const override { return phasemanager_->solid_density(); };
 
         //! get the current element the manager was set up with
-        const Core::Elements::Element* Element() const override
+        const Core::Elements::Element* element() const override
         {
-          return phasemanager_->Element();
+          return phasemanager_->element();
         };
 
         //! get the reaction term
-        double ReacTerm(int phasenum) const override { return phasemanager_->ReacTerm(phasenum); };
+        double reac_term(int phasenum) const override
+        {
+          return phasemanager_->reac_term(phasenum);
+        };
 
         //! get total number of scalars in system
-        int NumScal() const override { return phasemanager_->NumScal(); };
+        int num_scal() const override { return phasemanager_->num_scal(); };
 
         //! get the derivative of the reaction term
-        double ReacDeriv(int phasenum, int doftoderive) const override
+        double reac_deriv(int phasenum, int doftoderive) const override
         {
-          return phasemanager_->ReacDeriv(phasenum, doftoderive);
+          return phasemanager_->reac_deriv(phasenum, doftoderive);
         };
 
         //! get the derivative of the reaction term w.r.t. scalar 'scaltoderive'
-        double ReacDerivScalar(int phasenum, int scaltoderive) const override
+        double reac_deriv_scalar(int phasenum, int scaltoderive) const override
         {
-          return phasemanager_->ReacDerivScalar(phasenum, scaltoderive);
+          return phasemanager_->reac_deriv_scalar(phasenum, scaltoderive);
         };
 
         //! get the derivative of the reaction term w.r.t. porosity
-        double ReacDerivPorosity(int phasenum) const override
+        double reac_deriv_porosity(int phasenum) const override
         {
-          return phasemanager_->ReacDerivPorosity(phasenum);
+          return phasemanager_->reac_deriv_porosity(phasenum);
         };
 
         //! get the diffusion tensor
-        void PermeabilityTensor(
+        void permeability_tensor(
             int phasenum, Core::LinAlg::Matrix<3, 3>& permeabilitytensor) const override
         {
-          phasemanager_->PermeabilityTensor(phasenum, permeabilitytensor);
+          phasemanager_->permeability_tensor(phasenum, permeabilitytensor);
         };
         //! get the diffusion tensor
-        void PermeabilityTensor(
+        void permeability_tensor(
             int phasenum, Core::LinAlg::Matrix<2, 2>& permeabilitytensor) const override
         {
-          phasemanager_->PermeabilityTensor(phasenum, permeabilitytensor);
+          phasemanager_->permeability_tensor(phasenum, permeabilitytensor);
         };
         //! get the diffusion tensor
-        void PermeabilityTensor(
+        void permeability_tensor(
             int phasenum, Core::LinAlg::Matrix<1, 1>& permeabilitytensor) const override
         {
-          phasemanager_->PermeabilityTensor(phasenum, permeabilitytensor);
+          phasemanager_->permeability_tensor(phasenum, permeabilitytensor);
         };
 
         //! check for constant relpermeability
@@ -1091,9 +1097,9 @@ namespace Discret
         };
 
         //! get relative diffusivity of phase
-        double RelPermeability(int phasenum) const override
+        double rel_permeability(int phasenum) const override
         {
-          return phasemanager_->RelPermeability(phasenum);
+          return phasemanager_->rel_permeability(phasenum);
         };
 
         //! get derivative of relative permeability of phase
@@ -1108,26 +1114,26 @@ namespace Discret
           return phasemanager_->has_constant_dyn_viscosity(phasenum);
         };
         //! get dynamic viscosity of phase
-        double DynViscosity(int phasenum, double abspressgrad, int matnum = 0) const override
+        double dyn_viscosity(int phasenum, double abspressgrad, int matnum = 0) const override
         {
-          return phasemanager_->DynViscosity(phasenum, abspressgrad, matnum = 0);
+          return phasemanager_->dyn_viscosity(phasenum, abspressgrad, matnum = 0);
         };
         //! get dynamic viscosity of phase
-        double DynViscosity(
+        double dyn_viscosity(
             const Core::Mat::Material& material, int phasenum, double abspressgrad) const override
         {
-          return phasemanager_->DynViscosity(material, phasenum, abspressgrad);
+          return phasemanager_->dyn_viscosity(material, phasenum, abspressgrad);
         };
         //! get derivative of dynamic viscosity of phase
-        double DynViscosityDeriv(int phasenum, double abspressgrad) const override
+        double dyn_viscosity_deriv(int phasenum, double abspressgrad) const override
         {
-          return phasemanager_->DynViscosityDeriv(phasenum, abspressgrad);
+          return phasemanager_->dyn_viscosity_deriv(phasenum, abspressgrad);
         };
         //! get derivative dynamic viscosity of phase
-        double DynViscosityDeriv(
+        double dyn_viscosity_deriv(
             const Core::Mat::Material& material, int phasenum, double abspressgrad) const override
         {
-          return phasemanager_->DynViscosityDeriv(material, phasenum, abspressgrad);
+          return phasemanager_->dyn_viscosity_deriv(material, phasenum, abspressgrad);
         };
 
         //! check for constant dynamic visosity of volume fraction pressure
@@ -1165,22 +1171,22 @@ namespace Discret
         };
 
         //! get the diffusion tensor
-        void DiffTensorVolFrac(
+        void diff_tensor_vol_frac(
             int volfracnum, Core::LinAlg::Matrix<3, 3>& difftensorvolfrac) const override
         {
-          phasemanager_->DiffTensorVolFrac(volfracnum, difftensorvolfrac);
+          phasemanager_->diff_tensor_vol_frac(volfracnum, difftensorvolfrac);
         };
         //! get the diffusion tensor
-        void DiffTensorVolFrac(
+        void diff_tensor_vol_frac(
             int volfracnum, Core::LinAlg::Matrix<2, 2>& difftensorvolfrac) const override
         {
-          phasemanager_->DiffTensorVolFrac(volfracnum, difftensorvolfrac);
+          phasemanager_->diff_tensor_vol_frac(volfracnum, difftensorvolfrac);
         };
         //! get the diffusion tensor
-        void DiffTensorVolFrac(
+        void diff_tensor_vol_frac(
             int volfracnum, Core::LinAlg::Matrix<1, 1>& difftensorvolfrac) const override
         {
-          phasemanager_->DiffTensorVolFrac(volfracnum, difftensorvolfrac);
+          phasemanager_->diff_tensor_vol_frac(volfracnum, difftensorvolfrac);
         };
 
         //! get the permeability tensor for volume fraction pressures
@@ -1226,17 +1232,17 @@ namespace Discret
         };
 
         //! return scalar diffusivities of scalar 'iscal' of volume fraction 'volfracnum'
-        double ScalarDiff(int volfracnum, int iscal) const override
+        double scalar_diff(int volfracnum, int iscal) const override
         {
-          return phasemanager_->ScalarDiff(volfracnum, iscal);
+          return phasemanager_->scalar_diff(volfracnum, iscal);
         };
 
         //! return omega half of scalar 'iscal' of volume fraction 'volfracnum' for receptor kinetic
         //! law see: Anderson, A. R. A. & Chaplain, M. A. J.
         //       Continuous and discrete mathematical models of tumor-induced angiogenesis
-        double OmegaHalf(int volfracnum, int iscal) const override
+        double omega_half(int volfracnum, int iscal) const override
         {
-          return phasemanager_->OmegaHalf(volfracnum, iscal);
+          return phasemanager_->omega_half(volfracnum, iscal);
         };
 
         //@}
@@ -1268,16 +1274,16 @@ namespace Discret
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
         //! porofluidmultiphase-element otherwise it has to be explicitly passed from the caller
-        void EvaluateGPState(
+        void evaluate_gp_state(
             double J, const VariableManagerMinAccess& varmanager, const int matnum = 0) override;
 
         //! clear the states
-        void ClearGPState() override;
+        void clear_gp_state() override;
 
         //! @name Access methods
 
         //! get derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
-        double SaturationDeriv(int phasenum, int doftoderive) const override;
+        double saturation_deriv(int phasenum, int doftoderive) const override;
 
         //! get 2nd derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
         //! (dS/dphi_{ii})
@@ -1285,10 +1291,10 @@ namespace Discret
             int phasenum, int firstdoftoderive, int seconddoftoderive) const override;
 
         //! get derivative of pressure of phase 'phasenum' w.r.t. DOF 'doftoderive'
-        double PressureDeriv(int phasenum, int doftoderive) const override;
+        double pressure_deriv(int phasenum, int doftoderive) const override;
 
         //! get derivative of solid pressure  w.r.t. DOF 'doftoderive'
-        double SolidPressureDeriv(int doftoderive) const override;
+        double solid_pressure_deriv(int doftoderive) const override;
 
         //! get derivative of pressure of phase 'phasenum'
         //! w.r.t. DOF 'doftoderive' (first derivative)
@@ -1335,25 +1341,25 @@ namespace Discret
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
         //! porofluidmultiphase-element otherwise it has to be explicitly passed from the caller
-        void EvaluateGPState(
+        void evaluate_gp_state(
             double J, const VariableManagerMinAccess& varmanager, const int matnum = 0) override;
 
         //! clear the states
-        void ClearGPState() override;
+        void clear_gp_state() override;
 
         //! @name Access methods
 
         //! get porosity
-        double Porosity() const override;
+        double porosity() const override;
 
         //! get porosity
-        double JacobianDefGrad() const override;
+        double jacobian_def_grad() const override;
 
         //! get derivative of porosity wrt JacobianDefGrad
         double porosity_deriv_wrt_jacobian_def_grad() const override;
 
         //! get derivative of porosity w.r.t. DOF 'doftoderive'
-        double PorosityDeriv(int doftoderive) const override;
+        double porosity_deriv(int doftoderive) const override;
 
         //! check if porosity depends on fluid (pressure)
         bool porosity_depends_on_fluid() const override;
@@ -1406,38 +1412,38 @@ namespace Discret
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
         //! porofluidmultiphase-element otherwise it has to be explicitly passed from the caller
-        void EvaluateGPState(
+        void evaluate_gp_state(
             double J, const VariableManagerMinAccess& varmanager, const int matnum = 0) override;
 
         //! clear the states
-        void ClearGPState() override;
+        void clear_gp_state() override;
 
         //! @name Access methods
 
         //! get the reaction term
-        double ReacTerm(int phasenum) const override;
+        double reac_term(int phasenum) const override;
 
         //! get the derivative of the reaction term
-        double ReacDeriv(int phasenum, int doftoderive) const override;
+        double reac_deriv(int phasenum, int doftoderive) const override;
 
         //! check if the current phase is involved in a reaction
-        bool IsReactive(int phasenum) const override
+        bool is_reactive(int phasenum) const override
         {
           check_is_setup();
           return isreactive_[phasenum];
         };
 
         //! get scalar to phase mapping
-        Mat::ScaTraMatMultiPoro::ScalarToPhaseMap ScalarToPhase(int iscal) const override;
+        Mat::ScaTraMatMultiPoro::ScalarToPhaseMap scalar_to_phase(int iscal) const override;
 
         //! get total number of scalars in system
-        int NumScal() const override;
+        int num_scal() const override;
 
         //! get the derivative of the reaction term w.r.t. scalar 'scaltoderive'
-        double ReacDerivScalar(int phasenum, int scaltoderive) const override;
+        double reac_deriv_scalar(int phasenum, int scaltoderive) const override;
 
         //! get the derivative of the reaction term w.r.t. porosity
-        double ReacDerivPorosity(int phasenum) const override;
+        double reac_deriv_porosity(int phasenum) const override;
 
         //@}
 
@@ -1495,23 +1501,23 @@ namespace Discret
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
         //! porofluidmultiphase-element otherwise it has to be explicitly passed from the caller
-        void EvaluateGPState(
+        void evaluate_gp_state(
             double J, const VariableManagerMinAccess& varmanager, const int matnum = 0) override;
 
         //! clear the states
-        void ClearGPState() override;
+        void clear_gp_state() override;
 
         //! @name Access methods
 
         //! get the diffusion tensor
-        void PermeabilityTensor(
+        void permeability_tensor(
             int phasenum, Core::LinAlg::Matrix<nsd, nsd>& permeabilitytensor) const override;
 
         //! check for constant relpermeability
         bool has_constant_rel_permeability(int phasenum) const override;
 
         //! get relative diffusivity of phase
-        double RelPermeability(int phasenum) const override;
+        double rel_permeability(int phasenum) const override;
 
         //! get derivative of relative permeability of phase
         double rel_permeability_deriv(int phasenum) const override;
@@ -1519,14 +1525,14 @@ namespace Discret
         //! check for constant dynamic viscosity
         bool has_constant_dyn_viscosity(int phasenum) const override;
         //! get dynamic viscosity of phase
-        double DynViscosity(int phasenum, double abspressgrad, int matnum = 0) const override;
+        double dyn_viscosity(int phasenum, double abspressgrad, int matnum = 0) const override;
         //! get dynamic viscosity of phase
-        double DynViscosity(
+        double dyn_viscosity(
             const Core::Mat::Material& material, int phasenum, double abspressgrad) const override;
         //! get derivative of dynamic viscosity of phase
-        double DynViscosityDeriv(int phasenum, double abspressgrad) const override;
+        double dyn_viscosity_deriv(int phasenum, double abspressgrad) const override;
         //! get derivative dynamic viscosity of phase
-        double DynViscosityDeriv(
+        double dyn_viscosity_deriv(
             const Core::Mat::Material& material, int phasenum, double abspressgrad) const override;
 
         //! get the permeability tensor for volume fraction pressures
@@ -1597,28 +1603,28 @@ namespace Discret
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
         //! porofluidmultiphase-element otherwise it has to be explicitly passed from the caller
-        void EvaluateGPState(
+        void evaluate_gp_state(
             double J, const VariableManagerMinAccess& varmanager, const int matnum = 0) override;
 
         //! clear the states
-        void ClearGPState() override;
+        void clear_gp_state() override;
 
         //! @name Access methods
 
         //! get the diffusion tensor
-        void DiffTensorVolFrac(
+        void diff_tensor_vol_frac(
             int volfracnum, Core::LinAlg::Matrix<nsd, nsd>& difftensorvolfrac) const override;
 
         //! check if volume frac 'volfracnum' has additional scalar dependent flux
         bool has_add_scalar_dependent_flux(int volfracnum) const override;
 
         //! return scalar diffusivity of scalar 'iscal' of volume fraction 'volfracnum'
-        double ScalarDiff(int volfracnum, int iscal) const override;
+        double scalar_diff(int volfracnum, int iscal) const override;
 
         //! return omega half of scalar 'iscal' of volume fraction 'volfracnum' for receptor kinetic
         //! law see: Anderson, A. R. A. & Chaplain, M. A. J.
         //       Continuous and discrete mathematical models of tumor-induced angiogenesis
-        double OmegaHalf(int volfracnum, int iscal) const override;
+        double omega_half(int volfracnum, int iscal) const override;
 
         //! check if volume frac 'volfracnum' has additional scalar dependent flux of scalar 'iscal'
         bool has_add_scalar_dependent_flux(int volfracnum, int iscal) const override;

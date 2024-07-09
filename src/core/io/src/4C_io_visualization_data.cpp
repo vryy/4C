@@ -43,15 +43,15 @@ void Core::IO::VisualizationData::clear_data()
   cell_offsets_.clear();
   face_connectivity_.clear();
   face_offsets_.clear();
-  for (const auto& data_name : GetPointDataNames()) clear_data(point_data_, data_name);
-  for (const auto& data_name : GetCellDataNames()) clear_data(cell_data_, data_name);
-  for (const auto& data_name : GetFieldDataNames()) clear_data(field_data_, data_name);
+  for (const auto& data_name : get_point_data_names()) clear_data(point_data_, data_name);
+  for (const auto& data_name : get_cell_data_names()) clear_data(cell_data_, data_name);
+  for (const auto& data_name : get_field_data_names()) clear_data(field_data_, data_name);
 }
 
 /**
  *
  */
-void Core::IO::VisualizationData::ResetContainer()
+void Core::IO::VisualizationData::reset_container()
 {
   clear_data();
   point_data_.clear();
@@ -66,13 +66,13 @@ void Core::IO::VisualizationData::consistency_check_and_complete_data()
 {
   complete_cell_connectivity();
   complete_face_connectivity();
-  ConsistencyCheck();
+  consistency_check();
 }
 
 /**
  *
  */
-void Core::IO::VisualizationData::ConsistencyCheck() const
+void Core::IO::VisualizationData::consistency_check() const
 {
   // Check basic point coordinates consistency (is done with get_point_coordinates_number_of_points)
   const auto n_points = get_point_coordinates_number_of_points();
@@ -117,9 +117,9 @@ void Core::IO::VisualizationData::ConsistencyCheck() const
     }
   };
 
-  for (const auto& data_name : GetPointDataNames())
+  for (const auto& data_name : get_point_data_names())
     check_data_dimensions(point_data_, data_name, n_points);
-  for (const auto& data_name : GetCellDataNames())
+  for (const auto& data_name : get_cell_data_names())
     check_data_dimensions(cell_data_, data_name, n_cells);
 }
 

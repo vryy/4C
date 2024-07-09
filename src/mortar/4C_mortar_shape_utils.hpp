@@ -122,7 +122,7 @@ namespace Mortar
       int nnode = ele.num_node();
 
       // get node number and node pointers
-      Core::Nodes::Node** mynodes = ele.Nodes();
+      Core::Nodes::Node** mynodes = ele.nodes();
       if (!mynodes) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
 
       // one-noded elements are directly processed here, shape independent evaluation possible
@@ -139,10 +139,10 @@ namespace Mortar
       {
         Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
         if (!mymrtrnode) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
-        bound += mymrtrnode->IsOnBound();
+        bound += mymrtrnode->is_on_bound();
       }
 
-      switch (ele.Shape())
+      switch (ele.shape())
       {
         // 2D linear case (2noded line element)
         case Core::FE::CellType::line2:
@@ -265,7 +265,7 @@ namespace Mortar
         dual = true;
 
       // get node number and node pointers
-      Core::Nodes::Node** mynodes = ele.Nodes();
+      Core::Nodes::Node** mynodes = ele.nodes();
       if (!mynodes) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
 
       // one-noded elements are directly processed here, shape independent evaluation possible
@@ -276,7 +276,7 @@ namespace Mortar
         return;
       }
 
-      switch (ele.Shape())
+      switch (ele.shape())
       {
         // 2D linear case (2noded line element)
         case Core::FE::CellType::line2:
@@ -313,13 +313,13 @@ namespace Mortar
           // dual Lagrange multipliers
           if (dual)
           {
-            if (ele.Shape() == Core::FE::CellType::tri3)
+            if (ele.shape() == Core::FE::CellType::tri3)
               mortar_dualshape_function_2D(val, ele, xi[0], xi[1], Mortar::Element::lindual2D);
-            else if (ele.Shape() == Core::FE::CellType::quad4)
+            else if (ele.shape() == Core::FE::CellType::quad4)
               mortar_dualshape_function_2D(val, ele, xi[0], xi[1], Mortar::Element::bilindual2D);
-            else if (ele.Shape() == Core::FE::CellType::tri6)
+            else if (ele.shape() == Core::FE::CellType::tri6)
               mortar_dualshape_function_2D(val, ele, xi[0], xi[1], Mortar::Element::quaddual2D);
-            else if (ele.Shape() == Core::FE::CellType::quad8)
+            else if (ele.shape() == Core::FE::CellType::quad8)
               mortar_dualshape_function_2D(
                   val, ele, xi[0], xi[1], Mortar::Element::serendipitydual2D);
             else /*Shape()==quad9*/
@@ -329,13 +329,13 @@ namespace Mortar
           // standard Lagrange multipliers
           else
           {
-            if (ele.Shape() == Core::FE::CellType::tri3)
+            if (ele.shape() == Core::FE::CellType::tri3)
               mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::lin2D);
-            else if (ele.Shape() == Core::FE::CellType::quad4)
+            else if (ele.shape() == Core::FE::CellType::quad4)
               mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::bilin2D);
-            else if (ele.Shape() == Core::FE::CellType::tri6)
+            else if (ele.shape() == Core::FE::CellType::tri6)
               mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::quad2D);
-            else if (ele.Shape() == Core::FE::CellType::quad8)
+            else if (ele.shape() == Core::FE::CellType::quad8)
               mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::serendipity2D);
             else /*Shape()==quad9*/
               mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::biquad2D);
@@ -406,7 +406,7 @@ namespace Mortar
     void EvaluateShape_LM_Const(const Inpar::Mortar::ShapeFcn& lmtype, const double* xi, V& val,
         Mortar::Element& ele, const int& valdim)
     {
-      switch (ele.Shape())
+      switch (ele.shape())
       {
         case Core::FE::CellType::line3:
           val(0) = val(1) = 0.;
@@ -430,11 +430,11 @@ namespace Mortar
         Mortar::Element& ele, const int& valdim)
     {
       if (!xi) FOUR_C_THROW("evaluate_shape_lag_mult_lin called with xi=nullptr");
-      if (!ele.IsSlave()) FOUR_C_THROW("evaluate_shape_lag_mult_lin called for master element");
+      if (!ele.is_slave()) FOUR_C_THROW("evaluate_shape_lag_mult_lin called for master element");
 
       // check for feasible element types (line3,tri6, quad8 or quad9)
-      if (ele.Shape() != Core::FE::CellType::line3 && ele.Shape() != Core::FE::CellType::tri6 &&
-          ele.Shape() != Core::FE::CellType::quad8 && ele.Shape() != Core::FE::CellType::quad9)
+      if (ele.shape() != Core::FE::CellType::line3 && ele.shape() != Core::FE::CellType::tri6 &&
+          ele.shape() != Core::FE::CellType::quad8 && ele.shape() != Core::FE::CellType::quad9)
         FOUR_C_THROW("Linear LM interpolation only for quadratic finite elements");
 
       // dual shape functions or not
@@ -443,7 +443,7 @@ namespace Mortar
         dual = true;
 
       // get node number and node pointers
-      Core::Nodes::Node** mynodes = ele.Nodes();
+      Core::Nodes::Node** mynodes = ele.nodes();
       if (!mynodes) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
 
       // check for boundary nodes
@@ -452,7 +452,7 @@ namespace Mortar
       {
         Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
         if (!mymrtrnode) FOUR_C_THROW("evaluate_shape_lag_mult: Null pointer!");
-        bound += mymrtrnode->IsOnBound();
+        bound += mymrtrnode->is_on_bound();
       }
 
       // all nodes are interior: use unmodified shape functions
@@ -461,7 +461,7 @@ namespace Mortar
         FOUR_C_THROW("You should not be here...");
       }
 
-      switch (ele.Shape())
+      switch (ele.shape())
       {
         // 2D quadratic case (quadratic line)
         case Core::FE::CellType::line3:
@@ -488,10 +488,10 @@ namespace Mortar
           {
             // FOUR_C_THROW("Quad->Lin modification of dual LM shape functions not yet
             // implemented");
-            if (ele.Shape() == Core::FE::CellType::tri6)
+            if (ele.shape() == Core::FE::CellType::tri6)
               mortar_dualshape_function_2D(
                   val, ele, xi[0], xi[1], Mortar::Element::quaddual2D_only_lin);
-            else if (ele.Shape() == Core::FE::CellType::quad8)
+            else if (ele.shape() == Core::FE::CellType::quad8)
               mortar_dualshape_function_2D(
                   val, ele, xi[0], xi[1], Mortar::Element::serendipitydual2D_only_lin);
             else /*Shape()==quad9*/
@@ -502,9 +502,9 @@ namespace Mortar
           // standard Lagrange multipliers
           else
           {
-            if (ele.Shape() == Core::FE::CellType::tri6)
+            if (ele.shape() == Core::FE::CellType::tri6)
               mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::quad2D_only_lin);
-            else if (ele.Shape() == Core::FE::CellType::quad8)
+            else if (ele.shape() == Core::FE::CellType::quad8)
               mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::serendipity2D_only_lin);
             else /*Shape()==quad9*/
               mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::biquad2D_only_lin);
@@ -650,7 +650,7 @@ namespace Mortar
         case Mortar::Element::lindual1D:
         {
           // use element-based dual shape functions if no coefficient matrix is stored
-          if (ele.MoData().DualShape() == Teuchos::null)
+          if (ele.mo_data().dual_shape() == Teuchos::null)
           {
             funct(0) = 0.5 * (1 - 3.0 * r);
             funct(1) = 0.5 * (1 + 3.0 * r);
@@ -659,15 +659,15 @@ namespace Mortar
           // pre-calculated consistent dual shape functions
           else
           {
-            if (ele.MoData().DualShape()->numCols() != 2 &&
-                ele.MoData().DualShape()->numRows() != 2)
+            if (ele.mo_data().dual_shape()->numCols() != 2 &&
+                ele.mo_data().dual_shape()->numRows() != 2)
               FOUR_C_THROW("Dual shape functions coefficient matrix calculated in the wrong size");
 
             Core::LinAlg::Matrix<2, 1> stdval;
             double xi[1] = {r};
             EvaluateShape_Displ(xi, stdval, ele, false);
 
-            Core::LinAlg::SerialDenseMatrix& ae = *(ele.MoData().DualShape());
+            Core::LinAlg::SerialDenseMatrix& ae = *(ele.mo_data().dual_shape());
 
             for (int i = 0; i < 2; ++i)
             {
@@ -712,7 +712,7 @@ namespace Mortar
           const int nnodes = 3;
 
           // compute entries to bi-ortho matrices me/de with Gauss quadrature
-          Mortar::ElementIntegrator integrator(ele.Shape());
+          Mortar::ElementIntegrator integrator(ele.shape());
 
           Core::LinAlg::Matrix<nnodes, nnodes> me(true);
           Core::LinAlg::Matrix<nnodes, nnodes> de(true);
@@ -723,20 +723,20 @@ namespace Mortar
 
           for (int i = 0; i < nnodes; ++i) valtemp(i) = 0.0;
 
-          for (int i = 0; i < integrator.nGP(); ++i)
+          for (int i = 0; i < integrator.n_gp(); ++i)
           {
-            double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
+            double gpc[2] = {integrator.coordinate(i, 0), integrator.coordinate(i, 1)};
 
             EvaluateShape_Displ(gpc, stdval, ele, false);
 
-            detg = ele.Jacobian(gpc);
+            detg = ele.jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
             {
               for (int k = 0; k < nnodes; ++k)
               {
-                me(j, k) += integrator.Weight(i) * stdval(j) * stdval(k) * detg;
-                de(j, k) += (j == k) * integrator.Weight(i) * stdval(j) * detg;
+                me(j, k) += integrator.weight(i) * stdval(j) * stdval(k) * detg;
+                de(j, k) += (j == k) * integrator.weight(i) * stdval(j) * detg;
               }
             }
           }
@@ -776,24 +776,24 @@ namespace Mortar
           Core::LinAlg::SerialDenseMatrix derivquad(nnodes, 2);
 
           // compute entries to bi-ortho matrices me/de with Gauss quadrature
-          Mortar::ElementIntegrator integrator(ele.Shape());
+          Mortar::ElementIntegrator integrator(ele.shape());
           Core::LinAlg::Matrix<nnodes, nnodes> me(true);
           Core::LinAlg::SerialDenseMatrix de(nnodes, nnodes, true);
           Core::LinAlg::SerialDenseMatrix ae(nnodes, nnodes);
 
-          for (int i = 0; i < integrator.nGP(); ++i)
+          for (int i = 0; i < integrator.n_gp(); ++i)
           {
-            double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-            ele.ShapeFunctions(Mortar::Element::quad1D_only_lin, gpc, valquad, derivquad);
+            double gpc[2] = {integrator.coordinate(i, 0), integrator.coordinate(i, 1)};
+            ele.shape_functions(Mortar::Element::quad1D_only_lin, gpc, valquad, derivquad);
 
-            detg = ele.Jacobian(gpc);
+            detg = ele.jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
             {
               for (int k = 0; k < nnodes; ++k)
               {
-                me(j, k) += integrator.Weight(i) * valquad[j] * valquad[k] * detg;
-                de(j, k) += (j == k) * integrator.Weight(i) * valquad[j] * detg;
+                me(j, k) += integrator.weight(i) * valquad[j] * valquad[k] * detg;
+                de(j, k) += (j == k) * integrator.weight(i) * valquad[j] * detg;
               }
             }
           }
@@ -819,7 +819,7 @@ namespace Mortar
 
           // evaluate dual shape functions at loc. coord. xi
           double xi[1] = {r};
-          ele.ShapeFunctions(Mortar::Element::quad1D_only_lin, xi, valquad, derivquad);
+          ele.shape_functions(Mortar::Element::quad1D_only_lin, xi, valquad, derivquad);
 
           for (int i = 0; i < nnodes; ++i) funct(i) = 0;
 
@@ -870,23 +870,23 @@ namespace Mortar
           Core::LinAlg::SerialDenseMatrix derivtemp(nnodes, 1, true);
 
           // compute entries to bi-ortho matrices me/de with Gauss quadrature
-          Mortar::ElementIntegrator integrator(ele.Shape());
+          Mortar::ElementIntegrator integrator(ele.shape());
 
           Core::LinAlg::SerialDenseMatrix me(nnodes - 1, nnodes - 1, true);
           Core::LinAlg::SerialDenseMatrix de(nnodes - 1, nnodes - 1, true);
 
-          for (int i = 0; i < integrator.nGP(); ++i)
+          for (int i = 0; i < integrator.n_gp(); ++i)
           {
-            double gpc[2] = {integrator.Coordinate(i, 0), 0.0};
-            ele.ShapeFunctions(Mortar::Element::quad1D, gpc, valquad, derivquad);
-            ele.ShapeFunctions(Mortar::Element::dual1D_base_for_edge0, gpc, vallin, derivlin);
-            detg = ele.Jacobian(gpc);
+            double gpc[2] = {integrator.coordinate(i, 0), 0.0};
+            ele.shape_functions(Mortar::Element::quad1D, gpc, valquad, derivquad);
+            ele.shape_functions(Mortar::Element::dual1D_base_for_edge0, gpc, vallin, derivlin);
+            detg = ele.jacobian(gpc);
 
             for (int j = 1; j < nnodes; ++j)
               for (int k = 1; k < nnodes; ++k)
               {
-                me(j - 1, k - 1) += integrator.Weight(i) * vallin[j - 1] * valquad[k] * detg;
-                de(j - 1, k - 1) += (j == k) * integrator.Weight(i) * valquad[k] * detg;
+                me(j - 1, k - 1) += integrator.weight(i) * vallin[j - 1] * valquad[k] * detg;
+                de(j - 1, k - 1) += (j == k) * integrator.weight(i) * valquad[k] * detg;
               }
           }
 
@@ -906,7 +906,7 @@ namespace Mortar
 
           // evaluate dual shape functions at loc. coord. r
           double xi[1] = {r};
-          ele.ShapeFunctions(Mortar::Element::dual1D_base_for_edge0, xi, vallin, derivlin);
+          ele.shape_functions(Mortar::Element::dual1D_base_for_edge0, xi, vallin, derivlin);
           for (int i = 1; i < nnodes; ++i)
             for (int j = 1; j < nnodes; ++j)
             {
@@ -940,23 +940,23 @@ namespace Mortar
           Core::LinAlg::SerialDenseMatrix derivtemp(nnodes, 1, true);
 
           // compute entries to bi-ortho matrices me/de with Gauss quadrature
-          Mortar::ElementIntegrator integrator(ele.Shape());
+          Mortar::ElementIntegrator integrator(ele.shape());
 
           Core::LinAlg::SerialDenseMatrix me(nnodes - 1, nnodes - 1, true);
           Core::LinAlg::SerialDenseMatrix de(nnodes - 1, nnodes - 1, true);
 
-          for (int i = 0; i < integrator.nGP(); ++i)
+          for (int i = 0; i < integrator.n_gp(); ++i)
           {
-            double gpc[2] = {integrator.Coordinate(i, 0), 0.0};
-            ele.ShapeFunctions(Mortar::Element::quad1D, gpc, valquad, derivquad);
-            ele.ShapeFunctions(Mortar::Element::dual1D_base_for_edge1, gpc, vallin, derivlin);
-            detg = ele.Jacobian(gpc);
+            double gpc[2] = {integrator.coordinate(i, 0), 0.0};
+            ele.shape_functions(Mortar::Element::quad1D, gpc, valquad, derivquad);
+            ele.shape_functions(Mortar::Element::dual1D_base_for_edge1, gpc, vallin, derivlin);
+            detg = ele.jacobian(gpc);
 
             for (int j = 0; j < nnodes - 1; ++j)
               for (int k = 0; k < nnodes - 1; ++k)
               {
-                me(j, k) += integrator.Weight(i) * vallin[j] * valquad[2 * k] * detg;
-                de(j, k) += (j == k) * integrator.Weight(i) * valquad[2 * k] * detg;
+                me(j, k) += integrator.weight(i) * vallin[j] * valquad[2 * k] * detg;
+                de(j, k) += (j == k) * integrator.weight(i) * valquad[2 * k] * detg;
               }
           }
 
@@ -976,7 +976,7 @@ namespace Mortar
 
           // evaluate dual shape functions at loc. coord. r
           double xi[1] = {r};
-          ele.ShapeFunctions(Mortar::Element::dual1D_base_for_edge1, xi, vallin, derivlin);
+          ele.shape_functions(Mortar::Element::dual1D_base_for_edge1, xi, vallin, derivlin);
           for (int i = 0; i < nnodes - 1; ++i)
             for (int j = 0; j < nnodes - 1; ++j)
             {
@@ -1422,7 +1422,7 @@ namespace Mortar
         // *********************************************************************
         case Mortar::Element::lindual2D:
         {
-          if (ele.MoData().DualShape() == Teuchos::null)
+          if (ele.mo_data().dual_shape() == Teuchos::null)
           {
             funct(0) = 3.0 - 4.0 * xi0 - 4.0 * xi1;
             funct(1) = 4.0 * xi0 - 1.0;
@@ -1434,7 +1434,7 @@ namespace Mortar
             // get solution matrix with dual parameters
             Core::LinAlg::SerialDenseMatrix ae(nnodes, nnodes);
             // get dual shape functions coefficient matrix from data container
-            ae = *(ele.MoData().DualShape());
+            ae = *(ele.mo_data().dual_shape());
 
             // evaluate dual shape functions at loc. coord. xi
             // need standard shape functions at xi first
@@ -1467,28 +1467,28 @@ namespace Mortar
           Core::LinAlg::Matrix<nnodes, 1> stdval;
 
           // no pre-computed dual shape functions
-          if (ele.MoData().DualShape() == Teuchos::null)
+          if (ele.mo_data().dual_shape() == Teuchos::null)
           {
             // establish fundamental data
             double detg = 0.0;
 
             // compute entries to bi-ortho matrices me/de with Gauss quadrature
-            Mortar::ElementIntegrator integrator(ele.Shape());
+            Mortar::ElementIntegrator integrator(ele.shape());
 
             Core::LinAlg::Matrix<nnodes, nnodes> me(true);
             Core::LinAlg::Matrix<nnodes, nnodes> de(true);
 
-            for (int i = 0; i < integrator.nGP(); ++i)
+            for (int i = 0; i < integrator.n_gp(); ++i)
             {
-              double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
+              double gpc[2] = {integrator.coordinate(i, 0), integrator.coordinate(i, 1)};
               EvaluateShape_Displ(gpc, stdval, ele, false);
-              detg = ele.Jacobian(gpc);
+              detg = ele.jacobian(gpc);
 
               for (int j = 0; j < nnodes; ++j)
                 for (int k = 0; k < nnodes; ++k)
                 {
-                  me(j, k) += integrator.Weight(i) * stdval(j) * stdval(k) * detg;
-                  de(j, k) += (j == k) * integrator.Weight(i) * stdval(j) * detg;
+                  me(j, k) += integrator.weight(i) * stdval(j) * stdval(k) * detg;
+                  de(j, k) += (j == k) * integrator.weight(i) * stdval(j) * detg;
                 }
             }
 
@@ -1500,7 +1500,7 @@ namespace Mortar
           else
           {
             // get dual shape functions coefficient matrix from data container
-            ae = *(ele.MoData().DualShape());
+            ae = *(ele.mo_data().dual_shape());
           }
 
           // evaluate dual shape functions at loc. coord. xi
@@ -1537,23 +1537,23 @@ namespace Mortar
           Core::LinAlg::SerialDenseMatrix derivquad(nnodes, 2);
 
           // compute entries to bi-ortho matrices me/de with Gauss quadrature
-          Mortar::ElementIntegrator integrator(ele.Shape());
+          Mortar::ElementIntegrator integrator(ele.shape());
           Core::LinAlg::Matrix<nnodes, nnodes> me(true);
           Core::LinAlg::Matrix<nnodes, nnodes> de(true);
           Core::LinAlg::Matrix<nnodes, nnodes> ae;
 
-          for (int i = 0; i < integrator.nGP(); ++i)
+          for (int i = 0; i < integrator.n_gp(); ++i)
           {
-            double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
+            double gpc[2] = {integrator.coordinate(i, 0), integrator.coordinate(i, 1)};
             ele.evaluate_shape(gpc, valquad, derivquad, nnodes, true);
-            detg = ele.Jacobian(gpc);
+            detg = ele.jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
             {
               for (int k = 0; k < nnodes; ++k)
               {
-                me(j, k) += integrator.Weight(i) * valquad[j] * valquad[k] * detg;
-                de(j, k) += (j == k) * integrator.Weight(i) * valquad[j] * detg;
+                me(j, k) += integrator.weight(i) * valquad[j] * valquad[k] * detg;
+                de(j, k) += (j == k) * integrator.weight(i) * valquad[j] * detg;
               }
             }
           }
@@ -1588,23 +1588,23 @@ namespace Mortar
           Core::LinAlg::SerialDenseMatrix derivquad(nnodes, 2);
 
           // compute entries to bi-ortho matrices me/de with Gauss quadrature
-          Mortar::ElementIntegrator integrator(ele.Shape());
+          Mortar::ElementIntegrator integrator(ele.shape());
           Core::LinAlg::Matrix<nnodes, nnodes> me(true);
           Core::LinAlg::Matrix<nnodes, nnodes> de(true);
           Core::LinAlg::Matrix<nnodes, nnodes> ae;
 
-          for (int i = 0; i < integrator.nGP(); ++i)
+          for (int i = 0; i < integrator.n_gp(); ++i)
           {
-            double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
+            double gpc[2] = {integrator.coordinate(i, 0), integrator.coordinate(i, 1)};
             ele.evaluate_shape(gpc, valquad, derivquad, nnodes, true);
-            detg = ele.Jacobian(gpc);
+            detg = ele.jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
             {
               for (int k = 0; k < nnodes; ++k)
               {
-                me(j, k) += integrator.Weight(i) * valquad[j] * valquad[k] * detg;
-                de(j, k) += (j == k) * integrator.Weight(i) * valquad[j] * detg;
+                me(j, k) += integrator.weight(i) * valquad[j] * valquad[k] * detg;
+                de(j, k) += (j == k) * integrator.weight(i) * valquad[j] * detg;
               }
             }
           }
@@ -1639,23 +1639,23 @@ namespace Mortar
           Core::LinAlg::SerialDenseMatrix derivquad(nnodes, 2);
 
           // compute entries to bi-ortho matrices me/de with Gauss quadrature
-          Mortar::ElementIntegrator integrator(ele.Shape());
+          Mortar::ElementIntegrator integrator(ele.shape());
           Core::LinAlg::Matrix<nnodes, nnodes> me(true);
           Core::LinAlg::Matrix<nnodes, nnodes> de(true);
           Core::LinAlg::Matrix<nnodes, nnodes> ae;
 
-          for (int i = 0; i < integrator.nGP(); ++i)
+          for (int i = 0; i < integrator.n_gp(); ++i)
           {
-            double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
+            double gpc[2] = {integrator.coordinate(i, 0), integrator.coordinate(i, 1)};
             ele.evaluate_shape(gpc, valquad, derivquad, nnodes, true);
-            detg = ele.Jacobian(gpc);
+            detg = ele.jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
             {
               for (int k = 0; k < nnodes; ++k)
               {
-                me(j, k) += integrator.Weight(i) * valquad[j] * valquad[k] * detg;
-                de(j, k) += (j == k) * integrator.Weight(i) * valquad[j] * detg;
+                me(j, k) += integrator.weight(i) * valquad[j] * valquad[k] * detg;
+                de(j, k) += (j == k) * integrator.weight(i) * valquad[j] * detg;
               }
             }
           }
@@ -1690,23 +1690,23 @@ namespace Mortar
           Core::LinAlg::SerialDenseMatrix derivquad(nnodes, 2);
 
           // compute entries to bi-ortho matrices me/de with Gauss quadrature
-          Mortar::ElementIntegrator integrator(ele.Shape());
+          Mortar::ElementIntegrator integrator(ele.shape());
           Core::LinAlg::Matrix<nnodes, nnodes> me(true);
           Core::LinAlg::SerialDenseMatrix de(nnodes, nnodes, true);
 
-          for (int i = 0; i < integrator.nGP(); ++i)
+          for (int i = 0; i < integrator.n_gp(); ++i)
           {
-            double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-            ele.ShapeFunctions(Mortar::Element::quad2D_only_lin, gpc, valquad, derivquad);
+            double gpc[2] = {integrator.coordinate(i, 0), integrator.coordinate(i, 1)};
+            ele.shape_functions(Mortar::Element::quad2D_only_lin, gpc, valquad, derivquad);
 
-            detg = ele.Jacobian(gpc);
+            detg = ele.jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
             {
               for (int k = 0; k < nnodes; ++k)
               {
-                me(j, k) += integrator.Weight(i) * valquad[j] * valquad[k] * detg;
-                de(j, k) += (j == k) * integrator.Weight(i) * valquad[j] * detg;
+                me(j, k) += integrator.weight(i) * valquad[j] * valquad[k] * detg;
+                de(j, k) += (j == k) * integrator.weight(i) * valquad[j] * detg;
               }
             }
           }
@@ -1734,7 +1734,7 @@ namespace Mortar
           // evaluate dual shape functions at loc. coord. xi
           double xi[2] = {xi0, xi1};
 
-          ele.ShapeFunctions(Mortar::Element::quad2D_only_lin, xi, valquad, derivquad);
+          ele.shape_functions(Mortar::Element::quad2D_only_lin, xi, valquad, derivquad);
 
           for (int i = 0; i < nnodes; ++i) funct(i) = 0;
 
@@ -1760,23 +1760,23 @@ namespace Mortar
           Core::LinAlg::SerialDenseMatrix derivquad(nnodes, 2);
 
           // compute entries to bi-ortho matrices me/de with Gauss quadrature
-          Mortar::ElementIntegrator integrator(ele.Shape());
+          Mortar::ElementIntegrator integrator(ele.shape());
           Core::LinAlg::Matrix<nnodes, nnodes> me(true);
           Core::LinAlg::SerialDenseMatrix de(nnodes, nnodes, true);
 
-          for (int i = 0; i < integrator.nGP(); ++i)
+          for (int i = 0; i < integrator.n_gp(); ++i)
           {
-            double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-            ele.ShapeFunctions(Mortar::Element::serendipity2D_only_lin, gpc, valquad, derivquad);
+            double gpc[2] = {integrator.coordinate(i, 0), integrator.coordinate(i, 1)};
+            ele.shape_functions(Mortar::Element::serendipity2D_only_lin, gpc, valquad, derivquad);
 
-            detg = ele.Jacobian(gpc);
+            detg = ele.jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
             {
               for (int k = 0; k < nnodes; ++k)
               {
-                me(j, k) += integrator.Weight(i) * valquad[j] * valquad[k] * detg;
-                de(j, k) += (j == k) * integrator.Weight(i) * valquad[j] * detg;
+                me(j, k) += integrator.weight(i) * valquad[j] * valquad[k] * detg;
+                de(j, k) += (j == k) * integrator.weight(i) * valquad[j] * detg;
               }
             }
           }
@@ -1803,7 +1803,7 @@ namespace Mortar
 
           // evaluate dual shape functions at loc. coord. xi
           double xi[2] = {xi0, xi1};
-          ele.ShapeFunctions(Mortar::Element::serendipity2D_only_lin, xi, valquad, derivquad);
+          ele.shape_functions(Mortar::Element::serendipity2D_only_lin, xi, valquad, derivquad);
 
           for (int i = 0; i < nnodes; ++i) funct(i) = 0;
 
@@ -1829,22 +1829,22 @@ namespace Mortar
           Core::LinAlg::SerialDenseMatrix derivquad(nnodes, 2);
 
           // compute entries to bi-ortho matrices me/de with Gauss quadrature
-          Mortar::ElementIntegrator integrator(ele.Shape());
+          Mortar::ElementIntegrator integrator(ele.shape());
           Core::LinAlg::Matrix<nnodes, nnodes> me(true);
           Core::LinAlg::SerialDenseMatrix de(nnodes, nnodes, true);
 
-          for (int i = 0; i < integrator.nGP(); ++i)
+          for (int i = 0; i < integrator.n_gp(); ++i)
           {
-            double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
-            ele.ShapeFunctions(Mortar::Element::biquad2D_only_lin, gpc, valquad, derivquad);
-            detg = ele.Jacobian(gpc);
+            double gpc[2] = {integrator.coordinate(i, 0), integrator.coordinate(i, 1)};
+            ele.shape_functions(Mortar::Element::biquad2D_only_lin, gpc, valquad, derivquad);
+            detg = ele.jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
             {
               for (int k = 0; k < nnodes; ++k)
               {
-                me(j, k) += integrator.Weight(i) * valquad[j] * valquad[k] * detg;
-                de(j, k) += (j == k) * integrator.Weight(i) * valquad[j] * detg;
+                me(j, k) += integrator.weight(i) * valquad[j] * valquad[k] * detg;
+                de(j, k) += (j == k) * integrator.weight(i) * valquad[j] * detg;
               }
             }
           }
@@ -1870,7 +1870,7 @@ namespace Mortar
 
           // evaluate dual shape functions at loc. coord. xi
           double xi[2] = {xi0, xi1};
-          ele.ShapeFunctions(Mortar::Element::biquad2D_only_lin, xi, valquad, derivquad);
+          ele.shape_functions(Mortar::Element::biquad2D_only_lin, xi, valquad, derivquad);
 
           for (int i = 0; i < nnodes; ++i) funct(i) = 0;
 
@@ -1908,11 +1908,11 @@ namespace Mortar
         {
           Core::LinAlg::SerialDenseVector weights(ele.num_node());
           for (int inode = 0; inode < ele.num_node(); ++inode)
-            weights(inode) = dynamic_cast<Mortar::Node*>(ele.Nodes()[inode])->NurbsW();
+            weights(inode) = dynamic_cast<Mortar::Node*>(ele.nodes()[inode])->nurbs_w();
 
           Core::LinAlg::SerialDenseMatrix auxderiv(1, ele.num_node());
           Core::FE::Nurbs::nurbs_get_1D_funct_deriv(
-              funct, auxderiv, xi0, ele.Knots()[0], weights, Core::FE::CellType::nurbs2);
+              funct, auxderiv, xi0, ele.knots()[0], weights, Core::FE::CellType::nurbs2);
           break;
         }
         //*********************************************
@@ -1922,11 +1922,11 @@ namespace Mortar
         {
           Core::LinAlg::SerialDenseVector weights(ele.num_node());
           for (int inode = 0; inode < ele.num_node(); ++inode)
-            weights(inode) = dynamic_cast<Mortar::Node*>(ele.Nodes()[inode])->NurbsW();
+            weights(inode) = dynamic_cast<Mortar::Node*>(ele.nodes()[inode])->nurbs_w();
 
           Core::LinAlg::SerialDenseMatrix auxderiv(1, ele.num_node());
           Core::FE::Nurbs::nurbs_get_1D_funct_deriv(
-              funct, auxderiv, xi0, ele.Knots()[0], weights, Core::FE::CellType::nurbs3);
+              funct, auxderiv, xi0, ele.knots()[0], weights, Core::FE::CellType::nurbs3);
           break;
         }
         default:
@@ -1968,7 +1968,7 @@ namespace Mortar
         {
           Core::LinAlg::SerialDenseVector weights(ele.num_node());
           for (int inode = 0; inode < ele.num_node(); ++inode)
-            weights(inode) = dynamic_cast<Mortar::Node*>(ele.Nodes()[inode])->NurbsW();
+            weights(inode) = dynamic_cast<Mortar::Node*>(ele.nodes()[inode])->nurbs_w();
 
           Core::LinAlg::SerialDenseVector uv(2);
           uv(0) = xi0;
@@ -1976,7 +1976,7 @@ namespace Mortar
 
           Core::LinAlg::SerialDenseMatrix auxderiv(2, ele.num_node());
           Core::FE::Nurbs::nurbs_get_2D_funct_deriv(
-              funct, auxderiv, uv, ele.Knots(), weights, Core::FE::CellType::nurbs9);
+              funct, auxderiv, uv, ele.knots(), weights, Core::FE::CellType::nurbs9);
           break;
         }
         default:
@@ -2014,18 +2014,18 @@ namespace Mortar
           Core::LinAlg::Matrix<nnodes, nnodes> de(true);
           Core::LinAlg::Matrix<nnodes, nnodes> ae;
 
-          for (int i = 0; i < integrator.nGP(); ++i)
+          for (int i = 0; i < integrator.n_gp(); ++i)
           {
-            double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
+            double gpc[2] = {integrator.coordinate(i, 0), integrator.coordinate(i, 1)};
             mortar_nurbs_shape_function_1D(funct, ele, gpc[0], Core::FE::CellType::nurbs3);
-            detg = ele.Jacobian(gpc);
+            detg = ele.jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
             {
               for (int k = 0; k < nnodes; ++k)
               {
-                me(j, k) += integrator.Weight(i) * funct(j) * funct(k) * detg;
-                de(j, k) += (j == k) * integrator.Weight(i) * funct(j) * detg;
+                me(j, k) += integrator.weight(i) * funct(j) * funct(k) * detg;
+                de(j, k) += (j == k) * integrator.weight(i) * funct(j) * detg;
               }
             }
           }
@@ -2085,18 +2085,18 @@ namespace Mortar
           Core::LinAlg::Matrix<nnodes, nnodes> de(true);
           Core::LinAlg::Matrix<nnodes, nnodes> ae;
 
-          for (int i = 0; i < integrator.nGP(); ++i)
+          for (int i = 0; i < integrator.n_gp(); ++i)
           {
-            double gpc[2] = {integrator.Coordinate(i, 0), integrator.Coordinate(i, 1)};
+            double gpc[2] = {integrator.coordinate(i, 0), integrator.coordinate(i, 1)};
             mortar_nurbs_shape_function_2D(funct, ele, gpc[0], gpc[1], shape);
-            detg = ele.Jacobian(gpc);
+            detg = ele.jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
             {
               for (int k = 0; k < nnodes; ++k)
               {
-                me(j, k) += integrator.Weight(i) * funct(j) * funct(k) * detg;
-                de(j, k) += (j == k) * integrator.Weight(i) * funct(j) * detg;
+                me(j, k) += integrator.weight(i) * funct(j) * funct(k) * detg;
+                de(j, k) += (j == k) * integrator.weight(i) * funct(j) * detg;
               }
             }
           }

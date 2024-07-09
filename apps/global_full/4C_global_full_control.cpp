@@ -36,7 +36,7 @@ void ntam(int argc, char *argv[])
 {
   using namespace FourC;
 
-  Teuchos::RCP<Epetra_Comm> gcomm = Global::Problem::Instance()->GetCommunicators()->GlobalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = Global::Problem::instance()->get_communicators()->global_comm();
 
   double t0, ti, tc;
 

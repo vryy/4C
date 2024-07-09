@@ -54,7 +54,7 @@ namespace Core::DOFSets
     ~DofSetMergedWrapper() override;
 
     /// Returns true if filled
-    bool Filled() const override { return filled_ and sourcedofset_->Filled(); };
+    bool filled() const override { return filled_ and sourcedofset_->filled(); };
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     int assign_degrees_of_freedom(
@@ -67,7 +67,7 @@ namespace Core::DOFSets
     /// Proxies need to know about changes to the DofSet.
 
     /// our original DofSet dies
-    void Disconnect(DofSetInterface* dofset) override;
+    void disconnect(DofSetInterface* dofset) override;
 
     //@}
 
@@ -75,32 +75,33 @@ namespace Core::DOFSets
     const Epetra_Map* dof_row_map() const override;
 
     /// Get degree of freedom column map
-    const Epetra_Map* DofColMap() const override;
+    const Epetra_Map* dof_col_map() const override;
 
     //! @name Access methods
 
     /// Get number of dofs for given node
-    int NumDof(const Core::Nodes::Node* node) const override
+    int num_dof(const Core::Nodes::Node* node) const override
     {
-      const Core::Nodes::Node* masternode = get_master_node(node->LID());
-      const Core::Nodes::Node* slavenode = get_slave_node(node->LID());
-      return sourcedofset_->NumDof(slavenode) + sourcedofset_->NumDof(masternode);
+      const Core::Nodes::Node* masternode = get_master_node(node->lid());
+      const Core::Nodes::Node* slavenode = get_slave_node(node->lid());
+      return sourcedofset_->num_dof(slavenode) + sourcedofset_->num_dof(masternode);
     }
 
     /// Get number of dofs for given element
-    int NumDof(const Core::Elements::Element* element) const override
+    int num_dof(const Core::Elements::Element* element) const override
     {
-      return sourcedofset_->NumDof(element);
+      return sourcedofset_->num_dof(element);
     }
 
     /// get number of nodal dofs
-    int NumDofPerNode(
+    int num_dof_per_node(
         const Core::Nodes::Node& node  ///< node, for which you want to know the number of dofs
     ) const override
     {
-      const Core::Nodes::Node* masternode = get_master_node(node.LID());
-      const Core::Nodes::Node* slavenode = get_slave_node(node.LID());
-      return sourcedofset_->NumDofPerNode(*masternode) + sourcedofset_->NumDofPerNode(*slavenode);
+      const Core::Nodes::Node* masternode = get_master_node(node.lid());
+      const Core::Nodes::Node* slavenode = get_slave_node(node.lid());
+      return sourcedofset_->num_dof_per_node(*masternode) +
+             sourcedofset_->num_dof_per_node(*slavenode);
     };
 
     /*! \brief Get the gid of all dofs of a node
@@ -109,12 +110,12 @@ namespace Core::DOFSets
      vector! Thus all definitions in the input file concerning dof numbering have to be set
      accordingly (e.g. for reactions in MAT_scatra_reaction and MAT_scatra_reaction, see test case
      'ssi_3D_tet4_tet4_tri3.dat')  */
-    std::vector<int> Dof(const Core::Nodes::Node* node) const override
+    std::vector<int> dof(const Core::Nodes::Node* node) const override
     {
-      const Core::Nodes::Node* slavenode = get_slave_node(node->LID());
-      std::vector<int> slavedof = sourcedofset_->Dof(slavenode);
-      const Core::Nodes::Node* masternode = get_master_node(node->LID());
-      std::vector<int> masterdof = sourcedofset_->Dof(masternode);
+      const Core::Nodes::Node* slavenode = get_slave_node(node->lid());
+      std::vector<int> slavedof = sourcedofset_->dof(slavenode);
+      const Core::Nodes::Node* masternode = get_master_node(node->lid());
+      std::vector<int> masterdof = sourcedofset_->dof(masternode);
 
       std::vector<int> dof;
       dof.reserve(slavedof.size() + masterdof.size());  // preallocate memory
@@ -125,17 +126,17 @@ namespace Core::DOFSets
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(std::vector<int>& dof,     ///< vector of dof gids (to be filled)
+    void dof(std::vector<int>& dof,     ///< vector of dof gids (to be filled)
         const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
     ) const override
     {
-      const Core::Nodes::Node* masternode = get_master_node(node->LID());
-      const Core::Nodes::Node* slavenode = get_slave_node(node->LID());
+      const Core::Nodes::Node* masternode = get_master_node(node->lid());
+      const Core::Nodes::Node* slavenode = get_slave_node(node->lid());
       std::vector<int> slavedof;
-      sourcedofset_->Dof(slavedof, slavenode, nodaldofset);
+      sourcedofset_->dof(slavedof, slavenode, nodaldofset);
       std::vector<int> masterdof;
-      sourcedofset_->Dof(masterdof, masternode, nodaldofset);
+      sourcedofset_->dof(masterdof, masternode, nodaldofset);
 
       dof.reserve(slavedof.size() + masterdof.size());  // preallocate memory
       dof.insert(dof.end(), slavedof.begin(), slavedof.end());
@@ -143,94 +144,94 @@ namespace Core::DOFSets
     }
 
     /// Get the gid of all dofs of a element
-    std::vector<int> Dof(const Core::Elements::Element* element) const override
+    std::vector<int> dof(const Core::Elements::Element* element) const override
     {
-      return sourcedofset_->Dof(element);
+      return sourcedofset_->dof(element);
     }
 
     /// Get the gid of a dof for given node
-    int Dof(const Core::Nodes::Node* node, int dof) const override
+    int dof(const Core::Nodes::Node* node, int dof) const override
     {
-      const Core::Nodes::Node* slavenode = get_slave_node(node->LID());
-      const int numslavedofs = sourcedofset_->NumDof(slavenode);
+      const Core::Nodes::Node* slavenode = get_slave_node(node->lid());
+      const int numslavedofs = sourcedofset_->num_dof(slavenode);
       if (dof < numslavedofs)
-        return sourcedofset_->Dof(slavenode, dof);
+        return sourcedofset_->dof(slavenode, dof);
       else
       {
-        const Core::Nodes::Node* masternode = get_master_node(node->LID());
-        return sourcedofset_->Dof(masternode, dof - numslavedofs);
+        const Core::Nodes::Node* masternode = get_master_node(node->lid());
+        return sourcedofset_->dof(masternode, dof - numslavedofs);
       }
     }
 
     /// Get the gid of a dof for given element
-    int Dof(const Core::Elements::Element* element, int dof) const override
+    int dof(const Core::Elements::Element* element, int dof) const override
     {
-      return sourcedofset_->Dof(element, dof);
+      return sourcedofset_->dof(element, dof);
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(const Core::Nodes::Node* node, std::vector<int>& lm) const override
+    void dof(const Core::Nodes::Node* node, std::vector<int>& lm) const override
     {
-      const Core::Nodes::Node* masternode = get_master_node(node->LID());
-      const Core::Nodes::Node* slavenode = get_slave_node(node->LID());
-      sourcedofset_->Dof(slavenode, lm);
-      sourcedofset_->Dof(masternode, lm);
+      const Core::Nodes::Node* masternode = get_master_node(node->lid());
+      const Core::Nodes::Node* slavenode = get_slave_node(node->lid());
+      sourcedofset_->dof(slavenode, lm);
+      sourcedofset_->dof(masternode, lm);
 
       return;
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
+    void dof(const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
         const unsigned startindex,  ///< first index of vector at which will be written to end
         std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
     ) const override
     {
-      const Core::Nodes::Node* slavenode = get_slave_node(node->LID());
-      const int numslavedofs = sourcedofset_->NumDof(slavenode);
-      sourcedofset_->Dof(slavenode, startindex, lm);
+      const Core::Nodes::Node* slavenode = get_slave_node(node->lid());
+      const int numslavedofs = sourcedofset_->num_dof(slavenode);
+      sourcedofset_->dof(slavenode, startindex, lm);
 
-      const Core::Nodes::Node* masternode = get_master_node(node->LID());
-      sourcedofset_->Dof(masternode, startindex + numslavedofs, lm);
+      const Core::Nodes::Node* masternode = get_master_node(node->lid());
+      sourcedofset_->dof(masternode, startindex + numslavedofs, lm);
     }
 
     /// Get the gid of all dofs of a element
-    void Dof(const Core::Elements::Element* element, std::vector<int>& lm) const override
+    void dof(const Core::Elements::Element* element, std::vector<int>& lm) const override
     {
-      sourcedofset_->Dof(element, lm);
+      sourcedofset_->dof(element, lm);
     }
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    void Dof(const Core::Elements::Element*
+    void dof(const Core::Elements::Element*
                  element,  ///< element which provides its expected number of DOFs per node
         const Core::Nodes::Node* node,  ///< node, for which you want the DOF positions
         std::vector<int>& lm  ///< already allocated vector to be filled with DOF positions
     ) const override
     {
-      const Core::Nodes::Node* slavenode = get_slave_node(node->LID());
-      sourcedofset_->Dof(element, slavenode, lm);
+      const Core::Nodes::Node* slavenode = get_slave_node(node->lid());
+      sourcedofset_->dof(element, slavenode, lm);
 
-      const Core::Nodes::Node* masternode = get_master_node(node->LID());
-      sourcedofset_->Dof(element, masternode, lm);
+      const Core::Nodes::Node* masternode = get_master_node(node->lid());
+      sourcedofset_->dof(element, masternode, lm);
     }
 
     /// Get maximum GID of degree of freedom row map
-    int MaxAllGID() const override { return sourcedofset_->MaxAllGID(); };
+    int max_all_gid() const override { return sourcedofset_->max_all_gid(); };
 
     /// Get minimum GID of degree of freedom row map
-    int MinAllGID() const override { return sourcedofset_->MinAllGID(); };
+    int min_all_gid() const override { return sourcedofset_->min_all_gid(); };
 
     /// Get Max of all GID assigned in the DofSets in front of current one in the list
     /// #static_dofsets_
-    int MaxGIDinList(const Epetra_Comm& comm) const override
+    int max_gi_din_list(const Epetra_Comm& comm) const override
     {
-      return sourcedofset_->MaxGIDinList(comm);
+      return sourcedofset_->max_gi_din_list(comm);
     };
 
     /// are the dof maps already initialized?
-    bool Initialized() const override { return sourcedofset_->Initialized(); };
+    bool initialized() const override { return sourcedofset_->initialized(); };
 
     /// Get Number of Global Elements of degree of freedom row map
-    int NumGlobalElements() const override { return sourcedofset_->NumGlobalElements(); };
+    int num_global_elements() const override { return sourcedofset_->num_global_elements(); };
 
    private:
     //! get the master node to a corresponding slave node (given by LID)
@@ -241,7 +242,7 @@ namespace Core::DOFSets
       int mastergid = (*master_nodegids_col_layout_)[slaveLid];
       // std::cout<<"master gid = "<<mastergid<<" <-> slave lid ="<<slaveLid<<"  size of map =
       // "<<master_nodegids_col_layout_->MyLength()<<std::endl;
-      return sourcedis_->gNode(mastergid);
+      return sourcedis_->g_node(mastergid);
     }
 
     //! get the slave node to a corresponding master node (given by LID)
@@ -250,7 +251,7 @@ namespace Core::DOFSets
       FOUR_C_ASSERT(
           masterLid < slave_nodegids_col_layout_->MyLength(), "Master node Lid out of range!");
       int slavegid = (*slave_nodegids_col_layout_)[masterLid];
-      return sourcedis_->gNode(slavegid);
+      return sourcedis_->g_node(slavegid);
     }
 
     //! master node gids in col layout matching conditioned slave nodes

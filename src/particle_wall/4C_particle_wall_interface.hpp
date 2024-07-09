@@ -77,7 +77,7 @@ namespace PARTICLEWALL
      *
      * \return wall data state container
      */
-    virtual std::shared_ptr<PARTICLEWALL::WallDataState> GetWallDataState() const = 0;
+    virtual std::shared_ptr<PARTICLEWALL::WallDataState> get_wall_data_state() const = 0;
 
     /*!
      * \brief get reference to potential wall neighbors

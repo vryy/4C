@@ -24,9 +24,9 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 bool BEAMINTERACTION::SolidContactElement(const Core::Elements::Element& element)
 {
-  const Core::Elements::ElementType& ele_type = element.ElementType();
+  const Core::Elements::ElementType& ele_type = element.element_type();
 
-  if (ele_type == CONTACT::ElementType::Instance())
+  if (ele_type == CONTACT::ElementType::instance())
     return true;
   else
     return false;
@@ -42,11 +42,11 @@ bool BEAMINTERACTION::ElementsShareNode(
 
   for (int i = 0; i < element1.num_node(); i++)
   {
-    int id = element1.NodeIds()[i];
+    int id = element1.node_ids()[i];
 
     for (int j = 0; j < element2.num_node(); j++)
     {
-      if (id == element2.NodeIds()[j]) sharenode = true;
+      if (id == element2.node_ids()[j]) sharenode = true;
     }
   }
 
@@ -68,7 +68,7 @@ double BEAMINTERACTION::CalcEleRadius(const Core::Elements::Element* ele)
   if (beamele != nullptr)
     eleradius = MANIPULATERADIUS * beamele->get_circular_cross_section_radius_for_interactions();
   else if (thissphere != nullptr)
-    eleradius = thissphere->Radius();
+    eleradius = thissphere->radius();
   else
     FOUR_C_THROW(
         "BEAMCONTACT::CalcEleRadius: unknown element type; cannot determine cross-section radius");

@@ -62,7 +62,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::setup()
 
 
   // cast first element to Beam3Base
-  beam_element_ = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(Element1());
+  beam_element_ = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element1());
 
   if (beam_element_ == nullptr)
     FOUR_C_THROW(
@@ -71,10 +71,10 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::setup()
 
   // get radius and stress-free reference length of beam element
   radius1_ = BEAMINTERACTION::CalcEleRadius(beam_element_);
-  beamele_reflength_ = beam_element_->RefLength();
+  beamele_reflength_ = beam_element_->ref_length();
 
   // cast second element to RigidSphere
-  sphere_element_ = dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(Element2());
+  sphere_element_ = dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(element2());
 
   if (sphere_element_ == nullptr)
     FOUR_C_THROW(
@@ -82,7 +82,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::setup()
         " must be a Rigidsphere element!");
 
   // get radius of sphere element
-  radius2_ = sphere_element_->Radius();
+  radius2_ = sphere_element_->radius();
 
 
   nodalcontactflag_.assign(2, false);
@@ -201,7 +201,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
     if (forcevec1 != nullptr and forcevec2 != nullptr)
     {
       evaluate_fc_contact(*forcevec1, *forcevec2,
-          Params()->beam_to_sphere_contact_params()->beam_to_sphere_penalty_param(), gap, normal,
+          params()->beam_to_sphere_contact_params()->beam_to_sphere_penalty_param(), gap, normal,
           N1_i, contactflag_);
     }
 
@@ -210,7 +210,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
         stiffmat22 != nullptr)
     {
       evaluate_stiffc_contact(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22,
-          Params()->beam_to_sphere_contact_params()->beam_to_sphere_penalty_param(), gap, normal,
+          params()->beam_to_sphere_contact_params()->beam_to_sphere_penalty_param(), gap, normal,
           norm, x1, x2, dx1, ddx1, N1_i, N1_i_xi, N1_i_xixi, contactflag_);
     }
   }
@@ -288,7 +288,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
         if (forcevec1 != nullptr and forcevec2 != nullptr)
         {
           evaluate_fc_contact(*forcevec1, *forcevec2,
-              Params()->beam_to_sphere_contact_params()->beam_to_sphere_penalty_param(), gap,
+              params()->beam_to_sphere_contact_params()->beam_to_sphere_penalty_param(), gap,
               normal, N1_i, nodalcontactflag_[inode]);
         }
 
@@ -297,7 +297,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
             stiffmat22 != nullptr)
         {
           evaluate_stiffc_contact(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22,
-              Params()->beam_to_sphere_contact_params()->beam_to_sphere_penalty_param(), gap,
+              params()->beam_to_sphere_contact_params()->beam_to_sphere_penalty_param(), gap,
               normal, norm, x1, x2, dx1, ddx1, N1_i, N1_i_xi, N1_i_xixi, nodalcontactflag_[inode],
               false);
         }
@@ -305,7 +305,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
     }
   }
 
-  return GetContactFlag();
+  return get_contact_flag();
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -902,7 +902,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::get_sha
     Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi, const TYPE& eta)
 {
   // get both discretization types
-  const Core::FE::CellType distype1 = BeamElement()->Shape();
+  const Core::FE::CellType distype1 = beam_element()->shape();
 
   if (numnodalvalues == 1)
   {
@@ -1111,7 +1111,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ResetState(
+void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::reset_state(
     const std::vector<double>& centerline_dofvec_ele1,
     const std::vector<double>& centerline_dofvec_ele2)
 {
@@ -1136,8 +1136,8 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::print(
     std::ostream& out) const
 {
   // ToDo add further information here
-  out << "\nInstance of BeamToSphereContactPair: element GIDs " << Element1()->Id()
-      << " (beam) and " << Element2()->Id() << " (sphere)";
+  out << "\nInstance of BeamToSphereContactPair: element GIDs " << element1()->id()
+      << " (beam) and " << element2()->id() << " (sphere)";
   out << "\ncontactflag_: " << contactflag_ << "\tnodalcontactflag: " << nodalcontactflag_[0]
       << nodalcontactflag_[1];
   out << "\ngap_: " << gap_;
@@ -1157,11 +1157,11 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
 {
   check_init_setup();
 
-  if (GetContactFlag())
+  if (get_contact_flag())
   {
-    out << "    " << std::setw(5) << std::left << Element1()->Id() << "(" << std::setw(3)
+    out << "    " << std::setw(5) << std::left << element1()->id() << "(" << std::setw(3)
         << std::right << -1 << "/" << std::setw(3) << -1 << ")"
-        << " " << std::setw(5) << std::left << Element2()->Id() << "(" << std::setw(3) << std::right
+        << " " << std::setw(5) << std::left << element2()->id() << "(" << std::setw(3) << std::right
         << -1 << "/" << std::setw(3) << -1 << ")"
         << "  BTSPH ";
 

@@ -71,7 +71,7 @@ namespace ParticleInteraction
     };
 
     //! get reference to weighted fluid particle pressure
-    inline const std::vector<double>& GetWeightedPressure() const { return weightedpressure_; };
+    inline const std::vector<double>& get_weighted_pressure() const { return weightedpressure_; };
 
     //! get reference to weighted fluid particle pressure gradient
     inline const std::vector<std::vector<double>>& get_weighted_pressure_gradient() const
@@ -86,7 +86,7 @@ namespace ParticleInteraction
     };
 
     //! get reference to weighted fluid particle velocity
-    inline const std::vector<std::vector<double>>& GetWeightedVelocity() const
+    inline const std::vector<std::vector<double>>& get_weighted_velocity() const
     {
       return weightedvelocity_;
     };

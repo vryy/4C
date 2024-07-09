@@ -135,7 +135,7 @@ bool NOX::FSI::AitkenRelaxation::compute(::NOX::Abstract::Group& grp, double& st
     static std::ofstream* out;
     if (out == nullptr)
     {
-      std::string s = Global::Problem::Instance()->OutputControlFile()->file_name();
+      std::string s = Global::Problem::instance()->output_control_file()->file_name();
       s.append(".omega");
       out = new std::ofstream(s.c_str());
     }
@@ -151,6 +151,6 @@ bool NOX::FSI::AitkenRelaxation::compute(::NOX::Abstract::Group& grp, double& st
 }
 
 
-double NOX::FSI::AitkenRelaxation::GetOmega() { return 1. - nu_; }
+double NOX::FSI::AitkenRelaxation::get_omega() { return 1. - nu_; }
 
 FOUR_C_NAMESPACE_CLOSE

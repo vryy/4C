@@ -54,7 +54,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
   // start with ActionType none
   Core::Elements::ActionType act = Core::Elements::none;
 
-  if (IsParamsInterface())  // new structural time integration
+  if (is_params_interface())  // new structural time integration
   {
     act = params_interface().get_action_type();
   }
@@ -94,7 +94,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_nlnstiff:
     {
       // need current displacement
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -112,7 +112,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_nlnstiffmass:  // do mass, stiffness and internal forces
     {
       // need current displacement
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -130,7 +130,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_internalforce:
     {
       // need current displacement
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -146,11 +146,11 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_update_istep:
     {
       // Update materials
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
-      update_element(mydisp, params, Material());
+      update_element(mydisp, params, material());
     }
     break;
 
@@ -160,7 +160,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_reset_istep:
     {
       // Reset of history (if needed)
-      SolidMaterial()->reset_step();
+      solid_material()->reset_step();
     }
     break;
 
@@ -170,7 +170,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_stress:
     {
       // need current displacement
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -181,7 +181,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       Inpar::Solid::StressType iostress = Inpar::Solid::stress_none;
       Inpar::Solid::StrainType iostrain = Inpar::Solid::strain_none;
 
-      if (IsParamsInterface())  // new structural time integration
+      if (is_params_interface())  // new structural time integration
       {
         stressdata = str_params_interface().stress_data_ptr();
         straindata = str_params_interface().strain_data_ptr();
@@ -231,11 +231,11 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_thickness:
     {
       // nothing to do for ghost elements
-      if (discretization.Comm().MyPID() == Owner())
+      if (discretization.get_comm().MyPID() == owner())
       {
         Teuchos::RCP<std::vector<char>> thickdata = Teuchos::null;
 
-        if (IsParamsInterface())  // new structural time integration
+        if (is_params_interface())  // new structural time integration
           thickdata = str_params_interface().opt_quantity_data_ptr();
         else  // old structural time integration
           thickdata = params.get<Teuchos::RCP<std::vector<char>>>("optquantity", Teuchos::null);
@@ -264,7 +264,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       double intenergy = 0.0;
 
       // need current displacement
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -292,7 +292,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
         double gpweight = intpoints_.qwgt[gp];
 
         // get shape function derivatives in the plane of the element
-        Core::FE::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, Shape());
+        Core::FE::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, shape());
 
         /*===============================================================================*
          | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |
@@ -323,7 +323,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
         double lambda3 = 1.0;
 
         // standard evaluation (incompressible, plane stress)
-        if (Material()->MaterialType() == Core::Materials::m_membrane_elasthyper)
+        if (material()->material_type() == Core::Materials::m_membrane_elasthyper)
         {
           // incompressibility condition to get principle stretch in thickness direction
           lambda3 = std::sqrt(
@@ -354,11 +354,11 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
         double psi = 0.0;
 
         // standard evaluation (incompressible, plane stress)
-        if (Material()->MaterialType() == Core::Materials::m_membrane_elasthyper)
+        if (material()->material_type() == Core::Materials::m_membrane_elasthyper)
         {
           Teuchos::rcp_dynamic_cast<Mat::MembraneElastHyper>(
-              Core::Elements::Element::Material(), true)
-              ->StrainEnergy(cauchygreen_loc, psi, gp, Id());
+              Core::Elements::Element::material(), true)
+              ->strain_energy(cauchygreen_loc, psi, gp, id());
         }
         else
           FOUR_C_THROW(
@@ -369,10 +369,10 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
         intenergy += fac * psi;
       }
 
-      if (IsParamsInterface())  // new structural time integration
+      if (is_params_interface())  // new structural time integration
       {
         // only add contributions from row elements to avoid counting them on more than one proc
-        if (discretization.Comm().MyPID() == Owner())
+        if (discretization.get_comm().MyPID() == owner())
           str_params_interface().add_contribution_to_energy_type(intenergy, Solid::internal_energy);
       }
       else  // old structural time integration
@@ -398,7 +398,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
 
       std::string optquantitytype = params.get<std::string>("optquantitytype", "ndxyz");
 
-      int gid = Id();
+      int gid = id();
       Core::LinAlg::Matrix<numgpt_post_, 1> gpthick(((*gpthickmap)[gid])->values(), true);
 
       Teuchos::RCP<Epetra_MultiVector> postthick =
@@ -418,11 +418,11 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
         // "assembly" of extrapolated nodal thickness
         for (int i = 0; i < numnod_; ++i)
         {
-          int gid = NodeIds()[i];
-          if (postthick->Map().MyGID(NodeIds()[i]))  // rownode
+          int gid = node_ids()[i];
+          if (postthick->Map().MyGID(node_ids()[i]))  // rownode
           {
             int lid = postthick->Map().LID(gid);
-            int myadjele = Nodes()[i]->NumElement();
+            int myadjele = nodes()[i]->num_element();
             (*((*postthick)(0)))[lid] += nodalthickness(i) / myadjele;
           }
         }
@@ -478,7 +478,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate_neumann(Teuchos::ParameterLis
   // find out whether we will use a time curve
   double time = -1.0;
 
-  if (IsParamsInterface())  // new structural time integration
+  if (is_params_interface())  // new structural time integration
     time = params_interface().get_total_time();
   else  // old structural time integration
     time = params.get("total time", -1.0);
@@ -498,8 +498,8 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate_neumann(Teuchos::ParameterLis
   {
     const int functnum = (tmp_funct) ? (*tmp_funct)[i] : -1;
     if (functnum > 0)
-      functfacs[i] = Global::Problem::Instance()
-                         ->FunctionById<Core::UTILS::FunctionOfTime>(functnum - 1)
+      functfacs[i] = Global::Problem::instance()
+                         ->function_by_id<Core::UTILS::FunctionOfTime>(functnum - 1)
                          .evaluate(time);
   }
 
@@ -511,7 +511,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate_neumann(Teuchos::ParameterLis
     pressure = 0.0;
 
   // need displacement new
-  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
+  Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement new");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
   Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -540,8 +540,8 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate_neumann(Teuchos::ParameterLis
     double gpweight = intpoints_.qwgt[gp];
 
     // get shape functions and derivatives in the plane of the element
-    Core::FE::shape_function_2D(shapefcts, xi_gp, eta_gp, Shape());
-    Core::FE::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, Shape());
+    Core::FE::shape_function_2D(shapefcts, xi_gp, eta_gp, shape());
+    Core::FE::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, shape());
 
     /*===============================================================================*
      | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |
@@ -634,13 +634,13 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
 
   auto material_local_coordinates =
       Teuchos::rcp_dynamic_cast<Mat::MembraneMaterialLocalCoordinates>(
-          Core::Elements::Element::Material());
+          Core::Elements::Element::material());
   auto material_global_coordinates =
       Teuchos::rcp_dynamic_cast<Mat::MembraneMaterialGlobalCoordinates>(
-          Core::Elements::Element::Material());
+          Core::Elements::Element::material());
   auto material_inelastic_thickness =
       Teuchos::rcp_dynamic_cast<Mat::MembraneMaterialInelasticThickness>(
-          Core::Elements::Element::Material());
+          Core::Elements::Element::material());
 
   mem_configuration(disp, xrefe, xcurr);
 
@@ -662,8 +662,8 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     double gpweight = intpoints_.qwgt[gp];
 
     // get shape functions and derivatives in the plane of the element
-    Core::FE::shape_function_2D(shapefcts, xi_gp, eta_gp, Shape());
-    Core::FE::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, Shape());
+    Core::FE::shape_function_2D(shapefcts, xi_gp, eta_gp, shape());
+    Core::FE::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, shape());
 
     /*===============================================================================*
      | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |
@@ -734,7 +734,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     Core::LinAlg::Matrix<3, 3> cmatred_loc(true);
 
     // The growth remodel elast hyper material needs some special quantities for its evaluation
-    if (Material()->MaterialType() == Core::Materials::m_growthremodel_elasthyper)
+    if (material()->material_type() == Core::Materials::m_growthremodel_elasthyper)
     {
       // Gauss-point coordinates in reference configuration
       Core::LinAlg::Matrix<noddof_, 1> gprefecoord(true);
@@ -753,7 +753,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     {
       // Let material decide the total stretch in thickness direction
       lambda3 = material_inelastic_thickness->evaluate_membrane_thickness_stretch(
-          defgrd_glob, params, gp, Id());
+          defgrd_glob, params, gp, id());
 
       // update surface deformation gradient in 3 dimensions in global coordinates
       mem_defgrd_global(dXds1, dXds2, dxds1, dxds2, lambda3, defgrd_glob);
@@ -768,8 +768,8 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     // standard evaluation (incompressible, plane stress)
     if (material_local_coordinates != Teuchos::null)
     {
-      material_local_coordinates->EvaluateMembrane(
-          defgrd_loc, cauchygreen_loc, params, Q_localToGlobal, pk2red_loc, cmatred_loc, gp, Id());
+      material_local_coordinates->evaluate_membrane(
+          defgrd_loc, cauchygreen_loc, params, Q_localToGlobal, pk2red_loc, cmatred_loc, gp, id());
     }
     else if (material_global_coordinates != Teuchos::null)
     {
@@ -777,8 +777,8 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
       Core::LinAlg::Matrix<6, 6> cmat_glob(true);
 
       // Evaluate material with quantities in the global coordinate system
-      material_global_coordinates->EvaluateMembrane(
-          defgrd_glob, params, pk2M_glob, cmat_glob, gp, Id());
+      material_global_coordinates->evaluate_membrane(
+          defgrd_glob, params, pk2M_glob, cmat_glob, gp, id());
 
       // Transform stress and elasticity into the local membrane coordinate system
       Core::LinAlg::Matrix<3, 3> pk2M_loc(true);
@@ -888,7 +888,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     if (massmatrix != nullptr)
     {
       // get density
-      double density = SolidMaterial()->Density();
+      double density = solid_material()->density();
 
       // integrate consistent mass matrix
       const double factor = gpweight * thickness_ * G1G2_cn * density;
@@ -910,7 +910,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
       }
 
       // check for non constant mass matrix
-      if (SolidMaterial()->VaryingDensity())
+      if (solid_material()->varying_density())
       {
         FOUR_C_THROW("Varying Density not supported for Membrane");
       }
@@ -1163,28 +1163,28 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
  |  Return names of visualization data (public)                fb 09/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Membrane<distype>::VisNames(std::map<std::string, int>& names)
+void Discret::ELEMENTS::Membrane<distype>::vis_names(std::map<std::string, int>& names)
 {
   std::string result_thickness = "thickness";
 
   names[result_thickness] = 1;
 
 
-  SolidMaterial()->VisNames(names);
+  solid_material()->vis_names(names);
 
   return;
 
-}  // Discret::ELEMENTS::Membrane::VisNames
+}  // Discret::ELEMENTS::Membrane::vis_names
 
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                     fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::Membrane<distype>::VisData(
+bool Discret::ELEMENTS::Membrane<distype>::vis_data(
     const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (Core::Elements::Element::VisData(name, data)) return true;
+  if (Core::Elements::Element::vis_data(name, data)) return true;
 
   if (name == "thickness")
   {
@@ -1198,9 +1198,9 @@ bool Discret::ELEMENTS::Membrane<distype>::VisData(
     return true;
   }
 
-  return SolidMaterial()->VisData(name, data, intpoints_.nquad, this->Id());
+  return solid_material()->vis_data(name, data, intpoints_.nquad, this->id());
 
-}  // Discret::ELEMENTS::Membrane::VisData
+}  // Discret::ELEMENTS::Membrane::vis_data
 
 /*----------------------------------------------------------------------*
  |  get reference and current configuration                fbraeu 06/16 |
@@ -1210,12 +1210,12 @@ void Discret::ELEMENTS::Membrane<distype>::mem_configuration(const std::vector<d
     Core::LinAlg::Matrix<numnod_, noddof_>& xrefe, Core::LinAlg::Matrix<numnod_, noddof_>& xcurr)
 {
   // get reference configuration and determine current configuration
-  Core::Nodes::Node** nodes = Nodes();
+  Core::Nodes::Node** nodes = Membrane::nodes();
   if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
 
   for (int i = 0; i < numnod_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1464,14 +1464,14 @@ Discret::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
 
     // shape functions for the extrapolated coordinates
     Core::LinAlg::Matrix<numgpt_post_, 1> funct;
-    Core::FE::shape_function_2D(funct, e1, e2, Shape());
+    Core::FE::shape_function_2D(funct, e1, e2, shape());
 
     for (int i = 0; i < numgpt_post_; ++i) extrapol(nd, i) = funct(i);
   }
 
   // fixedsizesolver for inverting extrapol
   Core::LinAlg::FixedSizeSerialDenseSolver<numnod_, numgpt_post_, 1> solver;
-  solver.SetMatrix(extrapol);
+  solver.set_matrix(extrapol);
   int err = solver.invert();
   if (err != 0.) FOUR_C_THROW("Matrix extrapol is not invertible");
 
@@ -1487,7 +1487,7 @@ void Discret::ELEMENTS::Membrane<distype>::update_element(std::vector<double>& d
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material> mat)
 {
   // Calculate current deformation gradient
-  if (SolidMaterial()->UsesExtendedUpdate())
+  if (solid_material()->uses_extended_update())
   {
     // get reference configuration and determine current configuration
     Core::LinAlg::Matrix<numnod_, noddof_> xrefe(true);
@@ -1509,7 +1509,7 @@ void Discret::ELEMENTS::Membrane<distype>::update_element(std::vector<double>& d
       double eta_gp = intpoints_.qxg[gp][1];
 
       // get derivatives in the plane of the element
-      Core::FE::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, Shape());
+      Core::FE::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, shape());
 
       /*===============================================================================*
        | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |
@@ -1544,22 +1544,22 @@ void Discret::ELEMENTS::Membrane<distype>::update_element(std::vector<double>& d
 
       auto material_local_coordinates =
           Teuchos::rcp_dynamic_cast<Mat::MembraneMaterialLocalCoordinates>(
-              Core::Elements::Element::Material());
+              Core::Elements::Element::material());
       auto material_global_coordinates =
           Teuchos::rcp_dynamic_cast<Mat::MembraneMaterialGlobalCoordinates>(
-              Core::Elements::Element::Material());
+              Core::Elements::Element::material());
       if (material_local_coordinates != Teuchos::null)
       {
-        material_local_coordinates->UpdateMembrane(defgrd_loc, params, Q_localToGlobal, gp, Id());
+        material_local_coordinates->update_membrane(defgrd_loc, params, Q_localToGlobal, gp, id());
       }
       else if (material_global_coordinates != Teuchos::null)
       {
-        SolidMaterial()->update(defgrd_glob, gp, params, Id());
+        solid_material()->update(defgrd_glob, gp, params, id());
       }
     }
   }
 
-  SolidMaterial()->update();
+  solid_material()->update();
 
   return;
 }

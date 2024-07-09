@@ -19,16 +19,16 @@ FOUR_C_NAMESPACE_OPEN
  |  ReadElement                                            fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::Membrane<distype>::ReadElement(
+bool Discret::ELEMENTS::Membrane<distype>::read_element(
     const std::string& eletype, const std::string& eledistype, Input::LineDefinition* linedef)
 {
   // read number of material model
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  SetMaterial(0, Mat::Factory(material));
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  set_material(0, Mat::Factory(material_id));
 
   // set up of materials with GP data (e.g., history variables)
-  SolidMaterial()->setup(intpoints_.nquad, linedef);
+  solid_material()->setup(intpoints_.nquad, linedef);
 
 
   // read element thickness

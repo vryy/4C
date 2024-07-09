@@ -124,7 +124,7 @@ void Solid::TimeInt::BaseDataGlobalState::init(const Teuchos::RCP<Core::FE::Disc
   // ----------------------------------------------------------
   {
     discret_ = discret;
-    comm_ = Teuchos::rcpFromRef(discret_->Comm());
+    comm_ = Teuchos::rcpFromRef(discret_->get_comm());
     my_rank_ = comm_->MyPID();
   }
 
@@ -142,7 +142,7 @@ void Solid::TimeInt::BaseDataGlobalState::init(const Teuchos::RCP<Core::FE::Disc
     stepnp_ = stepn_ + 1;
 
     // initialize restart step
-    restartstep_ = Global::Problem::Instance()->restart();
+    restartstep_ = Global::Problem::instance()->restart();
     if (restartstep_ < 0) FOUR_C_THROW("The restart step is expected to be positive.");
   }
 
@@ -203,7 +203,7 @@ void Solid::TimeInt::BaseDataGlobalState::setup()
   mass_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
   if (datasdyn_->get_damping_type() != Inpar::Solid::damp_none)
   {
-    if (datasdyn_->GetMassLinType() == Inpar::Solid::ml_none)
+    if (datasdyn_->get_mass_lin_type() == Inpar::Solid::ml_none)
     {
       damp_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
     }
@@ -217,7 +217,7 @@ void Solid::TimeInt::BaseDataGlobalState::setup()
   }
 
   if (datasdyn_->get_dynamic_type() == Inpar::Solid::dyna_statics and
-      datasdyn_->GetMassLinType() != Inpar::Solid::ml_none)
+      datasdyn_->get_mass_lin_type() != Inpar::Solid::ml_none)
     FOUR_C_THROW(
         "Do not set parameter MASSLIN in static simulations as this leads to undesired"
         " evaluation of mass matrix on element level!");
@@ -239,15 +239,15 @@ void Solid::TimeInt::BaseDataGlobalState::set_initial_fields()
   localdofs.push_back(2);
 
   Core::FE::UTILS::evaluate_initial_field(
-      Global::Problem::Instance()->FunctionManager(), *discret_, field, velnp_, localdofs);
+      Global::Problem::instance()->function_manager(), *discret_, field, velnp_, localdofs);
 
   // set initial porosity field if existing
   const std::string porosityfield = "Porosity";
   std::vector<int> porositylocaldofs;
-  porositylocaldofs.push_back(Global::Problem::Instance()->NDim());
+  porositylocaldofs.push_back(Global::Problem::instance()->n_dim());
 
-  Core::FE::UTILS::evaluate_initial_field(Global::Problem::Instance()->FunctionManager(), *discret_,
-      porosityfield, (*dis_)(0), porositylocaldofs);
+  Core::FE::UTILS::evaluate_initial_field(Global::Problem::instance()->function_manager(),
+      *discret_, porosityfield, (*dis_)(0), porositylocaldofs);
 }
 
 /*----------------------------------------------------------------------------*
@@ -264,7 +264,7 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
     const Solid::MODELEVALUATOR::Generic& me, const Inpar::Solid::ModelType& mt)
 {
   check_init();
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
   Teuchos::RCP<const Epetra_Map> me_map_ptr = me.get_block_dof_row_map_ptr();
 
   model_maps_[mt] = me_map_ptr;
@@ -315,11 +315,11 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
       const Solid::MODELEVALUATOR::Meshtying& mt_me =
           dynamic_cast<const Solid::MODELEVALUATOR::Meshtying&>(me);
 
-      enum Inpar::CONTACT::SystemType systype = mt_me.Strategy().SystemType();
+      enum Inpar::CONTACT::SystemType systype = mt_me.strategy().system_type();
 
       enum Inpar::CONTACT::SolvingStrategy soltype =
           Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
-              mt_me.Strategy().Params(), "STRATEGY");
+              mt_me.strategy().params(), "STRATEGY");
 
       // systems without additional dofs
       if (soltype == Inpar::CONTACT::solution_nitsche ||
@@ -363,12 +363,12 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
       std::vector<Core::Conditions::Condition*> lagcond_mpconline2d(0);
       std::vector<Core::Conditions::Condition*> lagcond_mpconplane3d(0);
       std::vector<Core::Conditions::Condition*> lagcond_mpcnormcomp3d(0);
-      discret_->GetCondition("VolumeConstraint_3D", lagcond_volconstr3d);
-      discret_->GetCondition("AreaConstraint_3D", lagcond_areaconstr3d);
-      discret_->GetCondition("AreaConstraint_2D", lagcond_areaconstr2d);
-      discret_->GetCondition("MPC_NodeOnLine_2D", lagcond_mpconline2d);
-      discret_->GetCondition("MPC_NodeOnPlane_3D", lagcond_mpconplane3d);
-      discret_->GetCondition("MPC_NormalComponent_3D", lagcond_mpcnormcomp3d);
+      discret_->get_condition("VolumeConstraint_3D", lagcond_volconstr3d);
+      discret_->get_condition("AreaConstraint_3D", lagcond_areaconstr3d);
+      discret_->get_condition("AreaConstraint_2D", lagcond_areaconstr2d);
+      discret_->get_condition("MPC_NodeOnLine_2D", lagcond_mpconline2d);
+      discret_->get_condition("MPC_NodeOnPlane_3D", lagcond_mpconplane3d);
+      discret_->get_condition("MPC_NormalComponent_3D", lagcond_mpcnormcomp3d);
       if (lagcond_volconstr3d.size() or lagcond_areaconstr3d.size() or
           lagcond_areaconstr2d.size() or lagcond_mpconline2d.size() or
           lagcond_mpconplane3d.size() or lagcond_mpcnormcomp3d.size())
@@ -512,12 +512,12 @@ void Solid::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
    * (currently only rotation pseudo-vector DoFs of beam elements) */
   std::set<int> rotvecdofset;
 
-  for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
+  for (int i = 0; i < discret_->num_my_row_nodes(); ++i)
   {
-    Core::Nodes::Node* nodeptr = discret_->lRowNode(i);
+    Core::Nodes::Node* nodeptr = discret_->l_row_node(i);
 
     const Discret::ELEMENTS::Beam3Base* beameleptr =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(nodeptr->Elements()[0]);
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(nodeptr->elements()[0]);
 
     std::vector<int> nodaladditdofs;
     std::vector<int> nodalrotvecdofs;
@@ -525,18 +525,18 @@ void Solid::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
     // so far we only expect DoFs of beam elements for the rotvecdofset
     if (beameleptr == nullptr)
     {
-      nodaladditdofs = discret_->Dof(0, nodeptr);
+      nodaladditdofs = discret_->dof(0, nodeptr);
     }
     else
     {
       Teuchos::RCP<Core::FE::Discretization> discret = discret_;
-      nodaladditdofs = beameleptr->GetAdditiveDofGIDs(*discret, *nodeptr);
-      nodalrotvecdofs = beameleptr->GetRotVecDofGIDs(*discret, *nodeptr);
+      nodaladditdofs = beameleptr->get_additive_dof_gi_ds(*discret, *nodeptr);
+      nodalrotvecdofs = beameleptr->get_rot_vec_dof_gi_ds(*discret, *nodeptr);
 
       if (nodaladditdofs.size() + nodalrotvecdofs.size() !=
-          (unsigned)beameleptr->NumDofPerNode(*nodeptr))
+          (unsigned)beameleptr->num_dof_per_node(*nodeptr))
         FOUR_C_THROW("Expected %d DoFs for node with GID %d but collected %d DoFs",
-            beameleptr->NumDofPerNode(*nodeptr), discret_->NodeRowMap()->GID(i),
+            beameleptr->num_dof_per_node(*nodeptr), discret_->node_row_map()->GID(i),
             nodaladditdofs.size() + nodalrotvecdofs.size());
     }
 
@@ -553,7 +553,7 @@ void Solid::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
   additdofmapvec.assign(additdofset.begin(), additdofset.end());
   additdofset.clear();
   Teuchos::RCP<Epetra_Map> additdofmap = Teuchos::rcp(
-      new Epetra_Map(-1, additdofmapvec.size(), additdofmapvec.data(), 0, discret_->Comm()));
+      new Epetra_Map(-1, additdofmapvec.size(), additdofmapvec.data(), 0, discret_->get_comm()));
   additdofmapvec.clear();
 
   std::vector<int> rotvecdofmapvec;
@@ -561,7 +561,7 @@ void Solid::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
   rotvecdofmapvec.assign(rotvecdofset.begin(), rotvecdofset.end());
   rotvecdofset.clear();
   Teuchos::RCP<Epetra_Map> rotvecdofmap = Teuchos::rcp(
-      new Epetra_Map(-1, rotvecdofmapvec.size(), rotvecdofmapvec.data(), 0, discret_->Comm()));
+      new Epetra_Map(-1, rotvecdofmapvec.size(), rotvecdofmapvec.data(), 0, discret_->get_comm()));
   rotvecdofmapvec.clear();
 
   std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);
@@ -768,7 +768,7 @@ Teuchos::RCP<Epetra_Vector> Solid::TimeInt::BaseDataGlobalState::extract_model_e
 {
   Teuchos::RCP<Epetra_Vector> model_ptr = Teuchos::null;
   // extract from the full state vector
-  if (source.Map().NumGlobalElements() == block_extractor().FullMap()->NumGlobalElements())
+  if (source.Map().NumGlobalElements() == block_extractor().full_map()->NumGlobalElements())
   {
     model_ptr = block_extractor().extract_vector(source, model_block_id_.at(mt));
   }
@@ -853,7 +853,7 @@ void Solid::TimeInt::BaseDataGlobalState::apply_element_technology_to_accelerati
         const Core::LinAlg::MultiMapExtractor& mapext = get_element_technology_map_extractor(et);
 
         // set 1 on pressure DOFs in mass matrix
-        mass.ApplyDirichlet(*mapext.Map(1));
+        mass.apply_dirichlet(*mapext.Map(1));
 
         // set 0 on pressure DOFs in rhs
         const Epetra_Vector zeros(*mapext.Map(1), true);
@@ -911,22 +911,22 @@ void Solid::TimeInt::BaseDataGlobalState::assign_model_block(Core::LinAlg::Spars
     {
       case MatBlockType::displ_displ:
       {
-        blockmat_ptr->Matrix(0, 0).Assign(access, matrix);
+        blockmat_ptr->matrix(0, 0).assign(access, matrix);
         break;
       }
       case MatBlockType::displ_lm:
       {
-        blockmat_ptr->Matrix(0, b_id).Assign(access, matrix);
+        blockmat_ptr->matrix(0, b_id).assign(access, matrix);
         break;
       }
       case MatBlockType::lm_displ:
       {
-        blockmat_ptr->Matrix(b_id, 0).Assign(access, matrix);
+        blockmat_ptr->matrix(b_id, 0).assign(access, matrix);
         break;
       }
       case MatBlockType::lm_lm:
       {
-        blockmat_ptr->Matrix(b_id, b_id).Assign(access, matrix);
+        blockmat_ptr->matrix(b_id, b_id).assign(access, matrix);
         break;
       }
       default:
@@ -947,7 +947,7 @@ void Solid::TimeInt::BaseDataGlobalState::assign_model_block(Core::LinAlg::Spars
   Core::LinAlg::SparseMatrix* stiff_ptr = dynamic_cast<Core::LinAlg::SparseMatrix*>(&jac);
   if (stiff_ptr != nullptr)
   {
-    stiff_ptr->Assign(access, matrix);
+    stiff_ptr->assign(access, matrix);
     return;
   }
 
@@ -977,22 +977,22 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::BaseDataGlobalState::ex
     {
       case MatBlockType::displ_displ:
       {
-        block = Teuchos::rcpFromRef(blockmat_ptr->Matrix(0, 0));
+        block = Teuchos::rcpFromRef(blockmat_ptr->matrix(0, 0));
         break;
       }
       case MatBlockType::displ_lm:
       {
-        block = Teuchos::rcpFromRef(blockmat_ptr->Matrix(0, b_id));
+        block = Teuchos::rcpFromRef(blockmat_ptr->matrix(0, b_id));
         break;
       }
       case MatBlockType::lm_displ:
       {
-        block = Teuchos::rcpFromRef(blockmat_ptr->Matrix(b_id, 0));
+        block = Teuchos::rcpFromRef(blockmat_ptr->matrix(b_id, 0));
         break;
       }
       case MatBlockType::lm_lm:
       {
-        block = Teuchos::rcpFromRef(blockmat_ptr->Matrix(b_id, b_id));
+        block = Teuchos::rcpFromRef(blockmat_ptr->matrix(b_id, b_id));
         break;
       }
       default:
@@ -1051,10 +1051,10 @@ Solid::TimeInt::BaseDataGlobalState::extract_row_of_blocks(
           " two blocks! Seems wrong.");
     const int& b_id = model_block_id_.at(mt);
 
-    const int num_cols = blockmat_ptr->Cols();
+    const int num_cols = blockmat_ptr->cols();
     rowofblocks = Teuchos::rcp(new std::vector<Core::LinAlg::SparseMatrix*>(num_cols, nullptr));
 
-    for (int i = 0; i < num_cols; ++i) (*rowofblocks)[i] = &(blockmat_ptr->Matrix(b_id, i));
+    for (int i = 0; i < num_cols; ++i) (*rowofblocks)[i] = &(blockmat_ptr->matrix(b_id, i));
 
     return rowofblocks;
   }
@@ -1122,7 +1122,7 @@ int Solid::TimeInt::BaseDataGlobalState::get_last_lin_iteration_number(const uns
   check_init_setup();
   if (step < 1) FOUR_C_THROW("The given step number must be larger than 1. (step=%d)", step);
 
-  auto linsolvers = datasdyn_->GetLinSolvers();
+  auto linsolvers = datasdyn_->get_lin_solvers();
   int iter = -1;
 
   for (auto& linsolver : linsolvers)
@@ -1139,7 +1139,7 @@ int Solid::TimeInt::BaseDataGlobalState::get_last_lin_iteration_number(const uns
       case Inpar::Solid::model_partitioned_coupling:
       case Inpar::Solid::model_beam_interaction_old:
       {
-        iter = linsolvers[linsolver.first]->getNumIters();
+        iter = linsolvers[linsolver.first]->get_num_iters();
         break;
       }
       default:

@@ -42,7 +42,7 @@ Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::Wall1PoroP1Scatra(
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Core::Elements::Element* Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::clone() const
 {
   Discret::ELEMENTS::Wall1PoroP1Scatra<distype>* newelement =
       new Discret::ELEMENTS::Wall1PoroP1Scatra<distype>(*this);
@@ -59,7 +59,7 @@ void Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::pack(
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   my::add_to_pack(data, type);
   // pack scalar transport impltype
   my::add_to_pack(data, impltype_);
@@ -78,7 +78,7 @@ void Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::unpack(const std::vector<cha
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract scalar transport impltype
   impltype_ = static_cast<Inpar::ScaTra::ImplType>(my::extract_int(position, data));
@@ -98,11 +98,11 @@ void Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::unpack(const std::vector<cha
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::ReadElement(
+bool Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::read_element(
     const std::string& eletype, const std::string& eledistype, Input::LineDefinition* linedef)
 {
   // read base element
-  my::ReadElement(eletype, eledistype, linedef);
+  my::read_element(eletype, eledistype, linedef);
 
   // read scalar transport implementation type
   std::string impltype;
@@ -154,24 +154,24 @@ void Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::print(std::ostream& os) cons
  |  print this element (public)                           schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::UniqueParObjectId() const
+int Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::unique_par_object_id() const
 {
   int parobjectid(-1);
   switch (distype)
   {
     case Core::FE::CellType::tri3:
     {
-      parobjectid = Discret::ELEMENTS::WallTri3PoroP1ScatraType::Instance().UniqueParObjectId();
+      parobjectid = Discret::ELEMENTS::WallTri3PoroP1ScatraType::instance().unique_par_object_id();
       break;
     }
     case Core::FE::CellType::quad4:
     {
-      parobjectid = Discret::ELEMENTS::WallQuad4PoroP1ScatraType::Instance().UniqueParObjectId();
+      parobjectid = Discret::ELEMENTS::WallQuad4PoroP1ScatraType::instance().unique_par_object_id();
       break;
     }
     case Core::FE::CellType::quad9:
     {
-      parobjectid = Discret::ELEMENTS::WallQuad9PoroP1ScatraType::Instance().UniqueParObjectId();
+      parobjectid = Discret::ELEMENTS::WallQuad9PoroP1ScatraType::instance().unique_par_object_id();
       break;
     }
     default:
@@ -187,24 +187,24 @@ int Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::UniqueParObjectId() const
  | get the element type (public)                           schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Core::Elements::ElementType& Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::ElementType() const
+Core::Elements::ElementType& Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::element_type() const
 {
   switch (distype)
   {
     case Core::FE::CellType::tri3:
-      return Discret::ELEMENTS::WallTri3PoroP1ScatraType::Instance();
+      return Discret::ELEMENTS::WallTri3PoroP1ScatraType::instance();
       break;
     case Core::FE::CellType::quad4:
-      return Discret::ELEMENTS::WallQuad4PoroP1ScatraType::Instance();
+      return Discret::ELEMENTS::WallQuad4PoroP1ScatraType::instance();
       break;
     case Core::FE::CellType::quad9:
-      return Discret::ELEMENTS::WallQuad9PoroP1ScatraType::Instance();
+      return Discret::ELEMENTS::WallQuad9PoroP1ScatraType::instance();
       break;
     default:
       FOUR_C_THROW("unknown element type");
       break;
   }
-  return Discret::ELEMENTS::WallQuad4PoroP1ScatraType::Instance();
+  return Discret::ELEMENTS::WallQuad4PoroP1ScatraType::instance();
 }
 
 /*----------------------------------------------------------------------*

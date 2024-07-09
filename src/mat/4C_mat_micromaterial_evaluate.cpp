@@ -85,16 +85,16 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // activate microscale material
 
-  int microdisnum = MicroDisNum();
-  double V0 = InitVol();
-  Global::Problem::Instance()->Materials()->SetReadFromProblem(microdisnum);
+  int microdisnum = micro_dis_num();
+  double V0 = init_vol();
+  Global::Problem::instance()->materials()->set_read_from_problem(microdisnum);
 
   // avoid writing output also for ghosted elements
   const bool eleowner =
-      Global::Problem::Instance(0)->GetDis("structure")->ElementRowMap()->MyGID(eleGID);
+      Global::Problem::instance(0)->get_dis("structure")->element_row_map()->MyGID(eleGID);
 
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
 
   // tell the supporting procs that the micro material will be evaluated
   int task[2] = {0, eleGID};
@@ -107,8 +107,8 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   const auto convert_to_serial_dense_matrix = [](const auto& matrix)
   {
     using MatrixType = std::decay_t<decltype(matrix)>;
-    constexpr int n_rows = MatrixType::numRows();
-    constexpr int n_cols = MatrixType::numCols();
+    constexpr int n_rows = MatrixType::num_rows();
+    constexpr int n_cols = MatrixType::num_cols();
     Core::LinAlg::SerialDenseMatrix data(n_rows, n_cols);
     for (int i = 0; i < n_rows; i++)
       for (int j = 0; j < n_cols; j++) data(i, j) = matrix(i, j);
@@ -123,7 +123,7 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   microdata.microdisnum_ = microdisnum;
   microdata.V0_ = V0;
   microdata.eleowner_ = eleowner;
-  condnamemap[0]->SetMicroStaticData(microdata);
+  condnamemap[0]->set_micro_static_data(microdata);
 
   // maps are created and data is broadcast to the supporting procs
   int tag = 0;
@@ -143,7 +143,7 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     if (gp == 0)
     {
       Teuchos::RCP<MicroMaterialGP> actmicromatgp = matgp_[gp];
-      density_ = actmicromatgp->Density();
+      density_ = actmicromatgp->density();
     }
   }
 
@@ -154,10 +154,10 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   actmicromatgp->perform_micro_simulation(defgrd_enh, stress, cmat);
 
   // reactivate macroscale material
-  Global::Problem::Instance()->Materials()->reset_read_from_problem();
+  Global::Problem::instance()->materials()->reset_read_from_problem();
 }
 
-double Mat::MicroMaterial::Density() const { return density_; }
+double Mat::MicroMaterial::density() const { return density_; }
 
 
 // evaluate for supporting procs
@@ -165,7 +165,7 @@ void Mat::MicroMaterial::evaluate(Core::LinAlg::Matrix<3, 3>* defgrd,
     Core::LinAlg::Matrix<6, 6>* cmat, Core::LinAlg::Matrix<6, 1>* stress, const int gp,
     const int ele_ID, const int microdisnum, double V0, bool eleowner)
 {
-  Global::Problem::Instance()->Materials()->SetReadFromProblem(microdisnum);
+  Global::Problem::instance()->materials()->set_read_from_problem(microdisnum);
 
   if (matgp_.find(gp) == matgp_.end())
   {
@@ -179,7 +179,7 @@ void Mat::MicroMaterial::evaluate(Core::LinAlg::Matrix<3, 3>* defgrd,
   actmicromatgp->perform_micro_simulation(defgrd, stress, cmat);
 
   // reactivate macroscale material
-  Global::Problem::Instance()->Materials()->reset_read_from_problem();
+  Global::Problem::instance()->materials()->reset_read_from_problem();
 }
 
 
@@ -187,12 +187,12 @@ void Mat::MicroMaterial::evaluate(Core::LinAlg::Matrix<3, 3>* defgrd,
 void Mat::MicroMaterial::update()
 {
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
   if (subcomm->MyPID() == 0)
   {
     // tell the supporting procs that the micro material will be evaluated for the element with id
     // eleID
-    int eleID = matgp_.begin()->second->eleID();
+    int eleID = matgp_.begin()->second->ele_id();
     int task[2] = {2, eleID};
     subcomm->Broadcast(task, 2, 0);
   }
@@ -210,11 +210,11 @@ void Mat::MicroMaterial::update()
 void Mat::MicroMaterial::prepare_output()
 {
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
   if (subcomm->MyPID() == 0)
   {
     // tell the supporting procs that the micro material will be prepared for output
-    int eleID = matgp_.begin()->second->eleID();
+    int eleID = matgp_.begin()->second->ele_id();
     int task[2] = {1, eleID};
     subcomm->Broadcast(task, 2, 0);
   }
@@ -232,11 +232,11 @@ void Mat::MicroMaterial::prepare_output()
 void Mat::MicroMaterial::output()
 {
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
   if (subcomm->MyPID() == 0)
   {
     // tell the supporting procs that the micro material will be output
-    int eleID = matgp_.begin()->second->eleID();
+    int eleID = matgp_.begin()->second->ele_id();
     int task[2] = {3, eleID};
     subcomm->Broadcast(task, 2, 0);
   }
@@ -253,11 +253,11 @@ void Mat::MicroMaterial::output()
 // read restart for master procs
 void Mat::MicroMaterial::read_restart(const int gp, const int eleID, const bool eleowner)
 {
-  int microdisnum = MicroDisNum();
-  double V0 = InitVol();
+  int microdisnum = micro_dis_num();
+  double V0 = init_vol();
 
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
 
   // tell the supporting procs that the micro material will restart
   int task[2] = {4, eleID};
@@ -272,7 +272,7 @@ void Mat::MicroMaterial::read_restart(const int gp, const int eleID, const bool 
   microdata.microdisnum_ = microdisnum;
   microdata.V0_ = V0;
   microdata.eleowner_ = eleowner;
-  condnamemap[0]->SetMicroStaticData(microdata);
+  condnamemap[0]->set_micro_static_data(microdata);
 
   // maps are created and data is broadcast to the supporting procs
   int tag = 0;

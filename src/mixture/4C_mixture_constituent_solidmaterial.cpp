@@ -52,11 +52,11 @@ MIXTURE::MixtureConstituentSolidMaterial::MixtureConstituentSolidMaterial(
     FOUR_C_THROW(
         "The solid material constituent with ID %d needs to be an So3Material.", params_->matid_);
 
-  if (material_->Density() - 1.0 > 1e-16)
+  if (material_->density() - 1.0 > 1e-16)
     FOUR_C_THROW(
         "Please set the density of the solid material constituent with ID %d to 1.0 and prescribe "
         "a combined density for the entire mixture material.",
-        material_->Parameter()->Id());
+        material_->parameter()->id());
 }
 
 Core::Materials::MaterialType MIXTURE::MixtureConstituentSolidMaterial::material_type() const
@@ -72,7 +72,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::pack_constituent(
 
   // add the matid of the Mixture_SolidMaterial
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   Core::Communication::ParObject::add_to_pack(data, matid);
 
   // pack data of the solid material
@@ -94,20 +94,21 @@ void MIXTURE::MixtureConstituentSolidMaterial::unpack_constituent(
   Core::Communication::ParObject::extract_from_pack(position, data, matid);
 
   // recover the params_ of the Mixture_SolidMaterial
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
   {
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const unsigned int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const unsigned int probinst =
+          Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == material_type())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
       {
         params_ = dynamic_cast<MIXTURE::PAR::MixtureConstituentSolidMaterial*>(mat);
       }
       else
       {
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
             material_type());
       }
     }
@@ -128,7 +129,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::unpack_constituent(
   }
 }
 
-Core::Materials::MaterialType MaterialType() { return Core::Materials::mix_solid_material; }
+Core::Materials::MaterialType material_type() { return Core::Materials::mix_solid_material; }
 
 void MIXTURE::MixtureConstituentSolidMaterial::read_element(
     int numgp, Input::LineDefinition* linedef)
@@ -160,6 +161,6 @@ void MIXTURE::MixtureConstituentSolidMaterial::register_output_data_names(
 bool MIXTURE::MixtureConstituentSolidMaterial::evaluate_output_data(
     const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
-  return material_->EvaluateOutputData(name, data);
+  return material_->evaluate_output_data(name, data);
 }
 FOUR_C_NAMESPACE_CLOSE

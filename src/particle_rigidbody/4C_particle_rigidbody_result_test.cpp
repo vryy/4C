@@ -37,11 +37,11 @@ void ParticleRigidBody::RigidBodyResultTest::setup(
   particlerigidbodyinterface_ = particlerigidbodyinterface;
 }
 
-void ParticleRigidBody::RigidBodyResultTest::TestSpecial(
+void ParticleRigidBody::RigidBodyResultTest::test_special(
     Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // get owned rigid bodies by this processor
-  const std::vector<int>& ownedrigidbodies = particlerigidbodyinterface_->GetOwnedRigidBodies();
+  const std::vector<int>& ownedrigidbodies = particlerigidbodyinterface_->get_owned_rigid_bodies();
 
   // extract global id of rigid body
   int globalid;
@@ -66,7 +66,7 @@ void ParticleRigidBody::RigidBodyResultTest::TestSpecial(
     if (quantity == "posx" or quantity == "posy" or quantity == "posz")
     {
       // get reference to rigid body position
-      const std::vector<std::vector<double>>& pos = rigidbodydatastate->GetRefPosition();
+      const std::vector<std::vector<double>>& pos = rigidbodydatastate->get_ref_position();
 
       // get actual result
       if (quantity == "posx")
@@ -80,7 +80,7 @@ void ParticleRigidBody::RigidBodyResultTest::TestSpecial(
     else if (quantity == "velx" or quantity == "vely" or quantity == "velz")
     {
       // get reference to rigid body velocity
-      const std::vector<std::vector<double>>& vel = rigidbodydatastate->GetRefVelocity();
+      const std::vector<std::vector<double>>& vel = rigidbodydatastate->get_ref_velocity();
 
       // get actual result
       if (quantity == "velx")
@@ -109,7 +109,7 @@ void ParticleRigidBody::RigidBodyResultTest::TestSpecial(
     else if (quantity == "mass")
     {
       // get reference to rigid body mass
-      const std::vector<double>& mass = rigidbodydatastate->GetRefMass();
+      const std::vector<double>& mass = rigidbodydatastate->get_ref_mass();
 
       // get actual result
       actresult = mass[globalid];

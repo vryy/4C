@@ -29,16 +29,16 @@ namespace Discret
       class Ale2NurbsType : public Ale2Type
       {
        public:
-        std::string Name() const override { return "Ale2_NurbsType"; }
+        std::string name() const override { return "Ale2_NurbsType"; }
 
-        static Ale2NurbsType& Instance();
+        static Ale2NurbsType& instance();
 
-        Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+        Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-        Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+        Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
             const std::string eledistype, const int id, const int owner) override;
 
-        Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+        Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
         void setup_element_definition(
             std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -81,18 +81,18 @@ namespace Discret
 
         \return my parobject id
         */
-        int UniqueParObjectId() const override
+        int unique_par_object_id() const override
         {
-          return Ale2NurbsType::Instance().UniqueParObjectId();
+          return Ale2NurbsType::instance().unique_par_object_id();
         }
 
 
         /// Print this element
         void print(std::ostream& os) const override;
 
-        Core::Elements::ElementType& ElementType() const override
+        Core::Elements::ElementType& element_type() const override
         {
-          return Ale2NurbsType::Instance();
+          return Ale2NurbsType::instance();
         }
 
         /*!
@@ -101,13 +101,13 @@ namespace Discret
         \return nurbs4 or nurbs9
 
         */
-        Core::FE::CellType Shape() const override;
+        Core::FE::CellType shape() const override;
 
 
         /*!
         \brief Return number of lines of this element.
         */
-        int NumLine() const override
+        int num_line() const override
         {
           if (num_node() == 9 || num_node() == 4)
           {

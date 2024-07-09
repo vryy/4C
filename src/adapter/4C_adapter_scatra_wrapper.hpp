@@ -56,22 +56,22 @@ namespace Adapter
     };
 
     //! return number of dofset associated with displacement dofs
-    virtual int NdsDisp() { return scatra_timint_->NdsDisp(); };
+    virtual int nds_disp() { return scatra_timint_->nds_disp(); };
 
     /// return rcp ptr to neumann loads vector
-    Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr() override
+    Teuchos::RCP<Epetra_Vector> get_neumann_loads_ptr() override
     {
-      return scatra_timint_->GetNeumannLoadsPtr();
+      return scatra_timint_->get_neumann_loads_ptr();
     };
 
     //! return meshtying strategy (includes standard case without meshtying)
-    const Teuchos::RCP<ScaTra::MeshtyingStrategyBase>& Strategy() const override
+    const Teuchos::RCP<ScaTra::MeshtyingStrategyBase>& strategy() const override
     {
-      return scatra_timint_->Strategy();
+      return scatra_timint_->strategy();
     };
 
     //! return scalar field phi at time n
-    Teuchos::RCP<Epetra_Vector> Phin() override { return scatra_timint_->Phin(); }
+    Teuchos::RCP<Epetra_Vector> phin() override { return scatra_timint_->phin(); }
 
    private:
     Teuchos::RCP<ScatraInterface> scatra_timint_;  ///< underlying structural time integration

@@ -31,12 +31,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 void fs3i_dyn()
 {
-  const Epetra_Comm& comm = Global::Problem::Instance()->GetDis("structure")->Comm();
+  const Epetra_Comm& comm = Global::Problem::instance()->get_dis("structure")->get_comm();
 
   Teuchos::RCP<FS3I::FS3IBase> fs3i;
 
   // what's the current problem type?
-  Core::ProblemType probtype = Global::Problem::Instance()->GetProblemType();
+  Core::ProblemType probtype = Global::Problem::instance()->get_problem_type();
 
   switch (probtype)
   {
@@ -81,11 +81,11 @@ void fs3i_dyn()
   fs3i->redistribute_interface();
 
   // now do the coupling and create combined dofmaps
-  fs3i->SetupSystem();
+  fs3i->setup_system();
 
-  fs3i->Timeloop();
+  fs3i->timeloop();
 
-  fs3i->TestResults(comm);
+  fs3i->test_results(comm);
 
   Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
       Core::Communication::toTeuchosComm<int>(comm);

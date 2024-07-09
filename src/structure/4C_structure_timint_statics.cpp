@@ -52,7 +52,7 @@ void Solid::TimIntStatics::init(const Teuchos::ParameterList& timeparams,
   auto dyntype = Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP");
   const Inpar::Solid::PreStress pre_stress_type =
       Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
-          Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
+          Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
 
   if (pre_stress_type != Inpar::Solid::PreStress::none && dyntype != Inpar::Solid::dyna_statics)
   {
@@ -149,7 +149,7 @@ void Solid::TimIntStatics::predict_const_vel_consist_acc()
 
 /*----------------------------------------------------------------------*/
 /* quadratic extrapolation of displacement field */
-void Solid::TimIntStatics::PredictConstAcc()
+void Solid::TimIntStatics::predict_const_acc()
 {
   // for the first step we don't have any history to do
   // an extrapolation. Hence, we do TangDis
@@ -190,7 +190,7 @@ void Solid::TimIntStatics::evaluate_force_stiff_residual(Teuchos::ParameterList&
   if (params.isParameter("predict")) predict = params.get<bool>("predict");
 
   // initialize stiffness matrix to zero
-  stiff_->Zero();
+  stiff_->zero();
 
   // ************************** (1) EXTERNAL FORCES ***************************
 
@@ -254,7 +254,7 @@ void Solid::TimIntStatics::evaluate_force_stiff_residual(Teuchos::ParameterList&
   apply_force_stiff_contact_meshtying(stiff_, fres_, disn_, predict);
 
   // close stiffness matrix
-  stiff_->Complete();
+  stiff_->complete();
 
   return;
 }
@@ -319,7 +319,7 @@ void Solid::TimIntStatics::evaluate_force_residual()
 /*----------------------------------------------------------------------*/
 /* calculate characteristic/reference norms for forces
  * originally by lw */
-double Solid::TimIntStatics::CalcRefNormForce()
+double Solid::TimIntStatics::calc_ref_norm_force()
 {
   // The reference norms are used to scale the calculated iterative
   // displacement norm and/or the residual force norm. For this
@@ -365,7 +365,7 @@ void Solid::TimIntStatics::update_iter_iteratively()
 
 /*----------------------------------------------------------------------*/
 /* update after time step */
-void Solid::TimIntStatics::UpdateStepState()
+void Solid::TimIntStatics::update_step_state()
 {
   // calculate pseudo velocity and acceleration for predictor and/or binning
   // of the contact interface before updates
@@ -378,17 +378,17 @@ void Solid::TimIntStatics::UpdateStepState()
   // update state
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}
-  dis_->UpdateSteps(*disn_);
+  dis_->update_steps(*disn_);
 
   // new material displacements
-  if ((dismatn_ != Teuchos::null)) dismat_->UpdateSteps(*dismatn_);
+  if ((dismatn_ != Teuchos::null)) dismat_->update_steps(*dismatn_);
 
   // new velocities at t_{n+1} -> t_n
   //    V_{n} := V_{n+1}
-  vel_->UpdateSteps(*veln_);
+  vel_->update_steps(*veln_);
   // new accelerations at t_{n+1} -> t_n
   //    A_{n} := A_{n+1}
-  acc_->UpdateSteps(*accn_);
+  acc_->update_steps(*accn_);
 
   // update constraints
   update_step_constraint();
@@ -420,7 +420,7 @@ void Solid::TimIntStatics::UpdateStepState()
 /*----------------------------------------------------------------------*/
 /* update after time step after output on element level*/
 // update anything that needs to be updated at the element level
-void Solid::TimIntStatics::UpdateStepElement()
+void Solid::TimIntStatics::update_step_element()
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -431,23 +431,23 @@ void Solid::TimIntStatics::UpdateStepElement()
   // action for elements
   p.set("action", "calc_struct_update_istep");
   // go to elements
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("displacement", (*dis_)(0));
 
   // Set material displacement state for ale-wear formulation
   if ((dismat_ != Teuchos::null)) discret_->set_state("material_displacement", (*dismat_)(0));
 
   discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-  discret_->ClearState();
+  discret_->clear_state();
 }
 
 /*----------------------------------------------------------------------*/
 /* read restart forces */
-void Solid::TimIntStatics::ReadRestartForce() { return; }
+void Solid::TimIntStatics::read_restart_force() { return; }
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
-void Solid::TimIntStatics::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+void Solid::TimIntStatics::write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   output->write_vector("fexternal", fext_);
   output->write_vector("fint", fint_);

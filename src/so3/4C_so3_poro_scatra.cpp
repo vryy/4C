@@ -40,7 +40,7 @@ Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::So3PoroScatra(
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-Core::Elements::Element* Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>(*this);
   return newelement;
@@ -56,7 +56,7 @@ void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::pack(
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   So3Ele::add_to_pack(data, type);
   // pack scalar transport impltype
   So3Ele::add_to_pack(data, impltype_);
@@ -75,7 +75,7 @@ void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::unpack(const std::vector
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract scalar transport impltype_
   impltype_ = static_cast<Inpar::ScaTra::ImplType>(So3Ele::extract_int(position, data));
@@ -107,11 +107,11 @@ void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::print(std::ostream& os) 
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-bool Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::ReadElement(
+bool Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::read_element(
     const std::string& eletype, const std::string& eledistype, Input::LineDefinition* linedef)
 {
   // read base element
-  my::ReadElement(eletype, eledistype, linedef);
+  my::read_element(eletype, eledistype, linedef);
 
   // read scalar transport implementation type
   std::string impltype;
@@ -151,34 +151,34 @@ bool Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::ReadElement(
  | get the unique ParObject Id (public)                    schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-int Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::UniqueParObjectId() const
+int Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::unique_par_object_id() const
 {
   int parobjectid(-1);
   switch (distype)
   {
     case Core::FE::CellType::tet4:
     {
-      parobjectid = SoTet4PoroScatraType::Instance().UniqueParObjectId();
+      parobjectid = SoTet4PoroScatraType::instance().unique_par_object_id();
       break;
     }
     case Core::FE::CellType::tet10:
     {
-      parobjectid = SoTet10PoroScatraType::Instance().UniqueParObjectId();
+      parobjectid = SoTet10PoroScatraType::instance().unique_par_object_id();
       break;
     }
     case Core::FE::CellType::hex8:
     {
-      parobjectid = SoHex8PoroScatraType::Instance().UniqueParObjectId();
+      parobjectid = SoHex8PoroScatraType::instance().unique_par_object_id();
       break;
     }
     case Core::FE::CellType::hex27:
     {
-      parobjectid = SoHex27PoroScatraType::Instance().UniqueParObjectId();
+      parobjectid = SoHex27PoroScatraType::instance().unique_par_object_id();
       break;
     }
     case Core::FE::CellType::nurbs27:
     {
-      parobjectid = SoNurbs27PoroScatraType::Instance().UniqueParObjectId();
+      parobjectid = SoNurbs27PoroScatraType::instance().unique_par_object_id();
       break;
     }
     default:
@@ -194,25 +194,25 @@ int Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::UniqueParObjectId() const
  | get the element type (public)                           schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-Core::Elements::ElementType& Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::ElementType() const
+Core::Elements::ElementType& Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::element_type() const
 {
   switch (distype)
   {
     case Core::FE::CellType::tet4:
-      return SoTet4PoroScatraType::Instance();
+      return SoTet4PoroScatraType::instance();
     case Core::FE::CellType::tet10:
-      return SoTet10PoroScatraType::Instance();
+      return SoTet10PoroScatraType::instance();
     case Core::FE::CellType::hex8:
-      return SoHex8PoroScatraType::Instance();
+      return SoHex8PoroScatraType::instance();
     case Core::FE::CellType::hex27:
-      return SoHex27PoroScatraType::Instance();
+      return SoHex27PoroScatraType::instance();
     case Core::FE::CellType::nurbs27:
-      return SoNurbs27PoroScatraType::Instance();
+      return SoNurbs27PoroScatraType::instance();
     default:
       FOUR_C_THROW("unknown element type!");
       break;
   }
-  return SoHex8PoroScatraType::Instance();
+  return SoHex8PoroScatraType::instance();
 };
 
 FOUR_C_NAMESPACE_CLOSE

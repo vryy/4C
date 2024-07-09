@@ -28,12 +28,12 @@ namespace
               1, Inpar::CONTACT::ConstitutiveLawType::colaw_linear, "Linear Constitutivelaw"));
 
       // add parameters to container
-      container->Add("A", 1.5);
-      container->Add("B", 0.0);
-      container->Add("Offset", 0.5);
+      container->add("A", 1.5);
+      container->add("B", 0.0);
+      container->add("Offset", 0.5);
 
       const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> linearcoconstlaw =
-          CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(container);
+          CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(container);
       coconstlaw_ = linearcoconstlaw;
     }
 
@@ -56,7 +56,7 @@ namespace
   //! test member function EvaluateDeriv
   TEST_F(LinearConstitutiveLawTest, TestEvaluateDeriv)
   {
-    EXPECT_NEAR(coconstlaw_->EvaluateDeriv(-0.75, cnode.get()), 1.5, 1.e-15);
-    EXPECT_ANY_THROW(coconstlaw_->EvaluateDeriv(-0.25, cnode.get()));
+    EXPECT_NEAR(coconstlaw_->evaluate_deriv(-0.75, cnode.get()), 1.5, 1.e-15);
+    EXPECT_ANY_THROW(coconstlaw_->evaluate_deriv(-0.25, cnode.get()));
   }
 }  // namespace

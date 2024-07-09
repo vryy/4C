@@ -53,7 +53,7 @@ void Solid::EXPLICIT::CentrDiff::setup()
   // set initial displacement
   // -------------------------------------------------------------------
   set_initial_displacement(
-      tim_int().get_data_sdyn().get_initial_disp(), tim_int().get_data_sdyn().StartFuncNo());
+      tim_int().get_data_sdyn().get_initial_disp(), tim_int().get_data_sdyn().start_func_no());
 
   // Has to be set before the post_setup() routine is called!
   issetup_ = true;
@@ -118,7 +118,7 @@ void Solid::EXPLICIT::CentrDiff::add_visco_mass_contributions(
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
   // set mass matrix
-  stiff_ptr->Add(*global_state().get_mass_matrix(), false, 1.0, 0.0);
+  stiff_ptr->add(*global_state().get_mass_matrix(), false, 1.0, 0.0);
 }
 
 /*----------------------------------------------------------------------------*

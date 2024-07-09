@@ -77,24 +77,24 @@ namespace Core::Geo
 
         explicit Graph(int color_split) : color_split_(color_split) {}
 
-        void Add(int row, int col);
+        void add(int row, int col);
 
-        void Add(int p, const plain_int_set& row);
+        void add(int p, const plain_int_set& row);
 
-        int FindNext(Graph& used, int p, Graph& cycle, const plain_int_set& free);
+        int find_next(Graph& used, int p, Graph& cycle, const plain_int_set& free);
 
-        void FindFreeFacets(Graph& graph, Graph& used, plain_int_set& free,
+        void find_free_facets(Graph& graph, Graph& used, plain_int_set& free,
             const std::vector<std::pair<Point*, Point*>>& all_lines, std::vector<int>& split_trace);
 
-        void FindSplitTrace(std::vector<int>& split_trace);
+        void find_split_trace(std::vector<int>& split_trace);
 
-        void GetAll(plain_int_set& all);
+        void get_all(plain_int_set& all);
 
-        void FixSingleLines();
+        void fix_single_lines();
 
-        void TestClosed();
+        void test_closed();
 
-        void TestFacets();
+        void test_facets();
 
         void print() const;
 
@@ -110,20 +110,20 @@ namespace Core::Geo
 
         const_iterator end() const { return graph_.end(); }
 
-        void Swap(Graph& other)
+        void swap(Graph& other)
         {
           std::swap(graph_, other.graph_);
           std::swap(color_split_, other.color_split_);
         }
 
-        int Split() { return color_split_; }
+        int split() { return color_split_; }
 
-        void SetSplit(int color_split) { color_split_ = color_split; }
+        void set_split(int color_split) { color_split_ = color_split; }
 
-        void Split(Graph& used, plain_int_set& free, Graph& connection,
+        void split(Graph& used, plain_int_set& free, Graph& connection,
             const std::vector<int>& split_trace, Graph& c1, Graph& c2, Graph& datagraph);
 
-        bool ContainsTrace(const std::vector<int>& split_trace);
+        bool contains_trace(const std::vector<int>& split_trace);
 
         bool operator==(const Graph& other) const
         {
@@ -132,15 +132,15 @@ namespace Core::Geo
 
         bool operator!=(const Graph& other) const { return not(*this == other); }
 
-        void DumpGraph(const std::string& name);
+        void dump_graph(const std::string& name);
 
-        void Map(std::map<int, const void*>* index_value_map)
+        void map(std::map<int, const void*>* index_value_map)
         {
           index_value_map_ = index_value_map;
         };
 
         // get pointer to the underlying object
-        void* GetPointer(int Id) const
+        void* get_pointer(int Id) const
         {
           std::map<int, const void*>::iterator it = index_value_map_->find(Id);
           if (it != index_value_map_->end())
@@ -152,7 +152,7 @@ namespace Core::Geo
           return nullptr;
         }
         // Split split trace into the closed loops
-        void SplitSplittrace(const std::vector<int>& split_trace, Graph& datagraph,
+        void split_splittrace(const std::vector<int>& split_trace, Graph& datagraph,
             std::vector<std::vector<int>>& isolated_components);
 
        private:
@@ -176,19 +176,19 @@ namespace Core::Geo
        public:
         explicit Cycle(int color_split) : cycle_(color_split) {}
 
-        void Assign(Graph& cycle) { cycle_.Swap(cycle); }
+        void assign(Graph& cycle) { cycle_.swap(cycle); }
 
         void print() const;
 
-        void Split(Graph& used, plain_int_set& free, Graph& connection,
+        void split(Graph& used, plain_int_set& free, Graph& connection,
             const std::vector<int>& split_trace, Graph& c1, Graph& c2, Graph& datagraph)
         {
-          cycle_.Split(used, free, connection, split_trace, c1, c2, datagraph);
+          cycle_.split(used, free, connection, split_trace, c1, c2, datagraph);
         }
 
-        bool ContainsTrace(const std::vector<int>& split_trace)
+        bool contains_trace(const std::vector<int>& split_trace)
         {
-          return cycle_.ContainsTrace(split_trace);
+          return cycle_.contains_trace(split_trace);
         }
 
         Graph& operator()() { return cycle_; }
@@ -202,15 +202,15 @@ namespace Core::Geo
        public:
         CycleListIterator(std::list<Cycle>& cycles, std::list<Cycle>::iterator i) : i_(i)
         {
-          NextActive();
+          next_active();
         }
 
-        void NextActive() {}
+        void next_active() {}
 
         CycleListIterator& operator++()
         {
           ++i_;
-          NextActive();
+          next_active();
           return *this;
         }
 
@@ -228,7 +228,7 @@ namespace Core::Geo
        public:
         typedef CycleListIterator iterator;
 
-        void AddPoints(Graph& graph, Graph& used, Graph& cycle, plain_int_set& free,
+        void add_points(Graph& graph, Graph& used, Graph& cycle, plain_int_set& free,
             const std::vector<std::pair<Point*, Point*>>& all_lines);
 
         void print() const;

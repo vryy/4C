@@ -57,7 +57,7 @@ namespace FPSI
 
 
     */
-    void SetupSystem() override;
+    void setup_system() override;
 
     //! @name Apply current field state to system
 
@@ -65,7 +65,7 @@ namespace FPSI
     //@}
 
     /// the composed system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const override
     {
       return systemmatrix_;
     }

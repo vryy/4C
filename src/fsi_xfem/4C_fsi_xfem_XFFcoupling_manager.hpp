@@ -44,41 +44,41 @@ namespace XFEM
     void predict_coupling_states() override {}
 
     //! Set required displacement & velocity states in the coupling object
-    void SetCouplingStates() override;
+    void set_coupling_states() override;
 
     //! Initializes the couplings (done at the beginning of the algorithm after fields have their
     //! state for timestep n) -- not yet done here
-    void InitCouplingStates() override;
+    void init_coupling_states() override;
 
     //! Add the coupling matrixes to the global systemmatrix
     // in ... scaling between xfluid evaluated coupling matrixes and coupled systemmatrix
-    void AddCouplingMatrix(
+    void add_coupling_matrix(
         Core::LinAlg::BlockSparseMatrixBase& systemmatrix, double scaling) override;
 
     //! Add the coupling rhs
 
     // in scaling ... scaling between xfluid evaluated coupling rhs and coupled rhs
     // in me ... global map extractor of coupled problem (same index used as for idx)
-    void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs, const Core::LinAlg::MultiMapExtractor& me,
-        double scaling) override;
+    void add_coupling_rhs(Teuchos::RCP<Epetra_Vector> rhs,
+        const Core::LinAlg::MultiMapExtractor& me, double scaling) override;
 
     //! we need to think if inserting the ale matrixes are modifications (might conflict with other
     //! modifications)
-    virtual bool ModifySysmatandRHS(Core::LinAlg::BlockSparseMatrixBase& systemmatrix,
+    virtual bool modify_sysmatand_rhs(Core::LinAlg::BlockSparseMatrixBase& systemmatrix,
         Teuchos::RCP<Epetra_Vector> rhs, const Core::LinAlg::MultiMapExtractor& me)
     {
       return false;
     }
 
     //! nothing to do
-    virtual void PostLinearSolve(
+    virtual void post_linear_solve(
         Teuchos::RCP<Epetra_Vector> inc, const Core::LinAlg::MultiMapExtractor& me)
     {
       return;
     }
 
     //! Update (Perform after Each Timestep) -- nothing to do here
-    void Update(double scaling) override { return; }
+    void update(double scaling) override { return; }
 
     //! Write Output -- nothing to do here
     void output(Core::IO::DiscretizationWriter& writer) override { return; }

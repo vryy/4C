@@ -38,8 +38,8 @@ Solid::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input 
     )
     : sti_(tis),
       discret_(tis->discretization()),
-      myrank_(discret_->Comm().MyPID()),
-      solver_(tis->Solver()),
+      myrank_(discret_->get_comm().MyPID()),
+      solver_(tis->solver()),
       output_(tis->disc_writer()),
       //
       timeinitial_(0.0),
@@ -86,26 +86,26 @@ Solid::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input 
   locerrdisn_ = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
 
   // check whether energyout_ file handle was attached
-  if ((not sti_->AttachedEnergyFile()) and (outeneperiod_ != 0.0) and (myrank_ == 0))
+  if ((not sti_->attached_energy_file()) and (outeneperiod_ != 0.0) and (myrank_ == 0))
   {
-    sti_->AttachEnergyFile();
+    sti_->attach_energy_file();
   }
 
   // check if step size file is wanted and attach
   if ((outsizeevery_ != 0) and (myrank_ == 0))
   {
-    AttachFileStepSize();
+    attach_file_step_size();
   }
 
   // enable restart for adaptive timestepping - however initial timestep size is still read from
   // datfile! (mhv 01/2015)
-  const int restart = Global::Problem::Instance()->restart();
+  const int restart = Global::Problem::instance()->restart();
   if (restart)
   {
     // read restart of marching time-integrator and reset initial time and step for adaptive loop
     tis->read_restart(restart);
-    timeinitial_ = tis->TimeOld();
-    timestepinitial_ = tis->StepOld();
+    timeinitial_ = tis->time_old();
+    timestepinitial_ = tis->step_old();
 
     // update variables which depend on initial time and step
     timedirect_ = sign(timefinal_ - timeinitial_);
@@ -120,14 +120,14 @@ Solid::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input 
 
 /*----------------------------------------------------------------------*/
 /* Integrate adaptively in time */
-int Solid::TimAda::Integrate()
+int Solid::TimAda::integrate()
 {
   // finalize initialization
   // (only relevant if an auxiliary time integrator is used)
   init(sti_);
 
   // Richardson extrapolation to no avail
-  if (MethodAdaptDis() == ada_ident)
+  if (method_adapt_dis() == ada_ident)
     FOUR_C_THROW(
         "This combination is not implemented ... Richardson's extrapolation ... Yoshida technique "
         "...");
@@ -136,7 +136,7 @@ int Solid::TimAda::Integrate()
   time_ = timeinitial_;
   timestep_ = timestepinitial_;
   stepsize_ = stepsizeinitial_;
-  UpdateStepSize();
+  update_step_size();
 
   // time loop
   while ((time_ < timefinal_) and (timestep_ < timestepfinal_))
@@ -152,7 +152,7 @@ int Solid::TimAda::Integrate()
       size_for_output();
 
       // set current step size
-      sti_->dt_->SetStep(0, stepsize_);
+      sti_->dt_->set_step(0, stepsize_);
       sti_->timen_ = time_ + stepsize_;
 
       // integrate system with auxiliary TIS
@@ -161,13 +161,13 @@ int Solid::TimAda::Integrate()
       integrate_step_auxiliar();
 
       // integrate system with marching TIS and
-      sti_->IntegrateStep();
+      sti_->integrate_step();
 
       // get local error vector on #locerrdisn_
       evaluate_local_error_dis();
 
       // check whether step passes
-      Indicate(accepted, stpsiznew);
+      indicate(accepted, stpsiznew);
 
       // adjust step-size and prepare repetition of current step
       if (not accepted)
@@ -202,27 +202,27 @@ int Solid::TimAda::Integrate()
     }
 
     // increment time and step in the marching time integrator
-    sti_->time_->UpdateSteps(time_ + stepsize_);
+    sti_->time_->update_steps(time_ + stepsize_);
     sti_->step_ = timestep_ + 1;
-    sti_->dt_->UpdateSteps(stepsize_);
+    sti_->dt_->update_steps(stepsize_);
 
     // printing and output
     constexpr bool force_prepare = false;
-    PrepareOutputPeriod(force_prepare);
-    sti_->PreUpdate();
-    sti_->UpdateStepState();
-    sti_->UpdateStepElement();
+    prepare_output_period(force_prepare);
+    sti_->pre_update();
+    sti_->update_step_state();
+    sti_->update_step_element();
     sti_->post_update();
-    OutputPeriod();
-    sti_->PostOutput();
-    OutputStepSize();
+    output_period();
+    sti_->post_output();
+    output_step_size();
     sti_->print_step();
 
     // update
     //    update();
     timestep_ += 1;
     time_ += stepsize_;
-    UpdateStepSize(stpsiznew);
+    update_step_size(stpsiznew);
 
     update_period();
     outrest_ = outsys_ = outstr_ = outene_ = false;
@@ -242,7 +242,7 @@ int Solid::TimAda::Integrate()
 /* Evaluate local error vector */
 void Solid::TimAda::evaluate_local_error_dis()
 {
-  if (MethodAdaptDis() == ada_orderequal)
+  if (method_adapt_dis() == ada_orderequal)
   {
     const double coeffmarch = sti_->method_lin_err_coeff_dis();
     const double coeffaux = method_lin_err_coeff_dis();
@@ -263,7 +263,7 @@ void Solid::TimAda::evaluate_local_error_dis()
 
 /*----------------------------------------------------------------------*/
 /* Indicate error and determine new step size */
-void Solid::TimAda::Indicate(bool& accepted, double& stpsiznew)
+void Solid::TimAda::indicate(bool& accepted, double& stpsiznew)
 {
   // norm of local discretisation error vector
   const int numneglect = sti_->get_dbc_map_extractor()->cond_map()->NumGlobalElements();
@@ -289,7 +289,7 @@ void Solid::TimAda::Indicate(bool& accepted, double& stpsiznew)
 double Solid::TimAda::calculate_dt(const double norm)
 {
   // get error order
-  if (MethodAdaptDis() == ada_upward)
+  if (method_adapt_dis() == ada_upward)
     errorder_ = sti_->method_order_of_accuracy_dis();
   else
     errorder_ = method_order_of_accuracy_dis();
@@ -393,11 +393,14 @@ void Solid::TimAda::size_for_output()
 
 /*----------------------------------------------------------------------*/
 /* Prepare output to file(s)                                            */
-void Solid::TimAda::PrepareOutputPeriod(bool force_prepare) { sti_->prepare_output(force_prepare); }
+void Solid::TimAda::prepare_output_period(bool force_prepare)
+{
+  sti_->prepare_output(force_prepare);
+}
 
 /*----------------------------------------------------------------------*/
 /* Output to file(s) */
-void Solid::TimAda::OutputPeriod()
+void Solid::TimAda::output_period()
 {
   // this flag is passed along subroutines and prevents
   // repeated initialising of output writer, printing of
@@ -446,7 +449,7 @@ void Solid::TimAda::update_period()
 
 /*----------------------------------------------------------------------*/
 /* Write step size */
-void Solid::TimAda::OutputStepSize()
+void Solid::TimAda::output_step_size()
 {
   if ((outsizeevery_ != 0) and (timestep_ % outsizeevery_ == 0) and (myrank_ == 0))
   {
@@ -458,7 +461,7 @@ void Solid::TimAda::OutputStepSize()
 
 /*----------------------------------------------------------------------*/
 /* Print constants */
-void Solid::TimAda::PrintConstants(std::ostream& str) const
+void Solid::TimAda::print_constants(std::ostream& str) const
 {
   str << "TimAda:  Constants" << std::endl
       << "   Initial time = " << timeinitial_ << std::endl
@@ -480,7 +483,7 @@ void Solid::TimAda::PrintConstants(std::ostream& str) const
 
 /*----------------------------------------------------------------------*/
 /* Print variables */
-void Solid::TimAda::PrintVariables(std::ostream& str) const
+void Solid::TimAda::print_variables(std::ostream& str) const
 {
   str << "TimAda:  Variables" << std::endl
       << "   Current time = " << time_ << std::endl
@@ -496,20 +499,20 @@ void Solid::TimAda::PrintVariables(std::ostream& str) const
 void Solid::TimAda::print(std::ostream& str) const
 {
   str << "TimAda" << std::endl;
-  PrintConstants(str);
-  PrintVariables(str);
+  print_constants(str);
+  print_variables(str);
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /* Attach file handle for step size file #outsizefile_                  */
-void Solid::TimAda::AttachFileStepSize()
+void Solid::TimAda::attach_file_step_size()
 {
   if (outsizefile_.is_null())
   {
     std::string filename =
-        Global::Problem::Instance()->OutputControlFile()->file_name() + ".stepsize";
+        Global::Problem::instance()->output_control_file()->file_name() + ".stepsize";
     outsizefile_ = Teuchos::rcp(new std::ofstream(filename.c_str()));
     (*outsizefile_) << "# timestep time step-size adaptations" << std::endl;
   }
@@ -519,18 +522,18 @@ void Solid::TimAda::AttachFileStepSize()
 
 /*----------------------------------------------------------------------*/
 /* Update step size and set new time step size                          */
-void Solid::TimAda::UpdateStepSize(const double dtnew)
+void Solid::TimAda::update_step_size(const double dtnew)
 {
-  UpdateStepSize();
+  update_step_size();
   set_dt(dtnew);
-  sti_->UpdateStepTime();
+  sti_->update_step_time();
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /* Update step size                                                     */
-void Solid::TimAda::UpdateStepSize()
+void Solid::TimAda::update_step_size()
 {
   stepsizepre_ = stepsize_;
 

@@ -49,7 +49,7 @@ void FLD::TimIntStationary::init()
 
   set_element_time_parameter();
 
-  CompleteGeneralInit();
+  complete_general_init();
   return;
 }
 
@@ -58,7 +58,7 @@ void FLD::TimIntStationary::init()
 /*----------------------------------------------------------------------*
  | use TimeLoop() to start stationary problem                  bk 12/13 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntStationary::TimeLoop()
+void FLD::TimIntStationary::time_loop()
 {
   solve_stationary_problem();
   return;
@@ -129,17 +129,17 @@ void FLD::TimIntStationary::solve_stationary_problem()
     // -------------------------------------------------------------------
     //                     solve equation system
     // -------------------------------------------------------------------
-    Solve();
+    solve();
 
     // -------------------------------------------------------------------
     //                        compute flow rates
     // -------------------------------------------------------------------
-    ComputeFlowRates();
+    compute_flow_rates();
 
     // -------------------------------------------------------------------
     // evaluate divergence u
     // -------------------------------------------------------------------
-    EvaluateDivU();
+    evaluate_div_u();
 
 
     // Evaluate integral error
@@ -159,7 +159,7 @@ void FLD::TimIntStationary::solve_stationary_problem()
 /*----------------------------------------------------------------------*
 | set integration-scheme-specific state                        bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntStationary::SetStateTimInt()
+void FLD::TimIntStationary::set_state_tim_int()
 {
   discret_->set_state("velaf", velnp_);
   return;
@@ -180,7 +180,7 @@ void FLD::TimIntStationary::calculate_acceleration(const Teuchos::RCP<const Epet
 /*----------------------------------------------------------------------*
 | set gamma                                                    bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntStationary::SetGamma(Teuchos::ParameterList& eleparams)
+void FLD::TimIntStationary::set_gamma(Teuchos::ParameterList& eleparams)
 {
   // do nothing
   return;
@@ -189,16 +189,16 @@ void FLD::TimIntStationary::SetGamma(Teuchos::ParameterList& eleparams)
 /*----------------------------------------------------------------------*
 | scale separation                                             bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntStationary::Sep_Multiply()
+void FLD::TimIntStationary::sep_multiply()
 {
-  Sep_->Multiply(false, *velnp_, *fsvelaf_);
+  Sep_->multiply(false, *velnp_, *fsvelaf_);
   return;
 }
 
 /*----------------------------------------------------------------------*
  | paraview output of filtered velocity                  rasthofer 02/11|
  *----------------------------------------------------------------------*/
-void FLD::TimIntStationary::OutputofFilteredVel(
+void FLD::TimIntStationary::outputof_filtered_vel(
     Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec)
 {
   // no output since subgrid-scale modeling does not make sense for stationary problems!!!
@@ -235,7 +235,7 @@ void FLD::TimIntStationary::set_element_time_parameter()
 /*----------------------------------------------------------------------*
 | return time integration factor                               bk 12/13 |
 *-----------------------------------------------------------------------*/
-double FLD::TimIntStationary::TimIntParam() const
+double FLD::TimIntStationary::tim_int_param() const
 {
   double retval = 0.0;
   // no FSI with stationary time integrator

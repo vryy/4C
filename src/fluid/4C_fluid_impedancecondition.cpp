@@ -29,7 +29,7 @@ FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(
     const Teuchos::RCP<Core::FE::Discretization> actdis)
 {
   std::vector<Core::Conditions::Condition*> impedancecond;
-  actdis->GetCondition("ImpedanceCond", impedancecond);
+  actdis->get_condition("ImpedanceCond", impedancecond);
 
   // the number of lines of impedance boundary conditions found in the input
   // note that some of these lines could belong to the same physical condition
@@ -162,7 +162,7 @@ void FLD::UTILS::FluidImpedanceWrapper::read_restart(Core::IO::DiscretizationRea
 /*----------------------------------------------------------------------*
  |  Return relative vector of relative pressure errors      Thon 07/16 |
  *----------------------------------------------------------------------*/
-std::vector<double> FLD::UTILS::FluidImpedanceWrapper::getWKrelerrors()
+std::vector<double> FLD::UTILS::FluidImpedanceWrapper::get_w_krelerrors()
 {
   std::vector<double> wk_rel_error;
 
@@ -184,7 +184,7 @@ std::vector<double> FLD::UTILS::FluidImpedanceWrapper::getWKrelerrors()
 FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<Core::FE::Discretization> actdis,
     const int condid, Core::Conditions::Condition* impedancecond)
     : discret_(actdis),
-      myrank_(discret_->Comm().MyPID()),
+      myrank_(discret_->get_comm().MyPID()),
       theta_(0.5),
       treetype_(impedancecond->parameters().get<std::string>("TYPE")),
       period_(impedancecond->parameters().get<double>("TIMEPERIOD")),
@@ -218,9 +218,9 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<Core::FE::Disc
   // get theta of global time integration scheme to use it here
   // if global time integration scheme is not ONESTEPTHETA, theta is by default = 0.5
   std::string dyntype =
-      Global::Problem::Instance()->FluidDynamicParams().get<std::string>("TIMEINTEGR");
+      Global::Problem::instance()->fluid_dynamic_params().get<std::string>("TIMEINTEGR");
   if (dyntype == "One_Step_Theta")
-    theta_ = Global::Problem::Instance()->FluidDynamicParams().get<double>("THETA");
+    theta_ = Global::Problem::instance()->fluid_dynamic_params().get<double>("THETA");
 
   // ---------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -261,7 +261,7 @@ void FLD::UTILS::FluidImpedanceBc::use_block_matrix(Teuchos::RCP<std::set<int>> 
     // (re)allocate system matrix
     mat = Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(
         domainmaps, rangemaps, 108, false, true));
-    mat->SetCondElements(condelements);
+    mat->set_cond_elements(condelements);
     impedancetbcsysmat_ = mat;
   }
 
@@ -353,8 +353,8 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
   }
   else if (treetype_ == "pressure_by_funct")
   {
-    pressure = Global::Problem::Instance()
-                   ->FunctionById<Core::UTILS::FunctionOfTime>(functnum_ - 1)
+    pressure = Global::Problem::instance()
+                   ->function_by_id<Core::UTILS::FunctionOfTime>(functnum_ - 1)
                    .evaluate(time);
     Q_np_fac = 0.0;
   }
@@ -394,7 +394,7 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
 
   // NOTE: this can not be done in the constructure since maybe use_block_matrix
   // is called afterwards and hence its contenten is reseted :(
-  if (not impedancetbcsysmat_->Filled())
+  if (not impedancetbcsysmat_->filled())
   {
     // calculate dQ/du = ( \phi o n )_Gamma
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
@@ -416,7 +416,7 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
     // calculate d wk/du = d/du ( (v,n)_gamma n,phi)_Gamma were (d wk/du)_i,j= timefacs*
     // (phi_i,n)_Gamma * (phi_j,n)_Gamma
     // Note: this derivative cannot be build on element level, hence we have to do it here!
-    impedancetbcsysmat_->Zero();
+    impedancetbcsysmat_->zero();
 
     const double tfaclhs = eleparams2.get<double>("tfaclhs", 0.0);
 
@@ -431,12 +431,12 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
           const int gid2 = dofrowmapred->GID(lid2);
           const double val2 = (*dQdu_full)[lid2];
           const double actmatentry = tfaclhs * val * val2;
-          if (abs(actmatentry) > 1e-15) impedancetbcsysmat_->Assemble(actmatentry, gid, gid2);
+          if (abs(actmatentry) > 1e-15) impedancetbcsysmat_->assemble(actmatentry, gid, gid2);
         }
       }
     }
 
-    impedancetbcsysmat_->Complete();
+    impedancetbcsysmat_->complete();
     //  std::cout<<__FILE__<<__LINE__<<*((Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(impedancetbcsysmat_))->EpetraMatrix())<<std::endl;
 
     // NOTE: since the building of the linearization is very expensive and since it only
@@ -456,7 +456,7 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
   residual->Update(1.0, *impedancetbc_, 1.0);
 
   // Add linerisation to fluid sysmat
-  sysmat->Add(*impedancetbcsysmat_, false, Q_np_fac, 1.0);
+  sysmat->add(*impedancetbcsysmat_, false, Q_np_fac, 1.0);
 
   return;
 }  // FluidImplicitTimeInt::outflow_boundary
@@ -593,7 +593,7 @@ double FLD::UTILS::FluidImpedanceBc::area(const int condid)
 
   // get total area in parallel case
   double pararea = 0.0;
-  discret_->Comm().SumAll(&actarea, &pararea, 1);
+  discret_->get_comm().SumAll(&actarea, &pararea, 1);
 
   //  if (myrank_ == 0)
   //    std::cout << "Impedance condition Id: " << condid << ", Area: " << pararea << std::endl;

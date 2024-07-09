@@ -52,21 +52,21 @@ namespace ScaTra
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
     // routine to return scalar field phi at time step n-1
-    Teuchos::RCP<Epetra_Vector> Phinm() { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Vector> phinm() { return Teuchos::null; }
 
     /// routine to return scalar field phi at time step n+alpha_F
-    Teuchos::RCP<Epetra_Vector> Phiaf() override { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Vector> phiaf() override { return Teuchos::null; }
 
     /// routine to return scalar field phi at time step n+alpha_M
-    Teuchos::RCP<Epetra_Vector> Phiam() override { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Vector> phiam() override { return Teuchos::null; }
 
     /// routine to return time derivative of scalar field phi at time step n+alpha_M
-    Teuchos::RCP<Epetra_Vector> Phidtam() override { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Vector> phidtam() override { return Teuchos::null; }
 
     /// routine to return fine-scale scalar field fsphi
-    Teuchos::RCP<Epetra_Vector> FsPhi() override
+    Teuchos::RCP<Epetra_Vector> fs_phi() override
     {
-      if (Sep_ != Teuchos::null) Sep_->Multiply(false, *phinp_, *fsphinp_);
+      if (Sep_ != Teuchos::null) Sep_->multiply(false, *phinp_, *fsphinp_);
       return fsphinp_;
     };
 

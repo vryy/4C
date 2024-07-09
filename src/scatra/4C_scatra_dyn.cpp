@@ -44,23 +44,23 @@ FOUR_C_NAMESPACE_OPEN
 void scatra_dyn(int restart)
 {
   // access the communicator
-  const Epetra_Comm& comm = Global::Problem::Instance()->GetDis("fluid")->Comm();
+  const Epetra_Comm& comm = Global::Problem::instance()->get_dis("fluid")->get_comm();
 
   // print problem type
   if (comm.MyPID() == 0)
   {
     std::cout << "###################################################" << '\n';
-    std::cout << "# YOUR PROBLEM TYPE: " << Global::Problem::Instance()->ProblemName() << '\n';
+    std::cout << "# YOUR PROBLEM TYPE: " << Global::Problem::instance()->problem_name() << '\n';
     std::cout << "###################################################" << '\n';
   }
 
   // access the problem-specific parameter list
-  const auto& scatradyn = Global::Problem::Instance()->scalar_transport_dynamic_params();
+  const auto& scatradyn = Global::Problem::instance()->scalar_transport_dynamic_params();
 
   // access the fluid discretization
-  auto fluiddis = Global::Problem::Instance()->GetDis("fluid");
+  auto fluiddis = Global::Problem::instance()->get_dis("fluid");
   // access the scatra discretization
-  auto scatradis = Global::Problem::Instance()->GetDis("scatra");
+  auto scatradis = Global::Problem::instance()->get_dis("scatra");
 
   // ensure that all dofs are assigned in the right order;
   // this creates dof numbers with fluid dof < scatra dof
@@ -69,13 +69,13 @@ void scatra_dyn(int restart)
 
   // determine coupling type
   const auto fieldcoupling = Core::UTILS::IntegralValue<Inpar::ScaTra::FieldCoupling>(
-      Global::Problem::Instance()->scalar_transport_dynamic_params(), "FIELDCOUPLING");
+      Global::Problem::instance()->scalar_transport_dynamic_params(), "FIELDCOUPLING");
 
   // determine velocity type
   const auto veltype =
       Core::UTILS::IntegralValue<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
 
-  if (scatradis->NumGlobalNodes() == 0)
+  if (scatradis->num_global_nodes() == 0)
   {
     if (fieldcoupling != Inpar::ScaTra::coupling_match and
         veltype != Inpar::ScaTra::velocity_Navier_Stokes)
@@ -102,7 +102,7 @@ void scatra_dyn(int restart)
     case Inpar::ScaTra::velocity_function:  // function
     {
       // we directly use the elements from the scalar transport elements section
-      if (scatradis->NumGlobalNodes() == 0)
+      if (scatradis->num_global_nodes() == 0)
         FOUR_C_THROW("No elements in the ---TRANSPORT ELEMENTS section");
 
       // get linear solver id from SCALAR TRANSPORT DYNAMIC
@@ -116,14 +116,14 @@ void scatra_dyn(int restart)
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
       auto scatraonly = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
-          scatradyn, scatradyn, Global::Problem::Instance()->SolverParams(linsolvernumber)));
+          scatradyn, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber)));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
       auto dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
-          Global::Problem::Instance()->NDim() + 1, 0, 0, true));
-      if (scatradis->AddDofSet(dofsetaux) != 1)
+          Global::Problem::instance()->n_dim() + 1, 0, 0, true));
+      if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-      scatraonly->ScaTraField()->set_number_of_dof_set_velocity(1);
+      scatraonly->sca_tra_field()->set_number_of_dof_set_velocity(1);
 
       // allow TRANSPORT conditions, too
       // NOTE: we can not use the conditions given by 'conditions_to_copy =
@@ -135,7 +135,7 @@ void scatra_dyn(int restart)
           {"TransportVolumeNeumann", "VolumeNeumann"}};
 
       Core::FE::DiscretizationCreatorBase creator;
-      creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
+      creator.copy_conditions(*scatradis, *scatradis, conditions_to_copy);
 
       // finalize discretization
       scatradis->fill_complete(true, false, true);
@@ -146,23 +146,23 @@ void scatra_dyn(int restart)
 
       // redistribution between init(...) and setup()
       // redistribute scatra elements in case of heterogeneous reactions
-      if (scatradis->GetCondition("ScatraHeteroReactionSlave") != nullptr)
+      if (scatradis->get_condition("ScatraHeteroReactionSlave") != nullptr)
       {
         // create vector of discr.
         std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
         dis.push_back(scatradis);
 
         Teuchos::ParameterList binning_params =
-            Global::Problem::Instance()->binning_strategy_params();
+            Global::Problem::instance()->binning_strategy_params();
         Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
-            "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+            "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
             binning_params);
         auto element_filter = [](const Core::Elements::Element* element)
         { return Core::Binstrategy::Utils::SpecialElement::none; };
         auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
         auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
         Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
-            Global::Problem::Instance()->OutputControlFile(), dis, element_filter,
+            Global::Problem::instance()->output_control_file(), dis, element_filter,
             rigid_sphere_radius, correct_beam_center_node, false);
       }
 
@@ -173,50 +173,50 @@ void scatra_dyn(int restart)
       scatraonly->setup();
 
       // read the restart information, set vectors and variables
-      if (restart) scatraonly->ScaTraField()->read_restart(restart);
+      if (restart) scatraonly->sca_tra_field()->read_restart(restart);
 
       // set initial velocity field
       // note: The order read_restart() before set_velocity_field() is important here!!
       // for time-dependent velocity fields, set_velocity_field() is additionally called in each
       // prepare_time_step()-call
-      scatraonly->ScaTraField()->set_velocity_field();
+      scatraonly->sca_tra_field()->set_velocity_field();
 
       // set external force
-      if (scatraonly->ScaTraField()->HasExternalForce())
-        scatraonly->ScaTraField()->SetExternalForce();
+      if (scatraonly->sca_tra_field()->has_external_force())
+        scatraonly->sca_tra_field()->set_external_force();
 
       // enter time loop to solve problem with given convective velocity
-      scatraonly->ScaTraField()->TimeLoop();
+      scatraonly->sca_tra_field()->time_loop();
 
       // perform the result test if required
-      scatraonly->ScaTraField()->TestResults();
+      scatraonly->sca_tra_field()->test_results();
       break;
     }
     case Inpar::ScaTra::velocity_Navier_Stokes:  // Navier_Stokes
     {
       // we use the fluid discretization as layout for the scalar transport discretization
-      if (fluiddis->NumGlobalNodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
+      if (fluiddis->num_global_nodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
 
       // create scatra elements by cloning from fluid dis in matching case
       if (fieldcoupling == Inpar::ScaTra::coupling_match)
       {
         // fill scatra discretization by cloning fluid discretization
         Core::FE::CloneDiscretization<ScaTra::ScatraFluidCloneStrategy>(
-            fluiddis, scatradis, Global::Problem::Instance()->CloningMaterialMap());
+            fluiddis, scatradis, Global::Problem::instance()->cloning_material_map());
 
         // set implementation type of cloned scatra elements
-        for (int i = 0; i < scatradis->NumMyColElements(); ++i)
+        for (int i = 0; i < scatradis->num_my_col_elements(); ++i)
         {
-          auto* element = dynamic_cast<Discret::ELEMENTS::Transport*>(scatradis->lColElement(i));
+          auto* element = dynamic_cast<Discret::ELEMENTS::Transport*>(scatradis->l_col_element(i));
           if (element == nullptr)
             FOUR_C_THROW("Invalid element type!");
           else
-            element->SetImplType(Inpar::ScaTra::impltype_std);
+            element->set_impl_type(Inpar::ScaTra::impltype_std);
         }
       }
 
       // support for turbulent flow statistics
-      const Teuchos::ParameterList& fdyn = (Global::Problem::Instance()->FluidDynamicParams());
+      const Teuchos::ParameterList& fdyn = (Global::Problem::instance()->fluid_dynamic_params());
 
       // get linear solver id from SCALAR TRANSPORT DYNAMIC
       const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
@@ -229,15 +229,15 @@ void scatra_dyn(int restart)
 
       // create a scalar transport algorithm instance
       auto algo = Teuchos::rcp(new ScaTra::ScaTraAlgorithm(comm, scatradyn, fdyn, "scatra",
-          Global::Problem::Instance()->SolverParams(linsolvernumber)));
+          Global::Problem::instance()->solver_params(linsolvernumber)));
 
       // create scatra elements by cloning from fluid dis in matching case
       if (fieldcoupling == Inpar::ScaTra::coupling_match)
       {
         // add proxy of fluid transport degrees of freedom to scatra discretization
-        if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
+        if (scatradis->add_dof_set(fluiddis->get_dof_set_proxy()) != 1)
           FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-        algo->ScaTraField()->set_number_of_dof_set_velocity(1);
+        algo->sca_tra_field()->set_number_of_dof_set_velocity(1);
       }
 
       // we create  the aux dofsets before init(...)
@@ -248,28 +248,29 @@ void scatra_dyn(int restart)
         ScaTra::ScatraFluidCloneStrategy clonestrategy;
         const auto conditions_to_copy = clonestrategy.conditions_to_copy();
         Core::FE::DiscretizationCreatorBase creator;
-        creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
+        creator.copy_conditions(*scatradis, *scatradis, conditions_to_copy);
 
         // build the element and node maps
         scatradis->fill_complete(false, false, false);
         fluiddis->fill_complete(false, false, false);
 
         // build auxiliary dofsets, i.e. pseudo dofs on each discretization
-        const int ndofpernode_scatra = scatradis->NumDof(0, scatradis->lRowNode(0));
+        const int ndofpernode_scatra = scatradis->num_dof(0, scatradis->l_row_node(0));
         const int ndofperelement_scatra = 0;
-        const int ndofpernode_fluid = fluiddis->NumDof(0, fluiddis->lRowNode(0));
+        const int ndofpernode_fluid = fluiddis->num_dof(0, fluiddis->l_row_node(0));
         const int ndofperelement_fluid = 0;
 
         // add proxy of velocity related degrees of freedom to scatra discretization
         Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
         dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_scatra, ndofperelement_scatra, 0, true));
-        if (fluiddis->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in fluid field");
+        if (fluiddis->add_dof_set(dofsetaux) != 1)
+          FOUR_C_THROW("unexpected dof sets in fluid field");
         dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_fluid, ndofperelement_fluid, 0, true));
-        if (scatradis->AddDofSet(dofsetaux) != 1)
+        if (scatradis->add_dof_set(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in scatra field");
-        algo->ScaTraField()->set_number_of_dof_set_velocity(1);
+        algo->sca_tra_field()->set_number_of_dof_set_velocity(1);
 
         // call assign_degrees_of_freedom also for auxiliary dofsets
         // note: the order of fill_complete() calls determines the gid numbering!
@@ -294,16 +295,16 @@ void scatra_dyn(int restart)
         dis.push_back(scatradis);
 
         Teuchos::ParameterList binning_params =
-            Global::Problem::Instance()->binning_strategy_params();
+            Global::Problem::instance()->binning_strategy_params();
         Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
-            "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+            "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
             binning_params);
         auto element_filter = [](const Core::Elements::Element* element)
         { return Core::Binstrategy::Utils::SpecialElement::none; };
         auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
         auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
         Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
-            Global::Problem::Instance()->OutputControlFile(), dis, element_filter,
+            Global::Problem::instance()->output_control_file(), dis, element_filter,
             rigid_sphere_radius, correct_beam_center_node, false);
       }
 
@@ -323,7 +324,7 @@ void scatra_dyn(int restart)
       {
         if (Core::UTILS::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") and
             restart == fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP"))
-          algo->ReadInflowRestart(restart);
+          algo->read_inflow_restart(restart);
         else
           algo->read_restart(restart);
       }
@@ -335,13 +336,13 @@ void scatra_dyn(int restart)
       }
 
       // solve the whole scalar transport problem
-      algo->TimeLoop();
+      algo->time_loop();
 
       // summarize the performance measurements
       Teuchos::TimeMonitor::summarize();
 
       // perform the result test
-      algo->TestResults();
+      algo->test_results();
 
       break;
     }

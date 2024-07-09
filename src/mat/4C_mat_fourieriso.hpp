@@ -59,11 +59,11 @@ namespace Mat
   class FourierIsoType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "FourierIsoType"; }
+    std::string name() const override { return "FourierIsoType"; }
 
-    static FourierIsoType& Instance() { return instance_; };
+    static FourierIsoType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static FourierIsoType instance_;
@@ -97,16 +97,16 @@ namespace Mat
     ///
     ///  every class implementing ParObject needs a unique id defined at the
     ///  top of parobject.H (this file) and should return it in this method.
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return FourierIsoType::Instance().UniqueParObjectId();
+      return FourierIsoType::instance().unique_par_object_id();
     }
 
     /// Pack this class so it can be communicated
     ///
     /// Resizes the vector data and stores all information of a class in it.
     /// The first information to be stored in data has to be the
-    /// unique parobject id delivered by UniqueParObjectId() which will then
+    /// unique parobject id delivered by unique_par_object_id() which will then
     /// identify the exact class on the receiving processor.
     void pack(
         Core::Communication::PackBuffer& data  ///< (in/out): char vector to store class information
@@ -118,7 +118,7 @@ namespace Mat
     /// exact copy of an instance of a class on a different processor.
     /// The first entry in data has to be an integer which is the unique
     /// parobject id defined at the top of this file and delivered by
-    /// UniqueParObjectId().
+    /// unique_par_object_id().
     ///
     void unpack(const std::vector<char>& data  ///< vector storing all data to be unpacked into this
         ) override;
@@ -129,19 +129,19 @@ namespace Mat
     //@{
 
     /// conductivity
-    double Conductivity() const { return params_->conduct_; }
+    double conductivity() const { return params_->conduct_; }
 
     /// volumetric heat capacity
-    double Capacity() const override { return params_->capa_; }
+    double capacity() const override { return params_->capa_; }
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_th_fourier_iso;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new FourierIso(*this));
     }
@@ -157,31 +157,40 @@ namespace Mat
     void evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp, Core::LinAlg::Matrix<3, 3>& cmat,
         Core::LinAlg::Matrix<3, 1>& heatflux) const override;
 
-    void ConductivityDerivT(Core::LinAlg::Matrix<3, 3>& dCondDT) const override { dCondDT.clear(); }
+    void conductivity_deriv_t(Core::LinAlg::Matrix<3, 3>& dCondDT) const override
+    {
+      dCondDT.clear();
+    }
 
-    void ConductivityDerivT(Core::LinAlg::Matrix<2, 2>& dCondDT) const override { dCondDT.clear(); }
+    void conductivity_deriv_t(Core::LinAlg::Matrix<2, 2>& dCondDT) const override
+    {
+      dCondDT.clear();
+    }
 
-    void ConductivityDerivT(Core::LinAlg::Matrix<1, 1>& dCondDT) const override { dCondDT.clear(); }
+    void conductivity_deriv_t(Core::LinAlg::Matrix<1, 1>& dCondDT) const override
+    {
+      dCondDT.clear();
+    }
 
-    double CapacityDerivT() const override { return 0; }
+    double capacity_deriv_t() const override { return 0; }
 
-    void Reinit(double temperature, unsigned gp) override
+    void reinit(double temperature, unsigned gp) override
     {
       // do nothing
     }
 
-    void ResetCurrentState() override
+    void reset_current_state() override
     {
       // do nothing
     }
 
-    void CommitCurrentState() override
+    void commit_current_state() override
     {
       // do nothing
     }
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
    private:
     /// my material parameters

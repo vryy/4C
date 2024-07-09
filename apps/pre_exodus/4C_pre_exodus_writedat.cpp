@@ -70,10 +70,10 @@ void EXODUS::WriteDatIntro(
          "------------------------------------------------------PROBLEM SIZE\n";
   // print number of elements and nodes just as an comment instead of
   // a valid parameter (prevents possible misuse of these parameters in 4C)
-  dat << "//ELEMENTS    " << mymesh.GetNumEle() << std::endl;
-  dat << "//NODES       " << mymesh.GetNumNodes() << std::endl;
+  dat << "//ELEMENTS    " << mymesh.get_num_ele() << std::endl;
+  dat << "//NODES       " << mymesh.get_num_nodes() << std::endl;
   // parameter for the number of spatial dimensions
-  dat << "DIM           " << mymesh.GetFourCDim() << std::endl;
+  dat << "DIM           " << mymesh.get_four_c_dim() << std::endl;
 }
 
 
@@ -154,7 +154,7 @@ void EXODUS::WriteDatConditions(
   for (auto& condition : *condlist)
   {
     size_t linelength = 66;
-    std::string sectionname = condition->SectionName();
+    std::string sectionname = condition->section_name();
 
     // ignore conditions occurring zero times
     count = count_cond.find(sectionname);
@@ -164,7 +164,7 @@ void EXODUS::WriteDatConditions(
     std::string dash(linelength - sectionname.size(), '-');
     dat << dash << sectionname << std::endl;
     std::string geo;
-    switch (condition->GeometryType())
+    switch (condition->geometry_type())
     {
       case Core::Conditions::geometry_type_point:
         geo = "DPOINT ";
@@ -190,16 +190,16 @@ void EXODUS::WriteDatConditions(
       std::string pname;
       if (actcon.me == EXODUS::bcns)
       {
-        name = (mymesh.GetNodeSet(actcon.id).GetName());
-        pname = (mymesh.GetNodeSet(actcon.id).GetPropName());
+        name = (mymesh.get_node_set(actcon.id).get_name());
+        pname = (mymesh.get_node_set(actcon.id).get_prop_name());
       }
       else if (actcon.me == EXODUS::bceb)
       {
-        name = (mymesh.GetElementBlock(actcon.id)->GetName());
+        name = (mymesh.get_element_block(actcon.id)->get_name());
       }
       else if (actcon.me == EXODUS::bcss)
       {
-        name = (mymesh.GetSideSet(actcon.id).GetName());
+        name = (mymesh.get_side_set(actcon.id).get_name());
       }
       else
         FOUR_C_THROW("Unidentified Actcon");
@@ -248,9 +248,9 @@ void EXODUS::WriteDatConditions(
 std::vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id, const EXODUS::Mesh& m)
 {
   std::vector<double> normaltangent;
-  EXODUS::NodeSet ns = m.GetNodeSet(ns_id);
+  EXODUS::NodeSet ns = m.get_node_set(ns_id);
 
-  std::set<int> nodes_from_nodeset = ns.GetNodeSet();
+  std::set<int> nodes_from_nodeset = ns.get_node_set();
   std::set<int>::iterator it;
 
   // compute normal
@@ -265,9 +265,9 @@ std::vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id, const EXODUS::
   const auto compute_normal = [](int head1, int origin, int head2, const EXODUS::Mesh& basemesh)
   {
     std::vector<double> normal(3);
-    std::vector<double> h1 = basemesh.GetNode(head1);
-    std::vector<double> h2 = basemesh.GetNode(head2);
-    std::vector<double> o = basemesh.GetNode(origin);
+    std::vector<double> h1 = basemesh.get_node(head1);
+    std::vector<double> h2 = basemesh.get_node(head2);
+    std::vector<double> o = basemesh.get_node(origin);
 
     normal[0] = ((h1[1] - o[1]) * (h2[2] - o[2]) - (h1[2] - o[2]) * (h2[1] - o[1]));
     normal[1] = -((h1[0] - o[0]) * (h2[2] - o[2]) - (h1[2] - o[2]) * (h2[0] - o[0]));
@@ -300,7 +300,7 @@ std::vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id, const EXODUS::
   if (normaltangent.size() == 1)
   {
     FOUR_C_THROW(
-        "Warning! No normal defined for SurfLocsys within nodeset '%s'!", (ns.GetName()).c_str());
+        "Warning! No normal defined for SurfLocsys within nodeset '%s'!", (ns.get_name()).c_str());
   }
 
   // find tangent by Gram-Schmidt
@@ -418,14 +418,14 @@ std::set<int> EXODUS::GetNsFromBCEntity(const EXODUS::CondDef& e, const EXODUS::
 {
   if (e.me == EXODUS::bcns)
   {
-    EXODUS::NodeSet ns = m.GetNodeSet(e.id);
-    return ns.GetNodeSet();
+    EXODUS::NodeSet ns = m.get_node_set(e.id);
+    return ns.get_node_set();
   }
   else if (e.me == EXODUS::bceb)
   {
     std::set<int> allnodes;
-    Teuchos::RCP<EXODUS::ElementBlock> eb = m.GetElementBlock(e.id);
-    Teuchos::RCP<const std::map<int, std::vector<int>>> eles = eb->GetEleConn();
+    Teuchos::RCP<EXODUS::ElementBlock> eb = m.get_element_block(e.id);
+    Teuchos::RCP<const std::map<int, std::vector<int>>> eles = eb->get_ele_conn();
     for (const auto& ele : *eles)
     {
       const std::vector<int> nodes = ele.second;
@@ -436,8 +436,8 @@ std::set<int> EXODUS::GetNsFromBCEntity(const EXODUS::CondDef& e, const EXODUS::
   else if (e.me == EXODUS::bcss)
   {
     std::set<int> allnodes;
-    EXODUS::SideSet ss = m.GetSideSet(e.id);
-    const std::map<int, std::vector<int>> eles = ss.GetSideSet();
+    EXODUS::SideSet ss = m.get_side_set(e.id);
+    const std::map<int, std::vector<int>> eles = ss.get_side_set();
     for (const auto& ele : eles)
     {
       const std::vector<int> nodes = ele.second;
@@ -458,7 +458,7 @@ void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, std::ostream& dat)
 {
   dat << "-------------------------------------------------------NODE COORDS" << std::endl;
   dat.precision(16);
-  Teuchos::RCP<std::map<int, std::vector<double>>> nodes = mymesh.GetNodes();
+  Teuchos::RCP<std::map<int, std::vector<double>>> nodes = mymesh.get_nodes();
 
   for (const auto& node : *nodes)
   {
@@ -543,7 +543,7 @@ void EXODUS::WriteDatEles(
 
     for (const auto& ele : ele_vector)
     {
-      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(ele.id);
+      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.get_element_block(ele.id);
       EXODUS::DatEles(eb, ele, startele, dat, ele.id);
     }
   };
@@ -589,7 +589,7 @@ void EXODUS::WriteDatEles(
 void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::ElemDef& acte,
     int& startele, std::ostream& datfile, const int eb_id)
 {
-  auto eles = eb->GetEleConn();
+  auto eles = eb->get_ele_conn();
   for (const auto& ele : *eles)
   {
     std::stringstream dat;  // first build up the std::string for actual element line
@@ -597,7 +597,7 @@ void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::
     std::vector<int>::const_iterator i_n;
     dat << "   " << startele;
     dat << " " << acte.ename;  // e.g. "SOLID"
-    dat << " " << Core::FE::CellTypeToString(PreShapeToDrt(eb->GetShape()));
+    dat << " " << Core::FE::CellTypeToString(PreShapeToDrt(eb->get_shape()));
     dat << "  ";
     for (auto node : nodes) dat << node << " ";
     dat << "   " << acte.desc;  // e.g. "MAT 1"

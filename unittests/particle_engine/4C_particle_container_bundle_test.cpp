@@ -57,17 +57,17 @@ namespace
         // first particle
         globalid = 1;
         particle = create_test_particle({1.20, 0.70, 2.10}, {0.1}, {0.12});
-        container->AddParticle(index, globalid, particle);
+        container->add_particle(index, globalid, particle);
 
         // second particle
         globalid = 2;
         particle = create_test_particle({-1.05, 12.6, -8.54}, {0.5}, {12.34});
-        container->AddParticle(index, globalid, particle);
+        container->add_particle(index, globalid, particle);
 
         // third particle
         globalid = 3;
         particle = create_test_particle({-5.02, 2.26, -7.4}, {0.2}, {2.9});
-        container->AddParticle(index, globalid, particle);
+        container->add_particle(index, globalid, particle);
       }
 
       // ghosted particles for phase 1
@@ -79,12 +79,12 @@ namespace
         // first particle
         globalid = 4;
         particle = create_test_particle({2.20, -0.52, 1.10}, {0.8}, {3.12});
-        container->AddParticle(index, globalid, particle);
+        container->add_particle(index, globalid, particle);
 
         // second particle
         globalid = 5;
         particle = create_test_particle({-16.08, 1.46, -3.54}, {1.4}, {1.4});
-        container->AddParticle(index, globalid, particle);
+        container->add_particle(index, globalid, particle);
       }
 
       // owned particles for phase 2
@@ -96,17 +96,17 @@ namespace
         // first particle
         globalid = 6;
         particle = create_test_particle({0.24, -1.71, -2.15}, {1.91}, {2.2});
-        container->AddParticle(index, globalid, particle);
+        container->add_particle(index, globalid, particle);
 
         // second particle
         globalid = 7;
         particle = create_test_particle({-1.15, 2.6, 7.24}, {0.4}, {1.2});
-        container->AddParticle(index, globalid, particle);
+        container->add_particle(index, globalid, particle);
 
         // third particle
         globalid = 8;
         particle = create_test_particle({5.12, 4.26, -3.4}, {1.1}, {0.2});
-        container->AddParticle(index, globalid, particle);
+        container->add_particle(index, globalid, particle);
       }
     }
 
@@ -156,7 +156,7 @@ namespace
     PARTICLEENGINE::ParticleContainer* container = particlecontainerbundle_->get_specific_container(
         PARTICLEENGINE::Phase1, PARTICLEENGINE::Owned);
 
-    ASSERT_EQ(container->ParticlesStored(), 3);
+    ASSERT_EQ(container->particles_stored(), 3);
 
     int globalid(0);
 
@@ -181,7 +181,7 @@ namespace
         particle_reference = create_test_particle({-5.02, 2.26, -7.4}, {0.2}, {5.8});
       }
 
-      container->GetParticle(index, globalid, particle);
+      container->get_particle(index, globalid, particle);
 
       compareParticleStates(particle_reference, particle);
     }
@@ -195,7 +195,7 @@ namespace
     PARTICLEENGINE::ParticleContainer* container = particlecontainerbundle_->get_specific_container(
         PARTICLEENGINE::Phase1, PARTICLEENGINE::Owned);
 
-    ASSERT_EQ(container->ParticlesStored(), 3);
+    ASSERT_EQ(container->particles_stored(), 3);
 
     int globalid(0);
 
@@ -220,7 +220,7 @@ namespace
         particle_reference = create_test_particle({-5.02, 2.26, -7.4}, {0.2}, {6.0});
       }
 
-      container->GetParticle(index, globalid, particle);
+      container->get_particle(index, globalid, particle);
 
       compareParticleStates(particle_reference, particle);
     }
@@ -236,7 +236,7 @@ namespace
     PARTICLEENGINE::ParticleContainer* container = particlecontainerbundle_->get_specific_container(
         PARTICLEENGINE::Phase2, PARTICLEENGINE::Owned);
 
-    ASSERT_EQ(container->ParticlesStored(), 3);
+    ASSERT_EQ(container->particles_stored(), 3);
 
     int globalid(0);
 
@@ -261,7 +261,7 @@ namespace
         particle_reference = create_test_particle({5.12, 4.26, -3.4}, mass, {0.2});
       }
 
-      container->GetParticle(index, globalid, particle);
+      container->get_particle(index, globalid, particle);
 
       compareParticleStates(particle_reference, particle);
     }
@@ -277,7 +277,7 @@ namespace
     PARTICLEENGINE::ParticleContainer* container = particlecontainerbundle_->get_specific_container(
         PARTICLEENGINE::Phase2, PARTICLEENGINE::Owned);
 
-    ASSERT_EQ(container->ParticlesStored(), 3);
+    ASSERT_EQ(container->particles_stored(), 3);
 
     int globalid(0);
 
@@ -302,7 +302,7 @@ namespace
         particle_reference = create_test_particle({5.12, 4.26, -3.4}, mass, {0.2});
       }
 
-      container->GetParticle(index, globalid, particle);
+      container->get_particle(index, globalid, particle);
 
       compareParticleStates(particle_reference, particle);
     }
@@ -323,7 +323,7 @@ namespace
     container = particlecontainerbundle_->get_specific_container(
         PARTICLEENGINE::Phase1, PARTICLEENGINE::Owned);
 
-    ASSERT_EQ(container->ParticlesStored(), 3);
+    ASSERT_EQ(container->particles_stored(), 3);
 
     for (int index = 0; index < 3; ++index)
     {
@@ -341,7 +341,7 @@ namespace
         particle_reference = create_test_particle({-5.02, 2.26, -7.4}, {0.4}, {2.9});
       }
 
-      container->GetParticle(index, globalid, particle);
+      container->get_particle(index, globalid, particle);
 
       compareParticleStates(particle_reference, particle);
     }
@@ -349,7 +349,7 @@ namespace
     container = particlecontainerbundle_->get_specific_container(
         PARTICLEENGINE::Phase2, PARTICLEENGINE::Owned);
 
-    ASSERT_EQ(container->ParticlesStored(), 3);
+    ASSERT_EQ(container->particles_stored(), 3);
 
     for (int index = 0; index < 3; ++index)
     {
@@ -367,7 +367,7 @@ namespace
         particle_reference = create_test_particle({5.12, 4.26, -3.4}, {2.2}, {0.2});
       }
 
-      container->GetParticle(index, globalid, particle);
+      container->get_particle(index, globalid, particle);
 
       compareParticleStates(particle_reference, particle);
     }
@@ -389,7 +389,7 @@ namespace
     container = particlecontainerbundle_->get_specific_container(
         PARTICLEENGINE::Phase1, PARTICLEENGINE::Owned);
 
-    ASSERT_EQ(container->ParticlesStored(), 3);
+    ASSERT_EQ(container->particles_stored(), 3);
 
     for (int index = 0; index < 3; ++index)
     {
@@ -407,7 +407,7 @@ namespace
         particle_reference = create_test_particle({-5.02, 2.26, -7.4}, {3.3}, {2.9});
       }
 
-      container->GetParticle(index, globalid, particle);
+      container->get_particle(index, globalid, particle);
 
       compareParticleStates(particle_reference, particle);
     }
@@ -415,7 +415,7 @@ namespace
     container = particlecontainerbundle_->get_specific_container(
         PARTICLEENGINE::Phase2, PARTICLEENGINE::Owned);
 
-    ASSERT_EQ(container->ParticlesStored(), 3);
+    ASSERT_EQ(container->particles_stored(), 3);
 
     for (int index = 0; index < 3; ++index)
     {
@@ -433,7 +433,7 @@ namespace
         particle_reference = create_test_particle({5.12, 4.26, -3.4}, {2.4}, {0.2});
       }
 
-      container->GetParticle(index, globalid, particle);
+      container->get_particle(index, globalid, particle);
 
       compareParticleStates(particle_reference, particle);
     }
@@ -456,7 +456,7 @@ namespace
     container = particlecontainerbundle_->get_specific_container(
         PARTICLEENGINE::Phase1, PARTICLEENGINE::Owned);
 
-    ASSERT_EQ(container->ParticlesStored(), 3);
+    ASSERT_EQ(container->particles_stored(), 3);
 
     for (int index = 0; index < 3; ++index)
     {
@@ -474,7 +474,7 @@ namespace
         particle_reference = create_test_particle({-5.02, 2.26, -7.4}, mass, {2.9});
       }
 
-      container->GetParticle(index, globalid, particle);
+      container->get_particle(index, globalid, particle);
 
       compareParticleStates(particle_reference, particle);
     }
@@ -482,7 +482,7 @@ namespace
     container = particlecontainerbundle_->get_specific_container(
         PARTICLEENGINE::Phase2, PARTICLEENGINE::Owned);
 
-    ASSERT_EQ(container->ParticlesStored(), 3);
+    ASSERT_EQ(container->particles_stored(), 3);
 
     for (int index = 0; index < 3; ++index)
     {
@@ -500,7 +500,7 @@ namespace
         particle_reference = create_test_particle({5.12, 4.26, -3.4}, mass, {0.2});
       }
 
-      container->GetParticle(index, globalid, particle);
+      container->get_particle(index, globalid, particle);
 
       compareParticleStates(particle_reference, particle);
     }
@@ -523,7 +523,7 @@ namespace
     container = particlecontainerbundle_->get_specific_container(
         PARTICLEENGINE::Phase1, PARTICLEENGINE::Owned);
 
-    ASSERT_EQ(container->ParticlesStored(), 3);
+    ASSERT_EQ(container->particles_stored(), 3);
 
     for (int index = 0; index < 3; ++index)
     {
@@ -541,7 +541,7 @@ namespace
         particle_reference = create_test_particle({-5.02, 2.26, -7.4}, mass, {2.9});
       }
 
-      container->GetParticle(index, globalid, particle);
+      container->get_particle(index, globalid, particle);
 
       compareParticleStates(particle_reference, particle);
     }
@@ -549,7 +549,7 @@ namespace
     container = particlecontainerbundle_->get_specific_container(
         PARTICLEENGINE::Phase2, PARTICLEENGINE::Owned);
 
-    ASSERT_EQ(container->ParticlesStored(), 3);
+    ASSERT_EQ(container->particles_stored(), 3);
 
     for (int index = 0; index < 3; ++index)
     {
@@ -567,7 +567,7 @@ namespace
         particle_reference = create_test_particle({5.12, 4.26, -3.4}, mass, {0.2});
       }
 
-      container->GetParticle(index, globalid, particle);
+      container->get_particle(index, globalid, particle);
 
       compareParticleStates(particle_reference, particle);
     }
@@ -578,17 +578,17 @@ namespace
     PARTICLEENGINE::ParticleContainer* container = particlecontainerbundle_->get_specific_container(
         PARTICLEENGINE::Phase1, PARTICLEENGINE::Owned);
 
-    ASSERT_EQ(container->ParticlesStored(), 3);
-    ASSERT_EQ(container->ContainerSize(), 4);
+    ASSERT_EQ(container->particles_stored(), 3);
+    ASSERT_EQ(container->container_size(), 4);
 
-    container->RemoveParticle(0);
-    container->RemoveParticle(0);
+    container->remove_particle(0);
+    container->remove_particle(0);
 
     particlecontainerbundle_->check_and_decrease_size_all_containers_of_specific_status(
         PARTICLEENGINE::Owned);
 
-    EXPECT_EQ(container->ParticlesStored(), 1);
-    EXPECT_EQ(container->ContainerSize(), 2);
+    EXPECT_EQ(container->particles_stored(), 1);
+    EXPECT_EQ(container->container_size(), 2);
   }
 
   TEST_F(ParticleContainerBundleTest, clear_all_containers_of_specific_status)
@@ -598,7 +598,7 @@ namespace
     PARTICLEENGINE::ParticleContainer* container = particlecontainerbundle_->get_specific_container(
         PARTICLEENGINE::Phase1, PARTICLEENGINE::Ghosted);
 
-    EXPECT_EQ(container->ParticlesStored(), 0);
+    EXPECT_EQ(container->particles_stored(), 0);
   }
 
   TEST_F(ParticleContainerBundleTest, get_vector_of_particle_objects_of_all_containers)

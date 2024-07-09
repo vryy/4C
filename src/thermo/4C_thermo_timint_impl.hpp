@@ -66,12 +66,12 @@ namespace THR
     );
 
     //! Resize #TimIntMStep<T> multi-step quantities
-    void ResizeMStep() override = 0;
+    void resize_m_step() override = 0;
 
     //@}
 
     //! Do time integration of single step
-    void IntegrateStep() override;
+    void integrate_step() override;
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
@@ -85,7 +85,7 @@ namespace THR
     //@{
 
     //! Predict target solution and identify residual
-    void Predict();
+    void predict();
 
     //! Identify residual
     //! This method does not predict the target solution but
@@ -150,23 +150,23 @@ namespace THR
     //! determine characteristic norms for relative
     //! error checks of residual forces
     //! \author lw  \date 12/07
-    virtual double CalcRefNormForce() = 0;
+    virtual double calc_ref_norm_force() = 0;
 
     //! Is convergence reached of iterative solution technique?
     //! Keep your fingers crossed...
     //! \author lw  \date 12/07
-    bool Converged();
+    bool converged();
 
     //! Solve dynamic equilibrium
     //!
     //! This is a general wrapper around the specific techniques.
-    Inpar::THR::ConvergenceStatus Solve() override;
+    Inpar::THR::ConvergenceStatus solve() override;
 
     //! Do full Newton-Raphson iteration
     //!
     //! This routines expects a prepared negative reisdual force #fres_
     //! and associated effective tangent matrix #tang_
-    virtual Inpar::THR::ConvergenceStatus NewtonFull();
+    virtual Inpar::THR::ConvergenceStatus newton_full();
 
     //! Blank Dirichlet dofs form residual and reactions
     //! calculate norms for convergence checks
@@ -178,7 +178,7 @@ namespace THR
     //! Do (so-called) modified Newton-Raphson iteration in which
     //! the initial tangent is kept and not adapted to the current
     //! state of the temperature solution
-    void NewtonModified() { FOUR_C_THROW("Not impl."); }
+    void newton_modified() { FOUR_C_THROW("Not impl."); }
 
     //! Prepare system for solving with Newton's method
     //!
@@ -197,7 +197,7 @@ namespace THR
     //! This handles the iterative update of the current
     //! temperature \f$T_{n+1}\f$ with the residual temperature
     //! The temperature rate follow on par.
-    void UpdateIter(const int iter  //!< iteration counter
+    void update_iter(const int iter  //!< iteration counter
     );
 
     //! Update iteration incrementally
@@ -231,16 +231,16 @@ namespace THR
     //! Thus the 'last' converged state is lost and a reset
     //! of the time step becomes impossible.
     //! We are ready and keen awaiting the next time step.
-    void UpdateStepState() override = 0;
+    void update_step_state() override = 0;
 
     //! Update Element
-    void UpdateStepElement() override = 0;
+    void update_step_element() override = 0;
 
     //! update time step
     void update() override;
 
     //! update Newton step
-    void UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi) override;
+    void update_newton(Teuchos::RCP<const Epetra_Vector> tempi) override;
 
     //@}
 
@@ -270,7 +270,7 @@ namespace THR
     void print_newton_conv();
 
     //! print summary after step
-    void PrintStep() override;
+    void print_step() override;
 
     //! The text for summary print, see #print_step
     void print_step_text(FILE* ofile  //!< output file handle
@@ -282,20 +282,20 @@ namespace THR
     //@{
 
     //! Return time integrator name
-    enum Inpar::THR::DynamicType MethodName() const override = 0;
+    enum Inpar::THR::DynamicType method_name() const override = 0;
 
     //! These time integrators are all implicit (mark their name)
-    bool MethodImplicit() override { return true; }
+    bool method_implicit() override { return true; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    int MethodSteps() override = 0;
+    int method_steps() override = 0;
 
     //! Give local order of accuracy of temperature part
     int method_order_of_accuracy() override = 0;
 
     //! Return linear error coefficient of temperatures
-    double MethodLinErrCoeff() override = 0;
+    double method_lin_err_coeff() override = 0;
 
     //@}
 
@@ -303,10 +303,10 @@ namespace THR
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext() override = 0;
+    Teuchos::RCP<Epetra_Vector> fext() override = 0;
 
     //! Return external force \f$F_{ext,n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> FextNew() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> fext_new() = 0;
 
     //! Return reaction forces
     //!
@@ -317,22 +317,22 @@ namespace THR
     //! component is stored in global Cartesian components.
     //! The reaction force resultant is not affected by
     //! this operation.
-    Teuchos::RCP<Epetra_Vector> Freact() override { return freact_; }
+    Teuchos::RCP<Epetra_Vector> freact() override { return freact_; }
 
     //! Read and set external forces from file
-    void ReadRestartForce() override = 0;
+    void read_restart_force() override = 0;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override = 0;
+    void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override = 0;
 
     //! Return residual temperatures \f$\Delta T_{n+1}^{<k>}\f$
-    Teuchos::RCP<const Epetra_Vector> TempRes() const { return tempi_; }
+    Teuchos::RCP<const Epetra_Vector> temp_res() const { return tempi_; }
 
     //! initial guess of Newton's method
     Teuchos::RCP<const Epetra_Vector> initial_guess() override { return tempi_; }
 
     //! Set residual temperatures \f$\Delta T_{n+1}^{<k>}\f$
-    void SetTempResidual(
+    void set_temp_residual(
         const Teuchos::RCP<const Epetra_Vector> tempi  //!< input residual temperatures
     )
     {
@@ -340,10 +340,10 @@ namespace THR
     }
 
     //! Return effective residual force \f$R_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> ForceRes() const { return fres_; }
+    Teuchos::RCP<const Epetra_Vector> force_res() const { return fres_; }
 
     //! right-hand side alias the dynamic force residual
-    Teuchos::RCP<const Epetra_Vector> RHS() override { return fres_; }
+    Teuchos::RCP<const Epetra_Vector> rhs() override { return fres_; }
 
     //@}
 

@@ -42,7 +42,7 @@ void Solid::TimIntPrestress::setup()
   Solid::TimIntStatics::setup();
   // Check for compatible prestressing algorithms
   const auto pre_stress = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
-      Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
+      Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
   switch (pre_stress)
   {
     case Inpar::Solid::PreStress::mulf:
@@ -57,32 +57,32 @@ void Solid::TimIntPrestress::setup()
 /*----------------------------------------------------------------------*/
 /* update after time step after output on element level*/
 // update anything that needs to be updated at the element level
-void Solid::TimIntPrestress::UpdateStepElement()
+void Solid::TimIntPrestress::update_step_element()
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
 
   const auto pre_stress = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
-      Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
+      Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
   const double pstime =
-      Global::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
+      Global::Problem::instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
   // MULF, Material iterative prestressing
   if (pre_stress == Inpar::Solid::PreStress::mulf)
   {
     if ((*time_)[0] <= pstime + 1e-15)
     {
-      if (!discret_->Comm().MyPID())
+      if (!discret_->get_comm().MyPID())
         Core::IO::cout << "====== Entering MULF update" << Core::IO::endl;
       // action for elements
       p.set("action", "calc_struct_prestress_update");
-      discret_->ClearState();
+      discret_->clear_state();
       discret_->set_state(0, "residual displacement", zeros_);
     }
     else
     {
       // action for elements
       p.set("action", "calc_struct_update_istep");
-      discret_->ClearState();
+      discret_->clear_state();
     }
   }
 
@@ -99,14 +99,14 @@ void Solid::TimIntPrestress::UpdateStepElement()
   {
     // prestressing for spring in spring dashpot - corresponds to storage of deformation gradient
     // in material law (mhv 12/2015) pass current displacement state to spring at end of MULF step
-    if (springman_->HaveSpringDashpot())
+    if (springman_->have_spring_dashpot())
     {
-      springman_->ResetPrestress(disn_);
+      springman_->reset_prestress(disn_);
     }
     // only for MULF prestressing mode:
-    dis_->UpdateSteps(*zeros_);
-    vel_->UpdateSteps(*zeros_);  // this simply copies zero vectors
-    acc_->UpdateSteps(*zeros_);  // this simply copies zero vectors
+    dis_->update_steps(*zeros_);
+    vel_->update_steps(*zeros_);  // this simply copies zero vectors
+    acc_->update_steps(*zeros_);  // this simply copies zero vectors
   }
 }
 /*----------------------------------------------------------------------*/

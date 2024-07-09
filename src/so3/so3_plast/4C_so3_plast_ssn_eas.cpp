@@ -59,7 +59,7 @@ void Discret::ELEMENTS::So3Plast<distype>::eas_init()
     Kba_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseMatrix>(
         numgpt_, Core::LinAlg::SerialDenseMatrix(5, neas_, true)));
 
-    Core::ProblemType probtype = Global::Problem::Instance()->GetProblemType();
+    Core::ProblemType probtype = Global::Problem::instance()->get_problem_type();
     if (probtype == Core::ProblemType::tsi)
     {
       KaT_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, nen_, true));
@@ -132,8 +132,8 @@ void Discret::ELEMENTS::So3Plast<distype>::eas_setup()
 
   // now evaluate T0^{-T} with solver
   Core::LinAlg::FixedSizeSerialDenseSolver<numstr_, numstr_, 1> solve_for_inverseT0;
-  solve_for_inverseT0.SetMatrix(set_t0inv_t());
-  int err2 = solve_for_inverseT0.Factor();
+  solve_for_inverseT0.set_matrix(set_t0inv_t());
+  int err2 = solve_for_inverseT0.factor();
   int err = solve_for_inverseT0.invert();
   if ((err != 0) || (err2 != 0)) FOUR_C_THROW("Inversion of T0inv (Jacobian0) failed");
 

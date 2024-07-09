@@ -79,13 +79,13 @@ int Discret::ELEMENTS::Bele3::evaluate(Teuchos::ParameterList& params,
     case calc_struct_constrvol:
     {
       // create communicator
-      const Epetra_Comm& Comm = discretization.Comm();
+      const Epetra_Comm& Comm = discretization.get_comm();
 
       // We are not interested in volume of ghosted elements
-      if (Comm.MyPID() == Owner())
+      if (Comm.MyPID() == owner())
       {
         // element geometry update
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
         if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
         std::vector<double> mydisp(lm.size());
         Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -101,7 +101,7 @@ int Discret::ELEMENTS::Bele3::evaluate(Teuchos::ParameterList& params,
     case calc_struct_volconstrstiff:
     {
       // element geometry update
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -119,7 +119,7 @@ int Discret::ELEMENTS::Bele3::evaluate(Teuchos::ParameterList& params,
       // get projection method
       Teuchos::RCP<Core::Conditions::Condition> condition =
           params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
-      const std::string* projtype = condition->parameters().GetIf<std::string>("projection");
+      const std::string* projtype = condition->parameters().get_if<std::string>("projection");
 
       if (projtype != nullptr)
       {
@@ -218,8 +218,8 @@ double Discret::ELEMENTS::Bele3::compute_constr_vols(
       const double e1 = intpoints.qxg[gpid][1];
 
       // get shape functions and derivatives of shape functions in the plane of the element
-      Core::FE::shape_function_2D(funct, e0, e1, Shape());
-      Core::FE::shape_function_2D_deriv1(deriv, e0, e1, Shape());
+      Core::FE::shape_function_2D(funct, e0, e1, shape());
+      Core::FE::shape_function_2D_deriv1(deriv, e0, e1, shape());
 
       double detA;
       // compute "metric tensor" deriv*ab, which is a 2x3 matrix with zero indc'th column
@@ -291,8 +291,8 @@ void Discret::ELEMENTS::Bele3::compute_vol_deriv(const Core::LinAlg::SerialDense
       const double e1 = intpoints.qxg[gpid][1];
 
       // get shape functions and derivatives of shape functions in the plane of the element
-      Core::FE::shape_function_2D(funct, e0, e1, Shape());
-      Core::FE::shape_function_2D_deriv1(deriv, e0, e1, Shape());
+      Core::FE::shape_function_2D(funct, e0, e1, shape());
+      Core::FE::shape_function_2D_deriv1(deriv, e0, e1, shape());
 
       // evaluate Jacobi determinant, for projected dA*
       std::vector<double> normal(numdim);

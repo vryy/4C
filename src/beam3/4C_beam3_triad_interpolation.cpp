@@ -29,7 +29,7 @@ LargeRotations::TriadInterpolation<T>::TriadInterpolation()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-Teuchos::RCP<LargeRotations::TriadInterpolation<T>> LargeRotations::TriadInterpolation<T>::Create(
+Teuchos::RCP<LargeRotations::TriadInterpolation<T>> LargeRotations::TriadInterpolation<T>::create(
     unsigned int numnodes)
 {
   // so far, the only implemented variant is the one based on local rotation vectors

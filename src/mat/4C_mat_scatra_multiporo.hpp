@@ -142,11 +142,11 @@ namespace Mat
   class ScatraMatMultiPoroFluidType : public ScatraMatType
   {
    public:
-    std::string Name() const override { return "ScatraMatMultiPoroFluidType"; }
+    std::string name() const override { return "ScatraMatMultiPoroFluidType"; }
 
-    static ScatraMatMultiPoroFluidType& Instance() { return instance_; };
+    static ScatraMatMultiPoroFluidType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatMultiPoroFluidType instance_;
@@ -155,11 +155,11 @@ namespace Mat
   class ScatraMatMultiPoroVolFracType : public ScatraMatType
   {
    public:
-    std::string Name() const override { return "ScatraMatMultiPoroVolFracType"; }
+    std::string name() const override { return "ScatraMatMultiPoroVolFracType"; }
 
-    static ScatraMatMultiPoroVolFracType& Instance() { return instance_; };
+    static ScatraMatMultiPoroVolFracType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatMultiPoroVolFracType instance_;
@@ -168,11 +168,11 @@ namespace Mat
   class ScatraMatMultiPoroSolidType : public ScatraMatType
   {
    public:
-    std::string Name() const override { return "ScatraMatMultiPoroSolidType"; }
+    std::string name() const override { return "ScatraMatMultiPoroSolidType"; }
 
-    static ScatraMatMultiPoroSolidType& Instance() { return instance_; };
+    static ScatraMatMultiPoroSolidType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatMultiPoroSolidType instance_;
@@ -180,11 +180,11 @@ namespace Mat
   class ScatraMatMultiPoroTemperatureType : public ScatraMatType
   {
    public:
-    std::string Name() const override { return "ScatraMatMultiPoroTemperatureType"; }
+    std::string name() const override { return "ScatraMatMultiPoroTemperatureType"; }
 
-    static ScatraMatMultiPoroTemperatureType& Instance() { return instance_; };
+    static ScatraMatMultiPoroTemperatureType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatMultiPoroTemperatureType instance_;
@@ -208,9 +208,9 @@ namespace Mat
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ScatraMatMultiPoroFluidType::Instance().UniqueParObjectId();
+      return ScatraMatMultiPoroFluidType::instance().unique_par_object_id();
     }
 
     /*!
@@ -218,7 +218,7 @@ namespace Mat
 
      Resizes the vector data and stores all information of a class in it.
      The first information to be stored in data has to be the
-     unique parobject id delivered by UniqueParObjectId() which will then
+     unique parobject id delivered by unique_par_object_id() which will then
      identify the exact class on the receiving processor.
 
      \param data (in/out): char vector to store class information
@@ -232,7 +232,7 @@ namespace Mat
      exact copy of an instance of a class on a different processor.
      The first entry in data has to be an integer which is the unique
      parobject id defined at the top of this file and delivered by
-     UniqueParObjectId().
+     unique_par_object_id().
 
      \param data (in) : vector storing all data to be unpacked into this
      instance.
@@ -242,28 +242,28 @@ namespace Mat
     //@}
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_scatra_multiporo_fluid;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new ScatraMatMultiPoroFluid(*this));
     }
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     /// return phase ID
-    virtual int PhaseID() const { return params_->phaseID_; }
+    virtual int phase_id() const { return params_->phaseID_; }
 
     /// return delta
-    virtual double Delta() const { return params_->delta_; }
+    virtual double delta() const { return params_->delta_; }
 
     /// return minimum saturation
-    virtual double MinSat() const { return params_->min_sat_; }
+    virtual double min_sat() const { return params_->min_sat_; }
 
     /// return ID of relative mobility function
     [[nodiscard]] int relative_mobility_funct_id() const
@@ -295,9 +295,9 @@ namespace Mat
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ScatraMatMultiPoroVolFracType::Instance().UniqueParObjectId();
+      return ScatraMatMultiPoroVolFracType::instance().unique_par_object_id();
     }
 
     /*!
@@ -305,7 +305,7 @@ namespace Mat
 
      Resizes the vector data and stores all information of a class in it.
      The first information to be stored in data has to be the
-     unique parobject id delivered by UniqueParObjectId() which will then
+     unique parobject id delivered by unique_par_object_id() which will then
      identify the exact class on the receiving processor.
 
      \param data (in/out): char vector to store class information
@@ -319,7 +319,7 @@ namespace Mat
      exact copy of an instance of a class on a different processor.
      The first entry in data has to be an integer which is the unique
      parobject id defined at the top of this file and delivered by
-     UniqueParObjectId().
+     unique_par_object_id().
 
      \param data (in) : vector storing all data to be unpacked into this
      instance.
@@ -329,25 +329,25 @@ namespace Mat
     //@}
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_scatra_multiporo_volfrac;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new ScatraMatMultiPoroVolFrac(*this));
     }
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     /// return phase ID
-    virtual int PhaseID() const { return params_->phaseID_; }
+    virtual int phase_id() const { return params_->phaseID_; }
 
     /// return delta
-    virtual double Delta() const { return params_->delta_; }
+    virtual double delta() const { return params_->delta_; }
 
     /// return ID of relative mobility function
     [[nodiscard]] int relative_mobility_funct_id() const
@@ -379,9 +379,9 @@ namespace Mat
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ScatraMatMultiPoroSolidType::Instance().UniqueParObjectId();
+      return ScatraMatMultiPoroSolidType::instance().unique_par_object_id();
     }
 
     /*!
@@ -389,7 +389,7 @@ namespace Mat
 
      Resizes the vector data and stores all information of a class in it.
      The first information to be stored in data has to be the
-     unique parobject id delivered by UniqueParObjectId() which will then
+     unique parobject id delivered by unique_par_object_id() which will then
      identify the exact class on the receiving processor.
 
      \param data (in/out): char vector to store class information
@@ -403,7 +403,7 @@ namespace Mat
      exact copy of an instance of a class on a different processor.
      The first entry in data has to be an integer which is the unique
      parobject id defined at the top of this file and delivered by
-     UniqueParObjectId().
+     unique_par_object_id().
 
      \param data (in) : vector storing all data to be unpacked into this
      instance.
@@ -413,22 +413,22 @@ namespace Mat
     //@}
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_scatra_multiporo_solid;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new ScatraMatMultiPoroSolid(*this));
     }
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     /// return delta
-    virtual double Delta() const { return params_->delta_; }
+    virtual double delta() const { return params_->delta_; }
 
    private:
     /// my material parameters
@@ -454,9 +454,9 @@ namespace Mat
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ScatraMatMultiPoroTemperatureType::Instance().UniqueParObjectId();
+      return ScatraMatMultiPoroTemperatureType::instance().unique_par_object_id();
     }
 
     /*!
@@ -464,7 +464,7 @@ namespace Mat
 
      Resizes the vector data and stores all information of a class in it.
      The first information to be stored in data has to be the
-     unique parobject id delivered by UniqueParObjectId() which will then
+     unique parobject id delivered by unique_par_object_id() which will then
      identify the exact class on the receiving processor.
 
      \param data (in/out): char vector to store class information
@@ -478,7 +478,7 @@ namespace Mat
      exact copy of an instance of a class on a different processor.
      The first entry in data has to be an integer which is the unique
      parobject id defined at the top of this file and delivered by
-     UniqueParObjectId().
+     unique_par_object_id().
 
      \param data (in) : vector storing all data to be unpacked into this
      instance.
@@ -488,31 +488,31 @@ namespace Mat
     //@}
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_scatra_multiporo_temperature;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new ScatraMatMultiPoroTemperature(*this));
     }
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
-    std::vector<double> CP_Fluid() const { return params_->cp_fluid_; }
-    double CP_Fluid(int phase) const { return params_->cp_fluid_[phase]; }
-    std::vector<double> CP_Volfrac() const { return params_->cp_volfrac_; }
-    double CP_Volfrac(int phase) const { return params_->cp_volfrac_[phase]; }
-    double CP_Solid() const { return params_->cp_solid_; }
+    std::vector<double> cp_fluid() const { return params_->cp_fluid_; }
+    double cp_fluid(int phase) const { return params_->cp_fluid_[phase]; }
+    std::vector<double> cp_volfrac() const { return params_->cp_volfrac_; }
+    double cp_volfrac(int phase) const { return params_->cp_volfrac_[phase]; }
+    double cp_solid() const { return params_->cp_solid_; }
 
-    std::vector<double> KAPPA_Fluid() const { return params_->kappa_fluid_; }
-    double KAPPA_Fluid(int phase) const { return params_->kappa_fluid_[phase]; };
-    std::vector<double> KAPPA_Volfrac() const { return params_->kappa_volfrac_; }
-    double KAPPA_Volfrac(int phase) const { return params_->kappa_volfrac_[phase]; }
-    double KAPPA_Solid() const { return params_->kappa_solid_; }
+    std::vector<double> kappa_fluid() const { return params_->kappa_fluid_; }
+    double kappa_fluid(int phase) const { return params_->kappa_fluid_[phase]; };
+    std::vector<double> kappa_volfrac() const { return params_->kappa_volfrac_; }
+    double kappa_volfrac(int phase) const { return params_->kappa_volfrac_[phase]; }
+    double kappa_solid() const { return params_->kappa_solid_; }
 
    private:
     /// my material parameters

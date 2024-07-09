@@ -35,10 +35,10 @@ namespace Mat
       ScatraMicroMacroCoupling(const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! return name of micro-scale input file
-      std::string MicroInputFileName() const { return microfile_; }
+      std::string micro_input_file_name() const { return microfile_; }
 
       //! return number of micro-scale discretization
-      int MicroDisNum() const { return microdisnum_; };
+      int micro_dis_num() const { return microdisnum_; };
 
       //! return specific micro-scale surface area A_s
       double specific_micro_scale_surface_area() const { return A_s_; }
@@ -133,10 +133,10 @@ namespace Mat
     void read_restart(const int gp_id) const;
 
     //! return name of micro-scale input file
-    std::string MicroInputFileName() const { return params()->MicroInputFileName(); }
+    std::string micro_input_file_name() const { return params()->micro_input_file_name(); }
 
     //! return number of micro-scale discretization
-    int MicroDisNum() const { return params()->MicroDisNum(); }
+    int micro_dis_num() const { return params()->micro_dis_num(); }
 
     //! return specific micro-scale surface area A_s
     //!
@@ -149,7 +149,7 @@ namespace Mat
 
     //! set time stepping data: time step size @p dt, current time @p time, and number of time step
     //! @p step on current Gauss point @gp_id
-    void SetTimeStepping(int gp_id, double dt, double time, int step);
+    void set_time_stepping(int gp_id, double dt, double time, int step);
 
    protected:
     //! construct empty material

@@ -40,7 +40,7 @@ int Core::DOFSets::TransparentDofSet::assign_degrees_of_freedom(
   }
 
   // tell all proxies (again!)
-  NotifyAssigned();
+  notify_assigned();
 
   return count;
 }
@@ -51,25 +51,25 @@ void Core::DOFSets::TransparentDofSet::transfer_degrees_of_freedom(
     const int start)
 {
   if (!sourcedis.dof_row_map()->UniqueGIDs()) FOUR_C_THROW("dof_row_map is not unique");
-  if (!sourcedis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("NodeRowMap is not unique");
-  if (!sourcedis.ElementRowMap()->UniqueGIDs()) FOUR_C_THROW("ElementRowMap is not unique");
+  if (!sourcedis.node_row_map()->UniqueGIDs()) FOUR_C_THROW("NodeRowMap is not unique");
+  if (!sourcedis.element_row_map()->UniqueGIDs()) FOUR_C_THROW("ElementRowMap is not unique");
 
   if (!newdis.dof_row_map()->UniqueGIDs()) FOUR_C_THROW("dof_row_map is not unique");
-  if (!newdis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("NodeRowMap is not unique");
-  if (!newdis.ElementRowMap()->UniqueGIDs()) FOUR_C_THROW("ElementRowMap is not unique");
+  if (!newdis.node_row_map()->UniqueGIDs()) FOUR_C_THROW("NodeRowMap is not unique");
+  if (!newdis.element_row_map()->UniqueGIDs()) FOUR_C_THROW("ElementRowMap is not unique");
 
   // build dofrowmap
   std::set<int> dofrowset;
   std::vector<int> dofrowvec;
   dofrowvec.reserve(dofrowmap_->NumMyElements());
-  for (int inode = 0; inode != newdis.NumMyRowNodes(); ++inode)
+  for (int inode = 0; inode != newdis.num_my_row_nodes(); ++inode)
   {
-    const Core::Nodes::Node* newnode = newdis.lRowNode(inode);
-    const Core::Nodes::Node* sourcenode = sourcedis.gNode(newnode->Id());
+    const Core::Nodes::Node* newnode = newdis.l_row_node(inode);
+    const Core::Nodes::Node* sourcenode = sourcedis.g_node(newnode->id());
 
-    const std::vector<int> dofs = sourcedis.Dof(0, sourcenode);
+    const std::vector<int> dofs = sourcedis.dof(0, sourcenode);
 
-    const int newlid = newnode->LID();
+    const int newlid = newnode->lid();
     const int numdofs = (*numdfcolnodes_)[newlid];
     if (numdofs > 0)
     {
@@ -87,24 +87,24 @@ void Core::DOFSets::TransparentDofSet::transfer_degrees_of_freedom(
   }
 
   dofrowmap_ =
-      Teuchos::rcp(new Epetra_Map(-1, dofrowvec.size(), dofrowvec.data(), 0, newdis.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, dofrowvec.size(), dofrowvec.data(), 0, newdis.get_comm()));
 
   // build dofcolvec
   std::set<int> dofcolset;
   std::vector<int> dofcolvec;
   dofcolvec.reserve(dofcolmap_->NumMyElements());
-  for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
+  for (int inode = 0; inode != newdis.num_my_col_nodes(); ++inode)
   {
-    const Core::Nodes::Node* newnode = newdis.lColNode(inode);
-    const Core::Nodes::Node* sourcenode = sourcedis.gNode(newnode->Id());
+    const Core::Nodes::Node* newnode = newdis.l_col_node(inode);
+    const Core::Nodes::Node* sourcenode = sourcedis.g_node(newnode->id());
 
-    const int lid = sourcenode->LID();
+    const int lid = sourcenode->lid();
     if (lid == -1)
     {
-      FOUR_C_THROW("required node %d not on proc", newnode->Id());
+      FOUR_C_THROW("required node %d not on proc", newnode->id());
     }
-    const std::vector<int> dofs = sourcedis.Dof(0, sourcenode);
-    const int newlid = newnode->LID();
+    const std::vector<int> dofs = sourcedis.dof(0, sourcenode);
+    const int newlid = newnode->lid();
     // const int newfirstidx = (*idxcolnodes_)[newlid];
     const int numdofs = (*numdfcolnodes_)[newlid];
     if (numdofs > 0)
@@ -126,7 +126,7 @@ void Core::DOFSets::TransparentDofSet::transfer_degrees_of_freedom(
   }
 
   dofcolmap_ =
-      Teuchos::rcp(new Epetra_Map(-1, dofcolvec.size(), dofcolvec.data(), 0, newdis.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, dofcolvec.size(), dofcolvec.data(), 0, newdis.get_comm()));
 }
 
 /// Assign dof numbers for new discretization using dof numbering from source discretization.
@@ -135,12 +135,12 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
     const int start)
 {
   if (!sourcedis.dof_row_map()->UniqueGIDs()) FOUR_C_THROW("dof_row_map is not unique");
-  if (!sourcedis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("NodeRowMap is not unique");
-  if (!sourcedis.ElementRowMap()->UniqueGIDs()) FOUR_C_THROW("ElementRowMap is not unique");
+  if (!sourcedis.node_row_map()->UniqueGIDs()) FOUR_C_THROW("NodeRowMap is not unique");
+  if (!sourcedis.element_row_map()->UniqueGIDs()) FOUR_C_THROW("ElementRowMap is not unique");
 
   if (!newdis.dof_row_map()->UniqueGIDs()) FOUR_C_THROW("dof_row_map is not unique");
-  if (!newdis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("NodeRowMap is not unique");
-  if (!newdis.ElementRowMap()->UniqueGIDs()) FOUR_C_THROW("ElementRowMap is not unique");
+  if (!newdis.node_row_map()->UniqueGIDs()) FOUR_C_THROW("NodeRowMap is not unique");
+  if (!newdis.element_row_map()->UniqueGIDs()) FOUR_C_THROW("ElementRowMap is not unique");
 
   // list all my rownode ids
 
@@ -156,17 +156,17 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
   //
   std::map<int, std::vector<int>> gid_to_dofs;
 
-  for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
+  for (int inode = 0; inode != newdis.num_my_col_nodes(); ++inode)
   {
-    const Core::Nodes::Node* newnode = newdis.lColNode(inode);
-    int gid = newnode->Id();
+    const Core::Nodes::Node* newnode = newdis.l_col_node(inode);
+    int gid = newnode->id();
     std::vector<int> emptyvec;
     gid_to_dofs.insert(std::pair<int, std::vector<int>>(gid, emptyvec));
   }
 
   {
     // create an exporter for point to point comunication
-    Core::Communication::Exporter exporter(sourcedis.Comm());
+    Core::Communication::Exporter exporter(sourcedis.get_comm());
 
     // necessary variables
     MPI_Request request;
@@ -176,8 +176,8 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
     std::vector<char> rblock;
 
     // get number of processors and the current processors id
-    int numproc = sourcedis.Comm().NumProc();
-    int myrank = sourcedis.Comm().MyPID();
+    int numproc = sourcedis.get_comm().NumProc();
+    int myrank = sourcedis.get_comm().MyPID();
 
     //----------------------------------------------------------------------
     // communication is done in a round robin loop
@@ -202,7 +202,7 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
 
         // Pack info into block to send
         Core::Communication::PackBuffer data;
-        PackLocalSourceDofs(gid_to_dofs, data);
+        pack_local_source_dofs(gid_to_dofs, data);
         gid_to_dofs.clear();
         swap(sblock, data());
 
@@ -215,11 +215,11 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
   std::vector<Core::Conditions::Condition*> mypbcs;
 
   // get periodic surface boundary conditions
-  sourcedis_->GetCondition("SurfacePeriodic", mypbcs);
+  sourcedis_->get_condition("SurfacePeriodic", mypbcs);
 
   if (mypbcs.empty())
   {
-    sourcedis_->GetCondition("LinePeriodic", mypbcs);
+    sourcedis_->get_condition("LinePeriodic", mypbcs);
   }
 
   for (unsigned numcond = 0; numcond < mypbcs.size(); ++numcond)
@@ -233,7 +233,7 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
     if (!(mymasterslavetoggle == "Master"))
     {
       const std::vector<int>* pbcids;
-      pbcids = (*thiscond).GetNodes();
+      pbcids = (*thiscond).get_nodes();
 
       for (std::vector<int>::const_iterator iter = pbcids->begin(); iter != pbcids->end(); ++iter)
       {
@@ -246,19 +246,19 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
   std::set<int> dofrowset;
   std::vector<int> dofrowvec;
   dofrowvec.reserve(dofrowmap_->NumMyElements());
-  for (int inode = 0; inode != newdis.NumMyRowNodes(); ++inode)
+  for (int inode = 0; inode != newdis.num_my_row_nodes(); ++inode)
   {
-    const Core::Nodes::Node* newnode = newdis.lRowNode(inode);
+    const Core::Nodes::Node* newnode = newdis.l_row_node(inode);
 
-    const std::vector<int> dofs = gid_to_dofs[newnode->Id()];
+    const std::vector<int> dofs = gid_to_dofs[newnode->id()];
 
-    const int newlid = newnode->LID();
+    const int newlid = newnode->lid();
     const int numdofs = (*numdfcolnodes_)[newlid];
 
     if (numdofs != (int)dofs.size())
     {
-      printf("This is node %d  (%12.5e,%12.5e,%12.5e)\n", newnode->Id(), newnode->X()[0],
-          newnode->X()[1], newnode->X()[2]);
+      printf("This is node %d  (%12.5e,%12.5e,%12.5e)\n", newnode->id(), newnode->x()[0],
+          newnode->x()[1], newnode->x()[2]);
 
       FOUR_C_THROW("spooky, isn't it? dofs to overwrite %d != %d dofs.size() to set \n", numdofs,
           dofs.size());
@@ -269,7 +269,7 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
       (*idxcolnodes_)[newlid] = dofs[0];
 
       // slave-dofs must not enter the dofrowset (if master&slave are on different procs)
-      std::set<int>::iterator curr = slaveset.find(newnode->Id());
+      std::set<int>::iterator curr = slaveset.find(newnode->id());
 
       if (curr == slaveset.end())
       {
@@ -287,26 +287,26 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
   }
 
   dofrowmap_ =
-      Teuchos::rcp(new Epetra_Map(-1, dofrowvec.size(), dofrowvec.data(), 0, newdis.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, dofrowvec.size(), dofrowvec.data(), 0, newdis.get_comm()));
 
   // build dofcolvec
   std::set<int> dofcolset;
   std::vector<int> dofcolvec;
   dofcolvec.reserve(dofcolmap_->NumMyElements());
-  for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
+  for (int inode = 0; inode != newdis.num_my_col_nodes(); ++inode)
   {
-    const Core::Nodes::Node* newnode = newdis.lColNode(inode);
+    const Core::Nodes::Node* newnode = newdis.l_col_node(inode);
 
-    const std::vector<int> dofs = gid_to_dofs[newnode->Id()];
+    const std::vector<int> dofs = gid_to_dofs[newnode->id()];
 
-    const int newlid = newnode->LID();
+    const int newlid = newnode->lid();
     // const int newfirstidx = (*idxcolnodes_)[newlid];
     const int numdofs = (*numdfcolnodes_)[newlid];
     if (numdofs > 0)
     {
       (*idxcolnodes_)[newlid] = dofs[0];
       if (numdofs != (int)dofs.size())
-        FOUR_C_THROW("numdofs %d!=%d for node %d", numdofs, dofs.size(), newnode->Id());
+        FOUR_C_THROW("numdofs %d!=%d for node %d", numdofs, dofs.size(), newnode->id());
 
       for (int idof = 0; idof < numdofs; ++idof)
       {
@@ -321,7 +321,7 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
   }
 
   dofcolmap_ =
-      Teuchos::rcp(new Epetra_Map(-1, dofcolvec.size(), dofcolvec.data(), 0, newdis.Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, dofcolvec.size(), dofcolvec.data(), 0, newdis.get_comm()));
 
 
   return;
@@ -343,15 +343,15 @@ void Core::DOFSets::TransparentDofSet::set_source_dofs_available_on_this_proc(
   for (std::map<int, std::vector<int>>::iterator curr = gid_to_dofs.begin();
        curr != gid_to_dofs.end(); ++curr)
   {
-    const int lid = sourcedis_->NodeRowMap()->LID(curr->first);
+    const int lid = sourcedis_->node_row_map()->LID(curr->first);
 
     if (lid > -1)
     {
       curr->second.clear();
 
-      const Core::Nodes::Node* sourcenode = sourcedis_->gNode(curr->first);
+      const Core::Nodes::Node* sourcenode = sourcedis_->g_node(curr->first);
 
-      const std::vector<int> dofs = sourcedis_->Dof(0, sourcenode);
+      const std::vector<int> dofs = sourcedis_->dof(0, sourcenode);
 
       for (std::vector<int>::const_iterator iter = dofs.begin(); iter != dofs.end(); ++iter)
       {
@@ -360,7 +360,7 @@ void Core::DOFSets::TransparentDofSet::set_source_dofs_available_on_this_proc(
     }
     else
     {
-      int numproc = sourcedis_->Comm().NumProc();
+      int numproc = sourcedis_->get_comm().NumProc();
       if (numproc == 1)
       {
         FOUR_C_THROW(
@@ -381,7 +381,7 @@ void Core::DOFSets::TransparentDofSet::set_source_dofs_available_on_this_proc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Core::DOFSets::TransparentDofSet::PackLocalSourceDofs(
+void Core::DOFSets::TransparentDofSet::pack_local_source_dofs(
     std::map<int, std::vector<int>>& gid_to_dofs, Core::Communication::PackBuffer& sblock)
 {
   int size = gid_to_dofs.size();
@@ -479,17 +479,17 @@ void Core::DOFSets::TransparentDofSet::receive_block(int numproc, int myrank,
   }
 
   // receive from predecessor
-  exporter.ReceiveAny(frompid, tag, rblock, length);
+  exporter.receive_any(frompid, tag, rblock, length);
 
   if (tag != (myrank + numproc - 1) % numproc)
   {
     FOUR_C_THROW("received wrong message (ReceiveAny)");
   }
 
-  exporter.Wait(request);
+  exporter.wait(request);
 
   // for safety
-  exporter.Comm().Barrier();
+  exporter.get_comm().Barrier();
 
   return;
 }  // receive_block
@@ -516,7 +516,7 @@ void Core::DOFSets::TransparentDofSet::send_block(int numproc, int myrank,
 
 
   // for safety
-  exporter.Comm().Barrier();
+  exporter.get_comm().Barrier();
 
   return;
 }  // send_block

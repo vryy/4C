@@ -50,8 +50,8 @@ void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 5) evaluate_neumann");
 
 
-  if (!discret->Filled()) FOUR_C_THROW("fill_complete() was not called");
-  if (!discret->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
+  if (!discret->filled()) FOUR_C_THROW("fill_complete() was not called");
+  if (!discret->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   bool assemblemat = (systemmatrix != nullptr);
 
@@ -72,7 +72,7 @@ void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
 
   // get standard Point Neumann conditions
   condition_vec.clear();
-  discret->GetCondition("PointNeumann", condition_vec);
+  discret->get_condition("PointNeumann", condition_vec);
   // copy conditions to a condition multimap
   for (size_t i = 0; i < condition_vec.size(); i++)
   {
@@ -82,7 +82,7 @@ void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
 
   // get standard Surface Neumann conditions
   condition_vec.clear();
-  discret->GetCondition("LineNeumann", condition_vec);
+  discret->get_condition("LineNeumann", condition_vec);
   for (size_t i = 0; i < condition_vec.size(); i++)
   {
     condition.insert(std::pair<std::string, Core::Conditions::Condition*>(
@@ -91,7 +91,7 @@ void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
 
   // get standard Surface Neumann conditions
   condition_vec.clear();
-  discret->GetCondition("SurfaceNeumann", condition_vec);
+  discret->get_condition("SurfaceNeumann", condition_vec);
   for (size_t i = 0; i < condition_vec.size(); i++)
   {
     condition.insert(std::pair<std::string, Core::Conditions::Condition*>(
@@ -135,30 +135,30 @@ void XFEM::EvaluateNeumannStandard(
     if (assemblemat && !systemvector.Comm().MyPID())
       std::cout << "WARNING: No linearization of PointNeumann conditions" << std::endl;
     Core::Conditions::Condition& cond = *(fool->second);
-    const std::vector<int>* nodeids = cond.GetNodes();
+    const std::vector<int>* nodeids = cond.get_nodes();
     if (!nodeids) FOUR_C_THROW("PointNeumann condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
-    const auto* funct = cond.parameters().GetIf<std::vector<int>>("funct");
-    const auto* onoff = cond.parameters().GetIf<std::vector<int>>("onoff");
-    const auto* val = cond.parameters().GetIf<std::vector<double>>("val");
+    const auto* funct = cond.parameters().get_if<std::vector<int>>("funct");
+    const auto* onoff = cond.parameters().get_if<std::vector<int>>("onoff");
+    const auto* val = cond.parameters().get_if<std::vector<double>>("val");
     // Neumann BCs for some historic reason only have one curve
     int functnum = -1;
     if (funct) functnum = (*funct)[0];
     double functfac = 1.0;
     if (functnum >= 0)
     {
-      functfac =
-          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(functnum).evaluate(
-              time);
+      functfac = Global::Problem::instance()
+                     ->function_by_id<Core::UTILS::FunctionOfTime>(functnum)
+                     .evaluate(time);
     }
     for (int i = 0; i < nnode; ++i)
     {
       // do only nodes in my row map
-      if (!discret->NodeRowMap()->MyGID((*nodeids)[i])) continue;
-      Core::Nodes::Node* actnode = discret->gNode((*nodeids)[i]);
+      if (!discret->node_row_map()->MyGID((*nodeids)[i])) continue;
+      Core::Nodes::Node* actnode = discret->g_node((*nodeids)[i]);
       if (!actnode) FOUR_C_THROW("Cannot find global node %d", (*nodeids)[i]);
       // call explicitly the main dofset, i.e. the first column
-      std::vector<int> dofs = discret->Dof(0, actnode);
+      std::vector<int> dofs = discret->dof(0, actnode);
       const unsigned numdf = dofs.size();
       for (unsigned j = 0; j < numdf; ++j)
       {
@@ -181,7 +181,7 @@ void XFEM::EvaluateNeumannStandard(
     if (fool->first == (std::string) "LineNeumann" || fool->first == (std::string) "SurfaceNeumann")
     {
       Core::Conditions::Condition& cond = *(fool->second);
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond.Geometry();
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond.geometry();
       std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
       Core::LinAlg::SerialDenseVector elevector;
       Core::LinAlg::SerialDenseMatrix elematrix;
@@ -191,7 +191,7 @@ void XFEM::EvaluateNeumannStandard(
         std::vector<int> lm;
         std::vector<int> lmowner;
         std::vector<int> lmstride;
-        curr->second->LocationVector(*discret, lm, lmowner, lmstride);
+        curr->second->location_vector(*discret, lm, lmowner, lmstride);
         elevector.size((int)lm.size());
         if (!assemblemat)
         {
@@ -207,7 +207,7 @@ void XFEM::EvaluateNeumannStandard(
             elematrix.putScalar(0.0);
           curr->second->evaluate_neumann(params, *discret, cond, lm, elevector, &elematrix);
           Core::LinAlg::Assemble(systemvector, elevector, lm, lmowner);
-          systemmatrix->Assemble(curr->second->Id(), lmstride, elematrix, lm, lmowner);
+          systemmatrix->assemble(curr->second->id(), lmstride, elematrix, lm, lmowner);
         }
       }
     }

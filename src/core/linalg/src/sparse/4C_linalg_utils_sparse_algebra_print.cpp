@@ -100,13 +100,13 @@ void Core::LinAlg::PrintMatrixInMatlabFormat(
 void Core::LinAlg::PrintBlockMatrixInMatlabFormat(
     const std::string& filename, const BlockSparseMatrixBase& blockmatrix)
 {
-  for (int row = 0; row < blockmatrix.Rows(); row++)
+  for (int row = 0; row < blockmatrix.rows(); row++)
   {
-    for (int col = 0; col < blockmatrix.Cols(); col++)
+    for (int col = 0; col < blockmatrix.cols(); col++)
     {
-      const auto& sparsematrix = blockmatrix.Matrix(row, col);
+      const auto& sparsematrix = blockmatrix.matrix(row, col);
       Core::LinAlg::PrintMatrixInMatlabFormat(
-          filename, *(sparsematrix.EpetraMatrix()), ((row == 0) && (col == 0)));
+          filename, *(sparsematrix.epetra_matrix()), ((row == 0) && (col == 0)));
     }
   }
 }

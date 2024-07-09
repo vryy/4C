@@ -26,11 +26,11 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
 {
   using namespace FourC;
 
-  Global::Problem* problem = Global::Problem::Instance();
-  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetCommunicators()->LocalComm();
-  int group = problem->GetCommunicators()->GroupId();
-  int ngroups = problem->GetCommunicators()->NumGroups();
-  Core::Communication::NestedParallelismType npType = problem->GetCommunicators()->NpType();
+  Global::Problem* problem = Global::Problem::instance();
+  Teuchos::RCP<Epetra_Comm> lcomm = problem->get_communicators()->local_comm();
+  int group = problem->get_communicators()->group_id();
+  int ngroups = problem->get_communicators()->num_groups();
+  Core::Communication::NestedParallelismType npType = problem->get_communicators()->np_type();
   int restartgroup = 0;
   int myrank = lcomm->MyPID();
 
@@ -149,7 +149,7 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
         if (r < 0) FOUR_C_THROW("Restart number must be a positive value");
       }
       // tell the global problem about the restart step given in the command line
-      problem->SetRestartStep(r);
+      problem->set_restart_step(r);
       restartIsGiven = true;
     }
     else if (restart.substr(0, 12) == "restartfrom=")

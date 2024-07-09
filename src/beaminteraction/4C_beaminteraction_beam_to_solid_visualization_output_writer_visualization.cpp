@@ -26,7 +26,7 @@ BEAMINTERACTION::BeamToSolidOutputWriterVisualization::BeamToSolidOutputWriterVi
     const std::string& writer_full_name, Core::IO::VisualizationParameters visualization_params,
     Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params)
     : Core::IO::VisualizationManager(std::move(visualization_params),
-          *(Global::Problem::Instance()->GetCommunicators()->GlobalComm()), writer_full_name),
+          *(Global::Problem::instance()->get_communicators()->global_comm()), writer_full_name),
       visualization_output_params_(visualization_output_params),
       writer_full_name_(writer_full_name),
       discret_(Teuchos::null),
@@ -48,27 +48,28 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
     FOUR_C_THROW(
         "When calling add_discretization_nodal_reference_position, the discretization can not be "
         "already set. Did you forget to reset the writer?");
-  if (visualization_data.GetPointCoordinates().size() != 0)
+  if (visualization_data.get_point_coordinates().size() != 0)
     FOUR_C_THROW("Point coordinate vector is not empty!");
-  for (const auto& point_data_name : visualization_data.GetPointDataNames())
-    if (visualization_data.GetPointDataSize(point_data_name) != 0)
+  for (const auto& point_data_name : visualization_data.get_point_data_names())
+    if (visualization_data.get_point_data_size(point_data_name) != 0)
       FOUR_C_THROW("Point data for '%s' is not empty!", point_data_name.c_str());
-  if (visualization_data.GetCellTypes().size() != 0)
+  if (visualization_data.get_cell_types().size() != 0)
     FOUR_C_THROW("Cell types vector is not empty!");
-  if (visualization_data.GetCellOffsets().size() != 0)
+  if (visualization_data.get_cell_offsets().size() != 0)
     FOUR_C_THROW("Cell offsets vector is not empty!");
-  for (const auto& cell_data_name : visualization_data.GetCellDataNames())
-    if (visualization_data.GetCellDataSize(cell_data_name) != 0)
+  for (const auto& cell_data_name : visualization_data.get_cell_data_names())
+    if (visualization_data.get_cell_data_size(cell_data_name) != 0)
       FOUR_C_THROW("Cell data for '%s' is not empty!", cell_data_name.c_str());
 
   // Set the discretization for this writer.
   discret_ = discret;
 
   // Setup variables for the position and map.
-  unsigned int num_my_nodes = discret_->NumMyRowNodes();
+  unsigned int num_my_nodes = discret_->num_my_row_nodes();
   std::vector<int> my_global_dof_ids;
   std::vector<int> node_global_dof_ids;
-  std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates(3 * num_my_nodes);
+  std::vector<double>& point_coordinates =
+      visualization_data.get_point_coordinates(3 * num_my_nodes);
 
   // Check that the position vector is empty.
   if (point_coordinates.size() != 0)
@@ -77,17 +78,17 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
   // Loop over the nodes on this rank.
   for (unsigned int i_node = 0; i_node < num_my_nodes; i_node++)
   {
-    const Core::Nodes::Node* current_node = discret_->lRowNode(i_node);
+    const Core::Nodes::Node* current_node = discret_->l_row_node(i_node);
     node_global_dof_ids.clear();
-    discret_->Dof(current_node, node_global_dof_ids);
+    discret_->dof(current_node, node_global_dof_ids);
     for (unsigned int dim = 0; dim < 3; ++dim)
     {
       my_global_dof_ids.push_back(node_global_dof_ids[dim]);
-      point_coordinates.push_back(current_node->X()[dim]);
+      point_coordinates.push_back(current_node->x()[dim]);
     }
   }
-  node_gid_map_ = Teuchos::rcp<Epetra_Map>(
-      new Epetra_Map(-1, my_global_dof_ids.size(), my_global_dof_ids.data(), 0, discret_->Comm()));
+  node_gid_map_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(
+      -1, my_global_dof_ids.size(), my_global_dof_ids.data(), 0, discret_->get_comm()));
 }
 
 /**
@@ -107,7 +108,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::add_discretization_n
   // Add the values form the vector to the writer data.
   const int num_my_gid = node_gid_map_->NumMyElements();
   std::vector<double>& data_vector =
-      get_visualization_data().GetPointData<double>(data_name, 3 * num_my_gid);
+      get_visualization_data().get_point_data<double>(data_name, 3 * num_my_gid);
   data_vector.reserve(3 * num_my_gid);
   for (int i_lid = 0; i_lid < num_my_gid; i_lid++) data_vector.push_back((*vector_extract)[i_lid]);
 }
@@ -115,11 +116,11 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::add_discretization_n
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::Write(
+void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::write(
     const unsigned int timestep_number, const double time)
 {
   // Finalize everything and write all required vtk files to filesystem.
-  WriteToDisk(time, timestep_number);
+  write_to_disk(time, timestep_number);
 
   // Reset the data.
   discret_ = Teuchos::null;

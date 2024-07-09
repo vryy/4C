@@ -40,7 +40,7 @@ namespace Adapter
     explicit FSIStructureWrapperImmersed(Teuchos::RCP<Structure> structure);
 
     /// return the combined interface (matching fsi + immersed)
-    Teuchos::RCP<Core::LinAlg::MapExtractor> CombinedInterface() { return combinedinterface_; };
+    Teuchos::RCP<Core::LinAlg::MapExtractor> combined_interface() { return combinedinterface_; };
 
     /// extract interface displacements at \f$t_{n+1}\f$ of immersed interface
     virtual Teuchos::RCP<Epetra_Vector> extract_immersed_interface_dispnp();
@@ -55,15 +55,15 @@ namespace Adapter
     Teuchos::RCP<Epetra_Vector> predict_full_interface_dispnp();
 
     /// Get mutable reference to DBC object
-    Solid::Dbc& GetDBC();
+    Solid::Dbc& get_dbc();
 
     /// expand dirichlet bc map
     /// old struct. time integration version
-    void AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd) override;
+    void add_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoadd) override;
 
     /// contract dirichlet bc map
     /// old struct. time integration version
-    void RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove) override;
+    void remove_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoremove) override;
 
     /// set the state of the nox group and the global state data container
     void set_state(const Teuchos::RCP<Epetra_Vector>& x) override;

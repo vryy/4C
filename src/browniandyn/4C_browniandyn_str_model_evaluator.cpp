@@ -61,7 +61,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::setup()
   // -------------------------------------------------------------------------
   // get pointer to biopolymer network data and init random number data
   // -------------------------------------------------------------------------
-  eval_browniandyn_ptr_ = eval_data().BrownianDynPtr();
+  eval_browniandyn_ptr_ = eval_data().brownian_dyn_ptr();
   brown_dyn_state_data_.browndyn_dt = eval_browniandyn_ptr_->time_step_const_rand_numb();
 
   // todo: maybe make input of time step obligatory
@@ -114,8 +114,8 @@ void Solid::MODELEVALUATOR::BrownianDyn::reset(const Epetra_Vector& x)
   check_init_setup();
 
   // todo: somewhat illegal considering of const correctness
-  tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box()->ApplyDirichlet(
-      global_state().get_time_n(), Global::Problem::Instance()->FunctionManager());
+  tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box()->apply_dirichlet(
+      global_state().get_time_n(), Global::Problem::instance()->function_manager());
 
   // -------------------------------------------------------------------------
   // reset brownian (stochastic and damping) forces
@@ -128,7 +128,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::reset(const Epetra_Vector& x)
   // -------------------------------------------------------------------------
   // zero out brownian stiffness contributions
   // -------------------------------------------------------------------------
-  stiff_brownian_ptr_->Zero();
+  stiff_brownian_ptr_->zero();
 
   return;
 }
@@ -178,7 +178,7 @@ bool Solid::MODELEVALUATOR::BrownianDyn::evaluate_stiff()
   // -------------------------------------------------------------------------
   apply_force_stiff_brownian();
 
-  if (not stiff_brownian_ptr_->Filled()) stiff_brownian_ptr_->Complete();
+  if (not stiff_brownian_ptr_->filled()) stiff_brownian_ptr_->complete();
 
   return ok;
 }
@@ -199,7 +199,7 @@ bool Solid::MODELEVALUATOR::BrownianDyn::evaluate_force_stiff()
   // -------------------------------------------------------------------------
   apply_force_stiff_brownian();
 
-  if (not stiff_brownian_ptr_->Filled()) stiff_brownian_ptr_->Complete();
+  if (not stiff_brownian_ptr_->filled()) stiff_brownian_ptr_->complete();
 
   return ok;
 }
@@ -237,9 +237,9 @@ bool Solid::MODELEVALUATOR::BrownianDyn::assemble_jacobian(
   check_init_setup();
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
-  jac_dd_ptr->Add(*stiff_brownian_ptr_, false, timefac_np, 1.0);
+  jac_dd_ptr->add(*stiff_brownian_ptr_, false, timefac_np, 1.0);
   // no need to keep it
-  stiff_brownian_ptr_->Zero();
+  stiff_brownian_ptr_->zero();
 
   return true;
 }
@@ -258,7 +258,7 @@ bool Solid::MODELEVALUATOR::BrownianDyn::apply_force_external()
   // -------------------------------------------------------------------------
   // set vector values needed by elements
   // -------------------------------------------------------------------------
-  discret().ClearState();
+  discret().clear_state();
   discret().set_state(0, "displacement", global_state().get_dis_n());
   // -------------------------------------------------------------------------
   // Evaluate brownian specific neumann conditions
@@ -293,7 +293,7 @@ bool Solid::MODELEVALUATOR::BrownianDyn::apply_force_brownian()
   // -------------------------------------------------------------------------
   // set vector values needed by elements
   // -------------------------------------------------------------------------
-  discret().ClearState();
+  discret().clear_state();
   discret().set_state(0, "displacement", global_state_ptr()->get_dis_np());
   discret().set_state(0, "velocity", global_state().get_vel_np());
   // -------------------------------------------------------------------------
@@ -321,7 +321,7 @@ bool Solid::MODELEVALUATOR::BrownianDyn::apply_force_stiff_external()
   // -------------------------------------------------------------------------
   // set vector values needed by elements
   // -------------------------------------------------------------------------
-  discret().ClearState();
+  discret().clear_state();
   discret().set_state(0, "displacement", global_state().get_dis_n());
   // -------------------------------------------------------------------------
   // Evaluate brownian specific neumann conditions
@@ -357,7 +357,7 @@ bool Solid::MODELEVALUATOR::BrownianDyn::apply_force_stiff_brownian()
   // -------------------------------------------------------------------------
   // set vector values needed by elements
   // -------------------------------------------------------------------------
-  discret().ClearState();
+  discret().clear_state();
   discret().set_state(0, "displacement", global_state_ptr()->get_dis_np());
   discret().set_state(0, "velocity", global_state().get_vel_np());
   // -------------------------------------------------------------------------
@@ -399,7 +399,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::evaluate_brownian(Teuchos::ParameterLis
   // Evaluate brownian on element level
   // -------------------------------------------------------------------------
   discret().evaluate(p, eval_mat[0], eval_mat[1], eval_vec[0], eval_vec[1], eval_vec[2]);
-  discret().ClearState();
+  discret().clear_state();
 }
 
 /*----------------------------------------------------------------------------*
@@ -416,7 +416,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::evaluate_neumann_brownian_dyn(
   // evaluate brownian specific Neumann boundary conditions
   // -------------------------------------------------------------------------
   //  sm_manager_ptr_->EvaluateNeumannbrownian(interface_ptr,eval_vec,eval_mat);
-  discret_ptr()->ClearState();
+  discret_ptr()->clear_state();
 
   return;
 }
@@ -605,19 +605,20 @@ void Solid::MODELEVALUATOR::BrownianDyn::random_numbers_per_element()
   // -------------------------------------------------------------------------
   // see whether current element needs more random numbers per time step
   // than any other before
-  for (int i = 0; i < discret_ptr_->NumMyColElements(); ++i)
+  for (int i = 0; i < discret_ptr_->num_my_col_elements(); ++i)
   {
     Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<Discret::ELEMENTS::Beam3Base*>(discret_ptr_->lColElement(i));
+        dynamic_cast<Discret::ELEMENTS::Beam3Base*>(discret_ptr_->l_col_element(i));
     if (beamele != nullptr)
     {
       randomnumbersperlocalelement =
           std::max(randomnumbersperlocalelement, beamele->how_many_random_numbers_i_need());
     }
-    else if (dynamic_cast<Discret::ELEMENTS::Rigidsphere*>(discret_ptr_->lColElement(i)) != nullptr)
+    else if (dynamic_cast<Discret::ELEMENTS::Rigidsphere*>(discret_ptr_->l_col_element(i)) !=
+             nullptr)
     {
       randomnumbersperlocalelement = std::max(randomnumbersperlocalelement,
-          dynamic_cast<Discret::ELEMENTS::Rigidsphere*>(discret_ptr_->lColElement(i))
+          dynamic_cast<Discret::ELEMENTS::Rigidsphere*>(discret_ptr_->l_col_element(i))
               ->how_many_random_numbers_i_need());
     }
     else
@@ -631,7 +632,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::random_numbers_per_element()
   // results of each processor and store the maximal one in
   // maxrandnumelement_
   // -------------------------------------------------------------------------
-  discret_ptr()->Comm().MaxAll(&randomnumbersperlocalelement, &maxrandnumelement_, 1);
+  discret_ptr()->get_comm().MaxAll(&randomnumbersperlocalelement, &maxrandnumelement_, 1);
 }
 
 /*----------------------------------------------------------------------------*
@@ -659,11 +660,11 @@ void Solid::MODELEVALUATOR::BrownianDyn::generate_gaussian_random_numbers()
   // generate gaussian random numbers for parallel use with mean value 0 and
   // standard deviation (2KT / dt)^0.5
   double standarddeviation =
-      pow(2.0 * eval_browniandyn_ptr_->KT() / brown_dyn_state_data_.browndyn_dt, 0.5);
+      pow(2.0 * eval_browniandyn_ptr_->kt() / brown_dyn_state_data_.browndyn_dt, 0.5);
 
   // Set mean value and standard deviation of normal distribution
-  Global::Problem::Instance()->Random()->SetMeanVariance(meanvalue, standarddeviation);
-  Global::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
+  Global::Problem::instance()->random()->set_mean_variance(meanvalue, standarddeviation);
+  Global::Problem::instance()->random()->set_rand_range(0.0, 1.0);
 
   // multivector for stochastic forces evaluated by each element based on row map
   Teuchos::RCP<Epetra_MultiVector> randomnumbersrow = eval_browniandyn_ptr_->get_random_forces();
@@ -672,7 +673,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::generate_gaussian_random_numbers()
   int numperele = randomnumbersrow->NumVectors();
   int count = numele * numperele;
   std::vector<double> randvec(count);
-  Global::Problem::Instance()->Random()->Normal(randvec, count);
+  Global::Problem::instance()->random()->normal(randvec, count);
 
   // MAXRANDFORCE is a multiple of the standard deviation
   double maxrandforcefac = eval_browniandyn_ptr_->max_rand_force();
@@ -714,21 +715,21 @@ void Solid::MODELEVALUATOR::BrownianDyn::generate_gaussian_random_numbers()
 bool Solid::MODELEVALUATOR::BrownianDyn::
     is_any_beam_element_length_larger_than_min_half_pbb_edge_length() const
 {
-  const int numroweles = discret().NumMyRowElements();
+  const int numroweles = discret().num_my_row_elements();
   const double halfofminimalperiodlength =
-      0.5 * eval_browniandyn_ptr_->get_periodic_bounding_box()->EdgeLength(0);
+      0.5 * eval_browniandyn_ptr_->get_periodic_bounding_box()->edge_length(0);
   for (int i = 1; i < 3; ++i)
     std::min(halfofminimalperiodlength,
-        0.5 * eval_browniandyn_ptr_->get_periodic_bounding_box()->EdgeLength(i));
+        0.5 * eval_browniandyn_ptr_->get_periodic_bounding_box()->edge_length(i));
 
   if (halfofminimalperiodlength != 0.0)
   {
     for (int elelid = 0; elelid < numroweles; ++elelid)
     {
       const Discret::ELEMENTS::Beam3Base* beamele =
-          dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(discret().lRowElement(elelid));
+          dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(discret().l_row_element(elelid));
 
-      if (beamele != nullptr and beamele->RefLength() >= halfofminimalperiodlength) return true;
+      if (beamele != nullptr and beamele->ref_length() >= halfofminimalperiodlength) return true;
     }
   }
 
@@ -794,8 +795,8 @@ void Solid::MODELEVALUATOR::BrownianDyn::SeedRandomGenerator()
   // -----------------------------------------------------------------------
   // seed random number generator and set uni range
   // -----------------------------------------------------------------------
-  Global::Problem::Instance()->Random()->SetRandSeed( static_cast<unsigned int>(
-rand_data_.seedvariable ) ); Global::Problem::Instance()->Random()->SetRandRange( 0.0, 1.0);
+  Global::Problem::instance()->Random()->SetRandSeed( static_cast<unsigned int>(
+rand_data_.seedvariable ) ); Global::Problem::instance()->Random()->SetRandRange( 0.0, 1.0);
 
 }*/
 

@@ -119,34 +119,34 @@ namespace Core::Communication
         NestedParallelismType npType);
 
     /// return group id
-    int GroupId() const { return group_id_; }
+    int group_id() const { return group_id_; }
 
     /// return number of groups
-    int NumGroups() const { return ngroup_; }
+    int num_groups() const { return ngroup_; }
 
     /// return group size
-    int GroupSize() const { return lcomm_->NumProc(); }
+    int group_size() const { return lcomm_->NumProc(); }
 
     /// return global processor id of local processor id
-    int GPID(int LPID) { return lpidgpid_[LPID]; }
+    int gpid(int LPID) { return lpidgpid_[LPID]; }
 
     /// return local processor id of global processor id if GPID is in this group
-    int LPID(int GPID);
+    int lpid(int GPID);
 
     /// return local communicator
-    Teuchos::RCP<Epetra_Comm> LocalComm() const { return lcomm_; }
+    Teuchos::RCP<Epetra_Comm> local_comm() const { return lcomm_; }
 
     /// return local communicator
-    Teuchos::RCP<Epetra_Comm> GlobalComm() const { return gcomm_; }
+    Teuchos::RCP<Epetra_Comm> global_comm() const { return gcomm_; }
 
     /// set a sub group communicator
-    void SetSubComm(Teuchos::RCP<Epetra_Comm> subcomm);
+    void set_sub_comm(Teuchos::RCP<Epetra_Comm> subcomm);
 
     /// return sub group communicator
-    Teuchos::RCP<Epetra_Comm> SubComm() const { return subcomm_; }
+    Teuchos::RCP<Epetra_Comm> sub_comm() const { return subcomm_; }
 
     /// return nested parallelism type
-    NestedParallelismType NpType() const { return np_type_; }
+    NestedParallelismType np_type() const { return np_type_; }
 
    private:
     /// group id

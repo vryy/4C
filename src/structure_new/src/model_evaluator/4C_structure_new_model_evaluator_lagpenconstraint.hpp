@@ -46,7 +46,7 @@ namespace Solid
       void setup() override;
 
       //! derived
-      Inpar::Solid::ModelType Type() const override
+      Inpar::Solid::ModelType type() const override
       {
         return Inpar::Solid::model_lag_pen_constraint;
       }
@@ -84,7 +84,7 @@ namespace Solid
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void Predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
+      void predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
 
       //! derived
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
@@ -133,13 +133,13 @@ namespace Solid
       //! derived
       Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override;
 
-      const Teuchos::RCP<CONSTRAINTS::ConstrManager>& StrategyPtr();
+      const Teuchos::RCP<CONSTRAINTS::ConstrManager>& strategy_ptr();
 
       //! Return the NOX::Nln::CONSTRAINT::Interface::Required member object
       const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterface>& nox_interface_ptr();
 
       //! Return the NOX::Nln::CONSTRAINT::Interface::Preconditioner member object
-      const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterfacePrec>& NoxInterfacePrecPtr();
+      const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterfacePrec>& nox_interface_prec_ptr();
 
      protected:
       //! Returns the underlying contact strategy object

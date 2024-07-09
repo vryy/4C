@@ -123,11 +123,11 @@ namespace Mat
   class GrowthRemodelElastHyperType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "GrowthRemodel_ElastHyperType"; }
+    std::string name() const override { return "GrowthRemodel_ElastHyperType"; }
 
-    static GrowthRemodelElastHyperType& Instance() { return instance_; };
+    static GrowthRemodelElastHyperType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static GrowthRemodelElastHyperType instance_;
@@ -155,16 +155,16 @@ namespace Mat
     ///
     /// every class implementing ParObject needs a unique id defined at the
     /// top of parobject.H (this file) and should return it in this method.
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return GrowthRemodelElastHyperType::Instance().UniqueParObjectId();
+      return GrowthRemodelElastHyperType::instance().unique_par_object_id();
     }
 
     /// \brief Pack this class so it can be communicated
     ///
     /// Resizes the vector data and stores all information of a class in it.
     /// The first information to be stored in data has to be the
-    /// unique parobject id delivered by UniqueParObjectId() which will then
+    /// unique parobject id delivered by unique_par_object_id() which will then
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
@@ -176,7 +176,7 @@ namespace Mat
     /// exact copy of an instance of a class on a different processor.
     /// The first entry in data has to be an integer which is the unique
     /// parobject id defined at the top of this file and delivered by
-    /// UniqueParObjectId().
+    /// unique_par_object_id().
     ///
     /// \param data (in) : vector storing all data to be unpacked into this
     ///                    instance.
@@ -185,26 +185,26 @@ namespace Mat
     //@}
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Inpar::Solid::KinemType kinem) override
     {
       if (!(kinem == Inpar::Solid::KinemType::nonlinearTotLag))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_growthremodel_elasthyper;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new GrowthRemodelElastHyper(*this));
     }
 
     /// material mass density
-    double Density() const override { return params_->density_; }
+    double density() const override { return params_->density_; }
 
     /// hyperelastic stress response plus elasticity tensor
     void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< Deformation gradient
@@ -228,7 +228,7 @@ namespace Mat
     void post_setup(Teuchos::ParameterList& params, int eleGID) override;
 
     /// This material uses the extended update call
-    bool UsesExtendedUpdate() override { return true; }
+    bool uses_extended_update() override { return true; }
 
     /// update
     void update(Core::LinAlg::Matrix<3, 3> const& defgrd,  ///< Deformation gradient
@@ -237,12 +237,12 @@ namespace Mat
         int const eleGID) override;                        ///< Element ID
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     /// hyperelastic stress response plus elasticity tensor for membrane element (membrane
     /// formulation)
-    void EvaluateMembrane(Core::LinAlg::Matrix<3, 3> const&
-                              defgrd_glob,      ///< Deformation gradient in global coordinates
+    void evaluate_membrane(Core::LinAlg::Matrix<3, 3> const&
+                               defgrd_glob,     ///< Deformation gradient in global coordinates
         Teuchos::ParameterList& params,         ///< Container for additional information
         Core::LinAlg::Matrix<3, 3>& pk2M_glob,  ///< 2nd Piola-Kirchhoff stress global coordinates
         Core::LinAlg::Matrix<6, 6>& cmat_glob,  ///< Elasticity tensor in global coordinates
@@ -259,10 +259,11 @@ namespace Mat
         int eleGID) override;            ///< Element ID
 
     /// Return names of visualization data
-    void VisNames(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) override;
 
     /// Return visualization data
-    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+    bool vis_data(
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
    private:
     /// Setup circumferential, radial and axial structural tensor

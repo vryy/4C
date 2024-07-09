@@ -30,9 +30,9 @@ FOUR_C_NAMESPACE_OPEN
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCalc(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : scatraparamstimint_(Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance(disname)),
-      scatraparams_(Discret::ELEMENTS::ScaTraEleParameterStd::Instance(disname)),
-      scatraparamsboundary_(Discret::ELEMENTS::ScaTraEleParameterBoundary::Instance("scatra")),
+    : scatraparamstimint_(Discret::ELEMENTS::ScaTraEleParameterTimInt::instance(disname)),
+      scatraparams_(Discret::ELEMENTS::ScaTraEleParameterStd::instance(disname)),
+      scatraparamsboundary_(Discret::ELEMENTS::ScaTraEleParameterBoundary::instance("scatra")),
       numdofpernode_(numdofpernode),
       numscal_(numscal),
       xyze_(true),  // initialize to zero
@@ -59,7 +59,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCal
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::SetupCalc(
+int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::setup_calc(
     Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization)
 {
@@ -72,8 +72,8 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::SetupCalc(
     // for isogeometric elements --- get knotvectors for parent
     // element and boundary element, get weights
     bool zero_size =
-        Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(ele, ele->FaceParentNumber(),
-            ele->parent_element()->Id(), discretization, mypknots_, myknots_, weights_, normalfac_);
+        Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(ele, ele->face_parent_number(),
+            ele->parent_element()->id(), discretization, mypknots_, myknots_, weights_, normalfac_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
     if (zero_size) return -1;
@@ -100,7 +100,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate(
   //--------------------------------------------------------------------------------
   // preparations for element
   //--------------------------------------------------------------------------------
-  if (SetupCalc(ele, params, discretization) == -1) return 0;
+  if (setup_calc(ele, params, discretization) == -1) return 0;
 
   extract_displacement_values(ele, discretization, la);
 
@@ -120,7 +120,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_displac
     Core::Elements::FaceElement* ele, const Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& la)
 {
-  switch (ele->parent_element()->Shape())
+  switch (ele->parent_element()->shape())
   {
     case Core::FE::CellType::hex8:
     {
@@ -158,7 +158,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_displac
       break;
     }
     default:
-      FOUR_C_THROW("Not implemented for discretization type: %i!", ele->parent_element()->Shape());
+      FOUR_C_THROW("Not implemented for discretization type: %i!", ele->parent_element()->shape());
       break;
   }
 }
@@ -172,12 +172,12 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_displac
     Core::Elements::Element::LocationArray& la)
 {
   // get additional state vector for ALE case: grid displacement
-  if (scatraparams_->IsAle())
+  if (scatraparams_->is_ale())
   {
     // get number of dof-set associated with displacement related dofs
-    const int ndsdisp = scatraparams_->NdsDisp();
+    const int ndsdisp = scatraparams_->nds_disp();
 
-    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state(ndsdisp, "dispnp");
     FOUR_C_ASSERT(dispnp != Teuchos::null, "Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
@@ -196,8 +196,8 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_displac
     update_node_coordinates();
 
     // determine location array information of parent element
-    Core::Elements::Element::LocationArray parent_la(discretization.NumDofSets());
-    ele->parent_element()->LocationVector(discretization, parent_la, false);
+    Core::Elements::Element::LocationArray parent_la(discretization.num_dof_sets());
+    ele->parent_element()->location_vector(discretization, parent_la, false);
 
     const int num_node_parent_ele = Core::FE::num_nodes<parentdistype>;
 
@@ -256,7 +256,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
     case ScaTra::BoundaryAction::integrate_shape_functions:
     {
       // NOTE: add area value only for elements which are NOT ghosted!
-      const bool addarea = (ele->Owner() == discretization.Comm().MyPID());
+      const bool addarea = (ele->owner() == discretization.get_comm().MyPID());
       integrate_shape_functions(ele, params, elevec1_epetra, addarea);
 
       break;
@@ -291,10 +291,10 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
     {
       // get the parent element including its material
       Core::Elements::Element* parentele = ele->parent_element();
-      Teuchos::RCP<Core::Mat::Material> mat = parentele->Material();
+      Teuchos::RCP<Core::Mat::Material> mat = parentele->material();
 
       // get values of scalar
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
       // extract local values from global vector
@@ -322,7 +322,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
     {
       // get the parent element including its material
       Core::Elements::Element* parentele = ele->parent_element();
-      Teuchos::RCP<Core::Mat::Material> mat = parentele->Material();
+      Teuchos::RCP<Core::Mat::Material> mat = parentele->material();
 
       if (numscal_ > 1) FOUR_C_THROW("not yet implemented for more than one scalar\n");
 
@@ -331,7 +331,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
         // 2D:
         case Core::FE::CellType::line2:
         {
-          if (ele->parent_element()->Shape() == Core::FE::CellType::quad4)
+          if (ele->parent_element()->shape() == Core::FE::CellType::quad4)
           {
             weak_dirichlet<Core::FE::CellType::line2, Core::FE::CellType::quad4>(
                 ele, params, discretization, mat, elemat1_epetra, elevec1_epetra);
@@ -346,7 +346,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
         // 3D:
         case Core::FE::CellType::quad4:
         {
-          if (ele->parent_element()->Shape() == Core::FE::CellType::hex8)
+          if (ele->parent_element()->shape() == Core::FE::CellType::hex8)
           {
             weak_dirichlet<Core::FE::CellType::quad4, Core::FE::CellType::hex8>(
                 ele, params, discretization, mat, elemat1_epetra, elevec1_epetra);
@@ -389,7 +389,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
       //       it would be wrong to suppress results for a ghosted boundary!
 
       // get actual values of transported scalars
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
       // extract local values from the global vector
@@ -398,11 +398,11 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_action(
       Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
       // get number of dofset associated with velocity related dofs
-      const int ndsvel = scatraparams_->NdsVel();
+      const int ndsvel = scatraparams_->nds_vel();
 
       // get convective (velocity - mesh displacement) velocity at nodes
       Teuchos::RCP<const Epetra_Vector> convel =
-          discretization.GetState(ndsvel, "convective velocity field");
+          discretization.get_state(ndsvel, "convective velocity field");
       if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
       // determine number of velocity related dofs per node
@@ -502,14 +502,14 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_neumann
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // find out whether we will use a time curve
-  const double time = scatraparamstimint_->Time();
+  const double time = scatraparamstimint_->time();
 
   // get values, switches and spatial functions from the  condition
   // (assumed to be constant on element boundary)
   const int numdof = condition.parameters().get<int>("numdof");
   const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
   const auto* val = &condition.parameters().get<std::vector<double>>("val");
-  const auto* func = condition.parameters().GetIf<std::vector<int>>("funct");
+  const auto* func = condition.parameters().get_if<std::vector<int>>("funct");
 
   if (numdofpernode_ != numdof)
   {
@@ -519,7 +519,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_neumann
   }
 
   // integration loop
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     double fac = eval_shape_func_and_int_fac(intpoints, iquad);
 
@@ -543,8 +543,8 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_neumann
         if (functnum > 0)
         {
           // evaluate function at current Gauss point (provide always 3D coordinates!)
-          functfac = Global::Problem::Instance()
-                         ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+          functfac = Global::Problem::instance()
+                         ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                          .evaluate(coordgpref, time, dof);
         }
         else
@@ -583,7 +583,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_normal_vec
 
     for (int i_node = 0; i_node < 3; ++i_node)
     {
-      const auto& coords = p_ele->Nodes()[i_node]->X();
+      const auto& coords = p_ele->nodes()[i_node]->x();
       for (int dim = 0; dim < nsd_; ++dim) xyz_parent_ele(dim, i_node) = coords[dim];
     }
 
@@ -598,7 +598,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_normal_vec
 
   for (int j = 0; j < nen_; j++)
   {
-    const int nodegid = (ele->Nodes()[j])->Id();
+    const int nodegid = (ele->nodes()[j])->id();
     if (normals->Map().MyGID(nodegid))
     {
       // scaling to a unit vector is performed on the global level after
@@ -627,17 +627,17 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::neumann_inflow(
   Core::Elements::Element* parentele = ele->parent_element();
 
   // get material of parent element
-  Teuchos::RCP<Core::Mat::Material> material = parentele->Material();
+  Teuchos::RCP<Core::Mat::Material> material = parentele->material();
 
   // we don't know the parent element's lm vector; so we have to build it here
   const int nenparent = parentele->num_node();
   std::vector<int> lmparent(nenparent);
   std::vector<int> lmparentowner;
   std::vector<int> lmparentstride;
-  parentele->LocationVector(discretization, lmparent, lmparentowner, lmparentstride);
+  parentele->location_vector(discretization, lmparent, lmparentowner, lmparentstride);
 
   // get values of scalar
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
   // extract local values from global vector
@@ -646,11 +646,11 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::neumann_inflow(
   Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
   // get number of dofset associated with velocity related dofs
-  const int ndsvel = scatraparams_->NdsVel();
+  const int ndsvel = scatraparams_->nds_vel();
 
   // get convective (velocity - mesh displacement) velocity at nodes
   Teuchos::RCP<const Epetra_Vector> convel =
-      discretization.GetState(ndsvel, "convective velocity field");
+      discretization.get_state(ndsvel, "convective velocity field");
   if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
   // determine number of velocity related dofs per node
@@ -679,7 +679,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::neumann_inflow(
   for (int k = 0; k < numdofpernode_; ++k)
   {
     // loop over all integration points
-    for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+    for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
     {
       const double fac = eval_shape_func_and_int_fac(intpoints, iquad, &normal_);
 
@@ -695,15 +695,15 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::neumann_inflow(
         double dens = get_density(material, ephinp, k);
 
         // integration factor for left-hand side
-        const double lhsfac = dens * normvel * scatraparamstimint_->TimeFac() * fac;
+        const double lhsfac = dens * normvel * scatraparamstimint_->time_fac() * fac;
 
         // integration factor for right-hand side
         double rhsfac = 0.0;
-        if (scatraparamstimint_->IsIncremental() and scatraparamstimint_->IsGenAlpha())
-          rhsfac = lhsfac / scatraparamstimint_->AlphaF();
-        else if (not scatraparamstimint_->IsIncremental() and scatraparamstimint_->IsGenAlpha())
-          rhsfac = lhsfac * (1.0 - scatraparamstimint_->AlphaF()) / scatraparamstimint_->AlphaF();
-        else if (scatraparamstimint_->IsIncremental() and not scatraparamstimint_->IsGenAlpha())
+        if (scatraparamstimint_->is_incremental() and scatraparamstimint_->is_gen_alpha())
+          rhsfac = lhsfac / scatraparamstimint_->alpha_f();
+        else if (not scatraparamstimint_->is_incremental() and scatraparamstimint_->is_gen_alpha())
+          rhsfac = lhsfac * (1.0 - scatraparamstimint_->alpha_f()) / scatraparamstimint_->alpha_f();
+        else if (scatraparamstimint_->is_incremental() and not scatraparamstimint_->is_gen_alpha())
           rhsfac = lhsfac;
 
         // matrix
@@ -748,15 +748,15 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::get_density(
   double density(0.);
 
   // get density depending on material
-  switch (material->MaterialType())
+  switch (material->material_type())
   {
     case Core::Materials::m_matlist:
     {
       const auto* actmat = static_cast<const Mat::MatList*>(material.get());
 
-      const int matid = actmat->MatID(0);
+      const int matid = actmat->mat_id(0);
 
-      if (actmat->MaterialById(matid)->MaterialType() == Core::Materials::m_scatra)
+      if (actmat->material_by_id(matid)->material_type() == Core::Materials::m_scatra)
       {
         // set density to unity
         density = 1.;
@@ -807,7 +807,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_convective_flux
     integralflux[k] = 0.0;
 
     // loop over all integration points
-    for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+    for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
     {
       const double fac = eval_shape_func_and_int_fac(intpoints, iquad, &normal_);
 
@@ -851,37 +851,37 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::convective_heat
   for (int k = 0; k < numdofpernode_; ++k)
   {
     // loop over all integration points
-    for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+    for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
     {
       const double fac = eval_shape_func_and_int_fac(intpoints, iquad, &normal_);
 
       // get specific heat capacity at constant volume
       double shc = 0.0;
-      if (material->MaterialType() == Core::Materials::m_th_fourier_iso)
+      if (material->material_type() == Core::Materials::m_th_fourier_iso)
       {
         const auto* actmat = static_cast<const Mat::FourierIso*>(material.get());
 
-        shc = actmat->Capacity();
+        shc = actmat->capacity();
       }
-      else if (material->MaterialType() == Core::Materials::m_thermostvenant)
+      else if (material->material_type() == Core::Materials::m_thermostvenant)
       {
         const auto* actmat = static_cast<const Mat::ThermoStVenantKirchhoff*>(material.get());
 
-        shc = actmat->Capacity();
+        shc = actmat->capacity();
       }
       else
         FOUR_C_THROW("Material type is not supported for convective heat transfer!");
 
       // integration factor for left-hand side
-      const double lhsfac = heatranscoeff * scatraparamstimint_->TimeFac() * fac / shc;
+      const double lhsfac = heatranscoeff * scatraparamstimint_->time_fac() * fac / shc;
 
       // integration factor for right-hand side
       double rhsfac = 0.0;
-      if (scatraparamstimint_->IsIncremental() and scatraparamstimint_->IsGenAlpha())
-        rhsfac = lhsfac / scatraparamstimint_->AlphaF();
-      else if (not scatraparamstimint_->IsIncremental() and scatraparamstimint_->IsGenAlpha())
-        rhsfac = lhsfac * (1.0 - scatraparamstimint_->AlphaF()) / scatraparamstimint_->AlphaF();
-      else if (scatraparamstimint_->IsIncremental() and not scatraparamstimint_->IsGenAlpha())
+      if (scatraparamstimint_->is_incremental() and scatraparamstimint_->is_gen_alpha())
+        rhsfac = lhsfac / scatraparamstimint_->alpha_f();
+      else if (not scatraparamstimint_->is_incremental() and scatraparamstimint_->is_gen_alpha())
+        rhsfac = lhsfac * (1.0 - scatraparamstimint_->alpha_f()) / scatraparamstimint_->alpha_f();
+      else if (scatraparamstimint_->is_incremental() and not scatraparamstimint_->is_gen_alpha())
         rhsfac = lhsfac;
 
       // matrix
@@ -980,7 +980,7 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::eval_shape_fu
   }
 
   // return the integration factor
-  return intpoints.IP().qwgt[iquad] * drs;
+  return intpoints.ip().qwgt[iquad] * drs;
 }
 
 /*----------------------------------------------------------------------*
@@ -991,7 +991,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
         const Core::FE::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad)
 {
   // coordinates of the current integration point
-  const double* gpcoord = (intpoints.IP().qxg)[iquad];
+  const double* gpcoord = (intpoints.ip().qxg)[iquad];
   for (int idim = 0; idim < nsd_ele_; idim++)
   {
     xsi_(idim) = gpcoord[idim];
@@ -1140,7 +1140,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
   Core::LinAlg::Matrix<nsd_, 1> normal;
 
   // element slave mechanical stress tensor
-  const bool is_pseudo_contact = scatraparamsboundary_->IsPseudoContact();
+  const bool is_pseudo_contact = scatraparamsboundary_->is_pseudo_contact();
   std::vector<Core::LinAlg::Matrix<nen_, 1>> eslavestress_vector(
       6, Core::LinAlg::Matrix<nen_, 1>(true));
   if (is_pseudo_contact)
@@ -1148,7 +1148,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
         scatraparams_->nds_two_tensor_quantity());
 
   // loop over integration points
-  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac =
@@ -1156,8 +1156,8 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
             intpoints, gpid, &normal);
 
     // evaluate overall integration factors
-    const double timefacfac = scatraparamstimint_->TimeFac() * fac;
-    const double timefacrhsfac = scatraparamstimint_->TimeFacRhs() * fac;
+    const double timefacfac = scatraparamstimint_->time_fac() * fac;
+    const double timefacrhsfac = scatraparamstimint_->time_fac_rhs() * fac;
     if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
     const double pseudo_contact_fac =
@@ -1190,8 +1190,8 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
         Core::LinAlg::SerialDenseVector& r_m)
 {
   // get condition specific parameters
-  const int kineticmodel = scatra_parameter_boundary->KineticModel();
-  const std::vector<double>* permeabilities = scatra_parameter_boundary->Permeabilities();
+  const int kineticmodel = scatra_parameter_boundary->kinetic_model();
+  const std::vector<double>* permeabilities = scatra_parameter_boundary->permeabilities();
 
   // number of nodes of master-side mortar element
   const int nen_master = Core::FE::num_nodes<distype_master>;
@@ -1318,9 +1318,9 @@ double
 Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calculate_det_f_of_parent_element(
     const Core::Elements::FaceElement* faceele, const double* faceele_xsi)
 {
-  if (scatraparams_->IsAle())
+  if (scatraparams_->is_ale())
   {
-    switch (faceele->parent_element()->Shape())
+    switch (faceele->parent_element()->shape())
     {
       case Core::FE::CellType::hex8:
       {
@@ -1333,7 +1333,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calculate_det_f_of_p
       default:
       {
         FOUR_C_THROW(
-            "Not implemented for discretization type: %i!", faceele->parent_element()->Shape());
+            "Not implemented for discretization type: %i!", faceele->parent_element()->shape());
         break;
       }
     }
@@ -1361,7 +1361,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calculate_det_f_of_p
 
   for (auto i = 0; i < parent_ele_num_nodes; ++i)
   {
-    const auto& x = faceele->parent_element()->Nodes()[i]->X();
+    const auto& x = faceele->parent_element()->nodes()[i]->x();
     for (auto dim = 0; dim < probdim; ++dim)
     {
       xdisp(i, dim) = eparentdispnp_.at(i * probdim + dim);
@@ -1401,7 +1401,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
   Core::LinAlg::Matrix<nsd_, 1> normal;
 
   // element slave mechanical stress tensor
-  const bool is_pseudo_contact = scatraparamsboundary_->IsPseudoContact();
+  const bool is_pseudo_contact = scatraparamsboundary_->is_pseudo_contact();
   std::vector<Core::LinAlg::Matrix<nen_, 1>> eslavestress_vector(
       6, Core::LinAlg::Matrix<nen_, 1>(true));
   if (is_pseudo_contact)
@@ -1423,7 +1423,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; ++gpid)
   {
     // evaluate values of shape functions at current integration point
     eval_shape_func_and_int_fac(intpoints, gpid, &normal);
@@ -1437,7 +1437,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
       evaluate_spatial_derivative_of_area_integration_factor(intpoints, gpid, dsqrtdetg_dd);
 
     // evaluate overall integration factor
-    const double timefacwgt = scatraparamstimint_->TimeFac() * intpoints.IP().qwgt[gpid];
+    const double timefacwgt = scatraparamstimint_->time_fac() * intpoints.ip().qwgt[gpid];
     if (timefacwgt < 0.) FOUR_C_THROW("Integration factor is negative!");
 
     // loop over scalars
@@ -1450,7 +1450,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
 
       // compute matrix contributions according to kinetic model for current scatra-scatra interface
       // coupling condition
-      switch (scatraparamsboundary_->KineticModel())
+      switch (scatraparamsboundary_->kinetic_model())
       {
         // constant permeability model
         case Inpar::S2I::kinetics_constperm:
@@ -1461,7 +1461,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
             case ScaTra::DifferentiationType::disp:
             {
               // access real vector of constant permeabilities associated with current condition
-              const std::vector<double>* permeabilities = scatraparamsboundary_->Permeabilities();
+              const std::vector<double>* permeabilities = scatraparamsboundary_->permeabilities();
               if (permeabilities == nullptr)
                 FOUR_C_THROW(
                     "Cannot access vector of permeabilities for scatra-scatra interface coupling!");
@@ -1548,7 +1548,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::extract_node_va
     const std::string& statename, const int& nds) const
 {
   // extract global state vector from discretization
-  const Teuchos::RCP<const Epetra_Vector> state = discretization.GetState(nds, statename);
+  const Teuchos::RCP<const Epetra_Vector> state = discretization.get_state(nds, statename);
   if (state == Teuchos::null)
     FOUR_C_THROW("Cannot extract state vector \"" + statename + "\" from discretization!");
 
@@ -1570,7 +1570,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_boundary_i
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     // evaluate values of shape functions and boundary integration factor at current integration
     // point
@@ -1597,7 +1597,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_mat_mass(
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     // evaluate values of shape functions and boundary integration factor at current integration
     // point
@@ -1661,7 +1661,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_robin_boun
 
   // ------------get values of scalar transport------------------
   // extract global state vector from discretization
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
   if (phinp == Teuchos::null)
     FOUR_C_THROW("Cannot read state vector \"phinp\" from discretization!");
 
@@ -1684,7 +1684,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_robin_boun
     // flag for dofs to be considered by robin conditions
     if ((*onoff)[k] == 1)
     {
-      for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+      for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
       {
         // evaluate values of shape functions and domain integration factor at current integration
         // point
@@ -1706,7 +1706,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_robin_boun
           //////////////////////////////////////////////////////////////////////
           //                  rhs
           //////////////////////////////////////////////////////////////////////
-          const double vrhs = scatraparamstimint_->TimeFacRhs() * (phinp_gp - refval) * fac_3;
+          const double vrhs = scatraparamstimint_->time_fac_rhs() * (phinp_gp - refval) * fac_3;
 
           for (int vi = 0; vi < nen_; ++vi)
           {
@@ -1720,7 +1720,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_robin_boun
           //////////////////////////////////////////////////////////////////////
           for (int vi = 0; vi < nen_; ++vi)
           {
-            const double vlhs = scatraparamstimint_->TimeFac() * fac_3 * funct_(vi);
+            const double vlhs = scatraparamstimint_->time_fac() * fac_3 * funct_(vi);
             const int fvi = vi * numscal_ + k;
 
             for (int ui = 0; ui < nen_; ++ui)
@@ -1750,13 +1750,13 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_surfac
   //                  read nodal values
   //////////////////////////////////////////////////////////////////////
 
-  if (scatraparamstimint_->IsGenAlpha() or not scatraparamstimint_->IsIncremental())
+  if (scatraparamstimint_->is_gen_alpha() or not scatraparamstimint_->is_incremental())
     FOUR_C_THROW("Not a valid time integration scheme!");
 
   std::vector<int>& lm = la[0].lm_;
 
   // ------------get values of scalar transport------------------
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
   // extract local values from global vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
@@ -1765,7 +1765,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_surfac
 
   //------------get membrane concentration at the interface (i.e. within the
   // membrane)------------------
-  Teuchos::RCP<const Epetra_Vector> phibar = discretization.GetState("MembraneConcentration");
+  Teuchos::RCP<const Epetra_Vector> phibar = discretization.get_state("MembraneConcentration");
   if (phibar == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'MembraneConcentration'");
   // extract local values from global vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephibar(
@@ -1774,9 +1774,9 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_surfac
 
   // ------------get values of wall shear stress-----------------------
   // get number of dofset associated with pressure related dofs
-  const int ndswss = scatraparams_->NdsWss();
+  const int ndswss = scatraparams_->nds_wss();
   if (ndswss == -1) FOUR_C_THROW("Cannot get number of dofset of wss vector");
-  Teuchos::RCP<const Epetra_Vector> wss = discretization.GetState(ndswss, "WallShearStress");
+  Teuchos::RCP<const Epetra_Vector> wss = discretization.get_state(ndswss, "WallShearStress");
   if (wss == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'WallShearStress'");
 
   // determine number of velocity (and pressure) related dofs per node
@@ -1829,14 +1829,14 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_surfac
       if ((*onoff)[k] == 1)
       {
         // loop over all integration points
-        for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+        for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
         {
           const double fac = eval_shape_func_and_int_fac(intpoints, iquad, &normal_);
           const double refconcfac = fac_for_ref_conc(iquad, ele, params, discretization);
           // integration factor for right-hand side
           double facfac = 0.0;
-          if (scatraparamstimint_->IsIncremental() and not scatraparamstimint_->IsGenAlpha())
-            facfac = scatraparamstimint_->TimeFac() * fac * refconcfac;
+          if (scatraparamstimint_->is_incremental() and not scatraparamstimint_->is_gen_alpha())
+            facfac = scatraparamstimint_->time_fac() * fac * refconcfac;
           else
             FOUR_C_THROW("evaluate_surface_permeability: Requested scheme not yet implemented");
 
@@ -1885,13 +1885,13 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
   // safety checks
-  if (scatraparamstimint_->IsGenAlpha() or not scatraparamstimint_->IsIncremental())
+  if (scatraparamstimint_->is_gen_alpha() or not scatraparamstimint_->is_incremental())
     FOUR_C_THROW("Not a valid time integration scheme!");
 
   std::vector<int>& lm = la[0].lm_;
 
   // ------------get values of scalar transport------------------
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
   // extract local values from global vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
@@ -1901,7 +1901,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_
 
   //------------get membrane concentration at the interface (i.e. within the
   // membrane)------------------
-  Teuchos::RCP<const Epetra_Vector> phibar = discretization.GetState("MembraneConcentration");
+  Teuchos::RCP<const Epetra_Vector> phibar = discretization.get_state("MembraneConcentration");
   if (phibar == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'MembraneConcentration'");
   // extract local values from global vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephibar(
@@ -1911,9 +1911,9 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_
 
   //--------get values of pressure at the interface ----------------------
   // get number of dofset associated with pressure related dofs
-  const int ndspres = scatraparams_->NdsPres();
+  const int ndspres = scatraparams_->nds_pres();
   if (ndspres == -1) FOUR_C_THROW("Cannot get number of dofset of pressure vector");
-  Teuchos::RCP<const Epetra_Vector> pressure = discretization.GetState(ndspres, "Pressure");
+  Teuchos::RCP<const Epetra_Vector> pressure = discretization.get_state(ndspres, "Pressure");
   if (pressure == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'Pressure'");
 
   // determine number of velocity (and pressure) related dofs per node
@@ -1932,9 +1932,9 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_
 
   // ------------get values of wall shear stress-----------------------
   // get number of dofset associated with pressure related dofs
-  const int ndswss = scatraparams_->NdsWss();
+  const int ndswss = scatraparams_->nds_wss();
   if (ndswss == -1) FOUR_C_THROW("Cannot get number of dofset of wss vector");
-  Teuchos::RCP<const Epetra_Vector> wss = discretization.GetState(ndswss, "WallShearStress");
+  Teuchos::RCP<const Epetra_Vector> wss = discretization.get_state(ndswss, "WallShearStress");
   if (wss == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'WallShearStress'");
 
   // determine number of velocity (and pressure) related dofs per node
@@ -1985,14 +1985,14 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_
     if ((*onoff)[k] == 1)
     {
       // loop over all integration points
-      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+      for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
       {
         const double fac = eval_shape_func_and_int_fac(intpoints, iquad, &normal_);
 
         // integration factor
         double facfac = 0.0;
-        if (scatraparamstimint_->IsIncremental() and not scatraparamstimint_->IsGenAlpha())
-          facfac = scatraparamstimint_->TimeFac() * fac;
+        if (scatraparamstimint_->is_incremental() and not scatraparamstimint_->is_gen_alpha())
+          facfac = scatraparamstimint_->time_fac() * fac;
         else
           FOUR_C_THROW("Kedem-Katchalsky: Requested time integration scheme not yet implemented");
 
@@ -2088,7 +2088,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::integrate_shape
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
   {
     const double fac = eval_shape_func_and_int_fac(intpoints, gpid);
 
@@ -2121,7 +2121,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
       params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
 
   // check of total time
-  const double time = scatraparamstimint_->Time();
+  const double time = scatraparamstimint_->time();
 
   // get values and spatial functions from condition
   // (assumed to be constant on element boundary)
@@ -2155,15 +2155,15 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
   static const int pnen = Core::FE::num_nodes<pdistype>;
 
   // parent element location array
-  Core::Elements::Element::LocationArray pla(discretization.NumDofSets());
-  pele->LocationVector(discretization, pla, false);
+  Core::Elements::Element::LocationArray pla(discretization.num_dof_sets());
+  pele->location_vector(discretization, pla, false);
 
   // get number of dofset associated with velocity related dofs
-  const int ndsvel = scatraparams_->NdsVel();
+  const int ndsvel = scatraparams_->nds_vel();
 
   // get convective (velocity - mesh displacement) velocity at nodes
   Teuchos::RCP<const Epetra_Vector> convel =
-      discretization.GetState(ndsvel, "convective velocity field");
+      discretization.get_state(ndsvel, "convective velocity field");
   if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
   // determine number of velocity related dofs per node
@@ -2185,7 +2185,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
   rotsymmpbc_->template rotate_my_values_if_necessary<pnsd, pnen>(econvel);
 
   // get scalar values at parent element nodes
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
   // extract local values from global vectors for parent element
@@ -2289,7 +2289,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
 
   // element surface area (1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
-  const double* gpcoord = (intpoints_tau.IP().qxg)[0];
+  const double* gpcoord = (intpoints_tau.ip().qxg)[0];
   for (int idim = 0; idim < bnsd; idim++)
   {
     bxsi(idim) = gpcoord[idim];
@@ -2298,7 +2298,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
   double drs = 0.0;
   Core::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
       bxyze, bderiv, bmetrictensor, drs, &bnormal);
-  const double area = intpoints_tau.IP().qwgt[0] * drs;
+  const double area = intpoints_tau.ip().qwgt[0] * drs;
 
   // get number of dimensions for (boundary) element (convert from int to double)
   const auto dim = (double)bnsd;
@@ -2318,13 +2318,13 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
       ScaTra::DisTypeToOptGaussRule<pdistype>::rule);
 
   // transfer integration-point coordinates of (boundary) element to parent element
-  Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.IP().nquad, pnsd);
+  Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.ip().nquad, pnsd);
   {
-    Core::LinAlg::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
+    Core::LinAlg::SerialDenseMatrix gps(bintpoints.ip().nquad, bnsd);
 
-    for (int iquad = 0; iquad < bintpoints.IP().nquad; ++iquad)
+    for (int iquad = 0; iquad < bintpoints.ip().nquad; ++iquad)
     {
-      const double* gpcoord = (bintpoints.IP().qxg)[iquad];
+      const double* gpcoord = (bintpoints.ip().qxg)[iquad];
 
       for (int idim = 0; idim < bnsd; idim++)
       {
@@ -2333,11 +2333,11 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
     }
     if (pnsd == 2)
     {
-      Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, ele->FaceParentNumber());
+      Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, ele->face_parent_number());
     }
     else if (pnsd == 3)
     {
-      Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, ele->FaceParentNumber());
+      Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, ele->face_parent_number());
     }
   }
 
@@ -2346,10 +2346,10 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
   //------------------------------------------------------------------------
   if (mixhyb)
   {
-    for (int iquad = 0; iquad < pintpoints.IP().nquad; ++iquad)
+    for (int iquad = 0; iquad < pintpoints.ip().nquad; ++iquad)
     {
       // reference coordinates of integration point from (boundary) element
-      const double* gpcoord = (pintpoints.IP().qxg)[iquad];
+      const double* gpcoord = (pintpoints.ip().qxg)[iquad];
       for (int idim = 0; idim < pnsd; idim++)
       {
         pxsi(idim) = gpcoord[idim];
@@ -2364,10 +2364,10 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
       const double det = pxji.invert(pxjm);
       if (det < 1E-16)
         FOUR_C_THROW(
-            "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->Id(), det);
+            "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->id(), det);
 
       // compute integration factor
-      const double fac = pintpoints.IP().qwgt[iquad] * det;
+      const double fac = pintpoints.ip().qwgt[iquad] * det;
 
       // compute global derivatives
       pderxy.multiply(pxji, pderiv);
@@ -2379,14 +2379,14 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
       int k = 0;
       {
         // get viscosity
-        if (material->MaterialType() == Core::Materials::m_scatra)
+        if (material->material_type() == Core::Materials::m_scatra)
         {
           const auto* actmat = static_cast<const Mat::ScatraMat*>(material.get());
 
           FOUR_C_ASSERT(numdofpernode_ == 1, "more than 1 dof per node for SCATRA material");
 
           // get constant diffusivity
-          diffus_[k] = actmat->Diffusivity();
+          diffus_[k] = actmat->diffusivity();
         }
         else
           FOUR_C_THROW("Material type is not supported");
@@ -2395,15 +2395,15 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
         gradphi.multiply(pderxy, ephinp[k]);
 
         // integration factor for left-hand side
-        const double lhsfac = scatraparamstimint_->TimeFac() * fac;
+        const double lhsfac = scatraparamstimint_->time_fac() * fac;
 
         // integration factor for right-hand side
         double rhsfac = 0.0;
-        if (scatraparamstimint_->IsIncremental() and scatraparamstimint_->IsGenAlpha())
-          rhsfac = lhsfac / scatraparamstimint_->AlphaF();
-        else if (not scatraparamstimint_->IsIncremental() and scatraparamstimint_->IsGenAlpha())
-          rhsfac = lhsfac * (1.0 - scatraparamstimint_->AlphaF()) / scatraparamstimint_->AlphaF();
-        else if (scatraparamstimint_->IsIncremental() and not scatraparamstimint_->IsGenAlpha())
+        if (scatraparamstimint_->is_incremental() and scatraparamstimint_->is_gen_alpha())
+          rhsfac = lhsfac / scatraparamstimint_->alpha_f();
+        else if (not scatraparamstimint_->is_incremental() and scatraparamstimint_->is_gen_alpha())
+          rhsfac = lhsfac * (1.0 - scatraparamstimint_->alpha_f()) / scatraparamstimint_->alpha_f();
+        else if (scatraparamstimint_->is_incremental() and not scatraparamstimint_->is_gen_alpha())
           rhsfac = lhsfac;
 
         //--------------------------------------------------------------------
@@ -2473,10 +2473,10 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
   //------------------------------------------------------------------------
   // integration loop 2: boundary integrals
   //------------------------------------------------------------------------
-  for (int iquad = 0; iquad < bintpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < bintpoints.ip().nquad; ++iquad)
   {
     // reference coordinates of integration point from (boundary) element
-    const double* gpcoord = (bintpoints.IP().qxg)[iquad];
+    const double* gpcoord = (bintpoints.ip().qxg)[iquad];
     for (int idim = 0; idim < bnsd; idim++)
     {
       bxsi(idim) = gpcoord[idim];
@@ -2511,7 +2511,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
     const double det = pxji.invert(pxjm);
     if (det < 1E-16)
       FOUR_C_THROW(
-          "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->Id(), det);
+          "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->id(), det);
 
     // compute measure tensor for surface element, infinitesimal area element drs
     // and (outward-pointing) unit normal vector
@@ -2522,7 +2522,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
     if (Core::FE::Nurbs::IsNurbs(distype)) bnormal.scale(normalfac_);
 
     // compute integration factor
-    const double fac = bintpoints.IP().qwgt[iquad] * drs;
+    const double fac = bintpoints.ip().qwgt[iquad] * drs;
 
     // compute global derivatives
     pderxy.multiply(pxji, pderiv);
@@ -2570,8 +2570,8 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
       coordgp3D[2] = 0.0;
       for (int i = 0; i < pnsd; i++) coordgp3D[i] = coordgp(i);
 
-      functfac = Global::Problem::Instance()
-                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+      functfac = Global::Problem::instance()
+                     ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
                      .evaluate(coordgp3D.data(), time, 0);
     }
     else
@@ -2585,14 +2585,14 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
     int k = 0;
     {
       // get viscosity
-      if (material->MaterialType() == Core::Materials::m_scatra)
+      if (material->material_type() == Core::Materials::m_scatra)
       {
         const auto* actmat = static_cast<const Mat::ScatraMat*>(material.get());
 
         FOUR_C_ASSERT(numdofpernode_ == 1, "more than 1 dof per node for SCATRA material");
 
         // get constant diffusivity
-        diffus_[k] = actmat->Diffusivity();
+        diffus_[k] = actmat->diffusivity();
       }
       else
         FOUR_C_THROW("Material type is not supported");
@@ -2601,15 +2601,15 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
       const double phi = pfunct.dot(ephinp[k]);
 
       // integration factor for left-hand side
-      const double lhsfac = scatraparamstimint_->TimeFac() * fac;
+      const double lhsfac = scatraparamstimint_->time_fac() * fac;
 
       // integration factor for right-hand side
       double rhsfac = 0.0;
-      if (scatraparamstimint_->IsIncremental() and scatraparamstimint_->IsGenAlpha())
-        rhsfac = lhsfac / scatraparamstimint_->AlphaF();
-      else if (not scatraparamstimint_->IsIncremental() and scatraparamstimint_->IsGenAlpha())
-        rhsfac = lhsfac * (1.0 - scatraparamstimint_->AlphaF()) / scatraparamstimint_->AlphaF();
-      else if (scatraparamstimint_->IsIncremental() and not scatraparamstimint_->IsGenAlpha())
+      if (scatraparamstimint_->is_incremental() and scatraparamstimint_->is_gen_alpha())
+        rhsfac = lhsfac / scatraparamstimint_->alpha_f();
+      else if (not scatraparamstimint_->is_incremental() and scatraparamstimint_->is_gen_alpha())
+        rhsfac = lhsfac * (1.0 - scatraparamstimint_->alpha_f()) / scatraparamstimint_->alpha_f();
+      else if (scatraparamstimint_->is_incremental() and not scatraparamstimint_->is_gen_alpha())
         rhsfac = lhsfac;
 
       if (mixhyb)
@@ -2668,7 +2668,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
           {
             vec_s_o_n_phi_minus_g(fvi * pnsd + i) -=
                 pfunct(vi) * bnormal(i) *
-                (rhsfac * phi - scatraparamstimint_->TimeFac() * fac * dirichval);
+                (rhsfac * phi - scatraparamstimint_->time_fac() * fac * dirichval);
           }
         }
       }
@@ -2750,7 +2750,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
             emat(fvi, fui) -= vlhs * pfunct(ui);
           }
 
-          erhs(fvi) += prefac * (rhsfac * phi - scatraparamstimint_->TimeFac() * fac * dirichval);
+          erhs(fvi) += prefac * (rhsfac * phi - scatraparamstimint_->time_fac() * fac * dirichval);
         }
 
         /*  stabilization term
@@ -2773,7 +2773,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
             emat(fvi, fui) += lhsfac * prefac * pfunct(ui);
           }
 
-          erhs(fvi) -= prefac * (rhsfac * phi - scatraparamstimint_->TimeFac() * fac * dirichval);
+          erhs(fvi) -= prefac * (rhsfac * phi - scatraparamstimint_->time_fac() * fac * dirichval);
         }
       }
     }
@@ -2789,7 +2789,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
 
     Core::LinAlg::FixedSizeSerialDenseSolver<pnsd * pnen, pnsd * pnen> solver;
 
-    solver.SetMatrix(inv_s_q);
+    solver.set_matrix(inv_s_q);
     solver.invert();
 
     // computation of matrix-matrix and matrix vector products, local assembly
@@ -2860,12 +2860,12 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype,
   std::vector<int> plm;
   std::vector<int> plmowner;
   std::vector<int> plmstride;
-  pele->LocationVector(discretization, plm, plmowner, plmstride);
+  pele->location_vector(discretization, plm, plmowner, plmstride);
 
   // get scalar values at parent element nodes
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-  Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
+  Teuchos::RCP<const Epetra_Vector> phin = discretization.get_state("phin");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
 
   // extract local values from global vectors for parent element
@@ -2951,13 +2951,13 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype,
       ScaTra::DisTypeToOptGaussRule<pdistype>::rule);
 
   // transfer integration-point coordinates of (boundary) element to parent element
-  Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.IP().nquad, pnsd);
+  Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.ip().nquad, pnsd);
   {
-    Core::LinAlg::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
+    Core::LinAlg::SerialDenseMatrix gps(bintpoints.ip().nquad, bnsd);
 
-    for (int iquad = 0; iquad < bintpoints.IP().nquad; ++iquad)
+    for (int iquad = 0; iquad < bintpoints.ip().nquad; ++iquad)
     {
-      const double* gpcoord = (bintpoints.IP().qxg)[iquad];
+      const double* gpcoord = (bintpoints.ip().qxg)[iquad];
 
       for (int idim = 0; idim < bnsd; idim++)
       {
@@ -2966,28 +2966,28 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype,
     }
     if (pnsd == 2)
     {
-      Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, ele->FaceParentNumber());
+      Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, ele->face_parent_number());
     }
     else if (pnsd == 3)
     {
-      Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, ele->FaceParentNumber());
+      Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, ele->face_parent_number());
     }
   }
 
 
   const double reinit_pseudo_timestepsize_factor = params.get<double>("pseudotimestepsize_factor");
 
-  const double meshsize = GetEleDiameter<pdistype>(pxyze);
+  const double meshsize = get_ele_diameter<pdistype>(pxyze);
 
   const double pseudo_timestep_size = meshsize * reinit_pseudo_timestepsize_factor;
 
   //------------------------------------------------------------------------
   // integration loop: boundary integrals
   //------------------------------------------------------------------------
-  for (int iquad = 0; iquad < bintpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < bintpoints.ip().nquad; ++iquad)
   {
     // reference coordinates of integration point from (boundary) element
-    const double* gpcoord = (bintpoints.IP().qxg)[iquad];
+    const double* gpcoord = (bintpoints.ip().qxg)[iquad];
     for (int idim = 0; idim < bnsd; idim++)
     {
       bxsi(idim) = gpcoord[idim];
@@ -3022,7 +3022,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype,
     const double det = pxji.invert(pxjm);
     if (det < 1E-16)
       FOUR_C_THROW(
-          "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->Id(), det);
+          "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->id(), det);
 
     // compute measure tensor for surface element, infinitesimal area element drs
     // and (outward-pointing) unit normal vector
@@ -3033,7 +3033,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype,
     if (Core::FE::Nurbs::IsNurbs(distype)) bnormal.scale(normalfac_);
 
     // compute integration factor
-    const double fac_surface = bintpoints.IP().qwgt[iquad] * drs;
+    const double fac_surface = bintpoints.ip().qwgt[iquad] * drs;
 
     // compute global derivatives
     pderxy.multiply(pxji, pderiv);
@@ -3123,7 +3123,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_nodal_
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac =

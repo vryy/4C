@@ -29,7 +29,7 @@ void PARTICLEALGORITHM::InputGenerator::init()
   // nothing to do
 }
 
-void PARTICLEALGORITHM::InputGenerator::GenerateParticles(
+void PARTICLEALGORITHM::InputGenerator::generate_particles(
     std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particlesgenerated) const
 {
   // generate initial particles

@@ -71,7 +71,7 @@ namespace Discret
       /*!
         Interface function for supporting methods of the element
        */
-      int EvaluateService(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int evaluate_service(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
@@ -106,7 +106,7 @@ namespace Discret
       }
 
       /// projection of function field
-      virtual int ProjectField(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int project_field(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2);
@@ -136,7 +136,7 @@ namespace Discret
       \brief Initialize the shape functions and solver to the given element (degree is runtime
       parameter)
        */
-      void InitializeShapes(const Discret::ELEMENTS::Fluid* ele);
+      void initialize_shapes(const Discret::ELEMENTS::Fluid* ele);
 
       /// Evaluate the element
       /*!
@@ -179,7 +179,7 @@ namespace Discret
       }
 
       /// Evaluate the XFEM cut element
-      int EvaluateXFEM(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      int evaluate_xfem(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -267,21 +267,21 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec);
 
       /// Singleton access method
-      static FluidEleCalcHDG<distype>* Instance(
+      static FluidEleCalcHDG<distype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       /// Print local residuals
-      void PrintLocalResiduals(Discret::ELEMENTS::Fluid* ele);
+      void print_local_residuals(Discret::ELEMENTS::Fluid* ele);
 
       /// Print local variables
-      void PrintLocalVariables(Discret::ELEMENTS::Fluid* ele);
+      void print_local_variables(Discret::ELEMENTS::Fluid* ele);
 
       /// Print local correction term
       void print_local_correction(
           Discret::ELEMENTS::Fluid* ele, std::vector<double>& interiorecorrectionterm);
 
       /// Print local body force
-      void PrintLocalBodyForce(
+      void print_local_body_force(
           Discret::ELEMENTS::Fluid* ele, std::vector<double>& interiorebodyforce);
 
      private:
@@ -305,14 +305,14 @@ namespace Discret
             const std::vector<double>& interiorecorrectionterm,
             const std::vector<double>& interiorebodyforce);
 
-        void ComputeFaceResidual(const int face, const Teuchos::RCP<Core::Mat::Material>& mat,
+        void compute_face_residual(const int face, const Teuchos::RCP<Core::Mat::Material>& mat,
             const std::vector<double>& val, const std::vector<double>& traceval,
             Core::LinAlg::SerialDenseVector& eleVec);
 
         void compute_interior_matrices(
             const Teuchos::RCP<Core::Mat::Material>& mat, const bool evaluateOnlyNonlinear);
 
-        void ComputeFaceMatrices(const int face, const Teuchos::RCP<Core::Mat::Material>& mat,
+        void compute_face_matrices(const int face, const Teuchos::RCP<Core::Mat::Material>& mat,
             const bool evaluateOnlyNonlinear, Core::LinAlg::SerialDenseMatrix& elemat);
 
         // inverts the velocity gradient matrix and puts its contribution into the velocity matrix
@@ -321,11 +321,11 @@ namespace Discret
         void eliminate_velocity_gradient(Core::LinAlg::SerialDenseMatrix& elemat);
 
         // solves the local problem, including factorization of the matrix
-        void SolveResidual();
+        void solve_residual();
 
         // condense the local matrix (involving cell velocity gradients, velocities and pressure)
         // into the element matrix for the trace and similarly for the residuals
-        void CondenseLocalPart(
+        void condense_local_part(
             Core::LinAlg::SerialDenseMatrix& elemat, Core::LinAlg::SerialDenseVector& elevec);
 
         // compute the correction term on the rhs for the weakly compressible benchmark
@@ -333,7 +333,7 @@ namespace Discret
             std::vector<double>& interiorecorrectionterm, int corrtermfuncnum);
 
         // compute the body force on the rhs for the weakly compressible benchmark
-        void ComputeBodyForce(std::vector<double>& interiorebodyforce, int bodyforcefuncnum);
+        void compute_body_force(std::vector<double>& interiorebodyforce, int bodyforcefuncnum);
 
         const unsigned int ndofs_;
 

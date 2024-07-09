@@ -53,7 +53,7 @@ namespace
     const double y_d = hardeningfunction.evaluate(dp, {}, 0);
     double y_d_visc = y_d * pow(visc * Dgamma / dt + 1., eps);
 
-    const std::vector<double> dy_d_dgvector = hardeningfunction.EvaluateDerivative(dp, {}, 0);
+    const std::vector<double> dy_d_dgvector = hardeningfunction.evaluate_derivative(dp, {}, 0);
     const double dy_d_dgamma = dy_d_dgvector[0] * pow(visc * Dgamma / dt + 1., eps) +
                                y_d * eps * pow(visc * Dgamma / dt + 1., eps - 1) * visc / dt;
 
@@ -117,7 +117,7 @@ namespace
     dp.emplace_back("epsp", accplstrain_last + Dgamma);
     const double y_d = hardening_function.evaluate(dp, {}, 0);
 
-    std::vector<double> dy_d_dgvector = hardening_function.EvaluateDerivative(dp, {}, 0);
+    std::vector<double> dy_d_dgvector = hardening_function.evaluate_derivative(dp, {}, 0);
     double dy_d_dgamma = dy_d_dgvector[0] * pow(visc * Dgamma / dt + 1., eps) +
                          y_d * eps * pow(visc * Dgamma / dt + 1., eps - 1) * visc / dt;
 
@@ -201,7 +201,7 @@ Mat::PlasticNlnLogNeoHookeType Mat::PlasticNlnLogNeoHookeType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()                  |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::PlasticNlnLogNeoHookeType::Create(
+Core::Communication::ParObject* Mat::PlasticNlnLogNeoHookeType::create(
     const std::vector<char>& data)
 {
   Mat::PlasticNlnLogNeoHooke* plasticneo = new Mat::PlasticNlnLogNeoHooke();
@@ -233,18 +233,18 @@ void Mat::PlasticNlnLogNeoHooke::pack(Core::Communication::PackBuffer& data) con
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 
   // pack history data
   int histsize;
   // if material is not initialized, i.e. start simulation, nothing to pack
-  if (!Initialized())
+  if (!initialized())
   {
     histsize = 0;
   }
@@ -273,23 +273,23 @@ void Mat::PlasticNlnLogNeoHooke::unpack(const std::vector<char>& data)
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::PlasticNlnLogNeoHooke*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   // history data
@@ -335,7 +335,7 @@ void Mat::PlasticNlnLogNeoHooke::setup(int numgp, Input::LineDefinition* linedef
   if (functionID_hardening != 0)
   {
     hardening_function_ =
-        &Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfAnything>(
+        &Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfAnything>(
             functionID_hardening - 1);
   }
 
@@ -670,12 +670,12 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)                         |
  *---------------------------------------------------------------------*/
-void Mat::PlasticNlnLogNeoHooke::VisNames(std::map<std::string, int>& names)
+void Mat::PlasticNlnLogNeoHooke::vis_names(std::map<std::string, int>& names)
 {
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1;  // scalar
 
-}  // VisNames()
+}  // vis_names()
 
 
 /*---------------------------------------------------------------------*
@@ -693,22 +693,22 @@ void Mat::PlasticNlnLogNeoHooke::register_output_data_names(
 /*---------------------------------------------------------------------*
  | return visualization data (public)                                  |
  *---------------------------------------------------------------------*/
-bool Mat::PlasticNlnLogNeoHooke::VisData(
+bool Mat::PlasticNlnLogNeoHooke::vis_data(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "accumulatedstrain")
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
-    for (int gp = 0; gp < numgp; ++gp) temp += AccumulatedStrain(gp);
+    for (int gp = 0; gp < numgp; ++gp) temp += accumulated_strain(gp);
     data[0] = temp / numgp;
   }
   return false;
 
-}  // VisData()
+}  // vis_data()
 
 
-bool Mat::PlasticNlnLogNeoHooke::EvaluateOutputData(
+bool Mat::PlasticNlnLogNeoHooke::evaluate_output_data(
     const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
   if (name == "accumulated_plastic_strain")

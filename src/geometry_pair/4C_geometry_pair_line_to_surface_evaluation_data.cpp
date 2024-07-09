@@ -52,7 +52,7 @@ void GEOMETRYPAIR::LineToSurfaceEvaluationData::setup(
 
   // The averaged reference normals have to be calculated after each face element is set up.
   for (const auto& face_element_iterator : face_elements_)
-    if (face_element_iterator.second->IsPartOfPair())
+    if (face_element_iterator.second->is_part_of_pair())
       face_element_iterator.second->calculate_averaged_reference_normals(face_elements_);
 }
 
@@ -63,7 +63,8 @@ void GEOMETRYPAIR::LineToSurfaceEvaluationData::set_state(
     const Teuchos::RCP<const Epetra_Vector>& displacement_col_np)
 {
   for (const auto& [id, face_element] : face_elements_)
-    if (face_element->IsPartOfPair()) face_element->set_state(displacement_col_np, face_elements_);
+    if (face_element->is_part_of_pair())
+      face_element->set_state(displacement_col_np, face_elements_);
 }
 
 FOUR_C_NAMESPACE_CLOSE

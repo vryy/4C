@@ -70,156 +70,156 @@ namespace Core::DOFSets
     void reset() override;
 
     /// Notify original dofset of new proxies
-    void NotifyAssigned() override;
+    void notify_assigned() override;
 
     /// our original DofSet dies
-    void Disconnect(DofSetInterface* dofset) override;
+    void disconnect(DofSetInterface* dofset) override;
 
     /// Returns true if filled
-    bool Filled() const override { return sourcedofset_->Filled(); };
+    bool filled() const override { return sourcedofset_->filled(); };
 
     //! @name Access methods
 
     /// get number of nodal dofs
-    int NumDofPerNode(
+    int num_dof_per_node(
         const Core::Nodes::Node& node  ///< node, for which you want to know the number of dofs
     ) const override
     {
-      if (not sourcedis_->HaveGlobalNode(node.Id())) return 0;
-      Core::Nodes::Node* sourcenode = sourcedis_->gNode(node.Id());
+      if (not sourcedis_->have_global_node(node.id())) return 0;
+      Core::Nodes::Node* sourcenode = sourcedis_->g_node(node.id());
       check_is_assigned();
-      return sourcedofset_->NumDofPerNode(*sourcenode);
+      return sourcedofset_->num_dof_per_node(*sourcenode);
     };
 
     /// Get number of dofs for given node
-    int NumDof(const Core::Nodes::Node* node) const override
+    int num_dof(const Core::Nodes::Node* node) const override
     {
       check_is_assigned();
-      if (not sourcedis_->HaveGlobalNode(node->Id())) return 0;
-      Core::Nodes::Node* sourcenode = sourcedis_->gNode(node->Id());
-      return sourcedofset_->NumDof(sourcenode);
+      if (not sourcedis_->have_global_node(node->id())) return 0;
+      Core::Nodes::Node* sourcenode = sourcedis_->g_node(node->id());
+      return sourcedofset_->num_dof(sourcenode);
     }
 
     /// Get number of dofs for given element
-    int NumDof(const Core::Elements::Element* element) const override
+    int num_dof(const Core::Elements::Element* element) const override
     {
       check_is_assigned();
-      if (element->IsFaceElement()) return sourcedofset_->NumDof(element);
-      if (not sourcedis_->HaveGlobalElement(element->Id())) return 0;
-      Core::Elements::Element* sourceele = sourcedis_->gElement(element->Id());
-      return sourcedofset_->NumDof(sourceele);
+      if (element->is_face_element()) return sourcedofset_->num_dof(element);
+      if (not sourcedis_->have_global_element(element->id())) return 0;
+      Core::Elements::Element* sourceele = sourcedis_->g_element(element->id());
+      return sourcedofset_->num_dof(sourceele);
     }
 
     /// Get the gid of a dof for given node
-    int Dof(const Core::Nodes::Node* node, int dof) const override
+    int dof(const Core::Nodes::Node* node, int dof) const override
     {
       check_is_assigned();
-      if (not sourcedis_->HaveGlobalNode(node->Id())) return -1;
-      Core::Nodes::Node* sourcenode = sourcedis_->gNode(node->Id());
-      return sourcedofset_->Dof(sourcenode, dof);
+      if (not sourcedis_->have_global_node(node->id())) return -1;
+      Core::Nodes::Node* sourcenode = sourcedis_->g_node(node->id());
+      return sourcedofset_->dof(sourcenode, dof);
     }
 
     /// Get the gid of all dofs of a node
-    std::vector<int> Dof(const Core::Nodes::Node* node) const override
+    std::vector<int> dof(const Core::Nodes::Node* node) const override
     {
       check_is_assigned();
-      if (not sourcedis_->HaveGlobalNode(node->Id())) return std::vector<int>();
-      Core::Nodes::Node* sourcenode = sourcedis_->gNode(node->Id());
-      return sourcedofset_->Dof(sourcenode);
+      if (not sourcedis_->have_global_node(node->id())) return std::vector<int>();
+      Core::Nodes::Node* sourcenode = sourcedis_->g_node(node->id());
+      return sourcedofset_->dof(sourcenode);
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(std::vector<int>& dof,     ///< vector of dof gids (to be filled)
+    void dof(std::vector<int>& dof,     ///< vector of dof gids (to be filled)
         const Core::Nodes::Node* node,  ///< the node
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
     ) const override
     {
       check_is_assigned();
-      if (not sourcedis_->HaveGlobalNode(node->Id())) return;
-      Core::Nodes::Node* sourcenode = sourcedis_->gNode(node->Id());
-      return sourcedofset_->Dof(dof, sourcenode, nodaldofset);
+      if (not sourcedis_->have_global_node(node->id())) return;
+      Core::Nodes::Node* sourcenode = sourcedis_->g_node(node->id());
+      return sourcedofset_->dof(dof, sourcenode, nodaldofset);
     }
 
     /// Get the gid of all dofs of a element
-    std::vector<int> Dof(const Core::Elements::Element* element) const override
+    std::vector<int> dof(const Core::Elements::Element* element) const override
     {
       check_is_assigned();
-      if (element->IsFaceElement()) return sourcedofset_->Dof(element);
-      if (not sourcedis_->HaveGlobalElement(element->Id())) return std::vector<int>();
-      Core::Elements::Element* sourceele = sourcedis_->gElement(element->Id());
-      return sourcedofset_->Dof(sourceele);
+      if (element->is_face_element()) return sourcedofset_->dof(element);
+      if (not sourcedis_->have_global_element(element->id())) return std::vector<int>();
+      Core::Elements::Element* sourceele = sourcedis_->g_element(element->id());
+      return sourcedofset_->dof(sourceele);
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(const Core::Nodes::Node* node, std::vector<int>& lm) const override
+    void dof(const Core::Nodes::Node* node, std::vector<int>& lm) const override
     {
       check_is_assigned();
-      if (not sourcedis_->HaveGlobalNode(node->Id())) return;
-      Core::Nodes::Node* sourcenode = sourcedis_->gNode(node->Id());
-      return sourcedofset_->Dof(sourcenode, lm);
+      if (not sourcedis_->have_global_node(node->id())) return;
+      Core::Nodes::Node* sourcenode = sourcedis_->g_node(node->id());
+      return sourcedofset_->dof(sourcenode, lm);
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
+    void dof(const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
         const unsigned startindex,  ///< first index of vector at which will be written to end
         std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
     ) const override
     {
       check_is_assigned();
-      if (not sourcedis_->HaveGlobalNode(node->Id())) return;
-      Core::Nodes::Node* sourcenode = sourcedis_->gNode(node->Id());
-      return sourcedofset_->Dof(sourcenode, startindex, lm);
+      if (not sourcedis_->have_global_node(node->id())) return;
+      Core::Nodes::Node* sourcenode = sourcedis_->g_node(node->id());
+      return sourcedofset_->dof(sourcenode, startindex, lm);
     }
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    void Dof(const Core::Elements::Element*
+    void dof(const Core::Elements::Element*
                  element,  ///< element which provides its expected number of DOFs per node
         const Core::Nodes::Node* node,  ///< node, for which you want the DOF positions
         std::vector<int>& lm  ///< already allocated vector to be filled with DOF positions
     ) const override
     {
       check_is_assigned();
-      if (not sourcedis_->HaveGlobalNode(node->Id())) return;
-      Core::Nodes::Node* sourcenode = sourcedis_->gNode(node->Id());
-      Core::Elements::Element* sourceele = sourcedis_->gElement(element->Id());
-      return sourcedofset_->Dof(sourceele, sourcenode, lm);
+      if (not sourcedis_->have_global_node(node->id())) return;
+      Core::Nodes::Node* sourcenode = sourcedis_->g_node(node->id());
+      Core::Elements::Element* sourceele = sourcedis_->g_element(element->id());
+      return sourcedofset_->dof(sourceele, sourcenode, lm);
     }
 
     /// Get the gid of a dof for given element
-    int Dof(const Core::Elements::Element* element, int dof) const override
+    int dof(const Core::Elements::Element* element, int dof) const override
     {
       check_is_assigned();
-      if (element->IsFaceElement()) return sourcedofset_->Dof(element, dof);
-      if (not sourcedis_->HaveGlobalElement(element->Id())) return -1;
-      Core::Elements::Element* sourceele = sourcedis_->gElement(element->Id());
-      return sourcedofset_->Dof(sourceele, dof);
+      if (element->is_face_element()) return sourcedofset_->dof(element, dof);
+      if (not sourcedis_->have_global_element(element->id())) return -1;
+      Core::Elements::Element* sourceele = sourcedis_->g_element(element->id());
+      return sourcedofset_->dof(sourceele, dof);
     }
 
 
     /// Get the gid of all dofs of a element
-    void Dof(const Core::Elements::Element* element, std::vector<int>& lm) const override
+    void dof(const Core::Elements::Element* element, std::vector<int>& lm) const override
     {
       check_is_assigned();
-      if (element->IsFaceElement()) return sourcedofset_->Dof(element, lm);
-      if (not sourcedis_->HaveGlobalElement(element->Id())) return;
-      Core::Elements::Element* sourceele = sourcedis_->gElement(element->Id());
-      return sourcedofset_->Dof(sourceele, lm);
+      if (element->is_face_element()) return sourcedofset_->dof(element, lm);
+      if (not sourcedis_->have_global_element(element->id())) return;
+      Core::Elements::Element* sourceele = sourcedis_->g_element(element->id());
+      return sourcedofset_->dof(sourceele, lm);
     }
 
     /// Print this class
     void print(std::ostream& os) const override { sourcedofset_->print(os); };
 
     /// Print the dofsets in the static_dofsets_ list
-    void PrintAllDofsets(const Epetra_Comm& comm) const override
+    void print_all_dofsets(const Epetra_Comm& comm) const override
     {
-      sourcedofset_->PrintAllDofsets(comm);
+      sourcedofset_->print_all_dofsets(comm);
     };
 
     /// Get Number of Global Elements of degree of freedom row map
-    int NumGlobalElements() const override
+    int num_global_elements() const override
     {
       check_is_assigned();
-      return sourcedofset_->NumGlobalElements();
+      return sourcedofset_->num_global_elements();
     };
 
     /// Get degree of freedom row map
@@ -230,39 +230,39 @@ namespace Core::DOFSets
     };
 
     /// Get degree of freedom column map
-    const Epetra_Map* DofColMap() const override
+    const Epetra_Map* dof_col_map() const override
     {
       check_is_assigned();
-      return sourcedofset_->DofColMap();
+      return sourcedofset_->dof_col_map();
     };
 
     /// Get maximum GID of degree of freedom row map
-    int MaxAllGID() const override
+    int max_all_gid() const override
     {
       check_is_assigned();
-      return sourcedofset_->MaxAllGID();
+      return sourcedofset_->max_all_gid();
     };
 
     /// Get minimum GID of degree of freedom row map
-    int MinAllGID() const override
+    int min_all_gid() const override
     {
       check_is_assigned();
-      return sourcedofset_->MinAllGID();
+      return sourcedofset_->min_all_gid();
     };
 
     /// Get Max of all GID assigned in the DofSets in front of current one in the list
     /// #static_dofsets_
-    int MaxGIDinList(const Epetra_Comm& comm) const override
+    int max_gi_din_list(const Epetra_Comm& comm) const override
     {
       check_is_assigned();
-      return sourcedofset_->MaxGIDinList(comm);
+      return sourcedofset_->max_gi_din_list(comm);
     };
 
     /// are the dof maps already initialized?
-    bool Initialized() const override
+    bool initialized() const override
     {
       check_is_assigned();
-      return sourcedofset_->Initialized();
+      return sourcedofset_->initialized();
     };
 
     //@}

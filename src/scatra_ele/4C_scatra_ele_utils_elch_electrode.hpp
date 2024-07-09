@@ -32,7 +32,7 @@ namespace Discret
 
      public:
       //! singleton access method
-      static ScaTraEleUtilsElchElectrode<distype>* Instance(
+      static ScaTraEleUtilsElchElectrode<distype>* instance(
           const int numdofpernode,    ///< number of degrees of freedom per node
           const int numscal,          ///< number of transported scalars per node
           const std::string& disname  ///< name of discretization

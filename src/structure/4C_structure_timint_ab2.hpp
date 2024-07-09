@@ -104,19 +104,19 @@ namespace Solid
     //@{
 
     //! Resize \p TimIntMStep<T> multi-step quantities
-    void ResizeMStep() override;
+    void resize_m_step() override;
 
     //! Do time integration of single step
-    int IntegrateStep() override;
+    int integrate_step() override;
 
     //! Update configuration after time step
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
     //! becomes impossible. We are ready and keen awaiting the next time step.
-    void UpdateStepState() override;
+    void update_step_state() override;
 
     //! Update Element
-    void UpdateStepElement() override;
+    void update_step_element() override;
 
     //@}
 
@@ -124,11 +124,11 @@ namespace Solid
     //@{
 
     //! Return time integrator name
-    enum Inpar::Solid::DynamicType MethodName() const override { return Inpar::Solid::dyna_ab2; }
+    enum Inpar::Solid::DynamicType method_name() const override { return Inpar::Solid::dyna_ab2; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    int MethodSteps() const override { return 2; }
+    int method_steps() const override { return 2; }
 
     //! Give local order of accuracy of displacement part
     int method_order_of_accuracy_dis() const override { return 2; }
@@ -153,20 +153,20 @@ namespace Solid
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext() override { return fextn_; }
+    Teuchos::RCP<Epetra_Vector> fext() override { return fextn_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Epetra_Vector> FextNew() override
+    Teuchos::RCP<Epetra_Vector> fext_new() override
     {
       FOUR_C_THROW("FextNew() not available in AB2");
       return Teuchos::null;
     }
 
     //! Read and set restart for forces
-    void ReadRestartForce() override;
+    void read_restart_force() override;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
+    void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
 
     //@}
 

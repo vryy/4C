@@ -55,7 +55,7 @@ void ParticleInteraction::SPHPressure::setup(
   // update with actual fluid particle types
   const auto fluidtypes = fluidtypes_;
   for (const auto& type_i : fluidtypes)
-    if (not particlecontainerbundle_->GetParticleTypes().count(type_i)) fluidtypes_.erase(type_i);
+    if (not particlecontainerbundle_->get_particle_types().count(type_i)) fluidtypes_.erase(type_i);
 
   // setup pressure of ghosted particles to refresh
   {
@@ -66,7 +66,7 @@ void ParticleInteraction::SPHPressure::setup(
   }
 }
 
-void ParticleInteraction::SPHPressure::ComputePressure() const
+void ParticleInteraction::SPHPressure::compute_pressure() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::SPHPressure::ComputePressure");
 
@@ -78,14 +78,14 @@ void ParticleInteraction::SPHPressure::ComputePressure() const
         particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    const int particlestored = container->ParticlesStored();
+    const int particlestored = container->particles_stored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
 
     // get pointer to particle state
-    const double* dens = container->GetPtrToState(PARTICLEENGINE::Density, 0);
-    double* press = container->GetPtrToState(PARTICLEENGINE::Pressure, 0);
+    const double* dens = container->get_ptr_to_state(PARTICLEENGINE::Density, 0);
+    double* press = container->get_ptr_to_state(PARTICLEENGINE::Pressure, 0);
 
     // get material for current particle type
     const Mat::PAR::ParticleMaterialBase* material =
@@ -97,7 +97,7 @@ void ParticleInteraction::SPHPressure::ComputePressure() const
 
     // iterate over owned particles of current type
     for (int i = 0; i < particlestored; ++i)
-      press[i] = equationofstate->DensityToPressure(dens[i], material->initDensity_);
+      press[i] = equationofstate->density_to_pressure(dens[i], material->initDensity_);
   }
 
   // refresh pressure of ghosted particles

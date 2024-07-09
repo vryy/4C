@@ -49,7 +49,7 @@ namespace Discret
 
      public:
       //! Singleton access method
-      static ArteryEleCalcPresBased<distype>* Instance(
+      static ArteryEleCalcPresBased<distype>* instance(
           const int numdofpernode, const std::string& disname);
 
       int evaluate(Artery* ele, Teuchos::ParameterList& params,
@@ -61,7 +61,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
           Teuchos::RCP<Core::Mat::Material> mat) override;
 
-      int ScatraEvaluate(Artery* ele, Teuchos::ParameterList& params,
+      int scatra_evaluate(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -70,7 +70,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
           Teuchos::RCP<Core::Mat::Material> mat) override;
 
-      int EvaluateService(Artery* ele, const Arteries::Action action,
+      int evaluate_service(Artery* ele, const Arteries::Action action,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,

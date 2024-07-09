@@ -72,7 +72,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 02/2019
      */
-    void ApplyViscousDamping();
+    void apply_viscous_damping();
 
    private:
     //! interface to particle engine

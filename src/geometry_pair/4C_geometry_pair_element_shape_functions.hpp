@@ -82,7 +82,7 @@ namespace GEOMETRYPAIR
      * @param shape_function_data (in) Shape function data container.
      */
     template <typename V, typename T, typename... NotNeededArgumentType>
-    static void EvaluateDeriv1(
+    static void evaluate_deriv1(
         V& dN, const T& xi, const NotNeededArgumentType&... not_needed_argument)
     {
       if constexpr (ElementType::element_dim_ == 1)
@@ -132,7 +132,7 @@ namespace GEOMETRYPAIR
      * @param shape_function_data (in) Shape function data container.
      */
     template <typename V, typename T>
-    static void EvaluateDeriv1(
+    static void evaluate_deriv1(
         V& dN, const T& xi, const ShapeFunctionData<t_hermite>& shape_function_data)
     {
       Core::FE::shape_function_hermite_1D_deriv1(
@@ -188,7 +188,7 @@ namespace GEOMETRYPAIR
      * @param shape_function_data (in) Shape function data container.
      */
     template <typename V, typename T>
-    static void EvaluateDeriv1(
+    static void evaluate_deriv1(
         V& dN, const T& xi, const ShapeFunctionData<ElementType>& shape_function_data)
     {
       if (shape_function_data.myknots_.size() == 0)

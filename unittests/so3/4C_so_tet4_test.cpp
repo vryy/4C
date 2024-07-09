@@ -32,11 +32,11 @@ namespace
       std::vector<std::vector<double>> coords = {
           {-0.1, -0.2, -0.5}, {1.25, 0.23, 0.66}, {1.20, 0.99, 0.5}, {-0.10, -0.2, 1.96}};
       for (int lid = 0; lid < 4; ++lid)
-        testdis_->AddNode(Teuchos::rcp(new Core::Nodes::Node(lid, coords[lid], 0)));
+        testdis_->add_node(Teuchos::rcp(new Core::Nodes::Node(lid, coords[lid], 0)));
 
       // create 1 element
       testele_ = Teuchos::rcp(new Discret::ELEMENTS::SoTet4(0, 0));
-      testele_->SetNodeIds(4, nodeids.data());
+      testele_->set_node_ids(4, nodeids.data());
       testdis_->add_element(testele_);
       testdis_->fill_complete(false, false, false);
 
@@ -53,7 +53,7 @@ namespace
       // We need to make sure the Global::Problem instance created in setUp is deleted again. If
       // this is not done, some troubles arise where unit tests influence each other on some
       // configurations. We suspect that missing singleton destruction might be the reason for that.
-      Global::Problem::Done();
+      Global::Problem::done();
     }
     //! dummy discretization for holding element and node pointers
     Teuchos::RCP<Core::FE::Discretization> testdis_;
@@ -70,8 +70,8 @@ namespace
   {
     std::vector<double> pd = {1, 2, 3};
     Core::Nodes::Node node_dummy(0, pd, false);
-    EXPECT_EQ(testele_->NumDofPerNode(node_dummy), 3);
-    EXPECT_EQ(copytestele_->NumDofPerNode(node_dummy), 3);
+    EXPECT_EQ(testele_->num_dof_per_node(node_dummy), 3);
+    EXPECT_EQ(copytestele_->num_dof_per_node(node_dummy), 3);
   }
 
   /**
@@ -88,8 +88,8 @@ namespace
    */
   TEST_F(SoTet4Test, TestDegree)
   {
-    EXPECT_EQ(testele_->Degree(), 1);
-    EXPECT_EQ(copytestele_->Degree(), 1);
+    EXPECT_EQ(testele_->degree(), 1);
+    EXPECT_EQ(copytestele_->degree(), 1);
   }
 
   /**
@@ -97,8 +97,8 @@ namespace
    */
   TEST_F(SoTet4Test, TestNumVolume)
   {
-    EXPECT_EQ(testele_->NumVolume(), 1);
-    EXPECT_EQ(copytestele_->NumVolume(), 1);
+    EXPECT_EQ(testele_->num_volume(), 1);
+    EXPECT_EQ(copytestele_->num_volume(), 1);
   }
 
   /**
@@ -106,8 +106,8 @@ namespace
    */
   TEST_F(SoTet4Test, TestNumSurface)
   {
-    EXPECT_EQ(testele_->NumSurface(), 4);
-    EXPECT_EQ(copytestele_->NumSurface(), 4);
+    EXPECT_EQ(testele_->num_surface(), 4);
+    EXPECT_EQ(copytestele_->num_surface(), 4);
   }
 
   /**
@@ -115,8 +115,8 @@ namespace
    */
   TEST_F(SoTet4Test, TestNumLine)
   {
-    EXPECT_EQ(testele_->NumLine(), 6);
-    EXPECT_EQ(copytestele_->NumLine(), 6);
+    EXPECT_EQ(testele_->num_line(), 6);
+    EXPECT_EQ(copytestele_->num_line(), 6);
   }
 
   /**

@@ -109,7 +109,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 04/2018
      */
-    inline void ClearContainer() { particlestored_ = 0; };
+    inline void clear_container() { particlestored_ = 0; };
 
     /*!
      * \brief add particle to particle container and get index
@@ -124,7 +124,7 @@ namespace PARTICLEENGINE
      * \param[in]  globalid global id of particle
      * \param[in]  states   states of particle
      */
-    void AddParticle(int& index, int globalid, const ParticleStates& states);
+    void add_particle(int& index, int globalid, const ParticleStates& states);
 
     /*!
      * \brief replace particle in particle container at given index
@@ -139,7 +139,7 @@ namespace PARTICLEENGINE
      * \param[in] globalid global id of particle
      * \param[in] states   states of particle
      */
-    void ReplaceParticle(int index, int globalid, const ParticleStates& states);
+    void replace_particle(int index, int globalid, const ParticleStates& states);
 
     /*!
      * \brief get particle at index from particle container
@@ -152,7 +152,7 @@ namespace PARTICLEENGINE
      * \param[out] globalid global id of particle
      * \param[out] states   states of particle
      */
-    void GetParticle(int index, int& globalid, ParticleStates& states) const;
+    void get_particle(int index, int& globalid, ParticleStates& states) const;
 
     /*!
      * \brief remove particle from particle container
@@ -165,7 +165,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] index index of particle in container
      */
-    void RemoveParticle(int index);
+    void remove_particle(int index);
 
     //! @}
 
@@ -178,7 +178,7 @@ namespace PARTICLEENGINE
      *
      * \return dimension of particle state
      */
-    inline int GetStateDim(ParticleState state)
+    inline int get_state_dim(ParticleState state)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedstates_.count(state))
@@ -208,7 +208,7 @@ namespace PARTICLEENGINE
      *
      * \return pointer to particle state
      */
-    inline double* GetPtrToState(ParticleState state, int index)
+    inline double* get_ptr_to_state(ParticleState state, int index)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedstates_.count(state))
@@ -240,7 +240,7 @@ namespace PARTICLEENGINE
      *
      * \return pointer to particle state or nullptr
      */
-    inline double* CondGetPtrToState(ParticleState state, int index)
+    inline double* cond_get_ptr_to_state(ParticleState state, int index)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (index < 0 or index > (particlestored_ - 1))
@@ -262,7 +262,7 @@ namespace PARTICLEENGINE
      *
      * \return pointer to global id
      */
-    inline int* GetPtrToGlobalID(int index)
+    inline int* get_ptr_to_global_id(int index)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (index < 0 or index > (particlestored_ - 1))
@@ -286,7 +286,7 @@ namespace PARTICLEENGINE
      * \param[in] fac   scale factor
      * \param[in] state particle state
      */
-    inline void ScaleState(double fac, ParticleState state)
+    inline void scale_state(double fac, ParticleState state)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedstates_.count(state))
@@ -307,7 +307,7 @@ namespace PARTICLEENGINE
      * \param[in] facB   second scale factor
      * \param[in] stateB second particle state
      */
-    inline void UpdateState(double facA, ParticleState stateA, double facB, ParticleState stateB)
+    inline void update_state(double facA, ParticleState stateA, double facB, ParticleState stateB)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedstates_.count(stateA))
@@ -357,7 +357,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] state particle state
      */
-    inline void ClearState(ParticleState state)
+    inline void clear_state(ParticleState state)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedstates_.count(state))
@@ -377,7 +377,7 @@ namespace PARTICLEENGINE
      *
      * \return stored particle states
      */
-    inline const std::set<ParticleState>& GetStoredStates() const { return storedstates_; };
+    inline const std::set<ParticleState>& get_stored_states() const { return storedstates_; };
 
     /*!
      * \brief get flag indicating stored state
@@ -390,7 +390,7 @@ namespace PARTICLEENGINE
      *
      * \return flag indicating stored state
      */
-    inline bool HaveStoredState(ParticleState state) const { return storedstates_.count(state); };
+    inline bool have_stored_state(ParticleState state) const { return storedstates_.count(state); };
 
     /*!
      * \brief get size of particle container
@@ -399,7 +399,7 @@ namespace PARTICLEENGINE
      *
      * \return size of particle container
      */
-    inline int ContainerSize() const { return containersize_; };
+    inline int container_size() const { return containersize_; };
 
     /*!
      * \brief get number of particles stored in container
@@ -408,7 +408,7 @@ namespace PARTICLEENGINE
      *
      * \return number of particles stored in container
      */
-    inline int ParticlesStored() const { return particlestored_; };
+    inline int particles_stored() const { return particlestored_; };
 
     /*!
      * \brief get minimum stored value of state in container
@@ -419,7 +419,7 @@ namespace PARTICLEENGINE
      *
      * \return minimum stored value of state in container
      */
-    double GetMinValueOfState(ParticleState state) const;
+    double get_min_value_of_state(ParticleState state) const;
 
     /*!
      * \brief get maximum stored value of state in container
@@ -430,7 +430,7 @@ namespace PARTICLEENGINE
      *
      * \return maximum stored value of state in container
      */
-    double GetMaxValueOfState(ParticleState state) const;
+    double get_max_value_of_state(ParticleState state) const;
 
    private:
     //! size of particles container

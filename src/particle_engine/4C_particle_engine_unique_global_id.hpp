@@ -103,7 +103,7 @@ namespace PARTICLEENGINE
      *
      * \return maximum global id
      */
-    inline int GetMaxGlobalId() { return maxglobalid_; }
+    inline int get_max_global_id() { return maxglobalid_; }
 
     /*!
      * \brief return number of reusable global ids on this processor
@@ -124,7 +124,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] freedglobalid freed global id
      */
-    inline void InsertFreedGlobalId(int freedglobalid)
+    inline void insert_freed_global_id(int freedglobalid)
     {
       reusableglobalids_.push_back(freedglobalid);
     }

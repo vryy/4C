@@ -91,7 +91,7 @@ namespace FLD
       /*!
       \brief return vector of relative pressure errors of last cycle
       */
-      std::vector<double> getWKrelerrors();
+      std::vector<double> get_w_krelerrors();
 
      private:
       /*!

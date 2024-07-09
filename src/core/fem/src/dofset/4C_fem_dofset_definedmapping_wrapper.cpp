@@ -39,14 +39,14 @@ Core::DOFSets::DofSetDefinedMappingWrapper::DofSetDefinedMappingWrapper(
   if (sourcedofset_ == Teuchos::null) FOUR_C_THROW("Source dof set is null pointer.");
   if (sourcedis_ == Teuchos::null) FOUR_C_THROW("Source discretization is null pointer.");
 
-  sourcedofset_->Register(this);
+  sourcedofset_->register_proxy(this);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::DOFSets::DofSetDefinedMappingWrapper::~DofSetDefinedMappingWrapper()
 {
-  if (sourcedofset_ != Teuchos::null) sourcedofset_->Unregister(this);
+  if (sourcedofset_ != Teuchos::null) sourcedofset_->unregister(this);
 }
 
 /*----------------------------------------------------------------------*
@@ -61,11 +61,11 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
 
   // get condition which defines the coupling on target discretization
   std::vector<Core::Conditions::Condition*> conds;
-  dis.GetCondition(couplingcond_, conds);
+  dis.get_condition(couplingcond_, conds);
 
   // get condition which defines the coupling on source discretization
   std::vector<Core::Conditions::Condition*> conds_source;
-  sourcedis_->GetCondition(couplingcond_, conds_source);
+  sourcedis_->get_condition(couplingcond_, conds_source);
 
   // get the respective nodes which are in the condition
   const bool use_coupling_id = condids_.size() != 1;
@@ -106,7 +106,7 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
     //       and finds corresponding target nodes.
     std::map<int, std::pair<int, double>> condcoupling;
     // match target and source nodes using octtree
-    nodematchingtree.FindMatch(*sourcedis_, sourcenodes, condcoupling);
+    nodematchingtree.find_match(*sourcedis_, sourcenodes, condcoupling);
 
     // check if all nodes where matched for this condition ID
     if (targetnodes.size() != condcoupling.size())
@@ -122,11 +122,11 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
   }  // loop over all condition ids
 
   // clone communicator of target discretization
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(dis.Comm().Clone());
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(dis.get_comm().Clone());
 
   // extract permutation
-  std::vector<int> targetnodes(dis.NodeRowMap()->MyGlobalElements(),
-      dis.NodeRowMap()->MyGlobalElements() + dis.NodeRowMap()->NumMyElements());
+  std::vector<int> targetnodes(dis.node_row_map()->MyGlobalElements(),
+      dis.node_row_map()->MyGlobalElements() + dis.node_row_map()->NumMyElements());
 
   std::vector<int> patchedtargetnodes;
   patchedtargetnodes.reserve(coupling.size());
@@ -164,7 +164,7 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
       new Epetra_IntVector(Copy, *targetnodemap, permsourcenodemap->MyGlobalElements()));
 
   // initialize the final mapping
-  targetlidtosourcegidmapping_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
+  targetlidtosourcegidmapping_ = Teuchos::rcp(new Epetra_IntVector(*dis.node_col_map()));
 
   // default value -1
   targetlidtosourcegidmapping_->PutValue(-1);
@@ -176,7 +176,7 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
   filled_ = true;
 
   // tell the proxies
-  NotifyAssigned();
+  notify_assigned();
 
   return start;
 }
@@ -189,12 +189,12 @@ void Core::DOFSets::DofSetDefinedMappingWrapper::reset()
   filled_ = false;
 
   // tell the proxies
-  NotifyReset();
+  notify_reset();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetDefinedMappingWrapper::Disconnect(DofSetInterface* dofset)
+void Core::DOFSets::DofSetDefinedMappingWrapper::disconnect(DofSetInterface* dofset)
 {
   if (dofset == sourcedofset_.get())
   {
@@ -222,7 +222,7 @@ const Core::Nodes::Node* Core::DOFSets::DofSetDefinedMappingWrapper::get_source_
   // the target is not mapped -> return null pointer
   if (sourcegid == -1) return nullptr;
   // get the node from the source discretization
-  return sourcedis_->gNode(sourcegid);
+  return sourcedis_->g_node(sourcegid);
 }
 
 FOUR_C_NAMESPACE_CLOSE

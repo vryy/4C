@@ -68,7 +68,7 @@ namespace Core::IO
 
       \param er (i) a reader of one discretization that uses (a fraction of) our nodes
      */
-    void AddElementReader(const ElementReader& er) { element_readers_.emplace_back(er); }
+    void add_element_reader(const ElementReader& er) { element_readers_.emplace_back(er); }
 
     /*!
      * \brief Adds the selected reader to this meshreader
@@ -83,7 +83,7 @@ namespace Core::IO
      * \param geometrysource [in] selects which reader will be created
      * \param geofilepath    [in] path to the file for the file reader (not used for the others)
      */
-    void AddAdvancedReader(Teuchos::RCP<Core::FE::Discretization> dis,
+    void add_advanced_reader(Teuchos::RCP<Core::FE::Discretization> dis,
         const Core::IO::DatFileReader& reader, const std::string& sectionname,
         const Core::IO::GeometryType geometrysource, const std::string* geofilepath);
 
@@ -106,7 +106,7 @@ namespace Core::IO
       0. After each block read the discretizations are redistributed.
 
      */
-    void ReadAndPartition();
+    void read_and_partition();
 
    private:
     /*!

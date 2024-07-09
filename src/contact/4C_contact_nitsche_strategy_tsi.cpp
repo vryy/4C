@@ -48,7 +48,7 @@ void CONTACT::NitscheStrategyTsi::set_state(
     {
       curr_state_eval_ = false;
       (*curr_state_temp_) = vec;
-      SetParentState(statename, vec);
+      set_parent_state(statename, vec);
     }
   }
   else
@@ -58,45 +58,46 @@ void CONTACT::NitscheStrategyTsi::set_state(
 /*------------------------------------------------------------------------*
  |                                                             seitz 10/16|
  *------------------------------------------------------------------------*/
-void CONTACT::NitscheStrategyTsi::SetParentState(
+void CONTACT::NitscheStrategyTsi::set_parent_state(
     const enum Mortar::StateType& statename, const Epetra_Vector& vec)
 {
   if (statename == Mortar::state_temperature)
   {
-    Teuchos::RCP<Core::FE::Discretization> disT = Global::Problem::Instance()->GetDis("thermo");
+    Teuchos::RCP<Core::FE::Discretization> disT = Global::Problem::instance()->get_dis("thermo");
     if (disT.is_null()) FOUR_C_THROW("set state temperature, but no thermo-discretization???");
 
-    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*disT->DofColMap(), true));
+    Teuchos::RCP<Epetra_Vector> global =
+        Teuchos::rcp(new Epetra_Vector(*disT->dof_col_map(), true));
     Core::LinAlg::Export(vec, *global);
 
     // set state on interfaces
     for (auto& interface : interface_)
     {
-      Core::FE::Discretization& idiscret = interface->Discret();
+      Core::FE::Discretization& idiscret = interface->discret();
 
-      for (int j = 0; j < idiscret.ElementColMap()->NumMyElements(); ++j)
+      for (int j = 0; j < idiscret.element_col_map()->NumMyElements(); ++j)
       {
-        int gid = idiscret.ElementColMap()->GID(j);
+        int gid = idiscret.element_col_map()->GID(j);
 
-        Core::Elements::Element* e = idiscret.gElement(gid);
+        Core::Elements::Element* e = idiscret.g_element(gid);
         if (e == nullptr) FOUR_C_THROW("basic element not found");
 
-        auto* ele = dynamic_cast<Mortar::Element*>(idiscret.gElement(gid));
-        Core::Elements::Element* ele_parentT = disT->gElement(ele->ParentElementId());
+        auto* ele = dynamic_cast<Mortar::Element*>(idiscret.g_element(gid));
+        Core::Elements::Element* ele_parentT = disT->g_element(ele->parent_element_id());
 
         std::vector<int> lm, lmowner, lmstride;
-        ele_parentT->LocationVector(*disT, lm, lmowner, lmstride);
+        ele_parentT->location_vector(*disT, lm, lmowner, lmstride);
 
         std::vector<double> myval;
         Core::FE::ExtractMyValues(*global, myval, lm);
 
-        ele->MoData().ParentTemp() = myval;
-        ele->MoData().ParentTempDof() = lm;
+        ele->mo_data().parent_temp() = myval;
+        ele->mo_data().parent_temp_dof() = lm;
       }
     }
   }
   else
-    CONTACT::NitscheStrategy::SetParentState(statename, vec);
+    CONTACT::NitscheStrategy::set_parent_state(statename, vec);
 }
 
 void CONTACT::NitscheStrategyTsi::setup(bool redistributed, bool init)
@@ -109,15 +110,15 @@ void CONTACT::NitscheStrategyTsi::setup(bool redistributed, bool init)
 void CONTACT::NitscheStrategyTsi::update_trace_ineq_etimates()
 {
   auto NitWgt =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::NitscheWeighting>(Params(), "NITSCHE_WEIGHTING");
+      Core::UTILS::IntegralValue<Inpar::CONTACT::NitscheWeighting>(params(), "NITSCHE_WEIGHTING");
   for (auto& interface : interface_)
   {
-    for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
+    for (int e = 0; e < interface->discret().element_col_map()->NumMyElements(); ++e)
     {
       auto* mele = dynamic_cast<Mortar::Element*>(
-          interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
-      if (NitWgt == Inpar::CONTACT::NitWgt_slave && !mele->IsSlave()) continue;
-      if (NitWgt == Inpar::CONTACT::NitWgt_master && mele->IsSlave()) continue;
+          interface->discret().g_element(interface->discret().element_col_map()->GID(e)));
+      if (NitWgt == Inpar::CONTACT::NitWgt_slave && !mele->is_slave()) continue;
+      if (NitWgt == Inpar::CONTACT::NitWgt_master && mele->is_slave()) continue;
       mele->estimate_nitsche_trace_max_eigenvalue_combined();
     }
   }
@@ -130,7 +131,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyTsi::setup_rhs_block_vec(
   {
     case CONTACT::VecBlockType::temp:
       return Teuchos::rcp(
-          new Epetra_FEVector(*Global::Problem::Instance()->GetDis("thermo")->dof_row_map()));
+          new Epetra_FEVector(*Global::Problem::instance()->get_dis("thermo")->dof_row_map()));
     default:
       return CONTACT::NitscheStrategy::setup_rhs_block_vec(bt);
   }
@@ -162,13 +163,13 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategyTsi::setup_matr
     case CONTACT::MatBlockType::displ_temp:
       return Teuchos::rcp(new Core::LinAlg::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
-              *Global::Problem::Instance()->GetDis("structure")->dof_row_map()),
+              *Global::Problem::instance()->get_dis("structure")->dof_row_map()),
           100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
     case CONTACT::MatBlockType::temp_displ:
     case CONTACT::MatBlockType::temp_temp:
       return Teuchos::rcp(new Core::LinAlg::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
-              *Global::Problem::Instance()->GetDis("thermo")->dof_row_map()),
+              *Global::Problem::instance()->get_dis("thermo")->dof_row_map()),
           100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
     default:
       return CONTACT::NitscheStrategy::setup_matrix_block_ptr(bt);
@@ -181,23 +182,23 @@ void CONTACT::NitscheStrategyTsi::complete_matrix_block_ptr(
   switch (bt)
   {
     case CONTACT::MatBlockType::displ_temp:
-      if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
+      if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->epetra_matrix())
               .GlobalAssemble(
-                  *Global::Problem::Instance()->GetDis("thermo")->dof_row_map(),     // col map
-                  *Global::Problem::Instance()->GetDis("structure")->dof_row_map(),  // row map
+                  *Global::Problem::instance()->get_dis("thermo")->dof_row_map(),     // col map
+                  *Global::Problem::instance()->get_dis("structure")->dof_row_map(),  // row map
                   true, Add))
         FOUR_C_THROW("GlobalAssemble(...) failed");
       break;
     case CONTACT::MatBlockType::temp_displ:
-      if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
+      if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->epetra_matrix())
               .GlobalAssemble(
-                  *Global::Problem::Instance()->GetDis("structure")->dof_row_map(),  // col map
-                  *Global::Problem::Instance()->GetDis("thermo")->dof_row_map(),     // row map
+                  *Global::Problem::instance()->get_dis("structure")->dof_row_map(),  // col map
+                  *Global::Problem::instance()->get_dis("thermo")->dof_row_map(),     // row map
                   true, Add))
         FOUR_C_THROW("GlobalAssemble(...) failed");
       break;
     case CONTACT::MatBlockType::temp_temp:
-      if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add))
+      if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->epetra_matrix()).GlobalAssemble(true, Add))
         FOUR_C_THROW("GlobalAssemble(...) failed");
       break;
     default:
@@ -225,9 +226,9 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategyTsi::get_matrix
 }
 
 
-void CONTACT::NitscheStrategyTsi::Integrate(const CONTACT::ParamsInterface& cparams)
+void CONTACT::NitscheStrategyTsi::integrate(const CONTACT::ParamsInterface& cparams)
 {
-  CONTACT::NitscheStrategy::Integrate(cparams);
+  CONTACT::NitscheStrategy::integrate(cparams);
 
   ft_ = create_rhs_block_ptr(CONTACT::VecBlockType::temp);
   ktt_ = create_matrix_block_ptr(CONTACT::MatBlockType::temp_temp);

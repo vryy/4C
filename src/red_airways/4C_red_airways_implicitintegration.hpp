@@ -77,32 +77,32 @@ namespace Airway
     \brief start time loop for startingalgo, normal problems and restarts
 
     */
-    void Integrate();
+    void integrate();
 
     /*!
     \brief start time loop for startingalgo, normal problems and restarts
 
     */
-    void Integrate(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
+    void integrate(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
 
     /*!
     \brief Do time integration (time loop)
 
     */
-    void TimeLoop(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
+    void time_loop(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
     /*!
     \brief Do one step time integration (time loop)
 
     */
-    void TimeStep(bool CoupledTo3D = false,
+    void time_step(bool CoupledTo3D = false,
         Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams = Teuchos::null);
 
     /*!
     \brief Integrate one step
 
     */
-    void IntegrateStep(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams = Teuchos::null);
+    void integrate_step(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams = Teuchos::null);
 
 
     /// setup the variables to do a new time step
@@ -113,19 +113,19 @@ namespace Airway
     \brief solve of airways
 
     */
-    void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
+    void solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
     /*!
     \brief nonlinear solver of airways
 
     */
-    void NonLin_Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
+    void non_lin_solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
     /*!
     \brief solve the scalar transport
 
     */
-    void SolveScatra(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
+    void solve_scatra(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
     /*!
       \brief build linear system matrix and rhs
@@ -139,25 +139,25 @@ namespace Airway
            iteration. Current solution becomes old solution of next
            timestep.
     */
-    void TimeUpdate();
+    void time_update();
 
     /*!
     \brief initialize state saving vector
 
     */
-    void InitSaveState();
+    void init_save_state();
 
     /*! Save state vectors into saving vectors
     \brief update configuration and output to file/screen
 
     */
-    void SaveState();
+    void save_state();
 
     /*! load saved vectors into state vectors
     \brief update configuration and output to file/screen
 
     */
-    void LoadState();
+    void load_state();
 
     /*!
     \brief update configuration and output to file/screen
@@ -170,7 +170,7 @@ namespace Airway
     \brief Output for UQ problemtype
 
     */
-    void OutputUQ(Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
+    void output_uq(Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
 
     /*!
     \brief Adjust acini_volume with prestress
@@ -196,7 +196,7 @@ namespace Airway
     \brief Evaluate the error residual
 
     */
-    void EvalResidual(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
+    void eval_residual(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
 
     /*!
@@ -204,7 +204,7 @@ namespace Airway
            We use this to find the total lung volume by summing up
            the acinar volumes
     */
-    bool SumAllColElemVal(
+    bool sum_all_col_elem_val(
         Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<Epetra_Vector> sumCond, double& sum);
 
 
@@ -214,78 +214,78 @@ namespace Airway
     */
     void read_restart(int step, bool coupledTo3D = false);
 
-    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest();
+    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test();
 
 
     //! @name access methods for composite algorithms
     /// Return nodal values
-    Teuchos::RCP<Epetra_Vector> Pnp() { return pnp_; }
-    Teuchos::RCP<Epetra_Vector> Pn() { return pn_; }
-    Teuchos::RCP<Epetra_Vector> Pnm() { return pnm_; }
-    Teuchos::RCP<Epetra_Vector> Qin_np() { return qin_np_; }
-    Teuchos::RCP<Epetra_Vector> Qout_np() { return qout_np_; }
+    Teuchos::RCP<Epetra_Vector> pnp() { return pnp_; }
+    Teuchos::RCP<Epetra_Vector> pn() { return pn_; }
+    Teuchos::RCP<Epetra_Vector> pnm() { return pnm_; }
+    Teuchos::RCP<Epetra_Vector> qin_np() { return qin_np_; }
+    Teuchos::RCP<Epetra_Vector> qout_np() { return qout_np_; }
 
     /// provide access to the Dirichlet map
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> DirichMaps() { return dbcmaps_; }
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> dirich_maps() { return dbcmaps_; }
 
     /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
     ///
     /// This method provides backward compatability only. Formerly, the Dirichlet conditions
     /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-    const Teuchos::RCP<const Epetra_Vector> Dirichlet();
+    const Teuchos::RCP<const Epetra_Vector> dirichlet();
 
     /// Extract the Inverse Dirichlet toggle vector based on Dirichlet BC maps
     ///
     /// This method provides backward compatability only. Formerly, the Dirichlet conditions
     /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-    const Teuchos::RCP<const Epetra_Vector> InvDirichlet();
+    const Teuchos::RCP<const Epetra_Vector> inv_dirichlet();
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> MassMatrix()
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> mass_matrix()
     {
       return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(massmat_);
     }
     Teuchos::RCP<Core::FE::Discretization> discretization() { return discret_; }
 
-    double Dt() const { return dta_; }
-    double Time() const { return time_; }
-    int Step() const { return step_; }
+    double dt() const { return dta_; }
+    double time() const { return time_; }
+    int step() const { return step_; }
 
-    int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
-    void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
+    int itemax() const { return params_.get<int>("max nonlin iter steps"); }
+    void set_itemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
 
-    Teuchos::RCP<Epetra_Vector> Pext_np() { return p_extnp_; }
+    Teuchos::RCP<Epetra_Vector> pext_np() { return p_extnp_; }
 
     /// Return elemental acini volume
-    Teuchos::RCP<Epetra_Vector> AciniVolume() { return acini_e_volumenp_; }
+    Teuchos::RCP<Epetra_Vector> acini_volume() { return acini_e_volumenp_; }
 
     /// Return elemental airway volume
-    Teuchos::RCP<Epetra_Vector> AirwayVolume() { return elemVolumenp_; }
+    Teuchos::RCP<Epetra_Vector> airway_volume() { return elemVolumenp_; }
 
     /// Return elemental airway status regarding opening
-    Teuchos::RCP<Epetra_Vector> Open() { return open_; }
+    Teuchos::RCP<Epetra_Vector> open() { return open_; }
 
     /// Return elemental airway trajectory describing opening tendency
-    Teuchos::RCP<Epetra_Vector> OpeningTrajectory() { return x_np_; }
+    Teuchos::RCP<Epetra_Vector> opening_trajectory() { return x_np_; }
 
     //@}
 
 
     //! @name methods related to coupling with 3D tissue models
 
-    void SetupForCoupling();
+    void setup_for_coupling();
     void set_airway_flux_from_tissue(Teuchos::RCP<Epetra_Vector> coupflux);
-    void ExtractPressure(Teuchos::RCP<Epetra_Vector> couppres);
+    void extract_pressure(Teuchos::RCP<Epetra_Vector> couppres);
 
     /// Hand over outputwriter to redairway_tissue
-    Core::IO::DiscretizationWriter& GetOutputWriter() { return output_; }
+    Core::IO::DiscretizationWriter& get_output_writer() { return output_; }
 
     /// Hand over restartreader to redairway_tissue
-    Teuchos::RCP<Core::IO::DiscretizationReader> GetRestartReader(int step)
+    Teuchos::RCP<Core::IO::DiscretizationReader> get_restart_reader(int step)
     {
       return Teuchos::rcp(new Core::IO::DiscretizationReader(
-          discret_, Global::Problem::Instance()->InputControlFile(), step));
+          discret_, Global::Problem::instance()->input_control_file(), step));
     }
 
     //@}

@@ -53,7 +53,7 @@ void Solid::EXPLICIT::ForwardEuler::setup()
   // set initial displacement
   // -------------------------------------------------------------------
   set_initial_displacement(
-      tim_int().get_data_sdyn().get_initial_disp(), tim_int().get_data_sdyn().StartFuncNo());
+      tim_int().get_data_sdyn().get_initial_disp(), tim_int().get_data_sdyn().start_func_no());
 
   // mode of Forward Euler interpolation
   modexpleuler_ = dynamic_cast<const Solid::TimeInt::ExplEulerDataSDyn&>(tim_int().get_data_sdyn())
@@ -122,7 +122,7 @@ void Solid::EXPLICIT::ForwardEuler::add_visco_mass_contributions(
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
   // set mass matrix
-  stiff_ptr->Add(*global_state().get_mass_matrix(), false, 1.0, 0.0);
+  stiff_ptr->add(*global_state().get_mass_matrix(), false, 1.0, 0.0);
 }
 
 /*----------------------------------------------------------------------------*

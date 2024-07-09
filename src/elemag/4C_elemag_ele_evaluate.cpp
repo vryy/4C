@@ -34,14 +34,14 @@ int Discret::ELEMENTS::Elemag::evaluate(Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
   if (dynamic_cast<const Discret::ELEMENTS::ElemagDiff*>(this))
-    return Discret::ELEMENTS::ElemagFactory::ProvideImpl(Shape(), "diff")
+    return Discret::ELEMENTS::ElemagFactory::provide_impl(shape(), "diff")
         ->evaluate(
             this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
   else
-    return Discret::ELEMENTS::ElemagFactory::ProvideImpl(Shape(), "std")
+    return Discret::ELEMENTS::ElemagFactory::provide_impl(shape(), "std")
         ->evaluate(
             this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
 

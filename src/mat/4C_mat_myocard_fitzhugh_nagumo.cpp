@@ -57,15 +57,15 @@ MyocardFitzhughNagumo::MyocardFitzhughNagumo(
                      // act_thres_)
 }
 
-double MyocardFitzhughNagumo::ReaCoeff(const double phi, const double dt)
+double MyocardFitzhughNagumo::rea_coeff(const double phi, const double dt)
 {
-  return MyocardFitzhughNagumo::ReaCoeff(phi, dt, 0);
+  return MyocardFitzhughNagumo::rea_coeff(phi, dt, 0);
 }
 
-double MyocardFitzhughNagumo::ReaCoeff(const double phi, const double dt, int gp)
+double MyocardFitzhughNagumo::rea_coeff(const double phi, const double dt, int gp)
 {
   double reacoeff;
-  r_[gp] = tools_.GatingVarCalc(dt, r0_[gp], phi / d_, 1.0 / (b_ * d_));
+  r_[gp] = tools_.gating_var_calc(dt, r0_[gp], phi / d_, 1.0 / (b_ * d_));
   j1_[gp] = c1_ * phi * (phi - a_) * (phi - 1.0);
   j2_[gp] = c2_ * phi * r_[gp];
   reacoeff = j1_[gp] + j2_[gp];
@@ -84,13 +84,16 @@ int MyocardFitzhughNagumo::get_number_of_internal_state_variables() const { retu
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material          cbert 08/13 |
  *----------------------------------------------------------------------*/
-double MyocardFitzhughNagumo::GetInternalState(const int k) const { return GetInternalState(k, 0); }
+double MyocardFitzhughNagumo::get_internal_state(const int k) const
+{
+  return get_internal_state(k, 0);
+}
 
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material       hoermann 09/19 |
  |  for multiple points per element                                     |
  *----------------------------------------------------------------------*/
-double MyocardFitzhughNagumo::GetInternalState(const int k, int gp) const
+double MyocardFitzhughNagumo::get_internal_state(const int k, int gp) const
 {
   double val = 0.0;
   switch (k)
@@ -112,9 +115,9 @@ double MyocardFitzhughNagumo::GetInternalState(const int k, int gp) const
 /*----------------------------------------------------------------------*
  |  set  internal state of the material                     cbert 08/13 |
  *----------------------------------------------------------------------*/
-void MyocardFitzhughNagumo::SetInternalState(const int k, const double val)
+void MyocardFitzhughNagumo::set_internal_state(const int k, const double val)
 {
-  SetInternalState(k, val, 0);
+  set_internal_state(k, val, 0);
   return;
 }
 
@@ -122,7 +125,7 @@ void MyocardFitzhughNagumo::SetInternalState(const int k, const double val)
  |  set  internal state of the material                  hoermann 09/16 |
  |  for multiple points per element                                     |
  *----------------------------------------------------------------------*/
-void MyocardFitzhughNagumo::SetInternalState(const int k, const double val, int gp)
+void MyocardFitzhughNagumo::set_internal_state(const int k, const double val, int gp)
 {
   switch (k)
   {
@@ -154,13 +157,16 @@ int MyocardFitzhughNagumo::get_number_of_ionic_currents() const { return 2; }
 /*----------------------------------------------------------------------*
  |  returns current internal currents                       cbert 08/13 |
  *----------------------------------------------------------------------*/
-double MyocardFitzhughNagumo::GetIonicCurrents(const int k) const { return GetIonicCurrents(k, 0); }
+double MyocardFitzhughNagumo::get_ionic_currents(const int k) const
+{
+  return get_ionic_currents(k, 0);
+}
 
 /*----------------------------------------------------------------------*
  |  returns current internal currents                    hoermann 09/16 |
  |  for multiple points per element                                     |
  *----------------------------------------------------------------------*/
-double MyocardFitzhughNagumo::GetIonicCurrents(const int k, int gp) const
+double MyocardFitzhughNagumo::get_ionic_currents(const int k, int gp) const
 {
   double val = 0.0;
   switch (k)

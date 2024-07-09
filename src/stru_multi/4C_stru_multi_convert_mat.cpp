@@ -14,7 +14,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void MultiScale::MicroStatic::ConvertMat(const Epetra_MultiVector& cmatpf,
+void MultiScale::MicroStatic::convert_mat(const Epetra_MultiVector& cmatpf,
     const Core::LinAlg::Matrix<3, 3>& F_inv, const Core::LinAlg::Matrix<6, 1>& S,
     Core::LinAlg::Matrix<6, 6>& cmat)
 {

@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | singleton access method                                  wirtz 10/15 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::LubricationEleParameter* Discret::ELEMENTS::LubricationEleParameter::Instance(
+Discret::ELEMENTS::LubricationEleParameter* Discret::ELEMENTS::LubricationEleParameter::instance(
     const std::string& disname  //!< name of discretization
 )
 {
@@ -33,7 +33,7 @@ Discret::ELEMENTS::LubricationEleParameter* Discret::ELEMENTS::LubricationElePar
       [](const std::string& disname)
       { return std::unique_ptr<LubricationEleParameter>(new LubricationEleParameter(disname)); });
 
-  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, disname);
 }
 
 
@@ -56,7 +56,7 @@ Discret::ELEMENTS::LubricationEleParameter::LubricationEleParameter(
 //----------------------------------------------------------------------*/
 // set parameters which are equal for every lubrication     wirtz 10/15 |
 //----------------------------------------------------------------------*/
-void Discret::ELEMENTS::LubricationEleParameter::SetTimeParameters(
+void Discret::ELEMENTS::LubricationEleParameter::set_time_parameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {

@@ -86,9 +86,9 @@ namespace
     std::vector<FAD> fadvectvars(variables.size());
     for (int i = 0; i < static_cast<int>(variables.size()); ++i)
     {
-      fadvectvars[i] = FAD(fad_size, number_of_arguments + i, variables[i]->Value(t));
+      fadvectvars[i] = FAD(fad_size, number_of_arguments + i, variables[i]->value(t));
       fadvectvars[i].val() =
-          Sacado::Fad::DFad<double>(fad_size, number_of_arguments + i, variables[i]->Value(t));
+          Sacado::Fad::DFad<double>(fad_size, number_of_arguments + i, variables[i]->value(t));
     }
 
     // initialize spatial variables with zero
@@ -118,7 +118,7 @@ namespace
     // set the values of the variables at time t
     for (unsigned int i = 0; i < variables.size(); ++i)
     {
-      variable_values.emplace(variables[i]->Name(), fadvectvars[i]);
+      variable_values.emplace(variables[i]->name(), fadvectvars[i]);
     }
   }
 
@@ -134,7 +134,7 @@ namespace
     auto numvariables = static_cast<int>(variables.size());
 
     // evaluate the expression
-    Sacado::Fad::DFad<double> fdfad = expr[component]->FirstDerivative(variables, constant_values);
+    Sacado::Fad::DFad<double> fdfad = expr[component]->first_derivative(variables, constant_values);
 
     // resulting vector
     std::vector<double> res(numvariables);
@@ -323,7 +323,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> Core::UTILS::TryCreateSymbolicFun
           else if (vartype == "linearinterpolation")
           {
             // read times
-            std::vector<double> times = INTERNAL::ExtractTimeVector(line);
+            std::vector<double> times = INTERNAL::extract_time_vector(line);
 
             // read values
             std::vector<double> values;
@@ -335,7 +335,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> Core::UTILS::TryCreateSymbolicFun
           else if (vartype == "multifunction")
           {
             // read times
-            std::vector<double> times = INTERNAL::ExtractTimeVector(line);
+            std::vector<double> times = INTERNAL::extract_time_vector(line);
 
             // read descriptions (strings separated with spaces)
             std::vector<std::string> description_vec;
@@ -353,7 +353,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> Core::UTILS::TryCreateSymbolicFun
           else if (vartype == "fourierinterpolation")
           {
             // read times
-            std::vector<double> times = INTERNAL::ExtractTimeVector(line);
+            std::vector<double> times = INTERNAL::extract_time_vector(line);
 
             // read values
             std::vector<double> values;
@@ -381,10 +381,10 @@ Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> Core::UTILS::TryCreateSymbolicFun
     // multiple pieces make up this variable -> join them in a PiecewiseVariable
     else
     {
-      const auto& name = pieces.front()->Name();
+      const auto& name = pieces.front()->name();
 
       const bool names_of_all_pieces_equal = std::all_of(
-          pieces.begin(), pieces.end(), [&name](auto& var) { return var->Name() == name; });
+          pieces.begin(), pieces.end(), [&name](auto& var) { return var->name() == name; });
       if (not names_of_all_pieces_equal)
         FOUR_C_THROW("Variable %d has a piece-wise definition with inconsistent names.", id);
 
@@ -435,11 +435,11 @@ double Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate(
   // set the values of the variables at time t
   for (const auto& variable : variables_)
   {
-    variable_values.emplace(variable->Name(), variable->Value(t));
+    variable_values.emplace(variable->name(), variable->value(t));
   }
 
   // evaluate F = F ( x, y, z, t, v1, ..., vn )
-  return expr_[component_mod]->Value(variable_values);
+  return expr_[component_mod]->value(variable_values);
 }
 
 template <int dim>
@@ -459,7 +459,7 @@ std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate_spat
   SetValuesInExpressionSecondDeriv<dim>(variables_, x, t, variable_values);
 
   // The expression evaluates to an FAD object for up to second derivatives
-  SecondDerivativeType fdfad = expr_[component_mod]->SecondDerivative(variable_values, {});
+  SecondDerivativeType fdfad = expr_[component_mod]->second_derivative(variable_values, {});
 
   // Here we return the first spatial derivatives given by FAD component 0, 1 and 2
   return {fdfad.dx(0).val(), fdfad.dx(1).val(), fdfad.dx(2).val()};
@@ -492,14 +492,14 @@ std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate_time
   {
     // evaluation of derivatives
 
-    fdfad = expr_[component_mod]->SecondDerivative(variable_values, {});
+    fdfad = expr_[component_mod]->second_derivative(variable_values, {});
 
     // evaluation of dF/dt applying the chain rule:
     // dF/dt = dF*/dt + sum_i(dF/dvi*dvi/dt)
     double fdfad_dt = fdfad.dx(3).val();                           // 1) dF*/dt
     for (int i = 0; i < static_cast<int>(variables_.size()); ++i)  // 2) sum_i{...}
     {
-      fdfad_dt += fdfad.dx(number_of_arguments + i).val() * variables_[i]->TimeDerivativeValue(t);
+      fdfad_dt += fdfad.dx(number_of_arguments + i).val() * variables_[i]->time_derivative_value(t);
     }
 
     res[1] = fdfad_dt;
@@ -528,13 +528,13 @@ std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate_time
       {
         fdfad_dt2_term[i] +=
             fdfad.dx(number_of_arguments + i).dx(number_of_arguments + j) *  // d(dF/dvi)/dvj ...
-            variables_[j]->TimeDerivativeValue(t);                           // ... * dvj/dt
+            variables_[j]->time_derivative_value(t);                         // ... * dvj/dt
       }
 
-      fdfad_dt2_term[i] *= variables_[i]->TimeDerivativeValue(t);  // ... * dvi/dt
+      fdfad_dt2_term[i] *= variables_[i]->time_derivative_value(t);  // ... * dvi/dt
 
-      fdfad_dt2_term[i] += fdfad.dx(number_of_arguments + i).val() *  /// ... + dF/dvi ...
-                           variables_[i]->TimeDerivativeValue(t, 2);  /// ... * d^2vi/dt^2
+      fdfad_dt2_term[i] += fdfad.dx(number_of_arguments + i).val() *    /// ... + dF/dvi ...
+                           variables_[i]->time_derivative_value(t, 2);  /// ... * d^2vi/dt^2
 
       fdfad_dt2 += fdfad_dt2_term[i];  // 2) add sum_i{...} to d^2F/dt^2
     }
@@ -594,12 +594,12 @@ double Core::UTILS::SymbolicFunctionOfAnything<dim>::evaluate(
   }
 
   // evaluate the function and return the result
-  return expr_[component]->Value(variable_values);
+  return expr_[component]->value(variable_values);
 }
 
 
 template <int dim>
-std::vector<double> Core::UTILS::SymbolicFunctionOfAnything<dim>::EvaluateDerivative(
+std::vector<double> Core::UTILS::SymbolicFunctionOfAnything<dim>::evaluate_derivative(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const std::size_t component) const
 {

@@ -43,7 +43,7 @@ namespace NOX
         Factory();
 
 
-        Teuchos::RCP<::NOX::Epetra::LinearSystem> BuildLinearSystem(
+        Teuchos::RCP<::NOX::Epetra::LinearSystem> build_linear_system(
             const NOX::Nln::LinSystem::LinearSystemType& linsystype,
             NOX::Nln::GlobalData& noxNlnGlobalData,
             const Teuchos::RCP<Core::LinAlg::SparseOperator>& jac,

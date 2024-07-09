@@ -52,7 +52,7 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static ScaTraEleCalcAdvReac<distype, probdim>* Instance(const int numdofpernode,
+      static ScaTraEleCalcAdvReac<distype, probdim>* instance(const int numdofpernode,
           const int numscal, const std::string& disname  //!< creation/destruction indication
       );
 
@@ -154,10 +154,10 @@ namespace Discret
       //! @name set routines
 
       //! Clear everything and resize to length numscal
-      void Clear(int numscal) override
+      void clear(int numscal) override
       {
         // clear base class
-        ScaTraEleReaManager::Clear(numscal);
+        ScaTraEleReaManager::clear(numscal);
         // clear
         reabodyforce_.resize(0);
         reabodyforcederiv_.resize(0);
@@ -170,7 +170,7 @@ namespace Discret
       }
 
       //! Add to the body force due to reaction
-      void AddToReaBodyForce(const double reabodyforce, const int k)
+      void add_to_rea_body_force(const double reabodyforce, const int k)
       {
         reabodyforce_[k] += reabodyforce;
         if (reabodyforce != 0.0) include_me_ = true;
@@ -197,7 +197,7 @@ namespace Discret
       //! @name access routines
 
       //! Return the reaction coefficient
-      double GetReaBodyForce(const int k) const { return reabodyforce_[k]; }
+      double get_rea_body_force(const int k) const { return reabodyforce_[k]; }
 
       //! Return the reaction coefficient
       double get_rea_body_force_deriv_matrix(const int k, const int j) const

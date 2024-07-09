@@ -50,21 +50,21 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
-      virtual void Initial(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
+      virtual void initial(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<const Core::Mat::Material> material) = 0;
 
-      virtual void EvaluateTerminalBC(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
+      virtual void evaluate_terminal_bc(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
-      virtual void CalcFlowRates(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
+      virtual void calc_flow_rates(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& a_volumen,
           Core::LinAlg::SerialDenseVector& a_volumenp, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
-      virtual void GetCoupledValues(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
+      virtual void get_coupled_values(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) = 0;
 
@@ -74,7 +74,7 @@ namespace Discret
           std::vector<int>& lm, Teuchos::RCP<Core::Mat::Material> material) = 0;
 
       /// Internal implementation class for acinus element
-      static RedAirBloodScatraLine3ImplInterface* Impl(
+      static RedAirBloodScatraLine3ImplInterface* impl(
           Discret::ELEMENTS::RedAirBloodScatraLine3* red_acinus);
     };
 
@@ -129,14 +129,14 @@ namespace Discret
         \param time             (i) current simulation time
         \param dt               (i) timestep
         */
-      void Sysmat(RedAirBloodScatraLine3* ele, Core::LinAlg::SerialDenseVector& epnp,
+      void sysmat(RedAirBloodScatraLine3* ele, Core::LinAlg::SerialDenseVector& epnp,
           Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
           Core::LinAlg::SerialDenseMatrix& estif, Core::LinAlg::SerialDenseVector& eforce,
           Teuchos::RCP<const Core::Mat::Material> material, Teuchos::ParameterList& params,
           double time, double dt){};
 
 
-      void EvaluateTerminalBC(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
+      void evaluate_terminal_bc(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& disctretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Teuchos::RCP<Core::Mat::Material> mat) override{};
@@ -155,14 +155,14 @@ namespace Discret
         \param time             (i) current simulation time
         \param dt               (i) timestep
         */
-      void Initial(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
+      void initial(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<const Core::Mat::Material> material) override;
 
       /*!
        \Essential functions to compute the results of essentail matrices
       */
-      void CalcFlowRates(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
+      void calc_flow_rates(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization,
           Core::LinAlg::SerialDenseVector& a_volumen_strain_np,
           Core::LinAlg::SerialDenseVector& a_volumenp, std::vector<int>& lm,
@@ -171,7 +171,7 @@ namespace Discret
       /*!
        \Essential functions to evaluate the coupled results
       */
-      void GetCoupledValues(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
+      void get_coupled_values(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) override;
 

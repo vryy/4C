@@ -57,13 +57,14 @@ void FLD::TimIntLoma::init()
   // ---------------------------------------------------------------------
 
   // get gas constant
-  int id = Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_sutherland);
+  int id =
+      Global::Problem::instance()->materials()->first_id_by_type(Core::Materials::m_sutherland);
   if (id == -1)
     FOUR_C_THROW("Could not find sutherland material");
   else
   {
     const Core::Mat::PAR::Parameter* mat =
-        Global::Problem::Instance()->Materials()->ParameterById(id);
+        Global::Problem::instance()->materials()->parameter_by_id(id);
     const Mat::PAR::Sutherland* actmat = static_cast<const Mat::PAR::Sutherland*>(mat);
     // we need the kinematic viscosity here
     gasconstant_ = actmat->gasconst_;
@@ -106,24 +107,24 @@ void FLD::TimIntLoma::set_loma_iter_scalar_fields(Teuchos::RCP<const Epetra_Vect
   scaam_->Update(1.0, *veln_, 0.0);
 
   // loop all nodes on the processor
-  for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+  for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
   {
     // get the processor's local scatra node
-    Core::Nodes::Node* lscatranode = scatradis->lRowNode(lnodeid);
+    Core::Nodes::Node* lscatranode = scatradis->l_row_node(lnodeid);
 
     // find out the global dof id of the last(!) dof at the scatra node
-    const int numscatradof = scatradis->NumDof(0, lscatranode);
-    const int globalscatradofid = scatradis->Dof(0, lscatranode, numscatradof - 1);
+    const int numscatradof = scatradis->num_dof(0, lscatranode);
+    const int globalscatradofid = scatradis->dof(0, lscatranode, numscatradof - 1);
     const int localscatradofid = scalaraf->Map().LID(globalscatradofid);
     if (localscatradofid < 0) FOUR_C_THROW("localdofid not found in map for given globaldofid");
 
     // get the processor's local fluid node
-    Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+    Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
     // get the global ids of degrees of freedom associated with this node
-    nodedofs = discret_->Dof(0, lnode);
+    nodedofs = discret_->dof(0, lnode);
     // get global and processor's local pressure dof id (using the map!)
-    const int numdof = discret_->NumDof(0, lnode);
-    const int globaldofid = discret_->Dof(0, lnode, numdof - 1);
+    const int numdof = discret_->num_dof(0, lnode);
+    const int globaldofid = discret_->dof(0, lnode, numdof - 1);
     const int localdofid = scaam_->Map().LID(globaldofid);
     if (localdofid < 0) FOUR_C_THROW("localdofid not found in map for given globaldofid");
 
@@ -175,11 +176,11 @@ void FLD::TimIntLoma::set_loma_iter_scalar_fields(Teuchos::RCP<const Epetra_Vect
 /*----------------------------------------------------------------------*
  | set scalar fields     vg 09/09 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntLoma::SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
+void FLD::TimIntLoma::set_scalar_fields(Teuchos::RCP<const Epetra_Vector> scalarnp,
     const double thermpressnp, Teuchos::RCP<const Epetra_Vector> scatraresidual,
     Teuchos::RCP<Core::FE::Discretization> scatradis, const int whichscalar)
 {
-  FluidImplicitTimeInt::SetScalarFields(
+  FluidImplicitTimeInt::set_scalar_fields(
       scalarnp, thermpressnp, scatraresidual, scatradis, whichscalar);
   //--------------------------------------------------------------------------
   // get thermodynamic pressure at n+1
@@ -286,7 +287,7 @@ void FLD::TimIntLoma::call_statistics_manager()
   // -------------------------------------------------------------------
   // compute equation-of-state factor
   const double eosfac = thermpressaf_ / gasconstant_;
-  statisticsmanager_->DoTimeSample(
+  statisticsmanager_->do_time_sample(
       step_, eosfac, thermpressaf_, thermpressam_, thermpressdtaf_, thermpressdtam_);
   return;
 }
@@ -321,8 +322,8 @@ void FLD::TimIntLoma::av_m3_preparation()
   // required for loma
   if (physicaltype_ == Inpar::FLUID::loma)
   {
-    UpdateVelafGenAlpha();
-    Sep_Multiply();
+    update_velaf_gen_alpha();
+    sep_multiply();
   }
 
   return;

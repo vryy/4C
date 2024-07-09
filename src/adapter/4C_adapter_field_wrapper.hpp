@@ -49,7 +49,7 @@ namespace Adapter
     //@{
 
     /// right-hand-side of Newton's method
-    Teuchos::RCP<const Epetra_Vector> RHS() override { return field_->RHS(); }
+    Teuchos::RCP<const Epetra_Vector> rhs() override { return field_->rhs(); }
 
     //@}
 

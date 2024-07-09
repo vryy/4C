@@ -91,16 +91,16 @@ namespace NOX
       //@{
 
       //! Returns the value of the F-norm computed in the last call to checkStatus.
-      virtual double getNormF() const;
+      virtual double get_norm_f() const;
 
       //! Returns the true tolerance.
-      virtual double getTrueTolerance() const;
+      virtual double get_true_tolerance() const;
 
       //! Returns the specified tolerance set in the constructor.
       virtual double get_specified_tolerance() const;
 
       //! Returns the initial tolerance.
-      virtual double getInitialTolerance() const;
+      virtual double get_initial_tolerance() const;
 
       //@}
 
@@ -160,7 +160,7 @@ namespace NOX
       {
       }
 
-      void SetNewton(Teuchos::RCP<NOX::FSI::Newton> newton) { newton_ = newton; }
+      void set_newton(Teuchos::RCP<NOX::FSI::Newton> newton) { newton_ = newton; }
 
      protected:
       Teuchos::RCP<NOX::FSI::Newton> newton() { return newton_; }
@@ -259,10 +259,10 @@ namespace NOX
       //@{
 
       //! Returns the value of the Update-norm computed in the last call to checkStatus.
-      virtual double getNormUpdate() const;
+      virtual double get_norm_update() const;
 
       //! Returns the true tolerance.
-      virtual double getTolerance() const;
+      virtual double get_tolerance() const;
 
       //@}
 
@@ -341,14 +341,14 @@ namespace NOX
       std::ostream& print(std::ostream& stream, int indent = 0) const override;
 
       //! Returns the Minimum number of iterations set in the constructor.
-      virtual int getMinIters() const;
+      virtual int get_min_iters() const;
 
       /*!
       \brief Returns the current number of iterations taken by the solver.
 
       Returns -1 if the status of this test is ::NOX::StatusTest::Unevaluated.
       */
-      virtual int getNumIters() const;
+      virtual int get_num_iters() const;
 
      private:
       //! Minimum number of iterations

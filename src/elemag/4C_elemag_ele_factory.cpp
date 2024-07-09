@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------------*
  |                                                (public) berardocco 02/18 |
  *--------------------------------------------------------------------------*/
-Discret::ELEMENTS::ElemagEleInterface* Discret::ELEMENTS::ElemagFactory::ProvideImpl(
+Discret::ELEMENTS::ElemagEleInterface* Discret::ELEMENTS::ElemagFactory::provide_impl(
     Core::FE::CellType distype, std::string problem)
 {
   switch (distype)
@@ -104,9 +104,9 @@ Discret::ELEMENTS::ElemagEleInterface* Discret::ELEMENTS::ElemagFactory::define_
     std::string problem)
 {
   if (problem == "std")
-    return Discret::ELEMENTS::ElemagEleCalc<distype>::Instance();
+    return Discret::ELEMENTS::ElemagEleCalc<distype>::instance();
   else if (problem == "diff")
-    return Discret::ELEMENTS::ElemagDiffEleCalc<distype>::Instance();
+    return Discret::ELEMENTS::ElemagDiffEleCalc<distype>::instance();
   else
     FOUR_C_THROW("Defined problem type does not exist!!");
 

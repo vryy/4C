@@ -44,7 +44,7 @@ FSI::OverlappingBlockMatrixHybridSchwarz::OverlappingBlockMatrixHybridSchwarz(
   if (strategy_ != Inpar::FSI::HybridSchwarz)
     FOUR_C_THROW("Type of LINEARBLOCKSOLVER parameter not recognized by this class");
 
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   additiveschwarzeverywhere_ = Core::UTILS::IntegralValue<bool>(fsimono, "HYBRIDFULL");
@@ -64,14 +64,14 @@ FSI::OverlappingBlockMatrixHybridSchwarz::OverlappingBlockMatrixHybridSchwarz(
 }
 
 /*----------------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
+void FSI::OverlappingBlockMatrixHybridSchwarz::setup_preconditioner()
 {
   Teuchos::Time timer("FSI SetupPreconditioner", true);
 
   Teuchos::ParameterList ifpacklist;
   Teuchos::ParameterList azlist;
 
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   // ---------------------------------------------------------------------------
@@ -110,34 +110,34 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
   // get blocks of system matrix and save them in 2-dim array
   std::vector<std::vector<Teuchos::RCP<Epetra_CrsMatrix>>> rows;
 
-  const Teuchos::RCP<Epetra_CrsMatrix> Matrix00 = Matrix(0, 0).EpetraMatrix();
-  const Teuchos::RCP<Epetra_CrsMatrix> Matrix01 = Matrix(0, 1).EpetraMatrix();
-  const Teuchos::RCP<Epetra_CrsMatrix> Matrix02 = Matrix(0, 2).EpetraMatrix();
+  const Teuchos::RCP<Epetra_CrsMatrix> Matrix00 = matrix(0, 0).epetra_matrix();
+  const Teuchos::RCP<Epetra_CrsMatrix> Matrix01 = matrix(0, 1).epetra_matrix();
+  const Teuchos::RCP<Epetra_CrsMatrix> Matrix02 = matrix(0, 2).epetra_matrix();
   std::vector<Teuchos::RCP<Epetra_CrsMatrix>> cols1;
   cols1.push_back(Matrix00);
   cols1.push_back(Matrix01);
   cols1.push_back(Matrix02);
   rows.push_back(cols1);
 
-  const Teuchos::RCP<Epetra_CrsMatrix> Matrix10 = Matrix(1, 0).EpetraMatrix();
-  const Teuchos::RCP<Epetra_CrsMatrix> Matrix11 = Matrix(1, 1).EpetraMatrix();
-  const Teuchos::RCP<Epetra_CrsMatrix> Matrix12 = Matrix(1, 2).EpetraMatrix();
+  const Teuchos::RCP<Epetra_CrsMatrix> Matrix10 = matrix(1, 0).epetra_matrix();
+  const Teuchos::RCP<Epetra_CrsMatrix> Matrix11 = matrix(1, 1).epetra_matrix();
+  const Teuchos::RCP<Epetra_CrsMatrix> Matrix12 = matrix(1, 2).epetra_matrix();
   std::vector<Teuchos::RCP<Epetra_CrsMatrix>> cols2;
   cols2.push_back(Matrix10);
   cols2.push_back(Matrix11);
   cols2.push_back(Matrix12);
   rows.push_back(cols2);
 
-  const Teuchos::RCP<Epetra_CrsMatrix> Matrix20 = Matrix(2, 0).EpetraMatrix();
-  const Teuchos::RCP<Epetra_CrsMatrix> Matrix21 = Matrix(2, 1).EpetraMatrix();
-  const Teuchos::RCP<Epetra_CrsMatrix> Matrix22 = Matrix(2, 2).EpetraMatrix();
+  const Teuchos::RCP<Epetra_CrsMatrix> Matrix20 = matrix(2, 0).epetra_matrix();
+  const Teuchos::RCP<Epetra_CrsMatrix> Matrix21 = matrix(2, 1).epetra_matrix();
+  const Teuchos::RCP<Epetra_CrsMatrix> Matrix22 = matrix(2, 2).epetra_matrix();
   std::vector<Teuchos::RCP<Epetra_CrsMatrix>> cols3;
   cols3.push_back(Matrix20);
   cols3.push_back(Matrix21);
   cols3.push_back(Matrix22);
   rows.push_back(cols3);
 
-  Epetra_Map rowmap = FullRowMap();
+  Epetra_Map rowmap = full_row_map();
   const Epetra_Comm& comm = rowmap.Comm();
 
   /* How much memory to allocate here?
@@ -228,7 +228,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
   timer.reset();
 
   // setup 'multiplicative' part of hybrid preconditioner
-  amgprec_->SetupPreconditioner();
+  amgprec_->setup_preconditioner();
 
   comm.Barrier();
   if (comm.MyPID() == 0) printf("AMG prec in %f seconds.\n", timer.totalElapsedTime(true));
@@ -333,7 +333,7 @@ int FSI::OverlappingBlockMatrixHybridSchwarz::ApplyInverse(
   z->Update(0.0, *b, 0.0);
 
   // apply 'additive' part
-  int err = ifpackprec_->PrecOperator()->ApplyInverse(*b, *z);
+  int err = ifpackprec_->prec_operator()->ApplyInverse(*b, *z);
   if (err != 0) FOUR_C_THROW("Preconditioning 1 failed.");
 
   Teuchos::RCP<Epetra_Vector> Az = Teuchos::rcp(new Epetra_Vector(Copy, X, 0));
@@ -363,7 +363,7 @@ int FSI::OverlappingBlockMatrixHybridSchwarz::ApplyInverse(
   tmpz->Update(0.0, *b, 0.0);
 
   // apply 'additive' part
-  err = ifpackprec_->PrecOperator()->ApplyInverse(*tmpb, *tmpz);
+  err = ifpackprec_->prec_operator()->ApplyInverse(*tmpb, *tmpz);
   if (err != 0) FOUR_C_THROW("Preconditioning 3 failed.");
 
   z->Update(1.0, *tmpz, 1.0);

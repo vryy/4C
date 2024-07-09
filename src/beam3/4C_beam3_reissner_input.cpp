@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Beam3r::ReadElement(
+bool Discret::ELEMENTS::Beam3r::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   /* the triad field is discretized with Lagrange polynomials of order num_node()-1;
@@ -34,11 +34,11 @@ bool Discret::ELEMENTS::Beam3r::ReadElement(
 
 
   // read number of material model and cross-section specs
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  SetMaterial(0, Mat::Factory(material));
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  set_material(0, Mat::Factory(material_id));
 
-  const auto mat_type = Material()->Parameter()->Type();
+  const auto mat_type = material()->parameter()->type();
   FOUR_C_THROW_UNLESS(mat_type == Core::Materials::m_beam_reissner_elast_hyper ||
                           mat_type == Core::Materials::m_beam_reissner_elast_plastic ||
                           mat_type == Core::Materials::m_beam_reissner_elast_hyper_bymodes,
@@ -73,10 +73,10 @@ bool Discret::ELEMENTS::Beam3r::ReadElement(
   for (int node = 0; node < nnodetriad; node++)
     for (int dim = 0; dim < 3; dim++) theta0node_[node](dim) = nodal_rotvecs[3 * node + dim];
 
-  Core::FE::IntegrationPoints1D gausspoints_force(MyGaussRule(res_elastic_force));
-  Core::FE::IntegrationPoints1D gausspoints_moment(MyGaussRule(res_elastic_moment));
+  Core::FE::IntegrationPoints1D gausspoints_force(my_gauss_rule(res_elastic_force));
+  Core::FE::IntegrationPoints1D gausspoints_moment(my_gauss_rule(res_elastic_moment));
 
-  get_beam_material().setup(gausspoints_force.NumPoints(), gausspoints_moment.NumPoints());
+  get_beam_material().setup(gausspoints_force.num_points(), gausspoints_moment.num_points());
 
   return true;
 }

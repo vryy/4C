@@ -87,7 +87,7 @@ namespace Discret
       /*----------------------------------------------------------------------*/
       //! compute largest element diameter for reinitialization pseudo time step size
       template <Core::FE::CellType pdistype, class M1>
-      double GetEleDiameter(const M1& xyze)
+      double get_ele_diameter(const M1& xyze)
       {
         double elediam = 0.0;
 
@@ -124,7 +124,7 @@ namespace Discret
       }
 
       //! setup element evaluation
-      int SetupCalc(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+      int setup_calc(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization);
 
       /*!

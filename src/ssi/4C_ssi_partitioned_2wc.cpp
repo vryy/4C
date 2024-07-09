@@ -47,9 +47,9 @@ void SSI::SSIPart2WC::init(const Epetra_Comm& comm, const Teuchos::ParameterList
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // call the SSI parameter lists
-  const Teuchos::ParameterList& ssicontrol = Global::Problem::Instance()->SSIControlParams();
+  const Teuchos::ParameterList& ssicontrol = Global::Problem::instance()->ssi_control_params();
   const Teuchos::ParameterList& ssicontrolpart =
-      Global::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
+      Global::Problem::instance()->ssi_control_params().sublist("PARTITIONED");
 
   // do some checks
   {
@@ -68,13 +68,13 @@ void SSI::SSIPart2WC::init(const Epetra_Comm& comm, const Teuchos::ParameterList
     {
       // get scatra discretization
       Teuchos::RCP<Core::FE::Discretization> scatradis =
-          Global::Problem::Instance()->GetDis(scatra_disname);
+          Global::Problem::instance()->get_dis(scatra_disname);
 
       // loop over all elements of scatra discretization to check if impltype is correct or not
-      for (int i = 0; i < scatradis->NumMyColElements(); ++i)
+      for (int i = 0; i < scatradis->num_my_col_elements(); ++i)
       {
-        if ((dynamic_cast<Discret::ELEMENTS::Transport*>(scatradis->lColElement(i)))->ImplType() !=
-            Inpar::ScaTra::impltype_refconcreac)
+        if ((dynamic_cast<Discret::ELEMENTS::Transport*>(scatradis->l_col_element(i)))
+                ->impl_type() != Inpar::ScaTra::impltype_refconcreac)
         {
           FOUR_C_THROW(
               "If the scalar transport problem is solved on the deforming domain, the conservative "
@@ -105,14 +105,14 @@ void SSI::SSIPart2WC::setup()
   SSI::SSIPart::setup();
 
   // construct increment vectors
-  scaincnp_ = Core::LinAlg::CreateVector(*ScaTraField()->discretization()->dof_row_map(0), true);
+  scaincnp_ = Core::LinAlg::CreateVector(*sca_tra_field()->discretization()->dof_row_map(0), true);
   dispincnp_ = Core::LinAlg::CreateVector(*structure_field()->dof_row_map(0), true);
 }
 
 /*----------------------------------------------------------------------*
  | Timeloop for 2WC SSI problems                             Thon 12/14 |
  *----------------------------------------------------------------------*/
-void SSI::SSIPart2WC::Timeloop()
+void SSI::SSIPart2WC::timeloop()
 {
   // safety checks
   check_is_init();
@@ -121,7 +121,7 @@ void SSI::SSIPart2WC::Timeloop()
   prepare_time_loop();
 
   // time loop
-  while (NotFinished() and ScaTraField()->NotFinished())
+  while (not_finished() and sca_tra_field()->not_finished())
   {
     prepare_time_step();
 
@@ -133,12 +133,13 @@ void SSI::SSIPart2WC::Timeloop()
     // determine time spent by nonlinear solver and take maximum over all processors via
     // communication
     double mydtnonlinsolve(Teuchos::Time::wallTime() - time), dtnonlinsolve(0.);
-    Comm().MaxAll(&mydtnonlinsolve, &dtnonlinsolve, 1);
+    get_comm().MaxAll(&mydtnonlinsolve, &dtnonlinsolve, 1);
 
     // output performance statistics associated with nonlinear solver into *.csv file if applicable
     if (Core::UTILS::IntegralValue<int>(
-            *ScaTraField()->ScatraParameterList(), "OUTPUTNONLINSOLVERSTATS"))
-      ScaTraField()->output_nonlin_solver_stats(IterationCount(), dtnonlinsolve, Step(), Comm());
+            *sca_tra_field()->scatra_parameter_list(), "OUTPUTNONLINSOLVERSTATS"))
+      sca_tra_field()->output_nonlin_solver_stats(
+          iteration_count(), dtnonlinsolve, step(), get_comm());
 
     update_and_output();
   }
@@ -149,18 +150,18 @@ void SSI::SSIPart2WC::Timeloop()
  *----------------------------------------------------------------------*/
 void SSI::SSIPart2WC::do_struct_step()
 {
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n***********************\n STRUCTURE SOLVER \n***********************\n";
   }
 
   // Newton-Raphson iteration
-  structure_field()->Solve();
+  structure_field()->solve();
 
   if (is_s2_i_kinetics_with_pseudo_contact()) structure_field()->determine_stress_strain();
 
   //  set mesh displacement and velocity fields
-  return set_struct_solution(structure_field()->Dispnp(), structure_field()->Velnp(),
+  return set_struct_solution(structure_field()->dispnp(), structure_field()->velnp(),
       is_s2_i_kinetics_with_pseudo_contact());
 }
 
@@ -169,7 +170,7 @@ void SSI::SSIPart2WC::do_struct_step()
  *----------------------------------------------------------------------*/
 void SSI::SSIPart2WC::do_scatra_step()
 {
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n***********************\n  TRANSPORT SOLVER \n***********************\n";
   }
@@ -177,13 +178,13 @@ void SSI::SSIPart2WC::do_scatra_step()
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  ScaTraField()->Solve();
+  sca_tra_field()->solve();
 
   // set structure-based scalar transport values
-  SetScatraSolution(ScaTraField()->Phinp());
+  set_scatra_solution(sca_tra_field()->phinp());
 
   // set micro scale value (projected to macro scale) to structure field
-  if (macro_scale()) set_micro_scatra_solution(ScaTraField()->PhinpMicro());
+  if (macro_scale()) set_micro_scatra_solution(sca_tra_field()->phinp_micro());
 
   // evaluate temperature from function and set to structural discretization
   evaluate_and_set_temperature_field();
@@ -194,7 +195,7 @@ void SSI::SSIPart2WC::do_scatra_step()
  *----------------------------------------------------------------------*/
 void SSI::SSIPart2WC::pre_operator1()
 {
-  if (IterationCount() != 1 and use_old_structure_time_int())
+  if (iteration_count() != 1 and use_old_structure_time_int())
   {
     // NOTE: the predictor is NOT called in here. Just the screen output is not correct.
     // we only get norm of the evaluation of the structure problem
@@ -211,8 +212,8 @@ void SSI::SSIPart2WC::prepare_time_loop()
   constexpr bool force_prepare = true;
   structure_field()->prepare_output(force_prepare);
   structure_field()->output();
-  set_struct_solution(structure_field()->Dispnp(), structure_field()->Velnp(), false);
-  ScaTraField()->prepare_time_loop();
+  set_struct_solution(structure_field()->dispnp(), structure_field()->velnp(), false);
+  sca_tra_field()->prepare_time_loop();
 }
 
 /*----------------------------------------------------------------------*/
@@ -222,15 +223,15 @@ void SSI::SSIPart2WC::prepare_time_step(bool printheader)
 {
   increment_time_and_step();
 
-  set_struct_solution(structure_field()->Dispnp(), structure_field()->Velnp(), false);
-  ScaTraField()->prepare_time_step();
+  set_struct_solution(structure_field()->dispnp(), structure_field()->velnp(), false);
+  sca_tra_field()->prepare_time_step();
 
   // if adaptive time stepping and different time step size: calculate time step in scatra
   // (prepare_time_step() of Scatra) and pass to other fields
-  if (ScaTraField()->TimeStepAdapted()) set_dt_from_sca_tra_to_ssi();
+  if (sca_tra_field()->time_step_adapted()) set_dt_from_sca_tra_to_ssi();
 
-  SetScatraSolution(ScaTraField()->Phinp());
-  if (macro_scale()) set_micro_scatra_solution(ScaTraField()->PhinpMicro());
+  set_scatra_solution(sca_tra_field()->phinp());
+  if (macro_scale()) set_micro_scatra_solution(sca_tra_field()->phinp_micro());
 
   // NOTE: the predictor of the structure is called in here
   structure_field()->prepare_time_step();
@@ -245,21 +246,21 @@ void SSI::SSIPart2WC::update_and_output()
   constexpr bool force_prepare = false;
   structure_field()->prepare_output(force_prepare);
 
-  if (SSIInterfaceContact())
+  if (ssi_interface_contact())
   {
     // re-evaluate the contact to re-obtain the displ state
-    const auto& model_eval = structure_field()->ModelEvaluator(Inpar::Solid::model_structure);
-    const auto& cparams = model_eval.eval_data().ContactPtr();
-    nitsche_strategy_ssi()->Integrate(*cparams);
+    const auto& model_eval = structure_field()->model_evaluator(Inpar::Solid::model_structure);
+    const auto& cparams = model_eval.eval_data().contact_ptr();
+    nitsche_strategy_ssi()->integrate(*cparams);
   }
 
   structure_field()->update();
-  ScaTraField()->update();
+  sca_tra_field()->update();
 
-  ScaTraField()->evaluate_error_compared_to_analytical_sol();
+  sca_tra_field()->evaluate_error_compared_to_analytical_sol();
 
   structure_field()->output();
-  ScaTraField()->check_and_write_output_and_restart();
+  sca_tra_field()->check_and_write_output_and_restart();
 }
 
 
@@ -271,8 +272,8 @@ void SSI::SSIPart2WC::iter_update_states()
   // store last solutions (current states).
   // will be compared in convergence_check to the solutions,
   // obtained from the next Struct and Scatra steps.
-  scaincnp_->Update(1.0, *ScaTraField()->Phinp(), 0.0);
-  dispincnp_->Update(1.0, *structure_field()->Dispnp(), 0.0);
+  scaincnp_->Update(1.0, *sca_tra_field()->phinp(), 0.0);
+  dispincnp_->Update(1.0, *structure_field()->dispnp(), 0.0);
 }  // iter_update_states()
 
 
@@ -282,10 +283,10 @@ void SSI::SSIPart2WC::iter_update_states()
 void SSI::SSIPart2WC::outer_loop()
 {
   // reset iteration number
-  ResetIterationCount();
+  reset_iteration_count();
   bool stopnonliniter = false;
 
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n****************************************\n          OUTER ITERATION "
                  "LOOP\n****************************************\n";
@@ -315,7 +316,7 @@ void SSI::SSIPart2WC::outer_loop()
 
     // check convergence for all fields
     // stop iteration loop if converged
-    stopnonliniter = convergence_check(IterationCount());
+    stopnonliniter = convergence_check(iteration_count());
   }
 }
 
@@ -349,21 +350,21 @@ bool SSI::SSIPart2WC::convergence_check(int itnum)
 
   // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
-  scaincnp_->Update(1.0, *(ScaTraField()->Phinp()), -1.0);
-  dispincnp_->Update(1.0, *(structure_field()->Dispnp()), -1.0);
+  scaincnp_->Update(1.0, *(sca_tra_field()->phinp()), -1.0);
+  dispincnp_->Update(1.0, *(structure_field()->dispnp()), -1.0);
 
   // build the L2-norm of the scalar increment and the scalar
   scaincnp_->Norm2(&scaincnorm_L2);
-  ScaTraField()->Phinp()->Norm2(&scanorm_L2);
+  sca_tra_field()->phinp()->Norm2(&scanorm_L2);
   dispincnp_->Norm2(&dispincnorm_L2);
-  structure_field()->Dispnp()->Norm2(&dispnorm_L2);
+  structure_field()->dispnp()->Norm2(&dispnorm_L2);
 
   // care for the case that there is (almost) zero scalar
   if (scanorm_L2 < 1e-6) scanorm_L2 = 1.0;
   if (dispnorm_L2 < 1e-6) dispnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n";
     std::cout
@@ -380,8 +381,8 @@ bool SSI::SSIPart2WC::convergence_check(int itnum)
     printf(
         "|   %3d/%3d    |  %10.3E[L_2 ]   |  %10.3E    |  %10.3E      |  %10.3E        |  %10.3E   "
         "   |",
-        itnum, itmax_, ittol_, scaincnorm_L2 / Dt() / sqrt(scaincnp_->GlobalLength()),
-        dispincnorm_L2 / Dt() / sqrt(dispincnp_->GlobalLength()), scaincnorm_L2 / scanorm_L2,
+        itnum, itmax_, ittol_, scaincnorm_L2 / dt() / sqrt(scaincnp_->GlobalLength()),
+        dispincnorm_L2 / dt() / sqrt(dispincnp_->GlobalLength()), scaincnorm_L2 / scanorm_L2,
         dispincnorm_L2 / dispnorm_L2);
     printf("\n");
     printf(
@@ -391,11 +392,11 @@ bool SSI::SSIPart2WC::convergence_check(int itnum)
 
   // converged
   if (((scaincnorm_L2 / scanorm_L2) <= ittol_) and ((dispincnorm_L2 / dispnorm_L2) <= ittol_) and
-      ((dispincnorm_L2 / Dt() / sqrt(dispincnp_->GlobalLength())) <= ittol_) and
-      ((scaincnorm_L2 / Dt() / sqrt(scaincnp_->GlobalLength())) <= ittol_))
+      ((dispincnorm_L2 / dt() / sqrt(dispincnp_->GlobalLength())) <= ittol_) and
+      ((scaincnorm_L2 / dt() / sqrt(scaincnp_->GlobalLength())) <= ittol_))
   {
     stopnonliniter = true;
-    if (Comm().MyPID() == 0)
+    if (get_comm().MyPID() == 0)
     {
       printf(
           "|  Outer Iteration loop converged after iteration %3d/%3d !                             "
@@ -411,11 +412,11 @@ bool SSI::SSIPart2WC::convergence_check(int itnum)
   // timestep
   if ((itnum == itmax_) and
       (((scaincnorm_L2 / scanorm_L2) > ittol_) or ((dispincnorm_L2 / dispnorm_L2) > ittol_) or
-          ((dispincnorm_L2 / Dt() / sqrt(dispincnp_->GlobalLength())) > ittol_) or
-          (scaincnorm_L2 / Dt() / sqrt(scaincnp_->GlobalLength())) > ittol_))
+          ((dispincnorm_L2 / dt() / sqrt(dispincnp_->GlobalLength())) > ittol_) or
+          (scaincnorm_L2 / dt() / sqrt(scaincnp_->GlobalLength())) > ittol_))
   {
     stopnonliniter = true;
-    if ((Comm().MyPID() == 0))
+    if ((get_comm().MyPID() == 0))
     {
       printf(
           "|     >>>>>> not converged in itemax steps!                                             "
@@ -439,10 +440,10 @@ Teuchos::RCP<Epetra_Vector> SSI::SSIPart2WC::calc_velocity(Teuchos::RCP<const Ep
 {
   Teuchos::RCP<Epetra_Vector> vel = Teuchos::null;
   // copy D_n onto V_n+1
-  vel = Teuchos::rcp(new Epetra_Vector(*(structure_field()->Dispn())));
+  vel = Teuchos::rcp(new Epetra_Vector(*(structure_field()->dispn())));
   // calculate velocity with timestep Dt()
   //  V_n+1^k = (D_n+1^k - D_n) / Dt
-  vel->Update(1. / Dt(), *dispnp, -1. / Dt());
+  vel->Update(1. / dt(), *dispnp, -1. / dt());
 
   return vel;
 }  // calc_velocity()
@@ -474,7 +475,7 @@ void SSI::SSIPart2WCSolidToScatraRelax::init(const Epetra_Comm& comm,
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   const Teuchos::ParameterList& ssicontrolpart =
-      Global::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
+      Global::Problem::instance()->ssi_control_params().sublist("PARTITIONED");
 
   // Get minimal relaxation parameter from input file
   omega_ = ssicontrolpart.get<double>("STARTOMEGA");
@@ -485,10 +486,10 @@ void SSI::SSIPart2WCSolidToScatraRelax::init(const Epetra_Comm& comm,
  *----------------------------------------------------------------------*/
 void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
 {
-  ResetIterationCount();
+  reset_iteration_count();
   bool stopnonliniter = false;
 
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n****************************************\n          OUTER ITERATION "
                  "LOOP\n****************************************\n";
@@ -504,14 +505,14 @@ void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
   {
     increment_iteration_count();
 
-    if (IterationCount() == 1)
+    if (iteration_count() == 1)
     {
-      dispnp->Update(1.0, *(structure_field()->Dispnp()), 0.0);  // TSI does Dispn()
-      velnp->Update(1.0, *(structure_field()->Velnp()), 0.0);
+      dispnp->Update(1.0, *(structure_field()->dispnp()), 0.0);  // TSI does Dispn()
+      velnp->Update(1.0, *(structure_field()->velnp()), 0.0);
     }
 
     // store scalars and displacements for the convergence check later
-    scaincnp_->Update(1.0, *ScaTraField()->Phinp(), 0.0);
+    scaincnp_->Update(1.0, *sca_tra_field()->phinp(), 0.0);
     dispincnp_->Update(1.0, *dispnp, 0.0);
 
     // begin nonlinear solver / outer iteration ***************************
@@ -523,7 +524,7 @@ void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
     do_scatra_step();
 
     // prepare a partitioned structure step
-    if (IterationCount() != 1 and use_old_structure_time_int())
+    if (iteration_count() != 1 and use_old_structure_time_int())
       structure_field()->prepare_partition_step();
 
     // solve structural system
@@ -533,10 +534,10 @@ void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
 
     // check convergence for all fields and stop iteration loop if
     // convergence is achieved overall
-    stopnonliniter = convergence_check(IterationCount());
+    stopnonliniter = convergence_check(iteration_count());
 
     // get relaxation parameter
-    calc_omega(omega_, IterationCount());
+    calc_omega(omega_, iteration_count());
 
     // do the relaxation
     // d^{i+1} = omega^{i+1} . d^{i+1} + (1- omega^{i+1}) d^i
@@ -557,7 +558,7 @@ void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
       // set_state(dispnp) will automatically be undone during the next evaluation of the structural
       // field
       structure_field()->set_state(dispnp);
-      velnp->Update(1., *structure_field()->Velnp(), 0.);
+      velnp->Update(1., *structure_field()->velnp(), 0.);
     }
   }
 }
@@ -568,7 +569,7 @@ void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
 void SSI::SSIPart2WCSolidToScatraRelax::calc_omega(double& omega, const int itnum)
 {
   // nothing to do in here since we have a constant relaxation parameter: omega != startomega_;
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
     std::cout << "Fixed relaxation parameter omega is: " << omega << std::endl;
 }
 
@@ -604,7 +605,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::setup()
 void SSI::SSIPart2WCSolidToScatraRelaxAitken::calc_omega(double& omega, const int itnum)
 {
   const Teuchos::ParameterList& ssicontrolpart =
-      Global::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
+      Global::Problem::instance()->ssi_control_params().sublist("PARTITIONED");
 
   // Get maximal relaxation parameter from input file
   const double maxomega = ssicontrolpart.get<double>("MAXOMEGA");
@@ -620,7 +621,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::calc_omega(double& omega, const in
 
   double dispincnpdiffnorm = 0.0;
   dispincnpdiff->Norm2(&dispincnpdiffnorm);
-  if (dispincnpdiffnorm <= 1e-06 and Comm().MyPID() == 0)
+  if (dispincnpdiffnorm <= 1e-06 and get_comm().MyPID() == 0)
   {
     std::cout << "Warning: The structure increment is to small in order to use it for Aitken "
                  "relaxation. Using the previous Omega instead!"
@@ -642,7 +643,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::calc_omega(double& omega, const in
     // we force omega to be in the range defined in the input file
     if (omega < minomega)
     {
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
       {
         std::cout << "Warning: The calculation of the relaxation parameter omega via Aitken did "
                      "lead to a value smaller than MINOMEGA!"
@@ -652,7 +653,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::calc_omega(double& omega, const in
     }
     if (omega > maxomega)
     {
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
       {
         std::cout << "Warning: The calculation of the relaxation parameter omega via Aitken did "
                      "lead to a value bigger than MAXOMEGA!"
@@ -664,7 +665,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::calc_omega(double& omega, const in
 
   // else //if itnum==1 nothing is to do here since we want to take the last omega from the previous
   // step
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
     std::cout << "Using Aitken the relaxation parameter omega was estimated to: " << omega
               << std::endl;
 
@@ -700,12 +701,12 @@ void SSI::SSIPart2WCScatraToSolidRelax::init(const Epetra_Comm& comm,
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   const Teuchos::ParameterList& ssicontrolpart =
-      Global::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
+      Global::Problem::instance()->ssi_control_params().sublist("PARTITIONED");
 
   // Get start relaxation parameter from input file
   omega_ = ssicontrolpart.get<double>("STARTOMEGA");
 
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n#########################################################################\n  "
               << std::endl;
@@ -721,10 +722,10 @@ void SSI::SSIPart2WCScatraToSolidRelax::init(const Epetra_Comm& comm,
  *----------------------------------------------------------------------*/
 void SSI::SSIPart2WCScatraToSolidRelax::outer_loop()
 {
-  ResetIterationCount();
+  reset_iteration_count();
   bool stopnonliniter = false;
 
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n****************************************\n          OUTER ITERATION "
                  "LOOP\n****************************************\n";
@@ -732,32 +733,32 @@ void SSI::SSIPart2WCScatraToSolidRelax::outer_loop()
 
   // this is the relaxed input
   Teuchos::RCP<Epetra_Vector> phinp =
-      Core::LinAlg::CreateVector(*ScaTraField()->discretization()->dof_row_map(0), true);
+      Core::LinAlg::CreateVector(*sca_tra_field()->discretization()->dof_row_map(0), true);
 
   while (!stopnonliniter)
   {
     increment_iteration_count();
 
-    if (IterationCount() == 1)
+    if (iteration_count() == 1)
     {
-      phinp->Update(1.0, *(ScaTraField()->Phinp()), 0.0);  // TSI does Dispn()
+      phinp->Update(1.0, *(sca_tra_field()->phinp()), 0.0);  // TSI does Dispn()
     }
 
     // store scalars and displacements for the convergence check later
     scaincnp_->Update(1.0, *phinp, 0.0);
-    dispincnp_->Update(1.0, *structure_field()->Dispnp(), 0.0);
+    dispincnp_->Update(1.0, *structure_field()->dispnp(), 0.0);
 
 
     // begin nonlinear solver / outer iteration ***************************
 
     // set relaxed scalars
-    SetScatraSolution(phinp);
+    set_scatra_solution(phinp);
 
     // evaluate temperature from function and set to structural discretization
     evaluate_and_set_temperature_field();
 
     // prepare partitioned structure step
-    if (IterationCount() != 1 and use_old_structure_time_int())
+    if (iteration_count() != 1 and use_old_structure_time_int())
       structure_field()->prepare_partition_step();
 
     // solve structural system
@@ -768,10 +769,10 @@ void SSI::SSIPart2WCScatraToSolidRelax::outer_loop()
 
     // check convergence for all fields and stop iteration loop if
     // convergence is achieved overall
-    stopnonliniter = convergence_check(IterationCount());
+    stopnonliniter = convergence_check(iteration_count());
 
     // get relaxation parameter
-    calc_omega(omega_, IterationCount());
+    calc_omega(omega_, iteration_count());
 
     // do the relaxation
     // d^{i+1} = omega^{i+1} . d^{i+1} + (1- omega^{i+1}) d^i
@@ -786,7 +787,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::outer_loop()
 void SSI::SSIPart2WCScatraToSolidRelax::calc_omega(double& omega, const int itnum)
 {
   // nothing to do in here since we have a constant relaxation parameter: omega != startomega_;
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
     std::cout << "Fixed relaxation parameter omega is: " << omega << std::endl;
 }
 
@@ -813,7 +814,8 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::setup()
   SSI::SSIPart2WC::setup();
 
   // setup old scatra increment vector
-  scaincnpold_ = Core::LinAlg::CreateVector(*ScaTraField()->discretization()->dof_row_map(), true);
+  scaincnpold_ =
+      Core::LinAlg::CreateVector(*sca_tra_field()->discretization()->dof_row_map(), true);
 }
 
 /*----------------------------------------------------------------------*
@@ -822,7 +824,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::setup()
 void SSI::SSIPart2WCScatraToSolidRelaxAitken::calc_omega(double& omega, const int itnum)
 {
   const Teuchos::ParameterList& ssicontrolpart =
-      Global::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
+      Global::Problem::instance()->ssi_control_params().sublist("PARTITIONED");
 
   // Get maximal relaxation parameter from input file
   const double maxomega = ssicontrolpart.get<double>("MAXOMEGA");
@@ -831,13 +833,13 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::calc_omega(double& omega, const in
 
   // scaincnpdiff =  r^{i+1}_{n+1} - r^i_{n+1}
   Teuchos::RCP<Epetra_Vector> scaincnpdiff =
-      Core::LinAlg::CreateVector(*ScaTraField()->discretization()->dof_row_map(0), true);
+      Core::LinAlg::CreateVector(*sca_tra_field()->discretization()->dof_row_map(0), true);
   scaincnpdiff->Update(1.0, *scaincnp_, (-1.0), *scaincnpold_, 0.0);
 
   double scaincnpdiffnorm = 0.0;
   scaincnpdiff->Norm2(&scaincnpdiffnorm);
 
-  if (scaincnpdiffnorm <= 1e-06 and Comm().MyPID() == 0)
+  if (scaincnpdiffnorm <= 1e-06 and get_comm().MyPID() == 0)
   {
     std::cout << "Warning: The scalar increment is to small in order to use it for Aitken "
                  "relaxation. Using the previous omega instead!"
@@ -859,7 +861,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::calc_omega(double& omega, const in
     // we force omega to be in the range defined in the input file
     if (omega < minomega)
     {
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
       {
         std::cout << "Warning: The calculation of the relaxation parameter omega via Aitken did "
                      "lead to a value smaller than MINOMEGA!"
@@ -869,7 +871,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::calc_omega(double& omega, const in
     }
     if (omega > maxomega)
     {
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
       {
         std::cout << "Warning: The calculation of the relaxation parameter omega via Aitken did "
                      "lead to a value bigger than MAXOMEGA!"
@@ -881,7 +883,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::calc_omega(double& omega, const in
 
   // else //if itnum==1 nothing is to do here since we want to take the last omega from the previous
   // step
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
     std::cout << "Using Aitken the relaxation parameter omega was estimated to: " << omega
               << std::endl;
 

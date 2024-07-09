@@ -80,9 +80,9 @@ void ParticleInteraction::ParticleInteractionBase::
   comm_.MaxAll(&maxinteractiondistance, &allprocmaxinteractiondistance, 1);
 
   // bin size safety check
-  if (allprocmaxinteractiondistance > particleengineinterface_->MinBinSize())
+  if (allprocmaxinteractiondistance > particleengineinterface_->min_bin_size())
     FOUR_C_THROW("the particle interaction distance is larger than the minimal bin size (%f > %f)!",
-        allprocmaxinteractiondistance, particleengineinterface_->MinBinSize());
+        allprocmaxinteractiondistance, particleengineinterface_->min_bin_size());
 
   // periodic length safety check
   if (particleengineinterface_->have_periodic_boundary_conditions())
@@ -121,7 +121,7 @@ void ParticleInteraction::ParticleInteractionBase::set_current_write_result_flag
   particleinteractionwriter_->set_current_write_result_flag(writeresultsthisstep);
 }
 
-void ParticleInteraction::ParticleInteractionBase::SetGravity(std::vector<double>& gravity)
+void ParticleInteraction::ParticleInteractionBase::set_gravity(std::vector<double>& gravity)
 {
   gravity_ = gravity;
 }
@@ -158,14 +158,14 @@ double ParticleInteraction::ParticleInteractionBase::max_particle_radius() const
   double maxrad = 0.0;
 
   // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& type_i : particlecontainerbundle_->get_particle_types())
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // get maximum stored value of state
-    double currmaxrad = container->GetMaxValueOfState(PARTICLEENGINE::Radius);
+    double currmaxrad = container->get_max_value_of_state(PARTICLEENGINE::Radius);
 
     // compare to current maximum
     maxrad = std::max(maxrad, currmaxrad);

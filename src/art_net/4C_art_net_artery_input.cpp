@@ -16,13 +16,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Artery::ReadElement(
+bool Discret::ELEMENTS::Artery::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  SetMaterial(0, Mat::Factory(material));
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  set_material(0, Mat::Factory(material_id));
 
   int ngp;
   linedef->extract_int("GP", ngp);
@@ -81,25 +81,25 @@ bool Discret::ELEMENTS::Artery::ReadElement(
   linedef->extract_double("DIAM", diam);
 
   // set diameter in material
-  SetDiamInMaterial(diam);
+  set_diam_in_material(diam);
 
   return true;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Artery::SetDiamInMaterial(const double diam)
+void Discret::ELEMENTS::Artery::set_diam_in_material(const double diam)
 {
   // now the element knows its material, and we can use it to set the diameter
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
-  if (mat->MaterialType() == Core::Materials::m_cnst_art)
+  Teuchos::RCP<Core::Mat::Material> mat = material();
+  if (mat->material_type() == Core::Materials::m_cnst_art)
   {
     Mat::Cnst1dArt* arterymat = dynamic_cast<Mat::Cnst1dArt*>(mat.get());
-    arterymat->SetDiam(diam);
-    arterymat->SetDiamInitial(diam);
+    arterymat->set_diam(diam);
+    arterymat->set_diam_initial(diam);
   }
   else
-    FOUR_C_THROW("Artery element got unsupported material type %d", mat->MaterialType());
+    FOUR_C_THROW("Artery element got unsupported material type %d", mat->material_type());
   return;
 }
 

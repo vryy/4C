@@ -65,7 +65,8 @@ namespace BEAMINTERACTION
       /**
        * \brief Return a const pointer to the mortar manager.
        */
-      inline Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager> GetMortarManager() const
+      inline Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager> get_mortar_manager()
+          const
       {
         return mortar_manager_;
       }

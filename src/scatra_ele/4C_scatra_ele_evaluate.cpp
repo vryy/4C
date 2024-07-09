@@ -41,35 +41,35 @@ void Discret::ELEMENTS::TransportType::pre_evaluate(Core::FE::Discretization& di
   {
     case ScaTra::Action::set_general_scatra_parameter:
     {
-      ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
+      ScaTraEleParameterStd::instance(dis.name())->set_parameters(p);
 
       break;
     }
 
     case ScaTra::Action::set_nodeset_parameter:
     {
-      ScaTraEleParameterStd::Instance(dis.Name())->set_nodeset_parameters(p);
+      ScaTraEleParameterStd::instance(dis.name())->set_nodeset_parameters(p);
 
       break;
     }
 
     case ScaTra::Action::set_turbulence_scatra_parameter:
     {
-      ScaTraEleParameterTurbulence::Instance(dis.Name())->SetParameters(p);
+      ScaTraEleParameterTurbulence::instance(dis.name())->set_parameters(p);
 
       break;
     }
 
     case ScaTra::Action::set_time_parameter:
     {
-      ScaTraEleParameterTimInt::Instance(dis.Name())->SetParameters(p);
+      ScaTraEleParameterTimInt::instance(dis.name())->set_parameters(p);
 
       break;
     }
 
     case ScaTra::Action::set_mean_Cai:
     {
-      ScaTraEleParameterTurbulence::Instance(dis.Name())->SetCsgsPhi(p.get<double>("meanCai"));
+      ScaTraEleParameterTurbulence::instance(dis.name())->set_csgs_phi(p.get<double>("meanCai"));
 
       break;
     }
@@ -77,10 +77,10 @@ void Discret::ELEMENTS::TransportType::pre_evaluate(Core::FE::Discretization& di
     case ScaTra::Action::set_lsreinit_scatra_parameter:
     {
       // set general parameters first
-      ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
+      ScaTraEleParameterStd::instance(dis.name())->set_parameters(p);
 
       // set additional, problem-dependent parameters
-      ScaTraEleParameterLsReinit::Instance(dis.Name())->SetParameters(p);
+      ScaTraEleParameterLsReinit::instance(dis.name())->set_parameters(p);
 
       break;
     }
@@ -88,10 +88,10 @@ void Discret::ELEMENTS::TransportType::pre_evaluate(Core::FE::Discretization& di
     case ScaTra::Action::set_elch_scatra_parameter:
     {
       // set general parameters first
-      ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
+      ScaTraEleParameterStd::instance(dis.name())->set_parameters(p);
 
       // set additional, problem-dependent parameters
-      ScaTraEleParameterElch::Instance(dis.Name())->SetParameters(p);
+      ScaTraEleParameterElch::instance(dis.name())->set_parameters(p);
 
       break;
     }
@@ -99,7 +99,7 @@ void Discret::ELEMENTS::TransportType::pre_evaluate(Core::FE::Discretization& di
     case ScaTra::Action::set_scatra_ele_boundary_parameter:
     {
       // set additional, problem-dependent parameters
-      ScaTraEleParameterBoundary::Instance("scatra")->SetParameters(p);
+      ScaTraEleParameterBoundary::instance("scatra")->set_parameters(p);
 
       break;
     }
@@ -107,11 +107,11 @@ void Discret::ELEMENTS::TransportType::pre_evaluate(Core::FE::Discretization& di
     case ScaTra::Action::set_diffcond_scatra_parameter:
     {
       // set general parameters first
-      ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
+      ScaTraEleParameterStd::instance(dis.name())->set_parameters(p);
 
       // set additional, problem-dependent parameters
-      ScaTraEleParameterElch::Instance(dis.Name())->SetParameters(p);
-      ScaTraEleParameterElchDiffCond::Instance(dis.Name())->SetParameters(p);
+      ScaTraEleParameterElch::instance(dis.name())->set_parameters(p);
+      ScaTraEleParameterElchDiffCond::instance(dis.name())->set_parameters(p);
 
       break;
     }
@@ -146,7 +146,7 @@ int Discret::ELEMENTS::Transport::evaluate(Teuchos::ParameterList& params,
 {
   // we assume here, that numdofpernode is equal for every node within
   // the discretization and does not change during the computations
-  const int numdofpernode = NumDofPerNode(*(Nodes()[0]));
+  const int numdofpernode = num_dof_per_node(*(nodes()[0]));
   int numscal = numdofpernode;
 
   // perform additional operations specific to implementation type
@@ -166,12 +166,12 @@ int Discret::ELEMENTS::Transport::evaluate(Teuchos::ParameterList& params,
 
       // get the material of the first element
       // we assume here, that the material is equal for all elements in this discretization
-      Teuchos::RCP<Core::Mat::Material> material = Material();
-      if (material->MaterialType() == Core::Materials::m_elchmat)
+      Teuchos::RCP<Core::Mat::Material> material = Transport::material();
+      if (material->material_type() == Core::Materials::m_elchmat)
       {
         const auto* actmat = static_cast<const Mat::ElchMat*>(material.get());
 
-        numscal = actmat->NumScal();
+        numscal = actmat->num_scal();
       }
 
       break;
@@ -224,8 +224,8 @@ int Discret::ELEMENTS::Transport::evaluate(Teuchos::ParameterList& params,
     case ScaTra::Action::calc_mat_and_rhs:
     case ScaTra::Action::calc_rhs:
     {
-      return ScaTraFactory::ProvideImpl(
-          Shape(), impltype_, numdofpernode, numscal, discretization.Name())
+      return ScaTraFactory::provide_impl(
+          shape(), impltype_, numdofpernode, numscal, discretization.name())
           ->evaluate(this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
@@ -235,8 +235,8 @@ int Discret::ELEMENTS::Transport::evaluate(Teuchos::ParameterList& params,
     case ScaTra::Action::calc_scatra_mono_odblock_scatrathermo:
     case ScaTra::Action::calc_scatra_mono_odblock_thermoscatra:
     {
-      return ScaTraFactory::ProvideImpl(
-          Shape(), impltype_, numdofpernode, numscal, discretization.Name())
+      return ScaTraFactory::provide_impl(
+          shape(), impltype_, numdofpernode, numscal, discretization.name())
           ->evaluate_od(
               this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
@@ -283,9 +283,9 @@ int Discret::ELEMENTS::Transport::evaluate(Teuchos::ParameterList& params,
     case ScaTra::Action::transform_real_to_reference_point:
     case ScaTra::Action::evaluate_field_in_point:
     {
-      return ScaTraFactory::ProvideImpl(
-          Shape(), impltype_, numdofpernode, numscal, discretization.Name())
-          ->EvaluateService(
+      return ScaTraFactory::provide_impl(
+          shape(), impltype_, numdofpernode, numscal, discretization.name())
+          ->evaluate_service(
               this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }

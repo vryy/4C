@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 void StructureFilter::post_stress(const std::string groupname, const std::string stresstype)
 {
-  PostField* field = writer_->GetField();
+  PostField* field = writer_->get_field();
   PostResult result = PostResult(field);
   result.next_result();
 
@@ -101,7 +101,7 @@ struct WriteNodalStressStep : public SpecialFieldInterface
 {
   WriteNodalStressStep(StructureFilter& filter) : filter_(filter) {}
 
-  std::vector<int> NumDfMap() override { return std::vector<int>(1, 6); }
+  std::vector<int> num_df_map() override { return std::vector<int>(1, 6); }
 
   void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
@@ -115,7 +115,7 @@ struct WriteNodalStressStep : public SpecialFieldInterface
         result.read_result_serialdensematrix(groupname);
 
     const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
-    const Epetra_Map* noderowmap = dis->NodeRowMap();
+    const Epetra_Map* noderowmap = dis->node_row_map();
 
     Teuchos::ParameterList p;
     Epetra_MultiVector nodal_stress(*noderowmap, 6, true);
@@ -123,10 +123,10 @@ struct WriteNodalStressStep : public SpecialFieldInterface
     dis->evaluate(
         [&](Core::Elements::Element& ele) {
           Core::FE::ExtrapolateGaussPointQuantityToNodes(
-              ele, *data->at(ele.Id()), *dis, nodal_stress);
+              ele, *data->at(ele.id()), *dis, nodal_stress);
         });
 
-    filter_.GetWriter().write_nodal_result_step(
+    filter_.get_writer().write_nodal_result_step(
         *files[0], Teuchos::rcpFromRef(nodal_stress), resultfilepos, groupname, name[0], 6);
   }
 
@@ -142,7 +142,7 @@ struct WriteElementCenterStressStep : public SpecialFieldInterface
 {
   WriteElementCenterStressStep(StructureFilter& filter) : filter_(filter) {}
 
-  std::vector<int> NumDfMap() override { return std::vector<int>(1, 6); }
+  std::vector<int> num_df_map() override { return std::vector<int>(1, 6); }
 
   void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
@@ -155,14 +155,14 @@ struct WriteElementCenterStressStep : public SpecialFieldInterface
     const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    Epetra_MultiVector elestress(*(dis->ElementRowMap()), 6);
+    Epetra_MultiVector elestress(*(dis->element_row_map()), 6);
 
     dis->evaluate(
         [&](Core::Elements::Element& ele) {
-          Core::FE::EvaluateGaussPointQuantityAtElementCenter(ele, *data->at(ele.Id()), elestress);
+          Core::FE::EvaluateGaussPointQuantityAtElementCenter(ele, *data->at(ele.id()), elestress);
         });
 
-    filter_.GetWriter().write_element_result_step(
+    filter_.get_writer().write_element_result_step(
         *files[0], Teuchos::rcpFromRef(elestress), resultfilepos, groupname, name[0], 6, 0);
   }
 
@@ -178,7 +178,7 @@ struct WriteElementCenterRotation : public SpecialFieldInterface
 {
   WriteElementCenterRotation(StructureFilter& filter) : filter_(filter) {}
 
-  std::vector<int> NumDfMap() override { return std::vector<int>(1, 9); }
+  std::vector<int> num_df_map() override { return std::vector<int>(1, 9); }
 
   void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
@@ -191,21 +191,21 @@ struct WriteElementCenterRotation : public SpecialFieldInterface
     const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    Epetra_MultiVector elerotation(*(dis->ElementRowMap()), 9);
+    Epetra_MultiVector elerotation(*(dis->element_row_map()), 9);
     dis->evaluate(
         [&](Core::Elements::Element& ele)
         {
-          const Core::LinAlg::SerialDenseMatrix& elecenterrot = *data->at(ele.Id());
+          const Core::LinAlg::SerialDenseMatrix& elecenterrot = *data->at(ele.id());
 
           const Epetra_BlockMap& elemap = elerotation.Map();
-          int lid = elemap.LID(ele.Id());
+          int lid = elemap.LID(ele.id());
           if (lid != -1)
             for (int i = 0; i < elecenterrot.numRows(); ++i)
               for (int j = 0; j < elecenterrot.numCols(); ++j)
                 (*(elerotation(i * elecenterrot.numRows() + j)))[lid] = elecenterrot(i, j);
         });
 
-    filter_.GetWriter().write_element_result_step(
+    filter_.get_writer().write_element_result_step(
         *files[0], Teuchos::rcpFromRef(elerotation), resultfilepos, groupname, name[0], 9, 0);
   }
 
@@ -221,7 +221,7 @@ struct WriteNodalMembraneThicknessStep : public SpecialFieldInterface
 {
   WriteNodalMembraneThicknessStep(StructureFilter& filter) : filter_(filter) {}
 
-  std::vector<int> NumDfMap() override { return std::vector<int>(1, 1); }
+  std::vector<int> num_df_map() override { return std::vector<int>(1, 1); }
 
   void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
@@ -235,7 +235,7 @@ struct WriteNodalMembraneThicknessStep : public SpecialFieldInterface
         result.read_result_serialdensematrix(groupname);
 
     const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
-    const Epetra_Map* noderowmap = dis->NodeRowMap();
+    const Epetra_Map* noderowmap = dis->node_row_map();
 
     Teuchos::ParameterList p;
     p.set("action", "postprocess_thickness");
@@ -250,7 +250,7 @@ struct WriteNodalMembraneThicknessStep : public SpecialFieldInterface
       FOUR_C_THROW("vector containing nodal thickness not available");
     }
 
-    filter_.GetWriter().write_nodal_result_step(
+    filter_.get_writer().write_nodal_result_step(
         *files[0], nodal_thickness, resultfilepos, groupname, name[0], 1);
   }
 
@@ -332,7 +332,7 @@ void StructureFilter::write_stress(
   {
     name = "element_" + name;
     WriteElementCenterRotation stresses(*this);
-    writer_->WriteSpecialField(
+    writer_->write_special_field(
         stresses, result, elementbased, groupname, std::vector<std::string>(1, name), out);
   }
   if (groupname == "gauss_membrane_thickness")
@@ -341,7 +341,7 @@ void StructureFilter::write_stress(
     {
       name = "nodal_" + name;
       WriteNodalMembraneThicknessStep thickness(*this);
-      writer_->WriteSpecialField(
+      writer_->write_special_field(
           thickness, result, nodebased, groupname, std::vector<std::string>(1, name), out);
     }
     else if (stresskind == elementbased)
@@ -357,14 +357,14 @@ void StructureFilter::write_stress(
     {
       name = "nodal_" + name;
       WriteNodalStressStep stresses(*this);
-      writer_->WriteSpecialField(
+      writer_->write_special_field(
           stresses, result, nodebased, groupname, std::vector<std::string>(1, name), out);
     }
     else if (stresskind == elementbased)
     {
       name = "element_" + name;
       WriteElementCenterStressStep stresses(*this);
-      writer_->WriteSpecialField(
+      writer_->write_special_field(
           stresses, result, elementbased, groupname, std::vector<std::string>(1, name), out);
     }
     else
@@ -381,7 +381,7 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
 {
   WriteNodalEigenStressStep(StructureFilter& filter) : filter_(filter) {}
 
-  std::vector<int> NumDfMap() override
+  std::vector<int> num_df_map() override
   {
     std::vector<int> map(3, 1);
     for (int i = 0; i < 3; ++i) map.push_back(3);
@@ -400,14 +400,14 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
         result.read_result_serialdensematrix(groupname);
 
     const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
-    const Epetra_Map* noderowmap = dis->NodeRowMap();
+    const Epetra_Map* noderowmap = dis->node_row_map();
 
     Epetra_MultiVector nodal_stress(*noderowmap, 6, true);
 
     dis->evaluate(
         [&](Core::Elements::Element& ele) {
           Core::FE::ExtrapolateGaussPointQuantityToNodes(
-              ele, *data->at(ele.Id()), *dis, nodal_stress);
+              ele, *data->at(ele.id()), *dis, nodal_stress);
         });
 
 
@@ -418,7 +418,7 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
     for (int i = 3; i < 6; ++i)
       nodal_eigen_val_vec[i] = Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3));
 
-    const int numnodes = dis->NumMyRowNodes();
+    const int numnodes = dis->num_my_row_nodes();
     bool threedim = true;
     if (result.field()->problem()->num_dim() == 2) threedim = false;
 
@@ -480,10 +480,10 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
     }
 
     for (int i = 0; i < 3; ++i)
-      filter_.GetWriter().write_nodal_result_step(
+      filter_.get_writer().write_nodal_result_step(
           *files[i], nodal_eigen_val_vec[i], resultfilepos, groupname, name[i], 1);
     for (int i = 3; i < 6; ++i)
-      filter_.GetWriter().write_nodal_result_step(
+      filter_.get_writer().write_nodal_result_step(
           *files[i], nodal_eigen_val_vec[i], resultfilepos, groupname, name[i], 3);
   }
 
@@ -499,7 +499,7 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
 {
   WriteElementCenterEigenStressStep(StructureFilter& filter) : filter_(filter) {}
 
-  std::vector<int> NumDfMap() override
+  std::vector<int> num_df_map() override
   {
     std::vector<int> map(3, 1);
     for (int i = 0; i < 3; ++i) map.push_back(3);
@@ -517,29 +517,29 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
 
     const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
 
-    Epetra_MultiVector element_stress(*dis->ElementRowMap(), 6, true);
+    Epetra_MultiVector element_stress(*dis->element_row_map(), 6, true);
 
     dis->evaluate(
         [&](Core::Elements::Element& ele) {
           Core::FE::EvaluateGaussPointQuantityAtElementCenter(
-              ele, *data->at(ele.Id()), element_stress);
+              ele, *data->at(ele.id()), element_stress);
         });
 
 
     std::vector<Teuchos::RCP<Epetra_MultiVector>> nodal_eigen_val_vec(6);
     for (int i = 0; i < 3; ++i)
-      nodal_eigen_val_vec[i] = Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementRowMap()), 1));
+      nodal_eigen_val_vec[i] = Teuchos::rcp(new Epetra_MultiVector(*(dis->element_row_map()), 1));
     for (int i = 3; i < 6; ++i)
-      nodal_eigen_val_vec[i] = Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementRowMap()), 3));
+      nodal_eigen_val_vec[i] = Teuchos::rcp(new Epetra_MultiVector(*(dis->element_row_map()), 3));
 
-    const int numnodes = dis->NumMyRowNodes();
+    const int numnodes = dis->num_my_row_nodes();
     bool threedim = true;
     if (result.field()->problem()->num_dim() == 2) threedim = false;
 
     // the three-dimensional case
     if (threedim)
     {
-      for (int i = 0; i < dis->NumMyRowElements(); ++i)
+      for (int i = 0; i < dis->num_my_row_elements(); ++i)
       {
         Core::LinAlg::SerialDenseMatrix eigenvec(3, 3);
         Core::LinAlg::SerialDenseVector eigenval(3);
@@ -594,10 +594,10 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
     }
 
     for (int i = 0; i < 3; ++i)
-      filter_.GetWriter().write_element_result_step(
+      filter_.get_writer().write_element_result_step(
           *files[i], nodal_eigen_val_vec[i], resultfilepos, groupname, name[i], 1, 0);
     for (int i = 3; i < 6; ++i)
-      filter_.GetWriter().write_element_result_step(
+      filter_.get_writer().write_element_result_step(
           *files[i], nodal_eigen_val_vec[i], resultfilepos, groupname, name[i], 3, 0);
   }
 
@@ -715,13 +715,13 @@ void StructureFilter::write_eigen_stress(
   {
     for (int i = 0; i < 6; ++i) name[i] = "nodal_" + name[i];
     WriteNodalEigenStressStep stresses(*this);
-    writer_->WriteSpecialField(stresses, result, nodebased, groupname, name, out);
+    writer_->write_special_field(stresses, result, nodebased, groupname, name, out);
   }
   else if (stresskind == elementbased)
   {
     for (int i = 0; i < 6; ++i) name[i] = "element_" + name[i];
     WriteElementCenterEigenStressStep stresses(*this);
-    writer_->WriteSpecialField(stresses, result, elementbased, groupname, name, out);
+    writer_->write_special_field(stresses, result, elementbased, groupname, name, out);
   }
   else
     FOUR_C_THROW("Unknown heatflux type");

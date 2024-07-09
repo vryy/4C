@@ -206,8 +206,8 @@ bool NOX::Nln::LinearSystem::apply_jacobian_block(const ::NOX::Epetra::Vector& i
 {
   const Core::LinAlg::SparseMatrix& blockc = get_jacobian_block(rbid, cbid);
   Core::LinAlg::SparseMatrix& block = const_cast<Core::LinAlg::SparseMatrix&>(blockc);
-  const Epetra_Map& domainmap = block.DomainMap();
-  const Epetra_Map& rangemap = block.RangeMap();
+  const Epetra_Map& domainmap = block.domain_map();
+  const Epetra_Map& rangemap = block.range_map();
 
   const Epetra_Vector& input_epetra = input.getEpetraVector();
   Teuchos::RCP<const Epetra_Vector> input_apply = Teuchos::null;
@@ -259,7 +259,7 @@ bool NOX::Nln::LinearSystem::applyJacobianTranspose(
 void NOX::Nln::LinearSystem::set_linear_problem_for_solve(Epetra_LinearProblem& linear_problem,
     Core::LinAlg::SparseOperator& jac, Epetra_Vector& lhs, Epetra_Vector& rhs) const
 {
-  linear_problem.SetOperator(jac.EpetraOperator().get());
+  linear_problem.SetOperator(jac.epetra_operator().get());
   linear_problem.SetLHS(&lhs);
   linear_problem.SetRHS(&rhs);
 }
@@ -332,7 +332,7 @@ bool NOX::Nln::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
   Teuchos::RCP<Epetra_MultiVector> x = Teuchos::rcp(linProblem.GetLHS(), false);
   Teuchos::RCP<Epetra_MultiVector> b = Teuchos::rcp(linProblem.GetRHS(), false);
 
-  const int linsol_status = currSolver->Solve(matrix, x, b, solver_params);
+  const int linsol_status = currSolver->solve(matrix, x, b, solver_params);
 
   if (linsol_status)
   {
@@ -443,8 +443,8 @@ void NOX::Nln::LinearSystem::adjust_pseudo_time_step(double& delta, const double
   if (jac.is_null())
     throw_error("adjust_pseudo_time_step()", "Cast to Core::LinAlg::SparseMatrix failed!");
   // get the diagonal terms of the jacobian
-  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(jac->RowMap(), false);
-  jac->ExtractDiagonalCopy(*diag);
+  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(jac->row_map(), false);
+  jac->extract_diagonal_copy(*diag);
   diag->Update(-1.0, *v, 1.0);
   // Finally undo the changes
   jac->replace_diagonal_values(*diag);
@@ -455,9 +455,9 @@ void NOX::Nln::LinearSystem::adjust_pseudo_time_step(double& delta, const double
   /* evaluate the first vector:
    *    eta^{-1} F_{n-1} + (\nabla_{x} F_{n-1})^{T} d_{n-1}             */
   double stepSizeInv = 1.0 / stepSize;
-  Teuchos::RCP<Epetra_Vector> vec_1 = Core::LinAlg::CreateVector(jac->RowMap(), true);
+  Teuchos::RCP<Epetra_Vector> vec_1 = Core::LinAlg::CreateVector(jac->row_map(), true);
   Teuchos::RCP<Epetra_Vector> vec_2 = Teuchos::rcp(new Epetra_Vector(rhs.getEpetraVector()));
-  jac->Multiply(false, dir.getEpetraVector(), *vec_1);
+  jac->multiply(false, dir.getEpetraVector(), *vec_1);
   vec_2->Scale(stepSizeInv);
   vec_1->Update(1.0, *vec_2, 1.0);
   /* evaluate the second vector:              d^{T} V                   */
@@ -472,7 +472,7 @@ void NOX::Nln::LinearSystem::adjust_pseudo_time_step(double& delta, const double
   // ---------------------------------------------------------------------
   // show the error (L2-norm)
   // ---------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> vec_err = Core::LinAlg::CreateVector(jac->RowMap(), true);
+  Teuchos::RCP<Epetra_Vector> vec_err = Core::LinAlg::CreateVector(jac->row_map(), true);
   vec_err->Update(delta, *vec_1, 1.0, *vec_2, 0.0);
   double error_start = 0.0;
   vec_err->Norm2(&error_start);
@@ -656,13 +656,13 @@ const Core::LinAlg::SparseMatrix& NOX::Nln::LinearSystem::get_jacobian_block(
       typedef Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy> linalg_bsm;
       const linalg_bsm& jac_block = dynamic_cast<const linalg_bsm&>(jacobian());
 
-      if (rbid >= static_cast<unsigned>(jac_block.Rows()) or
-          cbid >= static_cast<unsigned>(jac_block.Cols()))
+      if (rbid >= static_cast<unsigned>(jac_block.rows()) or
+          cbid >= static_cast<unsigned>(jac_block.cols()))
         FOUR_C_THROW(
             "The given row/column block ids exceed the block dimension of "
             "the jacobian matrix.");
 
-      return jac_block.Matrix(rbid, cbid);
+      return jac_block.matrix(rbid, cbid);
     }
     case LinSystem::LinalgSparseMatrix:
     {
@@ -687,7 +687,7 @@ const Core::LinAlg::SparseMatrix& NOX::Nln::LinearSystem::get_jacobian_block(
  *----------------------------------------------------------------------*/
 const Epetra_Map& NOX::Nln::LinearSystem::get_jacobian_range_map(unsigned rbid, unsigned cbid) const
 {
-  return get_jacobian_block(rbid, cbid).RangeMap();
+  return get_jacobian_block(rbid, cbid).range_map();
 }
 
 /*----------------------------------------------------------------------*
@@ -696,11 +696,11 @@ Teuchos::RCP<Epetra_Vector> NOX::Nln::LinearSystem::get_diagonal_of_jacobian(
     unsigned diag_bid) const
 {
   const Core::LinAlg::SparseMatrix& diag_block = get_jacobian_block(diag_bid, diag_bid);
-  const Epetra_Map& rmap = diag_block.RangeMap();
+  const Epetra_Map& rmap = diag_block.range_map();
 
   Teuchos::RCP<Epetra_Vector> diag_copy = Teuchos::rcp(new Epetra_Vector(rmap, true));
 
-  diag_block.ExtractDiagonalCopy(*diag_copy);
+  diag_block.extract_diagonal_copy(*diag_copy);
 
   return diag_copy;
 }
@@ -794,8 +794,8 @@ void NOX::Nln::LinearSystem::prepare_block_dense_matrix(
     const Core::LinAlg::BlockSparseMatrixBase& block_sparse,
     Core::LinAlg::SerialDenseMatrix& block_dense) const
 {
-  const int grows = block_sparse.FullRangeMap().NumGlobalElements();
-  const int gcols = block_sparse.FullDomainMap().NumGlobalElements();
+  const int grows = block_sparse.full_range_map().NumGlobalElements();
+  const int gcols = block_sparse.full_domain_map().NumGlobalElements();
 
   block_dense.reshape(grows, gcols);
   if (block_dense.numCols() != block_dense.numRows())
@@ -830,16 +830,16 @@ void NOX::Nln::LinearSystem::convert_jacobian_to_dense_matrix(
       const linalg_blocksparsematrix& block_sparse =
           dynamic_cast<const linalg_blocksparsematrix&>(jacobian());
 
-      const Epetra_Map& full_rangemap = block_sparse.FullRangeMap();
-      const Epetra_Map& full_domainmap = block_sparse.FullDomainMap();
+      const Epetra_Map& full_rangemap = block_sparse.full_range_map();
+      const Epetra_Map& full_domainmap = block_sparse.full_domain_map();
 
       prepare_block_dense_matrix(block_sparse, dense_jac);
 
-      for (int r = 0; r < block_sparse.Rows(); ++r)
+      for (int r = 0; r < block_sparse.rows(); ++r)
       {
-        for (int c = 0; c < block_sparse.Cols(); ++c)
+        for (int c = 0; c < block_sparse.cols(); ++c)
         {
-          const Core::LinAlg::SparseMatrix& block = block_sparse.Matrix(r, c);
+          const Core::LinAlg::SparseMatrix& block = block_sparse.matrix(r, c);
           convert_sparse_to_dense_matrix(block, dense_jac, full_rangemap, full_domainmap);
         }
       }
@@ -851,7 +851,7 @@ void NOX::Nln::LinearSystem::convert_jacobian_to_dense_matrix(
       const Core::LinAlg::SparseMatrix& jac =
           dynamic_cast<const Core::LinAlg::SparseMatrix&>(jacobian());
 
-      convert_sparse_to_dense_matrix(jac, dense_jac, jac.RangeMap(), jac.DomainMap());
+      convert_sparse_to_dense_matrix(jac, dense_jac, jac.range_map(), jac.domain_map());
 
       break;
     }
@@ -869,19 +869,19 @@ void NOX::Nln::LinearSystem::convert_sparse_to_dense_matrix(
     const Core::LinAlg::SparseMatrix& sparse, Core::LinAlg::SerialDenseMatrix& dense,
     const Epetra_Map& full_rangemap, const Epetra_Map& full_domainmap) const
 {
-  if (not sparse.Filled()) FOUR_C_THROW("The sparse matrix must be filled!");
-  Teuchos::RCP<const Epetra_CrsMatrix> crs_mat = sparse.EpetraMatrix();
+  if (not sparse.filled()) FOUR_C_THROW("The sparse matrix must be filled!");
+  Teuchos::RCP<const Epetra_CrsMatrix> crs_mat = sparse.epetra_matrix();
 
   if (dense.numCols() == 0 or dense.numRows() == 0)
   {
-    const int numgrows = sparse.RowMap().NumGlobalElements();
-    const int numgcols = sparse.ColMap().NumGlobalElements();
+    const int numgrows = sparse.row_map().NumGlobalElements();
+    const int numgcols = sparse.col_map().NumGlobalElements();
     dense.reshape(numgrows, numgcols);
     dense.putScalar(0.0);
   }
 
-  const int num_myrows = sparse.RowMap().NumMyElements();
-  const int* rgids = sparse.RowMap().MyGlobalElements();
+  const int num_myrows = sparse.row_map().NumMyElements();
+  const int* rgids = sparse.row_map().MyGlobalElements();
 
   for (int rlid = 0; rlid < num_myrows; ++rlid)
   {
@@ -901,7 +901,7 @@ void NOX::Nln::LinearSystem::convert_sparse_to_dense_matrix(
 
     for (int i = 0; i < numentries; ++i)
     {
-      const int cgid = sparse.ColMap().GID(indices[i]);
+      const int cgid = sparse.col_map().GID(indices[i]);
       if (cgid == -1)
         FOUR_C_THROW("Column/Domain: Couldn't find the corresponding GID to LID %d", indices[i]);
 

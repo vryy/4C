@@ -42,7 +42,7 @@ ParticleInteraction::SPHEquationOfStateGenTait::SPHEquationOfStateGenTait(
   // empty constructor
 }
 
-double ParticleInteraction::SPHEquationOfStateGenTait::DensityToPressure(
+double ParticleInteraction::SPHEquationOfStateGenTait::density_to_pressure(
     const double& density, const double& density0) const
 {
   if (exponent_ == 1)
@@ -54,7 +54,7 @@ double ParticleInteraction::SPHEquationOfStateGenTait::DensityToPressure(
   }
 }
 
-double ParticleInteraction::SPHEquationOfStateGenTait::PressureToDensity(
+double ParticleInteraction::SPHEquationOfStateGenTait::pressure_to_density(
     const double& pressure, const double& density0) const
 {
   if (exponent_ == 1)
@@ -66,7 +66,7 @@ double ParticleInteraction::SPHEquationOfStateGenTait::PressureToDensity(
   }
 }
 
-double ParticleInteraction::SPHEquationOfStateGenTait::DensityToEnergy(
+double ParticleInteraction::SPHEquationOfStateGenTait::density_to_energy(
     const double& density, const double& mass, const double& density0) const
 {
   // thermodynamic energy E with p=-dE/dV, T=dE/dS (see Espanol2003, Eq.(5))
@@ -96,19 +96,19 @@ ParticleInteraction::SPHEquationOfStateIdealGas::SPHEquationOfStateIdealGas(
   // empty constructor
 }
 
-double ParticleInteraction::SPHEquationOfStateIdealGas::DensityToPressure(
+double ParticleInteraction::SPHEquationOfStateIdealGas::density_to_pressure(
     const double& density, const double& density0) const
 {
   return UTILS::Pow<2>(speedofsound_) * density;
 }
 
-double ParticleInteraction::SPHEquationOfStateIdealGas::PressureToDensity(
+double ParticleInteraction::SPHEquationOfStateIdealGas::pressure_to_density(
     const double& pressure, const double& density0) const
 {
   return pressure / UTILS::Pow<2>(speedofsound_);
 }
 
-double ParticleInteraction::SPHEquationOfStateIdealGas::DensityToEnergy(
+double ParticleInteraction::SPHEquationOfStateIdealGas::density_to_energy(
     const double& density, const double& mass, const double& density0) const
 {
   // thermodynamic energy E with p=-dE/dV, T=dE/dS (see Espanol2003, Eq.(5))

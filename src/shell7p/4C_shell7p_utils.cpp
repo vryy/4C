@@ -328,7 +328,7 @@ namespace
 Teuchos::SerialDenseMatrix<int, double> Solid::UTILS::Shell::ComputeShellNullSpace(
     Core::Nodes::Node& node, const double* x0, const Core::LinAlg::Matrix<3, 1>& dir)
 {
-  const auto& x = node.X();
+  const auto& x = node.x();
 
   Teuchos::SerialDenseMatrix<int, double> nullspace(6, 6);
   // x-modes
@@ -393,7 +393,7 @@ void Solid::UTILS::Shell::Director::SetupDirectorForElement(
   Core::LinAlg::SerialDenseMatrix xrefe(num_node, num_dim);
   for (int i = 0; i < num_node; ++i)
   {
-    for (int dim = 0; dim < num_dim; ++dim) xrefe(i, dim) = ele.Nodes()[i]->X()[dim];
+    for (int dim = 0; dim < num_dim; ++dim) xrefe(i, dim) = ele.nodes()[i]->x()[dim];
   }
   // allocate matrix for kovariant metric vectors
   Core::LinAlg::SerialDenseMatrix metrics_kovariant(num_dim, num_dim);
@@ -401,10 +401,10 @@ void Solid::UTILS::Shell::Director::SetupDirectorForElement(
   {
     // get shape functions and derivatives at nodes
     Core::LinAlg::Matrix<num_dim, 1> nodal_coordinates =
-        Core::FE::GetNodeCoordinates(i, ele.Shape());
+        Core::FE::GetNodeCoordinates(i, ele.shape());
     Core::LinAlg::SerialDenseMatrix derivatives(num_dim, num_node);
     Core::FE::shape_function_2D_deriv1(
-        derivatives, nodal_coordinates(0), nodal_coordinates(1), ele.Shape());
+        derivatives, nodal_coordinates(0), nodal_coordinates(1), ele.shape());
 
     // get a1, a2 direction derivatives in r and s direction
     metrics_kovariant.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, derivatives, xrefe, 0.0);
@@ -496,28 +496,28 @@ void Solid::UTILS::Shell::Director::ExportDirectorMapFromRowToColMap(
     std::map<int, std::vector<double>>& director_map)
 {
   // export this map from nodal row map to nodal col map
-  const Epetra_Map* noderowmap = dis.NodeRowMap();
-  const Epetra_Map* nodecolmap = dis.NodeColMap();
-  Core::Communication::Exporter exporter(*noderowmap, *nodecolmap, dis.Comm());
+  const Epetra_Map* noderowmap = dis.node_row_map();
+  const Epetra_Map* nodecolmap = dis.node_col_map();
+  Core::Communication::Exporter exporter(*noderowmap, *nodecolmap, dis.get_comm());
   exporter.Export(director_map);
 
   // loop through column nodes and put directors back into discretization
-  for (const auto& actnode : dis.MyColNodeRange())
+  for (const auto& actnode : dis.my_col_node_range())
   {
-    auto curr = director_map.find(actnode->Id());
+    auto curr = director_map.find(actnode->id());
     FOUR_C_ASSERT(curr != director_map.end(), "Cannot find director map entry");
-    for (int j = 0; j < actnode->NumElement(); ++j)
+    for (int j = 0; j < actnode->num_element(); ++j)
     {
-      Core::Elements::Element* tmpele = actnode->Elements()[j];
+      Core::Elements::Element* tmpele = actnode->elements()[j];
       if (!tmpele) continue;
-      if (tmpele->ElementType() != eletype) continue;
+      if (tmpele->element_type() != eletype) continue;
       if (auto* scatra_ele = dynamic_cast<Discret::ELEMENTS::Shell7pScatra*>(tmpele))
       {
         for (int k = 0; k < scatra_ele->num_node(); ++k)
         {
-          if (scatra_ele->Nodes()[k] == actnode)
+          if (scatra_ele->nodes()[k] == actnode)
           {
-            scatra_ele->SetNodalDirector(k, curr->second);
+            scatra_ele->set_nodal_director(k, curr->second);
             break;
           }
         }
@@ -526,9 +526,9 @@ void Solid::UTILS::Shell::Director::ExportDirectorMapFromRowToColMap(
       {
         for (int k = 0; k < shell_ele->num_node(); ++k)
         {
-          if (shell_ele->Nodes()[k] == actnode)
+          if (shell_ele->nodes()[k] == actnode)
           {
-            shell_ele->SetNodalDirector(k, curr->second);
+            shell_ele->set_nodal_director(k, curr->second);
             break;
           }
         }
@@ -549,20 +549,20 @@ void Solid::UTILS::Shell::Director::AverageDirectorsAtNodes(
   Core::LinAlg::Matrix<num_dim, max_ele> collaverdir(true);
 
   // loop through all row nodes and build director map
-  for (const auto& act_node : dis.MyRowNodeRange())
+  for (const auto& act_node : dis.my_row_node_range())
   {
     int num_directors = 0;
-    for (int j = 0; j < act_node->NumElement(); ++j)
+    for (int j = 0; j < act_node->num_element(); ++j)
     {
-      Core::Elements::Element* tmpele = act_node->Elements()[j];
-      if (tmpele->ElementType() != eletype) continue;
+      Core::Elements::Element* tmpele = act_node->elements()[j];
+      if (tmpele->element_type() != eletype) continue;
       if (auto* scatra_ele = dynamic_cast<Discret::ELEMENTS::Shell7pScatra*>(tmpele))
       {
         for (int k = 0; k < scatra_ele->num_node(); ++k)
         {
-          if (scatra_ele->Nodes()[k] == act_node)
+          if (scatra_ele->nodes()[k] == act_node)
           {
-            const auto nodal_directors = scatra_ele->GetDirectors();
+            const auto nodal_directors = scatra_ele->get_directors();
             for (int dim = 0; dim < num_dim; ++dim)
               collaverdir(dim, num_directors) = nodal_directors(k, dim);
             ++num_directors;
@@ -575,9 +575,9 @@ void Solid::UTILS::Shell::Director::AverageDirectorsAtNodes(
       {
         for (int k = 0; k < shell_ele->num_node(); ++k)
         {
-          if (shell_ele->Nodes()[k] == act_node)
+          if (shell_ele->nodes()[k] == act_node)
           {
-            const auto nodal_directors = shell_ele->GetDirectors();
+            const auto nodal_directors = shell_ele->get_directors();
             for (int dim = 0; dim < num_dim; ++dim)
               collaverdir(dim, num_directors) = nodal_directors(k, dim);
             ++num_directors;
@@ -593,17 +593,17 @@ void Solid::UTILS::Shell::Director::AverageDirectorsAtNodes(
 
     if (num_directors == 1)  // no averaging if number of neighboring elements to a node is one
     {
-      director_map[act_node->Id()].resize(num_dim);
+      director_map[act_node->id()].resize(num_dim);
       for (int dim = 0; dim < num_dim; ++dim)
-        director_map[act_node->Id()][dim] = collaverdir(dim, 0);
+        director_map[act_node->id()][dim] = collaverdir(dim, 0);
     }
     else  // average director at node actnode
     {
       Core::LinAlg::Matrix<num_dim, 1> nodal_director(true);
       AverageDirector(collaverdir, num_directors, nodal_director);
-      director_map[act_node->Id()].resize(num_dim);
+      director_map[act_node->id()].resize(num_dim);
       for (int dim = 0; dim < num_dim; ++dim)
-        director_map[act_node->Id()][dim] = nodal_director(dim);
+        director_map[act_node->id()][dim] = nodal_director(dim);
     }
   }
 }
@@ -611,9 +611,9 @@ void Solid::UTILS::Shell::Director::AverageDirectorsAtNodes(
 void Solid::UTILS::Shell::Director::SetupShellElementDirectors(
     const Core::Elements::ElementType& eletype, const Core::FE::Discretization& dis)
 {
-  for (const auto& actele : dis.MyColElementRange())
+  for (const auto& actele : dis.my_col_element_range())
   {
-    if (actele->ElementType() != eletype) return;
+    if (actele->element_type() != eletype) return;
     if (auto* scatra_ele = dynamic_cast<Discret::ELEMENTS::Shell7pScatra*>(actele))
     {
       // create matrix nodal_directors for nodal basis vector in thickness direction in material
@@ -710,9 +710,9 @@ void Solid::UTILS::Shell::ReadElement::ReadAndSetLockingTypes(const Core::FE::Ce
 
 int Solid::UTILS::Shell::ReadElement::ReadAndSetElementMaterial(Input::LineDefinition* linedef)
 {
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  return material;
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  return material_id;
 }
 
 int Solid::UTILS::Shell::ReadElement::ReadAndSetNumANS(const Core::FE::CellType& distype)

@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-bool BEAMINTERACTION::BeamToBeamPointCouplingCondition::IdsInCondition(
+bool BEAMINTERACTION::BeamToBeamPointCouplingCondition::ids_in_condition(
     const int id_line, const int id_other) const
 {
   if (line_ids_.find(id_line) != line_ids_.end() and line_ids_.find(id_other) != line_ids_.end())
@@ -39,12 +39,12 @@ void BEAMINTERACTION::BeamToBeamPointCouplingCondition::clear() {}
  *
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::BeamToBeamPointCouplingCondition::CreateContactPair(
+BEAMINTERACTION::BeamToBeamPointCouplingCondition::create_contact_pair(
     const std::vector<Core::Elements::Element const*>& ele_ptrs)
 {
   {
     // Check if the given elements are in this condition.
-    if (!IdsInCondition(ele_ptrs[0]->Id(), ele_ptrs[1]->Id())) return Teuchos::null;
+    if (!ids_in_condition(ele_ptrs[0]->id(), ele_ptrs[1]->id())) return Teuchos::null;
 
     // Create the beam contact pair.
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> contact_pair = Teuchos::rcp(
@@ -58,11 +58,11 @@ BEAMINTERACTION::BeamToBeamPointCouplingCondition::CreateContactPair(
 /**
  *
  */
-void BEAMINTERACTION::BeamToBeamPointCouplingCondition::BuildIdSets(
+void BEAMINTERACTION::BeamToBeamPointCouplingCondition::build_id_sets(
     const Teuchos::RCP<const Core::FE::Discretization>& discretization)
 {
   // Set the IDs of the nodes to be coupled
-  const std::vector<int> node_ids = *(condition_line_->GetNodes());
+  const std::vector<int> node_ids = *(condition_line_->get_nodes());
 
   if (node_ids.size() != 2)
     FOUR_C_THROW(
@@ -77,13 +77,13 @@ void BEAMINTERACTION::BeamToBeamPointCouplingCondition::BuildIdSets(
   for (auto node_id : node_ids)
   {
     i++;
-    Core::Nodes::Node* node = discretization->gNode(node_id);
+    Core::Nodes::Node* node = discretization->g_node(node_id);
     // This means that the node is not in the column map of this proc and the element pair will thus
     // be created on a different processor
     if (node == nullptr) return;
-    Core::Elements::Element* element = node->Elements()[0];
-    element_ids[i - 1] = element->Id();
-    if (element->NodeIds()[0] == node_id)
+    Core::Elements::Element* element = node->elements()[0];
+    element_ids[i - 1] = element->id();
+    if (element->node_ids()[0] == node_id)
       position_in_parameter_space[i - 1] = -1;
     else
       position_in_parameter_space[i - 1] = 1;

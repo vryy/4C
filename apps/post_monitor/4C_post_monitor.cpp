@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MonWriter::MonWriter(PostProblem& problem, std::string& infieldtype,
     int node)
-    : myrank_(problem.comm()->MyPID())  // get my processor id
+    : myrank_(problem.get_comm()->MyPID())  // get my processor id
 {
   using namespace FourC;
 
@@ -52,9 +52,9 @@ MonWriter::MonWriter(PostProblem& problem, std::string& infieldtype,
       // pointer (rcp) to actual discretisation
       Teuchos::RCP<Core::FE::Discretization> mydiscrete = field->discretization();
       // store, if this node belongs to me
-      if (mydiscrete->HaveGlobalNode(node))
+      if (mydiscrete->have_global_node(node))
       {
-        nodeowner_ = mydiscrete->HaveGlobalNode(node);
+        nodeowner_ = mydiscrete->have_global_node(node);
       }
     }
   }  // end loop over dis
@@ -63,7 +63,7 @@ MonWriter::MonWriter(PostProblem& problem, std::string& infieldtype,
   {
     int localnodeowner = (int)nodeowner_;
     int numnodeowner = 0;
-    (problem.comm())->SumAll(&localnodeowner, &numnodeowner, 1);
+    (problem.get_comm())->SumAll(&localnodeowner, &numnodeowner, 1);
     if ((myrank_ == 0) and (numnodeowner == 0)) FOUR_C_THROW("Could not find node %d", node);
     if ((myrank_ == 0) and (numnodeowner > 1))
       FOUR_C_THROW("Found more than one owner of node %d: %d", node, numnodeowner);
@@ -74,7 +74,7 @@ MonWriter::MonWriter(PostProblem& problem, std::string& infieldtype,
 
 
 /*----------------------------------------------------------------------*/
-void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int node)
+void MonWriter::write_mon_file(PostProblem& problem, std::string& infieldtype, int node)
 {
   using namespace FourC;
 
@@ -113,16 +113,16 @@ void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int
   if (nodeowner_)
   {
     // test, if this node belongs to me
-    bool ismynode = mydiscrete->HaveGlobalNode(node);
+    bool ismynode = mydiscrete->have_global_node(node);
     if (!ismynode)  // if this node does not belong to this field ( or proc, but we should be
                     // serial)
       field_error(node);
 
     // pointer to my actual node
-    const Core::Nodes::Node* mynode = mydiscrete->gNode(node);
+    const Core::Nodes::Node* mynode = mydiscrete->g_node(node);
 
     // global nodal dof numbers
-    gdof = mydiscrete->Dof(mynode);
+    gdof = mydiscrete->dof(mynode);
     // set some dummy values
     for (unsigned i = 0; i < gdof.size(); i++)
     {
@@ -133,9 +133,9 @@ void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int
     write_header(outfile);
     outfile << node << "\n";
     outfile << "# control information: nodal coordinates   ";
-    outfile << "x = " << mynode->X()[0] << "    ";
-    outfile << "y = " << mynode->X()[1] << "    ";
-    if (dim > 2) outfile << "z = " << mynode->X()[2];
+    outfile << "x = " << mynode->x()[0] << "    ";
+    outfile << "y = " << mynode->x()[1] << "    ";
+    if (dim > 2) outfile << "z = " << mynode->x()[2];
     outfile << "\n";
     outfile << "#\n";
 
@@ -162,7 +162,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int
 }
 
 /*----------------------------------------------------------------------*/
-void MonWriter::WriteMonStressFile(
+void MonWriter::write_mon_stress_file(
     PostProblem& problem, std::string& infieldtype, std::string stresstype, int node)
 {
   // stop it now
@@ -186,7 +186,7 @@ void MonWriter::WriteMonStressFile(
 }
 
 /*----------------------------------------------------------------------*/
-void MonWriter::WriteMonStrainFile(
+void MonWriter::write_mon_strain_file(
     PostProblem& problem, std::string& infieldtype, std::string straintype, int node)
 {
   // stop it now
@@ -278,16 +278,16 @@ void MonWriter::write_mon_str_file(const std::string& filename, PostProblem& pro
   if (nodeowner_)
   {
     // test, if this node belongs to me
-    bool ismynode = mydiscrete->HaveGlobalNode(node);
+    bool ismynode = mydiscrete->have_global_node(node);
     if (!ismynode)  // if this node does not belong to this field ( or proc, but we should be
                     // seriell)
       field_error(node);
 
     // pointer to my actual node
-    const Core::Nodes::Node* mynode = mydiscrete->gNode(node);
+    const Core::Nodes::Node* mynode = mydiscrete->g_node(node);
 
     // global nodal dof numbers
-    gdof = mydiscrete->Dof(mynode);
+    gdof = mydiscrete->dof(mynode);
     // set some dummy values
     for (unsigned i = 0; i < gdof.size(); i++)
     {
@@ -297,9 +297,9 @@ void MonWriter::write_mon_str_file(const std::string& filename, PostProblem& pro
     write_header(outfile);
     outfile << node << "\n";
     outfile << "# control information: nodal coordinates   ";
-    outfile << "x = " << mynode->X()[0] << "    ";
-    outfile << "y = " << mynode->X()[1] << "    ";
-    if (dim > 2) outfile << "z = " << mynode->X()[2];
+    outfile << "x = " << mynode->x()[0] << "    ";
+    outfile << "y = " << mynode->x()[1] << "    ";
+    if (dim > 2) outfile << "z = " << mynode->x()[2];
     outfile << "\n";
     outfile << "#\n";
 
@@ -423,16 +423,16 @@ void MonWriter::write_mon_thr_file(const std::string& filename, PostProblem& pro
   if (nodeowner_)
   {
     // test, if this node belongs to me
-    bool ismynode = mydiscrete->HaveGlobalNode(node);
+    bool ismynode = mydiscrete->have_global_node(node);
     if (!ismynode)  // if this node does not belong to this field ( or proc, but we should be
                     // seriell)
       field_error(node);
 
     // pointer to my actual node
-    const Core::Nodes::Node* mynode = mydiscrete->gNode(node);
+    const Core::Nodes::Node* mynode = mydiscrete->g_node(node);
 
     // global nodal dof numbers
-    gdof = mydiscrete->Dof(mynode);
+    gdof = mydiscrete->dof(mynode);
     // set some dummy values
     for (unsigned i = 0; i < gdof.size(); i++)
     {
@@ -443,9 +443,9 @@ void MonWriter::write_mon_thr_file(const std::string& filename, PostProblem& pro
     write_header(outfile);
     outfile << node << "\n";
     outfile << "# control information: nodal coordinates   ";
-    outfile << "x = " << mynode->X()[0] << "    ";
-    outfile << "y = " << mynode->X()[1] << "    ";
-    if (dim > 2) outfile << "z = " << mynode->X()[2];
+    outfile << "x = " << mynode->x()[0] << "    ";
+    outfile << "y = " << mynode->x()[1] << "    ";
+    if (dim > 2) outfile << "z = " << mynode->x()[2];
     outfile << "\n";
     outfile << "#\n";
 
@@ -876,12 +876,12 @@ void StructMonWriter::write_str_result(std::ofstream& outfile, PostField*& field
   // discretisation (once more)
   const Teuchos::RCP<Core::FE::Discretization> dis = field->discretization();
 
-  Epetra_MultiVector nodal_stress(*dis->NodeRowMap(), 6, true);
+  Epetra_MultiVector nodal_stress(*dis->node_row_map(), 6, true);
 
   dis->evaluate(
       [&](Core::Elements::Element& ele) {
         Core::FE::ExtrapolateGaussPointQuantityToNodes(
-            ele, *data->at(ele.Id()), *dis, nodal_stress);
+            ele, *data->at(ele.id()), *dis, nodal_stress);
       });
 
   if (nodeowner_)
@@ -1554,9 +1554,9 @@ void ThermoMonWriter::write_thr_result(std::ofstream& outfile, PostField*& field
   // average heatfluxes/temperature gradients and print to file
   if (nodeowner_)
   {
-    const Core::Nodes::Node* lnode = dis->gNode(node);
-    const std::vector<int> lnodedofs = dis->Dof(lnode);
-    const int adjele = lnode->NumElement();
+    const Core::Nodes::Node* lnode = dis->g_node(node);
+    const std::vector<int> lnodedofs = dis->dof(lnode);
+    const int adjele = lnode->num_element();
 
     std::vector<double> nodal_heatfluxes;
     if (dim == 3)
@@ -1820,7 +1820,7 @@ int main(int argc, char** argv)
   PostProblem problem(my_comlinproc, argc, argv);
 
 
-  switch (problem.Problemtype())
+  switch (problem.problemtype())
   {
     case Core::ProblemType::fsi:
     case Core::ProblemType::fsi_redmodels:
@@ -1829,18 +1829,18 @@ int main(int argc, char** argv)
       if (infieldtype == "fluid")
       {
         FsiFluidMonWriter mymonwriter(problem, infieldtype, node);
-        mymonwriter.WriteMonFile(problem, infieldtype, node);
+        mymonwriter.write_mon_file(problem, infieldtype, node);
       }
       else if (infieldtype == "structure")
       {
         FsiStructMonWriter mymonwriter(problem, infieldtype, node);
-        mymonwriter.WriteMonFile(problem, infieldtype, node);
+        mymonwriter.write_mon_file(problem, infieldtype, node);
       }
       else if (infieldtype == "ale")
       {
         FOUR_C_THROW("There is no ALE output. Displacements of fluid nodes can be printed.");
         FsiAleMonWriter mymonwriter(problem, infieldtype, node);
-        mymonwriter.WriteMonFile(problem, infieldtype, node);
+        mymonwriter.write_mon_file(problem, infieldtype, node);
       }
       else
       {
@@ -1858,30 +1858,30 @@ int main(int argc, char** argv)
       if (infieldtype == "scatra")
       {
         ScatraMonWriter mymonwriter(problem, infieldtype, node);
-        mymonwriter.WriteMonFile(problem, infieldtype, node);
+        mymonwriter.write_mon_file(problem, infieldtype, node);
       }
       else if (infieldtype == "fluid")
       {
         FluidMonWriter mymonwriter(problem, infieldtype, node);
-        mymonwriter.WriteMonFile(problem, infieldtype, node);
+        mymonwriter.write_mon_file(problem, infieldtype, node);
       }
       else if (infieldtype == "structure")
       {
         StructMonWriter mymonwriter(problem, infieldtype, node);
-        mymonwriter.WriteMonFile(problem, infieldtype, node);
+        mymonwriter.write_mon_file(problem, infieldtype, node);
       }
       break;
     }
     case Core::ProblemType::ale:
     {
       AleMonWriter mymonwriter(problem, infieldtype, node);
-      mymonwriter.WriteMonFile(problem, infieldtype, node);
+      mymonwriter.write_mon_file(problem, infieldtype, node);
       break;
     }
     case Core::ProblemType::thermo:
     {
       ThermoMonWriter mymonwriter(problem, infieldtype, node);
-      mymonwriter.WriteMonFile(problem, infieldtype, node);
+      mymonwriter.write_mon_file(problem, infieldtype, node);
       mymonwriter.write_mon_heatflux_file(problem, infieldtype, problem.heatfluxtype(), node);
       mymonwriter.write_mon_tempgrad_file(problem, infieldtype, problem.tempgradtype(), node);
       break;
@@ -1891,17 +1891,17 @@ int main(int argc, char** argv)
       if (infieldtype == "structure")
       {
         TsiStructMonWriter mymonwriter(problem, infieldtype, node);
-        mymonwriter.WriteMonFile(problem, infieldtype, node);
-        mymonwriter.WriteMonStressFile(problem, infieldtype, problem.stresstype(), node);
-        mymonwriter.WriteMonStrainFile(problem, infieldtype, problem.straintype(), node);
+        mymonwriter.write_mon_file(problem, infieldtype, node);
+        mymonwriter.write_mon_stress_file(problem, infieldtype, problem.stresstype(), node);
+        mymonwriter.write_mon_strain_file(problem, infieldtype, problem.straintype(), node);
         mymonwriter.write_mon_pl_strain_file(problem, infieldtype, problem.straintype(), node);
       }
       else if (infieldtype == "thermo")
       {
         TsiThermoMonWriter mymonwriter(problem, infieldtype, node);
-        mymonwriter.WriteMonFile(problem, infieldtype, node);
-        mymonwriter.WriteMonStressFile(problem, infieldtype, problem.stresstype(), node);
-        mymonwriter.WriteMonStrainFile(problem, infieldtype, problem.straintype(), node);
+        mymonwriter.write_mon_file(problem, infieldtype, node);
+        mymonwriter.write_mon_stress_file(problem, infieldtype, problem.stresstype(), node);
+        mymonwriter.write_mon_strain_file(problem, infieldtype, problem.straintype(), node);
         // TODO: bugfix in case of coupled tsi
         //        mymonwriter.write_mon_heatflux_file(problem,infieldtype,problem.heatfluxtype(),node);
         //        mymonwriter.write_mon_tempgrad_file(problem,infieldtype,problem.tempgradtype(),node);
@@ -1925,7 +1925,7 @@ int main(int argc, char** argv)
       if (infieldtype == "red_airway")
       {
         RedAirwayMonWriter mymonwriter(problem, infieldtype, node);
-        mymonwriter.WriteMonFile(problem, infieldtype, node);
+        mymonwriter.write_mon_file(problem, infieldtype, node);
       }
       break;
     }
@@ -1934,19 +1934,19 @@ int main(int argc, char** argv)
       if (infieldtype == "fluid")
       {
         FluidMonWriter mymonwriter(problem, infieldtype, node);
-        mymonwriter.WriteMonFile(problem, infieldtype, node);
+        mymonwriter.write_mon_file(problem, infieldtype, node);
       }
       else if (infieldtype == "structure")
       {
         StructMonWriter mymonwriter(problem, infieldtype, node);
-        mymonwriter.WriteMonFile(problem, infieldtype, node);
+        mymonwriter.write_mon_file(problem, infieldtype, node);
       }
       break;
     }
     case Core::ProblemType::porofluidmultiphase:
     {
       PoroFluidMultiMonWriter mymonwriter(problem, infieldtype, node);
-      mymonwriter.WriteMonFile(problem, infieldtype, node);
+      mymonwriter.write_mon_file(problem, infieldtype, node);
       break;
     }
     case Core::ProblemType::poromultiphase:
@@ -1954,12 +1954,12 @@ int main(int argc, char** argv)
       if (infieldtype == "structure")
       {
         StructMonWriter mymonwriter(problem, infieldtype, node);
-        mymonwriter.WriteMonFile(problem, infieldtype, node);
+        mymonwriter.write_mon_file(problem, infieldtype, node);
       }
       else if (infieldtype == "porofluid")
       {
         PoroMultiElastScatraFluidMonWriter mymonwriter(problem, infieldtype, node);
-        mymonwriter.WriteMonFile(problem, infieldtype, node);
+        mymonwriter.write_mon_file(problem, infieldtype, node);
       }
       else
         FOUR_C_THROW("Unsupported field type %s for problem-type Multiphase_Poroelasticity",
@@ -1971,22 +1971,22 @@ int main(int argc, char** argv)
       if (infieldtype == "structure")
       {
         StructMonWriter mymonwriter(problem, infieldtype, node);
-        mymonwriter.WriteMonFile(problem, infieldtype, node);
+        mymonwriter.write_mon_file(problem, infieldtype, node);
       }
       else if (infieldtype == "porofluid")
       {
         PoroMultiElastScatraFluidMonWriter mymonwriter(problem, infieldtype, node);
-        mymonwriter.WriteMonFile(problem, infieldtype, node);
+        mymonwriter.write_mon_file(problem, infieldtype, node);
       }
       else if (infieldtype == "scatra")
       {
         PoroMultiElastScatraScatraMonWriter mymonwriter(problem, infieldtype, node);
-        mymonwriter.WriteMonFile(problem, infieldtype, node);
+        mymonwriter.write_mon_file(problem, infieldtype, node);
       }
       else if (infieldtype == "artery_scatra")
       {
         PoroMultiElastScatraArteryScatraMonWriter mymonwriter(problem, infieldtype, node);
-        mymonwriter.WriteMonFile(problem, infieldtype, node);
+        mymonwriter.write_mon_file(problem, infieldtype, node);
       }
       else
         FOUR_C_THROW("Unsupported field type %s for problem-type Multiphase_Poroelasticity_ScaTra",
@@ -1995,12 +1995,12 @@ int main(int argc, char** argv)
     }
     default:
     {
-      FOUR_C_THROW("problem type %d not yet supported", problem.Problemtype());
+      FOUR_C_THROW("problem type %d not yet supported", problem.problemtype());
     }
     break;
   }
 
-  Global::Problem::Done();
+  Global::Problem::done();
 
   return 0;
 }

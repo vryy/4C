@@ -48,7 +48,7 @@ namespace ScaTra
     void compute_time_step_size(double& dt) final;
 
     //! compute meshtying residual terms and their linearizations
-    void EvaluateMeshtying() override;
+    void evaluate_meshtying() override;
 
     void evaluate_point_coupling() override;
 
@@ -86,11 +86,11 @@ namespace ScaTra
 
     void add_time_integration_specific_vectors() const override{};
 
-    void EvaluateMeshtying() override{};
+    void evaluate_meshtying() override{};
 
     void setup_meshtying() override;
 
-    void Solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,
+    void solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
         const Teuchos::RCP<Epetra_Vector>& phinp, const int iteration,
@@ -102,7 +102,7 @@ namespace ScaTra
   {
    public:
     //! singleton access method
-    static MortarCellCalcElch<distype_s, distype_m>* Instance(
+    static MortarCellCalcElch<distype_s, distype_m>* instance(
         const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
         const Inpar::S2I::InterfaceSides&
             lmside,  //!< flag for interface side underlying Lagrange multiplier definition
@@ -185,7 +185,7 @@ namespace ScaTra
   {
    public:
     //! singleton access method
-    static MortarCellCalcElchSTIThermo<distype_s, distype_m>* Instance(
+    static MortarCellCalcElchSTIThermo<distype_s, distype_m>* instance(
         const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
         const Inpar::S2I::InterfaceSides&
             lmside,  //!< flag for interface side underlying Lagrange multiplier definition
@@ -264,7 +264,7 @@ namespace ScaTra
   {
    public:
     //! singleton access method
-    static MortarCellCalcSTIElch<distype_s, distype_m>* Instance(
+    static MortarCellCalcSTIElch<distype_s, distype_m>* instance(
         const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
         const Inpar::S2I::InterfaceSides&
             lmside,  //!< flag for interface side underlying Lagrange multiplier definition

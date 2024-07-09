@@ -34,16 +34,16 @@ namespace Discret
     class SoHex8ThermoType : public SoHex8Type
     {
      public:
-      std::string Name() const override { return "So_hex8ThermoType"; }
+      std::string name() const override { return "So_hex8ThermoType"; }
 
-      static SoHex8ThermoType& Instance();
+      static SoHex8ThermoType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -64,16 +64,16 @@ namespace Discret
     class SoHex8fbarThermoType : public SoHex8fbarType
     {
      public:
-      std::string Name() const override { return "So_hex8fbarThermoType"; }
+      std::string name() const override { return "So_hex8fbarThermoType"; }
 
-      static SoHex8fbarThermoType& Instance();
+      static SoHex8fbarThermoType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -94,16 +94,16 @@ namespace Discret
     class SoTet4ThermoType : public SoTet4Type
     {
      public:
-      std::string Name() const override { return "So_tet4ThermoType"; }
+      std::string name() const override { return "So_tet4ThermoType"; }
 
-      static SoTet4ThermoType& Instance();
+      static SoTet4ThermoType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -123,16 +123,16 @@ namespace Discret
     class SoTet10ThermoType : public SoTet10Type
     {
      public:
-      std::string Name() const override { return "So_tet10ThermoType"; }
+      std::string name() const override { return "So_tet10ThermoType"; }
 
-      static SoTet10ThermoType& Instance();
+      static SoTet10ThermoType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -152,16 +152,16 @@ namespace Discret
     class SoHex27ThermoType : public SoHex27Type
     {
      public:
-      std::string Name() const override { return "So_hex27ThermoType"; }
+      std::string name() const override { return "So_hex27ThermoType"; }
 
-      static SoHex27ThermoType& Instance();
+      static SoHex27ThermoType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -181,16 +181,16 @@ namespace Discret
     class SoHex20ThermoType : public SoHex20Type
     {
      public:
-      std::string Name() const override { return "So_hex20ThermoType"; }
+      std::string name() const override { return "So_hex20ThermoType"; }
 
-      static SoHex20ThermoType& Instance();
+      static SoHex20ThermoType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -210,16 +210,16 @@ namespace Discret
     class SoNurbs27ThermoType : public Nurbs::SoNurbs27Type
     {
      public:
-      std::string Name() const override { return "So_nurbs27ThermoType"; }
+      std::string name() const override { return "So_nurbs27ThermoType"; }
 
-      static SoNurbs27ThermoType& Instance();
+      static SoNurbs27ThermoType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 

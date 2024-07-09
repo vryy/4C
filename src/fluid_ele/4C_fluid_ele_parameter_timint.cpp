@@ -22,7 +22,7 @@ with different parameters in more than one fluid field is not yet supported.
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::FluidEleParameterTimInt* Discret::ELEMENTS::FluidEleParameterTimInt::Instance(
+Discret::ELEMENTS::FluidEleParameterTimInt* Discret::ELEMENTS::FluidEleParameterTimInt::instance(
     Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
@@ -32,7 +32,7 @@ Discret::ELEMENTS::FluidEleParameterTimInt* Discret::ELEMENTS::FluidEleParameter
             new Discret::ELEMENTS::FluidEleParameterTimInt());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 //----------------------------------------------------------------------*/

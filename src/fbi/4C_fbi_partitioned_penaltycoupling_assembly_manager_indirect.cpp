@@ -47,7 +47,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerInd
 
   // Setup the mortar manager.
   mortar_manager_->setup();
-  mortar_manager_->SetLocalMaps(assembly_contact_elepairs_);
+  mortar_manager_->set_local_maps(assembly_contact_elepairs_);
 }
 
 
@@ -73,7 +73,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
     elepairptr->pre_evaluate();
   }
   // Evaluate the global mortar matrices.
-  mortar_manager_->EvaluateGlobalDM(assembly_contact_elepairs_);
+  mortar_manager_->evaluate_global_dm(assembly_contact_elepairs_);
 
   // Add the global mortar matrices to the force vector and stiffness matrix.
   mortar_manager_->add_global_force_stiffness_contributions(ff, fb, cbb, cbf,

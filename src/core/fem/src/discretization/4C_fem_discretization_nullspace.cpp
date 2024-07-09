@@ -29,19 +29,19 @@ namespace Core::FE
     {
       // for rigid body rotations compute nodal center of the discretization
       std::array<double, 3> x0send = {0.0, 0.0, 0.0};
-      for (int i = 0; i < dis.NumMyRowNodes(); ++i)
-        for (int j = 0; j < 3; ++j) x0send[j] += dis.lRowNode(i)->X()[j];
+      for (int i = 0; i < dis.num_my_row_nodes(); ++i)
+        for (int j = 0; j < 3; ++j) x0send[j] += dis.l_row_node(i)->x()[j];
 
       std::array<double, 3> x0;
-      dis.Comm().SumAll(x0send.data(), x0.data(), 3);
+      dis.get_comm().SumAll(x0send.data(), x0.data(), 3);
 
-      for (int i = 0; i < 3; ++i) x0[i] /= dis.NumGlobalNodes();
+      for (int i = 0; i < 3; ++i) x0[i] /= dis.num_global_nodes();
 
       // assembly process of the nodalNullspace into the actual nullspace
-      for (int node = 0; node < dis.NumMyRowNodes(); ++node)
+      for (int node = 0; node < dis.num_my_row_nodes(); ++node)
       {
-        Core::Nodes::Node* actnode = dis.lRowNode(node);
-        std::vector<int> dofs = dis.Dof(0, actnode);
+        Core::Nodes::Node* actnode = dis.l_row_node(node);
+        std::vector<int> dofs = dis.dof(0, actnode);
         const int localLength = dofs.size();
 
         // check if degrees of freedom are zero
@@ -62,19 +62,20 @@ namespace Core::FE
         // Here we check the first element type of the node. One node can be owned by several
         // elements we restrict the routine, that a node is only owned by elements with the same
         // physics
-        if (actnode->NumElement() > 1)
+        if (actnode->num_element() > 1)
         {
-          for (int i = 0; i < actnode->NumElement() - 1; i++)
+          for (int i = 0; i < actnode->num_element() - 1; i++)
           {
             // if element types are different, check nullspace dimension and dofs
-            if (actnode->Elements()[i + 1]->ElementType() != actnode->Elements()[i]->ElementType())
+            if (actnode->elements()[i + 1]->element_type() !=
+                actnode->elements()[i]->element_type())
             {
               int numdof1, dimnsp1, nv1, np1;
-              actnode->Elements()[i]->ElementType().nodal_block_information(
-                  actnode->Elements()[i], numdof1, dimnsp1, nv1, np1);
+              actnode->elements()[i]->element_type().nodal_block_information(
+                  actnode->elements()[i], numdof1, dimnsp1, nv1, np1);
               int numdof2, dimnsp2, nv2, np2;
-              actnode->Elements()[i + 1]->ElementType().nodal_block_information(
-                  actnode->Elements()[i + 1], numdof2, dimnsp2, nv2, np2);
+              actnode->elements()[i + 1]->element_type().nodal_block_information(
+                  actnode->elements()[i + 1], numdof2, dimnsp2, nv2, np2);
 
               if (numdof1 != numdof2 || dimnsp1 != dimnsp2)
                 FOUR_C_THROW(
@@ -84,7 +85,7 @@ namespace Core::FE
         }
 
         Core::LinAlg::SerialDenseMatrix nodalNullspace =
-            actnode->Elements()[0]->ElementType().ComputeNullSpace(
+            actnode->elements()[0]->element_type().compute_null_space(
                 *actnode, x0.data(), localLength, dimns);
 
         for (int dim = 0; dim < dimns; ++dim)

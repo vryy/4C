@@ -82,13 +82,13 @@ void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::setup(
 
     // apply projection to A without computing projection matrix thus avoiding
     // matrix-matrix multiplication
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> A2 = projector_->Project(A_view);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> A2 = projector_->project(A_view);
 
     // hand matrix over to A_
-    a_ = A2->EpetraMatrix();
+    a_ = A2->epetra_matrix();
     // hand over to b_ and project to (P^T b)
     b_ = b;
-    projector_->ApplyPT(*b_);
+    projector_->apply_pt(*b_);
     // hand over x_ as x_tilda (only zeros yet, )
     x_ = x;
   }
@@ -103,22 +103,22 @@ void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::setup(
       Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Ablock =
           Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(matrix);
 
-      int matrixDim = Ablock->FullRangeMap().NumGlobalElements();
+      int matrixDim = Ablock->full_range_map().NumGlobalElements();
       if (matrixDim > 50000)
       {
         Teuchos::RCP<Teuchos::FancyOStream> fos =
             Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
         fos->setOutputToRootOnly(0);
         *fos << "---------------------------- ATTENTION -----------------------" << std::endl;
-        *fos << "  Merging a " << Ablock->Rows() << " x " << Ablock->Cols() << " block matrix "
+        *fos << "  Merging a " << Ablock->rows() << " x " << Ablock->cols() << " block matrix "
              << std::endl;
         *fos << "  of size " << matrixDim << " is a very expensive operation. " << std::endl;
         *fos << "  For performance reasons, try iterative solvers instead!" << std::endl;
         *fos << "---------------------------- ATTENTION -----------------------" << std::endl;
       }
 
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> Ablock_merged = Ablock->Merge();
-      a_ = Ablock_merged->EpetraMatrix();
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> Ablock_merged = Ablock->merge();
+      a_ = Ablock_merged->epetra_matrix();
     }
     x_ = x;
     b_ = b;
@@ -135,7 +135,7 @@ void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::setup(
    */
   if (not reindexer_.is_null() and not(reset or refactor)) reindexer_->fwd();
 
-  if (reset or refactor or not IsFactored())
+  if (reset or refactor or not is_factored())
   {
     amesos_ = Teuchos::null;
 
@@ -171,12 +171,12 @@ void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::setup(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-int Core::LinearSolver::DirectSolver<MatrixType, VectorType>::Solve()
+int Core::LinearSolver::DirectSolver<MatrixType, VectorType>::solve()
 {
   if (amesos_ == Teuchos::null) FOUR_C_THROW("No solver allocated");
 
   // Problem has not been factorized before
-  if (not IsFactored())
+  if (not is_factored())
   {
     int err = amesos_->SymbolicFactorization();
     if (err) FOUR_C_THROW("Amesos::SymbolicFactorization returned an err");
@@ -193,7 +193,7 @@ int Core::LinearSolver::DirectSolver<MatrixType, VectorType>::Solve()
   if (projector_ != Teuchos::null)
   {
     // get x from x = P x_tilda
-    projector_->ApplyP(*x_);
+    projector_->apply_p(*x_);
   }
   // direct solver does not support errorcodes
   return 0;

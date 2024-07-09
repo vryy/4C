@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
   Create integration points on the facets of the volumecell by triangulating the facets
   A reference facet is identified on which integration weights are set to zero Sudhakar 04/12
 *--------------------------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::DirectDivergence::VCIntegrationRule(
+Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::DirectDivergence::vc_integration_rule(
     std::vector<double>& RefPlaneEqn)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "Core::Geo::Cut::DirectDivergence::VCIntegrationRule" );
@@ -36,19 +36,19 @@ Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::DirectDivergence::VCIntegrat
   is_ref_ = false;                                   // whether ref plane is falling on facet?
 
   // get integration facets and reference plane
-  Teuchos::RCP<BoundingBox> fbox = Teuchos::rcp(BoundingBox::Create());
-  const plain_facet_set& facete = volcell_->Facets();
+  Teuchos::RCP<BoundingBox> fbox = Teuchos::rcp(BoundingBox::create());
+  const plain_facet_set& facete = volcell_->facets();
   // create bounding box around all facets
   for (plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)
   {
     Facet* fe = *i;
-    const std::vector<Point*>& corn = fe->Points();
+    const std::vector<Point*>& corn = fe->points();
     for (std::vector<Point*>::const_iterator p = corn.begin(); p != corn.end(); ++p)
     {
-      fbox->AddPoint((*p)->X());
+      fbox->add_point((*p)->x());
     }
   }
-  Core::LinAlg::Matrix<3, 2> fvolume = fbox->GetBoundingVolume();
+  Core::LinAlg::Matrix<3, 2> fvolume = fbox->get_bounding_volume();
   const double totalVolume = (fvolume(0, 1) - fvolume(0, 0)) * (fvolume(1, 1) - fvolume(1, 0)) *
                              (fvolume(2, 1) - fvolume(2, 0));
 
@@ -66,7 +66,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::DirectDivergence::VCIntegrat
 
     if (totalVolume > MINIMUM_VOLUME_BB_FACETS)
     {
-      const plain_facet_set& facete = volcell_->Facets();
+      const plain_facet_set& facete = volcell_->facets();
       std::cout << "number of facets: " << facete.size() << std::endl;
 
       for (plain_facet_set::const_iterator f = facete.begin(); f != facete.end(); f++)
@@ -74,7 +74,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::DirectDivergence::VCIntegrat
 
       // dump element and facets
       std::ofstream file("facets_x_normal_equal_0_CUTFAIL_DD.pos");
-      volcell_->DumpGmsh(file);
+      volcell_->dump_gmsh(file);
       file.close();
 
       std::string filename1("element_x_normal_equal_0_CUTFAIL_DD.pos");
@@ -122,7 +122,7 @@ void Core::Geo::Cut::DirectDivergence::list_facets(
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "Core::Geo::Cut::DirectDivergence::list_facets" );
 
-  const plain_facet_set& facete = volcell_->Facets();
+  const plain_facet_set& facete = volcell_->facets();
 
   bool RefOnCutSide = false;
   std::vector<std::vector<double>> eqnAllFacets(facete.size());
@@ -136,7 +136,7 @@ void Core::Geo::Cut::DirectDivergence::list_facets(
   for (plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)
   {
     Facet* fe = *i;
-    const std::vector<Point*>& corn = fe->CornerPoints();
+    const std::vector<Point*>& corn = fe->corner_points();
     bool isPlanar = fe->is_planar(mesh_, corn);  // triangulates non-planar facets.
 
     if (isPlanar == false)  // and !(fe->belongs_to_level_set_side()) )
@@ -164,7 +164,7 @@ void Core::Geo::Cut::DirectDivergence::list_facets(
     std::vector<std::vector<double>> cornersLocal;
     fe->CornerPointsLocal(elem1_, cornersLocal, true);
 #else
-    std::vector<std::vector<double>> cornersLocal = fe->CornerPointsGlobal(elem1_, true);
+    std::vector<std::vector<double>> cornersLocal = fe->corner_points_global(elem1_, true);
 #endif
 
     std::vector<double> RefPlaneTemp = Kernel::EqnPlaneOfPolygon(cornersLocal);
@@ -257,8 +257,8 @@ void Core::Geo::Cut::DirectDivergence::list_facets(
   // When we construct integration rule in global coordinate system,
   // we need a reference plane such that when the main Gauss points are projected over
   // this plane, this line of projection must be completely within the background element
-  DirectDivergenceGlobalRefplane ddg(elem1_, volcell_, mesh_.GetOptions());
-  RefPlaneEqn = ddg.GetReferencePlane();
+  DirectDivergenceGlobalRefplane ddg(elem1_, volcell_, mesh_.get_options());
+  RefPlaneEqn = ddg.get_reference_plane();
   ref_pts_gmsh_ = ddg.get_reference_point_gmsh();
 #endif
 
@@ -309,7 +309,7 @@ void Core::Geo::Cut::DirectDivergence::list_facets(
 /*--------------------------------------------------------------------------------------------------------------*
                    Geometry of volumecell and main Gauss pts for visualization sudhakar 04/12
 *---------------------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::DirectDivergence::DivengenceCellsGMSH(
+void Core::Geo::Cut::DirectDivergence::divengence_cells_gmsh(
     const Core::FE::GaussIntegration& gpv, Teuchos::RCP<Core::FE::GaussPoints>& gpmain)
 {
 #ifdef LOCAL
@@ -430,7 +430,7 @@ void Core::Geo::Cut::DirectDivergence::DivengenceCellsGMSH(
   std::ofstream file(str.str().c_str());
 
   Core::Geo::Cut::Output::GmshCompleteCutElement(file, elem1_);
-  volcell_->DumpGmsh(file);
+  volcell_->dump_gmsh(file);
 
   // Activate this if you doubt that something is wrong with the vc
   // volcell_->DumpGmshSolid( file, mesh_ );
@@ -469,8 +469,8 @@ void Core::Geo::Cut::DirectDivergence::DivengenceCellsGMSH(
     Point* pt1 = ref_pts_gmsh_[itp];
     Point* pt2 = ref_pts_gmsh_[(itp + 1) % ref_pts_gmsh_.size()];
     double co1[3], co2[3];
-    pt1->Coordinates(co1);
-    pt2->Coordinates(co2);
+    pt1->coordinates(co1);
+    pt2->coordinates(co2);
     file << "SL(" << co1[0] << "," << co1[1] << "," << co1[2] << "," << co2[0] << "," << co2[1]
          << "," << co2[2] << "){0.0,0.0};" << std::endl;
   }
@@ -486,11 +486,11 @@ void Core::Geo::Cut::DirectDivergence::DivengenceCellsGMSH(
   // write main Gauss points
   file << "Geometry.PointSize=8.0;\n";  // Increase the point size
   file << "View \"Main points \" {\n";
-  if (gpv.NumPoints() > 0)
+  if (gpv.num_points() > 0)
   {
     for (Core::FE::GaussIntegration::iterator iquad = gpv.begin(); iquad != gpv.end(); ++iquad)
     {
-      const Core::LinAlg::Matrix<3, 1> etaFacet(iquad.Point());
+      const Core::LinAlg::Matrix<3, 1> etaFacet(iquad.point());
       file << "SP(" << etaFacet(0, 0) << "," << etaFacet(1, 0) << "," << etaFacet(2, 0) << ","
            << "1"
            << "){0.0};" << std::endl;
@@ -510,15 +510,15 @@ void Core::Geo::Cut::DirectDivergence::DivengenceCellsGMSH(
      Compute the volume of the considered cell by integrating 1 using the Gauss rule obtained.
 sudhakar 04/12 Then the volume in local coordinates is converted to global coordinate value
 *---------------------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::DirectDivergence::DebugVolume(
+void Core::Geo::Cut::DirectDivergence::debug_volume(
     const Core::FE::GaussIntegration& gpv, bool& isNeg)
 {
   double TotalInteg = 0.0;
 
   for (Core::FE::GaussIntegration::iterator iquad = gpv.begin(); iquad != gpv.end(); ++iquad)
   {
-    const Core::LinAlg::Matrix<3, 1> etaFacet(iquad.Point());
-    const double weiFacet = iquad.Weight();
+    const Core::LinAlg::Matrix<3, 1> etaFacet(iquad.point());
+    const double weiFacet = iquad.weight();
 
     TotalInteg += weiFacet;
   }
@@ -595,21 +595,21 @@ void Core::Geo::Cut::DirectDivergence::DebugVolume(
     if (fabs(TotalInteg) < REF_VOL_DIRDIV)
     {
       isNeg = true;
-      volcell_->SetVolume(0.0);
+      volcell_->set_volume(0.0);
       std::cout << "----WARNING:::negligible volumecell parent id = "
-                << volcell_->parent_element()->Id() << "---------------" << std::endl;
+                << volcell_->parent_element()->id() << "---------------" << std::endl;
       std::cout << "volume in local coordinates = " << TotalInteg
                 << "\t volume in global coordinates = " << volGlobal << std::endl;
 
       return;
     }
 
-    mesh_.DebugDump(elem1_, __FILE__, __LINE__);
+    mesh_.debug_dump(elem1_, __FILE__, __LINE__);
     std::cout << "volume: " << TotalInteg << std::endl;
     FOUR_C_THROW("negative volume predicted by the DirectDivergence integration rule;");
   }
 
-  volcell_->SetVolume(volGlobal);
+  volcell_->set_volume(volGlobal);
   if (std::isnan(volGlobal))
   {
     std::cout << "-------------------------------------------------------------\n";

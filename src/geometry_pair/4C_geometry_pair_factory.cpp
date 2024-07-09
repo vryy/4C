@@ -33,7 +33,7 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeF
       Teuchos::rcp_dynamic_cast<LineTo3DEvaluationData>(geometry_evaluation_data, true);
 
   // Get the strategy for line to volume interaction.
-  Inpar::GEOMETRYPAIR::LineTo3DStrategy strategy = line_to_3d_evaluation_data->GetStrategy();
+  Inpar::GEOMETRYPAIR::LineTo3DStrategy strategy = line_to_3d_evaluation_data->get_strategy();
 
   // Create the class depending on the strategy.
   switch (strategy)
@@ -95,7 +95,7 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurface
       Teuchos::rcp_dynamic_cast<LineToSurfaceEvaluationData>(geometry_evaluation_data, true);
 
   // Get the strategy for line to volume interaction.
-  Inpar::GEOMETRYPAIR::LineTo3DStrategy strategy = line_to_surface_evaluation_data->GetStrategy();
+  Inpar::GEOMETRYPAIR::LineTo3DStrategy strategy = line_to_surface_evaluation_data->get_strategy();
 
   // Create the class depending on the strategy.
   switch (strategy)

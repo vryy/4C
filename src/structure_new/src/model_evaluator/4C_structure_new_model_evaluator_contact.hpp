@@ -47,7 +47,7 @@ namespace Solid
       //!@{
 
       //! [derived]
-      Inpar::Solid::ModelType Type() const override { return Inpar::Solid::model_contact; }
+      Inpar::Solid::ModelType type() const override { return Inpar::Solid::model_contact; }
 
       //! reset class variables (without jacobian) [derived]
       void reset(const Epetra_Vector& x) override;
@@ -88,7 +88,7 @@ namespace Solid
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void Predict(const Inpar::Solid::PredEnum& pred_type) override{};
+      void predict(const Inpar::Solid::PredEnum& pred_type) override{};
 
       //! recover condensed Lagrange multipliers
       void run_post_compute_x(
@@ -183,8 +183,8 @@ namespace Solid
       const Teuchos::RCP<CONTACT::AbstractStrategy>& strategy_ptr();
 
       //! Returns the underlying contact strategy object
-      CONTACT::AbstractStrategy& Strategy();
-      const CONTACT::AbstractStrategy& Strategy() const;
+      CONTACT::AbstractStrategy& strategy();
+      const CONTACT::AbstractStrategy& strategy() const;
 
       //!@}
 

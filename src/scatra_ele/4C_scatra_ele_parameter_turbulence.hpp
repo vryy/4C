@@ -38,37 +38,37 @@ namespace Discret
     {
      public:
       //! singleton access method
-      static ScaTraEleParameterTurbulence* Instance(
+      static ScaTraEleParameterTurbulence* instance(
           const std::string& disname  //!< name of discretization
       );
 
 
 
       //! set parameters
-      void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
+      void set_parameters(Teuchos::ParameterList& parameters  //!< parameter list
           ) override;
 
       //! @name return turbulence parameters
       //! @{
-      Inpar::FLUID::TurbModelAction TurbModel() { return turbmodel_; };
-      Inpar::FLUID::ScalarForcing ScalarForcing() { return scalarforcing_; };
-      Inpar::ScaTra::FSSUGRDIFF WhichFssgd() { return whichfssgd_; };
-      bool FSSGD() { return fssgd_; };
-      double Cs() { return cs_; };
-      double TPN() { return tpn_; };
-      bool CsAv() { return cs_av_; };
-      double Csgs_SgVel() { return csgs_sgvel_; };
-      double Alpha() { return alpha_; }
-      bool Calc_N() { return calc_n_; };
-      double N_Vel() { return n_vel_; };
-      Inpar::FLUID::RefVelocity RefVel() { return refvel_; };
-      Inpar::FLUID::RefLength RefLength() { return reflength_; };
-      double C_Nu() { return c_nu_; };
-      bool Nwl() { return nwl_; };
-      bool Nwl_ScaTra() { return nwl_scatra_; };
-      bool Beta() { return beta_; };
-      bool BD_Gp() { return bd_gp_; };
-      double Csgs_SgPhi()
+      Inpar::FLUID::TurbModelAction turb_model() { return turbmodel_; };
+      Inpar::FLUID::ScalarForcing scalar_forcing() { return scalarforcing_; };
+      Inpar::ScaTra::FSSUGRDIFF which_fssgd() { return whichfssgd_; };
+      bool fssgd() { return fssgd_; };
+      double cs() { return cs_; };
+      double tpn() { return tpn_; };
+      bool cs_av() { return cs_av_; };
+      double csgs_sg_vel() { return csgs_sgvel_; };
+      double alpha() { return alpha_; }
+      bool calc_n() { return calc_n_; };
+      double n_vel() { return n_vel_; };
+      Inpar::FLUID::RefVelocity ref_vel() { return refvel_; };
+      Inpar::FLUID::RefLength ref_length() { return reflength_; };
+      double c_nu() { return c_nu_; };
+      bool nwl() { return nwl_; };
+      bool nwl_sca_tra() { return nwl_scatra_; };
+      bool beta() { return beta_; };
+      bool bd_gp() { return bd_gp_; };
+      double csgs_sg_phi()
       {
         double tmp = 0.0;
         if (adapt_csgs_phi_ and nwl_)
@@ -77,15 +77,15 @@ namespace Discret
           tmp = csgs_sgphi_;
         return tmp;
       };
-      double C_Diff() { return c_diff_; };
-      bool MfsConservative() { return mfs_conservative_; };
-      void SetCsgsPhi(double meanCai)
+      double c_diff() { return c_diff_; };
+      bool mfs_conservative() { return mfs_conservative_; };
+      void set_csgs_phi(double meanCai)
       {
         mean_cai_ = meanCai;
         return;
       };
-      bool AdaptCsgsPhi() { return adapt_csgs_phi_; };
-      bool TurbInflow() { return turbinflow_; };
+      bool adapt_csgs_phi() { return adapt_csgs_phi_; };
+      bool turb_inflow() { return turbinflow_; };
       //! @}
 
      private:

@@ -22,25 +22,25 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Discret::ELEMENTS::Ale3SurfaceImplInterface* Discret::ELEMENTS::Ale3SurfaceImplInterface::Impl(
+Discret::ELEMENTS::Ale3SurfaceImplInterface* Discret::ELEMENTS::Ale3SurfaceImplInterface::impl(
     Discret::ELEMENTS::Ale3Surface* ele)
 {
-  switch (ele->Shape())
+  switch (ele->shape())
   {
     case Core::FE::CellType::quad4:
     {
-      return Discret::ELEMENTS::Ale3SurfaceImpl<Core::FE::CellType::quad4>::Instance(
+      return Discret::ELEMENTS::Ale3SurfaceImpl<Core::FE::CellType::quad4>::instance(
           Core::UTILS::SingletonAction::create);
     }
     default:
-      FOUR_C_THROW("shape %d (%d nodes) not supported", ele->Shape(), ele->num_node());
+      FOUR_C_THROW("shape %d (%d nodes) not supported", ele->shape(), ele->num_node());
       break;
   }
   return nullptr;
 }
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::Ale3SurfaceImpl<distype>* Discret::ELEMENTS::Ale3SurfaceImpl<distype>::Instance(
+Discret::ELEMENTS::Ale3SurfaceImpl<distype>* Discret::ELEMENTS::Ale3SurfaceImpl<distype>::instance(
     Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
@@ -50,7 +50,7 @@ Discret::ELEMENTS::Ale3SurfaceImpl<distype>* Discret::ELEMENTS::Ale3SurfaceImpl<
             new Discret::ELEMENTS::Ale3SurfaceImpl<distype>());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -70,7 +70,7 @@ int Discret::ELEMENTS::Ale3Surface::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> dispnp;
       std::vector<double> mydispnp;
 
-      dispnp = discretization.GetState("dispnp");
+      dispnp = discretization.get_state("dispnp");
 
       if (dispnp != Teuchos::null)
       {
@@ -78,7 +78,7 @@ int Discret::ELEMENTS::Ale3Surface::evaluate(Teuchos::ParameterList& params,
         Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
       }
 
-      Ale3SurfaceImplInterface::Impl(this)->ElementNodeNormal(
+      Ale3SurfaceImplInterface::impl(this)->element_node_normal(
           this, params, discretization, lm, elevec1, mydispnp);
 
       break;
@@ -104,7 +104,7 @@ int Discret::ELEMENTS::Ale3Surface::evaluate_neumann(Teuchos::ParameterList& par
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-inline void Discret::ELEMENTS::Ale3SurfaceImpl<distype>::ElementNodeNormal(Ale3Surface* ele,
+inline void Discret::ELEMENTS::Ale3SurfaceImpl<distype>::element_node_normal(Ale3Surface* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, std::vector<double>& mydispnp)
 {

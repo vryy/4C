@@ -46,7 +46,7 @@ namespace
 
 Discret::ELEMENTS::SolidType Discret::ELEMENTS::SolidType::instance_;
 
-Discret::ELEMENTS::SolidType& Discret::ELEMENTS::SolidType::Instance() { return instance_; }
+Discret::ELEMENTS::SolidType& Discret::ELEMENTS::SolidType::instance() { return instance_; }
 
 void Discret::ELEMENTS::SolidType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -90,20 +90,20 @@ void Discret::ELEMENTS::SolidType::setup_element_definition(
                                .build();
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidType::create(
     const std::string eletype, const std::string elecelltype, const int id, const int owner)
 {
-  if (eletype == "SOLID") return Create(id, owner);
+  if (eletype == "SOLID") return create(id, owner);
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidType::create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new Discret::ELEMENTS::Solid(id, owner));
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SolidType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::SolidType::create(const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::Solid(-1, -1);
   object->unpack(data);
@@ -116,7 +116,7 @@ void Discret::ELEMENTS::SolidType::nodal_block_information(
   FourC::Solid::UTILS::nodal_block_information_solid(dwele, numdf, dimns, nv, np);
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SolidType::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SolidType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   switch (numdof)
@@ -136,29 +136,29 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SolidType::ComputeNullSpace(
 Discret::ELEMENTS::Solid::Solid(int id, int owner) : Core::Elements::Element(id, owner) {}
 
 
-Core::Elements::Element* Discret::ELEMENTS::Solid::Clone() const { return new Solid(*this); }
+Core::Elements::Element* Discret::ELEMENTS::Solid::clone() const { return new Solid(*this); }
 
-int Discret::ELEMENTS::Solid::NumLine() const
+int Discret::ELEMENTS::Solid::num_line() const
 {
   return Core::FE::getNumberOfElementLines(celltype_);
 }
 
-int Discret::ELEMENTS::Solid::NumSurface() const
+int Discret::ELEMENTS::Solid::num_surface() const
 {
   return Core::FE::getNumberOfElementSurfaces(celltype_);
 }
 
-int Discret::ELEMENTS::Solid::NumVolume() const
+int Discret::ELEMENTS::Solid::num_volume() const
 {
   return Core::FE::getNumberOfElementVolumes(celltype_);
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Solid::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Solid::lines()
 {
   return Core::Communication::GetElementLines<StructuralLine, Solid>(*this);
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Solid::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Solid::surfaces()
 {
   return Core::Communication::GetElementSurfaces<StructuralSurface, Solid>(*this);
 }
@@ -167,7 +167,7 @@ void Discret::ELEMENTS::Solid::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
-  add_to_pack(data, UniqueParObjectId());
+  add_to_pack(data, unique_par_object_id());
 
   // add base class Element
   Core::Elements::Element::pack(data);
@@ -185,7 +185,8 @@ void Discret::ELEMENTS::Solid::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  if (extract_int(position, data) != UniqueParObjectId()) FOUR_C_THROW("wrong instance type data");
+  if (extract_int(position, data) != unique_par_object_id())
+    FOUR_C_THROW("wrong instance type data");
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -196,9 +197,9 @@ void Discret::ELEMENTS::Solid::unpack(const std::vector<char>& data)
 
   Discret::ELEMENTS::ExtractFromPack(position, data, solid_ele_property_);
 
-  if (Shape() == Core::FE::CellType::nurbs27)
+  if (shape() == Core::FE::CellType::nurbs27)
   {
-    SetNurbsElement() = true;
+    set_nurbs_element() = true;
   }
 
   Core::Communication::ParObject::extract_from_pack(position, data, material_post_setup_);
@@ -223,57 +224,59 @@ void Discret::ELEMENTS::Solid::set_params_interface_ptr(const Teuchos::Parameter
     interface_ptr_ = Teuchos::null;
 }
 
-bool Discret::ELEMENTS::Solid::ReadElement(
+bool Discret::ELEMENTS::Solid::read_element(
     const std::string& eletype, const std::string& celltype, Input::LineDefinition* linedef)
 {
   // set cell type
   celltype_ = Core::FE::StringToCellType(celltype);
 
   // read number of material model
-  SetMaterial(0, Mat::Factory(FourC::Solid::UTILS::ReadElement::read_element_material(linedef)));
+  set_material(0, Mat::Factory(FourC::Solid::UTILS::ReadElement::read_element_material(linedef)));
 
   // kinematic type
-  SetKinematicType(FourC::Solid::UTILS::ReadElement::read_element_kinematic_type(linedef));
+  set_kinematic_type(FourC::Solid::UTILS::ReadElement::read_element_kinematic_type(linedef));
 
   solid_ele_property_ = FourC::Solid::UTILS::ReadElement::read_solid_element_properties(linedef);
 
-  if (Shape() == Core::FE::CellType::nurbs27)
+  if (shape() == Core::FE::CellType::nurbs27)
   {
-    SetNurbsElement() = true;
+    set_nurbs_element() = true;
   }
 
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_);
   std::visit(
-      [&](auto& interface) { interface->setup(*SolidMaterial(), linedef); }, solid_calc_variant_);
+      [&](auto& interface) { interface->setup(*solid_material(), linedef); }, solid_calc_variant_);
   return true;
 }
 
-Teuchos::RCP<Mat::So3Material> Discret::ELEMENTS::Solid::SolidMaterial(int nummat) const
+Teuchos::RCP<Mat::So3Material> Discret::ELEMENTS::Solid::solid_material(int nummat) const
 {
   return Teuchos::rcp_dynamic_cast<Mat::So3Material>(
-      Core::Elements::Element::Material(nummat), true);
+      Core::Elements::Element::material(nummat), true);
 }
 
-void Discret::ELEMENTS::Solid::VisNames(std::map<std::string, int>& names)
+void Discret::ELEMENTS::Solid::vis_names(std::map<std::string, int>& names)
 {
-  Core::Elements::Element::VisNames(names);
-  SolidMaterial()->VisNames(names);
+  Core::Elements::Element::vis_names(names);
+  solid_material()->vis_names(names);
 }
 
-bool Discret::ELEMENTS::Solid::VisData(const std::string& name, std::vector<double>& data)
+bool Discret::ELEMENTS::Solid::vis_data(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (Core::Elements::Element::VisData(name, data)) return true;
+  if (Core::Elements::Element::vis_data(name, data)) return true;
 
-  return SolidMaterial()->VisData(name, data, Id());
+  return solid_material()->vis_data(name, data, id());
 }
 
 void Discret::ELEMENTS::Solid::for_each_gauss_point(Core::FE::Discretization& discretization,
     std::vector<int>& lm,
     const std::function<void(Mat::So3Material&, double, int)>& integrator) const
 {
-  std::visit([&](auto& interface)
-      { interface->for_each_gauss_point(*this, *SolidMaterial(), discretization, lm, integrator); },
+  std::visit(
+      [&](auto& interface) {
+        interface->for_each_gauss_point(*this, *solid_material(), discretization, lm, integrator);
+      },
       solid_calc_variant_);
 }
 

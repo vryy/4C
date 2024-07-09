@@ -29,7 +29,7 @@ Mat::BeamElastHyperMaterialType<T> Mat::BeamElastHyperMaterialType<T>::instance_
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-Core::Communication::ParObject* Mat::BeamElastHyperMaterialType<T>::Create(
+Core::Communication::ParObject* Mat::BeamElastHyperMaterialType<T>::create(
     const std::vector<char>& data)
 {
   Core::Mat::Material* matobject = new Mat::BeamElastHyperMaterial<T>();
@@ -100,12 +100,12 @@ void Mat::BeamElastHyperMaterial<T>::pack(Core::Communication::PackBuffer& data)
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   this->add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   this->add_to_pack(data, matid);
 }
 
@@ -116,34 +116,34 @@ void Mat::BeamElastHyperMaterial<T>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
   this->extract_from_pack(position, data, matid);
   params_ = nullptr;
 
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
 
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
 
       /* the idea is that we have a generic type of material (this class), but various
        * possible sets of material parameters to 'feed' these very general constitutive relations */
-      if (mat->Type() == Core::Materials::m_beam_reissner_elast_hyper or
-          mat->Type() == Core::Materials::m_beam_reissner_elast_hyper_bymodes or
-          mat->Type() == Core::Materials::m_beam_kirchhoff_elast_hyper or
-          mat->Type() == Core::Materials::m_beam_reissner_elast_plastic or
-          mat->Type() == Core::Materials::m_beam_kirchhoff_elast_hyper_bymodes or
-          mat->Type() == Core::Materials::m_beam_kirchhoff_torsionfree_elast_hyper or
-          mat->Type() == Core::Materials::m_beam_kirchhoff_torsionfree_elast_hyper_bymodes)
+      if (mat->type() == Core::Materials::m_beam_reissner_elast_hyper or
+          mat->type() == Core::Materials::m_beam_reissner_elast_hyper_bymodes or
+          mat->type() == Core::Materials::m_beam_kirchhoff_elast_hyper or
+          mat->type() == Core::Materials::m_beam_reissner_elast_plastic or
+          mat->type() == Core::Materials::m_beam_kirchhoff_elast_hyper_bymodes or
+          mat->type() == Core::Materials::m_beam_kirchhoff_torsionfree_elast_hyper or
+          mat->type() == Core::Materials::m_beam_kirchhoff_torsionfree_elast_hyper_bymodes)
         params_ = static_cast<Mat::PAR::BeamElastHyperMaterialParameterGeneric*>(mat);
       else
         FOUR_C_THROW("Type of material parameter %d does not fit to type of material law %d",
-            mat->Type(), MaterialType());
+            mat->type(), material_type());
     }
 
   if (position != data.size())
@@ -153,7 +153,7 @@ void Mat::BeamElastHyperMaterial<T>::unpack(const std::vector<char>& data)
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-Core::Mat::PAR::Parameter* Mat::BeamElastHyperMaterial<T>::Parameter() const
+Core::Mat::PAR::Parameter* Mat::BeamElastHyperMaterial<T>::parameter() const
 {
   return params_;
 }
@@ -161,7 +161,7 @@ Core::Mat::PAR::Parameter* Mat::BeamElastHyperMaterial<T>::Parameter() const
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-const Mat::PAR::BeamElastHyperMaterialParameterGeneric& Mat::BeamElastHyperMaterial<T>::Params()
+const Mat::PAR::BeamElastHyperMaterialParameterGeneric& Mat::BeamElastHyperMaterial<T>::params()
     const
 {
   if (params_ == nullptr) FOUR_C_THROW("pointer to parameter class is not set!");
@@ -180,9 +180,9 @@ void Mat::BeamElastHyperMaterial<T>::get_constitutive_matrix_of_forces_material_
   // according to Jelenic 1999, section 2.4
   C_N.clear();
 
-  C_N(0, 0) = Params().GetAxialRigidity();
-  C_N(1, 1) = Params().GetShearRigidity2();
-  C_N(2, 2) = Params().GetShearRigidity3();
+  C_N(0, 0) = params().get_axial_rigidity();
+  C_N(1, 1) = params().get_shear_rigidity2();
+  C_N(2, 2) = params().get_shear_rigidity3();
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -195,9 +195,9 @@ void Mat::BeamElastHyperMaterial<T>::get_constitutive_matrix_of_moments_material
   // according to Jelenic 1999, section 2.4
   C_M.clear();
 
-  C_M(0, 0) = Params().get_torsional_rigidity();
-  C_M(1, 1) = Params().GetBendingRigidity2();
-  C_M(2, 2) = Params().GetBendingRigidity3();
+  C_M(0, 0) = params().get_torsional_rigidity();
+  C_M(1, 1) = params().get_bending_rigidity2();
+  C_M(2, 2) = params().get_bending_rigidity3();
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -205,7 +205,7 @@ void Mat::BeamElastHyperMaterial<T>::get_constitutive_matrix_of_moments_material
 template <typename T>
 double Mat::BeamElastHyperMaterial<T>::get_translational_mass_inertia_factor() const
 {
-  return Params().get_translational_mass_inertia();
+  return params().get_translational_mass_inertia();
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -216,9 +216,9 @@ void Mat::BeamElastHyperMaterial<T>::get_mass_moment_of_inertia_tensor_material_
 {
   J.clear();
 
-  J(0, 0) = Params().get_polar_mass_moment_of_inertia();
-  J(1, 1) = Params().get_mass_moment_of_inertia2();
-  J(2, 2) = Params().get_mass_moment_of_inertia3();
+  J(0, 0) = params().get_polar_mass_moment_of_inertia();
+  J(1, 1) = params().get_mass_moment_of_inertia2();
+  J(2, 2) = params().get_mass_moment_of_inertia3();
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -229,9 +229,9 @@ void Mat::BeamElastHyperMaterial<T>::get_mass_moment_of_inertia_tensor_material_
 {
   J.clear();
 
-  J(0, 0) = Params().get_polar_mass_moment_of_inertia();
-  J(1, 1) = Params().get_mass_moment_of_inertia2();
-  J(2, 2) = Params().get_mass_moment_of_inertia3();
+  J(0, 0) = params().get_polar_mass_moment_of_inertia();
+  J(1, 1) = params().get_mass_moment_of_inertia2();
+  J(2, 2) = params().get_mass_moment_of_inertia3();
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -239,7 +239,7 @@ void Mat::BeamElastHyperMaterial<T>::get_mass_moment_of_inertia_tensor_material_
 template <typename T>
 double Mat::BeamElastHyperMaterial<T>::get_interaction_radius() const
 {
-  return this->Params().get_interaction_radius();
+  return this->params().get_interaction_radius();
 }
 
 /*-----------------------------------------------------------------------------------------------*

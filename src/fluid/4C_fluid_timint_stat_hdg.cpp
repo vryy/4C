@@ -50,30 +50,30 @@ void FLD::TimIntStationaryHDG::init()
   Core::FE::DiscretizationHDG* hdgdis = dynamic_cast<Core::FE::DiscretizationHDG*>(discret_.get());
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
-  int elementndof = hdgdis->NumMyRowElements() > 0
-                        ? dynamic_cast<Discret::ELEMENTS::FluidHDG*>(hdgdis->lRowElement(0))
+  int elementndof = hdgdis->num_my_row_elements() > 0
+                        ? dynamic_cast<Discret::ELEMENTS::FluidHDG*>(hdgdis->l_row_element(0))
                               ->num_dof_per_element_auxiliary()
                         : 0;
 
   // set degrees of freedom in the discretization
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
       Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(0, elementndof, 0, false));
-  discret_->AddDofSet(dofsetaux);
+  discret_->add_dof_set(dofsetaux);
   discret_->fill_complete();
 
   // build velocity/pressure splitting
   std::set<int> conddofset;
   std::set<int> otherdofset;
 
-  for (int j = 0; j < hdgdis->NumMyRowElements(); ++j)
+  for (int j = 0; j < hdgdis->num_my_row_elements(); ++j)
   {
-    std::vector<int> dof = hdgdis->Dof(0, hdgdis->lRowElement(j));
+    std::vector<int> dof = hdgdis->dof(0, hdgdis->l_row_element(j));
     FOUR_C_ASSERT(dof.size() >= 1, "Internal error: could not find HDG pressure dof");
     for (unsigned int i = 0; i < dof.size(); ++i) conddofset.insert(dof[i]);
   }
-  for (int i = 0; i < hdgdis->NumMyRowFaces(); ++i)
+  for (int i = 0; i < hdgdis->num_my_row_faces(); ++i)
   {
-    std::vector<int> dof = hdgdis->Dof(0, hdgdis->lRowFace(i));
+    std::vector<int> dof = hdgdis->dof(0, hdgdis->l_row_face(i));
     for (unsigned int j = 0; j < dof.size(); ++j) otherdofset.insert(dof[j]);
   }
 
@@ -82,13 +82,13 @@ void FLD::TimIntStationaryHDG::init()
   conddofmapvec.assign(conddofset.begin(), conddofset.end());
   conddofset.clear();
   Teuchos::RCP<Epetra_Map> conddofmap = Teuchos::rcp(
-      new Epetra_Map(-1, conddofmapvec.size(), conddofmapvec.data(), 0, hdgdis->Comm()));
+      new Epetra_Map(-1, conddofmapvec.size(), conddofmapvec.data(), 0, hdgdis->get_comm()));
   std::vector<int> otherdofmapvec;
   otherdofmapvec.reserve(otherdofset.size());
   otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
   otherdofset.clear();
   Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::rcp(
-      new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->Comm()));
+      new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->get_comm()));
   velpressplitter_->setup(*hdgdis->dof_row_map(), conddofmap, otherdofmap);
 
   // call init()-functions of base classes
@@ -102,7 +102,7 @@ void FLD::TimIntStationaryHDG::reset(bool completeReset, int numsteps, int iter)
   FluidImplicitTimeInt::reset(completeReset, numsteps, iter);
   const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
   intvelnp_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
     std::cout << "Number of degrees of freedom in HDG system: "
               << discret_->dof_row_map(0)->NumGlobalElements() << std::endl;
 }
@@ -140,7 +140,7 @@ void FLD::TimIntStationaryHDG::set_old_part_of_righthandside()
 /*----------------------------------------------------------------------*
 | set integration-scheme-specific state                       als 01/18 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntStationaryHDG::SetStateTimInt()
+void FLD::TimIntStationaryHDG::set_state_tim_int()
 {
   const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
   Teuchos::RCP<Epetra_Vector> zerovec = Core::LinAlg::CreateVector(*intdofrowmap, true);
@@ -160,7 +160,7 @@ void FLD::TimIntStationaryHDG::clear_state_assemble_mat_and_rhs()
   {
     // Wrote into the state vector during element calls, need to transfer the
     // data back before it disappears when clearing the state (at least for nproc>1)
-    const Epetra_Vector& intvelnpGhosted = *discret_->GetState(1, "intvelnp");
+    const Epetra_Vector& intvelnpGhosted = *discret_->get_state(1, "intvelnp");
     for (int i = 0; i < intvelnp_->MyLength(); ++i)
       (*intvelnp_)[i] = intvelnpGhosted[intvelnpGhosted.Map().LID(intvelnp_->Map().GID(i))];
   }
@@ -171,7 +171,7 @@ void FLD::TimIntStationaryHDG::clear_state_assemble_mat_and_rhs()
 /*----------------------------------------------------------------------*
  |  set initial flow field for test cases              kronbichler 05/14|
  *----------------------------------------------------------------------*/
-void FLD::TimIntStationaryHDG::SetInitialFlowField(
+void FLD::TimIntStationaryHDG::set_initial_flow_field(
     const Inpar::FLUID::InitialField initfield, const int startfuncno)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
@@ -185,14 +185,14 @@ void FLD::TimIntStationaryHDG::SetInitialFlowField(
   // loop over all elements on the processor
   Core::Elements::Element::LocationArray la(2);
   double error = 0;
-  for (int el = 0; el < discret_->NumMyColElements(); ++el)
+  for (int el = 0; el < discret_->num_my_col_elements(); ++el)
   {
-    Core::Elements::Element* ele = discret_->lColElement(el);
+    Core::Elements::Element* ele = discret_->l_col_element(el);
 
-    ele->LocationVector(*discret_, la, false);
+    ele->location_vector(*discret_, la, false);
     if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())
       elevec1.size(la[0].lm_.size());
-    if (elevec2.numRows() != discret_->NumDof(1, ele)) elevec2.size(discret_->NumDof(1, ele));
+    if (elevec2.numRows() != discret_->num_dof(1, ele)) elevec2.size(discret_->num_dof(1, ele));
 
     ele->evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
 
@@ -209,9 +209,9 @@ void FLD::TimIntStationaryHDG::SetInitialFlowField(
       }
     }
 
-    if (ele->Owner() == discret_->Comm().MyPID())
+    if (ele->owner() == discret_->get_comm().MyPID())
     {
-      std::vector<int> localDofs = discret_->Dof(1, ele);
+      std::vector<int> localDofs = discret_->dof(1, ele);
       FOUR_C_ASSERT(
           localDofs.size() == static_cast<std::size_t>(elevec2.numRows()), "Internal error");
       for (unsigned int i = 0; i < localDofs.size(); ++i)
@@ -220,8 +220,8 @@ void FLD::TimIntStationaryHDG::SetInitialFlowField(
     }
   }
   double globerror = 0;
-  discret_->Comm().SumAll(&error, &globerror, 1);
-  if (discret_->Comm().MyPID() == 0)
+  discret_->get_comm().SumAll(&error, &globerror, 1);
+  if (discret_->get_comm().MyPID() == 0)
     std::cout << "Error project when setting face twice: " << globerror << std::endl;
 }
 

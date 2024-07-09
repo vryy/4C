@@ -31,9 +31,9 @@ namespace FSI
     void setup_coupling(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm) override;
 
     //! call the time loop of the base class
-    void Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface) override
+    void timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface) override
     {
-      FSI::Partitioned::Timeloop(interface);
+      FSI::Partitioned::timeloop(interface);
     };
 
     //! override version of fsi partitioned

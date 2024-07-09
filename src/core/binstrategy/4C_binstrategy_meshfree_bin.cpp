@@ -36,7 +36,7 @@ Core::FE::MeshFree::MeshfreeBin<ELEMENT>::MeshfreeBin(
  | Delete a single node from the element               (public) ghamm 11/12 |
  *--------------------------------------------------------------------------*/
 template <typename ELEMENT>
-void Core::FE::MeshFree::MeshfreeBin<ELEMENT>::DeleteNode(int gid)
+void Core::FE::MeshFree::MeshfreeBin<ELEMENT>::delete_node(int gid)
 {
   for (unsigned int i = 0; i < ELEMENT::nodeid_.size(); i++)
   {

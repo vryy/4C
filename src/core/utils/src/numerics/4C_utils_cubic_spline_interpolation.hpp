@@ -64,7 +64,7 @@ namespace Core::UTILS
      * @param[in] x  generic scalar
      * @return @deriv_order derivative of the function evaluated at @x
      */
-    [[nodiscard]] double EvaluateDerivative(double x, int deriv_order) const;
+    [[nodiscard]] double evaluate_derivative(double x, int deriv_order) const;
 
    private:
     /*!

@@ -48,7 +48,7 @@ namespace Mat
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
       /// @}
 
-      double GetScalarProduct(int gp) const override;
+      double get_scalar_product(int gp) const override;
       const Core::LinAlg::Matrix<3, 3>& get_structural_tensor(int gp) const override;
       const Core::LinAlg::Matrix<6, 1>& get_structural_tensor_stress(int gp) const override;
 
@@ -142,7 +142,7 @@ namespace Mat
       //@{
 
       /// material type
-      Core::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType material_type() const override
       {
         return Core::Materials::mes_coupanisoexposhear;
       }
@@ -151,9 +151,9 @@ namespace Mat
 
       /// @name Methods for Packing and Unpacking
       ///@{
-      void PackSummand(Core::Communication::PackBuffer& data) const override;
+      void pack_summand(Core::Communication::PackBuffer& data) const override;
 
-      void UnpackSummand(
+      void unpack_summand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
       ///@}
 
@@ -165,13 +165,13 @@ namespace Mat
       void register_anisotropy_extensions(Mat::Anisotropy& anisotropy) override;
 
       /// Set fiber directions
-      void SetFiberVecs(double newgamma,             ///< new angle
+      void set_fiber_vecs(double newgamma,           ///< new angle
           const Core::LinAlg::Matrix<3, 3>& locsys,  ///< local coordinate system
           const Core::LinAlg::Matrix<3, 3>& defgrd   ///< deformation gradient
           ) override;
 
       /// Get fiber directions
-      void GetFiberVecs(
+      void get_fiber_vecs(
           std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 

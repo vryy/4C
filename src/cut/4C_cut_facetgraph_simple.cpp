@@ -30,7 +30,7 @@ Core::Geo::Cut::SimpleFacetGraph1D::SimpleFacetGraph1D(
   {
     Facet* f = *cit;
 
-    if (f->HasHoles()) FOUR_C_THROW("Holes are not yet considered for the simple case!");
+    if (f->has_holes()) FOUR_C_THROW("Holes are not yet considered for the simple case!");
   }
 
   // first store all facets
@@ -40,7 +40,7 @@ Core::Geo::Cut::SimpleFacetGraph1D::SimpleFacetGraph1D(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::SimpleFacetGraph1D::CreateVolumeCells(
+void Core::Geo::Cut::SimpleFacetGraph1D::create_volume_cells(
     Mesh& mesh, Element* element, plain_volumecell_set& cells)
 {
   if (all_facets_.size() < 1) return;
@@ -62,7 +62,7 @@ void Core::Geo::Cut::SimpleFacetGraph1D::CreateVolumeCells(
     plain_facet_set& collected_facets = *it;
 
     // add the pseudo volume cell
-    cells.insert(mesh.NewVolumeCell(collected_facets, volume_lines, element));
+    cells.insert(mesh.new_volume_cell(collected_facets, volume_lines, element));
   }
 }
 
@@ -71,16 +71,16 @@ void Core::Geo::Cut::SimpleFacetGraph1D::CreateVolumeCells(
 void Core::Geo::Cut::SimpleFacetGraph1D::sort_facets(
     const Element* element, std::map<double, Facet*>& sorted_facets) const
 {
-  Edge* edge = element->Sides()[0]->Edges()[0];
+  Edge* edge = element->sides()[0]->edges()[0];
 
   for (std::vector<Facet*>::const_iterator cit = all_facets_.begin(); cit != all_facets_.end();
        ++cit)
   {
     Facet* f = *cit;
-    if (not f->Equals(Core::FE::CellType::point1))
+    if (not f->equals(Core::FE::CellType::point1))
       FOUR_C_THROW("The given facets are supposed to be points!");
 
-    Point* p = f->Points()[0];
+    Point* p = f->points()[0];
     double t = p->t(edge);
 
     sorted_facets[t] = f;
@@ -120,7 +120,7 @@ Core::Geo::Cut::SimpleFacetGraph2D::SimpleFacetGraph2D(
   {
     Facet* f = *cit;
 
-    if (f->HasHoles()) FOUR_C_THROW("Holes are not yet considered for the simple case!");
+    if (f->has_holes()) FOUR_C_THROW("Holes are not yet considered for the simple case!");
   }
 
   // first store all facets
@@ -130,12 +130,12 @@ Core::Geo::Cut::SimpleFacetGraph2D::SimpleFacetGraph2D(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::SimpleFacetGraph2D::CreateVolumeCells(
+void Core::Geo::Cut::SimpleFacetGraph2D::create_volume_cells(
     Mesh& mesh, Element* element, plain_volumecell_set& cells)
 {
   std::vector<plain_facet_set> volumes;
 
-  const std::vector<Side*> sides = element->Sides();
+  const std::vector<Side*> sides = element->sides();
   if (sides.size() != 1) FOUR_C_THROW("A 2-D element is supposed to contain exactly one side!");
 
   Side* side = sides[0];
@@ -143,7 +143,7 @@ void Core::Geo::Cut::SimpleFacetGraph2D::CreateVolumeCells(
   Impl::SimplePointGraph2D pg_2d(
       mesh, element, side, Impl::PointGraph::element_side, Impl::PointGraph::all_lines);
 
-  volumes.reserve(pg_2d.NumSurfaces());
+  volumes.reserve(pg_2d.num_surfaces());
 
   for (Impl::SimplePointGraph2D::surface_const_iterator sit = pg_2d.sbegin(); sit != pg_2d.send();
        ++sit)

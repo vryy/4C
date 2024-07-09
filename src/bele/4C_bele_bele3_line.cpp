@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::Bele3LineType Discret::ELEMENTS::Bele3LineType::instance_;
 
-Discret::ELEMENTS::Bele3LineType& Discret::ELEMENTS::Bele3LineType::Instance() { return instance_; }
+Discret::ELEMENTS::Bele3LineType& Discret::ELEMENTS::Bele3LineType::instance() { return instance_; }
 
 
 /*----------------------------------------------------------------------*
@@ -29,10 +29,10 @@ Discret::ELEMENTS::Bele3Line::Bele3Line(int id, int owner, int nnode, const int*
     Core::Nodes::Node** nodes, Discret::ELEMENTS::Bele3* parent, const int lline)
     : Core::Elements::FaceElement(id, owner)
 {
-  SetNodeIds(nnode, nodeids);
-  BuildNodalPointers(nodes);
+  set_node_ids(nnode, nodeids);
+  build_nodal_pointers(nodes);
   set_parent_master_element(parent, lline);
-  set_num_dof_per_node(parent->NumDofPerNode(*nodes[0]));
+  set_num_dof_per_node(parent->num_dof_per_node(*nodes[0]));
   return;
 }
 
@@ -49,7 +49,7 @@ Discret::ELEMENTS::Bele3Line::Bele3Line(const Discret::ELEMENTS::Bele3Line& old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Bele3Line::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Bele3Line::clone() const
 {
   Discret::ELEMENTS::Bele3Line* newelement = new Discret::ELEMENTS::Bele3Line(*this);
   return newelement;
@@ -59,7 +59,7 @@ Core::Elements::Element* Discret::ELEMENTS::Bele3Line::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Bele3Line::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Bele3Line::shape() const
 {
   switch (num_node())
   {

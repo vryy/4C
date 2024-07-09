@@ -45,7 +45,7 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static ScaTraEleCalcAniso<distype, probdim>* Instance(
+      static ScaTraEleCalcAniso<distype, probdim>* instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
      protected:
@@ -134,14 +134,15 @@ namespace Discret
       }
 
       //! Set the anisotropic diffusion coefficient
-      virtual void SetAnisotropicDiff(const Core::LinAlg::Matrix<nsd, nsd> difftensor, const int k)
+      virtual void set_anisotropic_diff(
+          const Core::LinAlg::Matrix<nsd, nsd> difftensor, const int k)
       {
         difftensor_[k] = difftensor;
         return;
       }
 
       //! Return the stored anisotropic diffusion coefficient
-      virtual Core::LinAlg::Matrix<nsd, nsd> GetAnisotropicDiff(const int k)
+      virtual Core::LinAlg::Matrix<nsd, nsd> get_anisotropic_diff(const int k)
       {
         return difftensor_[k];
       }

@@ -48,7 +48,7 @@ namespace Mat
        *
        * \note The scalar product between the same fiber is 1, so nothing needs to be computed here
        */
-      double GetScalarProduct(int gp) const override;
+      double get_scalar_product(int gp) const override;
 
       /*!
        * \brief Returns the fiber at the Gauss point
@@ -129,7 +129,7 @@ namespace Mat
       //@{
 
       /// material type
-      Core::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType material_type() const override
       {
         return Core::Materials::mes_coupanisoexpo;
       }
@@ -138,9 +138,9 @@ namespace Mat
 
       /// @name Methods for Packing and Unpacking
       ///@{
-      void PackSummand(Core::Communication::PackBuffer& data) const override;
+      void pack_summand(Core::Communication::PackBuffer& data) const override;
 
-      void UnpackSummand(
+      void unpack_summand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
       ///@}
 
@@ -152,17 +152,17 @@ namespace Mat
       void register_anisotropy_extensions(Mat::Anisotropy& anisotropy) override;
 
       /// Set fiber directions
-      void SetFiberVecs(double newgamma,             ///< new angle
+      void set_fiber_vecs(double newgamma,           ///< new angle
           const Core::LinAlg::Matrix<3, 3>& locsys,  ///< local coordinate system
           const Core::LinAlg::Matrix<3, 3>& defgrd   ///< deformation gradient
           ) override;
 
       /// Set fiber directions
-      void SetFiberVecs(const Core::LinAlg::Matrix<3, 1>& fibervec  ///< new fiber vector
+      void set_fiber_vecs(const Core::LinAlg::Matrix<3, 1>& fibervec  ///< new fiber vector
           ) override;
 
       /// Get fiber directions
-      void GetFiberVecs(
+      void get_fiber_vecs(
           std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 

@@ -71,43 +71,43 @@ namespace CONTACT
     /*!
     \brief Get problem discretization
     */
-    inline const Core::FE::Discretization& ProblemDiscret() const override { return pdiscret_; };
+    inline const Core::FE::Discretization& problem_discret() const override { return pdiscret_; };
 
     /*!
     \brief Get beam contact discretization
     */
-    inline const Core::FE::Discretization& ContactDiscret() const override { return cdiscret_; };
+    inline const Core::FE::Discretization& contact_discret() const override { return cdiscret_; };
 
     /*!
     \brief Get offset of dofs between cdiscret and pdiscret
     */
-    inline const std::map<int, int>& DofOffset() const override { return dofoffsetmap_; };
+    inline const std::map<int, int>& dof_offset() const override { return dofoffsetmap_; };
 
     /*!
     \brief Get first element
     */
-    inline const Core::Elements::Element* Element1() override { return element1_; };
+    inline const Core::Elements::Element* element1() override { return element1_; };
 
     /*!
     \brief Get first element
     */
-    inline const Core::Elements::Element* Element2() override { return element2_; };
+    inline const Core::Elements::Element* element2() override { return element2_; };
 
     /*!
     \brief Get number of standard large angle/small angle/endpoint contact points on this element
     pair
     */
-    int GetNumCps() override { return cpvariables_.size(); };
+    int get_num_cps() override { return cpvariables_.size(); };
 
-    int GetNumGps() override { return gpvariables_.size(); };
+    int get_num_gps() override { return gpvariables_.size(); };
 
-    int GetNumEps() override { return epvariables_.size(); };
+    int get_num_eps() override { return epvariables_.size(); };
 
     /*!
     \brief Get vector of type declarations (0=closest point contact, 1=gauss point contact, 2= end
     point contact) of all contact pairs
     */
-    std::vector<int> GetContactType() override
+    std::vector<int> get_contact_type() override
     {
       int size1 = cpvariables_.size();
       int size2 = gpvariables_.size();
@@ -135,7 +135,7 @@ namespace CONTACT
     /*!
     \brief Get vector of all gaps of this contact pair
     */
-    std::vector<double> GetGap() override
+    std::vector<double> get_gap() override
     {
       int size1 = cpvariables_.size();
       int size2 = gpvariables_.size();
@@ -144,17 +144,17 @@ namespace CONTACT
 
       for (int i = 0; i < size1; i++)
       {
-        gaps[i] = Core::FADUtils::CastToDouble(cpvariables_[i]->GetGap());
+        gaps[i] = Core::FADUtils::CastToDouble(cpvariables_[i]->get_gap());
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
-        gaps[i] = Core::FADUtils::CastToDouble(gpvariables_[i - size1]->GetGap());
+        gaps[i] = Core::FADUtils::CastToDouble(gpvariables_[i - size1]->get_gap());
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
-        gaps[i] = Core::FADUtils::CastToDouble(epvariables_[i - size1 - size2]->GetGap());
+        gaps[i] = Core::FADUtils::CastToDouble(epvariables_[i - size1 - size2]->get_gap());
       }
 
       return gaps;
@@ -163,7 +163,7 @@ namespace CONTACT
     /*!
     \brief Get vector of all contact forces of this contact pair
     */
-    std::vector<double> GetContactForce() override
+    std::vector<double> get_contact_force() override
     {
       int size1 = cpvariables_.size();
       int size2 = gpvariables_.size();
@@ -172,19 +172,20 @@ namespace CONTACT
 
       for (int i = 0; i < size1; i++)
       {
-        f[i] = Core::FADUtils::CastToDouble(cpvariables_[i]->Getfp() * cpvariables_[i]->GetPPfac());
+        f[i] =
+            Core::FADUtils::CastToDouble(cpvariables_[i]->getfp() * cpvariables_[i]->get_p_pfac());
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
         f[i] = Core::FADUtils::CastToDouble(
-            gpvariables_[i - size1]->Getfp() * gpvariables_[i - size1]->GetPPfac());
+            gpvariables_[i - size1]->getfp() * gpvariables_[i - size1]->get_p_pfac());
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
-        f[i] = Core::FADUtils::CastToDouble(
-            epvariables_[i - size1 - size2]->Getfp() * epvariables_[i - size1 - size2]->GetPPfac());
+        f[i] = Core::FADUtils::CastToDouble(epvariables_[i - size1 - size2]->getfp() *
+                                            epvariables_[i - size1 - size2]->get_p_pfac());
       }
 
       return f;
@@ -193,7 +194,7 @@ namespace CONTACT
     /*!
     \brief Get vector of all contact angles of this contact pair
     */
-    std::vector<double> GetContactAngle() override
+    std::vector<double> get_contact_angle() override
     {
       int size1 = cpvariables_.size();
       int size2 = gpvariables_.size();
@@ -221,7 +222,7 @@ namespace CONTACT
     /*!
     \brief Get vector of all closest points of this contact pair
     */
-    std::vector<std::pair<double, double>> GetClosestPoint() override
+    std::vector<std::pair<double, double>> get_closest_point() override
     {
       int size1 = cpvariables_.size();
       int size2 = gpvariables_.size();
@@ -230,22 +231,22 @@ namespace CONTACT
 
       for (int i = 0; i < size1; i++)
       {
-        double xi = Core::FADUtils::CastToDouble(cpvariables_[i]->GetCP().first);
-        double eta = Core::FADUtils::CastToDouble(cpvariables_[i]->GetCP().second);
+        double xi = Core::FADUtils::CastToDouble(cpvariables_[i]->get_cp().first);
+        double eta = Core::FADUtils::CastToDouble(cpvariables_[i]->get_cp().second);
         cps[i] = std::make_pair(xi, eta);
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
-        double xi = Core::FADUtils::CastToDouble(gpvariables_[i - size1]->GetCP().first);
-        double eta = Core::FADUtils::CastToDouble(gpvariables_[i - size1]->GetCP().second);
+        double xi = Core::FADUtils::CastToDouble(gpvariables_[i - size1]->get_cp().first);
+        double eta = Core::FADUtils::CastToDouble(gpvariables_[i - size1]->get_cp().second);
         cps[i] = std::make_pair(xi, eta);
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
-        double xi = Core::FADUtils::CastToDouble(epvariables_[i - size1 - size2]->GetCP().first);
-        double eta = Core::FADUtils::CastToDouble(epvariables_[i - size1 - size2]->GetCP().second);
+        double xi = Core::FADUtils::CastToDouble(epvariables_[i - size1 - size2]->get_cp().first);
+        double eta = Core::FADUtils::CastToDouble(epvariables_[i - size1 - size2]->get_cp().second);
         cps[i] = std::make_pair(xi, eta);
       }
 
@@ -255,12 +256,12 @@ namespace CONTACT
     /*!
     \brief Return number of individual contact segments on element pair
     */
-    std::pair<int, int> GetNumSegments() override { return std::make_pair(numseg1_, numseg2_); };
+    std::pair<int, int> get_num_segments() override { return std::make_pair(numseg1_, numseg2_); };
 
     /*!
     \brief Return ids of active segments
     */
-    std::vector<std::pair<int, int>> GetSegmentIds() override
+    std::vector<std::pair<int, int>> get_segment_ids() override
     {
       int size1 = cpvariables_.size();
       int size2 = gpvariables_.size();
@@ -269,17 +270,17 @@ namespace CONTACT
 
       for (int i = 0; i < size1; i++)
       {
-        ids[i] = cpvariables_[i]->GetSegIds();
+        ids[i] = cpvariables_[i]->get_seg_ids();
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
-        ids[i] = gpvariables_[i - size1]->GetSegIds();
+        ids[i] = gpvariables_[i - size1]->get_seg_ids();
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
-        ids[i] = epvariables_[i - size1 - size2]->GetSegIds();
+        ids[i] = epvariables_[i - size1 - size2]->get_seg_ids();
       }
 
       return ids;
@@ -288,7 +289,7 @@ namespace CONTACT
     /*!
     \brief Get flag indicating whether contact is active (true) or inactive (false)
     */
-    bool GetContactFlag() override
+    bool get_contact_flag() override
     {
       // The element pair is assumed to be active when we have at least one active contact point
       return (cpvariables_.size() + gpvariables_.size() + epvariables_.size());
@@ -297,7 +298,7 @@ namespace CONTACT
     /*!
     \brief Get coordinates of contact point of element1
     */
-    std::vector<Core::LinAlg::Matrix<3, 1>> GetX1() override
+    std::vector<Core::LinAlg::Matrix<3, 1>> get_x1() override
     {
       int size1 = cpvariables_.size();
       int size2 = gpvariables_.size();
@@ -307,19 +308,19 @@ namespace CONTACT
 
       for (int i = 0; i < size1; i++)
       {
-        TYPE eta1 = cpvariables_[i]->GetCP().first;
+        TYPE eta1 = cpvariables_[i]->get_cp().first;
         for (int j = 0; j < 3; j++) r1[i](j) = Core::FADUtils::CastToDouble(r(eta1, element1_)(j));
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
-        TYPE eta1 = gpvariables_[i - size1]->GetCP().first;
+        TYPE eta1 = gpvariables_[i - size1]->get_cp().first;
         for (int j = 0; j < 3; j++) r1[i](j) = Core::FADUtils::CastToDouble(r(eta1, element1_)(j));
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
-        TYPE eta1 = epvariables_[i - size1 - size2]->GetCP().first;
+        TYPE eta1 = epvariables_[i - size1 - size2]->get_cp().first;
         for (int j = 0; j < 3; j++) r1[i](j) = Core::FADUtils::CastToDouble(r(eta1, element1_)(j));
       }
 
@@ -329,7 +330,7 @@ namespace CONTACT
     /*!
     \brief Get coordinates of contact point of element2
     */
-    std::vector<Core::LinAlg::Matrix<3, 1>> GetX2() override
+    std::vector<Core::LinAlg::Matrix<3, 1>> get_x2() override
     {
       int size1 = cpvariables_.size();
       int size2 = gpvariables_.size();
@@ -339,19 +340,19 @@ namespace CONTACT
 
       for (int i = 0; i < size1; i++)
       {
-        TYPE eta2 = cpvariables_[i]->GetCP().second;
+        TYPE eta2 = cpvariables_[i]->get_cp().second;
         for (int j = 0; j < 3; j++) r2[i](j) = Core::FADUtils::CastToDouble(r(eta2, element2_)(j));
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
-        TYPE eta2 = gpvariables_[i - size1]->GetCP().second;
+        TYPE eta2 = gpvariables_[i - size1]->get_cp().second;
         for (int j = 0; j < 3; j++) r2[i](j) = Core::FADUtils::CastToDouble(r(eta2, element2_)(j));
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
-        TYPE eta2 = epvariables_[i - size1 - size2]->GetCP().second;
+        TYPE eta2 = epvariables_[i - size1 - size2]->get_cp().second;
         for (int j = 0; j < 3; j++) r2[i](j) = Core::FADUtils::CastToDouble(r(eta2, element2_)(j));
       }
 
@@ -363,7 +364,7 @@ namespace CONTACT
     /*!
     \brief Get normal vector
     */
-    Core::LinAlg::SerialDenseVector GetNormal() override
+    Core::LinAlg::SerialDenseVector get_normal() override
     {
       Core::LinAlg::SerialDenseVector normal(3);
 
@@ -377,7 +378,7 @@ namespace CONTACT
            Since this is only possible for beam3contactnew elements but not for beam3contact
     elements we always return false within this class.
     */
-    bool GetShiftStatus() override { return false; };
+    bool get_shift_status() override { return false; };
 
     /*!
       \Check, if there is a difference between the result of the new and old gap definition, i.e. if
@@ -385,7 +386,7 @@ namespace CONTACT
       beam3contactnew elements but not for beam3contact elements we always return false within this
       class.
     */
-    bool GetNewGapStatus() override { return false; };
+    bool get_new_gap_status() override { return false; };
     //@}
 
     /*!
@@ -406,22 +407,22 @@ namespace CONTACT
 
       for (int i = 0; i < (int)cpvariables_.size(); i++)
       {
-        double ppfac = Core::FADUtils::CastToDouble(cpvariables_[i]->GetPPfac());
-        double e = -cpvariables_[i]->GetIntegratedEnergy();
+        double ppfac = Core::FADUtils::CastToDouble(cpvariables_[i]->get_p_pfac());
+        double e = -cpvariables_[i]->get_integrated_energy();
         energy += ppfac * e;
       }
 
       for (int i = 0; i < (int)gpvariables_.size(); i++)
       {
-        double ppfac = Core::FADUtils::CastToDouble(gpvariables_[i]->GetPPfac());
-        double e = -gpvariables_[i]->GetIntegratedEnergy();
+        double ppfac = Core::FADUtils::CastToDouble(gpvariables_[i]->get_p_pfac());
+        double e = -gpvariables_[i]->get_integrated_energy();
         energy += ppfac * e;
       }
 
       for (int i = 0; i < (int)epvariables_.size(); i++)
       {
-        double ppfac = Core::FADUtils::CastToDouble(epvariables_[i]->GetPPfac());
-        double e = -epvariables_[i]->GetIntegratedEnergy();
+        double ppfac = Core::FADUtils::CastToDouble(epvariables_[i]->get_p_pfac());
+        double e = -epvariables_[i]->get_integrated_energy();
         energy += ppfac * e;
       }
 
@@ -446,7 +447,7 @@ namespace CONTACT
 
       for (int i = 0; i < (int)cpvariables_.size(); i++)
       {
-        double e = -cpvariables_[i]->GetIntegratedEnergy();
+        double e = -cpvariables_[i]->get_integrated_energy();
         energy += e;
       }
 
@@ -470,7 +471,7 @@ namespace CONTACT
 
       for (int i = 0; i < (int)gpvariables_.size(); i++)
       {
-        double e = -gpvariables_[i]->GetIntegratedEnergy();
+        double e = -gpvariables_[i]->get_integrated_energy();
         energy += e;
       }
 
@@ -481,13 +482,13 @@ namespace CONTACT
     /*!
       \We don't need this method for beam3contact elements!
     */
-    Core::LinAlg::Matrix<3, 1, TYPE>* GetNormalOld() override { return nullptr; };
+    Core::LinAlg::Matrix<3, 1, TYPE>* get_normal_old() override { return nullptr; };
 
     // TODO
     /*!
       \We don't need this method for beam3contact elements!
     */
-    bool FirstTimeStep() override { return false; };
+    bool first_time_step() override { return false; };
     //@}
 
     //! @name Public evaluation methods
@@ -504,7 +505,7 @@ namespace CONTACT
     could cross in the next time step when the new gap function definition (ngf_=true) for slender
     beams is applied!
     */
-    void InvertNormal() override { FOUR_C_THROW("Function not implemented!"); };
+    void invert_normal() override { FOUR_C_THROW("Function not implemented!"); };
 
     // TODO
     /*!
@@ -515,7 +516,7 @@ namespace CONTACT
     /*
     \brief Update nodal coordinates of both elements at the beginning of a new time step!
     */
-    void UpdateElePos(Core::LinAlg::SerialDenseMatrix& newele1pos,
+    void update_ele_pos(Core::LinAlg::SerialDenseMatrix& newele1pos,
         Core::LinAlg::SerialDenseMatrix& newele2pos) override;
 
     /*
@@ -1026,7 +1027,7 @@ namespace CONTACT
 
       if (ele == nullptr) FOUR_C_THROW("Dynamic cast to Beam3Base failed");
 
-      return ele->GetJacobiFacAtXi(xi);
+      return ele->get_jacobi_fac_at_xi(xi);
     }
 
     /*!

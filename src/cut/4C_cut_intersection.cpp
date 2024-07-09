@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Geo::Cut::IntersectionBase> Core::Geo::Cut::IntersectionBase::Create(
+Teuchos::RCP<Core::Geo::Cut::IntersectionBase> Core::Geo::Cut::IntersectionBase::create(
     const Core::FE::CellType& edge_type, const Core::FE::CellType& side_type)
 {
   const IntersectionFactory factory;
@@ -37,8 +37,8 @@ template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType side
 void Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
     num_nodes_edge, num_nodes_side>::set_coordinates()
 {
-  get_edge().Coordinates(xyze_lineElement_);
-  get_side().Coordinates(xyze_surfaceElement_);
+  get_edge().coordinates(xyze_lineElement_);
+  get_side().coordinates(xyze_surfaceElement_);
 }
 
 /*--------------------------------------------------------------------------*
@@ -61,7 +61,7 @@ void Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
                                                                xreal,
     const std::vector<int>& touched_edges_ids, std::set<std::pair<Side*, Edge*>>& out)
 {
-  const std::vector<Edge*> side_edges = get_side().Edges();
+  const std::vector<Edge*> side_edges = get_side().edges();
   for (std::vector<int>::const_iterator i = touched_edges_ids.begin(); i != touched_edges_ids.end();
        ++i)
   {
@@ -69,7 +69,7 @@ void Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     Edge* e = side_edges[*i];
 
     // if this edge cuts other edge in this point, this edge cuts all sides of the edge there
-    const plain_side_set& touched_edge_sides = e->Sides();
+    const plain_side_set& touched_edge_sides = e->sides();
     for (plain_side_set::const_iterator j = touched_edge_sides.begin();
          j != touched_edge_sides.end(); ++j)
     {
@@ -78,7 +78,7 @@ void Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     }
 
     // also add connection of < touched edge x sides of the cut_edge >
-    const plain_side_set& cut_edge_sides = get_edge().Sides();
+    const plain_side_set& cut_edge_sides = get_edge().sides();
     for (plain_side_set::const_iterator j = cut_edge_sides.begin(); j != cut_edge_sides.end(); ++j)
     {
       Side* s = *j;
@@ -96,7 +96,7 @@ void Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 {
   // original intersection pair
   std::pair<Side*, Edge*> or_int_pair = std::make_pair(&get_side(), &get_edge());
-  const std::vector<Edge*>& side_edges = get_side().Edges();
+  const std::vector<Edge*>& side_edges = get_side().edges();
   std::set<Edge*> touched_edges;
 
   for (std::vector<int>::const_iterator i = touched_edges_ids.begin(); i != touched_edges_ids.end();
@@ -117,7 +117,7 @@ void Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     {
       FOUR_C_THROW("Not supported");
     }
-    p->AddEdge(e);
+    p->add_edge(e);
   }
 
   for (std::set<std::pair<Side*, Edge*>>::const_iterator it = touched_cut_pairs.begin();
@@ -137,7 +137,7 @@ void Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 #endif
     //  p->AddEdge((*it).second);
     p->add_side((*it).first);
-    p->AddPair((*it).first, (*it).second, or_int_pair);
+    p->add_pair((*it).first, (*it).second, or_int_pair);
   }
 }
 
@@ -149,8 +149,8 @@ template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType side
 bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
     num_nodes_edge, num_nodes_side>::check_bounding_box_overlap()
 {
-  Teuchos::RCP<BoundingBox> sbb = Teuchos::rcp(BoundingBox::Create(get_side()));
-  Teuchos::RCP<BoundingBox> ebb = Teuchos::rcp(BoundingBox::Create(get_edge()));
+  Teuchos::RCP<BoundingBox> sbb = Teuchos::rcp(BoundingBox::create(get_side()));
+  Teuchos::RCP<BoundingBox> ebb = Teuchos::rcp(BoundingBox::create(get_edge()));
 
   return check_bounding_box_overlap(*sbb, *ebb);
 }
@@ -163,7 +163,7 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     num_nodes_edge, num_nodes_side>::check_bounding_box_overlap(BoundingBox& ebb,
     BoundingBox& sbb) const
 {
-  return (not sbb.Within(1.0, ebb));
+  return (not sbb.within(1.0, ebb));
 }
 
 /*--------------------------------------------------------------------------*
@@ -303,12 +303,12 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   {
     const Core::LinAlg::Matrix<probdim, 1> e_cornerpoint(&xyze_lineElement_(0, i), true);
     Teuchos::RCP<Core::Geo::Cut::Position> pos =
-        Core::Geo::Cut::Position::Create(xyze_surfaceElement_, e_cornerpoint, sidetype);
+        Core::Geo::Cut::Position::create(xyze_surfaceElement_, e_cornerpoint, sidetype);
 
-    bool withinlimits = pos->Compute(true);
+    bool withinlimits = pos->compute(true);
 
-    pos->Distance(e_corner_distance(i));
-    const double pos_tolerance = pos->NewtonTolerance();
+    pos->distance(e_corner_distance(i));
+    const double pos_tolerance = pos->newton_tolerance();
 
     // keep the largest up-coming tolerance
     if (i == 0 or tolerance < pos_tolerance) tolerance = pos_tolerance;
@@ -357,7 +357,8 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
             Core::LinAlg::Matrix<dimedge, 1>(xsi_edge_.data(), false));
 
       // safety
-      if (not(LineWithinLimits() and SurfaceWithinLimits())) FOUR_C_THROW("Something went wrong!");
+      if (not(line_within_limits() and surface_within_limits()))
+        FOUR_C_THROW("Something went wrong!");
     }
 
     return true;
@@ -456,7 +457,7 @@ Core::Geo::Cut::ParallelIntersectionStatus
 Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
     num_nodes_side>::handle_parallel_intersection(PointSet& cuts, int skip_id, bool output)
 {
-  std::array<Node*, 2> id_to_node = {get_edge().BeginNode(), get_edge().EndNode()};
+  std::array<Node*, 2> id_to_node = {get_edge().begin_node(), get_edge().end_node()};
   int id_start = 0, id_end = 2;
   int count_inside = 0;  // number of points inside the surface
 
@@ -510,7 +511,7 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
         lineendpoint_conv(lp) =
             compute_distance(actpoint, lineendpoint_dist(lp), lineendpoint_tol(lp), zeroarea,
                 lineendpoint_location_kernel[lp], lineendpoint_touched_edges[lp], true);
-        lineendpoint_within_surfacelimits(lp) = SurfaceWithinLimits();
+        lineendpoint_within_surfacelimits(lp) = surface_within_limits();
         // copy xsi_ in the lp column of lineendpoint_xsi
         std::copy(xsi_.data(), xsi_.data() + (dimside + dimedge), &lineendpoint_xsi(0, lp));
         break;
@@ -543,13 +544,13 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
               extended_tri_tolerance_loc_triangle_split[tri]);
 
           // we prefer to get on_side data from the side the point is within
-          if (tri_location_kernel[tri].WithinSide())
+          if (tri_location_kernel[tri].within_side())
           {
             within_side[tri] = true;
-            on_side[tri] = tri_location_kernel[tri].OnSide();
+            on_side[tri] = tri_location_kernel[tri].on_side();
           }
 
-          if (tri_location_kernel[tri].OnSide()) on_side[tri] = true;
+          if (tri_location_kernel[tri].on_side()) on_side[tri] = true;
         }
 
         // if it inside quad4
@@ -573,7 +574,7 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
           lineendpoint_conv(lp) = tri_conv(tri);
           lineendpoint_dist(lp) = tri_dist(tri);
           lineendpoint_tol(lp) = tri_tol(tri);
-          lineendpoint_within_surfacelimits(lp) = tri_location_kernel[tri].WithinSide();
+          lineendpoint_within_surfacelimits(lp) = tri_location_kernel[tri].within_side();
 
           std::copy(xsi_.data(), xsi_.data() + (dimside + dimedge), &lineendpoint_xsi(0, lp));
         }
@@ -583,7 +584,7 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
           // first check if it is not close to the common edge of two triangles and we missed it
           // if the point is parellel to both tri, we needle to handle extreme case of point being
           // close to shared edge of both tri (diagonal of the quad)
-          if ((tri_location_kernel[0].OnSide()) and (tri_location_kernel[1].OnSide()))
+          if ((tri_location_kernel[0].on_side()) and (tri_location_kernel[1].on_side()))
           {
             if (extended_tri_tolerance_loc_triangle_split[0] and
                 extended_tri_tolerance_loc_triangle_split[1])
@@ -623,8 +624,8 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
   }
 
 
-  if (!(lineendpoint_location_kernel[0].OnSide()) and
-      !(lineendpoint_location_kernel[1].OnSide()) and
+  if (!(lineendpoint_location_kernel[0].on_side()) and
+      !(lineendpoint_location_kernel[1].on_side()) and
       lineendpoint_dist(0) * lineendpoint_dist(1) > 0 and not zeroarea)
   {
     if (debug)
@@ -644,11 +645,11 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
     // starting- and end-point of the edge are inside/on the side
     // ------------------------------------------------------------------------
 
-    if (lineendpoint_location_kernel[0].WithinSide() and lineendpoint_location_kernel[0].OnSide())
+    if (lineendpoint_location_kernel[0].within_side() and lineendpoint_location_kernel[0].on_side())
       lineendpoint_in_surface(0) = true;
 
 
-    if (lineendpoint_location_kernel[1].WithinSide() and lineendpoint_location_kernel[1].OnSide())
+    if (lineendpoint_location_kernel[1].within_side() and lineendpoint_location_kernel[1].on_side())
       lineendpoint_in_surface(1) = true;
 
     for (int lp = id_start; lp < id_end; ++lp)
@@ -656,7 +657,7 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
       if (lineendpoint_in_surface(lp))
       {
         Core::LinAlg::Matrix<probdim, 1> x;
-        id_to_node[lp]->point()->Coordinates(x.data());
+        id_to_node[lp]->point()->coordinates(x.data());
         insert_cut(id_to_node[lp], cuts);
 
 #if CUT_CREATION_INFO
@@ -698,17 +699,17 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
       // ------------------------------------------------------------------------
       /* Try to find intersection of the current edge with all edges of the side   */
       // ------------------------------------------------------------------------
-      Teuchos::RCP<BoundingBox> edge_bb = Teuchos::rcp(BoundingBox::Create(get_edge()));
-      const std::vector<Edge*>& side_edges = get_side().Edges();
+      Teuchos::RCP<BoundingBox> edge_bb = Teuchos::rcp(BoundingBox::create(get_edge()));
+      const std::vector<Edge*>& side_edges = get_side().edges();
       for (std::vector<Edge*>::const_iterator i = side_edges.begin(); i != side_edges.end(); ++i)
       {
         Edge* e = *i;
-        Teuchos::RCP<BoundingBox> side_edge_bb = Teuchos::rcp(BoundingBox::Create(*e));
+        Teuchos::RCP<BoundingBox> side_edge_bb = Teuchos::rcp(BoundingBox::create(*e));
         // skip this edge if it is too far or intersection has been done already
-        if (not side_edge_bb->Within(1.0, *edge_bb)) continue;
+        if (not side_edge_bb->within(1.0, *edge_bb)) continue;
 
         PointSet cut_points;
-        get_edge().GetCutPoints(e, cut_points);
+        get_edge().get_cut_points(e, cut_points);
         // cut point obtained e.g. from other neigboring edge (e.g. it is end point) or from the
         // other intersection
 
@@ -731,7 +732,7 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
             /* NOTE: Here it might be possible to better transfer original intersection from the
              * another pair */
             (*cut_points.begin())
-                ->AddEdgeIntersection(&get_edge(), e, &get_side(), &get_edge(), msg.str());
+                ->add_edge_intersection(&get_edge(), e, &get_side(), &get_edge(), msg.str());
             /* Nothing to be done. There are already cut points between these
              * edges. We cannot find new ones. */
             cuts.insert(*(cut_points.begin()));
@@ -745,7 +746,7 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
                 << " was already cut by connecting edge. In fact two common points were found!"
                 << std::endl;
 #endif
-            (*cp)->AddEdgeIntersection(&get_edge(), e, &get_side(), &get_edge(), msg.str());
+            (*cp)->add_edge_intersection(&get_edge(), e, &get_side(), &get_edge(), msg.str());
             cp++;
             cuts.insert(*cp);
 #if CUT_CREATION_INFO
@@ -753,7 +754,7 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
                 << " was already cut by connecting edge. In fact two common points were found!"
                 << std::endl;
 #endif
-            (*cp)->AddEdgeIntersection(&get_edge(), e, &get_side(), &get_edge(), msg.str());
+            (*cp)->add_edge_intersection(&get_edge(), e, &get_side(), &get_edge(), msg.str());
           }
           else
           {
@@ -761,10 +762,10 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
             {
               for (PointSet::iterator i = cut_points.begin(); i != cut_points.end(); ++i)
                 (*i)->print(std::cout);
-              get_edge().BeginNode()->point()->print(std::cout);
-              get_edge().EndNode()->point()->print(std::cout);
-              e->BeginNode()->point()->print(std::cout);
-              e->EndNode()->point()->print(std::cout);
+              get_edge().begin_node()->point()->print(std::cout);
+              get_edge().end_node()->point()->print(std::cout);
+              e->begin_node()->point()->print(std::cout);
+              e->end_node()->point()->print(std::cout);
             }
             FOUR_C_THROW("Two Edges have more than two cutpoint, sounds strange!");
           }
@@ -808,11 +809,11 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
         /* both points outside the plane on the same side --> no intersection
          * Note: distances of both end-points have the same sign. */
 
-        if ((lineendpoint_location_kernel[0].OnSide()) and
-            (lineendpoint_location_kernel[1].OnSide()))
+        if ((lineendpoint_location_kernel[0].on_side()) and
+            (lineendpoint_location_kernel[1].on_side()))
         {
-          if ((not(lineendpoint_location_kernel[0].WithinSide())) and
-              (not(lineendpoint_location_kernel[1].WithinSide())))
+          if ((not(lineendpoint_location_kernel[0].within_side())) and
+              (not(lineendpoint_location_kernel[1].within_side())))
           {
             return intersection_not_possible;
           }
@@ -845,8 +846,8 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
         }
         // if one point lies on the extended side, but there was no edge-edge intersection, there is
         // no other possible intersection
-        else if ((lineendpoint_location_kernel[0].OnSide()) or
-                 (lineendpoint_location_kernel[1].OnSide()))
+        else if ((lineendpoint_location_kernel[0].on_side()) or
+                 (lineendpoint_location_kernel[1].on_side()))
         {
           return intersection_not_possible;
         }
@@ -886,7 +887,7 @@ void Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     ci(xyze_surfaceElement_, xyze_lineElement_);
     std::string filename(Output::GenerateGmshOutputFilename(".intersection_CUTFAIL_end.pos"));
     std::ofstream file(filename.c_str());
-    ci.WritetoGmsh(file);
+    ci.write_to_gmsh(file);
     file.close();
   }
   catch (Core::Exception& e)
@@ -900,7 +901,7 @@ void Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
 bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge, num_nodes_side>::HandleSpecialCases()
+    num_nodes_edge, num_nodes_side>::handle_special_cases()
 {
   Core::LinAlg::Matrix<dimside + dimedge, 1> i_xsi;
   i_xsi = xsi_;
@@ -916,12 +917,12 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
       tri_conv(tri) = compute_edge_tri3_intersection(tri, location_status[tri]);
       /* we expect the QUAD4 to converge in case that the projected point is
        * inside the QUAD4 or TRI3! */
-      if (location_status[tri].WithinSide())
+      if (location_status[tri].within_side())
       {
         generate_gmsh_dump();
         if (is_quad4_distorted().first) std::cout << "NOTICE: Element is distorted" << std::endl;
 
-        const std::vector<Node*>& side_nodes = get_side().Nodes();
+        const std::vector<Node*>& side_nodes = get_side().nodes();
         for (std::vector<Node*>::const_iterator it = side_nodes.begin(); it != side_nodes.end();
              ++it)
         {
@@ -984,9 +985,9 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
         if (conv == intersect_single_cut_point)
         {
           conv = intersect_single_cut_point;
-          FinalPoint();
+          final_point();
 
-          Point* p = Point::NewPoint(
+          Point* p = Point::new_point(
               get_mesh(), x_.data(), xsi_(dimside, 0), get_edge_ptr(), get_side_ptr(), itol);
 
           cuts.insert(p);
@@ -1031,7 +1032,7 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
           if (tri_status[tri] == intersect_single_cut_point)
           {
             istatus_ = intersect_single_cut_point;
-            final_points.push_back(Core::LinAlg::Matrix<3, 1>(FinalPoint()));
+            final_points.push_back(Core::LinAlg::Matrix<3, 1>(final_point()));
             edge_coords.push_back(Core::LinAlg::Matrix<dimedge, 1>(xsi_edge_.data()));
             // we found cut point
             cut_point_count++;
@@ -1046,7 +1047,7 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
               {
                 // possible reference implementation
                 istatus_ = intersect_single_cut_point;
-                final_points.push_back(Core::LinAlg::Matrix<3, 1>(FinalPoint()));
+                final_points.push_back(Core::LinAlg::Matrix<3, 1>(final_point()));
                 edge_coords.push_back(Core::LinAlg::Matrix<dimedge, 1>(xsi_edge_.data()));
                 // we found cut point
                 cut_point_count++;
@@ -1071,7 +1072,7 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
         case 1:
         {
           // intersection
-          Point* p = Point::NewPoint(get_mesh(), final_points[0].data(), edge_coords[0](0, 0),
+          Point* p = Point::new_point(get_mesh(), final_points[0].data(), edge_coords[0](0, 0),
               get_edge_ptr(), get_side_ptr(), itol);
           cuts.insert(p);
           // update status, in case of the other triangle returning different one
@@ -1108,7 +1109,7 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
           }
           else
           {
-            Point* p = Point::NewPoint(get_mesh(), final_points[0].data(), edge_coords[0](0, 0),
+            Point* p = Point::new_point(get_mesh(), final_points[0].data(), edge_coords[0](0, 0),
                 get_edge_ptr(), get_side_ptr(), itol);
             cuts.insert(p);
             return true;
@@ -1136,7 +1137,7 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
 bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge, num_nodes_side>::Intersect(PointSet& cuts)
+    num_nodes_edge, num_nodes_side>::intersect(PointSet& cuts)
 {
   check_init();
   // ------------------------------------------------------------------------
@@ -1267,7 +1268,7 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   Core::LinAlg::Matrix<3, 1> actpoint;
   for (unsigned nid = 0; nid < num_nodes_side; nid++)
   {
-    (get_side().Nodes()[nid])->Coordinates(actpoint.data());
+    (get_side().nodes()[nid])->coordinates(actpoint.data());
     surfpoints.push_back(actpoint);
   }
   // find shortest edge on the surface!
@@ -1296,7 +1297,7 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 
   for (unsigned nid = 0; nid < num_nodes_edge; nid++)
   {
-    (get_edge().Nodes()[nid])->Coordinates(actpoint.data());
+    (get_edge().nodes()[nid])->coordinates(actpoint.data());
     linepoints.push_back(actpoint);
   }
   Core::LinAlg::Matrix<3, 1> v3(true);
@@ -1342,11 +1343,11 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
       p2.update(1.0, surfpoints[smallestedge], alphap, v1);
       p3.update(1.0, surfpoints[smallestedge], alpha, v2);
       p4.update(1.0, surfpoints[smallestedge], alphap, v2);
-      Teuchos::RCP<BoundingBox> sbb = Teuchos::rcp(BoundingBox::Create());
-      sbb->AddPoint(p1);
-      sbb->AddPoint(p2);
-      sbb->AddPoint(p3);
-      sbb->AddPoint(p4);
+      Teuchos::RCP<BoundingBox> sbb = Teuchos::rcp(BoundingBox::create());
+      sbb->add_point(p1);
+      sbb->add_point(p2);
+      sbb->add_point(p3);
+      sbb->add_point(p4);
       for (int linestep = 0; linestep < max_steps; linestep += act_steps)
       {
         if (!(overlappingidx[act_boxidx][2] <= linestep and
@@ -1356,11 +1357,11 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
         double lalphap = (linestep + act_steps) * dmax_steps;
         lp1.update(1.0, linepoints[0], lalpha, v3);
         lp2.update(1.0, linepoints[0], lalphap, v3);
-        Teuchos::RCP<BoundingBox> ebb = Teuchos::rcp(BoundingBox::Create());
-        ebb->AddPoint(lp1);
-        ebb->AddPoint(lp2);
+        Teuchos::RCP<BoundingBox> ebb = Teuchos::rcp(BoundingBox::create());
+        ebb->add_point(lp1);
+        ebb->add_point(lp2);
 
-        if (sbb->Within(POSITIONTOL / BOXOVERLAP, *ebb))
+        if (sbb->within(POSITIONTOL / BOXOVERLAP, *ebb))
         {
           overlap = true;
           if (!tmpoverlappingidx.size())
@@ -1395,7 +1396,7 @@ Teuchos::RCP<Core::Geo::Cut::IntersectionBase>
 Core::Geo::Cut::IntersectionFactory::create_intersection(
     Core::FE::CellType edge_type, Core::FE::CellType side_type) const
 {
-  const int probdim = Global::Problem::Instance()->NDim();
+  const int probdim = Global::Problem::instance()->n_dim();
   switch (edge_type)
   {
     case Core::FE::CellType::line2:
@@ -1438,14 +1439,14 @@ std::pair<bool, bool> Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, 
       {
         Kernel::ComputeDistance<3, Core::FE::CellType::tri3, false> cd(xsi);
         conv = cd(xyze_triElement, point, distance[tri_id], signeddistance);
-        if (conv) loc[tri_id] = cd.GetSideLocation();
+        if (conv) loc[tri_id] = cd.get_side_location();
         break;
       }
       case Core::Geo::Cut::floattype_cln:
       {
         Kernel::ComputeDistance<3, Core::FE::CellType::tri3, true> cd(xsi);
         conv = cd(xyze_triElement, point, distance[tri_id], signeddistance);
-        if (conv) loc[tri_id] = cd.GetSideLocation();
+        if (conv) loc[tri_id] = cd.get_side_location();
         break;
       }
       default:
@@ -1467,7 +1468,7 @@ std::pair<bool, bool> Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, 
     if (std::abs(distance[tri_id]) >= 1e-30)
     {
       // it is outside of the plane of the side
-      loc_strict[tri_id] = Kernel::PointOnSurfaceLoc(loc[tri_id].WithinSide(), false);
+      loc_strict[tri_id] = Kernel::PointOnSurfaceLoc(loc[tri_id].within_side(), false);
     }
   }
 
@@ -1476,7 +1477,7 @@ std::pair<bool, bool> Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, 
 
   for (int tri_id = 0; tri_id < 2; ++tri_id)
   {
-    if (not(loc[tri_id].OnSide()))
+    if (not(loc[tri_id].on_side()))
     {
       result = true;
 #if EXTENDED_CUT_DEBUG_OUTPUT
@@ -1484,14 +1485,14 @@ std::pair<bool, bool> Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, 
       int other_point_index = (tri_id == 0) ? 3 : 1;
       Point* out_of_plane = GetSidePtr()->Nodes()[other_point_index]->point();
       Core::LinAlg::Matrix<3, 1> coord;
-      out_of_plane->Coordinates(coord.data());
+      out_of_plane->coordinates(coord.data());
 
       for (std::vector<Node*>::const_iterator it = GetSidePtr()->Nodes().begin();
            it != GetSidePtr()->Nodes().end(); ++it)
       {
         Point* p = (*it)->point();
         Core::LinAlg::Matrix<3, 1> distc;
-        p->Coordinates(distc.data());
+        p->coordinates(distc.data());
         distc.update(-1, coord, 1);
       }
 
@@ -1501,7 +1502,7 @@ std::pair<bool, bool> Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, 
                 << distance[tri_id] << std::endl;
 #endif
     }
-    if (not(loc_strict[tri_id].OnSide())) result_strict = true;
+    if (not(loc_strict[tri_id].on_side())) result_strict = true;
   }
   return std::make_pair(result, result_strict);
 }

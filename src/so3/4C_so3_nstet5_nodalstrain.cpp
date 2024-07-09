@@ -35,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
 void Discret::ELEMENTS::NStet5Type::element_deformation_gradient(Core::FE::Discretization& dis)
 {
   // current displacement
-  Teuchos::RCP<const Epetra_Vector> disp = dis.GetState("displacement");
+  Teuchos::RCP<const Epetra_Vector> disp = dis.get_state("displacement");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
   // loop elements
   std::map<int, Discret::ELEMENTS::NStet5*>::iterator ele;
@@ -45,7 +45,7 @@ void Discret::ELEMENTS::NStet5Type::element_deformation_gradient(Core::FE::Discr
     std::vector<int> lm;
     std::vector<int> lmowner;
     std::vector<int> lmstride;
-    e->LocationVector(dis, lm, lmowner, lmstride);
+    e->location_vector(dis, lm, lmowner, lmstride);
     std::vector<double> mydisp(lm.size());
     Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -63,7 +63,7 @@ void Discret::ELEMENTS::NStet5Type::element_deformation_gradient(Core::FE::Discr
       e->sub_f(k) = e->build_f(disp, e->sub_nxyz(k));
       double J = e->sub_f(k).determinant();
       if (J <= 0.0)
-        FOUR_C_THROW("det(F) of Element %d / Subelement %d %10.5e <= 0 !!\n", e->Id(), k, J);
+        FOUR_C_THROW("det(F) of Element %d / Subelement %d %10.5e <= 0 !!\n", e->id(), k, J);
     }  // for (int k=0; k<4; ++k)
 
   }  // ele
@@ -93,8 +93,8 @@ void Discret::ELEMENTS::NStet5Type::pre_evaluate(Core::FE::Discretization& dis,
   // These get filled in here, so remove old stuff
   if (action == "calc_struct_stress")
   {
-    nstress_ = Teuchos::rcp(new Epetra_MultiVector(*dis.NodeRowMap(), 6, false));
-    nstrain_ = Teuchos::rcp(new Epetra_MultiVector(*dis.NodeRowMap(), 6, false));
+    nstress_ = Teuchos::rcp(new Epetra_MultiVector(*dis.node_row_map(), 6, false));
+    nstrain_ = Teuchos::rcp(new Epetra_MultiVector(*dis.node_row_map(), 6, false));
   }
   else
   {
@@ -130,35 +130,35 @@ void Discret::ELEMENTS::NStet5Type::pre_evaluate(Core::FE::Discretization& dis,
     rmap = &(systemmatrix1->OperatorRangeMap());
     dmap = rmap;
     systemmatrix = Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(systemmatrix1);
-    if (systemmatrix != Teuchos::null && systemmatrix->Filled())
+    if (systemmatrix != Teuchos::null && systemmatrix->filled())
       stifftmp =
-          Teuchos::rcp(new Epetra_FECrsMatrix(::Copy, systemmatrix->EpetraMatrix()->Graph()));
+          Teuchos::rcp(new Epetra_FECrsMatrix(::Copy, systemmatrix->epetra_matrix()->Graph()));
     else
       stifftmp = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy, *rmap, 256, false));
   }
 
   //-----------------------------------------------------------------
   // make some tests for fast assembly
-  if (systemmatrix != Teuchos::null && systemmatrix->Filled())
+  if (systemmatrix != Teuchos::null && systemmatrix->filled())
   {
-    Epetra_CrsMatrix& matrix = *(systemmatrix->EpetraMatrix());
+    Epetra_CrsMatrix& matrix = *(systemmatrix->epetra_matrix());
     if (!matrix.StorageOptimized()) FOUR_C_THROW("Matrix must be StorageOptimized() when Filled()");
   }
 
   //-----------------------------------------------------------------
   // create temporary vector in column map to assemble to
-  Epetra_Vector forcetmp1(*dis.DofColMap(), true);
+  Epetra_Vector forcetmp1(*dis.dof_col_map(), true);
 
   //-----------------------------------------------------------------
   // current displacements
-  Teuchos::RCP<const Epetra_Vector> disp = dis.GetState("displacement");
+  Teuchos::RCP<const Epetra_Vector> disp = dis.get_state("displacement");
 
   //================================================== do nodal stiffness
   std::map<int, Core::Nodes::Node*>::iterator node;
   for (node = noderids_.begin(); node != noderids_.end(); ++node)
   {
     Core::Nodes::Node* nodeL = node->second;  // row node
-    const int nodeLid = nodeL->Id();
+    const int nodeLid = nodeL->id();
 
     // standard quantities for all nodes
     std::vector<Discret::ELEMENTS::NStet5*>& adjele = adjele_[nodeLid];
@@ -191,7 +191,7 @@ void Discret::ELEMENTS::NStet5Type::pre_evaluate(Core::FE::Discretization& dis,
       nodal_integration(nullptr, nullptr, adjnode, adjele, adjsubele, lm, lmlm, *disp, dis,
           &nodalstress, &nodalstrain, iostress, iostrain);
 
-      const int lid = dis.NodeRowMap()->LID(nodeLid);
+      const int lid = dis.node_row_map()->LID(nodeLid);
       if (lid == -1) FOUR_C_THROW("Cannot find local id for row node");
       for (int i = 0; i < 6; ++i)
       {
@@ -221,7 +221,7 @@ void Discret::ELEMENTS::NStet5Type::pre_evaluate(Core::FE::Discretization& dis,
       for (int i = 0; i < ndofperpatch; ++i) lrlm[i] = dofrowmap.LID(lm[i]);
       if (fastassemble)
       {
-        const Epetra_Map& dofcolmap = systemmatrix->ColMap();
+        const Epetra_Map& dofcolmap = systemmatrix->col_map();
         lclm.resize(ndofperpatch);
         for (int i = 0; i < ndofperpatch; ++i) lclm[i] = dofcolmap.LID(lm[i]);
       }
@@ -247,9 +247,9 @@ void Discret::ELEMENTS::NStet5Type::pre_evaluate(Core::FE::Discretization& dis,
         }
         else  // local row
         {
-          if (systemmatrix != Teuchos::null && systemmatrix->Filled())  // matrix is SparseMatrix
+          if (systemmatrix != Teuchos::null && systemmatrix->filled())  // matrix is SparseMatrix
           {
-            Epetra_CrsMatrix& matrix = *(systemmatrix->EpetraMatrix());
+            Epetra_CrsMatrix& matrix = *(systemmatrix->epetra_matrix());
             int length;
             double* values;
             int* indices;
@@ -293,7 +293,7 @@ void Discret::ELEMENTS::NStet5Type::pre_evaluate(Core::FE::Discretization& dis,
           else  // matrix not SparseMatrix (e.g. BlockMatrix) -> fall back to standard assembly
           {
             for (int j = 0; j < ndofperpatch; ++j)
-              systemmatrix1->Assemble(stiff(i, j), lm[i], lm[j]);
+              systemmatrix1->assemble(stiff(i, j), lm[i], lm[j]);
           }
         }
       }
@@ -320,10 +320,10 @@ void Discret::ELEMENTS::NStet5Type::pre_evaluate(Core::FE::Discretization& dis,
     // we have to export the nodal stresses and strains to column map
     // so they can be written by the elements
     Teuchos::RCP<Epetra_MultiVector> tmp =
-        Teuchos::rcp(new Epetra_MultiVector(*dis.NodeColMap(), 6, false));
+        Teuchos::rcp(new Epetra_MultiVector(*dis.node_col_map(), 6, false));
     Core::LinAlg::Export(*nstress_, *tmp);
     nstress_ = tmp;
-    tmp = Teuchos::rcp(new Epetra_MultiVector(*dis.NodeColMap(), 6, false));
+    tmp = Teuchos::rcp(new Epetra_MultiVector(*dis.node_col_map(), 6, false));
     Core::LinAlg::Export(*nstrain_, *tmp);
     nstrain_ = tmp;
   }
@@ -356,16 +356,16 @@ void Discret::ELEMENTS::NStet5Type::pre_evaluate(Core::FE::Discretization& dis,
         int* gindices;
         int err = stifftmp->ExtractGlobalRowView(grow, numentries, values, gindices);
         if (err) FOUR_C_THROW("Epetra_FECrsMatrix::ExtractGlobalRowView returned err=%d", err);
-        for (int j = 0; j < numentries; ++j) systemmatrix1->Assemble(values[j], grow, gindices[j]);
+        for (int j = 0; j < numentries; ++j) systemmatrix1->assemble(values[j], grow, gindices[j]);
       }
       else
       {
         int* lindices;
         int err = stifftmp->ExtractMyRowView(lrow, numentries, values, lindices);
         if (err) FOUR_C_THROW("Epetra_FECrsMatrix::ExtractMyRowView returned err=%d", err);
-        if (systemmatrix != Teuchos::null && systemmatrix->Filled())
+        if (systemmatrix != Teuchos::null && systemmatrix->filled())
         {
-          Epetra_CrsMatrix& matrix = *systemmatrix->EpetraMatrix();
+          Epetra_CrsMatrix& matrix = *systemmatrix->epetra_matrix();
           for (int j = 0; j < numentries; ++j)
           {
             int err = matrix.SumIntoMyValues(lrow, 1, &values[j], &lindices[j]);
@@ -376,7 +376,7 @@ void Discret::ELEMENTS::NStet5Type::pre_evaluate(Core::FE::Discretization& dis,
         {
           const int grow = stifftmp->RowMap().GID(lrow);
           for (int j = 0; j < numentries; ++j)
-            systemmatrix1->Assemble(values[j], grow, cmap.GID(lindices[j]));
+            systemmatrix1->assemble(values[j], grow, cmap.GID(lindices[j]));
         }
       }
     }
@@ -439,7 +439,7 @@ void Discret::ELEMENTS::NStet5Type::nodal_integration(Core::LinAlg::SerialDenseM
   for (int i = 0; i < neleinpatch; ++i)
   {
     Discret::ELEMENTS::NStet5* ele = adjele[i];
-    std::vector<int>& subele = adjsubele[ele->Id()];
+    std::vector<int>& subele = adjsubele[ele->id()];
 
     for (int subeleid : subele)
     {
@@ -489,7 +489,7 @@ void Discret::ELEMENTS::NStet5Type::nodal_integration(Core::LinAlg::SerialDenseM
   {
     // current element
     Discret::ELEMENTS::NStet5* actele = adjele[ele];
-    std::vector<int>& subele = adjsubele[actele->Id()];
+    std::vector<int>& subele = adjsubele[actele->id()];
     // loop subelements in this element
     for (unsigned j = 0; j < subele.size(); ++j)
     {
@@ -588,7 +588,7 @@ void Discret::ELEMENTS::NStet5Type::nodal_integration(Core::LinAlg::SerialDenseM
   if (matequal)  // element patch has single material
   {
     double density;  // just a dummy density
-    Teuchos::RCP<Core::Mat::Material> mat = adjele[0]->Material();
+    Teuchos::RCP<Core::Mat::Material> mat = adjele[0]->material();
     // EleGID is set to -1 errorcheck is performed in
     // Mat::Evaluate. I.e if we have elementwise mat params you will catch an error
     select_material(mat, stress, cmat, density, glstrain, Fnode, 0, -1);
@@ -606,10 +606,10 @@ void Discret::ELEMENTS::NStet5Type::nodal_integration(Core::LinAlg::SerialDenseM
       Discret::ELEMENTS::NStet5* actele = adjele[ele];
       // volume of that element assigned to node L
       double V = 0.0;
-      for (unsigned j = 0; j < adjsubele[actele->Id()].size(); ++j)
-        V += (actele->sub_v(adjsubele[actele->Id()][j]) / 3.0);
+      for (unsigned j = 0; j < adjsubele[actele->id()].size(); ++j)
+        V += (actele->sub_v(adjsubele[actele->id()][j]) / 3.0);
       // material of the element
-      Teuchos::RCP<Core::Mat::Material> mat = actele->Material();
+      Teuchos::RCP<Core::Mat::Material> mat = actele->material();
       // EleGID is set to -1 errorcheck is performed in
       // Mat::Evaluate. I.e if we have elementwise mat params you will catch an error
       select_material(mat, stressele, cmatele, density, glstrain, Fnode, 0, -1);
@@ -656,14 +656,14 @@ void Discret::ELEMENTS::NStet5Type::nodal_integration(Core::LinAlg::SerialDenseM
   //----------------------------------------------------- internal forces
   if (force)
   {
-    Core::LinAlg::SerialDenseVector stress_epetra(Teuchos::View, stress.data(), stress.numRows());
+    Core::LinAlg::SerialDenseVector stress_epetra(Teuchos::View, stress.data(), stress.num_rows());
     Core::LinAlg::multiply_tn(0.0, *force, Vnode, bopbar, stress_epetra);
   }
   //--------------------------------------------------- elastic stiffness
   if (stiff)
   {
     Core::LinAlg::SerialDenseMatrix cmat_epetra(
-        Teuchos::View, cmat.data(), cmat.numRows(), cmat.numRows(), cmat.numCols());
+        Teuchos::View, cmat.data(), cmat.num_rows(), cmat.num_rows(), cmat.num_cols());
     Core::LinAlg::SerialDenseMatrix cb(6, ndofinpatch);
     Core::LinAlg::multiply(cb, cmat_epetra, bopbar);
     Core::LinAlg::multiply_tn(0.0, *stiff, Vnode, bopbar, cb);
@@ -711,7 +711,7 @@ void Discret::ELEMENTS::NStet5Type::select_material(const Teuchos::RCP<Core::Mat
     Core::LinAlg::Matrix<6, 1>& glstrain, Core::LinAlg::Matrix<3, 3>& defgrd, const int gp,
     const int eleGID)
 {
-  switch (mat->MaterialType())
+  switch (mat->material_type())
   {
     case Core::Materials::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
@@ -719,7 +719,7 @@ void Discret::ELEMENTS::NStet5Type::select_material(const Teuchos::RCP<Core::Mat
       Teuchos::ParameterList params;
       Core::LinAlg::Matrix<3, 3> defgrd(true);
       stvk->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
-      density = stvk->Density();
+      density = stvk->density();
     }
     break;
     case Core::Materials::m_aaaneohooke: /*-- special case of generalised NeoHookean material see
@@ -728,7 +728,7 @@ void Discret::ELEMENTS::NStet5Type::select_material(const Teuchos::RCP<Core::Mat
       auto* aaa = dynamic_cast<Mat::AAAneohooke*>(mat.get());
       Teuchos::ParameterList params;
       aaa->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
-      density = aaa->Density();
+      density = aaa->density();
     }
     break;
     case Core::Materials::m_elasthyper: /*----------- general hyperelastic matrial */
@@ -736,12 +736,12 @@ void Discret::ELEMENTS::NStet5Type::select_material(const Teuchos::RCP<Core::Mat
       auto* hyper = dynamic_cast<Mat::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
       hyper->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
-      density = hyper->Density();
+      density = hyper->density();
       return;
       break;
     }
     default:
-      FOUR_C_THROW("Illegal type %d of material for element NStet5 tet4", mat->MaterialType());
+      FOUR_C_THROW("Illegal type %d of material for element NStet5 tet4", mat->material_type());
       break;
   }
 

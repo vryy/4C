@@ -21,64 +21,64 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::ElemagBoundaryImplInterface*
-Discret::ELEMENTS::ElemagBoundaryImplInterface::Impl(const Core::Elements::Element* ele)
+Discret::ELEMENTS::ElemagBoundaryImplInterface::impl(const Core::Elements::Element* ele)
 {
-  switch (ele->Shape())
+  switch (ele->shape())
   {
     case Core::FE::CellType::quad4:
     {
-      return ElemagBoundaryImpl<Core::FE::CellType::quad4>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::quad4>::instance();
     }
     case Core::FE::CellType::quad8:
     {
-      return ElemagBoundaryImpl<Core::FE::CellType::quad8>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::quad8>::instance();
     }
     case Core::FE::CellType::quad9:
     {
-      return ElemagBoundaryImpl<Core::FE::CellType::quad9>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::quad9>::instance();
     }
     case Core::FE::CellType::tri3:
     {
-      return ElemagBoundaryImpl<Core::FE::CellType::tri3>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::tri3>::instance();
     }
     case Core::FE::CellType::tri6:
     {
-      return ElemagBoundaryImpl<Core::FE::CellType::tri6>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::tri6>::instance();
     }
     case Core::FE::CellType::line2:
     {
-      return ElemagBoundaryImpl<Core::FE::CellType::line2>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::line2>::instance();
     }
     case Core::FE::CellType::line3:
     {
-      return ElemagBoundaryImpl<Core::FE::CellType::line3>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::line3>::instance();
     }
     case Core::FE::CellType::nurbs2:  // 1D nurbs boundary element
     {
-      return ElemagBoundaryImpl<Core::FE::CellType::nurbs2>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::nurbs2>::instance();
     }
     case Core::FE::CellType::nurbs3:  // 1D nurbs boundary element
     {
-      return ElemagBoundaryImpl<Core::FE::CellType::nurbs3>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::nurbs3>::instance();
     }
     case Core::FE::CellType::nurbs4:  // 2D nurbs boundary element
     {
-      return ElemagBoundaryImpl<Core::FE::CellType::nurbs4>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::nurbs4>::instance();
     }
     case Core::FE::CellType::nurbs9:  // 2D nurbs boundary element
     {
-      return ElemagBoundaryImpl<Core::FE::CellType::nurbs9>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::nurbs9>::instance();
     }
     default:
       FOUR_C_THROW(
-          "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->num_node());
+          "Element shape %d (%d nodes) not activated. Just do it.", ele->shape(), ele->num_node());
       break;
   }
 }
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ElemagBoundaryImpl<distype>*
-Discret::ELEMENTS::ElemagBoundaryImpl<distype>::Instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::ElemagBoundaryImpl<distype>::instance(Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
@@ -87,7 +87,7 @@ Discret::ELEMENTS::ElemagBoundaryImpl<distype>::Instance(Core::UTILS::SingletonA
             new Discret::ELEMENTS::ElemagBoundaryImpl<distype>());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 
@@ -142,14 +142,14 @@ int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate(Discret::ELEMENTS::
   {
     case EleMag::calc_abc:
     {
-      const int* nodeids = ele->NodeIds();
+      const int* nodeids = ele->node_ids();
 
       Core::Elements::Element* parent = ele->parent_element();
-      Teuchos::RCP<Core::Elements::FaceElement>* faces = parent->Faces();
+      Teuchos::RCP<Core::Elements::FaceElement>* faces = parent->faces();
       bool same = false;
-      for (int i = 0; i < parent->NumFace(); ++i)
+      for (int i = 0; i < parent->num_face(); ++i)
       {
-        const int* nodeidsfaces = faces[i]->NodeIds();
+        const int* nodeidsfaces = faces[i]->node_ids();
 
         if (faces[i]->num_node() != ele->num_node()) break;
 
@@ -183,9 +183,9 @@ int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate(Discret::ELEMENTS::
           FOUR_C_THROW(
               "absorbing line in 3d not implemented for higher order geometry approximation");
         // find the first face which contains the line!
-        for (int i = 0; i < parent->NumFace(); ++i)
+        for (int i = 0; i < parent->num_face(); ++i)
         {
-          const int* nodeidsfaces = faces[i]->NodeIds();
+          const int* nodeidsfaces = faces[i]->node_ids();
 
           int count = 0;
           for (int j = 0; j < faces[i]->num_node(); ++j)
@@ -201,7 +201,7 @@ int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate(Discret::ELEMENTS::
             face = i;
             params.set<int>("face", i);
 
-            const int* nodeidsface = faces[face]->NodeIds();
+            const int* nodeidsface = faces[face]->node_ids();
             Teuchos::RCP<std::vector<int>> indices = Teuchos::rcp(new std::vector<int>(elenode));
             for (int j = 0; j < faces[face]->num_node(); ++j)
             {
@@ -226,14 +226,14 @@ int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate(Discret::ELEMENTS::
     }
     case EleMag::bd_integrate:
     {
-      const int* nodeids = ele->NodeIds();
+      const int* nodeids = ele->node_ids();
 
       Core::Elements::Element* parent = ele->parent_element();
-      Teuchos::RCP<Core::Elements::FaceElement>* faces = parent->Faces();
+      Teuchos::RCP<Core::Elements::FaceElement>* faces = parent->faces();
       bool same = false;
-      for (int i = 0; i < parent->NumFace(); ++i)
+      for (int i = 0; i < parent->num_face(); ++i)
       {
-        const int* nodeidsfaces = faces[i]->NodeIds();
+        const int* nodeidsfaces = faces[i]->node_ids();
 
         if (faces[i]->num_node() != ele->num_node()) break;
         /*

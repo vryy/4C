@@ -51,7 +51,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
   set_params_interface_ptr(params);
   Core::Elements::ActionType act = Core::Elements::none;
 
-  if (IsParamsInterface())
+  if (is_params_interface())
   {
     act = params_interface().get_action_type();
   }
@@ -91,13 +91,13 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       FOUR_C_THROW("Unknown type of action %s for Wall1", action.c_str());
   }
   // get the material law
-  Teuchos::RCP<const Core::Mat::Material> actmat = Material();
+  Teuchos::RCP<const Core::Mat::Material> actmat = material();
 
   // --------------------------------------------------
   // Now do the nurbs specific stuff
   std::vector<Core::LinAlg::SerialDenseVector> myknots(2);
 
-  if (Shape() == Core::FE::CellType::nurbs4 or Shape() == Core::FE::CellType::nurbs9)
+  if (shape() == Core::FE::CellType::nurbs4 or shape() == Core::FE::CellType::nurbs9)
   {
     switch (act)
     {
@@ -112,7 +112,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
         Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
             dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
-        bool zero_sized = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id());
+        bool zero_sized = (*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, id());
 
         // skip zero sized elements in knot span --- they correspond to interpolated nodes
         if (zero_sized) return (0);
@@ -157,8 +157,8 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_nlnstifflmass:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -169,7 +169,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
-            discretization.GetState("material_displacement");
+            discretization.get_state("material_displacement");
         Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
@@ -194,8 +194,8 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_nlnstiff:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -206,7 +206,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
-            discretization.GetState("material_displacement");
+            discretization.get_state("material_displacement");
         Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
@@ -228,8 +228,8 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_internalforce:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -244,7 +244,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
-            discretization.GetState("material_displacement");
+            discretization.get_state("material_displacement");
         Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
@@ -266,8 +266,8 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_recover:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW(
             "Cannot get state vectors \"displacement\" "
@@ -294,7 +294,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
             (*alphao).values(),
             1);  // alphao := alpha
       }
-      SolidMaterial()->update();
+      solid_material()->update();
       break;
     }
     //==================================================================================
@@ -315,13 +315,13 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case Core::Elements::struct_calc_stress:
     {
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
       Teuchos::RCP<std::vector<char>> straindata = Teuchos::null;
       Inpar::Solid::StressType iostress = Inpar::Solid::stress_none;
       Inpar::Solid::StrainType iostrain = Inpar::Solid::strain_none;
-      if (IsParamsInterface())
+      if (is_params_interface())
       {
         stressdata = str_params_interface().stress_data_ptr();
         straindata = str_params_interface().strain_data_ptr();
@@ -349,7 +349,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
-            discretization.GetState("material_displacement");
+            discretization.get_state("material_displacement");
         Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
       }
       const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
@@ -386,7 +386,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_energy:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -408,7 +408,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       double mass_ref = 0.0;
       double mass_mat = 0.0;
       double mass_cur = 0.0;
-      double density = actmat->Density();
+      double density = actmat->density();
 
       // some definitions
       const int numnode = num_node();
@@ -430,7 +430,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
 
       // get displacements and extract values of this element
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -439,7 +439,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
-            discretization.GetState("material_displacement");
+            discretization.get_state("material_displacement");
         Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
@@ -456,8 +456,8 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
 
       for (int k = 0; k < numnode; ++k)
       {
-        xrefe(0, k) = Nodes()[k]->X()[0];
-        xrefe(1, k) = Nodes()[k]->X()[1];
+        xrefe(0, k) = nodes()[k]->x()[0];
+        xrefe(1, k) = nodes()[k]->x()[1];
         xcure(0, k) = xrefe(0, k) + mydisp[k * numdf + 0];
         xcure(1, k) = xrefe(1, k) + mydisp[k * numdf + 1];
 
@@ -470,15 +470,15 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       }
 
       /*------------------------- get node weights for nurbs elements */
-      const Core::FE::CellType distype = Shape();
+      const Core::FE::CellType distype = shape();
       Core::LinAlg::SerialDenseVector weights(numnode);
       if (distype == Core::FE::CellType::nurbs4 || distype == Core::FE::CellType::nurbs9)
       {
         for (int inode = 0; inode < numnode; ++inode)
         {
           Core::FE::Nurbs::ControlPoint* cp =
-              dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
-          weights(inode) = cp->W();
+              dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
+          weights(inode) = cp->w();
         }
       }
 
@@ -579,7 +579,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::analyse_jacobian_determinant:
     {
       // get displacements and extract values of this element
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -590,8 +590,8 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
 
       for (int k = 0; k < 4; ++k)
       {
-        xcurr(0, k) = Nodes()[k]->X()[0] + mydisp[k * 2 + 0];
-        xcurr(1, k) = Nodes()[k]->X()[1] + mydisp[k * 2 + 1];
+        xcurr(0, k) = nodes()[k]->x()[0] + mydisp[k * 2 + 0];
+        xcurr(1, k) = nodes()[k]->x()[1] + mydisp[k * 2 + 1];
       }
 
       const double min_detj =
@@ -652,7 +652,7 @@ int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
 
   // check total time
   double time = -1.0;
-  if (IsParamsInterface())
+  if (is_params_interface())
     time = params_interface().get_total_time();
   else
     time = params.get("total time", -1.0);
@@ -668,12 +668,12 @@ int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
   std::vector<Core::LinAlg::SerialDenseVector> myknots(numdim_);
   Core::LinAlg::SerialDenseVector weights(iel);
 
-  if (Shape() == Core::FE::CellType::nurbs4 || Shape() == Core::FE::CellType::nurbs9)
+  if (shape() == Core::FE::CellType::nurbs4 || shape() == Core::FE::CellType::nurbs9)
   {
     Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
         dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
-    bool zero_sized = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id());
+    bool zero_sized = (*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, id());
 
     // skip zero sized elements in knot span --- they correspond to interpolated nodes
     if (zero_sized)
@@ -684,9 +684,9 @@ int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
     for (int inode = 0; inode < iel; ++inode)
     {
       Core::FE::Nurbs::ControlPoint* cp =
-          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
 
-      weights(inode) = cp->W();
+      weights(inode) = cp->w();
     }
   }
 
@@ -695,7 +695,7 @@ int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
   double det = 0.0;                                       // determinant of iso-parametric Jacobian
 
   // quad, tri, etc
-  const Core::FE::CellType distype = Shape();
+  const Core::FE::CellType distype = shape();
 
   // gaussian points
   const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
@@ -711,8 +711,8 @@ int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
   /*----------------------------------------------------- geometry update */
   for (int k = 0; k < iel; ++k)
   {
-    xrefe(0, k) = Nodes()[k]->X()[0];
-    xrefe(1, k) = Nodes()[k]->X()[1];
+    xrefe(0, k) = nodes()[k]->x()[0];
+    xrefe(1, k) = nodes()[k]->x()[1];
   }
 
   /*=================================================== integration loops */
@@ -769,8 +769,8 @@ int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
         const double* coordgpref = gp_coord2;  // needed for function evaluation
 
         // evaluate function at current gauss point
-        functfac = Global::Problem::Instance()
-                       ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+        functfac = Global::Problem::instance()
+                       ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                        .evaluate(coordgpref, time, i);
       }
 
@@ -820,7 +820,7 @@ void Discret::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm,
     {
       // first, store the eas state of the previous accepted Newton step
       str_params_interface().sum_into_my_previous_sol_norm(
-          NOX::Nln::StatusTest::quantity_eas, w1_neas(), (*alpha)[0], Owner());
+          NOX::Nln::StatusTest::quantity_eas, w1_neas(), (*alpha)[0], owner());
 
       // get stored EAS history
       Core::LinAlg::SerialDenseMatrix* oldfeas = &easdata_.feas;
@@ -867,7 +867,7 @@ void Discret::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm,
   // contribution to the norm
   if (iseas_)
     str_params_interface().sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_eas, w1_neas(),
-        (*eas_inc)[0], (*alpha)[0], step_length, Owner());
+        (*eas_inc)[0], (*alpha)[0], step_length, owner());
 
   // the element internal stuff should be up-to-date for now...
   return;
@@ -952,10 +952,10 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
 
   // ------------------------------------ check calculation of mass matrix
   double density = 0.0;
-  if (massmatrix) density = material->Density();
+  if (massmatrix) density = material->density();
 
   /*------- get integraton data ---------------------------------------- */
-  const Core::FE::CellType distype = Shape();
+  const Core::FE::CellType distype = shape();
 
   // gaussian points
   const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
@@ -963,8 +963,8 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
   /*----------------------------------------------------- geometry update */
   for (int k = 0; k < numnode; ++k)
   {
-    xrefe(0, k) = Nodes()[k]->X()[0];
-    xrefe(1, k) = Nodes()[k]->X()[1];
+    xrefe(0, k) = nodes()[k]->x()[0];
+    xrefe(1, k) = nodes()[k]->x()[1];
     xcure(0, k) = xrefe(0, k) + disp[k * numdf + 0];
     xcure(1, k) = xrefe(1, k) + disp[k * numdf + 1];
 
@@ -983,9 +983,9 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     for (int inode = 0; inode < numnode; ++inode)
     {
       Core::FE::Nurbs::ControlPoint* cp =
-          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
 
-      weights(inode) = cp->W();
+      weights(inode) = cp->w();
     }
   }
 
@@ -1021,7 +1021,7 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     oldKda = &easdata_.Kda;
     if (!alpha || !oldKaainv || !oldKda || !oldfeas) FOUR_C_THROW("Missing EAS history-data");
     // FixMe deprecated implementation
-    if (not IsParamsInterface())
+    if (not is_params_interface())
     {
       // we need the (residual) displacement at the previous step
       Core::LinAlg::SerialDenseVector res_d(2 * numnode);
@@ -1333,10 +1333,10 @@ void Discret::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
 
   // ------------------------------------ check calculation of mass matrix
   double density = 0.0;
-  if (massmatrix) density = material->Density();
+  if (massmatrix) density = material->density();
 
   /*------- get integraton data ---------------------------------------- */
-  const Core::FE::CellType distype = Shape();
+  const Core::FE::CellType distype = shape();
 
   // gaussian points
   const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
@@ -1344,8 +1344,8 @@ void Discret::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
   /*----------------------------------------------------- geometry update */
   for (int k = 0; k < numnode; ++k)
   {
-    xrefe(0, k) = Nodes()[k]->X()[0];
-    xrefe(1, k) = Nodes()[k]->X()[1];
+    xrefe(0, k) = nodes()[k]->x()[0];
+    xrefe(1, k) = nodes()[k]->x()[1];
     xcure(0, k) = xrefe(0, k) + disp[k * numdf + 0];
     xcure(1, k) = xrefe(1, k) + disp[k * numdf + 1];
   }
@@ -1357,9 +1357,9 @@ void Discret::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     for (int inode = 0; inode < numnode; ++inode)
     {
       Core::FE::Nurbs::ControlPoint* cp =
-          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
 
-      weights(inode) = cp->W();
+      weights(inode) = cp->w();
     }
   }
 
@@ -1499,7 +1499,7 @@ void Discret::ELEMENTS::Wall1::w1_jacobianmatrix(const Core::LinAlg::SerialDense
   /*------------------------------------------ determinant of jacobian ---*/
   *det = xjm[0][0] * xjm[1][1] - xjm[1][0] * xjm[0][1];
 
-  if (*det < 0.0) FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n", *det, Id());
+  if (*det < 0.0) FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n", *det, id());
   /*----------------------------------------------------------------------*/
 
   return;
@@ -1710,7 +1710,7 @@ void Discret::ELEMENTS::Wall1::w1_boplin_cure(Core::LinAlg::SerialDenseMatrix& b
 //      break;
 //    }
 //    default:
-//      FOUR_C_THROW("Illegal type %d of material for wall1 element ", mat->MaterialType());
+//      FOUR_C_THROW("Illegal type %d of material for wall1 element ", mat->material_type());
 //      break;
 //  }
 //
@@ -1848,7 +1848,7 @@ void Discret::ELEMENTS::Wall1::energy(Teuchos::ParameterList& params, const std:
   // element porperties
   const int numnode = num_node();
   const int edof = numnode * Wall1::noddof_;
-  const Core::FE::CellType distype = Shape();
+  const Core::FE::CellType distype = shape();
   // Gaussian points
   const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
 
@@ -1888,8 +1888,8 @@ void Discret::ELEMENTS::Wall1::energy(Teuchos::ParameterList& params, const std:
   // element co-ordinates
   for (int k = 0; k < numnode; ++k)
   {
-    Xe(0, k) = Nodes()[k]->X()[0];
-    Xe(1, k) = Nodes()[k]->X()[1];
+    Xe(0, k) = nodes()[k]->x()[0];
+    Xe(1, k) = nodes()[k]->x()[1];
     xe(0, k) = Xe(0, k) + dis[k * Wall1::noddof_ + 0];
     xe(1, k) = Xe(1, k) + dis[k * Wall1::noddof_ + 1];
   }
@@ -1964,7 +1964,7 @@ void Discret::ELEMENTS::Wall1::energy(Teuchos::ParameterList& params, const std:
   }  // end loop Gauss points
 
 
-  if (IsParamsInterface())  // new structural time integration
+  if (is_params_interface())  // new structural time integration
   {
     str_params_interface().add_contribution_to_energy_type(internal_energy, Solid::internal_energy);
   }

@@ -67,7 +67,7 @@ namespace Mat
           const std::vector<double>& scalar);
 
       /// Check sizes of vectors
-      void CheckSizes(std::vector<double>& reacval,
+      void check_sizes(std::vector<double>& reacval,
           std::vector<std::vector<double>>& reacderivspressure,
           std::vector<std::vector<double>>& reacderivssaturation,
           std::vector<double>& reacderivsporosity,
@@ -151,11 +151,11 @@ namespace Mat
   class FluidPoroSingleReactionType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "FluidPoroSingleReactionType"; }
+    std::string name() const override { return "FluidPoroSingleReactionType"; }
 
-    static FluidPoroSingleReactionType& Instance() { return instance_; };
+    static FluidPoroSingleReactionType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroSingleReactionType instance_;
@@ -175,13 +175,13 @@ namespace Mat
     explicit FluidPoroSingleReaction(Mat::PAR::FluidPoroSingleReaction* params);
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_fluidporo_singlereaction;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new FluidPoroSingleReaction(*this));
     }
@@ -194,9 +194,9 @@ namespace Mat
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return FluidPoroSinglePhaseType::Instance().UniqueParObjectId();
+      return FluidPoroSinglePhaseType::instance().unique_par_object_id();
     }
 
     /*!
@@ -204,7 +204,7 @@ namespace Mat
 
      Resizes the vector data and stores all information of a class in it.
      The first information to be stored in data has to be the
-     unique parobject id delivered by UniqueParObjectId() which will then
+     unique parobject id delivered by unique_par_object_id() which will then
      identify the exact class on the receiving processor.
 
      \param data (in/out): char vector to store class information
@@ -218,7 +218,7 @@ namespace Mat
      exact copy of an instance of a class on a different processor.
      The first entry in data has to be an integer which is the unique
      parobject id defined at the top of this file and delivered by
-     UniqueParObjectId().
+     unique_par_object_id().
 
      \param data (in) : vector storing all data to be unpacked into this
      instance.
@@ -231,10 +231,10 @@ namespace Mat
     void initialize() override;
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     /// evaluate reaction
-    void EvaluateReaction(std::vector<double>& reacval,
+    void evaluate_reaction(std::vector<double>& reacval,
         std::vector<std::vector<double>>& reacderivspressure,
         std::vector<std::vector<double>>& reacderivssaturation,
         std::vector<double>& reacderivsporosity,
@@ -246,10 +246,10 @@ namespace Mat
         const std::vector<double>& scalar);
 
     /// return whether phase 'phasenum' is involved in this reaction
-    bool IsReactive(int phasenum) const { return params_->scale_.at(phasenum) != 0; };
+    bool is_reactive(int phasenum) const { return params_->scale_.at(phasenum) != 0; };
 
     /// Check sizes of vectors
-    int TotalNumDof() { return params_->totalnummultiphasedof_; }
+    int total_num_dof() { return params_->totalnummultiphasedof_; }
 
    private:
     /// my material parameters

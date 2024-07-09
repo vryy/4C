@@ -62,10 +62,10 @@ namespace FSI
     virtual void setup();
 
     //! outer level time loop (to be implemented by deriving classes)
-    virtual void Timeloop() = 0;
+    virtual void timeloop() = 0;
 
     /// initialise XFSI system
-    virtual void SetupSystem() = 0;
+    virtual void setup_system() = 0;
 
     //! read restart data
     void read_restart(int step  //!< step number where the calculation is continued
@@ -75,7 +75,7 @@ namespace FSI
     //! @name Access to single fields
 
     //! access to structural & poro field
-    const Teuchos::RCP<Adapter::StructurePoroWrapper>& StructurePoro() { return structureporo_; }
+    const Teuchos::RCP<Adapter::StructurePoroWrapper>& structure_poro() { return structureporo_; }
 
     //! access to fluid field
     const Teuchos::RCP<FLD::XFluid>& fluid_field() { return fluid_; }
@@ -84,10 +84,10 @@ namespace FSI
     const Teuchos::RCP<Adapter::AleFpsiWrapper>& ale_field() { return ale_; }
 
     //! is an monolithic ale computations
-    bool HaveAle() { return (ale_field() != Teuchos::null); }
+    bool have_ale() { return (ale_field() != Teuchos::null); }
 
     //! number of physical fields to solve involved
-    int NumFields() { return num_fields_; }
+    int num_fields() { return num_fields_; }
 
     //@}
 

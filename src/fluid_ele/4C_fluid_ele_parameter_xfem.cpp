@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::FluidEleParameterXFEM* Discret::ELEMENTS::FluidEleParameterXFEM::Instance(
+Discret::ELEMENTS::FluidEleParameterXFEM* Discret::ELEMENTS::FluidEleParameterXFEM::instance(
     Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
@@ -25,7 +25,7 @@ Discret::ELEMENTS::FluidEleParameterXFEM* Discret::ELEMENTS::FluidEleParameterXF
             new Discret::ELEMENTS::FluidEleParameterXFEM());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 //----------------------------------------------------------------------*/
@@ -114,13 +114,13 @@ void Discret::ELEMENTS::FluidEleParameterXFEM::check_parameter_consistency_for_a
     // check element l
     if (visc_stab_trac_estimate() != Inpar::XFEM::ViscStab_TraceEstimate_eigenvalue)
     {
-      if (ViscStabHK() == Inpar::XFEM::ViscStab_hk_cut_vol_div_by_cut_surf or
-          ViscStabHK() == Inpar::XFEM::ViscStab_hk_ele_vol_div_by_cut_surf)
+      if (visc_stab_hk() == Inpar::XFEM::ViscStab_hk_cut_vol_div_by_cut_surf or
+          visc_stab_hk() == Inpar::XFEM::ViscStab_hk_ele_vol_div_by_cut_surf)
         FOUR_C_THROW(
             "chosen characteristic element length definition ViscStabHK is not supported for "
             "embedded-sided Nitsche method");
 
-      if (ViscStabHK() == Inpar::XFEM::ViscStab_hk_ele_vol_div_by_max_ele_surf)
+      if (visc_stab_hk() == Inpar::XFEM::ViscStab_hk_ele_vol_div_by_max_ele_surf)
         FOUR_C_THROW(
             "chosen characteristic element length definition "
             "ViscStab_hk_ele_vol_div_by_max_ele_surf is supported for embedded-sided Nitsche "
@@ -137,13 +137,13 @@ void Discret::ELEMENTS::FluidEleParameterXFEM::check_parameter_consistency_for_a
         "estimating trace inequality scaling via solving eigenvalue problems not supported for "
         "xfluid-sided Nitsche!");
 
-  if (!isEmbNitsche and ViscStabHK() == Inpar::XFEM::ViscStab_hk_ele_vol_div_by_ele_surf)
+  if (!isEmbNitsche and visc_stab_hk() == Inpar::XFEM::ViscStab_hk_ele_vol_div_by_ele_surf)
     FOUR_C_THROW(
         "chosen characteristic element length definition ViscStabHK is not supported for "
         "xfluid-sided Nitsche method as the element surface cannot be specified for cut elements");
 
-  if (!isEmbNitsche and (ViscStabHK() == Inpar::XFEM::ViscStab_hk_ele_vol_div_by_cut_surf or
-                            ViscStabHK() == Inpar::XFEM::ViscStab_hk_cut_vol_div_by_cut_surf))
+  if (!isEmbNitsche and (visc_stab_hk() == Inpar::XFEM::ViscStab_hk_ele_vol_div_by_cut_surf or
+                            visc_stab_hk() == Inpar::XFEM::ViscStab_hk_cut_vol_div_by_cut_surf))
   {
     if (myrank == 0)
       Core::IO::cout

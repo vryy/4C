@@ -64,7 +64,7 @@ namespace Discret
 
      public:
       //! Singleton access method
-      static FluidEleCalcPoro<distype>* Instance(
+      static FluidEleCalcPoro<distype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       /*!
@@ -149,7 +149,7 @@ namespace Discret
       /*!
           Interface function for supporting methods of the element
        */
-      int EvaluateService(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int evaluate_service(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,

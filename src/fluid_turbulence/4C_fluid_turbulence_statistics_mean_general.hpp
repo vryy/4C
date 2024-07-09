@@ -118,7 +118,7 @@ namespace FLD
     \param (in) input reader to allow restart
 
     */
-    void ReadOldStatistics(Core::IO::DiscretizationReader& input);
+    void read_old_statistics(Core::IO::DiscretizationReader& input);
 
 
     /*!
@@ -136,7 +136,7 @@ namespace FLD
     \param (in) output context
 
     */
-    void WriteOldAverageVec(Core::IO::DiscretizationWriter& output);
+    void write_old_average_vec(Core::IO::DiscretizationWriter& output);
 
     //! @name Misc
 
@@ -144,7 +144,7 @@ namespace FLD
     \brief Clear all statistics collected in the current period
 
     */
-    void TimeReset();
+    void time_reset();
 
     /*!
     \brief Clear all statistics vectors based on fluid maps collected in the current period
@@ -156,7 +156,7 @@ namespace FLD
     \brief Clear all statistics collected up to now
 
     */
-    void ResetComplete();
+    void reset_complete();
 
     /*!
     \brief Clear statistics vectors based on fluid maps
@@ -168,14 +168,14 @@ namespace FLD
     \brief Redistribute all statistics vectors
 
     */
-    void Redistribute(Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset,
+    void redistribute(Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset,
         Teuchos::RCP<Core::FE::Discretization> discret);
 
     /*!
     \brief Add results from scalar transport field solver to statistics
 
     */
-    void AddScaTraResults(
+    void add_sca_tra_results(
         Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> myphinp);
 
     /*!
@@ -183,7 +183,7 @@ namespace FLD
            (statistics was already written during call of DoOutput())
 
     */
-    void DoOutputForScaTra(Core::IO::DiscretizationWriter& output, int step);
+    void do_output_for_sca_tra(Core::IO::DiscretizationWriter& output, int step);
 
     //@}
 

@@ -234,7 +234,7 @@ namespace Input
     }
 
     // add double parameter value to line parameter list
-    container.Add(name(), str);
+    container.add(name(), str);
 
     return condline;
   }
@@ -326,9 +326,9 @@ namespace Input
     const unsigned pos = std::distance(datfilevalues_.begin(), i);
     // choose, if we have an array based on std::string or int
     if (stringtostring_)
-      container.Add(name(), stringcondvalues_[pos]);
+      container.add(name(), stringcondvalues_[pos]);
     else
-      container.Add(name(), intcondvalues_[pos]);
+      container.add(name(), intcondvalues_[pos]);
 
     return condline;
   }
@@ -410,7 +410,7 @@ namespace Input
     }
 
     // add int parameter value to line parameter list
-    container.Add(name(), nnumber);
+    container.add(name(), nnumber);
 
     return condline;
   }
@@ -541,7 +541,7 @@ namespace Input
     }
 
     // add int parameter vector to line parameter list
-    container.Add(name(), nnumbers);
+    container.add(name(), nnumbers);
 
     return condline;
   }
@@ -598,7 +598,7 @@ namespace Input
     }
 
     // add double parameter value to line parameter list
-    container.Add(name(), nnumber);
+    container.add(name(), nnumber);
 
     return condline;
   }
@@ -677,7 +677,7 @@ namespace Input
     }
 
     // add double parameter vector to line parameter list
-    container.Add(name(), nnumbers);
+    container.add(name(), nnumbers);
 
     return condline;
   }
@@ -752,7 +752,7 @@ namespace Input
     }
 
     // add boolean parameter value to line parameter list
-    container.Add(name(), boolean);
+    container.add(name(), boolean);
 
     return condline;
   }

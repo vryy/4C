@@ -444,7 +444,7 @@ namespace Mat
      * This is an or operation: $this = $this || $other (for all items)
      * @param other (in) : Other Summand properties
      */
-    void Merge(const SummandProperties& other)
+    void merge(const SummandProperties& other)
     {
       isoprinc |= other.isoprinc;
       isomod |= other.isomod;

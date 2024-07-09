@@ -24,7 +24,7 @@
 FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Adapter::FBIConstraintenforcer> Adapter::ConstraintEnforcerFactory::CreateEnforcer(
+Teuchos::RCP<Adapter::FBIConstraintenforcer> Adapter::ConstraintEnforcerFactory::create_enforcer(
     const Teuchos::ParameterList& fsidyn, const Teuchos::ParameterList& fbidyn)
 {
   Teuchos::RCP<Adapter::FBIConstraintBridge> bridge =

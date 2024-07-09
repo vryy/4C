@@ -34,7 +34,7 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static FluidEleCalcLoma<distype>* Instance(
+      static FluidEleCalcLoma<distype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       int evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,

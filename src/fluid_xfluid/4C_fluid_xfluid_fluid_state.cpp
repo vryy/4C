@@ -71,7 +71,7 @@ void FLD::XFluidFluidState::init_state_vectors()
 /*----------------------------------------------------------------------*
  |  Access system matrix                                    kruse 01/15 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> FLD::XFluidFluidState::SystemMatrix()
+Teuchos::RCP<Core::LinAlg::SparseMatrix> FLD::XFluidFluidState::system_matrix()
 {
   return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(xffluidsysmat_);
 }
@@ -124,22 +124,22 @@ void FLD::XFluidFluidState::create_merged_dbc_map_extractor(
 /*----------------------------------------------------------------------*
  |  Set dirichlet- and velocity/pressure-map extractor      kruse 01/15 |
  *----------------------------------------------------------------------*/
-void FLD::XFluidFluidState::SetupMapExtractors(
+void FLD::XFluidFluidState::setup_map_extractors(
     const Teuchos::RCP<Core::FE::Discretization>& xfluiddiscret,
     const Teuchos::RCP<Core::FE::Discretization>& embfluiddiscret, const double& time)
 {
   // create merged dirichlet map extractor
-  XFluidState::SetupMapExtractors(xfluiddiscret, time);
+  XFluidState::setup_map_extractors(xfluiddiscret, time);
   xffluidsplitter_->setup(*xffluiddofrowmap_, embfluiddofrowmap_, XFluidState::xfluiddofrowmap_);
 
-  FLD::UTILS::SetupFluidFluidVelPresSplit(*xfluiddiscret, Global::Problem::Instance()->NDim(),
+  FLD::UTILS::SetupFluidFluidVelPresSplit(*xfluiddiscret, Global::Problem::instance()->n_dim(),
       *embfluiddiscret, *xffluidvelpressplitter_, xffluiddofrowmap_);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool FLD::XFluidFluidState::Destroy()
+bool FLD::XFluidFluidState::destroy()
 {
   // destroy system matrix
   std::cout << "Destroying the xffluidsysmat_ is not possible at the moment. Internally more "
@@ -172,7 +172,7 @@ bool FLD::XFluidFluidState::Destroy()
     std::cout << "could not destroy xffluiddofrowmap_: number of pointers is "
               << xffluiddofrowmap_.strong_count() << "!=1";
 
-  XFluidState::Destroy();
+  XFluidState::destroy();
 
   return true;
 }

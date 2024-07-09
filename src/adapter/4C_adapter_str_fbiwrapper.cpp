@@ -24,7 +24,7 @@ Adapter::FBIStructureWrapper::FBIStructureWrapper(Teuchos::RCP<Structure> struct
     : FSIStructureWrapper(structure)
 {
   const bool is_prestress = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
-                                Global::Problem::Instance()->structural_dynamic_params(),
+                                Global::Problem::instance()->structural_dynamic_params(),
                                 "PRESTRESS") != Inpar::Solid::PreStress::none;
   if (is_prestress)
   {
@@ -37,8 +37,8 @@ Adapter::FBIStructureWrapper::FBIStructureWrapper(Teuchos::RCP<Structure> struct
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::extract_interface_veln()
 {
-  Teuchos::RCP<Epetra_Vector> veli = Teuchos::rcp(new Epetra_Vector(Veln()->Map()));
-  veli->Update(1.0, *Veln(), 0.0);
+  Teuchos::RCP<Epetra_Vector> veli = Teuchos::rcp(new Epetra_Vector(veln()->Map()));
+  veli->Update(1.0, *veln(), 0.0);
   return veli;
 }
 
@@ -47,21 +47,21 @@ Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::extract_interface_veln
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::extract_interface_velnp()
 {
-  Teuchos::RCP<Epetra_Vector> veli = Teuchos::rcp(new Epetra_Vector(Velnp()->Map()));
-  veli->Update(1.0, *Velnp(), 0.0);
+  Teuchos::RCP<Epetra_Vector> veli = Teuchos::rcp(new Epetra_Vector(velnp()->Map()));
+  veli->Update(1.0, *velnp(), 0.0);
   return veli;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::predict_interface_velnp()
 {
-  Teuchos::RCP<Epetra_Vector> veli = Teuchos::rcp(new Epetra_Vector(Veln()->Map()));
-  veli->Update(1.0, *Veln(), 0.0);
+  Teuchos::RCP<Epetra_Vector> veli = Teuchos::rcp(new Epetra_Vector(veln()->Map()));
+  veli->Update(1.0, *veln(), 0.0);
   return veli;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::RelaxationSolve(
+Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::relaxation_solve(
     Teuchos::RCP<Epetra_Vector> iforce)
 {
   FOUR_C_THROW("RelaxationSolve not implemented for immersed fluid-beam interaction\n");
@@ -69,14 +69,14 @@ Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::RelaxationSolve(
 }
 /*------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------*/
-void Adapter::FBIStructureWrapper::RebuildInterface() { FOUR_C_THROW("Not implemented yet"); }
+void Adapter::FBIStructureWrapper::rebuild_interface() { FOUR_C_THROW("Not implemented yet"); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::predict_interface_dispnp()
 {
-  Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(new Epetra_Vector(Dispn()->Map()));
-  disi->Update(1.0, *Dispnp(), 0.0);
+  Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(new Epetra_Vector(dispn()->Map()));
+  disi->Update(1.0, *dispnp(), 0.0);
   return disi;
 }
 
@@ -84,16 +84,16 @@ Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::predict_interface_disp
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::extract_interface_dispnp()
 {
-  Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(new Epetra_Vector(Dispnp()->Map()));
-  disi->Update(1.0, *Dispnp(), 0.0);
+  Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(new Epetra_Vector(dispnp()->Map()));
+  disi->Update(1.0, *dispnp(), 0.0);
   return disi;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::extract_interface_dispn()
 {
-  Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(new Epetra_Vector(Dispn()->Map()));
-  disi->Update(1.0, *Dispn(), 0.0);
+  Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(new Epetra_Vector(dispn()->Map()));
+  disi->Update(1.0, *dispn(), 0.0);
   return disi;
 }
 
@@ -117,9 +117,9 @@ void Adapter::FBIStructureWrapper::setup_multi_map_extractor()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> Adapter::FBIStructureWrapper::GetIOData()
+Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> Adapter::FBIStructureWrapper::get_io_data()
 {
-  return fsi_model_evaluator()->GetInOutput().get_runtime_output_params();
+  return fsi_model_evaluator()->get_in_output().get_runtime_output_params();
 }
 
 FOUR_C_NAMESPACE_CLOSE

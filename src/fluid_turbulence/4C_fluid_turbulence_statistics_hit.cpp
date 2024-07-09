@@ -45,7 +45,7 @@ namespace FLD
     // output to screen
     //-----------------------------------
 
-    if (discret_->Comm().MyPID() == 0)
+    if (discret_->get_comm().MyPID() == 0)
     {
       std::cout << "This is the turbulence statistics manager of\n";
       std::cout << "homogeneous isotropic turbulence:\n\n";
@@ -63,7 +63,7 @@ namespace FLD
     // number of modes equal to number of elements in one spatial direction
     // this does not yield the correct value
     // nummodes_ = (int) pow((double) discret_->NumGlobalElements(),1.0/3.0);
-    switch (discret_->NumGlobalElements())
+    switch (discret_->num_global_elements())
     {
       case 512:
       {
@@ -102,7 +102,7 @@ namespace FLD
       }
       default:
       {
-        FOUR_C_THROW("Set problem size! %i", discret_->NumGlobalElements());
+        FOUR_C_THROW("Set problem size! %i", discret_->num_global_elements());
         break;
       }
     }
@@ -114,24 +114,24 @@ namespace FLD
     // the criterion allows differences in coordinates by 1e-9
     std::set<double, LineSortCriterion> coords;
     // loop all nodes and store x1-coordinate
-    for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+    for (int inode = 0; inode < discret_->num_my_row_nodes(); inode++)
     {
-      Core::Nodes::Node* node = discret_->lRowNode(inode);
-      if ((node->X()[1] < 2e-9 && node->X()[1] > -2e-9) and
-          (node->X()[2] < 2e-9 && node->X()[2] > -2e-9))
-        coords.insert(node->X()[0]);
+      Core::Nodes::Node* node = discret_->l_row_node(inode);
+      if ((node->x()[1] < 2e-9 && node->x()[1] > -2e-9) and
+          (node->x()[2] < 2e-9 && node->x()[2] > -2e-9))
+        coords.insert(node->x()[0]);
     }
 
     // communicate coordinates to all procs via round Robin loop
     {
-      int myrank = discret_->Comm().MyPID();
-      int numprocs = discret_->Comm().NumProc();
+      int myrank = discret_->get_comm().MyPID();
+      int numprocs = discret_->get_comm().NumProc();
 
       std::vector<char> sblock;
       std::vector<char> rblock;
 
       // create an exporter for point to point communication
-      Core::Communication::Exporter exporter(discret_->Comm());
+      Core::Communication::Exporter exporter(discret_->get_comm());
 
       // communicate coordinates
       for (int np = 0; np < numprocs; ++np)
@@ -159,18 +159,18 @@ namespace FLD
 
         // receive from predecessor
         frompid = (myrank + numprocs - 1) % numprocs;
-        exporter.ReceiveAny(frompid, tag, rblock, length);
+        exporter.receive_any(frompid, tag, rblock, length);
 
         if (tag != (myrank + numprocs - 1) % numprocs)
         {
           FOUR_C_THROW("received wrong message (ReceiveAny)");
         }
 
-        exporter.Wait(request);
+        exporter.wait(request);
 
         {
           // for safety
-          exporter.Comm().Barrier();
+          exporter.get_comm().Barrier();
         }
 
         // unpack received block into set of all coordinates
@@ -258,13 +258,13 @@ namespace FLD
     dt_ = params_.get<double>("time step size");
 
     // get fluid viscosity from material definition
-    int id = Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_fluid);
+    int id = Global::Problem::instance()->materials()->first_id_by_type(Core::Materials::m_fluid);
     if (id == -1)
       FOUR_C_THROW("Could not find Newtonian fluid material");
     else
     {
       const Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance()->Materials()->ParameterById(id);
+          Global::Problem::instance()->materials()->parameter_by_id(id);
       const Mat::PAR::NewtonianFluid* actmat = static_cast<const Mat::PAR::NewtonianFluid*>(mat);
       // we need the kinematic viscosity here
       double dens = actmat->density_;
@@ -316,7 +316,7 @@ namespace FLD
     Teuchos::RCP<std::ofstream> log_1;
     Teuchos::RCP<std::ofstream> log_2;
 
-    if (discret_->Comm().MyPID() == 0)
+    if (discret_->get_comm().MyPID() == 0)
     {
       std::string s(statistics_outfilename_);
       s.append(".energy_spectra");
@@ -350,7 +350,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | do sampling                                  rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void TurbulenceStatisticsHit::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp)
+  void TurbulenceStatisticsHit::do_time_sample(Teuchos::RCP<Epetra_Vector> velnp)
   {
 #ifdef FOUR_C_WITH_FFTW
     //-------------------------------------------------------------------------------------------------
@@ -385,17 +385,17 @@ namespace FLD
 
     // set solution in local vectors for velocity
 
-    for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+    for (int inode = 0; inode < discret_->num_my_row_nodes(); inode++)
     {
       // get node
-      Core::Nodes::Node* node = discret_->lRowNode(inode);
+      Core::Nodes::Node* node = discret_->l_row_node(inode);
 
       // get coordinates
       Core::LinAlg::Matrix<3, 1> xyz(true);
-      for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
+      for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->x()[idim];
 
       // get global ids of all dofs of the node
-      std::vector<int> dofs = discret_->Dof(node);
+      std::vector<int> dofs = discret_->dof(node);
 
       // determine position
       std::vector<int> loc(3);
@@ -436,11 +436,11 @@ namespace FLD
     // get values form all processors
     // number of nodes without slave nodes
     const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-    discret_->Comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
+    discret_->get_comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
 
-    discret_->Comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
+    discret_->get_comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
 
-    discret_->Comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
+    discret_->get_comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
 
     //----------------------------------------
     // fast Fourier transformation using FFTW
@@ -634,13 +634,13 @@ namespace FLD
     togglev_->PutScalar(0.0);
     togglew_->PutScalar(0.0);
 
-    for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+    for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
     {
       // get node
-      Core::Nodes::Node* node = discret_->lRowNode(nn);
+      Core::Nodes::Node* node = discret_->l_row_node(nn);
 
       // get global dof ids
-      std::vector<int> dof = discret_->Dof(node);
+      std::vector<int> dof = discret_->dof(node);
       double one = 1.0;
 
       // set one in respective position
@@ -704,7 +704,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | do sampling                                  rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void TurbulenceStatisticsHit::DoScatraTimeSample(
+  void TurbulenceStatisticsHit::do_scatra_time_sample(
       Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> phinp)
   {
 #ifdef FOUR_C_WITH_FFTW
@@ -747,17 +747,17 @@ namespace FLD
 
     // set solution in local vectors for velocity
 
-    for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+    for (int inode = 0; inode < discret_->num_my_row_nodes(); inode++)
     {
       // get node
-      Core::Nodes::Node* node = discret_->lRowNode(inode);
+      Core::Nodes::Node* node = discret_->l_row_node(inode);
 
       // get coordinates
       Core::LinAlg::Matrix<3, 1> xyz(true);
-      for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
+      for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->x()[idim];
 
       // get global ids of all dofs of the node
-      std::vector<int> dofs = discret_->Dof(node);
+      std::vector<int> dofs = discret_->dof(node);
 
       // determine position
       std::vector<int> loc(3);
@@ -797,17 +797,17 @@ namespace FLD
 
     // set also solution of scalar field
 
-    for (int inode = 0; inode < scatradiscret_->NumMyRowNodes(); inode++)
+    for (int inode = 0; inode < scatradiscret_->num_my_row_nodes(); inode++)
     {
       // get node
-      Core::Nodes::Node* node = scatradiscret_->lRowNode(inode);
+      Core::Nodes::Node* node = scatradiscret_->l_row_node(inode);
 
       // get coordinates
       Core::LinAlg::Matrix<3, 1> xyz(true);
-      for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
+      for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->x()[idim];
 
       // get global ids of all dofs of the node
-      std::vector<int> dofs = scatradiscret_->Dof(0, node);
+      std::vector<int> dofs = scatradiscret_->dof(0, node);
       if (dofs.size() > 1) FOUR_C_THROW("Only one scatra dof per node expected!");
 
       // determine position
@@ -844,13 +844,13 @@ namespace FLD
     // get values form all processors
     // number of nodes without slave nodes
     const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-    discret_->Comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
+    discret_->get_comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
 
-    discret_->Comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
+    discret_->get_comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
 
-    discret_->Comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
+    discret_->get_comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
 
-    discret_->Comm().SumAll(local_phi->data(), global_phi->data(), countallnodes);
+    discret_->get_comm().SumAll(local_phi->data(), global_phi->data(), countallnodes);
 
     //----------------------------------------
     // fast Fourier transformation using FFTW
@@ -1056,13 +1056,13 @@ namespace FLD
     togglev_->PutScalar(0.0);
     togglew_->PutScalar(0.0);
 
-    for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+    for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
     {
       // get node
-      Core::Nodes::Node* node = discret_->lRowNode(nn);
+      Core::Nodes::Node* node = discret_->l_row_node(nn);
 
       // get global dof ids
-      std::vector<int> dof = discret_->Dof(node);
+      std::vector<int> dof = discret_->dof(node);
       double one = 1.0;
 
       // set one in respective position
@@ -1125,7 +1125,7 @@ namespace FLD
    | evaluation of dissipation rate and rbvmm-related quantities  |
    |                                              rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void TurbulenceStatisticsHit::EvaluateResiduals(
+  void TurbulenceStatisticsHit::evaluate_residuals(
       std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs)
   {
     FOUR_C_THROW("EvaluateResiduals() not yet implemented for hit!");
@@ -1136,7 +1136,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | dump statistics to file                      rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void TurbulenceStatisticsHit::DumpStatistics(int step, bool multiple_records)
+  void TurbulenceStatisticsHit::dump_statistics(int step, bool multiple_records)
   {
     //------------------------------
     // compute remaining quantities
@@ -1197,7 +1197,7 @@ namespace FLD
     // write results to file
     //------------------------------
 
-    if (discret_->Comm().MyPID() == 0)
+    if (discret_->get_comm().MyPID() == 0)
     {
       Teuchos::RCP<std::ofstream> log_k;
 
@@ -1357,7 +1357,7 @@ namespace FLD
     // write results to file
     //------------------------------
 
-    if (discret_->Comm().MyPID() == 0)
+    if (discret_->get_comm().MyPID() == 0)
     {
       Teuchos::RCP<std::ofstream> log_k;
 
@@ -1407,7 +1407,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | reset statistics to zero                     rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void TurbulenceStatisticsHit::ClearStatistics()
+  void TurbulenceStatisticsHit::clear_statistics()
   {
     for (std::size_t rr = 0; rr < energyspectrum_->size(); rr++)
     {
@@ -1674,7 +1674,7 @@ namespace FLD
     //------------------------------
 
     Teuchos::RCP<std::ofstream> log;
-    if (discret_->Comm().MyPID() == 0)
+    if (discret_->get_comm().MyPID() == 0)
     {
       std::string s = statistics_outfilename_;
       s.append(".kinetic_energy");
@@ -1717,7 +1717,7 @@ namespace FLD
     // output to screen
     //-----------------------------------
 
-    if (discret_->Comm().MyPID() == 0)
+    if (discret_->get_comm().MyPID() == 0)
     {
       std::cout << "This is the turbulence statistics manager for HDG\n" << std::endl;
     }
@@ -1797,7 +1797,7 @@ namespace FLD
     Teuchos::RCP<std::ofstream> log_1;
     Teuchos::RCP<std::ofstream> log_2;
 
-    if (discret_->Comm().MyPID() == 0)
+    if (discret_->get_comm().MyPID() == 0)
     {
       std::string s(statistics_outfilename_);
       s.append(".energy_spectra");
@@ -1822,7 +1822,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | do sampling                                         bk 03/15 |
    *--------------------------------------------------------------*/
-  void TurbulenceStatisticsHitHDG::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp)
+  void TurbulenceStatisticsHitHDG::do_time_sample(Teuchos::RCP<Epetra_Vector> velnp)
   {
 #ifdef FOUR_C_WITH_FFTW
     //-------------------------------------------------------------------------------------------------
@@ -1875,10 +1875,10 @@ namespace FLD
     Core::LinAlg::SerialDenseMatrix dummyMat;
     Core::LinAlg::SerialDenseVector dummyVec;
 
-    for (int el = 0; el < discret_->NumMyRowElements(); ++el)
+    for (int el = 0; el < discret_->num_my_row_elements(); ++el)
     {
       Core::LinAlg::SerialDenseVector interpolVec;
-      Core::Elements::Element* ele = discret_->lRowElement(el);
+      Core::Elements::Element* ele = discret_->l_row_element(el);
 
       interpolVec.resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
@@ -1926,11 +1926,11 @@ namespace FLD
     // get values form all processors
     // number of nodes without slave nodes
     const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-    discret_->Comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
+    discret_->get_comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
 
-    discret_->Comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
+    discret_->get_comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
 
-    discret_->Comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
+    discret_->get_comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
 
     //----------------------------------------
     // fast Fourier transformation using FFTW
@@ -2185,7 +2185,7 @@ namespace FLD
     // for forced case only, since there is not any statistic-stationary state
     // for the decaying case (merely averaging in space)
     if (type_ == forced_homogeneous_isotropic_turbulence) numsamp_++;
-    discret_->ClearState(true);
+    discret_->clear_state(true);
     return;
 #else
     FOUR_C_THROW("FFTW required");

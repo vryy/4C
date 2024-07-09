@@ -37,22 +37,22 @@ namespace Adapter
     explicit StructureTimeLoop(Teuchos::RCP<Structure> structure) : StructureWrapper(structure) {}
 
     /// actual time loop
-    int Integrate() override;
+    int integrate() override;
 
     /// wrapper for things that should be done before prepare_time_step is called
-    void PrePredict() override{};
+    void pre_predict() override{};
 
     /// wrapper for things that should be done before solving the nonlinear iterations
-    void PreSolve() override{};
+    void pre_solve() override{};
 
     /// wrapper for things that should be done before updating
-    void PreUpdate() override{};
+    void pre_update() override{};
 
     /// wrapper for things that should be done after solving the update
     void post_update() override{};
 
     /// wrapper for things that should be done after the output
-    void PostOutput() override{};
+    void post_output() override{};
   };
 
 }  // namespace Adapter

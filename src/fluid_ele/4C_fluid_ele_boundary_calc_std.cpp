@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>*
-Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>::instance(Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
@@ -27,7 +27,7 @@ Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Instance(Core::UTILS::Singl
             new Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 /*----------------------------------------------------------------------*
@@ -37,7 +37,7 @@ Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>::FluidEleBoundaryCalcStd()
     : Discret::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
 {
   // pointer to class FluidImplParameter
-  my::fldpara_ = Discret::ELEMENTS::FluidEleParameterStd::Instance();
+  my::fldpara_ = Discret::ELEMENTS::FluidEleParameterStd::instance();
 }
 
 /*----------------------------------------------------------------------*

@@ -23,7 +23,7 @@ Mat::Elastic::PAR::Iso1Pow::Iso1Pow(const Core::Mat::PAR::Parameter::Data& matda
 
 Mat::Elastic::Iso1Pow::Iso1Pow(Mat::Elastic::PAR::Iso1Pow* params) : params_(params) {}
 
-void Mat::Elastic::Iso1Pow::AddStrainEnergy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
+void Mat::Elastic::Iso1Pow::add_strain_energy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
     const Core::LinAlg::Matrix<3, 1>& modinv, const Core::LinAlg::Matrix<6, 1>& glstrain,
     const int gp, const int eleGID)
 {

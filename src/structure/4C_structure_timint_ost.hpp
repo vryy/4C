@@ -130,7 +130,7 @@ namespace Solid
    public:
     //! verify if given coefficients are in admissible range;
     //! prints also info to STDOUT
-    void VerifyCoeff();
+    void verify_coeff();
 
     //! @name Construction
     //@{
@@ -196,7 +196,7 @@ namespace Solid
 
     //! Resize #TimIntMStep<T> multi-step quantities
     //! Single-step method: nothing to do here
-    void ResizeMStep() override { ; }
+    void resize_m_step() override { ; }
 
     //@}
 
@@ -204,18 +204,18 @@ namespace Solid
     //@{
 
     //! Return name
-    enum Inpar::Solid::DynamicType MethodName() const override
+    enum Inpar::Solid::DynamicType method_name() const override
     {
       return Inpar::Solid::dyna_onesteptheta;
     }
 
     //! Provide number of steps, a single-step method returns 1
-    int MethodSteps() const override { return 1; }
+    int method_steps() const override { return 1; }
 
     //! Give local order of accuracy of displacement part
     int method_order_of_accuracy_dis() const override
     {
-      return fabs(MethodLinErrCoeff1()) < 1e-6 ? 2 : 1;
+      return fabs(method_lin_err_coeff1()) < 1e-6 ? 2 : 1;
     }
 
     //! Give local order of accuracy of velocity part
@@ -225,25 +225,25 @@ namespace Solid
     double method_lin_err_coeff_dis() const override
     {
       if (method_order_of_accuracy_dis() == 1)
-        return MethodLinErrCoeff1();
+        return method_lin_err_coeff1();
       else
-        return MethodLinErrCoeff2();
+        return method_lin_err_coeff2();
     }
 
     //! Return linear error coefficient of velocities
     double method_lin_err_coeff_vel() const override { return method_lin_err_coeff_dis(); }
 
     //! Linear error coefficient if 1st order accurate
-    virtual double MethodLinErrCoeff1() const { return 1. / 2. - theta_; }
+    virtual double method_lin_err_coeff1() const { return 1. / 2. - theta_; }
 
     //! Linear error coefficient if 2nd order accurate
-    virtual double MethodLinErrCoeff2() const
+    virtual double method_lin_err_coeff2() const
     {
       return 1. / 6. - theta_ / 2.;  // this is -1/12
     }
 
     //! return time integration factor
-    double TimIntParam() const override { return 1.0 - theta_; }
+    double tim_int_param() const override { return 1.0 - theta_; }
 
     //! Consistent predictor with constant displacements
     //! and consistent velocities and displacements
@@ -257,7 +257,7 @@ namespace Solid
     //! Consistent predictor with constant accelerations
     //! and extrapolated velocities and displacements
     //! \author mayr
-    void PredictConstAcc() override;
+    void predict_const_acc() override;
 
     //! Create force residual #fres_ and its stiffness #stiff_
     void evaluate_force_stiff_residual(Teuchos::ParameterList& params) final;
@@ -271,7 +271,7 @@ namespace Solid
 
     //! Determine characteristic norm for force
     //! \author lw (originally)
-    double CalcRefNormForce() override;
+    double calc_ref_norm_force() override;
 
     //! Update iteration incrementally
     //!
@@ -290,16 +290,16 @@ namespace Solid
     void update_iter_iteratively() override;
 
     //! Update step
-    void UpdateStepState() override;
+    void update_step_state() override;
 
     //! Update element
-    void UpdateStepElement() override;
+    void update_step_element() override;
 
     //! Read and set restart for forces
-    void ReadRestartForce() override;
+    void read_restart_force() override;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
+    void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
 
     //@}
 
@@ -307,10 +307,10 @@ namespace Solid
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext() override { return fext_; }
+    Teuchos::RCP<Epetra_Vector> fext() override { return fext_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Epetra_Vector> FextNew() override { return fextn_; }
+    Teuchos::RCP<Epetra_Vector> fext_new() override { return fextn_; }
 
     //@}
 
@@ -318,7 +318,7 @@ namespace Solid
     //@{
 
     //! Evaluate mid-state vectors by averaging end-point vectors
-    void EvaluateMidState();
+    void evaluate_mid_state();
 
     //@}
 
@@ -331,7 +331,7 @@ namespace Solid
 
     //! Clear mass matrix and evaluate mass matrix again.
     //! \note not implemented in base class.
-    void DetermineMass() override;
+    void determine_mass() override;
 
     //! @name Key coefficients
     //@{

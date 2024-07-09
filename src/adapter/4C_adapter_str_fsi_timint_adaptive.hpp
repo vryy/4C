@@ -66,7 +66,7 @@ namespace Adapter
     virtual void time_step_auxiliar();
 
     //! Indicate norms of local discretization error
-    virtual void IndicateErrorNorms(
+    virtual void indicate_error_norms(
         double& err,       ///< L2-norm of temporal discretization error based on all DOFs
         double& errcond,   ///< L2-norm of temporal discretization error based on interface DOFs
         double& errother,  ///< L2-norm of temporal discretization error based on interior DOFs
@@ -80,22 +80,22 @@ namespace Adapter
     virtual double calculate_dt(const double norm);
 
     //! Get time step size of adaptive structural time integrator
-    double Dt() const override;
+    double dt() const override;
 
     //! Get target time \f$t_{n+1}\f$ of current time step
-    double Time() const override;
+    double time() const override;
 
     //! Set new time step size
     void set_dt(const double dtnew) override;
 
     //! Update step size
-    virtual void UpdateStepSize(const double dtnew);
+    virtual void update_step_size(const double dtnew);
 
     //! Reset certain quantities to prepare repetition of current time step
     void reset_step() override;
 
     //! return pointer to structure time integration
-    Teuchos::RCP<Structure> GetStrTimIntPtr() { return str_time_integrator_; };
+    Teuchos::RCP<Structure> get_str_tim_int_ptr() { return str_time_integrator_; };
 
    private:
     //! Indicate local discretization error

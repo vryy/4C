@@ -131,7 +131,7 @@ namespace Solid
       //! Give local order of accuracy of displacement part
       int method_order_of_accuracy_dis() const override
       {
-        return fabs(MethodLinErrCoeff1()) < 1e-6 ? 2 : 1;
+        return fabs(method_lin_err_coeff1()) < 1e-6 ? 2 : 1;
       }
 
       //! Give local order of accuracy of velocity part
@@ -141,19 +141,19 @@ namespace Solid
       double method_lin_err_coeff_dis() const override
       {
         if (method_order_of_accuracy_dis() == 1)
-          return MethodLinErrCoeff1();
+          return method_lin_err_coeff1();
         else
-          return MethodLinErrCoeff2();
+          return method_lin_err_coeff2();
       }
 
       //! Return linear error coefficient of velocities
       double method_lin_err_coeff_vel() const override { return method_lin_err_coeff_dis(); }
 
       //! Linear error coefficient if 1st order accurate
-      double MethodLinErrCoeff1() const { return 1. / 2. - theta_; }
+      double method_lin_err_coeff1() const { return 1. / 2. - theta_; }
 
       //! Linear error coefficient if 2nd order accurate
-      double MethodLinErrCoeff2() const
+      double method_lin_err_coeff2() const
       {
         return 1. / 6. - theta_ / 2.;  // this is -1/12
       }

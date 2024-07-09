@@ -44,7 +44,7 @@ namespace SSI
      */
     explicit SSIResultTest(const Teuchos::RCP<const SSI::SSIBase> ssi_base);
 
-    void TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_special(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     /*!

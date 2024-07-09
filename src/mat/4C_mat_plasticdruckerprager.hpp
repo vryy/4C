@@ -74,9 +74,9 @@ namespace Mat
   class PlasticDruckerPragerType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "PlasticDruckerPragerType"; }
-    static PlasticDruckerPragerType& Instance() { return instance_; };
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    std::string name() const override { return "PlasticDruckerPragerType"; }
+    static PlasticDruckerPragerType& instance() { return instance_; };
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static PlasticDruckerPragerType instance_;
@@ -88,23 +88,23 @@ namespace Mat
     PlasticDruckerPrager();
 
     explicit PlasticDruckerPrager(Mat::PAR::PlasticDruckerPrager* params);
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return PlasticDruckerPragerType::Instance().UniqueParObjectId();
+      return PlasticDruckerPragerType::instance().unique_par_object_id();
     }
     void pack(Core::Communication::PackBuffer& data) const override;
     void unpack(const std::vector<char>& data) override;
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_pldruckprag;
     }
-    void ValidKinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Inpar::Solid::KinemType kinem) override
     {
       if (kinem != Inpar::Solid::KinemType::linear)
         FOUR_C_THROW(
             "The plastic Drucker Prager material model is only compatible with linear kinematics.");
     }
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new PlasticDruckerPrager(*this));
     }
@@ -126,7 +126,7 @@ namespace Mat
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,
         Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, int gp, int eleGID) override
     {
-      this->EvaluateFAD(defgrd, linstrain, params, stress, cmat, gp, eleGID);
+      this->evaluate_fad(defgrd, linstrain, params, stress, cmat, gp, eleGID);
     };
 
     template <typename ScalarT>
@@ -135,15 +135,15 @@ namespace Mat
         Teuchos::ParameterList& params, Core::LinAlg::Matrix<NUM_STRESS_3D, 1, ScalarT>* stress,
         Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, int gp, int eleGID)
     {
-      this->EvaluateFAD(defgrd, linstrain, params, stress, cmat, gp, eleGID);
+      this->evaluate_fad(defgrd, linstrain, params, stress, cmat, gp, eleGID);
     };
     template <typename ScalarT>
-    void EvaluateFAD(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void evaluate_fad(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1, ScalarT>* linstrain,
         Teuchos::ParameterList& params, Core::LinAlg::Matrix<NUM_STRESS_3D, 1, ScalarT>* stress,
         Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, int gp, int eleGID);
     template <typename T>
-    void Stress(const T p, const Core::LinAlg::Matrix<NUM_STRESS_3D, 1, T>& devstress,
+    void stress(const T p, const Core::LinAlg::Matrix<NUM_STRESS_3D, 1, T>& devstress,
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1, T>& stress);
 
     void setup_cmat(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat);
@@ -183,17 +183,17 @@ namespace Mat
         double eta,                                         // Mohr-Coulomb parameter
         double etabar                                       // Mohr-Coulomb parameter
     );
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
-    double Density() const override { return params_->density_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
+    double density() const override { return params_->density_; }
     template <typename T>
     std::pair<T, T> return_to_cone_funct_and_deriv(T Dgamma, T G, T kappa, T Phi_trial);
     template <typename T>
     std::pair<T, T> return_to_apex_funct_and_deriv(T dstrainv, T p, T kappa, T strainbar_p);
-    bool Initialized() const { return (isinit_ and !strainplcurr_.empty()); }
+    bool initialized() const { return (isinit_ and !strainplcurr_.empty()); }
     void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
-    bool EvaluateOutputData(
+    bool evaluate_output_data(
         const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
    private:

@@ -42,12 +42,12 @@ namespace Core::Geo
       /*!
       \brief Returns true if the cycle of points are suitable for creating a facet
        */
-      bool IsValid() const;
+      bool is_valid() const;
 
       /*!
       \brief Returns true if all the points in the cylce falls within the element
        */
-      bool IsCut(Element* element) const;
+      bool is_cut(Element* element) const;
 
       /*!
       \brief Returns all the points in the cycle
@@ -56,12 +56,12 @@ namespace Core::Geo
       /*!
       \brief add all lines from this cycle to the set of lines
       */
-      void Add(point_line_set& lines) const;
+      void add(point_line_set& lines) const;
 
       /*!
       \brief Find the common edges among the cycle of points
        */
-      void CommonEdges(plain_edge_set& edges) const;
+      void common_edges(plain_edge_set& edges) const;
 
       /*!
       \brief Get only the sides that are cut by any one of the points in the cycle
@@ -71,14 +71,14 @@ namespace Core::Geo
       /*!
       \brief Check whether these two cycles are one and the same
        */
-      bool Equals(const Cycle& other);
+      bool equals(const Cycle& other);
 
       /*!
       \brief Delete the specified point from the cycle, and make the resulting cycle valid
        */
-      void DropPoint(Point* p);
+      void drop_point(Point* p);
 
-      void TestUnique();
+      void test_unique();
 
       /*!
       \brief Add the specified point to the cycle
@@ -107,10 +107,10 @@ namespace Core::Geo
 
       void swap(Cycle& other) { std::swap(points_, other.points_); }
 
-      void GnuplotDump(std::ostream& stream) const;
+      void gnuplot_dump(std::ostream& stream) const;
 
       // output cycle as a collection of lines into gmsh
-      void GmshDump(std::ofstream& file) const;
+      void gmsh_dump(std::ofstream& file) const;
 
       /// Print the stored points to the screen
       void print() const;

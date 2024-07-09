@@ -49,9 +49,9 @@ namespace Solid
      public:
       void setup() override;
 
-      int Integrate() override;
+      int integrate() override;
 
-      int IntegrateStep() override;
+      int integrate_step() override;
 
       /// set the state of the nox group and the global state data container
       /// see class \ref Adapter::StructureNew for a detailed documentation.
@@ -62,7 +62,7 @@ namespace Solid
        *  Do the nonlinear solve, i.e. (multiple) corrector,
        *  for the time step. All boundary conditions have
        *  been set. */
-      Inpar::Solid::ConvergenceStatus Solve() override;
+      Inpar::Solid::ConvergenceStatus solve() override;
 
       /** \brief Identify residual
        *
@@ -79,7 +79,7 @@ namespace Solid
       //! @name Accessors
       //! @{
       //! return the predictor
-      [[nodiscard]] const Solid::Predict::Generic& Predictor() const
+      [[nodiscard]] const Solid::Predict::Generic& predictor() const
       {
         check_init_setup();
         return *predictor_ptr_;
@@ -92,7 +92,7 @@ namespace Solid
       };
 
       //! do something in case nonlinear solution does not converge for some reason
-      Inpar::Solid::ConvergenceStatus PerformErrorAction(
+      Inpar::Solid::ConvergenceStatus perform_error_action(
           Inpar::Solid::ConvergenceStatus nonlinsoldiv) override;
 
       //! check, if according to divercont flag time step size can be increased

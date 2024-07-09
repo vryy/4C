@@ -34,7 +34,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
     const std::string& statistics_outfilename)
     : discret_(actdis), params_(params), statistics_outfilename_(statistics_outfilename)
 {
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::cout << "This is the turbulence statistics manager of a benchmark of blood flowing "
                  "through a channel:"
@@ -93,29 +93,29 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
 
   // loop nodes and build sets of lines in z-direction
   // accessible on this proc
-  for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
+  for (int i = 0; i < discret_->num_my_row_nodes(); ++i)
   {
     // create node object
-    Core::Nodes::Node* node = discret_->lRowNode(i);
+    Core::Nodes::Node* node = discret_->l_row_node(i);
 
     // Is the actual node on z-axis?
     // => get z-coordinates of nodes on z-axis
-    if (node->X()[1] < 2e-9 && node->X()[1] > -2e-9 && node->X()[0] < 2e-9 && node->X()[0] > -2e-9)
+    if (node->x()[1] < 2e-9 && node->x()[1] > -2e-9 && node->x()[0] < 2e-9 && node->x()[0] > -2e-9)
       // then insert z-coordinate to vector "zavcoords"
-      zavcoords.insert(node->X()[2]);
+      zavcoords.insert(node->x()[2]);
   }
 
   //--------------------------------------------------------------------
   // round robin loop to communicate coordinates to all procs
   //--------------------------------------------------------------------
-  int myrank = discret_->Comm().MyPID();
-  int numprocs = discret_->Comm().NumProc();
+  int myrank = discret_->get_comm().MyPID();
+  int numprocs = discret_->get_comm().NumProc();
 
   std::vector<char> sblock;
   std::vector<char> rblock;
 
   // create an exporter for point to point communication
-  Core::Communication::Exporter exporter(discret_->Comm());
+  Core::Communication::Exporter exporter(discret_->get_comm());
 
   // first, communicate coordinates in x1-direction
   for (int np = 0; np < numprocs; ++np)
@@ -143,18 +143,18 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
 
     // receive from predecessor
     frompid = (myrank + numprocs - 1) % numprocs;
-    exporter.ReceiveAny(frompid, tag, rblock, length);
+    exporter.receive_any(frompid, tag, rblock, length);
 
     if (tag != (myrank + numprocs - 1) % numprocs)
     {
       FOUR_C_THROW("received wrong message (ReceiveAny)");
     }
 
-    exporter.Wait(request);
+    exporter.wait(request);
 
     {
       // for safety
-      exporter.Comm().Barrier();
+      exporter.get_comm().Barrier();
     }
 
     //--------------------------------------------------
@@ -201,7 +201,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
   //----------------------------------------------------------------------
   // Error Message if no nodes are on z-axis (nothing for evaluation)
   //----------------------------------------------------------------------
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     if (numzcoor_ == 0)
     {
@@ -249,35 +249,35 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
     }
 
     // Loop to get all radial coordinates of this evaluation plane
-    for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
+    for (int i = 0; i < discret_->num_my_row_nodes(); ++i)
     {
       // create node object
-      Core::Nodes::Node* node = discret_->lRowNode(i);
+      Core::Nodes::Node* node = discret_->l_row_node(i);
 
       // Get all nodes on evaluation plane at this z position with y=0 and x>2e-9
-      if (node->X()[2] < actZ + 2e-9 && node->X()[2] > actZ - 2e-9 && node->X()[1] < 2e-9 &&
-          node->X()[1] > -2e-9 && node->X()[0] > 2e-9)
+      if (node->x()[2] < actZ + 2e-9 && node->x()[2] > actZ - 2e-9 && node->x()[1] < 2e-9 &&
+          node->x()[1] > -2e-9 && node->x()[0] > 2e-9)
       {
         // insert radial coordinate (here x) to matrix
         // rcoordinates_(actRadNode, actPosEval)=1.0; //(*node).X()[0];
         // ///////////////////////////////////////////////////////////////////////////////////////////
-        ravcoords.insert((*node).X()[0]);
+        ravcoords.insert((*node).x()[0]);
         actRadNode++;
       }
     }
 
 
     int countActRadNodeOnAllProcs = 0;
-    discret_->Comm().SumAll(&actRadNode, &countActRadNodeOnAllProcs, 1);
+    discret_->get_comm().SumAll(&actRadNode, &countActRadNodeOnAllProcs, 1);
 
-    int myrank = discret_->Comm().MyPID();
-    int numprocs = discret_->Comm().NumProc();
+    int myrank = discret_->get_comm().MyPID();
+    int numprocs = discret_->get_comm().NumProc();
 
     std::vector<char> sblock;
     std::vector<char> rblock;
 
     // create an exporter for point to point communication
-    Core::Communication::Exporter exporter(discret_->Comm());
+    Core::Communication::Exporter exporter(discret_->get_comm());
 
     // first, communicate coordinates in x1-direction
     for (int np = 0; np < numprocs; ++np)
@@ -305,18 +305,18 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
 
       // receive from predecessor
       frompid = (myrank + numprocs - 1) % numprocs;
-      exporter.ReceiveAny(frompid, tag, rblock, length);
+      exporter.receive_any(frompid, tag, rblock, length);
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
         FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
-      exporter.Wait(request);
+      exporter.wait(request);
 
       {
         // for safety
-        exporter.Comm().Barrier();
+        exporter.get_comm().Barrier();
       }
 
       //--------------------------------------------------
@@ -364,7 +364,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
   // Error Message if no nodes are in radial direction in a specific evaluation plane (nothing for
   // evaluation)
   //----------------------------------------------------------------------
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     if (numrstatlocations_ == 0)
     {
@@ -401,7 +401,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
   Teuchos::RCP<std::ofstream> log;
   Teuchos::RCP<std::ofstream> log_2;
 
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     std::string s2(statistics_outfilename_);
@@ -427,7 +427,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
 
 
 
-void FLD::TurbulenceStatisticsBfda::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp)
+void FLD::TurbulenceStatisticsBfda::do_time_sample(Teuchos::RCP<Epetra_Vector> velnp)
 {
   //----------------------------------------------------------------------
   // increase sample counter
@@ -455,20 +455,20 @@ void FLD::TurbulenceStatisticsBfda::DoTimeSample(Teuchos::RCP<Epetra_Vector> vel
     int countnodes = 0;
 
     // write a 1.0 at the position of the actual node of the processor in the toggle vectors
-    for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+    for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
     {
-      Core::Nodes::Node* node = discret_->lRowNode(nn);
+      Core::Nodes::Node* node = discret_->l_row_node(nn);
 
       // If node is on z-axis then get toggle vector for pressure and velocity at actual node //
       // this is the wall node
-      if ((node->X()[2] < (*zline + 2e-9) and node->X()[2] > (*zline - 2e-9)) and
-          (node->X()[0] < (2e-9) and node->X()[0] > (-2e-9)) and
-          (node->X()[1] < (2e-9) and node->X()[1] > (-2e-9)))
+      if ((node->x()[2] < (*zline + 2e-9) and node->x()[2] > (*zline - 2e-9)) and
+          (node->x()[0] < (2e-9) and node->x()[0] > (-2e-9)) and
+          (node->x()[1] < (2e-9) and node->x()[1] > (-2e-9)))
       {
         // Creation of vector dof that stores the values that variable "discret" points to
         // dof = [position of u     position of v     position of w     position of p]
         // position in terms of position of all degrees of freedom: u1 v1 w1 p1 u2 v2 w2 p2 u3 ...
-        std::vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->dof(node);
 
         double one = 1.0;
         togglep_->ReplaceGlobalValues(1, &one, &(dof[3]));
@@ -482,7 +482,7 @@ void FLD::TurbulenceStatisticsBfda::DoTimeSample(Teuchos::RCP<Epetra_Vector> vel
 
     // Count nodes on all procs (should be 1)
     int countnodesonallprocs = 1;
-    discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
     if (countnodesonallprocs)
     {
       //----------------------------------------------------------------------
@@ -546,18 +546,18 @@ void FLD::TurbulenceStatisticsBfda::DoTimeSample(Teuchos::RCP<Epetra_Vector> vel
         if (actY < 1e-8 and actY > -1e-8) actY = 0.0;
 
         // Put 1.0 in toggle vectors if node on proc is desired node
-        for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+        for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
         {
-          Core::Nodes::Node* node = discret_->lRowNode(nn);
+          Core::Nodes::Node* node = discret_->l_row_node(nn);
 
           // If node is on desired position then get toggle vector for pressure and velocity at
           // actual node
-          if ((node->X()[1] < (actY + 2e-9) and node->X()[1] > (actY - 2e-9)) and
-              (node->X()[0] < (actX + 2e-9) and node->X()[0] > (actX - 2e-9)) and
-              (node->X()[2] < (act_pos_evaluation_[actPosEval] + 2e-9) and
-                  node->X()[2] > (act_pos_evaluation_[actPosEval] - 2e-9)))
+          if ((node->x()[1] < (actY + 2e-9) and node->x()[1] > (actY - 2e-9)) and
+              (node->x()[0] < (actX + 2e-9) and node->x()[0] > (actX - 2e-9)) and
+              (node->x()[2] < (act_pos_evaluation_[actPosEval] + 2e-9) and
+                  node->x()[2] > (act_pos_evaluation_[actPosEval] - 2e-9)))
           {
-            std::vector<int> dof = discret_->Dof(node);
+            std::vector<int> dof = discret_->dof(node);
             double one = 1.0;
             togglep_->ReplaceGlobalValues(1, &one, &(dof[3]));
             togglew_->ReplaceGlobalValues(1, &one, &(dof[2]));
@@ -569,7 +569,7 @@ void FLD::TurbulenceStatisticsBfda::DoTimeSample(Teuchos::RCP<Epetra_Vector> vel
       // Sum nodes on all procs (should be 4 nodes at a specific radius per evaluation plane except
       // of r=0 where it is 1)
       int countnodesonallprocs = 4;
-      discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
 
       // At r=0 the loop above wrote 4 times a 1.0 at the same position of the toggle vector so this
       // is a special case
@@ -604,14 +604,14 @@ void FLD::TurbulenceStatisticsBfda::DoTimeSample(Teuchos::RCP<Epetra_Vector> vel
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsBfda::DumpStatistics(int step)
+void FLD::TurbulenceStatisticsBfda::dump_statistics(int step)
 {
   //----------------------------------------------------------------------------------------------
   // file *.flow_statistics_along_z
   //----------------------------------------------------------------------------------------------
   Teuchos::RCP<std::ofstream> log;
   Teuchos::RCP<std::ofstream> log_2;
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics_along_z");  // s.append(".flow_statistics");

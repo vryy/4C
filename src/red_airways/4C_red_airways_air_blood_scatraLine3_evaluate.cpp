@@ -84,7 +84,7 @@ int Discret::ELEMENTS::RedAirBloodScatraLine3::evaluate(Teuchos::ParameterList& 
   /*
   Here must add the steps for evaluating an element
   */
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
   switch (act)
   {
@@ -158,7 +158,7 @@ int Discret::ELEMENTS::RedAirBloodScatraLine3::evaluate(Teuchos::ParameterList& 
     break;
     case solve_blood_air_transport:
     {
-      Discret::ELEMENTS::RedAirBloodScatraLine3ImplInterface::Impl(this)->solve_blood_air_transport(
+      Discret::ELEMENTS::RedAirBloodScatraLine3ImplInterface::impl(this)->solve_blood_air_transport(
           this, elevec1, elevec2, params, discretization, lm, mat);
     }
     break;

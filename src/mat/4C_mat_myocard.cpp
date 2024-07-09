@@ -53,7 +53,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::Myocard::create_material()
 Mat::MyocardType Mat::MyocardType::instance_;
 
 
-Core::Communication::ParObject* Mat::MyocardType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MyocardType::create(const std::vector<char>& data)
 {
   Mat::Myocard* myocard = new Mat::Myocard();
   myocard->unpack(data);
@@ -95,12 +95,12 @@ void Mat::Myocard::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
   add_to_pack(data, nb_state_variables_);
   add_to_pack(data, difftensor_);
@@ -111,15 +111,15 @@ void Mat::Myocard::pack(Core::Communication::PackBuffer& data) const
     num = 0;
   add_to_pack(data, num);
   if (myocard_mat_ != Teuchos::null)
-    add_to_pack(data, myocard_mat_->GetNumberOfGP());
+    add_to_pack(data, myocard_mat_->get_number_of_gp());
   else
     add_to_pack(data, 0);
 
   // pack history data
   if (myocard_mat_ != Teuchos::null)
     for (int k = -1; k < nb_state_variables_; ++k)  // Starting from -1 for mechanical activation
-      for (int i = 0; i < myocard_mat_->GetNumberOfGP(); ++i)  // loop over Gauss points
-        add_to_pack(data, myocard_mat_->GetInternalState(k, i));
+      for (int i = 0; i < myocard_mat_->get_number_of_gp(); ++i)  // loop over Gauss points
+        add_to_pack(data, myocard_mat_->get_internal_state(k, i));
 
   return;
 }
@@ -131,7 +131,7 @@ void Mat::Myocard::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid
   int matid;
@@ -149,24 +149,24 @@ void Mat::Myocard::unpack(const std::vector<char>& data)
   extract_from_pack(position, data, num_gp);
 
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() !=
+  if (Global::Problem::instance()->materials() !=
       Teuchos::null)  // it does not enter here in postprocessing
   {
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
       {
         params_ = static_cast<Mat::PAR::Myocard*>(mat);
       }
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
 
       // Set number of Gauss points
-      SetGP(num_gp);
+      set_gp(num_gp);
 
       if (num_gp > 0)
       {
@@ -180,7 +180,7 @@ void Mat::Myocard::unpack(const std::vector<char>& data)
           for (int i = 0; i < params_->num_gp; ++i)  // loop over Gauss points
           {
             extract_from_pack(position, data, val);
-            myocard_mat_->SetInternalState(k, val, i);
+            myocard_mat_->set_internal_state(k, val, i);
           }
 
         if (position != data.size())
@@ -197,7 +197,7 @@ void Mat::Myocard::unpack_material(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid
   int matid;
@@ -214,24 +214,24 @@ void Mat::Myocard::unpack_material(const std::vector<char>& data)
   extract_from_pack(position, data, num_gp);
 
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() !=
+  if (Global::Problem::instance()->materials() !=
       Teuchos::null)  // it does not enter here in postprocessing
   {
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
       {
         params_ = static_cast<Mat::PAR::Myocard*>(mat);
       }
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
 
       // Set number of Gauss points
-      SetGP(myocard_mat_->GetNumberOfGP());
+      set_gp(myocard_mat_->get_number_of_gp());
 
       // unpack history data
       double val;
@@ -239,7 +239,7 @@ void Mat::Myocard::unpack_material(const std::vector<char>& data)
         for (int i = 0; i < params_->num_gp; ++i)     // loop over Gauss points
         {
           extract_from_pack(position, data, val);
-          myocard_mat_->SetInternalState(k, val, i);
+          myocard_mat_->set_internal_state(k, val, i);
         }
 
       if (position != data.size())
@@ -363,13 +363,13 @@ void Mat::Myocard::setup_diffusion_tensor(const Core::LinAlg::Matrix<2, 1>& fibe
   return;
 }
 
-void Mat::Myocard::Diffusivity(Core::LinAlg::Matrix<1, 1>& diffus3, int gp) const
+void Mat::Myocard::diffusivity(Core::LinAlg::Matrix<1, 1>& diffus3, int gp) const
 {
   diffus3(0, 0) = difftensor_[gp](0, 0);
   return;
 }
 
-void Mat::Myocard::Diffusivity(Core::LinAlg::Matrix<2, 2>& diffus3, int gp) const
+void Mat::Myocard::diffusivity(Core::LinAlg::Matrix<2, 2>& diffus3, int gp) const
 {
   for (int i = 0; i < 2; i++)
   {
@@ -382,7 +382,7 @@ void Mat::Myocard::Diffusivity(Core::LinAlg::Matrix<2, 2>& diffus3, int gp) cons
   return;
 }
 
-void Mat::Myocard::Diffusivity(Core::LinAlg::Matrix<3, 3>& diffus3, int gp) const
+void Mat::Myocard::diffusivity(Core::LinAlg::Matrix<3, 3>& diffus3, int gp) const
 {
   for (int i = 0; i < 3; i++)
   {
@@ -397,10 +397,10 @@ void Mat::Myocard::Diffusivity(Core::LinAlg::Matrix<3, 3>& diffus3, int gp) cons
 /*----------------------------------------------------------------------*
  |                                                           cbert 09/13 |
  *----------------------------------------------------------------------*/
-double Mat::Myocard::ReaCoeff(const double phi, const double dt) const
+double Mat::Myocard::rea_coeff(const double phi, const double dt) const
 {
   double reacoeff = params_->time_scale;
-  reacoeff *= myocard_mat_->ReaCoeff(phi, dt * params_->time_scale);
+  reacoeff *= myocard_mat_->rea_coeff(phi, dt * params_->time_scale);
 
   return reacoeff;
 }
@@ -408,13 +408,13 @@ double Mat::Myocard::ReaCoeff(const double phi, const double dt) const
 /*----------------------------------------------------------------------*
  |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
-double Mat::Myocard::ReaCoeff(const double phi, const double dt, int gp) const
+double Mat::Myocard::rea_coeff(const double phi, const double dt, int gp) const
 {
   double reacoeff = params_->time_scale;
   if (gp == -1)
-    reacoeff *= myocard_mat_->ReaCoeff(phi, dt * params_->time_scale);
+    reacoeff *= myocard_mat_->rea_coeff(phi, dt * params_->time_scale);
   else
-    reacoeff *= myocard_mat_->ReaCoeff(phi, dt * params_->time_scale, gp);
+    reacoeff *= myocard_mat_->rea_coeff(phi, dt * params_->time_scale, gp);
 
   return reacoeff;
 }
@@ -422,13 +422,13 @@ double Mat::Myocard::ReaCoeff(const double phi, const double dt, int gp) const
 /*----------------------------------------------------------------------*
  | reaction coefficient at time n                        hoermann 11/16 |
  *----------------------------------------------------------------------*/
-double Mat::Myocard::ReaCoeffN(const double phi, const double dt, int gp) const
+double Mat::Myocard::rea_coeff_n(const double phi, const double dt, int gp) const
 {
   double reacoeff = params_->time_scale;
   if (gp == -1)
-    reacoeff *= myocard_mat_->ReaCoeffN(phi, dt * params_->time_scale);
+    reacoeff *= myocard_mat_->rea_coeff_n(phi, dt * params_->time_scale);
   else
-    reacoeff *= myocard_mat_->ReaCoeffN(phi, dt * params_->time_scale, gp);
+    reacoeff *= myocard_mat_->rea_coeff_n(phi, dt * params_->time_scale, gp);
 
   return reacoeff;
 }
@@ -437,13 +437,13 @@ double Mat::Myocard::ReaCoeffN(const double phi, const double dt, int gp) const
 /*----------------------------------------------------------------------*
  |                                                           cbert 09/13 |
  *----------------------------------------------------------------------*/
-double Mat::Myocard::ReaCoeffDeriv(const double phi, const double dt) const
+double Mat::Myocard::rea_coeff_deriv(const double phi, const double dt) const
 {
   double ReaCoeffDeriv = 0.0;
   if (params_->dt_deriv != 0.0)
   {
-    double ReaCoeff_t2 = ReaCoeff((phi + params_->dt_deriv), dt);
-    double ReaCoeff_t1 = ReaCoeff(phi, dt);
+    double ReaCoeff_t2 = rea_coeff((phi + params_->dt_deriv), dt);
+    double ReaCoeff_t1 = rea_coeff(phi, dt);
     ReaCoeffDeriv = (ReaCoeff_t2 - ReaCoeff_t1) / (params_->dt_deriv);
   }
   return ReaCoeffDeriv;
@@ -453,13 +453,13 @@ double Mat::Myocard::ReaCoeffDeriv(const double phi, const double dt) const
 /*----------------------------------------------------------------------*
  |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
-double Mat::Myocard::ReaCoeffDeriv(const double phi, const double dt, int gp) const
+double Mat::Myocard::rea_coeff_deriv(const double phi, const double dt, int gp) const
 {
   double ReaCoeffDeriv = 0.0;
   if (params_->dt_deriv != 0.0)
   {
-    double ReaCoeff_t2 = ReaCoeff((phi + params_->dt_deriv), dt, gp);
-    double ReaCoeff_t1 = ReaCoeff(phi, dt, gp);
+    double ReaCoeff_t2 = rea_coeff((phi + params_->dt_deriv), dt, gp);
+    double ReaCoeff_t1 = rea_coeff(phi, dt, gp);
     ReaCoeffDeriv = (ReaCoeff_t2 - ReaCoeff_t1) / (params_->dt_deriv);
   }
   return ReaCoeffDeriv;
@@ -479,10 +479,10 @@ int Mat::Myocard::get_number_of_internal_state_variables() const
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material          cbert 08/13 |
  *----------------------------------------------------------------------*/
-double Mat::Myocard::GetInternalState(const int k) const
+double Mat::Myocard::get_internal_state(const int k) const
 {
   double val = 0.0;
-  val = myocard_mat_->GetInternalState(k);
+  val = myocard_mat_->get_internal_state(k);
   return val;
 }
 
@@ -490,28 +490,28 @@ double Mat::Myocard::GetInternalState(const int k) const
  |  returns current internal state of the material       hoermann 09/15 |
  |  for multiple points per element                                     |
  *----------------------------------------------------------------------*/
-double Mat::Myocard::GetInternalState(const int k, int gp) const
+double Mat::Myocard::get_internal_state(const int k, int gp) const
 {
   double val = 0.0;
-  val = myocard_mat_->GetInternalState(k, gp);
+  val = myocard_mat_->get_internal_state(k, gp);
   return val;
 }
 
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material          cbert 08/13 |
  *----------------------------------------------------------------------*/
-void Mat::Myocard::SetInternalState(const int k, const double val)
+void Mat::Myocard::set_internal_state(const int k, const double val)
 {
-  myocard_mat_->SetInternalState(k, val);
+  myocard_mat_->set_internal_state(k, val);
 }
 
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material       hoermann 09/15 |
  |  for multiple points per element                                     |
  *----------------------------------------------------------------------*/
-void Mat::Myocard::SetInternalState(const int k, const double val, int gp)
+void Mat::Myocard::set_internal_state(const int k, const double val, int gp)
 {
-  myocard_mat_->SetInternalState(k, val, gp);
+  myocard_mat_->set_internal_state(k, val, gp);
 }
 
 /*----------------------------------------------------------------------*
@@ -528,20 +528,20 @@ int Mat::Myocard::get_number_of_ionic_currents() const
  |  returns current internal currents                    hoermann 09/15 |
  |  for multiple points per element                                     |
  *----------------------------------------------------------------------*/
-double Mat::Myocard::GetIonicCurrents(const int k, int gp) const
+double Mat::Myocard::get_ionic_currents(const int k, int gp) const
 {
   double val = 0.0;
-  val = myocard_mat_->GetIonicCurrents(k, gp);
+  val = myocard_mat_->get_ionic_currents(k, gp);
   return val;
 }
 
 /*----------------------------------------------------------------------*
  |  returns current internal currents                       cbert 08/13 |
  *----------------------------------------------------------------------*/
-double Mat::Myocard::GetIonicCurrents(const int k) const
+double Mat::Myocard::get_ionic_currents(const int k) const
 {
   double val = 0.0;
-  val = myocard_mat_->GetIonicCurrents(k);
+  val = myocard_mat_->get_ionic_currents(k);
   return val;
 }
 
@@ -594,6 +594,6 @@ void Mat::Myocard::update(const double phi, const double dt)
 /*----------------------------------------------------------------------*
  |  get number of Gauss points                           hoermann 12/16 |
  *----------------------------------------------------------------------*/
-int Mat::Myocard::GetNumberOfGP() const { return myocard_mat_->GetNumberOfGP(); };
+int Mat::Myocard::get_number_of_gp() const { return myocard_mat_->get_number_of_gp(); };
 
 FOUR_C_NAMESPACE_CLOSE

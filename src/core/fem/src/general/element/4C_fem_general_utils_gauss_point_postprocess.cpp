@@ -37,7 +37,7 @@ void Core::FE::ExtrapolateGaussPointQuantityToNodes(Core::Elements::Element& ele
     const Core::LinAlg::SerialDenseMatrix& data, const Core::FE::Discretization& dis,
     Epetra_MultiVector& nodal_data)
 {
-  switch (ele.Shape())
+  switch (ele.shape())
   {
     case Core::FE::CellType::hex8:
     {
@@ -125,7 +125,7 @@ void Core::FE::ExtrapolateGaussPointQuantityToNodes(Core::Elements::Element& ele
     break;
     default:
       FOUR_C_THROW("Your discretization type (%s) is not yet in the list!",
-          Core::FE::CellTypeToString(ele.Shape()).c_str());
+          Core::FE::CellTypeToString(ele.shape()).c_str());
   }
 }
 

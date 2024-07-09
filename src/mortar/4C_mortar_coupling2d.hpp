@@ -64,37 +64,37 @@ namespace Mortar
      \brief Get interface discretization
 
      */
-    virtual Core::FE::Discretization& Discret() const { return idiscret_; }
+    virtual Core::FE::Discretization& discret() const { return idiscret_; }
 
     /*!
      \brief Get coupling slave element
 
      */
-    virtual Mortar::Element& SlaveElement() const { return sele_; }
+    virtual Mortar::Element& slave_element() const { return sele_; }
 
     /*!
      \brief Get coupling master element
 
      */
-    virtual Mortar::Element& MasterElement() const { return mele_; }
+    virtual Mortar::Element& master_element() const { return mele_; }
 
     /*!
      \brief Get problem dimension (here: 2D)
 
      */
-    virtual const int& Dim() { return dim_; };
+    virtual const int& n_dim() { return dim_; };
 
     /*!
      \brief Get coupling / FE ansatz type (true = quadratic)
 
      */
-    virtual const bool& Quad() { return quad_; };
+    virtual const bool& quad() { return quad_; };
 
     /*!
      \brief Return the LM interpolation / testing type for quadratic FE
 
      */
-    Inpar::Mortar::LagMultQuad LagMultQuad()
+    Inpar::Mortar::LagMultQuad lag_mult_quad()
     {
       return Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD");
     }
@@ -103,7 +103,7 @@ namespace Mortar
      \brief Return the LM shape fcn type
 
      */
-    Inpar::Mortar::ShapeFcn ShapeFcn()
+    Inpar::Mortar::ShapeFcn shape_fcn()
     {
       return Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
     }
@@ -118,19 +118,19 @@ namespace Mortar
      \brief Get projection status of the four end nodes
 
      */
-    virtual const std::vector<bool>& HasProj() { return hasproj_; }
+    virtual const std::vector<bool>& has_proj() { return hasproj_; }
 
     /*!
      \brief Get overlap regions in parameter spaces
 
      */
-    virtual const std::vector<double>& XiProj() { return xiproj_; }
+    virtual const std::vector<double>& xi_proj() { return xiproj_; }
 
     /*!
      \brief Get overlap status
 
      */
-    virtual const bool& Overlap() { return overlap_; };
+    virtual const bool& overlap() { return overlap_; };
 
     //@}
 
@@ -146,7 +146,7 @@ namespace Mortar
      coordinates of the 4 projection points are stored in xiproj.
 
      */
-    virtual bool Project();
+    virtual bool project();
 
     /*!
      \brief Detect overlap of slave / master pair
@@ -159,7 +159,7 @@ namespace Mortar
      is stored in the boolean variable overlap.
 
      */
-    virtual bool DetectOverlap();
+    virtual bool detect_overlap();
 
     /*!
      \brief Integrate overlap of slave / master pair
@@ -169,7 +169,7 @@ namespace Mortar
      integration always includes the Mortar matrices D/M and the gap g.
 
      */
-    virtual bool IntegrateOverlap(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
+    virtual bool integrate_overlap(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
 
     //@}
    private:
@@ -189,7 +189,7 @@ namespace Mortar
      \brief Get communicator
 
      */
-    virtual const Epetra_Comm& comm() const;
+    virtual const Epetra_Comm& get_comm() const;
 
     // don't want = operator and cctor
     Coupling2d operator=(const Coupling2d& old);
@@ -238,31 +238,31 @@ namespace Mortar
      \brief Get coupling slave element
 
      */
-    virtual Mortar::Element& SlaveElement() const { return *sele_; }
+    virtual Mortar::Element& slave_element() const { return *sele_; }
 
     /*!
      \brief Get one specific coupling master element
 
      */
-    virtual Mortar::Element& MasterElement(int k) const { return *(mele_[k]); }
+    virtual Mortar::Element& master_element(int k) const { return *(mele_[k]); }
 
     /*!
      \brief Get all coupling master elements
 
      */
-    virtual std::vector<Mortar::Element*> MasterElements() const { return mele_; }
+    virtual std::vector<Mortar::Element*> master_elements() const { return mele_; }
 
     /*!
      \brief Get coupling pairs
 
      */
-    virtual std::vector<Teuchos::RCP<Mortar::Coupling2d>>& Coupling() { return coup_; }
+    virtual std::vector<Teuchos::RCP<Mortar::Coupling2d>>& coupling() { return coup_; }
 
     /*!
      \brief Get type of quadratic LM interpolation
 
      */
-    virtual Inpar::Mortar::LagMultQuad LagMultQuad()
+    virtual Inpar::Mortar::LagMultQuad lag_mult_quad()
     {
       return Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD");
     }
@@ -271,7 +271,7 @@ namespace Mortar
      \brief Get integration type
 
      */
-    virtual Inpar::Mortar::IntType IntType()
+    virtual Inpar::Mortar::IntType int_type()
     {
       return Core::UTILS::IntegralValue<Inpar::Mortar::IntType>(imortar_, "INTTYPE");
     }
@@ -286,13 +286,13 @@ namespace Mortar
      \brief Get coupling type
 
      */
-    virtual const bool& Quad() { return quad_; };
+    virtual const bool& quad() { return quad_; };
 
     /*!
      \brief Return the LM shape fcn type
 
      */
-    Inpar::Mortar::ShapeFcn ShapeFcn()
+    Inpar::Mortar::ShapeFcn shape_fcn()
     {
       return Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
     }

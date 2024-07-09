@@ -57,12 +57,12 @@ namespace Adapter
     //@}
 
     //! communicate object at the interface
-    Teuchos::RCP<const ALE::UTILS::MapExtractor> Interface() const;
+    Teuchos::RCP<const ALE::UTILS::MapExtractor> interface() const;
 
     //! apply interface displacements
     void apply_interface_displacements(Teuchos::RCP<const Epetra_Vector> idisp)
     {
-      interface_->insert_fsi_cond_vector(idisp, WriteAccessDispnp());
+      interface_->insert_fsi_cond_vector(idisp, write_access_dispnp());
     }
 
     //! get Dirichlet map extractor

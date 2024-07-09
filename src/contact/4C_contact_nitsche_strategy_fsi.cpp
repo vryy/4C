@@ -60,13 +60,13 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
     const Core::LinAlg::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
 {
   // No master elements found
-  if (!cele->MoData().NumSearchElements())
+  if (!cele->mo_data().num_search_elements())
   {
     gap = 1.e12;
     return true;
   }
-  if (!(cele->Shape() == Core::FE::CellType::quad4 || cele->Shape() == Core::FE::CellType::quad8 ||
-          cele->Shape() == Core::FE::CellType::quad9))
+  if (!(cele->shape() == Core::FE::CellType::quad4 || cele->shape() == Core::FE::CellType::quad8 ||
+          cele->shape() == Core::FE::CellType::quad9))
     FOUR_C_THROW("This element shape is not yet implemented!");
 
   // find the corresponding master element
@@ -76,18 +76,18 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
   static const double tol = 1e-4;
   double near = 0.;
   double max_relevant_gap = gap * 2.;  // safety factor 2
-  for (int m = 0; m < cele->MoData().NumSearchElements(); ++m)
+  for (int m = 0; m < cele->mo_data().num_search_elements(); ++m)
   {
     if (other_cele) break;
     auto* test_ele = dynamic_cast<CONTACT::Element*>(
-        contactinterface.Discret().gElement(cele->MoData().SearchElements()[m]));
+        contactinterface.discret().g_element(cele->mo_data().search_elements()[m]));
     if (!test_ele)
-      FOUR_C_THROW("Cannot find element with gid %d", cele->MoData().SearchElements()[m]);
+      FOUR_C_THROW("Cannot find element with gid %d", cele->mo_data().search_elements()[m]);
 
-    Mortar::Projector::Impl(*cele, *test_ele)
-        ->ProjectGaussPoint3D(*cele, xsi.data(), *test_ele, mxi, projalpha);
+    Mortar::Projector::impl(*cele, *test_ele)
+        ->project_gauss_point3_d(*cele, xsi.data(), *test_ele, mxi, projalpha);
     bool is_inside = false;
-    switch (test_ele->Shape())
+    switch (test_ele->shape())
     {
       case Core::FE::CellType::quad4:
       case Core::FE::CellType::quad8:
@@ -95,7 +95,7 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
         if (abs(mxi[0]) < 1. + tol && abs(mxi[1]) < 1. + tol) is_inside = true;
         break;
       default:
-        FOUR_C_THROW("This element shape is not yet implemented (%d)!", test_ele->Shape());
+        FOUR_C_THROW("This element shape is not yet implemented (%d)!", test_ele->shape());
     }
     if (is_inside) other_cele = test_ele;
     // distance check
@@ -103,9 +103,9 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
     {
       double center[2] = {0., 0.};
       Core::LinAlg::Matrix<3, 1> sc, mc;
-      cele->LocalToGlobal(center, sc.data(), 0);
-      other_cele->LocalToGlobal(center, mc.data(), 0);
-      near = 2. * std::max(cele->MaxEdgeSize(), other_cele->MaxEdgeSize());
+      cele->local_to_global(center, sc.data(), 0);
+      other_cele->local_to_global(center, mc.data(), 0);
+      near = 2. * std::max(cele->max_edge_size(), other_cele->max_edge_size());
       sc.update(-1., mc, 1.);
       if (sc.norm2() > std::max(near, max_relevant_gap)) other_cele = nullptr;
     }
@@ -129,8 +129,8 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
   Core::LinAlg::Matrix<2, 1> mxi_m(mxi, true);
   double mx_glob[3];
   double sx_glob[3];
-  cele->LocalToGlobal(xsi.data(), sx_glob, 0);
-  other_cele->LocalToGlobal(mxi, mx_glob, 0);
+  cele->local_to_global(xsi.data(), sx_glob, 0);
+  other_cele->local_to_global(mxi, mx_glob, 0);
   Core::LinAlg::Matrix<3, 1> mx(mx_glob, true);
   Core::LinAlg::Matrix<3, 1> sx(sx_glob, true);
 

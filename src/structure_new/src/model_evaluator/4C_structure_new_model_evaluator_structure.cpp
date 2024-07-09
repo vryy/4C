@@ -82,7 +82,7 @@ void Solid::MODELEVALUATOR::Structure::setup()
   // get the structural dynamic content
   {
     // setup important evaluation booleans
-    masslin_type_ = tim_int().get_data_sdyn().GetMassLinType();
+    masslin_type_ = tim_int().get_data_sdyn().get_mass_lin_type();
   }
   // setup new variables
   {
@@ -94,23 +94,25 @@ void Solid::MODELEVALUATOR::Structure::setup()
     if (global_in_output().get_runtime_output_params() != Teuchos::null)
     {
       visualization_params_ = Core::IO::VisualizationParametersFactory(
-          Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-          *Global::Problem::Instance()->OutputControlFile(), global_state().get_time_n());
+          Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
+          *Global::Problem::instance()->output_control_file(), global_state().get_time_n());
 
       // We only want to create the respective writers if they are actually needed. Therefore, we
       // get the global number ob beam and non-beam elements here. Based on that number we know
       // which output writers need to be initialized.
       const auto discretization =
           Teuchos::rcp_dynamic_cast<const Core::FE::Discretization>(discret_ptr(), true);
-      int number_my_solid_elements = std::count_if(discretization->MyRowElementRange().begin(),
-          discretization->MyRowElementRange().end(),
+      int number_my_solid_elements = std::count_if(discretization->my_row_element_range().begin(),
+          discretization->my_row_element_range().end(),
           [](const auto* row_element)
           { return dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(row_element) == nullptr; });
-      int number_my_beam_elements = discretization->NumMyRowElements() - number_my_solid_elements;
+      int number_my_beam_elements =
+          discretization->num_my_row_elements() - number_my_solid_elements;
       int number_global_solid_elements = 0;
       int number_global_beam_elements = 0;
-      discretization->Comm().MaxAll(&number_my_solid_elements, &number_global_solid_elements, 1);
-      discretization->Comm().MaxAll(&number_my_beam_elements, &number_global_beam_elements, 1);
+      discretization->get_comm().MaxAll(
+          &number_my_solid_elements, &number_global_solid_elements, 1);
+      discretization->get_comm().MaxAll(&number_my_beam_elements, &number_global_beam_elements, 1);
 
       if (global_in_output().get_runtime_output_params()->output_structure() &&
           number_global_solid_elements > 0)
@@ -143,10 +145,10 @@ void Solid::MODELEVALUATOR::Structure::reset(const Epetra_Vector& x)
   fint_np().PutScalar(0.0);
 
   // reset stiffness matrix
-  stiff().Zero();
+  stiff().zero();
 
   // reset modified stiffness matrix
-  stiff_ptc().Zero();
+  stiff_ptc().zero();
 
 
   // set evaluation time back to zero
@@ -259,8 +261,8 @@ bool Solid::MODELEVALUATOR::Structure::assemble_force(
 bool Solid::MODELEVALUATOR::Structure::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
-  int err = stiff().Scale(timefac_np);
-  global_state().assign_model_block(jac, stiff(), Type(), Solid::MatBlockType::displ_displ);
+  int err = stiff().scale(timefac_np);
+  global_state().assign_model_block(jac, stiff(), type(), Solid::MatBlockType::displ_displ);
 
   // add the visco and mass contributions
   integrator().add_visco_mass_contributions(jac);
@@ -281,11 +283,11 @@ bool Solid::MODELEVALUATOR::Structure::initialize_inertia_and_damping()
       Teuchos::null, Teuchos::null};
 
   // create vector with zero entries
-  Teuchos::RCP<const Epetra_Vector> zeros = integrator().get_dbc().GetZerosPtr();
+  Teuchos::RCP<const Epetra_Vector> zeros = integrator().get_dbc().get_zeros_ptr();
 
   // set vector values needed by elements
   // --> initially zero !!!
-  discret().ClearState();
+  discret().clear_state();
   discret().set_state(0, "residual displacement", zeros);
   discret().set_state(0, "displacement", zeros);
 
@@ -319,7 +321,7 @@ bool Solid::MODELEVALUATOR::Structure::apply_force_internal()
       Teuchos::null, Teuchos::null};
 
   // set vector values needed by elements
-  discret().ClearState();
+  discret().clear_state();
   discret().set_state(0, "residual displacement", dis_incr_ptr_);
   discret().set_state(0, "displacement", global_state().get_dis_np());
   discret().set_state(0, "velocity", global_state().get_vel_np());
@@ -348,7 +350,7 @@ bool Solid::MODELEVALUATOR::Structure::apply_force_external()
   // evaluate_neumann routine.
   eval_data().set_action_type(Core::Elements::none);
   // set vector values needed by elements
-  discret().ClearState();
+  discret().clear_state();
   discret().set_state(0, "displacement", global_state().get_dis_n());
   if (eval_data().get_damping_type() == Inpar::Solid::damp_material)
     discret().set_state(0, "velocity", global_state().get_vel_n());
@@ -367,7 +369,7 @@ bool Solid::MODELEVALUATOR::Structure::apply_force_stiff_external()
   if (pre_apply_force_stiff_external(fext_np(), *stiff_ptr_)) return true;
 
   // set vector values needed by elements
-  discret().ClearState();
+  discret().clear_state();
   discret().set_state(0, "displacement", global_state().get_dis_n());
 
   if (eval_data().get_damping_type() == Inpar::Solid::damp_material)
@@ -395,7 +397,7 @@ bool Solid::MODELEVALUATOR::Structure::pre_apply_force_stiff_external(
   check_init_setup();
 
   const auto* impl_ptr = dynamic_cast<const Solid::TimeInt::Implicit*>(&tim_int());
-  if (impl_ptr) return impl_ptr->Predictor().pre_apply_force_external(fextnp);
+  if (impl_ptr) return impl_ptr->predictor().pre_apply_force_external(fextnp);
 
   return false;
 }
@@ -412,7 +414,7 @@ bool Solid::MODELEVALUATOR::Structure::apply_force_stiff_internal()
       Teuchos::null, Teuchos::null};
 
   // set vector values needed by elements
-  discret().ClearState();
+  discret().clear_state();
   discret().set_state(0, "residual displacement", dis_incr_ptr_);
   discret().set_state(0, "displacement", global_state().get_dis_np());
   discret().set_state(0, "velocity", global_state().get_vel_np());
@@ -471,7 +473,7 @@ void Solid::MODELEVALUATOR::Structure::material_damping_contributions(
   // set the discretization state
   discret().set_state(0, "velocity", global_state().get_vel_np());
   // reset damping matrix
-  damp().Zero();
+  damp().zero();
   // add the stiffness matrix as well (also for the apply_force case!)
   eval_mat[0] = Teuchos::rcpFromRef(*stiff_ptr_);
   // set damping matrix
@@ -485,10 +487,10 @@ void Solid::MODELEVALUATOR::Structure::inertial_contributions(
 {
   check_init_setup();
 
-  if (tim_int().get_data_sdyn_ptr()->NeglectInertia()) return;
+  if (tim_int().get_data_sdyn_ptr()->neglect_inertia()) return;
 
   // overwrite element action
-  if (tim_int().get_data_sdyn().IsMassLumping())
+  if (tim_int().get_data_sdyn().is_mass_lumping())
     eval_data().set_action_type(Core::Elements::struct_calc_nlnstifflmass);
   else
     eval_data().set_action_type(Core::Elements::struct_calc_nlnstiffmass);
@@ -497,7 +499,7 @@ void Solid::MODELEVALUATOR::Structure::inertial_contributions(
   discret().set_state(0, "velocity", global_state().get_vel_np());
   discret().set_state(0, "acceleration", global_state().get_acc_np());
   // reset the mass matrix
-  mass().Zero();
+  mass().zero();
   // set mass matrix
   eval_mat[1] = global_state().get_mass_matrix();
   // set inertial vector if necessary
@@ -510,7 +512,7 @@ void Solid::MODELEVALUATOR::Structure::inertial_contributions(Teuchos::RCP<Epetr
 {
   check_init_setup();
 
-  if (masslin_type_ == Inpar::Solid::ml_none or tim_int().get_data_sdyn_ptr()->NeglectInertia())
+  if (masslin_type_ == Inpar::Solid::ml_none or tim_int().get_data_sdyn_ptr()->neglect_inertia())
     return;
 
   // overwrite element action
@@ -529,17 +531,17 @@ void Solid::MODELEVALUATOR::Structure::inertial_and_viscous_forces()
 {
   check_init_setup();
 
-  if (masslin_type_ == Inpar::Solid::ml_none and !tim_int().get_data_sdyn_ptr()->NeglectInertia())
+  if (masslin_type_ == Inpar::Solid::ml_none and !tim_int().get_data_sdyn_ptr()->neglect_inertia())
   {
     // calculate the inertial force at t_{n+1}
-    mass().Multiply(false, *global_state().get_acc_np(), finertial_np());
+    mass().multiply(false, *global_state().get_acc_np(), finertial_np());
   }
 
   // calculate the viscous/damping force at t_{n+1}
   if (eval_data().get_damping_type() != Inpar::Solid::damp_none)
   {
-    if (not damp().Filled()) damp().Complete();
-    damp().Multiply(false, *global_state().get_vel_np(), fvisco_np());
+    if (not damp().filled()) damp().complete();
+    damp().multiply(false, *global_state().get_vel_np(), fvisco_np());
   }
 }
 
@@ -547,9 +549,9 @@ void Solid::MODELEVALUATOR::Structure::inertial_and_viscous_forces()
  *----------------------------------------------------------------------------*/
 void Solid::MODELEVALUATOR::Structure::fill_complete()
 {
-  if (not stiff_ptr_->Filled()) stiff_ptr_->Complete();
+  if (not stiff_ptr_->filled()) stiff_ptr_->complete();
 
-  if (not mass().Filled()) mass().Complete();
+  if (not mass().filled()) mass().complete();
 }
 
 /*----------------------------------------------------------------------------*
@@ -562,8 +564,8 @@ void Solid::MODELEVALUATOR::Structure::rayleigh_damping_matrix()
   const double& dampm = tim_int().get_data_sdyn().get_damping_mass_factor();
 
   // damping matrix with initial stiffness
-  damp().Add(stiff(), false, dampk, 0.0);
-  damp().Add(mass(), false, dampm, 1.0);
+  damp().add(stiff(), false, dampk, 0.0);
+  damp().add(mass(), false, dampm, 1.0);
 }
 
 /*----------------------------------------------------------------------------*
@@ -629,7 +631,7 @@ void Solid::MODELEVALUATOR::Structure::init_output_runtime_structure_gauss_point
   eval_data().set_delta_time((*global_state().get_delta_time())[0]);
 
   // Set vector values needed by elements.
-  discret().ClearState();
+  discret().clear_state();
 
   // Set dummy evaluation vectors and matrices.
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
@@ -639,7 +641,8 @@ void Solid::MODELEVALUATOR::Structure::init_output_runtime_structure_gauss_point
 
   evaluate_internal(eval_mat.data(), eval_vec.data());
 
-  eval_data().get_gauss_point_data_output_manager_ptr()->distribute_quantities(discret().Comm());
+  eval_data().get_gauss_point_data_output_manager_ptr()->distribute_quantities(
+      discret().get_comm());
 }
 
 /*----------------------------------------------------------------------------*
@@ -651,10 +654,10 @@ void Solid::MODELEVALUATOR::Structure::write_time_step_output_runtime_structure(
   // export displacement state to column format
   const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
   Teuchos::RCP<Epetra_Vector> disn_col =
-      Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
+      Teuchos::rcp(new Epetra_Vector(*discret.dof_col_map(), true));
   Core::LinAlg::Export(*global_state().get_dis_n(), *disn_col);
   Teuchos::RCP<Epetra_Vector> veln_col =
-      Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
+      Teuchos::rcp(new Epetra_Vector(*discret.dof_col_map(), true));
   Core::LinAlg::Export(*global_state().get_vel_n(), *veln_col);
 
   auto [output_time, output_step] = Core::IO::GetTimeAndTimeStepIndexForOutput(
@@ -671,10 +674,10 @@ void Solid::MODELEVALUATOR::Structure::write_iteration_output_runtime_structure(
   // export displacement state to column format
   const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
   Teuchos::RCP<Epetra_Vector> disnp_col =
-      Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
+      Teuchos::rcp(new Epetra_Vector(*discret.dof_col_map(), true));
   Core::LinAlg::Export(*global_state().get_dis_np(), *disnp_col);
   Teuchos::RCP<Epetra_Vector> velnp_col =
-      Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
+      Teuchos::rcp(new Epetra_Vector(*discret.dof_col_map(), true));
   Core::LinAlg::Export(*global_state().get_vel_np(), *velnp_col);
 
   auto [output_time, output_step] =
@@ -712,18 +715,18 @@ void Solid::MODELEVALUATOR::Structure::write_output_runtime_structure(
 
   // append element owner if desired
   if (structure_output_params.output_element_owner())
-    vtu_writer_ptr_->AppendElementOwner("element_owner");
+    vtu_writer_ptr_->append_element_owner("element_owner");
 
   // append element GIDs if desired
   if (structure_output_params.output_element_gid())
-    vtu_writer_ptr_->AppendElementGID("element_gid");
+    vtu_writer_ptr_->append_element_gid("element_gid");
 
   // append element ghosting information if desired
   if (structure_output_params.output_element_ghosting())
     vtu_writer_ptr_->append_element_ghosting_information();
 
   // append node GIDs if desired
-  if (structure_output_params.output_node_gid()) vtu_writer_ptr_->AppendNodeGID("node_gid");
+  if (structure_output_params.output_node_gid()) vtu_writer_ptr_->append_node_gid("node_gid");
 
   // append stress if desired
   if (structure_output_params.output_stress_strain() and
@@ -831,7 +834,7 @@ void Solid::MODELEVALUATOR::Structure::write_output_runtime_structure(
   }
 
   // finalize everything and write all required files to filesystem
-  vtu_writer_ptr_->WriteToDisk(time, timestep_number);
+  vtu_writer_ptr_->write_to_disk(time, timestep_number);
 }
 
 /*----------------------------------------------------------------------------*
@@ -853,7 +856,7 @@ void Solid::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stre
     eval_data().set_plastic_strain_data(Teuchos::rcp(new std::vector<char>()));
 
     // Set vector values needed by elements.
-    discret().ClearState();
+    discret().clear_state();
     discret().set_state(0, "displacement", global_state().get_dis_np());
     discret().set_state(0, "residual displacement", dis_incr_ptr_);
 
@@ -866,7 +869,7 @@ void Solid::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stre
         Teuchos::null, Teuchos::null};
 
     evaluate_internal_specified_elements(
-        eval_mat.data(), eval_vec.data(), discret().ElementRowMap());
+        eval_mat.data(), eval_vec.data(), discret().element_row_map());
 
     auto DoPostprocessingOnElement = [](const Core::Elements::Element& ele)
     {
@@ -879,14 +882,14 @@ void Solid::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stre
       // Get the values at the Gauss-points.
       std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>> mapdata{};
       std::vector<char>::size_type position = 0;
-      for (int i = 0; i < discret_ptr()->ElementRowMap()->NumMyElements(); ++i)
+      for (int i = 0; i < discret_ptr()->element_row_map()->NumMyElements(); ++i)
       {
-        if (DoPostprocessingOnElement(*discret().lRowElement(i)))
+        if (DoPostprocessingOnElement(*discret().l_row_element(i)))
         {
           Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> gpstress =
               Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
           Core::Communication::ParObject::extract_from_pack(position, raw_data, *gpstress);
-          mapdata[discret_ptr()->ElementRowMap()->GID(i)] = gpstress;
+          mapdata[discret_ptr()->element_row_map()->GID(i)] = gpstress;
         }
       }
       return mapdata;
@@ -901,7 +904,7 @@ void Solid::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stre
           {
             if (DoPostprocessingOnElement(ele))
               Core::FE::ExtrapolateGaussPointQuantityToNodes(
-                  ele, *map_data.at(ele.Id()), discret(), assembled_data);
+                  ele, *map_data.at(ele.id()), discret(), assembled_data);
           });
     };
 
@@ -914,7 +917,7 @@ void Solid::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stre
           {
             if (DoPostprocessingOnElement(ele))
               Core::FE::EvaluateGaussPointQuantityAtElementCenter(
-                  ele, *map_data.at(ele.Id()), assembled_data);
+                  ele, *map_data.at(ele.id()), assembled_data);
           });
     };
 
@@ -925,16 +928,16 @@ void Solid::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stre
           EvaluateGaussPointData(*eval_data().get_stress_data());
 
       Core::Communication::Exporter ex(
-          *(discret().ElementRowMap()), *(discret().ElementColMap()), discret().Comm());
+          *(discret().element_row_map()), *(discret().element_col_map()), discret().get_comm());
       ex.Export(gp_stress_data);
 
       eval_data().get_stress_data_node_postprocessed() =
-          Teuchos::rcp(new Epetra_MultiVector(*discret().NodeColMap(), 6, true));
+          Teuchos::rcp(new Epetra_MultiVector(*discret().node_col_map(), 6, true));
       eval_data().get_stress_data_element_postprocessed() =
-          Teuchos::rcp(new Epetra_MultiVector(*discret().ElementRowMap(), 6, true));
+          Teuchos::rcp(new Epetra_MultiVector(*discret().element_row_map(), 6, true));
 
 
-      Epetra_MultiVector row_nodal_data(*discret().NodeRowMap(), 6, true);
+      Epetra_MultiVector row_nodal_data(*discret().node_row_map(), 6, true);
       PostprocessGaussPointDataToNodes(gp_stress_data, row_nodal_data);
       Core::LinAlg::Export(row_nodal_data, *eval_data().get_stress_data_node_postprocessed());
 
@@ -947,15 +950,15 @@ void Solid::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stre
           EvaluateGaussPointData(*eval_data().get_strain_data());
 
       Core::Communication::Exporter ex(
-          *(discret().ElementRowMap()), *(discret().ElementColMap()), discret().Comm());
+          *(discret().element_row_map()), *(discret().element_col_map()), discret().get_comm());
       ex.Export(gp_strain_data);
 
       eval_data().get_strain_data_node_postprocessed() =
-          Teuchos::rcp(new Epetra_MultiVector(*discret().NodeColMap(), 6, true));
+          Teuchos::rcp(new Epetra_MultiVector(*discret().node_col_map(), 6, true));
       eval_data().get_strain_data_element_postprocessed() =
-          Teuchos::rcp(new Epetra_MultiVector(*discret().ElementRowMap(), 6, true));
+          Teuchos::rcp(new Epetra_MultiVector(*discret().element_row_map(), 6, true));
 
-      Epetra_MultiVector row_nodal_data(*discret().NodeRowMap(), 6, true);
+      Epetra_MultiVector row_nodal_data(*discret().node_row_map(), 6, true);
       PostprocessGaussPointDataToNodes(gp_strain_data, row_nodal_data);
       Core::LinAlg::Export(row_nodal_data, *eval_data().get_strain_data_node_postprocessed());
 
@@ -979,9 +982,9 @@ void Solid::MODELEVALUATOR::Structure::output_runtime_structure_gauss_point_data
     eval_data().set_delta_time((*global_state().get_delta_time())[0]);
 
     eval_data().gauss_point_data_output_manager_ptr()->prepare_data(
-        *discret().NodeColMap(), *discret().ElementRowMap());
+        *discret().node_col_map(), *discret().element_row_map());
 
-    discret().ClearState();
+    discret().clear_state();
     discret().set_state(0, "displacement", global_state().get_dis_np());
     discret().set_state(0, "residual displacement", dis_incr_ptr_);
 
@@ -1009,7 +1012,7 @@ void Solid::MODELEVALUATOR::Structure::init_output_runtime_beams()
 
   // export displacement state to column format
   Teuchos::RCP<Epetra_Vector> disn_col =
-      Teuchos::rcp(new Epetra_Vector(*discret().DofColMap(), true));
+      Teuchos::rcp(new Epetra_Vector(*discret().dof_col_map(), true));
   Core::LinAlg::Export(*global_state().get_dis_n(), *disn_col);
 
   // get bounding box object only if periodic boundaries are active
@@ -1032,7 +1035,7 @@ void Solid::MODELEVALUATOR::Structure::write_time_step_output_runtime_beams() co
   // export displacement state to column format
   const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
   Teuchos::RCP<Epetra_Vector> disn_col =
-      Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
+      Teuchos::rcp(new Epetra_Vector(*discret.dof_col_map(), true));
   Core::LinAlg::Export(*global_state().get_dis_n(), *disn_col);
 
   auto [output_time, output_step] = Core::IO::GetTimeAndTimeStepIndexForOutput(
@@ -1049,7 +1052,7 @@ void Solid::MODELEVALUATOR::Structure::write_iteration_output_runtime_beams() co
   // export displacement state to column format
   const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
   Teuchos::RCP<Epetra_Vector> disnp_col =
-      Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
+      Teuchos::rcp(new Epetra_Vector(*discret.dof_col_map(), true));
   Core::LinAlg::Export(*global_state().get_dis_np(), *disnp_col);
 
   auto [output_time, output_step] =
@@ -1093,7 +1096,7 @@ void Solid::MODELEVALUATOR::Structure::write_output_runtime_beams(
 
   // append triads if desired
   if (beam_output_params.is_write_triad_visualization_points())
-    beam_vtu_writer_ptr_->AppendTriadField(displacement_state_vector);
+    beam_vtu_writer_ptr_->append_triad_field(displacement_state_vector);
 
   // append material cross-section strain resultants if desired
   if (beam_output_params.is_write_material_strains_gauss_points())
@@ -1120,21 +1123,21 @@ void Solid::MODELEVALUATOR::Structure::write_output_runtime_beams(
     beam_vtu_writer_ptr_->append_element_orientation_paramater(displacement_state_vector);
 
   // append reference length if desired.
-  if (beam_output_params.IsWriteRefLength()) beam_vtu_writer_ptr_->AppendRefLength();
+  if (beam_output_params.is_write_ref_length()) beam_vtu_writer_ptr_->append_ref_length();
 
   // export displacement state to column format
   if (beam_output_params.is_write_rve_crosssection_forces())
     beam_vtu_writer_ptr_->append_rve_crosssection_forces(displacement_state_vector);
 
   // export beam element IDs
-  if (beam_output_params.IsWriteElementGID()) beam_vtu_writer_ptr_->AppendElementGID();
+  if (beam_output_params.is_write_element_gid()) beam_vtu_writer_ptr_->append_element_gid();
 
   // Ghosting information
   if (beam_output_params.is_write_element_ghosting())
     beam_vtu_writer_ptr_->append_element_ghosting_information();
 
   // finalize everything and write all required VTU files to filesystem
-  beam_vtu_writer_ptr_->WriteToDisk(time, timestep_number);
+  beam_vtu_writer_ptr_->write_to_disk(time, timestep_number);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1170,7 +1173,7 @@ void Solid::MODELEVALUATOR::Structure::evaluate_internal(Teuchos::ParameterList&
   params_interface2_parameter_list(eval_data_ptr(), p);
 
   discret().evaluate(p, eval_mat[0], eval_mat[1], eval_vec[0], eval_vec[1], eval_vec[2]);
-  discret().ClearState();
+  discret().clear_state();
 }
 
 void Solid::MODELEVALUATOR::Structure::evaluate_internal_specified_elements(
@@ -1207,7 +1210,7 @@ void Solid::MODELEVALUATOR::Structure::evaluate_internal_specified_elements(
 
   Core::FE::UTILS::evaluate(*discret_ptr(), p, *eval_mat, *eval_vec, ele_map_to_be_evaluated);
 
-  discret().ClearState();
+  discret().clear_state();
 }
 
 /*----------------------------------------------------------------------------*
@@ -1236,7 +1239,7 @@ void Solid::MODELEVALUATOR::Structure::evaluate_neumann(Teuchos::ParameterList& 
           "interface"))
     FOUR_C_THROW("The given parameter has the wrong type!");
   discret().evaluate_neumann(p, eval_vec, eval_mat);
-  discret().ClearState();
+  discret().clear_state();
 }
 
 /*----------------------------------------------------------------------------*
@@ -1264,12 +1267,12 @@ void Solid::MODELEVALUATOR::Structure::read_restart(Core::IO::DiscretizationRead
   // read displacement field
   Teuchos::RCP<Epetra_Vector>& disnp = global_state().get_dis_np();
   ioreader.read_vector(disnp, "displacement");
-  global_state().get_multi_dis()->UpdateSteps(*disnp);
+  global_state().get_multi_dis()->update_steps(*disnp);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::Structure::Predict(const Inpar::Solid::PredEnum& pred_type)
+void Solid::MODELEVALUATOR::Structure::predict(const Inpar::Solid::PredEnum& pred_type)
 {
   // set the element action
   eval_data().set_action_type(Core::Elements::struct_calc_predict);
@@ -1297,7 +1300,7 @@ void Solid::MODELEVALUATOR::Structure::run_pre_compute_x(
 void Solid::MODELEVALUATOR::Structure::run_recover()
 {
   // set vector values needed by elements
-  discret().ClearState();
+  discret().clear_state();
   discret().set_state(0, "residual displacement", dis_incr_ptr_);
   discret().set_state(0, "displacement", global_state().get_dis_np());
   // set the element action
@@ -1352,15 +1355,15 @@ void Solid::MODELEVALUATOR::Structure::update_step_state(const double& timefac_n
   // update state
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}
-  global_state().get_multi_dis()->UpdateSteps(dis_np());
+  global_state().get_multi_dis()->update_steps(dis_np());
 
   // new velocities at t_{n+1} -> t_{n}
   //    V_{n} := V_{n+1}
-  global_state().get_multi_vel()->UpdateSteps(*global_state().get_vel_np());
+  global_state().get_multi_vel()->update_steps(*global_state().get_vel_np());
 
   // new at t_{n+1} -> t_n
   //    A_{n} := A_{n+1}
-  global_state().get_multi_acc()->UpdateSteps(*global_state().get_acc_np());
+  global_state().get_multi_acc()->update_steps(*global_state().get_acc_np());
 
   // store the old external force
   global_state().get_fext_n()->Scale(1.0, fext_np());
@@ -1396,7 +1399,7 @@ void Solid::MODELEVALUATOR::Structure::evaluate_jacobian_contributions_from_elem
   eval_data().set_action_type(Core::Elements::struct_calc_addjacPTC);
 
   // set vector values needed by elements
-  discret().ClearState();
+  discret().clear_state();
   discret().set_state(0, "displacement", global_state().get_dis_np());
 
   eval_mat[0] = Teuchos::rcpFromRef(*stiff_ptc_ptr_);
@@ -1410,7 +1413,7 @@ void Solid::MODELEVALUATOR::Structure::evaluate_jacobian_contributions_from_elem
 void Solid::MODELEVALUATOR::Structure::assemble_jacobian_contributions_from_element_level_for_ptc(
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n)
 {
-  global_state().assign_model_block(*modjac, stiff_ptc(), Type(), Solid::MatBlockType::displ_displ);
+  global_state().assign_model_block(*modjac, stiff_ptc(), type(), Solid::MatBlockType::displ_displ);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1429,7 +1432,7 @@ void Solid::MODELEVALUATOR::Structure::update_step_element()
 
   if (isDuringPrestressing && prestress_type == Inpar::Solid::PreStress::mulf)
   {
-    if (discret().Comm().MyPID() == 0)
+    if (discret().get_comm().MyPID() == 0)
       Core::IO::cout << "====== Entering PRESTRESSING update" << Core::IO::endl;
 
     // Choose special update action for elements in case of MULF
@@ -1443,7 +1446,7 @@ void Solid::MODELEVALUATOR::Structure::update_step_element()
 
 
   // go to elements
-  discret().ClearState();
+  discret().clear_state();
   discret().set_state("displacement", global_state().get_dis_n());
 
   // set dummy evaluation vectors and matrices
@@ -1484,7 +1487,7 @@ void Solid::MODELEVALUATOR::Structure::determine_stress_strain()
   eval_data().set_plastic_strain_data(Teuchos::rcp(new std::vector<char>()));
 
   // set vector values needed by elements
-  discret().ClearState();
+  discret().clear_state();
   discret().set_state(0, "displacement", global_state().get_dis_np());
   discret().set_state(0, "residual displacement", dis_incr_ptr_);
 
@@ -1494,7 +1497,8 @@ void Solid::MODELEVALUATOR::Structure::determine_stress_strain()
   std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
       Teuchos::null, Teuchos::null};
 
-  evaluate_internal_specified_elements(eval_mat.data(), eval_vec.data(), discret().ElementRowMap());
+  evaluate_internal_specified_elements(
+      eval_mat.data(), eval_vec.data(), discret().element_row_map());
 }
 
 /*----------------------------------------------------------------------------*
@@ -1510,7 +1514,7 @@ void Solid::MODELEVALUATOR::Structure::determine_strain_energy(
   eval_data().set_delta_time((*global_state().get_delta_time())[0]);
 
   // set state vector values needed by elements
-  discret().ClearState();
+  discret().clear_state();
   discret().set_state(0, "displacement", Teuchos::rcpFromRef(disnp));
   discret().set_state(0, "residual displacement", dis_incr_ptr_);
 
@@ -1527,13 +1531,13 @@ void Solid::MODELEVALUATOR::Structure::determine_strain_energy(
 
   // evaluate energy contributions on element level (row elements only)
   evaluate_internal_specified_elements(
-      p, eval_mat.data(), eval_vec.data(), discret().ElementRowMap());
+      p, eval_mat.data(), eval_vec.data(), discret().element_row_map());
 
   if (global)
   {
     double my_int_energy = eval_data().get_energy_data(Solid::internal_energy);
     double gsum = 0.0;
-    discret().Comm().SumAll(&my_int_energy, &gsum, 1);
+    discret().get_comm().SumAll(&my_int_energy, &gsum, 1);
 
     eval_data().set_value_for_energy_type(gsum, Solid::internal_energy);
   }
@@ -1543,12 +1547,12 @@ void Solid::MODELEVALUATOR::Structure::determine_strain_energy(
  *----------------------------------------------------------------------------*/
 void Solid::MODELEVALUATOR::Structure::determine_energy()
 {
-  DetermineEnergy(*global_state().get_dis_np(), global_state().get_vel_np().get(), false);
+  determine_energy(*global_state().get_dis_np(), global_state().get_vel_np().get(), false);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::Structure::DetermineEnergy(
+void Solid::MODELEVALUATOR::Structure::determine_energy(
     const Epetra_Vector& disnp, const Epetra_Vector* velnp, const bool global)
 {
   determine_strain_energy(disnp, global);
@@ -1561,7 +1565,7 @@ void Solid::MODELEVALUATOR::Structure::DetermineEnergy(
     Teuchos::RCP<Epetra_Vector> linear_momentum =
         Core::LinAlg::CreateVector(*global_state().dof_row_map_view(), true);
 
-    mass().Multiply(false, *velnp, *linear_momentum);
+    mass().multiply(false, *velnp, *linear_momentum);
 
     linear_momentum->Dot(*velnp, &kinetic_energy_times2);
 
@@ -1603,7 +1607,7 @@ void Solid::MODELEVALUATOR::Structure::determine_optional_quantity()
   eval_data().set_opt_quantity_data(Teuchos::rcp(new std::vector<char>()));
 
   // set vector values needed by elements
-  discret().ClearState();
+  discret().clear_state();
   discret().set_state(0, "displacement", global_state().get_dis_np());
   discret().set_state(0, "residual displacement", dis_incr_ptr_);
 
@@ -1628,16 +1632,16 @@ bool Solid::MODELEVALUATOR::Structure::determine_element_volumes(
   p.set<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface", eval_data_ptr());
 
   // set vector values needed by elements
-  discret().ClearState();
+  discret().clear_state();
   Teuchos::RCP<const Epetra_Vector> disnp = global_state().extract_displ_entries(x);
   discret().set_state(0, "displacement", disnp);
 
   // start evaluation
-  const Epetra_Map* relemap = discret().ElementRowMap();
+  const Epetra_Map* relemap = discret().element_row_map();
   ele_vols = Teuchos::rcp(new Epetra_Vector(*relemap, true));
   const unsigned my_num_reles = relemap->NumMyElements();
 
-  Core::Elements::Element::LocationArray la(discret().NumDofSets());
+  Core::Elements::Element::LocationArray la(discret().num_dof_sets());
   Core::LinAlg::SerialDenseVector ele_vol(6, true);
 
   Core::LinAlg::SerialDenseMatrix empty_dummy_mat;
@@ -1646,8 +1650,8 @@ bool Solid::MODELEVALUATOR::Structure::determine_element_volumes(
   Solid::ELEMENTS::EvalErrorFlag ele_eval_error = Solid::ELEMENTS::ele_error_none;
   for (unsigned elid = 0; elid < my_num_reles; ++elid)
   {
-    Core::Elements::Element* rele = discret().lRowElement(elid);
-    rele->LocationVector(discret(), la, false);
+    Core::Elements::Element* rele = discret().l_row_element(elid);
+    rele->location_vector(discret(), la, false);
 
     eval_data().set_action_type(Core::Elements::analyse_jacobian_determinant);
     rele->evaluate(p, discret(), la, empty_dummy_mat, empty_dummy_mat, ele_vol, empty_dummy_vec,
@@ -1669,12 +1673,12 @@ bool Solid::MODELEVALUATOR::Structure::determine_element_volumes(
       ele_vol(2) = -1.0;
     }
 
-    const int rele_lid = relemap->LID(rele->Id());
+    const int rele_lid = relemap->LID(rele->id());
     (*ele_vols)[rele_lid] = ele_vol(2);
     ele_vol.putScalar(0.0);
   }
 
-  discret().ClearState();
+  discret().clear_state();
   eval_data().set_ele_eval_error_flag(ele_eval_error);
 
   return eval_error_check();
@@ -1763,7 +1767,7 @@ void Solid::MODELEVALUATOR::Structure::reset_step_state()
       Teuchos::null, Teuchos::null};
   evaluate_internal(eval_mat.data(), eval_vec.data());
 
-  discret_ptr()->ClearState();
+  discret_ptr()->clear_state();
 }
 
 /*----------------------------------------------------------------------------*
@@ -2112,7 +2116,7 @@ void Solid::MODELEVALUATOR::Structure::create_backup_state(const Epetra_Vector& 
   eval_data().set_action_type(Core::Elements::struct_create_backup);
 
   // set vector values needed by elements
-  discret().ClearState();
+  discret().clear_state();
   discret().set_state(0, "displacement", global_state().get_dis_np());
   Teuchos::RCP<const Epetra_Vector> dir_displ = global_state().extract_displ_entries(dir);
   discret().set_state(0, "residual displacement", dir_displ);
@@ -2136,7 +2140,7 @@ void Solid::MODELEVALUATOR::Structure::recover_from_backup_state()
   eval_data().set_action_type(Core::Elements::struct_recover_from_backup);
 
   // set vector values needed by elements
-  discret().ClearState();
+  discret().clear_state();
 
   // set dummy evaluation vectors and matrices
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {

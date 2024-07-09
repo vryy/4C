@@ -297,7 +297,7 @@ void VtkWriterBase::append_master_file_and_time_to_collection_file_mid_section_c
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteVtkHeaders()
+void VtkWriterBase::write_vtk_headers()
 {
   // Todo: might need BigEndian on some systems
   const std::string byteorder = "LittleEndian";
@@ -526,7 +526,7 @@ void VtkWriterBase::write_data_array_this_processor(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteVtkFooters()
+void VtkWriterBase::write_vtk_footers()
 {
   throw_error_if_invalid_file_stream(currentout_);
   throw_error_if_invalid_file_stream(currentmasterout_);

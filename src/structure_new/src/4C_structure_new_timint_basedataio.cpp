@@ -198,7 +198,7 @@ void Solid::TimeInt::BaseDataIO::setup_energy_output_file()
   if (energyfile_.is_null())
   {
     std::string energy_file_name =
-        Global::Problem::Instance()->OutputControlFile()->file_name() + "_energy.csv";
+        Global::Problem::instance()->output_control_file()->file_name() + "_energy.csv";
 
     energyfile_ = Teuchos::rcp(new std::ofstream(energy_file_name.c_str()));
   }
@@ -297,7 +297,7 @@ NOX::Nln::Solver::PrePostOp::TimeInt::WriteOutputEveryIteration::WriteOutputEver
 void NOX::Nln::Solver::PrePostOp::TimeInt::WriteOutputEveryIteration::runPreSolve(
     const ::NOX::Solver::Generic& solver)
 {
-  every_iter_writer_.InitNewtonIteration();
+  every_iter_writer_.init_newton_iteration();
 }
 
 /*----------------------------------------------------------------------------*
@@ -306,7 +306,7 @@ void NOX::Nln::Solver::PrePostOp::TimeInt::WriteOutputEveryIteration::runPostIte
     const ::NOX::Solver::Generic& solver)
 {
   const int newton_iteration = solver.getNumIterations();
-  every_iter_writer_.AddNewtonIteration(newton_iteration);
+  every_iter_writer_.add_newton_iteration(newton_iteration);
 }
 
 /*----------------------------------------------------------------------------*

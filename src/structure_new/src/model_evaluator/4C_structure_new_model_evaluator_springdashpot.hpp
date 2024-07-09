@@ -41,7 +41,7 @@ namespace Solid
       void setup() override;
 
       //! derived
-      Inpar::Solid::ModelType Type() const override { return Inpar::Solid::model_springdashpot; }
+      Inpar::Solid::ModelType type() const override { return Inpar::Solid::model_springdashpot; }
 
       //! derived
       void reset(const Epetra_Vector& x) override;
@@ -76,7 +76,7 @@ namespace Solid
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void Predict(const Inpar::Solid::PredEnum& pred_type) override{};
+      void predict(const Inpar::Solid::PredEnum& pred_type) override{};
 
       //! derived
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,

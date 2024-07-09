@@ -16,12 +16,12 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::FluidPoroBoundaryType Discret::ELEMENTS::FluidPoroBoundaryType::instance_;
 
-Discret::ELEMENTS::FluidPoroBoundaryType& Discret::ELEMENTS::FluidPoroBoundaryType::Instance()
+Discret::ELEMENTS::FluidPoroBoundaryType& Discret::ELEMENTS::FluidPoroBoundaryType::instance()
 {
   return instance_;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidPoroBoundaryType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidPoroBoundaryType::create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -40,7 +40,7 @@ Discret::ELEMENTS::FluidPoroBoundary::FluidPoroBoundary(
 {
 }
 
-Core::Elements::Element* Discret::ELEMENTS::FluidPoroBoundary::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::FluidPoroBoundary::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::FluidPoroBoundary(*this);
   return newelement;

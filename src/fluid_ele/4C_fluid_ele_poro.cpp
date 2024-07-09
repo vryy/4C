@@ -20,12 +20,12 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::FluidPoroEleType Discret::ELEMENTS::FluidPoroEleType::instance_;
 
-Discret::ELEMENTS::FluidPoroEleType& Discret::ELEMENTS::FluidPoroEleType::Instance()
+Discret::ELEMENTS::FluidPoroEleType& Discret::ELEMENTS::FluidPoroEleType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::FluidPoroEleType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::FluidPoroEleType::create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::FluidPoro(-1, -1);
@@ -33,7 +33,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::FluidPoroEleType::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidPoroEleType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidPoroEleType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDPORO")
@@ -43,7 +43,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidPoroEleType::Creat
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidPoroEleType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidPoroEleType::create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new Discret::ELEMENTS::FluidPoro(id, owner));
@@ -96,7 +96,7 @@ Discret::ELEMENTS::FluidPoro::FluidPoro(const Discret::ELEMENTS::FluidPoro& old)
 {
 }
 
-Core::Elements::Element* Discret::ELEMENTS::FluidPoro::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::FluidPoro::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::FluidPoro(*this);
   return newelement;
@@ -107,7 +107,7 @@ void Discret::ELEMENTS::FluidPoro::pack(Core::Communication::PackBuffer& data) c
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // kinemtics type
@@ -131,7 +131,7 @@ void Discret::ELEMENTS::FluidPoro::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // kintype_
   kintype_ = static_cast<Inpar::Solid::KinemType>(extract_int(position, data));
@@ -159,12 +159,12 @@ void Discret::ELEMENTS::FluidPoro::unpack(const std::vector<char>& data)
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidPoro::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidPoro::lines()
 {
   return Core::Communication::GetElementLines<FluidPoroBoundary, FluidPoro>(*this);
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidPoro::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidPoro::surfaces()
 {
   return Core::Communication::GetElementSurfaces<FluidPoroBoundary, FluidPoro>(*this);
 }

@@ -27,11 +27,11 @@ namespace
   void CreateMaterialInGlobalProblem()
   {
     Core::IO::InputParameterContainer mat_stvenant;
-    mat_stvenant.Add("YOUNG", 1.0);
-    mat_stvenant.Add("NUE", 0.1);
-    mat_stvenant.Add("DENS", 2.0);
+    mat_stvenant.add("YOUNG", 1.0);
+    mat_stvenant.add("NUE", 0.1);
+    mat_stvenant.add("DENS", 2.0);
 
-    Global::Problem::Instance()->Materials()->insert(
+    Global::Problem::instance()->materials()->insert(
         1, Mat::make_parameter(1, Core::Materials::MaterialType::m_stvenant, mat_stvenant));
   }
 
@@ -80,7 +80,7 @@ namespace
 
     if (comm_->MyPID() == 0)
     {
-      EXPECT_EQ(nodal_test_coordinates->MyLength(), test_discretization_->NumMyRowNodes());
+      EXPECT_EQ(nodal_test_coordinates->MyLength(), test_discretization_->num_my_row_nodes());
       EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);
 
       std::array<double, 54> coords;
@@ -98,7 +98,7 @@ namespace
     }
     else if (comm_->MyPID() == 1)
     {
-      EXPECT_EQ(nodal_test_coordinates->MyLength(), test_discretization_->NumMyRowNodes());
+      EXPECT_EQ(nodal_test_coordinates->MyLength(), test_discretization_->num_my_row_nodes());
       EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);
 
       std::array<double, 54> coords;
@@ -116,7 +116,7 @@ namespace
     }
     else if (comm_->MyPID() == 2)
     {
-      EXPECT_EQ(nodal_test_coordinates->MyLength(), test_discretization_->NumMyRowNodes());
+      EXPECT_EQ(nodal_test_coordinates->MyLength(), test_discretization_->num_my_row_nodes());
       EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);
 
       std::array<double, 27> coords;

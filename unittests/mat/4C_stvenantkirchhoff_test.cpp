@@ -23,9 +23,9 @@ namespace
     {
       Core::IO::InputParameterContainer container;
       // add material parameters to container
-      container.Add("YOUNG", young_);
-      container.Add("NUE", nu_);
-      container.Add("DENS", rho_);
+      container.add("YOUNG", young_);
+      container.add("NUE", nu_);
+      container.add("DENS", rho_);
 
       // initialize parameter class for StVenantKirchhoff material with container
       parameters_stvenantkirchhoff_ = Teuchos::rcp(new Mat::PAR::StVenantKirchhoff(
@@ -121,7 +121,7 @@ namespace
     int eleGID = 1;
 
     // Call evaluate function with test strain
-    stvenantkirchhoff_->StrainEnergy(test_glstrain, result_psi, 0, eleGID);
+    stvenantkirchhoff_->strain_energy(test_glstrain, result_psi, 0, eleGID);
 
     // test result with respect to reference result
     EXPECT_NEAR(result_psi, ref_strain_energy, 1.0e-4);

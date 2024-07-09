@@ -49,13 +49,13 @@ namespace Adapter
     void init() override;
 
     /// List of fluid-structure volume constraints
-    void ListLungVolCons(std::set<int>& LungVolConIDs, int& MinLungVolConID);
+    void list_lung_vol_cons(std::set<int>& LungVolConIDs, int& MinLungVolConID);
 
     /// Initialize fluid part of lung volume constraint
-    void InitializeVolCon(Teuchos::RCP<Epetra_Vector> initflowrate, const int offsetID);
+    void initialize_vol_con(Teuchos::RCP<Epetra_Vector> initflowrate, const int offsetID);
 
     /// Evaluate fluid/ale part of lung volume constraint
-    void EvaluateVolCon(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> FluidShapeDerivMatrix,
+    void evaluate_vol_con(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> FluidShapeDerivMatrix,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> FluidConstrMatrix,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> ConstrFluidMatrix,
         Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> AleConstrMatrix,
@@ -64,13 +64,13 @@ namespace Adapter
         Teuchos::RCP<Epetra_Vector> lagrMultVecRed, const int offsetID, const double dttheta);
 
     /// Write additional forces due to volume constraint
-    void OutputForces(Teuchos::RCP<Epetra_Vector> Forces);
+    void output_forces(Teuchos::RCP<Epetra_Vector> Forces);
 
     /// Get map extractor for fsi <-> full map
-    Teuchos::RCP<Core::LinAlg::MapExtractor> FSIInterface() { return fsiinterface_; }
+    Teuchos::RCP<Core::LinAlg::MapExtractor> fsi_interface() { return fsiinterface_; }
 
     /// Get map extractor for asi, other <-> full inner map
-    Teuchos::RCP<Core::LinAlg::MapExtractor> InnerSplit() { return innersplit_; }
+    Teuchos::RCP<Core::LinAlg::MapExtractor> inner_split() { return innersplit_; }
 
    private:
     /// conditions, that define the lung volume constraints

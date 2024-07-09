@@ -63,8 +63,8 @@ void Core::Adapter::Coupling::setup_condition_coupling(const Core::FE::Discretiz
   int localslavecount = static_cast<int>(slavenodes.size());
   int slavecount;
 
-  masterdis.Comm().SumAll(&localmastercount, &mastercount, 1);
-  slavedis.Comm().SumAll(&localslavecount, &slavecount, 1);
+  masterdis.get_comm().SumAll(&localmastercount, &mastercount, 1);
+  slavedis.get_comm().SumAll(&localslavecount, &slavecount, 1);
 
   if (mastercount != slavecount)
     FOUR_C_THROW("got %d master nodes but %d slave nodes for coupling", mastercount, slavecount);
@@ -128,13 +128,13 @@ void Core::Adapter::Coupling::setup_coupling(const Core::FE::Discretization& mas
   // Epetra maps in original distribution
 
   Teuchos::RCP<Epetra_Map> masternodemap = Teuchos::rcp(new Epetra_Map(
-      -1, patchedmasternodes.size(), patchedmasternodes.data(), 0, masterdis.Comm()));
+      -1, patchedmasternodes.size(), patchedmasternodes.data(), 0, masterdis.get_comm()));
 
-  Teuchos::RCP<Epetra_Map> slavenodemap =
-      Teuchos::rcp(new Epetra_Map(-1, slavenodes.size(), slavenodes.data(), 0, slavedis.Comm()));
+  Teuchos::RCP<Epetra_Map> slavenodemap = Teuchos::rcp(
+      new Epetra_Map(-1, slavenodes.size(), slavenodes.data(), 0, slavedis.get_comm()));
 
   Teuchos::RCP<Epetra_Map> permslavenodemap = Teuchos::rcp(
-      new Epetra_Map(-1, permslavenodes.size(), permslavenodes.data(), 0, slavedis.Comm()));
+      new Epetra_Map(-1, permslavenodes.size(), permslavenodes.data(), 0, slavedis.get_comm()));
 
   finish_coupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap, masterdofs,
       slavedofs, nds_master, nds_slave);
@@ -190,8 +190,8 @@ void Core::Adapter::Coupling::setup_constrained_condition_coupling(
   int localslavecount = static_cast<int>(slavenodes.size());
   int slavecount;
 
-  masterdis.Comm().SumAll(&localmastercount, &mastercount, 1);
-  slavedis.Comm().SumAll(&localslavecount, &slavecount, 1);
+  masterdis.get_comm().SumAll(&localmastercount, &mastercount, 1);
+  slavedis.get_comm().SumAll(&localslavecount, &slavecount, 1);
 
   if (mastercount != slavecount and matchall)
     FOUR_C_THROW("got %d master nodes but %d slave nodes for coupling", mastercount, slavecount);
@@ -260,13 +260,13 @@ void Core::Adapter::Coupling::setup_coupling(const Core::FE::Discretization& mas
 
   // Epetra maps in original distribution
 
-  Teuchos::RCP<Epetra_Map> masternodemap =
-      Teuchos::rcp(new Epetra_Map(-1, mastervect.size(), mastervect.data(), 0, masterdis.Comm()));
+  Teuchos::RCP<Epetra_Map> masternodemap = Teuchos::rcp(
+      new Epetra_Map(-1, mastervect.size(), mastervect.data(), 0, masterdis.get_comm()));
 
   Teuchos::RCP<Epetra_Map> slavenodemap = Teuchos::rcp(new Epetra_Map(slavenodes));
 
   Teuchos::RCP<Epetra_Map> permslavenodemap = Teuchos::rcp(
-      new Epetra_Map(-1, permslavenodes.size(), permslavenodes.data(), 0, slavedis.Comm()));
+      new Epetra_Map(-1, permslavenodes.size(), permslavenodes.data(), 0, slavedis.get_comm()));
 
   finish_coupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap,
       build_dof_vector_from_num_dof(numdof), build_dof_vector_from_num_dof(numdof), nds_master,
@@ -341,11 +341,11 @@ void Core::Adapter::Coupling::setup_coupling(const Core::FE::Discretization& mas
     match_nodes(masterdis, slavedis, masternodes, permslavenodes, slavenodes, matchall, tolerance);
 
     masternodemap_cond.push_back(Teuchos::rcp(
-        new const Epetra_Map(-1, masternodes.size(), masternodes.data(), 0, masterdis.Comm())));
+        new const Epetra_Map(-1, masternodes.size(), masternodes.data(), 0, masterdis.get_comm())));
     slavenodemap_cond.push_back(Teuchos::rcp(
-        new const Epetra_Map(-1, slavenodes.size(), slavenodes.data(), 0, slavedis.Comm())));
+        new const Epetra_Map(-1, slavenodes.size(), slavenodes.data(), 0, slavedis.get_comm())));
     permslavenodemap_cond.push_back(Teuchos::rcp(new const Epetra_Map(
-        -1, permslavenodes.size(), permslavenodes.data(), 0, slavedis.Comm())));
+        -1, permslavenodes.size(), permslavenodes.data(), 0, slavedis.get_comm())));
   }
 
   // merge maps for all conditions, but keep order (= keep assignment of permuted slave node map and
@@ -373,12 +373,12 @@ void Core::Adapter::Coupling::match_nodes(const Core::FE::Discretization& master
   tree.setup();
 
   std::map<int, std::pair<int, double>> coupling;
-  tree.FindMatch(slavedis, slavenodes, coupling);
+  tree.find_match(slavedis, slavenodes, coupling);
 
   if (masternodes.size() != coupling.size() and matchall)
     FOUR_C_THROW(
         "Did not get 1:1 correspondence. \nmasternodes.size()=%d (%s), coupling.size()=%d (%s)",
-        masternodes.size(), masterdis.Name().c_str(), coupling.size(), slavedis.Name().c_str());
+        masternodes.size(), masterdis.name().c_str(), coupling.size(), slavedis.name().c_str());
 
   // extract permutation
 
@@ -432,7 +432,7 @@ void Core::Adapter::Coupling::finish_coupling(const Core::FE::Discretization& ma
   if (err) FOUR_C_THROW("failed to export master nodes");
 
   Teuchos::RCP<const Epetra_Map> permmasternodemap = Teuchos::rcp(new Epetra_Map(
-      -1, permmasternodevec->MyLength(), permmasternodevec->Values(), 0, masterdis.Comm()));
+      -1, permmasternodevec->MyLength(), permmasternodevec->Values(), 0, masterdis.get_comm()));
 
   if (not slavenodemap->PointSameAs(*permmasternodemap))
     FOUR_C_THROW("slave and permuted master node maps do not match");
@@ -494,18 +494,18 @@ void Core::Adapter::Coupling::build_dof_maps(const Core::FE::Discretization& dis
 
   for (int i = 0; i < numnode; ++i)
   {
-    const Core::Nodes::Node* actnode = dis.gNode(nodes[i]);
+    const Core::Nodes::Node* actnode = dis.g_node(nodes[i]);
 
     // ----------------------------------------------------------------
     // get all periodic boundary conditions on this node
     // slave nodes do not contribute dofs, we skip them
     // ----------------------------------------------------------------
     std::vector<Core::Conditions::Condition*> thiscond;
-    actnode->GetCondition("SurfacePeriodic", thiscond);
+    actnode->get_condition("SurfacePeriodic", thiscond);
 
     if (thiscond.empty())
     {
-      actnode->GetCondition("LinePeriodic", thiscond);
+      actnode->get_condition("LinePeriodic", thiscond);
     }
 
     if (!thiscond.empty())
@@ -531,7 +531,7 @@ void Core::Adapter::Coupling::build_dof_maps(const Core::FE::Discretization& dis
       }
     }
 
-    const std::vector<int> dof = dis.Dof(nds, actnode);
+    const std::vector<int> dof = dis.dof(nds, actnode);
     const int numdof = coupled_dofs.size();
     if (numdof > static_cast<int>(dof.size()))
       FOUR_C_THROW(
@@ -549,11 +549,11 @@ void Core::Adapter::Coupling::build_dof_maps(const Core::FE::Discretization& dis
   if (pos != dofmapvec.end() and *pos < 0) FOUR_C_THROW("illegal dof number %d", *pos);
 
   // dof map is the original, unpermuted distribution of dofs
-  dofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, dis.Comm()));
+  dofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, dis.get_comm()));
 
   dofmapvec.clear();
 
-  Core::Communication::Exporter exportdofs(*nodemap, *permnodemap, dis.Comm());
+  Core::Communication::Exporter exportdofs(*nodemap, *permnodemap, dis.get_comm());
   exportdofs.Export(dofs);
 
   const int* permnodes = permnodemap->MyGlobalElements();
@@ -568,7 +568,8 @@ void Core::Adapter::Coupling::build_dof_maps(const Core::FE::Discretization& dis
   dofs.clear();
 
   // permuted dof map according to a given permuted node map
-  permdofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, dis.Comm()));
+  permdofmap =
+      Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, dis.get_comm()));
 
   // prepare communication plan to create a dofmap out of a permuted
   // dof map
@@ -578,12 +579,12 @@ void Core::Adapter::Coupling::build_dof_maps(const Core::FE::Discretization& dis
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Core::Adapter::Coupling::MasterToSlave(
+Teuchos::RCP<Epetra_Vector> Core::Adapter::Coupling::master_to_slave(
     Teuchos::RCP<const Epetra_Vector> mv) const
 {
   Teuchos::RCP<Epetra_Vector> sv = Teuchos::rcp(new Epetra_Vector(*slavedofmap_));
 
-  MasterToSlave(mv, sv);
+  master_to_slave(mv, sv);
 
   return sv;
 }
@@ -591,12 +592,12 @@ Teuchos::RCP<Epetra_Vector> Core::Adapter::Coupling::MasterToSlave(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Core::Adapter::Coupling::SlaveToMaster(
+Teuchos::RCP<Epetra_Vector> Core::Adapter::Coupling::slave_to_master(
     Teuchos::RCP<const Epetra_Vector> sv) const
 {
   Teuchos::RCP<Epetra_Vector> mv = Teuchos::rcp(new Epetra_Vector(*masterdofmap_));
 
-  SlaveToMaster(sv, mv);
+  slave_to_master(sv, mv);
 
   return mv;
 }
@@ -604,13 +605,13 @@ Teuchos::RCP<Epetra_Vector> Core::Adapter::Coupling::SlaveToMaster(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_FEVector> Core::Adapter::Coupling::MasterToSlave(
+Teuchos::RCP<Epetra_FEVector> Core::Adapter::Coupling::master_to_slave(
     Teuchos::RCP<const Epetra_FEVector> mv) const
 {
   Teuchos::RCP<Epetra_FEVector> sv =
       Teuchos::rcp(new Epetra_FEVector(*slavedofmap_, mv->NumVectors()));
 
-  MasterToSlave(mv, sv);
+  master_to_slave(mv, sv);
 
   return sv;
 }
@@ -618,13 +619,13 @@ Teuchos::RCP<Epetra_FEVector> Core::Adapter::Coupling::MasterToSlave(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_FEVector> Core::Adapter::Coupling::SlaveToMaster(
+Teuchos::RCP<Epetra_FEVector> Core::Adapter::Coupling::slave_to_master(
     Teuchos::RCP<const Epetra_FEVector> sv) const
 {
   Teuchos::RCP<Epetra_FEVector> mv =
       Teuchos::rcp(new Epetra_FEVector(*masterdofmap_, sv->NumVectors()));
 
-  SlaveToMaster(sv, mv);
+  slave_to_master(sv, mv);
 
   return mv;
 }
@@ -632,13 +633,13 @@ Teuchos::RCP<Epetra_FEVector> Core::Adapter::Coupling::SlaveToMaster(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Core::Adapter::Coupling::MasterToSlave(
+Teuchos::RCP<Epetra_MultiVector> Core::Adapter::Coupling::master_to_slave(
     Teuchos::RCP<const Epetra_MultiVector> mv) const
 {
   Teuchos::RCP<Epetra_MultiVector> sv =
       Teuchos::rcp(new Epetra_MultiVector(*slavedofmap_, mv->NumVectors()));
 
-  MasterToSlave(mv, sv);
+  master_to_slave(mv, sv);
 
   return sv;
 }
@@ -646,13 +647,13 @@ Teuchos::RCP<Epetra_MultiVector> Core::Adapter::Coupling::MasterToSlave(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Core::Adapter::Coupling::SlaveToMaster(
+Teuchos::RCP<Epetra_MultiVector> Core::Adapter::Coupling::slave_to_master(
     Teuchos::RCP<const Epetra_MultiVector> sv) const
 {
   Teuchos::RCP<Epetra_MultiVector> mv =
       Teuchos::rcp(new Epetra_MultiVector(*masterdofmap_, sv->NumVectors()));
 
-  SlaveToMaster(sv, mv);
+  slave_to_master(sv, mv);
 
   return mv;
 }
@@ -660,7 +661,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::Adapter::Coupling::SlaveToMaster(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Adapter::Coupling::MasterToSlave(
+void Core::Adapter::Coupling::master_to_slave(
     Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -680,7 +681,8 @@ void Core::Adapter::Coupling::MasterToSlave(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Adapter::Coupling::MasterToSlave(const Epetra_IntVector& mv, Epetra_IntVector& sv) const
+void Core::Adapter::Coupling::master_to_slave(
+    const Epetra_IntVector& mv, Epetra_IntVector& sv) const
 {
   Epetra_IntVector perm(*permslavedofmap_);
   std::copy(mv.Values(), mv.Values() + (mv.MyLength()), perm.Values());
@@ -692,7 +694,7 @@ void Core::Adapter::Coupling::MasterToSlave(const Epetra_IntVector& mv, Epetra_I
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Adapter::Coupling::SlaveToMaster(
+void Core::Adapter::Coupling::slave_to_master(
     Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -719,7 +721,8 @@ void Core::Adapter::Coupling::SlaveToMaster(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Adapter::Coupling::SlaveToMaster(const Epetra_IntVector& sv, Epetra_IntVector& mv) const
+void Core::Adapter::Coupling::slave_to_master(
+    const Epetra_IntVector& sv, Epetra_IntVector& mv) const
 {
   Epetra_IntVector perm(*permmasterdofmap_);
   std::copy(sv.Values(), sv.Values() + (sv.MyLength()), perm.Values());
@@ -752,7 +755,8 @@ void Core::Adapter::Coupling::fill_slave_to_master_map(std::map<int, int>& rowma
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::Adapter::Coupling::SlaveToMasterMap(Teuchos::RCP<Epetra_Map> slave)
+Teuchos::RCP<Epetra_Map> Core::Adapter::Coupling::slave_to_master_map(
+    Teuchos::RCP<Epetra_Map> slave)
 {
   int nummyele = 0;
   std::vector<int> globalelements;
@@ -773,7 +777,8 @@ Teuchos::RCP<Epetra_Map> Core::Adapter::Coupling::SlaveToMasterMap(Teuchos::RCP<
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::Adapter::Coupling::MasterToSlaveMap(Teuchos::RCP<Epetra_Map> master)
+Teuchos::RCP<Epetra_Map> Core::Adapter::Coupling::master_to_slave_map(
+    Teuchos::RCP<Epetra_Map> master)
 {
   int nummyele = 0;
   std::vector<int> globalelements;
@@ -795,55 +800,55 @@ Teuchos::RCP<Epetra_Map> Core::Adapter::Coupling::MasterToSlaveMap(Teuchos::RCP<
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::Adapter::Coupling::MasterToPermMaster(
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::Adapter::Coupling::master_to_perm_master(
     const Core::LinAlg::SparseMatrix& sm) const
 {
   Teuchos::RCP<Epetra_CrsMatrix> permsm =
-      Teuchos::rcp(new Epetra_CrsMatrix(Copy, *permmasterdofmap_, sm.MaxNumEntries()));
+      Teuchos::rcp(new Epetra_CrsMatrix(Copy, *permmasterdofmap_, sm.max_num_entries()));
 
   // OK. You cannot use the same exporter for different matrices. So we
   // recreate one all the time... This has to be optimized later on.
   Teuchos::RCP<Epetra_Export> exporter =
       Teuchos::rcp(new Epetra_Export(*permmasterdofmap_, *masterdofmap_));
-  int err = permsm->Import(*sm.EpetraMatrix(), *exporter, Insert);
+  int err = permsm->Import(*sm.epetra_matrix(), *exporter, Insert);
 
   if (err) FOUR_C_THROW("Import failed with err=%d", err);
 
-  permsm->FillComplete(sm.DomainMap(), *permmasterdofmap_);
+  permsm->FillComplete(sm.domain_map(), *permmasterdofmap_);
 
   // create a SparseMatrix that wraps the new CrsMatrix.
   return Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      permsm, Core::LinAlg::View, sm.ExplicitDirichlet(), sm.SaveGraph()));
+      permsm, Core::LinAlg::View, sm.explicit_dirichlet(), sm.save_graph()));
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::Adapter::Coupling::SlaveToPermSlave(
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::Adapter::Coupling::slave_to_perm_slave(
     const Core::LinAlg::SparseMatrix& sm) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (not sm.RowMap().PointSameAs(*slavedofmap_)) FOUR_C_THROW("slave dof map vector expected");
-  if (not sm.Filled()) FOUR_C_THROW("matrix must be filled");
+  if (not sm.row_map().PointSameAs(*slavedofmap_)) FOUR_C_THROW("slave dof map vector expected");
+  if (not sm.filled()) FOUR_C_THROW("matrix must be filled");
 #endif
 
   Teuchos::RCP<Epetra_CrsMatrix> permsm =
-      Teuchos::rcp(new Epetra_CrsMatrix(Copy, *permslavedofmap_, sm.MaxNumEntries()));
+      Teuchos::rcp(new Epetra_CrsMatrix(Copy, *permslavedofmap_, sm.max_num_entries()));
 
   // OK. You cannot use the same exporter for different matrices. So we
   // recreate one all the time... This has to be optimized later on.
 
   Teuchos::RCP<Epetra_Export> exporter =
       Teuchos::rcp(new Epetra_Export(*permslavedofmap_, *slavedofmap_));
-  int err = permsm->Import(*sm.EpetraMatrix(), *exporter, Insert);
+  int err = permsm->Import(*sm.epetra_matrix(), *exporter, Insert);
 
   if (err) FOUR_C_THROW("Import failed with err=%d", err);
 
-  permsm->FillComplete(sm.DomainMap(), *permslavedofmap_);
+  permsm->FillComplete(sm.domain_map(), *permslavedofmap_);
 
   // create a SparseMatrix that wraps the new CrsMatrix.
   return Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      permsm, Core::LinAlg::View, sm.ExplicitDirichlet(), sm.SaveGraph()));
+      permsm, Core::LinAlg::View, sm.explicit_dirichlet(), sm.save_graph()));
 }
 
 
@@ -857,14 +862,14 @@ void Core::Adapter::Coupling::setup_coupling_matrices(const Epetra_Map& shiftedm
   matsm_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy, shiftedmastermap, 1, true));
 
   matmm_trans_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy, masterdomainmap, 1, true));
-  matsm_trans_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy, *PermSlaveDofMap(), 1, true));
+  matsm_trans_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy, *perm_slave_dof_map(), 1, true));
 
   int length = shiftedmastermap.NumMyElements();
   double one = 1.;
   for (int i = 0; i < length; ++i)
   {
-    int sgid = PermSlaveDofMap()->GID(i);
-    int mgid = MasterDofMap()->GID(i);
+    int sgid = perm_slave_dof_map()->GID(i);
+    int mgid = master_dof_map()->GID(i);
     int shiftedmgid = shiftedmastermap.GID(i);
 
     int err = matmm_->InsertGlobalValues(shiftedmgid, 1, &one, &mgid);
@@ -892,14 +897,14 @@ void Core::Adapter::Coupling::setup_coupling_matrices(const Epetra_Map& shiftedm
   matsm_->FillComplete(slavedomainmap, shiftedmastermap);
 
   matmm_trans_->FillComplete(shiftedmastermap, masterdomainmap);
-  matsm_trans_->FillComplete(shiftedmastermap, *PermSlaveDofMap());
+  matsm_trans_->FillComplete(shiftedmastermap, *perm_slave_dof_map());
 
   // communicate slave to master matrix
 
   Teuchos::RCP<Epetra_CrsMatrix> tmp = Teuchos::rcp(new Epetra_CrsMatrix(Copy, slavedomainmap, 1));
 
   Teuchos::RCP<Epetra_Import> exporter =
-      Teuchos::rcp(new Epetra_Import(slavedomainmap, *PermSlaveDofMap()));
+      Teuchos::rcp(new Epetra_Import(slavedomainmap, *perm_slave_dof_map()));
   int err = tmp->Import(*matsm_trans_, *exporter, Insert);
   if (err) FOUR_C_THROW("Import failed with err=%d", err);
 

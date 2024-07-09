@@ -30,7 +30,7 @@ void Mat::PAR::Bundle::insert(int matid, Core::UTILS::LazyPtr<Core::Mat::PAR::Pa
 bool Mat::PAR::Bundle::id_exists(int id) const { return !(matmap_.find(id) == matmap_.end()); }
 
 /*----------------------------------------------------------------------*/
-Core::Mat::PAR::Parameter* Mat::PAR::Bundle::ParameterById(const int num) const
+Core::Mat::PAR::Parameter* Mat::PAR::Bundle::parameter_by_id(const int num) const
 {
   if (matmap_.size() == 0) FOUR_C_THROW("No materials available, num=%d", num);
 
@@ -41,10 +41,10 @@ Core::Mat::PAR::Parameter* Mat::PAR::Bundle::ParameterById(const int num) const
 }
 
 /*----------------------------------------------------------------------*/
-int Mat::PAR::Bundle::FirstIdByType(const Core::Materials::MaterialType type) const
+int Mat::PAR::Bundle::first_id_by_type(const Core::Materials::MaterialType type) const
 {
   if (auto it = std::find_if(matmap_.begin(), matmap_.end(),
-          [&type](const auto& m) { return m.second->Type() == type; });
+          [&type](const auto& m) { return m.second->type() == type; });
       it != matmap_.end())
     return it->first;
   else

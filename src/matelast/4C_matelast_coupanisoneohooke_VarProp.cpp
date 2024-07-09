@@ -36,14 +36,14 @@ Mat::Elastic::CoupAnisoNeoHookeVarProp::CoupAnisoNeoHookeVarProp(
 {
 }
 
-void Mat::Elastic::CoupAnisoNeoHookeVarProp::PackSummand(
+void Mat::Elastic::CoupAnisoNeoHookeVarProp::pack_summand(
     Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, a_);
   add_to_pack(data, structural_tensor_);
 }
 
-void Mat::Elastic::CoupAnisoNeoHookeVarProp::UnpackSummand(
+void Mat::Elastic::CoupAnisoNeoHookeVarProp::unpack_summand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   extract_from_pack(position, data, a_);
@@ -90,7 +90,7 @@ void Mat::Elastic::CoupAnisoNeoHookeVarProp::setup(int numgp, Input::LineDefinit
       locsys(0, 2) = sin(theta);
       locsys(2, 2) = cos(gamma) * cos(theta);
     }
-    SetFiberVecs(-1.0, locsys, Id);
+    set_fiber_vecs(-1.0, locsys, Id);
   }
 
   // path if fibers are given in .dat file
@@ -101,18 +101,18 @@ void Mat::Elastic::CoupAnisoNeoHookeVarProp::setup(int numgp, Input::LineDefinit
     {
       // Read in of data
       Core::LinAlg::Matrix<3, 3> locsys(true);
-      ReadRadAxiCir(linedef, locsys);
+      read_rad_axi_cir(linedef, locsys);
       Core::LinAlg::Matrix<3, 3> Id(true);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
       // final setup of fiber data
-      SetFiberVecs(0.0, locsys, Id);
+      set_fiber_vecs(0.0, locsys, Id);
     }
 
     // FIBER1 nomenclature
     else if (linedef->has_named("FIBER1"))
     {
       // Read in of fiber data and setting fiber data
-      ReadFiber(linedef, "FIBER1", a_);
+      read_fiber(linedef, "FIBER1", a_);
       params_->structural_tensor_strategy()->setup_structural_tensor(a_, structural_tensor_);
     }
 
@@ -135,8 +135,8 @@ void Mat::Elastic::CoupAnisoNeoHookeVarProp::add_stress_aniso_principal(
   const auto& element_center_coordinates_ref =
       params.get<Core::LinAlg::Matrix<3, 1>>("elecenter_coords_ref");
   double stressFact_ =
-      Global::Problem::Instance()
-          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
+      Global::Problem::instance()
+          ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
           .evaluate(element_center_coordinates_ref.data(), time_, 0);
 
 
@@ -148,14 +148,14 @@ void Mat::Elastic::CoupAnisoNeoHookeVarProp::add_stress_aniso_principal(
   // cmat.multiply_nt(delta, A_, A_, 1.0);
 }
 
-void Mat::Elastic::CoupAnisoNeoHookeVarProp::GetFiberVecs(
+void Mat::Elastic::CoupAnisoNeoHookeVarProp::get_fiber_vecs(
     std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
   fibervecs.push_back(a_);
 }
 
-void Mat::Elastic::CoupAnisoNeoHookeVarProp::SetFiberVecs(const double newgamma,
+void Mat::Elastic::CoupAnisoNeoHookeVarProp::set_fiber_vecs(const double newgamma,
     const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
   if ((params_->gamma_ < -90) || (params_->gamma_ > 90))

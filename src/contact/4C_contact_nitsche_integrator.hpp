@@ -285,14 +285,14 @@ namespace CONTACT
     {
       Core::FE::CollectedGaussPoints intpoints =
           Core::FE::CollectedGaussPoints(1);  // reserve just for 1 entry ...
-      intpoints.Append(gpcoord[0], gpcoord[1], 0.0, wgt);
+      intpoints.append(gpcoord[0], gpcoord[1], 0.0, wgt);
 
       // get coordinates of gauss point w.r.t. local parent coordinate system
       Core::LinAlg::SerialDenseMatrix pqxg(1, dim);
       derivtrafo.clear();
 
       Core::FE::BoundaryGPToParentGP<dim>(pqxg, derivtrafo, intpoints,
-          sele.parent_element()->Shape(), sele.Shape(), sele.FaceParentNumber());
+          sele.parent_element()->shape(), sele.shape(), sele.face_parent_number());
 
       // coordinates of the current integration point in parent coordinate system
       for (int idim = 0; idim < dim; idim++) pxsi(idim) = pqxg(0, idim);

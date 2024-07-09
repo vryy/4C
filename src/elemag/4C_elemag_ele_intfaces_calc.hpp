@@ -90,7 +90,7 @@ namespace Discret
 
       /// Internal implementation class for ElemagIntFace elements (the first object is created in
       /// Discret::ELEMENTS::ElemagIntFace::Evaluate)
-      static ElemagIntFaceImplInterface* Impl(const Core::Elements::Element* ele);
+      static ElemagIntFaceImplInterface* impl(const Core::Elements::Element* ele);
     };
 
     /// Internal ElemagIntFace element implementation
@@ -121,7 +121,7 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static ElemagIntFaceImpl<distype>* Instance(
+      static ElemagIntFaceImpl<distype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       /// Constructor
@@ -158,7 +158,7 @@ namespace Discret
 
       //! decide which terms have to be assembled and decide the assembly pattern, return if no
       //! assembly required
-      bool PrepareAssemble(Teuchos::ParameterList& stabparams, Teuchos::ParameterList& faceparams);
+      bool prepare_assemble(Teuchos::ParameterList& stabparams, Teuchos::ParameterList& faceparams);
 
      private:
       //! pointer to parameter lists

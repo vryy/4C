@@ -50,9 +50,9 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::distribute_linker_to_bins(
   std::list<Teuchos::RCP<Core::Nodes::Node>> homelesslinker;
   for (int lid = 0; lid < linkerrowmap->NumMyElements(); ++lid)
   {
-    Core::Nodes::Node* node = binstrategy_->BinDiscret()->gNode(linkerrowmap->GID(lid));
-    const double* currpos = node->X().data();
-    PlaceNodeCorrectly(Teuchos::rcp(node, false), currpos, homelesslinker);
+    Core::Nodes::Node* node = binstrategy_->bin_discret()->g_node(linkerrowmap->GID(lid));
+    const double* currpos = node->x().data();
+    place_node_correctly(Teuchos::rcp(node, false), currpos, homelesslinker);
   }
 
   // start round robin loop to fill linker into their correct bins
@@ -61,18 +61,18 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::distribute_linker_to_bins(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamCrosslinkerHandler::RemoveAllLinker()
+void BEAMINTERACTION::BeamCrosslinkerHandler::remove_all_linker()
 {
   // 1st) loop over bins and remove initial linker info
-  const int numrowbin = BinStrategy()->BinDiscret()->NumMyColElements();
+  const int numrowbin = bin_strategy()->bin_discret()->num_my_col_elements();
   for (int ibin = 0; ibin < numrowbin; ++ibin)
   {
-    Core::Elements::Element* actele = BinStrategy()->BinDiscret()->lColElement(ibin);
-    dynamic_cast<Core::FE::MeshFree::MeshfreeMultiBin*>(actele)->DeleteNodes();
+    Core::Elements::Element* actele = bin_strategy()->bin_discret()->l_col_element(ibin);
+    dynamic_cast<Core::FE::MeshFree::MeshfreeMultiBin*>(actele)->delete_nodes();
   }
 
   // 2nd) initial linker need to be removed from bindis_
-  BinStrategy()->BinDiscret()->DeleteNodes();
+  bin_strategy()->bin_discret()->delete_nodes();
 }
 
 /*----------------------------------------------------------------------*
@@ -81,12 +81,12 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::RemoveAllLinker()
 void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
     std::list<Teuchos::RCP<Core::Nodes::Node>>& homelesslinker)
 {
-  const int numproc = binstrategy_->BinDiscret()->Comm().NumProc();
-  const int myrank = binstrategy_->BinDiscret()->Comm().MyPID();  // me
-  const int torank = (myrank + 1) % numproc;                      // to
-  const int fromrank = (myrank + numproc - 1) % numproc;          // from
+  const int numproc = binstrategy_->bin_discret()->get_comm().NumProc();
+  const int myrank = binstrategy_->bin_discret()->get_comm().MyPID();  // me
+  const int torank = (myrank + 1) % numproc;                           // to
+  const int fromrank = (myrank + numproc - 1) % numproc;               // from
 
-  Core::Communication::Exporter exporter(binstrategy_->BinDiscret()->Comm());
+  Core::Communication::Exporter exporter(binstrategy_->bin_discret()->get_comm());
 
   for (int irobin = 0; irobin < numproc; ++irobin)
   {
@@ -101,7 +101,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
            currlinker != homelesslinker.end(); ++currlinker)
       {
         (*currlinker)->pack(data);
-        binstrategy_->BinDiscret()->DeleteNode((*currlinker)->Id());
+        binstrategy_->bin_discret()->delete_node((*currlinker)->id());
       }
       std::swap(sdata, data());
     }
@@ -116,7 +116,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
     int length = rdata.size();
     int tag = -1;
     int from = -1;
-    exporter.ReceiveAny(from, tag, rdata, length);
+    exporter.receive_any(from, tag, rdata, length);
     if (tag != 1234 or from != fromrank)
       FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
           myrank, from, myrank);
@@ -138,16 +138,16 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
         if (node == Teuchos::null) FOUR_C_THROW("Received object is not a node");
 
         // process received linker
-        const double* currpos = node->X().data();
-        PlaceNodeCorrectly(node, currpos, homelesslinker);
+        const double* currpos = node->x().data();
+        place_node_correctly(node, currpos, homelesslinker);
       }
     }
 
 
     // wait for all communication to finish
-    exporter.Wait(request);
-    binstrategy_->BinDiscret()->Comm().Barrier();  // I feel better this way ;-)
-  }                                                // end for irobin
+    exporter.wait(request);
+    binstrategy_->bin_discret()->get_comm().Barrier();  // I feel better this way ;-)
+  }                                                     // end for irobin
 
   if (homelesslinker.size())
   {
@@ -169,7 +169,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
 {
   TEUCHOS_FUNC_TIME_MONITOR(
       "BEAMINTERACTION::beam_crosslinker_handler::fill_linker_into_bins_remote_id_list");
-  const int numproc = binstrategy_->BinDiscret()->Comm().NumProc();
+  const int numproc = binstrategy_->bin_discret()->get_comm().NumProc();
   Teuchos::RCP<std::list<int>> removedlinker = Teuchos::rcp(new std::list<int>(0));
 
   // parallel case
@@ -180,7 +180,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
   std::list<Teuchos::RCP<Core::Nodes::Node>>::const_iterator hlp;
   for (hlp = homelesslinker.begin(); hlp != homelesslinker.end(); ++hlp)
   {
-    const int binId = binstrategy_->ConvertPosToGid((*hlp)->X().data());
+    const int binId = binstrategy_->convert_pos_to_gid((*hlp)->x().data());
     targetbinIdlist.push_back(binId);
   }
 
@@ -196,7 +196,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
 
     // 2) communication
     std::vector<int> unique_pidlist(uniquesize);
-    int err = binstrategy_->BinDiscret()->ElementRowMap()->RemoteIDList(
+    int err = binstrategy_->bin_discret()->element_row_map()->RemoteIDList(
         uniquesize, uniquevec_targetbinIdlist.data(), unique_pidlist.data(), nullptr);
     if (err < 0) FOUR_C_THROW("Epetra_BlockMap::RemoteIDList returned err=%d", err);
 
@@ -222,15 +222,15 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
     {
       Core::Communication::PackBuffer data;
       iterhomelesslinker->pack(data);
-      binstrategy_->BinDiscret()->DeleteNode(iterhomelesslinker->Id());
+      binstrategy_->bin_discret()->delete_node(iterhomelesslinker->id());
       sdata[targetproc].insert(sdata[targetproc].end(), data().begin(), data().end());
       targetprocs[targetproc] = 1;
     }
     else
     {
-      const int removeid = iterhomelesslinker->Id();
+      const int removeid = iterhomelesslinker->id();
       removedlinker->push_back(removeid);
-      binstrategy_->BinDiscret()->DeleteNode(removeid);
+      binstrategy_->bin_discret()->delete_node(removeid);
     }
     ++iter;
   }
@@ -242,10 +242,10 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
 
   // ---- prepare receiving procs -----
   std::vector<int> summedtargets(numproc, 0);
-  binstrategy_->BinDiscret()->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+  binstrategy_->bin_discret()->get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
 
   // ---- send ----
-  Core::Communication::Exporter exporter(binstrategy_->BinDiscret()->Comm());
+  Core::Communication::Exporter exporter(binstrategy_->bin_discret()->get_comm());
   const int length = sdata.size();
   std::vector<MPI_Request> request(length);
   int tag = 0;
@@ -261,10 +261,10 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
 
   // wait for all communications to finish
   {
-    for (int i = 0; i < length; ++i) exporter.Wait(request[i]);
+    for (int i = 0; i < length; ++i) exporter.wait(request[i]);
   }
 
-  binstrategy_->BinDiscret()->Comm().Barrier();  // I feel better this way ;-)
+  binstrategy_->bin_discret()->get_comm().Barrier();  // I feel better this way ;-)
 
   return removedlinker;
 }
@@ -279,7 +279,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
   TEUCHOS_FUNC_TIME_MONITOR(
       "BEAMINTERACTION::beam_crosslinker_handler::fill_linker_into_bins_using_ghosting");
 
-  const int numproc = binstrategy_->BinDiscret()->Comm().NumProc();
+  const int numproc = binstrategy_->bin_discret()->get_comm().NumProc();
   Teuchos::RCP<std::list<int>> removedlinker = Teuchos::rcp(new std::list<int>(0));
 
   // parallel case
@@ -289,7 +289,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
   int binId, binowner;
   for (hlp = homelesslinker.begin(); hlp != homelesslinker.end(); ++hlp)
   {
-    binId = binstrategy_->ConvertPosToGid((*hlp)->X().data());
+    binId = binstrategy_->convert_pos_to_gid((*hlp)->x().data());
     if (binId == -1)
     {
       binowner = -1;
@@ -298,13 +298,13 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       // safety check
-      if (not binstrategy_->BinDiscret()->HaveGlobalElement(binId))
+      if (not binstrategy_->bin_discret()->have_global_element(binId))
         FOUR_C_THROW(
             "To transfer linker using ghosting you need to provide a one layer ghosting,"
             " that is not the case. Bin with gid %i not ghosted on rank %i ",
             binId, myrank_);
 #endif
-      binowner = binstrategy_->BinDiscret()->gElement(binId)->Owner();
+      binowner = binstrategy_->bin_discret()->g_element(binId)->owner();
     }
     towhomwhat[binowner].push_back((*hlp));
   }
@@ -325,7 +325,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
       {
         Core::Communication::PackBuffer data;
         (*iter)->pack(data);
-        binstrategy_->BinDiscret()->DeleteNode((*iter)->Id());
+        binstrategy_->bin_discret()->delete_node((*iter)->id());
         sdata[p->first].insert(sdata[p->first].end(), data().begin(), data().end());
       }
       targetprocs[p->first] = 1;
@@ -335,15 +335,15 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
       std::list<Teuchos::RCP<Core::Nodes::Node>>::const_iterator iter;
       for (iter = p->second.begin(); iter != p->second.end(); ++iter)
       {
-        const int removeid = (*iter)->Id();
+        const int removeid = (*iter)->id();
         removedlinker->push_back(removeid);
-        binstrategy_->BinDiscret()->DeleteNode(removeid);
+        binstrategy_->bin_discret()->delete_node(removeid);
       }
     }
   }
 
   // ---- send ----
-  Core::Communication::Exporter exporter(binstrategy_->BinDiscret()->Comm());
+  Core::Communication::Exporter exporter(binstrategy_->bin_discret()->get_comm());
   const int length = sdata.size();
   std::vector<MPI_Request> request(length);
   int tag = 0;
@@ -368,16 +368,16 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
   // -----------------------------------------------------------------------
   // ---- prepare receiving procs -----
   std::vector<int> summedtargets(numproc, 0);
-  binstrategy_->BinDiscret()->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+  binstrategy_->bin_discret()->get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
 
   // ---- receive -----
   receive_linker_and_fill_them_in_bins(summedtargets[myrank_], exporter, homelesslinker);
 
   // wait for all communications to finish
-  for (int i = 0; i < length; ++i) exporter.Wait(request[i]);
+  for (int i = 0; i < length; ++i) exporter.wait(request[i]);
 
   // should be no time operation (if we have done everything correctly)
-  binstrategy_->BinDiscret()->Comm().Barrier();
+  binstrategy_->bin_discret()->get_comm().Barrier();
 
   return removedlinker;
 }
@@ -395,7 +395,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::receive_linker_and_fill_them_in_bi
     int length = 0;
     int tag = -1;
     int from = -1;
-    exporter.ReceiveAny(from, tag, rdata, length);
+    exporter.receive_any(from, tag, rdata, length);
     if (tag != 1234)
       FOUR_C_THROW("Received on proc %i data with wrong tag from proc %i", myrank_, from);
 
@@ -414,13 +414,13 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::receive_linker_and_fill_them_in_bi
         if (node == Teuchos::null) FOUR_C_THROW("Received object is not a node");
 
         // process received linker
-        const double* currpos = node->X().data();
-        PlaceNodeCorrectly(node, currpos, homelesslinker);
+        const double* currpos = node->x().data();
+        place_node_correctly(node, currpos, homelesslinker);
         if (homelesslinker.size())
           FOUR_C_THROW(
               "linker (id: %i) was sent to proc %i but corresponding bin (gid: %i) "
               " is missing",
-              node->Id(), myrank_, binstrategy_->ConvertPosToGid(currpos));
+              node->id(), myrank_, binstrategy_->convert_pos_to_gid(currpos));
       }
     }
   }
@@ -429,23 +429,23 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::receive_linker_and_fill_them_in_bi
 /*----------------------------------------------------------------------*
 | node is placed into the correct row bin                   ghamm 09/12 |
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamCrosslinkerHandler::PlaceNodeCorrectly(
+bool BEAMINTERACTION::BeamCrosslinkerHandler::place_node_correctly(
     Teuchos::RCP<Core::Nodes::Node> node, const double* currpos,
     std::list<Teuchos::RCP<Core::Nodes::Node>>& homelesslinker)
 {
   //  std::cout << "on proc: " << myrank_ << " node with ID: " << node->Id() << " and owner: " <<
   //  node->Owner() << " arrived in PlaceNodeCorrectly" << std::endl;
-  const int binId = binstrategy_->ConvertPosToGid(currpos);
+  const int binId = binstrategy_->convert_pos_to_gid(currpos);
 
   // check whether the current node belongs into a bin on this proc
-  const bool found = binstrategy_->BinDiscret()->HaveGlobalElement(binId);
+  const bool found = binstrategy_->bin_discret()->have_global_element(binId);
 
   // either fill linker into correct bin on this proc or mark it as homeless
   if (found == true)
   {
     Core::FE::MeshFree::MeshfreeMultiBin* currbin =
         dynamic_cast<Core::FE::MeshFree::MeshfreeMultiBin*>(
-            binstrategy_->BinDiscret()->gElement(binId));
+            binstrategy_->bin_discret()->g_element(binId));
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (currbin == nullptr)
       FOUR_C_THROW(
@@ -453,35 +453,35 @@ bool BEAMINTERACTION::BeamCrosslinkerHandler::PlaceNodeCorrectly(
           "failed");
 #endif
     // check whether it is a row bin
-    if (currbin->Owner() == myrank_)  // row bin
+    if (currbin->owner() == myrank_)  // row bin
     {
       //      std::cout << "on proc: " << myrank_ << " for node " << node->Id() << " a row bin was
       //      found" << std::endl;
       // node already exists (either row or ghost)
-      if (binstrategy_->BinDiscret()->HaveGlobalNode(node->Id()) == true)
+      if (binstrategy_->bin_discret()->have_global_node(node->id()) == true)
       {
-        Core::Nodes::Node* existingnode = binstrategy_->BinDiscret()->gNode(node->Id());
+        Core::Nodes::Node* existingnode = binstrategy_->bin_discret()->g_node(node->id());
         // existing node is a row node, this means that node is equal existingnode
-        if (existingnode->Owner() == myrank_)
+        if (existingnode->owner() == myrank_)
         {
           //          std::cout << "on proc: " << myrank_ << " existingnode row node " <<
           //          existingnode->Id() << " (ID from outside node: " << node->Id() << ") is added
           //          to element: " << currbin->Id() << std::endl;
 
           // assign node to the correct bin
-          currbin->AddNode(existingnode);
+          currbin->add_node(existingnode);
         }
         else  // delete existing node, insert received node into discretization and add it to
               // correct bin
         {
           // delete existing node
-          binstrategy_->BinDiscret()->DeleteNode(existingnode->Id());
+          binstrategy_->bin_discret()->delete_node(existingnode->id());
           // update ownership
-          node->SetOwner(myrank_);
+          node->set_owner(myrank_);
           // add node
-          binstrategy_->BinDiscret()->AddNode(node);
+          binstrategy_->bin_discret()->add_node(node);
           // assign node to the correct bin
-          currbin->AddNode(node.get());
+          currbin->add_node(node.get());
 
           //        std::cout << "on proc: " << myrank_ << " node " << node->Id() << " is added to
           //        the discretization and assigned to element: " << currbin->Id() << std::endl;
@@ -490,12 +490,12 @@ bool BEAMINTERACTION::BeamCrosslinkerHandler::PlaceNodeCorrectly(
       else  // fill newly received node into discretization
       {
         // change owner of the node to this proc and add it to the discretization
-        node->SetOwner(myrank_);
-        binstrategy_->BinDiscret()->AddNode(node);
+        node->set_owner(myrank_);
+        binstrategy_->bin_discret()->add_node(node);
         //        std::cout << "on proc: " << myrank_ << " node " << node->Id() << " is added to the
         //        discretization and assigned to element: " << currbin->Id() << std::endl;
         // assign node to the correct bin
-        currbin->AddNode(node.get());
+        currbin->add_node(node.get());
       }
       return true;
     }
@@ -518,7 +518,7 @@ bool BEAMINTERACTION::BeamCrosslinkerHandler::PlaceNodeCorrectly(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::TransferLinker(
+Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::transfer_linker(
     bool const fill_using_ghosting)
 {
   TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::beam_crosslinker_handler::TransferLinker");
@@ -526,24 +526,24 @@ Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::TransferLi
   // set of homeless linker
   std::list<Teuchos::RCP<Core::Nodes::Node>> homelesslinker;
 
-  std::vector<int> examinedbins(binstrategy_->BinDiscret()->NumMyRowElements(), 0);
+  std::vector<int> examinedbins(binstrategy_->bin_discret()->num_my_row_elements(), 0);
   // first run over linker and then process whole bin in which linker is located
   // until all linker have been checked
-  const int numrownodes = binstrategy_->BinDiscret()->NumMyRowNodes();
+  const int numrownodes = binstrategy_->bin_discret()->num_my_row_nodes();
   for (int i = 0; i < numrownodes; ++i)
   {
-    Core::Nodes::Node* currlinker = binstrategy_->BinDiscret()->lRowNode(i);
+    Core::Nodes::Node* currlinker = binstrategy_->bin_discret()->l_row_node(i);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-    if (currlinker->NumElement() != 1)
+    if (currlinker->num_element() != 1)
       FOUR_C_THROW("ERROR: A linker is assigned to more than one bin!");
 #endif
 
     Core::FE::MeshFree::MeshfreeMultiBin* currbin =
-        dynamic_cast<Core::FE::MeshFree::MeshfreeMultiBin*>(currlinker->Elements()[0]);
+        dynamic_cast<Core::FE::MeshFree::MeshfreeMultiBin*>(currlinker->elements()[0]);
     // as checked above, there is only one element in currele array
-    const int binId = currbin->Id();
-    const int rlid = binstrategy_->BinDiscret()->ElementRowMap()->LID(binId);
+    const int binId = currbin->id();
+    const int rlid = binstrategy_->bin_discret()->element_row_map()->LID(binId);
 
     // if a bin has already been examined --> continue with next linker
     if (examinedbins[rlid]) continue;
@@ -551,7 +551,7 @@ Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::TransferLi
     else
       examinedbins[rlid] = 1;
 
-    Core::Nodes::Node** linker = currbin->Nodes();
+    Core::Nodes::Node** linker = currbin->nodes();
     std::vector<int> tobemoved(0);
     for (int ilinker = 0; ilinker < currbin->num_node(); ++ilinker)
     {
@@ -560,21 +560,21 @@ Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::TransferLi
 
       // transform to array
       std::vector<double> pos(3, 0.0);
-      for (int dim = 0; dim < 3; ++dim) pos[dim] = currnode->X()[dim];
+      for (int dim = 0; dim < 3; ++dim) pos[dim] = currnode->x()[dim];
 
-      const int gidofbin = binstrategy_->ConvertPosToGid(pos.data());
+      const int gidofbin = binstrategy_->convert_pos_to_gid(pos.data());
       // linker has left current bin
       if (gidofbin != binId)
       {
         // (looping over nodes and deleting at the same time is detrimental)
-        tobemoved.push_back(currnode->Id());
+        tobemoved.push_back(currnode->id());
         // find new bin for linker
-        PlaceNodeCorrectly(Teuchos::rcp(currnode, false), pos.data(), homelesslinker);
+        place_node_correctly(Teuchos::rcp(currnode, false), pos.data(), homelesslinker);
       }
     }
 
     // finally remove nodes from their old bin
-    for (size_t iter = 0; iter < tobemoved.size(); ++iter) currbin->DeleteNode(tobemoved[iter]);
+    for (size_t iter = 0; iter < tobemoved.size(); ++iter) currbin->delete_node(tobemoved[iter]);
   }
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -589,7 +589,7 @@ Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::TransferLi
   //---------------------------------------------------------------------------
   // numproc == 1
   //---------------------------------------------------------------------------
-  if (binstrategy_->BinDiscret()->Comm().NumProc() == 1)
+  if (binstrategy_->bin_discret()->get_comm().NumProc() == 1)
   {
     if (homelesslinker.size())
     {
@@ -600,9 +600,9 @@ Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::TransferLi
       std::list<Teuchos::RCP<Core::Nodes::Node>>::const_iterator hlp;
       for (hlp = homelesslinker.begin(); hlp != homelesslinker.end(); ++hlp)
       {
-        const int removeid = (*hlp)->Id();
+        const int removeid = (*hlp)->id();
         deletedlinker->push_back(removeid);
-        binstrategy_->BinDiscret()->DeleteNode(removeid);
+        binstrategy_->bin_discret()->delete_node(removeid);
       }
       homelesslinker.clear();
     }
@@ -634,7 +634,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::
 {
   colbins.clear();
 
-  std::list<Core::Elements::Element*> const boundaryrowbins = binstrategy_->BoundaryRowBins();
+  std::list<Core::Elements::Element*> const boundaryrowbins = binstrategy_->boundary_row_bins();
 
   if (boundaryrowbins.size() == 0)
     FOUR_C_THROW("Boundary row bins unknown, call function determine_boundary_row_bins() first!");
@@ -648,7 +648,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::
       std::vector<int> binvec;
       binvec.reserve(26);
       // get neighboring bins
-      binstrategy_->GetNeighborBinIds((*it)->Id(), binvec);
+      binstrategy_->get_neighbor_bin_ids((*it)->id(), binvec);
       colbins.insert(binvec.begin(), binvec.end());
     }
   }

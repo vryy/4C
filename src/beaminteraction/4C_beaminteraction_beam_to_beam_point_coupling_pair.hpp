@@ -89,22 +89,22 @@ namespace BEAMINTERACTION
      * @param stiffness_matrix (in / out) Global stiffness matrix.
      * @param displacement_vector (in) Global displacement vector.
      */
-    void EvaluateAndAssemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
+    void evaluate_and_assemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
 
     /**
-     * \brief No need to update pair state vectors, as everything is done in the EvaluateAndAssemble
-     * call.
+     * \brief No need to update pair state vectors, as everything is done in the
+     * evaluate_and_assemble call.
      */
-    void ResetState(const std::vector<double>& beam_centerline_dofvec,
+    void reset_state(const std::vector<double>& beam_centerline_dofvec,
         const std::vector<double>& solid_nodal_dofvec) override{};
 
     /**
      * \brief This pair is always active.
      */
-    inline bool GetContactFlag() const override { return true; }
+    inline bool get_contact_flag() const override { return true; }
 
     /**
      * \brief Get number of active contact point pairs on this element pair. Not yet implemented.

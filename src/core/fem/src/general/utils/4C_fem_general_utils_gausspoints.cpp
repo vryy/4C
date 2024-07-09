@@ -55,13 +55,13 @@ namespace Core::FE
         myCub->getCubature(cub_points_, cub_weights_);
       }
 
-      int NumPoints() const override { return cub_points_.dimension(0); }
+      int num_points() const override { return cub_points_.dimension(0); }
 
-      int NumDimension() const override { return cub_points_.dimension(1); }
+      int num_dimension() const override { return cub_points_.dimension(1); }
 
-      const double* Point(int point) const override { return &cub_points_(point, 0); }
+      const double* point(int point) const override { return &cub_points_(point, 0); }
 
-      double Weight(int point) const override { return cub_weights_(point); }
+      double weight(int point) const override { return cub_weights_(point); }
 
       void print() const override
       {
@@ -69,10 +69,10 @@ namespace Core::FE
         shards::CellTopology cellType = shards::getCellTopologyData<Topology>();
 
         std::cout << cellType.getName() << " gauss points:\n";
-        for (int i = 0; i < NumPoints(); ++i)
+        for (int i = 0; i < num_points(); ++i)
         {
           std::cout << "    ";
-          for (int j = 0; j < NumDimension(); ++j) std::cout << cub_points_(i, j) << " ";
+          for (int j = 0; j < num_dimension(); ++j) std::cout << cub_points_(i, j) << " ";
           std::cout << cub_weights_(i) << "\n";
         }
       }
@@ -128,13 +128,13 @@ namespace Core::FE
         cub_weights_(7) = 0.23254745125351;
       }
 
-      int NumPoints() const override { return cub_points_.dimension(0); }
+      int num_points() const override { return cub_points_.dimension(0); }
 
-      int NumDimension() const override { return cub_points_.dimension(1); }
+      int num_dimension() const override { return cub_points_.dimension(1); }
 
-      const double* Point(int point) const override { return &cub_points_(point, 0); }
+      const double* point(int point) const override { return &cub_points_(point, 0); }
 
-      double Weight(int point) const override { return cub_weights_(point); }
+      double weight(int point) const override { return cub_weights_(point); }
 
       void print() const override
       {
@@ -142,10 +142,10 @@ namespace Core::FE
         shards::CellTopology cellType = shards::getCellTopologyData<shards::Pyramid<5>>();
 
         std::cout << cellType.getName() << " gauss points:\n";
-        for (int i = 0; i < NumPoints(); ++i)
+        for (int i = 0; i < num_points(); ++i)
         {
           std::cout << "    ";
-          for (int j = 0; j < NumDimension(); ++j) std::cout << cub_points_(i, j) << " ";
+          for (int j = 0; j < num_dimension(); ++j) std::cout << cub_points_(i, j) << " ";
           std::cout << cub_weights_(i) << "\n";
         }
       }
@@ -163,67 +163,67 @@ Core::FE::GaussIntegration::GaussIntegration(Core::FE::CellType distype)
   switch (distype)
   {
     case Core::FE::CellType::quad4:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::quad4, 3);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::quad4, 3);
       break;
     case Core::FE::CellType::quad8:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::quad8, 4);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::quad8, 4);
       break;
     case Core::FE::CellType::quad9:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::quad9, 4);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::quad9, 4);
       break;
     case Core::FE::CellType::tri3:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::tri3, 3);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::tri3, 3);
       break;
     case Core::FE::CellType::tri6:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::tri6, 4);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::tri6, 4);
       break;
     case Core::FE::CellType::hex8:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::hex8, 3);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::hex8, 3);
       break;
     case Core::FE::CellType::hex20:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::hex20, 4);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::hex20, 4);
       break;
     case Core::FE::CellType::hex27:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::hex27, 4);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::hex27, 4);
       break;
     case Core::FE::CellType::tet4:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::tet4, 3);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::tet4, 3);
       break;
     case Core::FE::CellType::tet10:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::tet10, 4);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::tet10, 4);
       break;
     case Core::FE::CellType::wedge6:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::wedge6, 3);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::wedge6, 3);
       break;
     case Core::FE::CellType::wedge15:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::wedge15, 4);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::wedge15, 4);
       break;
     case Core::FE::CellType::pyramid5:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::pyramid5, 3);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::pyramid5, 3);
       break;
     case Core::FE::CellType::line2:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::line2, 3);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::line2, 3);
       break;
     case Core::FE::CellType::line3:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::line3, 4);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::line3, 4);
       break;
     case Core::FE::CellType::nurbs2:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::line2, 3);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::line2, 3);
       break;
     case Core::FE::CellType::nurbs3:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::line3, 4);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::line3, 4);
       break;
     case Core::FE::CellType::nurbs4:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::quad4, 3);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::quad4, 3);
       break;
     case Core::FE::CellType::nurbs8:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::hex8, 3);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::hex8, 3);
       break;
     case Core::FE::CellType::nurbs9:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::quad9, 4);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::quad9, 4);
       break;
     case Core::FE::CellType::nurbs27:
-      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::hex27, 4);
+      gp_ = GaussPointCache::instance().create(Core::FE::CellType::hex27, 4);
       break;
     default:
       FOUR_C_THROW("unsupported element shape");
@@ -232,10 +232,10 @@ Core::FE::GaussIntegration::GaussIntegration(Core::FE::CellType distype)
 
 Core::FE::GaussIntegration::GaussIntegration(Core::FE::CellType distype, int degree)
 {
-  gp_ = GaussPointCache::Instance().Create(distype, degree);
+  gp_ = GaussPointCache::instance().create(distype, degree);
 }
 
-Core::FE::GaussPointCache& Core::FE::GaussPointCache::Instance()
+Core::FE::GaussPointCache& Core::FE::GaussPointCache::instance()
 {
   static std::unique_ptr<GaussPointCache> instance;
   if (instance == nullptr)
@@ -246,7 +246,7 @@ Core::FE::GaussPointCache& Core::FE::GaussPointCache::Instance()
 }
 
 
-Teuchos::RCP<Core::FE::GaussPoints> Core::FE::GaussPointCache::Create(
+Teuchos::RCP<Core::FE::GaussPoints> Core::FE::GaussPointCache::create(
     Core::FE::CellType distype, int degree)
 {
   std::map<std::pair<Core::FE::CellType, int>, Teuchos::RCP<GaussPoints>>::iterator i =

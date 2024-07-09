@@ -59,10 +59,10 @@ void SSI::SSIPart::setup()
   // call setup of base class
   SSI::SSIBase::setup();
 
-  if (SSIInterfaceContact() and !IsRestart())
+  if (ssi_interface_contact() and !is_restart())
   {
     setup_contact_strategy();
-    ScaTraField()->SetNitscheContactStrategy(nitsche_strategy_ssi());
+    sca_tra_field()->set_nitsche_contact_strategy(nitsche_strategy_ssi());
   }
 }
 
@@ -86,10 +86,10 @@ void SSI::SSIPart::read_restart(int restart)
   SSIBase::read_restart(restart);
 
   // do ssi contact specific tasks
-  if (SSIInterfaceContact())
+  if (ssi_interface_contact())
   {
     setup_contact_strategy();
-    ScaTraField()->SetNitscheContactStrategy(nitsche_strategy_ssi());
+    sca_tra_field()->set_nitsche_contact_strategy(nitsche_strategy_ssi());
   }
 }
 

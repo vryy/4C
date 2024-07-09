@@ -104,8 +104,8 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
     case calc_struct_nlnstiff:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -121,8 +121,8 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
     case calc_struct_internalforce:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -146,8 +146,8 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
     case calc_struct_nlnstifflmass:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -163,8 +163,8 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
     // evaluate stresses at gauss points
     case calc_struct_stress:
     {
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       Teuchos::RCP<std::vector<char>> stressdata =
           params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
       Teuchos::RCP<std::vector<char>> straindata =
@@ -217,7 +217,7 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
         // alphao := alpha
         Core::LinAlg::DenseFunctions::update<double, soshw6_easpoisthick, 1>(*alphao, *alpha);
       }
-      SolidMaterial()->update();
+      solid_material()->update();
     }
     break;
 
@@ -232,13 +232,13 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
         Core::LinAlg::DenseFunctions::update<double, soshw6_easpoisthick, 1>(*alpha, *alphao);
       }
       // Reset of history (if needed)
-      SolidMaterial()->reset_step();
+      solid_material()->reset_step();
     }
     break;
 
     case calc_recover:
     {
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       std::vector<double> myres(lm.size());
       Core::FE::ExtractMyValues(*res, myres, lm);
       soshw6_recover(myres);
@@ -278,10 +278,9 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
   // update element geometry
   Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xrefe;  // material coord. of element
   Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xcurr;  // current  coord. of element
-  Core::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_WEG6; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -340,7 +339,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
 
     // this is a line search step, i.e. the direction of the eas increments
     // has been calculated by a Newton step and now it is only scaled
-    if (not IsParamsInterface())
+    if (not is_params_interface())
     {
       if (params.isParameter("alpha_ls"))
       {
@@ -627,7 +626,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
 
-    SolidMaterial()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+    solid_material()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
@@ -736,7 +735,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
 
     if (massmatrix != nullptr)
     {  // evaluate mass matrix +++++++++++++++++++++++++
-      double density = Material()->Density(gp);
+      double density = material()->density(gp);
       // integrate consistent mass matrix
       const double factor = detJ_w * density;
       double ifactor, massfactor;
@@ -759,7 +758,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
   // rhs norm of eas equations
   if (eastype_ != soshw6_easnone && split_res)
     // only add for row-map elements
-    if (params.get<int>("MyPID") == Owner())
+    if (params.get<int>("MyPID") == owner())
       params.get<double>("cond_rhs_norm") += pow(Core::LinAlg::Norm2(feas), 2.);
 
   if (force != nullptr && stiffmatrix != nullptr)
@@ -971,8 +970,8 @@ void Discret::ELEMENTS::SoShw6::soshw6_evaluate_t(
   // now evaluate T^{-T} with solver
   Core::LinAlg::FixedSizeSerialDenseSolver<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D, 1>
       solve_for_inverseT;
-  solve_for_inverseT.SetMatrix(TinvT);
-  int err2 = solve_for_inverseT.Factor();
+  solve_for_inverseT.set_matrix(TinvT);
+  int err2 = solve_for_inverseT.factor();
   int err = solve_for_inverseT.invert();
   if ((err != 0) && (err2 != 0)) FOUR_C_THROW("Inversion of Tinv (Jacobian) failed");
   return;
@@ -1165,9 +1164,9 @@ int Discret::ELEMENTS::SoShw6::soshw6_findoptparmap()
   edgevecs.at(2).resize(3);
   for (int i = 0; i < 3; ++i)
   {
-    edgevecs.at(0)[i] = this->Nodes()[1]->X()[i] - this->Nodes()[0]->X()[i];  // a
-    edgevecs.at(1)[i] = this->Nodes()[2]->X()[i] - this->Nodes()[0]->X()[i];  // b
-    edgevecs.at(2)[i] = this->Nodes()[2]->X()[i] - this->Nodes()[1]->X()[i];  // c
+    edgevecs.at(0)[i] = this->nodes()[1]->x()[i] - this->nodes()[0]->x()[i];  // a
+    edgevecs.at(1)[i] = this->nodes()[2]->x()[i] - this->nodes()[0]->x()[i];  // b
+    edgevecs.at(2)[i] = this->nodes()[2]->x()[i] - this->nodes()[1]->x()[i];  // c
   }
 
   // normalize
@@ -1208,10 +1207,10 @@ int Discret::ELEMENTS::SoShw6::soshw6_findoptparmap()
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoShw6Type::initialize(Core::FE::Discretization& dis)
 {
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoShw6*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoShw6*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_shw6* failed");
 
     // check whether we should align the material space optimally with the parameter space.
@@ -1235,26 +1234,26 @@ int Discret::ELEMENTS::SoShw6Type::initialize(Core::FE::Discretization& dis)
         case 2:
         {
           // resorting of nodes to align with SECOND node
-          new_nodeids[0] = actele->NodeIds()[1];
-          new_nodeids[1] = actele->NodeIds()[2];
-          new_nodeids[2] = actele->NodeIds()[0];
-          new_nodeids[3] = actele->NodeIds()[4];
-          new_nodeids[4] = actele->NodeIds()[5];
-          new_nodeids[5] = actele->NodeIds()[3];
-          actele->SetNodeIds(NUMNOD_WEG6, new_nodeids);
+          new_nodeids[0] = actele->node_ids()[1];
+          new_nodeids[1] = actele->node_ids()[2];
+          new_nodeids[2] = actele->node_ids()[0];
+          new_nodeids[3] = actele->node_ids()[4];
+          new_nodeids[4] = actele->node_ids()[5];
+          new_nodeids[5] = actele->node_ids()[3];
+          actele->set_node_ids(NUMNOD_WEG6, new_nodeids);
           actele->nodes_rearranged_ = true;
           break;
         }
         case 3:
         {
           // resorting of nodes to align with THIRD node
-          new_nodeids[0] = actele->NodeIds()[2];
-          new_nodeids[1] = actele->NodeIds()[0];
-          new_nodeids[2] = actele->NodeIds()[1];
-          new_nodeids[3] = actele->NodeIds()[5];
-          new_nodeids[4] = actele->NodeIds()[3];
-          new_nodeids[5] = actele->NodeIds()[4];
-          actele->SetNodeIds(NUMNOD_WEG6, new_nodeids);
+          new_nodeids[0] = actele->node_ids()[2];
+          new_nodeids[1] = actele->node_ids()[0];
+          new_nodeids[2] = actele->node_ids()[1];
+          new_nodeids[3] = actele->node_ids()[5];
+          new_nodeids[4] = actele->node_ids()[3];
+          new_nodeids[5] = actele->node_ids()[4];
+          actele->set_node_ids(NUMNOD_WEG6, new_nodeids);
           actele->nodes_rearranged_ = true;
           break;
         }
@@ -1268,10 +1267,10 @@ int Discret::ELEMENTS::SoShw6Type::initialize(Core::FE::Discretization& dis)
   dis.fill_complete(false, false, false);
 
   // loop again to init Jacobian for Sosh8's
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoShw6*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoShw6*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_shw6* failed");
     actele->init_jacobian_mapping();
   }
@@ -1298,7 +1297,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_recover(const std::vector<double>& residu
   {
     // first, store the eas state of the previous accepted Newton step
     str_params_interface().sum_into_my_previous_sol_norm(
-        NOX::Nln::StatusTest::quantity_eas, soshw6_easpoisthick, (*alpha)[0], Owner());
+        NOX::Nln::StatusTest::quantity_eas, soshw6_easpoisthick, (*alpha)[0], owner());
 
     // add Kda . res_d to feas
     Core::LinAlg::DenseFunctions::multiply<double, soshw6_easpoisthick, NUMDOF_WEG6, 1>(
@@ -1316,7 +1315,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_recover(const std::vector<double>& residu
   old_step_length_ = step_length;
 
   str_params_interface().sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_eas,
-      soshw6_easpoisthick, (*eas_inc)[0], (*alpha)[0], step_length, Owner());
+      soshw6_easpoisthick, (*eas_inc)[0], (*alpha)[0], step_length, owner());
 }
 
 FOUR_C_NAMESPACE_CLOSE

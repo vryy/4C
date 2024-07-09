@@ -65,7 +65,7 @@ void Discret::ELEMENTS::StructureRuntimeOutputParams::init(
   {
     // If stress / strain data should be output, check that the relevant parameters in the --IO
     // section are set.
-    const Teuchos::ParameterList& io_parameter_list = Global::Problem::Instance()->IOParams();
+    const Teuchos::ParameterList& io_parameter_list = Global::Problem::instance()->io_params();
     Inpar::Solid::StressType io_stress =
         Core::UTILS::IntegralValue<Inpar::Solid::StressType>(io_parameter_list, "STRUCT_STRESS");
     Inpar::Solid::StrainType io_strain =

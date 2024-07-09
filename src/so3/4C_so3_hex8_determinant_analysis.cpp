@@ -180,7 +180,7 @@ void Discret::ELEMENTS::SoHex8DeterminantAnalysis::build_map_lagrange_to_bezier(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoHex8DeterminantAnalysis::isValid(
+bool Discret::ELEMENTS::SoHex8DeterminantAnalysis::is_valid(
     const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr, unsigned* rc) const
 {
   // placed on the stack and, thus, not static

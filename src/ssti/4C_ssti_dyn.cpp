@@ -24,29 +24,29 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 void ssti_drt()
 {
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
-  const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
+  const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
 
   auto ssti = SSTI::BuildSSTI(Teuchos::getIntegralValue<Inpar::SSTI::SolutionScheme>(
-                                  problem->SSTIControlParams(), "COUPALGO"),
-      comm, problem->SSTIControlParams());
+                                  problem->ssti_control_params(), "COUPALGO"),
+      comm, problem->ssti_control_params());
 
-  ssti->init(comm, problem->SSTIControlParams(), problem->scalar_transport_dynamic_params(),
-      problem->SSTIControlParams().sublist("THERMO"), problem->structural_dynamic_params());
+  ssti->init(comm, problem->ssti_control_params(), problem->scalar_transport_dynamic_params(),
+      problem->ssti_control_params().sublist("THERMO"), problem->structural_dynamic_params());
 
   ssti->setup();
 
   const int restart = problem->restart();
   if (restart) ssti->read_restart(restart);
 
-  ssti->SetupSystem();
+  ssti->setup_system();
 
-  ssti->Timeloop();
+  ssti->timeloop();
 
   Teuchos::TimeMonitor::summarize();
 
-  ssti->TestResults(comm);
+  ssti->test_results(comm);
 }
 
 FOUR_C_NAMESPACE_CLOSE

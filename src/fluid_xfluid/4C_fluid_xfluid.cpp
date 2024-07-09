@@ -110,7 +110,7 @@ void FLD::XFluid::add_additional_scalar_dofset_and_coupling()
       Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(1, 0, 0, true));
 
   // add the dofset to the xfluid dis
-  const int dofidx = xdiscret_->AddDofSet(dofsetaux);
+  const int dofidx = xdiscret_->add_dof_set(dofsetaux);
 
   // store the dof index in the dofset_coupling_map_ for right access through the coupling objects
   dofset_coupling_map_.insert(std::pair<std::string, int>("phi_scatra_proxy_in_fluid", dofidx));
@@ -123,7 +123,7 @@ void FLD::XFluid::add_additional_scalar_dofset_and_coupling()
   // assign degrees of freedom (as a new dofset has been added!)
   xdiscret_->fill_complete(true, false, false);
 
-  xdiscret_->GetDofSetProxy()->PrintAllDofsets(xdiscret_->Comm());
+  xdiscret_->get_dof_set_proxy()->print_all_dofsets(xdiscret_->get_comm());
 
   // TODO: check if we can add this dofset and the actdis all the time, even if there is a scatra
   // dis (maybe we would obtain two two-phase conditions?)
@@ -214,7 +214,7 @@ void FLD::XFluid::init(bool createinitialstate)
   //
   // REMARK: ivelnp_ and idispnp_ will be set again for the new time step in PrepareXFEMSolve()
 
-  const int restart = Global::Problem::Instance()->restart();
+  const int restart = Global::Problem::instance()->restart();
 
   if (restart) condition_manager_->read_restart(restart);
 
@@ -226,20 +226,20 @@ void FLD::XFluid::init(bool createinitialstate)
   // -------------------------------------------------------------------
 
   Teuchos::RCP<XFEM::LevelSetCoupling> combust_coupl =
-      condition_manager_->GetLevelSetCoupling("XFEMLevelsetCombustion");
+      condition_manager_->get_level_set_coupling("XFEMLevelsetCombustion");
 
   if (combust_coupl != Teuchos::null)
   {
     include_inner_ = true;
 
-    if (condition_manager_->HasMeshCoupling())
+    if (condition_manager_->has_mesh_coupling())
     {
       // loop all mesh coupling objects
-      for (int mc_idx = 0; mc_idx < condition_manager_->NumMeshCoupling(); mc_idx++)
+      for (int mc_idx = 0; mc_idx < condition_manager_->num_mesh_coupling(); mc_idx++)
       {
-        Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(mc_idx);
+        Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->get_mesh_coupling(mc_idx);
 
-        if (mc_coupl->CutGeometry())  // Mesh cut and Two-Phase cut not allowed at the same time.
+        if (mc_coupl->cut_geometry())  // Mesh cut and Two-Phase cut not allowed at the same time.
           FOUR_C_THROW(
               "two-phase flow coupling and mesh coupling at once is not supported by the cut at "
               "the moment, as Node-position and include inner are not handled properly then");
@@ -264,7 +264,7 @@ void FLD::XFluid::init(bool createinitialstate)
   // -------------------------------------------------------------------
 
   // load GMSH output flags
-  if (Core::UTILS::IntegralValue<int>(Global::Problem::Instance()->IOParams(), "OUTPUT_GMSH"))
+  if (Core::UTILS::IntegralValue<int>(Global::Problem::instance()->io_params(), "OUTPUT_GMSH"))
   {
     output_service_ = Teuchos::rcp(new XFluidOutputServiceGmsh(
         params_->sublist("XFEM"), xdiscret_, condition_manager_, include_inner_));
@@ -278,7 +278,7 @@ void FLD::XFluid::init(bool createinitialstate)
   // Create velpresssplitter for uncut discretization.
   velpressplitter_std_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
   Core::LinAlg::CreateMapExtractorFromDiscretization(
-      *discret_, xdiscret_->InitialDofSet(), numdim_, *velpressplitter_std_);
+      *discret_, xdiscret_->initial_dof_set(), numdim_, *velpressplitter_std_);
 
   // -------------------------------------------------------------------
   // initialize ALE-specific fluid vectors based on the initial dof row map
@@ -286,11 +286,11 @@ void FLD::XFluid::init(bool createinitialstate)
 
   if (alefluid_)
   {
-    dispnp_ = Core::LinAlg::CreateVector(*xdiscret_->InitialDofRowMap(), true);
-    dispn_ = Core::LinAlg::CreateVector(*xdiscret_->InitialDofRowMap(), true);
-    dispnm_ = Core::LinAlg::CreateVector(*xdiscret_->InitialDofRowMap(), true);
-    gridvnp_ = Core::LinAlg::CreateVector(*xdiscret_->InitialDofRowMap(), true);
-    gridvn_ = Core::LinAlg::CreateVector(*xdiscret_->InitialDofRowMap(), true);
+    dispnp_ = Core::LinAlg::CreateVector(*xdiscret_->initial_dof_row_map(), true);
+    dispn_ = Core::LinAlg::CreateVector(*xdiscret_->initial_dof_row_map(), true);
+    dispnm_ = Core::LinAlg::CreateVector(*xdiscret_->initial_dof_row_map(), true);
+    gridvnp_ = Core::LinAlg::CreateVector(*xdiscret_->initial_dof_row_map(), true);
+    gridvn_ = Core::LinAlg::CreateVector(*xdiscret_->initial_dof_row_map(), true);
   }
 
 
@@ -299,7 +299,7 @@ void FLD::XFluid::init(bool createinitialstate)
   // -------------------------------------------------------------------
   // note that all vectors w.r.t np have to be set properly
 
-  if (createinitialstate and (not restart)) CreateInitialState();
+  if (createinitialstate and (not restart)) create_initial_state();
 
   return;
 }  // init()
@@ -315,19 +315,19 @@ void FLD::XFluid::setup_fluid_discretization()
   // and xfluidfluid!!!
 
   // XFF-case
-  if (Global::Problem::Instance()->DoesExistDis("xfluid"))
+  if (Global::Problem::instance()->does_exist_dis("xfluid"))
   {
-    Teuchos::RCP<Core::FE::Discretization> fluiddis = Global::Problem::Instance()->GetDis(
+    Teuchos::RCP<Core::FE::Discretization> fluiddis = Global::Problem::instance()->get_dis(
         "fluid");  // fluid dis is here the embedded mesh (required for XFFSI)
-    xfluiddis = Global::Problem::Instance()->GetDis("xfluid");  // xfluid dis is here the cut mesh
+    xfluiddis = Global::Problem::instance()->get_dis("xfluid");  // xfluid dis is here the cut mesh
     xdisbuilder.setup_xfem_discretization(
-        Global::Problem::Instance()->XFEMGeneralParams(), xfluiddis, fluiddis, "FluidMesh");
+        Global::Problem::instance()->xfem_general_params(), xfluiddis, fluiddis, "FluidMesh");
   }
   else  // standard xfluid case
   {
-    xfluiddis = Global::Problem::Instance()->GetDis("fluid");  // fluid dis is here the cut mesh
+    xfluiddis = Global::Problem::instance()->get_dis("fluid");  // fluid dis is here the cut mesh
     xdisbuilder.setup_xfem_discretization(
-        Global::Problem::Instance()->XFEMGeneralParams(), xfluiddis);
+        Global::Problem::instance()->xfem_general_params(), xfluiddis);
   }
 }
 
@@ -338,7 +338,7 @@ void FLD::XFluid::set_x_fluid_params()
 {
   omtheta_ = 1.0 - theta_;
 
-  numdim_ = Global::Problem::Instance()->NDim();
+  numdim_ = Global::Problem::instance()->n_dim();
 
   Teuchos::ParameterList& params_xfem = params_->sublist("XFEM");
   Teuchos::ParameterList& params_xf_gen = params_->sublist("XFLUID DYNAMIC/GENERAL");
@@ -453,7 +453,7 @@ void FLD::XFluid::set_element_general_fluid_xfem_parameter()
 
   //------------------------------------------------------------------------------------------------------
   // set the params in the XFEM-parameter-list class
-  Discret::ELEMENTS::FluidType::Instance().pre_evaluate(*discret_, eleparams, Teuchos::null,
+  Discret::ELEMENTS::FluidType::instance().pre_evaluate(*discret_, eleparams, Teuchos::null,
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   return;
@@ -483,7 +483,7 @@ void FLD::XFluid::set_face_general_fluid_xfem_parameter()
     if (physicaltype_ == Inpar::FLUID::oseen)
       faceparams.set<int>("OSEENFIELDFUNCNO", params_->get<int>("OSEENFIELDFUNCNO"));
 
-    Discret::ELEMENTS::FluidIntFaceType::Instance().pre_evaluate(*discret_, faceparams,
+    Discret::ELEMENTS::FluidIntFaceType::instance().pre_evaluate(*discret_, faceparams,
         Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 
@@ -498,7 +498,7 @@ void FLD::XFluid::set_face_general_fluid_xfem_parameter()
     faceparams.sublist("XFLUID DYNAMIC/STABILIZATION") =
         params_->sublist("XFLUID DYNAMIC/STABILIZATION");
 
-    Discret::ELEMENTS::FluidIntFaceType::Instance().pre_evaluate(*discret_, faceparams,
+    Discret::ELEMENTS::FluidIntFaceType::instance().pre_evaluate(*discret_, faceparams,
         Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 
@@ -544,7 +544,7 @@ void FLD::XFluid::set_element_time_parameter()
   // call standard loop over elements
   // discret_->evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
-  Discret::ELEMENTS::FluidType::Instance().pre_evaluate(*discret_, eleparams, Teuchos::null,
+  Discret::ELEMENTS::FluidType::instance().pre_evaluate(*discret_, eleparams, Teuchos::null,
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -559,7 +559,7 @@ void FLD::XFluid::set_general_turbulence_parameters()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluid::CreateInitialState()
+void FLD::XFluid::create_initial_state()
 {
   // initialize the state class iterator with -1
   // the XFluidState class called from the constructor is then indexed with 0
@@ -578,7 +578,7 @@ void FLD::XFluid::CreateInitialState()
  *----------------------------------------------------------------------*/
 void FLD::XFluid::create_state()
 {
-  discret_->Comm().Barrier();
+  discret_->get_comm().Barrier();
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::CreateState");
 
   // ---------------------------------------------------------------------
@@ -622,7 +622,7 @@ void FLD::XFluid::destroy_state()
 
   if (state_ != Teuchos::null)
   {
-    if (!state_->Destroy()) FOUR_C_THROW("destroying XFluidState object failed");
+    if (!state_->destroy()) FOUR_C_THROW("destroying XFluidState object failed");
 
     // delete the old state object and its content (if no ownership given anymore) not to have two
     // objects in memory at the same time
@@ -647,7 +647,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluid::get_new_state()
 
   if (alefluid_)
   {
-    dispnpcol = Teuchos::rcp(new Epetra_Vector(*xdiscret_->InitialDofColMap()));
+    dispnpcol = Teuchos::rcp(new Epetra_Vector(*xdiscret_->initial_dof_col_map()));
     Core::LinAlg::Export(*dispnp_, *dispnpcol);
   }
 
@@ -675,9 +675,9 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluid::get_new_state()
   // create the new state class (vectors, matrices...)
   state_it_++;
 
-  Teuchos::RCP<FLD::XFluidState> state = state_creator_->Create(xdiscret_,
+  Teuchos::RCP<FLD::XFluidState> state = state_creator_->create(xdiscret_,
       dispnpcol,  //!< col vector holding background ALE displacements for backdis
-      solver_->Params(), step_, time_);
+      solver_->params(), step_, time_);
 
   //--------------------------------------------------------------------------------------
   // update ALE state vectors
@@ -694,7 +694,7 @@ void FLD::XFluid::update_ale_state_vectors(Teuchos::RCP<FLD::XFluidState> state)
   if (alefluid_)
   {
     std::cout << "InitALEStateVectors" << std::endl;
-    state_tmp->InitALEStateVectors(xdiscret_, dispnp_, gridvnp_);
+    state_tmp->init_ale_state_vectors(xdiscret_, dispnp_, gridvnp_);
   }
 }
 
@@ -703,20 +703,20 @@ void FLD::XFluid::extract_node_vectors(Teuchos::RCP<XFEM::DiscretizationXFEM> di
 {
   nodevecmap.clear();
 
-  for (int lid = 0; lid < dis->NumMyColNodes(); ++lid)
+  for (int lid = 0; lid < dis->num_my_col_nodes(); ++lid)
   {
-    const Core::Nodes::Node* node = dis->lColNode(lid);
+    const Core::Nodes::Node* node = dis->l_col_node(lid);
     std::vector<int> lm;
-    dis->InitialDof(node, lm);  // initial dofs!
+    dis->initial_dof(node, lm);  // initial dofs!
     std::vector<double> mydisp;
     Core::FE::ExtractMyValues(*dispnp_col, mydisp, lm);
     if (mydisp.size() < 3) FOUR_C_THROW("we need at least 3 dofs here");
 
     Core::LinAlg::Matrix<3, 1> currpos;
-    currpos(0) = node->X()[0] + mydisp[0];
-    currpos(1) = node->X()[1] + mydisp[1];
-    currpos(2) = node->X()[2] + mydisp[2];
-    nodevecmap.insert(std::make_pair(node->Id(), currpos));
+    currpos(0) = node->x()[0] + mydisp[0];
+    currpos(1) = node->x()[1] + mydisp[1];
+    currpos(2) = node->x()[2] + mydisp[2];
+    nodevecmap.insert(std::make_pair(node->id(), currpos));
   }
 }
 
@@ -725,7 +725,7 @@ void FLD::XFluid::extract_node_vectors(Teuchos::RCP<XFEM::DiscretizationXFEM> di
  *----------------------------------------------------------------------*/
 void FLD::XFluid::assemble_mat_and_rhs(int itnum)
 {
-  discret_->Comm().Barrier();
+  discret_->get_comm().Barrier();
 
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate");
 
@@ -746,7 +746,7 @@ void FLD::XFluid::assemble_mat_and_rhs(int itnum)
 
   //----------------------------------------------------------------------
   // set general vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
 
   discret_->set_state("hist", state_->hist_);
   discret_->set_state("veln", state_->veln_);
@@ -760,7 +760,7 @@ void FLD::XFluid::assemble_mat_and_rhs(int itnum)
     discret_->set_state("gridv", state_->gridvnp_);
   }
 
-  SetStateTimInt();
+  set_state_tim_int();
 
 
   //----------------------------------------------------------------------
@@ -791,7 +791,7 @@ void FLD::XFluid::assemble_mat_and_rhs(int itnum)
     // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather
     // entries from all processors and calls a fill_complete for the first run. For further
     // Newton-steps then the optimized FEAssemble routine is used for speedup.
-    state_->sysmat_->Complete();
+    state_->sysmat_->complete();
 
     //-------------------------------------------------------------------------------
     // finalize the coupling matrices
@@ -820,16 +820,16 @@ void FLD::XFluid::assemble_mat_and_rhs(int itnum)
   }
 
   //-------------------------------------------------------------------------------
-  discret_->ClearState();
+  discret_->clear_state();
 
-  condition_manager_->ClearState();
+  condition_manager_->clear_state();
 }
 
 void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 {
   // Initialize the fluid state
-  GetConditionManager()->initialize_fluid_state(
-      GetCutWizard(), DiscretisationXFEM(), GetConditionManager(), Params());
+  get_condition_manager()->initialize_fluid_state(
+      get_cut_wizard(), discretisation_xfem(), get_condition_manager(), params());
 
   //----------------------------------------------------------------------
   // TODO: empty eleparams, could be deleted!
@@ -845,14 +845,14 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
   // call standard loop over elements
 
   // loop over row elements
-  const int numrowele = discret_->NumMyRowElements();
+  const int numrowele = discret_->num_my_row_elements();
 
   // REMARK: in this XFEM framework the whole evaluate routine uses only row elements
   // and assembles into EpetraFECrs matrix
   // this is 4C-unusual but more efficient in all XFEM applications
   for (int i = 0; i < numrowele; ++i)
   {
-    Core::Elements::Element* actele = discret_->lRowElement(i);
+    Core::Elements::Element* actele = discret_->l_row_element(i);
     // Teuchos::RCP<Core::Mat::Material> mat = actele->Material();
 
     Discret::ELEMENTS::Fluid* ele = dynamic_cast<Discret::ELEMENTS::Fluid*>(actele);
@@ -862,9 +862,9 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
     }
 
     Discret::ELEMENTS::FluidEleInterface* impl =
-        Discret::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem");
+        Discret::ELEMENTS::FluidFactory::provide_impl_xfem(actele->shape(), "xfem");
 
-    Core::Geo::Cut::ElementHandle* e = state_->Wizard()->GetElement(actele);
+    Core::Geo::Cut::ElementHandle* e = state_->wizard()->get_element(actele);
 
     if (e != nullptr)
     {
@@ -898,11 +898,11 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
         // get element location vector, dirichlet flags and ownerships (discret, nds, la,
         // doDirichlet)
-        actele->LocationVector(*discret_, nds, la, false);
+        actele->location_vector(*discret_, nds, la, false);
 
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero (rdim, cdim)
-        strategy.ClearElementStorage(la[0].Size(), la[0].Size());
+        strategy.clear_element_storage(la[0].size(), la[0].size());
 
 
         if (!has_xfem_integration_rule)  // use standard integration!!!
@@ -912,13 +912,13 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
           TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 3) standard domain");
 
           // call the element evaluate method
-          int err = impl->evaluate(ele, *discret_, la[0].lm_, eleparams, mat, strategy.Elematrix1(),
-              strategy.Elematrix2(), strategy.Elevector1(), strategy.Elevector2(),
-              strategy.Elevector3());
+          int err = impl->evaluate(ele, *discret_, la[0].lm_, eleparams, mat, strategy.elematrix1(),
+              strategy.elematrix2(), strategy.elevector1(), strategy.elevector2(),
+              strategy.elevector3());
 
           if (err)
-            FOUR_C_THROW(
-                "Proc %d: Element %d returned err=%d", discret_->Comm().MyPID(), actele->Id(), err);
+            FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret_->get_comm().MyPID(),
+                actele->id(), err);
         }
         else
         {
@@ -930,13 +930,13 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
           TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 1) cut domain");
 
           // call the element evaluate method
-          int err = impl->EvaluateXFEM(ele, *discret_, la[0].lm_, eleparams, mat,
-              strategy.Elematrix1(), strategy.Elematrix2(), strategy.Elevector1(),
-              strategy.Elevector2(), strategy.Elevector3(), intpoints_sets[set_counter], cells);
+          int err = impl->evaluate_xfem(ele, *discret_, la[0].lm_, eleparams, mat,
+              strategy.elematrix1(), strategy.elematrix2(), strategy.elevector1(),
+              strategy.elevector2(), strategy.elevector3(), intpoints_sets[set_counter], cells);
 
           if (err)
-            FOUR_C_THROW(
-                "Proc %d: Element %d returned err=%d", discret_->Comm().MyPID(), actele->Id(), err);
+            FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret_->get_comm().MyPID(),
+                actele->id(), err);
         }
 
         //------------------------------------------------------------
@@ -969,7 +969,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
         std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>> empty_map;
         empty_map.clear();
 
-        const int num_coupling = condition_manager_->NumCoupling();
+        const int num_coupling = condition_manager_->num_coupling();
 
         // TODO: use a map instead of a vector, see handling of C_sx... matrices in state-class
         std::vector<std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>> coupling_bcells(
@@ -982,7 +982,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
           int coup_sid =
               bc->first;  // all boundary cells within the current iterator belong to the same side
 
-          const int coup_idx = condition_manager_->GetCouplingIndex(coup_sid, actele->Id());
+          const int coup_idx = condition_manager_->get_coupling_index(coup_sid, actele->id());
 
           std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>& bcells =
               coupling_bcells[coup_idx];
@@ -992,7 +992,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
           std::copy(bc->second.begin(), bc->second.end(), std::inserter(bc_new, bc_new.end()));
 
           const std::vector<std::pair<int, int>> cloning_information =
-              condition_manager_->get_bc_clone_information(coup_sid, actele->Id(), coup_idx);
+              condition_manager_->get_bc_clone_information(coup_sid, actele->id(), coup_idx);
           for (std::size_t clone_id = 0; clone_id < cloning_information.size(); ++clone_id)
           {
             //            std::cout << "XFluid - Cloning News: " << coup_idx << " --> " <<
@@ -1028,19 +1028,19 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
                      bcells.begin();
                  bit != bcells.end(); ++bit)
             {
-              Teuchos::RCP<XFEM::CouplingBase> mc = condition_manager_->GetCouplingByIdx(
+              Teuchos::RCP<XFEM::CouplingBase> mc = condition_manager_->get_coupling_by_idx(
                   condition_manager_->get_mesh_coupling_index(bit->first));
               Teuchos::RCP<XFEM::MeshCouplingFSI> mc_fsi =
                   Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(mc);
               Teuchos::RCP<XFEM::MeshCouplingFPI> mc_fpi =
                   Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(mc);
               if (mc_fsi != Teuchos::null)
-                mc_fsi->RegisterSideProc(bit->first);
+                mc_fsi->register_side_proc(bit->first);
               else if (mc_fpi != Teuchos::null)
-                mc_fpi->RegisterSideProc(bit->first);
+                mc_fpi->register_side_proc(bit->first);
             }
             e->boundary_cell_gauss_points_lin(
-                bcells, bintpoints, GetCutWizard()->get_bc_cubaturedegree());
+                bcells, bintpoints, get_cut_wizard()->get_bc_cubaturedegree());
 
             //-----------------------------------------------------------
             // fluid-structure coupling part
@@ -1065,20 +1065,20 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
               // boundary discretization for mesh coupling and background discretization for
               // level-set coupling
               Teuchos::RCP<Core::FE::Discretization> coupl_dis =
-                  condition_manager_->GetCouplingDis(coup_sid);
+                  condition_manager_->get_coupling_dis(coup_sid);
 
               std::vector<int>& patchlm = patchcouplm[coup_sid];  // []-operator creates new vector,
                                                                   // dofs of current coupling side
 
               // get dofs for coupling side or coupling element
-              if (condition_manager_->IsMeshCoupling(coup_sid))
+              if (condition_manager_->is_mesh_coupling(coup_sid))
               {
                 // fill patchlm for the element we couple with
                 condition_manager_->get_coupling_ele_location_vector(coup_sid, patchlm);
               }
-              else if (condition_manager_->IsLevelSetCoupling(coup_sid))
+              else if (condition_manager_->is_level_set_coupling(coup_sid))
               {
-                if (!condition_manager_->IsCoupling(coup_sid, ele->Id()))
+                if (!condition_manager_->is_coupling(coup_sid, ele->id()))
                   continue;  // level-set wdbc case
 
                 // get the other nds-set which is connected to the current one via this
@@ -1088,9 +1088,9 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
                 if (bc->second.empty()) FOUR_C_THROW("no boundary cells stored!");
 
                 Core::Geo::Cut::BoundaryCell* boundcell = bc->second[0];  // first boundary-cell
-                Core::Geo::Cut::Facet* f = boundcell->GetFacet();
+                Core::Geo::Cut::Facet* f = boundcell->get_facet();
 
-                const Core::Geo::Cut::plain_volumecell_set& vcs = f->Cells();
+                const Core::Geo::Cut::plain_volumecell_set& vcs = f->cells();
                 if (vcs.size() != 2)
                   FOUR_C_THROW(
                       "for the given boundary-cells facet, exactly two volume-cells have to be "
@@ -1101,28 +1101,28 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
                 for (Core::Geo::Cut::plain_volumecell_set::const_iterator it = vcs.begin();
                      it != vcs.end(); it++)
                 {
-                  if ((*it)->Position() ==
+                  if ((*it)->position() ==
                       Core::Geo::Cut::Point::inside)  // now take the inside volume-cell
                   {
-                    nds_other = (*it)->NodalDofSet();
+                    nds_other = (*it)->nodal_dof_set();
                     break;
                   }
                 }
 
-                if ((*cells.begin())->Position() == Core::Geo::Cut::Point::inside)
+                if ((*cells.begin())->position() == Core::Geo::Cut::Point::inside)
                   FOUR_C_THROW(
                       "For a two-sided level set coupling, we should not enter here with inside "
                       "volume-cells!!!");
 
                 // get element location vector, dirichlet flags and ownerships (discret, nds, la,
                 // doDirichlet)
-                actele->LocationVector(*coupl_dis, nds_other, la_other, false);
+                actele->location_vector(*coupl_dis, nds_other, la_other, false);
                 std::copy(la_other[0].lm_.begin(), la_other[0].lm_.end(),
                     std::inserter(patchlm, patchlm.end()));
               }
 
               // initialize the coupling matrices for each coupling side and the current element
-              if (condition_manager_->IsCoupling(coup_sid, ele->Id()))
+              if (condition_manager_->is_coupling(coup_sid, ele->id()))
               {
                 patchelementslm.reserve(patchelementslm.size() + patchlm.size());
                 patchelementslm.insert(patchelementslm.end(), patchlm.begin(), patchlm.end());
@@ -1159,13 +1159,13 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
                   coupling_method() == Inpar::XFEM::Hybrid_LM_viscous_stress)
                 impl->element_xfem_interface_hybrid_lm(ele, *discret_, la[0].lm_,
                     condition_manager_, intpoints_sets[set_counter], bcells, bintpoints,
-                    patchcouplm, side_coupling, eleparams, mat, strategy.Elematrix1(),
-                    strategy.Elevector1(), C_ss, cells);
+                    patchcouplm, side_coupling, eleparams, mat, strategy.elematrix1(),
+                    strategy.elevector1(), C_ss, cells);
 
               if (coupling_method() == Inpar::XFEM::Nitsche)
                 impl->element_xfem_interface_nit(ele, *discret_, la[0].lm_, condition_manager_,
                     bcells, bintpoints, patchcouplm, eleparams, matptr_m, matptr_s,
-                    strategy.Elematrix1(), strategy.Elevector1(), cells, side_coupling, C_ss,
+                    strategy.elematrix1(), strategy.elevector1(), cells, side_coupling, C_ss,
                     evaluate_cut_);
             }
 
@@ -1190,7 +1190,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
               std::vector<int> mypatchlmowner(patchlm.size(), myrank_);
               {
                 TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 6) FEAssemble");
-                coup_state->C_sx_->FEAssemble(
+                coup_state->C_sx_->fe_assemble(
                     couplingmatrices[0], patchlm, mypatchlmowner, la[0].lm_);
               }
 
@@ -1198,7 +1198,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
               std::vector<int> mylmowner(la[0].lmowner_.size(), myrank_);
               {
                 TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 6) FEAssemble");
-                coup_state->C_xs_->FEAssemble(couplingmatrices[1], la[0].lm_, mylmowner, patchlm);
+                coup_state->C_xs_->fe_assemble(couplingmatrices[1], la[0].lm_, mylmowner, patchlm);
               }
 
               // assemble rhC_s_col = rhC_ui_col
@@ -1213,7 +1213,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
             {
               // assemble C_ss_ = Cuiui
               std::vector<int> mypatchelementslmowner(patchelementslm.size(), myrank_);
-              coup_state->C_ss_->FEAssemble(
+              coup_state->C_ss_->fe_assemble(
                   C_ss, patchelementslm, mypatchelementslmowner, patchelementslm);
             }
 
@@ -1224,12 +1224,12 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
         // introduce an vector containing the rows for that values have to be communicated
         // REMARK: when assembling row elements also non-row rows have to be communicated
-        std::vector<int> myowner(la[0].lmowner_.size(), strategy.Systemvector1()->Comm().MyPID());
+        std::vector<int> myowner(la[0].lmowner_.size(), strategy.systemvector1()->Comm().MyPID());
         {
           TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 6) FEAssemble");
           // calls the Assemble function for EpetraFECrs matrices including communication of non-row
           // entries
-          state_->sysmat_->FEAssemble(strategy.Elematrix1(), la[0].lm_, myowner, la[0].lm_);
+          state_->sysmat_->fe_assemble(strategy.elematrix1(), la[0].lm_, myowner, la[0].lm_);
         }
         // REMARK:: call Assemble without lmowner
         // to assemble the residual_col vector on only row elements also column nodes have to be
@@ -1237,7 +1237,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
         // the col vector it has to be exported to the row residual_ vector using the 'Add' flag to
         // get the right value for shared nodes
         Core::LinAlg::Assemble(
-            *strategy.Systemvector1(), strategy.Elevector1(), la[0].lm_, myowner);
+            *strategy.systemvector1(), strategy.elevector1(), la[0].lm_, myowner);
 
         set_counter += 1;
 
@@ -1245,40 +1245,40 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
     }    // end of if(e!=nullptr) // assembly for cut elements
     else
     {
-      Teuchos::RCP<Core::Mat::Material> mat = actele->Material();
+      Teuchos::RCP<Core::Mat::Material> mat = actele->material();
 
-      if (mat->MaterialType() == Core::Materials::m_matlist)
+      if (mat->material_type() == Core::Materials::m_matlist)
         FOUR_C_THROW("No matlists allowed here!!");
 
       // get element location vector, dirichlet flags and ownerships
-      actele->LocationVector(*discret_, la, false);
+      actele->location_vector(*discret_, la, false);
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
-      strategy.ClearElementStorage(la[0].Size(), la[0].Size());
+      strategy.clear_element_storage(la[0].size(), la[0].size());
 
       {
         TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 3) standard domain");
 
         // call the element evaluate method
-        int err = impl->evaluate(ele, *discret_, la[0].lm_, eleparams, mat, strategy.Elematrix1(),
-            strategy.Elematrix2(), strategy.Elevector1(), strategy.Elevector2(),
-            strategy.Elevector3());
+        int err = impl->evaluate(ele, *discret_, la[0].lm_, eleparams, mat, strategy.elematrix1(),
+            strategy.elematrix2(), strategy.elevector1(), strategy.elevector2(),
+            strategy.elevector3());
 
         if (err)
-          FOUR_C_THROW(
-              "Proc %d: Element %d returned err=%d", discret_->Comm().MyPID(), actele->Id(), err);
+          FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret_->get_comm().MyPID(),
+              actele->id(), err);
       }
 
       // introduce an vector containing the rows for that values have to be communicated
       // REMARK: when assembling row elements also non-row rows have to be communicated
-      std::vector<int> myowner(la[0].lmowner_.size(), strategy.Systemvector1()->Comm().MyPID());
+      std::vector<int> myowner(la[0].lmowner_.size(), strategy.systemvector1()->Comm().MyPID());
       {
         TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 6) FEAssemble");
 
         // calls the Assemble function for EpetraFECrs matrices including communication of non-row
         // entries
-        state_->sysmat_->FEAssemble(strategy.Elematrix1(), la[0].lm_, myowner, la[0].lm_);
+        state_->sysmat_->fe_assemble(strategy.elematrix1(), la[0].lm_, myowner, la[0].lm_);
       }
 
       // REMARK:: call Assemble without lmowner
@@ -1286,7 +1286,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
       // assembled do not exclude non-row nodes (modify the real owner to myowner) after assembly
       // the col vector it has to be exported to the row residual_ vector using the 'Add' flag to
       // get the right value for shared nodes
-      Core::LinAlg::Assemble(*strategy.Systemvector1(), strategy.Elevector1(), la[0].lm_, myowner);
+      Core::LinAlg::Assemble(*strategy.systemvector1(), strategy.elevector1(), la[0].lm_, myowner);
     }
   }  // loop row elements
 
@@ -1316,14 +1316,14 @@ void FLD::XFluid::assemble_mat_and_rhs_face_terms(
     Teuchos::RCP<Core::FE::DiscretizationFaces> xdiscret =
         Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(discret_, true);
 
-    const int numrowintfaces = xdiscret->NumMyRowFaces();
+    const int numrowintfaces = xdiscret->num_my_row_faces();
 
     // REMARK: in this XFEM framework the whole evaluate routine uses only row internal faces
     // and assembles into EpetraFECrs matrix
     // this is 4C-unusual but more efficient in all XFEM applications
     for (int i = 0; i < numrowintfaces; ++i)
     {
-      Core::Elements::Element* actface = xdiscret->lRowFace(i);
+      Core::Elements::Element* actface = xdiscret->l_row_face(i);
 
       Discret::ELEMENTS::FluidIntFace* face_ele =
           dynamic_cast<Discret::ELEMENTS::FluidIntFace*>(actface);
@@ -1346,7 +1346,7 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::integrate_shape_function");
 
   // create an column vector for assembly over row elements that has to be communicated at the end
-  Teuchos::RCP<Epetra_Vector> w_col = Core::LinAlg::CreateVector(*discret.DofColMap(), true);
+  Teuchos::RCP<Epetra_Vector> w_col = Core::LinAlg::CreateVector(*discret.dof_col_map(), true);
 
 
   //----------------------------------------------------------------------
@@ -1361,15 +1361,15 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
 
   //------------------------------------------------------------
   // loop over row elements
-  const int numrowele = discret.NumMyRowElements();
+  const int numrowele = discret.num_my_row_elements();
 
   // REMARK: in this XFEM framework the whole evaluate routine uses only row elements
   // and assembles into EpetraFECrs matrix
   // this is 4C-unusual but more efficient in all XFEM applications
   for (int i = 0; i < numrowele; ++i)
   {
-    Core::Elements::Element* actele = discret.lRowElement(i);
-    Teuchos::RCP<Core::Mat::Material> mat = actele->Material();
+    Core::Elements::Element* actele = discret.l_row_element(i);
+    Teuchos::RCP<Core::Mat::Material> mat = actele->material();
 
     Discret::ELEMENTS::Fluid* ele = dynamic_cast<Discret::ELEMENTS::Fluid*>(actele);
     if (ele == nullptr)
@@ -1378,9 +1378,9 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
     }
 
     Discret::ELEMENTS::FluidEleInterface* impl =
-        Discret::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem");
+        Discret::ELEMENTS::FluidFactory::provide_impl_xfem(actele->shape(), "xfem");
 
-    Core::Geo::Cut::ElementHandle* e = state_->Wizard()->GetElement(actele);
+    Core::Geo::Cut::ElementHandle* e = state_->wizard()->get_element(actele);
 
 
     if (e != nullptr)
@@ -1411,11 +1411,11 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
 
         // get element location vector, dirichlet flags and ownerships (discret, nds, la,
         // doDirichlet)
-        actele->LocationVector(discret, nds, la, false);
+        actele->location_vector(discret, nds, la, false);
 
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero (rdim, cdim)
-        strategy.ClearElementStorage(la[0].Size(), la[0].Size());
+        strategy.clear_element_storage(la[0].size(), la[0].size());
 
         if (!has_xfem_integration_rule)
         {
@@ -1426,13 +1426,13 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
           Core::LinAlg::SerialDenseVector elevec3;
           Teuchos::ParameterList params;
           params.set<int>("action", FLD::integrate_shape);
-          Teuchos::RCP<Core::Mat::Material> mat = ele->Material();
-          int err = impl->EvaluateService(ele, params, mat, discret, la[0].lm_, elemat1, elemat2,
-              strategy.Elevector1(), elevec2, elevec3);
+          Teuchos::RCP<Core::Mat::Material> mat = ele->material();
+          int err = impl->evaluate_service(ele, params, mat, discret, la[0].lm_, elemat1, elemat2,
+              strategy.elevector1(), elevec2, elevec3);
 
           if (err)
-            FOUR_C_THROW(
-                "Proc %d: Element %d returned err=%d", discret.Comm().MyPID(), actele->Id(), err);
+            FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret.get_comm().MyPID(),
+                actele->id(), err);
         }
         else
         {
@@ -1445,11 +1445,11 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
 
           // call the element evaluate method
           int err = impl->integrate_shape_function_xfem(
-              ele, discret, la[0].lm_, strategy.Elevector1(), intpoints_sets[set_counter], cells);
+              ele, discret, la[0].lm_, strategy.elevector1(), intpoints_sets[set_counter], cells);
 
           if (err)
-            FOUR_C_THROW(
-                "Proc %d: Element %d returned err=%d", discret.Comm().MyPID(), actele->Id(), err);
+            FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret.get_comm().MyPID(),
+                actele->id(), err);
         }
 
 
@@ -1461,7 +1461,7 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
         std::vector<int> myowner;
         for (size_t index = 0; index < la[0].lmowner_.size(); index++)
         {
-          myowner.push_back(strategy.Systemvector1()->Comm().MyPID());
+          myowner.push_back(strategy.systemvector1()->Comm().MyPID());
         }
 
         // REMARK:: call Assemble without lmowner
@@ -1470,7 +1470,7 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
         // the col vector it has to be exported to the row residual_ vector using the 'Add' flag to
         // get the right value for shared nodes
         Core::LinAlg::Assemble(
-            *strategy.Systemvector1(), strategy.Elevector1(), la[0].lm_, myowner);
+            *strategy.systemvector1(), strategy.elevector1(), la[0].lm_, myowner);
 
         set_counter += 1;
 
@@ -1481,11 +1481,11 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
       TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 3) standard domain");
 
       // get element location vector, dirichlet flags and ownerships
-      actele->LocationVector(discret, la, false);
+      actele->location_vector(discret, la, false);
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
-      strategy.ClearElementStorage(la[0].Size(), la[0].Size());
+      strategy.clear_element_storage(la[0].size(), la[0].size());
 
       // call the element evaluate method
       Core::LinAlg::SerialDenseMatrix elemat1;
@@ -1494,20 +1494,20 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
       Core::LinAlg::SerialDenseVector elevec3;
       Teuchos::ParameterList params;
       params.set<int>("action", FLD::integrate_shape);
-      Teuchos::RCP<Core::Mat::Material> mat = ele->Material();
-      int err = impl->EvaluateService(ele, params, mat, discret, la[0].lm_, elemat1, elemat2,
-          strategy.Elevector1(), elevec2, elevec3);
+      Teuchos::RCP<Core::Mat::Material> mat = ele->material();
+      int err = impl->evaluate_service(ele, params, mat, discret, la[0].lm_, elemat1, elemat2,
+          strategy.elevector1(), elevec2, elevec3);
 
       if (err)
         FOUR_C_THROW(
-            "Proc %d: Element %d returned err=%d", discret.Comm().MyPID(), actele->Id(), err);
+            "Proc %d: Element %d returned err=%d", discret.get_comm().MyPID(), actele->id(), err);
 
       // introduce an vector containing the rows for that values have to be communicated
       // REMARK: when assembling row elements also non-row rows have to be communicated
       std::vector<int> myowner;
       for (size_t index = 0; index < la[0].lmowner_.size(); index++)
       {
-        myowner.push_back(strategy.Systemvector1()->Comm().MyPID());
+        myowner.push_back(strategy.systemvector1()->Comm().MyPID());
       }
 
       // REMARK:: call Assemble without lmowner
@@ -1515,18 +1515,18 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
       // assembled do not exclude non-row nodes (modify the real owner to myowner) after assembly
       // the col vector it has to be exported to the row w_ vector using the 'Add' flag to get the
       // right value for shared nodes
-      Core::LinAlg::Assemble(*strategy.Systemvector1(), strategy.Elevector1(), la[0].lm_, myowner);
+      Core::LinAlg::Assemble(*strategy.systemvector1(), strategy.elevector1(), la[0].lm_, myowner);
     }
   }
 
-  discret.ClearState();
+  discret.clear_state();
 
 
   //-------------------------------------------------------------------------------
   // need to export residual_col to systemvector1 (residual_)
   Epetra_Vector vec_tmp(vec->Map(), false);
-  Epetra_Export exporter(strategy.Systemvector1()->Map(), vec_tmp.Map());
-  int err2 = vec_tmp.Export(*strategy.Systemvector1(), exporter, Add);
+  Epetra_Export exporter(strategy.systemvector1()->Map(), vec_tmp.Map());
+  int err2 = vec_tmp.Export(*strategy.systemvector1(), exporter, Add);
   if (err2) FOUR_C_THROW("Export using exporter returned err=%d", err2);
   vec->Scale(1.0, vec_tmp);
 }
@@ -1555,7 +1555,7 @@ void FLD::XFluid::assemble_mat_and_rhs_gradient_penalty(
 
   //----------------------------------------------------------------------
   // set general vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
 
   if (alefluid_)
   {
@@ -1576,7 +1576,7 @@ void FLD::XFluid::assemble_mat_and_rhs_gradient_penalty(
   // call loop over face-elements
   assemble_mat_and_rhs_face_terms(sysmat_gp, residual_gp_col, state_->wizard_, true);
 
-  discret_->ClearState();
+  discret_->clear_state();
 
 
   //----------------------------------------------------------------------
@@ -1589,9 +1589,9 @@ void FLD::XFluid::assemble_mat_and_rhs_gradient_penalty(
 
   bool diagonalblock = true;
 
-  for (int i = 0; i < sysmat_gp->EpetraMatrix()->NumMyRows(); ++i)
+  for (int i = 0; i < sysmat_gp->epetra_matrix()->NumMyRows(); ++i)
   {
-    int row = sysmat_gp->EpetraMatrix()->GRID(i);
+    int row = sysmat_gp->epetra_matrix()->GRID(i);
 
     // check if there is already a value set, otherwise set at least a diagonal entry
     if (dbctoggle.MyGID(row))
@@ -1600,10 +1600,10 @@ void FLD::XFluid::assemble_mat_and_rhs_gradient_penalty(
       {
         double v = 1.0;
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-        int err = sysmat_gp->EpetraMatrix()->InsertGlobalValues(row, 1, &v, &row);
+        int err = sysmat_gp->epetra_matrix()->InsertGlobalValues(row, 1, &v, &row);
         if (err < 0) FOUR_C_THROW("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
 #else
-        sysmat_gp->EpetraMatrix()->InsertGlobalValues(row, 1, &v, &row);
+        sysmat_gp->epetra_matrix()->InsertGlobalValues(row, 1, &v, &row);
 #endif
       }
     }
@@ -1621,24 +1621,24 @@ void FLD::XFluid::assemble_mat_and_rhs_gradient_penalty(
   // finalize the complete matrix
   // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather
   // entries from all processors
-  sysmat_gp->Complete();
+  sysmat_gp->complete();
 
   return;
 }
 
 
-Teuchos::RCP<Epetra_Vector> FLD::XFluid::StdVelnp()
+Teuchos::RCP<Epetra_Vector> FLD::XFluid::std_velnp()
 {
   Teuchos::RCP<Epetra_Vector> initvec =
-      Teuchos::rcp(new Epetra_Vector(*xdiscret_->InitialDofRowMap(), true));
+      Teuchos::rcp(new Epetra_Vector(*xdiscret_->initial_dof_row_map(), true));
   Core::LinAlg::Export(*(state_->velnp_), *initvec);
   return initvec;
 }
 
-Teuchos::RCP<Epetra_Vector> FLD::XFluid::StdVeln()
+Teuchos::RCP<Epetra_Vector> FLD::XFluid::std_veln()
 {
   Teuchos::RCP<Epetra_Vector> initvec =
-      Teuchos::rcp(new Epetra_Vector(*xdiscret_->InitialDofRowMap(), true));
+      Teuchos::rcp(new Epetra_Vector(*xdiscret_->initial_dof_row_map(), true));
   Core::LinAlg::Export(*(state_->veln_), *initvec);
   return initvec;
 }
@@ -1843,7 +1843,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::evaluate_error_compared_to_analyt
       {
         std::ostringstream temp;
         const std::string simulation =
-            Global::Problem::Instance()->OutputControlFile()->file_name();
+            Global::Problem::instance()->output_control_file()->file_name();
         const std::string fname = simulation + ".xfem_abserror";
 
         std::ofstream f;
@@ -1878,7 +1878,8 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::evaluate_error_compared_to_analyt
       }
 
       std::ostringstream temp;
-      const std::string simulation = Global::Problem::Instance()->OutputControlFile()->file_name();
+      const std::string simulation =
+          Global::Problem::instance()->output_control_file()->file_name();
       const std::string fname = simulation + "_time.xfem_abserror";
 
       if (step_ == 1)
@@ -1949,14 +1950,14 @@ void FLD::XFluid::compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVect
   Core::LinAlg::SerialDenseVector cpu_stab_norms(num_stab_norms);
 
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("u and p at time n+1 (converged)", state_->velnp_);
 
   condition_manager_->set_state();
 
   // evaluate domain error norms and interface/boundary error norms at XFEM-interface
   // loop row elements
-  const int numrowele = discret_->NumMyRowElements();
+  const int numrowele = discret_->num_my_row_elements();
   for (int i = 0; i < numrowele; ++i)
   {
     // local element-wise squared error norms
@@ -1965,18 +1966,18 @@ void FLD::XFluid::compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVect
 
 
     // pointer to current element
-    Core::Elements::Element* actele = discret_->lRowElement(i);
+    Core::Elements::Element* actele = discret_->l_row_element(i);
 
-    Teuchos::RCP<Core::Mat::Material> mat = actele->Material();
+    Teuchos::RCP<Core::Mat::Material> mat = actele->material();
 
     Discret::ELEMENTS::Fluid* ele = dynamic_cast<Discret::ELEMENTS::Fluid*>(actele);
 
-    Core::Geo::Cut::ElementHandle* e = state_->Wizard()()->GetElement(actele);
+    Core::Geo::Cut::ElementHandle* e = state_->wizard()()->get_element(actele);
 
     Core::Elements::Element::LocationArray la(1);
 
     Discret::ELEMENTS::FluidEleInterface* impl =
-        Discret::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem");
+        Discret::ELEMENTS::FluidFactory::provide_impl_xfem(actele->shape(), "xfem");
 
     // xfem element
     if (e != nullptr)
@@ -2000,7 +2001,7 @@ void FLD::XFluid::compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVect
         const std::vector<int>& nds = nds_sets[set_counter];
 
         // get element location vector, dirichlet flags and ownerships
-        actele->LocationVector(*discret_, nds, la, false);
+        actele->location_vector(*discret_, nds, la, false);
 
         //------------------------------------------------------------
         // Evaluate interface integral errors
@@ -2015,9 +2016,9 @@ void FLD::XFluid::compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVect
              ++i)
         {
           Core::Geo::Cut::VolumeCell* vc = *i;
-          if (vc->Position() == Core::Geo::Cut::Point::outside)
+          if (vc->position() == Core::Geo::Cut::Point::outside)
           {
-            vc->GetBoundaryCells(bcells);
+            vc->get_boundary_cells(bcells);
           }
 
           const int cellcount = std::distance(cells.begin(), i);
@@ -2025,14 +2026,14 @@ void FLD::XFluid::compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVect
           if (!has_xfem_integration_rule)  // use standard integration!!!
           {
             // get element location vector, dirichlet flags and ownerships
-            actele->LocationVector(*discret_, la, false);
+            actele->location_vector(*discret_, la, false);
 
             Core::LinAlg::SerialDenseMatrix elemat1;
             Core::LinAlg::SerialDenseMatrix elemat2;
             Core::LinAlg::SerialDenseVector elevec2;
             Core::LinAlg::SerialDenseVector elevec3;
             params_->set<int>("action", FLD::calc_fluid_error);
-            impl->EvaluateService(ele, *params_, mat, *discret_, la[0].lm_, elemat1, elemat2,
+            impl->evaluate_service(ele, *params_, mat, *discret_, la[0].lm_, elemat1, elemat2,
                 ele_dom_norms, elevec2, elevec3);
           }
           else
@@ -2051,7 +2052,7 @@ void FLD::XFluid::compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVect
         {
           // get boundary cell Gaussian points
           e->boundary_cell_gauss_points_lin(
-              bcells, bintpoints, GetCutWizard()->get_bc_cubaturedegree());
+              bcells, bintpoints, get_cut_wizard()->get_bc_cubaturedegree());
 
           if (coupling_method() == Inpar::XFEM::Hybrid_LM_Cauchy_stress or
               coupling_method() == Inpar::XFEM::Hybrid_LM_viscous_stress or
@@ -2067,14 +2068,14 @@ void FLD::XFluid::compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVect
     else
     {
       // get element location vector, dirichlet flags and ownerships
-      actele->LocationVector(*discret_, la, false);
+      actele->location_vector(*discret_, la, false);
 
       Core::LinAlg::SerialDenseMatrix elemat1;
       Core::LinAlg::SerialDenseMatrix elemat2;
       Core::LinAlg::SerialDenseVector elevec2;
       Core::LinAlg::SerialDenseVector elevec3;
       params_->set<int>("action", FLD::calc_fluid_error);
-      impl->EvaluateService(ele, *params_, mat, *discret_, la[0].lm_, elemat1, elemat2,
+      impl->evaluate_service(ele, *params_, mat, *discret_, la[0].lm_, elemat1, elemat2,
           ele_dom_norms, elevec2, elevec3);
     }
 
@@ -2089,15 +2090,16 @@ void FLD::XFluid::compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVect
   //--------------------------------------------------------
   // reduce and sum over all procs
   for (int i = 0; i < num_dom_norms; ++i) (*glob_dom_norms)(i) = 0.0;
-  discret_->Comm().SumAll(cpu_dom_norms.values(), glob_dom_norms->values(), num_dom_norms);
+  discret_->get_comm().SumAll(cpu_dom_norms.values(), glob_dom_norms->values(), num_dom_norms);
 
   for (int i = 0; i < num_interf_norms; ++i) (*glob_interf_norms)(i) = 0.0;
-  discret_->Comm().SumAll(cpu_interf_norms.values(), glob_interf_norms->values(), num_interf_norms);
+  discret_->get_comm().SumAll(
+      cpu_interf_norms.values(), glob_interf_norms->values(), num_interf_norms);
 
 
   //--------------------------------------------------------
-  discret_->ClearState();
-  condition_manager_->ClearState();
+  discret_->clear_state();
+  condition_manager_->clear_state();
 }
 
 
@@ -2252,13 +2254,13 @@ bool FLD::XFluid::not_finished()
 /*----------------------------------------------------------------------*
  |  Timeloop()                                             schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::TimeLoop()
+void FLD::XFluid::time_loop()
 {
   if (myrank_ == 0)
     printf("START TIMELOOP (FLD::XFluid::TimeLoop) -- MAXTIME = %11.4E -- STEPMAX %4d\n\n",
         maxtime_, stepmax_);
 
-  FluidImplicitTimeInt::TimeLoop();
+  FluidImplicitTimeInt::time_loop();
 
   // print the results of time measurements
   Teuchos::TimeMonitor::summarize();
@@ -2292,13 +2294,13 @@ void FLD::XFluid::prepare_time_step()
   // -------------------------------------------------------------------
   // set time parameters dependent on time integration scheme and step
   // -------------------------------------------------------------------
-  SetTheta();
+  set_theta();
 
 
   // -------------------------------------------------------------------
   //                     do explicit predictor step
   // -------------------------------------------------------------------
-  DoPredictor();
+  do_predictor();
 
 
   // -------------------------------------------------------------------
@@ -2310,7 +2312,7 @@ void FLD::XFluid::prepare_time_step()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluid::SetTheta()
+void FLD::XFluid::set_theta()
 {
   // Sets theta_ to a specific value for bdf2 and calculates
   // a pseudo-theta for genalpha (the latter in case of startalgo_)
@@ -2358,7 +2360,7 @@ void FLD::XFluid::SetTheta()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluid::DoPredictor()
+void FLD::XFluid::do_predictor()
 {
   // no predictor in first time step
   if (step_ > 1)
@@ -2378,14 +2380,14 @@ void FLD::XFluid::DoPredictor()
 /*----------------------------------------------------------------------*
  |  prepare the nonlinear solver                           schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::PrepareXFEMSolve()
+void FLD::XFluid::prepare_xfem_solve()
 {
   // TODO: do we need to call PrepareXFEMSolve for each Newton increment when solving a monolithic
   // system can we shift this to prepare_time_step()?
   // -------------------------------------------------------------------
   // set new interface positions and possible values for XFEM Weak Dirichlet and Neumann BCs
   // -------------------------------------------------------------------
-  condition_manager_->PrepareSolve();
+  condition_manager_->prepare_solve();
 
   output_service_->gmsh_output_discretization(eval_eos_, step_);
   // -------------------------------------------------------------------
@@ -2411,9 +2413,9 @@ void FLD::XFluid::PrepareXFEMSolve()
 /*----------------------------------------------------------------------*
  |  solve the nonlinear problem                            schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::Solve()
+void FLD::XFluid::solve()
 {
-  PrepareXFEMSolve();
+  prepare_xfem_solve();
 
   // ---------------------------------------------- nonlinear iteration
   // ------------------------------- stop nonlinear iteration when both
@@ -2482,8 +2484,8 @@ void FLD::XFluid::Solve()
 
 
     // apply Dirichlet conditions to the residual vector by setting zeros into the residual
-    state_->DBCMapExtractor()->insert_cond_vector(
-        state_->DBCMapExtractor()->extract_cond_vector(state_->Zeros()), state_->Residual());
+    state_->dbc_map_extractor()->insert_cond_vector(
+        state_->dbc_map_extractor()->extract_cond_vector(state_->zeros()), state_->residual());
 
     output_service_->gmsh_residual_output_debug("DEBUG_residual", step_, itnum, state_);
 
@@ -2495,16 +2497,16 @@ void FLD::XFluid::Solve()
 
     // remove contributions of pressure mode
     // that would not vanish due to the projection
-    if (projector_ != Teuchos::null) projector_->ApplyPT(*state_->Residual());
+    if (projector_ != Teuchos::null) projector_->apply_pt(*state_->residual());
 
     if (convergence_check(itnum, itemax_, velrestol, velinctol, presrestol, presinctol)) break;
 
     //--------- Apply Dirichlet boundary conditions to system of equations
     //          residual displacements are supposed to be zero at
     //          boundary conditions
-    state_->IncVel()->PutScalar(0.0);
-    Core::LinAlg::apply_dirichlet_to_system(*state_->SystemMatrix(), *state_->IncVel(),
-        *state_->Residual(), *state_->Zeros(), *(state_->DBCMapExtractor()->cond_map()));
+    state_->inc_vel()->PutScalar(0.0);
+    Core::LinAlg::apply_dirichlet_to_system(*state_->system_matrix(), *state_->inc_vel(),
+        *state_->residual(), *state_->zeros(), *(state_->dbc_map_extractor()->cond_map()));
 
 
     //-------solve for residual displacements to correct incremental displacements
@@ -2527,7 +2529,7 @@ void FLD::XFluid::Solve()
 
       // scale system prior to solver call
       if (fluid_infnormscaling_ != Teuchos::null)
-        fluid_infnormscaling_->scale_system(state_->SystemMatrix(), *(state_->Residual()));
+        fluid_infnormscaling_->scale_system(state_->system_matrix(), *(state_->residual()));
 
       // if Krylov space projection is used, check whether constant pressure
       // is in nullspace of sysmat_
@@ -2537,8 +2539,8 @@ void FLD::XFluid::Solve()
       solver_params.refactor = true;
       solver_params.reset = itnum == 1;
       solver_params.projector = projector_;
-      solver_->Solve(state_->SystemMatrix()->EpetraOperator(), state_->IncVel(), state_->Residual(),
-          solver_params);
+      solver_->solve(state_->system_matrix()->epetra_operator(), state_->inc_vel(),
+          state_->residual(), solver_params);
 
       // TODO: here needed because of apply Dirichlet with explicit Dirichlet flag!? CHECK THIS
       solver_->reset();
@@ -2547,9 +2549,9 @@ void FLD::XFluid::Solve()
       // unscale solution
       if (fluid_infnormscaling_ != Teuchos::null)
         fluid_infnormscaling_->unscale_solution(
-            state_->SystemMatrix(), *(state_->IncVel()), *(state_->Residual()));
+            state_->system_matrix(), *(state_->inc_vel()), *(state_->residual()));
 
-      solver_->ResetTolerance();
+      solver_->reset_tolerance();
 
       // end time measurement for solver
       dtsolve_ = Teuchos::Time::wallTime() - tcpusolve;
@@ -2578,7 +2580,8 @@ void FLD::XFluid::Solve()
       gen_alpha_intermediate_values();
     }
 
-    std::cout << "MAXNUMENTRIES: " << state_->sysmat_->EpetraMatrix()->MaxNumEntries() << std::endl;
+    std::cout << "MAXNUMENTRIES: " << state_->sysmat_->epetra_matrix()->MaxNumEntries()
+              << std::endl;
   }
 
   // Reset the solver and so release the system matrix' pointer (enables to delete the
@@ -2601,23 +2604,23 @@ bool FLD::XFluid::convergence_check(int itnum, int itemax, const double velresto
   presnorm_ = 0.0;
 
   Teuchos::RCP<Epetra_Vector> onlyvel =
-      state_->VelPresSplitter()->extract_other_vector(state_->Residual());
+      state_->vel_pres_splitter()->extract_other_vector(state_->residual());
   onlyvel->Norm2(&vresnorm_);
 
-  state_->VelPresSplitter()->extract_other_vector(state_->IncVel(), onlyvel);
+  state_->vel_pres_splitter()->extract_other_vector(state_->inc_vel(), onlyvel);
   onlyvel->Norm2(&incvelnorm_L2_);
 
-  state_->VelPresSplitter()->extract_other_vector(state_->Velnp(), onlyvel);
+  state_->vel_pres_splitter()->extract_other_vector(state_->velnp(), onlyvel);
   onlyvel->Norm2(&velnorm_L2_);
 
   Teuchos::RCP<Epetra_Vector> onlypre =
-      state_->VelPresSplitter()->extract_cond_vector(state_->Residual());
+      state_->vel_pres_splitter()->extract_cond_vector(state_->residual());
   onlypre->Norm2(&presnorm_);
 
-  state_->VelPresSplitter()->extract_cond_vector(state_->IncVel(), onlypre);
+  state_->vel_pres_splitter()->extract_cond_vector(state_->inc_vel(), onlypre);
   onlypre->Norm2(&incprenorm_L2_);
 
-  state_->VelPresSplitter()->extract_cond_vector(state_->Velnp(), onlypre);
+  state_->vel_pres_splitter()->extract_cond_vector(state_->velnp(), onlypre);
   onlypre->Norm2(&prenorm_L2_);
 
   // care for the case that nothing really happens in the velocity
@@ -2707,7 +2710,7 @@ void FLD::XFluid::init_krylov_space_projection()
 {
   // get condition "KrylovSpaceProjection" from discretization
   std::vector<Core::Conditions::Condition*> KSPcond;
-  discret_->GetCondition("KrylovSpaceProjection", KSPcond);
+  discret_->get_condition("KrylovSpaceProjection", KSPcond);
   int numcond = KSPcond.size();
   int numfluid = 0;
 
@@ -2818,14 +2821,14 @@ void FLD::XFluid::setup_krylov_space_projection(Core::Conditions::Condition* ksp
 void FLD::XFluid::update_krylov_space_projection()
 {
   // get Teuchos::RCP to kernel vector of projector
-  Teuchos::RCP<Epetra_MultiVector> c = projector_->GetNonConstKernel();
+  Teuchos::RCP<Epetra_MultiVector> c = projector_->get_non_const_kernel();
   Teuchos::RCP<Epetra_Vector> c0 = Teuchos::rcp((*c)(0), false);
   c0->PutScalar(0.0);
 
   // extract vector of pressure-dofs
   Teuchos::RCP<Epetra_Vector> presmode = state_->velpressplitter_->extract_cond_vector(*c0);
 
-  const std::string* weighttype = projector_->WeightType();
+  const std::string* weighttype = projector_->weight_type();
 
   // compute w_ as defined in dat-file
   if (*weighttype == "pointvalues")
@@ -2851,7 +2854,7 @@ void FLD::XFluid::update_krylov_space_projection()
   else if (*weighttype == "integration")
   {
     // get Teuchos::RCP to weight vector of projector
-    Teuchos::RCP<Epetra_MultiVector> w = projector_->GetNonConstWeights();
+    Teuchos::RCP<Epetra_MultiVector> w = projector_->get_non_const_weights();
     Teuchos::RCP<Epetra_Vector> w0 = Teuchos::rcp((*w)(0), false);
     w0->PutScalar(0.0);
 
@@ -2906,7 +2909,7 @@ void FLD::XFluid::check_matrix_nullspace()
   // Note: this check is expensive and should only be used in the debug mode
   if (projector_ != Teuchos::null)
   {
-    Teuchos::RCP<Epetra_MultiVector> c = projector_->GetNonConstKernel();
+    Teuchos::RCP<Epetra_MultiVector> c = projector_->get_non_const_kernel();
     projector_->fill_complete();
     int nsdim = c->NumVectors();
     if (nsdim != 1) FOUR_C_THROW("Only one mode, namely the constant pressure mode, expected.");
@@ -2947,7 +2950,7 @@ void FLD::XFluid::check_matrix_nullspace()
  | cut and set new state-vectors, perform time-integration, apply bcs       |
  |                                                             schott 08/14 |
  *--------------------------------------------------------------------------*/
-void FLD::XFluid::UpdateByIncrements(
+void FLD::XFluid::update_by_increments(
     Teuchos::RCP<const Epetra_Vector> stepinc  ///< solution increment between time step n and n+1,
                                                ///< stepinc has to match the current xfluid dofmaps
 )
@@ -3096,7 +3099,7 @@ void FLD::XFluid::evaluate(
   itnum_out_++;
 
 
-  PrepareXFEMSolve();
+  prepare_xfem_solve();
 
 
   //--------------------------------------------------------------------------------------------
@@ -3132,7 +3135,7 @@ void FLD::XFluid::evaluate(
 /*----------------------------------------------------------------------*
  |  time update                                            schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::TimeUpdate()
+void FLD::XFluid::time_update()
 {
   if (timealgo_ == Inpar::FLUID::timeint_stationary) return;
 
@@ -3161,7 +3164,7 @@ void FLD::XFluid::TimeUpdate()
     Teuchos::ParameterList eleparams;
 
     // update time paramters
-    SetGamma(eleparams);
+    set_gamma(eleparams);
 
 
     eleparams.set("dt", dta_);
@@ -3217,7 +3220,7 @@ void FLD::XFluid::TimeUpdate()
   }
 
   // update of interface fields (interface velocity and interface displacements)
-  condition_manager_->UpdateStateVectors();
+  condition_manager_->update_state_vectors();
 
 }  // XFluid::TimeUpdate()
 
@@ -3238,7 +3241,7 @@ void FLD::XFluid::cut_and_set_state_vectors()
   // not required if neither the background mesh nor the interfaces move
 
   // get info from condition_manager_ if at least one coupling object has moving interfaces
-  const bool has_moving_interface = condition_manager_->HasMovingInterface();
+  const bool has_moving_interface = condition_manager_->has_moving_interface();
   const bool moving_meshes = (has_moving_interface or alefluid_);
 
   if (!moving_meshes) return;
@@ -3348,7 +3351,7 @@ void FLD::XFluid::cut_and_set_state_vectors()
 
   //-------------
   // output for the predicted iteration velnp
-  output_service_->GmshSolutionOutput("TIMINT_NP_", step_, state_, state_it_);
+  output_service_->gmsh_solution_output("TIMINT_NP_", step_, state_, state_it_);
 
 
   if (myrank_ == 0 and screen_out) std::cout << "finished cut_and_set_state_vectors()" << std::endl;
@@ -3377,11 +3380,11 @@ void FLD::XFluid::x_timint_store_old_state_data(const bool firstcall_in_timestep
     *velnm_Intn_ = *(state_->velnm_);
 
     // safe the old wizard and dofset w.r.t the interface position of the last time-step
-    wizard_Intn_ = state_->Wizard();
-    dofset_Intn_ = state_->DofSet();
+    wizard_Intn_ = state_->wizard();
+    dofset_Intn_ = state_->dof_set();
 
     // safe the old dofmap
-    dofcolmap_Intn_ = Teuchos::rcp(new Epetra_Map(*discret_->DofColMap()));
+    dofcolmap_Intn_ = Teuchos::rcp(new Epetra_Map(*discret_->dof_col_map()));
   }
 
   //------------------------------------------
@@ -3391,8 +3394,8 @@ void FLD::XFluid::x_timint_store_old_state_data(const bool firstcall_in_timestep
   *velnp_Intnpi_ = *state_->velnp_;
 
   // get the wizard w.r.t the last interface position (last XFSI iteration)
-  wizard_Intnpi_ = state_->Wizard();
-  dofset_Intnpi_ = state_->DofSet();
+  wizard_Intnpi_ = state_->wizard();
+  dofset_Intnpi_ = state_->dof_set();
 
   return;
 }
@@ -3414,7 +3417,7 @@ bool FLD::XFluid::x_timint_check_for_monolithic_newton_restart(
     const bool screen_out                        ///< screen output?
 )
 {
-  discret_->Comm().Barrier();
+  discret_->get_comm().Barrier();
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::x_timint_check_for_monolithic_newton_restart");
 
   // is a Newton restart necessary? initialize
@@ -3491,7 +3494,7 @@ bool FLD::XFluid::x_timint_changed_dofsets(
   int changed_dofsets_glob_max = 0;
 
   // check if at least one proc has changed dofsets? (maximum or sum of counts > 0)
-  dis->Comm().MaxAll(&changed_dofsets_proc_count, &changed_dofsets_glob_max, 1);
+  dis->get_comm().MaxAll(&changed_dofsets_proc_count, &changed_dofsets_glob_max, 1);
   const bool changed_dofsets_glob = (changed_dofsets_glob_max > 0);
 
   return changed_dofsets_glob;
@@ -3549,7 +3552,7 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
   // create time integration class just locally not to keep pointers to dofset and wizard...
   Teuchos::RCP<XFEM::XFluidTimeInt> xfluid_timeint = Teuchos::rcp(new XFEM::XFluidTimeInt(
       false,  // is_newton_increment_transfer?
-      discret_, condition_manager_, wizard_Intn_, state_->Wizard(), dofset_Intn_, state_->DofSet(),
+      discret_, condition_manager_, wizard_Intn_, state_->wizard(), dofset_Intn_, state_->dof_set(),
       xfluid_timintapproach_,  // use the chosen approach as defined in the input file
       node_to_reconstr_method, reconstr_method_to_node, step_, xfluid_timint_check_interfacetips_,
       xfluid_timint_check_sliding_on_surface_));
@@ -3647,9 +3650,9 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
     if (alefluid_)
     {
       Teuchos::RCP<Epetra_Vector> dispnpcol =
-          Teuchos::rcp(new Epetra_Vector(*DiscretisationXFEM()->InitialDofColMap()));
+          Teuchos::rcp(new Epetra_Vector(*discretisation_xfem()->initial_dof_col_map()));
       Teuchos::RCP<Epetra_Vector> dispncol =
-          Teuchos::rcp(new Epetra_Vector(*DiscretisationXFEM()->InitialDofColMap()));
+          Teuchos::rcp(new Epetra_Vector(*discretisation_xfem()->initial_dof_col_map()));
 
       Core::LinAlg::Export(*dispnp_, *dispnpcol);  // dispnp row->col
       Core::LinAlg::Export(*dispn_, *dispncol);    // dispn row->col
@@ -3682,7 +3685,7 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
     );
   }
 
-  condition_manager_->ClearState();
+  condition_manager_->clear_state();
 
   return;
 }
@@ -3775,8 +3778,8 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
   // create time integration class just locally not to keep pointers to dofset and wizard...
   Teuchos::RCP<XFEM::XFluidTimeInt> xfluid_timeint =
       Teuchos::rcp(new XFEM::XFluidTimeInt(true,  // is_newton_increment_transfer?
-          discret_, condition_manager_, wizard_Intnpi_, state_->Wizard(), dofset_Intnpi_,
-          state_->DofSet(), timint_method, node_to_reconstr_method, reconstr_method_to_node, step_,
+          discret_, condition_manager_, wizard_Intnpi_, state_->wizard(), dofset_Intnpi_,
+          state_->dof_set(), timint_method, node_to_reconstr_method, reconstr_method_to_node, step_,
           xfluid_timint_check_interfacetips_, xfluid_timint_check_sliding_on_surface_));
 
   {
@@ -3854,9 +3857,9 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
       if (alefluid_)
       {
         Teuchos::RCP<Epetra_Vector> dispnpcol =
-            Teuchos::rcp(new Epetra_Vector(*DiscretisationXFEM()->InitialDofColMap()));
+            Teuchos::rcp(new Epetra_Vector(*discretisation_xfem()->initial_dof_col_map()));
         Teuchos::RCP<Epetra_Vector> dispncol =
-            Teuchos::rcp(new Epetra_Vector(*DiscretisationXFEM()->InitialDofColMap()));
+            Teuchos::rcp(new Epetra_Vector(*discretisation_xfem()->initial_dof_col_map()));
 
         Core::LinAlg::Export(*dispnp_, *dispnpcol);  // dispnp row->col
         Core::LinAlg::Export(*dispn_, *dispncol);    // dispn row->col
@@ -3925,12 +3928,12 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
                                  ///< reconstruction techniques
         discret_,                ///< discretization
         dofset_Intnpi_,          ///< dofset last iteration
-        state_->DofSet(),        ///< dofset current iteration
+        state_->dof_set(),       ///< dofset current iteration
         screen_out               ///< screen output?
     );
   }
 
-  condition_manager_->ClearState();
+  condition_manager_->clear_state();
 
   return true;
 }
@@ -3955,11 +3958,11 @@ void FLD::XFluid::x_timint_transfer_vectors_between_steps(
 
   xfluid_timeint->transfer_dofs_to_new_map(oldRowStateVectors, newRowStateVectors, dbcgids);
 
-  if (fill_permutation_map) permutation_map_ = xfluid_timeint->GetPermutationMap();
+  if (fill_permutation_map) permutation_map_ = xfluid_timeint->get_permutation_map();
 
   if (myrank_ == 0 and screen_out) std::cout << " done\n" << std::flush;
 
-  xfluid_timeint->SetAndPrintStatus(screen_out);
+  xfluid_timeint->set_and_print_status(screen_out);
 
   if (reconstruct_method_output) xfluid_timeint->output();
 }
@@ -3994,7 +3997,7 @@ void FLD::XFluid::x_timint_corrective_transfer_vectors_between_steps(
   xfluid_timeint->transfer_dofs_to_new_map(
       oldRowStateVectors, newRowStateVectors, dbcgids, failed_nodevec);
 
-  xfluid_timeint->SetAndPrintStatus(screen_out);
+  xfluid_timeint->set_and_print_status(screen_out);
 }
 
 /*----------------------------------------------------------------------*
@@ -4019,7 +4022,7 @@ void FLD::XFluid::x_timint_get_reconstruct_status(
 
   if (xfluid_timeint == Teuchos::null) FOUR_C_THROW("xfluid_timint_ - class not available here!");
 
-  std::map<Inpar::XFEM::XFluidTimeInt, int>& reconstr_count = xfluid_timeint->Get_Reconstr_Counts();
+  std::map<Inpar::XFEM::XFluidTimeInt, int>& reconstr_count = xfluid_timeint->get_reconstr_counts();
 
   std::map<Inpar::XFEM::XFluidTimeInt, int>::iterator it;
 
@@ -4033,8 +4036,8 @@ void FLD::XFluid::x_timint_get_reconstruct_status(
   int glob_timint_ghost_penalty = 0;
   int glob_timint_semi_lagrangean = 0;
 
-  discret_->Comm().SumAll(&proc_timint_ghost_penalty, &glob_timint_ghost_penalty, 1);
-  discret_->Comm().SumAll(&proc_timint_semi_lagrangean, &glob_timint_semi_lagrangean, 1);
+  discret_->get_comm().SumAll(&proc_timint_ghost_penalty, &glob_timint_ghost_penalty, 1);
+  discret_->get_comm().SumAll(&proc_timint_semi_lagrangean, &glob_timint_semi_lagrangean, 1);
 
 
   //------------------------------------------------------------------------------------
@@ -4124,7 +4127,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
     const bool screen_out      ///< screen output?
 )
 {
-  discret_->Comm().Barrier();
+  discret_->get_comm().Barrier();
 
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::x_timint_reconstruct_ghost_values");
 
@@ -4141,9 +4144,9 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
   solverparams.sublist("IFPACK Parameters");
 
   Teuchos::RCP<Core::LinAlg::Solver> solver_gp = Teuchos::rcp(new Core::LinAlg::Solver(solverparams,
-      discret_->Comm(), Global::Problem::Instance()->solver_params_callback(),
+      discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
       Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::Instance()->IOParams(), "VERBOSITY"),
+          Global::Problem::instance()->io_params(), "VERBOSITY"),
       false));
 
   // ---------------------------------------------- new matrix and vectors
@@ -4197,7 +4200,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
 
   // do only one solve (as the system is linear!)
   {
-    discret_->Comm().Barrier();
+    discret_->get_comm().Barrier();
 
     // get cpu time
     const double tcpu = Teuchos::Time::wallTime();
@@ -4217,7 +4220,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
   // to avoid that.
 
   {
-    discret_->Comm().Barrier();
+    discret_->get_comm().Barrier();
 
     TEUCHOS_FUNC_TIME_MONITOR(
         "FLD::XFluid::x_timint_reconstruct_ghost_values::ghost_penaly_dbcmaps->insert_cond_vector");
@@ -4232,7 +4235,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
   incvel_gp->PutScalar(0.0);
 
   {
-    discret_->Comm().Barrier();
+    discret_->get_comm().Barrier();
     TEUCHOS_FUNC_TIME_MONITOR(
         "FLD::XFluid::x_timint_reconstruct_ghost_values::apply_dirichlet_to_system");
 
@@ -4242,7 +4245,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
 
   //-------solve for residual displacements to correct incremental displacements
   {
-    discret_->Comm().Barrier();
+    discret_->get_comm().Barrier();
 
     TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::x_timint_reconstruct_ghost_values::Solve");
 
@@ -4252,7 +4255,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = true;
-    solver_gp->Solve(sysmat_gp->EpetraOperator(), incvel_gp, residual_gp, solver_params);
+    solver_gp->solve(sysmat_gp->epetra_operator(), incvel_gp, residual_gp, solver_params);
 
     // end time measurement for solver
     dtsolve_ = Teuchos::Time::wallTime() - tcpusolve;
@@ -4288,8 +4291,8 @@ void FLD::XFluid::x_timint_semi_lagrangean(
 {
   if (myrank_ == 0 and screen_out) std::cout << "\t ...SemiLagrangean Reconstruction...";
 
-  Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(mc_idx_);
-  Teuchos::RCP<Core::FE::Discretization> bounddis = mc_coupl->GetCutterDis();
+  Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->get_mesh_coupling(mc_idx_);
+  Teuchos::RCP<Core::FE::Discretization> bounddis = mc_coupl->get_cutter_dis();
 
   condition_manager_->set_state_displacement();
 
@@ -4327,7 +4330,7 @@ void FLD::XFluid::x_timint_semi_lagrangean(
     Teuchos::RCP<XFEM::XfluidTimeintBase> timeIntData = Teuchos::null;
 
     timeIntData = Teuchos::rcp(new XFEM::XfluidTimeintBase(discret_, bounddis, wizard_Intn_,
-        state_->Wizard(), dofset_Intn_, state_->DofSet(), oldColStateVectorsn, dispn, dispnp,
+        state_->wizard(), dofset_Intn_, state_->dof_set(), oldColStateVectorsn, dispn, dispnp,
         *dofcolmap_Intn_, *newdofrowmap, Teuchos::null));
 
     // Safty check (both displacements have to exist or not --> based on that ale fluid is
@@ -4359,7 +4362,7 @@ void FLD::XFluid::x_timint_semi_lagrangean(
 
   }  // totalit
 
-  condition_manager_->ClearState();
+  condition_manager_->clear_state();
 
   if (myrank_ == 0) std::cout << " done\n" << std::flush;
 
@@ -4369,21 +4372,21 @@ void FLD::XFluid::x_timint_semi_lagrangean(
 /*----------------------------------------------------------------------*
  | calculate lift&drag forces                              schott 01/15 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::LiftDrag() const
+void FLD::XFluid::lift_drag() const
 {
   // initially check whether computation of lift and drag values is required
   if (params_->get<bool>("LIFTDRAG"))
   {
-    condition_manager_->LiftDrag(step_, time_);
+    condition_manager_->lift_drag(step_, time_);
   }
 }
 
 
 /// return time integration factor
-double FLD::XFluid::TimIntParam() const
+double FLD::XFluid::tim_int_param() const
 {
   double retval = 0.0;
-  switch (TimIntScheme())
+  switch (tim_int_scheme())
   {
     case Inpar::FLUID::timeint_afgenalpha:
     case Inpar::FLUID::timeint_npgenalpha:
@@ -4421,11 +4424,11 @@ void FLD::XFluid::output()
 
   // write gmsh-output for solution fields
   // solution output
-  output_service_->GmshSolutionOutput("SOL", step_, state_);
+  output_service_->gmsh_solution_output("SOL", step_, state_);
 
   //---------------------------------- GMSH DISCRET OUTPUT (extended output for EOS)
   //------------------------
-  output_service_->GmshOutputEOS(step_, edgestab_);
+  output_service_->gmsh_output_eos(step_, edgestab_);
 
   //---------------------------------- PARAVIEW SOLUTION OUTPUT (solution fields for pressure,
   // velocity) ------------------------
@@ -4443,10 +4446,10 @@ void FLD::XFluid::output()
 /*----------------------------------------------------------------------*
  |  set an initial flow field                              schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::SetInitialFlowField(
+void FLD::XFluid::set_initial_flow_field(
     const Inpar::FLUID::InitialField initfield, const int startfuncno)
 {
-  const int restart = Global::Problem::Instance()->restart();
+  const int restart = Global::Problem::instance()->restart();
 
   if (restart) return;
 
@@ -4461,12 +4464,12 @@ void FLD::XFluid::SetInitialFlowField(
       std::cout << "SetInitialFlowField with function number " << startfuncno << std::endl;
 
     // loop all nodes on the processor
-    for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+    for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
     {
       // get the processor local node
-      Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+      Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
       // the set of degrees of freedom associated with the node
-      const std::vector<int> nodedofset = discret_->Dof(0, lnode);
+      const std::vector<int> nodedofset = discret_->dof(0, lnode);
 
       if (nodedofset.size() != 0)
       {
@@ -4474,9 +4477,10 @@ void FLD::XFluid::SetInitialFlowField(
         {
           int gid = nodedofset[dof];
 
-          double initialval = Global::Problem::Instance()
-                                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .evaluate(lnode->X().data(), time_, dof % 4);
+          double initialval =
+              Global::Problem::instance()
+                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                  .evaluate(lnode->x().data(), time_, dof % 4);
           state_->velnp_->ReplaceGlobalValues(1, &initialval, &gid);
         }
       }
@@ -4510,18 +4514,18 @@ void FLD::XFluid::SetInitialFlowField(
     const double d = M_PI / 2.0;
 
     // loop all nodes on the processor
-    for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+    for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
     {
       // get the processor local node
-      Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+      Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
 
       // the set of degrees of freedom associated with the node
-      std::vector<int> nodedofset = discret_->Dof(0, lnode);
+      std::vector<int> nodedofset = discret_->dof(0, lnode);
 
       // set node coordinates
       for (int dim = 0; dim < numdim_; dim++)
       {
-        xyz[dim] = lnode->X()[dim];
+        xyz[dim] = lnode->x()[dim];
       }
 
       // compute initial velocity components
@@ -4533,10 +4537,10 @@ void FLD::XFluid::SetInitialFlowField(
                       exp(a * xyz[1]) * cos(a * xyz[2] + d * xyz[0]));
 
       // compute initial pressure
-      int id = Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_fluid);
+      int id = Global::Problem::instance()->materials()->first_id_by_type(Core::Materials::m_fluid);
       if (id == -1) FOUR_C_THROW("Newtonian fluid material could not be found");
       const Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance()->Materials()->ParameterById(id);
+          Global::Problem::instance()->materials()->parameter_by_id(id);
       const Mat::PAR::NewtonianFluid* actmat = static_cast<const Mat::PAR::NewtonianFluid*>(mat);
       double dens = actmat->density_;
       p = -a * a / 2.0 * dens *
@@ -4576,58 +4580,58 @@ void FLD::XFluid::SetInitialFlowField(
     // TODO: shift this function to the condition-manager!
 
     // Only supported for 1 levelset so far.
-    if (condition_manager_->NumLevelSetCoupling() != 1)
+    if (condition_manager_->num_level_set_coupling() != 1)
       FOUR_C_THROW(
           "There is either no LevelSetCoupling or more than 1. Exactly 1 is expected and supported "
           "at this point!");
 
     Teuchos::RCP<XFEM::LevelSetCoupling> levelset_condition =
-        condition_manager_->GetLevelSetCoupling("XFEMLevelsetCombustion");
+        condition_manager_->get_level_set_coupling("XFEMLevelsetCombustion");
 
 
     // vector of DOF-IDs which are Dirichlet BCs for ghost penalty reconstruction method
     Teuchos::RCP<std::set<int>> dbcgids = Teuchos::rcp(new std::set<int>());
 
-    const Teuchos::RCP<Core::Geo::CutWizard>& wizard = state_->Wizard();
-    const Teuchos::RCP<XFEM::XFEMDofSet>& dofset = state_->DofSet();
+    const Teuchos::RCP<Core::Geo::CutWizard>& wizard = state_->wizard();
+    const Teuchos::RCP<XFEM::XFEMDofSet>& dofset = state_->dof_set();
     const Epetra_Map* dofrowmap = dofset->dof_row_map();
 
     //------------------------
     // get material parameters
     //------------------------
     // arbitrarily take first node on this proc
-    Core::Nodes::Node* lnode = discret_->lRowNode(0);
+    Core::Nodes::Node* lnode = discret_->l_row_node(0);
     // get list of adjacent elements of the first node
-    Core::Elements::Element** elelist = lnode->Elements();
+    Core::Elements::Element** elelist = lnode->elements();
     Core::Elements::Element* ele = elelist[0];  // (arbitrary!) first element
     // get material from first (arbitrary!) element adjacent to this node
-    const Teuchos::RCP<Core::Mat::Material> material = ele->Material();
+    const Teuchos::RCP<Core::Mat::Material> material = ele->material();
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // check if we really got a list of materials
-    FOUR_C_ASSERT(material->MaterialType() == Core::Materials::m_matlist,
+    FOUR_C_ASSERT(material->material_type() == Core::Materials::m_matlist,
         "Material law is not of type m_matlist");
 #endif
     // get material list for this element
     const Mat::MatList* matlist = static_cast<const Mat::MatList*>(material.get());
 
     // get burnt material (first material in material list)
-    Teuchos::RCP<const Core::Mat::Material> matptr0 = matlist->MaterialById(matlist->MatID(0));
+    Teuchos::RCP<const Core::Mat::Material> matptr0 = matlist->material_by_id(matlist->mat_id(0));
     // get unburnt material (second material in material list)
-    Teuchos::RCP<const Core::Mat::Material> matptr1 = matlist->MaterialById(matlist->MatID(1));
+    Teuchos::RCP<const Core::Mat::Material> matptr1 = matlist->material_by_id(matlist->mat_id(1));
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     FOUR_C_ASSERT(
-        matptr0->MaterialType() == Core::Materials::m_fluid, "material is not of type m_fluid");
+        matptr0->material_type() == Core::Materials::m_fluid, "material is not of type m_fluid");
     FOUR_C_ASSERT(
-        matptr1->MaterialType() == Core::Materials::m_fluid, "material is not of type m_fluid");
+        matptr1->material_type() == Core::Materials::m_fluid, "material is not of type m_fluid");
 #endif
     const Mat::NewtonianFluid* mat0 = static_cast<const Mat::NewtonianFluid*>(matptr0.get());
     const Mat::NewtonianFluid* mat1 = static_cast<const Mat::NewtonianFluid*>(matptr1.get());
 
     // get the densities
-    const double dens_u = mat0->Density();  // outside, master, (i for i<j convention)
+    const double dens_u = mat0->density();  // outside, master, (i for i<j convention)
     if (dens_u != 1.161)
       FOUR_C_THROW("unburnt density should be 1.161 for the 'flame-vortex-interaction' case");
-    const double dens_b = mat1->Density();  // inside, slave, (j for i<j convention)
+    const double dens_b = mat1->density();  // inside, slave, (j for i<j convention)
     if (dens_b != 0.157)
       FOUR_C_THROW("burnt density should be 0.157 for the 'flame-vortex-interaction' case");
 
@@ -4657,23 +4661,23 @@ void FLD::XFluid::SetInitialFlowField(
     //--------------------------------
     // loop all nodes on the processor
     //--------------------------------
-    for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+    for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
     {
       // get the processor local node
-      Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+      Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
 
       // get node coordinates
-      for (int idim = 0; idim < nsd; idim++) xyz(idim) = lnode->X()[idim];
+      for (int idim = 0; idim < nsd; idim++) xyz(idim) = lnode->x()[idim];
 
       // get the node from the cut wizard
-      const int gid = lnode->Id();
-      Core::Geo::Cut::Node* cut_node = wizard->GetNode(gid);
+      const int gid = lnode->id();
+      Core::Geo::Cut::Node* cut_node = wizard->get_node(gid);
 
       // ask for the number of dofsets
-      const int numDofSets = cut_node->NumDofSets();
+      const int numDofSets = cut_node->num_dof_sets();
 
       const std::vector<Teuchos::RCP<Core::Geo::Cut::NodalDofSet>>& nodaldofsets =
-          cut_node->NodalDofSets();
+          cut_node->nodal_dof_sets();
 
       // set values just for the standard dofset, all ghost sets are determined by a ghost-penalty
       // time integration solve!
@@ -4682,12 +4686,12 @@ void FLD::XFluid::SetInitialFlowField(
         //-------------------------------------------
         // STOP FOR GHOSTSETS
         //-------------------------------------------
-        if (!nodaldofsets[i]->Is_Standard_DofSet()) continue;  // do nothing for ghost dofsets!
+        if (!nodaldofsets[i]->is_standard_dof_set()) continue;  // do nothing for ghost dofsets!
 
         //-------------------------------------------
         // just FOR STD SETS
         //-------------------------------------------
-        Core::Geo::Cut::Point::PointPosition pos = nodaldofsets[i]->Position();
+        Core::Geo::Cut::Point::PointPosition pos = nodaldofsets[i]->position();
 
         //----------------------------------------
         // set density with respect to flame front
@@ -4709,7 +4713,7 @@ void FLD::XFluid::SetInitialFlowField(
 
         // access standard FEM dofset (3 x vel + 1 x pressure) to get std-dof IDs for this node
         std::vector<int> std_dofs;
-        dofset->Dof(std_dofs, lnode, i);
+        dofset->dof(std_dofs, lnode, i);
 
         //-----------------------------------------
         // set components of initial velocity field
@@ -4778,17 +4782,17 @@ void FLD::XFluid::set_dirichlet_neumann_bc()
   // other parameters needed by the elements
   eleparams.set("total time", time_);
   eleparams.set<const Core::UTILS::FunctionManager*>(
-      "function_manager", &Global::Problem::Instance()->FunctionManager());
+      "function_manager", &Global::Problem::instance()->function_manager());
 
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("velaf", state_->velnp_);
   // predicted dirichlet values
   // velnp then also holds prescribed new dirichlet values
   discret_->evaluate_dirichlet(
       eleparams, state_->velnp_, Teuchos::null, Teuchos::null, Teuchos::null, state_->dbcmaps_);
 
-  discret_->ClearState();
+  discret_->clear_state();
 
   if (alefluid_)
   {
@@ -4803,7 +4807,7 @@ void FLD::XFluid::set_dirichlet_neumann_bc()
 
   XFEM::evaluate_neumann(eleparams, discret_, state_->neumann_loads_);
 
-  discret_->ClearState();
+  discret_->clear_state();
 }
 
 
@@ -4816,7 +4820,7 @@ void FLD::XFluid::assemble_mat_and_rhs() {}
  *----------------------------------------------------------------------*/
 void FLD::XFluid::explicit_predictor()
 {
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     printf("fluid: using explicit predictor %s", predictor_.c_str());
   }
@@ -4944,7 +4948,7 @@ void FLD::XFluid::explicit_predictor()
   else
     FOUR_C_THROW("Unknown fluid predictor %s", predictor_.c_str());
 
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     printf("\n");
   }
@@ -4959,7 +4963,7 @@ void FLD::XFluid::explicit_predictor()
 void FLD::XFluid::predict_tang_vel_consist_acc()
 {
   // message to screen
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::cout << "fluid: doing TangVel predictor" << std::endl;
   }
@@ -4968,7 +4972,7 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
   Teuchos::ParameterList eleparams;
   eleparams.set("total time", time_);
   eleparams.set<const Core::UTILS::FunctionManager*>(
-      "function_manager", &Global::Problem::Instance()->FunctionManager());
+      "function_manager", &Global::Problem::instance()->function_manager());
 
   // initialize
   state_->velnp_->Update(1.0, *state_->veln_, 0.0);
@@ -4983,7 +4987,7 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
 
   // get Dirichlet values at t_{n+1}
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("velnp", state_->velnp_);
 
   // predicted Dirichlet values
@@ -5017,7 +5021,7 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
   // add linear reaction forces to residual
   // linear reactions
   Teuchos::RCP<Epetra_Vector> freact = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
-  state_->sysmat_->Multiply(false, *dbcinc, *freact);
+  state_->sysmat_->multiply(false, *dbcinc, *freact);
 
   // add linear reaction forces due to prescribed Dirichlet BCs
   state_->residual_->Update(1.0, *freact, 1.0);
@@ -5033,7 +5037,7 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
 
   // apply Dirichlet BCs to system of equations
   state_->incvel_->PutScalar(0.0);
-  state_->sysmat_->Complete();
+  state_->sysmat_->complete();
   Core::LinAlg::apply_dirichlet_to_system(*state_->sysmat_, *state_->incvel_, *state_->residual_,
       *state_->zeros_, *(state_->dbcmaps_->cond_map()));
 
@@ -5041,8 +5045,8 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
-  solver_->Solve(
-      state_->sysmat_->EpetraOperator(), state_->incvel_, state_->residual_, solver_params);
+  solver_->solve(
+      state_->sysmat_->epetra_operator(), state_->incvel_, state_->residual_, solver_params);
 
   // set Dirichlet increments in solution increments
   state_->incvel_->Update(1.0, *dbcinc, 1.0);
@@ -5094,7 +5098,7 @@ void FLD::XFluid::read_restart(int step)
 {
   //-------- fluid discretization
   Core::IO::DiscretizationReader reader(
-      discret_, Global::Problem::Instance()->InputControlFile(), step);
+      discret_, Global::Problem::instance()->input_control_file(), step);
   time_ = reader.read_double("time");
   step_ = reader.read_int("step");
 
@@ -5124,8 +5128,8 @@ void FLD::XFluid::read_restart(int step)
   }
 
   // state-vectors in state will be set in the creation of a new state
-  CreateInitialState();  // Create an State with the deformed Fluid Mesh (otherwise state vectors
-                         // wouldn't fit)
+  create_initial_state();  // Create an State with the deformed Fluid Mesh (otherwise state vectors
+                           // wouldn't fit)
 
   reader.read_vector(state_->velnp_, "velnp_res");
   reader.read_vector(state_->velnm_, "velnm_res");
@@ -5154,52 +5158,52 @@ void FLD::XFluid::read_restart(int step)
   output_service_->gmsh_solution_output_previous("RESTART", step_, state_);
 
   // set the new time and step also to the coupling objects
-  condition_manager_->SetTimeAndStep(time_, step_);
+  condition_manager_->set_time_and_step(time_, step_);
 }
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
-Teuchos::RCP<XFEM::MeshCoupling> FLD::XFluid::GetMeshCoupling(const std::string& condname)
+Teuchos::RCP<XFEM::MeshCoupling> FLD::XFluid::get_mesh_coupling(const std::string& condname)
 {
-  return condition_manager_->GetMeshCoupling(condname);
+  return condition_manager_->get_mesh_coupling(condname);
 }
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
-Teuchos::RCP<Core::LinAlg::SparseMatrix> FLD::XFluid::C_sx_Matrix(const std::string& cond_name)
+Teuchos::RCP<Core::LinAlg::SparseMatrix> FLD::XFluid::c_sx_matrix(const std::string& cond_name)
 {
-  const int coup_idx = condition_manager_->GetCouplingIndex(cond_name);
+  const int coup_idx = condition_manager_->get_coupling_index(cond_name);
   return state_->coup_state_[coup_idx]->C_sx_;
 }
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
-Teuchos::RCP<Core::LinAlg::SparseMatrix> FLD::XFluid::C_xs_Matrix(const std::string& cond_name)
+Teuchos::RCP<Core::LinAlg::SparseMatrix> FLD::XFluid::c_xs_matrix(const std::string& cond_name)
 {
-  const int coup_idx = condition_manager_->GetCouplingIndex(cond_name);
+  const int coup_idx = condition_manager_->get_coupling_index(cond_name);
   return state_->coup_state_[coup_idx]->C_xs_;
 }
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
-Teuchos::RCP<Core::LinAlg::SparseMatrix> FLD::XFluid::C_ss_Matrix(const std::string& cond_name)
+Teuchos::RCP<Core::LinAlg::SparseMatrix> FLD::XFluid::c_ss_matrix(const std::string& cond_name)
 {
-  const int coup_idx = condition_manager_->GetCouplingIndex(cond_name);
+  const int coup_idx = condition_manager_->get_coupling_index(cond_name);
   return state_->coup_state_[coup_idx]->C_ss_;
 }
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
-Teuchos::RCP<Epetra_Vector> FLD::XFluid::RHS_s_Vec(const std::string& cond_name)
+Teuchos::RCP<Epetra_Vector> FLD::XFluid::rhs_s_vec(const std::string& cond_name)
 {
-  const int coup_idx = condition_manager_->GetCouplingIndex(cond_name);
+  const int coup_idx = condition_manager_->get_coupling_index(cond_name);
   return state_->coup_state_[coup_idx]->rhC_s_;
 }
 
 /*------------------------------------------------------------------------------------------------*
  | create field test
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> FLD::XFluid::CreateFieldTest()
+Teuchos::RCP<Core::UTILS::ResultTest> FLD::XFluid::create_field_test()
 {
   return Teuchos::rcp(new FLD::XFluidResultTest(*this));
 }
@@ -5279,11 +5283,12 @@ void FLD::XFluid::gen_alpha_update_acceleration()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluid::UpdateGridv()
+void FLD::XFluid::update_gridv()
 {
   // get order of accuracy of grid velocity determination
   // from input file data
-  const Teuchos::ParameterList& fluiddynparams = Global::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fluiddynparams =
+      Global::Problem::instance()->fluid_dynamic_params();
   const int order = Core::UTILS::IntegralValue<Inpar::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
 
   Teuchos::RCP<Epetra_Vector> gridv = Teuchos::rcp(new Epetra_Vector(dispnp_->Map(), true));
@@ -5330,9 +5335,9 @@ void FLD::XFluid::UpdateGridv()
  *----------------------------------------------------------------------*/
 void FLD::XFluid::update_by_increment()
 {
-  state_->Velnp()->Update(1.0, *state_->IncVel(), 1.0);
+  state_->velnp()->Update(1.0, *state_->inc_vel(), 1.0);
   double f_norm = 0;
-  state_->Velnp()->Norm2(&f_norm);
+  state_->velnp()->Norm2(&f_norm);
   //  std::cout << std::setprecision(14) << f_norm << std::endl;
 }
 
@@ -5402,7 +5407,7 @@ void FLD::XFluid::set_old_part_of_righthandside(const Teuchos::RCP<Epetra_Vector
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluid::SetGamma(Teuchos::ParameterList& eleparams)
+void FLD::XFluid::set_gamma(Teuchos::ParameterList& eleparams)
 {
   if (timealgo_ == Inpar::FLUID::timeint_afgenalpha)
   {
@@ -5422,7 +5427,7 @@ void FLD::XFluid::SetGamma(Teuchos::ParameterList& eleparams)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluid::SetStateTimInt()
+void FLD::XFluid::set_state_tim_int()
 {
   // set scheme-specific element parameters and vector values
   if (timealgo_ == Inpar::FLUID::timeint_afgenalpha)

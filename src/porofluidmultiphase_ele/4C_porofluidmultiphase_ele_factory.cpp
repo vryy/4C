@@ -20,12 +20,12 @@ FOUR_C_NAMESPACE_OPEN
  | provide the implementation of evaluation class      (public) vuong 08/16 |
  *--------------------------------------------------------------------------*/
 Discret::ELEMENTS::PoroFluidMultiPhaseEleInterface*
-Discret::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
+Discret::ELEMENTS::PoroFluidMultiPhaseFactory::provide_impl(
     Core::FE::CellType distype, const int numdofpernode, const std::string& disname)
 {
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
-  static const int ndim = Global::Problem::Instance()->NDim();
+  static const int ndim = Global::Problem::instance()->n_dim();
 
   switch (distype)
   {
@@ -135,7 +135,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleInterface*
 Discret::ELEMENTS::PoroFluidMultiPhaseFactory::define_problem_type(
     const int numdofpernode, const std::string& disname)
 {
-  return Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Instance(numdofpernode, disname);
+  return Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::instance(numdofpernode, disname);
 }
 
 FOUR_C_NAMESPACE_CLOSE

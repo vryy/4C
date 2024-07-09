@@ -62,11 +62,11 @@ namespace Mat
   class ParticleWallMaterialDEMType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "ParticleWallMaterialDEMType"; };
+    std::string name() const override { return "ParticleWallMaterialDEMType"; };
 
-    static ParticleWallMaterialDEMType& Instance() { return instance_; };
+    static ParticleWallMaterialDEMType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static ParticleWallMaterialDEMType instance_;
@@ -91,9 +91,9 @@ namespace Mat
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ParticleWallMaterialDEMType::Instance().UniqueParObjectId();
+      return ParticleWallMaterialDEMType::instance().unique_par_object_id();
     }
 
     /*!
@@ -101,7 +101,7 @@ namespace Mat
 
       Resizes the vector data and stores all information of a class in it.
       The first information to be stored in data has to be the
-      unique parobject id delivered by UniqueParObjectId() which will then
+      unique parobject id delivered by unique_par_object_id() which will then
       identify the exact class on the receiving processor.
 
       \param data (in/out): char vector to store class information
@@ -115,7 +115,7 @@ namespace Mat
       exact copy of an instance of a class on a different processor.
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
-      UniqueParObjectId().
+      unique_par_object_id().
 
       \param data (in) : vector storing all data to be unpacked into this
       instance.
@@ -129,25 +129,25 @@ namespace Mat
     //@{
 
     //! material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_particle_wall_dem;
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new ParticleWallMaterialDEM(*this));
     }
 
     //! return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     //! return tangential contact friction coefficient
-    double MuTangential() const { return params_->frictionTang_; }
+    double mu_tangential() const { return params_->frictionTang_; }
 
     //! return rolling contact friction coefficient
-    double MuRolling() const { return params_->frictionRoll_; }
+    double mu_rolling() const { return params_->frictionRoll_; }
 
     //! return adhesion surface energy
     double adhesion_surface_energy() const { return params_->adhesionSurfaceEnergy_; }

@@ -42,21 +42,21 @@ namespace PoroMultiPhaseScaTra
     virtual ~PoroMultiPhaseScaTraArtCouplBase() = default;
 
     //! access to full DOF map
-    const Teuchos::RCP<const Epetra_Map>& FullMap() const;
+    const Teuchos::RCP<const Epetra_Map>& full_map() const;
 
     //! Recompute the CouplingDOFs for each CouplingNode if ntp-coupling active
     void recompute_coupled_do_fs_for_ntp(
         std::vector<Core::Conditions::Condition*> coupcond, unsigned int couplingnode);
 
     //! get global extractor
-    const Teuchos::RCP<Core::LinAlg::MultiMapExtractor>& GlobalExtractor() const;
+    const Teuchos::RCP<Core::LinAlg::MultiMapExtractor>& global_extractor() const;
 
     //! check if initial fields on coupled DOFs are equal
-    virtual void CheckInitialFields(
+    virtual void check_initial_fields(
         Teuchos::RCP<const Epetra_Vector> vec_cont, Teuchos::RCP<const Epetra_Vector> vec_art) = 0;
 
     //! access artery (1D) dof row map
-    virtual Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const = 0;
+    virtual Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const = 0;
 
     //! access full dof row map
     virtual Teuchos::RCP<const Epetra_Map> dof_row_map() const = 0;
@@ -69,7 +69,7 @@ namespace PoroMultiPhaseScaTra
         Teuchos::RCP<Epetra_Vector> rhs) = 0;
 
     //! set-up of global system of equations of coupled problem
-    virtual void SetupSystem(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    virtual void setup_system(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
         Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
@@ -77,11 +77,11 @@ namespace PoroMultiPhaseScaTra
         Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art) = 0;
 
     //! set solution vectors of single fields
-    virtual void SetSolutionVectors(Teuchos::RCP<const Epetra_Vector> phinp_cont,
+    virtual void set_solution_vectors(Teuchos::RCP<const Epetra_Vector> phinp_cont,
         Teuchos::RCP<const Epetra_Vector> phin_cont, Teuchos::RCP<const Epetra_Vector> phinp_art);
 
     //! set the element pairs that are close as found by search algorithm
-    virtual void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs);
+    virtual void set_nearby_ele_pairs(const std::map<int, std::set<int>>* nearbyelepairs);
 
     /*!
      * @brief setup global vector
@@ -111,14 +111,14 @@ namespace PoroMultiPhaseScaTra
     virtual void setup() = 0;
 
     //! apply mesh movement (on artery elements)
-    virtual void ApplyMeshMovement() = 0;
+    virtual void apply_mesh_movement() = 0;
 
     //! return blood vessel volume fraction inside each 2D/3D element
     virtual Teuchos::RCP<const Epetra_Vector> blood_vessel_volume_fraction() = 0;
 
    protected:
     //! communicator
-    const Epetra_Comm& comm() const { return comm_; }
+    const Epetra_Comm& get_comm() const { return comm_; }
 
     //! artery (1D) discretization
     Teuchos::RCP<Core::FE::Discretization> arterydis_;

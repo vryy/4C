@@ -226,20 +226,20 @@ namespace CONTACT
     };
 
     //! return global LM dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map>& PGLmDofRowMapPtr() { return pglmdofrowmap_; };
-    Teuchos::RCP<const Epetra_Map> PGLmDofRowMapPtr() const { return pglmdofrowmap_; };
+    Teuchos::RCP<Epetra_Map>& pg_lm_dof_row_map_ptr() { return pglmdofrowmap_; };
+    Teuchos::RCP<const Epetra_Map> pg_lm_dof_row_map_ptr() const { return pglmdofrowmap_; };
 
     //! return global slave dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map>& PGSlDofRowMapPtr() { return pgsdofrowmap_; };
-    Teuchos::RCP<const Epetra_Map> PGSlDofRowMapPtr() const { return pgsdofrowmap_; };
+    Teuchos::RCP<Epetra_Map>& pg_sl_dof_row_map_ptr() { return pgsdofrowmap_; };
+    Teuchos::RCP<const Epetra_Map> pg_sl_dof_row_map_ptr() const { return pgsdofrowmap_; };
 
     //! return global master dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map>& PGMaDofRowMapPtr() { return pgmdofrowmap_; };
-    Teuchos::RCP<const Epetra_Map> PGMaDofRowMapPtr() const { return pgmdofrowmap_; };
+    Teuchos::RCP<Epetra_Map>& pg_ma_dof_row_map_ptr() { return pgmdofrowmap_; };
+    Teuchos::RCP<const Epetra_Map> pg_ma_dof_row_map_ptr() const { return pgmdofrowmap_; };
 
     //! return global slave and master dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map>& PGSlMaDofRowMapPtr() { return pgsmdofrowmap_; };
-    Teuchos::RCP<const Epetra_Map> PGSlMaDofRowMapPtr() const { return pgsmdofrowmap_; };
+    Teuchos::RCP<Epetra_Map>& pg_sl_ma_dof_row_map_ptr() { return pgsmdofrowmap_; };
+    Teuchos::RCP<const Epetra_Map> pg_sl_ma_dof_row_map_ptr() const { return pgsmdofrowmap_; };
 
     //! return global dirichlet toggle of all slave dofs (before parallel redistribution)
     Teuchos::RCP<Epetra_Vector>& pg_sl_dirich_toggle_dof_row_map_ptr() { return pgsdirichtoggle_; };
@@ -259,40 +259,40 @@ namespace CONTACT
     };
 
     //! return global Mortar matrix D
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& DMatrixPtr() { return dmatrix_; };
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> DMatrixPtr() const { return dmatrix_; };
-    Core::LinAlg::SparseMatrix& DMatrix()
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& d_matrix_ptr() { return dmatrix_; };
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> d_matrix_ptr() const { return dmatrix_; };
+    Core::LinAlg::SparseMatrix& d_matrix()
     {
       if (dmatrix_.is_null()) FOUR_C_THROW("The dmatrix_ is not initialized!");
       return *dmatrix_;
     }
 
     //! return global Mortar matrix M
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& MMatrixPtr() { return mmatrix_; };
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> MMatrixPtr() const { return mmatrix_; };
-    Core::LinAlg::SparseMatrix& MMatrix()
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& m_matrix_ptr() { return mmatrix_; };
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> m_matrix_ptr() const { return mmatrix_; };
+    Core::LinAlg::SparseMatrix& m_matrix()
     {
       if (mmatrix_.is_null()) FOUR_C_THROW("The mmatrix_ is not initialized!");
       return *mmatrix_;
     }
 
     //! return global weighted gap vector g
-    Teuchos::RCP<Epetra_Vector>& WGapPtr() { return wgap_; };
-    Teuchos::RCP<const Epetra_Vector> WGapPtr() const { return wgap_; };
-    Epetra_Vector& WGap()
+    Teuchos::RCP<Epetra_Vector>& w_gap_ptr() { return wgap_; };
+    Teuchos::RCP<const Epetra_Vector> w_gap_ptr() const { return wgap_; };
+    Epetra_Vector& w_gap()
     {
       if (wgap_.is_null()) FOUR_C_THROW("The wgap_ is not initialized!");
       return *wgap_;
     }
 
     //! return global tangential rhs vector
-    Teuchos::RCP<Epetra_Vector>& TangRhsPtr() { return tangrhs_; };
-    Teuchos::RCP<const Epetra_Vector> TangRhsPtr() const { return tangrhs_; };
+    Teuchos::RCP<Epetra_Vector>& tang_rhs_ptr() { return tangrhs_; };
+    Teuchos::RCP<const Epetra_Vector> tang_rhs_ptr() const { return tangrhs_; };
 
     //! return gloabl inactive rhs vector
-    Teuchos::RCP<Epetra_Vector>& InactiveRhsPtr() { return inactiverhs_; };
-    Teuchos::RCP<const Epetra_Vector> InactiveRhsPtr() const { return inactiverhs_; };
-    Epetra_Vector& InactiveRhs()
+    Teuchos::RCP<Epetra_Vector>& inactive_rhs_ptr() { return inactiverhs_; };
+    Teuchos::RCP<const Epetra_Vector> inactive_rhs_ptr() const { return inactiverhs_; };
+    Epetra_Vector& inactive_rhs()
     {
       if (inactiverhs_.is_null()) FOUR_C_THROW("The inactiverhs_ is not initialized!");
       return *inactiverhs_;
@@ -300,99 +300,102 @@ namespace CONTACT
 
     //! Return the structural contact right-hand-side contributions of the current time step
     //! \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector>& StrContactRhsPtr() { return str_contact_rhs_ptr_; }
-    Teuchos::RCP<const Epetra_Vector> StrContactRhsPtr() const { return str_contact_rhs_ptr_; }
-    Epetra_Vector& StrContactRhs()
+    Teuchos::RCP<Epetra_Vector>& str_contact_rhs_ptr() { return str_contact_rhs_ptr_; }
+    Teuchos::RCP<const Epetra_Vector> str_contact_rhs_ptr() const { return str_contact_rhs_ptr_; }
+    Epetra_Vector& str_contact_rhs()
     {
       if (str_contact_rhs_ptr_.is_null()) FOUR_C_THROW("The strContactRhsPtr_ is not initialized!");
       return *str_contact_rhs_ptr_;
     }
 
     //! return global constraint rhs vector (only for saddlepoint problems)
-    Teuchos::RCP<Epetra_Vector>& ConstrRhsPtr() { return constrrhs_; };
-    Teuchos::RCP<const Epetra_Vector> ConstrRhsPtr() const { return constrrhs_; };
-    Epetra_Vector& ConstrRhs()
+    Teuchos::RCP<Epetra_Vector>& constr_rhs_ptr() { return constrrhs_; };
+    Teuchos::RCP<const Epetra_Vector> constr_rhs_ptr() const { return constrrhs_; };
+    Epetra_Vector& constr_rhs()
     {
       if (constrrhs_.is_null()) FOUR_C_THROW("The constrrhs_ is not initialized!");
       return *constrrhs_;
     }
 
     //! return global Matrix LinD containing slave fc derivatives
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& DLinMatrixPtr() { return lindmatrix_; };
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> DLinMatrixPtr() const { return lindmatrix_; };
-    Core::LinAlg::SparseMatrix& DLinMatrix()
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& d_lin_matrix_ptr() { return lindmatrix_; };
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> d_lin_matrix_ptr() const { return lindmatrix_; };
+    Core::LinAlg::SparseMatrix& d_lin_matrix()
     {
       if (lindmatrix_.is_null()) FOUR_C_THROW("The augDnLinMatrixPtr_ is not initialized!");
       return *lindmatrix_;
     }
 
     //! return global Matrix LinM containing master fc derivatives
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& MLinMatrixPtr() { return linmmatrix_; };
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> MLinMatrixPtr() const { return linmmatrix_; };
-    Core::LinAlg::SparseMatrix& MLinMatrix()
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& m_lin_matrix_ptr() { return linmmatrix_; };
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> m_lin_matrix_ptr() const { return linmmatrix_; };
+    Core::LinAlg::SparseMatrix& m_lin_matrix()
     {
       if (linmmatrix_.is_null()) FOUR_C_THROW("The augMnLinMatrixPtr_ is not initialized!");
       return *linmmatrix_;
     }
 
     //! return global Matrix kteffnew containing modified jacobian
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& kteffnewMatrixPtr() { return kteffnew_; };
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> kteffnewMatrixPtr() const { return kteffnew_; };
-    Core::LinAlg::SparseMatrix& kteffnewMatrix()
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& kteffnew_matrix_ptr() { return kteffnew_; };
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> kteffnew_matrix_ptr() const
+    {
+      return kteffnew_;
+    };
+    Core::LinAlg::SparseMatrix& kteffnew_matrix()
     {
       if (kteffnew_.is_null()) FOUR_C_THROW("The kteffnewMatrixPtr is not initialized!");
       return *kteffnew_;
     }
 
     //! return global Mortar matrix D (last end-point \f$t_{n}\f$)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& OldDMatrixPtr() { return dold_; };
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> OldDMatrixPtr() const { return dold_; };
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& old_d_matrix_ptr() { return dold_; };
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> old_d_matrix_ptr() const { return dold_; };
 
     //! return global Mortar matrix M (last end-point \f$t_{n}\f$)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& OldMMatrixPtr() { return mold_; };
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> OldMMatrixPtr() const { return mold_; };
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& old_m_matrix_ptr() { return mold_; };
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> old_m_matrix_ptr() const { return mold_; };
 
     //! return current vector of Lagrange multipliers at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector>& LmPtr() { return z_; };
-    Teuchos::RCP<const Epetra_Vector> LmPtr() const { return z_; };
+    Teuchos::RCP<Epetra_Vector>& lm_ptr() { return z_; };
+    Teuchos::RCP<const Epetra_Vector> lm_ptr() const { return z_; };
 
     //! return old vector of Lagrange multipliers at \f$t_{n}\f$
-    Teuchos::RCP<Epetra_Vector>& OldLmPtr() { return zold_; };
-    Teuchos::RCP<const Epetra_Vector> OldLmPtr() const { return zold_; };
+    Teuchos::RCP<Epetra_Vector>& old_lm_ptr() { return zold_; };
+    Teuchos::RCP<const Epetra_Vector> old_lm_ptr() const { return zold_; };
 
     /*! \brief Return Lagrange multiplier vector increment
      *
      *  \remark This is NOT the increment of z_ between \f$t_{n+1}\f$ and \f$t_{n}\f$!) */
-    Teuchos::RCP<Epetra_Vector>& LmIncrPtr() { return zincr_; };
-    Teuchos::RCP<const Epetra_Vector> LmIncrPtr() const { return zincr_; };
+    Teuchos::RCP<Epetra_Vector>& lm_incr_ptr() { return zincr_; };
+    Teuchos::RCP<const Epetra_Vector> lm_incr_ptr() const { return zincr_; };
 
     //! return vector of Lagrange multipliers from last Uzawa step
-    Teuchos::RCP<Epetra_Vector>& LmUzawaPtr() { return zuzawa_; };
-    Teuchos::RCP<const Epetra_Vector> LmUzawaPtr() const { return zuzawa_; };
+    Teuchos::RCP<Epetra_Vector>& lm_uzawa_ptr() { return zuzawa_; };
+    Teuchos::RCP<const Epetra_Vector> lm_uzawa_ptr() const { return zuzawa_; };
 
     //! return vector of normal contact forces at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector>& StressNormalPtr() { return stressnormal_; };
-    Teuchos::RCP<const Epetra_Vector> StressNormalPtr() const { return stressnormal_; };
+    Teuchos::RCP<Epetra_Vector>& stress_normal_ptr() { return stressnormal_; };
+    Teuchos::RCP<const Epetra_Vector> stress_normal_ptr() const { return stressnormal_; };
 
     //! return vector of tangential contact forces at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector>& StressTangentialPtr() { return stresstangential_; };
-    Teuchos::RCP<const Epetra_Vector> StressTangentialPtr() const { return stresstangential_; };
+    Teuchos::RCP<Epetra_Vector>& stress_tangential_ptr() { return stresstangential_; };
+    Teuchos::RCP<const Epetra_Vector> stress_tangential_ptr() const { return stresstangential_; };
 
     //! return vector of normal contact forces at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector>& ForceNormalPtr() { return forcenormal_; };
-    Teuchos::RCP<const Epetra_Vector> ForceNormalPtr() const { return forcenormal_; };
+    Teuchos::RCP<Epetra_Vector>& force_normal_ptr() { return forcenormal_; };
+    Teuchos::RCP<const Epetra_Vector> force_normal_ptr() const { return forcenormal_; };
 
     //! return vector of tangential contact forces at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector>& ForceTangentialPtr() { return forcetangential_; };
-    Teuchos::RCP<const Epetra_Vector> ForceTangentialPtr() const { return forcetangential_; };
+    Teuchos::RCP<Epetra_Vector>& force_tangential_ptr() { return forcetangential_; };
+    Teuchos::RCP<const Epetra_Vector> force_tangential_ptr() const { return forcetangential_; };
 
     //! return time step index at \f$t_{n+1}\f$
-    int& StepNp() { return stepnp_; };
-    int StepNp() const { return stepnp_; };
+    int& step_np() { return stepnp_; };
+    int step_np() const { return stepnp_; };
 
     //! return non-linear (Newton) iteration index
-    int& NlnIter() { return iter_; };
-    int NlnIter() const { return iter_; };
+    int& nln_iter() { return iter_; };
+    int nln_iter() const { return iter_; };
 
     //! return flag indicating global contact status
     bool& is_in_contact() { return isincontact_; };
@@ -427,16 +430,16 @@ namespace CONTACT
     bool is_dual_quad_slave_trafo() const { return dualquadslavetrafo_; };
 
     //! return transformation matrix T for dual quad 3D case
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& TrafoPtr() { return trafo_; };
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> TrafoPtr() const { return trafo_; };
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& trafo_ptr() { return trafo_; };
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> trafo_ptr() const { return trafo_; };
 
     //! return inverse trafo matrix T^(-1) for dual quad 3D case
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& InvTrafoPtr() { return invtrafo_; };
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> InvTrafoPtr() const { return invtrafo_; };
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& inv_trafo_ptr() { return invtrafo_; };
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> inv_trafo_ptr() const { return invtrafo_; };
 
     //! return modified global Mortar matrix D
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& ModifiedDMatrixPtr() { return dmatrixmod_; };
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> ModifiedDMatrixPtr() const
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& modified_d_matrix_ptr() { return dmatrixmod_; };
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> modified_d_matrix_ptr() const
     {
       return dmatrixmod_;
     };
@@ -449,23 +452,23 @@ namespace CONTACT
     };
 
     //! return integration time
-    double& IntTime() { return inttime_; };
-    double IntTime() const { return inttime_; };
+    double& int_time() { return inttime_; };
+    double int_time() const { return inttime_; };
 
     //! return mean interface velocity
-    std::vector<double>& MeanInterfaceVels() { return ivel_; };
-    const std::vector<double>& MeanInterfaceVels() const { return ivel_; };
+    std::vector<double>& mean_interface_vels() { return ivel_; };
+    const std::vector<double>& mean_interface_vels() const { return ivel_; };
 
     //! return current used solving strategy
-    Inpar::CONTACT::SolvingStrategy& SolType() { return stype_; };
-    Inpar::CONTACT::SolvingStrategy SolType() const { return stype_; };
+    Inpar::CONTACT::SolvingStrategy& sol_type() { return stype_; };
+    Inpar::CONTACT::SolvingStrategy sol_type() const { return stype_; };
 
     //! return direction in which the contact constraints are formulated
-    Inpar::CONTACT::ConstraintDirection& ConstrDirection() { return constr_direction_; };
-    Inpar::CONTACT::ConstraintDirection ConstrDirection() const { return constr_direction_; };
+    Inpar::CONTACT::ConstraintDirection& constr_direction() { return constr_direction_; };
+    Inpar::CONTACT::ConstraintDirection constr_direction() const { return constr_direction_; };
 
-    Inpar::Mortar::ParallelRedist& ParType() { return partype_; };
-    Inpar::Mortar::ParallelRedist ParType() const { return partype_; };
+    Inpar::Mortar::ParallelRedist& par_type() { return partype_; };
+    Inpar::Mortar::ParallelRedist par_type() const { return partype_; };
 
     //!@}
 
@@ -748,7 +751,7 @@ namespace CONTACT
     \param[in] stratData Data container object
     \param[in] dof_row_map Dof row map of underlying problem
     \param[in] NodeRowMap Node row map of underlying problem
-    \param[in] params List of contact/parameters
+    \param[in] params_in List of contact/parameters
     \param[in] spatialDim Spatial dimension of the problem
     \param[in] comm Communicator
     \param[in] alphaf Mid-point for Generalized-alpha time integration
@@ -756,7 +759,7 @@ namespace CONTACT
     */
     AbstractStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
-        const Teuchos::ParameterList& params, const int spatialDim,
+        const Teuchos::ParameterList& params_in, const int spatialDim,
         const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, int const maxdof);
 
     /*! \brief Setup this strategy object (maps, vectors, etc.)
@@ -773,7 +776,7 @@ namespace CONTACT
 
 
     //! return the current solution type
-    virtual Inpar::CONTACT::SolvingStrategy Type() const { return stype_; }
+    virtual Inpar::CONTACT::SolvingStrategy type() const { return stype_; }
 
     //! @name Access methods
     //!@{
@@ -790,7 +793,7 @@ namespace CONTACT
      *  \author hiermeier */
     virtual Teuchos::RCP<const Epetra_Map> lm_dof_row_map_ptr(const bool& redist) const
     {
-      if ((not redist) and parallel_redistribution_status()) return data().PGLmDofRowMapPtr();
+      if ((not redist) and parallel_redistribution_status()) return data().pg_lm_dof_row_map_ptr();
 
       return data().global_lm_dof_row_map_ptr();
     };
@@ -809,7 +812,7 @@ namespace CONTACT
      *  \author hiermeier */
     virtual Teuchos::RCP<const Epetra_Map> lin_system_lm_dof_row_map_ptr() const
     {
-      if (SystemType() != Inpar::CONTACT::system_saddlepoint) return Teuchos::null;
+      if (system_type() != Inpar::CONTACT::system_saddlepoint) return Teuchos::null;
 
       if (is_self_contact())
       {
@@ -834,7 +837,7 @@ namespace CONTACT
      *  \author hiermeier */
     virtual Teuchos::RCP<const Epetra_Map> slave_dof_row_map_ptr(const bool& redist) const
     {
-      if ((not redist) and parallel_redistribution_status()) return data().PGSlDofRowMapPtr();
+      if ((not redist) and parallel_redistribution_status()) return data().pg_sl_dof_row_map_ptr();
 
       return data().global_slave_dof_row_map_ptr();
     };
@@ -890,7 +893,7 @@ namespace CONTACT
      *  \author hiermeier */
     virtual Teuchos::RCP<const Epetra_Map> master_dof_row_map_ptr(const bool& redist) const
     {
-      if ((not redist) and parallel_redistribution_status()) return data().PGMaDofRowMapPtr();
+      if ((not redist) and parallel_redistribution_status()) return data().pg_ma_dof_row_map_ptr();
 
       return data().global_master_dof_row_map_ptr();
     };
@@ -908,7 +911,8 @@ namespace CONTACT
      *  \author hiermeier */
     virtual Teuchos::RCP<const Epetra_Map> slave_master_dof_row_map_ptr(const bool& redist) const
     {
-      if ((not redist) and parallel_redistribution_status()) return data().PGSlMaDofRowMapPtr();
+      if ((not redist) and parallel_redistribution_status())
+        return data().pg_sl_ma_dof_row_map_ptr();
 
       return data().global_slave_master_dof_row_map_ptr();
     };
@@ -1070,13 +1074,13 @@ namespace CONTACT
     //! Return non-redistributed global slave dof row map
     Teuchos::RCP<Epetra_Map> non_redist_slave_row_dofs() override
     {
-      return data().PGSlDofRowMapPtr();
+      return data().pg_sl_dof_row_map_ptr();
     }
 
     //! Return non-redistributed global master dof row map
     Teuchos::RCP<Epetra_Map> non_redist_master_row_dofs() override
     {
-      return data().PGMaDofRowMapPtr();
+      return data().pg_ma_dof_row_map_ptr();
     }
 
     /*!
@@ -1107,7 +1111,7 @@ namespace CONTACT
     virtual Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_np(const bool& redist) const;
 
     //! Return old Lagrange multiplier vector (\f$t_{n}\f$)
-    Teuchos::RCP<Epetra_Vector> lagrange_multiplier_old() override { return data().OldLmPtr(); }
+    Teuchos::RCP<Epetra_Vector> lagrange_multiplier_old() override { return data().old_lm_ptr(); }
 
     /*! \brief Return old Lagrange multiplier vector \f$(t_n)\f$
      *
@@ -1122,72 +1126,75 @@ namespace CONTACT
     virtual Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_n(const bool& redist) const;
 
     //! Return Lagrange multiplier vector from last Uzawa step
-    Teuchos::RCP<Epetra_Vector> lagrange_multiplier_uzawa() { return data().LmUzawaPtr(); }
+    Teuchos::RCP<Epetra_Vector> lagrange_multiplier_uzawa() { return data().lm_uzawa_ptr(); }
 
     //! Return constraint rhs vector (only in saddle-point formulation
-    Teuchos::RCP<Epetra_Vector> constraint_rhs() override { return data().ConstrRhsPtr(); }
+    Teuchos::RCP<Epetra_Vector> constraint_rhs() override { return data().constr_rhs_ptr(); }
 
     //! Returns increment of LagrangeMultiplier solution vector in SaddlePointSolve routine
     Teuchos::RCP<Epetra_Vector> lagrange_multiplier_increment() override
     {
-      return data().LmIncrPtr();
+      return data().lm_incr_ptr();
     }
     Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_increment() const
     {
-      return data().LmIncrPtr();
+      return data().lm_incr_ptr();
     };
 
     //! Return mortar matrix D
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> d_matrix() override { return data().DMatrixPtr(); }
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> d_matrix() override { return data().d_matrix_ptr(); }
 
     //! Return mortar matrix M
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> m_matrix() override { return data().MMatrixPtr(); }
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> m_matrix() override { return data().m_matrix_ptr(); }
 
     //! Return vector of normal contact stresses \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> contact_normal_stress() override
     {
-      return data().StressNormalPtr();
+      return data().stress_normal_ptr();
     }
     Teuchos::RCP<const Epetra_Vector> contact_normal_stress() const
     {
-      return data().StressNormalPtr();
+      return data().stress_normal_ptr();
     }
     //! Return weighted gap
-    Teuchos::RCP<Epetra_Vector> contact_wgap() { return data().WGapPtr(); }
+    Teuchos::RCP<Epetra_Vector> contact_wgap() { return data().w_gap_ptr(); }
 
     //! Return vector of tangential contact stresses \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> contact_tangential_stress() override
     {
-      return data().StressTangentialPtr();
+      return data().stress_tangential_ptr();
     }
     Teuchos::RCP<const Epetra_Vector> contact_tangential_stress() const
     {
-      return data().StressTangentialPtr();
+      return data().stress_tangential_ptr();
     }
 
     //! Return vector of normal contact stresses \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> contact_normal_force() override { return data().ForceNormalPtr(); }
+    Teuchos::RCP<Epetra_Vector> contact_normal_force() override
+    {
+      return data().force_normal_ptr();
+    }
     Teuchos::RCP<const Epetra_Vector> contact_normal_force() const
     {
-      return data().ForceNormalPtr();
+      return data().force_normal_ptr();
     }
 
     //! Return vector of tangential contact stresses \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> contact_tangential_force() override
     {
-      return data().ForceTangentialPtr();
+      return data().force_tangential_ptr();
     }
     Teuchos::RCP<const Epetra_Vector> contact_tangential_force() const
     {
-      return data().ForceTangentialPtr();
+      return data().force_tangential_ptr();
     }
 
 
     //! Return required Integration time
-    double Inttime() override { return data().IntTime(); };
+    double inttime() override { return data().int_time(); };
 
     //! Set integration time to zero
-    void Inttime_init() override { data().IntTime() = 0.0; };
+    void inttime_init() override { data().int_time() = 0.0; };
 
     //! Return current global contact status
     bool is_in_contact() const override { return data().is_in_contact(); }
@@ -1241,14 +1248,14 @@ namespace CONTACT
     //! Return parallel redistribution status (yes or no)
     inline bool parallel_redistribution_status() const
     {
-      return (data().ParType() != Inpar::Mortar::ParallelRedist::redist_none);
+      return (data().par_type() != Inpar::Mortar::ParallelRedist::redist_none);
     }
 
 
     //! Return specific parallel redistribution status
     inline Inpar::Mortar::ParallelRedist which_parallel_redistribution() const
     {
-      return data().ParType();
+      return data().par_type();
     }
 
     //! Return matrix T
@@ -1488,7 +1495,7 @@ namespace CONTACT
      \param dis (in):  current displacements (-> old displacements)
 
      */
-    void Update(Teuchos::RCP<const Epetra_Vector> dis) override;
+    void update(Teuchos::RCP<const Epetra_Vector> dis) override;
 
     /*! \brief Perform a write restart
 
@@ -1496,7 +1503,7 @@ namespace CONTACT
      direct access to the nodal quantities. Hence, a portion of the restart has to be
      performed on the level of the contact algorithm, for short: here's the right place.
      */
-    void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
+    void do_write_restart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
         bool forcedrestart = false) const override;
 
     /*!
@@ -1505,10 +1512,10 @@ namespace CONTACT
     @param reader discretization reader to be used for reading the restart data
     @param dis Displacement vector of the solid field
     */
-    void DoReadRestart(
+    void do_read_restart(
         Core::IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) override
     {
-      DoReadRestart(reader, dis, Teuchos::null);
+      do_read_restart(reader, dis, Teuchos::null);
     };
 
     /*!
@@ -1518,7 +1525,7 @@ namespace CONTACT
     @param dis Displacement vector of the solid field
     @param cparams_ptr ??
     */
-    virtual void DoReadRestart(Core::IO::DiscretizationReader& reader,
+    virtual void do_read_restart(Core::IO::DiscretizationReader& reader,
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr);
 
     //!@}
@@ -1529,7 +1536,7 @@ namespace CONTACT
     /*! \brief Write strategy specific output
      *
      *  \param(in) writer: output writer */
-    virtual void WriteOutput(Core::IO::DiscretizationWriter& writer) const { return; }
+    virtual void write_output(Core::IO::DiscretizationWriter& writer) const { return; }
 
     /*! \brief Compute interface forces and moments
      *

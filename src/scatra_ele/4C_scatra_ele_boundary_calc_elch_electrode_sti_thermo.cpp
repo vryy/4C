@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>::Instance(
+Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -37,7 +37,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>
                 numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -63,16 +63,16 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
   // safety checks
   if (my::numscal_ != 1) FOUR_C_THROW("Invalid number of transported scalars!");
   if (my::numdofpernode_ != 2) FOUR_C_THROW("Invalid number of degrees of freedom per node!");
-  if (myelch::elchparams_->EquPot() != Inpar::ElCh::equpot_divi)
+  if (myelch::elchparams_->equ_pot() != Inpar::ElCh::equpot_divi)
     FOUR_C_THROW("Invalid closing equation for electric potential!");
 
   // access material of parent element
   Teuchos::RCP<const Mat::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->Material());
+      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->material());
   if (matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
-  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
+  const int kineticmodel = my::scatraparamsboundary_->kinetic_model();
   const auto differentiationtype =
       Teuchos::getIntegralValue<ScaTra::DifferentiationType>(params, "differentiationtype");
 
@@ -85,10 +85,10 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
   Core::LinAlg::Matrix<nen_, 1> emastertempnp(true);
   if (kineticmodel == Inpar::S2I::kinetics_butlervolmerreducedthermoresistance)
     my::extract_node_values(
-        emastertempnp, discretization, la, "imastertemp", my::scatraparams_->NdsThermo());
+        emastertempnp, discretization, la, "imastertemp", my::scatraparams_->nds_thermo());
 
   // element slave mechanical stress tensor
-  const bool is_pseudo_contact = my::scatraparamsboundary_->IsPseudoContact();
+  const bool is_pseudo_contact = my::scatraparamsboundary_->is_pseudo_contact();
   std::vector<Core::LinAlg::Matrix<nen_, 1>> eslavestress_vector(
       6, Core::LinAlg::Matrix<nen_, 1>(true));
   if (is_pseudo_contact)
@@ -107,11 +107,11 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
   static Core::LinAlg::Matrix<nsd_, nen_> dsqrtdetg_dd;
 
   // loop over integration points
-  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::eval_shape_func_and_int_fac(intpoints, gpid, &normal);
-    const double detF = my::calculate_det_f_of_parent_element(ele, intpoints.Point(gpid));
+    const double detF = my::calculate_det_f_of_parent_element(ele, intpoints.point(gpid));
 
     const double pseudo_contact_fac = my::calculate_pseudo_contact_factor(
         is_pseudo_contact, eslavestress_vector, normal, my::funct_);
@@ -126,10 +126,10 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
     }
 
     // evaluate overall integration factor
-    const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
+    const double timefacfac = my::scatraparamstimint_->time_fac() * fac;
     if (timefacfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
-    const double timefacwgt = my::scatraparamstimint_->TimeFac() * intpoints.IP().qwgt[gpid];
+    const double timefacwgt = my::scatraparamstimint_->time_fac() * intpoints.ip().qwgt[gpid];
     if (timefacwgt < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     evaluate_s2_i_coupling_od_at_integration_point<distype>(matelectrode, my::ephinp_, etempnp_,
@@ -164,11 +164,11 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, pro
         Core::LinAlg::SerialDenseMatrix& k_ss, Core::LinAlg::SerialDenseMatrix& k_ms)
 {
   // get condition specific parameters
-  const int kineticmodel = scatra_parameter_boundary->KineticModel();
-  const int numelectrons = scatra_parameter_boundary->NumElectrons();
+  const int kineticmodel = scatra_parameter_boundary->kinetic_model();
+  const int numelectrons = scatra_parameter_boundary->num_electrons();
   const double kr = scatra_parameter_boundary->charge_transfer_constant();
-  const double alphaa = scatra_parameter_boundary->Alphadata();
-  const double alphac = scatra_parameter_boundary->AlphaC();
+  const double alphaa = scatra_parameter_boundary->alphadata();
+  const double alphac = scatra_parameter_boundary->alpha_c();
 
   // number of nodes of master-side element
   const int nen_master = Core::FE::num_nodes<distype_master>;
@@ -182,12 +182,12 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, pro
   const double emasterphiint = funct_master.dot(emasterphinp[0]);
   const double emasterpotint = funct_master.dot(emasterphinp[1]);
 
-  const double faraday = Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+  const double faraday = Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
   const double gasconstant =
-      Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
+      Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->gas_constant();
 
   // extract saturation value of intercalated lithium concentration from electrode material
-  const double cmax = matelectrode->CMax();
+  const double cmax = matelectrode->c_max();
 
   // compute derivatives of scatra-scatra interface coupling residuals w.r.t. thermo dofs according
   // to kinetic model for current scatra-scatra interface coupling condition
@@ -429,7 +429,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
   my::extract_node_values(discretization, la);
 
   // extract nodal temperature variables associated with time t_{n+1} or t_{n+alpha_f}
-  my::extract_node_values(etempnp_, discretization, la, "thermo", my::scatraparams_->NdsThermo());
+  my::extract_node_values(etempnp_, discretization, la, "thermo", my::scatraparams_->nds_thermo());
 }
 
 /*----------------------------------------------------------------------*
@@ -444,8 +444,8 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, p
   // safety check
   if (temperature <= 0.) FOUR_C_THROW("Temperature is non-positive!");
 
-  const double faraday = myelch::elchparams_->Faraday();
-  const double gasconstant = myelch::elchparams_->GasConstant();
+  const double faraday = myelch::elchparams_->faraday();
+  const double gasconstant = myelch::elchparams_->gas_constant();
 
   // evaluate factor F/RT
   return faraday / (gasconstant * temperature);

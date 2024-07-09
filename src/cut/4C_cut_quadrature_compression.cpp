@@ -63,7 +63,7 @@ void Core::Geo::Cut::QuadratureCompression::form_matrix_system(Core::FE::GaussPo
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& mat,
     Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs)
 {
-  mat->shape(gin.NumPoints(), 56);
+  mat->shape(gin.num_points(), 56);
 
   int ma = mat->numRows();
   int na = mat->numCols();
@@ -74,8 +74,8 @@ void Core::Geo::Cut::QuadratureCompression::form_matrix_system(Core::FE::GaussPo
 
   for (int pt = 0; pt < ma; pt++)
   {
-    const double* loc = gin.Point(pt);
-    const double wei = gin.Weight(pt);
+    const double* loc = gin.point(pt);
+    const double wei = gin.weight(pt);
 
     double x = loc[0];
     double y = loc[1];
@@ -326,9 +326,9 @@ Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::QuadratureCompression::form_
   {
     double wei = (*sol)(pt);
     int quadNo = work[pt];
-    const double* loc = gin.Point(quadNo);
+    const double* loc = gin.point(quadNo);
 
-    cgp->Append(loc[0], loc[1], loc[2], wei);
+    cgp->append(loc[0], loc[1], loc[2], wei);
   }
 
   return cgp;
@@ -396,7 +396,7 @@ void Core::Geo::Cut::QuadratureCompression::compute_and_print_error(
   {
     double wei = (*sol)(pt);
     int quadNo = work[pt];
-    const double* loc = gin.Point(quadNo);
+    const double* loc = gin.point(quadNo);
 
     double x = loc[0];
     double y = loc[1];
@@ -707,16 +707,16 @@ void Core::Geo::Cut::QuadratureCompression::write_compressed_quadrature_gmsh(
 
   // Write Geometry
   std::stringstream str;
-  str << "compressedCells" << sideno << "_" << vc->parent_element()->Id() << ".pos";
+  str << "compressedCells" << sideno << "_" << vc->parent_element()->id() << ".pos";
   std::ofstream file(str.str().c_str());
-  vc->DumpGmsh(file);
+  vc->dump_gmsh(file);
 
   std::stringstream strc;
-  strc << "compressedPts" << sideno << "_" << vc->parent_element()->Id() << ".pos";
+  strc << "compressedPts" << sideno << "_" << vc->parent_element()->id() << ".pos";
   std::ofstream filec(strc.str().c_str());
 
   std::stringstream stro;
-  stro << "originalPts" << sideno << "_" << vc->parent_element()->Id() << ".pos";
+  stro << "originalPts" << sideno << "_" << vc->parent_element()->id() << ".pos";
   std::ofstream fileo(stro.str().c_str());
 
   //-----------------------------------------------------------------------
@@ -725,17 +725,17 @@ void Core::Geo::Cut::QuadratureCompression::write_compressed_quadrature_gmsh(
   // file<<"Geometry.PointType=1;\n";
   file << "View \"Original points \" {\n";
 
-  int numpts = gin.NumPoints();
+  int numpts = gin.num_points();
   for (int npt = 0; npt < numpts; npt++)
   {
-    const double* loc = gin.Point(npt);
+    const double* loc = gin.point(npt);
     file << "SP(" << loc[0] << "," << loc[1] << "," << loc[2] << ","
          << "1"
          << "){0.0};" << std::endl;
 
     if (outputQuadRule)
     {
-      fileo << loc[0] << " " << loc[1] << " " << loc[2] << " " << gin.Weight(npt);
+      fileo << loc[0] << " " << loc[1] << " " << loc[2] << " " << gin.weight(npt);
     }
   }
   file << "};\n";
@@ -751,17 +751,17 @@ void Core::Geo::Cut::QuadratureCompression::write_compressed_quadrature_gmsh(
   // file<<"Geometry.PointType=1;\n";
   file << "View \"Compressed points \" {\n";
 
-  int num = gout_->NumPoints();
+  int num = gout_->num_points();
   for (int npt = 0; npt < num; npt++)
   {
-    const double* loc = gout_->Point(npt);
+    const double* loc = gout_->point(npt);
     file << "SP(" << loc[0] << "," << loc[1] << "," << loc[2] << ","
          << "1"
          << "){0.0};" << std::endl;
 
     if (outputQuadRule)
     {
-      filec << loc[0] << " " << loc[1] << " " << loc[2] << " " << gout_->Weight(npt);
+      filec << loc[0] << " " << loc[1] << " " << loc[2] << " " << gout_->weight(npt);
     }
   }
   file << "};\n";
@@ -787,11 +787,11 @@ void Core::Geo::Cut::QuadratureCompression::integrate_predefined_polynomials(
   std::vector<double> intOri(6, 0.0), intCom(6, 0.0), err(6, 0.0);
 
   // Integrate using original quadrature
-  int numpts = gin.NumPoints();
+  int numpts = gin.num_points();
   for (int npt = 0; npt < numpts; npt++)
   {
-    const double* loc = gin.Point(npt);
-    double wei = gin.Weight(npt);
+    const double* loc = gin.point(npt);
+    double wei = gin.weight(npt);
 
     double x = loc[0];
     double y = loc[1];
@@ -819,11 +819,11 @@ void Core::Geo::Cut::QuadratureCompression::integrate_predefined_polynomials(
   }
 
   // Integrate using compressed quadrature
-  int num = gout_->NumPoints();
+  int num = gout_->num_points();
   for (int npt = 0; npt < num; npt++)
   {
-    const double* loc = gout_->Point(npt);
-    double wei = gout_->Weight(npt);
+    const double* loc = gout_->point(npt);
+    double wei = gout_->weight(npt);
 
     double x = loc[0];
     double y = loc[1];

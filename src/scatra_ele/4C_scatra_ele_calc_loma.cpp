@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ScaTraEleCalcLoma<distype>*
-Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::Instance(
+Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -39,7 +39,7 @@ Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::Instance(
             new ScaTraEleCalcLoma<distype>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -62,7 +62,7 @@ Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::ScaTraEleCalcLoma(
   my::reamanager_ = Teuchos::rcp(new ScaTraEleReaManagerLoma(my::numscal_));
 
   // safety check
-  if (my::turbparams_->MfsConservative())
+  if (my::turbparams_->mfs_conservative())
     FOUR_C_THROW("Conservative formulation not supported for loma!");
 
   return;
@@ -83,9 +83,9 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::materials(
     const int iquad  //!< id of current gauss point
 )
 {
-  if (material->MaterialType() == Core::Materials::m_sutherland)
+  if (material->material_type() == Core::Materials::m_sutherland)
     mat_sutherland(material, k, densn, densnp, densam, visc);
-  else if (material->MaterialType() == Core::Materials::m_thermostvenant)
+  else if (material->material_type() == Core::Materials::m_thermostvenant)
     mat_thermo_st_venant_kirchhoff(material, k, densn, densnp, densam, visc);
   else
     FOUR_C_THROW("Material type is not supported");
@@ -111,30 +111,30 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_sutherland(
       Teuchos::rcp_dynamic_cast<const Mat::Sutherland>(material);
 
   // get specific heat capacity at constant pressure
-  shc_ = actmat->Shc();
+  shc_ = actmat->shc();
 
   // compute temperature at n+1 or n+alpha_F and check whether it is positive
-  const double tempnp = my::scatravarmanager_->Phinp(0);
+  const double tempnp = my::scatravarmanager_->phinp(0);
   if (tempnp < 0.0) FOUR_C_THROW("Negative temperature in ScaTra Sutherland material evaluation!");
 
   // compute diffusivity according to Sutherland's law
-  my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp), k);
+  my::diffmanager_->set_isotropic_diff(actmat->compute_diffusivity(tempnp), k);
 
   // compute density at n+1 or n+alpha_F based on temperature
   // and thermodynamic pressure
-  densnp = actmat->ComputeDensity(tempnp, thermpressnp_);
+  densnp = actmat->compute_density(tempnp, thermpressnp_);
 
-  if (my::scatraparatimint_->IsGenAlpha())
+  if (my::scatraparatimint_->is_gen_alpha())
   {
     // compute density at n+alpha_M
     const double tempam = my::funct_.dot(ephiam_[0]);
-    densam = actmat->ComputeDensity(tempam, thermpressam_);
+    densam = actmat->compute_density(tempam, thermpressam_);
 
-    if (not my::scatraparatimint_->IsIncremental())
+    if (not my::scatraparatimint_->is_incremental())
     {
       // compute density at n (thermodynamic pressure approximated at n+alpha_M)
-      const double tempn = my::scatravarmanager_->Phin(0);
-      densn = actmat->ComputeDensity(tempn, thermpressam_);
+      const double tempn = my::scatravarmanager_->phin(0);
+      densn = actmat->compute_density(tempn, thermpressam_);
     }
     else
       densn = 1.0;
@@ -147,9 +147,9 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_sutherland(
 
   // get also fluid viscosity if subgrid-scale velocity is to be included
   // or multifractal subgrid-scales are used
-  if (my::scatrapara_->RBSubGrVel() or
-      my::turbparams_->TurbModel() == Inpar::FLUID::multifractal_subgrid_scales)
-    visc = actmat->ComputeViscosity(tempnp);
+  if (my::scatrapara_->rb_sub_gr_vel() or
+      my::turbparams_->turb_model() == Inpar::FLUID::multifractal_subgrid_scales)
+    visc = actmat->compute_viscosity(tempnp);
 
   return;
 }
@@ -172,7 +172,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_thermo_st_venant_kirchho
       Teuchos::rcp_dynamic_cast<const Mat::ThermoStVenantKirchhoff>(material);
 
   // get constant density
-  densnp = actmat->Density();
+  densnp = actmat->density();
   densam = densnp;
   densn = densnp;
 
@@ -181,7 +181,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_thermo_st_venant_kirchho
 
   // set specific heat capacity at constant volume
   // (value divided by density here for its intended use on right-hand side)
-  shc_ = actmat->Capacity() / densnp;
+  shc_ = actmat->capacity() / densnp;
 
   // compute velocity divergence required for reaction coefficient
   // double vdiv(0.0);
@@ -201,14 +201,14 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_thermo_st_venant_kirchho
   // reacoeffderiv_[0] = reacoef;
 
   // set different reaction terms in the reaction manager
-  my::reamanager_->SetReaCoeff(reacoef, 0);
+  my::reamanager_->set_rea_coeff(reacoef, 0);
 
   // ensure that temporal derivative of thermodynamic pressure is zero for
   // the present structure-based scalar transport
   thermpressdt_ = 0.0;
 
   // compute diffusivity as ratio of conductivity and specific heat capacity at constant volume
-  my::diffmanager_->SetIsotropicDiff(actmat->Conductivity() / actmat->Capacity(), k);
+  my::diffmanager_->set_isotropic_diff(actmat->conductivity() / actmat->capacity(), k);
 
   return;
 }
@@ -226,7 +226,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::get_rhs_int(
 {
   // get reatemprhs of species k from the reaction manager
   const double reatemprhs =
-      Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerLoma>(my::reamanager_)->GetReaTempRhs(k);
+      Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerLoma>(my::reamanager_)->get_rea_temp_rhs(k);
 
   // Three cases have to be distinguished for computing the rhs:
   // 1) reactive temperature equation: reaction-rate term
@@ -292,7 +292,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::recompute_conv_phi_for_rhs(d
     const Core::LinAlg::Matrix<nsd_, 1>& gradphi, const double densnp, const double densn,
     const double phinp, const double phin, const double vdiv)
 {
-  if (my::scatraparatimint_->IsIncremental())
+  if (my::scatraparatimint_->is_incremental())
   {
     // addition to convective term due to subgrid-scale velocity
     // (not included in residual)
@@ -301,7 +301,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::recompute_conv_phi_for_rhs(d
 
     // addition to convective term for conservative form
     // (not included in residual)
-    if (my::scatrapara_->IsConservative())
+    if (my::scatrapara_->is_conservative())
     {
       // convective term in conservative form
       conv_phi += phinp * (vdiv + (densgradfac_[k] / densnp) * conv_phi);
@@ -310,7 +310,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::recompute_conv_phi_for_rhs(d
     // multiply convective term by density
     conv_phi *= densnp;
   }
-  else if (not my::scatraparatimint_->IsIncremental() and my::scatraparatimint_->IsGenAlpha())
+  else if (not my::scatraparatimint_->is_incremental() and my::scatraparatimint_->is_gen_alpha())
   {
     // addition to convective term due to subgrid-scale velocity
     // (not included in residual)
@@ -319,7 +319,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::recompute_conv_phi_for_rhs(d
 
     // addition to convective term for conservative form
     // (not included in residual)
-    if (my::scatrapara_->IsConservative())
+    if (my::scatrapara_->is_conservative())
     {
       // convective term in conservative form
       // caution: velocity divergence is for n+1 and not for n!
