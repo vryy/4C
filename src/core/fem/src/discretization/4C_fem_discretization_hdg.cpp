@@ -52,8 +52,8 @@ int Core::FE::DiscretizationHDG::fill_complete(
     trafoMap[f->first] = f->second->get_local_trafo_map();
   }
 
-  nodeexporter.Export(nodeIds);
-  nodeexporter.Export(trafoMap);
+  nodeexporter.do_export(nodeIds);
+  nodeexporter.do_export(trafoMap);
 
   for (std::map<int, Teuchos::RCP<Core::Elements::FaceElement>>::iterator f = faces_.begin();
        f != faces_.end(); ++f)

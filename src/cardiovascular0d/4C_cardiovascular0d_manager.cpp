@@ -292,7 +292,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
     cv0ddof_n_->Export(*cv0ddof_n_red, *cardvasc0dimpo_, Insert);
 
 
-    Core::LinAlg::Export(*v_n_, *v_n_red2);
+    Core::LinAlg::export_to(*v_n_, *v_n_red2);
 
     // evaluate initial 0D right-hand side at t_{n}
     Teuchos::RCP<Epetra_Vector> cardvasc0d_df_n_red =
@@ -389,8 +389,8 @@ void UTILS::Cardiovascular0DManager::evaluate_force_stiff(const double time,
   dcv0ddof_m_->Update(1. / ts_size, *cv0ddof_np_, -1. / ts_size, *cv0ddof_n_, 0.0);
 
   // export end-point values
-  Core::LinAlg::Export(*cv0ddof_np_, *cv0ddof_np_red);
-  Core::LinAlg::Export(*v_np_, *v_np_red2);
+  Core::LinAlg::export_to(*cv0ddof_np_, *cv0ddof_np_red);
+  Core::LinAlg::export_to(*v_np_, *v_np_red2);
 
   // assemble Cardiovascular0D stiffness and offdiagonal coupling matrices as well as rhs
   // contributions
@@ -423,7 +423,7 @@ void UTILS::Cardiovascular0DManager::evaluate_force_stiff(const double time,
   // ATTENTION: We necessarily need the end-point and NOT the generalized mid-point pressure here
   // since fint will be set to the generalized mid-point by the respective structural
   // time-integrator!
-  // Core::LinAlg::Export(*cv0ddof_np_,*cv0ddof_np_red);
+  // Core::LinAlg::export_to(*cv0ddof_np_,*cv0ddof_np_red);
   evaluate_neumann_cardiovascular0_d_coupling(p, cv0ddof_np_red, fint, stiff);
 
   return;
@@ -461,8 +461,8 @@ void UTILS::Cardiovascular0DManager::check_periodic()  // not yet thoroughly tes
       Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
   Teuchos::RCP<Epetra_Vector> cv0ddof_T_NP_red =
       Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
-  Core::LinAlg::Export(*cv0ddof_t_n_, *cv0ddof_T_N_red);
-  Core::LinAlg::Export(*cv0ddof_t_np_, *cv0ddof_T_NP_red);
+  Core::LinAlg::export_to(*cv0ddof_t_n_, *cv0ddof_T_N_red);
+  Core::LinAlg::export_to(*cv0ddof_t_np_, *cv0ddof_T_NP_red);
 
   std::vector<double> vals;
   for (int j = 0; j < num_cardiovascular0_did_; j++)
@@ -699,18 +699,18 @@ void UTILS::Cardiovascular0DManager::print_pres_flux(bool init) const
       Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
   if (init)
   {
-    Core::LinAlg::Export(*cv0ddof_n_, *cv0ddof_m_red);
-    Core::LinAlg::Export(*v_n_, *v_m_red);
+    Core::LinAlg::export_to(*cv0ddof_n_, *cv0ddof_m_red);
+    Core::LinAlg::export_to(*v_n_, *v_m_red);
   }
   else
   {
-    Core::LinAlg::Export(*cv0ddof_m_, *cv0ddof_m_red);
-    Core::LinAlg::Export(*v_m_, *v_m_red);
+    Core::LinAlg::export_to(*cv0ddof_m_, *cv0ddof_m_red);
+    Core::LinAlg::export_to(*v_m_, *v_m_red);
   }
 
-  Core::LinAlg::Export(*dcv0ddof_m_, *dcv0ddof_m_red);
+  Core::LinAlg::export_to(*dcv0ddof_m_, *dcv0ddof_m_red);
 
-  Core::LinAlg::Export(*cv0ddof_n_, *cv0ddof_np_red);
+  Core::LinAlg::export_to(*cv0ddof_n_, *cv0ddof_np_red);
 
   if (myrank_ == 0)
   {
@@ -921,7 +921,7 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
   dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->full_map())));
   Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->cond_map())));
   temp->PutScalar(1.0);
-  Core::LinAlg::Export(*temp, *dirichtoggle_);
+  Core::LinAlg::export_to(*temp, *dirichtoggle_);
 
   // allocate additional vectors and matrices
   Teuchos::RCP<Epetra_Vector> rhscardvasc0d =
@@ -1032,12 +1032,12 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
     blockmat->complete();
 
     // export 0D part of rhs
-    Core::LinAlg::Export(*rhscardvasc0d, *mergedrhs);
+    Core::LinAlg::export_to(*rhscardvasc0d, *mergedrhs);
     // make the 0D part of the rhs negative
     mergedrhs->Scale(-1.0);
     // export reduced structure part of rhs -> no need to make it negative since this has been done
     // by the structural time integrator already!
-    Core::LinAlg::Export(*rhsstruct_R, *mergedrhs);
+    Core::LinAlg::export_to(*rhsstruct_R, *mergedrhs);
   }
   else
   {
@@ -1056,12 +1056,12 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
     blockmat->complete();
 
     // export 0D part of rhs
-    Core::LinAlg::Export(*rhscardvasc0d, *mergedrhs);
+    Core::LinAlg::export_to(*rhscardvasc0d, *mergedrhs);
     // make the 0D part of the rhs negative
     mergedrhs->Scale(-1.0);
     // export structure part of rhs -> no need to make it negative since this has been done by the
     // structural time integrator already!
-    Core::LinAlg::Export(*rhsstruct, *mergedrhs);
+    Core::LinAlg::export_to(*rhsstruct, *mergedrhs);
   }
 
   // ONLY compatability

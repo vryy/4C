@@ -158,7 +158,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::ComputeGradientAtNodesMean
   const Teuchos::RCP<Epetra_Vector> phinp_col =
       Teuchos::rcp(new Epetra_Vector(*discret->dof_col_map()));
   // export dof_row_map to DofColMap phinp
-  Core::LinAlg::Export(*state, *phinp_col);
+  Core::LinAlg::export_to(*state, *phinp_col);
 
   // ---------------------------------------------------------------
 

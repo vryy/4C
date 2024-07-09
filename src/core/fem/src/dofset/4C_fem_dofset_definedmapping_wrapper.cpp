@@ -170,7 +170,7 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
   targetlidtosourcegidmapping_->PutValue(-1);
 
   // export to column map
-  Core::LinAlg::Export(*permsourcenodevec, *targetlidtosourcegidmapping_);
+  Core::LinAlg::export_to(*permsourcenodevec, *targetlidtosourcegidmapping_);
 
   // filled.
   filled_ = true;

@@ -71,7 +71,7 @@ void CONTACT::NitscheStrategyPoro::set_parent_state(
     if (dis == Teuchos::null) FOUR_C_THROW("didn't get my discretization");
 
     Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->dof_col_map(), true));
-    Core::LinAlg::Export(vec, *global);
+    Core::LinAlg::export_to(vec, *global);
 
     // set state on interfaces
     for (const auto& interface : interface_)

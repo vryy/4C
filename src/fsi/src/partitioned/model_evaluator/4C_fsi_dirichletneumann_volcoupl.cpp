@@ -212,7 +212,7 @@ void FSI::InterfaceCorrector::correct_interface_displacements(
   // std::cout<<*disp_fluid<<std::endl;
   deltadisp_ = Core::LinAlg::CreateVector(*finterface->fsi_cond_map(), true);
 
-  Core::LinAlg::Export(*disp_fluid, *deltadisp_);
+  Core::LinAlg::export_to(*disp_fluid, *deltadisp_);
   // deltadisp_ = finterface->extract_fsi_cond_vector(disp_fluid);
 
   // FOUR_C_THROW("stop");
@@ -221,7 +221,7 @@ void FSI::InterfaceCorrector::correct_interface_displacements(
 
   deltadisp_->Update(1.0, *idisp_fluid_corrected, -1.0);
 
-  Core::LinAlg::Export(*idisp_fluid_corrected, *disp_fluid);
+  Core::LinAlg::export_to(*idisp_fluid_corrected, *disp_fluid);
   // finterface->insert_fsi_cond_vector(idisp_fluid_corrected,disp_fluid);
 
   volcorrector_->correct_vol_displacements(fluidale_, deltadisp_, disp_fluid, finterface);
@@ -270,7 +270,7 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
   Teuchos::RCP<Epetra_Vector> correction = Teuchos::rcp(new Epetra_Vector(disp_fluid->Map(), true));
   Teuchos::RCP<Epetra_Vector> DofColMapDummy = Teuchos::rcp(
       new Epetra_Vector(*fluidale->fluid_field()->discretization()->dof_col_map(), true));
-  Core::LinAlg::Export(*deltadisp, *DofColMapDummy);
+  Core::LinAlg::export_to(*deltadisp, *DofColMapDummy);
 
   const double tol = 1e-5;
 
@@ -399,7 +399,7 @@ void FSI::VolCorrector::correct_vol_displacements_phys_space(
   Teuchos::RCP<Epetra_Vector> correction = Teuchos::rcp(new Epetra_Vector(disp_fluid->Map(), true));
   Teuchos::RCP<Epetra_Vector> DofColMapDummy = Teuchos::rcp(
       new Epetra_Vector(*fluidale->fluid_field()->discretization()->dof_col_map(), true));
-  Core::LinAlg::Export(*deltadisp, *DofColMapDummy);
+  Core::LinAlg::export_to(*deltadisp, *DofColMapDummy);
 
   std::map<int, Core::LinAlg::Matrix<9, 2>> CurrentDOPs =
       calc_background_dops(fluidale->fluid_field()->discretization());

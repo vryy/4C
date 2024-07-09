@@ -26,7 +26,7 @@ void Core::Geo::update_reference_config_with_disp(
 {
   // Export row-displacments to col-displacements
   auto coldisp = Teuchos::rcp(new Epetra_Vector(*dis->dof_col_map()));
-  Core::LinAlg::Export(*disp, *coldisp);
+  Core::LinAlg::export_to(*disp, *coldisp);
 
   for (const auto& mynode : dis->my_col_node_range())
   {

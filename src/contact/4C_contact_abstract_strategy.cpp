@@ -717,7 +717,7 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
     else
     {
       Teuchos::RCP<Epetra_Vector> newz = Teuchos::rcp(new Epetra_Vector(slave_dof_row_map(true)));
-      Core::LinAlg::Export(*z_, *newz);
+      Core::LinAlg::export_to(*z_, *newz);
       z_ = newz;
     }
 
@@ -729,7 +729,7 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
     {
       Teuchos::RCP<Epetra_Vector> newzincr =
           Teuchos::rcp(new Epetra_Vector(slave_dof_row_map(true)));
-      Core::LinAlg::Export(*zincr_, *newzincr);
+      Core::LinAlg::export_to(*zincr_, *newzincr);
       zincr_ = newzincr;
     }
 
@@ -739,7 +739,7 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
     {
       Teuchos::RCP<Epetra_Vector> newzold =
           Teuchos::rcp(new Epetra_Vector(slave_dof_row_map(true)));
-      Core::LinAlg::Export(*zold_, *newzold);
+      Core::LinAlg::export_to(*zold_, *newzold);
       zold_ = newzold;
     }
 
@@ -749,7 +749,7 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
     {
       Teuchos::RCP<Epetra_Vector> newzuzawa =
           Teuchos::rcp(new Epetra_Vector(slave_dof_row_map(true)));
-      Core::LinAlg::Export(*zuzawa_, *newzuzawa);
+      Core::LinAlg::export_to(*zuzawa_, *newzuzawa);
       zuzawa_ = newzuzawa;
     }
 
@@ -1161,7 +1161,7 @@ void CONTACT::AbstractStrategy::calc_mean_velocity_for_binning(const Epetra_Vect
   {
     Teuchos::RCP<Epetra_Vector> interfaceVelocity =
         Teuchos::rcp(new Epetra_Vector(*interface->discret().dof_row_map()));
-    Core::LinAlg::Export(velocity, *interfaceVelocity);
+    Core::LinAlg::export_to(velocity, *interfaceVelocity);
 
     double meanVelocity = 0.0;
 
@@ -1609,7 +1609,7 @@ void CONTACT::AbstractStrategy::evaluate_relative_movement()
   // slave dof row map to obtain fully overlapping slave dof map.
   Teuchos::RCP<Epetra_Map> fullsdofs = Core::LinAlg::AllreduceEMap(slave_dof_row_map(true));
   Teuchos::RCP<Epetra_Vector> xsmodfull = Teuchos::rcp(new Epetra_Vector(*fullsdofs));
-  Core::LinAlg::Export(*xsmod, *xsmodfull);
+  Core::LinAlg::export_to(*xsmod, *xsmodfull);
   xsmod = xsmodfull;
 
   // evaluation of obj. invariant slip increment
@@ -1724,7 +1724,7 @@ void CONTACT::AbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Qua
     Teuchos::RCP<Epetra_Vector> vectorinterface = Teuchos::null;
     vectorinterface = Teuchos::rcp(new Epetra_Vector(*sdofmap));
     if (vectorglobal != Teuchos::null)  // necessary for case "activeold" and wear
-      Core::LinAlg::Export(*vectorglobal, *vectorinterface);
+      Core::LinAlg::export_to(*vectorglobal, *vectorinterface);
 
     // loop over all slave nodes (column or row) on the current interface
     for (int j = 0; j < snodemap->NumMyElements(); ++j)
@@ -1908,7 +1908,7 @@ void CONTACT::AbstractStrategy::store_dirichlet_status(
   pgsdirichtoggle_ = Core::LinAlg::CreateVector(slave_dof_row_map(true), true);
   Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->cond_map())));
   temp->PutScalar(1.0);
-  Core::LinAlg::Export(*temp, *pgsdirichtoggle_);
+  Core::LinAlg::export_to(*temp, *pgsdirichtoggle_);
 
   post_store_dirichlet_status(dbcmaps);
 
@@ -2259,7 +2259,7 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
   if (is_self_contact())
   {
     Teuchos::RCP<Epetra_Vector> zexp = Teuchos::rcp(new Epetra_Vector(dmatrix_->row_map()));
-    if (dmatrix_->row_map().NumGlobalElements()) Core::LinAlg::Export(*z_, *zexp);
+    if (dmatrix_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*z_, *zexp);
     dmatrix_->multiply(true, *zexp, *fcslavetemp);
     mmatrix_->multiply(true, *zexp, *fcmastertemp);
   }
@@ -2273,8 +2273,8 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
   // export the interface forces to full dof layout
   Teuchos::RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
   Teuchos::RCP<Epetra_Vector> fcmaster = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-  Core::LinAlg::Export(*fcslavetemp, *fcslave);
-  Core::LinAlg::Export(*fcmastertemp, *fcmaster);
+  Core::LinAlg::export_to(*fcslavetemp, *fcslave);
+  Core::LinAlg::export_to(*fcmastertemp, *fcmaster);
 
   // contact forces and moments
   std::vector<double> gfcs(3);
@@ -3368,7 +3368,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AbstractStrategy::lagrange_multiplier
 
   Teuchos::RCP<Epetra_Vector> z_unredist =
       Teuchos::rcp(new Epetra_Vector(slave_dof_row_map(false)));
-  Core::LinAlg::Export(*z_, *z_unredist);
+  Core::LinAlg::export_to(*z_, *z_unredist);
   return z_unredist;
 }
 
@@ -3381,7 +3381,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AbstractStrategy::lagrange_multiplier
 
   Teuchos::RCP<Epetra_Vector> zold_unredist =
       Teuchos::rcp(new Epetra_Vector(slave_dof_row_map(false)));
-  Core::LinAlg::Export(*zold_, *zold_unredist);
+  Core::LinAlg::export_to(*zold_, *zold_unredist);
   return zold_unredist;
 }
 

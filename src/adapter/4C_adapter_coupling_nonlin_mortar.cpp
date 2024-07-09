@@ -933,7 +933,7 @@ void Adapter::CouplingNonLinMortar::matrix_row_col_transform()
     if (gap_ != Teuchos::null)
     {
       Teuchos::RCP<Epetra_Vector> pgap = Core::LinAlg::CreateVector(*pslavenoderowmap_, true);
-      Core::LinAlg::Export(*gap_, *pgap);
+      Core::LinAlg::export_to(*gap_, *pgap);
       gap_ = pgap;
     }
   }  // end parredist

@@ -54,9 +54,9 @@ void XFEM::XffCouplingManager::set_coupling_states()
   mcffi_->set_interface_free();
 
   mcffi_->update_displacement_iteration_vectors();  // update last iteration interface displacements
-  Core::LinAlg::Export(*fluid_->dispnp(), *mcffi_->i_dispnp());
-  Core::LinAlg::Export(*fluid_->velnp(), *mcffi_->i_velnp());
-  Core::LinAlg::Export(*fluid_->veln(), *mcffi_->i_veln());
+  Core::LinAlg::export_to(*fluid_->dispnp(), *mcffi_->i_dispnp());
+  Core::LinAlg::export_to(*fluid_->velnp(), *mcffi_->i_velnp());
+  Core::LinAlg::export_to(*fluid_->veln(), *mcffi_->i_veln());
 
   Teuchos::RCP<Epetra_Vector> tmp_diff =
       Teuchos::rcp(new Epetra_Vector((*mcffi_->i_dispnp()).Map()));
@@ -124,7 +124,7 @@ void XFEM::XffCouplingManager::add_coupling_rhs(
   coup_rhs_sum->Scale(scaling);
 
   Teuchos::RCP<Epetra_Vector> coup_rhs = Teuchos::rcp(new Epetra_Vector(*me.Map(idx_[0]), true));
-  Core::LinAlg::Export(*coup_rhs_sum, *coup_rhs);
+  Core::LinAlg::export_to(*coup_rhs_sum, *coup_rhs);
   me.add_vector(coup_rhs, idx_[0], rhs);
 
   return;

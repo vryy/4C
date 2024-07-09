@@ -116,17 +116,17 @@ namespace Core::DOFSets
           not numdofpernodenodewise_->Map().SameAs(*dis.node_col_map()))
       {
         Epetra_IntVector numdofpernodenodewise_rowmap(*dis.node_row_map());
-        Core::LinAlg::Export(*numdofpernodenodewise_, numdofpernodenodewise_rowmap);
+        Core::LinAlg::export_to(*numdofpernodenodewise_, numdofpernodenodewise_rowmap);
         numdofpernodenodewise_ = Teuchos::rcp(new Epetra_IntVector(*dis.node_col_map()));
-        Core::LinAlg::Export(numdofpernodenodewise_rowmap, *numdofpernodenodewise_);
+        Core::LinAlg::export_to(numdofpernodenodewise_rowmap, *numdofpernodenodewise_);
       }
       if (numdofperelementelewise_ != Teuchos::null and
           not numdofperelementelewise_->Map().SameAs(*dis.element_col_map()))
       {
         Epetra_IntVector numdofperelementelewise_rowmap(*dis.element_row_map());
-        Core::LinAlg::Export(*numdofperelementelewise_, numdofperelementelewise_rowmap);
+        Core::LinAlg::export_to(*numdofperelementelewise_, numdofperelementelewise_rowmap);
         numdofperelementelewise_ = Teuchos::rcp(new Epetra_IntVector(*dis.element_col_map()));
-        Core::LinAlg::Export(numdofperelementelewise_rowmap, *numdofperelementelewise_);
+        Core::LinAlg::export_to(numdofperelementelewise_rowmap, *numdofperelementelewise_);
       }
       if (numdofperfacefacewise_ != Teuchos::null)
         FOUR_C_THROW("Redistribution not yet implemented!");

@@ -166,10 +166,10 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
 
   Teuchos::RCP<Epetra_MultiVector> elevec_toberecovered_col =
       Teuchos::rcp(new Epetra_MultiVector(*(dis.element_col_map()), numvec, true));
-  Core::LinAlg::Export(*elevec_toberecovered, *elevec_toberecovered_col);
+  Core::LinAlg::export_to(*elevec_toberecovered, *elevec_toberecovered_col);
   Teuchos::RCP<Epetra_MultiVector> centercoords_col =
       Teuchos::rcp(new Epetra_MultiVector(*(dis.element_col_map()), dim, true));
-  Core::LinAlg::Export(*centercoords, *centercoords_col);
+  Core::LinAlg::export_to(*centercoords, *centercoords_col);
 
   // step 2: use precalculated (velocity) gradient for patch-recovery of gradient
   // solution vector based on reduced node row map

@@ -321,10 +321,10 @@ void Discret::ELEMENTS::NStet5Type::pre_evaluate(Core::FE::Discretization& dis,
     // so they can be written by the elements
     Teuchos::RCP<Epetra_MultiVector> tmp =
         Teuchos::rcp(new Epetra_MultiVector(*dis.node_col_map(), 6, false));
-    Core::LinAlg::Export(*nstress_, *tmp);
+    Core::LinAlg::export_to(*nstress_, *tmp);
     nstress_ = tmp;
     tmp = Teuchos::rcp(new Epetra_MultiVector(*dis.node_col_map(), 6, false));
-    Core::LinAlg::Export(*nstrain_, *tmp);
+    Core::LinAlg::export_to(*nstrain_, *tmp);
     nstrain_ = tmp;
   }
 

@@ -86,7 +86,7 @@ namespace Core::LinAlg
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
     Core::Communication::Exporter exporter(source, target, comm);
-    exporter.Export(datamap);
+    exporter.do_export(datamap);
     // put data from map in rdata
     rdata.clear();
     int count = 0;
@@ -161,7 +161,7 @@ namespace Core::LinAlg
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
     Core::Communication::Exporter exporter(source, target, comm);
-    exporter.Export(datamap);
+    exporter.do_export(datamap);
     // put data from map in rdata
     rdata.clear();
     typename std::map<int, std::set<T>>::const_iterator curr;
@@ -236,7 +236,7 @@ namespace Core::LinAlg
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
     Core::Communication::Exporter exporter(source, target, comm);
-    exporter.Export(datamap);
+    exporter.do_export(datamap);
     // put data from map in rdata
     rdata.clear();
     typename std::map<int, std::map<int, std::set<T>>>::const_iterator curr;
@@ -311,7 +311,7 @@ namespace Core::LinAlg
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
     Core::Communication::Exporter exporter(source, target, comm);
-    exporter.Export(datamap);
+    exporter.do_export(datamap);
     // put data from map in rdata
     rdata.clear();
     typename std::map<int, std::map<int, std::vector<T>>>::const_iterator curr1;
@@ -389,7 +389,7 @@ namespace Core::LinAlg
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
     Core::Communication::Exporter exporter(source, target, comm);
-    exporter.Export(datamap);
+    exporter.do_export(datamap);
     // put data from map in rdata
     rdata.clear();
     typename std::map<int, std::map<T, U>>::const_iterator curr;

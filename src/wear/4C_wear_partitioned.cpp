@@ -500,7 +500,7 @@ void Wear::Partitioned::disp_coupling(Teuchos::RCP<Epetra_Vector>& disinterface)
       Teuchos::rcp(new Epetra_Vector(*structure_field()->interface()->ale_wear_cond_map()), true);
 
   // change the parallel distribution from mortar interface to structure
-  Core::LinAlg::Export(*disinterface, *strudofs);
+  Core::LinAlg::export_to(*disinterface, *strudofs);
 
   // perform coupling to ale dofs
   disinterface.reset();
@@ -528,8 +528,8 @@ void Wear::Partitioned::merge_wear(Teuchos::RCP<Epetra_Vector>& disinterface_s,
   Teuchos::RCP<Epetra_Vector> auxvector =
       Teuchos::rcp(new Epetra_Vector(*winterface->discret().dof_row_map()), true);
 
-  Core::LinAlg::Export(*disinterface_s, *disinterface_g);
-  Core::LinAlg::Export(*disinterface_m, *auxvector);
+  Core::LinAlg::export_to(*disinterface_s, *disinterface_g);
+  Core::LinAlg::export_to(*disinterface_m, *auxvector);
 
   int err = 0;
   err = disinterface_g->Update(1.0, *auxvector, true);
@@ -919,7 +919,7 @@ void Wear::Partitioned::wear_spatial_slave(Teuchos::RCP<Epetra_Vector>& disinter
       zref->Scale(fac);
 
       disinterface_s = Teuchos::rcp(new Epetra_Vector(*slavedofs));
-      Core::LinAlg::Export(*zref, *disinterface_s);
+      Core::LinAlg::export_to(*zref, *disinterface_s);
     }
   }
 
@@ -1462,7 +1462,7 @@ void Wear::Partitioned::update_mat_conf()
     Teuchos::RCP<Epetra_Vector> dismat_struct =
         Teuchos::rcp(new Epetra_Vector(dispnp->Map()), true);
 
-    Core::LinAlg::Export(*disalenp, *dismat_struct);
+    Core::LinAlg::export_to(*disalenp, *dismat_struct);
 
     err = dismat->Update(1.0, *dismat_struct, 0.0);
     if (err != 0) FOUR_C_THROW("update wrong!");

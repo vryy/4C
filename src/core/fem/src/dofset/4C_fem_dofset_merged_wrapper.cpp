@@ -127,7 +127,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
   master_nodegids_col_layout_ = Teuchos::rcp(new Epetra_IntVector(*dis.node_col_map()));
 
   // export to column map
-  Core::LinAlg::Export(*my_master_nodegids_row_layout, *master_nodegids_col_layout_);
+  Core::LinAlg::export_to(*my_master_nodegids_row_layout, *master_nodegids_col_layout_);
 
 
   ////////////////////////////////////////////////////
@@ -185,7 +185,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
   slave_nodegids_col_layout_ = Teuchos::rcp(new Epetra_IntVector(*dis.node_col_map()));
 
   // export to column map
-  Core::LinAlg::Export(*my_slave_nodegids_row_layout, *slave_nodegids_col_layout_);
+  Core::LinAlg::export_to(*my_slave_nodegids_row_layout, *slave_nodegids_col_layout_);
 
   // set filled flag true
   filled_ = true;

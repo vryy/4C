@@ -612,7 +612,7 @@ void Core::Geo::MeshFree::BoundingBox::apply_dirichlet(
   boxdiscret_->clear_state();
 
   // export to col format
-  Core::LinAlg::Export(*disn_row_, *disn_col_);
+  Core::LinAlg::export_to(*disn_row_, *disn_col_);
 }
 
 /*----------------------------------------------------------------------------*

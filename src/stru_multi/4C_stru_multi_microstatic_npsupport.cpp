@@ -86,7 +86,7 @@ void MultiScale::np_support_drt()
         // create an exporter object that will figure out the communication pattern
         Core::Communication::Exporter exporter(*oldmap, *newmap, *subcomm);
         std::map<int, Teuchos::RCP<MultiScale::MicroStaticParObject>> condnamemap;
-        exporter.Export<MultiScale::MicroStaticParObject>(condnamemap);
+        exporter.do_export<MultiScale::MicroStaticParObject>(condnamemap);
 
         const auto* micro_data = condnamemap[0]->get_micro_static_data_ptr();
         // extract received data from the container
@@ -136,7 +136,7 @@ void MultiScale::np_support_drt()
         // create an exporter object that will figure out the communication pattern
         Core::Communication::Exporter exporter(*oldmap, *newmap, *subcomm);
         std::map<int, Teuchos::RCP<MultiScale::MicroStaticParObject>> condnamemap;
-        exporter.Export<MultiScale::MicroStaticParObject>(condnamemap);
+        exporter.do_export<MultiScale::MicroStaticParObject>(condnamemap);
         const auto* micro_data = condnamemap[0]->get_micro_static_data_ptr();
 
         // extract received data from the container

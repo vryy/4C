@@ -652,7 +652,7 @@ void CONTACT::MtManager::postprocess_quantities(Core::IO::DiscretizationWriter& 
   Teuchos::RCP<Epetra_Vector> traction =
       Teuchos::rcp(new Epetra_Vector(*(get_strategy().lagrange_multiplier_old())));
   Teuchos::RCP<Epetra_Vector> tractionexp = Teuchos::rcp(new Epetra_Vector(*problem));
-  Core::LinAlg::Export(*traction, *tractionexp);
+  Core::LinAlg::export_to(*traction, *tractionexp);
 
   // evaluate slave and master forces
   Teuchos::RCP<Epetra_Vector> fcslave =
@@ -663,8 +663,8 @@ void CONTACT::MtManager::postprocess_quantities(Core::IO::DiscretizationWriter& 
   Teuchos::RCP<Epetra_Vector> fcmasterexp = Teuchos::rcp(new Epetra_Vector(*problem));
   get_strategy().d_matrix()->multiply(true, *traction, *fcslave);
   get_strategy().m_matrix()->multiply(true, *traction, *fcmaster);
-  Core::LinAlg::Export(*fcslave, *fcslaveexp);
-  Core::LinAlg::Export(*fcmaster, *fcmasterexp);
+  Core::LinAlg::export_to(*fcslave, *fcslaveexp);
+  Core::LinAlg::export_to(*fcmaster, *fcmasterexp);
 
   // write to output
   output.write_vector("interfacetraction", tractionexp);

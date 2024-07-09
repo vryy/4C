@@ -241,7 +241,7 @@ void Solid::MODELEVALUATOR::LagPenConstraint::run_post_compute_x(
   Teuchos::RCP<Epetra_Vector> lagmult_incr =
       Teuchos::rcp(new Epetra_Vector(*get_block_dof_row_map_ptr()));
 
-  Core::LinAlg::Export(dir, *lagmult_incr);
+  Core::LinAlg::export_to(dir, *lagmult_incr);
 
   constrman_->update_lagr_mult(lagmult_incr);
 }

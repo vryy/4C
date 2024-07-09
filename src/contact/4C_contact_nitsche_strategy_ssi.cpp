@@ -107,7 +107,7 @@ void CONTACT::NitscheStrategySsi::set_parent_state(
       if (scatra_dis == Teuchos::null) FOUR_C_THROW("didn't get scatra discretization");
 
       auto scatra_dofcolmap = Teuchos::rcp(new Epetra_Vector(*scatra_dis->dof_col_map(), true));
-      Core::LinAlg::Export(vec, *scatra_dofcolmap);
+      Core::LinAlg::export_to(vec, *scatra_dofcolmap);
 
       // set state on interfaces
       for (const auto& interface : interface_)

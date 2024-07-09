@@ -329,19 +329,19 @@ void Core::Communication::Exporter::generic_export(ExporterHelper& helper)
   helper.post_export_cleanup(this);
 }
 
-void Core::Communication::Exporter::Export(std::map<int, int>& data)
+void Core::Communication::Exporter::do_export(std::map<int, int>& data)
 {
   PODExporterHelper<int> helper(data);
   generic_export(helper);
 }
 
-void Core::Communication::Exporter::Export(std::map<int, double>& data)
+void Core::Communication::Exporter::do_export(std::map<int, double>& data)
 {
   PODExporterHelper<double> helper(data);
   generic_export(helper);
 }
 
-void Core::Communication::Exporter::Export(
+void Core::Communication::Exporter::do_export(
     std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& data)
 {
   AnyObjectExporterHelper<Core::LinAlg::SerialDenseMatrix> helper(data);

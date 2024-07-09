@@ -55,10 +55,10 @@ void BEAMINTERACTION::AddBeamInteractionNodalForces(
   // Extract the forces and add them to the discretization.
   Teuchos::RCP<Epetra_Vector> force_beam =
       Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(beam_dof_map, true));
-  Core::LinAlg::Export(*force, *force_beam);
+  Core::LinAlg::export_to(*force, *force_beam);
   Teuchos::RCP<Epetra_Vector> force_solid =
       Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(solid_dof_map, true));
-  Core::LinAlg::Export(*force, *force_solid);
+  Core::LinAlg::export_to(*force, *force_solid);
   visualization->add_discretization_nodal_data("force_beam", force_beam);
   visualization->add_discretization_nodal_data("force_solid", force_solid);
 

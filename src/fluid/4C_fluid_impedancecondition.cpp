@@ -410,7 +410,7 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
     Teuchos::RCP<Epetra_Map> dofrowmapred = Core::LinAlg::AllreduceEMap(*dofrowmap);
     Teuchos::RCP<Epetra_Vector> dQdu_full = Teuchos::rcp(new Epetra_Vector(*dofrowmapred, true));
 
-    Core::LinAlg::Export(*dQdu, *dQdu_full);  //!!! add off proc components
+    Core::LinAlg::export_to(*dQdu, *dQdu_full);  //!!! add off proc components
 
 
     // calculate d wk/du = d/du ( (v,n)_gamma n,phi)_Gamma were (d wk/du)_i,j= timefacs*

@@ -286,7 +286,7 @@ void XFEM::XFieldField::Coupling::build_min_dof_maps(const Core::FE::Discretizat
   dofmapvec.clear();
 
   Core::Communication::Exporter exportdofs(min_nodemap, min_permnodemap, min_dis.get_comm());
-  exportdofs.Export(dofs);
+  exportdofs.do_export(dofs);
 
   const int* permngids = min_permnodemap.MyGlobalElements();
   const int permnumnode = min_permnodemap.NumMyElements();
@@ -364,7 +364,7 @@ void XFEM::XFieldField::Coupling::build_max_dof_maps(const Core::FE::Discretizat
   dofmapvec.clear();
 
   Core::Communication::Exporter exportdofs(max_nodemap, max_permnodemap, max_dis.get_comm());
-  exportdofs.Export(dofs);
+  exportdofs.do_export(dofs);
 
   const int* permngids = max_permnodemap.MyGlobalElements();
   const int permnumnode = max_permnodemap.NumMyElements();

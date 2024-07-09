@@ -267,7 +267,7 @@ void Core::IO::Gmsh::VectorFieldMultiVectorDofBasedToGmsh(
   // tranform solution vector from dof_row_map to DofColMap
   const Teuchos::RCP<Epetra_MultiVector> vectorfield =
       Teuchos::rcp(new Epetra_MultiVector(*discret->dof_col_map(nds), 3, true));
-  Core::LinAlg::Export(*vectorfield_row, *vectorfield);
+  Core::LinAlg::export_to(*vectorfield_row, *vectorfield);
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->num_my_row_elements(); ++iele)
@@ -483,7 +483,7 @@ void Core::IO::Gmsh::VectorFieldNodeBasedToGmsh(
   // on dof_row_map
   const Teuchos::RCP<Epetra_MultiVector> vectorfield =
       Teuchos::rcp(new Epetra_MultiVector(*discret->node_col_map(), 3, true));
-  Core::LinAlg::Export(*vectorfield_row, *vectorfield);
+  Core::LinAlg::export_to(*vectorfield_row, *vectorfield);
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->num_my_row_elements(); ++iele)
@@ -533,7 +533,7 @@ void Core::IO::Gmsh::ScalarFieldNodeBasedToGmsh(
   //         Epetra_MultiVectors
   const Teuchos::RCP<Epetra_Vector> scalarfield =
       Teuchos::rcp(new Epetra_Vector(*discret->node_col_map(), true));
-  Core::LinAlg::Export(*scalarfield_row, *scalarfield);
+  Core::LinAlg::export_to(*scalarfield_row, *scalarfield);
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->num_my_row_elements(); ++iele)

@@ -587,11 +587,11 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
   Teuchos::RCP<Epetra_Vector> col_Cs_delta_sq = Teuchos::rcp(new Epetra_Vector(*elecolmap, true));
   col_Cs_delta_sq->PutScalar(0.0);
 
-  Core::LinAlg::Export(*Cs_delta_sq, *col_Cs_delta_sq);
+  Core::LinAlg::export_to(*Cs_delta_sq, *col_Cs_delta_sq);
   Teuchos::RCP<Epetra_Vector> col_Ci_delta_sq = Teuchos::rcp(new Epetra_Vector(*elecolmap, true));
   col_Ci_delta_sq->PutScalar(0.0);
 
-  Core::LinAlg::Export(*Ci_delta_sq, *col_Ci_delta_sq);
+  Core::LinAlg::export_to(*Ci_delta_sq, *col_Ci_delta_sq);
 
   // store in parameters
   Teuchos::ParameterList* modelparams = &(params_.sublist("TURBULENCE MODEL"));
@@ -953,7 +953,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
   const Epetra_Map* elecolmap = scatradiscret_->element_col_map();
   Teuchos::RCP<Epetra_Vector> col_Prt = Teuchos::rcp(new Epetra_Vector(*elecolmap, true));
   col_Prt->PutScalar(0.0);
-  Core::LinAlg::Export(*Prt, *col_Prt);
+  Core::LinAlg::export_to(*Prt, *col_Prt);
   // store in parameters
   Teuchos::ParameterList* modelparams = &(extraparams.sublist("TURBULENCE MODEL"));
   modelparams->set<Teuchos::RCP<Epetra_Vector>>("col_ele_Prt", col_Prt);

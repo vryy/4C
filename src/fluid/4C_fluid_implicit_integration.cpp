@@ -2246,9 +2246,9 @@ void FLD::FluidImplicitTimeInt::update_krylov_space_projection()
   // construct c by setting all pressure values to 1.0 and export to c
   presmode->PutScalar(1.0);
   Teuchos::RCP<Epetra_Vector> tmpc = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
-  Core::LinAlg::Export(*presmode, *tmpc);
+  Core::LinAlg::export_to(*presmode, *tmpc);
   Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_->extract_ksp_cond_vector(*tmpc);
-  Core::LinAlg::Export(*tmpkspc, *c0);
+  Core::LinAlg::export_to(*tmpkspc, *c0);
   // adapt kernel vector according to meshtying case
 
   if (msht_ != Inpar::FLUID::no_meshtying)
@@ -3293,7 +3293,7 @@ void FLD::FluidImplicitTimeInt::tim_int_calculate_acceleration()
   calculate_acceleration(onlyvelnp, onlyveln, onlyvelnm, onlyaccn, onlyaccnp);
 
   // copy back into global vector
-  Core::LinAlg::Export(*onlyaccnp, *accnp_);
+  Core::LinAlg::export_to(*onlyaccnp, *accnp_);
 }
 
 /*----------------------------------------------------------------------*
@@ -3455,20 +3455,20 @@ void FLD::FluidImplicitTimeInt::write_runtime_output()
 
   if (runtime_output_params_.output_velocity_state())
   {
-    Core::LinAlg::Export(*velnp_, *col_version);
+    Core::LinAlg::export_to(*velnp_, *col_version);
     runtime_output_writer_->append_dof_based_result_data_vector(col_version, 3, 0, "velocity");
   }
 
   if (runtime_output_params_.output_pressure_state())
   {
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_->extract_cond_vector(velnp_);
-    Core::LinAlg::Export(*pressure, *col_version);
+    Core::LinAlg::export_to(*pressure, *col_version);
     runtime_output_writer_->append_dof_based_result_data_vector(col_version, 1, 3, "pressure");
   }
 
   if (runtime_output_params_.output_acceleration_state())
   {
-    Core::LinAlg::Export(*accnp_, *col_version);
+    Core::LinAlg::export_to(*accnp_, *col_version);
     runtime_output_writer_->append_dof_based_result_data_vector(col_version, 3, 0, "acceleration");
   }
 
@@ -3476,14 +3476,14 @@ void FLD::FluidImplicitTimeInt::write_runtime_output()
   {
     if (runtime_output_params_.output_displacement_state())
     {
-      Core::LinAlg::Export(*dispnp_, *col_version);
+      Core::LinAlg::export_to(*dispnp_, *col_version);
       runtime_output_writer_->append_dof_based_result_data_vector(
           col_version, 3, 0, "displacement");
     }
 
     if (runtime_output_params_.output_grid_velocity_state())
     {
-      Core::LinAlg::Export(*gridvn_, *col_version);
+      Core::LinAlg::export_to(*gridvn_, *col_version);
       runtime_output_writer_->append_dof_based_result_data_vector(
           col_version, 3, 0, "grid-velocity");
     }

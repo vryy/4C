@@ -76,7 +76,7 @@ double CONTACT::NoxInterface::get_constraint_rhs_norms(const Epetra_Vector& F,
   if (not constrRhs->Map().PointSameAs(strategy().lm_dof_row_map(true)))
   {
     constrRhs_red = Teuchos::rcp(new Epetra_Vector(strategy().lm_dof_row_map(true)));
-    Core::LinAlg::Export(*constrRhs, *constrRhs_red);
+    Core::LinAlg::export_to(*constrRhs, *constrRhs_red);
   }
   else
     constrRhs_red = Teuchos::rcp(new Epetra_Vector(*constrRhs));

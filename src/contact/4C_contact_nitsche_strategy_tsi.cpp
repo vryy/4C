@@ -68,7 +68,7 @@ void CONTACT::NitscheStrategyTsi::set_parent_state(
 
     Teuchos::RCP<Epetra_Vector> global =
         Teuchos::rcp(new Epetra_Vector(*disT->dof_col_map(), true));
-    Core::LinAlg::Export(vec, *global);
+    Core::LinAlg::export_to(vec, *global);
 
     // set state on interfaces
     for (auto& interface : interface_)

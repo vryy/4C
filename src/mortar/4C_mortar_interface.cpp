@@ -2017,7 +2017,7 @@ void Mortar::Interface::set_state(const enum StateType& statetype, const Epetra_
       // alternative method to get vec to full overlap
       Teuchos::RCP<Epetra_Vector> global =
           Teuchos::rcp(new Epetra_Vector(*idiscret_->dof_col_map(), false));
-      Core::LinAlg::Export(vec, *global);
+      Core::LinAlg::export_to(vec, *global);
 
       // set displacements in interface discretization
       idiscret_->set_state(StateType2String(statetype), global);
@@ -2051,7 +2051,7 @@ void Mortar::Interface::set_state(const enum StateType& statetype, const Epetra_
       // alternative method to get vec to full overlap
       Teuchos::RCP<Epetra_Vector> global =
           Teuchos::rcp(new Epetra_Vector(*idiscret_->dof_col_map(), false));
-      Core::LinAlg::Export(vec, *global);
+      Core::LinAlg::export_to(vec, *global);
 
       // loop over all nodes to set current displacement
       // (use fully overlapping column map)
@@ -2079,7 +2079,7 @@ void Mortar::Interface::set_state(const enum StateType& statetype, const Epetra_
       // alternative method to get vec to full overlap
       Teuchos::RCP<Epetra_Vector> global =
           Teuchos::rcp(new Epetra_Vector(*idiscret_->dof_col_map(), false));
-      Core::LinAlg::Export(vec, *global);
+      Core::LinAlg::export_to(vec, *global);
 
       // set displacements in interface discretization
       idiscret_->set_state(StateType2String(statetype), global);
@@ -2725,7 +2725,7 @@ void Mortar::Interface::export_nodal_normals() const
 
   // communicate from slave node row to column map
 
-  interface_data_->exporter().Export(triad);
+  interface_data_->exporter().do_export(triad);
 
   // extract info on column map
   for (int i = 0; i < snodecolmapbound_->NumMyElements(); ++i)
@@ -4162,11 +4162,11 @@ void Mortar::Interface::detect_tied_slave_nodes(int& founduntied)
   }
 
   //**********************************************************************
-  // STEP 2: Export tying info to slave node column map (globally)
+  // STEP 2: Communicate tying info to slave node column map (globally)
   //**********************************************************************
-  // export tying information to standard column map
+  // communicate tying information to standard column map
   Teuchos::RCP<Epetra_Vector> coltied = Teuchos::rcp(new Epetra_Vector(*snodecolmap_));
-  Core::LinAlg::Export(*rowtied, *coltied);
+  Core::LinAlg::export_to(*rowtied, *coltied);
 
   //**********************************************************************
   // STEP 3: Extract tying info for slave node column map (locally)
@@ -4318,7 +4318,7 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
   /* Write interface displacement
    *
    * The interface displacement has been handed in via the parameter list outParams.
-   * Grab it from there, then use Core::LinAlg::Export() to extract the interface
+   * Grab it from there, then use Core::LinAlg::export_to() to extract the interface
    * portion from the global displacement vector. Finally, write the interface
    * portion using this interfaces' discretization writer.
    */
@@ -4326,7 +4326,7 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
     // Get full displacement vector and extract interface displacement
     RCP<const Epetra_Vector> disp = outputParams.get<RCP<const Epetra_Vector>>("displacement");
     RCP<Epetra_Vector> iDisp = Core::LinAlg::CreateVector(*idiscret_->dof_row_map());
-    Core::LinAlg::Export(*disp, *iDisp);
+    Core::LinAlg::export_to(*disp, *iDisp);
 
     // Write the interface displacement field
     writer->write_vector("displacement", iDisp, Core::IO::VectorType::dofvector);
@@ -4338,7 +4338,7 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
     RCP<const Epetra_Vector> lagMult =
         outputParams.get<RCP<const Epetra_Vector>>("interface traction");
     RCP<Epetra_Vector> iLagMult = Core::LinAlg::CreateVector(*idiscret_->dof_row_map());
-    Core::LinAlg::Export(*lagMult, *iLagMult);
+    Core::LinAlg::export_to(*lagMult, *iLagMult);
 
     // Write this interface's Lagrange multiplier field
     writer->write_vector("interfacetraction", iLagMult, Core::IO::VectorType::dofvector);
@@ -4350,7 +4350,7 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
     RCP<const Epetra_Vector> slaveforces =
         outputParams.get<RCP<const Epetra_Vector>>("slave forces");
     RCP<Epetra_Vector> forces = Core::LinAlg::CreateVector(*idiscret_->dof_row_map());
-    Core::LinAlg::Export(*slaveforces, *forces);
+    Core::LinAlg::export_to(*slaveforces, *forces);
 
     // Write to output
     writer->write_vector("slaveforces", forces, Core::IO::VectorType::dofvector);
@@ -4362,7 +4362,7 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
     RCP<const Epetra_Vector> masterforces =
         outputParams.get<RCP<const Epetra_Vector>>("master forces");
     RCP<Epetra_Vector> forces = Core::LinAlg::CreateVector(*idiscret_->dof_row_map());
-    Core::LinAlg::Export(*masterforces, *forces);
+    Core::LinAlg::export_to(*masterforces, *forces);
 
     // Write to output
     writer->write_vector("masterforces", forces, Core::IO::VectorType::dofvector);
@@ -4376,7 +4376,7 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
 
     RCP<const Epetra_Map> nodeRowMap = Core::LinAlg::MergeMap(snoderowmap_, mnoderowmap_, false);
     RCP<Epetra_Vector> masterSlaveVec = Core::LinAlg::CreateVector(*nodeRowMap, true);
-    Core::LinAlg::Export(*masterVec, *masterSlaveVec);
+    Core::LinAlg::export_to(*masterVec, *masterSlaveVec);
 
     writer->write_vector("slavemasternodes", masterSlaveVec, Core::IO::VectorType::nodevector);
   }
@@ -4388,7 +4388,7 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
 
     RCP<const Epetra_Map> eleRowMap = Core::LinAlg::MergeMap(selerowmap_, melerowmap_, false);
     RCP<Epetra_Vector> masterSlaveVec = Core::LinAlg::CreateVector(*eleRowMap, true);
-    Core::LinAlg::Export(*masterVec, *masterSlaveVec);
+    Core::LinAlg::export_to(*masterVec, *masterSlaveVec);
 
     writer->write_vector(
         "slavemasterelements", masterSlaveVec, Core::IO::VectorType::elementvector);

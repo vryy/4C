@@ -494,17 +494,17 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
 
   Core::Communication::Exporter nodeexporter(
       *dis.node_row_map(), *dis.node_col_map(), dis.get_comm());
-  nodeexporter.Export(nodedofset);
+  nodeexporter.do_export(nodedofset);
 
   Core::Communication::Exporter elementexporter(
       *dis.element_row_map(), *dis.element_col_map(), dis.get_comm());
-  elementexporter.Export(elementdofset);
+  elementexporter.do_export(elementdofset);
 
   if (facedis != Teuchos::null && facedis->face_row_map() != nullptr)
   {
     Core::Communication::Exporter faceexporter(
         *facedis->face_row_map(), *facedis->face_col_map(), dis.get_comm());
-    faceexporter.Export(facedofset);
+    faceexporter.do_export(facedofset);
   }
 
   for (std::map<int, std::vector<int>>::iterator i = nodedofset.begin(); i != nodedofset.end(); ++i)

@@ -655,10 +655,10 @@ void Solid::MODELEVALUATOR::Structure::write_time_step_output_runtime_structure(
   const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
   Teuchos::RCP<Epetra_Vector> disn_col =
       Teuchos::rcp(new Epetra_Vector(*discret.dof_col_map(), true));
-  Core::LinAlg::Export(*global_state().get_dis_n(), *disn_col);
+  Core::LinAlg::export_to(*global_state().get_dis_n(), *disn_col);
   Teuchos::RCP<Epetra_Vector> veln_col =
       Teuchos::rcp(new Epetra_Vector(*discret.dof_col_map(), true));
-  Core::LinAlg::Export(*global_state().get_vel_n(), *veln_col);
+  Core::LinAlg::export_to(*global_state().get_vel_n(), *veln_col);
 
   auto [output_time, output_step] = Core::IO::GetTimeAndTimeStepIndexForOutput(
       visualization_params_, global_state().get_time_n(), global_state().get_step_n());
@@ -675,10 +675,10 @@ void Solid::MODELEVALUATOR::Structure::write_iteration_output_runtime_structure(
   const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
   Teuchos::RCP<Epetra_Vector> disnp_col =
       Teuchos::rcp(new Epetra_Vector(*discret.dof_col_map(), true));
-  Core::LinAlg::Export(*global_state().get_dis_np(), *disnp_col);
+  Core::LinAlg::export_to(*global_state().get_dis_np(), *disnp_col);
   Teuchos::RCP<Epetra_Vector> velnp_col =
       Teuchos::rcp(new Epetra_Vector(*discret.dof_col_map(), true));
-  Core::LinAlg::Export(*global_state().get_vel_np(), *velnp_col);
+  Core::LinAlg::export_to(*global_state().get_vel_np(), *velnp_col);
 
   auto [output_time, output_step] =
       Core::IO::GetTimeAndTimeStepIndexForOutput(visualization_params_, global_state().get_time_n(),
@@ -929,7 +929,7 @@ void Solid::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stre
 
       Core::Communication::Exporter ex(
           *(discret().element_row_map()), *(discret().element_col_map()), discret().get_comm());
-      ex.Export(gp_stress_data);
+      ex.do_export(gp_stress_data);
 
       eval_data().get_stress_data_node_postprocessed() =
           Teuchos::rcp(new Epetra_MultiVector(*discret().node_col_map(), 6, true));
@@ -939,7 +939,7 @@ void Solid::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stre
 
       Epetra_MultiVector row_nodal_data(*discret().node_row_map(), 6, true);
       PostprocessGaussPointDataToNodes(gp_stress_data, row_nodal_data);
-      Core::LinAlg::Export(row_nodal_data, *eval_data().get_stress_data_node_postprocessed());
+      Core::LinAlg::export_to(row_nodal_data, *eval_data().get_stress_data_node_postprocessed());
 
       PostprocessGaussPointDataToElementCenter(
           gp_stress_data, *eval_data().get_stress_data_element_postprocessed());
@@ -951,7 +951,7 @@ void Solid::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stre
 
       Core::Communication::Exporter ex(
           *(discret().element_row_map()), *(discret().element_col_map()), discret().get_comm());
-      ex.Export(gp_strain_data);
+      ex.do_export(gp_strain_data);
 
       eval_data().get_strain_data_node_postprocessed() =
           Teuchos::rcp(new Epetra_MultiVector(*discret().node_col_map(), 6, true));
@@ -960,7 +960,7 @@ void Solid::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stre
 
       Epetra_MultiVector row_nodal_data(*discret().node_row_map(), 6, true);
       PostprocessGaussPointDataToNodes(gp_strain_data, row_nodal_data);
-      Core::LinAlg::Export(row_nodal_data, *eval_data().get_strain_data_node_postprocessed());
+      Core::LinAlg::export_to(row_nodal_data, *eval_data().get_strain_data_node_postprocessed());
 
       PostprocessGaussPointDataToElementCenter(
           gp_strain_data, *eval_data().get_strain_data_element_postprocessed());
@@ -1013,7 +1013,7 @@ void Solid::MODELEVALUATOR::Structure::init_output_runtime_beams()
   // export displacement state to column format
   Teuchos::RCP<Epetra_Vector> disn_col =
       Teuchos::rcp(new Epetra_Vector(*discret().dof_col_map(), true));
-  Core::LinAlg::Export(*global_state().get_dis_n(), *disn_col);
+  Core::LinAlg::export_to(*global_state().get_dis_n(), *disn_col);
 
   // get bounding box object only if periodic boundaries are active
   Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> bounding_box_ptr =
@@ -1036,7 +1036,7 @@ void Solid::MODELEVALUATOR::Structure::write_time_step_output_runtime_beams() co
   const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
   Teuchos::RCP<Epetra_Vector> disn_col =
       Teuchos::rcp(new Epetra_Vector(*discret.dof_col_map(), true));
-  Core::LinAlg::Export(*global_state().get_dis_n(), *disn_col);
+  Core::LinAlg::export_to(*global_state().get_dis_n(), *disn_col);
 
   auto [output_time, output_step] = Core::IO::GetTimeAndTimeStepIndexForOutput(
       visualization_params_, global_state().get_time_n(), global_state().get_step_n());
@@ -1053,7 +1053,7 @@ void Solid::MODELEVALUATOR::Structure::write_iteration_output_runtime_beams() co
   const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
   Teuchos::RCP<Epetra_Vector> disnp_col =
       Teuchos::rcp(new Epetra_Vector(*discret.dof_col_map(), true));
-  Core::LinAlg::Export(*global_state().get_dis_np(), *disnp_col);
+  Core::LinAlg::export_to(*global_state().get_dis_np(), *disnp_col);
 
   auto [output_time, output_step] =
       Core::IO::GetTimeAndTimeStepIndexForOutput(visualization_params_, global_state().get_time_n(),

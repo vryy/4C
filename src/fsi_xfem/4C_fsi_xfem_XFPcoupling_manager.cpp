@@ -99,11 +99,11 @@ void XFEM::XfpCouplingManager::set_coupling_states()
   Teuchos::RCP<Epetra_Map> sfulldofmap =
       Core::LinAlg::AllreduceEMap(*poro_->structure_field()->discretization()->dof_row_map());
   Teuchos::RCP<Epetra_Vector> dispnp_col = Teuchos::rcp(new Epetra_Vector(*sfulldofmap, true));
-  Core::LinAlg::Export(*poro_->structure_field()->dispnp(), *dispnp_col);
+  Core::LinAlg::export_to(*poro_->structure_field()->dispnp(), *dispnp_col);
   Teuchos::RCP<Epetra_Map> ffulldofmap =
       Core::LinAlg::AllreduceEMap(*poro_->fluid_field()->discretization()->dof_row_map());
   Teuchos::RCP<Epetra_Vector> velnp_col = Teuchos::rcp(new Epetra_Vector(*ffulldofmap, true));
-  Core::LinAlg::Export(*poro_->fluid_field()->velnp(), *velnp_col);
+  Core::LinAlg::export_to(*poro_->fluid_field()->velnp(), *velnp_col);
 
   mcfpi_ps_ps_->set_full_state(dispnp_col, velnp_col);
   mcfpi_ps_pf_->set_full_state(dispnp_col, velnp_col);

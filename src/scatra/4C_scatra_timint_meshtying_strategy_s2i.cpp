@@ -605,7 +605,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
         // export global state vector to mortar interface
         Teuchos::RCP<Epetra_Vector> iphinp =
             Teuchos::rcp(new Epetra_Vector(*idiscret.dof_col_map(), false));
-        Core::LinAlg::Export(*scatratimint_->phiafnp(), *iphinp);
+        Core::LinAlg::export_to(*scatratimint_->phiafnp(), *iphinp);
         idiscret.set_state("iphinp", iphinp);
 
         // create parameter list for mortar integration cells
@@ -2298,7 +2298,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
           // assign physical implementation type to each mortar integration cell by copying the
           // physical implementation type of the corresponding slave-side mortar element
           Epetra_IntVector impltypes_col(*interface.slave_col_elements());
-          Core::LinAlg::Export(impltypes_row, impltypes_col);
+          Core::LinAlg::export_to(impltypes_row, impltypes_col);
           imortarcells_[condid].resize(imortarcells.size());
           for (unsigned icell = 0; icell < imortarcells.size(); ++icell)
           {

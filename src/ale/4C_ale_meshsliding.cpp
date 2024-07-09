@@ -264,14 +264,14 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 
   // export and add r_m subvector to residual
   Teuchos::RCP<Epetra_Vector> rm_modexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap_));
-  Core::LinAlg::Export(*rm_mod, *rm_modexp);
+  Core::LinAlg::export_to(*rm_mod, *rm_modexp);
   residual->Update(1.0, *rm_modexp, 1.0);
 
   //----------------------------------------------------------- THIRD LINE
 
   // r_s: * 0
   Teuchos::RCP<Epetra_Vector> rs_delete = Teuchos::rcp(new Epetra_Vector(*dofrowmap_));
-  Core::LinAlg::Export(*(splitres[2]), *rs_delete);
+  Core::LinAlg::export_to(*(splitres[2]), *rs_delete);
   residual->Update(-1.0, *rs_delete, 1.0);
 
   // r_s: add - T*D^(-1)*r_s
@@ -282,12 +282,12 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 
   // export and subtract rs_mod from residual
   Teuchos::RCP<Epetra_Vector> rs_modexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap_));
-  Core::LinAlg::Export(*rs_mod, *rs_modexp);
+  Core::LinAlg::export_to(*rs_mod, *rs_modexp);
   residual->Update(-1.0, *rs_modexp, 1.0);
 
   // r_s: add gap
   Teuchos::RCP<Epetra_Vector> g_exp = Teuchos::rcp(new Epetra_Vector(*dofrowmap_));
-  Core::LinAlg::Export(*gap, *g_exp);
+  Core::LinAlg::export_to(*gap, *g_exp);
   residual->Update(1.0, *g_exp, 1.0);
 
   return;

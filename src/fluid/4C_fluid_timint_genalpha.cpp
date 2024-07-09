@@ -208,7 +208,7 @@ void FLD::TimIntGenAlpha::gen_alpha_update_acceleration()
     onlyaccnp->Update(fact1, *onlyvelnp, -fact1, *onlyveln, 1.0);
 
     // copy back into global vector
-    Core::LinAlg::Export(*onlyaccnp, *accnp_);
+    Core::LinAlg::export_to(*onlyaccnp, *accnp_);
   }
 
 }  // TimIntGenAlpha::gen_alpha_update_acceleration
@@ -247,7 +247,7 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values()
     onlyaccam->Update((alphaM_), *onlyaccnp, (1.0 - alphaM_), *onlyaccn, 0.0);
 
     // copy back into global vector
-    Core::LinAlg::Export(*onlyaccam, *accam_);
+    Core::LinAlg::export_to(*onlyaccam, *accam_);
   }
 
   // set intermediate values for velocity

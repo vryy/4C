@@ -66,7 +66,7 @@ void CONTACT::LagrangeStrategyPoro::do_read_restart(Core::IO::DiscretizationRead
       Teuchos::rcp(new Epetra_Vector(*discret->dof_col_map(), true));
   // it's clear that we get some zeros here ... but poroelast monolithic fixes this a little bit
   // later by doing the same thing with correct displacements again :-)
-  Core::LinAlg::Export(*dis, *global);
+  Core::LinAlg::export_to(*dis, *global);
   set_parent_state("displacement", global, discret);
 
   // Call (nearly absolute)Base Class
@@ -261,10 +261,10 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
     //
     Teuchos::RCP<Epetra_Vector> tmpfullncoup =
         Teuchos::rcp(new Epetra_Vector(*coupfs.master_dof_map()));
-    Core::LinAlg::Export(*NCoup_, *tmpfullncoup);
+    Core::LinAlg::export_to(*NCoup_, *tmpfullncoup);
     tmpfullncoup = coupfs.master_to_slave(tmpfullncoup);
     fNCoup_ = Teuchos::rcp(new Epetra_Vector(*fgactiven_));
-    Core::LinAlg::Export(*tmpfullncoup, *fNCoup_);
+    Core::LinAlg::export_to(*tmpfullncoup, *fNCoup_);
     //
     //************************************************************************************************
     //
@@ -545,7 +545,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
     // split and transform to redistributed maps
     Core::LinAlg::split_vector(*problem_dofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
     Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
-    Core::LinAlg::Export(*fsm, *fsmtemp);
+    Core::LinAlg::export_to(*fsm, *fsmtemp);
     fsm = fsmtemp;
   }
   else
@@ -759,9 +759,9 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
     //        Teuchos::RCP<Epetra_Vector> tempvecm2  = Teuchos::rcp(new
     //        Epetra_Vector(mold_->DomainMap())); Teuchos::RCP<Epetra_Vector> zoldexp  =
     //        Teuchos::rcp(new Epetra_Vector(mold_->RowMap())); if
-    //        (mold_->RowMap().NumGlobalElements()) Core::LinAlg::Export(*zold_,*zoldexp);
+    //        (mold_->RowMap().NumGlobalElements()) Core::LinAlg::export_to(*zold_,*zoldexp);
     //        mold_->Multiply(true,*zoldexp,*tempvecm2);
-    //        if (mset) Core::LinAlg::Export(*tempvecm2,*tempvecm);
+    //        if (mset) Core::LinAlg::export_to(*tempvecm2,*tempvecm);
     //        fm->Update(alphaf_,*tempvecm,1.0);
   }
   // if there is no self contact everything is ok
@@ -783,9 +783,9 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
     //        Teuchos::RCP<Epetra_Vector> tempvec  = Teuchos::rcp(new
     //        Epetra_Vector(dold_->DomainMap())); Teuchos::RCP<Epetra_Vector> zoldexp  =
     //        Teuchos::rcp(new Epetra_Vector(dold_->RowMap())); if
-    //        (dold_->RowMap().NumGlobalElements()) Core::LinAlg::Export(*zold_,*zoldexp);
+    //        (dold_->RowMap().NumGlobalElements()) Core::LinAlg::export_to(*zold_,*zoldexp);
     //        dold_->Multiply(true,*zoldexp,*tempvec);
-    //        if (sset) Core::LinAlg::Export(*tempvec,*fsadd);
+    //        if (sset) Core::LinAlg::export_to(*tempvec,*fsadd);
   }
   // if there is no self contact everything is ok
   else
@@ -797,7 +797,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   if (aset)
   {
     Teuchos::RCP<Epetra_Vector> faadd = Teuchos::rcp(new Epetra_Vector(*fgactivedofs_));
-    Core::LinAlg::Export(*fsadd, *faadd);
+    Core::LinAlg::export_to(*fsadd, *faadd);
 
     fa->Update(-nopenalpha_, *faadd, 1.0);
   }
@@ -816,7 +816,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   if (iset)
   {
     Teuchos::RCP<Epetra_Vector> fiadd = Teuchos::rcp(new Epetra_Vector(*fgidofs));
-    Core::LinAlg::Export(*fsadd, *fiadd);
+    Core::LinAlg::export_to(*fsadd, *fiadd);
     fi->Update(-nopenalpha_, *fiadd, 1.0);
   }
 
@@ -931,7 +931,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   // add n subvector to feffnew
   Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*falldofrowmap_));
 
-  Core::LinAlg::Export(*fn, *fnexp);
+  Core::LinAlg::export_to(*fn, *fnexp);
 
   feffnew->Update(1.0, *fnexp, 1.0);
   //---------------------------------------------------------- SECOND LINE
@@ -939,7 +939,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   if (mset)
   {
     Teuchos::RCP<Epetra_Vector> fmmodexp = Teuchos::rcp(new Epetra_Vector(*falldofrowmap_));
-    Core::LinAlg::Export(*fmmod, *fmmodexp);
+    Core::LinAlg::export_to(*fmmod, *fmmodexp);
     feffnew->Update(1.0, *fmmodexp, 1.0);
   }
   //----------------------------------------------------------- THIRD LINE
@@ -948,7 +948,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   if (iset)
   {
     fimodexp = Teuchos::rcp(new Epetra_Vector(*falldofrowmap_));
-    Core::LinAlg::Export(*fimod, *fimodexp);
+    Core::LinAlg::export_to(*fimod, *fimodexp);
     feffnew->Update(1.0, *fimodexp, 1.0);
   }
 
@@ -958,7 +958,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   if (aset)
   {
     nCoupexp = Teuchos::rcp(new Epetra_Vector(*falldofrowmap_));
-    Core::LinAlg::Export(*fNCoup_, *nCoupexp);
+    Core::LinAlg::export_to(*fNCoup_, *nCoupexp);
     feffnew->Update(-1.0, *nCoupexp, 1.0);
   }
 
@@ -968,7 +968,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   if (aset)
   {
     famodexp = Teuchos::rcp(new Epetra_Vector(*falldofrowmap_));
-    Core::LinAlg::Export(*famod, *famodexp);
+    Core::LinAlg::export_to(*famod, *famodexp);
     feffnew->Update(-1.0, *famodexp, 1.0);
   }
 
@@ -1250,15 +1250,15 @@ void CONTACT::LagrangeStrategyPoro::recover_poro_no_pen(
 
     // extract slave displacements from disi
     Teuchos::RCP<Epetra_Vector> disis = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    if (gsdofrowmap_->NumGlobalElements()) Core::LinAlg::Export(*disi, *disis);
+    if (gsdofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*disi, *disis);
 
     // extract master displacements from disi
     Teuchos::RCP<Epetra_Vector> disim = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-    if (gmdofrowmap_->NumGlobalElements()) Core::LinAlg::Export(*disi, *disim);
+    if (gmdofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*disi, *disim);
 
     // extract other displacements from disi
     Teuchos::RCP<Epetra_Vector> disin = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_));
-    if (gndofrowmap_->NumGlobalElements()) Core::LinAlg::Export(*disi, *disin);
+    if (gndofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*disi, *disin);
 
     // condensation has been performed for active LM only,
     // thus we construct a modified invd matrix here which
@@ -1368,7 +1368,7 @@ void CONTACT::LagrangeStrategyPoro::set_state(
             Teuchos::RCP<Epetra_Vector> global =
                 Teuchos::rcp(new Epetra_Vector(*idiscret_.dof_col_map(), true));
 
-            Core::LinAlg::Export(vec, *global);
+            Core::LinAlg::export_to(vec, *global);
 
             // loop over all nodes to set current velocity
             // (use fully overlapping column map)
@@ -1400,7 +1400,7 @@ void CONTACT::LagrangeStrategyPoro::set_state(
             // alternative method to get vec to full overlap
             Teuchos::RCP<Epetra_Vector> global =
                 Teuchos::rcp(new Epetra_Vector(*idiscret_.dof_col_map(), true));
-            Core::LinAlg::Export(vec, *global);
+            Core::LinAlg::export_to(vec, *global);
 
             // loop over all nodes to set current velocity
             // (use fully overlapping column map)
@@ -1434,7 +1434,7 @@ void CONTACT::LagrangeStrategyPoro::set_state(
             // alternative method to get vec to full overlap
             Teuchos::RCP<Epetra_Vector> global =
                 Teuchos::rcp(new Epetra_Vector(*idiscret_.dof_col_map(), true));
-            Core::LinAlg::Export(vec, *global);
+            Core::LinAlg::export_to(vec, *global);
 
             // loop over all nodes to set current pressure
             // (use fully overlapping column map)
@@ -1484,7 +1484,7 @@ void CONTACT::LagrangeStrategyPoro::set_parent_state(const std::string& statenam
   if (statename == "displacement")
   {
     Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->dof_col_map(), true));
-    Core::LinAlg::Export(*vec, *global);
+    Core::LinAlg::export_to(*vec, *global);
 
     // set state on interfaces
     for (int i = 0; i < (int)interface_.size(); ++i)

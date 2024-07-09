@@ -83,7 +83,7 @@ namespace FLD
     {
       Teuchos::RCP<Epetra_Vector> tauw =
           Teuchos::rcp(new Epetra_Vector(*(discret_->node_row_map()), true));
-      Core::LinAlg::Export(*tauw_, *tauw);
+      Core::LinAlg::export_to(*tauw_, *tauw);
       return tauw;
     }
 

@@ -338,7 +338,7 @@ void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_V
             // pass interfacial scatra degrees of freedom to thermo discretization
             const Teuchos::RCP<Epetra_Vector> iscatra =
                 Teuchos::rcp(new Epetra_Vector(*thermodis.dof_row_map(1)));
-            Core::LinAlg::Export(*scatra, *iscatra);
+            Core::LinAlg::export_to(*scatra, *iscatra);
             thermodis.set_state(1, "scatra", iscatra);
           }
         }
@@ -385,7 +385,7 @@ void STI::Algorithm::transfer_thermo_to_scatra(const Teuchos::RCP<const Epetra_V
         // pass interfacial thermo degrees of freedom to scatra discretization
         const Teuchos::RCP<Epetra_Vector> ithermo =
             Teuchos::rcp(new Epetra_Vector(*scatradis.dof_row_map(1)));
-        Core::LinAlg::Export(*thermo, *ithermo);
+        Core::LinAlg::export_to(*thermo, *ithermo);
         scatradis.set_state(1, "thermo", ithermo);
       }
     }

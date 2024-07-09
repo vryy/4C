@@ -1187,10 +1187,10 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
 
       // export information on all master->slave couplings (with multiple
       // couplings)
-      exportconnectivity.Export(*allcoupledcolnodes_);
+      exportconnectivity.do_export(*allcoupledcolnodes_);
 
       // export the inverse slave->master matching without multiple couplings
-      exportconnectivity.Export(*inversenodecoupling);
+      exportconnectivity.do_export(*inversenodecoupling);
     }
 
     // to assign the degrees of freedom, we have to make sure that coupled
@@ -1240,7 +1240,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
 
         // export information on all master->slave couplings (with multiple
         // couplings)
-        exportconnectivity.Export(*allcoupledcolnodes_);
+        exportconnectivity.do_export(*allcoupledcolnodes_);
       }
 
       // determine all ghosted master nodes in this vector which do not have
@@ -1283,7 +1283,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
             *newrownodemap, *newcolnodemap, discret_->get_comm());
         // export information on all slave->master couplings (with multiple
         // couplings)
-        exportconnectivity.Export(*allcoupledcolnodes_);
+        exportconnectivity.do_export(*allcoupledcolnodes_);
       }
     }
 

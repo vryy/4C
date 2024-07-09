@@ -648,7 +648,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluid::get_new_state()
   if (alefluid_)
   {
     dispnpcol = Teuchos::rcp(new Epetra_Vector(*xdiscret_->initial_dof_col_map()));
-    Core::LinAlg::Export(*dispnp_, *dispnpcol);
+    Core::LinAlg::export_to(*dispnp_, *dispnpcol);
   }
 
   // -------------------------------------------------------------------
@@ -1631,7 +1631,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XFluid::std_velnp()
 {
   Teuchos::RCP<Epetra_Vector> initvec =
       Teuchos::rcp(new Epetra_Vector(*xdiscret_->initial_dof_row_map(), true));
-  Core::LinAlg::Export(*(state_->velnp_), *initvec);
+  Core::LinAlg::export_to(*(state_->velnp_), *initvec);
   return initvec;
 }
 
@@ -1639,7 +1639,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XFluid::std_veln()
 {
   Teuchos::RCP<Epetra_Vector> initvec =
       Teuchos::rcp(new Epetra_Vector(*xdiscret_->initial_dof_row_map(), true));
-  Core::LinAlg::Export(*(state_->veln_), *initvec);
+  Core::LinAlg::export_to(*(state_->veln_), *initvec);
   return initvec;
 }
 
@@ -2892,9 +2892,9 @@ void FLD::XFluid::update_krylov_space_projection()
   // construct c by setting all pressure values to 1.0 and export to c
   presmode->PutScalar(1.0);
   Teuchos::RCP<Epetra_Vector> tmpc = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
-  Core::LinAlg::Export(*presmode, *tmpc);
+  Core::LinAlg::export_to(*presmode, *tmpc);
   Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_->extract_ksp_cond_vector(*tmpc);
-  Core::LinAlg::Export(*tmpkspc, *c0);
+  Core::LinAlg::export_to(*tmpkspc, *c0);
 
   // fillcomplete the projector to compute (w^T c)^(-1)
   projector_->fill_complete();
@@ -3195,7 +3195,7 @@ void FLD::XFluid::time_update()
     calculate_acceleration(onlyvelnp, onlyveln, onlyvelnm, onlyaccn, onlyaccnp);
 
     // copy back into global vector
-    Core::LinAlg::Export(*onlyaccnp, *state_->accnp_);
+    Core::LinAlg::export_to(*onlyaccnp, *state_->accnp_);
   }
 
 
@@ -3654,8 +3654,8 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
       Teuchos::RCP<Epetra_Vector> dispncol =
           Teuchos::rcp(new Epetra_Vector(*discretisation_xfem()->initial_dof_col_map()));
 
-      Core::LinAlg::Export(*dispnp_, *dispnpcol);  // dispnp row->col
-      Core::LinAlg::Export(*dispn_, *dispncol);    // dispn row->col
+      Core::LinAlg::export_to(*dispnp_, *dispnpcol);  // dispnp row->col
+      Core::LinAlg::export_to(*dispn_, *dispncol);    // dispn row->col
     }
 
     x_timint_semi_lagrangean(newRowStateVectors,  ///< vectors to be reconstructed
@@ -3861,8 +3861,8 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
         Teuchos::RCP<Epetra_Vector> dispncol =
             Teuchos::rcp(new Epetra_Vector(*discretisation_xfem()->initial_dof_col_map()));
 
-        Core::LinAlg::Export(*dispnp_, *dispnpcol);  // dispnp row->col
-        Core::LinAlg::Export(*dispn_, *dispncol);    // dispn row->col
+        Core::LinAlg::export_to(*dispnp_, *dispnpcol);  // dispnp row->col
+        Core::LinAlg::export_to(*dispn_, *dispncol);    // dispn row->col
       }
 
       x_timint_semi_lagrangean(rowStateVectors_npip,  ///< vectors to be reconstructed
@@ -4300,7 +4300,7 @@ void FLD::XFluid::x_timint_semi_lagrangean(
   // export veln row vector from t^n to a col vector
 
   Teuchos::RCP<Epetra_Vector> veln_col = Teuchos::rcp(new Epetra_Vector(*olddofcolmap, true));
-  Core::LinAlg::Export(*veln_Intn_, *veln_col);
+  Core::LinAlg::export_to(*veln_Intn_, *veln_col);
 
   //--------------------------------------------------------
   // export row vectors from t^n to col vectors
@@ -4312,7 +4312,7 @@ void FLD::XFluid::x_timint_semi_lagrangean(
        vec_it != oldRowStateVectors.end(); vec_it++)
   {
     Teuchos::RCP<Epetra_Vector> vec_col = Teuchos::rcp(new Epetra_Vector(*olddofcolmap, true));
-    Core::LinAlg::Export(**vec_it, *vec_col);
+    Core::LinAlg::export_to(**vec_it, *vec_col);
     oldColStateVectorsn.push_back(vec_col);
   }
 
@@ -5229,7 +5229,7 @@ void FLD::XFluid::gen_alpha_intermediate_values()
     onlyaccam->Update((alphaM_), *onlyaccnp, (1.0 - alphaM_), *onlyaccn, 0.0);
 
     // copy back into global vector
-    Core::LinAlg::Export(*onlyaccam, *state_->accam_);
+    Core::LinAlg::export_to(*onlyaccam, *state_->accam_);
   }
 
   // set intermediate values for velocity
@@ -5277,7 +5277,7 @@ void FLD::XFluid::gen_alpha_update_acceleration()
   onlyaccnp->Update(fact1, *onlyvelnp, -fact1, *onlyveln, 1.0);
 
   // copy back into global vector
-  Core::LinAlg::Export(*onlyaccnp, *state_->accnp_);
+  Core::LinAlg::export_to(*onlyaccnp, *state_->accnp_);
 }
 
 

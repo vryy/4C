@@ -141,12 +141,12 @@ void PoroElast::MonolithicSplitNoPenetration::setup_vector(
 
   Teuchos::RCP<Epetra_Vector> fullcouprhs =
       Teuchos::rcp(new Epetra_Vector(*fluid_field()->dof_row_map(), true));
-  Core::LinAlg::Export(*couprhs, *fullcouprhs);
+  Core::LinAlg::export_to(*couprhs, *fullcouprhs);
   extractor()->insert_vector(*fullcouprhs, 1, f);
 
   Teuchos::RCP<Epetra_Vector> fullfov =
       Teuchos::rcp(new Epetra_Vector(*fluid_field()->dof_row_map(), true));
-  Core::LinAlg::Export(*fov, *fullfov);
+  Core::LinAlg::export_to(*fov, *fullfov);
   extractor()->add_vector(*fullfov, 1, f, 1.0);
 
   rhs_fgcur_ = fcv;  // Store interface rhs for recovering of lagrange multiplier
@@ -598,7 +598,7 @@ void PoroElast::MonolithicSplitNoPenetration::output(bool forced_writerestart)
   // for now, we always write the lagrange multiplier
   Teuchos::RCP<Epetra_Vector> fulllambda =
       Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*structure_field()->dof_row_map()));
-  Core::LinAlg::Export(*lambdanp_, *fulllambda);
+  Core::LinAlg::export_to(*lambdanp_, *fulllambda);
   structure_field()->disc_writer()->write_vector("poronopencond_lambda", fulllambda);
 }
 

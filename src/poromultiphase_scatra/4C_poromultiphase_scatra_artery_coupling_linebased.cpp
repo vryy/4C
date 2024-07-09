@@ -441,7 +441,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::fill_unaffecte
   // global assembly and export
   if (unaffected_diams_artery_row->GlobalAssemble(Add, false) != 0)
     FOUR_C_THROW("GlobalAssemble of unaffected_seg_lengths_artery_ failed");
-  Core::LinAlg::Export(*unaffected_diams_artery_row, *unaffected_integrated_diams_artery_col_);
+  Core::LinAlg::export_to(*unaffected_diams_artery_row, *unaffected_integrated_diams_artery_col_);
 }
 
 /*----------------------------------------------------------------------*
@@ -646,7 +646,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::set_artery_dia
     FOUR_C_THROW("GlobalAssemble of integrated_integrated_diams_artery_row_ failed");
 
   // export to column format
-  Core::LinAlg::Export(*integrated_diams_artery_row_, *integrated_diams_artery_col_);
+  Core::LinAlg::export_to(*integrated_diams_artery_row_, *integrated_diams_artery_col_);
 
   // fill the vector collecting the element diameter
   fill_artery_ele_diam_col();
@@ -752,8 +752,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::find_free_hang
       Teuchos::rcp(new Epetra_Vector(*artconncompdis->element_col_map(), true));
   Teuchos::RCP<Epetra_Vector> ele_diams_artery_row =
       Teuchos::rcp(new Epetra_Vector(*arterydis_->element_row_map(), true));
-  Core::LinAlg::Export(*ele_diams_artery_col_, *ele_diams_artery_row);
-  Core::LinAlg::Export(*ele_diams_artery_row, *ele_diams_artery_full_overlap);
+  Core::LinAlg::export_to(*ele_diams_artery_col_, *ele_diams_artery_row);
+  Core::LinAlg::export_to(*ele_diams_artery_row, *ele_diams_artery_full_overlap);
 
   // vector of connected components of 1D graph
   std::vector<std::vector<int>> connected_components;

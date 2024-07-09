@@ -300,9 +300,9 @@ void BEAMINTERACTION::BeamToFluidMortarManager::set_local_maps(
 
   // Export values from the global multi vector to the ones needed on this rank.
   if (node_gid_to_lambda_gid_ != Teuchos::null)
-    Core::LinAlg::Export(*node_gid_to_lambda_gid_, *node_gid_to_lambda_gid_copy);
+    Core::LinAlg::export_to(*node_gid_to_lambda_gid_, *node_gid_to_lambda_gid_copy);
   if (element_gid_to_lambda_gid_ != Teuchos::null)
-    Core::LinAlg::Export(*element_gid_to_lambda_gid_, *element_gid_to_lambda_gid_copy);
+    Core::LinAlg::export_to(*element_gid_to_lambda_gid_, *element_gid_to_lambda_gid_copy);
 
   // Fill in the local maps.
   std::vector<int> lambda_gid_for_col_map;
@@ -576,8 +576,8 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::get_globa
   // Get the velocity of the beams and the fluid.
   Teuchos::RCP<Epetra_Vector> beam_vel = Teuchos::rcp(new Epetra_Vector(*beam_dof_rowmap_));
   Teuchos::RCP<Epetra_Vector> fluid_vel = Teuchos::rcp(new Epetra_Vector(*fluid_dof_rowmap_));
-  Core::LinAlg::Export(*vel, *beam_vel);
-  Core::LinAlg::Export(*vel, *fluid_vel);
+  Core::LinAlg::export_to(*vel, *beam_vel);
+  Core::LinAlg::export_to(*vel, *fluid_vel);
 
   // Set up lambda vector;
   Teuchos::RCP<Epetra_Vector> lambda = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
@@ -612,7 +612,7 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::get_globa
     Teuchos::RCP<const Epetra_Vector> vel) const
 {
   Teuchos::RCP<Epetra_Vector> lambda_col = Teuchos::rcp(new Epetra_Vector(*lambda_dof_colmap_));
-  Core::LinAlg::Export(*get_global_lambda(vel), *lambda_col);
+  Core::LinAlg::export_to(*get_global_lambda(vel), *lambda_col);
   return lambda_col;
 }
 

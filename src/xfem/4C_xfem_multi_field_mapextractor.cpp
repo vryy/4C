@@ -546,7 +546,7 @@ void XFEM::MultiFieldMapExtractor::build_interface_coupling_dof_set()
 
     Core::Communication::Exporter export_max_dof_num(
         sl_inodemap, ma_inodemap, sl_discret(i).get_comm());
-    export_max_dof_num.Export(sl_max_num_dof_per_inode);
+    export_max_dof_num.do_export(sl_max_num_dof_per_inode);
 
     // communicate the number of standard DoF's
     // Supposed to be the same value on all discretizations and all nodes.

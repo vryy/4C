@@ -366,7 +366,7 @@ namespace Core::Communication
     // export full vectors to the two desired processors
     Teuchos::RCP<Epetra_MultiVector> fullvec =
         Teuchos::rcp(new Epetra_MultiVector(*proc0map, vec->NumVectors(), true));
-    Core::LinAlg::Export(*vec, *fullvec);
+    Core::LinAlg::export_to(*vec, *fullvec);
 
     const int myglobalrank = gcomm->MyPID();
     double maxdiff = 0.0;

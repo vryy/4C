@@ -406,11 +406,11 @@ void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
         //      z_->Update(-1.0,*mod,1.0);
         //      Teuchos::RCP<Epetra_Vector> mod2 = Teuchos::rcp(new
         //      Epetra_Vector((dold_->RowMap()))); if (dold_->RowMap().NumGlobalElements())
-        //      Core::LinAlg::Export(*zold_,*mod2); Teuchos::RCP<Epetra_Vector> mod3 =
+        //      Core::LinAlg::export_to(*zold_,*mod2); Teuchos::RCP<Epetra_Vector> mod3 =
         //      Teuchos::rcp(new Epetra_Vector((dold_->RowMap())));
         //      dold_->Multiply(true,*mod2,*mod3); Teuchos::RCP<Epetra_Vector> mod4 =
         //      Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_)); if
-        //      (gsdofrowmap_->NumGlobalElements()) Core::LinAlg::Export(*mod3,*mod4);
+        //      (gsdofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*mod3,*mod4);
         //      z_->Update(-alphaf_,*mod4,1.0);
         //      Teuchos::RCP<Epetra_Vector> zcopy = Teuchos::rcp(new Epetra_Vector(*z_));
         //      invdmod->Multiply(true,*zcopy,*z_);

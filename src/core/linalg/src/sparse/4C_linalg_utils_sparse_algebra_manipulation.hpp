@@ -39,7 +39,7 @@ namespace Core::FE
 namespace Core::LinAlg
 {
   /*!
-   \brief Export a vector to a different map
+   \brief Communicate a vector to a different map
 
    Values of source are copied to target where maps don't have to match.
    Prerequisite: Either the map of source OR the map of target has to be unique
@@ -51,10 +51,10 @@ namespace Core::LinAlg
    \param source (in) : source vector values are taken from
    \param target (out): target vector values will be inserted in
    */
-  void Export(const Epetra_MultiVector& source, Epetra_MultiVector& target);
+  void export_to(const Epetra_MultiVector& source, Epetra_MultiVector& target);
 
   /*!
-   \brief Export a vector to a different map
+   \brief Communicate a vector to a different map
 
    Values of source are copied to target where maps don't have to match.
    Prerequisite: Either the map of source OR the map of target has to be unique
@@ -66,7 +66,7 @@ namespace Core::LinAlg
    \param source (in) : source vector values are taken from
    \param target (out): target vector values will be inserted in
    */
-  void Export(const Epetra_IntVector& source, Epetra_IntVector& target);
+  void export_to(const Epetra_IntVector& source, Epetra_IntVector& target);
 
   /*
    \brief Insert a list of elements in a given global row of the matrix with

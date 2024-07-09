@@ -249,14 +249,14 @@ void Adapter::CouplingEhlMortar::condense_contact(
   if (constr_direction_ == Inpar::CONTACT::constr_xyz)
   {
     gact = Core::LinAlg::CreateVector(*interface_->active_dofs(), true);
-    if (gact->GlobalLength()) Core::LinAlg::Export(*g_all, *gact);
+    if (gact->GlobalLength()) Core::LinAlg::export_to(*g_all, *gact);
   }
   else
   {
     gact = Core::LinAlg::CreateVector(*interface_->active_nodes(), true);
     if (gact->GlobalLength())
     {
-      Core::LinAlg::Export(*g_all, *gact);
+      Core::LinAlg::export_to(*g_all, *gact);
       if (gact->ReplaceMap(*interface_->active_n_dofs())) FOUR_C_THROW("replaceMap went wrong");
     }
   }
@@ -289,8 +289,8 @@ void Adapter::CouplingEhlMortar::condense_contact(
   // split rhs
   Teuchos::RCP<Epetra_Vector> rs = Teuchos::rcp(new Epetra_Vector(kss->row_map(), true));
   Teuchos::RCP<Epetra_Vector> rt = Teuchos::rcp(new Epetra_Vector(ktt->row_map(), true));
-  Core::LinAlg::Export(*combined_RHS, *rs);
-  Core::LinAlg::Export(*combined_RHS, *rt);
+  Core::LinAlg::export_to(*combined_RHS, *rs);
+  Core::LinAlg::export_to(*combined_RHS, *rt);
 
   // we don't want the rhs but the residual
   rs->Scale(-1.);
@@ -301,7 +301,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
                                // contact force, after that, fscn_ should be initialized propperly
   {
     Epetra_Vector tmp(kss->row_map());
-    Core::LinAlg::Export(*fscn_, tmp);
+    Core::LinAlg::export_to(*fscn_, tmp);
     if (rs->Update(alphaf_, tmp, 1.) != 0)  // fscn already scaled with alphaf_ in update
       FOUR_C_THROW("update went wrong");
   }
@@ -423,11 +423,11 @@ void Adapter::CouplingEhlMortar::condense_contact(
   // ****************************************************
   // split structural rhs
   Epetra_Vector rsni(*str_gni_dofs);
-  Core::LinAlg::Export(*rs, rsni);
+  Core::LinAlg::export_to(*rs, rsni);
   Epetra_Vector rsm(*interface_->master_row_dofs());
-  Core::LinAlg::Export(*rs, rsm);
+  Core::LinAlg::export_to(*rs, rsm);
   Teuchos::RCP<Epetra_Vector> rsa = Teuchos::rcp(new Epetra_Vector(*interface_->active_dofs()));
-  Core::LinAlg::Export(*rs, *rsa);
+  Core::LinAlg::export_to(*rs, *rsa);
   // ****************************************************
   // split rhs vectors***********************************
   // ****************************************************
@@ -464,7 +464,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
   // We can do that, since the system is linear in the LMs.
   tmpv = Teuchos::rcp(new Epetra_Vector(*interface_->active_dofs()));
   Teuchos::RCP<Epetra_Vector> tmpv2 = Teuchos::rcp(new Epetra_Vector(*interface_->active_dofs()));
-  Core::LinAlg::Export(*z_, *tmpv2);
+  Core::LinAlg::export_to(*z_, *tmpv2);
   dcsdLMc->multiply(false, *tmpv2, *tmpv);
   tmpv->Scale(-1.);
   CONTACT::UTILS::add_vector(*tmpv, *fcsa);
@@ -490,7 +490,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
       dInvA->extract_diagonal_copy(*diag);
       Teuchos::RCP<Epetra_Vector> lmDBC =
           Core::LinAlg::CreateVector(*interface_->active_dofs(), true);
-      Core::LinAlg::Export(*sdirichtoggle_, *lmDBC);
+      Core::LinAlg::export_to(*sdirichtoggle_, *lmDBC);
       Teuchos::RCP<Epetra_Vector> tmp =
           Core::LinAlg::CreateVector(*interface_->active_dofs(), true);
       tmp->Multiply(1., *diag, *lmDBC, 0.);
@@ -625,7 +625,7 @@ void Adapter::CouplingEhlMortar::recover_coupled(
     tmp.Scale(-1. / (1. - alphaf_));
     z_ = Teuchos::rcp(new Epetra_Vector(*interface_->slave_row_dofs()));
 
-    Core::LinAlg::Export(tmp, *z_);
+    Core::LinAlg::export_to(tmp, *z_);
   }
 
   else
@@ -689,7 +689,7 @@ void Adapter::CouplingEhlMortar::store_dirichlet_status(
   sdirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*interface_->slave_row_dofs(), true));
   Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->cond_map())));
   temp->PutScalar(1.0);
-  Core::LinAlg::Export(*temp, *sdirichtoggle_);
+  Core::LinAlg::export_to(*temp, *sdirichtoggle_);
 
   return;
 }

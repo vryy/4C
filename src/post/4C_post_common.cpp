@@ -930,7 +930,7 @@ PostResult::read_result_serialdensematrix(const std::string name)
 
   const Epetra_Map& elecolmap = *field_->discretization()->element_col_map();
   Core::Communication::Exporter ex(*elemap, elecolmap, *comm);
-  ex.Export(*mapdata);
+  ex.do_export(*mapdata);
 
   return mapdata;
 }

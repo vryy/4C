@@ -1232,7 +1232,7 @@ namespace BEAMINTERACTION
       {
         if (old == Teuchos::null) old = dofmapvec;
         dofmapvec = Core::LinAlg::CreateVector(*discret->dof_row_map(), true);
-        Core::LinAlg::Export(*old, *dofmapvec);
+        Core::LinAlg::export_to(*old, *dofmapvec);
       }
     }
 

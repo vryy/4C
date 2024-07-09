@@ -377,7 +377,7 @@ void EleMag::ElemagTimeInt::set_initial_electric_field(
   else
     phicol = Teuchos::rcp(new Epetra_Vector(*(scatradis->dof_col_map())));
 
-  Core::LinAlg::Export(*phi, *phicol);
+  Core::LinAlg::export_to(*phi, *phicol);
 
   // Loop MyColElements
   for (int el = 0; el < discret_->num_my_col_elements(); ++el)
@@ -1025,10 +1025,10 @@ void EleMag::ElemagTimeInt::write_restart()
   discret_->evaluate(eleparams);
 
   Teuchos::RCP<const Epetra_Vector> matrix_state = discret_->get_state(1, "intVar");
-  Core::LinAlg::Export(*matrix_state, *intVar);
+  Core::LinAlg::export_to(*matrix_state, *intVar);
 
   matrix_state = discret_->get_state(1, "intVarnm");
-  Core::LinAlg::Export(*matrix_state, *intVarnm);
+  Core::LinAlg::export_to(*matrix_state, *intVarnm);
 
   output_->write_vector("intVar", intVar);
   output_->write_vector("intVarnm", intVarnm);

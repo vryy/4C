@@ -121,7 +121,7 @@ void Core::IO::DiscretizationReader::read_multi_vector(
         "Source size: %d Target size: %d",
         name.c_str(), nv->GlobalLength(), vec->GlobalLength());
 
-  Core::LinAlg::Export(*nv, *vec);
+  Core::LinAlg::export_to(*nv, *vec);
 }
 
 

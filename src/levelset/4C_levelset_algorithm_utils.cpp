@@ -480,7 +480,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   if (convel_col == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
   Teuchos::RCP<Epetra_Vector> convel =
       Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map(nds_vel()), true));
-  Core::LinAlg::Export(*convel_col, *convel);
+  Core::LinAlg::export_to(*convel_col, *convel);
 
   // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
   // remark: operations must not be performed on 'convel', because the vector is accessed by both
@@ -572,7 +572,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   // export phinp to column map
   const Teuchos::RCP<Epetra_Vector> phinpcol =
       Teuchos::rcp(new Epetra_Vector(*discret_->dof_col_map()));
-  Core::LinAlg::Export(*phinp_, *phinpcol);
+  Core::LinAlg::export_to(*phinp_, *phinpcol);
 
   // this loop determines how many layers around the cut elements will be collected
   for (int loopcounter = 0; loopcounter < convel_layers_; ++loopcounter)
@@ -1031,14 +1031,14 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   {
     old = phinp_;
     phinp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    Core::LinAlg::Export(*old, *phinp_);
+    Core::LinAlg::export_to(*old, *phinp_);
   }
 
   if (phin_ != Teuchos::null)
   {
     old = phin_;
     phin_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    Core::LinAlg::Export(*old, *phin_);
+    Core::LinAlg::export_to(*old, *phin_);
   }
 
   // temporal solution derivative at time n+1
@@ -1046,7 +1046,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   {
     old = phidtnp_;
     phidtnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    Core::LinAlg::Export(*old, *phidtnp_);
+    Core::LinAlg::export_to(*old, *phidtnp_);
   }
 
   // temporal solution derivative at time n
@@ -1054,7 +1054,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   {
     old = phidtn_;
     phidtn_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    Core::LinAlg::Export(*old, *phidtn_);
+    Core::LinAlg::export_to(*old, *phidtn_);
   }
 
   // history vector (a linear combination of phinm, phin (BDF)
@@ -1063,7 +1063,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   {
     old = hist_;
     hist_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    Core::LinAlg::Export(*old, *hist_);
+    Core::LinAlg::export_to(*old, *hist_);
   }
 
   // -------------------------------------------------------------------
@@ -1074,7 +1074,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   {
     old = zeros_;
     zeros_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    Core::LinAlg::Export(*old, *zeros_);
+    Core::LinAlg::export_to(*old, *zeros_);
   }
 
   // -------------------------------------------------------------------
@@ -1085,7 +1085,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   {
     old = neumann_loads_;
     neumann_loads_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    Core::LinAlg::Export(*old, *neumann_loads_);
+    Core::LinAlg::export_to(*old, *neumann_loads_);
   }
 
   // the residual vector --- more or less the rhs
@@ -1093,7 +1093,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   {
     old = residual_;
     residual_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    Core::LinAlg::Export(*old, *residual_);
+    Core::LinAlg::export_to(*old, *residual_);
   }
 
   // residual vector containing the normal boundary fluxes
@@ -1101,7 +1101,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   {
     old = trueresidual_;
     trueresidual_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    Core::LinAlg::Export(*old, *trueresidual_);
+    Core::LinAlg::export_to(*old, *trueresidual_);
   }
 
   // incremental solution vector
@@ -1109,7 +1109,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   {
     old = increment_;
     increment_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    Core::LinAlg::Export(*old, *increment_);
+    Core::LinAlg::export_to(*old, *increment_);
   }
 
   // subgrid-diffusivity(-scaling) vector
@@ -1119,14 +1119,14 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   {
     old = subgrdiff_;
     subgrdiff_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    Core::LinAlg::Export(*old, *subgrdiff_);
+    Core::LinAlg::export_to(*old, *subgrdiff_);
   }
 
   if (initialphireinit_ != Teuchos::null)
   {
     old = initialphireinit_;
     initialphireinit_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    Core::LinAlg::Export(*old, *initialphireinit_);
+    Core::LinAlg::export_to(*old, *initialphireinit_);
   }
 
   if (fssgd_ != Inpar::ScaTra::fssugrdiff_no)

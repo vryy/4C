@@ -46,7 +46,7 @@ void Core::FE::Discretization::export_row_nodes(
   Core::Communication::Exporter exporter(oldmap, newmap, get_comm());
 
   // Do the communication
-  exporter.Export(node_);
+  exporter.do_export(node_);
 
   // update all ownership flags
   for (curr = node_.begin(); curr != node_.end(); ++curr) curr->second->set_owner(myrank);
@@ -87,7 +87,7 @@ void Core::FE::Discretization::export_column_nodes(
   // create an exporter object that will figure out the communication pattern
   Core::Communication::Exporter exporter(oldmap, newmap, get_comm());
   // Do the communication
-  exporter.Export(node_);
+  exporter.do_export(node_);
 
   // maps and pointers are no longer correct and need rebuilding
   reset(killdofs, killcond);
@@ -327,7 +327,7 @@ void Core::FE::Discretization::export_row_elements(
   // create an exporter object that will figure out the communication pattern
   Core::Communication::Exporter exporter(oldmap, newmap, get_comm());
 
-  exporter.Export(element_);
+  exporter.do_export(element_);
 
   // update ownerships and kick out everything that's not in newmap
   for (curr = element_.begin(); curr != element_.end(); ++curr) curr->second->set_owner(myrank);
@@ -367,7 +367,7 @@ void Core::FE::Discretization::export_column_elements(
 
   // create an exporter object that will figure out the communication pattern
   Core::Communication::Exporter exporter(oldmap, newmap, get_comm());
-  exporter.Export(element_);
+  exporter.do_export(element_);
 
   // maps and pointers are no longer correct and need rebuilding
   reset(killdofs, killcond);

@@ -147,7 +147,7 @@ void Solid::MODELEVALUATOR::BeamInteraction::setup()
 
   // We have to pass the displacement column vector to the initialization of the binning strategy.
   ia_state_ptr_->get_dis_col_np() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->dof_col_map()));
-  Core::LinAlg::Export(*ia_state_ptr_->get_dis_np(), *ia_state_ptr_->get_dis_col_np());
+  Core::LinAlg::export_to(*ia_state_ptr_->get_dis_np(), *ia_state_ptr_->get_dis_col_np());
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> disp_vec(1, ia_state_ptr_->get_dis_col_np());
   Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
@@ -420,7 +420,7 @@ void Solid::MODELEVALUATOR::BeamInteraction::partition_problem()
   // displacement vector according to periodic boundary conditions
   std::vector<Teuchos::RCP<Epetra_Vector>> mutabledisnp(
       1, Teuchos::rcp(new Epetra_Vector(*ia_discret_->dof_col_map())));
-  Core::LinAlg::Export(*ia_state_ptr_->get_dis_np(), *mutabledisnp[0]);
+  Core::LinAlg::export_to(*ia_state_ptr_->get_dis_np(), *mutabledisnp[0]);
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> disnp(
       1, Teuchos::rcp(new const Epetra_Vector(*mutabledisnp[0])));
@@ -463,7 +463,7 @@ void Solid::MODELEVALUATOR::BeamInteraction::partition_problem()
   // distribute elements that can be cut by the periodic boundary to bins
   Teuchos::RCP<Epetra_Vector> iadiscolnp =
       Teuchos::rcp(new Epetra_Vector(*ia_discret_->dof_col_map()));
-  Core::LinAlg::Export(*ia_state_ptr_->get_dis_np(), *iadiscolnp);
+  Core::LinAlg::export_to(*ia_state_ptr_->get_dis_np(), *iadiscolnp);
 
   binstrategy_->distribute_row_elements_to_bins_using_ele_aabb(
       ia_discret_, ia_state_ptr_->get_bin_to_row_ele_map(), iadiscolnp);
@@ -581,14 +581,15 @@ void Solid::MODELEVALUATOR::BeamInteraction::reset(const Epetra_Vector& x)
 
   // update column vector
   ia_state_ptr_->get_dis_col_np() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->dof_col_map()));
-  Core::LinAlg::Export(*ia_state_ptr_->get_dis_np(), *ia_state_ptr_->get_dis_col_np());
+  Core::LinAlg::export_to(*ia_state_ptr_->get_dis_np(), *ia_state_ptr_->get_dis_col_np());
 
   // update restart displacement vector
   if (ia_state_ptr_->get_restart_coupling_flag())
   {
     ia_state_ptr_->get_dis_restart_col() =
         Teuchos::rcp(new Epetra_Vector(*ia_discret_->dof_col_map()));
-    Core::LinAlg::Export(*ia_state_ptr_->get_dis_restart(), *ia_state_ptr_->get_dis_restart_col());
+    Core::LinAlg::export_to(
+        *ia_state_ptr_->get_dis_restart(), *ia_state_ptr_->get_dis_restart_col());
   }
 
   // submodel loop
@@ -1151,14 +1152,15 @@ void Solid::MODELEVALUATOR::BeamInteraction::update_maps()
 
   // update column vector
   ia_state_ptr_->get_dis_col_np() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->dof_col_map()));
-  Core::LinAlg::Export(*ia_state_ptr_->get_dis_np(), *ia_state_ptr_->get_dis_col_np());
+  Core::LinAlg::export_to(*ia_state_ptr_->get_dis_np(), *ia_state_ptr_->get_dis_col_np());
 
   // update restart displacement vector
   if (ia_state_ptr_->get_restart_coupling_flag())
   {
     ia_state_ptr_->get_dis_restart_col() =
         Teuchos::rcp(new Epetra_Vector(*ia_discret_->dof_col_map()));
-    Core::LinAlg::Export(*ia_state_ptr_->get_dis_restart(), *ia_state_ptr_->get_dis_restart_col());
+    Core::LinAlg::export_to(
+        *ia_state_ptr_->get_dis_restart(), *ia_state_ptr_->get_dis_restart_col());
   }
 
   // force

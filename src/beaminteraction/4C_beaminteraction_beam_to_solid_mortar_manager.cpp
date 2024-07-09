@@ -348,9 +348,9 @@ void BEAMINTERACTION::BeamToSolidMortarManager::set_local_maps(
 
   // Export values from the global multi vector to the ones needed on this rank.
   if (node_gid_to_lambda_gid_ != Teuchos::null)
-    Core::LinAlg::Export(*node_gid_to_lambda_gid_, *node_gid_to_lambda_gid_copy);
+    Core::LinAlg::export_to(*node_gid_to_lambda_gid_, *node_gid_to_lambda_gid_copy);
   if (element_gid_to_lambda_gid_ != Teuchos::null)
-    Core::LinAlg::Export(*element_gid_to_lambda_gid_, *element_gid_to_lambda_gid_copy);
+    Core::LinAlg::export_to(*element_gid_to_lambda_gid_, *element_gid_to_lambda_gid_copy);
 
   // Fill in the local maps.
   std::vector<int> lambda_gid_for_col_map;
@@ -488,7 +488,7 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::get_globa
 Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::get_global_lambda_col() const
 {
   Teuchos::RCP<Epetra_Vector> lambda_col = Teuchos::rcp(new Epetra_Vector(*lambda_dof_colmap_));
-  Core::LinAlg::Export(*get_global_lambda(), *lambda_col);
+  Core::LinAlg::export_to(*get_global_lambda(), *lambda_col);
   return lambda_col;
 }
 
@@ -639,8 +639,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
     if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
     Teuchos::RCP<Epetra_Vector> global_temp =
         Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map()));
-    Core::LinAlg::Export(*beam_force, *global_temp);
-    Core::LinAlg::Export(*solid_force, *global_temp);
+    Core::LinAlg::export_to(*beam_force, *global_temp);
+    Core::LinAlg::export_to(*solid_force, *global_temp);
 
     // Add force contributions to global vector.
     linalg_error = force->Update(-1.0 * rhs_factor, *global_temp, 1.0);
@@ -649,7 +649,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
 
   // Add the force and stiffness contributions that are assembled directly by the pairs.
   auto lambda_col = Teuchos::rcp(new Epetra_Vector(*lambda_dof_colmap_));
-  Core::LinAlg::Export(*lambda, *lambda_col);
+  Core::LinAlg::export_to(*lambda, *lambda_col);
   for (const auto& elepairptr : contact_pairs_)
     elepairptr->evaluate_and_assemble(
         *discret_, this, force, stiff, *lambda_col, *data_state->get_dis_col_np());

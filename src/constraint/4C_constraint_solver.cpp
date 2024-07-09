@@ -275,9 +275,9 @@ void CONSTRAINTS::ConstraintSolver::solve_direct(Teuchos::RCP<Core::LinAlg::Spar
   mergedmatrix->add(*constrT, true, 1.0, 1.0);
   mergedmatrix->complete(*mergedmap, *mergedmap);
   // fill merged vectors using Export
-  Core::LinAlg::Export(*rhsconstr, *mergedrhs);
+  Core::LinAlg::export_to(*rhsconstr, *mergedrhs);
   mergedrhs->Scale(-1.0);
-  Core::LinAlg::Export(*rhsstand, *mergedrhs);
+  Core::LinAlg::export_to(*rhsstand, *mergedrhs);
 
   // solve
   Core::LinAlg::SolverParams solver_params;
@@ -381,9 +381,9 @@ void CONSTRAINTS::ConstraintSolver::solve_simple(Teuchos::RCP<Core::LinAlg::Spar
 
   // merged rhs using Export
   Teuchos::RCP<Epetra_Vector> mergedrhs = Teuchos::rcp(new Epetra_Vector(*mergedrowmap));
-  Core::LinAlg::Export(*rhsconstr, *mergedrhs);
+  Core::LinAlg::export_to(*rhsconstr, *mergedrhs);
   mergedrhs->Scale(-1.0);
-  Core::LinAlg::Export(*rhscopy, *mergedrhs);
+  Core::LinAlg::export_to(*rhscopy, *mergedrhs);
 
   // solution vector
   Teuchos::RCP<Epetra_Vector> mergedsol = Teuchos::rcp(new Epetra_Vector(*mergedrowmap));
