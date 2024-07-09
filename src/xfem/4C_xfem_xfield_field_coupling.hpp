@@ -72,61 +72,61 @@ namespace XFEM
        *
        *  \param mv       (in) : master vector (to be transferred)
        *  \param map_type (in) : map type of the master vector */
-      inline Teuchos::RCP<Epetra_Vector> MasterToSlave(
+      inline Teuchos::RCP<Epetra_Vector> master_to_slave(
           const Teuchos::RCP<Epetra_Vector>& mv, const enum XFEM::MapType& map_type) const
       {
-        return MasterToSlave(mv.getConst(), map_type);
+        return master_to_slave(mv.getConst(), map_type);
       }
 
       /** \brief transfer a nodal/dof vector from slave to master
        *
        *  \param sv       (in) : slave vector (to be transferred)
        *  \param map_type (in) : map type of the slave vector */
-      inline Teuchos::RCP<Epetra_Vector> SlaveToMaster(
+      inline Teuchos::RCP<Epetra_Vector> slave_to_master(
           Teuchos::RCP<Epetra_Vector> sv, const enum XFEM::MapType& map_type) const
       {
-        return SlaveToMaster(sv.getConst(), map_type);
+        return slave_to_master(sv.getConst(), map_type);
       }
 
       /** \brief transfer a nodal/dof multi vector from master to slave
        *
        *  \param mv       (in) : master multi vector (to be transferred)
        *  \param map_type (in) : map type of the master vector */
-      inline Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
+      inline Teuchos::RCP<Epetra_MultiVector> master_to_slave(
           Teuchos::RCP<Epetra_MultiVector> mv, const enum XFEM::MapType& map_type) const
       {
-        return MasterToSlave(mv.getConst(), map_type);
+        return master_to_slave(mv.getConst(), map_type);
       }
 
       /** \brief transfer a nodal/dof multi vector from slave to master
        *
        *  \param sv       (in) : slave multi vector (to be transferred)
        *  \param map_type (in) : map type of the slave vector */
-      inline Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
+      inline Teuchos::RCP<Epetra_MultiVector> slave_to_master(
           Teuchos::RCP<Epetra_MultiVector> sv, const enum XFEM::MapType& map_type) const
       {
-        return SlaveToMaster(sv.getConst(), map_type);
+        return slave_to_master(sv.getConst(), map_type);
       }
 
       /** \brief transfer a nodel/dof vector from master to slave
        *
        *  \param mv       (in) : master vector (to be transferred)
        *  \param map_type (in) : map type of the master vector */
-      Teuchos::RCP<Epetra_Vector> MasterToSlave(
+      Teuchos::RCP<Epetra_Vector> master_to_slave(
           const Teuchos::RCP<const Epetra_Vector>& mv, const enum XFEM::MapType& map_type) const;
 
       /** \brief transfer a nodal/dof vector from slave to master
        *
        *  \param sv       (in) : slave vector (to be transferred)
        *  \param map_type (in) : map type of the slave vector */
-      Teuchos::RCP<Epetra_Vector> SlaveToMaster(
+      Teuchos::RCP<Epetra_Vector> slave_to_master(
           const Teuchos::RCP<const Epetra_Vector>& sv, const enum XFEM::MapType& map_type) const;
 
       /** \brief transfer a nodel/dof vector from master to slave
        *
        *  \param mv       (in) : master vector (to be transferred)
        *  \param map_type (in) : map type of the master vector */
-      Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
+      Teuchos::RCP<Epetra_MultiVector> master_to_slave(
           const Teuchos::RCP<const Epetra_MultiVector>& mv,
           const enum XFEM::MapType& map_type) const;
 
@@ -134,7 +134,7 @@ namespace XFEM
        *
        *  \param sv       (in) : slave multi vector (to be transferred)
        *  \param map_type (in) : map type of the slave vector */
-      Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
+      Teuchos::RCP<Epetra_MultiVector> slave_to_master(
           const Teuchos::RCP<const Epetra_MultiVector>& sv,
           const enum XFEM::MapType& map_type) const;
 
@@ -143,7 +143,7 @@ namespace XFEM
        *  \param mv       (in) : master multi vector (to be transferred/source)
        *  \param map_type (in) : map type of the master vector
        *  \param sv       (out): slave multi vector (target)*/
-      void MasterToSlave(const Teuchos::RCP<const Epetra_MultiVector>& mv,
+      void master_to_slave(const Teuchos::RCP<const Epetra_MultiVector>& mv,
           const enum XFEM::MapType& map_type, Teuchos::RCP<Epetra_MultiVector> sv) const;
 
       /** \brief transfer a nodal/dof multi vector from slave to master
@@ -151,7 +151,7 @@ namespace XFEM
        *  \param sv       (in) : slave multi vector (to be transferred)
        *  \param map_type (in) : map type of the slave vector
        *  \param mv       (out): master multi vector (target)*/
-      void SlaveToMaster(const Teuchos::RCP<const Epetra_MultiVector>& sv,
+      void slave_to_master(const Teuchos::RCP<const Epetra_MultiVector>& sv,
           const enum XFEM::MapType& map_type, Teuchos::RCP<Epetra_MultiVector> mv) const;
 
       //@}

@@ -471,7 +471,7 @@ namespace Discret
       /*!
       \brief return the master parent elemag element
       */
-      Discret::ELEMENTS::ElemagDiff* ParentMasterElement() const
+      Discret::ELEMENTS::ElemagDiff* parent_master_element() const
       {
         Core::Elements::Element* parent =
             this->Core::Elements::FaceElement::parent_master_element();
@@ -484,7 +484,7 @@ namespace Discret
       /*!
       \brief return the slave parent elemag element
       */
-      Discret::ELEMENTS::ElemagDiff* ParentSlaveElement() const
+      Discret::ELEMENTS::ElemagDiff* parent_slave_element() const
       {
         Core::Elements::Element* parent = this->Core::Elements::FaceElement::parent_slave_element();
         // make sure the static cast below is really valid

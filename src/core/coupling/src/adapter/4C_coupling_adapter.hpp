@@ -75,7 +75,7 @@ namespace Core::Adapter
    *  Epetra_Vector from the other side without actually looking at the
    *  respective maps. Afterwards the communication happens within one
    *  field in the usual fashion. So the transfer functions
-   *  MasterToSlave() and SlaveToMaster() are quite simple. The hard
+   *  master_to_slave() and slave_to_master() are quite simple. The hard
    *  work happens (once) during setup.
    *
    *  \author u.kue

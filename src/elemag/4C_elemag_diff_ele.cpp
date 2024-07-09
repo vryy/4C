@@ -446,8 +446,8 @@ void Discret::ELEMENTS::ElemagDiffIntFace::patch_location_vector(
   // *this ElemagDiffIntFace element only once (no duplicates)
 
   //-----------------------------------------------------------------------
-  const int m_numnode = ParentMasterElement()->num_node();
-  Core::Nodes::Node** m_nodes = ParentMasterElement()->nodes();
+  const int m_numnode = parent_master_element()->num_node();
+  Core::Nodes::Node** m_nodes = parent_master_element()->nodes();
 
   if (m_numnode != static_cast<int>(nds_master.size()))
   {
@@ -455,8 +455,8 @@ void Discret::ELEMENTS::ElemagDiffIntFace::patch_location_vector(
   }
 
   //-----------------------------------------------------------------------
-  const int s_numnode = ParentSlaveElement()->num_node();
-  Core::Nodes::Node** s_nodes = ParentSlaveElement()->nodes();
+  const int s_numnode = parent_slave_element()->num_node();
+  Core::Nodes::Node** s_nodes = parent_slave_element()->nodes();
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
   {
