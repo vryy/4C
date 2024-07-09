@@ -151,7 +151,7 @@ namespace Core::Geo
     {
      public:
       void* allocate(size_t size) override { return malloc(size); }
-      void free(void* ptr) override { free(ptr); }
+      void free(void* ptr) override { std::free(ptr); }
     };
 
     // Generic memory allocator that consist of small memory pools of constant size
