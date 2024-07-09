@@ -101,7 +101,10 @@ int Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::Solve()
     if (belosParams.isSublist("GMRES"))
     {
       auto belosSolverList = rcpFromRef(belosParams.sublist("GMRES"));
-      belosSolverList->set("Convergence Tolerance", belist.get<double>("Convergence Tolerance"));
+      if (belist.isParameter("Convergence Tolerance"))
+      {
+        belosSolverList->set("Convergence Tolerance", belist.get<double>("Convergence Tolerance"));
+      }
 
       newSolver = Teuchos::rcp(new Belos::PseudoBlockGmresSolMgr<double, VectorType, MatrixType>(
           problem, belosSolverList));
@@ -109,16 +112,20 @@ int Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::Solve()
     else if (belosParams.isSublist("CG"))
     {
       auto belosSolverList = rcpFromRef(belosParams.sublist("CG"));
-      belosSolverList->set("Convergence Tolerance", belist.get<double>("Convergence Tolerance"));
-
+      if (belist.isParameter("Convergence Tolerance"))
+      {
+        belosSolverList->set("Convergence Tolerance", belist.get<double>("Convergence Tolerance"));
+      }
       newSolver = Teuchos::rcp(
           new Belos::PseudoBlockCGSolMgr<double, VectorType, MatrixType>(problem, belosSolverList));
     }
     else if (belosParams.isSublist("BiCGSTAB"))
     {
       auto belosSolverList = rcpFromRef(belosParams.sublist("BiCGSTAB"));
-      belosSolverList->set("Convergence Tolerance", belist.get<double>("Convergence Tolerance"));
-
+      if (belist.isParameter("Convergence Tolerance"))
+      {
+        belosSolverList->set("Convergence Tolerance", belist.get<double>("Convergence Tolerance"));
+      }
       newSolver = Teuchos::rcp(
           new Belos::BiCGStabSolMgr<double, VectorType, MatrixType>(problem, belosSolverList));
     }
