@@ -1215,14 +1215,14 @@ void FLD::TurbulenceStatisticsGeneralMean::redistribute(
   {
     old = curr_avg_;
     curr_avg_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap), true);
-    Core::LinAlg::Export(*old, *curr_avg_);
+    Core::LinAlg::export_to(*old, *curr_avg_);
   }
 
   if (prev_avg_ != Teuchos::null)
   {
     old = prev_avg_;
     prev_avg_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap), true);
-    Core::LinAlg::Export(*old, *prev_avg_);
+    Core::LinAlg::export_to(*old, *prev_avg_);
   }
 
   if (withscatra_)
@@ -1231,14 +1231,14 @@ void FLD::TurbulenceStatisticsGeneralMean::redistribute(
     {
       old = curr_avg_sca_;
       curr_avg_sca_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap), true);
-      Core::LinAlg::Export(*old, *curr_avg_sca_);
+      Core::LinAlg::export_to(*old, *curr_avg_sca_);
     }
 
     if (prev_avg_sca_ != Teuchos::null)
     {
       old = prev_avg_sca_;
       prev_avg_sca_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap), true);
-      Core::LinAlg::Export(*old, *prev_avg_sca_);
+      Core::LinAlg::export_to(*old, *prev_avg_sca_);
     }
 
     if (scatradis_ != Teuchos::null)
@@ -1249,14 +1249,14 @@ void FLD::TurbulenceStatisticsGeneralMean::redistribute(
       {
         old = curr_avg_scatra_;
         curr_avg_scatra_ = Teuchos::rcp(new Epetra_Vector(*scatradofrowmap), true);
-        Core::LinAlg::Export(*old, *curr_avg_scatra_);
+        Core::LinAlg::export_to(*old, *curr_avg_scatra_);
       }
 
       if (prev_avg_scatra_ != Teuchos::null)
       {
         old = prev_avg_scatra_;
         prev_avg_scatra_ = Teuchos::rcp(new Epetra_Vector(*scatradofrowmap), true);
-        Core::LinAlg::Export(*old, *prev_avg_scatra_);
+        Core::LinAlg::export_to(*old, *prev_avg_scatra_);
       }
     }
   }

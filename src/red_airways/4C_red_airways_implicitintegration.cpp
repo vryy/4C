@@ -1934,41 +1934,41 @@ void Airway::RedAirwayImplicitTimeInt::output(
     }
 
     // write the flow values
-    Core::LinAlg::Export(*qin_nm_, *qexp_);
+    Core::LinAlg::export_to(*qin_nm_, *qexp_);
     output_.write_vector("qin_nm", qexp_);
-    Core::LinAlg::Export(*qin_n_, *qexp_);
+    Core::LinAlg::export_to(*qin_n_, *qexp_);
     output_.write_vector("qin_n", qexp_);
-    Core::LinAlg::Export(*qin_np_, *qexp_);
+    Core::LinAlg::export_to(*qin_np_, *qexp_);
     output_.write_vector("qin_np", qexp_);
 
-    Core::LinAlg::Export(*qout_nm_, *qexp_);
+    Core::LinAlg::export_to(*qout_nm_, *qexp_);
     output_.write_vector("qout_nm", qexp_);
-    Core::LinAlg::Export(*qout_n_, *qexp_);
+    Core::LinAlg::export_to(*qout_n_, *qexp_);
     output_.write_vector("qout_n", qexp_);
-    Core::LinAlg::Export(*qout_np_, *qexp_);
+    Core::LinAlg::export_to(*qout_np_, *qexp_);
     output_.write_vector("qout_np", qexp_);
 
-    Core::LinAlg::Export(*x_n_, *qexp_);
+    Core::LinAlg::export_to(*x_n_, *qexp_);
     output_.write_vector("x_n", qexp_);
-    Core::LinAlg::Export(*x_np_, *qexp_);
+    Core::LinAlg::export_to(*x_np_, *qexp_);
     output_.write_vector("x_np", qexp_);
-    Core::LinAlg::Export(*open_, *qexp_);
+    Core::LinAlg::export_to(*open_, *qexp_);
     output_.write_vector("open", qexp_);
-    Core::LinAlg::Export(*p_extnp_, *qexp_);
+    Core::LinAlg::export_to(*p_extnp_, *qexp_);
     output_.write_vector("p_extnp", qexp_);
-    Core::LinAlg::Export(*p_extn_, *qexp_);
+    Core::LinAlg::export_to(*p_extn_, *qexp_);
     output_.write_vector("p_extn", qexp_);
-    Core::LinAlg::Export(*airway_acinus_dep_, *qexp_);
+    Core::LinAlg::export_to(*airway_acinus_dep_, *qexp_);
     output_.write_vector("airway_acinus_dep", qexp_);
 
-    Core::LinAlg::Export(*elemVolumenm_, *qexp_);
+    Core::LinAlg::export_to(*elemVolumenm_, *qexp_);
     output_.write_vector("elemVolumenm", qexp_);
-    Core::LinAlg::Export(*elemVolumen_, *qexp_);
+    Core::LinAlg::export_to(*elemVolumen_, *qexp_);
     output_.write_vector("elemVolumen", qexp_);
-    Core::LinAlg::Export(*elemVolumenp_, *qexp_);
+    Core::LinAlg::export_to(*elemVolumenp_, *qexp_);
     output_.write_vector("elemVolumenp", qexp_);
 
-    Core::LinAlg::Export(*elemRadiusnp_, *qexp_);
+    Core::LinAlg::export_to(*elemRadiusnp_, *qexp_);
     output_.write_vector("elemRadius_current", qexp_);
 
     {
@@ -2004,16 +2004,16 @@ void Airway::RedAirwayImplicitTimeInt::output(
 
     if (step_ == upres_)
     {
-      Core::LinAlg::Export(*elemVolume0_, *qexp_);
+      Core::LinAlg::export_to(*elemVolume0_, *qexp_);
       output_.write_vector("elemVolume0", qexp_);
       output_.write_vector("NodeIDs", nodeIds_);
       output_.write_vector("radii", radii_);
-      Core::LinAlg::Export(*generations_, *qexp_);
+      Core::LinAlg::export_to(*generations_, *qexp_);
       output_.write_vector("generations", qexp_);
-      Core::LinAlg::Export(*acini_bc_, *qexp_);
+      Core::LinAlg::export_to(*acini_bc_, *qexp_);
       output_.write_vector("acin_bc", qexp_);
       output_.write_element_data(true);
-      Core::LinAlg::Export(*elemArea0_, *qexp_);
+      Core::LinAlg::export_to(*elemArea0_, *qexp_);
       output_.write_vector("elemArea0", qexp_);
     }
 
@@ -2085,50 +2085,50 @@ void Airway::RedAirwayImplicitTimeInt::output(
       output_.write_vector("juncVolMix", jVDofRowMix_);
     }
     // write the flow values
-    Core::LinAlg::Export(*qin_nm_, *qexp_);
+    Core::LinAlg::export_to(*qin_nm_, *qexp_);
     output_.write_vector("qin_nm", qexp_);
-    Core::LinAlg::Export(*qin_n_, *qexp_);
+    Core::LinAlg::export_to(*qin_n_, *qexp_);
     output_.write_vector("qin_n", qexp_);
-    Core::LinAlg::Export(*qin_np_, *qexp_);
+    Core::LinAlg::export_to(*qin_np_, *qexp_);
     output_.write_vector("qin_np", qexp_);
     //
-    Core::LinAlg::Export(*qout_nm_, *qexp_);
+    Core::LinAlg::export_to(*qout_nm_, *qexp_);
     output_.write_vector("qout_nm", qexp_);
-    Core::LinAlg::Export(*qout_n_, *qexp_);
+    Core::LinAlg::export_to(*qout_n_, *qexp_);
     output_.write_vector("qout_n", qexp_);
-    Core::LinAlg::Export(*qout_np_, *qexp_);
+    Core::LinAlg::export_to(*qout_np_, *qexp_);
     output_.write_vector("qout_np", qexp_);
 
-    Core::LinAlg::Export(*x_n_, *qexp_);
+    Core::LinAlg::export_to(*x_n_, *qexp_);
     output_.write_vector("x_n", qexp_);
-    Core::LinAlg::Export(*x_np_, *qexp_);
+    Core::LinAlg::export_to(*x_np_, *qexp_);
     output_.write_vector("x_np", qexp_);
-    Core::LinAlg::Export(*open_, *qexp_);
+    Core::LinAlg::export_to(*open_, *qexp_);
     output_.write_vector("open", qexp_);
-    Core::LinAlg::Export(*p_extnp_, *qexp_);
+    Core::LinAlg::export_to(*p_extnp_, *qexp_);
     output_.write_vector("p_extnp", qexp_);
-    Core::LinAlg::Export(*p_extn_, *qexp_);
+    Core::LinAlg::export_to(*p_extn_, *qexp_);
     output_.write_vector("p_extn", qexp_);
-    Core::LinAlg::Export(*airway_acinus_dep_, *qexp_);
+    Core::LinAlg::export_to(*airway_acinus_dep_, *qexp_);
     output_.write_vector("airway_acinus_dep", qexp_);
 
-    Core::LinAlg::Export(*elemVolumenm_, *qexp_);
+    Core::LinAlg::export_to(*elemVolumenm_, *qexp_);
     output_.write_vector("elemVolumenm", qexp_);
-    Core::LinAlg::Export(*elemVolumen_, *qexp_);
+    Core::LinAlg::export_to(*elemVolumen_, *qexp_);
     output_.write_vector("elemVolumen", qexp_);
-    Core::LinAlg::Export(*elemVolumenp_, *qexp_);
+    Core::LinAlg::export_to(*elemVolumenp_, *qexp_);
     output_.write_vector("elemVolumenp", qexp_);
 
     //
-    Core::LinAlg::Export(*acini_e_volumenm_, *qexp_);
+    Core::LinAlg::export_to(*acini_e_volumenm_, *qexp_);
     output_.write_vector("acini_vnm", qexp_);
-    Core::LinAlg::Export(*acini_e_volumen_, *qexp_);
+    Core::LinAlg::export_to(*acini_e_volumen_, *qexp_);
     output_.write_vector("acini_vn", qexp_);
-    Core::LinAlg::Export(*acini_e_volumenp_, *qexp_);
+    Core::LinAlg::export_to(*acini_e_volumenp_, *qexp_);
     output_.write_vector("acini_vnp", qexp_);
-    Core::LinAlg::Export(*acini_e_volume_strain_, *qexp_);
+    Core::LinAlg::export_to(*acini_e_volume_strain_, *qexp_);
     output_.write_vector("acini_volumetric_strain", qexp_);
-    Core::LinAlg::Export(*acini_e_volume0_, *qexp_);
+    Core::LinAlg::export_to(*acini_e_volume0_, *qexp_);
     output_.write_vector("acini_v0", qexp_);
 
     // write mesh in each restart step --- the elements are required since
@@ -2178,49 +2178,49 @@ void Airway::RedAirwayImplicitTimeInt::read_restart(int step, bool coupledTo3D)
   reader.read_vector(p_nonlin_, "p_nonlin");
 
   reader.read_vector(qexp_, "acini_vnm");
-  Core::LinAlg::Export(*qexp_, *acini_e_volumenm_);
+  Core::LinAlg::export_to(*qexp_, *acini_e_volumenm_);
   reader.read_vector(qexp_, "acini_vn");
-  Core::LinAlg::Export(*qexp_, *acini_e_volumen_);
+  Core::LinAlg::export_to(*qexp_, *acini_e_volumen_);
   reader.read_vector(qexp_, "acini_vnp");
-  Core::LinAlg::Export(*qexp_, *acini_e_volumenp_);
+  Core::LinAlg::export_to(*qexp_, *acini_e_volumenp_);
   reader.read_vector(qexp_, "acini_volumetric_strain");
-  Core::LinAlg::Export(*qexp_, *acini_e_volume_strain_);
+  Core::LinAlg::export_to(*qexp_, *acini_e_volume_strain_);
   reader.read_vector(qexp_, "acini_v0");
-  Core::LinAlg::Export(*qexp_, *acini_e_volume0_);
+  Core::LinAlg::export_to(*qexp_, *acini_e_volume0_);
 
   reader.read_vector(qexp_, "qin_nm");
-  Core::LinAlg::Export(*qexp_, *qin_nm_);
+  Core::LinAlg::export_to(*qexp_, *qin_nm_);
   reader.read_vector(qexp_, "qin_n");
-  Core::LinAlg::Export(*qexp_, *qin_n_);
+  Core::LinAlg::export_to(*qexp_, *qin_n_);
   reader.read_vector(qexp_, "qin_np");
-  Core::LinAlg::Export(*qexp_, *qin_np_);
+  Core::LinAlg::export_to(*qexp_, *qin_np_);
 
   reader.read_vector(qexp_, "qout_nm");
-  Core::LinAlg::Export(*qexp_, *qout_nm_);
+  Core::LinAlg::export_to(*qexp_, *qout_nm_);
   reader.read_vector(qexp_, "qout_n");
-  Core::LinAlg::Export(*qexp_, *qout_n_);
+  Core::LinAlg::export_to(*qexp_, *qout_n_);
   reader.read_vector(qexp_, "qout_np");
-  Core::LinAlg::Export(*qexp_, *qout_np_);
+  Core::LinAlg::export_to(*qexp_, *qout_np_);
 
   reader.read_vector(qexp_, "elemVolumenm");
-  Core::LinAlg::Export(*qexp_, *elemVolumenm_);
+  Core::LinAlg::export_to(*qexp_, *elemVolumenm_);
   reader.read_vector(qexp_, "elemVolumen");
-  Core::LinAlg::Export(*qexp_, *elemVolumen_);
+  Core::LinAlg::export_to(*qexp_, *elemVolumen_);
   reader.read_vector(qexp_, "elemVolumenp");
-  Core::LinAlg::Export(*qexp_, *elemVolumenp_);
+  Core::LinAlg::export_to(*qexp_, *elemVolumenp_);
 
   reader.read_vector(qexp_, "x_n");
-  Core::LinAlg::Export(*qexp_, *x_n_);
+  Core::LinAlg::export_to(*qexp_, *x_n_);
   reader.read_vector(qexp_, "x_np");
-  Core::LinAlg::Export(*qexp_, *x_np_);
+  Core::LinAlg::export_to(*qexp_, *x_np_);
   reader.read_vector(qexp_, "open");
-  Core::LinAlg::Export(*qexp_, *open_);
+  Core::LinAlg::export_to(*qexp_, *open_);
   reader.read_vector(qexp_, "p_extn");
-  Core::LinAlg::Export(*qexp_, *p_extn_);
+  Core::LinAlg::export_to(*qexp_, *p_extn_);
   reader.read_vector(qexp_, "p_extnp");
-  Core::LinAlg::Export(*qexp_, *p_extnp_);
+  Core::LinAlg::export_to(*qexp_, *p_extnp_);
   reader.read_vector(qexp_, "airway_acinus_dep");
-  Core::LinAlg::Export(*qexp_, *airway_acinus_dep_);
+  Core::LinAlg::export_to(*qexp_, *airway_acinus_dep_);
 
 
   // read the previously written elements including the history data
@@ -2232,21 +2232,21 @@ void Airway::RedAirwayImplicitTimeInt::read_restart(int step, bool coupledTo3D)
     reader.read_vector(scatraO2nm_, "scatraO2nm");
 
     reader.read_vector(qexp_, "e1scatraO2np");
-    Core::LinAlg::Export(*qexp_, *e1scatraO2np_);
+    Core::LinAlg::export_to(*qexp_, *e1scatraO2np_);
     reader.read_vector(qexp_, "e1scatraO2n");
-    Core::LinAlg::Export(*qexp_, *e1scatraO2n_);
+    Core::LinAlg::export_to(*qexp_, *e1scatraO2n_);
     reader.read_vector(qexp_, "e1scatraO2nm");
-    Core::LinAlg::Export(*qexp_, *e1scatraO2nm_);
+    Core::LinAlg::export_to(*qexp_, *e1scatraO2nm_);
 
     reader.read_vector(qexp_, "e2scatraO2np");
-    Core::LinAlg::Export(*qexp_, *e2scatraO2np_);
+    Core::LinAlg::export_to(*qexp_, *e2scatraO2np_);
     reader.read_vector(qexp_, "e2scatraO2n");
-    Core::LinAlg::Export(*qexp_, *e2scatraO2n_);
+    Core::LinAlg::export_to(*qexp_, *e2scatraO2n_);
     reader.read_vector(qexp_, "e2scatraO2nm");
-    Core::LinAlg::Export(*qexp_, *e2scatraO2nm_);
+    Core::LinAlg::export_to(*qexp_, *e2scatraO2nm_);
 
     reader.read_vector(jVDofRowMix_, "juncVolMix");
-    Core::LinAlg::Export(*jVDofRowMix_, *junctionVolumeInMix_);
+    Core::LinAlg::export_to(*jVDofRowMix_, *junctionVolumeInMix_);
   }
 
 }  // RedAirwayImplicitTimeInt::read_restart

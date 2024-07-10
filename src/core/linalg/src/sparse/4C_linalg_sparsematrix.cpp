@@ -1660,7 +1660,7 @@ void Core::LinAlg::SparseMatrix::split2x2(BlockSparseMatrixBase& Abase) const
       dselector[i] = -1.;
   }
   Epetra_Vector selector(A->ColMap());
-  Core::LinAlg::Export(dselector, selector);
+  Core::LinAlg::export_to(dselector, selector);
 
   std::vector<int> gcindices1(A->MaxNumEntries());
   std::vector<double> gvalues1(A->MaxNumEntries());
@@ -1774,7 +1774,7 @@ void Core::LinAlg::SparseMatrix::split_mx_n(BlockSparseMatrixBase& ABlock) const
     if (n == N) FOUR_C_THROW("Matrix column was not found in BlockSparseMatrixBase!");
   }
   Epetra_Vector selector(A.ColMap());
-  Core::LinAlg::Export(dselector, selector);
+  Core::LinAlg::export_to(dselector, selector);
 
   // allocate vectors storing global column indexes and values of matrix entries in a given row,
   // separated by blocks allocation is done outside loop over all rows for efficiency to be on the

@@ -625,7 +625,7 @@ Teuchos::RCP<const Epetra_Vector> Core::Rebalance::GetColVersionOfRowVector(
   else
   {
     Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(*colmap, false);
-    Core::LinAlg::Export(*state, *tmp);
+    Core::LinAlg::export_to(*state, *tmp);
     return tmp;
   }
 }  // GetColVersionOfRowVector

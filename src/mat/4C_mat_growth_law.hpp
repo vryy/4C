@@ -594,7 +594,7 @@ namespace Mat
     }
 
     //! material parameters
-    Mat::PAR::GrowthLawAnisoStrain* Parameter()
+    Mat::PAR::GrowthLawAnisoStrain* parameter()
     {
       return dynamic_cast<Mat::PAR::GrowthLawAnisoStrain*>(Mat::GrowthLawDyn::parameter());
     }
@@ -738,7 +738,7 @@ namespace Mat
     }
 
     //! material parameters
-    Mat::PAR::GrowthLawAnisoStress* Parameter()
+    Mat::PAR::GrowthLawAnisoStress* parameter()
     {
       return dynamic_cast<Mat::PAR::GrowthLawAnisoStress*>(Mat::GrowthLawDyn::parameter());
     }
@@ -839,7 +839,7 @@ namespace Mat
     }
 
     //! material parameters
-    Mat::PAR::GrowthLawAnisoStrainConstTrig* Parameter()
+    Mat::PAR::GrowthLawAnisoStrainConstTrig* parameter()
     {
       return dynamic_cast<Mat::PAR::GrowthLawAnisoStrainConstTrig*>(Mat::GrowthLawDyn::parameter());
     }
@@ -941,7 +941,7 @@ namespace Mat
     }
 
     //! material parameters
-    Mat::PAR::GrowthLawAnisoStressConstTrig* Parameter()
+    Mat::PAR::GrowthLawAnisoStressConstTrig* parameter()
     {
       return dynamic_cast<Mat::PAR::GrowthLawAnisoStressConstTrig*>(Mat::GrowthLawDyn::parameter());
     }
@@ -1094,7 +1094,7 @@ namespace Mat
     }
 
     //! material parameters
-    Mat::PAR::GrowthLawIsoStress* Parameter()
+    Mat::PAR::GrowthLawIsoStress* parameter()
     {
       return dynamic_cast<Mat::PAR::GrowthLawIsoStress*>(Mat::GrowthLawDyn::parameter());
     }

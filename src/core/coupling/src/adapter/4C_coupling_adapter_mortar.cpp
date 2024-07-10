@@ -701,7 +701,7 @@ void Core::Adapter::CouplingMortar::mesh_relocation(Teuchos::RCP<Core::FE::Discr
   Teuchos::RCP<Epetra_Map> fullsnodes =
       Core::LinAlg::AllreduceEMap(*(interface_->slave_row_nodes()));
   Epetra_Vector Xslavemodcol(*fullsdofs, false);
-  Core::LinAlg::Export(*Xslavemod, Xslavemodcol);
+  Core::LinAlg::export_to(*Xslavemod, Xslavemodcol);
 
   // loop over all slave nodes on the current interface
   for (int j = 0; j < fullsnodes->NumMyElements(); ++j)

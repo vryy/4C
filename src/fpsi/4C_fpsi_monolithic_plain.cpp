@@ -1055,7 +1055,7 @@ void FPSI::MonolithicPlain::recover_lagrange_multiplier()
     // ---------Addressing term (6)
     auxvec = Teuchos::rcp(new Epetra_Vector(fgiprev_->range_map(), true));
     Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(fgiprev_->domain_map(), true));
-    Core::LinAlg::Export(*duiinc_, *tmp);
+    Core::LinAlg::export_to(*duiinc_, *tmp);
     fgiprev_->Apply(*tmp, *auxvec);
     tmpvec->Update(1.0, *auxvec, 1.0);
     // ---------End of term (6)

@@ -1218,10 +1218,10 @@ void ScaTra::TimIntHDG::adapt_degree()
   // copy old values of the state vectors phi and intphi into vectors, which are then used for the
   // projection
   Teuchos::RCP<Epetra_Vector> phinp_old = Core::LinAlg::CreateVector(*facedofs_old, true);
-  Core::LinAlg::Export(*phinp_, *phinp_old);
+  Core::LinAlg::export_to(*phinp_, *phinp_old);
 
   Teuchos::RCP<Epetra_Vector> intphinp_old = Core::LinAlg::CreateVector(*eledofs_old, true);
-  Core::LinAlg::Export(*intphinp_, *intphinp_old);
+  Core::LinAlg::export_to(*intphinp_, *intphinp_old);
 
   // reset the residual, increment and sysmat to the size of the adapted new dofset
   residual_.reset(new Epetra_Vector(*(discret_->dof_row_map())));

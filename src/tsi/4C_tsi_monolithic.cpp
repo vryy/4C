@@ -2642,7 +2642,7 @@ void TSI::Monolithic::calculate_necking_tsi_results()
                                                   // all DOFs at top surf with DBC
           false));
   // copy the structural reaction force to tension
-  Core::LinAlg::Export(*(structure_field()->freact()), *tension);
+  Core::LinAlg::export_to(*(structure_field()->freact()), *tension);
   double top_force_local = 0.0;  // local force
   for (int i = 0; i < tension->MyLength(); i++) top_force_local -= (*tension)[i];
 

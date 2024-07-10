@@ -486,7 +486,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::distribute_wall_elements_and_nod
   if (walldatastate_->get_disp_row() != Teuchos::null)
   {
     disn_col = Teuchos::rcp(new Epetra_Vector(*walldiscretization_->dof_col_map()));
-    Core::LinAlg::Export(*walldatastate_->get_disp_row(), *disn_col);
+    Core::LinAlg::export_to(*walldatastate_->get_disp_row(), *disn_col);
   }
 
   // determine bin to row wall element distribution

@@ -118,7 +118,7 @@ namespace Core::Communication
                                 TargetMap().
     */
     template <typename T>
-    void Export(std::map<int, Teuchos::RCP<T>>& parobjects);
+    void do_export(std::map<int, Teuchos::RCP<T>>& parobjects);
 
     /*!
     \brief Communicate a map of vectors of some basic data type T
@@ -136,7 +136,7 @@ namespace Core::Communication
                           TargetMap().
     */
     template <typename T>
-    void Export(std::map<int, std::vector<T>>& data);
+    void do_export(std::map<int, std::vector<T>>& data);
 
     /*!
     \brief Communicate a map of sets of some basic data type T (currently only int)
@@ -154,7 +154,7 @@ namespace Core::Communication
                           TargetMap().
     */
     template <typename T>
-    void Export(std::map<int, std::set<T>>& data);
+    void do_export(std::map<int, std::set<T>>& data);
 
     //                                                             nagler 07/2012
     /*!
@@ -172,7 +172,7 @@ namespace Core::Communication
                           TargetMap().
     */
     template <typename T, typename U>
-    void Export(std::map<int, std::map<T, U>>& data);
+    void do_export(std::map<int, std::map<T, U>>& data);
 
     /*!
     \brief Communicate a map of int values
@@ -186,7 +186,7 @@ namespace Core::Communication
                                 On output, the map has a distribution of
                                 TargetMap().
     */
-    void Export(std::map<int, int>& data);
+    void do_export(std::map<int, int>& data);
 
     /*!
     \brief Communicate a map of double values
@@ -200,7 +200,7 @@ namespace Core::Communication
                                 On output, the map has a distribution of
                                 TargetMap().
     */
-    void Export(std::map<int, double>& data);
+    void do_export(std::map<int, double>& data);
 
     /*!
     \brief Communicate a map of serial dense matrices
@@ -214,7 +214,7 @@ namespace Core::Communication
                                 On output, the map has a distribution of
                                 TargetMap().
     */
-    void Export(std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& data);
+    void do_export(std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& data);
 
     /**@}*/
     /*!
@@ -821,28 +821,28 @@ namespace Core::Communication
  |  communicate objects (public)                             mwgee 11/06|
  *----------------------------------------------------------------------*/
 template <typename T>
-void Core::Communication::Exporter::Export(std::map<int, Teuchos::RCP<T>>& parobjects)
+void Core::Communication::Exporter::do_export(std::map<int, Teuchos::RCP<T>>& parobjects)
 {
   ParObjectExporterHelper<T> helper(parobjects);
   generic_export(helper);
 }
 
 template <typename T>
-void Core::Communication::Exporter::Export(std::map<int, std::vector<T>>& data)
+void Core::Communication::Exporter::do_export(std::map<int, std::vector<T>>& data)
 {
   PODVectorExporterHelper<T> helper(data);
   generic_export(helper);
 }
 
 template <typename T>
-void Core::Communication::Exporter::Export(std::map<int, std::set<T>>& data)
+void Core::Communication::Exporter::do_export(std::map<int, std::set<T>>& data)
 {
   PODSetExporterHelper<T> helper(data);
   generic_export(helper);
 }
 
 template <typename T, typename U>
-void Core::Communication::Exporter::Export(std::map<int, std::map<T, U>>& data)
+void Core::Communication::Exporter::do_export(std::map<int, std::map<T, U>>& data)
 {
   PODMapExporterHelper<T, U> helper(data);
   generic_export(helper);

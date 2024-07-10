@@ -946,7 +946,7 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
 
     Teuchos::RCP<Epetra_Vector> tmpColVector = Teuchos::rcp(new Epetra_Vector(*newdofcolmap, true));
     newColVectors.push_back(tmpColVector);
-    Core::LinAlg::Export(*newRowVectors[index], *newColVectors[index]);
+    Core::LinAlg::export_to(*newRowVectors[index], *newColVectors[index]);
   }
 
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();

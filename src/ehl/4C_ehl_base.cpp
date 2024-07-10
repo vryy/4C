@@ -330,7 +330,7 @@ void EHL::Base::add_poiseuille_force(
       ada_strDisp_to_lubPres_->slave_to_master(lubrication_->lubrication_field()->prenp());
   Teuchos::RCP<Epetra_Vector> p_int_full =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->slave_dof_map()));
-  Core::LinAlg::Export(*p_int, *p_int_full);
+  Core::LinAlg::export_to(*p_int, *p_int_full);
 
   Teuchos::RCP<Epetra_Vector> nodal_gap =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->slave_dof_map()));
@@ -554,7 +554,7 @@ void EHL::Base::setup_unprojectable_dbc()
 
   Teuchos::RCP<Epetra_Vector> exp =
       Teuchos::rcp(new Epetra_Vector(*ada_strDisp_to_lubPres_->master_dof_map()));
-  Core::LinAlg::Export(*inf_gap_toggle, *exp);
+  Core::LinAlg::export_to(*inf_gap_toggle, *exp);
   inf_gap_toggle_lub_ = ada_strDisp_to_lubPres_->master_to_slave(exp);
 
   static Teuchos::RCP<Epetra_Vector> old_toggle = Teuchos::null;
@@ -745,8 +745,8 @@ void EHL::Base::output(bool forced_writerestart)
         Teuchos::rcp(new Epetra_Vector(*structure_field()->discretization()->node_row_map()));
     Teuchos::RCP<Epetra_Vector> slip =
         Teuchos::rcp(new Epetra_Vector(*structure_field()->discretization()->node_row_map()));
-    Core::LinAlg::Export(*active_toggle, *active);
-    Core::LinAlg::Export(*slip_toggle, *slip);
+    Core::LinAlg::export_to(*active_toggle, *active);
+    Core::LinAlg::export_to(*slip_toggle, *slip);
     structure_field()->disc_writer()->write_vector("active", active, Core::IO::dofvector);
     structure_field()->disc_writer()->write_vector("slip", slip, Core::IO::dofvector);
   }
@@ -758,8 +758,8 @@ void EHL::Base::output(bool forced_writerestart)
         Teuchos::rcp(new Epetra_Vector(*structure_field()->discretization()->dof_row_map()));
     Teuchos::RCP<Epetra_Vector> te =
         Teuchos::rcp(new Epetra_Vector(*structure_field()->discretization()->dof_row_map()));
-    Core::LinAlg::Export(*n, *ne);
-    Core::LinAlg::Export(*t, *te);
+    Core::LinAlg::export_to(*n, *ne);
+    Core::LinAlg::export_to(*t, *te);
     structure_field()->disc_writer()->write_vector("normal_contact", ne, Core::IO::dofvector);
     structure_field()->disc_writer()->write_vector("tangential_contact", te, Core::IO::dofvector);
   }
@@ -790,7 +790,7 @@ void EHL::Base::output(bool forced_writerestart)
 
     Teuchos::RCP<Epetra_Vector> height_ex =
         Teuchos::rcp(new Epetra_Vector(*ada_lubPres_to_lubDisp_->slave_dof_map()));
-    Core::LinAlg::Export(*height, *height_ex);
+    Core::LinAlg::export_to(*height, *height_ex);
     Teuchos::RCP<Epetra_Vector> h1 = ada_lubPres_to_lubDisp_->slave_to_master(height_ex);
     lubrication_->lubrication_field()->disc_writer()->write_vector(
         "height", h1, Core::IO::dofvector);
@@ -827,7 +827,7 @@ void EHL::Base::output(bool forced_writerestart)
     Teuchos::RCP<Epetra_Vector> visc_vec_ex =
         Teuchos::rcp(new Epetra_Vector(*ada_lubPres_to_lubDisp_->slave_dof_map()));
 
-    Core::LinAlg::Export(*visc_vec, *visc_vec_ex);
+    Core::LinAlg::export_to(*visc_vec, *visc_vec_ex);
 
     Teuchos::RCP<Epetra_Vector> v1 = ada_lubPres_to_lubDisp_->slave_to_master(visc_vec_ex);
 

@@ -781,7 +781,7 @@ Teuchos::RCP<Epetra_Vector> Solid::TimeInt::BaseDataGlobalState::extract_model_e
   else
   {
     model_ptr = Teuchos::rcp(new Epetra_Vector(*model_maps_.at(mt)));
-    Core::LinAlg::Export(source, *model_ptr);
+    Core::LinAlg::export_to(source, *model_ptr);
   }
 
 

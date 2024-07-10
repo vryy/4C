@@ -442,7 +442,7 @@ void Solid::MonitorDbc::get_area(double area[], const Core::Conditions::Conditio
   const std::map<int, Teuchos::RCP<Core::Elements::Element>>& celes = rcond->geometry();
   Teuchos::RCP<const Epetra_Vector> dispn = gstate_ptr_->get_dis_np();
   Epetra_Vector dispn_col(*discret.dof_col_map(), true);
-  Core::LinAlg::Export(*dispn, dispn_col);
+  Core::LinAlg::export_to(*dispn, dispn_col);
 
   for (auto& cele_pair : celes)
   {

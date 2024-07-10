@@ -907,20 +907,21 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
   if (alpha2_) col_filtered_alpha2_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap, true));
 
   // export filtered vectors in rowmap to columnmap format
-  if (velocity_) Core::LinAlg::Export(*filtered_vel_, *col_filtered_vel_);
+  if (velocity_) Core::LinAlg::export_to(*filtered_vel_, *col_filtered_vel_);
   if (reynoldsstress_)
-    Core::LinAlg::Export(*filtered_reynoldsstress_, *col_filtered_reynoldsstress_);
+    Core::LinAlg::export_to(*filtered_reynoldsstress_, *col_filtered_reynoldsstress_);
   if (modeled_subgrid_stress_)
-    Core::LinAlg::Export(*filtered_modeled_subgrid_stress_, *col_filtered_modeled_subgrid_stress_);
-  if (finescale_velocity_) Core::LinAlg::Export(*fs_vel_, *col_fs_vel_);
-  if (densvelocity_) Core::LinAlg::Export(*filtered_dens_vel_, *col_filtered_dens_vel_);
-  if (density_) Core::LinAlg::Export(*filtered_dens_, *col_filtered_dens_);
+    Core::LinAlg::export_to(
+        *filtered_modeled_subgrid_stress_, *col_filtered_modeled_subgrid_stress_);
+  if (finescale_velocity_) Core::LinAlg::export_to(*fs_vel_, *col_fs_vel_);
+  if (densvelocity_) Core::LinAlg::export_to(*filtered_dens_vel_, *col_filtered_dens_vel_);
+  if (density_) Core::LinAlg::export_to(*filtered_dens_, *col_filtered_dens_);
   if (densstrainrate_)
-    Core::LinAlg::Export(*filtered_dens_strainrate_, *col_filtered_dens_strainrate_);
-  if (strainrate_) Core::LinAlg::Export(*filtered_strainrate_, *col_filtered_strainrate_);
-  if (alphaij_) Core::LinAlg::Export(*filtered_alphaij_, *col_filtered_alphaij_);
-  if (expression_) Core::LinAlg::Export(*filtered_expression_, *col_filtered_expression_);
-  if (alpha2_) Core::LinAlg::Export(*filtered_alpha2_, *col_filtered_alpha2_);
+    Core::LinAlg::export_to(*filtered_dens_strainrate_, *col_filtered_dens_strainrate_);
+  if (strainrate_) Core::LinAlg::export_to(*filtered_strainrate_, *col_filtered_strainrate_);
+  if (alphaij_) Core::LinAlg::export_to(*filtered_alphaij_, *col_filtered_alphaij_);
+  if (expression_) Core::LinAlg::export_to(*filtered_expression_, *col_filtered_expression_);
+  if (alpha2_) Core::LinAlg::export_to(*filtered_alpha2_, *col_filtered_alpha2_);
   return;
 }
 
@@ -1527,17 +1528,18 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
     col_filtered_alphaijsc_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 9, true));
 
   // export filtered vectors in rowmap to columnmap format
-  Core::LinAlg::Export(*filtered_vel_, *col_filtered_vel_);
-  Core::LinAlg::Export(*filtered_dens_vel_, *col_filtered_dens_vel_);
-  Core::LinAlg::Export(*filtered_dens_vel_temp_, *col_filtered_dens_vel_temp_);
-  Core::LinAlg::Export(*filtered_dens_rateofstrain_temp_, *col_filtered_dens_rateofstrain_temp_);
-  Core::LinAlg::Export(*filtered_temp_, *col_filtered_temp_);
-  Core::LinAlg::Export(*filtered_dens_, *col_filtered_dens_);
-  Core::LinAlg::Export(*filtered_dens_temp_, *col_filtered_dens_temp_);
-  if (phi_) Core::LinAlg::Export(*filtered_phi_, *col_filtered_phi_);
-  if (phi2_) Core::LinAlg::Export(*filtered_phi2_, *col_filtered_phi2_);
-  if (phiexpression_) Core::LinAlg::Export(*filtered_phiexpression_, *col_filtered_phiexpression_);
-  if (alphaijsc_) Core::LinAlg::Export(*filtered_alphaijsc_, *col_filtered_alphaijsc_);
+  Core::LinAlg::export_to(*filtered_vel_, *col_filtered_vel_);
+  Core::LinAlg::export_to(*filtered_dens_vel_, *col_filtered_dens_vel_);
+  Core::LinAlg::export_to(*filtered_dens_vel_temp_, *col_filtered_dens_vel_temp_);
+  Core::LinAlg::export_to(*filtered_dens_rateofstrain_temp_, *col_filtered_dens_rateofstrain_temp_);
+  Core::LinAlg::export_to(*filtered_temp_, *col_filtered_temp_);
+  Core::LinAlg::export_to(*filtered_dens_, *col_filtered_dens_);
+  Core::LinAlg::export_to(*filtered_dens_temp_, *col_filtered_dens_temp_);
+  if (phi_) Core::LinAlg::export_to(*filtered_phi_, *col_filtered_phi_);
+  if (phi2_) Core::LinAlg::export_to(*filtered_phi2_, *col_filtered_phi2_);
+  if (phiexpression_)
+    Core::LinAlg::export_to(*filtered_phiexpression_, *col_filtered_phiexpression_);
+  if (alphaijsc_) Core::LinAlg::export_to(*filtered_alphaijsc_, *col_filtered_alphaijsc_);
 
   return;
 }

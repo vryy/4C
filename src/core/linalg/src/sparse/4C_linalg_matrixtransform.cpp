@@ -97,7 +97,7 @@ void Core::LinAlg::MatrixLogicalSplitAndTransform::setup_gid_map(const Epetra_Ma
     {
       Core::Communication::Exporter ex(rowmap, colmap, comm);
       converter->fill_src_to_dst_map(gidmap_);
-      ex.Export(gidmap_);
+      ex.do_export(gidmap_);
     }
     else
       for (int i = 0; i < colmap.NumMyElements(); ++i) gidmap_[colmap.GID(i)] = colmap.GID(i);
@@ -126,7 +126,7 @@ void Core::LinAlg::MatrixLogicalSplitAndTransform::internal_add(Teuchos::RCP<Epe
       dselector[i] = 0.;
   }
   Epetra_Vector selector(esrc->ColMap());
-  Core::LinAlg::Export(dselector, selector);
+  Core::LinAlg::export_to(dselector, selector);
 
   if (edst->Filled())
     add_into_filled(esrc, logical_range_map, logical_domain_map, selector, matching_dst_rows, edst,

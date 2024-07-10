@@ -1295,7 +1295,7 @@ might become invalid after a redistribution of the discretization.
   elements (for interior faces). In the latter case, we distinguish between the so-called
   parent master element and the parent slave element. The parent master element is
   the element that shares the node numbering with the face element. Boundary elements
-  have only one parent and the methods parent_element() and ParentMasterElement()
+  have only one parent and the methods parent_element() and parent_master_element()
   return the same element. The parent slave element is the element on the other
   side that usually has a different orientation of nodes.
 

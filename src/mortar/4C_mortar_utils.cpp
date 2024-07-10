@@ -201,7 +201,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::MatrixColTransformGIDs(
   Core::Communication::Exporter ex(inmat->domain_map(), inmat->col_map(), inmat->Comm());
   for (int i = 0; i < inmat->domain_map().NumMyElements(); ++i)
     gidmap[inmat->domain_map().GID(i)] = newdomainmap->GID(i);
-  ex.Export(gidmap);
+  ex.do_export(gidmap);
 
   // transform input matrix to newdomainmap
   for (int i = 0; i < (inmat->epetra_matrix())->NumMyRows(); ++i)
@@ -268,7 +268,7 @@ void Mortar::CreateNewColMap(const Core::LinAlg::SparseMatrix& mat, const Epetra
 
   for (int i = 0; i < nummyelements; ++i) gidmap[old_gids[i]] = new_gids[i];
 
-  exDomain2Col.Export(gidmap);
+  exDomain2Col.do_export(gidmap);
 
   std::vector<int> my_col_gids(gidmap.size(), -1);
   for (std::map<int, int>::const_iterator cit = gidmap.begin(); cit != gidmap.end(); ++cit)
@@ -326,7 +326,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::MatrixRowColTransformGIDs(
   Core::Communication::Exporter ex(inmat->domain_map(), inmat->col_map(), inmat->Comm());
   for (int i = 0; i < inmat->domain_map().NumMyElements(); ++i)
     gidmap[inmat->domain_map().GID(i)] = newdomainmap->GID(i);
-  ex.Export(gidmap);
+  ex.do_export(gidmap);
 
   // transform input matrix to newrowmap and newdomainmap
   for (int i = 0; i < (inmat->epetra_matrix())->NumMyRows(); ++i)
@@ -977,15 +977,15 @@ void Mortar::UTILS::MortarRhsCondensation(
 
   Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap));
   Teuchos::RCP<Epetra_Vector> fm_cond = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap));
-  Core::LinAlg::Export(*rhs, *fs);
+  Core::LinAlg::export_to(*rhs, *fs);
   Teuchos::RCP<Epetra_Vector> fs_full = Teuchos::rcp(new Epetra_Vector(rhs->Map()));
-  Core::LinAlg::Export(*fs, *fs_full);
+  Core::LinAlg::export_to(*fs, *fs_full);
   if (rhs->Update(-1., *fs_full, 1.)) FOUR_C_THROW("update failed");
 
   if (p->multiply(true, *fs, *fm_cond)) FOUR_C_THROW("multiply failed");
 
   Teuchos::RCP<Epetra_Vector> fm_cond_full = Teuchos::rcp(new Epetra_Vector(rhs->Map()));
-  Core::LinAlg::Export(*fm_cond, *fm_cond_full);
+  Core::LinAlg::export_to(*fm_cond, *fm_cond_full);
   if (rhs->Update(1., *fm_cond_full, 1.)) FOUR_C_THROW("update failed");
 
   return;
@@ -1003,12 +1003,12 @@ void Mortar::UTILS::MortarRecover(
       Teuchos::rcp_const_cast<Epetra_Map>(Teuchos::rcpFromRef<const Epetra_Map>(p->domain_map()));
 
   Teuchos::RCP<Epetra_Vector> m_inc = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap));
-  Core::LinAlg::Export(*inc, *m_inc);
+  Core::LinAlg::export_to(*inc, *m_inc);
 
   Teuchos::RCP<Epetra_Vector> s_inc = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap));
   if (p->multiply(false, *m_inc, *s_inc)) FOUR_C_THROW("multiply failed");
   Teuchos::RCP<Epetra_Vector> s_inc_full = Teuchos::rcp(new Epetra_Vector(inc->Map()));
-  Core::LinAlg::Export(*s_inc, *s_inc_full);
+  Core::LinAlg::export_to(*s_inc, *s_inc_full);
   if (inc->Update(1., *s_inc_full, 1.)) FOUR_C_THROW("update failed");
 
   return;

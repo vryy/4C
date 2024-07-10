@@ -601,7 +601,7 @@ void CONTACT::Beam3cmanager::shift_dis_map(const Epetra_Vector& disrow, Epetra_V
     double disp = disrow[(*problem_discret().dof_row_map()).LID(problem_gid)];
     discrow.ReplaceGlobalValue(btsolcontact_gid, 0, disp);
   }
-  Core::LinAlg::Export(discrow, disccol);
+  Core::LinAlg::export_to(discrow, disccol);
 
   return;
 }
@@ -932,7 +932,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   // communicate the map nodedofs to all proccs
   Core::Communication::Exporter ex(
       *(problem_discret().node_col_map()), *(bt_sol_discret().node_col_map()), get_comm());
-  ex.Export(nodedofs);
+  ex.do_export(nodedofs);
 
   // Determine offset between the IDs of problem discretization and BTSol discretization
   for (int i = 0; i < (bt_sol_discret().node_col_map())->NumMyElements(); ++i)

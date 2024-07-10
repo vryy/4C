@@ -237,7 +237,7 @@ bool Solid::MODELEVALUATOR::Contact::assemble_force(
     block_vec_ptr = strategy().get_rhs_block_ptr(CONTACT::VecBlockType::constraint);
     if (block_vec_ptr.is_null()) return true;
     Epetra_Vector tmp(f.Map());
-    Core::LinAlg::Export(*block_vec_ptr, tmp);
+    Core::LinAlg::export_to(*block_vec_ptr, tmp);
     f.Update(1., tmp, 1.);
   }
 
@@ -494,14 +494,14 @@ void Solid::MODELEVALUATOR::Contact::output_step_state(
     slipset->PutScalar(1.0);
     Teuchos::RCP<Epetra_Vector> slipsetexp =
         Teuchos::rcp(new Epetra_Vector(*strategy().active_row_nodes()));
-    Core::LinAlg::Export(*slipset, *slipsetexp);
+    Core::LinAlg::export_to(*slipset, *slipsetexp);
     activeset->Update(1.0, *slipsetexp, 1.0);
   }
 
   // export to problem node row map
   Teuchos::RCP<const Epetra_Map> problemnodes = strategy().problem_nodes();
   Teuchos::RCP<Epetra_Vector> activesetexp = Teuchos::rcp(new Epetra_Vector(*problemnodes));
-  Core::LinAlg::Export(*activeset, *activesetexp);
+  Core::LinAlg::export_to(*activeset, *activesetexp);
 
   if (strategy().wear_both_discrete())
   {
@@ -513,11 +513,11 @@ void Solid::MODELEVALUATOR::Contact::output_step_state(
     slipset->PutScalar(1.0);
     Teuchos::RCP<Epetra_Vector> slipsetexp =
         Teuchos::rcp(new Epetra_Vector(*strategy().master_active_nodes()));
-    Core::LinAlg::Export(*slipset, *slipsetexp);
+    Core::LinAlg::export_to(*slipset, *slipsetexp);
     mactiveset->Update(1.0, *slipsetexp, 1.0);
 
     Teuchos::RCP<Epetra_Vector> mactivesetexp = Teuchos::rcp(new Epetra_Vector(*problemnodes));
-    Core::LinAlg::Export(*mactiveset, *mactivesetexp);
+    Core::LinAlg::export_to(*mactiveset, *mactivesetexp);
     activesetexp->Update(1.0, *mactivesetexp, 1.0);
   }
 
@@ -533,12 +533,12 @@ void Solid::MODELEVALUATOR::Contact::output_step_state(
   // normal direction
   Teuchos::RCP<const Epetra_Vector> normalstresses = strategy().contact_normal_stress();
   Teuchos::RCP<Epetra_Vector> normalstressesexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  Core::LinAlg::Export(*normalstresses, *normalstressesexp);
+  Core::LinAlg::export_to(*normalstresses, *normalstressesexp);
 
   // tangential plane
   Teuchos::RCP<const Epetra_Vector> tangentialstresses = strategy().contact_tangential_stress();
   Teuchos::RCP<Epetra_Vector> tangentialstressesexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  Core::LinAlg::Export(*tangentialstresses, *tangentialstressesexp);
+  Core::LinAlg::export_to(*tangentialstresses, *tangentialstressesexp);
 
   // write to output
   // contact tractions in normal and tangential direction
@@ -627,10 +627,10 @@ void Solid::MODELEVALUATOR::Contact::output_step_state(
 
 #endif  // MASTERNODESINCONTACT: to output the global ID's of the master nodes in contact
   // export
-  Core::LinAlg::Export(*fcslavenor, *fcslavenorexp);
-  Core::LinAlg::Export(*fcslavetan, *fcslavetanexp);
-  Core::LinAlg::Export(*fcmasternor, *fcmasternorexp);
-  Core::LinAlg::Export(*fcmastertan, *fcmastertanexp);
+  Core::LinAlg::export_to(*fcslavenor, *fcslavenorexp);
+  Core::LinAlg::export_to(*fcslavetan, *fcslavetanexp);
+  Core::LinAlg::export_to(*fcmasternor, *fcmasternorexp);
+  Core::LinAlg::export_to(*fcmastertan, *fcmastertanexp);
 
   // contact forces on slave and master side
   iowriter.write_vector("norslaveforce", fcslavenorexp);
@@ -677,7 +677,7 @@ void Solid::MODELEVALUATOR::Contact::output_step_state(
     // write output
     Teuchos::RCP<const Epetra_Vector> wearoutput = strategy().contact_wear();
     Teuchos::RCP<Epetra_Vector> wearoutputexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    Core::LinAlg::Export(*wearoutput, *wearoutputexp);
+    Core::LinAlg::export_to(*wearoutput, *wearoutputexp);
     iowriter.write_vector("wear", wearoutputexp);
   }
 
@@ -691,7 +691,7 @@ void Solid::MODELEVALUATOR::Contact::output_step_state(
         dynamic_cast<const CONTACT::LagrangeStrategyPoro&>(strategy());
     Teuchos::RCP<const Epetra_Vector> lambdaout = poro_strategy.lambda_no_pen();
     Teuchos::RCP<Epetra_Vector> lambdaoutexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    Core::LinAlg::Export(*lambdaout, *lambdaoutexp);
+    Core::LinAlg::export_to(*lambdaout, *lambdaoutexp);
     iowriter.write_vector("poronopen_lambda", lambdaoutexp);
   }
 
@@ -831,7 +831,7 @@ void Solid::MODELEVALUATOR::Contact::extend_lagrange_multiplier_domain(
   {
     Teuchos::RCP<Epetra_Vector> tmp_ptr =
         Teuchos::rcp(new Epetra_Vector(*get_block_dof_row_map_ptr()));
-    Core::LinAlg::Export(*lm_vec, *tmp_ptr);
+    Core::LinAlg::export_to(*lm_vec, *tmp_ptr);
     lm_vec = tmp_ptr;
   }
   else

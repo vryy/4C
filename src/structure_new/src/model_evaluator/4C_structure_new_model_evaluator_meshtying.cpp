@@ -433,7 +433,7 @@ void Solid::MODELEVALUATOR::Meshtying::apply_mesh_initialization(
   const Epetra_Map* dof_colmap = discret_ptr()->dof_col_map();
   const Epetra_Map* node_colmap = discret_ptr()->node_col_map();
   Teuchos::RCP<Epetra_Vector> Xslavemodcol = Core::LinAlg::CreateVector(*dof_colmap, false);
-  Core::LinAlg::Export(*Xslavemod, *Xslavemodcol);
+  Core::LinAlg::export_to(*Xslavemod, *Xslavemodcol);
 
   const int numnode = allreduceslavemap->NumMyElements();
   const int numdim = Global::Problem::instance()->n_dim();

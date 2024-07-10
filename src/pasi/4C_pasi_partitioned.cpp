@@ -197,12 +197,12 @@ void PaSI::PartitionedAlgo::set_interface_states(Teuchos::RCP<const Epetra_Vecto
 #endif
 
   // export displacement, velocity and acceleration states
-  Core::LinAlg::Export(*intfdispnp, *walldatastate->get_disp_col());
-  Core::LinAlg::Export(*intfvelnp, *walldatastate->get_vel_col());
-  Core::LinAlg::Export(*intfaccnp, *walldatastate->get_acc_col());
+  Core::LinAlg::export_to(*intfdispnp, *walldatastate->get_disp_col());
+  Core::LinAlg::export_to(*intfvelnp, *walldatastate->get_vel_col());
+  Core::LinAlg::export_to(*intfaccnp, *walldatastate->get_acc_col());
 
   // export column to row displacements (no communication)
-  Core::LinAlg::Export(*walldatastate->get_disp_col(), *walldatastate->get_disp_row());
+  Core::LinAlg::export_to(*walldatastate->get_disp_col(), *walldatastate->get_disp_row());
 
   // print norm of interface displacement to the screen
   if (print_screen_evry() and (step() % print_screen_evry() == 0))

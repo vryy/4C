@@ -71,11 +71,11 @@ The major part of this code is the setup() method that gets the
 non-matching interface meshes on input, initializes the mortar
 interface and computes the so-called coupling matrices \f$D\f$ and \f$M\f$.
 
-The actual coupling methods MasterToSlave() and SlaveToMaster()
+The actual coupling methods master_to_slave() and slave_to_master()
 just evaluate one simple equation each, i.e. primal variables
 are projected from master to slave side via \f$D^{-1} M\f$ when
-calling MasterToSlave(), and dual variables are projected from
-slave to master side via \f$M^T D^{-T}\f$ when calling SlaveToMaster().
+calling master_to_slave(), and dual variables are projected from
+slave to master side via \f$M^T D^{-T}\f$ when calling slave_to_master().
 
 Whenever you want to add a new problem class, check whether you
 can re-use one of the already existing setup() methods. If not,

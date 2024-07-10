@@ -130,7 +130,7 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   Teuchos::RCP<Epetra_Map> oldmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
   Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
   Core::Communication::Exporter exporter(*oldmap, *newmap, *subcomm);
-  exporter.Export<MultiScale::MicroStaticParObject>(condnamemap);
+  exporter.do_export<MultiScale::MicroStaticParObject>(condnamemap);
 
   // standard evaluation of the micro material
   if (matgp_.find(gp) == matgp_.end())
@@ -279,7 +279,7 @@ void Mat::MicroMaterial::read_restart(const int gp, const int eleID, const bool 
   Teuchos::RCP<Epetra_Map> oldmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
   Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
   Core::Communication::Exporter exporter(*oldmap, *newmap, *subcomm);
-  exporter.Export<MultiScale::MicroStaticParObject>(condnamemap);
+  exporter.do_export<MultiScale::MicroStaticParObject>(condnamemap);
 
   if (matgp_.find(gp) == matgp_.end())
   {

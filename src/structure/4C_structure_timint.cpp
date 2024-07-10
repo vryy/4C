@@ -919,7 +919,7 @@ void Solid::TimInt::apply_mesh_initialization(Teuchos::RCP<const Epetra_Vector> 
   // export modified node positions to column map of problem discretization
   Teuchos::RCP<Epetra_Vector> Xslavemodcol =
       Core::LinAlg::CreateVector(*discret_->dof_col_map(), false);
-  Core::LinAlg::Export(*Xslavemod, *Xslavemodcol);
+  Core::LinAlg::export_to(*Xslavemod, *Xslavemodcol);
 
   const int numnode = allreduceslavemap->NumMyElements();
   const int numdim = Global::Problem::instance()->n_dim();
@@ -1385,7 +1385,7 @@ void Solid::TimInt::update_step_contact_vum()
       Teuchos::RCP<Epetra_Vector> Z = Core::LinAlg::CreateVector(*slavenodemap, true);
       Teuchos::RCP<Epetra_Vector> z = Core::LinAlg::CreateVector(*activenodemap, true);
       N->multiply(false, *LM, *Z);
-      Core::LinAlg::Export(*Z, *z);
+      Core::LinAlg::export_to(*Z, *z);
 
       // auxiliary operator BN = Bc * N
       Teuchos::RCP<Core::LinAlg::SparseMatrix> BN =
@@ -1417,13 +1417,13 @@ void Solid::TimInt::update_step_contact_vum()
       btemp1->Update(R2, (*vel_)[0], 1.0);
       btemp1->Update(R3, (*acc_)[0], 1.0);
       BN->multiply(true, *btemp1, *btemp2);
-      Core::LinAlg::Export(*btemp2, *b);
+      Core::LinAlg::export_to(*btemp2, *b);
 
       // operatior c
       Teuchos::RCP<Epetra_Vector> ctemp = Core::LinAlg::CreateVector(*slavenodemap, true);
       Teuchos::RCP<Epetra_Vector> c = Core::LinAlg::CreateVector(*activenodemap, true);
       BN->multiply(true, *Dd, *ctemp);
-      Core::LinAlg::Export(*ctemp, *c);
+      Core::LinAlg::export_to(*ctemp, *c);
 
       // contact work wc
       Teuchos::RCP<Epetra_Vector> wc = Core::LinAlg::CreateVector(*activenodemap, true);
@@ -1660,7 +1660,7 @@ void Solid::TimInt::update_step_contact_vum()
       Teuchos::RCP<Epetra_Vector> ptemp1 = Core::LinAlg::CreateVector(*slavenodemap, true);
       Teuchos::RCP<Epetra_Vector> ptemp2 = Core::LinAlg::CreateVector(*dofmap, true);
       Teuchos::RCP<Epetra_Vector> VU = Core::LinAlg::CreateVector(*dofmap, true);
-      Core::LinAlg::Export(*p, *ptemp1);
+      Core::LinAlg::export_to(*p, *ptemp1);
       BN->multiply(false, *ptemp1, *ptemp2);
       Minv->multiply(false, *ptemp2, *VU);
       veln_->Update(1.0, *VU, 1.0);
@@ -3270,7 +3270,7 @@ void Solid::TimInt::apply_dis_mat(Teuchos::RCP<Epetra_Vector> dismat)
 {
   // The values in dismatn_ are replaced, because the new absolute material
   // displacement is provided in the argument (not an increment)
-  Core::LinAlg::Export(*dismat, *dismatn_);
+  Core::LinAlg::export_to(*dismat, *dismatn_);
 }
 
 /*----------------------------------------------------------------------*/

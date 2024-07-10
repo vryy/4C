@@ -274,7 +274,7 @@ Teuchos::RCP<const Epetra_Vector> XFEM::MeshCoupling::get_cutter_disp_col()
   // export cut-discretization mesh displacements
   Teuchos::RCP<Epetra_Vector> idispcol =
       Core::LinAlg::CreateVector(*cutter_dis_->dof_col_map(), true);
-  Core::LinAlg::Export(*idispnp_, *idispcol);
+  Core::LinAlg::export_to(*idispnp_, *idispcol);
 
   return idispcol;
 }

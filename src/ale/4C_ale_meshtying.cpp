@@ -278,8 +278,8 @@ void ALE::Meshtying::split_vector_based_on3x3(
 
   split_vector(orgvector, splitvector);
   // build up the reduced residual
-  Core::LinAlg::Export(*(splitvector[0]), *vectorbasedon2x2);
-  Core::LinAlg::Export(*(splitvector[1]), *vectorbasedon2x2);
+  Core::LinAlg::export_to(*(splitvector[0]), *vectorbasedon2x2);
+  Core::LinAlg::export_to(*(splitvector[1]), *vectorbasedon2x2);
 
   return;
 }
@@ -574,19 +574,19 @@ void ALE::Meshtying::condensation_operation_block_matrix(
 
   // export and add r_m subvector to residual
   Teuchos::RCP<Epetra_Vector> fm_modexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap_));
-  Core::LinAlg::Export(*fm_mod, *fm_modexp);
+  Core::LinAlg::export_to(*fm_mod, *fm_modexp);
   residual->Update(1.0, *fm_modexp, 1.0);
 
   if (dconmaster_ == true and firstnonliniter_ == true)
   {
     Teuchos::RCP<Epetra_Vector> fn_exp = Teuchos::rcp(new Epetra_Vector(*dofrowmap_, true));
-    Core::LinAlg::Export(*dcnm, *fn_exp);
+    Core::LinAlg::export_to(*dcnm, *fn_exp);
     residual->Update(-1.0, *fn_exp, 1.0);
   }
 
   // export r_s = zero to residual
   Teuchos::RCP<Epetra_Vector> fs_mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_, true));
-  Core::LinAlg::Export(*fs_mod, *residual);
+  Core::LinAlg::export_to(*fs_mod, *residual);
 
   return;
 }
@@ -648,17 +648,17 @@ void ALE::Meshtying::update_slave_dof(
 
   // export interior degrees of freedom
   Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap));
-  Core::LinAlg::Export(*(splitinc[0]), *fnexp);
+  Core::LinAlg::export_to(*(splitinc[0]), *fnexp);
   incnew->Update(1.0, *fnexp, 1.0);
 
   // export master degrees of freedom
   Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap));
-  Core::LinAlg::Export(*(splitinc[1]), *fmexp);
+  Core::LinAlg::export_to(*(splitinc[1]), *fmexp);
   incnew->Update(1.0, *fmexp, 1.0);
 
   // export slave degrees of freedom
   Teuchos::RCP<Epetra_Vector> fs_modexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap));
-  Core::LinAlg::Export(*fs_mod, *fs_modexp);
+  Core::LinAlg::export_to(*fs_mod, *fs_modexp);
   incnew->Update(1.0, *fs_modexp, 1.0);
 
   // set iteration counter for Dirichlet boundary conditions, if any
@@ -719,8 +719,8 @@ int ALE::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
     solver_params.refactor = true;
     errorcode = solver_.solve(mergedmatrix->epetra_operator(), dis, res, solver_params);
 
-    Core::LinAlg::Export(*dis, *disi);
-    Core::LinAlg::Export(*res, *residual);
+    Core::LinAlg::export_to(*dis, *disi);
+    Core::LinAlg::export_to(*res, *residual);
     // compute and update slave dof's
     update_slave_dof(disi, dispnp);
   }

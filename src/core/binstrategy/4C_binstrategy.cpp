@@ -1479,7 +1479,7 @@ void Core::Binstrategy::BinningStrategy::standard_discretization_ghosting(
   if (discret->have_dofs() and disnp != Teuchos::null)
   {
     disnp_col = Teuchos::rcp(new Epetra_Vector(*discret->dof_col_map()));
-    Core::LinAlg::Export(*disnp, *disnp_col);
+    Core::LinAlg::export_to(*disnp, *disnp_col);
   }
 
   // distribute nodes, that are owned by a proc, to the bins of this proc
@@ -1543,7 +1543,7 @@ void Core::Binstrategy::BinningStrategy::standard_discretization_ghosting(
     Teuchos::RCP<Epetra_Vector> old;
     old = disnp;
     disnp = Core::LinAlg::CreateVector(*discret->dof_row_map(), true);
-    Core::LinAlg::Export(*old, *disnp);
+    Core::LinAlg::export_to(*old, *disnp);
   }
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS

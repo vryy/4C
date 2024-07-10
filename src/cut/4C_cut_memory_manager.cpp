@@ -471,7 +471,7 @@ void Core::Geo::Cut::GenericMemoryPool::finalize()
 }
 
 // Free all the memory for this and const memory containters
-void Core::Geo::Cut::GenericMemoryPool::Delete()
+void Core::Geo::Cut::GenericMemoryPool::free_all()
 {
   if (is_allocated_together_)
   {
@@ -484,7 +484,7 @@ void Core::Geo::Cut::GenericMemoryPool::Delete()
 #if EXTENDED_CUT_DEBUG_OUTPUT
     std::cout << "Deleting container with the size of " << (*it).first << std::endl;
 #endif
-    if (not is_allocated_together_) it.second->Delete();
+    if (not is_allocated_together_) it.second->free_all();
     delete it.second;
   }
 }
@@ -559,15 +559,15 @@ void Core::Geo::Cut::DebugCustomMemoryManager::reset_allocated()
 
 void Core::Geo::Cut::DebugCustomMemoryManager::finalize() { mem_->finalize(); }
 
-void Core::Geo::Cut::DebugCustomMemoryManager::Delete()
+void Core::Geo::Cut::DebugCustomMemoryManager::free_all()
 {
   // delete free memory from the memory pool
   if (prev_)
   {
     if (state_ == normal)
-      prev_->Delete();
+      prev_->free_all();
     else
-      mem_->Delete();
+      mem_->free_all();
   }
 }
 
@@ -636,15 +636,15 @@ void Core::Geo::Cut::CustomMemoryManager::switch_state()
 }
 
 
-void Core::Geo::Cut::CustomMemoryManager::Delete()
+void Core::Geo::Cut::CustomMemoryManager::free_all()
 {
   // delete free memory from the memory pool
   if (prev_)
   {
     if (state_ == normal)
-      prev_->Delete();
+      prev_->free_all();
     else
-      mem_->Delete();
+      mem_->free_all();
   }
 }
 

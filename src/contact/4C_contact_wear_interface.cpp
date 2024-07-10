@@ -1037,28 +1037,28 @@ void Wear::WearInterface::export_nodal_normals() const
 
     // communicate from master node row to column map
     Core::Communication::Exporter ex(*mnoderowmap_, *masternodes, get_comm());
-    ex.Export(triad);
+    ex.do_export(triad);
 
-    ex.Export(n_x_key);
-    ex.Export(n_x_val);
-    ex.Export(n_y_key);
-    ex.Export(n_y_val);
-    ex.Export(n_z_key);
-    ex.Export(n_z_val);
+    ex.do_export(n_x_key);
+    ex.do_export(n_x_val);
+    ex.do_export(n_y_key);
+    ex.do_export(n_y_val);
+    ex.do_export(n_z_key);
+    ex.do_export(n_z_val);
 
-    ex.Export(txi_x_key);
-    ex.Export(txi_x_val);
-    ex.Export(txi_y_key);
-    ex.Export(txi_y_val);
-    ex.Export(txi_z_key);
-    ex.Export(txi_z_val);
+    ex.do_export(txi_x_key);
+    ex.do_export(txi_x_val);
+    ex.do_export(txi_y_key);
+    ex.do_export(txi_y_val);
+    ex.do_export(txi_z_key);
+    ex.do_export(txi_z_val);
 
-    ex.Export(teta_x_key);
-    ex.Export(teta_x_val);
-    ex.Export(teta_y_key);
-    ex.Export(teta_y_val);
-    ex.Export(teta_z_key);
-    ex.Export(teta_z_val);
+    ex.do_export(teta_x_key);
+    ex.do_export(teta_x_val);
+    ex.do_export(teta_y_key);
+    ex.do_export(teta_y_val);
+    ex.do_export(teta_z_key);
+    ex.do_export(teta_z_val);
 
     // extract info on column map
     for (int i = 0; i < masternodes->NumMyElements(); ++i)

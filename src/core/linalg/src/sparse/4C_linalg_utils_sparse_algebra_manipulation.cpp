@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  export a Epetra_Vector                                   mwgee 12/06|
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Export(const Epetra_MultiVector& source, Epetra_MultiVector& target)
+void Core::LinAlg::export_to(const Epetra_MultiVector& source, Epetra_MultiVector& target)
 {
   try
   {
@@ -99,7 +99,7 @@ void Core::LinAlg::Export(const Epetra_MultiVector& source, Epetra_MultiVector& 
 /*----------------------------------------------------------------------*
  |  export a Epetra_IntVector                                mwgee 01/13|
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Export(const Epetra_IntVector& source, Epetra_IntVector& target)
+void Core::LinAlg::export_to(const Epetra_IntVector& source, Epetra_IntVector& target)
 {
   try
   {

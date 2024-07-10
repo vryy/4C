@@ -546,7 +546,7 @@ void XFEM::MultiFieldMapExtractor::build_interface_coupling_dof_set()
 
     Core::Communication::Exporter export_max_dof_num(
         sl_inodemap, ma_inodemap, sl_discret(i).get_comm());
-    export_max_dof_num.Export(sl_max_num_dof_per_inode);
+    export_max_dof_num.do_export(sl_max_num_dof_per_inode);
 
     // communicate the number of standard DoF's
     // Supposed to be the same value on all discretizations and all nodes.
@@ -805,7 +805,7 @@ void XFEM::MultiFieldMapExtractor::extract_vector(const Epetra_MultiVector& full
   Teuchos::RCP<Epetra_MultiVector> partial_ma_interface =
       ma_map_extractor(map_type).extract_vector(full, block);
   Teuchos::RCP<Epetra_MultiVector> partial_sl_interface =
-      i_coupling(block).MasterToSlave(partial_ma_interface, map_type);
+      i_coupling(block).master_to_slave(partial_ma_interface, map_type);
   sl_map_extractor(block, map_type)
       .insert_vector(*partial_sl_interface, MultiField::block_interface, partial);
 }
@@ -879,7 +879,7 @@ void XFEM::MultiFieldMapExtractor::insert_vector(const Epetra_MultiVector& parti
       sl_map_extractor(block, map_type).extract_vector(partial, MultiField::block_interface);
 
   Teuchos::RCP<Epetra_MultiVector> partial_ma_interface =
-      i_coupling(block).SlaveToMaster(partial_sl_interface, map_type);
+      i_coupling(block).slave_to_master(partial_sl_interface, map_type);
 
   ma_map_extractor(map_type).insert_vector(*partial_ma_interface, block, full);
 }
@@ -904,7 +904,7 @@ void XFEM::MultiFieldMapExtractor::add_vector(const Epetra_MultiVector& partial,
       sl_map_extractor(block, map_type).extract_vector(partial, MultiField::block_interface);
 
   Teuchos::RCP<Epetra_MultiVector> partial_ma_interface =
-      i_coupling(block).SlaveToMaster(partial_sl_interface, map_type);
+      i_coupling(block).slave_to_master(partial_sl_interface, map_type);
 
   ma_map_extractor(map_type).add_vector(*partial_ma_interface, block, full, scale);
 }

@@ -499,7 +499,7 @@ void Solid::UTILS::Shell::Director::ExportDirectorMapFromRowToColMap(
   const Epetra_Map* noderowmap = dis.node_row_map();
   const Epetra_Map* nodecolmap = dis.node_col_map();
   Core::Communication::Exporter exporter(*noderowmap, *nodecolmap, dis.get_comm());
-  exporter.Export(director_map);
+  exporter.do_export(director_map);
 
   // loop through column nodes and put directors back into discretization
   for (const auto& actnode : dis.my_col_node_range())

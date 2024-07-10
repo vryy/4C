@@ -331,7 +331,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::mesh_initializati
   if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
   Teuchos::RCP<Epetra_Vector> lmDBC = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
-  Core::LinAlg::Export(*pgsdirichtoggle_, *lmDBC);
+  Core::LinAlg::export_to(*pgsdirichtoggle_, *lmDBC);
   Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
   tmp->Multiply(1., *diag, *lmDBC, 0.);
   diag->Update(-1., *tmp, 1.);
@@ -656,12 +656,12 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
 
     // add n subvector to feffnew
     Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fn, *fnexp);
+    Core::LinAlg::export_to(*fn, *fnexp);
     feffnew->Update(1.0, *fnexp, 1.0);
 
     // add m subvector to feffnew
     Teuchos::RCP<Epetra_Vector> fmmodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fmmod, *fmmodexp);
+    Core::LinAlg::export_to(*fmmod, *fmmodexp);
     feffnew->Update(1.0, *fmmodexp, 1.0);
 
     /**********************************************************************/
@@ -712,26 +712,26 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
     Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     dmatrix_->multiply(true, *z_, *fs);
     Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fs, *fsexp);
+    Core::LinAlg::export_to(*fs, *fsexp);
     feff->Update(-(1.0 - alphaf_), *fsexp, 1.0);
 
     Teuchos::RCP<Epetra_Vector> fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
     mmatrix_->multiply(true, *z_, *fm);
     Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fm, *fmexp);
+    Core::LinAlg::export_to(*fm, *fmexp);
     feff->Update(1.0 - alphaf_, *fmexp, 1.0);
 
     // add old contact forces (t_n)
     Teuchos::RCP<Epetra_Vector> fsold = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     dmatrix_->multiply(true, *zold_, *fsold);
     Teuchos::RCP<Epetra_Vector> fsoldexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fsold, *fsoldexp);
+    Core::LinAlg::export_to(*fsold, *fsoldexp);
     feff->Update(-alphaf_, *fsoldexp, 1.0);
 
     Teuchos::RCP<Epetra_Vector> fmold = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
     mmatrix_->multiply(true, *zold_, *fmold);
     Teuchos::RCP<Epetra_Vector> fmoldexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fmold, *fmoldexp);
+    Core::LinAlg::export_to(*fmold, *fmoldexp);
     feff->Update(alphaf_, *fmoldexp, 1.0);
   }
 
@@ -753,7 +753,7 @@ void CONTACT::MtLagrangeStrategy::build_saddle_point_system(
       Teuchos::rcp(new Epetra_Vector(*(dbcmaps->full_map())));
   Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->cond_map())));
   temp->PutScalar(1.0);
-  Core::LinAlg::Export(*temp, *dirichtoggle);
+  Core::LinAlg::export_to(*temp, *dirichtoggle);
 
   //**********************************************************************
   // prepare saddle point system
@@ -817,15 +817,15 @@ void CONTACT::MtLagrangeStrategy::build_saddle_point_system(
 
     // we also need merged rhs here
     Teuchos::RCP<Epetra_Vector> fresmexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    Core::LinAlg::Export(*fd, *fresmexp);
+    Core::LinAlg::export_to(*fd, *fresmexp);
     mergedrhs->Update(1.0, *fresmexp, 1.0);
     Teuchos::RCP<Epetra_Vector> constrexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    Core::LinAlg::Export(*constrrhs, *constrexp);
+    Core::LinAlg::export_to(*constrrhs, *constrexp);
     mergedrhs->Update(1.0, *constrexp, 1.0);
 
     // apply Dirichlet B.C. to mergedrhs and mergedsol
     Teuchos::RCP<Epetra_Vector> dirichtoggleexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    Core::LinAlg::Export(*dirichtoggle, *dirichtoggleexp);
+    Core::LinAlg::export_to(*dirichtoggle, *dirichtoggleexp);
     Core::LinAlg::apply_dirichlet_to_system(*mergedsol, *mergedrhs, *mergedzeros, *dirichtoggleexp);
 
     // make solver SIMPLER-ready
@@ -895,15 +895,15 @@ void CONTACT::MtLagrangeStrategy::recover(Teuchos::RCP<Epetra_Vector> disi)
 
     // extract slave displacements from disi
     Teuchos::RCP<Epetra_Vector> disis = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    if (gsdofrowmap_->NumGlobalElements()) Core::LinAlg::Export(*disi, *disis);
+    if (gsdofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*disi, *disis);
 
     // extract master displacements from disi
     Teuchos::RCP<Epetra_Vector> disim = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-    if (gmdofrowmap_->NumGlobalElements()) Core::LinAlg::Export(*disi, *disim);
+    if (gmdofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*disi, *disim);
 
     // extract other displacements from disi
     Teuchos::RCP<Epetra_Vector> disin = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_));
-    if (gndofrowmap_->NumGlobalElements()) Core::LinAlg::Export(*disi, *disin);
+    if (gndofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*disi, *disin);
 
     /**********************************************************************/
     /* Update slave increment \Delta d_s                                  */
@@ -913,7 +913,7 @@ void CONTACT::MtLagrangeStrategy::recover(Teuchos::RCP<Epetra_Vector> disi)
     {
       mhatmatrix_->multiply(false, *disim, *disis);
       Teuchos::RCP<Epetra_Vector> disisexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      Core::LinAlg::Export(*disis, *disisexp);
+      Core::LinAlg::export_to(*disis, *disisexp);
       disi->Update(1.0, *disisexp, 1.0);
     }
 
@@ -1004,13 +1004,13 @@ bool CONTACT::MtLagrangeStrategy::evaluate_force(const Teuchos::RCP<const Epetra
     Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     if (dmatrix_->multiply(true, *z_, *fs)) FOUR_C_THROW("multiply failed");
     Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fs, *fsexp);
+    Core::LinAlg::export_to(*fs, *fsexp);
     f_->Update(1.0, *fsexp, 1.0);
 
     Teuchos::RCP<Epetra_Vector> fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
     mmatrix_->multiply(true, *z_, *fm);
     Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fm, *fmexp);
+    Core::LinAlg::export_to(*fm, *fmexp);
     f_->Update(-1.0, *fmexp, 1.0);
   }
 
@@ -1197,7 +1197,7 @@ void CONTACT::MtLagrangeStrategy::run_post_compute_x(
   if (system_type() != Inpar::CONTACT::system_condensed)
   {
     Teuchos::RCP<Epetra_Vector> zdir_ptr = Teuchos::rcp(new Epetra_Vector(*glmdofrowmap_, true));
-    Core::LinAlg::Export(dir, *zdir_ptr);
+    Core::LinAlg::export_to(dir, *zdir_ptr);
     zdir_ptr->ReplaceMap(*gsdofrowmap_);
     z_->Update(1., *zdir_ptr, 1.);
   }

@@ -554,7 +554,7 @@ void Core::Adapter::Coupling::build_dof_maps(const Core::FE::Discretization& dis
   dofmapvec.clear();
 
   Core::Communication::Exporter exportdofs(*nodemap, *permnodemap, dis.get_comm());
-  exportdofs.Export(dofs);
+  exportdofs.do_export(dofs);
 
   const int* permnodes = permnodemap->MyGlobalElements();
   const int permnumnode = permnodemap->NumMyElements();

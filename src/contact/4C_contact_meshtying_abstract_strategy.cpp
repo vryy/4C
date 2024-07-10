@@ -493,7 +493,7 @@ void CONTACT::MtAbstractStrategy::mesh_initialization(Teuchos::RCP<Epetra_Vector
   {
     // export Xslavemod to column map for current interface
     Epetra_Vector Xslavemodcol(*(interface_[i]->slave_col_dofs()), false);
-    Core::LinAlg::Export(*Xslavemod, Xslavemodcol);
+    Core::LinAlg::export_to(*Xslavemod, Xslavemodcol);
 
     // loop over all slave column nodes on the current interface
     for (int j = 0; j < interface_[i]->slave_col_nodes()->NumMyElements(); ++j)
@@ -638,7 +638,7 @@ void CONTACT::MtAbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Q
     Teuchos::RCP<Epetra_Vector> vectorinterface = Teuchos::rcp(new Epetra_Vector(*sdofrowmap));
 
     if (vectorglobal != Teuchos::null)
-      Core::LinAlg::Export(*vectorglobal, *vectorinterface);
+      Core::LinAlg::export_to(*vectorglobal, *vectorinterface);
     else
       FOUR_C_THROW("store_nodal_quantities: Null vector handed in!");
 
@@ -745,7 +745,7 @@ void CONTACT::MtAbstractStrategy::store_dirichlet_status(
   pgsdirichtoggle_ = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
   Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->cond_map())));
   temp->PutScalar(1.0);
-  Core::LinAlg::Export(*temp, *pgsdirichtoggle_);
+  Core::LinAlg::export_to(*temp, *pgsdirichtoggle_);
 
   return;
 }
@@ -825,8 +825,8 @@ void CONTACT::MtAbstractStrategy::interface_forces(bool output)
   // export the interface forces to full dof layout
   Teuchos::RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
   Teuchos::RCP<Epetra_Vector> fcmaster = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-  Core::LinAlg::Export(*fcslavetemp, *fcslave);
-  Core::LinAlg::Export(*fcmastertemp, *fcmaster);
+  Core::LinAlg::export_to(*fcslavetemp, *fcslave);
+  Core::LinAlg::export_to(*fcmastertemp, *fcmaster);
 
   // interface forces and moments
   std::vector<double> gfcs(3);

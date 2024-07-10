@@ -52,7 +52,7 @@ void Solid::MODELEVALUATOR::BaseSSI::determine_stress_strain()
   // export map to column format
   Core::Communication::Exporter exporter(
       *discret().element_row_map(), *discret().element_col_map(), discret().get_comm());
-  exporter.Export(*stresses);
+  exporter.do_export(*stresses);
 
   // prepare nodal stress vectors
   Epetra_MultiVector nodal_stresses_source(*discret().node_row_map(), 6);

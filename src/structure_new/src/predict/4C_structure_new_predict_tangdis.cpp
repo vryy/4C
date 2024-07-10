@@ -124,7 +124,7 @@ void Solid::Predict::TangDis::compute(::NOX::Abstract::Group& grp)
   // add the DBC values to the current state vector
   Teuchos::RCP<Epetra_Vector> dbc_incr_exp_ptr =
       Teuchos::rcp(new Epetra_Vector(global_state().global_problem_map(), true));
-  Core::LinAlg::Export(*dbc_incr_ptr_, *dbc_incr_exp_ptr);
+  Core::LinAlg::export_to(*dbc_incr_ptr_, *dbc_incr_exp_ptr);
   grp_ptr->computeX(*grp_ptr, *dbc_incr_exp_ptr, 1.0);
   // Reset the state variables
   const ::NOX::Epetra::Vector& x_eptra =

@@ -351,7 +351,7 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
     Teuchos::RCP<Epetra_Vector> fcmdold = Teuchos::rcp(new Epetra_Vector(dold_->row_map()));
     dold_->multiply(true, *zold_, *fcmdold);
     Teuchos::RCP<Epetra_Vector> fcmdoldtemp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fcmdold, *fcmdoldtemp);
+    Core::LinAlg::export_to(*fcmdold, *fcmdoldtemp);
     feff->Update(-alphaf_, *fcmdoldtemp, 1.0);
   }
 
@@ -362,7 +362,7 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
     Teuchos::RCP<Epetra_Vector> fcmmold = Teuchos::rcp(new Epetra_Vector(mold_->domain_map()));
     mold_->multiply(true, *zold_, *fcmmold);
     Teuchos::RCP<Epetra_Vector> fcmmoldtemp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fcmmold, *fcmmoldtemp);
+    Core::LinAlg::export_to(*fcmmold, *fcmmoldtemp);
     feff->Update(alphaf_, *fcmmoldtemp, 1.0);
   }
 
@@ -370,7 +370,7 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
     Teuchos::RCP<Epetra_Vector> fcmd = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     dmatrix_->multiply(true, *z_, *fcmd);
     Teuchos::RCP<Epetra_Vector> fcmdtemp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fcmd, *fcmdtemp);
+    Core::LinAlg::export_to(*fcmd, *fcmdtemp);
     feff->Update(-(1 - alphaf_), *fcmdtemp, 1.0);
   }
 
@@ -378,7 +378,7 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
     Teuchos::RCP<Epetra_Vector> fcmm = Core::LinAlg::CreateVector(*gmdofrowmap_, true);
     mmatrix_->multiply(true, *z_, *fcmm);
     Teuchos::RCP<Epetra_Vector> fcmmtemp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fcmm, *fcmmtemp);
+    Core::LinAlg::export_to(*fcmm, *fcmmtemp);
     feff->Update(1 - alphaf_, *fcmmtemp, 1.0);
   }
 
@@ -507,25 +507,25 @@ void CONTACT::PenaltyStrategy::initialize_uzawa(
   Teuchos::RCP<Epetra_Vector> fcmdold = Teuchos::rcp(new Epetra_Vector(dold_->row_map()));
   dold_->multiply(true, *zold_, *fcmdold);
   Teuchos::RCP<Epetra_Vector> fcmdoldtemp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-  Core::LinAlg::Export(*fcmdold, *fcmdoldtemp);
+  Core::LinAlg::export_to(*fcmdold, *fcmdoldtemp);
   feff->Update(alphaf_, *fcmdoldtemp, 1.0);
 
   Teuchos::RCP<Epetra_Vector> fcmmold = Teuchos::rcp(new Epetra_Vector(mold_->domain_map()));
   mold_->multiply(true, *zold_, *fcmmold);
   Teuchos::RCP<Epetra_Vector> fcmmoldtemp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-  Core::LinAlg::Export(*fcmmold, *fcmmoldtemp);
+  Core::LinAlg::export_to(*fcmmold, *fcmmoldtemp);
   feff->Update(-alphaf_, *fcmmoldtemp, 1.0);
 
   Teuchos::RCP<Epetra_Vector> fcmd = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   dmatrix_->multiply(true, *z_, *fcmd);
   Teuchos::RCP<Epetra_Vector> fcmdtemp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-  Core::LinAlg::Export(*fcmd, *fcmdtemp);
+  Core::LinAlg::export_to(*fcmd, *fcmdtemp);
   feff->Update(1 - alphaf_, *fcmdtemp, 1.0);
 
   Teuchos::RCP<Epetra_Vector> fcmm = Core::LinAlg::CreateVector(*gmdofrowmap_, true);
   mmatrix_->multiply(true, *z_, *fcmm);
   Teuchos::RCP<Epetra_Vector> fcmmtemp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-  Core::LinAlg::Export(*fcmm, *fcmmtemp);
+  Core::LinAlg::export_to(*fcmm, *fcmmtemp);
   feff->Update(-(1 - alphaf_), *fcmmtemp, 1.0);
 
   // reset some matrices
@@ -599,12 +599,12 @@ void CONTACT::PenaltyStrategy::update_constraint_norm(int uzawaiter)
     if (constr_direction_ == Inpar::CONTACT::constr_xyz)
     {
       gact = Core::LinAlg::CreateVector(*gactivedofs_, true);
-      Core::LinAlg::Export(*wgap_, *gact);
+      Core::LinAlg::export_to(*wgap_, *gact);
     }
     else
     {
       gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
-      if (gact->GlobalLength()) Core::LinAlg::Export(*wgap_, *gact);
+      if (gact->GlobalLength()) Core::LinAlg::export_to(*wgap_, *gact);
     }
 
     // compute constraint norm
@@ -909,7 +909,7 @@ void CONTACT::PenaltyStrategy::assemble()
     Teuchos::RCP<Epetra_Vector> fcmd = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     dmatrix_->multiply(true, *z_, *fcmd);
     Teuchos::RCP<Epetra_Vector> fcmdtemp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fcmd, *fcmdtemp);
+    Core::LinAlg::export_to(*fcmd, *fcmdtemp);
     fc_->Update(-(1.), *fcmdtemp, 1.0);
   }
 
@@ -917,7 +917,7 @@ void CONTACT::PenaltyStrategy::assemble()
     Teuchos::RCP<Epetra_Vector> fcmm = Core::LinAlg::CreateVector(*gmdofrowmap_, true);
     mmatrix_->multiply(true, *z_, *fcmm);
     Teuchos::RCP<Epetra_Vector> fcmmtemp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fcmm, *fcmmtemp);
+    Core::LinAlg::export_to(*fcmm, *fcmmtemp);
     fc_->Update(1, *fcmmtemp, 1.0);
   }
 

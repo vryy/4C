@@ -632,7 +632,7 @@ void Arteries::ArtNetImplStationary::read_restart(int step, bool coupledTo3D)
   reader.read_vector(ele_radius_, "ele_radius");
   Teuchos::RCP<Epetra_Vector> ele_radius_col =
       Core::LinAlg::CreateVector(*discret_->element_col_map(), true);
-  Core::LinAlg::Export(*ele_radius_, *ele_radius_col);
+  Core::LinAlg::export_to(*ele_radius_, *ele_radius_col);
 
   // set the diameter in material
   for (int i = 0; i < discret_->num_my_col_elements(); ++i)

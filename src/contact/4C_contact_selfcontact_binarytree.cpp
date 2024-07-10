@@ -1618,7 +1618,7 @@ void CONTACT::SelfBinaryTree::search_contact()
       Teuchos::rcp(new Epetra_Map(-1, (int)locdata.size(), locdata.data(), 0, get_comm()));
   Teuchos::RCP<Epetra_Map> redmap = Core::LinAlg::AllreduceEMap(*mymap);
   Core::Communication::Exporter ex(*mymap, *redmap, get_comm());
-  ex.Export(contactpairs_);
+  ex.do_export(contactpairs_);
 
   // now do new slave and master sorting
   while (!contactpairs_.empty())

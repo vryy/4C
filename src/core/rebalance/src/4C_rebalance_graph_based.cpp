@@ -372,7 +372,7 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildMonolithicNodeGraph(
       my_colliding_primitives_vec.data(), 0, dis.get_comm());
   Epetra_MultiVector my_colliding_primitives_node_ids(
       my_colliding_primitives_map, n_nodes_per_element_max, false);
-  Core::LinAlg::Export(node_information, my_colliding_primitives_node_ids);
+  Core::LinAlg::export_to(node_information, my_colliding_primitives_node_ids);
 
   // 4. Build and fill the graph with element internal connectivities
   auto my_graph = Teuchos::rcp(new Epetra_FECrsGraph(Copy, *(dis.node_row_map()), 40, false));

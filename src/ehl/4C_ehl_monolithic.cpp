@@ -705,14 +705,14 @@ void EHL::Monolithic::setup_system_matrix()
   // d(D^T)/dd * t
   Teuchos::RCP<Epetra_Vector> stritraction_D_col =
       Core::LinAlg::CreateVector(*(mortaradapter_->interface()->slave_col_dofs()), true);
-  Core::LinAlg::Export(*stritraction_D_, *stritraction_D_col);
+  Core::LinAlg::export_to(*stritraction_D_, *stritraction_D_col);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> slaveiforce_derivd1 =
       mortaradapter_->assemble_ehl_lin_d(stritraction_D_col);
 
   // d(-M^T)/dd * t
   Teuchos::RCP<Epetra_Vector> stritraction_M_col =
       Core::LinAlg::CreateVector(*(mortaradapter_->interface()->slave_col_dofs()), true);
-  Core::LinAlg::Export(*stritraction_M_, *stritraction_M_col);
+  Core::LinAlg::export_to(*stritraction_M_, *stritraction_M_col);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> masteriforce_derivd1 =
       mortaradapter_->assemble_ehl_lin_m(stritraction_M_col);
   masteriforce_derivd1->scale(-1.0);
@@ -1877,7 +1877,7 @@ void EHL::Monolithic::lin_poiseuille_force_disp(Teuchos::RCP<Core::LinAlg::Spars
       ada_strDisp_to_lubPres_->slave_to_master(lubrication_->lubrication_field()->prenp());
   Teuchos::RCP<Epetra_Vector> p_int_full =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->slave_dof_map()));
-  Core::LinAlg::Export(*p_int, *p_int_full);
+  Core::LinAlg::export_to(*p_int, *p_int_full);
 
   Teuchos::RCP<Epetra_Vector> nodal_gap =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->slave_dof_map()));
@@ -1898,7 +1898,7 @@ void EHL::Monolithic::lin_poiseuille_force_disp(Teuchos::RCP<Core::LinAlg::Spars
 
   Teuchos::RCP<Epetra_Vector> p_int_full_col =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->interface()->slave_col_dofs()));
-  Core::LinAlg::Export(*p_int_full, *p_int_full_col);
+  Core::LinAlg::export_to(*p_int_full, *p_int_full_col);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> h_derivGrad_nodalP =
       mortaradapter_->assemble_surf_grad_deriv(p_int_full_col);
   if (h_derivGrad_nodalP->left_scale(*nodal_gap)) FOUR_C_THROW("leftscale failed");

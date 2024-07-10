@@ -1467,7 +1467,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
           *dummy_cl_map, *bin_discret().node_col_map(), bin_discret().get_comm()));
 
   // export
-  exporter->Export(cl_datapacks);
+  exporter->do_export(cl_datapacks);
 
   // rebuild data container
   crosslinker_data_.resize(bin_discret().num_my_col_nodes());
@@ -1527,7 +1527,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
       *dummy_beam_map, *discret().element_col_map(), discret().get_comm()));
 
   // export
-  exporter->Export(beam_datapacks);
+  exporter->do_export(beam_datapacks);
 
   // rebuild data container
   beam_data_.resize(discret().num_my_col_elements());
@@ -2068,7 +2068,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_crossli
   }
 
   // export
-  cl_exporter_->Export(allpacks);
+  cl_exporter_->do_export(allpacks);
 
   // rebuild data container
   crosslinker_data_.resize(bin_discret().num_my_col_nodes());
@@ -2173,7 +2173,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
   }
 
   // export
-  beam_exporter_->Export(allpacks);
+  beam_exporter_->do_export(allpacks);
 
   // rebuild data container
   beam_data_.resize(discret().num_my_col_elements());

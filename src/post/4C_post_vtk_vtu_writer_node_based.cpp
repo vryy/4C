@@ -286,7 +286,7 @@ void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
     for (int i = 0; i < vecmap.NumMyElements(); ++i) (*dofvec)[i] = (*data)[i];
 
     ghostedData = Core::LinAlg::CreateVector(*colmap, true);
-    Core::LinAlg::Export(*dofvec, *ghostedData);
+    Core::LinAlg::export_to(*dofvec, *ghostedData);
   }
 
   int ncomponents = numdf;
@@ -372,7 +372,7 @@ void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
   else
   {
     ghostedData = Teuchos::rcp(new Epetra_MultiVector(*colmap, data->NumVectors(), false));
-    Core::LinAlg::Export(*data, *ghostedData);
+    Core::LinAlg::export_to(*data, *ghostedData);
   }
 
   int ncomponents = numdf;

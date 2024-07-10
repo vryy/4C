@@ -245,7 +245,7 @@ void CONSTRAINTS::ConstrManager::evaluate_force_stiff(const double time,
   // Convert Epetra_Vector containing lagrange multipliers to an completely
   // redundant Epetra_vector since every element with the constraint condition needs them
   Teuchos::RCP<Epetra_Vector> lagrMultVecDense = Teuchos::rcp(new Epetra_Vector(*redconstrmap_));
-  Core::LinAlg::Export(*lagr_mult_vec_, *lagrMultVecDense);
+  Core::LinAlg::export_to(*lagr_mult_vec_, *lagrMultVecDense);
   p.set("LagrMultVector", lagrMultVecDense);
   // Construct a redundant time curve factor and put it into parameter list
   Teuchos::RCP<Epetra_Vector> factredundant = Teuchos::rcp(new Epetra_Vector(*redconstrmap_));
@@ -306,7 +306,7 @@ void CONSTRAINTS::ConstrManager::compute_error(double time, Teuchos::RCP<Epetra_
   actdisc_->set_state("displacement", disp);
 
   Teuchos::RCP<Epetra_Vector> actredundant = Teuchos::rcp(new Epetra_Vector(*redconstrmap_));
-  Core::LinAlg::Export(*actvalues_, *actredundant);
+  Core::LinAlg::export_to(*actvalues_, *actredundant);
   // Compute current values and assemble them to the completely redundant vector
   // We will always use the third systemvector for this purpose
   p.set("OffsetID", offset_id_);
@@ -486,7 +486,7 @@ void CONSTRAINTS::ConstrManager::build_moni_type()
   // Export redundant vector into distributed one
   dummymondist->Export(*dummymonredundant, *monimpo_, Add);
   // Now export back
-  Core::LinAlg::Export(*dummymondist, *dummymonredundant);
+  Core::LinAlg::export_to(*dummymondist, *dummymonredundant);
   for (int i = 0; i < dummymonredundant->MyLength(); i++)
   {
     if ((*dummymonredundant)[i] != 0.0) (*monitortypes_)[i] = 1.0;
@@ -499,7 +499,7 @@ void CONSTRAINTS::ConstrManager::build_moni_type()
   // Export redundant vector into distributed one
   dummymondist->Export(*dummymonredundant, *monimpo_, Add);
   // Now export back
-  Core::LinAlg::Export(*dummymondist, *dummymonredundant);
+  Core::LinAlg::export_to(*dummymondist, *dummymonredundant);
   for (int i = 0; i < dummymonredundant->MyLength(); i++)
   {
     if ((*dummymonredundant)[i] != 0.0) (*monitortypes_)[i] = 2.0;
@@ -512,7 +512,7 @@ void CONSTRAINTS::ConstrManager::build_moni_type()
   // Export redundant vector into distributed one
   dummymondist->Export(*dummymonredundant, *monimpo_, Add);
   // Now export back
-  Core::LinAlg::Export(*dummymondist, *dummymonredundant);
+  Core::LinAlg::export_to(*dummymondist, *dummymonredundant);
   for (int i = 0; i < dummymonredundant->MyLength(); i++)
   {
     if ((*dummymonredundant)[i] != 0.0) (*monitortypes_)[i] = 3.0;

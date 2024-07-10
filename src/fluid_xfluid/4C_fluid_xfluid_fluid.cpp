@@ -327,7 +327,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidFluid::get_new_state()
   {
     mc_xff_
         ->update_displacement_iteration_vectors();  // update last iteration interface displacements
-    Core::LinAlg::Export(*embedded_fluid_->dispnp(), *mc_xff_->i_dispnp());
+    Core::LinAlg::export_to(*embedded_fluid_->dispnp(), *mc_xff_->i_dispnp());
   }
 
   state_it_++;
@@ -386,8 +386,8 @@ void FLD::XFluidFluid::assemble_mat_and_rhs(int itnum  ///< iteration number
 
   // export interface velocities
   // TODO: shift to mesh coupling class
-  Core::LinAlg::Export(*(embedded_fluid_->velnp()), *(mc_xff_->i_velnp()));
-  Core::LinAlg::Export(*(embedded_fluid_->veln()), *(mc_xff_->i_veln()));
+  Core::LinAlg::export_to(*(embedded_fluid_->velnp()), *(mc_xff_->i_velnp()));
+  Core::LinAlg::export_to(*(embedded_fluid_->veln()), *(mc_xff_->i_veln()));
 
   // evaluate elements of XFluid part
   XFluid::assemble_mat_and_rhs(itnum);

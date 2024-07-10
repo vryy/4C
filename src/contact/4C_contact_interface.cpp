@@ -4132,28 +4132,28 @@ void CONTACT::Interface::export_master_nodal_normals()
 
   // communicate from master node row to column map
   Core::Communication::Exporter ex(*mnoderowmap_, *masternodes, get_comm());
-  ex.Export(triad);
+  ex.do_export(triad);
 
-  ex.Export(n_x_key);
-  ex.Export(n_x_val);
-  ex.Export(n_y_key);
-  ex.Export(n_y_val);
-  ex.Export(n_z_key);
-  ex.Export(n_z_val);
+  ex.do_export(n_x_key);
+  ex.do_export(n_x_val);
+  ex.do_export(n_y_key);
+  ex.do_export(n_y_val);
+  ex.do_export(n_z_key);
+  ex.do_export(n_z_val);
 
-  ex.Export(txi_x_key);
-  ex.Export(txi_x_val);
-  ex.Export(txi_y_key);
-  ex.Export(txi_y_val);
-  ex.Export(txi_z_key);
-  ex.Export(txi_z_val);
+  ex.do_export(txi_x_key);
+  ex.do_export(txi_x_val);
+  ex.do_export(txi_y_key);
+  ex.do_export(txi_y_val);
+  ex.do_export(txi_z_key);
+  ex.do_export(txi_z_val);
 
-  ex.Export(teta_x_key);
-  ex.Export(teta_x_val);
-  ex.Export(teta_y_key);
-  ex.Export(teta_y_val);
-  ex.Export(teta_z_key);
-  ex.Export(teta_z_val);
+  ex.do_export(teta_x_key);
+  ex.do_export(teta_x_val);
+  ex.do_export(teta_y_key);
+  ex.do_export(teta_y_val);
+  ex.do_export(teta_z_key);
+  ex.do_export(teta_z_val);
 
   // extract info on column map
   for (int i = 0; i < masternodes->NumMyElements(); ++i)
@@ -5797,28 +5797,28 @@ void CONTACT::Interface::export_nodal_normals() const
   // communicate from slave node row to column map
   Core::Communication::Exporter& ex = interface_data_->exporter();
 
-  ex.Export(triad);
+  ex.do_export(triad);
 
-  ex.Export(n_x_key);
-  ex.Export(n_x_val);
-  ex.Export(n_y_key);
-  ex.Export(n_y_val);
-  ex.Export(n_z_key);
-  ex.Export(n_z_val);
+  ex.do_export(n_x_key);
+  ex.do_export(n_x_val);
+  ex.do_export(n_y_key);
+  ex.do_export(n_y_val);
+  ex.do_export(n_z_key);
+  ex.do_export(n_z_val);
 
-  ex.Export(txi_x_key);
-  ex.Export(txi_x_val);
-  ex.Export(txi_y_key);
-  ex.Export(txi_y_val);
-  ex.Export(txi_z_key);
-  ex.Export(txi_z_val);
+  ex.do_export(txi_x_key);
+  ex.do_export(txi_x_val);
+  ex.do_export(txi_y_key);
+  ex.do_export(txi_y_val);
+  ex.do_export(txi_z_key);
+  ex.do_export(txi_z_val);
 
-  ex.Export(teta_x_key);
-  ex.Export(teta_x_val);
-  ex.Export(teta_y_key);
-  ex.Export(teta_y_val);
-  ex.Export(teta_z_key);
-  ex.Export(teta_z_val);
+  ex.do_export(teta_x_key);
+  ex.do_export(teta_x_val);
+  ex.do_export(teta_y_key);
+  ex.do_export(teta_y_val);
+  ex.do_export(teta_z_key);
+  ex.do_export(teta_z_val);
 
   // extract info on column map
   for (int i = 0; i < snodecolmapbound_->NumMyElements(); ++i)
@@ -8641,7 +8641,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   /* Write interface displacement
    *
    * The interface displacement has been handed in via the parameter list outParams.
-   * Grab it from there, then use Core::LinAlg::Export() to extract the interface
+   * Grab it from there, then use Core::LinAlg::export_to() to extract the interface
    * portion from the global displacement vector. Finally, write the interface
    * portion using this interfaces' discretization writer.
    */
@@ -8649,7 +8649,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     // Get full displacement vector and extract interface displacement
     RCP<const Epetra_Vector> disp = outputParams.get<RCP<const Epetra_Vector>>("displacement");
     RCP<Epetra_Vector> iDisp = Core::LinAlg::CreateVector(*idiscret_->dof_row_map());
-    Core::LinAlg::Export(*disp, *iDisp);
+    Core::LinAlg::export_to(*disp, *iDisp);
 
     // Write the interface displacement field
     writer->write_vector("displacement", iDisp, Core::IO::VectorType::dofvector);
@@ -8661,7 +8661,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     RCP<const Epetra_Vector> lagMult =
         outputParams.get<RCP<const Epetra_Vector>>("interface traction");
     RCP<Epetra_Vector> iLagMult = Core::LinAlg::CreateVector(*idiscret_->dof_row_map());
-    Core::LinAlg::Export(*lagMult, *iLagMult);
+    Core::LinAlg::export_to(*lagMult, *iLagMult);
 
     // Write this interface's Lagrange multiplier field
     writer->write_vector("interfacetraction", iLagMult, Core::IO::VectorType::dofvector);
@@ -8673,7 +8673,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     RCP<const Epetra_Vector> normalStresses =
         outputParams.get<RCP<const Epetra_Vector>>("norcontactstress");
     RCP<Epetra_Vector> iNormalStresses = Core::LinAlg::CreateVector(*idiscret_->dof_row_map());
-    Core::LinAlg::Export(*normalStresses, *iNormalStresses);
+    Core::LinAlg::export_to(*normalStresses, *iNormalStresses);
 
     // Write this interface's normal contact stress field
     writer->write_vector("norcontactstress", iNormalStresses, Core::IO::VectorType::dofvector);
@@ -8685,7 +8685,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     RCP<const Epetra_Vector> tangentialStresses =
         outputParams.get<RCP<const Epetra_Vector>>("tancontactstress");
     RCP<Epetra_Vector> iTangentialStresses = Core::LinAlg::CreateVector(*idiscret_->dof_row_map());
-    Core::LinAlg::Export(*tangentialStresses, *iTangentialStresses);
+    Core::LinAlg::export_to(*tangentialStresses, *iTangentialStresses);
 
     // Write this interface's normal contact stress field
     writer->write_vector("tancontactstress", iTangentialStresses, Core::IO::VectorType::dofvector);
@@ -8697,7 +8697,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     RCP<const Epetra_Vector> slaveforces =
         outputParams.get<RCP<const Epetra_Vector>>("slave forces");
     RCP<Epetra_Vector> forces = Core::LinAlg::CreateVector(*idiscret_->dof_row_map());
-    Core::LinAlg::Export(*slaveforces, *forces);
+    Core::LinAlg::export_to(*slaveforces, *forces);
 
     // Write to output
     writer->write_vector("slaveforces", forces, Core::IO::VectorType::dofvector);
@@ -8709,7 +8709,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     RCP<const Epetra_Vector> masterforces =
         outputParams.get<RCP<const Epetra_Vector>>("master forces");
     RCP<Epetra_Vector> forces = Core::LinAlg::CreateVector(*idiscret_->dof_row_map());
-    Core::LinAlg::Export(*masterforces, *forces);
+    Core::LinAlg::export_to(*masterforces, *forces);
 
     // Write to output
     writer->write_vector("masterforces", forces, Core::IO::VectorType::dofvector);
@@ -8723,7 +8723,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
 
     RCP<const Epetra_Map> nodeRowMap = Core::LinAlg::MergeMap(snoderowmap_, mnoderowmap_, false);
     RCP<Epetra_Vector> masterSlaveVec = Core::LinAlg::CreateVector(*nodeRowMap, true);
-    Core::LinAlg::Export(*masterVec, *masterSlaveVec);
+    Core::LinAlg::export_to(*masterVec, *masterSlaveVec);
 
     writer->write_vector("slavemasternodes", masterSlaveVec, Core::IO::VectorType::nodevector);
   }
@@ -8739,13 +8739,13 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
       RCP<Epetra_Vector> slipset = Teuchos::rcp(new Epetra_Vector(*slipnodes_));
       slipset->PutScalar(1.0);
       RCP<Epetra_Vector> slipsetexp = Teuchos::rcp(new Epetra_Vector(*activenodes_));
-      Core::LinAlg::Export(*slipset, *slipsetexp);
+      Core::LinAlg::export_to(*slipset, *slipsetexp);
       activeset->Update(1.0, *slipsetexp, 1.0);
     }
 
     // export to interface node row map
     RCP<Epetra_Vector> activesetexp = Teuchos::rcp(new Epetra_Vector(*(idiscret_->node_row_map())));
-    Core::LinAlg::Export(*activeset, *activesetexp);
+    Core::LinAlg::export_to(*activeset, *activesetexp);
 
     writer->write_vector("activeset", activesetexp, Core::IO::VectorType::nodevector);
   }
@@ -8757,7 +8757,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
 
     RCP<const Epetra_Map> eleRowMap = Core::LinAlg::MergeMap(selerowmap_, melerowmap_, false);
     RCP<Epetra_Vector> masterSlaveVec = Core::LinAlg::CreateVector(*eleRowMap, true);
-    Core::LinAlg::Export(*masterVec, *masterSlaveVec);
+    Core::LinAlg::export_to(*masterVec, *masterSlaveVec);
 
     writer->write_vector(
         "slavemasterelements", masterSlaveVec, Core::IO::VectorType::elementvector);

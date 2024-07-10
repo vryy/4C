@@ -673,7 +673,7 @@ void STI::Monolithic::output_vector_to_file(
 
   // export vector to processor with ID 0
   Epetra_MultiVector fullvector(fullmap, vector.NumVectors(), true);
-  Core::LinAlg::Export(vector, fullvector);
+  Core::LinAlg::export_to(vector, fullvector);
 
   // let processor with ID 0 output vector to file
   if (comm.MyPID() == 0)
@@ -1153,7 +1153,7 @@ void STI::Monolithic::assemble_mat_and_rhs()
   if (condensationthermo_)
   {
     thermoresidual = Teuchos::rcp(new Epetra_Vector(*maps_->Map(1)));
-    Core::LinAlg::Export(*thermo_field()->residual(), *thermoresidual);
+    Core::LinAlg::export_to(*thermo_field()->residual(), *thermoresidual);
   }
   else
     thermoresidual = thermo_field()->residual();
@@ -1573,7 +1573,7 @@ void STI::Monolithic::solve()
     {
       thermoincrement =
           Teuchos::rcp(new Epetra_Vector(*thermo_field()->discretization()->dof_row_map()));
-      Core::LinAlg::Export(*maps_->extract_vector(increment_, 1), *thermoincrement);
+      Core::LinAlg::export_to(*maps_->extract_vector(increment_, 1), *thermoincrement);
       const Teuchos::RCP<const Epetra_Vector> masterincrement =
           strategythermo_->interface_maps()->extract_vector(*thermoincrement, 2);
       const Teuchos::RCP<Epetra_Vector> slaveincrement =

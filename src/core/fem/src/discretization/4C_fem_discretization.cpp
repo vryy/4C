@@ -748,7 +748,7 @@ void Core::FE::Discretization::redistribute_state(const unsigned nds, const std:
     // get the state and export it to the rowmap to be able to reset the state
     auto statevec = get_state(nds, name);
     auto statevecrowmap = Core::LinAlg::CreateVector(*dof_row_map(nds), true);
-    Core::LinAlg::Export(*statevec, *statevecrowmap);
+    Core::LinAlg::export_to(*statevec, *statevecrowmap);
 
     // now set the state again
     set_state(nds, name, statevecrowmap);
@@ -868,7 +868,7 @@ void Core::FE::Discretization::add_multi_vector_to_parameter_list(
     {
       Teuchos::RCP<Epetra_MultiVector> tmp =
           Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, numcol));
-      Core::LinAlg::Export(*vec, *tmp);
+      Core::LinAlg::export_to(*vec, *tmp);
       p.set(name, tmp);
     }
   }

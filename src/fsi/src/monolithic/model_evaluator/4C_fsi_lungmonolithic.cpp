@@ -378,7 +378,7 @@ void FSI::LungMonolithic::evaluate(Teuchos::RCP<const Epetra_Vector> step_increm
 
   // create redundant vectors
   Teuchos::RCP<Epetra_Vector> LagrMultVecRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
-  Core::LinAlg::Export(*LagrMultVec_, *LagrMultVecRed);
+  Core::LinAlg::export_to(*LagrMultVec_, *LagrMultVecRed);
   Teuchos::RCP<Epetra_Vector> CurrVolsRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
 
   const Teuchos::RCP<Adapter::StructureLung>& structfield =
@@ -793,11 +793,11 @@ void FSI::LungMonolithic::output()
     const Teuchos::RCP<Adapter::StructureLung>& structfield =
         Teuchos::rcp_dynamic_cast<Adapter::StructureLung>(structure_field());
     Teuchos::RCP<Epetra_Vector> OldFlowRatesRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
-    Core::LinAlg::Export(*OldFlowRates_, *OldFlowRatesRed);
+    Core::LinAlg::export_to(*OldFlowRates_, *OldFlowRatesRed);
     Teuchos::RCP<Epetra_Vector> OldVolsRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
-    Core::LinAlg::Export(*OldVols_, *OldVolsRed);
+    Core::LinAlg::export_to(*OldVols_, *OldVolsRed);
     Teuchos::RCP<Epetra_Vector> LagrMultVecOldRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
-    Core::LinAlg::Export(*LagrMultVecOld_, *LagrMultVecOldRed);
+    Core::LinAlg::export_to(*LagrMultVecOld_, *LagrMultVecOldRed);
     structfield->write_vol_con_restart(OldFlowRatesRed, OldVolsRed, LagrMultVecOldRed);
   }
 
@@ -812,7 +812,7 @@ void FSI::LungMonolithic::output()
   // output of volumes for visualization (e.g. gnuplot)
 
   Teuchos::RCP<Epetra_Vector> dVfluidRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
-  Core::LinAlg::Export(*dVfluid_, *dVfluidRed);
+  Core::LinAlg::export_to(*dVfluid_, *dVfluidRed);
 
   if (get_comm().MyPID() == 0)
   {
@@ -825,7 +825,7 @@ void FSI::LungMonolithic::output()
   }
 
   Teuchos::RCP<Epetra_Vector> dVstructRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
-  Core::LinAlg::Export(*dVstruct_, *dVstructRed);
+  Core::LinAlg::export_to(*dVstruct_, *dVstructRed);
 
   if (get_comm().MyPID() == 0)
   {
@@ -838,7 +838,7 @@ void FSI::LungMonolithic::output()
   }
 
   Teuchos::RCP<Epetra_Vector> VstructRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
-  Core::LinAlg::Export(*CurrVols_, *VstructRed);
+  Core::LinAlg::export_to(*CurrVols_, *VstructRed);
 
   if (get_comm().MyPID() == 0)
   {

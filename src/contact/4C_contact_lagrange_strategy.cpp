@@ -188,14 +188,14 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
   if (constr_direction_ == Inpar::CONTACT::constr_xyz)
   {
     gact = Core::LinAlg::CreateVector(*gactivedofs_, true);
-    if (gact->GlobalLength()) Core::LinAlg::Export(*wgap_, *gact);
+    if (gact->GlobalLength()) Core::LinAlg::export_to(*wgap_, *gact);
   }
   else
   {
     gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
     if (gact->GlobalLength())
     {
-      Core::LinAlg::Export(*wgap_, *gact);
+      Core::LinAlg::export_to(*wgap_, *gact);
       gact->ReplaceMap(*gactiven_);
     }
   }
@@ -422,7 +422,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
       if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
-      Core::LinAlg::Export(*pgsdirichtoggle_, *lmDBC);
+      Core::LinAlg::export_to(*pgsdirichtoggle_, *lmDBC);
       Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
       tmp->Multiply(1., *diag, *lmDBC, 0.);
       diag->Update(-1., *tmp, 1.);
@@ -511,7 +511,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
       // split and transform to redistributed maps
       Core::LinAlg::split_vector(*problem_dofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
       Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
-      Core::LinAlg::Export(*fsm, *fsmtemp);
+      Core::LinAlg::export_to(*fsm, *fsmtemp);
       fsm = fsmtemp;
     }
     else
@@ -878,9 +878,9 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
       Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
       Teuchos::RCP<Epetra_Vector> tempvecm2 = Teuchos::rcp(new Epetra_Vector(mold_->domain_map()));
       Teuchos::RCP<Epetra_Vector> zoldexp = Teuchos::rcp(new Epetra_Vector(mold_->row_map()));
-      if (mold_->row_map().NumGlobalElements()) Core::LinAlg::Export(*zold_, *zoldexp);
+      if (mold_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*zold_, *zoldexp);
       mold_->multiply(true, *zoldexp, *tempvecm2);
-      if (mset) Core::LinAlg::Export(*tempvecm2, *tempvecm);
+      if (mset) Core::LinAlg::export_to(*tempvecm2, *tempvecm);
       fm->Update(alphaf_, *tempvecm, 1.0);
     }
     // if there is no self contact everything is ok
@@ -900,9 +900,9 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     {
       Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(dold_->domain_map()));
       Teuchos::RCP<Epetra_Vector> zoldexp = Teuchos::rcp(new Epetra_Vector(dold_->row_map()));
-      if (dold_->row_map().NumGlobalElements()) Core::LinAlg::Export(*zold_, *zoldexp);
+      if (dold_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*zold_, *zoldexp);
       dold_->multiply(true, *zoldexp, *tempvec);
-      if (sset) Core::LinAlg::Export(*tempvec, *fsadd);
+      if (sset) Core::LinAlg::export_to(*tempvec, *fsadd);
     }
     // if there is no self contact everything is ok
     else
@@ -914,7 +914,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     if (aset)
     {
       Teuchos::RCP<Epetra_Vector> faadd = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
-      Core::LinAlg::Export(*fsadd, *faadd);
+      Core::LinAlg::export_to(*fsadd, *faadd);
       fa->Update(-alphaf_, *faadd, 1.0);
     }
 
@@ -928,7 +928,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     if (iset)
     {
       Teuchos::RCP<Epetra_Vector> fiadd = Teuchos::rcp(new Epetra_Vector(*gidofs));
-      Core::LinAlg::Export(*fsadd, *fiadd);
+      Core::LinAlg::export_to(*fsadd, *fiadd);
       fi->Update(-alphaf_, *fiadd, 1.0);
     }
 
@@ -1122,13 +1122,13 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     //--------------------------------------------------------- FIRST LINE
     // add n subvector to feffnew
     Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fn, *fnexp);
+    Core::LinAlg::export_to(*fn, *fnexp);
     feffnew->Update(1.0, *fnexp, 1.0);
 
     //-------------------------------------------------------- SECOND LINE
     // add m subvector to feffnew
     Teuchos::RCP<Epetra_Vector> fmmodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fmmod, *fmmodexp);
+    Core::LinAlg::export_to(*fmmod, *fmmodexp);
     feffnew->Update(1.0, *fmmodexp, 1.0);
 
     //--------------------------------------------------------- THIRD LINE
@@ -1137,7 +1137,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     if (iset)
     {
       fimodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      Core::LinAlg::Export(*fimod, *fimodexp);
+      Core::LinAlg::export_to(*fimod, *fimodexp);
       feffnew->Update(1.0, *fimodexp, 1.0);
     }
 
@@ -1150,7 +1150,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     if (aset)
     {
       gexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      Core::LinAlg::Export(*gact, *gexp);
+      Core::LinAlg::export_to(*gact, *gexp);
       feffnew->Update(-1.0, *gexp, 1.0);
     }
 
@@ -1160,7 +1160,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     if (stickset)
     {
       fstmodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      Core::LinAlg::Export(*fstmod, *fstmodexp);
+      Core::LinAlg::export_to(*fstmod, *fstmodexp);
       feffnew->Update(1.0, *fstmodexp, +1.0);
     }
 
@@ -1168,7 +1168,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     if (stickset)
     {
       Teuchos::RCP<Epetra_Vector> linstickRHSexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      Core::LinAlg::Export(*linstickRHS_, *linstickRHSexp);
+      Core::LinAlg::export_to(*linstickRHS_, *linstickRHSexp);
       feffnew->Update(-1.0, *linstickRHSexp, 1.0);
     }
 
@@ -1183,14 +1183,14 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     if (slipset)
     {
       fslmodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      Core::LinAlg::Export(*fslmod, *fslmodexp);
+      Core::LinAlg::export_to(*fslmod, *fslmodexp);
       feffnew->Update(1.0, *fslmodexp, 1.0);
     }
 
     if (slipset)
     {
       Teuchos::RCP<Epetra_Vector> linslipRHSexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      Core::LinAlg::Export(*linslipRHS_, *linslipRHSexp);
+      Core::LinAlg::export_to(*linslipRHS_, *linslipRHSexp);
       feffnew->Update(-1.0, *linslipRHSexp, 1.0);
     }
 
@@ -1243,16 +1243,16 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
       Teuchos::RCP<Epetra_Vector> tempvecd =
           Teuchos::rcp(new Epetra_Vector(dmatrix_->domain_map()));
       Teuchos::RCP<Epetra_Vector> zexp = Teuchos::rcp(new Epetra_Vector(dmatrix_->row_map()));
-      if (dmatrix_->row_map().NumGlobalElements()) Core::LinAlg::Export(*z_, *zexp);
+      if (dmatrix_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*z_, *zexp);
       dmatrix_->multiply(true, *zexp, *tempvecd);
-      Core::LinAlg::Export(*tempvecd, *fsexp);
+      Core::LinAlg::export_to(*tempvecd, *fsexp);
       feff->Update(-(1.0 - alphaf_), *fsexp, 1.0);
 
       Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
       Teuchos::RCP<Epetra_Vector> tempvecm =
           Teuchos::rcp(new Epetra_Vector(mmatrix_->domain_map()));
       mmatrix_->multiply(true, *zexp, *tempvecm);
-      Core::LinAlg::Export(*tempvecm, *fmexp);
+      Core::LinAlg::export_to(*tempvecm, *fmexp);
       feff->Update(1.0 - alphaf_, *fmexp, 1.0);
 
       // add old contact forces (t_n)
@@ -1260,16 +1260,16 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
       Teuchos::RCP<Epetra_Vector> tempvecdold =
           Teuchos::rcp(new Epetra_Vector(dold_->domain_map()));
       Teuchos::RCP<Epetra_Vector> zoldexp = Teuchos::rcp(new Epetra_Vector(dold_->row_map()));
-      if (dold_->row_map().NumGlobalElements()) Core::LinAlg::Export(*zold_, *zoldexp);
+      if (dold_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*zold_, *zoldexp);
       dold_->multiply(true, *zoldexp, *tempvecdold);
-      Core::LinAlg::Export(*tempvecdold, *fsoldexp);
+      Core::LinAlg::export_to(*tempvecdold, *fsoldexp);
       feff->Update(-alphaf_, *fsoldexp, 1.0);
 
       Teuchos::RCP<Epetra_Vector> fmoldexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
       Teuchos::RCP<Epetra_Vector> tempvecmold =
           Teuchos::rcp(new Epetra_Vector(mold_->domain_map()));
       mold_->multiply(true, *zoldexp, *tempvecmold);
-      Core::LinAlg::Export(*tempvecmold, *fmoldexp);
+      Core::LinAlg::export_to(*tempvecmold, *fmoldexp);
       feff->Update(alphaf_, *fmoldexp, 1.0);
     }
     // if there is no self contact everything is ok
@@ -1279,26 +1279,26 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
       Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
       dmatrix_->multiply(true, *z_, *fs);
       Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      Core::LinAlg::Export(*fs, *fsexp);
+      Core::LinAlg::export_to(*fs, *fsexp);
       feff->Update(-(1.0 - alphaf_), *fsexp, 1.0);
 
       Teuchos::RCP<Epetra_Vector> fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
       mmatrix_->multiply(true, *z_, *fm);
       Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      Core::LinAlg::Export(*fm, *fmexp);
+      Core::LinAlg::export_to(*fm, *fmexp);
       feff->Update(1.0 - alphaf_, *fmexp, 1.0);
 
       // add old contact forces (t_n)
       Teuchos::RCP<Epetra_Vector> fsold = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
       dold_->multiply(true, *zold_, *fsold);
       Teuchos::RCP<Epetra_Vector> fsoldexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      Core::LinAlg::Export(*fsold, *fsoldexp);
+      Core::LinAlg::export_to(*fsold, *fsoldexp);
       feff->Update(-alphaf_, *fsoldexp, 1.0);
 
       Teuchos::RCP<Epetra_Vector> fmold = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
       mold_->multiply(true, *zold_, *fmold);
       Teuchos::RCP<Epetra_Vector> fmoldexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      Core::LinAlg::Export(*fmold, *fmoldexp);
+      Core::LinAlg::export_to(*fmold, *fmoldexp);
       feff->Update(alphaf_, *fmoldexp, 1.0);
 
       // Check linear and angular momentum conservation
@@ -1414,7 +1414,7 @@ void CONTACT::LagrangeStrategy::compute_contact_stresses()
     if (fLTLn_ != Teuchos::null)
     {
       Teuchos::RCP<Epetra_Vector> dummy = Teuchos::rcp(new Epetra_Vector(slave_dof_row_map(true)));
-      Core::LinAlg::Export(*fLTLn_, *dummy);
+      Core::LinAlg::export_to(*fLTLn_, *dummy);
       forcenormal_->Update(1.0, *dummy, 1.0);
       forcenormal->Update(1.0, *dummy, 1.0);
     }
@@ -1423,7 +1423,7 @@ void CONTACT::LagrangeStrategy::compute_contact_stresses()
     if (fLTLt_ != Teuchos::null)
     {
       Teuchos::RCP<Epetra_Vector> dummy = Teuchos::rcp(new Epetra_Vector(slave_dof_row_map(true)));
-      Core::LinAlg::Export(*fLTLt_, *dummy);
+      Core::LinAlg::export_to(*fLTLt_, *dummy);
       forcetangential_->Update(1.0, *dummy, 1.0);
       forcetangential->Update(1.0, *dummy, 1.0);
     }
@@ -1917,7 +1917,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     gact = Core::LinAlg::CreateVector(*gactivedofs_, true);
     if (gact->GlobalLength())
     {
-      Core::LinAlg::Export(*wgap_, *gact);
+      Core::LinAlg::export_to(*wgap_, *gact);
     }
   }
   else
@@ -1925,7 +1925,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
     if (gact->GlobalLength())
     {
-      Core::LinAlg::Export(*wgap_, *gact);
+      Core::LinAlg::export_to(*wgap_, *gact);
       gact->ReplaceMap(*gactiven_);
     }
   }
@@ -2177,7 +2177,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
       if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
-      Core::LinAlg::Export(*pgsdirichtoggle_, *lmDBC);
+      Core::LinAlg::export_to(*pgsdirichtoggle_, *lmDBC);
       Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
       tmp->Multiply(1., *diag, *lmDBC, 0.);
       diag->Update(-1., *tmp, 1.);
@@ -2285,7 +2285,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
       // split and transform to redistributed maps
       Core::LinAlg::split_vector(*problem_dofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
       Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
-      Core::LinAlg::Export(*fsm, *fsmtemp);
+      Core::LinAlg::export_to(*fsm, *fsmtemp);
       fsm = fsmtemp;
     }
     else
@@ -2570,9 +2570,9 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
       Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
       Teuchos::RCP<Epetra_Vector> tempvecm2 = Teuchos::rcp(new Epetra_Vector(mold_->domain_map()));
       Teuchos::RCP<Epetra_Vector> zoldexp = Teuchos::rcp(new Epetra_Vector(mold_->row_map()));
-      if (mold_->row_map().NumGlobalElements()) Core::LinAlg::Export(*zold_, *zoldexp);
+      if (mold_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*zold_, *zoldexp);
       mold_->multiply(true, *zoldexp, *tempvecm2);
-      if (mset) Core::LinAlg::Export(*tempvecm2, *tempvecm);
+      if (mset) Core::LinAlg::export_to(*tempvecm2, *tempvecm);
       fm->Update(alphaf_, *tempvecm, 1.0);
     }
     // if there is no self contact everything is ok
@@ -2592,9 +2592,9 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     {
       Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(dold_->domain_map()));
       Teuchos::RCP<Epetra_Vector> zoldexp = Teuchos::rcp(new Epetra_Vector(dold_->row_map()));
-      if (dold_->row_map().NumGlobalElements()) Core::LinAlg::Export(*zold_, *zoldexp);
+      if (dold_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*zold_, *zoldexp);
       dold_->multiply(true, *zoldexp, *tempvec);
-      if (sset) Core::LinAlg::Export(*tempvec, *fsadd);
+      if (sset) Core::LinAlg::export_to(*tempvec, *fsadd);
     }
     // if there is no self contact everything is ok
     else
@@ -2606,7 +2606,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     if (aset)
     {
       Teuchos::RCP<Epetra_Vector> faadd = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
-      Core::LinAlg::Export(*fsadd, *faadd);
+      Core::LinAlg::export_to(*fsadd, *faadd);
       fa->Update(-alphaf_, *faadd, 1.0);
     }
 
@@ -2620,7 +2620,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     if (iset)
     {
       Teuchos::RCP<Epetra_Vector> fiadd = Teuchos::rcp(new Epetra_Vector(*gidofs));
-      Core::LinAlg::Export(*fsadd, *fiadd);
+      Core::LinAlg::export_to(*fsadd, *fiadd);
       fi->Update(-alphaf_, *fiadd, 1.0);
     }
 
@@ -2744,13 +2744,13 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     //----------------------------------------------------------- FIRST LINE
     // add n subvector to feffnew
     Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fn, *fnexp);
+    Core::LinAlg::export_to(*fn, *fnexp);
     feffnew->Update(1.0, *fnexp, 1.0);
 
     //---------------------------------------------------------- SECOND LINE
     // add m subvector to feffnew
     Teuchos::RCP<Epetra_Vector> fmmodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fmmod, *fmmodexp);
+    Core::LinAlg::export_to(*fmmod, *fmmodexp);
     feffnew->Update(1.0, *fmmodexp, 1.0);
 
     //----------------------------------------------------------- THIRD LINE
@@ -2759,7 +2759,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     if (iset)
     {
       fimodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      Core::LinAlg::Export(*fimod, *fimodexp);
+      Core::LinAlg::export_to(*fimod, *fimodexp);
       feffnew->Update(1.0, *fimodexp, 1.0);
     }
 
@@ -2769,7 +2769,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     if (aset)
     {
       gexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      Core::LinAlg::Export(*gact, *gexp);
+      Core::LinAlg::export_to(*gact, *gexp);
       feffnew->Update(-1.0, *gexp, 1.0);
     }
 
@@ -2779,7 +2779,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     if (aset)
     {
       famodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      Core::LinAlg::Export(*famod, *famodexp);
+      Core::LinAlg::export_to(*famod, *famodexp);
       feffnew->Update(1.0, *famodexp, 1.0);
     }
 
@@ -2856,16 +2856,16 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
       Teuchos::RCP<Epetra_Vector> tempvecd =
           Teuchos::rcp(new Epetra_Vector(dmatrix_->domain_map()));
       Teuchos::RCP<Epetra_Vector> zexp = Teuchos::rcp(new Epetra_Vector(dmatrix_->row_map()));
-      if (dmatrix_->row_map().NumGlobalElements()) Core::LinAlg::Export(*z_, *zexp);
+      if (dmatrix_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*z_, *zexp);
       dmatrix_->multiply(true, *zexp, *tempvecd);
-      Core::LinAlg::Export(*tempvecd, *fsexp);
+      Core::LinAlg::export_to(*tempvecd, *fsexp);
       feff->Update(-(1.0 - alphaf_), *fsexp, 1.0);
 
       Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
       Teuchos::RCP<Epetra_Vector> tempvecm =
           Teuchos::rcp(new Epetra_Vector(mmatrix_->domain_map()));
       mmatrix_->multiply(true, *zexp, *tempvecm);
-      Core::LinAlg::Export(*tempvecm, *fmexp);
+      Core::LinAlg::export_to(*tempvecm, *fmexp);
       feff->Update(1.0 - alphaf_, *fmexp, 1.0);
 
       // add old contact forces (t_n)
@@ -2873,16 +2873,16 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
       Teuchos::RCP<Epetra_Vector> tempvecdold =
           Teuchos::rcp(new Epetra_Vector(dold_->domain_map()));
       Teuchos::RCP<Epetra_Vector> zoldexp = Teuchos::rcp(new Epetra_Vector(dold_->row_map()));
-      if (dold_->row_map().NumGlobalElements()) Core::LinAlg::Export(*zold_, *zoldexp);
+      if (dold_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*zold_, *zoldexp);
       dold_->multiply(true, *zoldexp, *tempvecdold);
-      Core::LinAlg::Export(*tempvecdold, *fsoldexp);
+      Core::LinAlg::export_to(*tempvecdold, *fsoldexp);
       feff->Update(-alphaf_, *fsoldexp, 1.0);
 
       Teuchos::RCP<Epetra_Vector> fmoldexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
       Teuchos::RCP<Epetra_Vector> tempvecmold =
           Teuchos::rcp(new Epetra_Vector(mold_->domain_map()));
       mold_->multiply(true, *zoldexp, *tempvecmold);
-      Core::LinAlg::Export(*tempvecmold, *fmoldexp);
+      Core::LinAlg::export_to(*tempvecmold, *fmoldexp);
       feff->Update(alphaf_, *fmoldexp, 1.0);
     }
     // if there is no self contact everything is ok
@@ -2892,13 +2892,13 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
       Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
       dmatrix_->multiply(true, *z_, *fs);
       Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      Core::LinAlg::Export(*fs, *fsexp);
+      Core::LinAlg::export_to(*fs, *fsexp);
       feff->Update(-(1.0 - alphaf_), *fsexp, 1.0);
 
       Teuchos::RCP<Epetra_Vector> fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
       mmatrix_->multiply(true, *z_, *fm);
       Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      Core::LinAlg::Export(*fm, *fmexp);
+      Core::LinAlg::export_to(*fm, *fmexp);
       feff->Update(1.0 - alphaf_, *fmexp, 1.0);
 
       // Check linear and angular momentum conservation
@@ -2913,13 +2913,13 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
       Teuchos::RCP<Epetra_Vector> fsold = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
       dold_->multiply(true, *zold_, *fsold);
       Teuchos::RCP<Epetra_Vector> fsoldexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      Core::LinAlg::Export(*fsold, *fsoldexp);
+      Core::LinAlg::export_to(*fsold, *fsoldexp);
       feff->Update(-alphaf_, *fsoldexp, 1.0);
 
       Teuchos::RCP<Epetra_Vector> fmold = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
       mold_->multiply(true, *zold_, *fmold);
       Teuchos::RCP<Epetra_Vector> fmoldexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      Core::LinAlg::Export(*fmold, *fmoldexp);
+      Core::LinAlg::export_to(*fmold, *fmoldexp);
       feff->Update(alphaf_, *fmoldexp, 1.0);
     }
   }
@@ -2970,7 +2970,7 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
       Teuchos::rcp(new Epetra_Vector(*(dbcmaps->full_map())));
   Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->cond_map())));
   temp->PutScalar(1.0);
-  Core::LinAlg::Export(*temp, *dirichtoggle);
+  Core::LinAlg::export_to(*temp, *dirichtoggle);
 
   // Initialize constraint matrices
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kzz =
@@ -3126,13 +3126,13 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
      */
     Teuchos::RCP<Epetra_Vector> dirichtoggleexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
     {
-      Core::LinAlg::Export(*dirichtoggle, *dirichtoggleexp);
+      Core::LinAlg::export_to(*dirichtoggle, *dirichtoggleexp);
       Teuchos::RCP<Epetra_Vector> lmDBC = Teuchos::null;
       if (parallel_redistribution_status())
         lmDBC = Teuchos::rcp(new Epetra_Vector(*pgsdofrowmap_, true));
       else
         lmDBC = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-      Core::LinAlg::Export(*dirichtoggle, *lmDBC);
+      Core::LinAlg::export_to(*dirichtoggle, *lmDBC);
 
       if (parallel_redistribution_status())
         lmDBC->ReplaceMap(*pglmdofrowmap_);
@@ -3140,7 +3140,7 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
         lmDBC->ReplaceMap(*glmdofrowmap_);
 
       Teuchos::RCP<Epetra_Vector> lmDBCexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-      Core::LinAlg::Export(*lmDBC, *lmDBCexp);
+      Core::LinAlg::export_to(*lmDBC, *lmDBCexp);
       if (dirichtoggleexp->Update(1., *lmDBCexp, 1.)) FOUR_C_THROW("Update failed.");
       trkzd->apply_dirichlet(*lmDBC, false);
 
@@ -3188,10 +3188,10 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
 
     // we also need merged rhs here
     Teuchos::RCP<Epetra_Vector> fresmexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    Core::LinAlg::Export(*fd, *fresmexp);
+    Core::LinAlg::export_to(*fd, *fresmexp);
     mergedrhs->Update(1.0, *fresmexp, 1.0);
     Teuchos::RCP<Epetra_Vector> constrexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    Core::LinAlg::Export(*constrrhs_, *constrexp);
+    Core::LinAlg::export_to(*constrrhs_, *constrexp);
     mergedrhs->Update(1.0, *constrexp, 1.0);
 
     // apply Dirichlet B.C. to mergedrhs and mergedsol
@@ -3221,7 +3221,7 @@ void CONTACT::LagrangeStrategy::update_displacements_and_l_mincrements(
     mapext.extract_other_vector(blocksol, sollmOrig);
 
     sollm = Teuchos::rcp(new Epetra_Vector(*glmdofrowmap_));
-    Core::LinAlg::Export(*sollmOrig, *sollm);
+    Core::LinAlg::export_to(*sollmOrig, *sollm);
     sollm->ReplaceMap(*gsdofrowmap_);
   }
   else
@@ -3241,7 +3241,7 @@ void CONTACT::LagrangeStrategy::update_displacements_and_l_mincrements(
   if (is_self_contact())
   {
     zincr_ = Teuchos::rcp(new Epetra_Vector(*sollm));
-    Core::LinAlg::Export(*z_, *zincr_);  // change the map of z_
+    Core::LinAlg::export_to(*z_, *zincr_);  // change the map of z_
     z_ = Teuchos::rcp(new Epetra_Vector(*zincr_));
     zincr_->Update(1.0, *sollm, 0.0);  // save sollm in zincr_
     z_->Update(1.0, *zincr_, 1.0);     // update z_
@@ -3285,7 +3285,7 @@ void CONTACT::LagrangeStrategy::evaluate_constr_rhs()
     gact = Core::LinAlg::CreateVector(*gactivedofs_, true);
     if (gact->GlobalLength())
     {
-      Core::LinAlg::Export(*wgap_, *gact);
+      Core::LinAlg::export_to(*wgap_, *gact);
     }
   }
   else
@@ -3293,19 +3293,19 @@ void CONTACT::LagrangeStrategy::evaluate_constr_rhs()
     gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
     if (gactiven_->NumGlobalElements())
     {
-      Core::LinAlg::Export(*wgap_, *gact);
+      Core::LinAlg::export_to(*wgap_, *gact);
       gact->ReplaceMap(*gactiven_);
     }
   }
 
   Teuchos::RCP<Epetra_Vector> gact_exp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  Core::LinAlg::Export(*gact, *gact_exp);
+  Core::LinAlg::export_to(*gact, *gact_exp);
 
   constrrhs->Update(-1.0, *gact_exp, 1.0);
 
   // export inactive rhs
   Teuchos::RCP<Epetra_Vector> inactiverhsexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  Core::LinAlg::Export(*inactiverhs_, *inactiverhsexp);
+  Core::LinAlg::export_to(*inactiverhs_, *inactiverhsexp);
 
   // build constraint rhs (1)
   constrrhs->Update(1.0, *inactiverhsexp, 1.0);
@@ -3315,7 +3315,7 @@ void CONTACT::LagrangeStrategy::evaluate_constr_rhs()
   {
     // export tangential rhs
     Teuchos::RCP<Epetra_Vector> tangrhs_exp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    Core::LinAlg::Export(*tangrhs_, *tangrhs_exp);
+    Core::LinAlg::export_to(*tangrhs_, *tangrhs_exp);
 
     // build constraint rhs (2)
     constrrhs->Update(1.0, *tangrhs_exp, 1.0);
@@ -3325,9 +3325,9 @@ void CONTACT::LagrangeStrategy::evaluate_constr_rhs()
   {
     // export stick and slip r.h.s.
     Teuchos::RCP<Epetra_Vector> stickexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    Core::LinAlg::Export(*linstickRHS_, *stickexp);
+    Core::LinAlg::export_to(*linstickRHS_, *stickexp);
     Teuchos::RCP<Epetra_Vector> slipexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    Core::LinAlg::Export(*linslipRHS_, *slipexp);
+    Core::LinAlg::export_to(*linslipRHS_, *slipexp);
 
     // build constraint rhs
     constrrhs->Update(1.0, *stickexp, 1.0);
@@ -3340,7 +3340,7 @@ void CONTACT::LagrangeStrategy::evaluate_constr_rhs()
   if (parallel_redistribution_status())
   {
     constrrhs_ = Teuchos::rcp(new Epetra_Vector(lm_dof_row_map(false)));
-    Core::LinAlg::Export(*constrrhs, *constrrhs_);
+    Core::LinAlg::export_to(*constrrhs, *constrrhs_);
   }
   else
     constrrhs_ = constrrhs;
@@ -3677,7 +3677,7 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_friction()
       if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
-      Core::LinAlg::Export(*pgsdirichtoggle_, *lmDBC);
+      Core::LinAlg::export_to(*pgsdirichtoggle_, *lmDBC);
       Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
       tmp->Multiply(1., *diag, *lmDBC, 0.);
       diag->Update(-1., *tmp, 1.);
@@ -3938,7 +3938,7 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_frictionless()
       if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
-      Core::LinAlg::Export(*pgsdirichtoggle_, *lmDBC);
+      Core::LinAlg::export_to(*pgsdirichtoggle_, *lmDBC);
       Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
       tmp->Multiply(1., *diag, *lmDBC, 0.);
       diag->Update(-1., *tmp, 1.);
@@ -4016,15 +4016,15 @@ void CONTACT::LagrangeStrategy::eval_str_contact_rhs()
     Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Teuchos::RCP<Epetra_Vector> tempvecd = Teuchos::rcp(new Epetra_Vector(dmatrix_->domain_map()));
     Teuchos::RCP<Epetra_Vector> zexp = Teuchos::rcp(new Epetra_Vector(dmatrix_->row_map()));
-    if (dmatrix_->row_map().NumGlobalElements()) Core::LinAlg::Export(*z_, *zexp);
+    if (dmatrix_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*z_, *zexp);
     dmatrix_->multiply(true, *zexp, *tempvecd);
-    Core::LinAlg::Export(*tempvecd, *fsexp);
+    Core::LinAlg::export_to(*tempvecd, *fsexp);
     strcontactrhs_->Update(1., *fsexp, 1.0);
 
     Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(mmatrix_->domain_map()));
     mmatrix_->multiply(true, *zexp, *tempvecm);
-    Core::LinAlg::Export(*tempvecm, *fmexp);
+    Core::LinAlg::export_to(*tempvecm, *fmexp);
     strcontactrhs_->Update(-1., *fmexp, 1.0);
   }
   // if there is no self contact everything is ok
@@ -4035,13 +4035,13 @@ void CONTACT::LagrangeStrategy::eval_str_contact_rhs()
     dmatrix_->multiply(true, *z_, *fs);
     //    Core::LinAlg::MLMultiply(*lindmatrix_,false,*trafo_,false,false,false,true);
     Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fs, *fsexp);
+    Core::LinAlg::export_to(*fs, *fsexp);
     strcontactrhs_->Update(+1., *fsexp, 1.0);
 
     Teuchos::RCP<Epetra_Vector> fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
     mmatrix_->multiply(true, *z_, *fm);
     Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fm, *fmexp);
+    Core::LinAlg::export_to(*fm, *fmexp);
     strcontactrhs_->Update(-1., *fmexp, 1.0);
 
     // Check linear and angular momentum conservation
@@ -4324,7 +4324,7 @@ void CONTACT::LagrangeStrategy::run_post_compute_x(const CONTACT::ParamsInterfac
     {
       Teuchos::RCP<Epetra_Vector> zdir_ptr =
           Teuchos::rcp(new Epetra_Vector(lm_dof_row_map(true), true));
-      Core::LinAlg::Export(dir, *zdir_ptr);
+      Core::LinAlg::export_to(dir, *zdir_ptr);
       // get the current step length
       const double stepLength = cparams.get_step_length();
       // ---------------------------------------------------------------------
@@ -4388,7 +4388,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::LagrangeStrategy::get_rhs_block_ptr(
         static Teuchos::RCP<Epetra_Vector> tmp_ptr =
             Teuchos::rcp(new Epetra_Vector(lin_system_lm_dof_row_map(), false));
         tmp_ptr->PutScalar(0.0);
-        Core::LinAlg::Export(*vec_ptr, *tmp_ptr);
+        Core::LinAlg::export_to(*vec_ptr, *tmp_ptr);
         vec_ptr = tmp_ptr;
       }
 
@@ -4415,7 +4415,7 @@ void CONTACT::LagrangeStrategy::reset_lagrange_multipliers(
 
     Teuchos::RCP<Epetra_Vector> znew_ptr =
         Teuchos::rcp(new Epetra_Vector(lm_dof_row_map(true), true));
-    Core::LinAlg::Export(xnew, *znew_ptr);
+    Core::LinAlg::export_to(xnew, *znew_ptr);
     // ---------------------------------------------------------------------
     // Update the current lagrange multiplier
     // ---------------------------------------------------------------------
@@ -4465,15 +4465,15 @@ void CONTACT::LagrangeStrategy::recover(Teuchos::RCP<Epetra_Vector> disi)
 
     // extract slave displacements from disi
     Teuchos::RCP<Epetra_Vector> disis = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    if (gsdofrowmap_->NumGlobalElements()) Core::LinAlg::Export(*disi, *disis);
+    if (gsdofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*disi, *disis);
 
     // extract master displacements from disi
     Teuchos::RCP<Epetra_Vector> disim = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-    if (gmdofrowmap_->NumGlobalElements()) Core::LinAlg::Export(*disi, *disim);
+    if (gmdofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*disi, *disim);
 
     // extract other displacements from disi
     Teuchos::RCP<Epetra_Vector> disin = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_));
-    if (gndofrowmap_->NumGlobalElements()) Core::LinAlg::Export(*disi, *disin);
+    if (gndofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*disi, *disin);
 
     // condensation has been performed for active LM only,
     // thus we construct a modified invd matrix here which
@@ -4529,11 +4529,11 @@ void CONTACT::LagrangeStrategy::recover(Teuchos::RCP<Epetra_Vector> disi)
       ksn_->multiply(false, *disin, *mod);
       z_->Update(-1.0, *mod, 1.0);
       Teuchos::RCP<Epetra_Vector> mod2 = Teuchos::rcp(new Epetra_Vector((dold_->row_map())));
-      if (dold_->row_map().NumGlobalElements()) Core::LinAlg::Export(*zold_, *mod2);
+      if (dold_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*zold_, *mod2);
       Teuchos::RCP<Epetra_Vector> mod3 = Teuchos::rcp(new Epetra_Vector((dold_->row_map())));
       dold_->multiply(true, *mod2, *mod3);
       Teuchos::RCP<Epetra_Vector> mod4 = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-      if (gsdofrowmap_->NumGlobalElements()) Core::LinAlg::Export(*mod3, *mod4);
+      if (gsdofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*mod3, *mod4);
       z_->Update(-alphaf_, *mod4, 1.0);
       Teuchos::RCP<Epetra_Vector> zcopy = Teuchos::rcp(new Epetra_Vector(*z_));
       invdmod->multiply(true, *zcopy, *z_);
@@ -5141,8 +5141,8 @@ void CONTACT::LagrangeStrategy::update(Teuchos::RCP<const Epetra_Vector> dis)
   //  Teuchos::RCP<Epetra_Vector> fconservationM =
   //      Teuchos::rcp(new Epetra_Vector(master_dof_row_map(true)),true);
   //
-  //  Core::LinAlg::Export(*fconservation_,*fconservationS);
-  //  Core::LinAlg::Export(*fconservation_,*fconservationM);
+  //  Core::LinAlg::export_to(*fconservation_,*fconservationS);
+  //  Core::LinAlg::export_to(*fconservation_,*fconservationM);
   ////  fconservationM->Scale(-1.0);
   //  // check conservation properties:
   //  interface_[0]->EvalResultantMoment(*fconservationS, *fconservationM);
@@ -5353,7 +5353,7 @@ void CONTACT::LagrangeStrategy::do_regularization_scaling(bool aset, bool iset,
   if (aset)
   {
     famodexp_n = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*famod_n, *famodexp_n);
+    Core::LinAlg::export_to(*famod_n, *famodexp_n);
     feffnew->Update(-1.0, *famodexp_n, 1.0);
   }
 }
@@ -5514,14 +5514,14 @@ void CONTACT::LagrangeStrategy::condense_friction(
   if (constr_direction_ == Inpar::CONTACT::constr_xyz)
   {
     gact = Core::LinAlg::CreateVector(*gactivedofs_, true);
-    if (gact->GlobalLength()) Core::LinAlg::Export(*wgap_, *gact);
+    if (gact->GlobalLength()) Core::LinAlg::export_to(*wgap_, *gact);
   }
   else
   {
     gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
     if (gact->GlobalLength())
     {
-      Core::LinAlg::Export(*wgap_, *gact);
+      Core::LinAlg::export_to(*wgap_, *gact);
       gact->ReplaceMap(*gactiven_);
     }
   }
@@ -5607,7 +5607,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
     // split and transform to redistributed maps
     Core::LinAlg::split_vector(*problem_dofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
     Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
-    Core::LinAlg::Export(*fsm, *fsmtemp);
+    Core::LinAlg::export_to(*fsm, *fsmtemp);
     fsm = fsmtemp;
   }
   else
@@ -6143,13 +6143,13 @@ void CONTACT::LagrangeStrategy::condense_friction(
   //--------------------------------------------------------- FIRST LINE
   // add n subvector to feffnew
   Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-  Core::LinAlg::Export(*fn, *fnexp);
+  Core::LinAlg::export_to(*fn, *fnexp);
   feffnew->Update(1.0, *fnexp, 1.0);
 
   //-------------------------------------------------------- SECOND LINE
   // add m subvector to feffnew
   Teuchos::RCP<Epetra_Vector> fmmodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-  Core::LinAlg::Export(*fmmod, *fmmodexp);
+  Core::LinAlg::export_to(*fmmod, *fmmodexp);
   feffnew->Update(1.0, *fmmodexp, 1.0);
 
   //--------------------------------------------------------- THIRD LINE
@@ -6158,7 +6158,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   if (iset)
   {
     fimodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fimod, *fimodexp);
+    Core::LinAlg::export_to(*fimod, *fimodexp);
     feffnew->Update(1.0, *fimodexp, 1.0);
   }
 
@@ -6171,7 +6171,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   if (aset)
   {
     gexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*gact, *gexp);
+    Core::LinAlg::export_to(*gact, *gexp);
     feffnew->Update(-1.0, *gexp, 1.0);
   }
 
@@ -6181,7 +6181,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   if (stickset)
   {
     fstmodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fstmod, *fstmodexp);
+    Core::LinAlg::export_to(*fstmod, *fstmodexp);
     feffnew->Update(1.0, *fstmodexp, +1.0);
   }
 
@@ -6189,7 +6189,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   if (stickset)
   {
     Teuchos::RCP<Epetra_Vector> linstickRHSexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*linstickRHS_, *linstickRHSexp);
+    Core::LinAlg::export_to(*linstickRHS_, *linstickRHSexp);
     feffnew->Update(-1.0, *linstickRHSexp, 1.0);
   }
 
@@ -6204,14 +6204,14 @@ void CONTACT::LagrangeStrategy::condense_friction(
   if (slipset)
   {
     fslmodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fslmod, *fslmodexp);
+    Core::LinAlg::export_to(*fslmod, *fslmodexp);
     feffnew->Update(1.0, *fslmodexp, 1.0);
   }
 
   if (slipset)
   {
     Teuchos::RCP<Epetra_Vector> linslipRHSexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*linslipRHS_, *linslipRHSexp);
+    Core::LinAlg::export_to(*linslipRHS_, *linslipRHSexp);
     feffnew->Update(-1.0, *linslipRHSexp, 1.0);
   }
 
@@ -6344,7 +6344,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
     gact = Core::LinAlg::CreateVector(*gactivedofs_, true);
     if (gact->GlobalLength())
     {
-      Core::LinAlg::Export(*wgap_, *gact);
+      Core::LinAlg::export_to(*wgap_, *gact);
     }
   }
   else
@@ -6352,7 +6352,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
     gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
     if (gact->GlobalLength())
     {
-      Core::LinAlg::Export(*wgap_, *gact);
+      Core::LinAlg::export_to(*wgap_, *gact);
       gact->ReplaceMap(*gactiven_);
     }
   }
@@ -6434,7 +6434,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
     // split and transform to redistributed maps
     Core::LinAlg::split_vector(*problem_dofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
     Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
-    Core::LinAlg::Export(*fsm, *fsmtemp);
+    Core::LinAlg::export_to(*fsm, *fsmtemp);
     fsm = fsmtemp;
   }
   else
@@ -6812,13 +6812,13 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   //----------------------------------------------------------- FIRST LINE
   // add n subvector to feffnew
   Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-  Core::LinAlg::Export(*fn, *fnexp);
+  Core::LinAlg::export_to(*fn, *fnexp);
   feffnew->Update(1.0, *fnexp, 1.0);
 
   //---------------------------------------------------------- SECOND LINE
   // add m subvector to feffnew
   Teuchos::RCP<Epetra_Vector> fmmodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-  Core::LinAlg::Export(*fmmod, *fmmodexp);
+  Core::LinAlg::export_to(*fmmod, *fmmodexp);
   feffnew->Update(1.0, *fmmodexp, 1.0);
 
   //----------------------------------------------------------- THIRD LINE
@@ -6827,7 +6827,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   if (iset)
   {
     fimodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*fimod, *fimodexp);
+    Core::LinAlg::export_to(*fimod, *fimodexp);
     feffnew->Update(1.0, *fimodexp, 1.0);
   }
 
@@ -6837,7 +6837,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   if (aset)
   {
     gexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*gact, *gexp);
+    Core::LinAlg::export_to(*gact, *gexp);
     feffnew->Update(-1.0, *gexp, 1.0);
   }
 
@@ -6847,7 +6847,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   if (aset)
   {
     famodexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-    Core::LinAlg::Export(*famod, *famodexp);
+    Core::LinAlg::export_to(*famod, *famodexp);
     feffnew->Update(1.0, *famodexp, 1.0);
   }
 
@@ -6900,7 +6900,7 @@ void CONTACT::LagrangeStrategy::run_pre_apply_jacobian_inverse(
     *kteff = *Core::LinAlg::Multiply(*systrafo_, true, *kteff, false, false, false, true);
     Epetra_Vector rhs_str(*problem_dofs());
     Epetra_Vector rhs_str2(*problem_dofs());
-    Core::LinAlg::Export(rhs, rhs_str);
+    Core::LinAlg::export_to(rhs, rhs_str);
     if (systrafo_->multiply(true, rhs_str, rhs_str2)) FOUR_C_THROW("multiply failed");
     for (int i = 0; i < rhs_str2.Map().NumMyElements(); ++i)
       rhs[rhs.Map().LID(rhs_str2.Map().GID(i))] = rhs_str2[i];
@@ -6943,15 +6943,15 @@ void CONTACT::LagrangeStrategy::run_post_apply_jacobian_inverse(
 
     // extract slave displacements from disi
     Teuchos::RCP<Epetra_Vector> disis = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    if (gsdofrowmap_->NumGlobalElements()) Core::LinAlg::Export(*disi, *disis);
+    if (gsdofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*disi, *disis);
 
     // extract master displacements from disi
     Teuchos::RCP<Epetra_Vector> disim = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-    if (gmdofrowmap_->NumGlobalElements()) Core::LinAlg::Export(*disi, *disim);
+    if (gmdofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*disi, *disim);
 
     // extract other displacements from disi
     Teuchos::RCP<Epetra_Vector> disin = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_));
-    if (gndofrowmap_->NumGlobalElements()) Core::LinAlg::Export(*disi, *disin);
+    if (gndofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*disi, *disin);
 
     // condensation has been performed for active LM only,
     // thus we construct a modified invd matrix here which

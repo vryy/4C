@@ -311,7 +311,7 @@ Mat::GrowthLawAnisoStrain::GrowthLawAnisoStrain(Mat::PAR::GrowthLawAnisoStrain* 
 void Mat::GrowthLawAnisoStrain::evaluate_growth_function(
     double& growthfunc, const double growthtrig, const double theta)
 {
-  Mat::PAR::GrowthLawAnisoStrain* params = Parameter();
+  Mat::PAR::GrowthLawAnisoStrain* params = parameter();
   // parameters
   const double tau = params->tau_;
   const double taurev = params->taurev_;
@@ -356,7 +356,7 @@ void Mat::GrowthLawAnisoStrain::evaluate_growth_function_deriv_theta(double& dgr
     const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
     const Core::LinAlg::Matrix<3, 3>& F_g, const Core::LinAlg::Matrix<3, 1>& direction)
 {
-  Mat::PAR::GrowthLawAnisoStrain* params = Parameter();
+  Mat::PAR::GrowthLawAnisoStrain* params = parameter();
   // parameters
   const double tau = params->tau_;
   const double taurev = params->taurev_;
@@ -394,7 +394,7 @@ void Mat::GrowthLawAnisoStrain::evaluate_growth_function_deriv_c(
     const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
     const Core::LinAlg::Matrix<3, 1>& direction)
 {
-  Mat::PAR::GrowthLawAnisoStrain* params = Parameter();
+  Mat::PAR::GrowthLawAnisoStrain* params = parameter();
   // parameters
   const double tau = params->tau_;
   const double taurev = params->taurev_;
@@ -494,7 +494,7 @@ Mat::GrowthLawAnisoStress::GrowthLawAnisoStress(Mat::PAR::GrowthLawAnisoStress* 
 void Mat::GrowthLawAnisoStress::evaluate_growth_function(
     double& growthfunc, const double growthtrig, const double theta)
 {
-  Mat::PAR::GrowthLawAnisoStress* params = Parameter();
+  Mat::PAR::GrowthLawAnisoStress* params = parameter();
   // parameters
   const double tau = params->tau_;
   const double taurev = params->taurev_;
@@ -531,7 +531,7 @@ void Mat::GrowthLawAnisoStress::evaluate_growth_function_deriv_theta(double& dgr
     const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
     const Core::LinAlg::Matrix<3, 3>& F_g, const Core::LinAlg::Matrix<3, 1>& direction)
 {
-  Mat::PAR::GrowthLawAnisoStress* params = Parameter();
+  Mat::PAR::GrowthLawAnisoStress* params = parameter();
   // parameters
   const double tau = params->tau_;
   const double taurev = params->taurev_;
@@ -624,7 +624,7 @@ void Mat::GrowthLawAnisoStress::evaluate_growth_function_deriv_c(
     const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
     const Core::LinAlg::Matrix<3, 1>& direction)
 {
-  Mat::PAR::GrowthLawAnisoStress* params = Parameter();
+  Mat::PAR::GrowthLawAnisoStress* params = parameter();
   // parameters
   const double tau = params->tau_;
   const double taurev = params->taurev_;
@@ -728,7 +728,7 @@ void Mat::GrowthLawAnisoStrainConstTrig::evaluate_growth_function_deriv_theta(
     const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
     const Core::LinAlg::Matrix<3, 3>& F_g, const Core::LinAlg::Matrix<3, 1>& direction)
 {
-  Mat::PAR::GrowthLawAnisoStrainConstTrig* params = Parameter();
+  Mat::PAR::GrowthLawAnisoStrainConstTrig* params = parameter();
   // parameters
   const double tau = params->tau_;
   const double taurev = params->taurev_;
@@ -819,7 +819,7 @@ void Mat::GrowthLawAnisoStressConstTrig::evaluate_growth_function_deriv_theta(
     const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
     const Core::LinAlg::Matrix<3, 3>& F_g, const Core::LinAlg::Matrix<3, 1>& direction)
 {
-  Mat::PAR::GrowthLawAnisoStressConstTrig* params = Parameter();
+  Mat::PAR::GrowthLawAnisoStressConstTrig* params = parameter();
   // parameters
   const double tau = params->tau_;
   const double taurev = params->taurev_;
@@ -903,7 +903,7 @@ Mat::GrowthLawIsoStress::GrowthLawIsoStress(Mat::PAR::GrowthLawIsoStress* params
 void Mat::GrowthLawIsoStress::evaluate_growth_function(
     double& growthfunc, const double growthtrig, const double theta)
 {
-  Mat::PAR::GrowthLawIsoStress* params = Parameter();
+  Mat::PAR::GrowthLawIsoStress* params = parameter();
   // parameters
   const double hommandel = params->hommandel_;
   const double thetaplus = params->thetaplus_;      // 1.5;
@@ -943,7 +943,7 @@ void Mat::GrowthLawIsoStress::evaluate_growth_function_deriv_theta(double& dgrow
     const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
     const Core::LinAlg::Matrix<3, 3>& F_g, const Core::LinAlg::Matrix<3, 1>& direction)
 {
-  Mat::PAR::GrowthLawIsoStress* params = Parameter();
+  Mat::PAR::GrowthLawIsoStress* params = parameter();
   // parameters
   const double hommandel = params->hommandel_;
   const double thetaplus = params->thetaplus_;
@@ -991,7 +991,7 @@ void Mat::GrowthLawIsoStress::evaluate_growth_function_deriv_c(
     const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
     const Core::LinAlg::Matrix<3, 1>& direction)
 {
-  Mat::PAR::GrowthLawIsoStress* params = Parameter();
+  Mat::PAR::GrowthLawIsoStress* params = parameter();
   // parameters
   const double hommandel = params->hommandel_;
   const double thetaplus = params->thetaplus_;      // 1.5;

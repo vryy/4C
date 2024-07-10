@@ -512,7 +512,7 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
           }
         }
         // Bring dof_row_map to DofColMap layout (Attention: name is node but lives on dof)
-        Core::LinAlg::Export(*gradphinp_smoothed_node_, *gradphinp_smoothed_node_col_);
+        Core::LinAlg::export_to(*gradphinp_smoothed_node_, *gradphinp_smoothed_node_col_);
       }
 
       //---------------------------------------------- // SMOOTHED GRAD PHI END

@@ -156,7 +156,7 @@ void PostVtiWriter::write_dof_result_step(std::ofstream& file,
   else
   {
     ghostedData = Core::LinAlg::CreateVector(*colmap, false);
-    Core::LinAlg::Export(*data, *ghostedData);
+    Core::LinAlg::export_to(*data, *ghostedData);
   }
 
   const int ncomponents = (numdf > 1 && numdf == field_->problem()->num_dim()) ? 3 : numdf;
@@ -252,7 +252,7 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
   else
   {
     ghostedData = Teuchos::rcp(new Epetra_MultiVector(*colmap, data->NumVectors(), false));
-    Core::LinAlg::Export(*data, *ghostedData);
+    Core::LinAlg::export_to(*data, *ghostedData);
   }
 
   const int ncomponents = (numdf > 1 && numdf == field_->problem()->num_dim()) ? 3 : numdf;
@@ -341,7 +341,7 @@ void PostVtiWriter::write_element_result_step(std::ofstream& file,
   {
     importedData =
         Teuchos::rcp(new Epetra_MultiVector(*dis->element_col_map(), data->NumVectors(), false));
-    Core::LinAlg::Export(*data, *importedData);
+    Core::LinAlg::export_to(*data, *importedData);
   }
 
   for (int e = 0; e < dis->num_my_col_elements(); ++e)

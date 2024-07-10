@@ -1266,14 +1266,14 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
     slipset->PutScalar(1.0);
     Teuchos::RCP<Epetra_Vector> slipsetexp =
         Teuchos::rcp(new Epetra_Vector(*get_strategy().active_row_nodes()));
-    Core::LinAlg::Export(*slipset, *slipsetexp);
+    Core::LinAlg::export_to(*slipset, *slipsetexp);
     activeset->Update(1.0, *slipsetexp, 1.0);
   }
 
   // export to problem node row map
   Teuchos::RCP<Epetra_Map> problemnodes = get_strategy().problem_nodes();
   Teuchos::RCP<Epetra_Vector> activesetexp = Teuchos::rcp(new Epetra_Vector(*problemnodes));
-  Core::LinAlg::Export(*activeset, *activesetexp);
+  Core::LinAlg::export_to(*activeset, *activesetexp);
 
   if (get_strategy().wear_both_discrete())
   {
@@ -1285,11 +1285,11 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
     slipset->PutScalar(1.0);
     Teuchos::RCP<Epetra_Vector> slipsetexp =
         Teuchos::rcp(new Epetra_Vector(*get_strategy().master_active_nodes()));
-    Core::LinAlg::Export(*slipset, *slipsetexp);
+    Core::LinAlg::export_to(*slipset, *slipsetexp);
     mactiveset->Update(1.0, *slipsetexp, 1.0);
 
     Teuchos::RCP<Epetra_Vector> mactivesetexp = Teuchos::rcp(new Epetra_Vector(*problemnodes));
-    Core::LinAlg::Export(*mactiveset, *mactivesetexp);
+    Core::LinAlg::export_to(*mactiveset, *mactivesetexp);
     activesetexp->Update(1.0, *mactivesetexp, 1.0);
   }
 
@@ -1305,7 +1305,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   if (gaps != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> gapsexp = Teuchos::rcp(new Epetra_Vector(*gapnodes));
-    Core::LinAlg::Export(*gaps, *gapsexp);
+    Core::LinAlg::export_to(*gaps, *gapsexp);
 
     output.write_vector("gap", gapsexp);
   }
@@ -1323,12 +1323,12 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   // normal direction
   Teuchos::RCP<Epetra_Vector> normalstresses = get_strategy().contact_normal_stress();
   Teuchos::RCP<Epetra_Vector> normalstressesexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  Core::LinAlg::Export(*normalstresses, *normalstressesexp);
+  Core::LinAlg::export_to(*normalstresses, *normalstressesexp);
 
   // tangential plane
   Teuchos::RCP<Epetra_Vector> tangentialstresses = get_strategy().contact_tangential_stress();
   Teuchos::RCP<Epetra_Vector> tangentialstressesexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  Core::LinAlg::Export(*tangentialstresses, *tangentialstressesexp);
+  Core::LinAlg::export_to(*tangentialstresses, *tangentialstressesexp);
 
   // write to output
   // contact tractions in normal and tangential direction
@@ -1340,12 +1340,12 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
     // normal direction
     Teuchos::RCP<Epetra_Vector> normalforce = get_strategy().contact_normal_force();
     Teuchos::RCP<Epetra_Vector> normalforceexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    Core::LinAlg::Export(*normalforce, *normalforceexp);
+    Core::LinAlg::export_to(*normalforce, *normalforceexp);
 
     // tangential plane
     Teuchos::RCP<Epetra_Vector> tangentialforce = get_strategy().contact_tangential_force();
     Teuchos::RCP<Epetra_Vector> tangentialforceexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    Core::LinAlg::Export(*tangentialforce, *tangentialforceexp);
+    Core::LinAlg::export_to(*tangentialforce, *tangentialforceexp);
 
     // write to output
     // contact tractions in normal and tangential direction
@@ -1435,23 +1435,23 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   //  // master force which correcpond to the slave force!
   //  Teuchos::RCP<Epetra_Vector> slavedummy =
   //      Teuchos::rcp(new Epetra_Vector(GetStrategy().d_matrix()->RowMap(),true));
-  //  Core::LinAlg::Export(*fcmasternor,*slavedummy);
+  //  Core::LinAlg::export_to(*fcmasternor,*slavedummy);
   //  int err = fcslavenor->Update(-1.0,*slavedummy,1.0);
   //  if(err!=0)
   //    FOUR_C_THROW("ERROR");
   //
   //  Teuchos::RCP<Epetra_Vector> masterdummy =
   //      Teuchos::rcp(new Epetra_Vector(GetStrategy().m_matrix()->DomainMap(),true));
-  //  Core::LinAlg::Export(*slavedummy,*masterdummy);
+  //  Core::LinAlg::export_to(*slavedummy,*masterdummy);
   //  err = fcmasternor->Update(-1.0,*masterdummy,1.0);
   //  if(err!=0)
   //    FOUR_C_THROW("ERROR");
 
   // export
-  Core::LinAlg::Export(*fcslavenor, *fcslavenorexp);
-  Core::LinAlg::Export(*fcslavetan, *fcslavetanexp);
-  Core::LinAlg::Export(*fcmasternor, *fcmasternorexp);
-  Core::LinAlg::Export(*fcmastertan, *fcmastertanexp);
+  Core::LinAlg::export_to(*fcslavenor, *fcslavenorexp);
+  Core::LinAlg::export_to(*fcslavetan, *fcslavetanexp);
+  Core::LinAlg::export_to(*fcmasternor, *fcmasternorexp);
+  Core::LinAlg::export_to(*fcmastertan, *fcmastertanexp);
 
   // contact forces on slave and master side
   output.write_vector("norslaveforce", fcslavenorexp);
@@ -1509,7 +1509,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
     // write output
     Teuchos::RCP<Epetra_Vector> wearoutput = get_strategy().contact_wear();
     Teuchos::RCP<Epetra_Vector> wearoutputexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    Core::LinAlg::Export(*wearoutput, *wearoutputexp);
+    Core::LinAlg::export_to(*wearoutput, *wearoutputexp);
     output.write_vector("wear", wearoutputexp);
     get_strategy().contact_wear()->PutScalar(0.0);
   }
@@ -1525,7 +1525,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
         dynamic_cast<CONTACT::LagrangeStrategyPoro&>(get_strategy());
     Teuchos::RCP<Epetra_Vector> lambdaout = costrategy.lambda_no_pen();
     Teuchos::RCP<Epetra_Vector> lambdaoutexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    Core::LinAlg::Export(*lambdaout, *lambdaoutexp);
+    Core::LinAlg::export_to(*lambdaout, *lambdaoutexp);
     output.write_vector("poronopen_lambda", lambdaoutexp);
   }
   return;

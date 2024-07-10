@@ -420,7 +420,7 @@ Teuchos::RCP<const Epetra_Vector> XFEM::ConditionManager::get_level_set_field_co
   // export nodal level-set values to node column map
   Teuchos::RCP<Epetra_Vector> bg_phinp_col =
       Teuchos::rcp(new Epetra_Vector(*bg_dis_->node_col_map()));
-  Core::LinAlg::Export(*get_level_set_field(), *bg_phinp_col);
+  Core::LinAlg::export_to(*get_level_set_field(), *bg_phinp_col);
 
   return bg_phinp_col;
 }
@@ -490,7 +490,7 @@ void XFEM::ConditionManager::update_level_set_field()
   }
 
   // export to column vector
-  Core::LinAlg::Export(*node_lsc_coup_idx, *node_lsc_coup_idx_col);
+  Core::LinAlg::export_to(*node_lsc_coup_idx, *node_lsc_coup_idx_col);
 
   // set the levelset coupling index for all row elements
   const Epetra_Map* elerowmap = bg_dis_->element_row_map();
@@ -525,7 +525,7 @@ void XFEM::ConditionManager::update_level_set_field()
     (*ele_lsc_coup_idx)[leleid] = *(lsc_coupling_indices.begin());
   }
 
-  Core::LinAlg::Export(*ele_lsc_coup_idx, *ele_lsc_coup_idx_col_);
+  Core::LinAlg::export_to(*ele_lsc_coup_idx, *ele_lsc_coup_idx_col_);
 
   is_levelset_uptodate_ = true;
 }

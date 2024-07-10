@@ -417,10 +417,10 @@ std::vector<double> FSI::UTILS::SlideAleUtils::centerdisp(
   // get structure and fluid discretizations  and set stated for element evaluation
   const Teuchos::RCP<Epetra_Vector> idisptotalcol =
       Core::LinAlg::CreateVector(*structdis->dof_col_map(), true);
-  Core::LinAlg::Export(*idisptotal, *idisptotalcol);
+  Core::LinAlg::export_to(*idisptotal, *idisptotalcol);
   const Teuchos::RCP<Epetra_Vector> idispstepcol =
       Core::LinAlg::CreateVector(*structdis->dof_col_map(), true);
-  Core::LinAlg::Export(*idispstep, *idispstepcol);
+  Core::LinAlg::export_to(*idispstep, *idispstepcol);
 
   structdis->set_state("displacementtotal", idisptotalcol);
   structdis->set_state("displacementincr", idispstepcol);
@@ -784,10 +784,10 @@ void FSI::UTILS::SlideAleUtils::rotation(
   // get structure and fluid discretizations  and set state for element evaluation
   const Teuchos::RCP<Epetra_Vector> idispstepcol =
       Core::LinAlg::CreateVector(*mtrdis.dof_col_map(), false);
-  Core::LinAlg::Export(*idispstep, *idispstepcol);
+  Core::LinAlg::export_to(*idispstep, *idispstepcol);
   const Teuchos::RCP<Epetra_Vector> idispnpcol =
       Core::LinAlg::CreateVector(*mtrdis.dof_col_map(), false);
-  Core::LinAlg::Export(*idispale, *idispnpcol);
+  Core::LinAlg::export_to(*idispale, *idispnpcol);
 
   mtrdis.set_state("displacementnp", idispnpcol);
   mtrdis.set_state("displacementincr", idispstepcol);

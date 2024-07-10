@@ -80,7 +80,7 @@ void ScaTra::LevelSet::Intersection::get_zero_level_set(const Epetra_Vector& phi
   // export phi from row to column map
   const Teuchos::RCP<Epetra_Vector> phicol =
       Teuchos::rcp(new Epetra_Vector(*scatradis.dof_col_map()));
-  Core::LinAlg::Export(phi, *phicol);
+  Core::LinAlg::export_to(phi, *phicol);
 
   // remark: loop over row elements is sufficient
   for (int iele = 0; iele < scatradis.num_my_row_elements(); ++iele)
