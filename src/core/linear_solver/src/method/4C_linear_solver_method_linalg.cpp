@@ -583,56 +583,67 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& i
   outparams.set("solver", "belos");
   Teuchos::ParameterList& beloslist = outparams.sublist("Belos Parameters");
 
-  switch (verbosity)
-  {
-    case Core::IO::minimal:
-      beloslist.set("Output Style", Belos::OutputType::Brief);
-      beloslist.set("Verbosity", Belos::MsgType::Warnings);
-      break;
-    case Core::IO::standard:
-      beloslist.set("Output Style", Belos::OutputType::Brief);
-      beloslist.set("Verbosity", Belos::MsgType::Warnings + Belos::MsgType::StatusTestDetails);
-      break;
-    case Core::IO::verbose:
-      beloslist.set("Output Style", Belos::OutputType::General);
-      beloslist.set("Verbosity", Belos::MsgType::Warnings + Belos::MsgType::StatusTestDetails +
-                                     Belos::MsgType::FinalSummary);
-      break;
-    case Core::IO::debug:
-      beloslist.set("Output Style", Belos::OutputType::General);
-      beloslist.set("Verbosity", Belos::MsgType::Debug);
-    default:
-      break;
-  }
-  beloslist.set("Output Frequency", inparams.get<int>("AZOUTPUT"));
-
-  // set tolerances and iterations
-  beloslist.set("Maximum Iterations", inparams.get<int>("AZITER"));
-  beloslist.set("Convergence Tolerance", inparams.get<double>("AZTOL"));
   beloslist.set("reuse", inparams.get<int>("AZREUSE"));
   beloslist.set("ncall", 0);
-  beloslist.set("Implicit Residual Scaling",
-      Belos::convertScaleTypeToString(
-          Teuchos::getIntegralValue<Belos::ScaleType>(inparams, "AZCONV")));
 
-  // set type of solver
-  switch (Teuchos::getIntegralValue<Core::LinearSolver::IterativeSolverType>(inparams, "AZSOLVE"))
+  // try to get an xml file if possible
+  std::string xmlfile = inparams.get<std::string>("SOLVER_XML_FILE");
+  if (xmlfile != "none")
   {
-    case Core::LinearSolver::IterativeSolverType::cg:
-      beloslist.set("Solver Type", "CG");
-      break;
-    case Core::LinearSolver::IterativeSolverType::bicgstab:
-      beloslist.set("Solver Type", "BiCGSTAB");
-      break;
-    case Core::LinearSolver::IterativeSolverType::gmres:
-      beloslist.set("Solver Type", "GMRES");
-      beloslist.set("Num Blocks", inparams.get<int>("AZSUB"));
-      break;
-    default:
+    beloslist.set("SOLVER_XML_FILE", xmlfile);
+  }
+  else
+  {
+    switch (verbosity)
     {
-      FOUR_C_THROW("Flag '%s'! \nUnknown solver for Belos.",
-          Teuchos::getIntegralValue<Core::LinearSolver::IterativeSolverType>(inparams, "AZSOLVE"));
-      break;
+      case Core::IO::minimal:
+        beloslist.set("Output Style", Belos::OutputType::Brief);
+        beloslist.set("Verbosity", Belos::MsgType::Warnings);
+        break;
+      case Core::IO::standard:
+        beloslist.set("Output Style", Belos::OutputType::Brief);
+        beloslist.set("Verbosity", Belos::MsgType::Warnings + Belos::MsgType::StatusTestDetails);
+        break;
+      case Core::IO::verbose:
+        beloslist.set("Output Style", Belos::OutputType::General);
+        beloslist.set("Verbosity", Belos::MsgType::Warnings + Belos::MsgType::StatusTestDetails +
+                                       Belos::MsgType::FinalSummary);
+        break;
+      case Core::IO::debug:
+        beloslist.set("Output Style", Belos::OutputType::General);
+        beloslist.set("Verbosity", Belos::MsgType::Debug);
+      default:
+        break;
+    }
+    beloslist.set("Output Frequency", inparams.get<int>("AZOUTPUT"));
+
+    // set tolerances and iterations
+    beloslist.set("Maximum Iterations", inparams.get<int>("AZITER"));
+    beloslist.set("Convergence Tolerance", inparams.get<double>("AZTOL"));
+    beloslist.set("Implicit Residual Scaling",
+        Belos::convertScaleTypeToString(
+            Teuchos::getIntegralValue<Belos::ScaleType>(inparams, "AZCONV")));
+
+    // set type of solver
+    switch (Teuchos::getIntegralValue<Core::LinearSolver::IterativeSolverType>(inparams, "AZSOLVE"))
+    {
+      case Core::LinearSolver::IterativeSolverType::cg:
+        beloslist.set("Solver Type", "CG");
+        break;
+      case Core::LinearSolver::IterativeSolverType::bicgstab:
+        beloslist.set("Solver Type", "BiCGSTAB");
+        break;
+      case Core::LinearSolver::IterativeSolverType::gmres:
+        beloslist.set("Solver Type", "GMRES");
+        beloslist.set("Num Blocks", inparams.get<int>("AZSUB"));
+        break;
+      default:
+      {
+        FOUR_C_THROW("Flag '%s'! \nUnknown solver for Belos.",
+            Teuchos::getIntegralValue<Core::LinearSolver::IterativeSolverType>(
+                inparams, "AZSOLVE"));
+        break;
+      }
     }
   }
 

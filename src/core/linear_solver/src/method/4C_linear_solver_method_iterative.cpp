@@ -23,10 +23,13 @@
 #include <BelosBlockGmresSolMgr.hpp>
 #include <BelosEpetraAdapter.hpp>
 #include <BelosLinearProblem.hpp>
+#include <BelosPseudoBlockCGSolMgr.hpp>
+#include <BelosPseudoBlockGmresSolMgr.hpp>
 #include <Epetra_Comm.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Map.h>
 #include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_XMLParameterListHelpers.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -87,18 +90,68 @@ int Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::solve()
     FOUR_C_THROW("Core::LinearSolver::BelosSolver: Iterative solver failed to set up correctly.");
 
   Teuchos::RCP<Belos::SolverManager<double, VectorType, MatrixType>> newSolver;
-  std::string solverType = belist.get<std::string>("Solver Type");
-  if (solverType == "GMRES")
-    newSolver = Teuchos::rcp(new Belos::BlockGmresSolMgr<double, VectorType, MatrixType>(
-        problem, Teuchos::rcp(&belist, false)));
-  else if (solverType == "CG")
-    newSolver = Teuchos::rcp(new Belos::BlockCGSolMgr<double, VectorType, MatrixType>(
-        problem, Teuchos::rcp(&belist, false)));
-  else if (solverType == "BiCGSTAB")
-    newSolver = Teuchos::rcp(new Belos::BiCGStabSolMgr<double, VectorType, MatrixType>(
-        problem, Teuchos::rcp(&belist, false)));
+
+  if (belist.isParameter("SOLVER_XML_FILE"))
+  {
+    const std::string xmlFileName = belist.get<std::string>("SOLVER_XML_FILE");
+    Teuchos::ParameterList belosParams;
+    Teuchos::updateParametersFromXmlFileAndBroadcast(
+        xmlFileName, Teuchos::Ptr<Teuchos::ParameterList>(&belosParams), *Xpetra::toXpetra(comm_));
+
+    if (belosParams.isSublist("GMRES"))
+    {
+      auto belosSolverList = rcpFromRef(belosParams.sublist("GMRES"));
+      if (belist.isParameter("Convergence Tolerance"))
+      {
+        belosSolverList->set("Convergence Tolerance", belist.get<double>("Convergence Tolerance"));
+      }
+
+      newSolver = Teuchos::rcp(new Belos::PseudoBlockGmresSolMgr<double, VectorType, MatrixType>(
+          problem, belosSolverList));
+    }
+    else if (belosParams.isSublist("CG"))
+    {
+      auto belosSolverList = rcpFromRef(belosParams.sublist("CG"));
+      if (belist.isParameter("Convergence Tolerance"))
+      {
+        belosSolverList->set("Convergence Tolerance", belist.get<double>("Convergence Tolerance"));
+      }
+      newSolver = Teuchos::rcp(
+          new Belos::PseudoBlockCGSolMgr<double, VectorType, MatrixType>(problem, belosSolverList));
+    }
+    else if (belosParams.isSublist("BiCGSTAB"))
+    {
+      auto belosSolverList = rcpFromRef(belosParams.sublist("BiCGSTAB"));
+      if (belist.isParameter("Convergence Tolerance"))
+      {
+        belosSolverList->set("Convergence Tolerance", belist.get<double>("Convergence Tolerance"));
+      }
+      newSolver = Teuchos::rcp(
+          new Belos::BiCGStabSolMgr<double, VectorType, MatrixType>(problem, belosSolverList));
+    }
+    else
+      FOUR_C_THROW("Core::LinearSolver::BelosSolver: Unknown iterative solver solver type chosen.");
+  }
   else
-    FOUR_C_THROW("Core::LinearSolver::BelosSolver: Unknown iterative solver solver type chosen.");
+  {
+    if (comm_.MyPID() == 0)
+      std::cout << "WARNING: The linear solver input parameters from the .dat file will be "
+                   "depreciated soon. Switch to an appropriate xml-file version."
+                << std::endl;
+
+    std::string solverType = belist.get<std::string>("Solver Type");
+    if (solverType == "GMRES")
+      newSolver = Teuchos::rcp(new Belos::BlockGmresSolMgr<double, VectorType, MatrixType>(
+          problem, Teuchos::rcp(&belist, false)));
+    else if (solverType == "CG")
+      newSolver = Teuchos::rcp(new Belos::BlockCGSolMgr<double, VectorType, MatrixType>(
+          problem, Teuchos::rcp(&belist, false)));
+    else if (solverType == "BiCGSTAB")
+      newSolver = Teuchos::rcp(new Belos::BiCGStabSolMgr<double, VectorType, MatrixType>(
+          problem, Teuchos::rcp(&belist, false)));
+    else
+      FOUR_C_THROW("Core::LinearSolver::BelosSolver: Unknown iterative solver solver type chosen.");
+  }
 
   Belos::ReturnType ret = newSolver->solve();
 
