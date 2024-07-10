@@ -71,8 +71,8 @@ namespace Core::GeometricSearch
           "The struct 'Core::GeometricSearch::BoundingVolume' can only be used with ArborX."
           "To use it, enable ArborX during the configure process.");
     }
-    inline void ExtendBoundaries(const double offset) {}
-    inline void AddPoint(const Core::LinAlg::Matrix<3, 1, double> &point) {}
+    inline void extend_boundaries(const double offset) {}
+    inline void add_point(const Core::LinAlg::Matrix<3, 1, double> &point) {}
 #else
     /*! \brief Constructor initializing the bounding volume corners with numerical limit values.
      */
