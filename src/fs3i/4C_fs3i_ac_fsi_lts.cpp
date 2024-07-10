@@ -75,8 +75,8 @@ void FS3I::ACFSI::prepare_large_time_scale_loop()
               << std::endl;
   }
   // Set large time scale time step in both scatra fields
-  scatravec_[0]->sca_tra_field()->set_dt(dt_large_);
-  scatravec_[1]->sca_tra_field()->set_dt(dt_large_);
+  scatravec_[0]->scatra_field()->set_dt(dt_large_);
+  scatravec_[1]->scatra_field()->set_dt(dt_large_);
 
   // set mean values in scatra fields
   large_time_scale_set_fsi_solution();
@@ -87,7 +87,7 @@ void FS3I::ACFSI::prepare_large_time_scale_loop()
 
   // Save the phinp vector at the beginning of the large time scale loop in
   // in order to estimate the so far induced growth
-  *structurephinp_blts_ = *scatravec_[1]->sca_tra_field()->phinp();
+  *structurephinp_blts_ = *scatravec_[1]->scatra_field()->phinp();
 }
 
 /*----------------------------------------------------------------------*
@@ -98,7 +98,7 @@ void FS3I::ACFSI::set_mean_wall_shear_stresses() const
   std::vector<Teuchos::RCP<const Epetra_Vector>> wss;
 
   // ############ Fluid Field ###############
-  scatravec_[0]->sca_tra_field()->set_wall_shear_stresses(
+  scatravec_[0]->scatra_field()->set_wall_shear_stresses(
       fluid_to_fluid_scalar(wall_shear_stress_lp_));
 
   // ############ Structure Field ###############
@@ -117,7 +117,7 @@ void FS3I::ACFSI::set_mean_wall_shear_stresses() const
   // Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of
   // structure, 2: inner dofs of porofluid, 3: interface dofs of porofluid )
   fsi_->structure_field()->interface()->insert_vector(WallShearStress, 1, structurewss);
-  scatravec_[1]->sca_tra_field()->set_wall_shear_stresses(
+  scatravec_[1]->scatra_field()->set_wall_shear_stresses(
       structure_to_structure_scalar(structurewss));
 }
 
@@ -128,7 +128,7 @@ void FS3I::ACFSI::set_mean_fluid_scatra_concentration()
 {
   Teuchos::RCP<const Epetra_Vector> MeanFluidConc = meanmanager_->get_mean_value("mean_phi");
 
-  scatravec_[0]->sca_tra_field()->set_mean_concentration(MeanFluidConc);
+  scatravec_[0]->scatra_field()->set_mean_concentration(MeanFluidConc);
 }
 
 /*----------------------------------------------------------------------*
@@ -138,11 +138,11 @@ void FS3I::ACFSI::set_zero_velocity_field()
 {
   Teuchos::RCP<Epetra_Vector> zeros =
       Teuchos::rcp(new Epetra_Vector(fsi_->fluid_field()->velnp()->Map(), true));
-  scatravec_[0]->sca_tra_field()->set_velocity_field(
+  scatravec_[0]->scatra_field()->set_velocity_field(
       fluid_to_fluid_scalar(zeros), Teuchos::null, fluid_to_fluid_scalar(zeros), Teuchos::null);
   Teuchos::RCP<Epetra_Vector> zeros2 =
       Teuchos::rcp(new Epetra_Vector(fsi_->structure_field()->velnp()->Map(), true));
-  scatravec_[1]->sca_tra_field()->set_velocity_field(structure_to_structure_scalar(zeros2),
+  scatravec_[1]->scatra_field()->set_velocity_field(structure_to_structure_scalar(zeros2),
       Teuchos::null, structure_to_structure_scalar(zeros2), Teuchos::null);
 }
 
@@ -169,11 +169,11 @@ void FS3I::ACFSI::evaluateith_scatra_surface_permeability(const int i  // id of 
   rhs_scal->PutScalar(0.0);
   mat_scal->zero();
 
-  scatravec_[i]->sca_tra_field()->surface_permeability(mat_scal, rhs_scal);
+  scatravec_[i]->scatra_field()->surface_permeability(mat_scal, rhs_scal);
 
   // apply Dirichlet boundary conditions to coupling matrix and vector
   const Teuchos::RCP<const Epetra_Map> dbcmap =
-      scatravec_[i]->sca_tra_field()->dirich_maps()->cond_map();
+      scatravec_[i]->scatra_field()->dirich_maps()->cond_map();
   mat_scal->apply_dirichlet(*dbcmap, false);
   Core::LinAlg::apply_dirichlet_to_system(*rhs_scal, *scatrazeros_[i], *dbcmap);
 }
@@ -184,8 +184,8 @@ void FS3I::ACFSI::evaluateith_scatra_surface_permeability(const int i  // id of 
 void FS3I::ACFSI::finish_large_time_scale_loop()
 {
   // Set small time scale time step size
-  scatravec_[0]->sca_tra_field()->set_dt(dt_);
-  scatravec_[1]->sca_tra_field()->set_dt(dt_);
+  scatravec_[0]->scatra_field()->set_dt(dt_);
+  scatravec_[1]->scatra_field()->set_dt(dt_);
 
   // Fix time and step in fsi and fluid scatra field
 
@@ -198,8 +198,8 @@ void FS3I::ACFSI::finish_large_time_scale_loop()
   time_ = tmp;
 
   set_time_and_step_in_fsi(time_, step_);
-  scatravec_[0]->sca_tra_field()->set_time_step(time_, step_);
-  scatravec_[1]->sca_tra_field()->set_time_step(time_, step_);
+  scatravec_[0]->scatra_field()->set_time_step(time_, step_);
+  scatravec_[1]->scatra_field()->set_time_step(time_, step_);
 
   // we now have to fix the time_ and step_ of the structure field, since this is not shifted
   // in prepare_time_step(), but in update(), which we here will not call. So..
@@ -260,8 +260,8 @@ bool FS3I::ACFSI::large_time_scale_loop_not_finished()
 void FS3I::ACFSI::large_time_scale_prepare_time_step()
 {
   // Set large time scale time step in both scatra fields
-  scatravec_[0]->sca_tra_field()->set_dt(dt_large_);
-  scatravec_[1]->sca_tra_field()->set_dt(dt_large_);
+  scatravec_[0]->scatra_field()->set_dt(dt_large_);
+  scatravec_[1]->scatra_field()->set_dt(dt_large_);
 
   // Increment time and step
   step_ += 1;
@@ -277,7 +277,7 @@ void FS3I::ACFSI::large_time_scale_prepare_time_step()
   }
 
   // prepare structure scatra field
-  scatravec_[1]->sca_tra_field()->prepare_time_step();
+  scatravec_[1]->scatra_field()->prepare_time_step();
 }
 
 /*----------------------------------------------------------------------*
@@ -328,7 +328,7 @@ void FS3I::ACFSI::struct_scatra_evaluate_solve_iter_update()
   if (infperm_) FOUR_C_THROW("This not a valid option!");  // just for safety
 
   const Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra =
-      scatravec_[1]->sca_tra_field();  // structure scatra
+      scatravec_[1]->scatra_field();  // structure scatra
 
   //----------------------------------------------------------------------
   // evaluate the structure scatra field
@@ -393,7 +393,7 @@ void FS3I::ACFSI::struct_scatra_evaluate_solve_iter_update()
 bool FS3I::ACFSI::struct_scatra_convergence_check(const int itnum)
 {
   const Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra =
-      scatravec_[1]->sca_tra_field();  // structure scatra
+      scatravec_[1]->scatra_field();  // structure scatra
 
   // some input parameters for the scatra fields
   const Teuchos::ParameterList& scatradyn =
@@ -530,7 +530,7 @@ bool FS3I::ACFSI::does_growth_needs_update()
     // loop
     //----------------------------------------------------------------------------------------------------
     const Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra =
-        scatravec_[1]->sca_tra_field();                               // structure scatra
+        scatravec_[1]->scatra_field();                                // structure scatra
     const Teuchos::RCP<const Epetra_Vector> phinp = scatra->phinp();  // fluidscatra
 
     // build difference vector with the reference
@@ -596,8 +596,8 @@ void FS3I::ACFSI::large_time_scale_do_growth_update()
   const int growth_updates =
       Global::Problem::instance()->f_s3_i_dynamic_params().sublist("AC").get<int>("GROWTH_UPDATES");
 
-  const Teuchos::RCP<ScaTra::ScaTraTimIntImpl> fluidscatra = scatravec_[0]->sca_tra_field();
-  const Teuchos::RCP<ScaTra::ScaTraTimIntImpl> structurescatra = scatravec_[1]->sca_tra_field();
+  const Teuchos::RCP<ScaTra::ScaTraTimIntImpl> fluidscatra = scatravec_[0]->scatra_field();
+  const Teuchos::RCP<ScaTra::ScaTraTimIntImpl> structurescatra = scatravec_[1]->scatra_field();
 
   // Note: we never do never proceed with time_ and step_, so this really just about updating the
   // growth, i.e. the displacements of the structure scatra fields
@@ -740,10 +740,10 @@ void FS3I::ACFSI::large_time_scale_set_fsi_solution()
   // we clear every state, including the states of the secondary dof sets
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
-    scatravec_[i]->sca_tra_field()->discretization()->clear_state(true);
+    scatravec_[i]->scatra_field()->discretization()->clear_state(true);
     // we have to manually clear this since this can not be saved directly in the
     // primary dof set (because it is cleared in between)
-    scatravec_[i]->sca_tra_field()->clear_external_concentrations();
+    scatravec_[i]->scatra_field()->clear_external_concentrations();
   }
 
   set_mesh_disp();
@@ -762,14 +762,14 @@ void FS3I::ACFSI::large_time_scale_update_and_output()
 {
   // keep fsi time and fluid scatra field up to date
   set_time_and_step_in_fsi(time_, step_);
-  scatravec_[0]->sca_tra_field()->set_time_step(time_, step_);
+  scatravec_[0]->scatra_field()->set_time_step(time_, step_);
 
   // NOTE: fsi output is already updated and written in large_time_scale_do_growth_update()
   // NOTE: fluid scatra is already updated and written in large_time_scale_do_growth_update()
 
   // now update and output the structure scatra field
-  scatravec_[1]->sca_tra_field()->update();
-  scatravec_[1]->sca_tra_field()->check_and_write_output_and_restart();
+  scatravec_[1]->scatra_field()->update();
+  scatravec_[1]->scatra_field()->check_and_write_output_and_restart();
 }
 
 /*----------------------------------------------------------------------*
@@ -780,7 +780,7 @@ std::vector<Teuchos::RCP<Core::LinAlg::MapExtractor>> FS3I::ACFSI::build_map_ext
   std::vector<Teuchos::RCP<Core::LinAlg::MapExtractor>> extractjthscalar;
 
   const Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra =
-      scatravec_[1]->sca_tra_field();  // structure scatra
+      scatravec_[1]->scatra_field();  // structure scatra
   const int numscal = scatra->num_scal();
   const Teuchos::RCP<const Core::FE::Discretization> dis = scatra->discretization();
 
@@ -795,7 +795,7 @@ std::vector<Teuchos::RCP<Core::LinAlg::MapExtractor>> FS3I::ACFSI::build_map_ext
       Core::Nodes::Node* node = dis->l_row_node(i);
 
       std::vector<int> dof = dis->dof(0, node);
-      if (dof.size() != (unsigned)scatravec_[1]->sca_tra_field()->num_scal())
+      if (dof.size() != (unsigned)scatravec_[1]->scatra_field()->num_scal())
         FOUR_C_THROW("There was some error building the Map Extractor!");
       for (unsigned j = 0; j < dof.size(); ++j)
       {

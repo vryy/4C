@@ -428,7 +428,7 @@ void CONTACT::IntegratorNitscheSsi::integrate_ssi_interface_condition(Mortar::El
       master_conc, d_master_conc_dc, d_master_conc_dd);
 
   // get the scatra-scatra interface condition kinetic model
-  const int kinetic_model = get_sca_tra_ele_parameter_boundary()->kinetic_model();
+  const int kinetic_model = get_scatra_ele_parameter_boundary()->kinetic_model();
 
   double flux;
   Core::Gen::Pairedvector<int, double> dflux_dd;
@@ -439,7 +439,7 @@ void CONTACT::IntegratorNitscheSsi::integrate_ssi_interface_condition(Mortar::El
   {
     case Inpar::S2I::kinetics_constperm:
     {
-      const double permeability = (*get_sca_tra_ele_parameter_boundary()->permeabilities())[0];
+      const double permeability = (*get_scatra_ele_parameter_boundary()->permeabilities())[0];
 
       // calculate the interface flux
       flux = permeability * (slave_conc - master_conc);
@@ -458,7 +458,7 @@ void CONTACT::IntegratorNitscheSsi::integrate_ssi_interface_condition(Mortar::El
     }
     case Inpar::S2I::kinetics_linearperm:
     {
-      const double permeability = (*get_sca_tra_ele_parameter_boundary()->permeabilities())[0];
+      const double permeability = (*get_scatra_ele_parameter_boundary()->permeabilities())[0];
 
       // calculate the interface flux
       // the minus sign is to obtain the absolute value of the contact forces
@@ -501,11 +501,11 @@ void CONTACT::IntegratorNitscheSsi::integrate_ssi_interface_condition(Mortar::El
     }
   }
 
-  integrate_sca_tra_test<dim>(-1.0, slave_ele, slave_shape, slave_shape_deriv, d_slave_xi_dd, jac,
+  integrate_scatra_test<dim>(-1.0, slave_ele, slave_shape, slave_shape_deriv, d_slave_xi_dd, jac,
       d_jac_dd, wgt, flux, dflux_dd, dflux_dc);
   if (!two_half_pass_)
   {
-    integrate_sca_tra_test<dim>(1.0, master_ele, master_shape, master_shape_deriv, d_master_xi_dd,
+    integrate_scatra_test<dim>(1.0, master_ele, master_shape, master_shape_deriv, d_master_xi_dd,
         jac, d_jac_dd, wgt, flux, dflux_dd, dflux_dc);
   }
 }
@@ -513,7 +513,7 @@ void CONTACT::IntegratorNitscheSsi::integrate_ssi_interface_condition(Mortar::El
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheSsi::integrate_sca_tra_test(const double fac, Mortar::Element& ele,
+void CONTACT::IntegratorNitscheSsi::integrate_scatra_test(const double fac, Mortar::Element& ele,
     const Core::LinAlg::SerialDenseVector& shape_func,
     const Core::LinAlg::SerialDenseMatrix& shape_deriv,
     const std::vector<Core::Gen::Pairedvector<int, double>>& d_xi_dd, const double jac,
@@ -522,8 +522,8 @@ void CONTACT::IntegratorNitscheSsi::integrate_sca_tra_test(const double fac, Mor
     const Core::Gen::Pairedvector<int, double>& d_test_val_ds)
 {
   // get time integration factors
-  const double time_fac = get_sca_tra_ele_parameter_tim_int()->time_fac();
-  const double time_fac_rhs = get_sca_tra_ele_parameter_tim_int()->time_fac_rhs();
+  const double time_fac = get_scatra_ele_parameter_tim_int()->time_fac();
+  const double time_fac_rhs = get_scatra_ele_parameter_tim_int()->time_fac_rhs();
 
   const double val = fac * jac * wgt * test_val;
 

@@ -127,7 +127,7 @@ namespace FLD
     \param (in) input reader to allow restart
 
     */
-    void read_old_statistics_sca_tra(Core::IO::DiscretizationReader& input);
+    void read_old_statistics_scatra(Core::IO::DiscretizationReader& input);
 
 
     /*!
@@ -175,7 +175,7 @@ namespace FLD
     \brief Add results from scalar transport field solver to statistics
 
     */
-    void add_sca_tra_results(
+    void add_scatra_results(
         Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> myphinp);
 
     /*!
@@ -183,7 +183,7 @@ namespace FLD
            (statistics was already written during call of DoOutput())
 
     */
-    void do_output_for_sca_tra(Core::IO::DiscretizationWriter& output, int step);
+    void do_output_for_scatra(Core::IO::DiscretizationWriter& output, int step);
 
     //@}
 

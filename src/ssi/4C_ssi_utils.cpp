@@ -224,11 +224,11 @@ SSI::UTILS::SSIMatrices::SSIMatrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi
     const bool is_scatra_manifold)
     : is_scatra_manifold_(is_scatra_manifold),
       scatra_matrixtype_(scatra_matrixtype),
-      scatra_dofrowmap_(ssi_maps->sca_tra_dof_row_map()),
+      scatra_dofrowmap_(ssi_maps->scatra_dof_row_map()),
       structure_dofrowmap_(ssi_maps->structure_dof_row_map())
 {
   // fill maps related to scalar transport manifold if relevant
-  if (is_scatra_manifold_) scatramanifold_dofrowmap_ = ssi_maps->sca_tra_manifold_dof_row_map();
+  if (is_scatra_manifold_) scatramanifold_dofrowmap_ = ssi_maps->scatra_manifold_dof_row_map();
 
   initialize_system_matrix(ssi_maps, ssi_matrixtype);
 
@@ -250,10 +250,10 @@ void SSI::UTILS::SSIMatrices::initialize_main_diag_matrices(
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
       scatra_matrix_ =
-          setup_block_matrix(ssi_maps->block_map_sca_tra(), ssi_maps->block_map_sca_tra());
+          setup_block_matrix(ssi_maps->block_map_scatra(), ssi_maps->block_map_scatra());
       if (is_scatra_manifold_)
         manifold_matrix_ = setup_block_matrix(
-            ssi_maps->block_map_sca_tra_manifold(), ssi_maps->block_map_sca_tra_manifold());
+            ssi_maps->block_map_scatra_manifold(), ssi_maps->block_map_scatra_manifold());
 
       break;
     }
@@ -286,19 +286,19 @@ void SSI::UTILS::SSIMatrices::initialize_off_diag_matrices(
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
       scatra_structure_matrix_ =
-          setup_block_matrix(ssi_maps->block_map_sca_tra(), ssi_maps->block_map_structure());
+          setup_block_matrix(ssi_maps->block_map_scatra(), ssi_maps->block_map_structure());
 
       structure_scatra_matrix_ =
-          setup_block_matrix(ssi_maps->block_map_structure(), ssi_maps->block_map_sca_tra());
+          setup_block_matrix(ssi_maps->block_map_structure(), ssi_maps->block_map_scatra());
 
       if (is_scatra_manifold_)
       {
         scatramanifold_structure_matrix_ = setup_block_matrix(
-            ssi_maps->block_map_sca_tra_manifold(), ssi_maps->block_map_structure());
-        scatramanifold_scatra_matrix_ = setup_block_matrix(
-            ssi_maps->block_map_sca_tra_manifold(), ssi_maps->block_map_sca_tra());
-        scatra_scatramanifold_matrix_ = setup_block_matrix(
-            ssi_maps->block_map_sca_tra(), ssi_maps->block_map_sca_tra_manifold());
+            ssi_maps->block_map_scatra_manifold(), ssi_maps->block_map_structure());
+        scatramanifold_scatra_matrix_ =
+            setup_block_matrix(ssi_maps->block_map_scatra_manifold(), ssi_maps->block_map_scatra());
+        scatra_scatramanifold_matrix_ =
+            setup_block_matrix(ssi_maps->block_map_scatra(), ssi_maps->block_map_scatra_manifold());
       }
 
       break;
@@ -329,16 +329,16 @@ void SSI::UTILS::SSIMatrices::initialize_off_diag_matrices(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::UTILS::SSIMatrices::complete_sca_tra_manifold_sca_tra_matrix()
+void SSI::UTILS::SSIMatrices::complete_scatra_manifold_scatra_matrix()
 {
   switch (scatra_matrixtype_)
   {
     case Core::LinAlg::MatrixType::sparse:
-      sca_tra_manifold_sca_tra_matrix()()->complete(*scatra_dofrowmap_, *scatramanifold_dofrowmap_);
+      scatra_manifold_scatra_matrix()()->complete(*scatra_dofrowmap_, *scatramanifold_dofrowmap_);
       break;
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
-      sca_tra_manifold_sca_tra_matrix()()->complete();
+      scatra_manifold_scatra_matrix()()->complete();
       break;
     default:
       FOUR_C_THROW("Not supported Core::LinAlg::MatrixType!");
@@ -348,17 +348,17 @@ void SSI::UTILS::SSIMatrices::complete_sca_tra_manifold_sca_tra_matrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::UTILS::SSIMatrices::complete_sca_tra_manifold_structure_matrix()
+void SSI::UTILS::SSIMatrices::complete_scatra_manifold_structure_matrix()
 {
   switch (scatra_matrixtype_)
   {
     case Core::LinAlg::MatrixType::sparse:
-      sca_tra_manifold_structure_matrix()->complete(
+      scatra_manifold_structure_matrix()->complete(
           *structure_dofrowmap_, *scatramanifold_dofrowmap_);
       break;
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
-      sca_tra_manifold_structure_matrix()->complete();
+      scatra_manifold_structure_matrix()->complete();
       break;
     default:
       FOUR_C_THROW("Not supported Core::LinAlg::MatrixType!");
@@ -368,16 +368,16 @@ void SSI::UTILS::SSIMatrices::complete_sca_tra_manifold_structure_matrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::UTILS::SSIMatrices::complete_sca_tra_sca_tra_manifold_matrix()
+void SSI::UTILS::SSIMatrices::complete_scatra_scatra_manifold_matrix()
 {
   switch (scatra_matrixtype_)
   {
     case Core::LinAlg::MatrixType::sparse:
-      sca_tra_sca_tra_manifold_matrix()->complete(*scatramanifold_dofrowmap_, *scatra_dofrowmap_);
+      scatra_scatra_manifold_matrix()->complete(*scatramanifold_dofrowmap_, *scatra_dofrowmap_);
       break;
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
-      sca_tra_sca_tra_manifold_matrix()->complete();
+      scatra_scatra_manifold_matrix()->complete();
       break;
     default:
       FOUR_C_THROW("Not supported Core::LinAlg::MatrixType!");
@@ -387,16 +387,16 @@ void SSI::UTILS::SSIMatrices::complete_sca_tra_sca_tra_manifold_matrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::UTILS::SSIMatrices::complete_sca_tra_structure_matrix()
+void SSI::UTILS::SSIMatrices::complete_scatra_structure_matrix()
 {
   switch (scatra_matrixtype_)
   {
     case Core::LinAlg::MatrixType::sparse:
-      sca_tra_structure_matrix()->complete(*structure_dofrowmap_, *scatra_dofrowmap_);
+      scatra_structure_matrix()->complete(*structure_dofrowmap_, *scatra_dofrowmap_);
       break;
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
-      sca_tra_structure_matrix()->complete();
+      scatra_structure_matrix()->complete();
       break;
     default:
       FOUR_C_THROW("Not supported Core::LinAlg::MatrixType!");
@@ -406,16 +406,16 @@ void SSI::UTILS::SSIMatrices::complete_sca_tra_structure_matrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::UTILS::SSIMatrices::complete_structure_sca_tra_matrix()
+void SSI::UTILS::SSIMatrices::complete_structure_scatra_matrix()
 {
   switch (scatra_matrixtype_)
   {
     case Core::LinAlg::MatrixType::sparse:
-      structure_sca_tra_matrix()->complete(*scatra_dofrowmap_, *structure_dofrowmap_);
+      structure_scatra_matrix()->complete(*scatra_dofrowmap_, *structure_dofrowmap_);
       break;
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
-      structure_sca_tra_matrix()->complete();
+      structure_scatra_matrix()->complete();
       break;
     default:
       FOUR_C_THROW("Not supported Core::LinAlg::MatrixType!");
@@ -449,10 +449,10 @@ SSI::UTILS::SSIVectors::SSIVectors(
     : increment_(Core::LinAlg::CreateVector(*(ssi_maps->maps_sub_problems()->full_map()), true)),
       is_scatra_manifold_(is_scatra_manifold),
       manifold_residual_(is_scatra_manifold ? Core::LinAlg::CreateVector(
-                                                  *(ssi_maps->sca_tra_manifold_dof_row_map()), true)
+                                                  *(ssi_maps->scatra_manifold_dof_row_map()), true)
                                             : Teuchos::null),
       residual_(Core::LinAlg::CreateVector(*(ssi_maps->maps_sub_problems()->full_map()), true)),
-      scatra_residual_(Core::LinAlg::CreateVector(*(ssi_maps->sca_tra_dof_row_map()), true)),
+      scatra_residual_(Core::LinAlg::CreateVector(*(ssi_maps->scatra_dof_row_map()), true)),
       structure_residual_(Core::LinAlg::CreateVector(*(ssi_maps->structure_dof_row_map()), true))
 {
 }
@@ -530,24 +530,24 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> SSI::UTILS::SSIMatrices::setup_sparse_m
  *----------------------------------------------------------------------*/
 SSI::UTILS::SSIMaps::SSIMaps(const SSI::SsiMono& ssi_mono_algorithm)
     : block_maps_sub_problems_(),
-      scatra_matrixtype_(ssi_mono_algorithm.sca_tra_field()->matrix_type()),
-      scatra_manifold_matrixtype_(ssi_mono_algorithm.is_sca_tra_manifold()
-                                      ? ssi_mono_algorithm.sca_tra_manifold()->matrix_type()
+      scatra_matrixtype_(ssi_mono_algorithm.scatra_field()->matrix_type()),
+      scatra_manifold_matrixtype_(ssi_mono_algorithm.is_scatra_manifold()
+                                      ? ssi_mono_algorithm.scatra_manifold()->matrix_type()
                                       : Core::LinAlg::MatrixType::undefined),
       ssi_matrixtype_(ssi_mono_algorithm.matrix_type())
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps(
-      ssi_mono_algorithm.is_sca_tra_manifold() ? 3 : 2, Teuchos::null);
+      ssi_mono_algorithm.is_scatra_manifold() ? 3 : 2, Teuchos::null);
   Teuchos::RCP<const Epetra_Map> merged_map;
 
   partial_maps[get_problem_position(Subproblem::scalar_transport)] =
-      Teuchos::rcp(new Epetra_Map(*ssi_mono_algorithm.sca_tra_field()->dof_row_map()));
+      Teuchos::rcp(new Epetra_Map(*ssi_mono_algorithm.scatra_field()->dof_row_map()));
   partial_maps[get_problem_position(Subproblem::structure)] =
       Teuchos::rcp(new Epetra_Map(*ssi_mono_algorithm.structure_field()->dof_row_map()));
-  if (ssi_mono_algorithm.is_sca_tra_manifold())
+  if (ssi_mono_algorithm.is_scatra_manifold())
   {
     partial_maps[get_problem_position(Subproblem::manifold)] =
-        Teuchos::rcp(new Epetra_Map(*ssi_mono_algorithm.sca_tra_manifold()->dof_row_map()));
+        Teuchos::rcp(new Epetra_Map(*ssi_mono_algorithm.scatra_manifold()->dof_row_map()));
     auto temp_map = Core::LinAlg::MergeMap(partial_maps[0], partial_maps[1], false);
     merged_map = Core::LinAlg::MergeMap(temp_map, partial_maps[2], false);
   }
@@ -576,21 +576,21 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SsiMono& ssi_mono_algorithm)
         case Core::LinAlg::MatrixType::sparse:
         {
           auto block_map_scatra = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(
-              *ssi_mono_algorithm.sca_tra_field()->discretization()->dof_row_map(),
+              *ssi_mono_algorithm.scatra_field()->discretization()->dof_row_map(),
               std::vector<Teuchos::RCP<const Epetra_Map>>(
-                  1, ssi_mono_algorithm.sca_tra_field()->dof_row_map())));
+                  1, ssi_mono_algorithm.scatra_field()->dof_row_map())));
 
           block_map_scatra->check_for_valid_map_extractor();
 
           block_maps_sub_problems_.insert(
               std::make_pair(Subproblem::scalar_transport, block_map_scatra));
 
-          if (ssi_mono_algorithm.is_sca_tra_manifold())
+          if (ssi_mono_algorithm.is_scatra_manifold())
           {
             auto block_map_scatra_manifold = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(
-                *ssi_mono_algorithm.sca_tra_manifold()->discretization()->dof_row_map(),
+                *ssi_mono_algorithm.scatra_manifold()->discretization()->dof_row_map(),
                 std::vector<Teuchos::RCP<const Epetra_Map>>(
-                    1, ssi_mono_algorithm.sca_tra_manifold()->dof_row_map())));
+                    1, ssi_mono_algorithm.scatra_manifold()->dof_row_map())));
 
             block_map_scatra_manifold->check_for_valid_map_extractor();
 
@@ -603,12 +603,12 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SsiMono& ssi_mono_algorithm)
         case Core::LinAlg::MatrixType::block_condition_dof:
         {
           block_maps_sub_problems_.insert(std::make_pair(
-              Subproblem::scalar_transport, ssi_mono_algorithm.sca_tra_field()->block_maps()));
+              Subproblem::scalar_transport, ssi_mono_algorithm.scatra_field()->block_maps()));
 
-          if (ssi_mono_algorithm.is_sca_tra_manifold())
+          if (ssi_mono_algorithm.is_scatra_manifold())
           {
             block_maps_sub_problems_.insert(std::make_pair(
-                Subproblem::manifold, ssi_mono_algorithm.sca_tra_manifold()->block_maps()));
+                Subproblem::manifold, ssi_mono_algorithm.scatra_manifold()->block_maps()));
           }
           else
           {
@@ -663,7 +663,7 @@ std::vector<int> SSI::UTILS::SSIMaps::get_block_positions(Subproblem subproblem)
       if (scatra_matrixtype_ == Core::LinAlg::MatrixType::sparse)
         block_position.emplace_back(1);
       else
-        block_position.emplace_back(block_map_sca_tra()->num_maps());
+        block_position.emplace_back(block_map_scatra()->num_maps());
       break;
     }
     case Subproblem::scalar_transport:
@@ -672,7 +672,7 @@ std::vector<int> SSI::UTILS::SSIMaps::get_block_positions(Subproblem subproblem)
         block_position.emplace_back(0);
       else
       {
-        for (int i = 0; i < block_map_sca_tra()->num_maps(); ++i) block_position.emplace_back(i);
+        for (int i = 0; i < block_map_scatra()->num_maps(); ++i) block_position.emplace_back(i);
       }
       break;
     }
@@ -682,10 +682,10 @@ std::vector<int> SSI::UTILS::SSIMaps::get_block_positions(Subproblem subproblem)
         block_position.emplace_back(2);
       else
       {
-        auto scatra_manifold_num_block_maps = block_map_sca_tra_manifold()->num_maps();
+        auto scatra_manifold_num_block_maps = block_map_scatra_manifold()->num_maps();
 
         for (int i = 0; i < scatra_manifold_num_block_maps; ++i)
-          block_position.emplace_back(block_map_sca_tra()->num_maps() + 1 + i);
+          block_position.emplace_back(block_map_scatra()->num_maps() + 1 + i);
       }
       break;
     }
@@ -738,29 +738,29 @@ void SSI::UTILS::SSIMaps::create_and_check_block_maps_sub_problems(
     const SSI::SsiMono& ssi_mono_algorithm)
 {
   const int num_blocks_systemmatrix =
-      block_map_sca_tra()->num_maps() + block_map_structure()->num_maps() +
-      (ssi_mono_algorithm.is_sca_tra_manifold() ? block_map_sca_tra_manifold()->num_maps() : 0);
+      block_map_scatra()->num_maps() + block_map_structure()->num_maps() +
+      (ssi_mono_algorithm.is_scatra_manifold() ? block_map_scatra_manifold()->num_maps() : 0);
 
   std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps_system_matrix(
       num_blocks_systemmatrix, Teuchos::null);
 
-  for (int i = 0; i < block_map_sca_tra()->num_maps(); ++i)
+  for (int i = 0; i < block_map_scatra()->num_maps(); ++i)
 
   {
     auto block_positions_scatra = get_block_positions(Subproblem::scalar_transport);
-    partial_maps_system_matrix[block_positions_scatra.at(i)] = block_map_sca_tra()->Map(i);
+    partial_maps_system_matrix[block_positions_scatra.at(i)] = block_map_scatra()->Map(i);
   }
 
   partial_maps_system_matrix.at(get_block_positions(Subproblem::structure).at(0)) =
       block_map_structure()->full_map();
 
-  if (ssi_mono_algorithm.is_sca_tra_manifold())
+  if (ssi_mono_algorithm.is_scatra_manifold())
   {
-    for (int i = 0; i < block_map_sca_tra_manifold()->num_maps(); ++i)
+    for (int i = 0; i < block_map_scatra_manifold()->num_maps(); ++i)
     {
       auto block_positions_manifold = get_block_positions(Subproblem::manifold);
       partial_maps_system_matrix[block_positions_manifold.at(i)] =
-          block_map_sca_tra_manifold()->Map(i);
+          block_map_scatra_manifold()->Map(i);
     }
   }
 
@@ -772,15 +772,15 @@ void SSI::UTILS::SSIMaps::create_and_check_block_maps_sub_problems(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> SSI::UTILS::SSIMaps::block_map_sca_tra() const
+Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> SSI::UTILS::SSIMaps::block_map_scatra() const
 {
   return block_maps_sub_problems_.at(Subproblem::scalar_transport);
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::MultiMapExtractor>
-SSI::UTILS::SSIMaps::block_map_sca_tra_manifold() const
+Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> SSI::UTILS::SSIMaps::block_map_scatra_manifold()
+    const
 {
   return block_maps_sub_problems_.at(Subproblem::manifold);
 }
@@ -794,14 +794,14 @@ Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> SSI::UTILS::SSIMaps::block_m
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMaps::sca_tra_dof_row_map() const
+Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMaps::scatra_dof_row_map() const
 {
   return maps_sub_problems()->Map(SSIMaps::get_problem_position(Subproblem::scalar_transport));
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMaps::sca_tra_manifold_dof_row_map() const
+Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMaps::scatra_manifold_dof_row_map() const
 {
   return maps_sub_problems()->Map(SSIMaps::get_problem_position(Subproblem::manifold));
 }

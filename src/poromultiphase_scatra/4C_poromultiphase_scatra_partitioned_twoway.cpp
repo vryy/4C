@@ -60,7 +60,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::init(
 
   // initialize increment vectors
   scaincnp_ = Teuchos::rcp(
-      new Epetra_Vector(*(scatra_algo()->sca_tra_field()->discretization()->dof_row_map())));
+      new Epetra_Vector(*(scatra_algo()->scatra_field()->discretization()->dof_row_map())));
   structincnp_ = Teuchos::rcp(new Epetra_Vector(*(poro_field()->struct_dof_row_map())));
   fluidincnp_ = (Teuchos::rcp(new Epetra_Vector(*(poro_field()->fluid_dof_row_map()))));
   if (artery_coupling_active_)
@@ -110,7 +110,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::do_scatra_step
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  scatra_algo()->sca_tra_field()->solve();
+  scatra_algo()->scatra_field()->solve();
 }
 
 /*----------------------------------------------------------------------*
@@ -140,7 +140,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::iter_update_st
 {
   // store scalar from first solution for convergence check (like in
   // elch_algorithm: use current values)
-  scaincnp_->Update(1.0, *scatra_algo()->sca_tra_field()->phinp(), 0.0);
+  scaincnp_->Update(1.0, *scatra_algo()->scatra_field()->phinp(), 0.0);
   structincnp_->Update(1.0, *poro_field()->struct_dispnp(), 0.0);
   fluidincnp_->Update(1.0, *poro_field()->fluid_phinp(), 0.0);
   if (artery_coupling_active_)
@@ -179,7 +179,7 @@ bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::convergence_ch
 
   // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
-  scaincnp_->Update(1.0, *(scatra_algo()->sca_tra_field()->phinp()), -1.0);
+  scaincnp_->Update(1.0, *(scatra_algo()->scatra_field()->phinp()), -1.0);
   structincnp_->Update(1.0, *(poro_field()->struct_dispnp()), -1.0);
   fluidincnp_->Update(1.0, *(poro_field()->fluid_phinp()), -1.0);
   if (artery_coupling_active_)
@@ -191,7 +191,7 @@ bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::convergence_ch
 
   // build the L2-norm of the scalar increment and the scalar
   scaincnp_->Norm2(&scaincnorm_L2);
-  scatra_algo()->sca_tra_field()->phinp()->Norm2(&scanorm_L2);
+  scatra_algo()->scatra_field()->phinp()->Norm2(&scanorm_L2);
   structincnp_->Norm2(&dispincnorm_L2);
   poro_field()->struct_dispnp()->Norm2(&dispnorm_L2);
   fluidincnp_->Norm2(&fluidincnorm_L2);

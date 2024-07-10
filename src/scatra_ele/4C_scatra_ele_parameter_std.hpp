@@ -76,7 +76,7 @@ namespace Discret
       //! number of dofset associated with pressure dofs
       int nds_pres() const;
       //! number of dofset associated with scalar transport dofs
-      int nds_sca_tra() const;
+      int nds_scatra() const;
       //! number of dofset associated with temperature dofs
       int nds_thermo() const;
       //! number of dofset associated with two-tensor quantity dofs, e.g. stresses, strains

@@ -79,7 +79,7 @@ namespace ScaTra
     */
     virtual Teuchos::RCP<Core::LinAlg::SerialDenseVector> compute_error() const;
 
-    Teuchos::RCP<Core::UTILS::ResultTest> create_sca_tra_field_test() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> create_scatra_field_test() override;
 
    protected:
     //! copy constructor

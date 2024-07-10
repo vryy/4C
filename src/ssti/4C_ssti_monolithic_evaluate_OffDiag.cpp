@@ -63,10 +63,10 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
       "action", ScaTra::Action::calc_scatra_mono_odblock_mesh, eleparams);
 
   // remove state vectors from thermo discretization
-  thermo_->sca_tra_field()->discretization()->clear_state();
+  thermo_->scatra_field()->discretization()->clear_state();
 
   // add state vectors to thermo discretization
-  thermo_->sca_tra_field()->add_time_integration_specific_vectors();
+  thermo_->scatra_field()->add_time_integration_specific_vectors();
 
   // create strategy for assembly of thermo-structure matrix block
   Core::FE::AssembleStrategy strategyscatrastructure(
@@ -77,9 +77,9 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
       thermostructuredomain,  // thermo-structure matrix block
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-  thermo_->sca_tra_field()->discretization()->evaluate(eleparams, strategyscatrastructure);
+  thermo_->scatra_field()->discretization()->evaluate(eleparams, strategyscatrastructure);
 
-  thermo_->sca_tra_field()->discretization()->clear_state();
+  thermo_->scatra_field()->discretization()->clear_state();
 }
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
@@ -91,7 +91,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
   // slave and master matrix for evaluation of conditions
   Teuchos::RCP<Core::LinAlg::SparseOperator> slavematrix(Teuchos::null);
   Teuchos::RCP<Core::LinAlg::SparseOperator> mastermatrix(Teuchos::null);
-  switch (thermo_->sca_tra_field()->matrix_type())
+  switch (thermo_->scatra_field()->matrix_type())
   {
     case Core::LinAlg::MatrixType::block_condition:
     {
@@ -128,7 +128,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
   thermostructureinterface->add(*mastermatrix, false, 1.0, 1.0);
 
   // finalize thermo-structure matrix block
-  switch (thermo_->sca_tra_field()->matrix_type())
+  switch (thermo_->scatra_field()->matrix_type())
   {
     case Core::LinAlg::MatrixType::block_condition:
     {
@@ -149,7 +149,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
     }
   }
 
-  thermo_->sca_tra_field()->discretization()->clear_state();
+  thermo_->scatra_field()->discretization()->clear_state();
 }
 
 /*-----------------------------------------------------------------------------------*
@@ -196,11 +196,11 @@ void SSTI::ThermoStructureOffDiagCoupling::copy_slave_to_master_thermo_structure
 {
   mastermatrix->zero();
 
-  switch (thermo_->sca_tra_field()->matrix_type())
+  switch (thermo_->scatra_field()->matrix_type())
   {
     case Core::LinAlg::MatrixType::block_condition:
     {
-      const int numberthermoblocks = thermo_->sca_tra_field()->block_maps()->num_maps();
+      const int numberthermoblocks = thermo_->scatra_field()->block_maps()->num_maps();
 
       auto blockslavematrix =
           Teuchos::rcp_dynamic_cast<const Core::LinAlg::BlockSparseMatrixBase>(slavematrix);
@@ -290,12 +290,12 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_s
   Core::UTILS::AddEnumClassToParameterList<ScaTra::DifferentiationType>(
       "differentiationtype", ScaTra::DifferentiationType::disp, condparams);
 
-  thermo_->sca_tra_field()->discretization()->clear_state();
+  thermo_->scatra_field()->discretization()->clear_state();
 
-  thermo_->sca_tra_field()->add_time_integration_specific_vectors();
+  thermo_->scatra_field()->add_time_integration_specific_vectors();
 
   Teuchos::RCP<Core::LinAlg::SparseOperator> evaluate_matrix;
-  if (thermo_->sca_tra_field()->matrix_type() == Core::LinAlg::MatrixType::sparse)
+  if (thermo_->scatra_field()->matrix_type() == Core::LinAlg::MatrixType::sparse)
   {
     evaluate_matrix = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
         *meshtying_strategy_thermo_->coupling_adapter()->slave_dof_map(), 27, false, true));
@@ -323,16 +323,16 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_s
         static_cast<int>(Inpar::S2I::kinetics_nointerfaceflux))
     {
       // collect condition specific data and store to scatra boundary parameter class
-      meshtying_strategy_thermo_->set_condition_specific_sca_tra_parameters(
+      meshtying_strategy_thermo_->set_condition_specific_scatra_parameters(
           *kinetics_slave_cond.second);
       // evaluate the condition
-      thermo_->sca_tra_field()->discretization()->evaluate_condition(
+      thermo_->scatra_field()->discretization()->evaluate_condition(
           condparams, strategyscatrastructures2i, "S2IKinetics", kinetics_slave_cond.first);
     }
   }
 
   // finalize thermo-structure matrix block
-  switch (thermo_->sca_tra_field()->matrix_type())
+  switch (thermo_->scatra_field()->matrix_type())
   {
     case Core::LinAlg::MatrixType::block_condition:
     {
@@ -356,13 +356,13 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_s
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->slave_dof_map();
 
-        for (int iblock = 0; iblock < thermo_->sca_tra_field()->block_maps()->num_maps(); ++iblock)
+        for (int iblock = 0; iblock < thermo_->scatra_field()->block_maps()->num_maps(); ++iblock)
         {
           auto evaluate_iblock = evaluate_matrix_block->matrix(iblock, 0);
           auto slave_iblock = slavematrix_block->matrix(iblock, 0);
 
           auto scatra_slave_block_mapi =
-              Core::LinAlg::IntersectMap(*thermo_->sca_tra_field()->block_maps()->Map(iblock),
+              Core::LinAlg::IntersectMap(*thermo_->scatra_field()->block_maps()->Map(iblock),
                   *meshtying_strategy_thermo_->coupling_adapter()->slave_dof_map());
 
           Core::LinAlg::MatrixLogicalSplitAndTransform()(evaluate_iblock, *scatra_slave_block_mapi,

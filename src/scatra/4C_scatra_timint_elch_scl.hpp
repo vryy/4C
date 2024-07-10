@@ -55,7 +55,7 @@ namespace ScaTra
     Teuchos::RCP<Core::UTILS::ResultTest> create_micro_field_test();
 
     //! get time integration of micro problem
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> micro_sca_tra_field();
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> micro_scatra_field();
 
     void nonlinear_solve() override;
 

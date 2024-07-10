@@ -86,13 +86,13 @@ namespace SSI
 
    protected:
     //! solve additional scatra field on manifolds
-    bool is_sca_tra_manifold() const { return is_scatra_manifold_; }
+    bool is_scatra_manifold() const { return is_scatra_manifold_; }
 
     //! access to scalar transport field
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> sca_tra_field() const { return scatra_; }
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_field() const { return scatra_; }
 
     //! access to scalar transport on manifold field
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> sca_tra_manifold_field() const
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold_field() const
     {
       return scatra_manifold_;
     }

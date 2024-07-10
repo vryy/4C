@@ -1940,7 +1940,7 @@ void CONTACT::STRATEGY::Factory::set_parameters_for_contact_condition(
         {
           // fill the parameters from the s2i condition
           ScaTra::MeshtyingStrategyS2I::
-              write_s2_i_kinetics_specific_sca_tra_parameters_to_parameter_list(
+              write_s2_i_kinetics_specific_scatra_parameters_to_parameter_list(
                   *s2ikinetics_cond, s2icouplingparameters);
 
           // add the sublist to the contact interface parameter list

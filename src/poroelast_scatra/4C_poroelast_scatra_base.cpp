@@ -92,8 +92,8 @@ PoroElastScaTra::PoroScatraBase::PoroScatraBase(
   // now we can call init() on the base algo.
   // time integrator is constructed and initialized inside.
   scatra_->init();
-  scatra_->sca_tra_field()->set_number_of_dof_set_displacement(2);
-  scatra_->sca_tra_field()->set_number_of_dof_set_velocity(2);
+  scatra_->scatra_field()->set_number_of_dof_set_displacement(2);
+  scatra_->scatra_field()->set_number_of_dof_set_velocity(2);
 
   // only now we must call setup() on the scatra time integrator.
   // all objects relying on the parallel distribution are
@@ -116,7 +116,7 @@ void PoroElastScaTra::PoroScatraBase::test_results(const Epetra_Comm& comm)
 
   problem->add_field_test(poro_->structure_field()->create_field_test());
   problem->add_field_test(poro_->fluid_field()->create_field_test());
-  problem->add_field_test(scatra_->create_sca_tra_field_test());
+  problem->add_field_test(scatra_->create_scatra_field_test());
   problem->test_all(comm);
 }
 
@@ -142,19 +142,19 @@ void PoroElastScaTra::PoroScatraBase::set_scatra_solution()
 
   if (matchinggrid_)
   {
-    phinp_s = scatra_->sca_tra_field()->phinp();
+    phinp_s = scatra_->scatra_field()->phinp();
     phinp_f = phinp_s;
-    phin_s = scatra_->sca_tra_field()->phin();
+    phin_s = scatra_->scatra_field()->phin();
     phin_f = phin_s;
-    phidtnp = scatra_->sca_tra_field()->phidtnp();
+    phidtnp = scatra_->scatra_field()->phidtnp();
   }
   else
   {
-    phinp_s = volcoupl_structurescatra_->apply_vector_mapping12(scatra_->sca_tra_field()->phinp());
-    phinp_f = volcoupl_fluidscatra_->apply_vector_mapping12(scatra_->sca_tra_field()->phinp());
-    phin_s = volcoupl_structurescatra_->apply_vector_mapping12(scatra_->sca_tra_field()->phin());
-    phin_f = volcoupl_fluidscatra_->apply_vector_mapping12(scatra_->sca_tra_field()->phin());
-    phidtnp = volcoupl_fluidscatra_->apply_vector_mapping12(scatra_->sca_tra_field()->phidtnp());
+    phinp_s = volcoupl_structurescatra_->apply_vector_mapping12(scatra_->scatra_field()->phinp());
+    phinp_f = volcoupl_fluidscatra_->apply_vector_mapping12(scatra_->scatra_field()->phinp());
+    phin_s = volcoupl_structurescatra_->apply_vector_mapping12(scatra_->scatra_field()->phin());
+    phin_f = volcoupl_fluidscatra_->apply_vector_mapping12(scatra_->scatra_field()->phin());
+    phidtnp = volcoupl_fluidscatra_->apply_vector_mapping12(scatra_->scatra_field()->phidtnp());
   }
 
   // porous structure
@@ -186,11 +186,11 @@ void PoroElastScaTra::PoroScatraBase::set_velocity_fields()
     velnp = volcoupl_fluidscatra_->apply_vector_mapping21(poro_->fluid_field()->velnp());
   }
 
-  scatra_->sca_tra_field()->set_velocity_field(convel,  // convective vel.
-      Teuchos::null,                                    // acceleration
-      velnp,                                            // velocity
-      Teuchos::null,                                    // fsvel
-      true                                              // set pressure
+  scatra_->scatra_field()->set_velocity_field(convel,  // convective vel.
+      Teuchos::null,                                   // acceleration
+      velnp,                                           // velocity
+      Teuchos::null,                                   // fsvel
+      true                                             // set pressure
   );
 }
 
@@ -210,7 +210,7 @@ void PoroElastScaTra::PoroScatraBase::set_mesh_disp()
     dispnp = volcoupl_fluidscatra_->apply_vector_mapping21(fluid_field()->dispnp());
   }
 
-  scatra_->sca_tra_field()->apply_mesh_movement(dispnp);
+  scatra_->scatra_field()->apply_mesh_movement(dispnp);
 
   Teuchos::RCP<const Epetra_Vector> sdispnp = Teuchos::null;
 
@@ -223,7 +223,7 @@ void PoroElastScaTra::PoroScatraBase::set_mesh_disp()
     sdispnp = volcoupl_structurescatra_->apply_vector_mapping21(structure_field()->dispnp());
   }
 
-  scatra_->sca_tra_field()->discretization()->set_state(1, "displacement", sdispnp);
+  scatra_->scatra_field()->discretization()->set_state(1, "displacement", sdispnp);
 }
 
 /*----------------------------------------------------------------------*

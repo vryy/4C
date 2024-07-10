@@ -185,7 +185,7 @@ namespace PoroMultiPhaseScaTra
     void print_structure_disabled_info();
 
     //! FD-Check
-    void poro_multi_phase_sca_tra_fd_check();
+    void poro_multi_phase_scatra_fd_check();
 
     //! convergence tolerance (increment)
     double ittolinc_;

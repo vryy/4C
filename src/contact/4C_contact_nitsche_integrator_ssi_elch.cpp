@@ -328,7 +328,7 @@ void CONTACT::IntegratorNitscheSsiElch::integrate_ssi_interface_condition(
   }
 
   // get the scatra-scatra interface kinetic model
-  const int kinetic_model = get_sca_tra_ele_parameter_boundary()->kinetic_model();
+  const int kinetic_model = get_scatra_ele_parameter_boundary()->kinetic_model();
 
   // perform integration dependent on scatra-scatra interface kinetic model
   switch (kinetic_model)
@@ -345,9 +345,9 @@ void CONTACT::IntegratorNitscheSsiElch::integrate_ssi_interface_condition(
       const double faraday =
           Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
       const double frt = Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->frt();
-      const double kr = get_sca_tra_ele_parameter_boundary()->charge_transfer_constant();
-      const double alphaa = get_sca_tra_ele_parameter_boundary()->alphadata();
-      const double alphac = get_sca_tra_ele_parameter_boundary()->alpha_c();
+      const double kr = get_scatra_ele_parameter_boundary()->charge_transfer_constant();
+      const double alphaa = get_scatra_ele_parameter_boundary()->alphadata();
+      const double alphac = get_scatra_ele_parameter_boundary()->alpha_c();
 
       // calculate the electrode side concentration, potential and their derivatives at the current
       // gauss point
@@ -491,11 +491,11 @@ void CONTACT::IntegratorNitscheSsiElch::integrate_elch_test(const double fac,
   const std::vector<Core::Gen::Pairedvector<int, double>>& d_xi_dd = *ele_data_bundle.d_xi_dd;
 
   // get time integration factors
-  const double time_fac = get_sca_tra_ele_parameter_tim_int()->time_fac();
-  const double time_fac_rhs = get_sca_tra_ele_parameter_tim_int()->time_fac_rhs();
+  const double time_fac = get_scatra_ele_parameter_tim_int()->time_fac();
+  const double time_fac_rhs = get_scatra_ele_parameter_tim_int()->time_fac_rhs();
 
   // get number of electrons per charge transfer reaction
-  const int num_electrons = get_sca_tra_ele_parameter_boundary()->num_electrons();
+  const int num_electrons = get_scatra_ele_parameter_boundary()->num_electrons();
 
   // prepare the RHS integration value
   const double val = fac * jac * wgt * test_val;

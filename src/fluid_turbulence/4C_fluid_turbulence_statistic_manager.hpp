@@ -154,19 +154,19 @@ namespace FLD
     \brief Restart scatra-specific collection of statistics
 
     */
-    void read_restart_sca_tra(Core::IO::DiscretizationReader& scatrareader, int step);
+    void read_restart_scatra(Core::IO::DiscretizationReader& scatrareader, int step);
 
     /*!
     \brief Provide access to scalar transport field
 
     */
-    void add_sca_tra_field(Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_timeint);
+    void add_scatra_field(Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_timeint);
 
     /*!
     \brief   Write (dump) the scatra-specific mean fields to the result file
 
     */
-    void do_output_for_sca_tra(Core::IO::DiscretizationWriter& output, int step);
+    void do_output_for_scatra(Core::IO::DiscretizationWriter& output, int step);
 
     //@}
 
@@ -179,7 +179,7 @@ namespace FLD
       return statistics_general_mean_;
     }
 
-    bool with_sca_tra() { return withscatra_; }
+    bool with_scatra() { return withscatra_; }
 
    private:
     /*!

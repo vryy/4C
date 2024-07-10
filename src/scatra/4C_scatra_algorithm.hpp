@@ -71,7 +71,7 @@ namespace ScaTra
     void prepare_time_step_convection();
 
     /// print scatra solver type to screen
-    virtual void print_sca_tra_solver();
+    virtual void print_scatra_solver();
 
     /// solve Navier-Stokes equations for current time step
     void do_fluid_step();

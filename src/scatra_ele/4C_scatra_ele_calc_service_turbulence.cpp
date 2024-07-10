@@ -1140,7 +1140,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_b_and_d_for_multif
   }
 
   // apply near-wall limit if required
-  if (turbparams_->nwl_sca_tra() and turbparams_->nwl())
+  if (turbparams_->nwl_scatra() and turbparams_->nwl())
   {
     D_mfs *= Cai_phi;
   }

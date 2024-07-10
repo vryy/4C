@@ -189,22 +189,22 @@ namespace SSI
     }
 
     //! access the scalar transport base algorithm
-    const Teuchos::RCP<Adapter::ScaTraBaseAlgorithm>& sca_tra_base_algorithm() const
+    const Teuchos::RCP<Adapter::ScaTraBaseAlgorithm>& scatra_base_algorithm() const
     {
       return scatra_base_algorithm_;
     }
 
     //! access the scalar transport base algorithm on manifolds
-    const Teuchos::RCP<Adapter::ScaTraBaseAlgorithm>& sca_tra_manifold_base_algorithm() const
+    const Teuchos::RCP<Adapter::ScaTraBaseAlgorithm>& scatra_manifold_base_algorithm() const
     {
       return scatra_manifold_base_algorithm_;
     }
 
     //! access the scalar transport field
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> sca_tra_field() const;
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_field() const;
 
     //! access the scalar transport field on manifolds
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> sca_tra_manifold() const;
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold() const;
 
     /// set structure solution on other fields
     void set_struct_solution(Teuchos::RCP<const Epetra_Vector> disp,
@@ -239,13 +239,13 @@ namespace SSI
     bool do_calculate_initial_potential_field() const;
 
     //! returns if the scalar transport time integration is of type electrochemistry
-    bool is_elch_sca_tra_tim_int_type() const;
+    bool is_elch_scatra_tim_int_type() const;
 
     //! solve additional scatra field on manifolds
-    bool is_sca_tra_manifold() const { return is_scatra_manifold_; }
+    bool is_scatra_manifold() const { return is_scatra_manifold_; }
 
     //! activate mesh tying between overlapping manifold fields
-    bool is_sca_tra_manifold_meshtying() const { return is_manifold_meshtying_; }
+    bool is_scatra_manifold_meshtying() const { return is_manifold_meshtying_; }
 
     //! Redistribute nodes and elements on processors
     void redistribute(RedistributionType redistribution_type);
@@ -285,13 +285,13 @@ namespace SSI
     }
 
     //! copy modified time step from scatra to scatra manifold field
-    void set_dt_from_sca_tra_to_manifold();
+    void set_dt_from_scatra_to_manifold();
 
     //! copy modified time step from scatra to this SSI algorithm
-    void set_dt_from_sca_tra_to_ssi();
+    void set_dt_from_scatra_to_ssi();
 
     //! copy modified time step from scatra to structure field
-    void set_dt_from_sca_tra_to_structure();
+    void set_dt_from_scatra_to_structure();
 
     //! set structure stress state on scatra field
     void set_mechanical_stress_state(

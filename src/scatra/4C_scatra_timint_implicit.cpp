@@ -925,7 +925,7 @@ void ScaTra::ScaTraTimIntImpl::set_element_nodeset_parameters() const
   eleparams.set<int>("ndsdisp", nds_disp());
   eleparams.set<int>("ndsgrowth", nds_growth());
   eleparams.set<int>("ndspres", nds_pressure());
-  eleparams.set<int>("ndsscatra", nds_sca_tra());
+  eleparams.set<int>("ndsscatra", nds_scatra());
   eleparams.set<int>("ndsthermo", nds_thermo());
   eleparams.set<int>("ndsTwoTensorQuantity", nds_two_tensor_quantity());
   eleparams.set<int>("ndsvel", nds_vel());
@@ -1009,7 +1009,7 @@ void ScaTra::ScaTraTimIntImpl::set_element_general_parameters(bool calcinitialti
 
   // additional problem-specific parameters for non-standard scalar transport problems
   // (electrochemistry etc.)
-  set_element_specific_sca_tra_parameters(eleparams);
+  set_element_specific_scatra_parameters(eleparams);
 
   // call standard loop over elements
   discret_->evaluate(
@@ -3859,7 +3859,7 @@ void ScaTra::ScaTraTimIntImpl::set_time_stepping_to_micro_scale()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::ScaTraTimIntImpl::create_sca_tra_field_test()
+Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::ScaTraTimIntImpl::create_scatra_field_test()
 {
   return Teuchos::rcp(new ScaTra::ScaTraResultTest(Teuchos::rcp(this, false)));
 }
@@ -3868,7 +3868,7 @@ Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::ScaTraTimIntImpl::create_sca_tra_f
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::test_results()
 {
-  Global::Problem::instance()->add_field_test(create_sca_tra_field_test());
+  Global::Problem::instance()->add_field_test(create_scatra_field_test());
   Global::Problem::instance()->test_all(discret_->get_comm());
 }
 

@@ -152,7 +152,7 @@ void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globalti
     // all objects relying on the parallel distribution are
     // created and pointers are set.
     // calls setup() on the scatra time integrator inside.
-    scatra_->sca_tra_field()->setup();
+    scatra_->scatra_field()->setup();
   }
 }
 
@@ -210,13 +210,13 @@ void Arteries::ArtNetImplStationary::solve_scatra()
     FOUR_C_THROW("this type of coupling is only available for explicit time integration");
 
   // provide scatra discretization with fluid primary variable field
-  scatra_->sca_tra_field()->discretization()->set_state(1, "one_d_artery_pressure", pressurenp_);
-  scatra_->sca_tra_field()->prepare_time_step();
+  scatra_->scatra_field()->discretization()->set_state(1, "one_d_artery_pressure", pressurenp_);
+  scatra_->scatra_field()->prepare_time_step();
 
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  scatra_->sca_tra_field()->solve();
+  scatra_->scatra_field()->solve();
 }
 
 /*----------------------------------------------------------------------*
@@ -428,8 +428,8 @@ void Arteries::ArtNetImplStationary::time_update()
 
   if (solvescatra_)
   {
-    scatra_->sca_tra_field()->update();
-    scatra_->sca_tra_field()->evaluate_error_compared_to_analytical_sol();
+    scatra_->scatra_field()->update();
+    scatra_->scatra_field()->evaluate_error_compared_to_analytical_sol();
   }
 
   return;
@@ -497,7 +497,7 @@ void Arteries::ArtNetImplStationary::output(
     // output of flow
     output_flow();
 
-    if (solvescatra_) scatra_->sca_tra_field()->check_and_write_output_and_restart();
+    if (solvescatra_) scatra_->scatra_field()->check_and_write_output_and_restart();
   }
 
   return;
@@ -593,7 +593,7 @@ void Arteries::ArtNetImplStationary::test_results()
   Global::Problem::instance()->add_field_test(resulttest);
   if (solvescatra_)
   {
-    Global::Problem::instance()->add_field_test(scatra_->create_sca_tra_field_test());
+    Global::Problem::instance()->add_field_test(scatra_->create_scatra_field_test());
   }
   Global::Problem::instance()->test_all(discret_->get_comm());
 }
@@ -655,7 +655,7 @@ void Arteries::ArtNetImplStationary::read_restart(int step, bool coupledTo3D)
 
   if (solvescatra_)
     // read restart data for scatra field
-    scatra_->sca_tra_field()->read_restart(step);
+    scatra_->scatra_field()->read_restart(step);
 }
 
 /*----------------------------------------------------------------------*

@@ -96,7 +96,7 @@ namespace STI
     Teuchos::RCP<const Epetra_Map> full_map_thermo() const { return full_map_thermo_; }
 
     //! map associated with all degrees of freedom on thermo interface
-    Teuchos::RCP<const Epetra_Map> interface_map_sca_tra() const { return interface_map_scatra_; }
+    Teuchos::RCP<const Epetra_Map> interface_map_scatra() const { return interface_map_scatra_; }
 
     //! map associated with all degrees of freedom on scatra interface
     Teuchos::RCP<const Epetra_Map> interface_map_thermo() const { return interface_map_thermo_; }
@@ -105,7 +105,7 @@ namespace STI
     bool is_ale() const { return isale_; }
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_sca_tra() const
+    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_scatra() const
     {
       return meshtying_strategy_scatra_;
     }
@@ -117,10 +117,10 @@ namespace STI
     }
 
     //! ScaTra subproblem
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> sca_tra_field() { return scatra_->sca_tra_field(); }
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_field() { return scatra_->scatra_field(); }
 
     //! Thermo subproblem
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> thermo_field() { return thermo_->sca_tra_field(); }
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> thermo_field() { return thermo_->scatra_field(); }
 
    private:
     //! map extractor associated with all degrees of freedom inside temperature field

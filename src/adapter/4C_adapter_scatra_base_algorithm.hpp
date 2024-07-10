@@ -72,10 +72,10 @@ namespace Adapter
     virtual void setup();
 
     /// access to the scalar transport field solver
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> sca_tra_field() { return scatra_; }
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_field() { return scatra_; }
 
     /// create result test for scalar transport field
-    Teuchos::RCP<Core::UTILS::ResultTest> create_sca_tra_field_test();
+    Teuchos::RCP<Core::UTILS::ResultTest> create_scatra_field_test();
 
    private:
     /// scalar transport field solver

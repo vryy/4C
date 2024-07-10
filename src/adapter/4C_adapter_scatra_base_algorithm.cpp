@@ -587,9 +587,9 @@ void Adapter::ScaTraBaseAlgorithm::setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> Adapter::ScaTraBaseAlgorithm::create_sca_tra_field_test()
+Teuchos::RCP<Core::UTILS::ResultTest> Adapter::ScaTraBaseAlgorithm::create_scatra_field_test()
 {
-  return scatra_->create_sca_tra_field_test();
+  return scatra_->create_scatra_field_test();
 }
 
 /*----------------------------------------------------------------------*/

@@ -132,7 +132,7 @@ namespace FLD
     //@}
 
     // Add results from scalar transport field solver to statistics
-    void add_sca_tra_results(
+    void add_scatra_results(
         Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp);
 
    protected:

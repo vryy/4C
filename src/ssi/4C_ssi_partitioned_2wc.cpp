@@ -105,7 +105,7 @@ void SSI::SSIPart2WC::setup()
   SSI::SSIPart::setup();
 
   // construct increment vectors
-  scaincnp_ = Core::LinAlg::CreateVector(*sca_tra_field()->discretization()->dof_row_map(0), true);
+  scaincnp_ = Core::LinAlg::CreateVector(*scatra_field()->discretization()->dof_row_map(0), true);
   dispincnp_ = Core::LinAlg::CreateVector(*structure_field()->dof_row_map(0), true);
 }
 
@@ -121,7 +121,7 @@ void SSI::SSIPart2WC::timeloop()
   prepare_time_loop();
 
   // time loop
-  while (not_finished() and sca_tra_field()->not_finished())
+  while (not_finished() and scatra_field()->not_finished())
   {
     prepare_time_step();
 
@@ -137,8 +137,8 @@ void SSI::SSIPart2WC::timeloop()
 
     // output performance statistics associated with nonlinear solver into *.csv file if applicable
     if (Core::UTILS::IntegralValue<int>(
-            *sca_tra_field()->scatra_parameter_list(), "OUTPUTNONLINSOLVERSTATS"))
-      sca_tra_field()->output_nonlin_solver_stats(
+            *scatra_field()->scatra_parameter_list(), "OUTPUTNONLINSOLVERSTATS"))
+      scatra_field()->output_nonlin_solver_stats(
           iteration_count(), dtnonlinsolve, step(), get_comm());
 
     update_and_output();
@@ -178,13 +178,13 @@ void SSI::SSIPart2WC::do_scatra_step()
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  sca_tra_field()->solve();
+  scatra_field()->solve();
 
   // set structure-based scalar transport values
-  set_scatra_solution(sca_tra_field()->phinp());
+  set_scatra_solution(scatra_field()->phinp());
 
   // set micro scale value (projected to macro scale) to structure field
-  if (macro_scale()) set_micro_scatra_solution(sca_tra_field()->phinp_micro());
+  if (macro_scale()) set_micro_scatra_solution(scatra_field()->phinp_micro());
 
   // evaluate temperature from function and set to structural discretization
   evaluate_and_set_temperature_field();
@@ -213,7 +213,7 @@ void SSI::SSIPart2WC::prepare_time_loop()
   structure_field()->prepare_output(force_prepare);
   structure_field()->output();
   set_struct_solution(structure_field()->dispnp(), structure_field()->velnp(), false);
-  sca_tra_field()->prepare_time_loop();
+  scatra_field()->prepare_time_loop();
 }
 
 /*----------------------------------------------------------------------*/
@@ -224,14 +224,14 @@ void SSI::SSIPart2WC::prepare_time_step(bool printheader)
   increment_time_and_step();
 
   set_struct_solution(structure_field()->dispnp(), structure_field()->velnp(), false);
-  sca_tra_field()->prepare_time_step();
+  scatra_field()->prepare_time_step();
 
   // if adaptive time stepping and different time step size: calculate time step in scatra
   // (prepare_time_step() of Scatra) and pass to other fields
-  if (sca_tra_field()->time_step_adapted()) set_dt_from_sca_tra_to_ssi();
+  if (scatra_field()->time_step_adapted()) set_dt_from_scatra_to_ssi();
 
-  set_scatra_solution(sca_tra_field()->phinp());
-  if (macro_scale()) set_micro_scatra_solution(sca_tra_field()->phinp_micro());
+  set_scatra_solution(scatra_field()->phinp());
+  if (macro_scale()) set_micro_scatra_solution(scatra_field()->phinp_micro());
 
   // NOTE: the predictor of the structure is called in here
   structure_field()->prepare_time_step();
@@ -255,12 +255,12 @@ void SSI::SSIPart2WC::update_and_output()
   }
 
   structure_field()->update();
-  sca_tra_field()->update();
+  scatra_field()->update();
 
-  sca_tra_field()->evaluate_error_compared_to_analytical_sol();
+  scatra_field()->evaluate_error_compared_to_analytical_sol();
 
   structure_field()->output();
-  sca_tra_field()->check_and_write_output_and_restart();
+  scatra_field()->check_and_write_output_and_restart();
 }
 
 
@@ -272,7 +272,7 @@ void SSI::SSIPart2WC::iter_update_states()
   // store last solutions (current states).
   // will be compared in convergence_check to the solutions,
   // obtained from the next Struct and Scatra steps.
-  scaincnp_->Update(1.0, *sca_tra_field()->phinp(), 0.0);
+  scaincnp_->Update(1.0, *scatra_field()->phinp(), 0.0);
   dispincnp_->Update(1.0, *structure_field()->dispnp(), 0.0);
 }  // iter_update_states()
 
@@ -350,12 +350,12 @@ bool SSI::SSIPart2WC::convergence_check(int itnum)
 
   // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
-  scaincnp_->Update(1.0, *(sca_tra_field()->phinp()), -1.0);
+  scaincnp_->Update(1.0, *(scatra_field()->phinp()), -1.0);
   dispincnp_->Update(1.0, *(structure_field()->dispnp()), -1.0);
 
   // build the L2-norm of the scalar increment and the scalar
   scaincnp_->Norm2(&scaincnorm_L2);
-  sca_tra_field()->phinp()->Norm2(&scanorm_L2);
+  scatra_field()->phinp()->Norm2(&scanorm_L2);
   dispincnp_->Norm2(&dispincnorm_L2);
   structure_field()->dispnp()->Norm2(&dispnorm_L2);
 
@@ -512,7 +512,7 @@ void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
     }
 
     // store scalars and displacements for the convergence check later
-    scaincnp_->Update(1.0, *sca_tra_field()->phinp(), 0.0);
+    scaincnp_->Update(1.0, *scatra_field()->phinp(), 0.0);
     dispincnp_->Update(1.0, *dispnp, 0.0);
 
     // begin nonlinear solver / outer iteration ***************************
@@ -733,7 +733,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::outer_loop()
 
   // this is the relaxed input
   Teuchos::RCP<Epetra_Vector> phinp =
-      Core::LinAlg::CreateVector(*sca_tra_field()->discretization()->dof_row_map(0), true);
+      Core::LinAlg::CreateVector(*scatra_field()->discretization()->dof_row_map(0), true);
 
   while (!stopnonliniter)
   {
@@ -741,7 +741,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::outer_loop()
 
     if (iteration_count() == 1)
     {
-      phinp->Update(1.0, *(sca_tra_field()->phinp()), 0.0);  // TSI does Dispn()
+      phinp->Update(1.0, *(scatra_field()->phinp()), 0.0);  // TSI does Dispn()
     }
 
     // store scalars and displacements for the convergence check later
@@ -814,8 +814,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::setup()
   SSI::SSIPart2WC::setup();
 
   // setup old scatra increment vector
-  scaincnpold_ =
-      Core::LinAlg::CreateVector(*sca_tra_field()->discretization()->dof_row_map(), true);
+  scaincnpold_ = Core::LinAlg::CreateVector(*scatra_field()->discretization()->dof_row_map(), true);
 }
 
 /*----------------------------------------------------------------------*
@@ -833,7 +832,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::calc_omega(double& omega, const in
 
   // scaincnpdiff =  r^{i+1}_{n+1} - r^i_{n+1}
   Teuchos::RCP<Epetra_Vector> scaincnpdiff =
-      Core::LinAlg::CreateVector(*sca_tra_field()->discretization()->dof_row_map(0), true);
+      Core::LinAlg::CreateVector(*scatra_field()->discretization()->dof_row_map(0), true);
   scaincnpdiff->Update(1.0, *scaincnp_, (-1.0), *scaincnpold_, 0.0);
 
   double scaincnpdiffnorm = 0.0;

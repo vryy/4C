@@ -50,33 +50,33 @@ STI::Partitioned::Partitioned(const Epetra_Comm& comm,  //! communicator
     case Inpar::STI::CouplingType::twoway_thermotoscatra_aitken:
     {
       // initialize increment vectors
-      sca_tra_field()->phinp_inc() =
-          Core::LinAlg::CreateVector(*sca_tra_field()->discretization()->dof_row_map(), true);
+      scatra_field()->phinp_inc() =
+          Core::LinAlg::CreateVector(*scatra_field()->discretization()->dof_row_map(), true);
       thermo_field()->phinp_inc() =
           Core::LinAlg::CreateVector(*thermo_field()->discretization()->dof_row_map(), true);
 
       // initialize old increment vectors
       if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo_aitken or
           couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit)
-        sca_tra_field()->phinp_inc_old() =
-            Core::LinAlg::CreateVector(*sca_tra_field()->discretization()->dof_row_map(), true);
+        scatra_field()->phinp_inc_old() =
+            Core::LinAlg::CreateVector(*scatra_field()->discretization()->dof_row_map(), true);
       else if (couplingtype_ == Inpar::STI::CouplingType::twoway_thermotoscatra_aitken)
         thermo_field()->phinp_inc_old() =
             Core::LinAlg::CreateVector(*thermo_field()->discretization()->dof_row_map(), true);
 
       // initialize relaxation parameter
       if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo)
-        sca_tra_field()->omega().resize(1, stidyn.sublist("PARTITIONED").get<double>("OMEGA"));
+        scatra_field()->omega().resize(1, stidyn.sublist("PARTITIONED").get<double>("OMEGA"));
       else if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo_aitken)
-        sca_tra_field()->omega().resize(1, 1.);
+        scatra_field()->omega().resize(1, 1.);
       else if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit)
-        sca_tra_field()->omega().resize(sca_tra_field()->num_dof_per_node(), 1.);
+        scatra_field()->omega().resize(scatra_field()->num_dof_per_node(), 1.);
       else if (couplingtype_ == Inpar::STI::CouplingType::twoway_thermotoscatra)
         thermo_field()->omega().resize(1, stidyn.sublist("PARTITIONED").get<double>("OMEGA"));
       else if (couplingtype_ == Inpar::STI::CouplingType::twoway_thermotoscatra_aitken)
         thermo_field()->omega().resize(1, 1.);
       else
-        thermo_field()->omega().resize(sca_tra_field()->num_dof_per_node(), 1.);
+        thermo_field()->omega().resize(scatra_field()->num_dof_per_node(), 1.);
 
       break;
     }
@@ -102,8 +102,8 @@ bool STI::Partitioned::exit_outer_coupling() const
 
   // compute vector norms
   double L2_scatra(0.), L2_scatra_inc(0.), L2_thermo(0.), L2_thermo_inc(0.);
-  sca_tra_field()->phinp()->Norm2(&L2_scatra);
-  sca_tra_field()->phinp_inc()->Norm2(&L2_scatra_inc);
+  scatra_field()->phinp()->Norm2(&L2_scatra);
+  scatra_field()->phinp_inc()->Norm2(&L2_scatra_inc);
   thermo_field()->phinp()->Norm2(&L2_thermo);
   thermo_field()->phinp_inc()->Norm2(&L2_thermo_inc);
   if (L2_scatra < 1.e-10) L2_scatra = 1.;
@@ -205,10 +205,10 @@ void STI::Partitioned::solve_one_way() const
       transfer_thermo_to_scatra(thermo_field()->phiafnp());
 
       // solve scatra field
-      sca_tra_field()->solve();
+      scatra_field()->solve();
 
       // pass scatra degrees of freedom to thermo discretization
-      transfer_scatra_to_thermo(sca_tra_field()->phiafnp());
+      transfer_scatra_to_thermo(scatra_field()->phiafnp());
 
       // solve thermo field
       thermo_field()->solve();
@@ -219,7 +219,7 @@ void STI::Partitioned::solve_one_way() const
     case Inpar::STI::CouplingType::oneway_thermotoscatra:
     {
       // pass scatra degrees of freedom to thermo discretization
-      transfer_scatra_to_thermo(sca_tra_field()->phiafnp());
+      transfer_scatra_to_thermo(scatra_field()->phiafnp());
 
       // solve thermo field
       thermo_field()->solve();
@@ -228,7 +228,7 @@ void STI::Partitioned::solve_one_way() const
       transfer_thermo_to_scatra(thermo_field()->phiafnp());
 
       // solve scatra field
-      sca_tra_field()->solve();
+      scatra_field()->solve();
 
       break;
     }
@@ -258,7 +258,7 @@ void STI::Partitioned::solve_two_way()
     {
       // initialize relaxed scatra state vector
       const Teuchos::RCP<Epetra_Vector> scatra_relaxed =
-          Teuchos::rcp(new Epetra_Vector(*sca_tra_field()->phiafnp()));
+          Teuchos::rcp(new Epetra_Vector(*scatra_field()->phiafnp()));
 
       // begin outer iteration loop
       while (true)
@@ -284,14 +284,14 @@ void STI::Partitioned::solve_two_way()
         transfer_thermo_to_scatra(thermo_field()->phiafnp());
 
         // store current scatra state vector
-        if (sca_tra_field()->phinp_inc()->Update(1., *scatra_relaxed, 0.))
+        if (scatra_field()->phinp_inc()->Update(1., *scatra_relaxed, 0.))
           FOUR_C_THROW("Update failed!");
 
         // solve scatra field
-        sca_tra_field()->solve();
+        scatra_field()->solve();
 
         // compute increment of scatra state vector
-        if (sca_tra_field()->phinp_inc()->Update(1., *sca_tra_field()->phiafnp(), -1.))
+        if (scatra_field()->phinp_inc()->Update(1., *scatra_field()->phiafnp(), -1.))
           FOUR_C_THROW("Update failed!");
 
         // convergence check
@@ -300,8 +300,7 @@ void STI::Partitioned::solve_two_way()
         // perform static relaxation
         if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo)
         {
-          if (scatra_relaxed->Update(
-                  sca_tra_field()->omega()[0], *sca_tra_field()->phinp_inc(), 1.))
+          if (scatra_relaxed->Update(scatra_field()->omega()[0], *scatra_field()->phinp_inc(), 1.))
             FOUR_C_THROW("Update failed!");
         }
 
@@ -309,8 +308,8 @@ void STI::Partitioned::solve_two_way()
         else
         {
           // compute difference between current and previous increments of scatra state vector
-          Epetra_Vector scatra_inc_diff(*sca_tra_field()->phinp_inc());
-          if (scatra_inc_diff.Update(-1., *sca_tra_field()->phinp_inc_old(), 1.))
+          Epetra_Vector scatra_inc_diff(*scatra_field()->phinp_inc());
+          if (scatra_inc_diff.Update(-1., *scatra_field()->phinp_inc_old(), 1.))
             FOUR_C_THROW("Update failed!");
 
           if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo_aitken)
@@ -323,38 +322,38 @@ void STI::Partitioned::solve_two_way()
             // compute dot product between increment of scatra state vector and difference between
             // current and previous increments of scatra state vector
             double scatra_inc_dot_scatra_inc_diff(0.);
-            if (scatra_inc_diff.Dot(*sca_tra_field()->phinp_inc(), &scatra_inc_dot_scatra_inc_diff))
+            if (scatra_inc_diff.Dot(*scatra_field()->phinp_inc(), &scatra_inc_dot_scatra_inc_diff))
               FOUR_C_THROW("Couldn't compute dot product!");
 
             // compute Aitken relaxation factor
             if (iter_ > 1 and scatra_inc_diff_L2 > 1.e-12)
-              sca_tra_field()->omega()[0] *=
+              scatra_field()->omega()[0] *=
                   1 - scatra_inc_dot_scatra_inc_diff / (scatra_inc_diff_L2 * scatra_inc_diff_L2);
 
             // restrict Aitken relaxation factor if necessary
-            if (omegamax_ > 0. and sca_tra_field()->omega()[0] > omegamax_)
-              sca_tra_field()->omega()[0] = omegamax_;
+            if (omegamax_ > 0. and scatra_field()->omega()[0] > omegamax_)
+              scatra_field()->omega()[0] = omegamax_;
 
             // perform Aitken relaxation
             if (scatra_relaxed->Update(
-                    sca_tra_field()->omega()[0], *sca_tra_field()->phinp_inc(), 1.))
+                    scatra_field()->omega()[0], *scatra_field()->phinp_inc(), 1.))
               FOUR_C_THROW("Update failed!");
           }
 
           else
           {
             // safety check
-            if (sca_tra_field()->splitter() == Teuchos::null)
+            if (scatra_field()->splitter() == Teuchos::null)
               FOUR_C_THROW("Map extractor was not initialized!");
 
             // loop over all degrees of freedom
-            for (int idof = 0; idof < sca_tra_field()->splitter()->num_maps(); ++idof)
+            for (int idof = 0; idof < scatra_field()->splitter()->num_maps(); ++idof)
             {
               // extract subvectors associated with current degree of freedom
               const Teuchos::RCP<const Epetra_Vector> scatra_inc_dof =
-                  sca_tra_field()->splitter()->extract_vector(*sca_tra_field()->phinp_inc(), idof);
+                  scatra_field()->splitter()->extract_vector(*scatra_field()->phinp_inc(), idof);
               const Teuchos::RCP<const Epetra_Vector> scatra_inc_diff_dof =
-                  sca_tra_field()->splitter()->extract_vector(scatra_inc_diff, idof);
+                  scatra_field()->splitter()->extract_vector(scatra_inc_diff, idof);
 
               // compute L2 norm of difference between current and previous increments of current
               // degree of freedom
@@ -369,21 +368,21 @@ void STI::Partitioned::solve_two_way()
 
               // compute Aitken relaxation factor for current degree of freedom
               if (iter_ > 1 and scatra_inc_diff_L2 > 1.e-12)
-                sca_tra_field()->omega()[idof] *=
+                scatra_field()->omega()[idof] *=
                     1 - scatra_inc_dot_scatra_inc_diff / (scatra_inc_diff_L2 * scatra_inc_diff_L2);
 
               // restrict Aitken relaxation factor if necessary
-              if (omegamax_ > 0. and sca_tra_field()->omega()[idof] > omegamax_)
-                sca_tra_field()->omega()[idof] = omegamax_;
+              if (omegamax_ > 0. and scatra_field()->omega()[idof] > omegamax_)
+                scatra_field()->omega()[idof] = omegamax_;
 
               // perform Aitken relaxation for current degree of freedom
-              sca_tra_field()->splitter()->add_vector(
-                  *scatra_inc_dof, idof, *scatra_relaxed, sca_tra_field()->omega()[idof]);
+              scatra_field()->splitter()->add_vector(
+                  *scatra_inc_dof, idof, *scatra_relaxed, scatra_field()->omega()[idof]);
             }
           }
 
           // update increment of scatra state vector
-          if (sca_tra_field()->phinp_inc_old()->Update(1., *sca_tra_field()->phinp_inc(), 0.))
+          if (scatra_field()->phinp_inc_old()->Update(1., *scatra_field()->phinp_inc(), 0.))
             FOUR_C_THROW("Update failed!");
         }
       }
@@ -408,18 +407,18 @@ void STI::Partitioned::solve_two_way()
         transfer_thermo_to_scatra(thermo_relaxed);
 
         // store current scatra state vector
-        if (sca_tra_field()->phinp_inc()->Update(1., *sca_tra_field()->phiafnp(), 0.))
+        if (scatra_field()->phinp_inc()->Update(1., *scatra_field()->phiafnp(), 0.))
           FOUR_C_THROW("Update failed!");
 
         // solve scatra field
-        sca_tra_field()->solve();
+        scatra_field()->solve();
 
         // compute increment of scatra state vector
-        if (sca_tra_field()->phinp_inc()->Update(1., *sca_tra_field()->phiafnp(), -1.))
+        if (scatra_field()->phinp_inc()->Update(1., *scatra_field()->phiafnp(), -1.))
           FOUR_C_THROW("Update failed!");
 
         // pass scatra degrees of freedom to thermo discretization
-        transfer_scatra_to_thermo(sca_tra_field()->phiafnp());
+        transfer_scatra_to_thermo(scatra_field()->phiafnp());
 
         // store current thermo state vector
         if (thermo_field()->phinp_inc()->Update(1., *thermo_relaxed, 0.))

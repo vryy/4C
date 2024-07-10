@@ -61,7 +61,7 @@ namespace ElCh
     void solve_fluid_ale();
 
     /// solve transport equations for current time step
-    void solve_sca_tra();
+    void solve_scatra();
 
     /// compute interface displacement and velocity
     void compute_interface_vectors(

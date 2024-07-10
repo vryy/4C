@@ -1037,7 +1037,7 @@ void FLD::TurbulenceStatisticsGeneralMean::read_old_statistics(
 //      Read previous scatra statistics from a file (for restart)
 //
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsGeneralMean::read_old_statistics_sca_tra(
+void FLD::TurbulenceStatisticsGeneralMean::read_old_statistics_scatra(
     Core::IO::DiscretizationReader& input)
 {
   if (withscatra_)
@@ -1045,7 +1045,7 @@ void FLD::TurbulenceStatisticsGeneralMean::read_old_statistics_sca_tra(
     // read previous averaged vector. That's all
     input.read_vector(prev_avg_scatra_, "averaged_phinp");
   }
-}  // FLD::TurbulenceStatisticsGeneralMean::read_old_statistics_sca_tra
+}  // FLD::TurbulenceStatisticsGeneralMean::read_old_statistics_scatra
 
 
 //----------------------------------------------------------------------
@@ -1268,7 +1268,7 @@ void FLD::TurbulenceStatisticsGeneralMean::redistribute(
 Add results from scalar transport field solver to statistics
 
 ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsGeneralMean::add_sca_tra_results(
+void FLD::TurbulenceStatisticsGeneralMean::add_scatra_results(
     Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp)
 {
   withscatra_ = true;  // now it is clear: we have scatra results as well!
@@ -1285,7 +1285,7 @@ void FLD::TurbulenceStatisticsGeneralMean::add_sca_tra_results(
   Write (dump) the scatra-specific mean field to the result file
 
 ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsGeneralMean::do_output_for_sca_tra(
+void FLD::TurbulenceStatisticsGeneralMean::do_output_for_scatra(
     Core::IO::DiscretizationWriter& output, int step)
 {
   if (withscatra_)

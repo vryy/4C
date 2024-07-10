@@ -115,7 +115,7 @@ namespace SSI
     }
 
     //! Map exctractor for dofs in this kinetics condition
-    Teuchos::RCP<Core::LinAlg::MapExtractor> sca_tra_map_extractor() const
+    Teuchos::RCP<Core::LinAlg::MapExtractor> scatra_map_extractor() const
     {
       return scatra_map_extractor_;
     }
@@ -162,12 +162,12 @@ namespace SSI
 
     //! call complete on system matrices and coupling matrices
     //@{
-    void complete_matrix_manifold_sca_tra();
+    void complete_matrix_manifold_scatra();
     void complete_matrix_manifold_structure();
-    void complete_matrix_sca_tra_manifold();
-    void complete_matrix_sca_tra_structure();
+    void complete_matrix_scatra_manifold();
+    void complete_matrix_scatra_structure();
     void complete_system_matrix_manifold();
-    void complete_system_matrix_sca_tra();
+    void complete_system_matrix_scatra();
     //@}
 
     //! write inflow fluxes to csv file
@@ -177,12 +177,12 @@ namespace SSI
     void evaluate();
 
     //! Evaluate inflow into manifold field from coupling with scatra field
-    void evaluate_sca_tra_manifold_inflow();
+    void evaluate_scatra_manifold_inflow();
 
     //! get all RHS
     //@{
     Teuchos::RCP<Epetra_Vector> rhs_manifold() { return rhs_manifold_; }
-    Teuchos::RCP<Epetra_Vector> rhs_sca_tra() { return rhs_scatra_; }
+    Teuchos::RCP<Epetra_Vector> rhs_scatra() { return rhs_scatra_; }
     //@}
 
     //! get all matrices
@@ -191,7 +191,7 @@ namespace SSI
     {
       return systemmatrix_manifold_;
     }
-    Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix_sca_tra()
+    Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix_scatra()
     {
       return systemmatrix_scatra_;
     }
@@ -200,7 +200,7 @@ namespace SSI
     {
       return matrix_manifold_scatra_;
     }
-    Teuchos::RCP<Core::LinAlg::SparseOperator> matrix_sca_tra_manifold()
+    Teuchos::RCP<Core::LinAlg::SparseOperator> matrix_scatra_manifold()
     {
       return matrix_scatra_manifold_;
     }
@@ -208,7 +208,7 @@ namespace SSI
     {
       return matrix_manifold_structure_;
     }
-    Teuchos::RCP<Core::LinAlg::SparseOperator> matrix_sca_tra_structure()
+    Teuchos::RCP<Core::LinAlg::SparseOperator> matrix_scatra_structure()
     {
       return matrix_scatra_structure_;
     }
@@ -218,7 +218,7 @@ namespace SSI
     void output();
 
     //! return all scatra-scatra manifold coupling operators
-    std::vector<Teuchos::RCP<SSI::ManifoldScaTraCoupling>>& sca_tra_manifold_couplings()
+    std::vector<Teuchos::RCP<SSI::ManifoldScaTraCoupling>>& scatra_manifold_couplings()
     {
       return scatra_manifold_couplings_;
     }
@@ -228,18 +228,18 @@ namespace SSI
     void add_condition_contribution();
 
     //! Copy and scale (-1.0) to manifold side
-    void copy_sca_tra_sca_tra_manifold_side(
+    void copy_scatra_scatra_manifold_side(
         Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! Evaluate flux and linearizations on bulk side
     void evaluate_bulk_side(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! Evaluate integral on scatra manifold over 1.0
-    void evaluate_sca_tra_manifold_domain_integral(
+    void evaluate_scatra_manifold_domain_integral(
         Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! Evaluate integral on scatra manifold over positive fluxes
-    void evaluate_sca_tra_manifold_inflow_integral(
+    void evaluate_scatra_manifold_inflow_integral(
         Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! prepare evaluation of coupling condition: set elemental data

@@ -1450,7 +1450,7 @@ void ScaTra::TimIntHDG::assemble_rhs()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::TimIntHDG::create_sca_tra_field_test()
+Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::TimIntHDG::create_scatra_field_test()
 {
   return Teuchos::rcp(new ScaTra::HDGResultTest(Teuchos::rcp(this, false)));
 }

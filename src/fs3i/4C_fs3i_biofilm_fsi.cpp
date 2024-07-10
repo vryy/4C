@@ -224,9 +224,9 @@ void FS3I::BiofilmFSI::setup()
   struct_growth_disp_ = ale_to_struct_field(ale_->write_access_dispnp());
   fluid_growth_disp_ = ale_to_fluid_field(fsi_->ale_field()->write_access_dispnp());
   scatra_struct_growth_disp_ = Teuchos::rcp(new Epetra_MultiVector(
-      *(scatravec_[1]->sca_tra_field()->discretization())->node_row_map(), 3, true));
+      *(scatravec_[1]->scatra_field()->discretization())->node_row_map(), 3, true));
   scatra_fluid_growth_disp_ = Teuchos::rcp(new Epetra_MultiVector(
-      *(scatravec_[0]->sca_tra_field()->discretization())->node_row_map(), 3, true));
+      *(scatravec_[0]->scatra_field()->discretization())->node_row_map(), 3, true));
 
   idispn_->PutScalar(0.0);
   idispnp_->PutScalar(0.0);
@@ -421,7 +421,7 @@ void FS3I::BiofilmFSI::inner_timeloop()
     // calculation of the flux at the interface based on normal influx values before time shift of
     // results is performed in Update
     Teuchos::RCP<Epetra_MultiVector> strufluxn =
-        scatravec_[1]->sca_tra_field()->calc_flux_at_boundary(false);
+        scatravec_[1]->scatra_field()->calc_flux_at_boundary(false);
 
     update_scatra_fields();
 
@@ -776,7 +776,7 @@ void FS3I::BiofilmFSI::fluid_ale_solve()
 
   // change nodes reference position also for scatra fluid field
   Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[0];
-  Teuchos::RCP<Core::FE::Discretization> scatradis = scatra->sca_tra_field()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> scatradis = scatra->scatra_field()->discretization();
   FS3I::BioFilm::UTILS::ScatraChangeConfig(scatradis, fluiddis, fluiddisp);
 
   // set the total displacement due to growth for output reasons
@@ -785,7 +785,7 @@ void FS3I::BiofilmFSI::fluid_ale_solve()
   fsi_->fluid_field()->set_fld_gr_disp(fluid_growth_disp_);
   // fluid scatra
   vec_to_scatravec(scatradis, fluid_growth_disp_, scatra_fluid_growth_disp_);
-  scatra->sca_tra_field()->set_sc_fld_gr_disp(scatra_fluid_growth_disp_);
+  scatra->scatra_field()->set_sc_fld_gr_disp(scatra_fluid_growth_disp_);
 
   // computation of fluid solution
   // fluid_->Solve();
@@ -823,7 +823,7 @@ void FS3I::BiofilmFSI::struct_ale_solve()
   // change nodes reference position also for scatra structure field
   Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> struscatra = scatravec_[1];
   Teuchos::RCP<Core::FE::Discretization> struscatradis =
-      struscatra->sca_tra_field()->discretization();
+      struscatra->scatra_field()->discretization();
   FS3I::BioFilm::UTILS::ScatraChangeConfig(struscatradis, structdis, structdisp);
 
   // set the total displacement due to growth for output reasons
@@ -832,7 +832,7 @@ void FS3I::BiofilmFSI::struct_ale_solve()
   fsi_->structure_field()->set_str_gr_disp(struct_growth_disp_);
   // structure scatra
   vec_to_scatravec(struscatradis, struct_growth_disp_, scatra_struct_growth_disp_);
-  struscatra->sca_tra_field()->set_sc_str_gr_disp(scatra_struct_growth_disp_);
+  struscatra->scatra_field()->set_sc_str_gr_disp(scatra_struct_growth_disp_);
 
   // computation of structure solution
   // structure_->Solve();
@@ -931,7 +931,7 @@ void FS3I::BiofilmFSI::struct_gmsh_output()
       fsi_->structure_field()->discretization();
   const Teuchos::RCP<Core::FE::Discretization> structaledis = ale_->write_access_discretization();
   Teuchos::RCP<Core::FE::Discretization> struscatradis =
-      scatravec_[1]->sca_tra_field()->discretization();
+      scatravec_[1]->scatra_field()->discretization();
 
   const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("struct",
       structdis->writer()->output()->file_name(), step_bio_, 701, false,
@@ -958,7 +958,7 @@ void FS3I::BiofilmFSI::struct_gmsh_output()
     gmshfilecontent << "};" << std::endl;
   }
 
-  Teuchos::RCP<const Epetra_Vector> structphi = scatravec_[1]->sca_tra_field()->phinp();
+  Teuchos::RCP<const Epetra_Vector> structphi = scatravec_[1]->scatra_field()->phinp();
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "
@@ -981,7 +981,7 @@ void FS3I::BiofilmFSI::fluid_gmsh_output()
   const Teuchos::RCP<Core::FE::Discretization> fluidaledis =
       fsi_->ale_field()->write_access_discretization();
   Teuchos::RCP<Core::FE::Discretization> fluidscatradis =
-      scatravec_[0]->sca_tra_field()->discretization();
+      scatravec_[0]->scatra_field()->discretization();
 
   const std::string filenamefluid = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("fluid",
       fluiddis->writer()->output()->file_name(), step_bio_, 701, false,
@@ -1008,7 +1008,7 @@ void FS3I::BiofilmFSI::fluid_gmsh_output()
     gmshfilecontent << "};" << std::endl;
   }
 
-  Teuchos::RCP<Epetra_Vector> fluidphi = scatravec_[0]->sca_tra_field()->phinp();
+  Teuchos::RCP<Epetra_Vector> fluidphi = scatravec_[0]->scatra_field()->phinp();
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "

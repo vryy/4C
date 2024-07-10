@@ -110,10 +110,10 @@ namespace PoroElastScaTra
     };
 
     //! return pointer to scalar transport problem
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> sca_tra_field() { return scatra_->sca_tra_field(); };
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_field() { return scatra_->scatra_field(); };
 
     //! return pointer to scalar problem adapter base class
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> sca_tra_field_base() { return scatra_; };
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_field_base() { return scatra_; };
 
     //! setup solver (for monolithic only)
     virtual bool setup_solver() { return true; };

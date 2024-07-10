@@ -108,7 +108,7 @@ namespace Discret
       //! displacement
       //! @param[out] dN_dx               derivative of shape functions
       //! @param[out] nodal_concentration nodal concentrations
-      void prep_calc_internal_force_stiff_tot_lag_sca_tra(
+      void prep_calc_internal_force_stiff_tot_lag_scatra(
           const std::map<std::string, std::vector<double>>& ele_state,
           Core::LinAlg::Matrix<6, 1>& curr_nodal_coords,
           Core::LinAlg::Matrix<6, 6>& dcurr_nodal_coords_du, Core::LinAlg::Matrix<6, 1>& dN_dx,

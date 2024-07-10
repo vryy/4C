@@ -78,7 +78,7 @@ void SSI::ContactStrategyBlock::apply_contact_to_scatra_scatra(
       nitsche_strategy_ssi()
           ->get_matrix_block_ptr(CONTACT::MatBlockType::scatra_scatra)
           ->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *ssi_maps()->block_map_sca_tra(), *ssi_maps()->block_map_sca_tra());
+              *ssi_maps()->block_map_scatra(), *ssi_maps()->block_map_scatra());
   scatra_scatra_blockmatrix->complete();
 
   scatra_scatra_matrix_block->add(*scatra_scatra_blockmatrix, false, 1.0, 1.0);
@@ -112,7 +112,7 @@ void SSI::ContactStrategyBlock::apply_contact_to_scatra_structure(
       nitsche_strategy_ssi()
           ->get_matrix_block_ptr(CONTACT::MatBlockType::scatra_displ)
           ->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *ssi_maps()->block_map_structure(), *ssi_maps()->block_map_sca_tra());
+              *ssi_maps()->block_map_structure(), *ssi_maps()->block_map_scatra());
   scatra_struct_blockmatrix->complete();
 
   scatra_structure_matrix_block->add(*scatra_struct_blockmatrix, false, 1.0, 1.0);
@@ -147,7 +147,7 @@ void SSI::ContactStrategyBlock::apply_contact_to_structure_scatra(
       nitsche_strategy_ssi()
           ->get_matrix_block_ptr(CONTACT::MatBlockType::displ_scatra)
           ->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *ssi_maps()->block_map_sca_tra(), *ssi_maps()->block_map_structure());
+              *ssi_maps()->block_map_scatra(), *ssi_maps()->block_map_structure());
   struct_scatra_blockmatrix->complete();
 
   structure_scatra_matrix_block->add(*struct_scatra_blockmatrix, false, 1.0, 1.0);

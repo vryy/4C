@@ -129,9 +129,9 @@ void FS3I::ACFSI::init()
     FOUR_C_THROW("Your structure time step does not match!");
   if (not is_realtive_equal_to(dt_, fsiperssisteps * fsi_->ale_field()->dt(), 1.0))
     FOUR_C_THROW("Your ale time step does not match!");
-  if (not is_realtive_equal_to(dt_, scatravec_[0]->sca_tra_field()->dt(), 1.0))
+  if (not is_realtive_equal_to(dt_, scatravec_[0]->scatra_field()->dt(), 1.0))
     FOUR_C_THROW("Your fluid scatra time step does not match!");
-  if (not is_realtive_equal_to(dt_, scatravec_[1]->sca_tra_field()->dt(), 1.0))
+  if (not is_realtive_equal_to(dt_, scatravec_[1]->scatra_field()->dt(), 1.0))
     FOUR_C_THROW("Your structure scatra time step does not match!");
 
   if (not(Inpar::FLUID::wss_standard ==
@@ -151,14 +151,14 @@ void FS3I::ACFSI::setup()
   FS3I::PartFS3I::setup();
 
   meanmanager_ = Teuchos::rcp(new FS3I::MeanManager(*fsi_->fluid_field()->dof_row_map(0),
-      *scatravec_[0]->sca_tra_field()->dof_row_map(), *fsi_->fluid_field()->pressure_row_map()));
+      *scatravec_[0]->scatra_field()->dof_row_map(), *fsi_->fluid_field()->pressure_row_map()));
 
   structureincrement_ = Core::LinAlg::CreateVector(*fsi_->structure_field()->dof_row_map(0), true);
   fluidincrement_ = Core::LinAlg::CreateVector(*fsi_->fluid_field()->dof_row_map(0), true);
   aleincrement_ = Core::LinAlg::CreateVector(*fsi_->ale_field()->dof_row_map(), true);
-  fluidphinp_lp_ = Core::LinAlg::CreateVector(*scatravec_[0]->sca_tra_field()->dof_row_map(), true);
+  fluidphinp_lp_ = Core::LinAlg::CreateVector(*scatravec_[0]->scatra_field()->dof_row_map(), true);
   structurephinp_blts_ =
-      Core::LinAlg::CreateVector(*scatravec_[1]->sca_tra_field()->dof_row_map(), true);
+      Core::LinAlg::CreateVector(*scatravec_[1]->scatra_field()->dof_row_map(), true);
   wall_shear_stress_lp_ = Core::LinAlg::CreateVector(*fsi_->fluid_field()->dof_row_map(0), true);
 
   extractjthstructscalar_ = build_map_extractor();
@@ -260,8 +260,8 @@ void FS3I::ACFSI::timeloop()
       Core::UTILS::IntegralValue<int>(
           Global::Problem::instance()->f_s3_i_dynamic_params(), "RESTART_FROM_PART_FSI"))
   {
-    scatravec_[0]->sca_tra_field()->prepare_first_time_step();
-    scatravec_[1]->sca_tra_field()->prepare_first_time_step();
+    scatravec_[0]->scatra_field()->prepare_first_time_step();
+    scatravec_[1]->scatra_field()->prepare_first_time_step();
   }
 
   // output of initial state
@@ -352,7 +352,7 @@ void FS3I::ACFSI::small_time_scale_prepare_time_step()
   // SetFSISolution();
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
-    scatravec_[i]->sca_tra_field()->prepare_time_step();
+    scatravec_[i]->scatra_field()->prepare_time_step();
   }
 }
 
@@ -572,7 +572,7 @@ void FS3I::ACFSI::is_scatra_periodic()
   const double fluid_scatra_rel_tol =
       Global::Problem::instance()->f_s3_i_dynamic_params().sublist("AC").get<double>(
           "FLUID_SCATRA_REL_TOL");
-  const int numscal = scatravec_[0]->sca_tra_field()->num_scal();  // numscal of fluid scatra field
+  const int numscal = scatravec_[0]->scatra_field()->num_scal();  // numscal of fluid scatra field
 
   // we test all scalars individually
   for (int i = 0; i < numscal; i++)
@@ -605,7 +605,7 @@ void FS3I::ACFSI::is_scatra_periodic()
     // calculate the difference vector
     const Teuchos::RCP<Epetra_Vector> ith_phi_diff_bar_boundary =
         extractjthstructscalar_[i]->extract_cond_vector(
-            Core::LinAlg::CreateVector(*scatravec_[1]->sca_tra_field()->dof_row_map(0), true));
+            Core::LinAlg::CreateVector(*scatravec_[1]->scatra_field()->dof_row_map(0), true));
     ith_phi_diff_bar_boundary->Update(
         1.0, *ith_phinp_bar_boundary_on_struct, -1.0, *ith_phin_bar_boundary_on_struct, 0.0);
 
@@ -913,7 +913,7 @@ void FS3I::ACFSI::small_time_scale_do_scatra_step()
 void FS3I::ACFSI::small_time_scale_update_and_output()
 {
   // Update mean manager
-  meanmanager_->add_value("phi", scatravec_[0]->sca_tra_field()->phinp(), dt_);
+  meanmanager_->add_value("phi", scatravec_[0]->scatra_field()->phinp(), dt_);
   meanmanager_->add_value(
       "pressure", fsi_->fluid_field()->extract_pressure_part(fsi_->fluid_field()->velnp()), dt_);
   if (not fsiisperiodic_)
@@ -1018,9 +1018,9 @@ bool FS3I::ACFSI::scatra_convergence_check(const int itnum)
   // set up vector of absolute concentrations
   Teuchos::RCP<Epetra_Vector> con = Teuchos::rcp(new Epetra_Vector(scatraincrement_->Map()));
   Teuchos::RCP<const Epetra_Vector> scatra1 =
-      scatravec_[0]->sca_tra_field()->phinp();  // fluidscatra
+      scatravec_[0]->scatra_field()->phinp();  // fluidscatra
   Teuchos::RCP<const Epetra_Vector> scatra2 =
-      scatravec_[1]->sca_tra_field()->phinp();  // structurescatra
+      scatravec_[1]->scatra_field()->phinp();  // structurescatra
   setup_coupled_scatra_vector(con, scatra1, scatra2);
 
   double connorm(0.0);
@@ -1098,9 +1098,9 @@ bool FS3I::ACFSI::part_fs3i_convergence_ckeck(const int itnum)
   // set up vector of absolute concentrations
   Teuchos::RCP<Epetra_Vector> scatra = Teuchos::rcp(new Epetra_Vector(scatraincrement_->Map()));
   Teuchos::RCP<const Epetra_Vector> scatra1 =
-      scatravec_[0]->sca_tra_field()->phinp();  // fluidscatra
+      scatravec_[0]->scatra_field()->phinp();  // fluidscatra
   Teuchos::RCP<const Epetra_Vector> scatra2 =
-      scatravec_[1]->sca_tra_field()->phinp();  // structurescatra
+      scatravec_[1]->scatra_field()->phinp();  // structurescatra
   setup_coupled_scatra_vector(scatra, scatra1, scatra2);
 
   // norms of solution vectors
@@ -1183,8 +1183,8 @@ void FS3I::ACFSI::check_if_times_and_steps_and_dts_match()
   const double structuretime = fsi_->structure_field()->time();
   const double aletime = fsi_->ale_field()->time();
   const double fsitime = fsi_->time();
-  const double fluidscatratime = scatravec_[0]->sca_tra_field()->time();
-  const double structurescatratime = scatravec_[1]->sca_tra_field()->time();
+  const double fluidscatratime = scatravec_[0]->scatra_field()->time();
+  const double structurescatratime = scatravec_[1]->scatra_field()->time();
 
   if (not is_realtive_equal_to(fluidtime, time_, time_))
     FOUR_C_THROW("Your fluid time %f does not match the fs3i time %f!", fluidtime, time_);
@@ -1206,8 +1206,8 @@ void FS3I::ACFSI::check_if_times_and_steps_and_dts_match()
   const int structurestep = fsi_->structure_field()->step();
   const int alestep = fsi_->ale_field()->step();
   const int fsistep = fsi_->step();
-  const int fluidscatrastep = scatravec_[0]->sca_tra_field()->step();
-  const int structurescatrastep = scatravec_[1]->sca_tra_field()->step();
+  const int fluidscatrastep = scatravec_[0]->scatra_field()->step();
+  const int structurescatrastep = scatravec_[1]->scatra_field()->step();
 
   if (not is_realtive_equal_to(fluidstep, step_, step_))
     FOUR_C_THROW("Your fluid step %i does not match the fs3i step %i!", fluidstep, step_);
@@ -1232,8 +1232,8 @@ void FS3I::ACFSI::check_if_times_and_steps_and_dts_match()
   const double structuredt = fsi_->structure_field()->dt() * fsiperssisteps;
   const double aledt = fsi_->ale_field()->dt() * fsiperssisteps;
   const double fsidt = fsi_->dt() * fsiperssisteps;
-  const double fluidscatradt = scatravec_[0]->sca_tra_field()->dt();
-  const double structurescatradt = scatravec_[1]->sca_tra_field()->dt();
+  const double fluidscatradt = scatravec_[0]->scatra_field()->dt();
+  const double structurescatradt = scatravec_[1]->scatra_field()->dt();
 
   if (not is_realtive_equal_to(fluiddt, dt_, 1.0))
     FOUR_C_THROW("Your fluid dt %f does not match the fs3i time %f!", fluiddt, dt_);

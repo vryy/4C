@@ -55,13 +55,13 @@ namespace CONTACT
 
    protected:
     //! access method to scatra time integration factors
-    const Discret::ELEMENTS::ScaTraEleParameterTimInt* get_sca_tra_ele_parameter_tim_int() const
+    const Discret::ELEMENTS::ScaTraEleParameterTimInt* get_scatra_ele_parameter_tim_int() const
     {
       return scatraparamstimint_;
     }
 
     //! access method to scatra-scatra coupling specific parameters
-    const Discret::ELEMENTS::ScaTraEleParameterBoundary* get_sca_tra_ele_parameter_boundary() const
+    const Discret::ELEMENTS::ScaTraEleParameterBoundary* get_scatra_ele_parameter_boundary() const
     {
       return scatraparamsboundary_;
     }
@@ -238,7 +238,7 @@ namespace CONTACT
      * @param[in] d_test_val_ds  derivative of test_val w.r.t. scalar
      */
     template <int dim>
-    void integrate_sca_tra_test(double fac, Mortar::Element& ele,
+    void integrate_scatra_test(double fac, Mortar::Element& ele,
         const Core::LinAlg::SerialDenseVector& shape_func,
         const Core::LinAlg::SerialDenseMatrix& shape_deriv,
         const std::vector<Core::Gen::Pairedvector<int, double>>& d_xi_dd, double jac,

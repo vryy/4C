@@ -237,7 +237,7 @@ namespace Immersed
     \date 05/14
 
     */
-    void evaluate_sca_tra_with_internal_communication(Teuchos::RCP<Core::FE::Discretization> dis,
+    void evaluate_scatra_with_internal_communication(Teuchos::RCP<Core::FE::Discretization> dis,
         const Teuchos::RCP<const Core::FE::Discretization> idis,
         Core::FE::AssembleStrategy* strategy, std::map<int, std::set<int>>* elementstoeval,
         Teuchos::RCP<Core::Geo::SearchTree> structsearchtree,

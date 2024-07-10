@@ -49,7 +49,7 @@ void SSI::SSIPart::init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
         "degrees of freedom!");
   }
 
-  if (is_sca_tra_manifold()) FOUR_C_THROW("Manifold not implemented for partitioned SSI");
+  if (is_scatra_manifold()) FOUR_C_THROW("Manifold not implemented for partitioned SSI");
 }
 
 /*----------------------------------------------------------------------*/
@@ -62,7 +62,7 @@ void SSI::SSIPart::setup()
   if (ssi_interface_contact() and !is_restart())
   {
     setup_contact_strategy();
-    sca_tra_field()->set_nitsche_contact_strategy(nitsche_strategy_ssi());
+    scatra_field()->set_nitsche_contact_strategy(nitsche_strategy_ssi());
   }
 }
 
@@ -89,7 +89,7 @@ void SSI::SSIPart::read_restart(int restart)
   if (ssi_interface_contact())
   {
     setup_contact_strategy();
-    sca_tra_field()->set_nitsche_contact_strategy(nitsche_strategy_ssi());
+    scatra_field()->set_nitsche_contact_strategy(nitsche_strategy_ssi());
   }
 }
 

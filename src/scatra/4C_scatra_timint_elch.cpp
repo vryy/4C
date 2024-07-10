@@ -406,7 +406,7 @@ void ScaTra::ScaTraTimIntElch::setup_conc_pot_pot_split()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElch::set_element_specific_sca_tra_parameters(
+void ScaTra::ScaTraTimIntElch::set_element_specific_scatra_parameters(
     Teuchos::ParameterList& eleparams) const
 {
   // overwrite action type
@@ -3322,7 +3322,7 @@ double ScaTra::ScaTraTimIntElch::get_current_temperature() const
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::ScaTraTimIntElch::create_sca_tra_field_test()
+Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::ScaTraTimIntElch::create_scatra_field_test()
 {
   return Teuchos::rcp(new ScaTra::ElchResultTest(Teuchos::rcp(this, false)));
 }

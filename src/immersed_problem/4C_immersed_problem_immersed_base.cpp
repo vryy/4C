@@ -365,7 +365,7 @@ void Immersed::ImmersedBase::evaluate_immersed_no_assembly(Teuchos::ParameterLis
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Immersed::ImmersedBase::evaluate_sca_tra_with_internal_communication(
+void Immersed::ImmersedBase::evaluate_scatra_with_internal_communication(
     Teuchos::RCP<Core::FE::Discretization> dis,
     const Teuchos::RCP<const Core::FE::Discretization> idis, Core::FE::AssembleStrategy* strategy,
     std::map<int, std::set<int>>* elementstoeval,

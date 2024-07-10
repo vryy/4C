@@ -72,7 +72,7 @@ void ScaTra::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
     scatratimint_->discretization()->get_condition("S2IKineticsGrowth", conditions);
 
     // collect condition specific data and store to scatra boundary parameter class
-    set_condition_specific_sca_tra_parameters(*conditions[0]);
+    set_condition_specific_scatra_parameters(*conditions[0]);
     // evaluate minimum and maximum interfacial overpotential associated with scatra-scatra
     // interface layer growth
     scatratimint_->discretization()->evaluate_condition(condparams, Teuchos::null, Teuchos::null,

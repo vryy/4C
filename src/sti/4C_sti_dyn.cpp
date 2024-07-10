@@ -165,7 +165,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
   if (restartstep) sti_algorithm->read_restart(restartstep);
 
   // provide scatra and thermo fields with velocities
-  sti_algorithm->sca_tra_field()->set_velocity_field();
+  sti_algorithm->scatra_field()->set_velocity_field();
   sti_algorithm->thermo_field()->set_velocity_field();
 
   // enter time loop and solve scatra-thermo interaction problem
@@ -180,7 +180,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
   if (Teuchos::getIntegralValue<Inpar::STI::ScaTraTimIntType>(
           problem->sti_dynamic_params(), "SCATRATIMINTTYPE") == Inpar::STI::ScaTraTimIntType::elch)
     problem->add_field_test(Teuchos::rcp<Core::UTILS::ResultTest>(new ScaTra::ElchResultTest(
-        Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntElch>(sti_algorithm->sca_tra_field()))));
+        Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntElch>(sti_algorithm->scatra_field()))));
   else
     FOUR_C_THROW(
         "Scatra-thermo interaction is currently only available for thermodynamic electrochemistry, "

@@ -94,7 +94,7 @@ void loma_dyn(int restart)
               Global::Problem::instance()->n_dim() + 1, 0, 0, true));
       if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-      scatraonly->sca_tra_field()->set_number_of_dof_set_velocity(1);
+      scatraonly->scatra_field()->set_number_of_dof_set_velocity(1);
 
       // now we can call init() on base algo
       scatraonly->init();
@@ -106,19 +106,19 @@ void loma_dyn(int restart)
       scatraonly->setup();
 
       // read restart information
-      if (restart) (scatraonly->sca_tra_field())->read_restart(restart);
+      if (restart) (scatraonly->scatra_field())->read_restart(restart);
 
       // set initial velocity field
       // note: The order read_restart() before set_velocity_field() is important here!!
       // for time-dependent velocity fields, set_velocity_field() is additionally called in each
       // prepare_time_step()-call
-      (scatraonly->sca_tra_field())->set_velocity_field();
+      (scatraonly->scatra_field())->set_velocity_field();
 
       // enter time loop to solve problem with given convective velocity field
-      (scatraonly->sca_tra_field())->time_loop();
+      (scatraonly->scatra_field())->time_loop();
 
       // perform result test if required
-      problem->add_field_test(scatraonly->create_sca_tra_field_test());
+      problem->add_field_test(scatraonly->create_scatra_field_test());
       problem->test_all(comm);
 
       break;
@@ -171,7 +171,7 @@ void loma_dyn(int restart)
       // add proxy of fluid transport degrees of freedom to scatra discretization
       if (scatradis->add_dof_set(fluiddis->get_dof_set_proxy()) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-      loma->sca_tra_field()->set_number_of_dof_set_velocity(1);
+      loma->scatra_field()->set_number_of_dof_set_velocity(1);
 
       loma->init();
 
@@ -198,7 +198,7 @@ void loma_dyn(int restart)
 
       // perform result test if required
       problem->add_field_test(loma->fluid_field()->create_field_test());
-      problem->add_field_test(loma->create_sca_tra_field_test());
+      problem->add_field_test(loma->create_scatra_field_test());
       problem->test_all(comm);
 
       break;
