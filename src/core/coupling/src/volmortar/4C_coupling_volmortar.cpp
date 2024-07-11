@@ -804,7 +804,7 @@ void Core::VolMortar::VolMortarCoupl::evaluate_elements()
     Core::Elements::Element* Aele = dis1_->l_col_element(j);
 
     std::vector<int> found = search(*Aele, SearchTreeB, CurrentDOPsB);
-    integrate3_d_ele_based_p12(*Aele, found);
+    integrate_3d_ele_based_p12(*Aele, found);
 
     // create trafo operator for quadr. modification
     if (dualquad_ != dualquad_no_mod) create_trafo_operator(*Aele, dis1_, true, donebeforea);
@@ -829,7 +829,7 @@ void Core::VolMortar::VolMortarCoupl::evaluate_elements()
     Core::Elements::Element* Bele = dis2_->l_col_element(j);
 
     std::vector<int> found = search(*Bele, SearchTreeA, CurrentDOPsA);
-    integrate3_d_ele_based_p21(*Bele, found);
+    integrate_3d_ele_based_p21(*Bele, found);
 
     // create trafo operator for quadr. modification
     if (dualquad_ != dualquad_no_mod) create_trafo_operator(*Bele, dis2_, false, donebeforeb);
@@ -887,7 +887,7 @@ void Core::VolMortar::VolMortarCoupl::evaluate_segments()
        **************************************************/
       if (dim_ == 2)
       {
-        evaluate_segments2_d(*Aele, *Bele);
+        evaluate_segments_2d(*Aele, *Bele);
       }
 
       /**************************************************
@@ -895,7 +895,7 @@ void Core::VolMortar::VolMortarCoupl::evaluate_segments()
        **************************************************/
       else if (dim_ == 3)
       {
-        evaluate_segments3_d(Aele, Bele);
+        evaluate_segments_3d(Aele, Bele);
       }
 
       /**************************************************
@@ -911,7 +911,7 @@ void Core::VolMortar::VolMortarCoupl::evaluate_segments()
 /*----------------------------------------------------------------------*
  |  Segment-based routine 2D                                 farah 04/14|
  *----------------------------------------------------------------------*/
-void Core::VolMortar::VolMortarCoupl::evaluate_segments2_d(
+void Core::VolMortar::VolMortarCoupl::evaluate_segments_2d(
     Core::Elements::Element& Aele, Core::Elements::Element& Bele)
 {
   // define polygon vertices
@@ -952,13 +952,13 @@ void Core::VolMortar::VolMortarCoupl::evaluate_segments2_d(
   cellcounter_ += (int)cells.size();
 
   // integrate cells
-  integrate2_d(Aele, Bele, cells);
+  integrate_2d(Aele, Bele, cells);
 }
 
 /*----------------------------------------------------------------------*
  |  Segment-based routine 3D                                 farah 04/14|
  *----------------------------------------------------------------------*/
-void Core::VolMortar::VolMortarCoupl::evaluate_segments3_d(
+void Core::VolMortar::VolMortarCoupl::evaluate_segments_3d(
     Core::Elements::Element* Aele, Core::Elements::Element* Bele)
 {
   // check need element-based integration over sele:
@@ -976,7 +976,7 @@ void Core::VolMortar::VolMortarCoupl::evaluate_segments3_d(
   if (integrateA)
   {
     // integrate over Aele
-    integrate3_d(*Aele, *Bele, 0);
+    integrate_3d(*Aele, *Bele, 0);
   }
   /**************************************************
    * Integrate element-based Mele                   *
@@ -984,7 +984,7 @@ void Core::VolMortar::VolMortarCoupl::evaluate_segments3_d(
   else if (integrateB)
   {
     // integrate over Bele
-    integrate3_d(*Aele, *Bele, 1);
+    integrate_3d(*Aele, *Bele, 1);
   }
   /**************************************************
    * Start Cut                                      *
@@ -1196,7 +1196,7 @@ void Core::VolMortar::VolMortarCoupl::mesh_init()
       Core::Elements::Element* Aele = dis1_->l_col_element(j);
 
       std::vector<int> found = search(*Aele, SearchTreeB, CurrentDOPsB);
-      integrate3_d_ele_based_a_dis_mesh_init(*Aele, found, dofseta, dofsetb);
+      integrate_3d_ele_based_a_dis_mesh_init(*Aele, found, dofseta, dofsetb);
     }
 
     /**************************************************
@@ -1209,7 +1209,7 @@ void Core::VolMortar::VolMortarCoupl::mesh_init()
       Core::Elements::Element* Bele = dis2_->l_col_element(j);
 
       std::vector<int> found = search(*Bele, SearchTreeA, CurrentDOPsA);
-      integrate3_d_ele_based_b_dis_mesh_init(*Bele, found, dofseta, dofsetb);
+      integrate_3d_ele_based_b_dis_mesh_init(*Bele, found, dofseta, dofsetb);
     }
 
     // complete...
@@ -1682,9 +1682,9 @@ void Core::VolMortar::VolMortarCoupl::perform_cut(
       }
       // integrate found cells - tesselation
       if (!switched_conf)
-        integrate3_d_cell(*sele, *mele, IntCells);
+        integrate_3d_cell(*sele, *mele, IntCells);
       else
-        integrate3_d_cell(*mele, *sele, IntCells);
+        integrate_3d_cell(*mele, *sele, IntCells);
 
       // count the cells and the polygons/polyhedra
       polygoncounter_ += mcells_in.size();
@@ -1725,9 +1725,9 @@ void Core::VolMortar::VolMortarCoupl::perform_cut(
 
       // start integration
       if (switched_conf)
-        integrate3_d_cell_direct_divergence(*mele, *sele, switched_conf);
+        integrate_3d_cell_direct_divergence(*mele, *sele, switched_conf);
       else
-        integrate3_d_cell_direct_divergence(*sele, *mele, switched_conf);
+        integrate_3d_cell_direct_divergence(*sele, *mele, switched_conf);
 
       polygoncounter_ += volcell_.size();
     }
@@ -2071,9 +2071,9 @@ bool Core::VolMortar::VolMortarCoupl::check_cut(
 }
 
 /*----------------------------------------------------------------------*
- |  integrate2_d Cells                                        farah 01/14|
+ |  integrate_2d Cells                                        farah 01/14|
  *----------------------------------------------------------------------*/
-void Core::VolMortar::VolMortarCoupl::integrate2_d(Core::Elements::Element& sele,
+void Core::VolMortar::VolMortarCoupl::integrate_2d(Core::Elements::Element& sele,
     Core::Elements::Element& mele, std::vector<Teuchos::RCP<Mortar::IntCell>>& cells)
 {
   //--------------------------------------------------------------------
@@ -2093,7 +2093,7 @@ void Core::VolMortar::VolMortarCoupl::integrate2_d(Core::Elements::Element& sele
           {
             static VolMortarIntegrator<Core::FE::CellType::quad4, Core::FE::CellType::quad4>
                 integrator(params());
-            integrator.integrate_cells2_d(
+            integrator.integrate_cells_2d(
                 sele, mele, cells[q], *d1_, *m12_, dis1_, dis2_, dofset12_.first, dofset12_.second);
             break;
           }
@@ -2101,7 +2101,7 @@ void Core::VolMortar::VolMortarCoupl::integrate2_d(Core::Elements::Element& sele
           {
             static VolMortarIntegrator<Core::FE::CellType::quad4, Core::FE::CellType::tri3>
                 integrator(params());
-            integrator.integrate_cells2_d(
+            integrator.integrate_cells_2d(
                 sele, mele, cells[q], *d1_, *m12_, dis1_, dis2_, dofset12_.first, dofset12_.second);
             break;
           }
@@ -2122,7 +2122,7 @@ void Core::VolMortar::VolMortarCoupl::integrate2_d(Core::Elements::Element& sele
           {
             static VolMortarIntegrator<Core::FE::CellType::tri3, Core::FE::CellType::quad4>
                 integrator(params());
-            integrator.integrate_cells2_d(
+            integrator.integrate_cells_2d(
                 sele, mele, cells[q], *d1_, *m12_, dis1_, dis2_, dofset12_.first, dofset12_.second);
             break;
           }
@@ -2130,7 +2130,7 @@ void Core::VolMortar::VolMortarCoupl::integrate2_d(Core::Elements::Element& sele
           {
             static VolMortarIntegrator<Core::FE::CellType::tri3, Core::FE::CellType::tri3>
                 integrator(params());
-            integrator.integrate_cells2_d(
+            integrator.integrate_cells_2d(
                 sele, mele, cells[q], *d1_, *m12_, dis1_, dis2_, dofset12_.first, dofset12_.second);
             break;
           }
@@ -2163,7 +2163,7 @@ void Core::VolMortar::VolMortarCoupl::integrate2_d(Core::Elements::Element& sele
           {
             static VolMortarIntegrator<Core::FE::CellType::quad4, Core::FE::CellType::quad4>
                 integrator(params());
-            integrator.integrate_cells2_d(
+            integrator.integrate_cells_2d(
                 mele, sele, cells[q], *d2_, *m21_, dis2_, dis1_, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2171,7 +2171,7 @@ void Core::VolMortar::VolMortarCoupl::integrate2_d(Core::Elements::Element& sele
           {
             static VolMortarIntegrator<Core::FE::CellType::quad4, Core::FE::CellType::tri3>
                 integrator(params());
-            integrator.integrate_cells2_d(
+            integrator.integrate_cells_2d(
                 mele, sele, cells[q], *d2_, *m21_, dis2_, dis1_, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2192,7 +2192,7 @@ void Core::VolMortar::VolMortarCoupl::integrate2_d(Core::Elements::Element& sele
           {
             static VolMortarIntegrator<Core::FE::CellType::tri3, Core::FE::CellType::quad4>
                 integrator(params());
-            integrator.integrate_cells2_d(
+            integrator.integrate_cells_2d(
                 mele, sele, cells[q], *d2_, *m21_, dis2_, dis1_, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2200,7 +2200,7 @@ void Core::VolMortar::VolMortarCoupl::integrate2_d(Core::Elements::Element& sele
           {
             static VolMortarIntegrator<Core::FE::CellType::tri3, Core::FE::CellType::tri3>
                 integrator(params());
-            integrator.integrate_cells2_d(
+            integrator.integrate_cells_2d(
                 mele, sele, cells[q], *d2_, *m21_, dis2_, dis1_, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2224,9 +2224,9 @@ void Core::VolMortar::VolMortarCoupl::integrate2_d(Core::Elements::Element& sele
 }
 
 /*----------------------------------------------------------------------*
- |  integrate3_d Cells                                        farah 01/14|
+ |  integrate_3d Cells                                        farah 01/14|
  *----------------------------------------------------------------------*/
-void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element& sele,
+void Core::VolMortar::VolMortarCoupl::integrate_3d_cell(Core::Elements::Element& sele,
     Core::Elements::Element& mele, std::vector<Teuchos::RCP<Cell>>& cells)
 {
   //--------------------------------------------------------------------
@@ -2246,7 +2246,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::hex8, Core::FE::CellType::hex8>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2255,7 +2255,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::hex8, Core::FE::CellType::hex20>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2264,7 +2264,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::hex8, Core::FE::CellType::hex27>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2273,7 +2273,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::hex8, Core::FE::CellType::tet4>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2282,7 +2282,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::hex8, Core::FE::CellType::tet10>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2291,7 +2291,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::hex8, Core::FE::CellType::pyramid5>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2314,7 +2314,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::hex20, Core::FE::CellType::hex8>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2323,7 +2323,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::hex20, Core::FE::CellType::hex20>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2332,7 +2332,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::hex20, Core::FE::CellType::hex27>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2341,7 +2341,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::hex20, Core::FE::CellType::tet4>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2350,7 +2350,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::hex20, Core::FE::CellType::tet10>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2359,7 +2359,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::hex20, Core::FE::CellType::pyramid5>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2382,7 +2382,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::hex27, Core::FE::CellType::hex8>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2391,7 +2391,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::hex27, Core::FE::CellType::hex20>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2400,7 +2400,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::hex27, Core::FE::CellType::hex27>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2409,7 +2409,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::hex27, Core::FE::CellType::tet4>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2418,7 +2418,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::hex27, Core::FE::CellType::tet10>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2427,7 +2427,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::hex27, Core::FE::CellType::pyramid5>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2450,7 +2450,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::tet4, Core::FE::CellType::hex8>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2459,7 +2459,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::tet4, Core::FE::CellType::hex20>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2468,7 +2468,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::tet4, Core::FE::CellType::hex27>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2477,7 +2477,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::tet4, Core::FE::CellType::tet4>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2486,7 +2486,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::tet4, Core::FE::CellType::tet10>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2495,7 +2495,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::tet4, Core::FE::CellType::pyramid5>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2518,7 +2518,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::tet10, Core::FE::CellType::hex8>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2527,7 +2527,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::tet10, Core::FE::CellType::hex20>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2536,7 +2536,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::tet10, Core::FE::CellType::hex27>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2545,7 +2545,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::tet10, Core::FE::CellType::tet4>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2554,7 +2554,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::tet10, Core::FE::CellType::tet10>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2563,7 +2563,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::tet10, Core::FE::CellType::pyramid5>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2586,7 +2586,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::pyramid5, Core::FE::CellType::hex8>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2595,7 +2595,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::pyramid5, Core::FE::CellType::hex20>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2604,7 +2604,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::pyramid5, Core::FE::CellType::hex27>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2613,7 +2613,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::pyramid5, Core::FE::CellType::tet4>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2622,7 +2622,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::pyramid5, Core::FE::CellType::tet10>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2631,7 +2631,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
             static VolMortarIntegrator<Core::FE::CellType::pyramid5, Core::FE::CellType::pyramid5>
                 integrator(params());
             integrator.initialize_gp(false, 0, cells[q]->shape());
-            integrator.integrate_cells3_d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
+            integrator.integrate_cells_3d(sele, mele, cells[q], *d1_, *m12_, *d2_, *m21_, dis1_,
                 dis2_, dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
             break;
           }
@@ -2654,9 +2654,9 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell(Core::Elements::Element&
 }
 
 /*----------------------------------------------------------------------*
- |  integrate3_d elebased                                     farah 04/14|
+ |  integrate_3d elebased                                     farah 04/14|
  *----------------------------------------------------------------------*/
-void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p12(
+void Core::VolMortar::VolMortarCoupl::integrate_3d_ele_based_p12(
     Core::Elements::Element& Aele, std::vector<int>& foundeles)
 {
   switch (Aele.shape())
@@ -2666,7 +2666,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p12(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::quad4> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
+      integrator.integrate_ele_based_3d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
       break;
     }
@@ -2674,7 +2674,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p12(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::quad8> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
+      integrator.integrate_ele_based_3d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
       break;
     }
@@ -2682,7 +2682,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p12(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::quad9> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
+      integrator.integrate_ele_based_3d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
       break;
     }
@@ -2690,7 +2690,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p12(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::tri3> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
+      integrator.integrate_ele_based_3d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
       break;
     }
@@ -2698,7 +2698,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p12(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::tri6> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
+      integrator.integrate_ele_based_3d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
       break;
     }
@@ -2707,7 +2707,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p12(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::hex8> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
+      integrator.integrate_ele_based_3d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
       break;
     }
@@ -2715,7 +2715,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p12(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::hex27> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
+      integrator.integrate_ele_based_3d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
       break;
     }
@@ -2723,7 +2723,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p12(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::hex20> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
+      integrator.integrate_ele_based_3d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
       break;
     }
@@ -2731,7 +2731,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p12(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::tet4> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
+      integrator.integrate_ele_based_3d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
       break;
     }
@@ -2739,7 +2739,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p12(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::tet10> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
+      integrator.integrate_ele_based_3d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
       break;
     }
@@ -2747,7 +2747,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p12(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::pyramid5> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
+      integrator.integrate_ele_based_3d(Aele, foundeles, *d1_, *m12_, dis1_, dis2_, dofset12_.first,
           dofset12_.second, p12_dofrowmap_, p12_dofcolmap_);
       break;
     }
@@ -2762,9 +2762,9 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p12(
 }
 
 /*----------------------------------------------------------------------*
- |  integrate3_d element based for projector P21              farah 04/14|
+ |  integrate_3d element based for projector P21              farah 04/14|
  *----------------------------------------------------------------------*/
-void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p21(
+void Core::VolMortar::VolMortarCoupl::integrate_3d_ele_based_p21(
     Core::Elements::Element& Bele, std::vector<int>& foundeles)
 {
   switch (Bele.shape())
@@ -2774,7 +2774,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p21(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::quad4> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
+      integrator.integrate_ele_based_3d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
       break;
     }
@@ -2782,7 +2782,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p21(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::quad8> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
+      integrator.integrate_ele_based_3d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
       break;
     }
@@ -2790,7 +2790,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p21(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::quad9> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
+      integrator.integrate_ele_based_3d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
       break;
     }
@@ -2798,7 +2798,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p21(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::tri3> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
+      integrator.integrate_ele_based_3d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
       break;
     }
@@ -2806,7 +2806,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p21(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::tri6> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
+      integrator.integrate_ele_based_3d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
       break;
     }
@@ -2815,7 +2815,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p21(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::hex8> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
+      integrator.integrate_ele_based_3d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
       break;
     }
@@ -2823,7 +2823,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p21(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::hex20> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
+      integrator.integrate_ele_based_3d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
       break;
     }
@@ -2831,7 +2831,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p21(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::hex27> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
+      integrator.integrate_ele_based_3d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
       break;
     }
@@ -2839,7 +2839,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p21(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::tet4> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
+      integrator.integrate_ele_based_3d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
       break;
     }
@@ -2847,7 +2847,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p21(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::tet10> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
+      integrator.integrate_ele_based_3d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
       break;
     }
@@ -2855,7 +2855,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p21(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::pyramid5> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
+      integrator.integrate_ele_based_3d(Bele, foundeles, *d2_, *m21_, dis2_, dis1_, dofset21_.first,
           dofset21_.second, p21_dofrowmap_, p21_dofcolmap_);
       break;
     }
@@ -2869,9 +2869,9 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_p21(
 }
 
 /*----------------------------------------------------------------------*
- |  integrate3_d elebased                                     farah 03/15|
+ |  integrate_3d elebased                                     farah 03/15|
  *----------------------------------------------------------------------*/
-void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_a_dis_mesh_init(
+void Core::VolMortar::VolMortarCoupl::integrate_3d_ele_based_a_dis_mesh_init(
     Core::Elements::Element& Aele, std::vector<int>& foundeles, int dofseta, int dofsetb)
 {
   switch (Aele.shape())
@@ -2881,7 +2881,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_a_dis_mesh_init(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::hex8> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Aele, foundeles, *dmatrix_xa_, *mmatrix_xa_, dis1_, dis2_,
+      integrator.integrate_ele_based_3d(Aele, foundeles, *dmatrix_xa_, *mmatrix_xa_, dis1_, dis2_,
           dofseta, dofsetb, p12_dofrowmap_, p12_dofcolmap_);
       break;
     }
@@ -2889,7 +2889,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_a_dis_mesh_init(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::tet4> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Aele, foundeles, *dmatrix_xa_, *mmatrix_xa_, dis1_, dis2_,
+      integrator.integrate_ele_based_3d(Aele, foundeles, *dmatrix_xa_, *mmatrix_xa_, dis1_, dis2_,
           dofseta, dofsetb, p12_dofrowmap_, p12_dofcolmap_);
       break;
     }
@@ -2897,7 +2897,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_a_dis_mesh_init(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::hex27> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Aele, foundeles, *dmatrix_xa_, *mmatrix_xa_, dis1_, dis2_,
+      integrator.integrate_ele_based_3d(Aele, foundeles, *dmatrix_xa_, *mmatrix_xa_, dis1_, dis2_,
           dofseta, dofsetb, p12_dofrowmap_, p12_dofcolmap_);
       break;
     }
@@ -2905,7 +2905,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_a_dis_mesh_init(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::hex20> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Aele, foundeles, *dmatrix_xa_, *mmatrix_xa_, dis1_, dis2_,
+      integrator.integrate_ele_based_3d(Aele, foundeles, *dmatrix_xa_, *mmatrix_xa_, dis1_, dis2_,
           dofseta, dofsetb, p12_dofrowmap_, p12_dofcolmap_);
       break;
     }
@@ -2913,7 +2913,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_a_dis_mesh_init(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::tet10> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Aele, foundeles, *dmatrix_xa_, *mmatrix_xa_, dis1_, dis2_,
+      integrator.integrate_ele_based_3d(Aele, foundeles, *dmatrix_xa_, *mmatrix_xa_, dis1_, dis2_,
           dofseta, dofsetb, p12_dofrowmap_, p12_dofcolmap_);
       break;
     }
@@ -2921,7 +2921,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_a_dis_mesh_init(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::pyramid5> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Aele, foundeles, *dmatrix_xa_, *mmatrix_xa_, dis1_, dis2_,
+      integrator.integrate_ele_based_3d(Aele, foundeles, *dmatrix_xa_, *mmatrix_xa_, dis1_, dis2_,
           dofseta, dofsetb, p12_dofrowmap_, p12_dofcolmap_);
       break;
     }
@@ -2936,9 +2936,9 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_a_dis_mesh_init(
 }
 
 /*----------------------------------------------------------------------*
- |  integrate3_d Cells                                        farah 03/15|
+ |  integrate_3d Cells                                        farah 03/15|
  *----------------------------------------------------------------------*/
-void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_b_dis_mesh_init(
+void Core::VolMortar::VolMortarCoupl::integrate_3d_ele_based_b_dis_mesh_init(
     Core::Elements::Element& Bele, std::vector<int>& foundeles, int dofsetb, int dofseta)
 {
   switch (Bele.shape())
@@ -2948,7 +2948,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_b_dis_mesh_init(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::hex8> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Bele, foundeles, *dmatrix_xb_, *mmatrix_xb_, dis2_, dis1_,
+      integrator.integrate_ele_based_3d(Bele, foundeles, *dmatrix_xb_, *mmatrix_xb_, dis2_, dis1_,
           dofseta, dofsetb, p21_dofrowmap_, p21_dofcolmap_);
       break;
     }
@@ -2956,7 +2956,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_b_dis_mesh_init(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::tet4> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Bele, foundeles, *dmatrix_xb_, *mmatrix_xb_, dis2_, dis1_,
+      integrator.integrate_ele_based_3d(Bele, foundeles, *dmatrix_xb_, *mmatrix_xb_, dis2_, dis1_,
           dofseta, dofsetb, p21_dofrowmap_, p21_dofcolmap_);
       break;
     }
@@ -2964,7 +2964,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_b_dis_mesh_init(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::hex27> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Bele, foundeles, *dmatrix_xb_, *mmatrix_xb_, dis2_, dis1_,
+      integrator.integrate_ele_based_3d(Bele, foundeles, *dmatrix_xb_, *mmatrix_xb_, dis2_, dis1_,
           dofseta, dofsetb, p21_dofrowmap_, p21_dofcolmap_);
       break;
     }
@@ -2972,7 +2972,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_b_dis_mesh_init(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::hex20> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Bele, foundeles, *dmatrix_xb_, *mmatrix_xb_, dis2_, dis1_,
+      integrator.integrate_ele_based_3d(Bele, foundeles, *dmatrix_xb_, *mmatrix_xb_, dis2_, dis1_,
           dofseta, dofsetb, p21_dofrowmap_, p21_dofcolmap_);
       break;
     }
@@ -2980,7 +2980,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_b_dis_mesh_init(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::tet10> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Bele, foundeles, *dmatrix_xb_, *mmatrix_xb_, dis2_, dis1_,
+      integrator.integrate_ele_based_3d(Bele, foundeles, *dmatrix_xb_, *mmatrix_xb_, dis2_, dis1_,
           dofseta, dofsetb, p21_dofrowmap_, p21_dofcolmap_);
       break;
     }
@@ -2988,7 +2988,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_ele_based_b_dis_mesh_init(
     {
       static VolMortarIntegratorEleBased<Core::FE::CellType::pyramid5> integrator(params());
       integrator.initialize_gp();
-      integrator.integrate_ele_based3_d(Bele, foundeles, *dmatrix_xb_, *mmatrix_xb_, dis2_, dis1_,
+      integrator.integrate_ele_based_3d(Bele, foundeles, *dmatrix_xb_, *mmatrix_xb_, dis2_, dis1_,
           dofseta, dofsetb, p21_dofrowmap_, p21_dofcolmap_);
       break;
     }
@@ -3028,9 +3028,9 @@ void Core::VolMortar::VolMortarCoupl::assemble_consistent_interpolation_p21(
 }
 
 /*----------------------------------------------------------------------*
- |  integrate3_d Cells for direct divergence approach         farah 04/14|
+ |  integrate_3d Cells for direct divergence approach         farah 04/14|
  *----------------------------------------------------------------------*/
-void Core::VolMortar::VolMortarCoupl::integrate3_d_cell_direct_divergence(
+void Core::VolMortar::VolMortarCoupl::integrate_3d_cell_direct_divergence(
     Core::Elements::Element& sele, Core::Elements::Element& mele, bool switched_conf)
 {
   if ((int)(volcell_.size()) > 1)
@@ -3064,7 +3064,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell_direct_divergence(
           {
             static VolMortarIntegrator<Core::FE::CellType::hex8, Core::FE::CellType::hex8>
                 integrator(params());
-            integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
+            integrator.integrate_cells_3d_direct_diveregence(sele, mele, *vc, intpoints,
                 switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
                 dofset12_.second, dofset21_.first, dofset21_.second);
             break;
@@ -3073,7 +3073,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell_direct_divergence(
           {
             static VolMortarIntegrator<Core::FE::CellType::hex8, Core::FE::CellType::tet4>
                 integrator(params());
-            integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
+            integrator.integrate_cells_3d_direct_diveregence(sele, mele, *vc, intpoints,
                 switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
                 dofset12_.second, dofset21_.first, dofset21_.second);
             break;
@@ -3082,7 +3082,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell_direct_divergence(
           {
             static VolMortarIntegrator<Core::FE::CellType::hex8, Core::FE::CellType::pyramid5>
                 integrator(params());
-            integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
+            integrator.integrate_cells_3d_direct_diveregence(sele, mele, *vc, intpoints,
                 switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
                 dofset12_.second, dofset21_.first, dofset21_.second);
             break;
@@ -3104,7 +3104,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell_direct_divergence(
           {
             static VolMortarIntegrator<Core::FE::CellType::tet4, Core::FE::CellType::hex8>
                 integrator(params());
-            integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
+            integrator.integrate_cells_3d_direct_diveregence(sele, mele, *vc, intpoints,
                 switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
                 dofset12_.second, dofset21_.first, dofset21_.second);
             break;
@@ -3113,7 +3113,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell_direct_divergence(
           {
             static VolMortarIntegrator<Core::FE::CellType::tet4, Core::FE::CellType::tet4>
                 integrator(params());
-            integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
+            integrator.integrate_cells_3d_direct_diveregence(sele, mele, *vc, intpoints,
                 switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
                 dofset12_.second, dofset21_.first, dofset21_.second);
             break;
@@ -3122,7 +3122,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell_direct_divergence(
           {
             static VolMortarIntegrator<Core::FE::CellType::tet4, Core::FE::CellType::pyramid5>
                 integrator(params());
-            integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
+            integrator.integrate_cells_3d_direct_diveregence(sele, mele, *vc, intpoints,
                 switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
                 dofset12_.second, dofset21_.first, dofset21_.second);
             break;
@@ -3144,7 +3144,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell_direct_divergence(
           {
             static VolMortarIntegrator<Core::FE::CellType::pyramid5, Core::FE::CellType::hex8>
                 integrator(params());
-            integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
+            integrator.integrate_cells_3d_direct_diveregence(sele, mele, *vc, intpoints,
                 switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
                 dofset12_.second, dofset21_.first, dofset21_.second);
             break;
@@ -3153,7 +3153,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell_direct_divergence(
           {
             static VolMortarIntegrator<Core::FE::CellType::pyramid5, Core::FE::CellType::tet4>
                 integrator(params());
-            integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
+            integrator.integrate_cells_3d_direct_diveregence(sele, mele, *vc, intpoints,
                 switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
                 dofset12_.second, dofset21_.first, dofset21_.second);
             break;
@@ -3162,7 +3162,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell_direct_divergence(
           {
             static VolMortarIntegrator<Core::FE::CellType::pyramid5, Core::FE::CellType::pyramid5>
                 integrator(params());
-            integrator.integrate_cells3_d_direct_diveregence(sele, mele, *vc, intpoints,
+            integrator.integrate_cells_3d_direct_diveregence(sele, mele, *vc, intpoints,
                 switched_conf, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_, dofset12_.first,
                 dofset12_.second, dofset21_.first, dofset21_.second);
             break;
@@ -3189,7 +3189,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d_cell_direct_divergence(
 /*----------------------------------------------------------------------*
  |  Integrate over A-element domain                          farah 01/14|
  *----------------------------------------------------------------------*/
-void Core::VolMortar::VolMortarCoupl::integrate3_d(
+void Core::VolMortar::VolMortarCoupl::integrate_3d(
     Core::Elements::Element& sele, Core::Elements::Element& mele, int domain)
 {
   //--------------------------------------------------------------------
@@ -3207,7 +3207,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::hex8, Core::FE::CellType::hex8> integrator(
               params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3216,7 +3216,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::hex8, Core::FE::CellType::hex20>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3225,7 +3225,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::hex8, Core::FE::CellType::hex27>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3234,7 +3234,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::hex8, Core::FE::CellType::tet4> integrator(
               params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3243,7 +3243,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::hex8, Core::FE::CellType::tet10>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3252,7 +3252,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::hex8, Core::FE::CellType::pyramid5>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3275,7 +3275,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::hex20, Core::FE::CellType::hex8>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3284,7 +3284,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::hex20, Core::FE::CellType::hex20>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3293,7 +3293,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::hex20, Core::FE::CellType::hex27>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3302,7 +3302,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::hex20, Core::FE::CellType::tet4>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3311,7 +3311,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::hex20, Core::FE::CellType::tet10>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3320,7 +3320,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::hex20, Core::FE::CellType::pyramid5>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3343,7 +3343,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::hex27, Core::FE::CellType::hex8>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3352,7 +3352,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::hex27, Core::FE::CellType::hex20>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3361,7 +3361,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::hex27, Core::FE::CellType::hex27>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3370,7 +3370,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::hex27, Core::FE::CellType::tet4>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3379,7 +3379,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::hex27, Core::FE::CellType::tet10>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3388,7 +3388,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::hex27, Core::FE::CellType::pyramid5>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3411,7 +3411,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::tet4, Core::FE::CellType::hex8> integrator(
               params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3420,7 +3420,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::tet4, Core::FE::CellType::hex20>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3429,7 +3429,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::tet4, Core::FE::CellType::hex27>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3438,7 +3438,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::tet4, Core::FE::CellType::tet4> integrator(
               params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3447,7 +3447,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::tet4, Core::FE::CellType::tet10>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3456,7 +3456,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::tet4, Core::FE::CellType::pyramid5>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3479,7 +3479,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::tet10, Core::FE::CellType::hex8>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3488,7 +3488,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::tet10, Core::FE::CellType::hex20>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3497,7 +3497,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::tet10, Core::FE::CellType::hex27>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3506,7 +3506,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::tet10, Core::FE::CellType::tet4>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3515,7 +3515,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::tet10, Core::FE::CellType::tet10>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3524,7 +3524,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::tet10, Core::FE::CellType::pyramid5>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3547,7 +3547,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::pyramid5, Core::FE::CellType::hex8>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3556,7 +3556,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::pyramid5, Core::FE::CellType::hex20>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3565,7 +3565,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::pyramid5, Core::FE::CellType::hex27>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3574,7 +3574,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::pyramid5, Core::FE::CellType::tet4>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3583,7 +3583,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::pyramid5, Core::FE::CellType::tet10>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }
@@ -3592,7 +3592,7 @@ void Core::VolMortar::VolMortarCoupl::integrate3_d(
           static VolMortarIntegrator<Core::FE::CellType::pyramid5, Core::FE::CellType::pyramid5>
               integrator(params());
           integrator.initialize_gp(true, domain);
-          integrator.integrate_ele3_d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
+          integrator.integrate_ele_3d(domain, sele, mele, *d1_, *m12_, *d2_, *m21_, dis1_, dis2_,
               dofset12_.first, dofset12_.second, dofset21_.first, dofset21_.second);
           break;
         }

@@ -3312,9 +3312,9 @@ void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
     d2_cauchyndir_dd2->reshape(NUMDOF_SOH8, NUMDOF_SOH8);
     Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> d2_cauchyndir_dd2_mat(
         d2_cauchyndir_dd2->values(), true);
-    static Core::LinAlg::Matrix<9, NUMDOF_SOH8> d2_cauchyndir_dF2_d_F_dd(true);
-    d2_cauchyndir_dF2_d_F_dd.multiply(1.0, d2_cauchyndir_dF2, d_F_dd, 0.0);
-    d2_cauchyndir_dd2_mat.multiply_tn(1.0, d_F_dd, d2_cauchyndir_dF2_d_F_dd, 0.0);
+    static Core::LinAlg::Matrix<9, NUMDOF_SOH8> d2_cauchyndir_dF_2d_F_dd(true);
+    d2_cauchyndir_dF_2d_F_dd.multiply(1.0, d2_cauchyndir_dF2, d_F_dd, 0.0);
+    d2_cauchyndir_dd2_mat.multiply_tn(1.0, d_F_dd, d2_cauchyndir_dF_2d_F_dd, 0.0);
   }
 
   // prepare evaluation of d_cauchyndir_dxi or d2_cauchyndir_dd_dxi
@@ -3377,9 +3377,9 @@ void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
     Xsec.multiply(1.0, deriv2, xrefe, 0.0);
     N_XYZ_Xsec.multiply_tt(1.0, N_XYZ, Xsec, 0.0);
 
-    static Core::LinAlg::Matrix<9, NUMDOF_SOH8> d2_cauchyndir_dF2_d_F_dd(true);
-    d2_cauchyndir_dF2_d_F_dd.multiply(1.0, d2_cauchyndir_dF2, d_F_dd, 0.0);
-    d2_cauchyndir_dd_dxi_mat.multiply_tn(1.0, d2_cauchyndir_dF2_d_F_dd, d_F_dxi, 0.0);
+    static Core::LinAlg::Matrix<9, NUMDOF_SOH8> d2_cauchyndir_dF_2d_F_dd(true);
+    d2_cauchyndir_dF_2d_F_dd.multiply(1.0, d2_cauchyndir_dF2, d_F_dd, 0.0);
+    d2_cauchyndir_dd_dxi_mat.multiply_tn(1.0, d2_cauchyndir_dF_2d_F_dd, d_F_dxi, 0.0);
 
     static Core::LinAlg::Matrix<9, NUMDIM_SOH8 * NUMDOF_SOH8> d2_F_dxi_dd(true);
     d2_F_dxi_dd.clear();

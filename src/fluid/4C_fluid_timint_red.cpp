@@ -166,7 +166,7 @@ void FLD::TimIntRedModels::do_problem_specific_boundary_conditions()
 /*----------------------------------------------------------------------*
 | Update3DToReduced in assemble_mat_and_rhs                       bk 11/13 |
 *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::update3_d_to_reduced_mat_and_rhs()
+void FLD::TimIntRedModels::update_3d_to_reduced_mat_and_rhs()
 {
   discret_->clear_state();
 
@@ -213,14 +213,14 @@ void FLD::TimIntRedModels::update3_d_to_reduced_mat_and_rhs()
 }
 
 /*----------------------------------------------------------------------*
-| call update3_d_to_reduced_mat_and_rhs                              bk 11/13 |
+| call update_3d_to_reduced_mat_and_rhs                              bk 11/13 |
 *----------------------------------------------------------------------*/
 void FLD::TimIntRedModels::set_custom_ele_params_assemble_mat_and_rhs(
     Teuchos::ParameterList& eleparams)
 {
   // these are the only routines that have to be called in assemble_mat_and_rhs
   // before Evaluate in the RedModels case
-  update3_d_to_reduced_mat_and_rhs();
+  update_3d_to_reduced_mat_and_rhs();
 }
 
 /*----------------------------------------------------------------------*

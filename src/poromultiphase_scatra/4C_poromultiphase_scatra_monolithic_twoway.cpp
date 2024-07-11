@@ -763,7 +763,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::extract_field_v
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::extract3_d_field_vectors(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::extract_3d_field_vectors(
     Teuchos::RCP<const Epetra_Vector> x, Teuchos::RCP<const Epetra_Vector>& stx,
     Teuchos::RCP<const Epetra_Vector>& flx, Teuchos::RCP<const Epetra_Vector>& scx)
 {
@@ -828,7 +828,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::build_convergen
   Teuchos::RCP<const Epetra_Vector> rhs_sc;
 
   // get structure and fluid RHS
-  extract3_d_field_vectors(rhs_, rhs_st, rhs_fl, rhs_sc);
+  extract_3d_field_vectors(rhs_, rhs_st, rhs_fl, rhs_sc);
 
   // build also norms for structure, fluid and scatra
   normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_st);
@@ -842,7 +842,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::build_convergen
   Teuchos::RCP<const Epetra_Vector> iterincsc;
 
   // get structure and fluid increment
-  extract3_d_field_vectors(iterinc_, iterincst, iterincfl, iterincsc);
+  extract_3d_field_vectors(iterinc_, iterincst, iterincfl, iterincsc);
 
   // build also norms for fluid and structure
   normincstruct_ = UTILS::calculate_vector_norm(vectornorminc_, iterincst);

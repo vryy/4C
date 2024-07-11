@@ -106,7 +106,7 @@ namespace Discret
           Core::LinAlg::Matrix<nsd_, nen_>& edispnp) override;
 
       //! linearisation in the case of mesh motion 3-D
-      void lin_mesh_motion_3_d(
+      void lin_mesh_motion_3d(
           Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,  ///< mesh motion
           const Core::LinAlg::Matrix<nsd_, nen_>& evelaf,  ///< velocity at time n+alpha_f / n+1
           const double& press,                             ///< pressure at integration point

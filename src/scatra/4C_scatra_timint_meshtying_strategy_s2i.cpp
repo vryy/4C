@@ -2373,7 +2373,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
               std::array<double, 2> coordinates_master;
               double dummy(0.);
               Mortar::Projector::impl(*master_mortar_ele)
-                  ->project_gauss_point_auxn3_d(slavenode->x().data(), slavenode->mo_data().n(),
+                  ->project_gauss_point_auxn_3d(slavenode->x().data(), slavenode->mo_data().n(),
                       *master_mortar_ele, coordinates_master.data(), dummy);
 
               // check whether projected node lies inside master-side element
@@ -4358,10 +4358,10 @@ double ScaTra::MortarCellCalc<distype_s, distype_m>::eval_shape_func_and_dom_int
   std::array<double, nsd_master_> coordinates_master;
   double dummy(0.);
   Mortar::Projector::impl(slaveelement)
-      ->project_gauss_point_auxn3_d(
+      ->project_gauss_point_auxn_3d(
           coordinates_global.data(), cell.auxn(), slaveelement, coordinates_slave.data(), dummy);
   Mortar::Projector::impl(masterelement)
-      ->project_gauss_point_auxn3_d(
+      ->project_gauss_point_auxn_3d(
           coordinates_global.data(), cell.auxn(), masterelement, coordinates_master.data(), dummy);
 
   // evaluate shape functions at current integration point on slave and master elements
@@ -4506,7 +4506,7 @@ void ScaTra::MortarCellCalc<distype_s, distype_m>::eval_shape_func_at_slave_node
   std::array<double, 2> coordinates_master;
   double dummy(0.);
   Mortar::Projector::impl(masterelement)
-      ->project_gauss_point_auxn3_d(slavenode.x().data(), slavenode.mo_data().n(), masterelement,
+      ->project_gauss_point_auxn_3d(slavenode.x().data(), slavenode.mo_data().n(), masterelement,
           coordinates_master.data(), dummy);
 
   // evaluate master-side shape functions at projected node on master-side element

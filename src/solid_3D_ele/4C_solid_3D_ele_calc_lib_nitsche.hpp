@@ -119,9 +119,9 @@ namespace Discret::ELEMENTS
       Core::LinAlg::SerialDenseMatrix& d2_cauchyndir_dd_dd)
   {
     Core::LinAlg::Matrix<9, Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
-        d2_cauchyndir_dF2_d_F_dd(false);
-    d2_cauchyndir_dF2_d_F_dd.multiply(d2_cauchyndir_dF2, d_F_dd);
-    Details::multiply_tn(d_F_dd, d2_cauchyndir_dF2_d_F_dd, d2_cauchyndir_dd_dd);
+        d2_cauchyndir_dF_2d_F_dd(false);
+    d2_cauchyndir_dF_2d_F_dd.multiply(d2_cauchyndir_dF2, d_F_dd);
+    Details::multiply_tn(d_F_dd, d2_cauchyndir_dF_2d_F_dd, d2_cauchyndir_dd_dd);
   }
 
   /*!

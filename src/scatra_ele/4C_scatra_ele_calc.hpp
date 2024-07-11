@@ -453,7 +453,7 @@ namespace Discret
       );
 
       //! exact calculation of tau for 1D
-      virtual void calc_tau1_d_exact(
+      virtual void calc_tau_1d_exact(
           double& tau,            //!< the stabilisation parameters (one per transported scalar)
           const double diffus,    //!< diffusivity or viscosity
           const double reacoeff,  //!< reaction coefficient

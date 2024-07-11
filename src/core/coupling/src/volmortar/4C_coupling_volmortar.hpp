@@ -298,13 +298,13 @@ namespace Core::VolMortar
      \brief Evaluate segment-based for 2D problems
 
      */
-    virtual void evaluate_segments2_d(Core::Elements::Element& Aele, Core::Elements::Element& Bele);
+    virtual void evaluate_segments_2d(Core::Elements::Element& Aele, Core::Elements::Element& Bele);
 
     /*!
      \brief Evaluate segment-based for 3D problems
 
      */
-    virtual void evaluate_segments3_d(Core::Elements::Element* Aele, Core::Elements::Element* Bele);
+    virtual void evaluate_segments_3d(Core::Elements::Element* Aele, Core::Elements::Element* Bele);
 
     /*!
      \brief get adjacent node ids for quadr. dual shape functions (trafo calculation)
@@ -335,55 +335,55 @@ namespace Core::VolMortar
      \brief perform 2D integration
 
      */
-    virtual void integrate2_d(Core::Elements::Element& sele, Core::Elements::Element& mele,
+    virtual void integrate_2d(Core::Elements::Element& sele, Core::Elements::Element& mele,
         std::vector<Teuchos::RCP<Mortar::IntCell>>& cells);
 
     /*!
      \brief perform 3D element-wise integration
 
      */
-    virtual void integrate3_d(
+    virtual void integrate_3d(
         Core::Elements::Element& sele, Core::Elements::Element& mele, int domain);
 
     /*!
      \brief perform 3D element-wise integration for P12
 
      */
-    virtual void integrate3_d_ele_based_p12(
+    virtual void integrate_3d_ele_based_p12(
         Core::Elements::Element& Aele, std::vector<int>& foundeles);
 
     /*!
      \brief perform 3D element-wise integration for BDis
 
      */
-    virtual void integrate3_d_ele_based_p21(
+    virtual void integrate_3d_ele_based_p21(
         Core::Elements::Element& Bele, std::vector<int>& foundeles);
 
     /*!
      \brief perform 3D element-wise integration for ADis for meshinit
 
      */
-    virtual void integrate3_d_ele_based_a_dis_mesh_init(
+    virtual void integrate_3d_ele_based_a_dis_mesh_init(
         Core::Elements::Element& Aele, std::vector<int>& foundeles, int dofseta, int dofsetb);
 
     /*!
      \brief perform 3D element-wise integration for BDis for meshinit
 
      */
-    virtual void integrate3_d_ele_based_b_dis_mesh_init(
+    virtual void integrate_3d_ele_based_b_dis_mesh_init(
         Core::Elements::Element& Bele, std::vector<int>& foundeles, int dofsetb, int dofseta);
     /*!
      \brief perform 3D integration of created cells
 
      */
-    virtual void integrate3_d_cell(Core::Elements::Element& sele, Core::Elements::Element& mele,
+    virtual void integrate_3d_cell(Core::Elements::Element& sele, Core::Elements::Element& mele,
         std::vector<Teuchos::RCP<Cell>>& cells);
 
     /*!
      \brief perform 3D integration of created cells
 
      */
-    virtual void integrate3_d_cell_direct_divergence(
+    virtual void integrate_3d_cell_direct_divergence(
         Core::Elements::Element& sele, Core::Elements::Element& mele, bool switched_conf = false);
     /*!
      \brief perform mesh init procedure

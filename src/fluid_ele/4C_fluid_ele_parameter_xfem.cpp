@@ -42,7 +42,7 @@ Discret::ELEMENTS::FluidEleParameterXFEM::FluidEleParameterXFEM()
       nit_stab_gamma_(0.0),
       nit_stab_gamma_tang_(0.0),
       visc_adjoint_scaling_(Inpar::XFEM::adj_sym),
-      is_pseudo_2_d_(false),
+      is_pseudo_2d_(false),
       xff_conv_stab_scaling_(Inpar::XFEM::XFF_ConvStabScaling_none),
       conv_stab_scaling_(Inpar::XFEM::ConvStabScaling_none),
       mass_conservation_combo_(Inpar::XFEM::MassConservationCombination_max),
@@ -203,7 +203,7 @@ void Discret::ELEMENTS::FluidEleParameterXFEM::set_element_xfem_parameter(
   visc_adjoint_scaling_ = Core::UTILS::IntegralValue<Inpar::XFEM::AdjointScaling>(
       params_xf_stab, "VISC_ADJOINT_SYMMETRY");
 
-  is_pseudo_2_d_ = (bool)Core::UTILS::IntegralValue<int>(params_xf_stab, "IS_PSEUDO_2D");
+  is_pseudo_2d_ = (bool)Core::UTILS::IntegralValue<int>(params_xf_stab, "IS_PSEUDO_2D");
 
 
   // TODO: add a comment how to define the visc-stab-fac for eigenvalue problem

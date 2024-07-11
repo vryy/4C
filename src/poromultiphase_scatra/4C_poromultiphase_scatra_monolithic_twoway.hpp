@@ -122,7 +122,7 @@ namespace PoroMultiPhaseScaTra
      \param scx (o) scatra vector (primary variables of scatra field, i.e. mass fraction)
      of 3D field
      */
-    void extract3_d_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
+    void extract_3d_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& stx, Teuchos::RCP<const Epetra_Vector>& flx,
         Teuchos::RCP<const Epetra_Vector>& scx);
 

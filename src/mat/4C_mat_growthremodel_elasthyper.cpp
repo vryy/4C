@@ -741,7 +741,7 @@ void Mat::GrowthRemodelElastHyper::evaluate_prestretch(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::GrowthRemodelElastHyper::setup_g_r3_d(Core::LinAlg::Matrix<3, 3> const* const defgrd,
+void Mat::GrowthRemodelElastHyper::setup_g_r_3d(Core::LinAlg::Matrix<3, 3> const* const defgrd,
     Teuchos::ParameterList& params, const double dt, const int gp, const int eleGID)
 {
   Core::LinAlg::Matrix<3, 1> axdir(true);
@@ -792,7 +792,7 @@ void Mat::GrowthRemodelElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>* de
 
   if (setup_[gp] == 1)
   {
-    setup_g_r3_d(defgrd, params, dt, gp, eleGID);
+    setup_g_r_3d(defgrd, params, dt, gp, eleGID);
     setup_[gp] = 0;
   }
 
@@ -1572,7 +1572,7 @@ void Mat::GrowthRemodelElastHyper::evaluate_growth_def_grad(Core::LinAlg::Matrix
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::GrowthRemodelElastHyper::setup_g_r2_d(
+void Mat::GrowthRemodelElastHyper::setup_g_r_2d(
     Teuchos::ParameterList& params, const double dt, const int gp)
 {
   Core::LinAlg::Matrix<3, 1> axdir(true);
@@ -1659,7 +1659,7 @@ double Mat::GrowthRemodelElastHyper::evaluate_membrane_thickness_stretch(
 
   if (setup_[gp] == 1)
   {
-    setup_g_r2_d(params, dt, gp);
+    setup_g_r_2d(params, dt, gp);
     setup_[gp] = 0;
   }
 

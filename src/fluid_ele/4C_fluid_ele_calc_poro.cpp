@@ -1966,12 +1966,12 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::fill_matrix_momentum_od(const
   // shape derivatives
   if (nsd_ == 3)
   {
-    lin3_d_mesh_motion_od(
+    lin_3d_mesh_motion_od(
         ecoupl_u, dphi_dp, dphi_dJ, refporositydot, Base::fldparatimint_->time_fac(), timefacfac);
   }
   else if (nsd_ == 2)
   {
-    lin2_d_mesh_motion_od(
+    lin_2d_mesh_motion_od(
         ecoupl_u, dphi_dp, dphi_dJ, refporositydot, Base::fldparatimint_->time_fac(), timefacfac);
   }
   else
@@ -2296,15 +2296,15 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::fill_matrix_conti_od(const do
   //**************************************************************************
   // shape derivatives
   if (nsd_ == 3)
-    lin_mesh_motion_3_d_pres_od(ecoupl_p, dphi_dp, dphi_dJ, refporositydot, timefacfacpre);
+    lin_mesh_motion_3d_pres_od(ecoupl_p, dphi_dp, dphi_dJ, refporositydot, timefacfacpre);
   else if (nsd_ == 2)
-    lin_mesh_motion_2_d_pres_od(ecoupl_p, dphi_dp, dphi_dJ, refporositydot, timefacfacpre);
+    lin_mesh_motion_2d_pres_od(ecoupl_p, dphi_dp, dphi_dJ, refporositydot, timefacfacpre);
   else
     FOUR_C_THROW("Linearization of the mesh motion is only available in 2D and 3D");
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin3_d_mesh_motion_od(
+void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_3d_mesh_motion_od(
     Core::LinAlg::Matrix<nsd_ * nen_, nsd_ * nen_>& ecoupl_u, const double& dphi_dp,
     const double& dphi_dJ, const double& refporositydot, const double& timefac,
     const double& timefacfac)
@@ -3183,7 +3183,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin3_d_mesh_motion_od(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_mesh_motion_3_d_pres_od(
+void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_mesh_motion_3d_pres_od(
     Core::LinAlg::Matrix<nen_, nsd_ * nen_>& ecoupl_p, const double& dphi_dp, const double& dphi_dJ,
     const double& refporositydot, const double& timefacfac)
 {
@@ -3808,7 +3808,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_mesh_motion_3_d_pres_od(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin2_d_mesh_motion_od(
+void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_2d_mesh_motion_od(
     Core::LinAlg::Matrix<nsd_ * nen_, nsd_ * nen_>& ecoupl_u, const double& dphi_dp,
     const double& dphi_dJ, const double& refporositydot, const double& timefac,
     const double& timefacfac)
@@ -4106,7 +4106,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin2_d_mesh_motion_od(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_mesh_motion_2_d_pres_od(
+void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_mesh_motion_2d_pres_od(
     Core::LinAlg::Matrix<nen_, nsd_ * nen_>& ecoupl_p, const double& dphi_dp, const double& dphi_dJ,
     const double& refporositydot, const double& timefacfac)
 {

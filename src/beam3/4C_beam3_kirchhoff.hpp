@@ -592,7 +592,7 @@ namespace Discret
        *
        *  \author grill
        *  \date 07/16 */
-      inline void rotation1_d_dof_indices(
+      inline void rotation_1d_dof_indices(
           std::vector<int>& twistdofs, const Core::Nodes::Node& node) const override
       {
         if ((not rotvec_) and

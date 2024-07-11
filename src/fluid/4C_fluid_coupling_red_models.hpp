@@ -127,7 +127,7 @@ namespace FLD
       Teuchos::RCP<std::map<std::string, double>> map3_dn_;
 
       //! 3D fluid discretization
-      Teuchos::RCP<Core::FE::Discretization> discret3_d_;
+      Teuchos::RCP<Core::FE::Discretization> discret_3d_;
 
       //! Reduced-D artery network discretization
       Teuchos::RCP<Core::FE::Discretization> discret_red_d_;
@@ -295,7 +295,7 @@ namespace FLD
       int myrank_;
 
       //! 3D fluid discretization
-      Teuchos::RCP<Core::FE::Discretization> discret_3_d_;
+      Teuchos::RCP<Core::FE::Discretization> discret_3d_;
 
       //! fluid discretization
       Teuchos::RCP<Core::FE::Discretization> discret_red_d_;

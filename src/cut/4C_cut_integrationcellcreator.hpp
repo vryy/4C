@@ -55,7 +55,7 @@ namespace Core::Geo
       template <Core::FE::CellType celltype,
           Core::FE::CellType facetype = Core::FE::DisTypeToFaceShapeType<celltype>::shape,
           unsigned numfaces = Core::FE::num_faces<celltype>>
-      bool create2_d_cell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
+      bool create_2d_cell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
 
       /// fill the tet4 volume cell
       bool create_tet4_cell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);

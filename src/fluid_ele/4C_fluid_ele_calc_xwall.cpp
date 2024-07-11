@@ -1336,7 +1336,7 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_grid_disp_ale(
 }
 
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::lin_mesh_motion_3_d(
+void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::lin_mesh_motion_3d(
     Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
     const double& timefacfac)

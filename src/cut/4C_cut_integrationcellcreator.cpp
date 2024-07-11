@@ -43,8 +43,8 @@ bool Core::Geo::Cut::IntegrationCellCreator::create_cells(
         break;
       case 2:
       {
-        found = (creator.create2_d_cell<Core::FE::CellType::tri3>(mesh, cell, cell->facets()) or
-                 creator.create2_d_cell<Core::FE::CellType::quad4>(mesh, cell, cell->facets()));
+        found = (creator.create_2d_cell<Core::FE::CellType::tri3>(mesh, cell, cell->facets()) or
+                 creator.create_2d_cell<Core::FE::CellType::quad4>(mesh, cell, cell->facets()));
         if (not found)
           FOUR_C_THROW(
               "No 2-D cell could be generated and tessellation is currently "
@@ -106,10 +106,10 @@ bool Core::Geo::Cut::IntegrationCellCreator::create_cell(
       success = creator.create_line2_cell(mesh, cell, cell->facets());
       break;
     case Core::FE::CellType::tri3:
-      success = creator.create2_d_cell<Core::FE::CellType::tri3>(mesh, cell, cell->facets());
+      success = creator.create_2d_cell<Core::FE::CellType::tri3>(mesh, cell, cell->facets());
       break;
     case Core::FE::CellType::quad4:
-      success = creator.create2_d_cell<Core::FE::CellType::quad4>(mesh, cell, cell->facets());
+      success = creator.create_2d_cell<Core::FE::CellType::quad4>(mesh, cell, cell->facets());
       break;
     default:
       FOUR_C_THROW(
@@ -231,7 +231,7 @@ bool Core::Geo::Cut::IntegrationCellCreator::create_line2_cell(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <Core::FE::CellType celltype, Core::FE::CellType facetype, unsigned numfaces>
-bool Core::Geo::Cut::IntegrationCellCreator::create2_d_cell(
+bool Core::Geo::Cut::IntegrationCellCreator::create_2d_cell(
     Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets)
 {
   // check the facet number
@@ -1321,9 +1321,9 @@ bool Core::Geo::Cut::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
   return true;
 }
 
-template bool Core::Geo::Cut::IntegrationCellCreator::create2_d_cell<Core::FE::CellType::tri3>(
+template bool Core::Geo::Cut::IntegrationCellCreator::create_2d_cell<Core::FE::CellType::tri3>(
     Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
-template bool Core::Geo::Cut::IntegrationCellCreator::create2_d_cell<Core::FE::CellType::quad4>(
+template bool Core::Geo::Cut::IntegrationCellCreator::create_2d_cell<Core::FE::CellType::quad4>(
     Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
 
 FOUR_C_NAMESPACE_CLOSE

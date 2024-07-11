@@ -1132,7 +1132,7 @@ namespace Discret
       //! definition in fluid_impl_ale_service.cpp
 
       //! linearisation in the case of mesh motion 2-D
-      virtual void lin_mesh_motion_2_d(
+      virtual void lin_mesh_motion_2d(
           Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,  ///< mesh motion
           const Core::LinAlg::Matrix<nsd_, nen_>& evelaf,  ///< velocity at time n+alpha_f / n+1
           const double& press,                             ///< pressure at integration point
@@ -1141,7 +1141,7 @@ namespace Discret
       );
 
       //! linearisation in the case of mesh motion 3-D
-      virtual void lin_mesh_motion_3_d(
+      virtual void lin_mesh_motion_3d(
           Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,  ///< mesh motion
           const Core::LinAlg::Matrix<nsd_, nen_>& evelaf,  ///< velocity at time n+alpha_f / n+1
           const double& press,                             ///< pressure at integration point

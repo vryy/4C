@@ -145,7 +145,7 @@ namespace PoroMultiPhaseScaTra
     virtual int get_segment_id() const = 0;
 
     //! get the volume of the 2D/3D element
-    virtual double calculate_vol2_d3_d() const = 0;
+    virtual double calculate_vol_2d_3d() const = 0;
 
     //! get number of Gauss points
     virtual int num_gp() const = 0;
@@ -244,7 +244,7 @@ namespace PoroMultiPhaseScaTra
     int get_segment_id() const override;
 
     //! get the volume of the 2D/3D element
-    double calculate_vol2_d3_d() const override;
+    double calculate_vol_2d_3d() const override;
 
    private:
     // static variables
@@ -299,17 +299,17 @@ namespace PoroMultiPhaseScaTra
     bool projection_not_yet_found(const std::vector<double>& intersections, const double& eta);
 
     //! Intersect artery element with edges (2D) or surfaces (3D) of element
-    void inter_sect_with2_d3_d(std::vector<double>& xi, double& eta, const int& fixedPar,
+    void inter_sect_with_2d_3d(std::vector<double>& xi, double& eta, const int& fixedPar,
         const double& fixedAt, bool& projection_valid);
 
     //! get 1D shapefunctions at eta
     template <typename T>
-    void get1_d_shape_functions(Core::LinAlg::Matrix<1, numnodesart_, T>& N1,
+    void get_1d_shape_functions(Core::LinAlg::Matrix<1, numnodesart_, T>& N1,
         Core::LinAlg::Matrix<1, numnodesart_, T>& N1_eta, const T& eta);
 
     //! get 2D/3D shapefunctions at xi1, xi2 (, xi3)
     template <typename T>
-    void get2_d3_d_shape_functions(Core::LinAlg::Matrix<1, numnodescont_, T>& N2,
+    void get_2d_3d_shape_functions(Core::LinAlg::Matrix<1, numnodescont_, T>& N2,
         Core::LinAlg::Matrix<numdim_, numnodescont_, T>& N2_xi, const std::vector<T>& xi);
 
     //! compute artery coordinates and derivatives in reference configuration
@@ -321,7 +321,7 @@ namespace PoroMultiPhaseScaTra
 
     //! compute 2D/3D coordinates and derivatives in reference configuration
     template <typename T>
-    void compute2_d3_d_coords_and_derivs_ref(Core::LinAlg::Matrix<numdim_, 1, T>& x2,
+    void compute_2d_3d_coords_and_derivs_ref(Core::LinAlg::Matrix<numdim_, 1, T>& x2,
         Core::LinAlg::Matrix<numdim_, numdim_, T>& x2_xi,
         const Core::LinAlg::Matrix<1, numnodescont_, T>& N2,
         const Core::LinAlg::Matrix<numdim_, numnodescont_, T>& N2_xi);

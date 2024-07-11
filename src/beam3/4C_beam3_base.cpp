@@ -137,7 +137,7 @@ std::vector<int> Discret::ELEMENTS::Beam3Base::get_additive_dof_gi_ds(
   // first collect all DoF indices
   this->position_dof_indices(dofindices, node);
   this->tangent_dof_indices(dofindices, node);
-  this->rotation1_d_dof_indices(dofindices, node);
+  this->rotation_1d_dof_indices(dofindices, node);
   this->tangent_length_dof_indices(dofindices, node);
 
   // now ask for the GIDs of the DoFs with collected local indices
@@ -346,7 +346,7 @@ void Discret::ELEMENTS::Beam3Base::un_shift_node_position(
       X(dim) = nodes()[i]->x()[dim];
     }
 
-    periodic_boundingbox.un_shift3_d(d, ref, X);
+    periodic_boundingbox.un_shift_3d(d, ref, X);
 
     for (unsigned int dim = 0; dim < 3; ++dim)
     {
@@ -406,7 +406,7 @@ void Discret::ELEMENTS::Beam3Base::get_pos_of_binding_spot(Core::LinAlg::Matrix<
   get_pos_at_xi(pos, xi, disp);
 
   // check if pos at xi lies outside the periodic box, if it does, shift it back in
-  periodic_boundingbox.shift3_d(pos);
+  periodic_boundingbox.shift_3d(pos);
 }
 
 /*--------------------------------------------------------------------------------------------*

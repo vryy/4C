@@ -73,7 +73,7 @@ namespace Core::VolMortar
     \brief Integrate cell for 2D problems
 
     */
-    void integrate_cells2_d(Core::Elements::Element& sele, Core::Elements::Element& mele,
+    void integrate_cells_2d(Core::Elements::Element& sele, Core::Elements::Element& mele,
         Teuchos::RCP<Mortar::IntCell> cell, Core::LinAlg::SparseMatrix& dmatrix,
         Core::LinAlg::SparseMatrix& mmatrix, Teuchos::RCP<const Core::FE::Discretization> slavedis,
         Teuchos::RCP<const Core::FE::Discretization> masterdis, int sdofset, int mdofset);
@@ -82,7 +82,7 @@ namespace Core::VolMortar
     \brief Integrate cell for 3D problems
 
     */
-    void integrate_cells3_d(Core::Elements::Element& Aele, Core::Elements::Element& Bele,
+    void integrate_cells_3d(Core::Elements::Element& Aele, Core::Elements::Element& Bele,
         Teuchos::RCP<Core::VolMortar::Cell> cell, Core::LinAlg::SparseMatrix& dmatrix_A,
         Core::LinAlg::SparseMatrix& mmatrix_A, Core::LinAlg::SparseMatrix& dmatrix_B,
         Core::LinAlg::SparseMatrix& mmatrix_B, Teuchos::RCP<const Core::FE::Discretization> Adis,
@@ -93,7 +93,7 @@ namespace Core::VolMortar
     \brief Integrate cell for 3D problems
 
     */
-    void integrate_cells3_d_direct_diveregence(Core::Elements::Element& Aele,
+    void integrate_cells_3d_direct_diveregence(Core::Elements::Element& Aele,
         Core::Elements::Element& Bele, Core::Geo::Cut::VolumeCell& vc,
         Teuchos::RCP<Core::FE::GaussPoints> intpoints, bool switched_conf,
         Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
@@ -106,7 +106,7 @@ namespace Core::VolMortar
     \brief Integrate ele for 3D problems
 
     */
-    void integrate_ele3_d(int domain, Core::Elements::Element& Aele, Core::Elements::Element& Bele,
+    void integrate_ele_3d(int domain, Core::Elements::Element& Aele, Core::Elements::Element& Bele,
         Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
         Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
         Teuchos::RCP<const Core::FE::Discretization> Adis,
@@ -117,7 +117,7 @@ namespace Core::VolMortar
     \brief Integrate ele for 3D problems
 
     */
-    void integrate_ele_based3_d_a_dis(Core::Elements::Element& Aele, std::vector<int>& foundeles,
+    void integrate_ele_based_3d_a_dis(Core::Elements::Element& Aele, std::vector<int>& foundeles,
         Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
         Teuchos::RCP<const Core::FE::Discretization> Adiscret,
         Teuchos::RCP<const Core::FE::Discretization> Bdiscret, int dofsetA, int dofsetB);
@@ -126,7 +126,7 @@ namespace Core::VolMortar
     \brief Integrate ele for 3D problems
 
     */
-    void integrate_ele_based3_d_b_dis(Core::Elements::Element& Bele, std::vector<int>& foundeles,
+    void integrate_ele_based_3d_b_dis(Core::Elements::Element& Bele, std::vector<int>& foundeles,
         Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
         Teuchos::RCP<const Core::FE::Discretization> Adiscret,
         Teuchos::RCP<const Core::FE::Discretization> Bdiscret, int dofsetA, int dofsetB);
@@ -136,14 +136,14 @@ namespace Core::VolMortar
     \brief Check integration point mapping (2D)
 
     */
-    bool check_mapping2_d(
+    bool check_mapping_2d(
         Core::Elements::Element& sele, Core::Elements::Element& mele, double* sxi, double* mxi);
 
     /*!
     \brief Check integration point mapping (3D)
 
     */
-    bool check_mapping3_d(
+    bool check_mapping_3d(
         Core::Elements::Element& sele, Core::Elements::Element& mele, double* sxi, double* mxi);
 
     //@}
@@ -182,7 +182,7 @@ namespace Core::VolMortar
     \brief Integrate ele for 3D problems
 
     */
-    void integrate_ele_based3_d(Core::Elements::Element& sele, std::vector<int>& foundeles,
+    void integrate_ele_based_3d(Core::Elements::Element& sele, std::vector<int>& foundeles,
         Core::LinAlg::SparseMatrix& dmatrixA, Core::LinAlg::SparseMatrix& mmatrixA,
         Teuchos::RCP<const Core::FE::Discretization> Adiscret,
         Teuchos::RCP<const Core::FE::Discretization> Bdiscret, int dofseta, int dofsetb,
@@ -194,7 +194,7 @@ namespace Core::VolMortar
     \brief Check integration point mapping (3D)
 
     */
-    bool check_mapping3_d(
+    bool check_mapping_3d(
         Core::Elements::Element& sele, Core::Elements::Element& mele, double* sxi, double* mxi);
 
     //@}

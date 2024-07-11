@@ -71,7 +71,7 @@ namespace FLD
     \brief update the 3D-to-reduced_D coupling data in assemble_mat_and_rhs
 
     */
-    virtual void update3_d_to_reduced_mat_and_rhs();
+    virtual void update_3d_to_reduced_mat_and_rhs();
 
     /*!
     \brief read restart data

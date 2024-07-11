@@ -1119,10 +1119,10 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
       // assemble special pressure least-squares condition for pseudo 2D examples where pressure
       // level is determined via Krylov-projection
-      if (fldintfacepara.pres_krylov2_dz() and
+      if (fldintfacepara.pres_krylov_2dz() and
           fldintfacepara.eos_pres() == Inpar::FLUID::EOS_PRES_std_eos)
       {
-        pressure_krylov2_dz(tau_timefacfac_pre, tau_timefacfac_rhs);
+        pressure_krylov_2dz(tau_timefacfac_pre, tau_timefacfac_rhs);
       }
     }
 
@@ -2845,7 +2845,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::d
 
 
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::pressure_krylov2_dz(
+void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::pressure_krylov_2dz(
     const double& tau_timefacfacpre,  ///< tau * (time factor pressure) x (integration factor)
     const double& tau_timefacfacrhs   ///< tau * (time factor rhs)      x (integration factor)
 )
@@ -2991,19 +2991,19 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       switch (nnode_psurf)
       {
         case 3:  // tri3 surface
-          diameter2_d<3>(true, m_connectivity_[p_surf], h_e);
+          diameter_2d<3>(true, m_connectivity_[p_surf], h_e);
           break;
         case 6:  // tri6 surface
-          diameter2_d<6>(true, m_connectivity_[p_surf], h_e);
+          diameter_2d<6>(true, m_connectivity_[p_surf], h_e);
           break;
         case 4:  // quad4 surface
-          diameter2_d<4>(true, m_connectivity_[p_surf], h_e);
+          diameter_2d<4>(true, m_connectivity_[p_surf], h_e);
           break;
         case 8:  // quad8 surface
-          diameter2_d<8>(true, m_connectivity_[p_surf], h_e);
+          diameter_2d<8>(true, m_connectivity_[p_surf], h_e);
           break;
         case 9:  // quad9 surface
-          diameter2_d<9>(true, m_connectivity_[p_surf], h_e);
+          diameter_2d<9>(true, m_connectivity_[p_surf], h_e);
           break;
         default:
           FOUR_C_THROW("unknown number of nodes for surface of parent element");
@@ -3026,19 +3026,19 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       switch (nnode_psurf)
       {
         case 3:  // tri3 surface
-          diameter2_d<3>(false, s_connectivity_[p_surf], h_e);
+          diameter_2d<3>(false, s_connectivity_[p_surf], h_e);
           break;
         case 6:  // tri6 surface
-          diameter2_d<6>(false, s_connectivity_[p_surf], h_e);
+          diameter_2d<6>(false, s_connectivity_[p_surf], h_e);
           break;
         case 4:  // quad4 surface
-          diameter2_d<4>(false, s_connectivity_[p_surf], h_e);
+          diameter_2d<4>(false, s_connectivity_[p_surf], h_e);
           break;
         case 8:  // quad8 surface
-          diameter2_d<8>(false, s_connectivity_[p_surf], h_e);
+          diameter_2d<8>(false, s_connectivity_[p_surf], h_e);
           break;
         case 9:  // quad9 surface
-          diameter2_d<9>(false, s_connectivity_[p_surf], h_e);
+          diameter_2d<9>(false, s_connectivity_[p_surf], h_e);
           break;
         default:
           FOUR_C_THROW("unknown number of nodes for surface of parent element");
@@ -3064,10 +3064,10 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       switch (nnode_pline)
       {
         case 2:  // line2 face
-          diameter1_d<2>(true, m_connectivity_[p_line], h_e);
+          diameter_1d<2>(true, m_connectivity_[p_line], h_e);
           break;
         case 3:  // line3 face
-          diameter1_d<3>(true, m_connectivity_[p_line], h_e);
+          diameter_1d<3>(true, m_connectivity_[p_line], h_e);
           break;
         default:
           FOUR_C_THROW("unknown number of nodes for line of parent element");
@@ -3090,10 +3090,10 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       switch (nnode_pline)
       {
         case 2:  // line2 face
-          diameter1_d<2>(false, s_connectivity_[p_line], h_e);
+          diameter_1d<2>(false, s_connectivity_[p_line], h_e);
           break;
         case 3:  // line3 face
-          diameter1_d<3>(false, s_connectivity_[p_line], h_e);
+          diameter_1d<3>(false, s_connectivity_[p_line], h_e);
           break;
         default:
           FOUR_C_THROW("unknown number of nodes for line of parent element");
@@ -3157,19 +3157,19 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       switch (nnode_psurf)
       {
         case 3:  // tri3 surface
-          diameter2_d<3>(true, m_connectivity_[p_surf], h_e);
+          diameter_2d<3>(true, m_connectivity_[p_surf], h_e);
           break;
         case 6:  // tri6 surface
-          diameter2_d<6>(true, m_connectivity_[p_surf], h_e);
+          diameter_2d<6>(true, m_connectivity_[p_surf], h_e);
           break;
         case 4:  // quad4 surface
-          diameter2_d<4>(true, m_connectivity_[p_surf], h_e);
+          diameter_2d<4>(true, m_connectivity_[p_surf], h_e);
           break;
         case 8:  // quad8 surface
-          diameter2_d<8>(true, m_connectivity_[p_surf], h_e);
+          diameter_2d<8>(true, m_connectivity_[p_surf], h_e);
           break;
         case 9:  // quad9 surface
-          diameter2_d<9>(true, m_connectivity_[p_surf], h_e);
+          diameter_2d<9>(true, m_connectivity_[p_surf], h_e);
           break;
         default:
           FOUR_C_THROW("unknown number of nodes for surface of parent element");
@@ -3195,19 +3195,19 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       switch (nnode_psurf)
       {
         case 3:  // tri3 surface
-          diameter2_d<3>(false, s_connectivity_[p_surf], h_e);
+          diameter_2d<3>(false, s_connectivity_[p_surf], h_e);
           break;
         case 6:  // tri6 surface
-          diameter2_d<6>(false, s_connectivity_[p_surf], h_e);
+          diameter_2d<6>(false, s_connectivity_[p_surf], h_e);
           break;
         case 4:  // quad4 surface
-          diameter2_d<4>(false, s_connectivity_[p_surf], h_e);
+          diameter_2d<4>(false, s_connectivity_[p_surf], h_e);
           break;
         case 8:  // quad8 surface
-          diameter2_d<8>(false, s_connectivity_[p_surf], h_e);
+          diameter_2d<8>(false, s_connectivity_[p_surf], h_e);
           break;
         case 9:  // quad9 surface
-          diameter2_d<9>(false, s_connectivity_[p_surf], h_e);
+          diameter_2d<9>(false, s_connectivity_[p_surf], h_e);
           break;
         default:
           FOUR_C_THROW("unknown number of nodes for surface of parent element");
@@ -3246,10 +3246,10 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       switch (nnode_pline)
       {
         case 2:  // line2 face
-          diameter1_d<2>(true, m_connectivity_[p_line], h_e);
+          diameter_1d<2>(true, m_connectivity_[p_line], h_e);
           break;
         case 3:  // line3 face
-          diameter1_d<3>(true, m_connectivity_[p_line], h_e);
+          diameter_1d<3>(true, m_connectivity_[p_line], h_e);
           break;
         default:
           FOUR_C_THROW("unknown number of nodes for line of parent element");
@@ -3275,10 +3275,10 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       switch (nnode_pline)
       {
         case 2:  // line2 face
-          diameter1_d<2>(false, s_connectivity_[p_line], h_e);
+          diameter_1d<2>(false, s_connectivity_[p_line], h_e);
           break;
         case 3:  // line3 face
-          diameter1_d<3>(false, s_connectivity_[p_line], h_e);
+          diameter_1d<3>(false, s_connectivity_[p_line], h_e);
           break;
         default:
           FOUR_C_THROW("unknown number of nodes for line of parent element");
@@ -3319,19 +3319,19 @@ Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::comput
     switch (nnode_psurf)
     {
       case 3:  // tri3 surface
-        diameter2_d<3>(true, m_connectivity_[side_id_master], h_e);
+        diameter_2d<3>(true, m_connectivity_[side_id_master], h_e);
         break;
       case 6:  // tri6 surface
-        diameter2_d<6>(true, m_connectivity_[side_id_master], h_e);
+        diameter_2d<6>(true, m_connectivity_[side_id_master], h_e);
         break;
       case 4:  // quad4 surface
-        diameter2_d<4>(true, m_connectivity_[side_id_master], h_e);
+        diameter_2d<4>(true, m_connectivity_[side_id_master], h_e);
         break;
       case 8:  // quad8 surface
-        diameter2_d<8>(true, m_connectivity_[side_id_master], h_e);
+        diameter_2d<8>(true, m_connectivity_[side_id_master], h_e);
         break;
       case 9:  // quad9 surface
-        diameter2_d<9>(true, m_connectivity_[side_id_master], h_e);
+        diameter_2d<9>(true, m_connectivity_[side_id_master], h_e);
         break;
       default:
         FOUR_C_THROW("unknown number of nodes for surface of parent element");
@@ -3352,10 +3352,10 @@ Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::comput
     switch (nnode_pline)
     {
       case 2:  // line2 face
-        diameter1_d<2>(true, m_connectivity_[line_id_master], h_e);
+        diameter_1d<2>(true, m_connectivity_[line_id_master], h_e);
         break;
       case 3:  // line3 face
-        diameter1_d<3>(true, m_connectivity_[line_id_master], h_e);
+        diameter_1d<3>(true, m_connectivity_[line_id_master], h_e);
         break;
       default:
         FOUR_C_THROW("unknown number of nodes for line of parent element");
@@ -3403,12 +3403,12 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   if (nsd_ == 3)
   {
-    find_hex_connecting_lines2_d(numnode_intface, connectivity_line_surf_, side_id_master,
+    find_hex_connecting_lines_2d(numnode_intface, connectivity_line_surf_, side_id_master,
         side_id_slave, p_lines_master, p_lines_slave, opposite_side_id_master,
         opposite_side_id_slave);
   }
   else if (nsd_ == 2)
-    find_quad_connecting_lines1_d(numnode_intface, side_id_master, side_id_slave, p_lines_master,
+    find_quad_connecting_lines_1d(numnode_intface, side_id_master, side_id_slave, p_lines_master,
         p_lines_slave, opposite_side_id_master, opposite_side_id_slave);
   else
     FOUR_C_THROW("no valid nsd_");

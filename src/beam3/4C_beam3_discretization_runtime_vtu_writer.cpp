@@ -180,7 +180,7 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
         beamele->get_ref_pos_at_xi(interpolated_position, xi);
 
       if (periodic_boundingbox_ != Teuchos::null)
-        periodic_boundingbox_->shift3_d(interpolated_position);
+        periodic_boundingbox_->shift_3d(interpolated_position);
 
       Core::LinAlg::Matrix<3, 1> unshift_interpolated_position = interpolated_position;
 
@@ -1494,7 +1494,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_rve_crosssection_forces(
 
     beamele->get_pos_at_xi(pos_node_1, -1.0, beamelement_displacement_vector);
     beamele->get_pos_at_xi(pos_node_2, 1.0, beamelement_displacement_vector);
-    periodic_boundingbox_->get_xi_of_intersection3_d(pos_node_1, pos_node_2, xi_intersect, box);
+    periodic_boundingbox_->get_xi_of_intersection_3d(pos_node_1, pos_node_2, xi_intersect, box);
 
     // todo: change from just using first gauss point to linear inter-/extrapolation
     // between two closest gauss points

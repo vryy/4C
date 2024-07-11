@@ -154,7 +154,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::reset()
 
       // unshift one of the positions if both are separated by a periodic boundary
       // condition, i.e. have been shifted before
-      periodic_bounding_box_ptr()->un_shift3_d(pos[1], pos[0]);
+      periodic_bounding_box_ptr()->un_shift_3d(pos[1], pos[0]);
 
       // dummy triad
       std::vector<Core::LinAlg::Matrix<3, 3>> dummy_triad(2, Core::LinAlg::Matrix<3, 3>(true));
@@ -683,7 +683,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::write_output_runtime
 
       // unshift one of the positions if both are separated by a periodic boundary
       // condition, i.e. have been shifted before
-      periodic_bounding_box().un_shift3_d(pos[1], pos[0]);
+      periodic_bounding_box().un_shift_3d(pos[1], pos[0]);
 
       elepairptr->get_binding_spot_force(0, bspotforce);
       // set point coordinate value

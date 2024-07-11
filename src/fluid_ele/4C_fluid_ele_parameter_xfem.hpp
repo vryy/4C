@@ -120,7 +120,7 @@ namespace Discret
 
       //! get the flag if the simulation is run as pseudo 2D simulation with only one element in the
       //! third dimension and strong Dirichlet condition to fix u_z = 0
-      bool is_pseudo2_d() const { return is_pseudo_2_d_; };
+      bool is_pseudo_2d() const { return is_pseudo_2d_; };
 
       //@}
 
@@ -242,7 +242,7 @@ namespace Discret
       //@{
 
       //! pseudo 2D flag for 2D simulation with one element in z-direction
-      double is_pseudo_2_d_;
+      double is_pseudo_2d_;
 
       //@}
 
