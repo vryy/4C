@@ -14,8 +14,6 @@
 #include "4C_contact_nitsche_utils.hpp"
 #include "4C_contact_node.hpp"
 #include "4C_contact_paramsinterface.hpp"
-#include "4C_fem_general_utils_boundary_integration.hpp"
-#include "4C_mat_elasthyper.hpp"
 #include "4C_mat_structporo.hpp"
 #include "4C_so3_base.hpp"
 #include "4C_so3_hex8.hpp"
@@ -27,7 +25,6 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -42,7 +39,7 @@ CONTACT::IntegratorNitschePoro::IntegratorNitschePoro(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitschePoro::integrate_gp_3_d(Mortar::Element& sele, Mortar::Element& mele,
+void CONTACT::IntegratorNitschePoro::integrate_gp_3d(Mortar::Element& sele, Mortar::Element& mele,
     Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseVector& lmval,
     Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& sderiv,
     Core::LinAlg::SerialDenseMatrix& mderiv, Core::LinAlg::SerialDenseMatrix& lmderiv,
@@ -53,7 +50,7 @@ void CONTACT::IntegratorNitschePoro::integrate_gp_3_d(Mortar::Element& sele, Mor
     std::vector<Core::Gen::Pairedvector<int, double>>& derivsxi,
     std::vector<Core::Gen::Pairedvector<int, double>>& derivmxi)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR("CONTACT::IntegratorNitsche::integrate_gp_3_d");
+  // TEUCHOS_FUNC_TIME_MONITOR("CONTACT::IntegratorNitsche::integrate_gp_3d");
   // We use the consistent element normal for poro contact!
   // if (nit_normal_==Inpar::CONTACT::NitNor_ele)
   {
@@ -73,7 +70,7 @@ void CONTACT::IntegratorNitschePoro::integrate_gp_3_d(Mortar::Element& sele, Mor
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitschePoro::integrate_gp_2_d(Mortar::Element& sele, Mortar::Element& mele,
+void CONTACT::IntegratorNitschePoro::integrate_gp_2d(Mortar::Element& sele, Mortar::Element& mele,
     Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseVector& lmval,
     Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& sderiv,
     Core::LinAlg::SerialDenseMatrix& mderiv, Core::LinAlg::SerialDenseMatrix& lmderiv,

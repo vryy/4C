@@ -45,7 +45,7 @@ void CONTACT::NitscheStrategyPoro::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vec
   //        Mortar::Element* mele
   //        =dynamic_cast<Mortar::Element*>(interface_[i]->discret().gElement(
   //            interface_[i]->discret().ElementColMap()->GID(e)));
-  //        mele->GetNitscheContainer().ClearAll();
+  //        mele->get_nitsche_container().ClearAll();
   //      }
   //    }
 }

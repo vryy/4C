@@ -1260,7 +1260,7 @@ void FLD::TurbulenceStatisticsGeneralMean::redistribute(
       }
     }
   }
-}  // FLD::TurbulenceStatisticsGeneralMean::Redistribute
+}  // FLD::TurbulenceStatisticsGeneralMean::redistribute
 
 
 /*----------------------------------------------------------------------

@@ -85,7 +85,7 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
       FOUR_C_THROW("Cannot find element with gid %d", cele->mo_data().search_elements()[m]);
 
     Mortar::Projector::impl(*cele, *test_ele)
-        ->project_gauss_point3_d(*cele, xsi.data(), *test_ele, mxi, projalpha);
+        ->project_gauss_point_3d(*cele, xsi.data(), *test_ele, mxi, projalpha);
     bool is_inside = false;
     switch (test_ele->shape())
     {

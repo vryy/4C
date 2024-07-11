@@ -768,7 +768,7 @@ void CONTACT::Interface::redistribute()
 
   // check for consistency
   if (slaveCloseRowEles->NumGlobalElements() == 0 && slaveNonCloseRowEles->NumGlobalElements() == 0)
-    FOUR_C_THROW("CONTACT Redistribute: Both slave sets (close/non-close) are empty");
+    FOUR_C_THROW("CONTACT redistribute: Both slave sets (close/non-close) are empty");
 
   //**********************************************************************
   // (2) SPECIAL CASES and output to screen
@@ -937,7 +937,7 @@ void CONTACT::Interface::redistribute()
   //----------------------------------CASE 1: ONE OR BOTH SLAVE SETS EMPTY
   if (slaveCloseRowNodes == Teuchos::null || slaveNonCloseRowNodes == Teuchos::null)
   {
-    FOUR_C_THROW("CONTACT Redistribute: Both slave sets (close/non-close) are empty");
+    FOUR_C_THROW("CONTACT redistribute: Both slave sets (close/non-close) are empty");
   }
   //-------------------------------------CASE 2: BOTH SLAVE SETS NON-EMPTY
   else
@@ -1798,7 +1798,7 @@ void CONTACT::Interface::store_lt_svalues()
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 10/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_lt_lforces_fric(Teuchos::RCP<Epetra_FEVector> feff)
+void CONTACT::Interface::add_ltl_forces_friction(Teuchos::RCP<Epetra_FEVector> feff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
   const double penaltytan = interface_params().get<double>("PENALTYPARAMTAN");
@@ -1941,7 +1941,7 @@ void CONTACT::Interface::add_lt_lforces_fric(Teuchos::RCP<Epetra_FEVector> feff)
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 10/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_lt_lstiffness_fric(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff)
+void CONTACT::Interface::add_ltl_stiffness_friction(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
   const double penaltytan = interface_params().get<double>("PENALTYPARAMTAN");
@@ -2353,7 +2353,7 @@ void CONTACT::Interface::add_lt_lstiffness_fric(Teuchos::RCP<Core::LinAlg::Spars
 /*----------------------------------------------------------------------*
  |  Add nts penalty forces master                           farah 11/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_nt_sforces_master(Teuchos::RCP<Epetra_FEVector> feff)
+void CONTACT::Interface::add_nts_forces_master(Teuchos::RCP<Epetra_FEVector> feff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
 
@@ -2437,7 +2437,7 @@ void CONTACT::Interface::add_nt_sforces_master(Teuchos::RCP<Epetra_FEVector> fef
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces master                  farah 11/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_lt_sforces_master(Teuchos::RCP<Epetra_FEVector> feff)
+void CONTACT::Interface::add_lts_forces_master(Teuchos::RCP<Epetra_FEVector> feff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
 
@@ -2525,7 +2525,7 @@ void CONTACT::Interface::add_lt_sforces_master(Teuchos::RCP<Epetra_FEVector> fef
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 10/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_lt_lforces(Teuchos::RCP<Epetra_FEVector> feff)
+void CONTACT::Interface::add_ltl_forces(Teuchos::RCP<Epetra_FEVector> feff)
 {
   // gap = g_n * n
   // D/M = sval/mval
@@ -2606,7 +2606,7 @@ void CONTACT::Interface::add_lt_lforces(Teuchos::RCP<Epetra_FEVector> feff)
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 11/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_lt_sstiffness_master(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff)
+void CONTACT::Interface::add_lts_stiffness_master(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
 
@@ -2803,7 +2803,7 @@ void CONTACT::Interface::add_lt_sstiffness_master(Teuchos::RCP<Core::LinAlg::Spa
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 11/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_nt_sstiffness_master(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff)
+void CONTACT::Interface::add_nts_stiffness_master(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
 
@@ -2953,7 +2953,7 @@ void CONTACT::Interface::add_nt_sstiffness_master(Teuchos::RCP<Core::LinAlg::Spa
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 10/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_lt_lstiffness(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff)
+void CONTACT::Interface::add_ltl_stiffness(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
 
@@ -3350,12 +3350,12 @@ void CONTACT::Interface::evaluate_coupling(const Epetra_Map& selecolmap,
       //********************************************************************
       // perform LTS steps for master edges
       //********************************************************************
-      //      EvaluateLTSMaster();
+      //      evaluate_lts_master();
 
       //********************************************************************
       // perform NTS steps for master edges
       //********************************************************************
-      //      EvaluateNTSMaster();
+      //      evaluate_nts_master();
 
       //********************************************************************
       // NTN is a special case of NTS and an additional implementation is
@@ -4626,28 +4626,17 @@ void CONTACT::Interface::compute_scaling_ltl()
       }
     }
   }  // end slave loop
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  scale normals for hybrid formulation                    farah 05/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::scale_normals()
-{
-  FOUR_C_THROW("outdated!");
-
-  if (n_dim() == 2)
-    scale_normals2_d();
-  else if (n_dim() == 3)
-    scale_normals3_d();
-  else
-    FOUR_C_THROW("Wrong dimension!");
-}
+void CONTACT::Interface::scale_normals() { FOUR_C_THROW("outdated!"); }
 
 /*----------------------------------------------------------------------*
  |  scale normals for hybrid formulation                    farah 05/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::scale_normals2_d()
+void CONTACT::Interface::scale_normals_2d()
 {
   // define iterator for paired vector
   typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
@@ -4826,13 +4815,13 @@ void CONTACT::Interface::scale_normals2_d()
 /*----------------------------------------------------------------------*
  |  scale normals for hybrid formulation                    farah 05/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::scale_normals3_d() { FOUR_C_THROW("not yet implemented!"); }
+void CONTACT::Interface::scale_normals_3d() { FOUR_C_THROW("not yet implemented!"); }
 
 
 /*----------------------------------------------------------------------*
  |  cpp to line based on averaged nodal normal field        farah 08/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::compute_cpp_normal2_d(Mortar::Node& mrtrnode,
+double CONTACT::Interface::compute_cpp_normal_2d(Mortar::Node& mrtrnode,
     std::vector<Mortar::Element*> meles, double* normal,
     std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin)
 {
@@ -5032,7 +5021,7 @@ double CONTACT::Interface::compute_cpp_normal2_d(Mortar::Node& mrtrnode,
 /*----------------------------------------------------------------------*
  |  cpp to line based on averaged nodal normal field        farah 08/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::compute_cpp_normal3_d(Mortar::Node& mrtrnode,
+double CONTACT::Interface::compute_cpp_normal_3d(Mortar::Node& mrtrnode,
     std::vector<Mortar::Element*> meles, double* normal,
     std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin)
 {
@@ -5360,7 +5349,7 @@ double CONTACT::Interface::compute_cpp_normal(Mortar::Node& mrtrnode,
   //===================================================================
   if (n_dim() == 2)
   {
-    gdist = compute_cpp_normal2_d(mrtrnode, meles, normal, normaltolineLin);
+    gdist = compute_cpp_normal_2d(mrtrnode, meles, normal, normaltolineLin);
   }
   //===================================================================
   //===================================================================
@@ -5369,7 +5358,7 @@ double CONTACT::Interface::compute_cpp_normal(Mortar::Node& mrtrnode,
   //===================================================================
   else if (n_dim() == 3)
   {
-    gdist = compute_cpp_normal3_d(mrtrnode, meles, normal, normaltolineLin);
+    gdist = compute_cpp_normal_3d(mrtrnode, meles, normal, normaltolineLin);
   }
   //===================================================================
   //===================================================================
@@ -7151,7 +7140,7 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
 /*----------------------------------------------------------------------*
  |  Evaluate relative movement (jump) of a slave node     gitterle 10/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::evaluate_rel_mov(const Teuchos::RCP<Epetra_Vector> xsmod,
+void CONTACT::Interface::evaluate_relative_movement(const Teuchos::RCP<Epetra_Vector> xsmod,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrixmod,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix> doldmod)
 {
@@ -7679,7 +7668,7 @@ void CONTACT::Interface::evaluate_distances(const Teuchos::RCP<const Epetra_Vect
         double projalpha = 0.0;
         bool is_projected =
             Mortar::Projector::impl(*selement, *melements[nummaster])
-                ->project_gauss_point3_d(*selement, sxi, *melements[nummaster], mxi, projalpha);
+                ->project_gauss_point_3d(*selement, sxi, *melements[nummaster], mxi, projalpha);
 
         bool is_on_mele = true;
 
@@ -7726,8 +7715,8 @@ void CONTACT::Interface::evaluate_distances(const Teuchos::RCP<const Epetra_Vect
           std::vector<Core::Gen::Pairedvector<int, double>> dmxi(2, 4 * linsize + ncol * ndof);
 
           (*interpolator)
-              .deriv_xi_g_p3_d(*selement, *melements[nummaster], sxi, mxi, dsxi, dmxi, projalpha);
-          (*interpolator).nw_gap3_d(*mynode, *melements[nummaster], mval, mderiv, dmxi, gpn);
+              .deriv_xi_gp_3d(*selement, *melements[nummaster], sxi, mxi, dsxi, dmxi, projalpha);
+          (*interpolator).nw_gap_3d(*mynode, *melements[nummaster], mval, mderiv, dmxi, gpn);
 
           // store linearization for node
           std::map<int, double> dgap = mynode->data().get_deriv_gnts();  // (dof,value)
@@ -8276,7 +8265,7 @@ bool CONTACT::Interface::split_active_dofs()
 
   // check global dimensions
   if ((gcountN + gcountT) != activedofs_->NumGlobalElements())
-    FOUR_C_THROW("SplitActiveDofs: Splitting went wrong!");
+    FOUR_C_THROW("split_active_dofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
   activen_ = Teuchos::rcp(new Epetra_Map(gcountN, countN, myNgids.data(), 0, get_comm()));

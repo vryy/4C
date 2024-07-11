@@ -1137,6 +1137,6 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (discret_->get_comm().MyPID() == 0) std::cout << "done" << std::endl;
 
   return;
-}  // ScaTra::ScaTraTimIntImpl::Redistribute
+}  // ScaTra::ScaTraTimIntImpl::redistribute
 
 FOUR_C_NAMESPACE_CLOSE

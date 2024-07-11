@@ -23,7 +23,6 @@
 #include "4C_mortar_defines.hpp"
 #include "4C_mortar_element.hpp"
 #include "4C_mortar_node.hpp"
-#include "4C_mortar_projector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -103,7 +102,7 @@ bool CONTACT::Coupling2d::integrate_overlap(
     // ***********************************************************
     //                   Integrate stuff !!!                    //
     // ***********************************************************
-    integrator->integrate_deriv_segment2_d(
+    integrator->integrate_deriv_segment_2d(
         slave_element(), sxia, sxib, master_element(), mxia, mxib, get_comm(), mparams_ptr);
     // ***********************************************************
     //                   END INTEGRATION !!!                    //
@@ -134,7 +133,7 @@ bool CONTACT::Coupling2d::integrate_overlap(
   // *******************************************************************
   else
   {
-    FOUR_C_THROW("IntegrateOverlap: Invalid case for 2D mortar coupling LM interpolation");
+    FOUR_C_THROW("Invalid case for 2D mortar coupling LM interpolation");
   }
 
   return true;
@@ -271,7 +270,7 @@ void CONTACT::Coupling2dManager::integrate_coupling(
       // ***********************************************************
       //                  START INTEGRATION !!!                   //
       // ***********************************************************
-      integrator->integrate_deriv_ele2_d(
+      integrator->integrate_deriv_ele_2d(
           slave_element(), master_elements(), &boundary_ele, mparams_ptr);
       // ***********************************************************
       //                   END INTEGRATION !!!                    //
@@ -441,7 +440,7 @@ void CONTACT::Coupling2dManager::consist_dual_shape()
 
     std::vector<Core::Gen::Pairedvector<int, double>> ximaps(4, linsize + ndof * mnodes);
     // get directional derivatives of sxia, sxib, mxia, mxib
-    integrator.deriv_xi_a_b2_d(slave_element(), sxia, sxib, master_element(m), mxia, mxib, ximaps,
+    integrator.deriv_xi_a_b_2d(slave_element(), sxia, sxib, master_element(m), mxia, mxib, ximaps,
         startslave, endslave, linsize);
 
     // get element contact integration area

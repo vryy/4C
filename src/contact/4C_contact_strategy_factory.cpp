@@ -958,7 +958,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
           }
 
           /* note that we do not have to worry about double entries
-           * as the AddNode function can deal with this case!
+           * as the add_node function can deal with this case!
            * the only problem would have occurred for the initial active nodes,
            * as their status could have been overwritten, but is prevented
            * by the "foundinitialactive" block above! */
@@ -1035,7 +1035,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
           }
 
           /* note that we do not have to worry about double entries
-           * as the AddNode function can deal with this case!
+           * as the add_node function can deal with this case!
            * the only problem would have occurred for the initial active nodes,
            * as their status could have been overwritten, but is prevented
            * by the "foundinitialactive" block above! */

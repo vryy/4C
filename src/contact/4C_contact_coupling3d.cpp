@@ -10,7 +10,6 @@
 
 #include "4C_contact_coupling3d.hpp"
 
-#include "4C_contact_defines.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_contact_integrator.hpp"
 #include "4C_contact_integrator_factory.hpp"
@@ -22,7 +21,6 @@
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
-#include "4C_mortar_calc_utils.hpp"
 #include "4C_mortar_coupling3d_classes.hpp"
 #include "4C_mortar_defines.hpp"
 #include "4C_mortar_projector.hpp"
@@ -143,7 +141,7 @@ bool CONTACT::Coupling3d::integrate_cells(const Teuchos::RCP<Mortar::ParamsInter
     // *******************************************************************
     if (!quad())
     {
-      integrator->integrate_deriv_cell3_d_aux_plane(
+      integrator->integrate_deriv_cell_3d_aux_plane(
           slave_element(), master_element(), cells()[i], auxn(), get_comm(), mparams_ptr);
     }
     // *******************************************************************
@@ -167,7 +165,7 @@ bool CONTACT::Coupling3d::integrate_cells(const Teuchos::RCP<Mortar::ParamsInter
       Mortar::IntElement& mintref = dynamic_cast<Mortar::IntElement&>(master_int_element());
 
       // call integrator
-      integrator->integrate_deriv_cell3_d_aux_plane_quad(
+      integrator->integrate_deriv_cell_3d_aux_plane_quad(
           slave_element(), master_element(), sintref, mintref, cells()[i], auxn());
     }
 
@@ -188,7 +186,7 @@ bool CONTACT::Coupling3d::integrate_cells(const Teuchos::RCP<Mortar::ParamsInter
       Mortar::IntElement& mintref = dynamic_cast<Mortar::IntElement&>(master_int_element());
 
       // call integrator
-      integrator->integrate_deriv_cell3_d_aux_plane_quad(
+      integrator->integrate_deriv_cell_3d_aux_plane_quad(
           slave_element(), master_element(), sintref, mintref, cells()[i], auxn());
     }
 
@@ -1169,7 +1167,7 @@ void CONTACT::Coupling3dManager::integrate_coupling(
           stype_, imortar_, slave_element().shape(), get_comm());
 
       // Perform integration and linearization
-      integrator->integrate_deriv_ele3_d(
+      integrator->integrate_deriv_ele_3d(
           slave_element(), feasible_ma_eles, &boundary_ele, &proj, get_comm(), mparams_ptr);
 
 
@@ -1267,7 +1265,7 @@ bool CONTACT::Coupling3dManager::evaluate_coupling(
   // interpolate temperatures in TSI case
   if (imortar_.get<int>("PROBTYPE") == Inpar::CONTACT::tsi)
     NTS::Interpolator(imortar_, dim_)
-        .interpolate_master_temp3_d(slave_element(), master_elements());
+        .interpolate_master_temp_3d(slave_element(), master_elements());
 
   return true;
 }
@@ -1368,7 +1366,7 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
     bool proj = false;
 
     // Perform integration and linearization
-    integrator->integrate_deriv_ele3_d(
+    integrator->integrate_deriv_ele_3d(
         slave_element(), master_elements(), &boundary_ele, &proj, get_comm(), mparams_ptr);
 
     if (int_type() == Inpar::Mortar::inttype_elements_BS)
@@ -1577,7 +1575,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
         {
           double mxi_test[2] = {0.0, 0.0};
           Mortar::Projector::impl(slave_element(), coupling()[bs_test]->master_int_element())
-              ->project_gauss_point3_d(slave_element(), sxi_test,
+              ->project_gauss_point_3d(slave_element(), sxi_test,
                   coupling()[bs_test]->master_int_element(), mxi_test, alpha_test);
 
           Core::FE::CellType dt = coupling()[bs_test]->master_int_element().shape();
@@ -1643,7 +1641,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
         {
           double mxi_test[2] = {0.0, 0.0};
           Mortar::Projector::impl(slave_element(), coupling()[bs_test]->master_element())
-              ->project_gauss_point3_d(slave_element(), sxi_test,
+              ->project_gauss_point_3d(slave_element(), sxi_test,
                   coupling()[bs_test]->master_element(), mxi_test, alpha_test);
 
           Core::FE::CellType dt = coupling()[bs_test]->master_element().shape();
@@ -1762,7 +1760,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
         double sxi[2] = {0.0, 0.0};
         double sprojalpha = 0.0;
         Mortar::Projector::impl(coupling()[m]->slave_int_element())
-            ->project_gauss_point_auxn3_d(
+            ->project_gauss_point_auxn_3d(
                 globgp, coupling()[m]->auxn(), coupling()[m]->slave_int_element(), sxi, sprojalpha);
 
         // project Gauss point onto slave (parent) element
@@ -1774,7 +1772,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
               dynamic_cast<Mortar::IntElement*>(&(coupling()[m]->slave_int_element()));
           if (ie == nullptr) FOUR_C_THROW("nullptr pointer");
           Mortar::Projector::impl(slave_element())
-              ->project_gauss_point_auxn3_d(
+              ->project_gauss_point_auxn_3d(
                   globgp, coupling()[m]->auxn(), slave_element(), psxi, psprojalpha);
           // ie->MapToParent(sxi,psxi); // old way of doing it via affine map... wrong (popp
           // 05/2016)
@@ -1813,7 +1811,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
               lingp[p->first](d) += svalcell(v) * (p->second);
 
         // compute GP slave coordinate derivatives
-        integrator.deriv_xi_g_p3_d_aux_plane(coupling()[m]->slave_int_element(), sxi,
+        integrator.deriv_xi_gp_3d_aux_plane(coupling()[m]->slave_int_element(), sxi,
             currcell->auxn(), dsxigp, sprojalpha, currcell->get_deriv_auxn(), lingp);
 
         // compute GP slave coordinate derivatives (parent element)
@@ -1822,7 +1820,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
           Mortar::IntElement* ie =
               dynamic_cast<Mortar::IntElement*>(&(coupling()[m]->slave_int_element()));
           if (ie == nullptr) FOUR_C_THROW("wtf");
-          integrator.deriv_xi_g_p3_d_aux_plane(slave_element(), psxi, currcell->auxn(), dpsxigp,
+          integrator.deriv_xi_gp_3d_aux_plane(slave_element(), psxi, currcell->auxn(), dpsxigp,
               psprojalpha, currcell->get_deriv_auxn(), lingp);
           // ie->MapToParent(dsxigp,dpsxigp); // old way of doing it via affine map... wrong (popp
           // 05/2016)

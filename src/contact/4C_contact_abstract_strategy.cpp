@@ -940,7 +940,6 @@ void CONTACT::AbstractStrategy::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector
     get_comm().Barrier();
     const double t_end1 = Teuchos::Time::wallTime() - t_start1;
 
-
     get_comm().Barrier();
     const double t_start2 = Teuchos::Time::wallTime();
     //---------------------------------------------------------------
@@ -968,7 +967,7 @@ void CONTACT::AbstractStrategy::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector
     get_comm().Barrier();
     const double t_start3 = Teuchos::Time::wallTime();
     if (predictor)
-      evaluate_rel_mov_predict();
+      predict_relative_movement();
     else
       evaluate_relative_movement();
 
@@ -1025,7 +1024,7 @@ void CONTACT::AbstractStrategy::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector
 
     // evaluate relative movement for friction
     if (predictor)
-      evaluate_rel_mov_predict();
+      predict_relative_movement();
     else
       evaluate_relative_movement();
 
@@ -1040,8 +1039,6 @@ void CONTACT::AbstractStrategy::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector
     // only for debugging:
     interface_forces();
   }
-
-  return;
 }
 
 
@@ -1460,7 +1457,7 @@ void CONTACT::AbstractStrategy::assemble_mortar()
 #ifdef CONTACTFDNORMAL
     // FD check of normal derivatives
     std::cout << " -- CONTACTFDNORMAL- -----------------------------------" << std::endl;
-    //    Interfaces()[i]->FDCheckNormalDeriv();
+    //    Interfaces()[i]->fd_check_normal_deriv();
     Interfaces()[i]->fd_check_normal_cpp_deriv();
     std::cout << " -- CONTACTFDNORMAL- -----------------------------------" << std::endl;
 #endif  // #ifdef CONTACTFDNORMAL
@@ -1617,7 +1614,7 @@ void CONTACT::AbstractStrategy::evaluate_relative_movement()
   // loop over all slave row nodes on the current interface
   if (Core::UTILS::IntegralValue<int>(params(), "GP_SLIP_INCR") == false)
     for (int i = 0; i < (int)interfaces().size(); ++i)
-      interfaces()[i]->evaluate_rel_mov(xsmod, dmatrixmod_, doldmod_);
+      interfaces()[i]->evaluate_relative_movement(xsmod, dmatrixmod_, doldmod_);
 
   return;
 }

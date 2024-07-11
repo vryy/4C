@@ -362,7 +362,7 @@ void SSI::SSICouplingNonMatchingVolume::init(const int ndim,
 
   // parallel redistribution is performed in the global control
   // algorithm. We redistribute between init(...) and setup().
-  // volcoupl_structurescatra_->Redistribute();
+  // volcoupl_structurescatra_->redistribute();
 
   set_is_init(true);
 }

@@ -48,22 +48,22 @@ namespace CONTACT
 
     //! @name currently unsupported derived methods
     //! @{
-    void integrate_deriv_segment2_d(Mortar::Element& sele, double& sxia, double& sxib,
+    void integrate_deriv_segment_2d(Mortar::Element& sele, double& sxia, double& sxib,
         Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
-        const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override
+        const Teuchos::RCP<Mortar::ParamsInterface>& cparams_ptr) override
     {
       FOUR_C_THROW("Segment based integration is currently unsupported!");
     }
 
-    void integrate_deriv_ele2_d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
-        bool* boundary_ele, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override
+    void integrate_deriv_ele_2d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
+        bool* boundary_ele, const Teuchos::RCP<Mortar::ParamsInterface>& cparams_ptr) override
     {
       FOUR_C_THROW("Element based integration in 2D is currently unsupported!");
     }
 
-    void integrate_deriv_cell3_d_aux_plane(Mortar::Element& sele, Mortar::Element& mele,
+    void integrate_deriv_cell_3d_aux_plane(Mortar::Element& sele, Mortar::Element& mele,
         Teuchos::RCP<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm,
-        const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override
+        const Teuchos::RCP<Mortar::ParamsInterface>& cparams_ptr) override
     {
       FOUR_C_THROW("The auxiliary plane 3-D coupling integration case is currently unsupported!");
     }
@@ -74,9 +74,9 @@ namespace CONTACT
      Second, Build all integrals and linearizations without segmentation -- 3D
      (i.e. M, g, LinM, Ling and possibly D, LinD)
      */
-    void integrate_deriv_ele3_d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
+    void integrate_deriv_ele_3d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
-        const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override;
+        const Teuchos::RCP<Mortar::ParamsInterface>& cparams_ptr) override;
 
     //! @}
 
@@ -86,7 +86,7 @@ namespace CONTACT
             This is where the distinction between methods should be,
             i.e. mortar, augmented, gpts,...
      */
-    void integrate_gp_3_d(Mortar::Element& sele, Mortar::Element& mele,
+    void integrate_gp_3d(Mortar::Element& sele, Mortar::Element& mele,
         Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseVector& lmval,
         Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& sderiv,
         Core::LinAlg::SerialDenseMatrix& mderiv, Core::LinAlg::SerialDenseMatrix& lmderiv,
@@ -102,7 +102,7 @@ namespace CONTACT
             This is where the distinction between methods should be,
             i.e. mortar, augmented, gpts,...
      */
-    void integrate_gp_2_d(Mortar::Element& sele, Mortar::Element& mele,
+    void integrate_gp_2d(Mortar::Element& sele, Mortar::Element& mele,
         Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseVector& lmval,
         Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& sderiv,
         Core::LinAlg::SerialDenseMatrix& mderiv, Core::LinAlg::SerialDenseMatrix& lmderiv,

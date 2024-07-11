@@ -1096,7 +1096,7 @@ void Mortar::Element::deriv_jacobian(
   // (loop over all nodes and over all nodal dofs to capture all
   // potential dependencies of the Jacobian. Note that here we only
   // need to compute the DIRECT derivative of Lin(J), as the current
-  // GP coordinate does not change! The derivative DJacDXi is done in
+  // GP coordinate does not change! The derivative d_jac_d_xi is done in
   // a special function (see above)!
   // *********************************************************************
   for (int i = 0; i < nnodes; ++i)

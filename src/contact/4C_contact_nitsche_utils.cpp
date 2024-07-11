@@ -161,7 +161,6 @@ void Mortar::ElementNitscheData<parent_distype>::assemble_matrix(Mortar::Element
   }
 }
 
-
 template class Mortar::ElementNitscheData<Core::FE::CellType::hex8>;
 template class Mortar::ElementNitscheData<Core::FE::CellType::tet4>;
 template class Mortar::ElementNitscheData<Core::FE::CellType::hex27>;

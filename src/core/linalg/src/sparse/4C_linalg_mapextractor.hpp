@@ -69,7 +69,7 @@ namespace Core::LinAlg
       Teuchos::null and check whether they have a valid DataPtr() and are
       unique
 
-      \note hidden calls to Redistribute may render maps in maps_ obsolete.
+      \note hidden calls to redistribute() may render maps in maps_ obsolete.
       This function is intendend to simplify debugging for these cases.
     */
     void check_for_valid_map_extractor() const;

@@ -452,7 +452,7 @@ namespace CONTACT
 
     */
     double constraint_norm() const override { return 0.0; }
-    void evaluate_rel_mov_predict() override {}
+    void predict_relative_movement() override {}
     double initial_penalty() override { return 0.0; }
     void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override

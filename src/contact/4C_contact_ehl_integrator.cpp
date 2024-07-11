@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorEhl::integrate_gp_3_d(Mortar::Element& sele, Mortar::Element& mele,
+void CONTACT::IntegratorEhl::integrate_gp_3d(Mortar::Element& sele, Mortar::Element& mele,
     Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseVector& lmval,
     Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& sderiv,
     Core::LinAlg::SerialDenseMatrix& mderiv, Core::LinAlg::SerialDenseMatrix& lmderiv,
@@ -39,15 +39,15 @@ void CONTACT::IntegratorEhl::integrate_gp_3_d(Mortar::Element& sele, Mortar::Ele
   bool quad = sele.is_quad();
 
   // weighted gap
-  gp_3_d_w_gap(sele, sval, lmval, &gap, jac, wgt, quad);
+  gp_3d_w_gap(sele, sval, lmval, &gap, jac, wgt, quad);
   for (int j = 0; j < sele.num_node(); ++j)
     gp_g_lin(j, sele, mele, sval, mval, lmval, sderiv, lmderiv, gap, normal, jac, wgt, deriv_gap,
         derivjac, derivsxi, dualmap);
 
   // integrate D and M matrix
   gp_dm(sele, mele, lmval, sval, mval, jac, wgt, bound);
-  gp_3_d_dm_lin(sele, mele, sval, mval, lmval, sderiv, mderiv, lmderiv, wgt, jac, derivsxi,
-      derivmxi, derivjac, dualmap);
+  gp_3d_dm_lin(sele, mele, sval, mval, lmval, sderiv, mderiv, lmderiv, wgt, jac, derivsxi, derivmxi,
+      derivjac, dualmap);
 
   // get second derivative of shape function
   Core::LinAlg::SerialDenseMatrix ssecderiv(sele.num_node(), 3);
@@ -66,7 +66,7 @@ void CONTACT::IntegratorEhl::integrate_gp_3_d(Mortar::Element& sele, Mortar::Ele
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorEhl::integrate_gp_2_d(Mortar::Element& sele, Mortar::Element& mele,
+void CONTACT::IntegratorEhl::integrate_gp_2d(Mortar::Element& sele, Mortar::Element& mele,
     Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseVector& lmval,
     Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& sderiv,
     Core::LinAlg::SerialDenseMatrix& mderiv, Core::LinAlg::SerialDenseMatrix& lmderiv,

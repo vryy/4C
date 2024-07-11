@@ -660,7 +660,7 @@ namespace CONTACT
 
     Thus, an independent parallel distribution of the interface is
     desirable, which divides the interface among all available
-    processors. Redistribute() is the method to achieve this.
+    processors. redistribute() is the method to achieve this.
     Moreover, for contact problems we have to account for the fact
     that only parts of the slave surface actually need to evaluate
     contact terms (those parts that are "close" to the master side).
@@ -668,15 +668,15 @@ namespace CONTACT
     Internally, we call ZOLTAN to re-partition the contact interfaces
     in three independent parts: (1) close slave part, (2) non-close
     slave part, (3) master part. This results in new "optimal" node/element
-    maps of the interface discretization. Note that after Redistribute(),
+    maps of the interface discretization. Note that after redistribute(),
     we must call fill_complete() again. Note also that for contact
-    simulations Redistribute() might be called dynamically again and
+    simulations redistribute() might be called dynamically again and
     again to account for changes of the contact zone.
 
     Two special cases are treated separately: First, if ALL slave
     elements of the interface have some "close" neighbors, we do not
     need to distinguish the two different slave parts. Thus, we
-    simply call the base class method Redistribute() also used for
+    simply call the base class method redistribute() also used for
     meshtying. Second, if NO slave element of the interface has any
     "close" neighbors, we do not need to redistribute at all. This
     is indicated by returning with a boolean return value FALSE.
@@ -816,10 +816,11 @@ namespace CONTACT
     correct interpolation N_j is chosen for any case (2D, 3D, linear
     quadratic, piecewise linear...)
 
-    TODO: maybe update kappa each time step?
+    \todo maybe update kappa each time step?
 
     */
     virtual bool integrate_kappa_penalty(CONTACT::Element& sele);
+
     /*!
     \brief Evaluate relative movement (jump) of slave nodes
 
@@ -829,7 +830,7 @@ namespace CONTACT
     evaluated here.
 
     */
-    virtual void evaluate_rel_mov(const Teuchos::RCP<Epetra_Vector> xsmod,
+    virtual void evaluate_relative_movement(const Teuchos::RCP<Epetra_Vector> xsmod,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrixmod,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix> doldmod);
 
@@ -1083,16 +1084,16 @@ namespace CONTACT
         const Epetra_Map& gref_lmmap, const Epetra_Map& gref_smmap);
 
     /*!
-    \brief Assemble normal coupling weighted condition for poro contact
+    \brief Assemble normal coupling weighted condition. It is useful for poro contact
 
     */
-    virtual void assemble_n_coup(Epetra_Vector& gglobal);
+    virtual void assemble_normal_coupling(Epetra_Vector& gglobal);
 
     /*!
     \brief Assemble linearisation of normal coupling weighted condition for poro contact
 
     */
-    virtual void assemble_n_coup_lin(
+    virtual void assemble_normal_coupling_linearisation(
         Core::LinAlg::SparseMatrix& sglobal, Core::Adapter::Coupling& coupfs,
         bool AssembleVelocityLin = false  // if true velocity linearisation will be assembled into
                                           // sglobal, otherwise lin. w.r.t. displacements!
@@ -1265,50 +1266,50 @@ namespace CONTACT
     \brief Add line to line penalty forces
 
     */
-    void add_lt_lforces(Teuchos::RCP<Epetra_FEVector> feff);
+    void add_ltl_forces(Teuchos::RCP<Epetra_FEVector> feff);
 
     /*!
     \brief Add line to line penalty forces
 
     */
-    void add_lt_sforces_master(Teuchos::RCP<Epetra_FEVector> feff);
+    void add_lts_forces_master(Teuchos::RCP<Epetra_FEVector> feff);
 
     /*!
     \brief Add line to line penalty forces
 
     */
-    void add_nt_sforces_master(Teuchos::RCP<Epetra_FEVector> feff);
+    void add_nts_forces_master(Teuchos::RCP<Epetra_FEVector> feff);
 
     /*!
     \brief Add line to line penalty forces - friction
 
     */
-    void add_lt_lforces_fric(Teuchos::RCP<Epetra_FEVector> feff);
+    void add_ltl_forces_friction(Teuchos::RCP<Epetra_FEVector> feff);
 
     /*!
     \brief Add line to line penalty stiffness contribution
 
     */
-    void add_lt_lstiffness(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
+    void add_ltl_stiffness(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
 
     /*!
     \brief Add line to segment penalty stiffness contribution master side
 
     */
-    void add_lt_sstiffness_master(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
+    void add_lts_stiffness_master(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
 
     /*!
-    \brief Add line to segment penalty stiffness contribution master side
+    \brief Add node to segment penalty stiffness contribution master side
 
     */
-    void add_nt_sstiffness_master(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
+    void add_nts_stiffness_master(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
 
 
     /*!
     \brief Add line to line penalty stiffness contribution
 
     */
-    void add_lt_lstiffness_fric(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
+    void add_ltl_stiffness_friction(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
 
     Teuchos::RCP<Epetra_Vector>& get_cn() { return cnValues_; };
 
@@ -1445,7 +1446,7 @@ namespace CONTACT
     \brief 2D routine for cpp normal
 
     */
-    virtual double compute_cpp_normal2_d(Mortar::Node& mrtrnode,
+    virtual double compute_cpp_normal_2d(Mortar::Node& mrtrnode,
         std::vector<Mortar::Element*> meles, double* normal,
         std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin);
 
@@ -1453,7 +1454,7 @@ namespace CONTACT
     \brief 3D routine for cpp normal
 
     */
-    virtual double compute_cpp_normal3_d(Mortar::Node& mrtrnode,
+    virtual double compute_cpp_normal_3d(Mortar::Node& mrtrnode,
         std::vector<Mortar::Element*> meles, double* normal,
         std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin);
 
@@ -1499,13 +1500,13 @@ namespace CONTACT
     \brief 2D version of nodal normal scaling
 
     */
-    virtual void scale_normals2_d();
+    virtual void scale_normals_2d();
 
     /*!
     \brief 3D version of nodal normal scaling
 
     */
-    virtual void scale_normals3_d();
+    virtual void scale_normals_3d();
 
     /*!
     \brief Routine which stores entries from nts algorithm into mortar nodes to reuse
@@ -1617,7 +1618,7 @@ namespace CONTACT
      *  corresponding data container, instead! If you have any questions
      *  concerning this, do not hesitate and ask me.
      *                                                          hiermeier 03/17 */
-    // TODO: As already noted by Michael Hiermeier above, the contact interface should not store
+    // \todo As already noted by Michael Hiermeier above, the contact interface should not store
     // references to all member variables of the IDataContainer as it is currently implemented.
     // Instead, the contact interface should only store a reference to the data container and then
     // directly access the member variables of the data container using suitable set and get
@@ -1670,10 +1671,8 @@ namespace CONTACT
   };  // class Interface
 }  // namespace CONTACT
 
-
 //! << operator
 std::ostream& operator<<(std::ostream& os, const CONTACT::Interface& interface);
-
 
 FOUR_C_NAMESPACE_CLOSE
 

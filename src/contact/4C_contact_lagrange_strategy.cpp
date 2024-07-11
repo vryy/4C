@@ -1705,11 +1705,11 @@ void CONTACT::LagrangeStrategy::add_master_contributions(
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     // line to segment
-    interface_[i]->add_lt_sforces_master(fc);
-    interface_[i]->add_lt_sstiffness_master(kc);
+    interface_[i]->add_lts_forces_master(fc);
+    interface_[i]->add_lts_stiffness_master(kc);
     // node to segment
-    interface_[i]->add_nt_sforces_master(fc);
-    interface_[i]->add_nt_sstiffness_master(kc);
+    interface_[i]->add_nts_forces_master(fc);
+    interface_[i]->add_nts_stiffness_master(kc);
   }
 
   // force
@@ -1761,8 +1761,8 @@ void CONTACT::LagrangeStrategy::add_line_to_lin_contributions(
   // loop over interface and assemble force and stiffness
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->add_lt_lforces(fc);
-    interface_[i]->add_lt_lstiffness(kc);
+    interface_[i]->add_ltl_forces(fc);
+    interface_[i]->add_ltl_stiffness(kc);
   }
 
   // get info for conservation check
@@ -1816,8 +1816,8 @@ void CONTACT::LagrangeStrategy::add_line_to_lin_contributions_friction(
   // loop over interface and assemble force and stiffness
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->add_lt_lforces(fc);
-    interface_[i]->add_lt_lstiffness(kc);
+    interface_[i]->add_ltl_forces(fc);
+    interface_[i]->add_ltl_stiffness(kc);
   }
 
   // store normal forces
@@ -1827,8 +1827,8 @@ void CONTACT::LagrangeStrategy::add_line_to_lin_contributions_friction(
   // loop over interface and assemble force and stiffness
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->add_lt_lforces_fric(fc);
-    interface_[i]->add_lt_lstiffness_fric(kc);
+    interface_[i]->add_ltl_forces_friction(fc);
+    interface_[i]->add_ltl_stiffness_friction(kc);
   }
 
   // get info for conservation check
@@ -3373,7 +3373,7 @@ void CONTACT::LagrangeStrategy::evaluate_force(CONTACT::ParamsInterface& cparams
 
   // evaluate relative movement for friction
   if (cparams.is_predictor())
-    evaluate_rel_mov_predict();
+    predict_relative_movement();
   else
     evaluate_relative_movement();
 

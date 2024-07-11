@@ -1073,7 +1073,7 @@ Teuchos::RCP<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_binnin
 void Mortar::Interface::redistribute()
 {
   std::stringstream ss;
-  ss << "Mortar::Interface::Redistribute of '" << discret().name() << "'";
+  ss << "Mortar::Interface::redistribute of '" << discret().name() << "'";
   TEUCHOS_FUNC_TIME_MONITOR(ss.str());
 
   const Teuchos::ParameterList& mortarParallelRedistParams =
@@ -1137,7 +1137,7 @@ void Mortar::Interface::redistribute()
 
   {
     std::stringstream ss_slave;
-    ss_slave << "Mortar::Interface::Redistribute of '" << discret().name() << "' (slave)";
+    ss_slave << "Mortar::Interface::redistribute of '" << discret().name() << "' (slave)";
     TEUCHOS_FUNC_TIME_MONITOR(ss_slave.str());
 
     Teuchos::RCP<const Epetra_CrsGraph> snodegraph =
@@ -1159,7 +1159,7 @@ void Mortar::Interface::redistribute()
 
   {
     std::stringstream ss_master;
-    ss_master << "Mortar::Interface::Redistribute of '" << discret().name() << "' (master)";
+    ss_master << "Mortar::Interface::redistribute of '" << discret().name() << "' (master)";
     TEUCHOS_FUNC_TIME_MONITOR(ss_master.str());
 
     redistribute_master_side(mrownodes, mcolnodes, mroweles, comm, mproc, imbalance_tol);
@@ -1177,7 +1177,7 @@ void Mortar::Interface::redistribute()
   //**********************************************************************
   {
     std::stringstream ss_comm;
-    ss_comm << "Mortar::Interface::Redistribute of '" << discret().name() << "' (communicate)";
+    ss_comm << "Mortar::Interface::redistribute of '" << discret().name() << "' (communicate)";
     TEUCHOS_FUNC_TIME_MONITOR(ss_comm.str());
 
     // build reasonable element maps from the already valid and final node maps

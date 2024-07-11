@@ -123,7 +123,7 @@ void CONTACT::PenaltyStrategy::save_reference_state(Teuchos::RCP<const Epetra_Ve
 /*----------------------------------------------------------------------*
  | evaluate relative movement in predictor step               popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::PenaltyStrategy::evaluate_rel_mov_predict()
+void CONTACT::PenaltyStrategy::predict_relative_movement()
 {
   // only for frictional contact
   if (friction_ == false) return;
@@ -729,7 +729,7 @@ void CONTACT::PenaltyStrategy::evaluate_force(CONTACT::ParamsInterface& cparams)
 
   // evaluate relative movement for friction
   if (cparams.is_predictor())
-    evaluate_rel_mov_predict();
+    predict_relative_movement();
   else
     evaluate_relative_movement();
 

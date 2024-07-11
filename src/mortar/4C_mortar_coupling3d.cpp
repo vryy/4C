@@ -3402,7 +3402,7 @@ bool Mortar::Coupling3d::integrate_cells(const Teuchos::RCP<Mortar::ParamsInterf
     {
       // call integrator
       Mortar::Integrator::impl(slave_element(), master_element(), interface_params())
-          ->integrate_cell3_d_aux_plane(
+          ->integrate_cell_3d_aux_plane(
               slave_element(), master_element(), cells()[i], auxn(), get_comm());
     }
 
@@ -3418,7 +3418,7 @@ bool Mortar::Coupling3d::integrate_cells(const Teuchos::RCP<Mortar::ParamsInterf
       Mortar::IntElement& mintref = dynamic_cast<Mortar::IntElement&>(master_int_element());
 
       Mortar::Integrator::impl(slave_element(), master_element(), interface_params())
-          ->integrate_cell3_d_aux_plane_quad(
+          ->integrate_cell_3d_aux_plane_quad(
               slave_element(), master_element(), sintref, mintref, cells()[i], auxn());
     }
 
@@ -3438,7 +3438,7 @@ bool Mortar::Coupling3d::integrate_cells(const Teuchos::RCP<Mortar::ParamsInterf
       Mortar::IntElement& mintref = dynamic_cast<Mortar::IntElement&>(master_int_element());
 
       Mortar::Integrator::impl(slave_element(), master_element(), interface_params())
-          ->integrate_cell3_d_aux_plane_quad(
+          ->integrate_cell_3d_aux_plane_quad(
               slave_element(), master_element(), sintref, mintref, cells()[i], auxn());
     }
 
@@ -4001,7 +4001,7 @@ void Mortar::Coupling3dManager::integrate_coupling(
 
       // integrate D and M -- 2 Cells
       Mortar::Integrator::impl(slave_element(), master_element(0), imortar_)
-          ->integrate_ele_based3_d(
+          ->integrate_ele_based_3d(
               slave_element(), master_elements(), &boundary_ele, idiscret_.get_comm());
 
       if (int_type() == Inpar::Mortar::inttype_elements_BS)
@@ -4136,7 +4136,7 @@ void Mortar::Coupling3dQuadManager::integrate_coupling(
 
     // integrate D and M -- 2 Cells
     Mortar::Integrator::impl(slave_element(), master_element(0), imortar_)
-        ->integrate_ele_based3_d(
+        ->integrate_ele_based_3d(
             slave_element(), master_elements(), &boundary_ele, idiscret_.get_comm());
 
     if (int_type() == Inpar::Mortar::inttype_elements_BS)
@@ -4248,7 +4248,7 @@ void Mortar::Coupling3dManager::consist_dual_shape()
       {
         // project Gauss point onto master element
         Mortar::Projector::impl(slave_element(), coupling()[nummaster]->master_element())
-            ->project_gauss_point3_d(
+            ->project_gauss_point_3d(
                 slave_element(), sxi, coupling()[nummaster]->master_element(), mxi, projalpha);
 
         bool is_on_mele = true;
@@ -4325,7 +4325,7 @@ void Mortar::Coupling3dManager::consist_dual_shape()
 
         // TODO random?
         Mortar::Projector::impl(slave_element())
-            ->project_gauss_point_auxn3_d(
+            ->project_gauss_point_auxn_3d(
                 globgp, coupling()[m]->auxn(), slave_element(), sxi, sprojalpha);
 
         // create vector for shape function evaluation

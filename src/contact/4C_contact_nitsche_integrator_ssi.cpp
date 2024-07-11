@@ -35,7 +35,7 @@ CONTACT::IntegratorNitscheSsi::IntegratorNitscheSsi(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitscheSsi::integrate_gp_3_d(Mortar::Element& sele, Mortar::Element& mele,
+void CONTACT::IntegratorNitscheSsi::integrate_gp_3d(Mortar::Element& sele, Mortar::Element& mele,
     Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseVector& lmval,
     Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& sderiv,
     Core::LinAlg::SerialDenseMatrix& mderiv, Core::LinAlg::SerialDenseMatrix& lmderiv,
@@ -52,7 +52,7 @@ void CONTACT::IntegratorNitscheSsi::integrate_gp_3_d(Mortar::Element& sele, Mort
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitscheSsi::integrate_gp_2_d(Mortar::Element& sele, Mortar::Element& mele,
+void CONTACT::IntegratorNitscheSsi::integrate_gp_2d(Mortar::Element& sele, Mortar::Element& mele,
     Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseVector& lmval,
     Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& sderiv,
     Core::LinAlg::SerialDenseMatrix& mderiv, Core::LinAlg::SerialDenseMatrix& lmderiv,

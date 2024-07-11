@@ -45,7 +45,7 @@ CONTACT::IntegratorNitscheSsiElch::IntegratorNitscheSsiElch(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitscheSsiElch::integrate_gp_3_d(Mortar::Element& sele,
+void CONTACT::IntegratorNitscheSsiElch::integrate_gp_3d(Mortar::Element& sele,
     Mortar::Element& mele, Core::LinAlg::SerialDenseVector& sval,
     Core::LinAlg::SerialDenseVector& lmval, Core::LinAlg::SerialDenseVector& mval,
     Core::LinAlg::SerialDenseMatrix& sderiv, Core::LinAlg::SerialDenseMatrix& mderiv,

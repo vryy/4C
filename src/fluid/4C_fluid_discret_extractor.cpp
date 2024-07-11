@@ -430,7 +430,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         Global::Problem::instance()->spatial_approximation_type())));
 
     // call fill_complete() to assign the dof
-    // remark: equal Redistribute(*newrownodemap,*newcolnodemap,true,true,true) as
+    // remark: equal redistribute(*newrownodemap,*newcolnodemap,true,true,true) as
     //         it also calls fill_complete() at the end
     childdiscret_->fill_complete(true, true, true);
 

@@ -1598,7 +1598,7 @@ namespace CONTACT
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
     virtual void evaluate_friction(
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
-    void evaluate_rel_mov_predict() override = 0;
+    void predict_relative_movement() override = 0;
     double initial_penalty() override = 0;
     void initialize() override = 0;
     void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,

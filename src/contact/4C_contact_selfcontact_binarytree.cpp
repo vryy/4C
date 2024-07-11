@@ -1014,8 +1014,8 @@ void CONTACT::SelfBinaryTree::add_tree_nodes_to_contact_pairs(
 {
   bool isadjacent(true);
 
-  if (n_dim() == 2) isadjacent = test_adjacent2_d(treenode1, treenode2);
-  if (n_dim() == 3) isadjacent = test_adjacent3_d(treenode1, treenode2);
+  if (n_dim() == 2) isadjacent = test_adjacent_2d(treenode1, treenode2);
+  if (n_dim() == 3) isadjacent = test_adjacent_3d(treenode1, treenode2);
   if (!isadjacent)
   {
     contactpairs_[treenode1->elelist()[0]].push_back(treenode2->elelist()[0]);
@@ -1283,10 +1283,10 @@ void CONTACT::SelfBinaryTree::evaluate_contact_and_adjacency(
     if (isadjacent)
     {
       if (n_dim() == 2)
-        isadjacent = test_adjacent2_d(treenode1, treenode2);
+        isadjacent = test_adjacent_2d(treenode1, treenode2);
       else
       {
-        isadjacent = test_adjacent3_d(treenode1, treenode2);
+        isadjacent = test_adjacent_3d(treenode1, treenode2);
       }
 
       if (isadjacent)
@@ -1345,10 +1345,10 @@ void CONTACT::SelfBinaryTree::evaluate_contact_and_adjacency(
 /*----------------------------------------------------------------------*
  | find contact and test adjacency (public)                    popp 06/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::SelfBinaryTree::test_adjacent2_d(
+bool CONTACT::SelfBinaryTree::test_adjacent_2d(
     Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2)
 {
-  if (n_dim() != 2) FOUR_C_THROW("test_adjacent2_d: problem must be 2D!!\n");
+  if (n_dim() != 2) FOUR_C_THROW("test_adjacent_2d: problem must be 2D!!\n");
 
   std::vector<int> endnodes1 = treenode1->endnodes();
   std::vector<int> endnodes2 = treenode2->endnodes();
@@ -1386,10 +1386,10 @@ bool CONTACT::SelfBinaryTree::test_adjacent2_d(
 /*----------------------------------------------------------------------*
  | find contact and test adjacency (public)                    popp 06/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::SelfBinaryTree::test_adjacent3_d(
+bool CONTACT::SelfBinaryTree::test_adjacent_3d(
     Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2)
 {
-  if (n_dim() != 3) FOUR_C_THROW("test_adjacent3_d: problem must be 3D!!\n");
+  if (n_dim() != 3) FOUR_C_THROW("test_adjacent_3d: problem must be 3D!!\n");
 
   // if the treenodes are in the same layer check the vector of adjacent treenodes
   if (treenode1->get_layer() == treenode2->get_layer())
@@ -1433,20 +1433,20 @@ bool CONTACT::SelfBinaryTree::test_adjacent3_d(
 
       // one leaf and one inner treenode
       else if (treenode1->type() == SELFCO_LEAF and treenode2->type() != SELFCO_LEAF)
-        return (test_adjacent3_d(treenode1, treenode2->leftchild()) or
-                test_adjacent3_d(treenode1, treenode2->rightchild()));
+        return (test_adjacent_3d(treenode1, treenode2->leftchild()) or
+                test_adjacent_3d(treenode1, treenode2->rightchild()));
 
       else if (treenode1->type() != SELFCO_LEAF and treenode2->type() == SELFCO_LEAF)
-        return (test_adjacent3_d(treenode1->leftchild(), treenode2) or
-                test_adjacent3_d(treenode1->rightchild(), treenode2));
+        return (test_adjacent_3d(treenode1->leftchild(), treenode2) or
+                test_adjacent_3d(treenode1->rightchild(), treenode2));
 
       else if ((treenode1->get_layer()) > treenode2->get_layer())
-        return (test_adjacent3_d(treenode1, treenode2->leftchild()) or
-                test_adjacent3_d(treenode1, treenode2->rightchild()));
+        return (test_adjacent_3d(treenode1, treenode2->leftchild()) or
+                test_adjacent_3d(treenode1, treenode2->rightchild()));
 
       else if ((treenode1->get_layer()) < treenode2->get_layer())
-        return (test_adjacent3_d(treenode1->leftchild(), treenode2) or
-                test_adjacent3_d(treenode1->rightchild(), treenode2));
+        return (test_adjacent_3d(treenode1->leftchild(), treenode2) or
+                test_adjacent_3d(treenode1->rightchild(), treenode2));
     }
   }
   // treenodes do not overlap;

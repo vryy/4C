@@ -16,7 +16,6 @@
 #include "4C_contact_defines.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_contact_friction_node.hpp"
-#include "4C_contact_integrator.hpp"
 #include "4C_contact_interface.hpp"
 #include "4C_contact_lagrange_strategy.hpp"
 #include "4C_contact_wear_interface.hpp"

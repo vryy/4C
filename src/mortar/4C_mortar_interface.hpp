@@ -1050,11 +1050,11 @@ namespace Mortar
 
     Thus, an independent parallel distribution of the interface is
     desirable, which divides the interface among all available
-    processors. Redistribute() is the method to achieve this.
+    processors. redistribute() is the method to achieve this.
     Internally, we call ZOLTAN to re-partition both slave and
     master side of the interface independently. This results in new
     "optimal" node/element maps of the interface discretization.
-    Note that after Redistribute(), we must call fill_complete() again.
+    Note that after redistribute(), we must call fill_complete() again.
 
     References
     ==========
@@ -1407,7 +1407,7 @@ namespace Mortar
 
     //! @}
 
-    /** \brief function called at the beginning of each MortarCoupling call
+    /** \brief function called at the beginning of each mortar_coupling call
      *
      *  \param sele        (in): pointer to the current slave element
      *  \param mele        (in): pointer to the current master element
@@ -1421,7 +1421,7 @@ namespace Mortar
         /* does nothing in the default case */
     };
 
-    /** \brief function called at the end of each MortarCoupling call
+    /** \brief function called at the end of each mortar_coupling call
      *
      *  \param sele        (in): pointer to the current slave element
      *  \param mele        (in): pointer to the current master element

@@ -775,14 +775,14 @@ namespace CONTACT
     \brief Test for adjacency (2D)
 
     */
-    bool test_adjacent2_d(
+    bool test_adjacent_2d(
         Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2);
 
     /*!
     \brief Test for adjacency (2D)
 
     */
-    bool test_adjacent3_d(
+    bool test_adjacent_3d(
         Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2);
     //@}
 

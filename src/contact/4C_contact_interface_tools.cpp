@@ -5344,7 +5344,7 @@ void CONTACT::Interface::fd_check_stick_deriv(
 
   return;
 
-}  // FDCheckStickDeriv
+}  // fd_check_stick_deriv
 
 /*----------------------------------------------------------------------*
  | Finite difference check of slip condition derivatives     farah 08/13|

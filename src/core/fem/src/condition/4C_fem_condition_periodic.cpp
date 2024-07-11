@@ -76,11 +76,11 @@ Core::Conditions::PeriodicBoundaryConditions::PeriodicBoundaryConditions(
         Teuchos::TimeMonitor::getNewTimer("3)      +search closest nodes in octrees on all procs");
     timepbcaddcon_ =
         Teuchos::TimeMonitor::getNewTimer("4)   +add connectivity to previous conditions");
-    timepbcreddis_ = Teuchos::TimeMonitor::getNewTimer("5)   +Redistribute the nodes");
+    timepbcreddis_ = Teuchos::TimeMonitor::getNewTimer("5)   +redistribute the nodes");
     timepbcmakeghostmap_ =
         Teuchos::TimeMonitor::getNewTimer("6)      +build rowmap and temporary colmap");
     timepbcghost_ = Teuchos::TimeMonitor::getNewTimer("7)      +repair ghosting");
-    timepbcrenumdofs_ = Teuchos::TimeMonitor::getNewTimer("8)      +call discret->Redistribute");
+    timepbcrenumdofs_ = Teuchos::TimeMonitor::getNewTimer("8)      +call discret->redistribute");
   }
 
   return;

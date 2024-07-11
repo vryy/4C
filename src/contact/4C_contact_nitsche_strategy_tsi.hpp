@@ -125,6 +125,7 @@ namespace CONTACT
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kdt_;
   };
 }  // namespace CONTACT
+
 FOUR_C_NAMESPACE_CLOSE
 
 #endif
