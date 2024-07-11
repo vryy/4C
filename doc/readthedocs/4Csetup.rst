@@ -153,7 +153,7 @@ See the `ArborX repository <https://github.com/arborx/ArborX>`_ for details and 
 
 **Trilinos**
 
-This essential TPL can be downloaded from the `trilinos Github repository <https://github.com/trilinos/Trilinos>`__.
+This essential TPL can be downloaded from the `Trilinos Github repository <https://github.com/trilinos/Trilinos>`__.
 The currently used (and tested) version is tagged with *trilinos-release-15-0-0*.
 Additionally, |FOURC| is tested weekly against the Trilinos develop branch. Though, this may not always work.
 

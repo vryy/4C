@@ -4,26 +4,35 @@
 Welcome to |FOURC|
 ===================
 
+Purpose and objectives
+---------------------
+
+|FOURC| is a parallel multi-physics research code
+to analyze and solve a plethora of physical problems
+described by ordinary or partial differential equations.
+Its development is driven by challenging research questions and real-world problems,
+for which existing tools do not suffice, either due to the lack of capabilities or due to falling short of accuracy or performance.
+|FOURC| not only provides ready-to-use simulation capabilities for a variety of physical models,
+including single fields such as solids and structures, fluids, or scalar transport,
+and multi-physics coupling and interactions between several fields,
+but also a modular software environment for research in mathematical modeling and numerical methods.
+Pre- and post-processing tools facilitate the use of |FOURC| within streamlined application workflows in science and engineering.
+For spatial discretization, |FOURC| mostly relies on finite element methods (FEM, CutFEM).
+It leverages the `Trilinos project <https://trilinos.github.io>`_ for sparse linear algebra, nonlinear solvers, and linear solvers and preconditioners
+to be executed on MPI-parallel computing clusters.
+Through its comprehensive set of physics modules available to all users without coding effort,
+|FOURC| facilitates the advancement of research in all areas of science, engineering, and biomedicine.
+
 History
 -------
 
-|FOURC| is a C++ research code that has its roots in the by now abandoned C
-code ``ccarat`` and its successor, written in modern C++, BACI (the Bavarian Advanced Computation Initiative).
-``ccarat`` was started by Michael Gee in 2000 and has
-since grown in several directions. The aim back then was to provide a
-framework for parallel multifield finite element simulation, including
-moderate parallelization, not massive parallel execution with hundreds of processes.
-That is why there is a strong emphasis on data structures in ``ccarat``
-but still a lot of data redundancies.
-The original ``ccarat`` is a large C project that uses
-external linear solver packages (both parallel and serial).
-
-In 2006 it was felt that ``ccarat`` needs a major face lift.
-And again it is due to Michael Gee to introduce the trilinos libraries into ``ccarat`` and redesign the whole package on top of that.
-This is how the predecessor of |FOURC|, BACI, emerged in spring 2007.
-The ``ccarat`` code was replaced step by step (even if some of these steps were XXL sized) until close to no original code remained.
-Eventually, after lots and lots of other improvements and extensions, the code was renamed as |FOURC| in spring 2024, and is to become open source soon.
-
+The development of |FOURC| arose from the need to tackle challenging research questions
+in and with numerical methods for ordinary and partial differential equations
+and to advance complex models for real-world applications,
+all based on a proper theoretical foundation and with verified and state-of-the-art methods and software implementations.
+Since suitable tools are often not available either in commercial or in other (academic) research codes,
+we want to close this gap by developing |FOURC|, a comprehensive multi-physics simulation framework.
+|FOURC| originated in the 2000s at the `Institute for Computational Mechanics <https://www.epc.ed.tum.de/lnm/home/>`_ of the Technical University of Munich [#f1]_.
 
 .. _items-to-be-added:
 
@@ -61,3 +70,6 @@ The following list only contains a few parts and sections, which should be fille
     :ref:`old_Fluid-structure Interaction<fluid_structure_interaction>` and :ref:`old_Free Surface Flow<free_surface_flow>`.
     Somebody should check, which parts of these sections can still be used, ond which should be removed.
 
+.. rubric:: Footnotes
+
+.. [#f1] A predecessor has been developed under the name BACI, which has been built upon the extensive experience of individual developers of the software ccarat of the Institute for Structural Mechanics of the University of Stuttgart.
