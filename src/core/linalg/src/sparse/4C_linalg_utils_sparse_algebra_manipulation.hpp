@@ -291,20 +291,6 @@ namespace Core::LinAlg
   Teuchos::RCP<Epetra_Map> MergeMap(const Teuchos::RCP<const Epetra_Map>& map1,
       const Teuchos::RCP<const Epetra_Map>& map2, bool overlap = true);
 
-  /*! \brief Extract a locally overlapping sub-map from the source map
-   *
-   *  Find all gids in the source map which are also part of the reference map.
-   *  This function works only locally on each proc. No communication is
-   *  performed.
-   *
-   *  \param(in) src_map  source map which shall be considered
-   *  \param(in) ref_map  reference map
-   *  \return overlapping sub-map
-   *
-   *  \author hiermeier \date 03/18 */
-  Teuchos::RCP<Epetra_Map> ExtractMyOverlappingSubMap(
-      const Epetra_BlockMap& src_map, const Epetra_BlockMap& ref_map);
-
   /*!
      \brief split a vector into 2 non-overlapping pieces (Teuchos::RCP version)
 
@@ -334,31 +320,6 @@ namespace Core::LinAlg
   bool split_vector(const Epetra_Map& xmap, const Epetra_Vector& x,
       Teuchos::RCP<const Epetra_Map>& x1map, Teuchos::RCP<Epetra_Vector>& x1,
       Teuchos::RCP<const Epetra_Map>& x2map, Teuchos::RCP<Epetra_Vector>& x2);
-
-  /*! \brief compute a set of dof maps from a provided set of node maps
-   *
-   *  \param(in) dofset_id  considered dof set id. In the default case this value
-   *                        can be set to zero.
-   *  \param(in) node_maps  set of provided node maps
-   *  \param(in) discret    underlying discretization
-   *  \param(out) dof_maps  set of corresponding dof maps
-   *
-   *  \author hiermeier \date 03/18 */
-  void ComputeDofMapsFromNodeMaps(const int dofset_id,
-      const std::vector<Teuchos::RCP<Epetra_Map>>& node_maps,
-      const Core::FE::Discretization& discret, std::vector<Teuchos::RCP<Epetra_Map>>& dof_maps);
-
-  /*! \brief Compute a dof map corresponding to the given node map
-   *
-   *  \param(in) dofset_id  considered dof set id. In the default case this value
-   *                        can be set to zero.
-   *  \param(in) node_map   provided node map
-   *  \param(in) discret    underlying discretization
-   *  \return corresponding dof map
-   *
-   *  \author hiermeier \date 03/18 */
-  Teuchos::RCP<Epetra_Map> ComputeDofMapFromNodeMap(
-      const int dofset_id, const Epetra_Map& node_map, const Core::FE::Discretization& discret);
 
   /*! \brief Write values from a std::vector to a Epetra_MultiVector
    *
