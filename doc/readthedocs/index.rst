@@ -1,64 +1,75 @@
-.. 4C-documentation documentation master file, created by
-   sphinx-quickstart on Wed Nov 23 14:27:39 2022.
+.. 4C-documentation documentation master file
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
-
 
 ========
 |FOURC|
 ========
 
-.. note::
+Mission statement
+=================
 
-    This is a draft of the |FOURC| documentation, and the content is rather incomplete.
-    The faster additional content is added,
-    the sooner the documentation will be useful for users to understand the various types of simulations and their application.
-    Some documentation parts are highly relevant for many users; those need an update with highest priority.
-    A list of items that should be added asap, is given :ref:`here<items-to-be-added>`.
+|FOURC| is a parallel multi-physics research code
+to analyze and solve a plethora of physical problems
+described by ordinary or partial differential equations.
+Its development is driven by challenging research questions and real-world problems,
+for which existing tools do not suffice,
+either due to the lack of capabilities or due to falling short of accuracy or performance.
+
+|FOURC| not only provides ready-to-use simulation capabilities for a variety of physical models,
+including single fields such as solids and structures, fluids, or scalar transport,
+and multi-physics coupling and interactions between several fields,
+but also a modular software environment for research in mathematical modeling and numerical methods.
+Pre- and post-processing tools facilitate the use of |FOURC| within streamlined application workflows in science and engineering.
+For spatial discretization, |FOURC| mostly relies on finite element methods (FEM, CutFEM).
+It leverages the `Trilinos project <https://trilinos.github.io>`_ for sparse linear algebra, nonlinear solvers, and linear solvers and preconditioners
+to be executed on MPI-parallel computing clusters.
+Through its comprehensive set of physics modules available to all users without coding effort,
+|FOURC| facilitates the advancement of research in all areas of science, engineering, and biomedicine.
 
 Content
 =======
 
-The following Guide to |FOURC| deals with
+This guide to |FOURC| is structured as follows:
 
-:ref:`Part I - Welcome <WelcomeTo4C>`
-   This section outlines the history of the code.
-   Also you'll find a list of documentation sections that needs some update.
+:ref:`Part I — About 4C<about>`
+   Learn about the capabilities and history of |FOURC|.
 
 :ref:`Part II — Tutorials<tutorials>`
-   A number of tutorials are available, which also serve as framework tests during the gitlab CI.
+   A series of beginner-level tutorials showcases the setup procedure for specific application scenarios.
 
 :ref:`Part III - Analysis guide<analysisguide>`
-   Explanations on the whole tool chain from model generation (pre processing)
-   to results evaluation (post processing)
-   Theoretical background and detailed description on elements, data types, ...
+   Detailed explanations on the whole tool chain from model generation (pre-processing)
+   over running a simulation to the evaluation of results (post-processing) offers deep insight into using |FOURC|
+   for advanced simulation scenarios.
+   This guide includes background information and detailed descriptions
+   for the specification of elements, boundary conditions, constitutive laws
+   as well as options for linear and nonlinear solvers.
 
 :ref:`Part IV - Developer guide<developerguide>`
-   Contains useful information for developers, about adding Doxygen information, C++ basics, etc.
+   This guide gets you started on actively developing and contributing to |FOURC|.
+   It covers the build process, our CI/CD testing infrastructure,
+   coding guidelines, and useful tools for the daily development of |FOURC|.
 
 :ref:`Part V - Input Parameter Reference<inputparameterreference>`
-   Input parameter (including elements, materials, boundary conditions) with short description
+   A comprehensive list of all input parameters, elements, materials, and boundary conditions
+   with short descriptions for each option
 
 :ref:`Part VI - Tools and Scripts<toolsAndScripts>`
+   A collection of useful scripts for working with |FOURC|
 
 :ref:`Appendix<appendix>`
-   Some additional theory information,
-   and a section about how to add information to the ReadTheDocs documentation.
-   Also, you'll find the index and the references therein.
-
+   Information on contributing to this documentation as well as seleceted topics of interest
 
 .. toctree::
    :maxdepth: 2
    :hidden:
    :caption: Contents:
 
-   welcome
+   about
    tutorials
    analysisguide
    developmentguide
    parameterreference
    tools
    appendix
-
-
-
