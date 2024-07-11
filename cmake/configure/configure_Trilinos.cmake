@@ -1,6 +1,7 @@
 # Kokkos is typically pulled in via Trilinos. If no location has been given,
 # try the same location as Trilinos. If no Trilinos location exists, users
 # will get an error to provide that one first.
+set(Kokkos_FIND_QUIETLY TRUE)
 if(Trilinos_ROOT AND NOT Kokkos_ROOT)
   set(Kokkos_ROOT
       ${Trilinos_ROOT}
@@ -11,8 +12,8 @@ endif()
 # We only support Trilinos versions that provide a config file.
 find_package(Trilinos REQUIRED)
 
+message(STATUS "Trilinos version: ${Trilinos_VERSION}")
 message(STATUS "Trilinos packages: ${Trilinos_PACKAGE_LIST}")
-message(STATUS "Trilinos TPLs: ${Trilinos_TPL_LIST}")
 
 if(Trilinos_FOUND AND NOT TARGET Trilinos::all_selected_libs)
   # In preparation for newer Trilinos releases, create a target
