@@ -1191,7 +1191,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::materials(
 
     case Core::Materials::m_scatra_multiscale:
     {
-      mat_sca_tra_multi_scale(material, densn, densnp, densam);
+      mat_scatra_multi_scale(material, densn, densnp, densam);
       break;
     }
 
@@ -1259,7 +1259,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::mat_scatra(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::mat_sca_tra_multi_scale(
+void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::mat_scatra_multi_scale(
     const Teuchos::RCP<const Core::Mat::Material> material, double& densn, double& densnp,
     double& densam) const
 {

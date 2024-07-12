@@ -1459,7 +1459,7 @@ namespace FLD
   Provide access to scalar transport field
 
   ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::add_sca_tra_field(
+  void TurbulenceStatisticManager::add_scatra_field(
       Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_timeint)
   {
     if (discret_->get_comm().MyPID() == 0)
@@ -1505,10 +1505,9 @@ namespace FLD
     myfsphi_ = scatra_timeint->fs_phi();
 
     if (statistics_general_mean_ != Teuchos::null)
-      statistics_general_mean_->add_sca_tra_results(scatradis_, myphinp_);
+      statistics_general_mean_->add_scatra_results(scatradis_, myphinp_);
 
-    if (statistics_ccy_ != Teuchos::null)
-      statistics_ccy_->add_sca_tra_results(scatradis_, myphinp_);
+    if (statistics_ccy_ != Teuchos::null) statistics_ccy_->add_scatra_results(scatradis_, myphinp_);
 
     if (flow_ == scatra_channel_flow_of_height_2 or flow_ == loma_channel_flow_of_height_2)
     {
@@ -1530,7 +1529,7 @@ namespace FLD
   Write (dump) the scatra-specific mean fields to the result file
 
   ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::do_output_for_sca_tra(
+  void TurbulenceStatisticManager::do_output_for_scatra(
       Core::IO::DiscretizationWriter& output, int step)
   {
     // sampling takes place only in the sampling period
@@ -1546,7 +1545,7 @@ namespace FLD
 
       if ((step % upres == 0 || step % uprestart == 0) &&
           (statistics_general_mean_ != Teuchos::null))
-        statistics_general_mean_->do_output_for_sca_tra(output, step);
+        statistics_general_mean_->do_output_for_scatra(output, step);
     }
     return;
   }
@@ -1597,7 +1596,7 @@ namespace FLD
   Restart for scatra mean fields (statistics was restarted via restart() )
 
   ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::read_restart_sca_tra(
+  void TurbulenceStatisticManager::read_restart_scatra(
       Core::IO::DiscretizationReader& scatrareader, int step)
   {
     // we have only to read in the mean field.
@@ -1614,7 +1613,7 @@ namespace FLD
           std::cout << "\n\n";
         }
 
-        statistics_general_mean_->read_old_statistics_sca_tra(scatrareader);
+        statistics_general_mean_->read_old_statistics_scatra(scatrareader);
       }
     }
 

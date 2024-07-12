@@ -10,9 +10,7 @@
 #include "4C_contact_meshtying_abstract_strategy.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_contact_meshtying_defines.hpp"
 #include "4C_contact_meshtying_noxinterface.hpp"
-#include "4C_fem_discretization.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
@@ -29,7 +27,6 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN
-
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                             popp 05/09 |

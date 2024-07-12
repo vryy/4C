@@ -107,7 +107,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
               Global::Problem::instance()->n_dim() + 1, 0, 0, true));
       if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-      scatraonly->sca_tra_field()->set_number_of_dof_set_velocity(1);
+      scatraonly->scatra_field()->set_number_of_dof_set_velocity(1);
 
       // allow TRANSPORT conditions, too
       // NOTE: we can not use the conditions given by 'conditions_to_copy =
@@ -177,19 +177,19 @@ void scatra_cardiac_monodomain_dyn(int restart)
       scatraonly->setup();
 
       // read the restart information, set vectors and variables
-      if (restart) scatraonly->sca_tra_field()->read_restart(restart);
+      if (restart) scatraonly->scatra_field()->read_restart(restart);
 
       // set initial velocity field
       // note: The order read_restart() before set_velocity_field() is important here!!
       // for time-dependent velocity fields, set_velocity_field() is additionally called in each
       // prepare_time_step()-call
-      (scatraonly->sca_tra_field())->set_velocity_field();
+      (scatraonly->scatra_field())->set_velocity_field();
 
       // enter time loop to solve problem with given convective velocity
-      (scatraonly->sca_tra_field())->time_loop();
+      (scatraonly->scatra_field())->time_loop();
 
       // perform the result test if required
-      Global::Problem::instance()->add_field_test(scatraonly->create_sca_tra_field_test());
+      Global::Problem::instance()->add_field_test(scatraonly->create_scatra_field_test());
       Global::Problem::instance()->test_all(comm);
 
       break;
@@ -367,7 +367,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
 
       // perform the result test
       Global::Problem::instance()->add_field_test(algo->fluid_field()->create_field_test());
-      Global::Problem::instance()->add_field_test(algo->create_sca_tra_field_test());
+      Global::Problem::instance()->add_field_test(algo->create_scatra_field_test());
       Global::Problem::instance()->test_all(comm);
 
       break;

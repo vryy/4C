@@ -76,7 +76,7 @@ void SSTI::SSTIMono::assemble_mat_and_rhs()
 
   // assemble blocks of subproblems into system matrix
   strategy_assemble_->assemble_scatra(
-      ssti_matrices_->system_matrix(), sca_tra_field()->system_matrix_operator());
+      ssti_matrices_->system_matrix(), scatra_field()->system_matrix_operator());
   strategy_assemble_->assemble_structure(
       ssti_matrices_->system_matrix(), structure_field()->system_matrix());
   strategy_assemble_->assemble_thermo(
@@ -84,23 +84,23 @@ void SSTI::SSTIMono::assemble_mat_and_rhs()
 
   // assemble domain contributions from coupling into system matrix
   strategy_assemble_->assemble_scatra_structure(ssti_matrices_->system_matrix(),
-      ssti_matrices_->sca_tra_structure_domain(), ssti_matrices_->sca_tra_structure_interface());
+      ssti_matrices_->scatra_structure_domain(), ssti_matrices_->scatra_structure_interface());
   strategy_assemble_->assemble_structure_scatra(
-      ssti_matrices_->system_matrix(), ssti_matrices_->structure_sca_tra_domain());
+      ssti_matrices_->system_matrix(), ssti_matrices_->structure_scatra_domain());
   strategy_assemble_->assemble_thermo_structure(ssti_matrices_->system_matrix(),
       ssti_matrices_->thermo_structure_domain(), ssti_matrices_->thermo_structure_interface());
   strategy_assemble_->assemble_structure_thermo(
       ssti_matrices_->system_matrix(), ssti_matrices_->structure_thermo_domain());
   strategy_assemble_->assemble_thermo_scatra(ssti_matrices_->system_matrix(),
-      ssti_matrices_->thermo_sca_tra_domain(), ssti_matrices_->thermo_sca_tra_interface());
+      ssti_matrices_->thermo_scatra_domain(), ssti_matrices_->thermo_scatra_interface());
   strategy_assemble_->assemble_scatra_thermo_domain(
-      ssti_matrices_->system_matrix(), ssti_matrices_->sca_tra_thermo_domain());
+      ssti_matrices_->system_matrix(), ssti_matrices_->scatra_thermo_domain());
 
   // assemble interface contributions from coupling into system matrix
   if (interface_meshtying())
   {
     strategy_assemble_->assemble_scatra_thermo_interface(
-        ssti_matrices_->system_matrix(), ssti_matrices_->sca_tra_thermo_interface());
+        ssti_matrices_->system_matrix(), ssti_matrices_->scatra_thermo_interface());
   }
 
   // apply meshtying on structural linearizations
@@ -111,14 +111,14 @@ void SSTI::SSTIMono::assemble_mat_and_rhs()
 
   // apply Dirichlet conditions
   ssti_matrices_->system_matrix()->apply_dirichlet(
-      *sca_tra_field()->dirich_maps()->cond_map(), true);
+      *scatra_field()->dirich_maps()->cond_map(), true);
   ssti_matrices_->system_matrix()->apply_dirichlet(
       *thermo_field()->dirich_maps()->cond_map(), true);
   strategy_assemble_->apply_structural_dbc_system_matrix(ssti_matrices_->system_matrix());
 
   // assemble RHS
   strategy_assemble_->assemble_rhs(
-      residual_, sca_tra_field()->residual(), structure_field()->rhs(), thermo_field()->residual());
+      residual_, scatra_field()->residual(), structure_field()->rhs(), thermo_field()->residual());
 
   double mydt = timer_->wallTime() - starttime;
   get_comm().MaxAll(&mydt, &dtassemble_, 1);
@@ -129,12 +129,12 @@ void SSTI::SSTIMono::assemble_mat_and_rhs()
 void SSTI::SSTIMono::build_null_spaces()
 {
   // build null spaces for scatra and thermo
-  switch (sca_tra_field()->matrix_type())
+  switch (scatra_field()->matrix_type())
   {
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
-      sca_tra_field()->build_block_null_spaces(
+      scatra_field()->build_block_null_spaces(
           solver_, get_block_positions(Subproblem::scalar_transport).at(0));
       thermo_field()->build_block_null_spaces(
           solver_, get_block_positions(Subproblem::thermo).at(0));
@@ -154,7 +154,7 @@ void SSTI::SSTIMono::build_null_spaces()
 
       // equip smoother for scatra matrix block with null space associated with all degrees of
       // freedom on scatra discretization
-      sca_tra_field()->discretization()->compute_null_space_if_necessary(blocksmootherparamsscatra);
+      scatra_field()->discretization()->compute_null_space_if_necessary(blocksmootherparamsscatra);
 
       std::ostringstream thermoblockstr;
       thermoblockstr << get_block_positions(Subproblem::thermo).at(0) + 1;
@@ -230,7 +230,7 @@ void SSTI::SSTIMono::output()
               << std::endl;
   }
 
-  sca_tra_field()->check_and_write_output_and_restart();
+  scatra_field()->check_and_write_output_and_restart();
   thermo_field()->check_and_write_output_and_restart();
   structure_field()->output();
 }
@@ -245,11 +245,11 @@ void SSTI::SSTIMono::prepare_time_step()
   distribute_solution_all_fields();
 
   // in first time step: solve to get initital derivatives
-  sca_tra_field()->prepare_time_step();
+  scatra_field()->prepare_time_step();
 
   // if adaptive time stepping and different time step size: calculate time step in scatra
   // (prepare_time_step() of Scatra) and pass to structure and thermo
-  if (sca_tra_field()->time_step_adapted()) distribute_dt_from_sca_tra();
+  if (scatra_field()->time_step_adapted()) distribute_dt_from_scatra();
 
   // in first time step: solve to get initital derivatives
   thermo_field()->prepare_time_step();
@@ -259,7 +259,7 @@ void SSTI::SSTIMono::prepare_time_step()
   // consistent scalar transport state vector with valid Dirichlet conditions
   structure_field()->prepare_time_step();
 
-  sca_tra_field()->print_time_step_info();
+  scatra_field()->print_time_step_info();
 }
 
 /*--------------------------------------------------------------------------*
@@ -270,7 +270,7 @@ void SSTI::SSTIMono::setup()
   SSTIAlgorithm::setup();
 
   // safety checks
-  if (sca_tra_field()->num_scal() != 1)
+  if (scatra_field()->num_scal() != 1)
   {
     FOUR_C_THROW(
         "Since the ssti_monolithic framework is only implemented for usage in combination with "
@@ -298,7 +298,7 @@ void SSTI::SSTIMono::setup()
       Global::Problem::instance()->elch_control_params(), "INITPOTCALC");
 
   if (!equilibration_scatra_initial and
-      sca_tra_field()->equilibration_method() != Core::LinAlg::EquilibrationMethod::none)
+      scatra_field()->equilibration_method() != Core::LinAlg::EquilibrationMethod::none)
   {
     FOUR_C_THROW(
         "You are within the monolithic SSTI framework but activated a pure scatra equilibration "
@@ -306,7 +306,7 @@ void SSTI::SSTIMono::setup()
         "CONTROL/MONOLITHIC' instead.");
   }
   if (equilibration_scatra_initial and
-      sca_tra_field()->equilibration_method() == Core::LinAlg::EquilibrationMethod::none)
+      scatra_field()->equilibration_method() == Core::LinAlg::EquilibrationMethod::none)
   {
     FOUR_C_THROW(
         "You selected to equilibrate equations of initial potential but did not specify any "
@@ -319,7 +319,7 @@ void SSTI::SSTIMono::setup()
         "INITPOTCALC in ELCH CONTROL");
   }
 
-  if (!sca_tra_field()->is_incremental())
+  if (!scatra_field()->is_incremental())
     FOUR_C_THROW("Must have incremental solution approach for monolithic SSTI!");
 }
 
@@ -353,18 +353,18 @@ void SSTI::SSTIMono::setup_system()
 
   // initialize submatrices and system matrix
   ssti_matrices_ = Teuchos::rcp(new SSTI::SSTIMatrices(
-      ssti_maps_mono_, matrixtype_, sca_tra_field()->matrix_type(), interface_meshtying()));
+      ssti_maps_mono_, matrixtype_, scatra_field()->matrix_type(), interface_meshtying()));
 
   // initialize strategy for assembly
   strategy_assemble_ = SSTI::BuildAssembleStrategy(
-      Teuchos::rcp(this, false), matrixtype_, sca_tra_field()->matrix_type());
+      Teuchos::rcp(this, false), matrixtype_, scatra_field()->matrix_type());
 
   // initialize evaluation objects for coupling between subproblems
   scatrastructureoffdiagcoupling_ = Teuchos::rcp(new SSI::ScatraStructureOffDiagCouplingSSTI(
       ssti_maps_mono_->block_map_structure(),
       ssti_maps_mono_->maps_sub_problems()->Map(get_problem_position(Subproblem::scalar_transport)),
       ssti_maps_mono_->maps_sub_problems()->Map(get_problem_position(Subproblem::structure)),
-      ssti_structure_mesh_tying(), meshtying_scatra(), sca_tra_field(), structure_field()));
+      ssti_structure_mesh_tying(), meshtying_scatra(), scatra_field(), structure_field()));
 
   thermostructureoffdiagcoupling_ = Teuchos::rcp(new SSTI::ThermoStructureOffDiagCoupling(
       ssti_maps_mono_->block_map_structure(), ssti_maps_mono_->block_map_thermo(),
@@ -382,7 +382,7 @@ void SSTI::SSTIMono::setup_system()
       ssti_maps_mono_->maps_sub_problems()->Map(get_problem_position(Subproblem::thermo)),
       ssti_maps_mono_->maps_sub_problems()->Map(get_problem_position(Subproblem::scalar_transport)),
       ssti_maps_mono_->maps_sub_problems()->Map(get_problem_position(Subproblem::thermo)), true,
-      meshtying_scatra(), meshtying_thermo(), sca_tra_field_base(), thermo_field_base()));
+      meshtying_scatra(), meshtying_thermo(), scatra_field_base(), thermo_field_base()));
 
   // initialize equilibration class
   strategy_equilibration_ = Core::LinAlg::BuildEquilibration(
@@ -431,11 +431,11 @@ void SSTI::SSTIMono::timeloop()
   {
     distribute_solution_all_fields();
 
-    sca_tra_field()->prepare_time_loop();
+    scatra_field()->prepare_time_loop();
     thermo_field()->prepare_time_loop();
   }
   // time loop
-  while (not_finished() and sca_tra_field()->not_finished())
+  while (not_finished() and scatra_field()->not_finished())
   {
     prepare_time_step();
 
@@ -454,7 +454,7 @@ void SSTI::SSTIMono::timeloop()
  *--------------------------------------------------------------------------------------*/
 void SSTI::SSTIMono::update()
 {
-  sca_tra_field()->update();
+  scatra_field()->update();
   thermo_field()->update();
   structure_field()->update();
 }
@@ -532,34 +532,34 @@ void SSTI::SSTIMono::evaluate_subproblems()
 
   // evaluate all subproblems
   structure_field()->evaluate();
-  sca_tra_field()->prepare_linear_solve();
+  scatra_field()->prepare_linear_solve();
   thermo_field()->prepare_linear_solve();
 
   // evaluate domain contributions from coupling
   scatrastructureoffdiagcoupling_->evaluate_off_diag_block_scatra_structure_domain(
-      ssti_matrices_->sca_tra_structure_domain());
+      ssti_matrices_->scatra_structure_domain());
   scatrastructureoffdiagcoupling_->evaluate_off_diag_block_structure_scatra_domain(
-      ssti_matrices_->structure_sca_tra_domain());
+      ssti_matrices_->structure_scatra_domain());
   thermostructureoffdiagcoupling_->evaluate_off_diag_block_thermo_structure_domain(
       ssti_matrices_->thermo_structure_domain());
   thermostructureoffdiagcoupling_->evaluate_off_diag_block_structure_thermo_domain(
       ssti_matrices_->structure_thermo_domain());
   scatrathermooffdiagcoupling_->evaluate_off_diag_block_thermo_scatra_domain(
-      ssti_matrices_->thermo_sca_tra_domain());
+      ssti_matrices_->thermo_scatra_domain());
   scatrathermooffdiagcoupling_->evaluate_off_diag_block_scatra_thermo_domain(
-      ssti_matrices_->sca_tra_thermo_domain());
+      ssti_matrices_->scatra_thermo_domain());
 
   // evaluate interface contributions from coupling
   if (interface_meshtying())
   {
     scatrastructureoffdiagcoupling_->evaluate_off_diag_block_scatra_structure_interface(
-        ssti_matrices_->sca_tra_structure_interface());
+        ssti_matrices_->scatra_structure_interface());
     thermostructureoffdiagcoupling_->evaluate_off_diag_block_thermo_structure_interface(
         ssti_matrices_->thermo_structure_interface());
     scatrathermooffdiagcoupling_->evaluate_off_diag_block_thermo_scatra_interface(
-        ssti_matrices_->thermo_sca_tra_interface());
+        ssti_matrices_->thermo_scatra_interface());
     scatrathermooffdiagcoupling_->evaluate_off_diag_block_scatra_thermo_interface(
-        ssti_matrices_->sca_tra_thermo_interface());
+        ssti_matrices_->scatra_thermo_interface());
   }
 
   double mydt = timer_->wallTime() - starttime;
@@ -597,8 +597,8 @@ void SSTI::SSTIMono::linear_solve()
  *--------------------------------------------------------------------------------------*/
 void SSTI::SSTIMono::update_iter_states()
 {
-  sca_tra_field()->update_iter(extract_sub_increment(Subproblem::scalar_transport));
-  sca_tra_field()->compute_intermediate_values();
+  scatra_field()->update_iter(extract_sub_increment(Subproblem::scalar_transport));
+  scatra_field()->compute_intermediate_values();
 
   thermo_field()->update_iter(extract_sub_increment(Subproblem::thermo));
   thermo_field()->compute_intermediate_values();
@@ -632,20 +632,20 @@ std::vector<int> SSTI::SSTIMono::get_block_positions(Subproblem subproblem) cons
   {
     case Subproblem::structure:
     {
-      if (sca_tra_field()->matrix_type() == Core::LinAlg::MatrixType::sparse)
+      if (scatra_field()->matrix_type() == Core::LinAlg::MatrixType::sparse)
         block_position.emplace_back(1);
       else
-        block_position.emplace_back(sca_tra_field()->block_maps()->num_maps());
+        block_position.emplace_back(scatra_field()->block_maps()->num_maps());
       break;
     }
     case Subproblem::scalar_transport:
     {
-      if (sca_tra_field()->matrix_type() == Core::LinAlg::MatrixType::sparse)
+      if (scatra_field()->matrix_type() == Core::LinAlg::MatrixType::sparse)
         block_position.emplace_back(0);
       else
 
       {
-        for (int i = 0; i < static_cast<int>(sca_tra_field()->block_maps()->num_maps()); ++i)
+        for (int i = 0; i < static_cast<int>(scatra_field()->block_maps()->num_maps()); ++i)
           block_position.emplace_back(i);
       }
       break;
@@ -657,7 +657,7 @@ std::vector<int> SSTI::SSTIMono::get_block_positions(Subproblem subproblem) cons
       else
       {
         for (int i = 0; i < static_cast<int>(thermo_field()->block_maps()->num_maps()); ++i)
-          block_position.emplace_back(sca_tra_field()->block_maps()->num_maps() + 1 + i);
+          block_position.emplace_back(scatra_field()->block_maps()->num_maps() + 1 + i);
       }
       break;
     }

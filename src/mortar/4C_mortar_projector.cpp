@@ -623,7 +623,7 @@ bool Mortar::ProjectorCalc<distype>::project_element_normal(
  |  Project a Gauss point along its normal (public)           popp 01/08|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::project_gauss_point2_d(
+bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::project_gauss_point_2d(
     Mortar::Element& gpele, const double* gpeta, Mortar::Element& ele, double* xi)
 {
   bool ok = true;
@@ -678,9 +678,9 @@ bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::project_gauss_point2_d
 
     for (k = 0; k < MORTARMAXITER; ++k)
     {
-      f = evaluate_f_gauss_point2_d(gpx, gpn, ele, eta);
+      f = evaluate_f_gauss_point_2d(gpx, gpn, ele, eta);
       if (abs(f) < MORTARCONVTOL) break;
-      df = evaluate_grad_f_gauss_point2_d(gpn, ele, eta);
+      df = evaluate_grad_f_gauss_point_2d(gpn, ele, eta);
       if (abs(df) < 1.0e-12) FOUR_C_THROW("Singular Jacobian for projection");
       eta[0] += (-f) / df;
     }
@@ -868,7 +868,7 @@ bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::check_projection4_auxp
  |  Project a Gauss point along its normal (3D)               popp 11/08|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::project_gauss_point3_d(
+bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::project_gauss_point_3d(
     Mortar::Element& gpele, const double* gpeta, Mortar::Element& ele, double* xi, double& par)
 {
   if (ndim_ == 3)
@@ -950,10 +950,10 @@ bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::project_gauss_point3_d
 
     for (k = 0; k < MORTARMAXITER; ++k)
     {
-      evaluate_f_gauss_point3_d(f, gpx, gpn, ele, eta, alpha);
+      evaluate_f_gauss_point_3d(f, gpx, gpn, ele, eta, alpha);
       conv = sqrt(f[0] * f[0] + f[1] * f[1] + f[2] * f[2]);
       if (conv <= MORTARCONVTOL) break;
-      evaluate_grad_f_gauss_point3_d(df, gpx, gpn, ele, eta, alpha);
+      evaluate_grad_f_gauss_point_3d(df, gpx, gpn, ele, eta, alpha);
 
       // safety check: if projection normal is parallel to the master element --> det can be zero
       double det = df.determinant();
@@ -1012,7 +1012,7 @@ bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::project_gauss_point3_d
  |  Project a Gauss point along AuxPlane normal (3D)          popp 11/08|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Mortar::ProjectorCalc<distype>::project_gauss_point_auxn3_d(
+bool Mortar::ProjectorCalc<distype>::project_gauss_point_auxn_3d(
     const double* globgp, const double* auxn, Mortar::Element& ele, double* xi, double& par)
 {
   if (ndim_ == 3)
@@ -1051,11 +1051,11 @@ bool Mortar::ProjectorCalc<distype>::project_gauss_point_auxn3_d(
 
     for (k = 0; k < MORTARMAXITER; ++k)
     {
-      evaluate_f_gauss_point_auxn3_d(f, globgp, auxn, ele, eta, alpha);
+      evaluate_f_gauss_point_auxn_3d(f, globgp, auxn, ele, eta, alpha);
       conv = sqrt(f[0] * f[0] + f[1] * f[1] + f[2] * f[2]);
       // std::cout << "Iteration " << k << ": -> |f|=" << conv << std::endl;
       if (conv <= MORTARCONVTOL) break;
-      evaluate_grad_f_gauss_point_auxn3_d(df, globgp, auxn, ele, eta, alpha);
+      evaluate_grad_f_gauss_point_auxn_3d(df, globgp, auxn, ele, eta, alpha);
 
       // solve deta = - inv(df) * f
       double jacdet = df.invert();
@@ -1074,7 +1074,7 @@ bool Mortar::ProjectorCalc<distype>::project_gauss_point_auxn3_d(
     if (conv > MORTARCONVTOL)
     {
       //      std::cout << "res= " << conv << std::endl;
-      //      FOUR_C_THROW("project_gauss_point_auxn3_d: Newton unconverged for GP"
+      //      FOUR_C_THROW("project_gauss_point_auxn_3d: Newton unconverged for GP"
       //          "at xi = (%f,%f,%f) onto Mortar::ElementID %i", globgp[0], globgp[1],
       //          globgp[2], ele.Id());
       xi[0] = 1e12;
@@ -1103,10 +1103,10 @@ bool Mortar::ProjectorCalc<distype>::project_gauss_point_auxn3_d(
  |  Project snode onto melement with master normal           farah 01/16|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal3_d(
+bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal_3d(
     Mortar::Node& snode, Mortar::Element& mele, double* xi, double* normal, double& dist)
 {
-  if (ndim_ != 3) FOUR_C_THROW("project_s_node_by_m_normal3_d is only for 3D problems!");
+  if (ndim_ != 3) FOUR_C_THROW("project_s_node_by_m_normal_3d is only for 3D problems!");
 
   // start in the element center
   double eta[2] = {0.0, 0.0};
@@ -1272,11 +1272,11 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal3_d(
  |  Project snode onto melement with master normal           farah 01/16|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal3_d_lin(Mortar::Node& snode,
+bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal_3d_lin(Mortar::Node& snode,
     Mortar::Element& mele, double* xi, double* normal, double& dist,
     std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin)
 {
-  if (ndim_ != 3) FOUR_C_THROW("project_s_node_by_m_normal3_d is only for 3D problems!");
+  if (ndim_ != 3) FOUR_C_THROW("project_s_node_by_m_normal_3d is only for 3D problems!");
 
   // start in the element center
   double eta[2] = {0.0, 0.0};
@@ -1435,11 +1435,11 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal3_d_lin(Mortar::N
  |  Project snode onto melement with master normal           farah 08/16|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(Mortar::Node& snode,
+bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal_3d_lin(Mortar::Node& snode,
     Mortar::Element& mele, double* xi, double* normal, double& dist,
     std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin)
 {
-  if (ndim_ != 3) FOUR_C_THROW("project_s_node_by_m_normal3_d_lin is only for 3D problems!");
+  if (ndim_ != 3) FOUR_C_THROW("project_s_node_by_m_normal_3d_lin is only for 3D problems!");
 
   // start in the element center
   std::array<double, 2> eta = {0.0, 0.0};
@@ -1753,11 +1753,11 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(Mor
  |  Project snode onto melement with master normal           farah 05/16|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(Mortar::Node& snode,
+bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal_2d_lin(Mortar::Node& snode,
     Mortar::Element& mele, double* xi, double* normal, double& dist,
     std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin)
 {
-  if (ndim_ != 2) FOUR_C_THROW("project_s_node_by_m_normal2_d_lin is only for 2D problems!");
+  if (ndim_ != 2) FOUR_C_THROW("project_s_node_by_m_normal_2d_lin is only for 2D problems!");
 
   // start in the element center
   double eta[2] = {0.0, 0.0};
@@ -2044,10 +2044,10 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(Mor
  |  Project snode onto melement with master element normal   farah 01/16|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal2_d(
+bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal_2d(
     Mortar::Node& snode, Mortar::Element& mele, double* xi, double* normal, double& dist)
 {
-  if (ndim_ != 2) FOUR_C_THROW("project_s_node_by_m_normal2_d is only for 2D problems!");
+  if (ndim_ != 2) FOUR_C_THROW("project_s_node_by_m_normal_2d is only for 2D problems!");
 
   // start in the element center
   double eta[2] = {0.0, 0.0};
@@ -2194,11 +2194,11 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal2_d(
  |  Project snode onto melement with master normal + Lin     farah 01/16|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(Mortar::Node& snode,
+bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal_2d_lin(Mortar::Node& snode,
     Mortar::Element& mele, double* xi, double* normal, double& dist,
     std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin)
 {
-  if (ndim_ != 2) FOUR_C_THROW("project_s_node_by_m_normal2_d is only for 2D problems!");
+  if (ndim_ != 2) FOUR_C_THROW("project_s_node_by_m_normal_2d is only for 2D problems!");
 
   // start in the element center
   double eta[2] = {0.0, 0.0};
@@ -2528,11 +2528,11 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal(
 {
   if (ndim_ == 2)
   {
-    project_s_node_by_m_normal2_d(snode, mele, xi, normal, dist);
+    project_s_node_by_m_normal_2d(snode, mele, xi, normal, dist);
   }
   else if (ndim_ == 3)
   {
-    project_s_node_by_m_normal3_d(snode, mele, xi, normal, dist);
+    project_s_node_by_m_normal_3d(snode, mele, xi, normal, dist);
   }
   else
   {
@@ -2556,12 +2556,12 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal_lin(Mortar
   if (ndim_ == 2)
   {
     success =
-        project_s_node_by_m_nodal_normal2_d_lin(snode, mele, xi, normal, dist, normaltolineLin);
+        project_s_node_by_m_nodal_normal_2d_lin(snode, mele, xi, normal, dist, normaltolineLin);
   }
   else if (ndim_ == 3)
   {
     success =
-        project_s_node_by_m_nodal_normal3_d_lin(snode, mele, xi, normal, dist, normaltolineLin);
+        project_s_node_by_m_nodal_normal_3d_lin(snode, mele, xi, normal, dist, normaltolineLin);
   }
   else
   {
@@ -2581,7 +2581,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal_lin(Mortar::Node
 {
   if (ndim_ == 2)
   {
-    project_s_node_by_m_normal2_d_lin(snode, mele, xi, normal, dist, normaltolineLin);
+    project_s_node_by_m_normal_2d_lin(snode, mele, xi, normal, dist, normaltolineLin);
   }
   else if (ndim_ == 3)
   {
@@ -2808,7 +2808,7 @@ double Mortar::ProjectorCalc<distype>::evaluate_grad_f_element_normal(
  |  Evaluate F for Gauss point case (public)                  popp 01/08|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-double Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_f_gauss_point2_d(
+double Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_f_gauss_point_2d(
     const double* gpx, const double* gpn, Mortar::Element& ele, const double* eta)
 {
   /* Evaluate the function F(eta) = ( Ni * xim - gpx ) x gpn,
@@ -2839,7 +2839,7 @@ double Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_f_gauss_poi
  |  Evaluate GradF for Gauss point case (public)              popp 01/08|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-double Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_grad_f_gauss_point2_d(
+double Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_grad_f_gauss_point_2d(
     const double* gpn, Mortar::Element& ele, const double* eta)
 {
   /* Evaluate the function GradF(eta)
@@ -2866,7 +2866,7 @@ double Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_grad_f_gaus
  |  Evaluate F for Gauss point case (3D)                      popp 11/08|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_f_gauss_point3_d(double* f,
+bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_f_gauss_point_3d(double* f,
     const double* gpx, const double* gpn, Mortar::Element& ele, const double* eta,
     const double& alpha)
 {
@@ -2892,7 +2892,7 @@ bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_f_gauss_point
  |  Evaluate GradF for Gauss point case (3D)                  popp 11/08|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_grad_f_gauss_point3_d(
+bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_grad_f_gauss_point_3d(
     Core::LinAlg::Matrix<3, 3>& fgrad, const double* gpx, const double* gpn, Mortar::Element& ele,
     const double* eta, const double& alpha)
 {
@@ -2924,7 +2924,7 @@ bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_grad_f_gauss_
  |  Evaluate F for AuxPlane Gauss point case (3D)             popp 11/08|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Mortar::ProjectorCalc<distype>::evaluate_f_gauss_point_auxn3_d(double* f, const double* globgp,
+bool Mortar::ProjectorCalc<distype>::evaluate_f_gauss_point_auxn_3d(double* f, const double* globgp,
     const double* auxn, Mortar::Element& ele, const double* eta, const double& alpha)
 {
   /* Evaluate the function F(eta,alpha) = Ni * xi - alpha * auxn - globgp
@@ -2949,7 +2949,7 @@ bool Mortar::ProjectorCalc<distype>::evaluate_f_gauss_point_auxn3_d(double* f, c
  |  Evaluate GradF for AuxPlane Gauss point case (3D)         popp 11/08|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Mortar::ProjectorCalc<distype>::evaluate_grad_f_gauss_point_auxn3_d(
+bool Mortar::ProjectorCalc<distype>::evaluate_grad_f_gauss_point_auxn_3d(
     Core::LinAlg::Matrix<3, 3>& fgrad, const double* globgp, const double* auxn,
     Mortar::Element& ele, const double* eta, const double& alpha)
 {

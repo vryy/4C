@@ -370,7 +370,7 @@ namespace Discret
        * @param densnp   density at time t_(n+1) or t_(n+alpha_f)
        * @param densam   density at time t_(n+alpha_m)
        */
-      virtual void mat_sca_tra_multi_scale(const Teuchos::RCP<const Core::Mat::Material> material,
+      virtual void mat_scatra_multi_scale(const Teuchos::RCP<const Core::Mat::Material> material,
           double& densn, double& densnp, double& densam) const;
 
       //! evaluate electrode material
@@ -453,7 +453,7 @@ namespace Discret
       );
 
       //! exact calculation of tau for 1D
-      virtual void calc_tau1_d_exact(
+      virtual void calc_tau_1d_exact(
           double& tau,            //!< the stabilisation parameters (one per transported scalar)
           const double diffus,    //!< diffusivity or viscosity
           const double reacoeff,  //!< reaction coefficient

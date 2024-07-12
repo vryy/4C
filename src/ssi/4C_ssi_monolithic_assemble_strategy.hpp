@@ -103,7 +103,7 @@ namespace SSI
 
    protected:
     //! solve additional scatra field on manifolds
-    bool is_sca_tra_manifold() const { return is_scatra_manifold_; }
+    bool is_scatra_manifold() const { return is_scatra_manifold_; }
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
     Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps() const { return ssi_maps_; }
@@ -153,10 +153,10 @@ namespace SSI
 
    protected:
     //! position of scatra blocks in system matrix
-    const std::vector<int>& block_position_sca_tra() const { return block_position_scatra_; }
+    const std::vector<int>& block_position_scatra() const { return block_position_scatra_; }
 
     //! position of scatra manifold blocks in system matrix
-    const std::vector<int>& block_position_sca_tra_manifold() const
+    const std::vector<int>& block_position_scatra_manifold() const
     {
       return block_position_scatra_manifold_;
     }

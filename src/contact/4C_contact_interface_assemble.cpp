@@ -8,7 +8,6 @@
 */
 /*---------------------------------------------------------------------*/
 
-
 #include "4C_contact_element.hpp"
 #include "4C_contact_friction_node.hpp"
 #include "4C_contact_interface.hpp"
@@ -5132,7 +5131,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
 /*---------------------------------------------------------------------------*
  |  Assemble normal coupling weighted condition for poro contact   ager 07/14|
  *--------------------------------------------------------------------------*/
-void CONTACT::Interface::assemble_n_coup(Epetra_Vector& gglobal)
+void CONTACT::Interface::assemble_normal_coupling(Epetra_Vector& gglobal)
 {
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -5171,7 +5170,7 @@ void CONTACT::Interface::assemble_n_coup(Epetra_Vector& gglobal)
  |  Assemble linearisation of normal coupling                          |
  |          weighted condition for poro contact              ager 07/14|
  *--------------------------------------------------------------------*/
-void CONTACT::Interface::assemble_n_coup_lin(
+void CONTACT::Interface::assemble_normal_coupling_linearisation(
     Core::LinAlg::SparseMatrix& sglobal, Core::Adapter::Coupling& coupfs, bool AssembleVelocityLin)
 {
   // nothing to do if no active nodes

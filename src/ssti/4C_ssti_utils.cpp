@@ -39,7 +39,7 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
   // setup maps containing dofs of subproblems
   std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps(3, Teuchos::null);
   partial_maps[ssti_mono_algorithm.get_problem_position(Subproblem::scalar_transport)] =
-      Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.sca_tra_field()->dof_row_map()));
+      Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.scatra_field()->dof_row_map()));
   partial_maps[ssti_mono_algorithm.get_problem_position(Subproblem::structure)] =
       Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.structure_field()->dof_row_map()));
   partial_maps[ssti_mono_algorithm.get_problem_position(Subproblem::thermo)] =
@@ -58,14 +58,14 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
       new Core::LinAlg::MultiMapExtractor(*ssti_mono_algorithm.structure_field()->dof_row_map(),
           std::vector<Teuchos::RCP<const Epetra_Map>>(
               1, ssti_mono_algorithm.structure_field()->dof_row_map())));
-  switch (ssti_mono_algorithm.sca_tra_field()->matrix_type())
+  switch (ssti_mono_algorithm.scatra_field()->matrix_type())
   {
     case Core::LinAlg::MatrixType::sparse:
     {
       block_map_scatra_ = Teuchos::rcp(
-          new Core::LinAlg::MultiMapExtractor(*ssti_mono_algorithm.sca_tra_field()->dof_row_map(),
+          new Core::LinAlg::MultiMapExtractor(*ssti_mono_algorithm.scatra_field()->dof_row_map(),
               std::vector<Teuchos::RCP<const Epetra_Map>>(
-                  1, ssti_mono_algorithm.sca_tra_field()->dof_row_map())));
+                  1, ssti_mono_algorithm.scatra_field()->dof_row_map())));
       block_map_thermo_ = Teuchos::rcp(
           new Core::LinAlg::MultiMapExtractor(*ssti_mono_algorithm.thermo_field()->dof_row_map(),
               std::vector<Teuchos::RCP<const Epetra_Map>>(
@@ -74,7 +74,7 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
     }
     case Core::LinAlg::MatrixType::block_condition:
     {
-      block_map_scatra_ = ssti_mono_algorithm.sca_tra_field()->block_maps();
+      block_map_scatra_ = ssti_mono_algorithm.scatra_field()->block_maps();
       block_map_thermo_ = ssti_mono_algorithm.thermo_field()->block_maps();
       break;
     }
@@ -187,7 +187,7 @@ SSTI::SSTIMapsMono::SSTIMapsMono(const SSTI::SSTIMono& ssti_mono_algorithm)
     : SSTIMaps(ssti_mono_algorithm), block_map_system_matrix_(Teuchos::null)
 {
   // initialize map extractors associated with blocks of global system matrix
-  switch (ssti_mono_algorithm.sca_tra_field()->matrix_type())
+  switch (ssti_mono_algorithm.scatra_field()->matrix_type())
   {
     // one single main-diagonal matrix block associated with scalar transport field
     case Core::LinAlg::MatrixType::sparse:
@@ -486,14 +486,14 @@ bool SSTI::ConvCheckMono::converged(const SSTI::SSTIMono& ssti_mono)
 
   // compute L2 norm of concentration state vector
   double concdofnorm(0.0);
-  ssti_mono.sca_tra_field()
+  ssti_mono.scatra_field()
       ->splitter()
-      ->extract_other_vector(ssti_mono.sca_tra_field()->phinp())
+      ->extract_other_vector(ssti_mono.scatra_field()->phinp())
       ->Norm2(&concdofnorm);
 
   // compute L2 norm of concentration increment vector
   double concincnorm(0.0);
-  ssti_mono.sca_tra_field()
+  ssti_mono.scatra_field()
       ->splitter()
       ->extract_other_vector(ssti_mono.all_maps()->maps_sub_problems()->extract_vector(
           ssti_mono.increment(), ssti_mono.get_problem_position(Subproblem::scalar_transport)))
@@ -501,7 +501,7 @@ bool SSTI::ConvCheckMono::converged(const SSTI::SSTIMono& ssti_mono)
 
   // compute L2 norm of concentration residual vector
   double concresnorm(0.0);
-  ssti_mono.sca_tra_field()
+  ssti_mono.scatra_field()
       ->splitter()
       ->extract_other_vector(ssti_mono.all_maps()->maps_sub_problems()->extract_vector(
           ssti_mono.residual(), ssti_mono.get_problem_position(Subproblem::scalar_transport)))
@@ -509,14 +509,14 @@ bool SSTI::ConvCheckMono::converged(const SSTI::SSTIMono& ssti_mono)
 
   // compute L2 norm of potential state vector
   double potdofnorm(0.0);
-  ssti_mono.sca_tra_field()
+  ssti_mono.scatra_field()
       ->splitter()
-      ->extract_cond_vector(ssti_mono.sca_tra_field()->phinp())
+      ->extract_cond_vector(ssti_mono.scatra_field()->phinp())
       ->Norm2(&potdofnorm);
 
   // compute L2 norm of potential increment vector
   double potincnorm(0.0);
-  ssti_mono.sca_tra_field()
+  ssti_mono.scatra_field()
       ->splitter()
       ->extract_cond_vector(ssti_mono.all_maps()->maps_sub_problems()->extract_vector(
           ssti_mono.increment(), ssti_mono.get_problem_position(Subproblem::scalar_transport)))
@@ -524,7 +524,7 @@ bool SSTI::ConvCheckMono::converged(const SSTI::SSTIMono& ssti_mono)
 
   // compute L2 norm of potential residual vector
   double potresnorm(0.0);
-  ssti_mono.sca_tra_field()
+  ssti_mono.scatra_field()
       ->splitter()
       ->extract_cond_vector(ssti_mono.all_maps()->maps_sub_problems()->extract_vector(
           ssti_mono.residual(), ssti_mono.get_problem_position(Subproblem::scalar_transport)))

@@ -277,7 +277,7 @@ namespace Mortar
         Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual void evaluate_reference_state() = 0;
     virtual void evaluate_relative_movement() = 0;
-    virtual void evaluate_rel_mov_predict() = 0;
+    virtual void predict_relative_movement() = 0;
     virtual bool is_friction() const = 0;
     virtual void initialize_and_evaluate_interface() = 0;
     virtual void initialize_mortar() = 0;

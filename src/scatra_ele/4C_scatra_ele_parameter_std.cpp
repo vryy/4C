@@ -277,7 +277,7 @@ int Discret::ELEMENTS::ScaTraEleParameterStd::nds_pres() const
   return nds_pres_;
 }
 
-int Discret::ELEMENTS::ScaTraEleParameterStd::nds_sca_tra() const
+int Discret::ELEMENTS::ScaTraEleParameterStd::nds_scatra() const
 {
   FOUR_C_ASSERT(nds_scatra_ != -1,
       "You try to access the number of dofset associated with scalar transport dofs without having "

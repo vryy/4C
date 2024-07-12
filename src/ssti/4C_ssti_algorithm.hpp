@@ -103,9 +103,9 @@ namespace SSTI
     //! return subproblems
     //@{
     Teuchos::RCP<Adapter::SSIStructureWrapper> structure_field() const { return structure_; };
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> sca_tra_field() const;
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_field() const;
     Teuchos::RCP<ScaTra::ScaTraTimIntImpl> thermo_field() const;
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> sca_tra_field_base() { return scatra_; };
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_field_base() { return scatra_; };
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> thermo_field_base() { return thermo_; };
     //@}
 
@@ -126,7 +126,7 @@ namespace SSTI
     virtual void clone_discretizations(const Epetra_Comm& comm);
 
     //! copies modified time step from scatra to structure and to this SSI algorithm
-    void distribute_dt_from_sca_tra();
+    void distribute_dt_from_scatra();
 
     //! distribute states between subproblems
     //@{

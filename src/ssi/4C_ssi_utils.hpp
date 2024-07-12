@@ -95,18 +95,18 @@ namespace SSI
           Core::LinAlg::MatrixType ssi_matrixtype, Core::LinAlg::MatrixType scatra_matrixtype,
           bool is_scatra_manifold);
 
-      void complete_sca_tra_manifold_sca_tra_matrix();
+      void complete_scatra_manifold_scatra_matrix();
 
       //! call complete on the scalar transport manifold - structure off-diagonal matrix
-      void complete_sca_tra_manifold_structure_matrix();
+      void complete_scatra_manifold_structure_matrix();
 
-      void complete_sca_tra_sca_tra_manifold_matrix();
+      void complete_scatra_scatra_manifold_matrix();
 
       //! call complete on the scalar transport - structure off-diagonal matrix
-      void complete_sca_tra_structure_matrix();
+      void complete_scatra_structure_matrix();
 
       //! call complete on the structure - scalar transport off-diagonal matrix
-      void complete_structure_sca_tra_matrix();
+      void complete_structure_scatra_matrix();
 
       //! method that clears all ssi matrices
       void clear_matrices();
@@ -116,26 +116,26 @@ namespace SSI
 
       //! return sub blocks of system matrix
       //@{
-      Teuchos::RCP<Core::LinAlg::SparseOperator> sca_tra_matrix() { return scatra_matrix_; }
-      Teuchos::RCP<Core::LinAlg::SparseOperator> sca_tra_manifold_structure_matrix()
+      Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_matrix() { return scatra_matrix_; }
+      Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_manifold_structure_matrix()
       {
         return scatramanifold_structure_matrix_;
       }
-      Teuchos::RCP<Core::LinAlg::SparseOperator> sca_tra_structure_matrix()
+      Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_structure_matrix()
       {
         return scatra_structure_matrix_;
       }
-      Teuchos::RCP<Core::LinAlg::SparseOperator> structure_sca_tra_matrix()
+      Teuchos::RCP<Core::LinAlg::SparseOperator> structure_scatra_matrix()
       {
         return structure_scatra_matrix_;
       }
       Teuchos::RCP<Core::LinAlg::SparseMatrix> structure_matrix() { return structure_matrix_; }
       Teuchos::RCP<Core::LinAlg::SparseOperator> manifold_matrix() { return manifold_matrix_; }
-      Teuchos::RCP<Core::LinAlg::SparseOperator> sca_tra_sca_tra_manifold_matrix()
+      Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_scatra_manifold_matrix()
       {
         return scatra_scatramanifold_matrix_;
       }
-      Teuchos::RCP<Core::LinAlg::SparseOperator> sca_tra_manifold_sca_tra_matrix()
+      Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_manifold_scatra_matrix()
       {
         return scatramanifold_scatra_matrix_;
       }
@@ -285,10 +285,10 @@ namespace SSI
       static int get_problem_position(Subproblem subproblem);
 
       //! the multi map extractor of the scalar transport field
-      Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_sca_tra() const;
+      Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_scatra() const;
 
       //! the multi map extractor of the scalar transport on manifold field
-      Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_sca_tra_manifold() const;
+      Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_scatra_manifold() const;
 
       //! the multi map extractor of the structure field
       Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_structure() const;
@@ -312,10 +312,10 @@ namespace SSI
       }
 
       //! the scalar transport dof row map
-      Teuchos::RCP<const Epetra_Map> sca_tra_dof_row_map() const;
+      Teuchos::RCP<const Epetra_Map> scatra_dof_row_map() const;
 
       //! the scalar transport on manifolds dof row map
-      Teuchos::RCP<const Epetra_Map> sca_tra_manifold_dof_row_map() const;
+      Teuchos::RCP<const Epetra_Map> scatra_manifold_dof_row_map() const;
 
       //! the structure dof row map
       Teuchos::RCP<const Epetra_Map> structure_dof_row_map() const;

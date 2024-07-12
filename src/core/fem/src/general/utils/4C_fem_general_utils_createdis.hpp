@@ -231,7 +231,7 @@ namespace Core::FE
       // conditioned subset of the source discretiztation.
       numeleskips_++;
 
-      // call Redistribute, fill_complete etc.
+      // call redistribute, fill_complete etc.
       finalize(sourcedis, *targetdis);
 
       return targetdis;
@@ -387,7 +387,7 @@ namespace Core::FE
       const auto conditions_to_copy = CloneStrategy::conditions_to_copy();
       copy_conditions(*sourcedis, *targetdis, conditions_to_copy);
 
-      // call Redistribute, fill_complete etc.
+      // call redistribute, fill_complete etc.
       finalize(*sourcedis, *targetdis);
     };  // create_matching_discretization
 
@@ -478,7 +478,7 @@ namespace Core::FE
       const auto conditions_to_copy = CloneStrategy::conditions_to_copy();
       copy_conditions(sourcedis, targetdis, conditions_to_copy);
 
-      // call Redistribute, fill_complete etc.
+      // call redistribute, fill_complete etc.
       finalize(sourcedis, targetdis);
     };  // create_matching_discretization_from_condition with material
 

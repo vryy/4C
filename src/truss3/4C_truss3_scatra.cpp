@@ -185,7 +185,7 @@ void Discret::ELEMENTS::Truss3Scatra::calc_internal_force_stiff_tot_lag(
       Core::LinAlg::Matrix<2, 1> nodal_concentration;
       const int ndof = 6;
 
-      prep_calc_internal_force_stiff_tot_lag_sca_tra(
+      prep_calc_internal_force_stiff_tot_lag_scatra(
           ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx, nodal_concentration);
 
       // get data from input
@@ -282,7 +282,7 @@ void Discret::ELEMENTS::Truss3Scatra::calc_gp_stresses(
       Core::LinAlg::Matrix<6, 1> dN_dx;
       Core::LinAlg::Matrix<2, 1> nodal_concentration;
 
-      prep_calc_internal_force_stiff_tot_lag_sca_tra(
+      prep_calc_internal_force_stiff_tot_lag_scatra(
           ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx, nodal_concentration);
 
       // get data from input
@@ -379,7 +379,7 @@ void Discret::ELEMENTS::Truss3Scatra::extract_elemental_variables(LocationArray&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3Scatra::prep_calc_internal_force_stiff_tot_lag_sca_tra(
+void Discret::ELEMENTS::Truss3Scatra::prep_calc_internal_force_stiff_tot_lag_scatra(
     const std::map<std::string, std::vector<double>>& ele_state,
     Core::LinAlg::Matrix<6, 1>& curr_nodal_coords,
     Core::LinAlg::Matrix<6, 6>& dcurr_nodal_coords_du, Core::LinAlg::Matrix<6, 1>& dN_dx,
@@ -433,7 +433,7 @@ void Discret::ELEMENTS::Truss3Scatra::energy(
       Core::LinAlg::Matrix<6, 1> dN_dx;
       Core::LinAlg::Matrix<2, 1> nodal_concentration;
 
-      prep_calc_internal_force_stiff_tot_lag_sca_tra(
+      prep_calc_internal_force_stiff_tot_lag_scatra(
           ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx, nodal_concentration);
 
       // get data from input

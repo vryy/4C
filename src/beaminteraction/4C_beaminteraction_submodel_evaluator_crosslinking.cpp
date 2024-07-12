@@ -792,7 +792,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::reset()
 
     // unshift one of the positions if both are separated by a periodic boundary
     // condition, i.e. have been shifted before
-    periodic_bounding_box_ptr()->un_shift3_d(pos[1], pos[0]);
+    periodic_bounding_box_ptr()->un_shift_3d(pos[1], pos[0]);
 
     // safety check until code is better tested for potential problems with periodic boundary
     // conditions
@@ -1023,7 +1023,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::pre_update_step_element(b
       (*linker_disnp_)[doflid[dim]] = ref(dim) = node->x()[dim];
     }
     // unshift
-    periodic_bounding_box().un_shift3_d(d, ref);
+    periodic_bounding_box().un_shift_3d(d, ref);
 
     for (int dim = 0; dim < 3; ++dim) (*dis_increment)[doflid[dim]] = d(dim) - ref(dim);
   }
@@ -1905,7 +1905,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_unbound_crosslink
   }
 
   // check compliance with periodic boundary conditions
-  periodic_bounding_box().shift3_d(newclpos);
+  periodic_bounding_box().shift_3d(newclpos);
   std::vector<double> newpos(3, 0.0);
   for (int dim = 0; dim < 3; ++dim) newpos[dim] = newclpos(dim);
   crosslinker->set_pos(newpos);
@@ -1944,14 +1944,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
   /* if the two binding spots are separated by a periodic boundary, we need to
    * shift one position back to get the interpolation right */
   clpos = bspot2pos;
-  periodic_bounding_box().un_shift3_d(clpos, bspot1pos);
+  periodic_bounding_box().un_shift_3d(clpos, bspot1pos);
 
   // fixme: to avoid senseless FOUR_C_THROW in debug mode
   Core::LinAlg::Matrix<3, 1> dummy(clpos);
   clpos.update(0.5, bspot1pos, 0.5, dummy);
 
   // shift the interpolated position back in the periodic box if necessary
-  periodic_bounding_box().shift3_d(clpos);
+  periodic_bounding_box().shift_3d(clpos);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1976,7 +1976,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::set_position_of_newly_fre
 
   clpos.update(1.0, cldeltapos_i, 1.0);
 
-  periodic_bounding_box().shift3_d(clpos);
+  periodic_bounding_box().shift_3d(clpos);
 
   std::vector<double> newpos(3, 0.0);
   for (int dim = 0; dim < 3; ++dim) newpos[dim] = clpos(dim);

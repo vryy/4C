@@ -467,7 +467,7 @@ namespace Discret::ELEMENTS
      *         (planar rotations are additive, e.g. in case of relative twist DOF of beam3k with
      *          rotvec=false)
      */
-    inline void rotation1_d_dof_indices(
+    inline void rotation_1d_dof_indices(
         std::vector<int>& twistdofs, const Core::Nodes::Node& node) const override
     {
     }

@@ -317,7 +317,7 @@ namespace ScaTra
     }
 
     //! set number of dofset to write scalar transport values on
-    void set_number_of_dof_set_sca_tra(int nds_scatra)
+    void set_number_of_dof_set_scatra(int nds_scatra)
     {
       FOUR_C_ASSERT(nds_scatra_ == -1, "Don't set 'nds_scatra_' twice!");
       nds_scatra_ = nds_scatra;
@@ -368,7 +368,7 @@ namespace ScaTra
     }
 
     //! create result test for scalar transport field
-    virtual Teuchos::RCP<Core::UTILS::ResultTest> create_sca_tra_field_test();
+    virtual Teuchos::RCP<Core::UTILS::ResultTest> create_scatra_field_test();
 
     //! Add tests to global problem and start tests
     virtual void test_results();
@@ -529,7 +529,7 @@ namespace ScaTra
     int nds_pressure() const { return nds_pres_; }
 
     //! return number of dofset associated with scalar transport dofs
-    int nds_sca_tra() const { return nds_scatra_; }
+    int nds_scatra() const { return nds_scatra_; }
 
     //! return number of dofset associated with thermo dofs
     int nds_thermo() const { return nds_thermo_; }
@@ -937,8 +937,7 @@ namespace ScaTra
 
     //! Set additional problem-specific parameters for non-standard scalar transport problems
     //! (electrochemistry etc.)
-    virtual void set_element_specific_sca_tra_parameters(
-        Teuchos::ParameterList& eleparams) const {};
+    virtual void set_element_specific_scatra_parameters(Teuchos::ParameterList& eleparams) const {};
 
     //! Set element parameter specific for turbulence
     void set_element_turbulence_parameters(bool calcinitialtimederivative = false) const;

@@ -71,7 +71,6 @@ void CONTACT::LagrangeStrategyPoro::do_read_restart(Core::IO::DiscretizationRead
 
   // Call (nearly absolute)Base Class
   CONTACT::AbstractStrategy::do_read_restart(reader, dis, cparams_ptr);
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -195,10 +194,10 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
   {
     if (no_penetration_ && (is_in_contact() || was_in_contact() || was_in_contact_last_time_step()))
     {
-      interface_[i]->assemble_n_coup(*NCoup_);
+      interface_[i]->assemble_normal_coupling(*NCoup_);
 
-      interface_[i]->assemble_n_coup_lin(*NCoup_lindisp_, coupfs);
-      interface_[i]->assemble_n_coup_lin(*NCoup_linvel_, coupfs, true);
+      interface_[i]->assemble_normal_coupling_linearisation(*NCoup_lindisp_, coupfs);
+      interface_[i]->assemble_normal_coupling_linearisation(*NCoup_linvel_, coupfs, true);
 
       interface_[i]->assemble_tn(Tangential_, Teuchos::null);
       interface_[i]->assemble_t_nderiv(linTangentiallambda_, Teuchos::null,
@@ -396,7 +395,6 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
       finvda_->complete(invda_->domain_map(), *fgactivedofs_);
     }
   }
-  return;
 }  // CONTACT::LagrangeStrategyPoro::PoroInitialize
 
 /*-------------------------------------------------------------------------*
@@ -408,7 +406,6 @@ void CONTACT::LagrangeStrategyPoro::evaluate_poro_no_pen_contact(
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& Feff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   evaluate_mat_poro_no_pen(k_fseff, feff);
-
   evaluate_other_mat_poro_no_pen(Feff, 0);
 }
 
@@ -975,7 +972,6 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   // finally do the replacement
   k_fseff = k_fs_effnew;
   feff = feffnew;
-  return;
 }  // CONTACT::LagrangeStrategyPoro::EvaluatePoroNoPen
 
 /*----------------------------------------------------------------------*
@@ -1206,7 +1202,6 @@ void CONTACT::LagrangeStrategyPoro::evaluate_other_mat_poro_no_pen(
 
   // finally do the replacement
   Feff = F_effnew;
-  return;
 }  // CONTACT::LagrangeStrategyPoro::evaluate_other_mat_poro_no_pen
 
 /*----------------------------------------------------------------------------*
@@ -1219,7 +1214,6 @@ void CONTACT::LagrangeStrategyPoro::recover_poro_no_pen(
   incm.insert(std::pair<int, Teuchos::RCP<Epetra_Vector>>(0, inc));
 
   recover_poro_no_pen(disi, incm);
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1307,9 +1301,8 @@ void CONTACT::LagrangeStrategyPoro::recover_poro_no_pen(
 
       flambda->Update(1.0, *ffs_, 1.0);
 
-
-
       fdoldtransp_->multiply(false, *lambdaold_, *mod);
+
       flambda->Update(-nopenalpha_, *mod, 1.0);
 
       Teuchos::RCP<Epetra_Vector> lambdacopy = Teuchos::rcp(new Epetra_Vector(*flambda));
@@ -1323,8 +1316,6 @@ void CONTACT::LagrangeStrategyPoro::recover_poro_no_pen(
   }
   // store updated LM into nodes
   set_state(Mortar::state_lagrange_multiplier, *lambda_);
-
-  return;
 }
 
 /*------------------------------------------------------------------------------*
@@ -1337,7 +1328,6 @@ void CONTACT::LagrangeStrategyPoro::update_poro_contact()
     // std::cout << "print lambda: " << *lambda_ << std::endl;
     lambdaold_->Update(1.0, *lambda_, 0.0);
   }
-  return;
 }
 
 /*------------------------------------------------------------------------*
@@ -1468,7 +1458,6 @@ void CONTACT::LagrangeStrategyPoro::set_state(
       break;
     }
   }  // end outer switch statement
-  return;
 }
 
 
@@ -1539,7 +1528,6 @@ void CONTACT::LagrangeStrategyPoro::set_parent_state(const std::string& statenam
       }
     }
   }
-  return;
 }
 
 /*------------------------------------------------------------------------*
@@ -1563,7 +1551,6 @@ void CONTACT::LagrangeStrategyPoro::poro_mt_initialize()
   isincontact_ = true;      // simply set true for meshtying
   wasincontact_ = true;     // as meshtying interfaces stay the same and are fully in contact
   wasincontactlts_ = true;  // this is necessary for other methods in this strategy
-  return;
 }  // CONTACT::LagrangeStrategyPoro::PoroLinkDM
 
 /*------------------------------------------------------------------------*
@@ -1589,8 +1576,6 @@ void CONTACT::LagrangeStrategyPoro::poro_mt_prepare_fluid_coupling()
   // as mhataam-, dhat_ and invda_ are not computed in poro - meshtying before this point it is
   // necessary here
   poro_mt_set_coupling_matrices();
-
-  return;
 }  // CONTACT::LagrangeStrategyPoro::PoroAssembleFluidCoupling()
 
 /*------------------------------------------------------------------------*
@@ -1663,8 +1648,6 @@ void CONTACT::LagrangeStrategyPoro::poro_mt_set_coupling_matrices()
   invda->scale(1 / (1 - alphaf_));
 
   save_coupling_matrices(dhat, mhataam, invda);
-
-  return;
 }  // CONTACT::LagrangeStrategyPoro::poro_mt_prepare_fluid_coupling
 
 /*------------------------------------------------------------------------*
@@ -1678,7 +1661,6 @@ void CONTACT::LagrangeStrategyPoro::poro_mt_update()
   dold_->complete(dmatrix_->domain_map(), dmatrix_->range_map());
   mold_->complete(mmatrix_->domain_map(), mmatrix_->range_map());
   update_poro_contact();
-  return;
 }  // CONTACT::LagrangeStrategyPoro::PoroMtUpdate()
 
 FOUR_C_NAMESPACE_CLOSE

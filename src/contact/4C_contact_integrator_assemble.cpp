@@ -12,17 +12,10 @@
  *----------------------------------------------------------------------*/
 #include "4C_contact_defines.hpp"
 #include "4C_contact_element.hpp"
-#include "4C_contact_friction_node.hpp"
 #include "4C_contact_integrator.hpp"
 #include "4C_contact_node.hpp"
-#include "4C_inpar_contact.hpp"
-#include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_mortar_coupling3d_classes.hpp"
-#include "4C_mortar_defines.hpp"
-#include "4C_mortar_projector.hpp"
-
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

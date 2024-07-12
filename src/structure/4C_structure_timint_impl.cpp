@@ -1461,7 +1461,7 @@ Inpar::Solid::ConvergenceStatus Solid::TimIntImpl::solve()
   // After a prescribed number of converged time steps, the time step is doubled again. The
   // following methods checks, if the time step size can be increased again.
   check_for_time_step_increase(status);
-  check_for3_d0_dptc_reset(status);
+  check_for_3d0_dptc_reset(status);
 
   return status;
 }
@@ -4638,7 +4638,7 @@ void Solid::TimIntImpl::check_for_time_step_increase(Inpar::Solid::ConvergenceSt
   }
 }
 
-void Solid::TimIntImpl::check_for3_d0_dptc_reset(Inpar::Solid::ConvergenceStatus& status)
+void Solid::TimIntImpl::check_for_3d0_dptc_reset(Inpar::Solid::ConvergenceStatus& status)
 {
   const int maxnumfinestep = 1;
 

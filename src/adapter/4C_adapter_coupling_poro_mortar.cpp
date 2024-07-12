@@ -388,22 +388,6 @@ void Adapter::CouplingPoroMortar::complete_interface(
   // print parallel distribution
   interface->print_parallel_distribution();
 
-  // TODO: is this possible?
-  //**********************************************************************
-  // PARALLEL REDISTRIBUTION OF INTERFACE
-  //**********************************************************************
-  //  if (parredist && comm_->NumProc()>1)
-  //  {
-  //    // redistribute optimally among all procs
-  //    interface->Redistribute(1);
-  //
-  //    // call fill complete again
-  //    interface->fill_complete();
-  //
-  //    // print parallel distribution again
-  //    interface->print_parallel_distribution();
-  //  }
-
   // store interface
   interface_ = interface;
 

@@ -51,7 +51,7 @@ void XFEM::XFluidContactComm::initialize_fluid_state(Teuchos::RCP<Core::Geo::Cut
   visc_stab_hk_ =
       Core::UTILS::IntegralValue<Inpar::XFEM::ViscStabHk>(params_xf_stab, "VISC_STAB_HK");
   nit_stab_gamma_ = params_xf_stab.get<double>("NIT_STAB_FAC");
-  is_pseudo_2_d_ = (bool)Core::UTILS::IntegralValue<int>(params_xf_stab, "IS_PSEUDO_2D");
+  is_pseudo_2d_ = (bool)Core::UTILS::IntegralValue<int>(params_xf_stab, "IS_PSEUDO_2D");
   mass_conservation_scaling_ = Core::UTILS::IntegralValue<Inpar::XFEM::MassConservationScaling>(
       params_xf_stab, "MASS_CONSERVATION_SCALING");
   mass_conservation_combination_ =
@@ -531,7 +531,7 @@ void XFEM::XFluidContactComm::get_penalty_param(Core::Elements::Element* fluidel
   double kappa_s = 1.0 - kappa_m;
   double visc_stab_fac = 0.0;
   mc_[mcidx_]->get_visc_penalty_stabfac(fluidele, nullptr, kappa_m, kappa_s, inv_h_k, visc_stab_fac,
-      dummy, nit_stab_gamma_, nit_stab_gamma_, is_pseudo_2_d_, visc_stab_trace_estimate_);
+      dummy, nit_stab_gamma_, nit_stab_gamma_, is_pseudo_2d_, visc_stab_trace_estimate_);
 
   Teuchos::RCP<Core::Mat::Material> mat;
   XFEM::UTILS::get_volume_cell_material(fluidele, mat);

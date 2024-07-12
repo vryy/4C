@@ -774,7 +774,7 @@ namespace Solid
     void check_for_time_step_increase(Inpar::Solid::ConvergenceStatus& status);
 
     //! check, if according to divercont flag 3D0D PTC can be reset to normal Newton
-    void check_for3_d0_dptc_reset(Inpar::Solid::ConvergenceStatus& status);
+    void check_for_3d0_dptc_reset(Inpar::Solid::ConvergenceStatus& status);
 
     /*! \brief Prepare system for solving with Newton's method
      *

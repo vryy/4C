@@ -62,11 +62,11 @@ void ScaTra::MeshtyingStrategyArtery::init_meshtying()
   // all objects relying on the parallel distribution are
   // created and pointers are set.
   // calls setup() on the scatra time integrator inside.
-  art_scatra->sca_tra_field()->setup();
-  Global::Problem::instance()->add_field_test(art_scatra->create_sca_tra_field_test());
+  art_scatra->scatra_field()->setup();
+  Global::Problem::instance()->add_field_test(art_scatra->create_scatra_field_test());
 
   // set the time integrator
-  set_artery_scatra_time_integrator(art_scatra->sca_tra_field());
+  set_artery_scatra_time_integrator(art_scatra->scatra_field());
 
   // get the two discretizations
   artscatradis_ = artscatratimint_->discretization();

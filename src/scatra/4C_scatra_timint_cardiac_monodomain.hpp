@@ -49,7 +49,7 @@ namespace ScaTra
     void output_state() override;
 
     //! Set ep-specific parameters
-    void set_element_specific_sca_tra_parameters(Teuchos::ParameterList& eleparams) const override;
+    void set_element_specific_scatra_parameters(Teuchos::ParameterList& eleparams) const override;
 
     /*========================================================================*/
     //! @name electrophysiology

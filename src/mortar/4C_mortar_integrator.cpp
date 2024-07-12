@@ -709,7 +709,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::initialize_gp()
  | required                                                                             |
  *--------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based2_d(Mortar::Element& sele,
+void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_2d(Mortar::Element& sele,
     std::vector<Mortar::Element*> meles, bool* boundary_ele, const Epetra_Comm& comm)
 {
   // check for problem dimension
@@ -735,7 +735,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based2_d(Mortar
   for (int k = 0; k < nrow; ++k)
   {
     Mortar::Node* mymrtrnode = dynamic_cast<Mortar::Node*>(mynodes[k]);
-    if (!mymrtrnode) FOUR_C_THROW("integrate_deriv_segment2_d: Null pointer!");
+    if (!mymrtrnode) FOUR_C_THROW("integrate_deriv_segment_2d: Null pointer!");
     bound += mymrtrnode->is_on_bound();
   }
 
@@ -794,7 +794,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based2_d(Mortar
       sxi[0] = eta[0];
 
       Mortar::Projector::impl(sele, *meles[nummaster])
-          ->project_gauss_point2_d(sele, eta, *meles[nummaster], mxi);
+          ->project_gauss_point_2d(sele, eta, *meles[nummaster], mxi);
 
       // evaluate trace space shape functions (on both elements)
       UTILS::EvaluateShape_Displ(mxi, mval, *meles[nummaster], false);
@@ -833,7 +833,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based2_d(Mortar
  |  LinD/M and Ling are built and stored directly into adjacent nodes.  |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_segment2_d(Mortar::Element& sele,
+void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_segment_2d(Mortar::Element& sele,
     double& sxia, double& sxib, Mortar::Element& mele, double& mxia, double& mxib,
     const Epetra_Comm& comm)
 {
@@ -842,7 +842,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_segment2_d(Mortar::
 
   // explicitly defined shape function type needed
   if (shapefcn_ == Inpar::Mortar::shape_undefined)
-    FOUR_C_THROW("integrate_deriv_segment2_d called without specific shape function defined!");
+    FOUR_C_THROW("integrate_deriv_segment_2d called without specific shape function defined!");
 
   // check for problem dimension
   if (ndim_ != 2) FOUR_C_THROW("2D integration method called for non-2D problem");
@@ -931,7 +931,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_segment2_d(Mortar::
 
     // project Gauss point onto master element
     double mxi[2] = {0.0, 0.0};
-    Mortar::Projector::impl(sele, mele)->project_gauss_point2_d(sele, sxi, mele, mxi);
+    Mortar::Projector::impl(sele, mele)->project_gauss_point_2d(sele, sxi, mele, mxi);
 
     // check GP projection
     if ((mxi[0] < mxia) || (mxi[0] > mxib))
@@ -1112,7 +1112,7 @@ void inline Mortar::IntegratorCalc<distype_s, distype_m>::gp_dm(Mortar::Element&
  |  Compute entries for D and M matrix at GP (3D Quad)       farah 12/13|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void inline Mortar::IntegratorCalc<distype_s, distype_m>::gp_3_d_dm_quad(Mortar::Element& sele,
+void inline Mortar::IntegratorCalc<distype_s, distype_m>::gp_3d_dm_quad(Mortar::Element& sele,
     Mortar::Element& mele, Mortar::IntElement& sintele, Core::LinAlg::SerialDenseVector& lmval,
     Core::LinAlg::SerialDenseVector& lmintval, Core::LinAlg::Matrix<ns_, 1>& sval,
     Core::LinAlg::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& nintrow,
@@ -1254,7 +1254,7 @@ void inline Mortar::IntegratorCalc<distype_s, distype_m>::gp_3_d_dm_quad(Mortar:
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>
-Mortar::IntegratorCalc<distype_s, distype_m>::integrate_mmod2_d(Mortar::Element& sele, double& sxia,
+Mortar::IntegratorCalc<distype_s, distype_m>::integrate_mmod_2d(Mortar::Element& sele, double& sxia,
     double& sxib, Mortar::Element& mele, double& mxia, double& mxib)
 {
   //**********************************************************************
@@ -1301,7 +1301,7 @@ Mortar::IntegratorCalc<distype_s, distype_m>::integrate_mmod2_d(Mortar::Element&
     sxi[0] = 0.5 * (1 - eta[0]) * sxia + 0.5 * (1 + eta[0]) * sxib;
 
     // project Gauss point onto master element
-    Mortar::Projector::impl(sele, mele)->project_gauss_point2_d(sele, sxi, mele, mxi);
+    Mortar::Projector::impl(sele, mele)->project_gauss_point_2d(sele, sxi, mele, mxi);
 
     // check GP projection
     if ((mxi[0] < mxia) || (mxi[0] > mxib))
@@ -1381,13 +1381,13 @@ Mortar::IntegratorCalc<distype_s, distype_m>::integrate_mmod2_d(Mortar::Element&
  |  Integrate and linearize without segmentation             farah 01/13|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based3_d(Mortar::Element& sele,
+void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_3d(Mortar::Element& sele,
     std::vector<Mortar::Element*> meles, bool* boundary_ele, const Epetra_Comm& comm)
 {
   // explicitly defined shape function type needed
   if (shapefcn_ == Inpar::Mortar::shape_undefined)
     FOUR_C_THROW(
-        "integrate_deriv_cell3_d_aux_plane called without specific shape function defined!");
+        "integrate_deriv_cell_3d_aux_plane called without specific shape function defined!");
 
   // check for problem dimension
   if (ndim_ != 3) FOUR_C_THROW("3D integration method called for non-3D problem");
@@ -1454,7 +1454,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based3_d(Mortar
     {
       // project Gauss point onto master element
       bool is_on_mele = Mortar::Projector::impl(sele, *meles[nummaster])
-                            ->project_gauss_point3_d(sele, sxi, *meles[nummaster], mxi, projalpha);
+                            ->project_gauss_point_3d(sele, sxi, *meles[nummaster], mxi, projalpha);
       if (not is_on_mele) continue;
 
       // check GP projection
@@ -1509,14 +1509,14 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based3_d(Mortar
  |  This is the auxiliary plane coupling version!!!                     |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane(
+void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell_3d_aux_plane(
     Mortar::Element& sele, Mortar::Element& mele, Teuchos::RCP<Mortar::IntCell> cell, double* auxn,
     const Epetra_Comm& comm)
 {
   // explicitly defined shape function type needed
   if (shapefcn_ == Inpar::Mortar::shape_undefined)
     FOUR_C_THROW(
-        "integrate_deriv_cell3_d_aux_plane called without specific shape function defined!");
+        "integrate_deriv_cell_3d_aux_plane called without specific shape function defined!");
 
   // check for problem dimension
   if (ndim_ != 3) FOUR_C_THROW("3D integration method called for non-3D problem");
@@ -1528,9 +1528,9 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane(
   // check input data
   if ((!sele.is_slave()) || (mele.is_slave()))
     FOUR_C_THROW(
-        "integrate_deriv_cell3_d_aux_plane called on a wrong type of Mortar::Element pair!");
+        "integrate_deriv_cell_3d_aux_plane called on a wrong type of Mortar::Element pair!");
   if (cell == Teuchos::null)
-    FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane called without integration cell");
+    FOUR_C_THROW("integrate_deriv_cell_3d_aux_plane called without integration cell");
 
   // number of nodes (slave, master)
   int nrow = sele.num_node();
@@ -1597,8 +1597,8 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane(
     // project Gauss point onto master element
     double sprojalpha = 0.0;
     double mprojalpha = 0.0;
-    Mortar::Projector::impl(sele)->project_gauss_point_auxn3_d(globgp, auxn, sele, sxi, sprojalpha);
-    Mortar::Projector::impl(mele)->project_gauss_point_auxn3_d(globgp, auxn, mele, mxi, mprojalpha);
+    Mortar::Projector::impl(sele)->project_gauss_point_auxn_3d(globgp, auxn, sele, sxi, sprojalpha);
+    Mortar::Projector::impl(mele)->project_gauss_point_auxn_3d(globgp, auxn, mele, mxi, mprojalpha);
 
     // check GP projection (SLAVE)
     double tol = 0.01;
@@ -1608,7 +1608,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane(
       if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[0] > 1.0 + tol || sxi[1] > 1.0 + tol)
       {
         std::cout
-            << "\n***Warning: integrate_deriv_cell3_d_aux_plane: Gauss point projection outside!";
+            << "\n***Warning: integrate_deriv_cell_3d_aux_plane: Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.id() << " Master ID: " << mele.id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
         std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << std::endl;
@@ -1620,7 +1620,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane(
           sxi[0] + sxi[1] > 1.0 + 2 * tol)
       {
         std::cout
-            << "\n***Warning: integrate_deriv_cell3_d_aux_plane: Gauss point projection outside!";
+            << "\n***Warning: integrate_deriv_cell_3d_aux_plane: Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.id() << " Master ID: " << mele.id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
         std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << std::endl;
@@ -1634,7 +1634,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane(
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
       {
         std::cout
-            << "\n***Warning: integrate_deriv_cell3_d_aux_plane: Gauss point projection outside!";
+            << "\n***Warning: integrate_deriv_cell_3d_aux_plane: Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.id() << " Master ID: " << mele.id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
         std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << std::endl;
@@ -1646,7 +1646,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane(
           mxi[0] + mxi[1] > 1.0 + 2 * tol)
       {
         std::cout
-            << "\n***Warning: integrate_deriv_cell3_d_aux_plane: Gauss point projection outside!";
+            << "\n***Warning: integrate_deriv_cell_3d_aux_plane: Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.id() << " Master ID: " << mele.id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
         std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << std::endl;
@@ -1689,7 +1689,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane(
  |  This is the QUADRATIC auxiliary plane coupling version!!!           |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane_quad(
+void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell_3d_aux_plane_quad(
     Mortar::Element& sele, Mortar::Element& mele, Mortar::IntElement& sintele,
     Mortar::IntElement& mintele, Teuchos::RCP<Mortar::IntCell> cell, double* auxn)
 {
@@ -1699,7 +1699,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane_q
   // explicitly defined shape function type needed
   if (shapefcn_ == Inpar::Mortar::shape_undefined)
     FOUR_C_THROW(
-        "ERROR: integrate_deriv_cell3_d_aux_plane_quad called without specific shape function "
+        "ERROR: integrate_deriv_cell_3d_aux_plane_quad called without specific shape function "
         "defined!");
 
   // check for problem dimension
@@ -1718,10 +1718,10 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane_q
   // check input data
   if ((!sele.is_slave()) || (mele.is_slave()))
     FOUR_C_THROW(
-        "ERROR: integrate_deriv_cell3_d_aux_plane_quad called on a wrong type of Mortar::Element "
+        "ERROR: integrate_deriv_cell_3d_aux_plane_quad called on a wrong type of Mortar::Element "
         "pair!");
   if (cell == Teuchos::null)
-    FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane_quad called without integration cell");
+    FOUR_C_THROW("integrate_deriv_cell_3d_aux_plane_quad called without integration cell");
 
   // number of nodes (slave, master)
   int nrow = sele.num_node();
@@ -1739,7 +1739,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane_q
 
   // get slave element nodes themselves
   Core::Nodes::Node** mynodes = sele.nodes();
-  if (!mynodes) FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane_quad: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("integrate_deriv_cell_3d_aux_plane_quad: Null pointer!");
 
   // decide whether boundary modification has to be considered or not
   // this is element-specific (is there a boundary node in this element?)
@@ -1747,7 +1747,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane_q
   for (int k = 0; k < nrow; ++k)
   {
     Mortar::Node* mymrtrnode = dynamic_cast<Mortar::Node*>(mynodes[k]);
-    if (!mymrtrnode) FOUR_C_THROW("integrate_deriv_segment2_d: Null pointer!");
+    if (!mymrtrnode) FOUR_C_THROW("integrate_deriv_segment_2d: Null pointer!");
     bound += mymrtrnode->is_on_boundor_ce();
   }
 
@@ -1783,9 +1783,9 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane_q
     // project Gauss point onto master integration element
     double sprojalpha = 0.0;
     double mprojalpha = 0.0;
-    Mortar::Projector::impl(sintele)->project_gauss_point_auxn3_d(
+    Mortar::Projector::impl(sintele)->project_gauss_point_auxn_3d(
         globgp, auxn, sintele, sxi, sprojalpha);
-    Mortar::Projector::impl(mintele)->project_gauss_point_auxn3_d(
+    Mortar::Projector::impl(mintele)->project_gauss_point_auxn_3d(
         globgp, auxn, mintele, mxi, mprojalpha);
 
     // check GP projection (SLAVE)
@@ -1795,7 +1795,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane_q
     {
       if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[0] > 1.0 + tol || sxi[1] > 1.0 + tol)
       {
-        std::cout << "\n***Warning: integrate_deriv_cell3_d_aux_plane: Slave Gauss point "
+        std::cout << "\n***Warning: integrate_deriv_cell_3d_aux_plane: Slave Gauss point "
                      "projection outside!";
         std::cout << "Slave ID: " << sele.id() << " Master ID: " << mele.id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
@@ -1807,7 +1807,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane_q
       if (sxi[0] < -tol || sxi[1] < -tol || sxi[0] > 1.0 + tol || sxi[1] > 1.0 + tol ||
           sxi[0] + sxi[1] > 1.0 + 2 * tol)
       {
-        std::cout << "\n***Warning: integrate_deriv_cell3_d_aux_plane: Slave Gauss point "
+        std::cout << "\n***Warning: integrate_deriv_cell_3d_aux_plane: Slave Gauss point "
                      "projection outside!";
         std::cout << "Slave ID: " << sele.id() << " Master ID: " << mele.id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
@@ -1821,7 +1821,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane_q
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
       {
-        std::cout << "\n***Warning: integrate_deriv_cell3_d_aux_plane: Master Gauss point "
+        std::cout << "\n***Warning: integrate_deriv_cell_3d_aux_plane: Master Gauss point "
                      "projection outside!";
         std::cout << "Slave ID: " << sele.id() << " Master ID: " << mele.id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
@@ -1833,7 +1833,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane_q
       if (mxi[0] < -tol || mxi[1] < -tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol ||
           mxi[0] + mxi[1] > 1.0 + 2 * tol)
       {
-        std::cout << "\n***Warning: integrate_deriv_cell3_d_aux_plane: Master Gauss point "
+        std::cout << "\n***Warning: integrate_deriv_cell_3d_aux_plane: Master Gauss point "
                      "projection outside!";
         std::cout << "Slave ID: " << sele.id() << " Master ID: " << mele.id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
@@ -1847,9 +1847,9 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane_q
     double pmxi[2] = {0.0, 0.0};
     double psprojalpha = 0.0;
     double pmprojalpha = 0.0;
-    Mortar::Projector::impl(sele)->project_gauss_point_auxn3_d(
+    Mortar::Projector::impl(sele)->project_gauss_point_auxn_3d(
         globgp, auxn, sele, psxi, psprojalpha);
-    Mortar::Projector::impl(mele)->project_gauss_point_auxn3_d(
+    Mortar::Projector::impl(mele)->project_gauss_point_auxn_3d(
         globgp, auxn, mele, pmxi, pmprojalpha);
     // sintele.MapToParent(sxi, psxi); // old way of doing it via affine map... wrong (popp 05/2016)
     // mintele.MapToParent(mxi, pmxi); // old way of doing it via affine map... wrong (popp 05/2016)
@@ -1861,7 +1861,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane_q
       if (psxi[0] < -1.0 - tol || psxi[1] < -1.0 - tol || psxi[0] > 1.0 + tol ||
           psxi[1] > 1.0 + tol)
       {
-        std::cout << "\n***Warning: integrate_deriv_cell3_d_aux_plane: Slave Gauss point "
+        std::cout << "\n***Warning: integrate_deriv_cell_3d_aux_plane: Slave Gauss point "
                      "projection outside!";
         std::cout << "Slave ID: " << sele.id() << " Master ID: " << mele.id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
@@ -1873,7 +1873,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane_q
       if (psxi[0] < -tol || psxi[1] < -tol || psxi[0] > 1.0 + tol || psxi[1] > 1.0 + tol ||
           psxi[0] + psxi[1] > 1.0 + 2 * tol)
       {
-        std::cout << "\n***Warning: integrate_deriv_cell3_d_aux_plane: Slave Gauss point "
+        std::cout << "\n***Warning: integrate_deriv_cell_3d_aux_plane: Slave Gauss point "
                      "projection outside!";
         std::cout << "Slave ID: " << sele.id() << " Master ID: " << mele.id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
@@ -1888,7 +1888,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane_q
       if (pmxi[0] < -1.0 - tol || pmxi[1] < -1.0 - tol || pmxi[0] > 1.0 + tol ||
           pmxi[1] > 1.0 + tol)
       {
-        std::cout << "\n***Warning: integrate_deriv_cell3_d_aux_plane: Master Gauss point "
+        std::cout << "\n***Warning: integrate_deriv_cell_3d_aux_plane: Master Gauss point "
                      "projection outside!";
         std::cout << "Slave ID: " << sele.id() << " Master ID: " << mele.id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
@@ -1900,7 +1900,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane_q
       if (pmxi[0] < -tol || pmxi[1] < -tol || pmxi[0] > 1.0 + tol || pmxi[1] > 1.0 + tol ||
           pmxi[0] + pmxi[1] > 1.0 + 2 * tol)
       {
-        std::cout << "\n***Warning: integrate_deriv_cell3_d_aux_plane: Master Gauss point "
+        std::cout << "\n***Warning: integrate_deriv_cell_3d_aux_plane: Master Gauss point "
                      "projection outside!";
         std::cout << "Slave ID: " << sele.id() << " Master ID: " << mele.id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
@@ -1939,7 +1939,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane_q
     double jac = cell->jacobian();
 
     // compute cell D/M matrix *******************************************
-    gp_3_d_dm_quad(sele, mele, sintele, lmval, lmintval, sval, mval, jac, wgt, nrow, nintrow, ncol,
+    gp_3d_dm_quad(sele, mele, sintele, lmval, lmintval, sval, mval, jac, wgt, nrow, nintrow, ncol,
         ndof, bound);
   }
   //**********************************************************************

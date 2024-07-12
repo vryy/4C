@@ -80,16 +80,16 @@ void SSI::SSIPart1WC::do_scatra_step()
   // -------------------------------------------------------------------
   if (isscatrafromfile_)
   {
-    int diffsteps = structure_field()->dt() / sca_tra_field()->dt();
-    if (sca_tra_field()->step() % diffsteps == 0)
+    int diffsteps = structure_field()->dt() / scatra_field()->dt();
+    if (scatra_field()->step() % diffsteps == 0)
     {
       Teuchos::RCP<Core::IO::DiscretizationReader> reader =
-          Teuchos::rcp(new Core::IO::DiscretizationReader(sca_tra_field()->discretization(),
-              Global::Problem::instance()->input_control_file(), sca_tra_field()->step()));
+          Teuchos::rcp(new Core::IO::DiscretizationReader(scatra_field()->discretization(),
+              Global::Problem::instance()->input_control_file(), scatra_field()->step()));
 
       // check if this is a cardiac monodomain problem
       Teuchos::RCP<ScaTra::TimIntCardiacMonodomain> cardmono =
-          Teuchos::rcp_dynamic_cast<ScaTra::TimIntCardiacMonodomain>(sca_tra_field());
+          Teuchos::rcp_dynamic_cast<ScaTra::TimIntCardiacMonodomain>(scatra_field());
 
       if (cardmono == Teuchos::null)
       {
@@ -97,11 +97,11 @@ void SSI::SSIPart1WC::do_scatra_step()
         Teuchos::RCP<Epetra_MultiVector> phinptemp = reader->read_vector("phinp");
 
         // replace old scatra map with new map since ssi map has more dofs
-        int err = phinptemp->ReplaceMap(*sca_tra_field()->dof_row_map());
+        int err = phinptemp->ReplaceMap(*scatra_field()->dof_row_map());
         if (err) FOUR_C_THROW("Replacing old scatra map with new scatra map in ssi failed!");
 
         // update phinp
-        sca_tra_field()->phinp()->Update(1.0, *phinptemp, 0.0);
+        scatra_field()->phinp()->Update(1.0, *phinptemp, 0.0);
       }
       else
       {
@@ -113,11 +113,11 @@ void SSI::SSIPart1WC::do_scatra_step()
         reader->read_vector(phinptemp, "phinp");
 
         // replace old scatra map with new map since ssi map has more dofs
-        int err = phinptemp->ReplaceMap(*sca_tra_field()->dof_row_map());
+        int err = phinptemp->ReplaceMap(*scatra_field()->dof_row_map());
         if (err) FOUR_C_THROW("Replacing old scatra map with new scatra map in ssi failed!");
 
         // update phinp
-        sca_tra_field()->phinp()->Update(1.0, *phinptemp, 0.0);
+        scatra_field()->phinp()->Update(1.0, *phinptemp, 0.0);
       }
     }
   }
@@ -125,27 +125,27 @@ void SSI::SSIPart1WC::do_scatra_step()
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
   else
-    sca_tra_field()->solve();
+    scatra_field()->solve();
 
 
   // -------------------------------------------------------------------
   //                         update solution
   //        current solution becomes old solution of next timestep
   // -------------------------------------------------------------------
-  sca_tra_field()->update();
+  scatra_field()->update();
 
   // -------------------------------------------------------------------
   // evaluate error for problems with analytical solution
   // -------------------------------------------------------------------
-  sca_tra_field()->evaluate_error_compared_to_analytical_sol();
+  scatra_field()->evaluate_error_compared_to_analytical_sol();
 
   // -------------------------------------------------------------------
   //                         output of solution
   // -------------------------------------------------------------------
-  sca_tra_field()->check_and_write_output_and_restart();
+  scatra_field()->check_and_write_output_and_restart();
 
   // cleanup
-  sca_tra_field()->discretization()->clear_state();
+  scatra_field()->discretization()->clear_state();
 }
 
 /*----------------------------------------------------------------------*/
@@ -159,18 +159,18 @@ void SSI::SSIPart1WCSolidToScatra::prepare_time_step(bool printheader)
 
   // if adaptive time stepping: calculate time step in scatra (prepare_time_step() of Scatra) and
   // pass to structure
-  if (sca_tra_field()->time_step_adapted()) set_dt_from_sca_tra_to_structure();
+  if (scatra_field()->time_step_adapted()) set_dt_from_scatra_to_structure();
 
   structure_field()->prepare_time_step();
 
-  const int diffsteps = sca_tra_field()->dt() / structure_field()->dt();
+  const int diffsteps = scatra_field()->dt() / structure_field()->dt();
 
   if (structure_field()->step() % diffsteps == 0)
   {
     if (is_s2_i_kinetics_with_pseudo_contact()) structure_field()->determine_stress_strain();
     set_struct_solution(structure_field()->dispn(), structure_field()->veln(),
         is_s2_i_kinetics_with_pseudo_contact());
-    sca_tra_field()->prepare_time_step();
+    scatra_field()->prepare_time_step();
   }
 }
 
@@ -221,14 +221,14 @@ void SSI::SSIPart1WCSolidToScatra::timeloop()
   check_is_init();
   check_is_setup();
 
-  if (structure_field()->dt() > sca_tra_field()->dt())
+  if (structure_field()->dt() > scatra_field()->dt())
   {
     FOUR_C_THROW(
         "Timestepsize of scatra should be equal or bigger than solid timestep in solid to scatra "
         "interaction");
   }
 
-  const int diffsteps = sca_tra_field()->dt() / structure_field()->dt();
+  const int diffsteps = scatra_field()->dt() / structure_field()->dt();
 
   while (not_finished())
   {
@@ -280,7 +280,7 @@ void SSI::SSIPart1WCScatraToSolid::init(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*/
 void SSI::SSIPart1WCScatraToSolid::timeloop()
 {
-  if (structure_field()->dt() < sca_tra_field()->dt())
+  if (structure_field()->dt() < scatra_field()->dt())
   {
     FOUR_C_THROW(
         "Timestepsize of solid should be equal or bigger than scatra timestep in scatra to solid "
@@ -291,20 +291,20 @@ void SSI::SSIPart1WCScatraToSolid::timeloop()
   auto zeros_structure = Core::LinAlg::CreateVector(*structure_field()->dof_row_map(), true);
   set_struct_solution(zeros_structure, zeros_structure, false);
 
-  sca_tra_field()->prepare_time_loop();
+  scatra_field()->prepare_time_loop();
 
-  const int diffsteps = structure_field()->dt() / sca_tra_field()->dt();
+  const int diffsteps = structure_field()->dt() / scatra_field()->dt();
   while (!finished())
   {
     prepare_time_step();
     do_scatra_step();  // It has its own time and timestep variables, and it increments them by
                        // itself.
-    if (sca_tra_field()->step() % diffsteps == 0)
+    if (scatra_field()->step() % diffsteps == 0)
     {
-      set_scatra_solution(sca_tra_field()->phinp());
+      set_scatra_solution(scatra_field()->phinp());
 
       // set micro scale value (projected to macro scale) to structure field
-      if (macro_scale()) set_micro_scatra_solution(sca_tra_field()->phinp_micro());
+      if (macro_scale()) set_micro_scatra_solution(scatra_field()->phinp_micro());
 
       // evaluate temperature from function and set to structural discretization
       evaluate_and_set_temperature_field();
@@ -326,11 +326,11 @@ void SSI::SSIPart1WCScatraToSolid::prepare_time_step(bool printheader)
   increment_time_and_step();
   print_header();
 
-  sca_tra_field()->prepare_time_step();
+  scatra_field()->prepare_time_step();
   // prepare_time_step of structure field is called later
 
   // copy time step to SSI problem, in case it was modified in ScaTra
-  if (sca_tra_field()->time_step_adapted()) set_dt_from_sca_tra_to_ssi();
+  if (scatra_field()->time_step_adapted()) set_dt_from_scatra_to_ssi();
 }
 
 /*----------------------------------------------------------------------*/
@@ -340,7 +340,7 @@ bool SSI::SSIPart1WCScatraToSolid::finished() const
   if (diff_time_step_size())
     return !not_finished();
   else
-    return !(not_finished() and sca_tra_field()->not_finished());
+    return !(not_finished() and scatra_field()->not_finished());
 }
 
 FOUR_C_NAMESPACE_CLOSE

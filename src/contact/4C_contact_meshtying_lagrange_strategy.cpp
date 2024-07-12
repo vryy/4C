@@ -22,7 +22,6 @@
 #include "4C_linear_solver_method_linalg.hpp"  // mesh initialization :-(
 #include "4C_mortar_defines.hpp"
 #include "4C_mortar_interface.hpp"
-#include "4C_mortar_node.hpp"
 #include "4C_mortar_utils.hpp"
 #include "4C_utils_parameter_list.hpp"
 

@@ -21,7 +21,6 @@
 #include "4C_so3_plast_ssn.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Epetra_Operator.h>
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -350,7 +350,7 @@ namespace Core::Conditions
     Teuchos::RCP<Teuchos::Time> timepbcghost_;
     //!\brief time measurement (make colmap for ghosting)
     Teuchos::RCP<Teuchos::Time> timepbcmakeghostmap_;
-    //!\brief time measurement (discret->Redistribute)
+    //!\brief time measurement (discret->redistribute)
     Teuchos::RCP<Teuchos::Time> timepbcrenumdofs_;
 
 
@@ -370,7 +370,7 @@ namespace Core::Conditions
     Teuchos::RCP<Teuchos::TimeMonitor> tm6_ref_;
     //!\brief time measurement (repair ghosting)
     Teuchos::RCP<Teuchos::TimeMonitor> tm7_ref_;
-    //!\brief time measurement (discret->Redistribute)
+    //!\brief time measurement (discret->redistribute)
     Teuchos::RCP<Teuchos::TimeMonitor> tm8_ref_;
   };
 }  // namespace Core::Conditions

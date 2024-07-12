@@ -127,7 +127,7 @@ namespace CONTACT
 
     */
 
-    void evaluate_rel_mov_predict() override;
+    void predict_relative_movement() override;
 
     /*!
     \brief Initialize general contact variables for next Newton step

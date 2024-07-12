@@ -94,7 +94,7 @@ namespace SSI
     Teuchos::RCP<const Epetra_Map> full_map_structure() const { return full_map_structure_; }
 
     //! scatra discretization
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> sca_tra_field() const { return scatra_; }
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_field() const { return scatra_; }
 
    private:
     //! map extractor associated with all degrees of freedom inside structure field

@@ -2269,9 +2269,9 @@ void Discret::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_x
     d2_cauchyndir_dd2->shape(numdofperelement_, numdofperelement_);
     Core::LinAlg::Matrix<numdofperelement_, numdofperelement_> d2_cauchyndir_dd2_mat(
         d2_cauchyndir_dd2->values(), true);
-    static Core::LinAlg::Matrix<9, numdofperelement_> d2_cauchyndir_dF2_d_F_dd(true);
-    d2_cauchyndir_dF2_d_F_dd.multiply(1.0, d2_cauchyndir_dF2, d_F_dd, 0.0);
-    d2_cauchyndir_dd2_mat.multiply_tn(1.0, d_F_dd, d2_cauchyndir_dF2_d_F_dd, 0.0);
+    static Core::LinAlg::Matrix<9, numdofperelement_> d2_cauchyndir_dF_2d_F_dd(true);
+    d2_cauchyndir_dF_2d_F_dd.multiply(1.0, d2_cauchyndir_dF2, d_F_dd, 0.0);
+    d2_cauchyndir_dd2_mat.multiply_tn(1.0, d_F_dd, d2_cauchyndir_dF_2d_F_dd, 0.0);
   }
 
   // prepare evaluation of d_cauchyndir_dxi or d2_cauchyndir_dd_dxi
@@ -2328,9 +2328,9 @@ void Discret::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_x
     Xsec.multiply(1.0, deriv2, xrefe, 0.0);
     N_XYZ_Xsec.multiply_tt(1.0, N_XYZ, Xsec, 0.0);
 
-    static Core::LinAlg::Matrix<9, numdofperelement_> d2_cauchyndir_dF2_d_F_dd(true);
-    d2_cauchyndir_dF2_d_F_dd.multiply(1.0, d2_cauchyndir_dF2, d_F_dd, 0.0);
-    d2_cauchyndir_dd_dxi_mat.multiply_tn(1.0, d2_cauchyndir_dF2_d_F_dd, d_F_dxi, 0.0);
+    static Core::LinAlg::Matrix<9, numdofperelement_> d2_cauchyndir_dF_2d_F_dd(true);
+    d2_cauchyndir_dF_2d_F_dd.multiply(1.0, d2_cauchyndir_dF2, d_F_dd, 0.0);
+    d2_cauchyndir_dd_dxi_mat.multiply_tn(1.0, d2_cauchyndir_dF_2d_F_dd, d_F_dxi, 0.0);
 
     if (temp)
     {

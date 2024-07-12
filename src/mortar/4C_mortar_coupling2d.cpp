@@ -111,7 +111,7 @@ bool Mortar::Coupling2d::project()
       // for nurbs we need to use the Gauss point projector, since the actual spatial coords
       // of the point to be projected is calculated by N*X using shape functions N and CP coords X
       Mortar::Projector::impl(slave_element(), mele_)
-          ->project_gauss_point2_d(slave_element(), xinode.data(), mele_, xi.data());
+          ->project_gauss_point_2d(slave_element(), xinode.data(), mele_, xi.data());
     }
     else
     {
@@ -498,7 +498,7 @@ bool Mortar::Coupling2d::detect_overlap()
                 << master_element().node_ids()[1] << '\n';
       std::cout << "s0: " << s0hasproj << " s1: " << s1hasproj << '\n';
       std::cout << "m0: " << m0hasproj << " m1: " << m1hasproj << '\n';
-      FOUR_C_THROW("IntegrateOverlap: Unknown overlap case found!");
+      FOUR_C_THROW("integrate_overlap: Unknown overlap case found!");
     }
   }
 
@@ -521,7 +521,7 @@ bool Mortar::Coupling2d::detect_overlap()
                 << master_element().node_ids()[1] << '\n';
       std::cout << "s0: " << s0hasproj << " s1: " << s1hasproj << '\n';
       std::cout << "m0: " << m0hasproj << " m1: " << m1hasproj << '\n';
-      FOUR_C_THROW("IntegrateOverlap: Unknown overlap case found!");
+      FOUR_C_THROW("integrate_overlap: Unknown overlap case found!");
     }
   }
 
@@ -724,7 +724,7 @@ bool Mortar::Coupling2d::detect_overlap()
                 << master_element().node_ids()[1] << '\n';
       std::cout << "s0: " << s0hasproj << " s1: " << s1hasproj << '\n';
       std::cout << "m0: " << m0hasproj << " m1: " << m1hasproj << '\n';
-      FOUR_C_THROW("IntegrateOverlap: Unknown overlap case found!");
+      FOUR_C_THROW("integrate_overlap: Unknown overlap case found!");
     }
     if (sprojxi[0] < -1. || mprojxi[0] > 1.)
       overlap = false;
@@ -749,7 +749,7 @@ bool Mortar::Coupling2d::detect_overlap()
                 << master_element().node_ids()[1] << '\n';
       std::cout << "s0: " << s0hasproj << " s1: " << s1hasproj << '\n';
       std::cout << "m0: " << m0hasproj << " m1: " << m1hasproj << '\n';
-      FOUR_C_THROW("IntegrateOverlap: Unknown overlap case found!");
+      FOUR_C_THROW("integrate_overlap: Unknown overlap case found!");
     }
     if (sprojxi[0] > 1.)
       overlap = false;
@@ -772,7 +772,7 @@ bool Mortar::Coupling2d::detect_overlap()
               << master_element().node_ids()[1] << '\n';
     std::cout << "s0: " << s0hasproj << " s1: " << s1hasproj << '\n';
     std::cout << "m0: " << m0hasproj << " m1: " << m1hasproj << '\n';
-    FOUR_C_THROW("IntegrateOverlap: Unknown overlap case found!");
+    FOUR_C_THROW("integrate_overlap: Unknown overlap case found!");
   }
 
   // check for 1:1 node projections and for infeasible limits
@@ -787,8 +787,8 @@ bool Mortar::Coupling2d::detect_overlap()
     {
       //      std::cout << "Slave: " << sxia << " " << sxib << std::endl;
       //      std::cout << "Master: " << mxia << " " << mxib << std::endl;
-      //      FOUR_C_THROW("IntegrateOverlap: Determined infeasible limits!");
-      std::cout << "WARNING: IntegrateOverlap: Determined infeasible limits!" << '\n';
+      //      FOUR_C_THROW("integrate_overlap: Determined infeasible limits!");
+      std::cout << "WARNING: integrate_overlap: Determined infeasible limits!" << '\n';
       overlap = false;
     }
   }
@@ -861,7 +861,7 @@ bool Mortar::Coupling2d::integrate_overlap(const Teuchos::RCP<Mortar::ParamsInte
   {
     // do the overlap integration (integrate and linearize both M and gap)
     Mortar::Integrator::impl(slave_element(), master_element(), interface_params())
-        ->integrate_segment2_d(
+        ->integrate_segment_2d(
             slave_element(), sxia, sxib, master_element(), mxia, mxib, get_comm());
   }
 
@@ -889,7 +889,7 @@ bool Mortar::Coupling2d::integrate_overlap(const Teuchos::RCP<Mortar::ParamsInte
   // *******************************************************************
   else
   {
-    FOUR_C_THROW("IntegrateOverlap: Invalid case for 2D mortar coupling LM interpolation");
+    FOUR_C_THROW("integrate_overlap: Invalid case for 2D mortar coupling LM interpolation");
   }
 
   return true;
@@ -973,7 +973,7 @@ void Mortar::Coupling2dManager::integrate_coupling(
         (quad() && lmtype == Inpar::Mortar::lagmult_lin))
     {
       Mortar::Integrator::impl(slave_element(), master_element(0), imortar_)
-          ->integrate_ele_based2_d(
+          ->integrate_ele_based_2d(
               slave_element(), master_elements(), &boundary_ele, idiscret_.get_comm());
 
       // Perform Boundary Segmentation if required

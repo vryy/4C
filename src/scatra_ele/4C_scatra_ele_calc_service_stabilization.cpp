@@ -68,7 +68,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau(
     }
     case Inpar::ScaTra::tau_exact_1d:
     {
-      calc_tau1_d_exact(tau, diffus, reacoeff, densnp, convelint, vol);
+      calc_tau_1d_exact(tau, diffus, reacoeff, densnp, convelint, vol);
       break;
     }
     case Inpar::ScaTra::tau_zero:
@@ -465,7 +465,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_madurei
  |  exact calculation of tau for 1D                            vg 01/11 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau1_d_exact(
+void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_1d_exact(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient

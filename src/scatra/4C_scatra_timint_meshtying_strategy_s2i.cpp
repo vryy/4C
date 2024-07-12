@@ -324,7 +324,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
             kinetics_slave_cond.second->g_type() != Core::Conditions::geometry_type_point)
         {
           // collect condition specific data and store to scatra boundary parameter class
-          set_condition_specific_sca_tra_parameters(*kinetics_slave_cond.second);
+          set_condition_specific_scatra_parameters(*kinetics_slave_cond.second);
 
           if (not slaveonly_)
           {
@@ -615,7 +615,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
         params.set<Core::Conditions::Condition*>("condition", kinetics_slave_cond.second);
 
         // collect condition specific data and store to scatra boundary parameter class
-        set_condition_specific_sca_tra_parameters(*(kinetics_slave_cond.second));
+        set_condition_specific_scatra_parameters(*(kinetics_slave_cond.second));
 
         if (couplingtype_ != Inpar::S2I::coupling_nts_standard)
         {
@@ -901,7 +901,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
         islaveresidual_->PutScalar(0.);
 
         // collect condition specific data and store to scatra boundary parameter class
-        set_condition_specific_sca_tra_parameters(*s2icoupling_growth_conditions[0]);
+        set_condition_specific_scatra_parameters(*s2icoupling_growth_conditions[0]);
         // evaluate the condition
         scatratimint_->discretization()->evaluate_condition(conditionparams, islavematrix_,
             imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2IKineticsGrowth");
@@ -1062,7 +1062,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                   if (kinetics_slave_cond_id == condid)
                   {
                     // collect condition specific data and store to scatra boundary parameter class
-                    set_condition_specific_sca_tra_parameters(*kinetics_slave_cond);
+                    set_condition_specific_scatra_parameters(*kinetics_slave_cond);
 
                     scatratimint_->discretization()->evaluate_condition(
                         condparams, strategy, "S2IKinetics", condid);
@@ -1092,7 +1092,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                     scatratimint_->discretization()->get_condition("S2IKineticsGrowth");
 
                 // collect condition specific data and store to scatra boundary parameter class
-                set_condition_specific_sca_tra_parameters(*s2i_coupling_growth_cond);
+                set_condition_specific_scatra_parameters(*s2i_coupling_growth_cond);
 
                 scatratimint_->discretization()->evaluate_condition(
                     condparams, strategy, "S2IKineticsGrowth", condid);
@@ -1400,7 +1400,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
         static_cast<int>(Inpar::S2I::kinetics_butlervolmerreducedcapacitance))
     {
       // collect condition specific data and store to scatra boundary parameter class
-      set_condition_specific_sca_tra_parameters(*kinetics_slave_cond_cap.second);
+      set_condition_specific_scatra_parameters(*kinetics_slave_cond_cap.second);
 
       scatratimint_->discretization()->evaluate_condition(capcondparas, islavematrix_,
           imasterslavematrix_, islaveresidual_, imasterresidual_on_slave_side, Teuchos::null,
@@ -2373,7 +2373,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
               std::array<double, 2> coordinates_master;
               double dummy(0.);
               Mortar::Projector::impl(*master_mortar_ele)
-                  ->project_gauss_point_auxn3_d(slavenode->x().data(), slavenode->mo_data().n(),
+                  ->project_gauss_point_auxn_3d(slavenode->x().data(), slavenode->mo_data().n(),
                       *master_mortar_ele, coordinates_master.data(), dummy);
 
               // check whether projected node lies inside master-side element
@@ -2966,13 +2966,13 @@ void ScaTra::MeshtyingStrategyS2I::set_element_general_parameters(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyS2I::set_condition_specific_sca_tra_parameters(
+void ScaTra::MeshtyingStrategyS2I::set_condition_specific_scatra_parameters(
     Core::Conditions::Condition& s2icondition) const
 {
   Teuchos::ParameterList conditionparams;
 
   // fill the parameter list
-  write_s2_i_kinetics_specific_sca_tra_parameters_to_parameter_list(s2icondition, conditionparams);
+  write_s2_i_kinetics_specific_scatra_parameters_to_parameter_list(s2icondition, conditionparams);
 
   // call standard loop over elements
   scatratimint_->discretization()->evaluate(
@@ -2981,10 +2981,8 @@ void ScaTra::MeshtyingStrategyS2I::set_condition_specific_sca_tra_parameters(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyS2I::
-    write_s2_i_kinetics_specific_sca_tra_parameters_to_parameter_list(
-        Core::Conditions::Condition& s2ikinetics_cond,
-        Teuchos::ParameterList& s2icouplingparameters)
+void ScaTra::MeshtyingStrategyS2I::write_s2_i_kinetics_specific_scatra_parameters_to_parameter_list(
+    Core::Conditions::Condition& s2ikinetics_cond, Teuchos::ParameterList& s2icouplingparameters)
 {
   // get kinetic model and condition type
   const int kineticmodel = s2ikinetics_cond.parameters().get<int>("kinetic model");
@@ -4360,10 +4358,10 @@ double ScaTra::MortarCellCalc<distype_s, distype_m>::eval_shape_func_and_dom_int
   std::array<double, nsd_master_> coordinates_master;
   double dummy(0.);
   Mortar::Projector::impl(slaveelement)
-      ->project_gauss_point_auxn3_d(
+      ->project_gauss_point_auxn_3d(
           coordinates_global.data(), cell.auxn(), slaveelement, coordinates_slave.data(), dummy);
   Mortar::Projector::impl(masterelement)
-      ->project_gauss_point_auxn3_d(
+      ->project_gauss_point_auxn_3d(
           coordinates_global.data(), cell.auxn(), masterelement, coordinates_master.data(), dummy);
 
   // evaluate shape functions at current integration point on slave and master elements
@@ -4508,7 +4506,7 @@ void ScaTra::MortarCellCalc<distype_s, distype_m>::eval_shape_func_at_slave_node
   std::array<double, 2> coordinates_master;
   double dummy(0.);
   Mortar::Projector::impl(masterelement)
-      ->project_gauss_point_auxn3_d(slavenode.x().data(), slavenode.mo_data().n(), masterelement,
+      ->project_gauss_point_auxn_3d(slavenode.x().data(), slavenode.mo_data().n(), masterelement,
           coordinates_master.data(), dummy);
 
   // evaluate master-side shape functions at projected node on master-side element

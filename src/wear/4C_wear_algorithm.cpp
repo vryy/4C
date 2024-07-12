@@ -393,7 +393,7 @@ void Wear::Algorithm::create_material_interface()
             }
 
           // note that we do not have to worry about double entries
-          // as the AddNode function can deal with this case!
+          // as the add_node function can deal with this case!
           // the only problem would have occured for the initial active nodes,
           // as their status could have been overwritten, but is prevented
           // by the "foundinitialactive" block above!
@@ -427,7 +427,7 @@ void Wear::Algorithm::create_material_interface()
             }
 
           // note that we do not have to worry about double entries
-          // as the AddNode function can deal with this case!
+          // as the add_node function can deal with this case!
           // the only problem would have occured for the initial active nodes,
           // as their status could have been overwritten, but is prevented
           // by the "foundinitialactive" block above!

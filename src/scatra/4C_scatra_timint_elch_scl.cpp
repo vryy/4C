@@ -101,15 +101,15 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
   micro_timint_->init();
 
   auto dofset_vel = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(3, 0, 0, true));
-  if (micro_timint_->sca_tra_field()->discretization()->add_dof_set(dofset_vel) != 1)
+  if (micro_timint_->scatra_field()->discretization()->add_dof_set(dofset_vel) != 1)
     FOUR_C_THROW("unexpected number of dofsets in the scatra micro discretization");
-  micro_sca_tra_field()->set_number_of_dof_set_velocity(1);
+  micro_scatra_field()->set_number_of_dof_set_velocity(1);
 
-  micro_sca_tra_field()->discretization()->fill_complete();
+  micro_scatra_field()->discretization()->fill_complete();
 
   redistribute_micro_discretization();
 
-  micro_sca_tra_field()->set_velocity_field();
+  micro_scatra_field()->set_velocity_field();
 
   micro_timint_->setup();
 
@@ -117,7 +117,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
   setup_coupling();
 
   // setup maps for coupled problem
-  full_map_elch_scl_ = Core::LinAlg::MergeMap(dof_row_map(), micro_sca_tra_field()->dof_row_map());
+  full_map_elch_scl_ = Core::LinAlg::MergeMap(dof_row_map(), micro_scatra_field()->dof_row_map());
   std::vector<Teuchos::RCP<const Epetra_Map>> block_map_vec_scl;
   switch (matrixtype_elch_scl_)
   {
@@ -125,7 +125,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
       block_map_vec_scl = {full_map_elch_scl_};
       break;
     case Core::LinAlg::MatrixType::block_field:
-      block_map_vec_scl = {dof_row_map(), micro_sca_tra_field()->dof_row_map()};
+      block_map_vec_scl = {dof_row_map(), micro_scatra_field()->dof_row_map()};
       break;
     default:
       FOUR_C_THROW("Matrix type not supported.");
@@ -168,7 +168,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
 
   // extractor to get micro or macro dofs from global vector
   macro_micro_dofs_ = Teuchos::rcp(
-      new Core::LinAlg::MapExtractor(*full_map_elch_scl_, micro_sca_tra_field()->dof_row_map()));
+      new Core::LinAlg::MapExtractor(*full_map_elch_scl_, micro_scatra_field()->dof_row_map()));
 
   dbcmaps_elch_scl_ =
       Teuchos::rcp(new Core::LinAlg::MapExtractor(*full_map_elch_scl_, dbcmaps_->cond_map()));
@@ -201,7 +201,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
           solver_elch_scl_->params().sublist("Inverse" + microblockstr.str());
       blocksmootherparamsmicro.sublist("Belos Parameters");
       blocksmootherparamsmicro.sublist("MueLu Parameters");
-      micro_sca_tra_field()->discretization()->compute_null_space_if_necessary(
+      micro_scatra_field()->discretization()->compute_null_space_if_necessary(
           blocksmootherparamsmicro);
 
       break;
@@ -224,8 +224,8 @@ void ScaTra::ScaTraTimIntElchSCL::prepare_time_step()
     set_dt(new_dt);
     set_time_step(time(), step());
 
-    micro_sca_tra_field()->set_dt(new_dt);
-    micro_sca_tra_field()->set_time_step(time(), step());
+    micro_scatra_field()->set_dt(new_dt);
+    micro_scatra_field()->set_time_step(time(), step());
     if (discret_->get_comm().MyPID() == 0)
       std::cout << "Time step size changed to " << new_dt << std::endl;
   }
@@ -233,7 +233,7 @@ void ScaTra::ScaTraTimIntElchSCL::prepare_time_step()
   ScaTraTimIntElch::prepare_time_step();
 
   copy_solution_to_micro_field();
-  micro_sca_tra_field()->prepare_time_step();
+  micro_scatra_field()->prepare_time_step();
   copy_solution_to_micro_field();
 }
 
@@ -243,7 +243,7 @@ void ScaTra::ScaTraTimIntElchSCL::update()
 {
   ScaTraTimIntElch::update();
 
-  micro_sca_tra_field()->update();
+  micro_scatra_field()->update();
 }
 
 /*------------------------------------------------------------------------------*
@@ -252,7 +252,7 @@ void ScaTra::ScaTraTimIntElchSCL::check_and_write_output_and_restart()
 {
   ScaTraTimIntElch::check_and_write_output_and_restart();
 
-  micro_sca_tra_field()->check_and_write_output_and_restart();
+  micro_scatra_field()->check_and_write_output_and_restart();
 }
 
 /*----------------------------------------------------------------------*
@@ -291,7 +291,7 @@ void ScaTra::ScaTraTimIntElchSCL::nonlinear_solve()
       TEUCHOS_FUNC_TIME_MONITOR("SCL: evaluate");
       // assemble sub problems
       assemble_mat_and_rhs();
-      micro_sca_tra_field()->assemble_mat_and_rhs();
+      micro_scatra_field()->assemble_mat_and_rhs();
 
       // scale micro problem to account for related macro area
       scale_micro_problem();
@@ -330,13 +330,13 @@ void ScaTra::ScaTraTimIntElchSCL::nonlinear_solve()
 
       //-------- update values at intermediate time steps (only for gen.-alpha)
       compute_intermediate_values();
-      micro_sca_tra_field()->compute_intermediate_values();
+      micro_scatra_field()->compute_intermediate_values();
       // compute values at the interior of the elements (required for hdg)
       compute_interior_values();
-      micro_sca_tra_field()->compute_interior_values();
+      micro_scatra_field()->compute_interior_values();
 
       compute_time_derivative();
-      micro_sca_tra_field()->compute_time_derivative();
+      micro_scatra_field()->compute_time_derivative();
     }
 
   }  // nonlinear iteration
@@ -360,7 +360,7 @@ void ScaTra::ScaTraTimIntElchSCL::copy_solution_to_micro_field()
   auto macro_to_micro_coupled_nodes = macro_micro_coupling_adapter_->master_to_slave(
       macro_coupling_dofs_->extract_cond_vector(phinp()));
   micro_coupling_dofs_->insert_cond_vector(
-      macro_to_micro_coupled_nodes, micro_sca_tra_field()->phinp());
+      macro_to_micro_coupled_nodes, micro_scatra_field()->phinp());
 }
 
 /*----------------------------------------------------------------------------------------*
@@ -380,9 +380,9 @@ void ScaTra::ScaTraTimIntElchSCL::read_restart_problem_specific(
 
 /*----------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------*/
-Teuchos::RCP<ScaTra::ScaTraTimIntImpl> ScaTra::ScaTraTimIntElchSCL::micro_sca_tra_field()
+Teuchos::RCP<ScaTra::ScaTraTimIntImpl> ScaTra::ScaTraTimIntElchSCL::micro_scatra_field()
 {
-  return micro_timint_->sca_tra_field();
+  return micro_timint_->scatra_field();
 }
 
 /*----------------------------------------------------------------------------------------*
@@ -459,10 +459,10 @@ void ScaTra::ScaTraTimIntElchSCL::write_coupling_to_csv(
         }
 
         if (Core::Communication::IsNodeGIDOnThisProc(
-                *micro_sca_tra_field()->discretization(), mirco_node_gid))
+                *micro_scatra_field()->discretization(), mirco_node_gid))
         {
           const auto& micro_coords =
-              micro_sca_tra_field()->discretization()->g_node(mirco_node_gid)->x();
+              micro_scatra_field()->discretization()->g_node(mirco_node_gid)->x();
 
           file.open(file_name_coords, std::fstream::app);
           file << std::setprecision(16) << std::scientific;
@@ -503,7 +503,7 @@ bool ScaTra::ScaTraTimIntElchSCL::break_newton_loop_and_print_convergence()
   increment_elch_scl_->Norm2(&increment_L2);
   micro_increment->Norm2(&micro_increment_L2);
   macro_increment->Norm2(&macro_increment_L2);
-  micro_sca_tra_field()->phinp()->Norm2(&micro_state_L2);
+  micro_scatra_field()->phinp()->Norm2(&micro_state_L2);
   phinp()->Norm2(&macro_state_L2);
 
   // safety checks
@@ -598,7 +598,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
 {
   TEUCHOS_FUNC_TIME_MONITOR("SCL: setup");
 
-  auto microdis = micro_sca_tra_field()->discretization();
+  auto microdis = micro_scatra_field()->discretization();
   const auto& comm = microdis->get_comm();
 
   // get coupling conditions
@@ -776,9 +776,9 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
     const int slave_gid = macro_micro_coupling_adapter_temp->slave_dof_map()->GID(slave_lid);
 
     for (int dbc_lid = 0;
-         dbc_lid < micro_sca_tra_field()->dirich_maps()->cond_map()->NumMyElements(); ++dbc_lid)
+         dbc_lid < micro_scatra_field()->dirich_maps()->cond_map()->NumMyElements(); ++dbc_lid)
     {
-      const int dbc_gid = micro_sca_tra_field()->dirich_maps()->cond_map()->GID(dbc_lid);
+      const int dbc_gid = micro_scatra_field()->dirich_maps()->cond_map()->GID(dbc_lid);
       if (slave_gid == dbc_gid)
       {
         my_slave_dofs.emplace_back(slave_gid);
@@ -843,10 +843,10 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
   // by definition, the last node of a micro sub problem is coupled with the macro. Here, all nodes
   // in the sub problem are linked to the coupled node, by looping backwards through all nodes and
   // forwards through the coupled nodes
-  for (int lid_micro = micro_sca_tra_field()->dof_row_map()->NumMyElements() - 1; lid_micro >= 0;
+  for (int lid_micro = micro_scatra_field()->dof_row_map()->NumMyElements() - 1; lid_micro >= 0;
        --lid_micro)
   {
-    const int gid_micro = micro_sca_tra_field()->dof_row_map()->GID(lid_micro);
+    const int gid_micro = micro_scatra_field()->dof_row_map()->GID(lid_micro);
     for (const auto& coupled_node : glob_micro_coupling_nodes)
     {
       if (coupled_node >= gid_micro)
@@ -898,17 +898,17 @@ void ScaTra::ScaTraTimIntElchSCL::scale_micro_problem()
   const auto glob_nodal_size_micro =
       Core::Communication::broadcast(my_nodal_size_micro, discret_->get_comm());
 
-  auto micro_scale = Core::LinAlg::CreateVector(*micro_sca_tra_field()->dof_row_map(), true);
-  for (int lid_micro = micro_sca_tra_field()->dof_row_map()->NumMyElements() - 1; lid_micro >= 0;
+  auto micro_scale = Core::LinAlg::CreateVector(*micro_scatra_field()->dof_row_map(), true);
+  for (int lid_micro = micro_scatra_field()->dof_row_map()->NumMyElements() - 1; lid_micro >= 0;
        --lid_micro)
   {
-    const int gid_micro = micro_sca_tra_field()->dof_row_map()->GID(lid_micro);
+    const int gid_micro = micro_scatra_field()->dof_row_map()->GID(lid_micro);
     const int coupled_node = coupled_micro_nodes_[gid_micro];
     const double scale_val = glob_nodal_size_micro.at(coupled_node);
     (*micro_scale)[lid_micro] = scale_val;
-    (*micro_sca_tra_field()->residual())[lid_micro] *= scale_val;
+    (*micro_scatra_field()->residual())[lid_micro] *= scale_val;
   }
-  micro_sca_tra_field()->system_matrix()->left_scale(*micro_scale);
+  micro_scatra_field()->system_matrix()->left_scale(*micro_scale);
 }
 
 /*----------------------------------------------------------------------------------------*
@@ -916,8 +916,7 @@ void ScaTra::ScaTraTimIntElchSCL::scale_micro_problem()
 void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
 {
   // Meshtying + Assembly RHS
-  auto micro_residual =
-      micro_coupling_dofs_->extract_cond_vector(micro_sca_tra_field()->residual());
+  auto micro_residual = micro_coupling_dofs_->extract_cond_vector(micro_scatra_field()->residual());
   auto micro_residual_on_macro_side =
       macro_micro_coupling_adapter_->slave_to_master(micro_residual);
 
@@ -932,10 +931,10 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
   macro_micro_dofs_->add_other_vector(residual(), residual_elch_scl_);
 
   // apply pseudo DBC on slave side
-  micro_coupling_dofs_->cond_put_scalar(*micro_sca_tra_field()->residual(), 0.0);
+  micro_coupling_dofs_->cond_put_scalar(*micro_scatra_field()->residual(), 0.0);
 
   macro_micro_dofs_->add_cond_vector(
-      micro_sca_tra_field()->residual(), residual_elch_scl_);  // add slave side to total residual
+      micro_scatra_field()->residual(), residual_elch_scl_);  // add slave side to total residual
 
   switch (matrixtype_elch_scl_)
   {
@@ -950,22 +949,22 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
           Teuchos::rcp(new Core::Adapter::CouplingSlaveConverter(*macro_micro_coupling_adapter_));
 
       // micro: interior - interior
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_sca_tra_field()->system_matrix(),
+      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->other_map(), *micro_coupling_dofs_->other_map(), 1.0, nullptr,
           nullptr, *sparse_systemmatrix, true, true);
 
       // micro: interior - slave
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_sca_tra_field()->system_matrix(),
+      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->other_map(), *micro_coupling_dofs_->cond_map(), 1.0, nullptr,
           &(*micro_side_converter), *sparse_systemmatrix, true, true);
 
       // micro: slave - interior
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_sca_tra_field()->system_matrix(),
+      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->cond_map(), *micro_coupling_dofs_->other_map(), 1.0,
           &(*micro_side_converter), nullptr, *sparse_systemmatrix, true, true);
 
       // micro: slave - slave
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_sca_tra_field()->system_matrix(),
+      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->cond_map(), *micro_coupling_dofs_->cond_map(), 1.0,
           &(*micro_side_converter), &(*micro_side_converter), *sparse_systemmatrix, true, true);
       break;
@@ -981,22 +980,22 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
           Teuchos::rcp(new Core::Adapter::CouplingSlaveConverter(*macro_micro_coupling_adapter_));
 
       // micro: interior - interior
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_sca_tra_field()->system_matrix(),
+      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->other_map(), *micro_coupling_dofs_->other_map(), 1.0, nullptr,
           nullptr, block_systemmatrix->matrix(1, 1), true, true);
 
       // micro: interior - slave
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_sca_tra_field()->system_matrix(),
+      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->other_map(), *micro_coupling_dofs_->cond_map(), 1.0, nullptr,
           &(*micro_side_converter), block_systemmatrix->matrix(1, 0), true, true);
 
       // micro: slave - interior
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_sca_tra_field()->system_matrix(),
+      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->cond_map(), *micro_coupling_dofs_->other_map(), 1.0,
           &(*micro_side_converter), nullptr, block_systemmatrix->matrix(0, 1), true, true);
 
       // micro: slave - slave
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_sca_tra_field()->system_matrix(),
+      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->cond_map(), *micro_coupling_dofs_->cond_map(), 1.0,
           &(*micro_side_converter), &(*micro_side_converter), block_systemmatrix->matrix(0, 0),
           true, true);
@@ -1052,14 +1051,14 @@ void ScaTra::ScaTraTimIntElchSCL::update_iter_micro_macro()
   micro_coupling_dofs_->insert_cond_vector(macro_extract_to_micro, increment_micro);
 
   update_iter(increment_macro);
-  micro_sca_tra_field()->update_iter(increment_micro);
+  micro_scatra_field()->update_iter(increment_micro);
 }
 
 /*----------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElchSCL::redistribute_micro_discretization()
 {
-  auto micro_dis = micro_sca_tra_field()->discretization();
+  auto micro_dis = micro_scatra_field()->discretization();
   const int min_node_gid = micro_dis->node_row_map()->MinAllGID();
   const int num_nodes = micro_dis->node_row_map()->NumGlobalElements();
   const int num_proc = micro_dis->get_comm().NumProc();
@@ -1102,7 +1101,7 @@ void ScaTra::ScaTraTimIntElchSCL::prepare_time_loop()
 void ScaTra::ScaTraTimIntElchSCL::calc_initial_potential_field()
 {
   pre_calc_initial_potential_field();
-  Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntElch>(micro_sca_tra_field())
+  Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntElch>(micro_scatra_field())
       ->pre_calc_initial_potential_field();
 
   // safety checks
@@ -1142,7 +1141,7 @@ void ScaTra::ScaTraTimIntElchSCL::calc_initial_potential_field()
 
     // assemble sub problems
     assemble_mat_and_rhs();
-    micro_sca_tra_field()->assemble_mat_and_rhs();
+    micro_scatra_field()->assemble_mat_and_rhs();
 
     // scale micro problem to account for related macro area
     scale_micro_problem();
@@ -1159,7 +1158,7 @@ void ScaTra::ScaTraTimIntElchSCL::calc_initial_potential_field()
     // apply artificial Dirichlet boundary conditions to system of equations
     // to hold initial concentrations constant when solving for initial potential field
     auto pseudo_dbc_scl = Core::LinAlg::MergeMap(
-        splitter_->other_map(), micro_sca_tra_field()->splitter()->other_map());
+        splitter_->other_map(), micro_scatra_field()->splitter()->other_map());
     auto pseudo_zeros_scl = Core::LinAlg::CreateVector(*pseudo_dbc_scl, true);
 
     Core::LinAlg::apply_dirichlet_to_system(*system_matrix_elch_scl_, *increment_elch_scl_,
@@ -1168,7 +1167,7 @@ void ScaTra::ScaTraTimIntElchSCL::calc_initial_potential_field()
     // compute L2 norm of state vector
     double state_L2_macro, state_L2_micro;
     phinp()->Norm2(&state_L2_macro);
-    micro_sca_tra_field()->phinp()->Norm2(&state_L2_micro);
+    micro_scatra_field()->phinp()->Norm2(&state_L2_micro);
     double state_L2 = std::sqrt(std::pow(state_L2_macro, 2) + std::pow(state_L2_micro, 2));
 
     // compute L2 residual vector
@@ -1257,11 +1256,11 @@ void ScaTra::ScaTraTimIntElchSCL::calc_initial_potential_field()
 
     // copy initial state vector
     phin_->Update(1., *phinp_, 0.);
-    micro_sca_tra_field()->phin()->Update(1.0, *micro_sca_tra_field()->phinp(), 0.0);
+    micro_scatra_field()->phin()->Update(1.0, *micro_scatra_field()->phinp(), 0.0);
 
     // update state vectors for intermediate time steps (only for generalized alpha)
     compute_intermediate_values();
-    micro_sca_tra_field()->compute_intermediate_values();
+    micro_scatra_field()->compute_intermediate_values();
   }  // Newton-Raphson iteration
 
   // reset global system matrix and its graph, since we solved a very special problem with a
@@ -1270,21 +1269,21 @@ void ScaTra::ScaTraTimIntElchSCL::calc_initial_potential_field()
 
   post_calc_initial_potential_field();
 
-  Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntElch>(micro_sca_tra_field())
+  Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntElch>(micro_scatra_field())
       ->post_calc_initial_potential_field();
 }
 
 Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::ScaTraTimIntElchSCL::create_micro_field_test()
 {
   return Teuchos::rcp(new ScaTra::ElchResultTest(
-      Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntElch>(micro_sca_tra_field())));
+      Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntElch>(micro_scatra_field())));
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElchSCL::test_results()
 {
-  Global::Problem::instance()->add_field_test(create_sca_tra_field_test());
+  Global::Problem::instance()->add_field_test(create_scatra_field_test());
   Global::Problem::instance()->add_field_test(create_micro_field_test());
   Global::Problem::instance()->test_all(discret_->get_comm());
 }

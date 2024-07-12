@@ -958,7 +958,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
           }
 
           /* note that we do not have to worry about double entries
-           * as the AddNode function can deal with this case!
+           * as the add_node function can deal with this case!
            * the only problem would have occurred for the initial active nodes,
            * as their status could have been overwritten, but is prevented
            * by the "foundinitialactive" block above! */
@@ -1035,7 +1035,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
           }
 
           /* note that we do not have to worry about double entries
-           * as the AddNode function can deal with this case!
+           * as the add_node function can deal with this case!
            * the only problem would have occurred for the initial active nodes,
            * as their status could have been overwritten, but is prevented
            * by the "foundinitialactive" block above! */
@@ -1940,7 +1940,7 @@ void CONTACT::STRATEGY::Factory::set_parameters_for_contact_condition(
         {
           // fill the parameters from the s2i condition
           ScaTra::MeshtyingStrategyS2I::
-              write_s2_i_kinetics_specific_sca_tra_parameters_to_parameter_list(
+              write_s2_i_kinetics_specific_scatra_parameters_to_parameter_list(
                   *s2ikinetics_cond, s2icouplingparameters);
 
           // add the sublist to the contact interface parameter list

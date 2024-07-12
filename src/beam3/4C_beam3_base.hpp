@@ -202,7 +202,7 @@ namespace Discret
        *
        *  \author grill
        *  \date 07/16 */
-      virtual void rotation1_d_dof_indices(
+      virtual void rotation_1d_dof_indices(
           std::vector<int>& twistdofs, const Core::Nodes::Node& node) const = 0;
 
       /** \brief add indices of those DOFs of a given node that represent norm of tangent vector

@@ -84,10 +84,10 @@ namespace SSI
     Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> maps_sub_problems() const;
 
     //! return map extractor associated with all degrees of freedom inside scatra field
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_sca_tra() const;
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_scatra() const;
 
     //! return map extractor associated with all degrees of freedom inside scatra manifold field
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_sca_tra_manifold() const;
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_scatra_manifold() const;
 
     //! return map extractor associated with all degrees of freedom inside structural field
     Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_structure() const;
@@ -143,10 +143,10 @@ namespace SSI
     void assemble_mat_and_rhs();
 
     //! assemble linearization of scatra residuals to system matrix
-    void assemble_mat_sca_tra();
+    void assemble_mat_scatra();
 
     //! assemble linearization of scatra on manifold residuals to system matrix
-    void assemble_mat_sca_tra_manifold();
+    void assemble_mat_scatra_manifold();
 
     //! assemble linearization of structural residuals to system matrix
     void assemble_mat_structure();
@@ -173,10 +173,10 @@ namespace SSI
     void evaluate_off_diag_contributions();
 
     //! Evaluate ScaTra including copy to corresponding ssi matrix
-    void evaluate_sca_tra();
+    void evaluate_scatra();
 
     //! Evaluate ScaTra on manifold incl. coupling with scatra
-    void evaluate_sca_tra_manifold();
+    void evaluate_scatra_manifold();
 
     //! get matrix and right-hand-side for all subproblems incl. coupling
     void evaluate_subproblems();
@@ -218,7 +218,7 @@ namespace SSI
     void update() override;
 
     //! update ScaTra state within Newton iteration
-    void update_iter_sca_tra();
+    void update_iter_scatra();
 
     //! update structure state within Newton iteration
     void update_iter_structure();

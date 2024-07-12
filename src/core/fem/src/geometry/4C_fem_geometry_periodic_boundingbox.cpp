@@ -231,7 +231,7 @@ void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization(
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-bool Core::Geo::MeshFree::BoundingBox::shift3_d(
+bool Core::Geo::MeshFree::BoundingBox::shift_3d(
     Core::LinAlg::Matrix<3, 1>& d, Core::LinAlg::Matrix<3, 1> const X) const
 {
   throw_if_not_init();
@@ -249,7 +249,7 @@ bool Core::Geo::MeshFree::BoundingBox::shift3_d(
 
   // shift
   for (int dim = 0; dim < 3; ++dim)
-    if (shift1_d(dim, x_ud(dim))) shifted = true;
+    if (shift_1d(dim, x_ud(dim))) shifted = true;
 
   x.clear();
   d.clear();
@@ -264,17 +264,17 @@ bool Core::Geo::MeshFree::BoundingBox::shift3_d(
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::get_xi_of_intersection3_d(
+void Core::Geo::MeshFree::BoundingBox::get_xi_of_intersection_3d(
     Core::LinAlg::Matrix<3, 1> const& x1, Core::LinAlg::Matrix<3, 1> const& x2,
     Core::LinAlg::Matrix<3, 1>& xi) const
 {
   throw_if_not_init();
-  get_xi_of_intersection3_d(x1, x2, xi, box_);
+  get_xi_of_intersection_3d(x1, x2, xi, box_);
 }
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::get_xi_of_intersection3_d(
+void Core::Geo::MeshFree::BoundingBox::get_xi_of_intersection_3d(
     Core::LinAlg::Matrix<3, 1> const& x1, Core::LinAlg::Matrix<3, 1> const& x2,
     Core::LinAlg::Matrix<3, 1>& xi, Core::LinAlg::Matrix<3, 2> const& box) const
 {
@@ -341,7 +341,7 @@ void Core::Geo::MeshFree::BoundingBox::get_xi_of_intersection3_d(
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::un_shift3_d(Core::LinAlg::Matrix<3, 1>& d,
+void Core::Geo::MeshFree::BoundingBox::un_shift_3d(Core::LinAlg::Matrix<3, 1>& d,
     Core::LinAlg::Matrix<3, 1> const& ref, Core::LinAlg::Matrix<3, 1> const X) const
 {
   throw_if_not_init();
@@ -356,7 +356,7 @@ void Core::Geo::MeshFree::BoundingBox::un_shift3_d(Core::LinAlg::Matrix<3, 1>& d
   transform_from_global_to_undeformed_bounding_box_system(x, x_ud);
   transform_from_global_to_undeformed_bounding_box_system(ref, ref_ud);
 
-  for (int dim = 0; dim < 3; ++dim) un_shift1_d(dim, x_ud(dim), ref_ud(dim));
+  for (int dim = 0; dim < 3; ++dim) un_shift_1d(dim, x_ud(dim), ref_ud(dim));
 
   x.clear();
   d.clear();
@@ -392,7 +392,7 @@ bool Core::Geo::MeshFree::BoundingBox::check_if_shift_between_points(Core::LinAl
   transform_from_global_to_undeformed_bounding_box_system(x, x_ud);
   transform_from_global_to_undeformed_bounding_box_system(ref, ref_ud);
 
-  for (int dim = 0; dim < 3; ++dim) shift_in_dim[dim] = un_shift1_d(dim, x_ud(dim), ref_ud(dim));
+  for (int dim = 0; dim < 3; ++dim) shift_in_dim[dim] = un_shift_1d(dim, x_ud(dim), ref_ud(dim));
 
   x.clear();
   d.clear();
@@ -407,7 +407,7 @@ bool Core::Geo::MeshFree::BoundingBox::check_if_shift_between_points(Core::LinAl
 /*----------------------------------------------------------------------------*
  * (private)                                                                   |
  *----------------------------------------------------------------------------*/
-bool Core::Geo::MeshFree::BoundingBox::shift1_d(int dim, double& d, double const& X) const
+bool Core::Geo::MeshFree::BoundingBox::shift_1d(int dim, double& d, double const& X) const
 {
   throw_if_not_init();
 
@@ -434,7 +434,7 @@ bool Core::Geo::MeshFree::BoundingBox::shift1_d(int dim, double& d, double const
 /*----------------------------------------------------------------------------*
  * (private)                                                                   |
  *----------------------------------------------------------------------------*/
-bool Core::Geo::MeshFree::BoundingBox::un_shift1_d(
+bool Core::Geo::MeshFree::BoundingBox::un_shift_1d(
     int dim, double& d, double const& ref, double const& X) const
 {
   throw_if_not_init();

@@ -220,17 +220,19 @@ namespace CONTACT
     }
 
     /*!
-     \brief Prepare D-Matrix deriv integration of contribution of one slave element
+     \brief Prepare D-Matrix (first mortar coupling matrix) deriv integration of contribution of one
+     slave element
      */
     virtual void prepare_dderiv(const std::vector<Mortar::Element*>& meles);
 
     /*!
-     \brief Prepare D-Matrix deriv integration of contribution of one slave element
+     \brief Prepare M-Matrix (second mortar coupling matrix) deriv integration of contribution of
+     one slave element
      */
     virtual void prepare_mderiv(const std::vector<Mortar::Element*>& meles, const int m);
 
     /*!
-     \brief Access to D-Matrix deriv to add Gauss point contribution
+     \brief Access to D-Matrix (first mortar coupling matrix) deriv to add Gauss point contribution
      */
     Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& get_dderiv()
     {
@@ -240,7 +242,7 @@ namespace CONTACT
     }
 
     /*!
-     \brief Access to M-Matrix deriv to add Gauss point contribution
+     \brief Access to M-Matrix (second mortar coupling matrix) deriv to add Gauss point contribution
      */
     Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& get_mderiv()
     {
@@ -250,12 +252,14 @@ namespace CONTACT
     }
 
     /*!
-     \brief Assemble D-Matrix deriv contribution of one slave element into the adjacent nodes
+     \brief Assemble D-Matrix (first mortar coupling matrix) deriv contribution of one slave element
+     into the adjacent nodes
      */
     virtual void assemble_dderiv_to_nodes(bool dual);
 
     /*!
-     \brief Assemble M-Matrix deriv contribution of one slave/master pair into the adjacent nodes
+     \brief Assemble M-Matrix (second mortar coupling matrix) deriv contribution of one slave/master
+     pair into the adjacent nodes
      */
     virtual void assemble_mderiv_to_nodes(Mortar::Element& mele);
 

@@ -48,7 +48,7 @@ void PoroElastScaTra::PoroScatraPart1WC::do_scatra_step()
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  sca_tra_field()->solve();
+  scatra_field()->solve();
 }
 
 /*----------------------------------------------------------------------*
@@ -70,12 +70,12 @@ void PoroElastScaTra::PoroScatraPart1WC::update()
   //        current solution becomes old solution of next timestep
   // -------------------------------------------------------------------
   poro_field()->update();
-  sca_tra_field()->update();
+  scatra_field()->update();
 
   // -------------------------------------------------------------------
   // evaluate error for problems with analytical solution
   // -------------------------------------------------------------------
-  sca_tra_field()->evaluate_error_compared_to_analytical_sol();
+  scatra_field()->evaluate_error_compared_to_analytical_sol();
 }
 
 /*----------------------------------------------------------------------*
@@ -87,7 +87,7 @@ void PoroElastScaTra::PoroScatraPart1WC::output()
   //                         output of solution
   // -------------------------------------------------------------------
   poro_field()->output();
-  sca_tra_field()->check_and_write_output_and_restart();
+  scatra_field()->check_and_write_output_and_restart();
 }
 
 /*----------------------------------------------------------------------*
@@ -132,7 +132,7 @@ void PoroElastScaTra::PoroScatraPart1WCPoroToScatra::prepare_time_step(bool prin
 
   poro_field()->prepare_time_step();
   set_poro_solution();
-  sca_tra_field()->prepare_time_step();
+  scatra_field()->prepare_time_step();
 }
 
 /*----------------------------------------------------------------------*
@@ -157,16 +157,16 @@ void PoroElastScaTra::PoroScatraPart1WCPoroToScatra::read_restart(int restart)
   {
     poro_field()->read_restart(restart);
     set_poro_solution();
-    sca_tra_field()->read_restart(restart);
+    scatra_field()->read_restart(restart);
 
     set_time_step(poro_field()->time(), restart);
 
     // Material pointers to other field were deleted during read_restart().
     // They need to be reset.
     PoroElast::UTILS::SetMaterialPointersMatchingGrid(
-        poro_field()->structure_field()->discretization(), sca_tra_field()->discretization());
+        poro_field()->structure_field()->discretization(), scatra_field()->discretization());
     PoroElast::UTILS::SetMaterialPointersMatchingGrid(
-        poro_field()->fluid_field()->discretization(), sca_tra_field()->discretization());
+        poro_field()->fluid_field()->discretization(), scatra_field()->discretization());
   }
 }
 
@@ -182,7 +182,7 @@ PoroElastScaTra::PoroScatraPart1WCScatraToPoro::PoroScatraPart1WCScatraToPoro(
 
   // build a proxy of the scatra discretization for the structure field
   Teuchos::RCP<Core::DOFSets::DofSetInterface> scatradofset =
-      sca_tra_field()->discretization()->get_dof_set_proxy();
+      scatra_field()->discretization()->get_dof_set_proxy();
 
   // check if structure field has 2 discretizations, so that coupling is possible
   if (poro_field()->structure_field()->discretization()->add_dof_set(scatradofset) != 1)
@@ -218,7 +218,7 @@ void PoroElastScaTra::PoroScatraPart1WCScatraToPoro::prepare_time_step(bool prin
   increment_time_and_step();
   if (printheader) print_header();
 
-  sca_tra_field()->prepare_time_step();
+  scatra_field()->prepare_time_step();
   set_scatra_solution();
   poro_field()->prepare_time_step();
 }
@@ -244,7 +244,7 @@ void PoroElastScaTra::PoroScatraPart1WCScatraToPoro::read_restart(int restart)
   // (Note that dofmaps might have changed in a redistribution call!)
   if (restart)
   {
-    sca_tra_field()->read_restart(restart);
+    scatra_field()->read_restart(restart);
     set_scatra_solution();
     poro_field()->read_restart(restart);
 
@@ -253,9 +253,9 @@ void PoroElastScaTra::PoroScatraPart1WCScatraToPoro::read_restart(int restart)
     // Material pointers to other field were deleted during read_restart().
     // They need to be reset.
     PoroElast::UTILS::SetMaterialPointersMatchingGrid(
-        poro_field()->structure_field()->discretization(), sca_tra_field()->discretization());
+        poro_field()->structure_field()->discretization(), scatra_field()->discretization());
     PoroElast::UTILS::SetMaterialPointersMatchingGrid(
-        poro_field()->fluid_field()->discretization(), sca_tra_field()->discretization());
+        poro_field()->fluid_field()->discretization(), scatra_field()->discretization());
   }
 }
 

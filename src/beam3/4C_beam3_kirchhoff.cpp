@@ -2000,7 +2000,7 @@ void Discret::ELEMENTS::Beam3k::calc_velocity(
   }
 
   // difference in position of this GP as compared to last time step
-  pbb->un_shift3_d(unshiftedrconvmass_i, position_i_double);
+  pbb->un_shift_3d(unshiftedrconvmass_i, position_i_double);
 
   for (unsigned int idim = 0; idim < ndim; ++idim)
   {

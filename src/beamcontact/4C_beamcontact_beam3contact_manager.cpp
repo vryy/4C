@@ -719,7 +719,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
               false));  // no "initially active" decision necessary for beam to solid contact
 
       // note that we do not have to worry about double entries
-      // as the AddNode function can deal with this case!
+      // as the add_node function can deal with this case!
       // the only problem would have occured for the initial active nodes,
       // as their status could have been overwritten, but is prevented
       // by the "foundinitialactive" block above!
@@ -797,7 +797,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
               false));  // all solid elements are master elements
 
       // note that we do not have to worry about double entries
-      // as the AddNode function can deal with this case!
+      // as the add_node function can deal with this case!
       // the only problem would have occured for the initial active nodes,
       // as their status could have been overwritten, but is prevented
       // by the "foundinitialactive" block above!

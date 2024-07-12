@@ -96,7 +96,7 @@ namespace XFEM
           visc_stab_trace_estimate_(Inpar::XFEM::ViscStab_TraceEstimate_CT_div_by_hk),
           visc_stab_hk_(Inpar::XFEM::ViscStab_hk_ele_vol_div_by_max_ele_surf),
           nit_stab_gamma_(-1),
-          is_pseudo_2_d_(false),
+          is_pseudo_2d_(false),
           mass_conservation_scaling_(Inpar::XFEM::MassConservationScaling_only_visc),
           mass_conservation_combination_(Inpar::XFEM::MassConservationCombination_sum),
           dt_(-1),
@@ -329,7 +329,7 @@ namespace XFEM
     /// reference penalty parameter for FSI-Nit-Pen
     double nit_stab_gamma_;
     /// pseudo 2D flag for 2D simulation with one element in z-direction
-    bool is_pseudo_2_d_;
+    bool is_pseudo_2d_;
     /// mass conservation scaline on FSI-Nit-Pen
     Inpar::XFEM::MassConservationScaling mass_conservation_scaling_;
     /// How to combine the contribution on FSI-Nit-Pen

@@ -170,7 +170,7 @@ void ScaTra::TimIntCardiacMonodomain::element_material_time_update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomain::set_element_specific_sca_tra_parameters(
+void ScaTra::TimIntCardiacMonodomain::set_element_specific_scatra_parameters(
     Teuchos::ParameterList& eleparams) const
 {
   // safety check

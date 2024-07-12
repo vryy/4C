@@ -81,17 +81,17 @@ void SSI::DBCHandlerBase::apply_dbc_to_rhs(Teuchos::RCP<Epetra_Vector> rhs)
 
   // apply Dirichlet boundary conditions to the scatra part of the right hand side
   const auto zeros_scatra =
-      Teuchos::rcp(new Epetra_Vector(*sca_tra_field()->dirich_maps()->cond_map()));
+      Teuchos::rcp(new Epetra_Vector(*scatra_field()->dirich_maps()->cond_map()));
   Core::LinAlg::apply_dirichlet_to_system(
-      *rhs, *zeros_scatra, *sca_tra_field()->dirich_maps()->cond_map());
+      *rhs, *zeros_scatra, *scatra_field()->dirich_maps()->cond_map());
 
   // apply Dirichlet boundary conditions to the scatra manifold part of the right hand side
-  if (is_sca_tra_manifold())
+  if (is_scatra_manifold())
   {
     const auto zeros_scatramanifold =
-        Teuchos::rcp(new Epetra_Vector(*sca_tra_manifold_field()->dirich_maps()->cond_map()));
+        Teuchos::rcp(new Epetra_Vector(*scatra_manifold_field()->dirich_maps()->cond_map()));
     Core::LinAlg::apply_dirichlet_to_system(
-        *rhs, *zeros_scatramanifold, *sca_tra_manifold_field()->dirich_maps()->cond_map());
+        *rhs, *zeros_scatramanifold, *scatra_manifold_field()->dirich_maps()->cond_map());
   }
 }
 
@@ -101,12 +101,12 @@ void SSI::DBCHandlerBase::apply_dbc_to_system_matrix(
     Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix)
 {
   // apply the scalar transport Dirichlet boundary conditions to the global system matrix
-  system_matrix->apply_dirichlet(*sca_tra_field()->dirich_maps()->cond_map(), true);
+  system_matrix->apply_dirichlet(*scatra_field()->dirich_maps()->cond_map(), true);
 
   // apply the scalar transport on manifolds Dirichlet boundary conditions to the global system
   // matrix
-  if (is_sca_tra_manifold())
-    system_matrix->apply_dirichlet(*sca_tra_manifold_field()->dirich_maps()->cond_map(), true);
+  if (is_scatra_manifold())
+    system_matrix->apply_dirichlet(*scatra_manifold_field()->dirich_maps()->cond_map(), true);
 
   // apply the structure Dirichlet boundary conditions to the global system matrix
   apply_structure_dbc_to_system_matrix(system_matrix);

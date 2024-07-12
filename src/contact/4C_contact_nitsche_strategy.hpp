@@ -176,7 +176,7 @@ namespace CONTACT
     void evaluate_constr_rhs() override {}
     void update_active_set() override {}
     void update_active_set_semi_smooth(const bool firstStepPredictor) override {}
-    void evaluate_rel_mov_predict() override {}
+    void predict_relative_movement() override {}
     void modify_penalty() override {}
     void update_uzawa_augmented_lagrange() override {}
     void update_constraint_norm(int uzawaiter) override {}

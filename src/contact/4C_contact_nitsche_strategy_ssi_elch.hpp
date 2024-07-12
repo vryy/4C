@@ -53,6 +53,7 @@ namespace CONTACT
     NitscheStrategySsiElch(const NitscheStrategySsiElch& old) = delete;
   };
 }  // namespace CONTACT
+
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

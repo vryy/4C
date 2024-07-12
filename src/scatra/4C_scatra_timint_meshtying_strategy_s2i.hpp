@@ -251,7 +251,7 @@ namespace ScaTra
      * @param[in] s2icondition Scatra-scatra interface condition of which parameters are read and
      * stored to the parameter class
      */
-    void set_condition_specific_sca_tra_parameters(Core::Conditions::Condition& s2icondition) const;
+    void set_condition_specific_scatra_parameters(Core::Conditions::Condition& s2icondition) const;
 
     /*!
      * \brief Writes S2IKinetics condition specific parameters to parameter list that is stored to
@@ -261,7 +261,7 @@ namespace ScaTra
      *                                    stored to the parameter list
      * @param[out] s2icouplingparameters  parameter list filled with condition specific parameters
      */
-    static void write_s2_i_kinetics_specific_sca_tra_parameters_to_parameter_list(
+    static void write_s2_i_kinetics_specific_scatra_parameters_to_parameter_list(
         Core::Conditions::Condition& s2ikinetics_cond,
         Teuchos::ParameterList& s2icouplingparameters);
 

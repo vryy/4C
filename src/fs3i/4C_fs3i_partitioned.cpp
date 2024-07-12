@@ -294,17 +294,17 @@ void FS3I::PartFS3I::init()
       new Adapter::ScaTraBaseAlgorithm(fs3idyn, problem->scalar_transport_dynamic_params(),
           problem->solver_params(linsolver1number), "scatra1", true));
   fluidscatra_->init();
-  fluidscatra_->sca_tra_field()->set_number_of_dof_set_displacement(1);
-  fluidscatra_->sca_tra_field()->set_number_of_dof_set_velocity(1);
-  fluidscatra_->sca_tra_field()->set_number_of_dof_set_wall_shear_stress(1);
+  fluidscatra_->scatra_field()->set_number_of_dof_set_displacement(1);
+  fluidscatra_->scatra_field()->set_number_of_dof_set_velocity(1);
+  fluidscatra_->scatra_field()->set_number_of_dof_set_wall_shear_stress(1);
 
   structscatra_ = Teuchos::rcp(
       new Adapter::ScaTraBaseAlgorithm(fs3idyn, problem->scalar_transport_dynamic_params(),
           problem->solver_params(linsolver2number), "scatra2", true));
   structscatra_->init();
-  structscatra_->sca_tra_field()->set_number_of_dof_set_displacement(1);
-  structscatra_->sca_tra_field()->set_number_of_dof_set_velocity(1);
-  structscatra_->sca_tra_field()->set_number_of_dof_set_wall_shear_stress(1);
+  structscatra_->scatra_field()->set_number_of_dof_set_displacement(1);
+  structscatra_->scatra_field()->set_number_of_dof_set_velocity(1);
+  structscatra_->scatra_field()->set_number_of_dof_set_wall_shear_stress(1);
 
   scatravec_.push_back(fluidscatra_);
   scatravec_.push_back(structscatra_);
@@ -452,7 +452,7 @@ void FS3I::PartFS3I::read_restart()
       for (unsigned i = 0; i < scatravec_.size(); ++i)
       {
         Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
-        currscatra->sca_tra_field()->read_restart(restart);
+        currscatra->scatra_field()->read_restart(restart);
       }
     }
     else  // we do not want to read the scatras values and the lagrange multiplyer, since we start
@@ -464,7 +464,7 @@ void FS3I::PartFS3I::read_restart()
       for (unsigned i = 0; i < scatravec_.size(); ++i)
       {
         Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
-        currscatra->sca_tra_field()->set_time_step(
+        currscatra->scatra_field()->set_time_step(
             fsi_->fluid_field()->time(), fsi_->fluid_field()->step());
       }
     }
@@ -490,8 +490,8 @@ void FS3I::PartFS3I::setup_system()
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
-    Teuchos::RCP<Core::FE::Discretization> currdis = currscatra->sca_tra_field()->discretization();
-    const int numscal = currscatra->sca_tra_field()->num_scal();
+    Teuchos::RCP<Core::FE::Discretization> currdis = currscatra->scatra_field()->discretization();
+    const int numscal = currscatra->scatra_field()->num_scal();
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mapex =
         Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
     Core::Conditions::MultiConditionSelector mcs;
@@ -501,11 +501,11 @@ void FS3I::PartFS3I::setup_system()
     scatrafieldexvec_.push_back(mapex);
   }
 
-  scatracoup_->setup_condition_coupling(*(scatravec_[0]->sca_tra_field()->discretization()),
-      scatrafieldexvec_[0]->Map(1), *(scatravec_[1]->sca_tra_field()->discretization()),
+  scatracoup_->setup_condition_coupling(*(scatravec_[0]->scatra_field()->discretization()),
+      scatrafieldexvec_[0]->Map(1), *(scatravec_[1]->scatra_field()->discretization()),
       scatrafieldexvec_[1]->Map(1), "ScaTraCoupling",
       scatravec_[0]
-          ->sca_tra_field()
+          ->scatra_field()
           ->num_scal());  // we assume here that both discretisation have the same number of scalars
 
   // create map extractor for coupled scatra fields
@@ -545,7 +545,7 @@ void FS3I::PartFS3I::setup_system()
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(scatraglobalex_->Map(i)), 27, false, true));
       scatracoupmat_.push_back(scatracoupmat);
 
-      const Epetra_Map* dofrowmap = scatravec_[i]->sca_tra_field()->discretization()->dof_row_map();
+      const Epetra_Map* dofrowmap = scatravec_[i]->scatra_field()->discretization()->dof_row_map();
       Teuchos::RCP<Epetra_Vector> zeros = Core::LinAlg::CreateVector(*dofrowmap, true);
       scatrazeros_.push_back(zeros);
     }
@@ -568,7 +568,7 @@ void FS3I::PartFS3I::setup_system()
 
   // scatra solver
   Teuchos::RCP<Core::FE::Discretization> firstscatradis =
-      (scatravec_[0])->sca_tra_field()->discretization();
+      (scatravec_[0])->scatra_field()->discretization();
 #ifdef SCATRABLOCKMATRIXMERGE
   Teuchos::RCP<Teuchos::ParameterList> scatrasolvparams = Teuchos::rcp(new Teuchos::ParameterList);
   Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
@@ -631,11 +631,11 @@ void FS3I::PartFS3I::setup_system()
           Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   (scatravec_[0])
-      ->sca_tra_field()
+      ->scatra_field()
       ->discretization()
       ->compute_null_space_if_necessary(scatrasolver_->params().sublist("Inverse1"));
   (scatravec_[1])
-      ->sca_tra_field()
+      ->scatra_field()
       ->discretization()
       ->compute_null_space_if_necessary(scatrasolver_->params().sublist("Inverse2"));
 #endif
@@ -653,7 +653,7 @@ void FS3I::PartFS3I::test_results(const Epetra_Comm& comm)
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    Global::Problem::instance()->add_field_test(scatra->create_sca_tra_field_test());
+    Global::Problem::instance()->add_field_test(scatra->create_scatra_field_test());
   }
   Global::Problem::instance()->test_all(comm);
 }
@@ -666,10 +666,10 @@ void FS3I::PartFS3I::set_fsi_solution()
   // we clear every state, including the states of the secondary dof sets
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
-    scatravec_[i]->sca_tra_field()->discretization()->clear_state(true);
+    scatravec_[i]->scatra_field()->discretization()->clear_state(true);
     // we have to manually clear this since this can not be saved directly in the
     // primary dof set (because it is cleared in between)
-    scatravec_[i]->sca_tra_field()->clear_external_concentrations();
+    scatravec_[i]->scatra_field()->clear_external_concentrations();
   }
 
   set_mesh_disp();
@@ -683,7 +683,7 @@ void FS3I::PartFS3I::set_fsi_solution()
 void FS3I::PartFS3I::set_struct_scatra_solution() const
 {
   fsi_->structure_field()->discretization()->set_state(
-      1, "scalarfield", structure_scalar_to_structure(scatravec_[1]->sca_tra_field()->phinp()));
+      1, "scalarfield", structure_scalar_to_structure(scatravec_[1]->scatra_field()->phinp()));
 }
 
 
@@ -693,12 +693,12 @@ void FS3I::PartFS3I::set_mesh_disp() const
 {
   // fluid field
   Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> fluidscatra = scatravec_[0];
-  fluidscatra->sca_tra_field()->apply_mesh_movement(
+  fluidscatra->scatra_field()->apply_mesh_movement(
       fluid_to_fluid_scalar(fsi_->fluid_field()->dispnp()));
 
   // structure field
   Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> structscatra = scatravec_[1];
-  structscatra->sca_tra_field()->apply_mesh_movement(
+  structscatra->scatra_field()->apply_mesh_movement(
       structure_to_structure_scalar(fsi_->structure_field()->dispnp()));
 }
 
@@ -714,7 +714,7 @@ void FS3I::PartFS3I::set_velocity_fields() const
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->sca_tra_field()->set_velocity_field(vol_mortar_master_to_slavei(i, convel[i]),
+    scatra->scatra_field()->set_velocity_field(vol_mortar_master_to_slavei(i, convel[i]),
         Teuchos::null, vol_mortar_master_to_slavei(i, vel[i]), Teuchos::null);
   }
 }
@@ -771,7 +771,7 @@ void FS3I::PartFS3I::set_wall_shear_stresses() const
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->sca_tra_field()->set_wall_shear_stresses(vol_mortar_master_to_slavei(i, wss[i]));
+    scatra->scatra_field()->set_wall_shear_stresses(vol_mortar_master_to_slavei(i, wss[i]));
   }
 }
 

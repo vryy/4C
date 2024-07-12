@@ -30,9 +30,9 @@ CONTACT::IntegratorNitscheFpi::IntegratorNitscheFpi(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitscheFpi::integrate_deriv_ele3_d(Mortar::Element& sele,
+void CONTACT::IntegratorNitscheFpi::integrate_deriv_ele_3d(Mortar::Element& sele,
     std::vector<Mortar::Element*> meles, bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
-    const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
+    const Teuchos::RCP<Mortar::ParamsInterface>& cparams_ptr)
 {
   auto* csele = dynamic_cast<CONTACT::Element*>(&sele);
   if (!csele) FOUR_C_THROW("Could cast to Contact Element!");
@@ -57,12 +57,12 @@ void CONTACT::IntegratorNitscheFpi::integrate_deriv_ele3_d(Mortar::Element& sele
     xf_c_comm_->get_cut_side_integration_points(sele.id(), coords_, weights_, ngp_);
 
   // Call Base Contact Integratederiv with potentially increased number of GPs!
-  CONTACT::Integrator::integrate_deriv_ele3_d(sele, meles, boundary_ele, proj_, comm, cparams_ptr);
+  CONTACT::Integrator::integrate_deriv_ele_3d(sele, meles, boundary_ele, proj_, comm, cparams_ptr);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitscheFpi::integrate_gp_3_d(Mortar::Element& sele, Mortar::Element& mele,
+void CONTACT::IntegratorNitscheFpi::integrate_gp_3d(Mortar::Element& sele, Mortar::Element& mele,
     Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseVector& lmval,
     Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& sderiv,
     Core::LinAlg::SerialDenseMatrix& mderiv, Core::LinAlg::SerialDenseMatrix& lmderiv,

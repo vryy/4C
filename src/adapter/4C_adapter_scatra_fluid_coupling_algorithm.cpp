@@ -89,17 +89,17 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup()
     // transfer the initial convective velocity from initial fluid field to scalar transport field
     // subgrid scales not transferred since they are zero at time t=0.0
     if (volcoupl_fluidscatra_.is_null())
-      sca_tra_field()->set_velocity_field(
+      scatra_field()->set_velocity_field(
           fluid_field()->convective_vel(), Teuchos::null, Teuchos::null, Teuchos::null);
     else
-      sca_tra_field()->set_velocity_field(
+      scatra_field()->set_velocity_field(
           volcoupl_fluidscatra_->apply_vector_mapping21(fluid_field()->convective_vel()),
           Teuchos::null, Teuchos::null, Teuchos::null);
   }
 
   // ensure that both single field solvers use the same
   // time integration scheme
-  switch (sca_tra_field()->method_name())
+  switch (scatra_field()->method_name())
   {
     case Inpar::ScaTra::timeint_stationary:
     {
@@ -142,19 +142,19 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup()
 
   // if applicable, provide scatra data to the turbulence statistics
   if (fluid_field()->turbulence_statistic_manager() != Teuchos::null and
-      sca_tra_field()->method_name() != Inpar::ScaTra::timeint_stationary)
+      scatra_field()->method_name() != Inpar::ScaTra::timeint_stationary)
   {
     // Now, the statistics manager has access to the scatra time integration
-    fluid_field()->turbulence_statistic_manager()->add_sca_tra_field(sca_tra_field());
+    fluid_field()->turbulence_statistic_manager()->add_scatra_field(scatra_field());
   }
 
   // if available, allow scatra field to access dynamic Smagorinsky filter
   if (fluid_field()->dyn_smag_filter() != Teuchos::null)
-    sca_tra_field()->access_dyn_smag_filter(fluid_field()->dyn_smag_filter());
+    scatra_field()->access_dyn_smag_filter(fluid_field()->dyn_smag_filter());
 
   // if available, allow scatra field to access dynamic Vreman
   if (fluid_field()->vreman() != Teuchos::null)
-    sca_tra_field()->access_vreman(fluid_field()->vreman());
+    scatra_field()->access_vreman(fluid_field()->vreman());
 
   // safety check:
   if (volcoupl_fluidscatra_ == Teuchos::null and
@@ -230,15 +230,15 @@ Teuchos::RCP<const Epetra_Vector> Adapter::ScaTraFluidCouplingAlgorithm::scatra_
 void Adapter::ScaTraFluidCouplingAlgorithm::read_restart(int step)
 {
   fluid_field()->read_restart(step);
-  sca_tra_field()->read_restart(step);
+  scatra_field()->read_restart(step);
   set_time_step(fluid_field()->time(), step);
 
   // read scatra-specific restart data for turbulence statistics
   if (fluid_field()->turbulence_statistic_manager() != Teuchos::null)
   {
     Core::IO::DiscretizationReader reader(
-        sca_tra_field()->discretization(), Global::Problem::instance()->input_control_file(), step);
-    fluid_field()->turbulence_statistic_manager()->read_restart_sca_tra(reader, step);
+        scatra_field()->discretization(), Global::Problem::instance()->input_control_file(), step);
+    fluid_field()->turbulence_statistic_manager()->read_restart_scatra(reader, step);
   }
 }
 

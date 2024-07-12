@@ -78,7 +78,7 @@ namespace ScaTra
     /*========================================================================*/
 
     //! Set elch-specific parameters
-    void set_element_specific_sca_tra_parameters(Teuchos::ParameterList& eleparams) const override;
+    void set_element_specific_scatra_parameters(Teuchos::ParameterList& eleparams) const override;
 
     //! contains the nonlinear iteration loop
     void nonlinear_solve() override;
@@ -86,7 +86,7 @@ namespace ScaTra
     //! calculate error compared to analytical solution
     void evaluate_error_compared_to_analytical_sol() override;
 
-    Teuchos::RCP<Core::UTILS::ResultTest> create_sca_tra_field_test() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> create_scatra_field_test() override;
 
     /*========================================================================*/
     //! @name ELCH methods

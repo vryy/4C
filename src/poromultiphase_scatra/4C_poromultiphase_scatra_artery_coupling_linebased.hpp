@@ -109,7 +109,7 @@ namespace PoroMultiPhaseScaTra
      * threshold, all its elements are taken out
      * @param : eles_to_be_deleted vector of free-hanging elements
      */
-    void find_free_hanging1_d_elements(std::vector<int>& eles_to_be_deleted);
+    void find_free_hanging_1d_elements(std::vector<int>& eles_to_be_deleted);
 
     //! evaluate additional linearization of (integrated) element diameter dependent terms
     //! (Hagen-Poiseuille)

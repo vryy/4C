@@ -7,7 +7,6 @@
 
 #include "4C_contact_element.hpp"
 
-#include "4C_contact_friction_node.hpp"
 #include "4C_contact_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -378,7 +377,7 @@ void CONTACT::Element::d_jac_d_xi(
 
   // unknown case
   else
-    FOUR_C_THROW("DJacDXi called for unknown element type!");
+    FOUR_C_THROW("d_jac_d_xi called for unknown element type!");
 
   return;
 }
@@ -408,7 +407,7 @@ void CONTACT::Element::prepare_mderiv(const std::vector<Mortar::Element*>& meles
 void CONTACT::Element::assemble_dderiv_to_nodes(bool dual)
 {
   if (d_matrix_deriv_ == Teuchos::null)
-    FOUR_C_THROW("assemble_dderiv_to_nodes called w/o PrepareDderiv first");
+    FOUR_C_THROW("assemble_dderiv_to_nodes called w/o prepare_dderiv first");
 
   if (d_matrix_deriv_->size() == 0) return;
 
@@ -445,7 +444,7 @@ void CONTACT::Element::assemble_dderiv_to_nodes(bool dual)
 void CONTACT::Element::assemble_mderiv_to_nodes(Mortar::Element& mele)
 {
   if (m_matrix_deriv_ == Teuchos::null)
-    FOUR_C_THROW("assemble_mderiv_to_nodes called w/o PrepareMderiv first");
+    FOUR_C_THROW("assemble_mderiv_to_nodes called w/o prepare_mderiv first");
   if (m_matrix_deriv_->size() == 0) return;
 
   for (int j = 0; j < num_node(); ++j)

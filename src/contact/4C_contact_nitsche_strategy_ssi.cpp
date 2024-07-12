@@ -273,4 +273,5 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategySsi::get_matrix
       return CONTACT::NitscheStrategy::get_matrix_block_ptr(bp, nullptr);
   }
 }
+
 FOUR_C_NAMESPACE_CLOSE

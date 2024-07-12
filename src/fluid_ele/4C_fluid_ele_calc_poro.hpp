@@ -374,7 +374,7 @@ namespace Discret
         \param timefac            (i) time factor
         \param timefacfac         (i) time factor * integration factor
        */
-      void lin3_d_mesh_motion_od(Core::LinAlg::Matrix<nsd_ * nen_, nsd_ * nen_>& ecoupl_u,
+      void lin_3d_mesh_motion_od(Core::LinAlg::Matrix<nsd_ * nen_, nsd_ * nen_>& ecoupl_u,
           const double& dphi_dp, const double& dphi_dJ, const double& refporositydot,
           const double& timefac, const double& timefacfac);
 
@@ -388,7 +388,7 @@ namespace Discret
         \param timefac            (i) time factor
         \param timefacfac         (i) time factor * integration factor
        */
-      void lin2_d_mesh_motion_od(Core::LinAlg::Matrix<nsd_ * nen_, nsd_ * nen_>& ecoupl_u,
+      void lin_2d_mesh_motion_od(Core::LinAlg::Matrix<nsd_ * nen_, nsd_ * nen_>& ecoupl_u,
           const double& dphi_dp, const double& dphi_dJ, const double& refporositydot,
           const double& timefac, const double& timefacfac);
 
@@ -402,7 +402,7 @@ namespace Discret
         \param refporositydot     (i) time derivative of reference porosity
         \param timefacfacpre      (i) time factor * integration factor
        */
-      void lin_mesh_motion_2_d_pres_od(Core::LinAlg::Matrix<nen_, nsd_ * nen_>& ecoupl_p,
+      void lin_mesh_motion_2d_pres_od(Core::LinAlg::Matrix<nen_, nsd_ * nen_>& ecoupl_p,
           const double& dphi_dp, const double& dphi_dJ, const double& refporositydot,
           const double& timefacfacpre);
 
@@ -416,7 +416,7 @@ namespace Discret
         \param refporositydot     (i) time derivative of reference porosity
         \param timefacfacpre      (i) time factor * integration factor
        */
-      virtual void lin_mesh_motion_3_d_pres_od(Core::LinAlg::Matrix<nen_, nsd_ * nen_>& ecoupl_p,
+      virtual void lin_mesh_motion_3d_pres_od(Core::LinAlg::Matrix<nen_, nsd_ * nen_>& ecoupl_p,
           const double& dphi_dp, const double& dphi_dJ, const double& refporositydot,
           const double& timefacfacpre);
 

@@ -260,7 +260,7 @@ void Core::VolMortar::VolMortarIntegratorEleBased<distype_s>::initialize_gp()
  |  Initialize gauss points for ele-based integration        farah 02/15|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s>
-void Core::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_based3_d(
+void Core::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_based_3d(
     Core::Elements::Element& sele, std::vector<int>& foundeles, Core::LinAlg::SparseMatrix& D,
     Core::LinAlg::SparseMatrix& M, Teuchos::RCP<const Core::FE::Discretization> Adis,
     Teuchos::RCP<const Core::FE::Discretization> Bdis, int dofseta, int dofsetb,
@@ -862,7 +862,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::initialize_gp(
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells2_d(
+void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells_2d(
     Core::Elements::Element& sele, Core::Elements::Element& mele,
     Teuchos::RCP<Mortar::IntCell> cell, Core::LinAlg::SparseMatrix& dmatrix,
     Core::LinAlg::SparseMatrix& mmatrix, Teuchos::RCP<const Core::FE::Discretization> slavedis,
@@ -893,7 +893,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells
     Mortar::UTILS::GlobalToLocal<distype_m>(mele, globgp, mxi);
 
     // Check parameter space mapping
-    bool proj = check_mapping2_d(sele, mele, sxi, mxi);
+    bool proj = check_mapping_2d(sele, mele, sxi, mxi);
     if (proj == false) FOUR_C_THROW("ERROR: Mapping failed!");
 
     // evaluate trace space shape functions (on both elements)
@@ -1024,7 +1024,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells3_d(
+void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells_3d(
     Core::Elements::Element& Aele, Core::Elements::Element& Bele,
     Teuchos::RCP<Core::VolMortar::Cell> cell, Core::LinAlg::SparseMatrix& dmatrix_A,
     Core::LinAlg::SparseMatrix& mmatrix_A, Core::LinAlg::SparseMatrix& dmatrix_B,
@@ -1071,7 +1071,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells
     // Check parameter space mapping
     // std::cout << "globgp " << globgp[0] <<"  "<< globgp[1] <<"  "<< globgp[2] <<std::endl;
 
-    bool check = check_mapping3_d(Aele, Bele, Axi, Bxi);
+    bool check = check_mapping_3d(Aele, Bele, Axi, Bxi);
     if (!check) continue;
 
     // evaluate trace space shape functions (on both elements)
@@ -1164,7 +1164,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void Core::VolMortar::VolMortarIntegrator<distype_s,
-    distype_m>::integrate_cells3_d_direct_diveregence(Core::Elements::Element& Aele,
+    distype_m>::integrate_cells_3d_direct_diveregence(Core::Elements::Element& Aele,
     Core::Elements::Element& Bele, Core::Geo::Cut::VolumeCell& vc,
     Teuchos::RCP<Core::FE::GaussPoints> intpoints, bool switched_conf,
     Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
@@ -1219,7 +1219,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s,
       jac = UTILS::Jacobian<distype_m>(Bxi, Bele);
 
     // Check parameter space mapping
-    // check_mapping3_d(Aele,Bele,Axi,Bxi);
+    // check_mapping_3d(Aele,Bele,Axi,Bxi);
 
     // evaluate trace space shape functions (on both elements)
     UTILS::shape_function<distype_s>(sval_A, Axi);
@@ -1313,7 +1313,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s,
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_based3_d_a_dis(
+void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_based_3d_a_dis(
     Core::Elements::Element& Aele, std::vector<int>& foundeles,
     Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
     Teuchos::RCP<const Core::FE::Discretization> Adis,
@@ -1375,7 +1375,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_b
       }
 
       // Check parameter space mapping
-      bool proj = check_mapping3_d(Aele, *Bele, Axi, Bxi);
+      bool proj = check_mapping_3d(Aele, *Bele, Axi, Bxi);
 
       // if gp outside continue or eval nearest gp
       if (!proj and (found != ((int)foundeles.size() - 1)))
@@ -1439,7 +1439,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_b
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_based3_d_b_dis(
+void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_based_3d_b_dis(
     Core::Elements::Element& Bele, std::vector<int>& foundeles,
     Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
     Teuchos::RCP<const Core::FE::Discretization> Adis,
@@ -1501,7 +1501,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_b
       }
 
       // Check parameter space mapping
-      bool proj = check_mapping3_d(*Aele, Bele, Axi, Bxi);
+      bool proj = check_mapping_3d(*Aele, Bele, Axi, Bxi);
 
       // if gp outside continue or eval nearest gp
       if (!proj and (found != ((int)foundeles.size() - 1)))
@@ -1566,7 +1566,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_b
  |  element is completely located within an other element               |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele3_d(int domain,
+void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_3d(int domain,
     Core::Elements::Element& Aele, Core::Elements::Element& Bele,
     Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
     Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
@@ -1621,7 +1621,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele3_
     Mortar::UTILS::GlobalToLocal<distype_m>(Bele, globgp, Bxi);
 
     // Check parameter space mapping
-    check_mapping3_d(Aele, Bele, Axi, Bxi);
+    check_mapping_3d(Aele, Bele, Axi, Bxi);
 
     // evaluate trace space shape functions (on both elements)
     UTILS::shape_function<distype_s>(sval_A, Axi);
@@ -1713,7 +1713,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele3_
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-bool Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::check_mapping2_d(
+bool Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::check_mapping_2d(
     Core::Elements::Element& sele, Core::Elements::Element& mele, double* sxi, double* mxi)
 {
   // check GP projection (SLAVE)
@@ -1777,7 +1777,7 @@ bool Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::check_mapping2_
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-bool Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::check_mapping3_d(
+bool Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::check_mapping_3d(
     Core::Elements::Element& sele, Core::Elements::Element& mele, double* sxi, double* mxi)
 {
   // check GP projection (SLAVE)

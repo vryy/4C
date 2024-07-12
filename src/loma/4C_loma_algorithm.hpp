@@ -105,10 +105,10 @@ namespace LowMach
     void mono_loop();
 
     /// set fluid values required in scatra
-    void set_fluid_values_in_sca_tra();
+    void set_fluid_values_in_scatra();
 
     /// set scatra values required in fluid
-    void set_sca_tra_values_in_fluid();
+    void set_scatra_values_in_fluid();
 
     /// set up right-hand-side for monolithic low-Mach-number system
     void setup_mono_loma_matrix();

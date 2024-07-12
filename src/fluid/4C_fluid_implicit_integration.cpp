@@ -823,7 +823,7 @@ void FLD::FluidImplicitTimeInt::solve()
   // when near-wall limit is used
   // see also comment within function
   // -------------------------------------------------------------------
-  if ((physicaltype_ == Inpar::FLUID::loma or statisticsmanager_->with_sca_tra()) and
+  if ((physicaltype_ == Inpar::FLUID::loma or statisticsmanager_->with_scatra()) and
       turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
     recompute_mean_csgs_b();
 

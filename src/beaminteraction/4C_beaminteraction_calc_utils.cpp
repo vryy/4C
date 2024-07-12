@@ -150,7 +150,7 @@ namespace BEAMINTERACTION
           X(dim) = node->x()[dim];
         }
         // shift
-        pbb->shift3_d(d, X);
+        pbb->shift_3d(d, X);
 
         for (int dim = 0; dim < 3; ++dim)
         {

@@ -301,7 +301,7 @@ namespace Discret
 
       //! Provide special condition to fix uncoupled pressure layers for pseudo 2D examples in
       //! combination with Krylov projection
-      void pressure_krylov2_dz(
+      void pressure_krylov_2dz(
           const double& tau_timefacfacpre,  ///< tau * (time factor pressure) x (integration factor)
           const double& tau_timefacfacrhs   ///< tau * (time factor rhs)      x (integration factor)
       );
@@ -510,7 +510,7 @@ namespace Discret
       //! compute surface diameter w.r.t to parent master element or parent slave element (flag
       //! master=true/false)
       template <int numnode>
-      void diameter2_d(bool master,        ///< master or slave parent element
+      void diameter_2d(bool master,        ///< master or slave parent element
           std::vector<int>& connectivity,  ///< connectivity vector for parent element
           double& h_e                      ///< element length w.r.t parent element
       )
@@ -613,7 +613,7 @@ namespace Discret
       //! compute line diameter (length) w.r.t to parent master element or parent slave element
       //! (flag master=true/false)
       template <int numnode>
-      void diameter1_d(bool master,        ///< master or slave parent element
+      void diameter_1d(bool master,        ///< master or slave parent element
           std::vector<int>& connectivity,  ///< connectivity vector for parent element
           double& h_e                      ///< element length w.r.t parent element
       )
@@ -835,7 +835,7 @@ namespace Discret
 
 
       //! find the lines which connect this surface to the surface at the other side
-      void find_hex_connecting_lines2_d(const int numnode,
+      void find_hex_connecting_lines_2d(const int numnode,
           std::vector<std::vector<int>> connectivity_line_surf, const int side_id_master,
           const int side_id_slave,
           std::set<int>& p_lines_m,  //< to be filled
@@ -877,7 +877,7 @@ namespace Discret
       }
 
       //! find the lines which connect this line to the other opposite line
-      void find_quad_connecting_lines1_d(const int numnode, const int masterlocalid,
+      void find_quad_connecting_lines_1d(const int numnode, const int masterlocalid,
           const int slavelocalid, std::set<int>& p_lines_m, std::set<int>& p_lines_s,
           const int opposite_side_id_master, const int opposite_side_id_slave)
       {

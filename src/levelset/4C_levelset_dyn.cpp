@@ -75,7 +75,7 @@ void levelset_dyn(int restart)
           Global::Problem::instance()->n_dim() + 1, 0, 0, true));
   if (scatradis->add_dof_set(dofsetaux) != 1)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-  scatrabase->sca_tra_field()->set_number_of_dof_set_velocity(1);
+  scatrabase->scatra_field()->set_number_of_dof_set_velocity(1);
 
   // finalize discretization
   scatradis->fill_complete();
@@ -95,7 +95,7 @@ void levelset_dyn(int restart)
   scatrabase->setup();
 
   // get pointer to time integrator
-  Teuchos::RCP<ScaTra::ScaTraTimIntImpl> levelsetalgo = scatrabase->sca_tra_field();
+  Teuchos::RCP<ScaTra::ScaTraTimIntImpl> levelsetalgo = scatrabase->scatra_field();
 
   // read the restart information, set vectors and variables
   if (restart) levelsetalgo->read_restart(restart);

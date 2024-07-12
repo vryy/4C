@@ -652,7 +652,7 @@ void fsi_ale_drt()
       }
 
       // read the restart information, set vectors and variables ---
-      // be careful, dofmaps might be changed here in a Redistribute call
+      // be careful, dofmaps might be changed here in a redistribute() call
       const int restart = Global::Problem::instance()->restart();
       if (restart)
       {
@@ -754,7 +754,7 @@ void fsi_ale_drt()
         FOUR_C_THROW("Unsupported monolithic XFFSI scheme");
 
       // read the restart information, set vectors and variables ---
-      // be careful, dofmaps might be changed here in a Redistribute call
+      // be careful, dofmaps might be changed here in a redistribute() call
       const int restart = Global::Problem::instance()->restart();
       if (restart)
       {
@@ -909,7 +909,7 @@ void xfsi_drt()
       Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm, fsidyn));
 
       // read the restart information, set vectors and variables ---
-      // be careful, dofmaps might be changed here in a Redistribute call
+      // be careful, dofmaps might be changed here in a redistribute() call
       const int restart = Global::Problem::instance()->restart();
       if (restart)
       {
@@ -1064,7 +1064,7 @@ void xfpsi_drt()
 
       // read the restart information, set vectors and variables ---
 
-      // be careful, dofmaps might be changed here in a Redistribute call
+      // be careful, dofmaps might be changed here in a redistribute() call
       const int restart =
           Global::Problem::instance()
               ->restart();  // not adapated at the moment .... Todo check it .. ChrAg

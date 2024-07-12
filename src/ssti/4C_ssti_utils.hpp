@@ -156,23 +156,23 @@ namespace SSTI
 
     //! return sub blocks of system matrix
     //@{
-    Teuchos::RCP<Core::LinAlg::SparseOperator> sca_tra_structure_domain()
+    Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_structure_domain()
     {
       return scatrastructuredomain_;
     };
-    Teuchos::RCP<Core::LinAlg::SparseOperator> sca_tra_structure_interface()
+    Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_structure_interface()
     {
       return scatrastructureinterface_;
     };
-    Teuchos::RCP<Core::LinAlg::SparseOperator> sca_tra_thermo_domain()
+    Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_thermo_domain()
     {
       return scatrathermodomain_;
     };
-    Teuchos::RCP<Core::LinAlg::SparseOperator> sca_tra_thermo_interface()
+    Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_thermo_interface()
     {
       return scatrathermointerface_;
     };
-    Teuchos::RCP<Core::LinAlg::SparseOperator> structure_sca_tra_domain()
+    Teuchos::RCP<Core::LinAlg::SparseOperator> structure_scatra_domain()
     {
       return structurescatradomain_;
     };
@@ -180,11 +180,11 @@ namespace SSTI
     {
       return structurethermodomain_;
     };
-    Teuchos::RCP<Core::LinAlg::SparseOperator> thermo_sca_tra_domain()
+    Teuchos::RCP<Core::LinAlg::SparseOperator> thermo_scatra_domain()
     {
       return thermoscatradomain_;
     };
-    Teuchos::RCP<Core::LinAlg::SparseOperator> thermo_sca_tra_interface()
+    Teuchos::RCP<Core::LinAlg::SparseOperator> thermo_scatra_interface()
     {
       return thermoscatrainterface_;
     };

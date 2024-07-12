@@ -469,7 +469,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::
     const double etaB = coupl_elepairs_[i]->eta_b();
     const double length = POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(artele, arterydis_);
 
-    const double vol_cont = coupl_elepairs_[i]->calculate_vol2_d3_d();
+    const double vol_cont = coupl_elepairs_[i]->calculate_vol_2d_3d();
     const double vol_art =
         (etaB - etaA) / 2.0 * length * arterymat->diam() * arterymat->diam() * M_PI / 4.0;
 
@@ -653,7 +653,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::set_artery_dia
 
   // find the free-hanging elements which will be deleted
   std::vector<int> eles_to_be_deleted;
-  if (delete_free_hanging_eles_) find_free_hanging1_d_elements(eles_to_be_deleted);
+  if (delete_free_hanging_eles_) find_free_hanging_1d_elements(eles_to_be_deleted);
 
   // set the diameter in material
   for (int i = 0; i < arterydis_->num_my_col_elements(); ++i)
@@ -725,7 +725,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::fill_artery_el
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::find_free_hanging1_d_elements(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::find_free_hanging_1d_elements(
     std::vector<int>& eles_to_be_deleted)
 {
   // user info

@@ -733,7 +733,7 @@ void Core::FE::Discretization::un_pack_my_nodes(Teuchos::RCP<std::vector<char>> 
     node->set_owner(comm_->MyPID());
     add_node(Teuchos::rcp(node));
   }
-  // in case AddNode forgets...
+  // in case add_node forgets...
   reset();
 }
 

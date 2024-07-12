@@ -143,7 +143,7 @@ namespace SSI
 
    protected:
     //! get L2 norms from scatra field and check if they are reasonable
-    void get_and_check_l2_norm_sca_tra(
+    void get_and_check_l2_norm_scatra(
         const SSI::SsiMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
 
    private:
@@ -194,11 +194,11 @@ namespace SSI
 
    protected:
     //! get L2 norms from concentration field and check if they are reasonable
-    void get_and_check_l2_norm_sca_tra_manifold_conc(
+    void get_and_check_l2_norm_scatra_manifold_conc(
         const SSI::SsiMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
 
     //! get L2 norms from potential field and check if they are reasonable
-    void get_and_check_l2_norm_sca_tra_manifold_pot(
+    void get_and_check_l2_norm_scatra_manifold_pot(
         const SSI::SsiMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
 
    private:

@@ -481,7 +481,7 @@ namespace CONTACT
     }
     void evaluate_reference_state() override {}
     void evaluate_relative_movement() override {}
-    void evaluate_rel_mov_predict() override {}
+    void predict_relative_movement() override {}
     Teuchos::RCP<Epetra_Map> slave_row_nodes_ptr() override { return gsnoderowmap_; }
     Teuchos::RCP<Epetra_Map> active_row_nodes() override { return Teuchos::null; }
     Teuchos::RCP<Epetra_Map> active_row_dofs() override { return Teuchos::null; }

@@ -162,7 +162,7 @@ namespace Discret
 
       //! Flag to activate special least-squares condition for pseudo 2D examples where pressure
       //! level is determined via Krylov-projection
-      bool pres_krylov2_dz() const { return presKrylov2Dz_; };
+      bool pres_krylov_2dz() const { return presKrylov2Dz_; };
 
       //! get the viscous ghost-penalty stabilization flag
       bool is_general_ghost_penalty_visc() { return ghost_penalty_visc_; };

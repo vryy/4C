@@ -61,8 +61,8 @@ void FS3I::PartFS3I1Wc::timeloop()
       Core::UTILS::IntegralValue<int>(
           Global::Problem::instance()->f_s3_i_dynamic_params(), "RESTART_FROM_PART_FSI"))
   {
-    scatravec_[0]->sca_tra_field()->prepare_first_time_step();
-    scatravec_[1]->sca_tra_field()->prepare_first_time_step();
+    scatravec_[0]->scatra_field()->prepare_first_time_step();
+    scatravec_[1]->scatra_field()->prepare_first_time_step();
   }
 
   // output of initial state
@@ -146,7 +146,7 @@ void FS3I::PartFS3I1Wc::prepare_time_step()
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->sca_tra_field()->prepare_time_step();
+    scatra->scatra_field()->prepare_time_step();
   }
 }
 
@@ -192,8 +192,8 @@ bool FS3I::PartFS3I1Wc::scatra_convergence_check(const int itnum)
       double connorm(0.0);
       // set up vector of absolute concentrations
       Teuchos::RCP<Epetra_Vector> con = Teuchos::rcp(new Epetra_Vector(scatraincrement_->Map()));
-      Teuchos::RCP<const Epetra_Vector> scatra1 = scatravec_[0]->sca_tra_field()->phinp();
-      Teuchos::RCP<const Epetra_Vector> scatra2 = scatravec_[1]->sca_tra_field()->phinp();
+      Teuchos::RCP<const Epetra_Vector> scatra1 = scatravec_[0]->scatra_field()->phinp();
+      Teuchos::RCP<const Epetra_Vector> scatra2 = scatravec_[1]->scatra_field()->phinp();
       setup_coupled_scatra_vector(con, scatra1, scatra2);
       con->Norm2(&connorm);
 

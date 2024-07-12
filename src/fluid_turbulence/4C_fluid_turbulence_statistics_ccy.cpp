@@ -1491,7 +1491,7 @@ void FLD::TurbulenceStatisticsCcy::clear_statistics()
 Add results from scalar transport fields to statistics
 
 ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCcy::add_sca_tra_results(
+void FLD::TurbulenceStatisticsCcy::add_scatra_results(
     Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp)
 {
   if (withscatra_)

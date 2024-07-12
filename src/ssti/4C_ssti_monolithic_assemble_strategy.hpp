@@ -208,7 +208,7 @@ namespace SSTI
 
    protected:
     //! position of scatra blocks in system matrix
-    std::vector<int> block_position_sca_tra() const { return block_position_scatra_; };
+    std::vector<int> block_position_scatra() const { return block_position_scatra_; };
 
     //! position of thermo blocks in system matrix
     std::vector<int> block_position_thermo() const { return block_position_thermo_; };

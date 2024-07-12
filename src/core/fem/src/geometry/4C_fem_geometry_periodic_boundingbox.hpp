@@ -81,15 +81,15 @@ namespace Core::Geo
       /*!
       \brief shift node (if outside) back in box if periodic boundary conditions
       */
-      bool shift3_d(Core::LinAlg::Matrix<3, 1>& d,
+      bool shift_3d(Core::LinAlg::Matrix<3, 1>& d,
           Core::LinAlg::Matrix<3, 1> const X = Core::LinAlg::Matrix<3, 1>(true)) const;
 
       /*!
       \brief get xi of intersection between two points
       */
-      void get_xi_of_intersection3_d(Core::LinAlg::Matrix<3, 1> const& x1,
+      void get_xi_of_intersection_3d(Core::LinAlg::Matrix<3, 1> const& x1,
           Core::LinAlg::Matrix<3, 1> const& x2, Core::LinAlg::Matrix<3, 1>& xi) const;
-      void get_xi_of_intersection3_d(Core::LinAlg::Matrix<3, 1> const& x1,
+      void get_xi_of_intersection_3d(Core::LinAlg::Matrix<3, 1> const& x1,
           Core::LinAlg::Matrix<3, 1> const& x2, Core::LinAlg::Matrix<3, 1>& xi,
           Core::LinAlg::Matrix<3, 2> const& box) const;
 
@@ -106,7 +106,7 @@ namespace Core::Geo
        * Note: this should be equivalent to the previously applied criterion
        *       that the distance between given point and reference point
        *       decreases by either adding or subtracting the period length. */
-      void un_shift3_d(Core::LinAlg::Matrix<3, 1>& d, Core::LinAlg::Matrix<3, 1> const& ref,
+      void un_shift_3d(Core::LinAlg::Matrix<3, 1>& d, Core::LinAlg::Matrix<3, 1> const& ref,
           Core::LinAlg::Matrix<3, 1> const X = Core::LinAlg::Matrix<3, 1>(true)) const;
 
       bool check_if_shift_between_points(Core::LinAlg::Matrix<3, 1>& d,
@@ -241,12 +241,12 @@ namespace Core::Geo
       /*!
       \brief shift node (if outside) back in box if periodic boundary conditions
       */
-      bool shift1_d(int dim, double& d, double const& X = 0.0) const;
+      bool shift_1d(int dim, double& d, double const& X = 0.0) const;
 
       /*!
       \brief shift node out of box if it was shifted in previously
       */
-      bool un_shift1_d(int dim, double& d, double const& ref, double const& X = 0.0) const;
+      bool un_shift_1d(int dim, double& d, double const& ref, double const& X = 0.0) const;
 
       bool in_between(double smin, double smax, double omin, double omax) const;
 

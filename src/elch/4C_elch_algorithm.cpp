@@ -31,18 +31,18 @@ void ElCh::Algorithm::prepare_time_loop()
   // provide information about initial field (do not do for restarts!)
   if (step() == 0)
   {
-    sca_tra_field()->output_problem_specific();
-    sca_tra_field()->output_total_and_mean_scalars();
+    scatra_field()->output_problem_specific();
+    scatra_field()->output_total_and_mean_scalars();
 
     // compute error for problems with analytical solution (initial field!)
-    sca_tra_field()->evaluate_error_compared_to_analytical_sol();
+    scatra_field()->evaluate_error_compared_to_analytical_sol();
   }
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ElCh::Algorithm::print_sca_tra_solver()
+void ElCh::Algorithm::print_scatra_solver()
 {
   if (get_comm().MyPID() == 0)
     std::cout
@@ -63,7 +63,7 @@ bool ElCh::Algorithm::convergence_check(
   //     | concentration_n+1 |_2
 
   bool stopnonliniter = false;
-  Teuchos::RCP<Core::LinAlg::MapExtractor> conpotsplitter = sca_tra_field()->splitter();
+  Teuchos::RCP<Core::LinAlg::MapExtractor> conpotsplitter = scatra_field()->splitter();
   // Variables to save different L2 - Norms
 
   double potincnorm_L2 = 0.0;
@@ -82,16 +82,16 @@ bool ElCh::Algorithm::convergence_check(
   fluid_field()->extract_velocity_part(fluid_field()->velnp())->Norm2(&velnorm_L2);
 
   // Calculate concentration increment and concentration L2 - Norm
-  phiincnp_->Update(1.0, *sca_tra_field()->phinp(), -1.0);
+  phiincnp_->Update(1.0, *scatra_field()->phinp(), -1.0);
   auto onlycon = conpotsplitter->extract_other_vector(phiincnp_);
   onlycon->Norm2(&conincnorm_L2);
-  conpotsplitter->extract_other_vector(sca_tra_field()->phinp(), onlycon);
+  conpotsplitter->extract_other_vector(scatra_field()->phinp(), onlycon);
   onlycon->Norm2(&connorm_L2);
 
   // Calculate potential increment and potential L2 - Norm
   auto onlypot = conpotsplitter->extract_cond_vector(phiincnp_);
   onlypot->Norm2(&potincnorm_L2);
-  conpotsplitter->extract_cond_vector(sca_tra_field()->phinp(), onlypot);
+  conpotsplitter->extract_cond_vector(scatra_field()->phinp(), onlypot);
   onlypot->Norm2(&potnorm_L2);
 
   // care for the case that there is (almost) zero temperature or velocity

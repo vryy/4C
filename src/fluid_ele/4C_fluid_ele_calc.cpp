@@ -1273,9 +1273,9 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::sysmat(
     if (emesh.is_initialized())
     {
       if (nsd_ == 3)
-        lin_mesh_motion_3_d(emesh, evelaf, press, fldparatimint_->time_fac(), timefacfac);
+        lin_mesh_motion_3d(emesh, evelaf, press, fldparatimint_->time_fac(), timefacfac);
       else if (nsd_ == 2)
-        lin_mesh_motion_2_d(emesh, evelaf, press, fldparatimint_->time_fac(), timefacfac);
+        lin_mesh_motion_2d(emesh, evelaf, press, fldparatimint_->time_fac(), timefacfac);
       else
         FOUR_C_THROW("Linearization of the mesh motion is not available in 1D");
     }
@@ -10470,7 +10470,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_vel_gradient_ele_cen
 }
 
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_mesh_motion_2_d(
+void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_mesh_motion_2d(
     Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
     const double& timefacfac)
@@ -10575,7 +10575,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_mesh_motion_2_d(
 
 
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_mesh_motion_3_d(
+void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_mesh_motion_3d(
     Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
     const double& timefacfac)
@@ -12659,9 +12659,9 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
     if (emesh.is_initialized())
     {
       if (nsd_ == 3)
-        lin_mesh_motion_3_d(emesh, evelaf, press, fldparatimint_->time_fac(), timefacfac);
+        lin_mesh_motion_3d(emesh, evelaf, press, fldparatimint_->time_fac(), timefacfac);
       else if (nsd_ == 2)
-        lin_mesh_motion_2_d(emesh, evelaf, press, fldparatimint_->time_fac(), timefacfac);
+        lin_mesh_motion_2d(emesh, evelaf, press, fldparatimint_->time_fac(), timefacfac);
       else
         FOUR_C_THROW("Linearization of the mesh motion is not available in 1D");
     }

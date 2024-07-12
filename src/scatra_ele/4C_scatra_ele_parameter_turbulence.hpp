@@ -65,7 +65,7 @@ namespace Discret
       Inpar::FLUID::RefLength ref_length() { return reflength_; };
       double c_nu() { return c_nu_; };
       bool nwl() { return nwl_; };
-      bool nwl_sca_tra() { return nwl_scatra_; };
+      bool nwl_scatra() { return nwl_scatra_; };
       bool beta() { return beta_; };
       bool bd_gp() { return bd_gp_; };
       double csgs_sg_phi()

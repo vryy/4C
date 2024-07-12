@@ -285,7 +285,7 @@ void CONTACT::LineToSurfaceCoupling3d::consist_dual_shape()
     double sxi[2] = {0.0, 0.0};
     double sprojalpha = 0.0;
     Mortar::Projector::impl(surface_element())
-        ->project_gauss_point_auxn3_d(globgp, auxn(), surface_element(), sxi, sprojalpha);
+        ->project_gauss_point_auxn_3d(globgp, auxn(), surface_element(), sxi, sprojalpha);
 
     // project Gauss point onto slave (parent) element
     double psxi[2] = {0., 0.};
@@ -318,7 +318,7 @@ void CONTACT::LineToSurfaceCoupling3d::consist_dual_shape()
           lingp[p->first](d) += svalcell(v) * (p->second);
 
     // compute GP slave coordinate derivatives
-    integrator.deriv_xi_g_p3_d_aux_plane(surface_element(), sxi, currcell->auxn(), dsxigp,
+    integrator.deriv_xi_gp_3d_aux_plane(surface_element(), sxi, currcell->auxn(), dsxigp,
         sprojalpha, currcell->get_deriv_auxn(), lingp);
 
     // compute GP slave coordinate derivatives (parent element)
@@ -425,12 +425,12 @@ void CONTACT::LineToSurfaceCoupling3d::integrate_line()
   // perform integration
   if (i_type() == LineToSurfaceCoupling3d::lts)
   {
-    integrator->integrate_deriv_cell3_d_aux_plane_lts(
+    integrator->integrate_deriv_cell_3d_aux_plane_lts(
         parent_element(), *line_element(), surface_element(), int_line(), auxn(), get_comm());
   }
   else if (i_type() == LineToSurfaceCoupling3d::stl)
   {
-    integrator->integrate_deriv_cell3_d_aux_plane_stl(
+    integrator->integrate_deriv_cell_3d_aux_plane_stl(
         parent_element(), *line_element(), surface_element(), int_line(), auxn(), get_comm());
   }
   else
@@ -2390,9 +2390,9 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
 
   // get slave element nodes themselves for normal evaluation
   Core::Nodes::Node** mynodes = line_slave_element()->nodes();
-  if (!mynodes) FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane_lts: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("integrate_deriv_cell_3d_aux_plane_lts: Null pointer!");
   Core::Nodes::Node** mnodes = line_master_element()->nodes();
-  if (!mnodes) FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane_lts: Null pointer!");
+  if (!mnodes) FOUR_C_THROW("integrate_deriv_cell_3d_aux_plane_lts: Null pointer!");
 
   int nnodes = 2;
   int ndof = 3;

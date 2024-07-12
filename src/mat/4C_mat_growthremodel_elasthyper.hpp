@@ -270,7 +270,7 @@ namespace Mat
     void setup_axi_cir_rad_structural_tensor(Input::LineDefinition* linedef);
 
     /// Setup prestretch (optional: setup element axi-, circ-, and rad-directions) for 3D elements
-    void setup_g_r3_d(Core::LinAlg::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
+    void setup_g_r_3d(Core::LinAlg::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
         Teuchos::ParameterList& params,  ///< Container for additional information
         const double dt,                 ///< Time step size
         const int gp,                    ///< Current Gauss-Point
@@ -278,7 +278,7 @@ namespace Mat
 
     /// Setup prestretch (optional: setup element axi-, circ-, and rad-directions) for 2D elements
     /// -> membrane
-    void setup_g_r2_d(Teuchos::ParameterList& params,  ///< Container for additional information
+    void setup_g_r_2d(Teuchos::ParameterList& params,  ///< Container for additional information
         const double dt,                               ///< Time step size
         const int gp);                                 ///< Current Gauss-Point
 

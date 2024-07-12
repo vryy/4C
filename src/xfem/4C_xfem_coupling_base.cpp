@@ -712,7 +712,7 @@ void XFEM::CouplingBase::get_visc_penalty_stabfac(Core::Elements::Element* xfele
 {
   get_visc_penalty_stabfac(xfele, coup_ele, kappa_m, kappa_s, inv_h_k, NIT_visc_stab_fac,
       NIT_visc_stab_fac_tang, params->nit_stab_scaling(), params->nit_stab_scaling_tang(),
-      params->is_pseudo2_d(), params->visc_stab_trac_estimate());
+      params->is_pseudo_2d(), params->visc_stab_trac_estimate());
 }
 
 /*--------------------------------------------------------------------------------
