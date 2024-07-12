@@ -40,7 +40,16 @@ namespace Core::UTILS
       const Core::LinAlg::Matrix<n, 1, ScalarType>& residuum,
       Core::LinAlg::Matrix<n, n, ScalarType>&& jacobian)
   {
-    jacobian.invert();
+    if constexpr (n < 4)
+    {
+      jacobian.invert();
+    }
+    else
+    {
+      Core::LinAlg::FixedSizeSerialDenseSolver<n, n> serial_dense_solver;
+      serial_dense_solver.set_matrix(jacobian);
+      serial_dense_solver.invert();
+    }
     x.multiply_nn(-1, jacobian, residuum, 1.0);
   }
   /// @}
