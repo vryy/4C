@@ -13,6 +13,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_fem_nurbs_discretization.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -203,6 +204,44 @@ namespace Core::FE
       // goodbye
       return zero_size;
     }  // GetKnotVectorAndWeightsForNurbsBoundary()
+
+    /**
+     * \brief Helper function to evaluate the NURBS interpolation inside the element.
+
+     \param controlpoint_data   (in) data from control points
+     \param xi                  (in) Parameter coordinate on the element.
+     \param weights             (in) weights of the control points
+     \param knots               (in) knots where the NURBS element is defined
+     \param distype             (in) discretization type of NURBS element
+     */
+    template <unsigned int n_points, unsigned int n_dim_nurbs, unsigned int n_dim = n_dim_nurbs>
+    Core::LinAlg::Matrix<n_dim, 1, double> EvalNurbsInterpolation(
+        const Core::LinAlg::Matrix<n_points * n_dim, 1, double>& controlpoint_data,
+        const Core::LinAlg::Matrix<n_dim_nurbs, 1, double>& xi,
+        const Core::LinAlg::Matrix<n_points, 1, double>& weights,
+        const std::vector<Core::LinAlg::SerialDenseVector>& knots,
+        const Core::FE::CellType& distype)
+    {
+      Core::LinAlg::Matrix<n_dim, 1, double> point_result;
+
+      // Get the shape functions.
+      Core::LinAlg::Matrix<n_points, 1, double> N;
+
+      if (n_dim_nurbs == 3)
+        Core::FE::Nurbs::nurbs_get_3D_funct(N, xi, knots, weights, distype);
+      else if (n_dim_nurbs == 2)
+        Core::FE::Nurbs::nurbs_get_2D_funct(N, xi, knots, weights, distype);
+      else
+        FOUR_C_THROW("Unable to compute the shape functions for this nurbs element case");
+
+      for (unsigned int i_node_nurbs = 0; i_node_nurbs < n_points; i_node_nurbs++)
+      {
+        for (unsigned int i_dim = 0; i_dim < n_dim; i_dim++)
+          point_result(i_dim) += N(i_node_nurbs) * controlpoint_data(i_node_nurbs * 3 + i_dim);
+      }
+
+      return point_result;
+    }
 
   }  // namespace Nurbs
 
