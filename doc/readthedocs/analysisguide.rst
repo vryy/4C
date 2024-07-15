@@ -17,5 +17,3 @@ Analysis Guide
    materials
    struct_dynamics
    introduction_solvers
-   fsi
-   free_surface_flow
