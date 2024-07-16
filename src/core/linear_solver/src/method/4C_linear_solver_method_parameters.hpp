@@ -54,7 +54,7 @@ namespace Core::LinearSolver
         const Epetra_Map& newmap, Teuchos::ParameterList& solveparams);
 
     /*!
-     * \brief Extract nullspace from 4C-provided ML list and convert to Xpetra::MultiVector
+     * \brief Extract nullspace from parameter list and convert to Xpetra::MultiVector
      *
      * \pre The input parameter list needs to contain these entries:
      *   - "null space: dimension" (type: \c int )
