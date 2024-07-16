@@ -1044,8 +1044,6 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
 
   sysmat->Complete();
 
-  // output_sparse_matrix_split(sysmat);
-
 #else
   // the sysmat is manipulated indirectly via a second sparse matrix
   // and therefore, the graph changes
@@ -1420,92 +1418,6 @@ void FLD::Meshtying::update_slave_dof(
 
   // define incremental vector to new incremental vector
   inc->Update(1.0, *incnew, 0.0);
-}
-
-/*-------------------------------------------------------*/
-/*  Output maps and projection matrix      ehrl (04/11)  */
-/*-------------------------------------------------------*/
-
-void FLD::Meshtying::output_set_up()
-{
-  if (myrank_ == 0)
-  {
-    // Output:
-
-    /*std::cout << std::endl << "dof_row_map:" << std::endl;
-    std::cout << *(discret_->dof_row_map())<< std::endl << std::endl;
-    std::cout << std::endl << "masterDofRowMap:" << std::endl;
-    std::cout << *(adaptermeshtying_->MasterDofRowMap())<< std::endl << std::endl;
-    std::cout << "slaveDofRowMap:" << std::endl;
-    std::cout << *(adaptermeshtying_->SlaveDofRowMap())<< std::endl << std::endl;
-   */
-    std::cout << "Projection matrix:" << std::endl;
-    std::cout << *(adaptermeshtying_->get_mortar_matrix_p()) << std::endl << std::endl;
-  }
-
-  /* {
-   const std::string fname = "c_after.txt";
-
-   std::ofstream f;
-   f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-   f << "\n" << "Begin" << "\n";
-   f << *c;
-   f << "End" << "\n";
-   f.close();
-   }*/
-}
-
-/*-------------------------------------------------------*/
-/*  Output: split sparse matrix            ehrl (04/11)  */
-/*-------------------------------------------------------*/
-void FLD::Meshtying::output_sparse_matrix_split(Teuchos::RCP<Core::LinAlg::SparseOperator> conmat)
-{
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> splitmatrix;
-
-  split_matrix(conmat, splitmatrix);
-
-  std::cout << "Teil nn " << std::endl << splitmatrix->matrix(0, 0) << std::endl;
-  std::cout << "Teil nm: " << std::endl << splitmatrix->matrix(0, 1) << std::endl;
-  std::cout << "Teil ns: " << std::endl << splitmatrix->matrix(0, 2) << std::endl;
-
-  std::cout << "Teil mn: " << std::endl << splitmatrix->matrix(1, 0) << std::endl;
-  std::cout << "Teil mm: " << std::endl << splitmatrix->matrix(1, 1) << std::endl;
-  std::cout << "Teil ms: " << std::endl << splitmatrix->matrix(1, 2) << std::endl;
-
-  std::cout << "Teil sn: " << std::endl << splitmatrix->matrix(2, 0) << std::endl;
-  std::cout << "Teil sm: " << std::endl << splitmatrix->matrix(2, 1) << std::endl;
-  std::cout << "Teil ss: " << std::endl << splitmatrix->matrix(2, 2) << std::endl;
-
-  FOUR_C_THROW("Matrix output finished");
-}
-
-/*-------------------------------------------------------*/
-/*  Output: block matrix                   ehrl (04/11)  */
-/*-------------------------------------------------------*/
-void FLD::Meshtying::output_block_matrix(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> blockmatrix, Teuchos::RCP<Epetra_Vector> residual)
-{
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockmatrixnew =
-      Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(blockmatrix);
-
-  Core::LinAlg::SparseMatrix sysmat0 = blockmatrixnew->matrix(0, 0);
-  Core::LinAlg::SparseMatrix sysmat1 = blockmatrixnew->matrix(0, 1);
-  // Core::LinAlg::SparseMatrix sysmat2 = blockmatrixnew->Matrix(0,2);
-
-  Core::LinAlg::SparseMatrix sysmat3 = blockmatrixnew->matrix(1, 0);
-  Core::LinAlg::SparseMatrix sysmat4 = blockmatrixnew->matrix(1, 1);
-  // Core::LinAlg::SparseMatrix sysmat5 = blockmatrixnew->Matrix(1,2);
-  /*
-    Core::LinAlg::SparseMatrix sysmat6 = blockmatrixnew->Matrix(2,0);
-    Core::LinAlg::SparseMatrix sysmat7 = blockmatrixnew->Matrix(2,1);
-    Core::LinAlg::SparseMatrix sysmat8 = blockmatrixnew->Matrix(2,2);*/
-
-  std::cout << "Block nn" << *(sysmat0.epetra_matrix()) << std::endl;
-  std::cout << "Block nm" << *(sysmat1.epetra_matrix()) << std::endl;
-  // std::cout << "Block ns" << *(sysmat2.EpetraMatrix()) << std::endl;
-
-  std::cout << "Block mn" << *(sysmat3.epetra_matrix()) << std::endl;
-  std::cout << "Block mm" << *(sysmat4.epetra_matrix()) << std::endl;
 }
 
 /*-------------------------------------------------------*/

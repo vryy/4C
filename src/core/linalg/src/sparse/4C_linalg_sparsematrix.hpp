@@ -501,12 +501,6 @@ namespace Core::LinAlg
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Strategy>> split(
         const MultiMapExtractor& domainmaps, const MultiMapExtractor& rangemaps) const;
 
-    /// binary dump of matrix for debugging
-    void dump(const std::string& filename);
-
-    /// load a dump
-    void load(const Epetra_Comm& comm, std::string& filename);
-
     //@}
 
    private:
@@ -538,9 +532,6 @@ namespace Core::LinAlg
     MatrixType matrixtype_;
   };
 
-  /// output of SparseMatrix
-  std::ostream& operator<<(std::ostream& os, const Core::LinAlg::SparseMatrix& mat);
-
   /// matrix matrix multiplication
   Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B,
       bool transB, bool completeoutput = true);
@@ -548,12 +539,6 @@ namespace Core::LinAlg
   /// matrix matrix multiplication with explicitly defined flags
   Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B,
       bool transB, bool explicitdirichlet, bool savegraph, bool completeoutput = true);
-
-  /// merge 2x2 system
-  Teuchos::RCP<SparseMatrix> Merge(const Core::LinAlg::SparseMatrix& Aii,
-      const Core::LinAlg::SparseMatrix& Aig, const Core::LinAlg::SparseMatrix& Agi,
-      const Core::LinAlg::SparseMatrix& Agg);
-
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Eye(const Epetra_Map& map);
 

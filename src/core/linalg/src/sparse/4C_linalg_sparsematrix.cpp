@@ -1492,138 +1492,6 @@ void Core::LinAlg::SparseMatrix::put(const Core::LinAlg::SparseMatrix& A, const 
 }
 
 /*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void Core::LinAlg::SparseMatrix::dump(const std::string& filename)
-{
-  int MyRow;
-  int NumEntries;
-  std::stringstream rowsetname;
-  rowsetname << filename << "." << Comm().MyPID() << ".row";
-  std::stringstream offsetname;
-  offsetname << filename << "." << Comm().MyPID() << ".off";
-  std::stringstream indicesname;
-  indicesname << filename << "." << Comm().MyPID() << ".idx";
-  std::stringstream valuesname;
-  valuesname << filename << "." << Comm().MyPID() << ".val";
-
-  std::ofstream row(rowsetname.str().c_str());
-  std::ofstream off(offsetname.str().c_str());
-  std::ofstream idx(indicesname.str().c_str());
-  std::ofstream val(valuesname.str().c_str());
-
-  const Epetra_Map& rowmap = row_map();
-  const Epetra_Map& colmap = col_map();
-
-  if (sysmat_->Filled())
-  {
-    for (MyRow = 0; MyRow < sysmat_->NumMyRows(); ++MyRow)
-    {
-      double* Values;
-      int* Indices;
-
-      int err = sysmat_->ExtractMyRowView(MyRow, NumEntries, Values, Indices);
-      if (err) FOUR_C_THROW("ExtractMyRowView failed: err=%d", err);
-      row << rowmap.GID(MyRow) << "\n";
-      off << NumEntries << "\n";
-      // std::copy(Indices,Indices+NumEntries, std::ostream_iterator<int>(idx," "));
-      for (int i = 0; i < NumEntries; ++i)
-      {
-        idx << colmap.GID(Indices[i]) << " ";
-      }
-      idx << "\n";
-      val.write(reinterpret_cast<char*>(Values), NumEntries * sizeof(double));
-    }
-  }
-  else
-  {
-    // Warning: does not write nonlocal values for Epetra_FECrsMatrices
-    for (MyRow = 0; MyRow < sysmat_->NumMyRows(); ++MyRow)
-    {
-      std::vector<double> Values(sysmat_->MaxNumEntries());
-      std::vector<int> Indices(sysmat_->MaxNumEntries());
-
-      int err = sysmat_->ExtractGlobalRowCopy(
-          rowmap.GID(MyRow), sysmat_->MaxNumEntries(), NumEntries, Values.data(), Indices.data());
-      if (err) FOUR_C_THROW("ExtractGlobalRowCopy failed: err=%d", err);
-      row << rowmap.GID(MyRow) << "\n";
-      off << NumEntries << "\n";
-      std::copy(Indices.data(), Indices.data() + NumEntries, std::ostream_iterator<int>(idx, " "));
-      idx << "\n";
-      val.write(reinterpret_cast<char*>(Values.data()), NumEntries * sizeof(double));
-    }
-  }
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void Core::LinAlg::SparseMatrix::load(const Epetra_Comm& comm, std::string& filename)
-{
-  std::stringstream rowsetname;
-  rowsetname << filename << "." << comm.MyPID() << ".row";
-  std::stringstream offsetname;
-  offsetname << filename << "." << comm.MyPID() << ".off";
-  std::stringstream indicesname;
-  indicesname << filename << "." << comm.MyPID() << ".idx";
-  std::stringstream valuesname;
-  valuesname << filename << "." << comm.MyPID() << ".val";
-
-  std::ifstream row(rowsetname.str().c_str());
-  std::ifstream off(offsetname.str().c_str());
-  std::ifstream idx(indicesname.str().c_str());
-  std::ifstream val(valuesname.str().c_str());
-
-  std::vector<int> rowids;
-  for (;;)
-  {
-    int r;
-    row >> r;
-    if (not row) break;
-    rowids.push_back(r);
-  }
-
-  Epetra_Map rowmap(-1, rowids.size(), rowids.data(), 0, comm);
-
-  if (!rowmap.UniqueGIDs()) FOUR_C_THROW("Row map is not unique");
-
-  std::vector<int> offnum;
-  for (;;)
-  {
-    int o;
-    off >> o;
-    if (not off) break;
-    offnum.push_back(o);
-  }
-
-  if (rowids.size() != offnum.size()) FOUR_C_THROW("failed to read rows and column counts");
-
-  if (matrixtype_ == CRS_MATRIX)
-    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(::Copy, rowmap, offnum.data(), false));
-  else if (matrixtype_ == FE_MATRIX)
-    sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy, rowmap, offnum.data(), false));
-  else
-    FOUR_C_THROW("matrix type is not correct");
-
-  for (unsigned i = 0; i < rowids.size(); ++i)
-  {
-    std::vector<int> indices(offnum[i]);
-    std::vector<double> values(offnum[i]);
-
-    for (int j = 0; j < offnum[i]; ++j)
-    {
-      idx >> indices[j];
-      if (not idx) FOUR_C_THROW("failed to read indices");
-    }
-    val.read(reinterpret_cast<char*>(values.data()), offnum[i] * sizeof(double));
-    int err = sysmat_->InsertGlobalValues(rowids[i], offnum[i], values.data(), indices.data());
-    if (err) FOUR_C_THROW("InsertGlobalValues failed: err=%d", err);
-  }
-
-  graph_ = Teuchos::null;
-}
-
-
-/*----------------------------------------------------------------------*
   (private)
  *----------------------------------------------------------------------*/
 void Core::LinAlg::SparseMatrix::split2x2(BlockSparseMatrixBase& Abase) const
@@ -1838,23 +1706,6 @@ void Core::LinAlg::SparseMatrix::split_mx_n(BlockSparseMatrixBase& ABlock) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::ostream& Core::LinAlg::operator<<(std::ostream& os, const Core::LinAlg::SparseMatrix& mat)
-{
-  if (mat.get_matrixtype() == SparseMatrix::CRS_MATRIX)
-    os << *(const_cast<Core::LinAlg::SparseMatrix&>(mat).epetra_matrix());
-  else if (mat.get_matrixtype() == SparseMatrix::FE_MATRIX)
-  {
-    os << *(Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(
-        const_cast<Core::LinAlg::SparseMatrix&>(mat).epetra_matrix()));
-  }
-  else
-    FOUR_C_THROW("matrixtype does not exist");
-  return os;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::Multiply(const Core::LinAlg::SparseMatrix& A,
     bool transA, const Core::LinAlg::SparseMatrix& B, bool transB, bool completeoutput)
 {
@@ -1907,29 +1758,6 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::Multiply(const Core::LinA
   if (err) FOUR_C_THROW("EpetraExt::MatrixMatrix::Multiply returned err = %d", err);
 
   return C;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::Merge(const Core::LinAlg::SparseMatrix& Aii,
-    const Core::LinAlg::SparseMatrix& Aig, const Core::LinAlg::SparseMatrix& Agi,
-    const Core::LinAlg::SparseMatrix& Agg)
-{
-  if (not Aii.row_map().SameAs(Aig.row_map()) or not Agi.row_map().SameAs(Agg.row_map()))
-    FOUR_C_THROW("row maps mismatch");
-
-  Teuchos::RCP<Epetra_Map> rowmap = MergeMap(Aii.row_map(), Agi.row_map(), false);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mat =
-      Teuchos::rcp(new SparseMatrix(*rowmap, std::max(Aii.max_num_entries() + Aig.max_num_entries(),
-                                                 Agi.max_num_entries() + Agg.max_num_entries())));
-
-
-  mat->add(Aii, false, 1.0, 1.0);
-  mat->add(Aig, false, 1.0, 1.0);
-  mat->add(Agi, false, 1.0, 1.0);
-  mat->add(Agg, false, 1.0, 1.0);
-
-  return mat;
 }
 
 
