@@ -800,12 +800,6 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::call_partitioner(
 
   Teuchos::ParameterList paramlist;
 
-  // Set imbalance tolerance for relative subdomain sizes to avoid empty procs
-  const Teuchos::ParameterList& fsimono =
-      Global::Problem::instance()->fsi_dynamic_params().sublist("MONOLITHIC SOLVER");
-  const double imbalance_tol = fsimono.get<double>("HYBRID_IMBALANCE_TOL");
-  paramlist.set("IMBALANCE_TOL", imbalance_tol);
-
   if (parts != -1) paramlist.set("NUM_PARTS", std::to_string(parts));
 
   return Core::Rebalance::RebalanceGraph(*initgraph_manip, paramlist);

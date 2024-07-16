@@ -78,7 +78,6 @@ namespace Inpar
     enum LinearBlockSolver
     {
       PreconditionedKrylov,  ///< BGS(AMG)
-      HybridSchwarz,         ///< hybrid additive/multiplicative Schwarz
       LinalgSolver           ///< use Core::LinAlg::Solver interface
     };
 
