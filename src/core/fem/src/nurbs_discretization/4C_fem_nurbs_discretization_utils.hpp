@@ -228,16 +228,16 @@ namespace Core::FE
       Core::LinAlg::Matrix<n_points, 1, double> N;
 
       if (n_dim_nurbs == 3)
-        Core::FE::Nurbs::nurbs_get_3D_funct(N, xi, knots, weights, distype);
+        nurbs_get_3D_funct(N, xi, knots, weights, distype);
       else if (n_dim_nurbs == 2)
-        Core::FE::Nurbs::nurbs_get_2D_funct(N, xi, knots, weights, distype);
+        nurbs_get_2D_funct(N, xi, knots, weights, distype);
       else
         FOUR_C_THROW("Unable to compute the shape functions for this nurbs element case");
 
       for (unsigned int i_node_nurbs = 0; i_node_nurbs < n_points; i_node_nurbs++)
       {
         for (unsigned int i_dim = 0; i_dim < n_dim; i_dim++)
-          point_result(i_dim) += N(i_node_nurbs) * controlpoint_data(i_node_nurbs * 3 + i_dim);
+          point_result(i_dim) += N(i_node_nurbs) * controlpoint_data(i_node_nurbs * n_dim + i_dim);
       }
 
       return point_result;
