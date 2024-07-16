@@ -405,7 +405,8 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
       // basis transformation
       Teuchos::RCP<Core::LinAlg::SparseMatrix> systrafo =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> eye = Core::LinAlg::Eye(*gndofrowmap_);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
+          Core::LinAlg::CreateIdentityMatrix(*gndofrowmap_);
       systrafo->add(*eye, false, 1.0, 1.0);
       if (par_redist())
         trafo_ = Mortar::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
@@ -686,7 +687,8 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
       // basis transformation
       Teuchos::RCP<Core::LinAlg::SparseMatrix> systrafo =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> eye = Core::LinAlg::Eye(*gndofrowmap_);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
+          Core::LinAlg::CreateIdentityMatrix(*gndofrowmap_);
       systrafo->add(*eye, false, 1.0, 1.0);
       if (par_redist())
         trafo_ = Mortar::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
@@ -925,7 +927,8 @@ void CONTACT::MtLagrangeStrategy::recover(Teuchos::RCP<Epetra_Vector> disi)
       // undo basis transformation to solution
       Teuchos::RCP<Core::LinAlg::SparseMatrix> systrafo =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> eye = Core::LinAlg::Eye(*gndofrowmap_);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
+          Core::LinAlg::CreateIdentityMatrix(*gndofrowmap_);
       systrafo->add(*eye, false, 1.0, 1.0);
       if (par_redist())
         trafo_ = Mortar::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
@@ -974,7 +977,8 @@ void CONTACT::MtLagrangeStrategy::recover(Teuchos::RCP<Epetra_Vector> disi)
       // undo basis transformation to solution
       Teuchos::RCP<Core::LinAlg::SparseMatrix> systrafo =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> eye = Core::LinAlg::Eye(*gndofrowmap_);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
+          Core::LinAlg::CreateIdentityMatrix(*gndofrowmap_);
       systrafo->add(*eye, false, 1.0, 1.0);
       if (par_redist())
         trafo_ = Mortar::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
@@ -1057,7 +1061,8 @@ bool CONTACT::MtLagrangeStrategy::evaluate_stiff(const Teuchos::RCP<const Epetra
   if (dualquadslavetrafo() && lagmultquad == Inpar::Mortar::lagmult_lin)
   {
     systrafo_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> eye = Core::LinAlg::Eye(*gndofrowmap_);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
+        Core::LinAlg::CreateIdentityMatrix(*gndofrowmap_);
     systrafo_->add(*eye, false, 1.0, 1.0);
     if (par_redist())
       trafo_ = Mortar::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);

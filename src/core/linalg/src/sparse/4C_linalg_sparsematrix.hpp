@@ -540,8 +540,6 @@ namespace Core::LinAlg
   Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B,
       bool transB, bool explicitdirichlet, bool savegraph, bool completeoutput = true);
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> Eye(const Epetra_Map& map);
-
   //! Cast matrix of type SparseOperator to const SparseMatrix and check in debug mode if cast was
   //! successful
   Teuchos::RCP<const Core::LinAlg::SparseMatrix> CastToConstSparseMatrixAndCheckSuccess(

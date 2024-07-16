@@ -22,6 +22,7 @@
 #include "4C_inpar_fsi.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_matrixtransform.hpp"
+#include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_structure_aux.hpp"
 
@@ -286,7 +287,7 @@ void FSI::ConstrMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 
   mat.matrix(1, 1).add(fii, false, 1., 0.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
-      Core::LinAlg::Eye(*fluid_field()->interface()->fsi_cond_map());
+      Core::LinAlg::CreateIdentityMatrix(*fluid_field()->interface()->fsi_cond_map());
   mat.matrix(1, 1).add(*eye, false, 1., 1.0);
 
   (*aigtransform_)(a->full_row_map(), a->full_col_map(), aig, 1.,
