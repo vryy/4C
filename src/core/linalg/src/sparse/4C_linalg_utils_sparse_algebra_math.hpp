@@ -27,14 +27,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::LinAlg
 {
   /*!
-   \brief Make Core::LinAlg::SerialDenseMatrix symmetric by averaging upper and lower traingular
-   indices
-
-   \param A (in/out): Matrix to be symmetrised
-   */
-  void SymmetriseMatrix(Core::LinAlg::SerialDenseMatrix& A);
-
-  /*!
    \brief Add a (transposed) Epetra_CrsMatrix to another: B = B*scalarB + A(^T)*scalarA
 
    Add one matrix to another.
@@ -232,24 +224,6 @@ namespace Core::LinAlg
       const Teuchos::RCP<Epetra_CrsMatrix>& C, bool transC, bool complete = true)
   {
     return Multiply(*A, transA, *B, transB, *C, transC, complete);
-  }
-
-  /// Returns a dim x dim identity matrix
-  template <unsigned int dim>
-  void IdentityMatrix(Core::LinAlg::Matrix<dim, dim>& identity_matrix)
-  {
-    for (unsigned int i = 0; i < dim; i++)
-    {
-      for (unsigned int j = 0; j < dim; j++)
-      {
-        if (i == j)
-          identity_matrix(i, j) = 1.0;
-        else
-          identity_matrix(i, j) = 0.0;
-      }
-    }
-
-    return;
   }
 
 }  // namespace Core::LinAlg

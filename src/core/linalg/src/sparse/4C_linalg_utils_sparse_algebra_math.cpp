@@ -133,11 +133,7 @@ namespace Core::LinAlg
   }  // namespace
 }  // namespace Core::LinAlg
 
-
-
 /*----------------------------------------------------------------------*
- |  Add a sparse matrix to another                     kronbichler 11/15|
- |  B = B*scalarB + A(transposed)*scalarA                               |
  *----------------------------------------------------------------------*/
 void Core::LinAlg::Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
     Core::LinAlg::SparseMatrixBase& B, const double scalarB)
@@ -181,8 +177,6 @@ void Core::LinAlg::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
 
 
 /*----------------------------------------------------------------------*
- |  Add a sparse matrix to another                           mwgee 12/06|
- |  B = B*scalarB + A(transposed)*scalarA                               |
  *----------------------------------------------------------------------*/
 void Core::LinAlg::Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
     Epetra_CrsMatrix& B, const double scalarB)
@@ -214,7 +208,6 @@ void Core::LinAlg::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
 }
 
 /*----------------------------------------------------------------------*
- | Transpose matrix A                                         popp 02/08|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsMatrix> Core::LinAlg::Transpose(const Epetra_CrsMatrix& A)
 {
@@ -229,7 +222,6 @@ Teuchos::RCP<Epetra_CrsMatrix> Core::LinAlg::Transpose(const Epetra_CrsMatrix& A
 }
 
 /*----------------------------------------------------------------------*
- | Multiply matrices A*B                                     mwgee 01/06|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsMatrix> Core::LinAlg::Multiply(
     const Epetra_CrsMatrix& A, bool transA, const Epetra_CrsMatrix& B, bool transB, bool complete)
@@ -282,28 +274,12 @@ Teuchos::RCP<Epetra_CrsMatrix> Core::LinAlg::Multiply(
 }
 
 /*----------------------------------------------------------------------*
- | Multiply matrices A*B*C                                   mwgee 02/08|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsMatrix> Core::LinAlg::Multiply(const Epetra_CrsMatrix& A, bool transA,
     const Epetra_CrsMatrix& B, bool transB, const Epetra_CrsMatrix& C, bool transC, bool complete)
 {
   Teuchos::RCP<Epetra_CrsMatrix> tmp = Core::LinAlg::Multiply(B, transB, C, transC, true);
   return Core::LinAlg::Multiply(A, transA, *tmp, false, complete);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void Core::LinAlg::SymmetriseMatrix(Core::LinAlg::SerialDenseMatrix& A)
-{
-  const int n = A.numCols();
-  if (n != A.numRows()) FOUR_C_THROW("Cannot symmetrize non-square matrix");
-  // do not make deep copy of A, matrix addition and full scaling just to sym it
-  for (int i = 0; i < n; ++i)
-    for (int j = i + 1; j < n; ++j)
-    {
-      const double aver = 0.5 * (A(i, j) + A(j, i));
-      A(i, j) = A(j, i) = aver;
-    }
 }
 
 FOUR_C_NAMESPACE_CLOSE
