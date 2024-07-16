@@ -81,12 +81,6 @@ namespace Inpar
       LinalgSolver           ///< use Core::LinAlg::Solver interface
     };
 
-    enum HybridASType
-    {
-      hybrid_as_type_ILU,       ///< do processor-local ILU
-      hybrid_as_type_Amesos_LU  ///< do processor-local direct solve
-    };
-
     /// Projection methods for sliding fluid-structure interface
     enum SlideALEProj
     {
@@ -144,16 +138,6 @@ namespace Inpar
       verbosity_low,         ///< write only nonlinear solver status
       verbosity_medium,      ///< write nonlinear and linear solver status
       verbosity_full,        ///< write everything
-    };
-
-    /// options for parallel domain redistribution
-    enum Redistribute
-    {
-      Redistribute_off,        ///< no redistribution
-      Redistribute_structure,  ///< redistribute structure field only
-      Redistribute_fluid,      ///< redistribute fluid field only
-      Redistribute_both,       ///< redistribute both structure and fluid field
-      Redistribute_monolithic  ///< redistribute monolithic graph (fluid + structure)
     };
 
     /// Coupling variable for Dirichlet-Neumann algorithms

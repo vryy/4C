@@ -265,22 +265,6 @@ void Inpar::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Core::UTILS::BoolParameter("REBUILDPRECEVERYSTEP", "Yes",
       "Enforce rebuilding the preconditioner at the beginning of every time step", &fsimono);
 
-  setStringToIntegralParameter<int>("REDISTRIBUTE", "off", "Redistribute domain decomposition.",
-      tuple<std::string>("off", "structure", "fluid", "both", "monolithic"),
-      tuple<int>(Inpar::FSI::Redistribute_off, Inpar::FSI::Redistribute_structure,
-          Inpar::FSI::Redistribute_fluid, Inpar::FSI::Redistribute_both,
-          Inpar::FSI::Redistribute_monolithic),
-      &fsimono);
-
-  Core::UTILS::DoubleParameter(
-      "REDIST_WEIGHT1", 1.0, "Weight for redistribution, general domain.", &fsimono);
-  Core::UTILS::DoubleParameter(
-      "REDIST_WEIGHT2", 50000.0, "Weight for redistribution, interface domain.", &fsimono);
-  Core::UTILS::DoubleParameter(
-      "REDIST_SECONDWEIGHT1", -1.0, "Weight for 2nd redistribution, general domain.", &fsimono);
-  Core::UTILS::DoubleParameter(
-      "REDIST_SECONDWEIGHT2", -1.0, "Weight for 2nd redistribution, interface domain.", &fsimono);
-
   Core::UTILS::BoolParameter("SHAPEDERIVATIVES", "No",
       "Include linearization with respect to mesh movement in Navier Stokes equation.", &fsimono);
 

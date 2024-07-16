@@ -1365,16 +1365,4 @@ bool FSI::MortarMonolithicFluidSplitSaddlePoint::set_accepted() const
   return accepted;
 }
 
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplitSaddlePoint::create_node_owner_relationship(
-    std::map<int, int>* nodeOwner, std::map<int, std::list<int>>* inverseNodeOwner,
-    std::map<int, Core::Nodes::Node*>* fluidnodesPtr,
-    std::map<int, Core::Nodes::Node*>* structuregnodesPtr,
-    Teuchos::RCP<Core::FE::Discretization> structuredis,
-    Teuchos::RCP<Core::FE::Discretization> fluiddis, const Inpar::FSI::Redistribute domain)
-{
-  FOUR_C_THROW("Not implemented, yet.");
-}
-
 FOUR_C_NAMESPACE_CLOSE
