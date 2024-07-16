@@ -6,28 +6,17 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
+
 #include "4C_linalg_utils_sparse_algebra_print.hpp"
 
 #include "4C_linalg_blocksparsematrix.hpp"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_MultiVector.h>
-#include <Ifpack_AdditiveSchwarz.h>
-#include <MueLu_UseDefaultTypes.hpp>
-#include <Xpetra_CrsMatrix.hpp>
-#include <Xpetra_CrsMatrixWrap.hpp>
-#include <Xpetra_EpetraMultiVector.hpp>
-#include <Xpetra_IO.hpp>
-#include <Xpetra_Matrix.hpp>
-#include <Xpetra_MultiVector.hpp>
 
 #include <fstream>
 
 FOUR_C_NAMESPACE_OPEN
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void Core::LinAlg::PrintSparsityToPostscript(const Epetra_RowMatrix& A) { Ifpack_PrintSparsity(A); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -241,30 +230,6 @@ void Core::LinAlg::PrintMapInMatlabFormat(
     // wait, until proc 0 has written
     comm.Barrier();
   }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void Core::LinAlg::WriteEpetraCrsMatrixAsXpetra(
-    const std::string& filename, Teuchos::RCP<Epetra_CrsMatrix> matrix)
-{
-#include <Xpetra_UseShortNames.hpp>  // Include in scope to avoid clash with namespace Core::IO
-  using Teuchos::rcp;
-  using Teuchos::RCP;
-
-  RCP<CrsMatrix> ACrs = rcp(new EpetraCrsMatrix(matrix));
-  RCP<CrsMatrixWrap> ACrsWrap = rcp(new CrsMatrixWrap(ACrs));
-  RCP<Matrix> A = Teuchos::rcp_dynamic_cast<Matrix>(ACrsWrap);
-
-  Xpetra::IO<double, int, int, Node>::Write(filename, *A);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void Core::LinAlg::WriteEpetraMultiVectorAsXpetra(
-    const std::string& filename, Teuchos::RCP<Epetra_MultiVector> vec)
-{
-  Xpetra::IO<double, int, int, Node>::Write(filename, *Xpetra::toXpetra<int, Node>(vec));
 }
 
 FOUR_C_NAMESPACE_CLOSE
