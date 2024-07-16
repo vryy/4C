@@ -549,25 +549,6 @@ Core::LinAlg::BlockMatrix2x2(Core::LinAlg::SparseMatrix& A00, Core::LinAlg::Spar
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::ostream& Core::LinAlg::operator<<(
-    std::ostream& os, const Core::LinAlg::BlockSparseMatrixBase& mat)
-{
-  for (int i = 0; i < mat.rows(); ++i)
-  {
-    for (int j = 0; j < mat.cols(); ++j)
-    {
-      if (mat.Comm().MyPID() == 0)
-        os << "====================================Matrix block (" << i << "," << j
-           << "):" << std::endl;
-      fflush(stdout);
-      os << mat(i, j);
-    }
-  }
-  return os;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Core::LinAlg::DefaultBlockMatrixStrategy::DefaultBlockMatrixStrategy(BlockSparseMatrixBase& mat)
     : mat_(mat), scratch_lcols_(mat_.rows())
 {

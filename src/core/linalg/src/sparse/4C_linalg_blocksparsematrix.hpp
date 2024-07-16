@@ -410,10 +410,6 @@ namespace Core::LinAlg
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
 
-  /// output of BlockSparseMatrixBase
-  std::ostream& operator<<(std::ostream& os, const Core::LinAlg::BlockSparseMatrixBase& mat);
-
-
   //////////////////////////////////
   /// helper functions
 

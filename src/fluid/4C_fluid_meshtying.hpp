@@ -144,16 +144,6 @@ namespace FLD
     //! Adjust null-space for Krylov projector (slave node are in-active)
     Teuchos::RCP<Epetra_Vector> adapt_krylov_projector(Teuchos::RCP<Epetra_Vector> vec);
 
-    //! Output: maps & projection matrix
-    void output_set_up();
-
-    //! Output: split sparse matrix
-    void output_sparse_matrix_split(Teuchos::RCP<Core::LinAlg::SparseOperator> conmat);
-
-    //! Output: single blocks of the block matrix
-    void output_block_matrix(Teuchos::RCP<Core::LinAlg::SparseOperator> blockmatrix,
-        Teuchos::RCP<Epetra_Vector> residual);
-
     //! Output: split vector
     void output_vector_split(Teuchos::RCP<Epetra_Vector> vector);
 
