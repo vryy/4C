@@ -20,6 +20,7 @@
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_matrixtransform.hpp"
+#include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_structure_aux.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -327,7 +328,7 @@ void FSI::LungMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpars
   mat.matrix(1, 1).add(fGG, false, 1.0, 1.0);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
-      Core::LinAlg::Eye(*fluid_field()->interface()->fsi_cond_map());
+      Core::LinAlg::CreateIdentityMatrix(*fluid_field()->interface()->fsi_cond_map());
   mat.matrix(1, 1).add(*eye, false, 1.0, 1.0);
 
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> mmm = fluid_field()->shape_derivatives();

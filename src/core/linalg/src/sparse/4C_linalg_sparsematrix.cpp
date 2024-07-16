@@ -1760,23 +1760,6 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::Multiply(const Core::LinA
   return C;
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::Eye(const Epetra_Map& map)
-{
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> eye = Teuchos::rcp(new SparseMatrix(map, 1));
-  int numelements = map.NumMyElements();
-  int* gids = map.MyGlobalElements();
-  for (int i = 0; i < numelements; ++i)
-  {
-    int gid = gids[i];
-    eye->assemble(1., gid, gid);
-  }
-  eye->complete();
-  return eye;
-}
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::CastToSparseMatrixAndCheckSuccess(

@@ -690,7 +690,7 @@ void FSI::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSparseMat
 
   mat.matrix(1, 1).add(fii, false, 1., 0.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
-      Core::LinAlg::Eye(*fluid_field()->interface()->fsi_cond_map());
+      Core::LinAlg::CreateIdentityMatrix(*fluid_field()->interface()->fsi_cond_map());
   mat.matrix(1, 1).add(*eye, false, 1., 1.0);
 
   if (stcalgo == Inpar::Solid::stc_none)

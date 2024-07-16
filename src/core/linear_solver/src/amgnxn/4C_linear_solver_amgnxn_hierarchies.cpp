@@ -12,6 +12,7 @@
 #include "4C_linear_solver_amgnxn_hierarchies.hpp"
 
 #include "4C_linalg_multiply.hpp"
+#include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_amgnxn_vcycle.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -194,8 +195,10 @@ void Core::LinearSolver::AMGNxN::Hierarchies::setup()
           num_level_max_ - 1, Teuchos::null);
 
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Abb = a_->get_matrix(block, block);
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> Peye = Core::LinAlg::Eye(Abb->domain_map());
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> Reye = Core::LinAlg::Eye(Abb->range_map());
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> Peye =
+          Core::LinAlg::CreateIdentityMatrix(Abb->domain_map());
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> Reye =
+          Core::LinAlg::CreateIdentityMatrix(Abb->range_map());
 
       for (int level = 0; level < num_level_max_; level++) A_level[level] = Abb;
 

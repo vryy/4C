@@ -17,6 +17,7 @@
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
+#include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -954,7 +955,7 @@ void Mortar::UTILS::MortarMatrixCondensation(Teuchos::RCP<Core::LinAlg::SparseMa
                     *Core::LinAlg::Multiply(*kss, false, *p_col, false, true, false, true), false,
                     true, false, true),
       false, 1., 1.);
-  if (p_row == p_col) kteffnew->add(*Core::LinAlg::Eye(*gsrow), false, 1., 1.);
+  if (p_row == p_col) kteffnew->add(*Core::LinAlg::CreateIdentityMatrix(*gsrow), false, 1., 1.);
 
   kteffnew->complete(k->domain_map(), k->range_map());
 

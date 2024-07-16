@@ -39,6 +39,13 @@ namespace Core::LinAlg
   Teuchos::RCP<Epetra_CrsMatrix> CreateMatrix(const Epetra_Map& rowmap, const int npr);
 
   /*!
+   \brief Create a new sparse identity matrix and return RefcountPtr to it
+
+   \param rowmap (in): row map of matrix
+   */
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> CreateIdentityMatrix(const Epetra_Map& map);
+
+  /*!
    \brief Create a new Epetra_Vector and return RefcountPtr to it
 
    \param rowmap (in): row map of vector

@@ -24,6 +24,24 @@ Teuchos::RCP<Epetra_CrsMatrix> Core::LinAlg::CreateMatrix(const Epetra_Map& rowm
 }
 
 /*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::CreateIdentityMatrix(const Epetra_Map& map)
+{
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> eye = Teuchos::rcp(new SparseMatrix(map, 1));
+  int numelements = map.NumMyElements();
+  int* gids = map.MyGlobalElements();
+
+  for (int i = 0; i < numelements; ++i)
+  {
+    int gid = gids[i];
+    eye->assemble(1., gid, gid);
+  }
+  eye->complete();
+
+  return eye;
+}
+
+/*----------------------------------------------------------------------*
  |  create a Epetra_Vector                                   mwgee 12/06|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> Core::LinAlg::CreateVector(
