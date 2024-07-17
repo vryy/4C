@@ -20,6 +20,7 @@
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 
 #include <Epetra_Map.h>
@@ -491,7 +492,8 @@ void Adapter::FluidFSI::proj_vel_to_div_zero()
   B->complete(*domainmap, *dof_row_map());
 
   // Compute the projection operator
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> BTB = Core::LinAlg::Multiply(*B, true, *B, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> BTB =
+      Core::LinAlg::MatrixMultiply(*B, true, *B, false, true);
 
   Teuchos::RCP<Epetra_Vector> BTvR = Teuchos::rcp(new Epetra_Vector(*domainmap));
   B->multiply(true, *velnp(), *BTvR);

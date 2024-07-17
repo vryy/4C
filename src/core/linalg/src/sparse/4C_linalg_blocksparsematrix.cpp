@@ -447,60 +447,6 @@ void Core::LinAlg::BlockSparseMatrixBase::get_partial_extractor(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::Multiply(
-    const BlockSparseMatrixBase& A, bool transA, const BlockSparseMatrixBase& B, bool transB,
-    bool explicitdirichlet, bool savegraph, bool completeoutput)
-{
-  if (!A.filled() || !B.filled())
-    FOUR_C_THROW(
-        "Core::LinAlg::BlockSparseMatrixBase::MatrixMultiyply: we expect A and B to be filled");
-
-  if (A.cols() != B.rows() /*|| !A.FullDomainMap().SameAs(B.FullRowMap())*/)
-  {
-    FOUR_C_THROW("Core::LinAlg::BlockSparseMatrixBase::MatrixMultiply: A and B not compatible");
-  }
-
-
-  int npr = 81;  // estimated number of entries per row in each block
-
-  // generate result matrix
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>> C =
-      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          B.domain_extractor(), A.range_extractor(), npr, explicitdirichlet, savegraph));
-
-  // nested loop over all blocks
-  for (int i = 0; i < C->rows(); i++)
-  {
-    for (int j = 0; j < C->cols(); j++)
-    {
-      // build block C(i,j)
-      Teuchos::RCP<SparseMatrix> Cij = Teuchos::rcp(
-          new Core::LinAlg::SparseMatrix(C->range_map(i), npr, explicitdirichlet, savegraph));
-
-      for (int l = 0; l < C->cols(); l++)
-      {
-        // build submatrices for row i and j
-        Teuchos::RCP<SparseMatrix> tmpij =
-            Core::LinAlg::Multiply(A.matrix(i, l), false, B.matrix(l, j), false, true);
-        Cij->add(*tmpij, false, 1.0, 1.0);
-      }
-
-      // complete Cij with correct range and domain map
-      if (completeoutput) Cij->complete(C->domain_map(j), C->range_map(i));
-
-      // assign Cij block
-      C->assign(i, j, Core::LinAlg::View, *Cij);
-    }
-  }
-
-  if (completeoutput) C->complete();
-
-  return Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(C);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>
 Core::LinAlg::BlockMatrix2x2(Core::LinAlg::SparseMatrix& A00, Core::LinAlg::SparseMatrix& A01,
     Core::LinAlg::SparseMatrix& A10, Core::LinAlg::SparseMatrix& A11)

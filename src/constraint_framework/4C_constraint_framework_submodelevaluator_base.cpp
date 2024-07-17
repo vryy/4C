@@ -12,6 +12,7 @@
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_structure_new_timint_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -29,7 +30,7 @@ bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_force_stiff(
       FOUR_C_THROW("Call evaluate_coupling_terms() first.");
 
     // evaluate the stiffness contribution of this sme:
-    auto sme_stiff_ptr = Core::LinAlg::Multiply(*Q_dL_, false, *Q_Ld_, false, false);
+    auto sme_stiff_ptr = Core::LinAlg::MatrixMultiply(*Q_dL_, false, *Q_Ld_, false, false);
     sme_stiff_ptr->scale(penalty_parameter_);
     sme_stiff_ptr->add(*Q_dd_, false, 1.0, 1.0);
     sme_stiff_ptr->complete();

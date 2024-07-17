@@ -18,6 +18,7 @@ vectors and matrices.
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_utils_function.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -484,7 +485,7 @@ void Core::Conditions::LocsysManager::rotate_global_to_local(
 
   // selective multiplication from left
   Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
-      Core::LinAlg::Multiply(*subtrafo_, false, *sysmat, false, true);
+      Core::LinAlg::MatrixMultiply(*subtrafo_, false, *sysmat, false, true);
   // put transformed rows back into global matrix
   sysmat->put(*temp, 1.0, locsysdofmap_);
 }
@@ -534,8 +535,10 @@ void Core::Conditions::LocsysManager::rotate_local_to_global(Teuchos::RCP<Epetra
   // We want to keep the SaveGraph() value of sysmat also after transformation.
   // It is not possible to keep ExplicitDirichlet()==true after transformation,
   // so we explicitly set this to false.
-  temp = Core::LinAlg::Multiply(*sysmat, false, *trafo_, false, false, sysmat->save_graph(), true);
-  temp2 = Core::LinAlg::Multiply(*trafo_, true, *temp, false, false, sysmat->save_graph(), true);
+  temp = Core::LinAlg::MatrixMultiply(
+      *sysmat, false, *trafo_, false, false, sysmat->save_graph(), true);
+  temp2 =
+      Core::LinAlg::MatrixMultiply(*trafo_, true, *temp, false, false, sysmat->save_graph(), true);
 
   // this is a deep copy (expensive!)
   *sysmat = *temp2;
@@ -556,8 +559,8 @@ void Core::Conditions::LocsysManager::rotate_local_to_global(
 void Core::Conditions::LocsysManager::rotate_local_to_global(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat) const
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
-      Core::LinAlg::Multiply(*trafo_, true, *sysmat, false, false, sysmat->save_graph(), true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 = Core::LinAlg::MatrixMultiply(
+      *trafo_, true, *sysmat, false, false, sysmat->save_graph(), true);
   *sysmat = *temp2;
 }
 
