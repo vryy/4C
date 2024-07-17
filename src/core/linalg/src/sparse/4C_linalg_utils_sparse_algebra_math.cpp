@@ -237,12 +237,12 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::MatrixMultiply(
   // now create resultmatrix with correct rowmap
   Teuchos::RCP<Core::LinAlg::SparseMatrix> C;
   if (!transA)
-    C = Teuchos::rcp(new SparseMatrix(A.range_map(), npr, A.explicitdirichlet_, A.savegraph_));
+    C = Teuchos::rcp(new SparseMatrix(A.range_map(), npr, A.explicit_dirichlet(), A.save_graph()));
   else
-    C = Teuchos::rcp(new SparseMatrix(A.domain_map(), npr, A.explicitdirichlet_, A.savegraph_));
+    C = Teuchos::rcp(new SparseMatrix(A.domain_map(), npr, A.explicit_dirichlet(), A.save_graph()));
 
   int err = EpetraExt::MatrixMatrix::Multiply(
-      *A.sysmat_, transA, *B.sysmat_, transB, *C->sysmat_, complete);
+      *A.epetra_matrix(), transA, *B.epetra_matrix(), transB, *C->epetra_matrix(), complete);
   if (err) FOUR_C_THROW("EpetraExt::MatrixMatrix::MatrixMultiply returned err = %d", err);
 
   return C;
@@ -270,7 +270,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::MatrixMultiply(const Spar
     C = Teuchos::rcp(new SparseMatrix(A.domain_map(), npr, explicitdirichlet, savegraph));
 
   int err = EpetraExt::MatrixMatrix::Multiply(
-      *A.sysmat_, transA, *B.sysmat_, transB, *C->sysmat_, complete);
+      *A.epetra_matrix(), transA, *B.epetra_matrix(), transB, *C->epetra_matrix(), complete);
   if (err) FOUR_C_THROW("EpetraExt::MatrixMatrix::MatrixMultiply returned err = %d", err);
 
   return C;

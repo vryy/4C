@@ -387,54 +387,9 @@ namespace Core::LinAlg
     \param scalarA    (in)     : scaling factor for #A
     \param rowmap     (in)     : to put selectively on rows in #rowmap (inactive if ==Teuchos::null)
     */
+
     void put(const Core::LinAlg::SparseMatrix& A, const double scalarA,
         Teuchos::RCP<const Epetra_Map> rowmap);
-
-    /// Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
-    /*!
-      Multiply one matrix with another. Both matrices must be completed.
-      Respective Range, Row and Domain maps of A(^T) and B(^T) have to match.
-
-      \note This is a true parallel multiplication, even in the transposed case.
-
-      \note Does call complete on C upon exit by default.
-
-      \param A              (in)     : Matrix to multiply with B (must have Filled()==true)
-      \param transA         (in)     : flag indicating whether transposed of A should be used
-      \param B              (in)     : Matrix to multiply with A (must have Filled()==true)
-      \param transB         (in)     : flag indicating whether transposed of B should be used
-      \param completeoutput (in)     : flag indicating whether Complete(...) shall be called on C
-      upon output \return Matrix product A(^T)*B(^T)
-    */
-    friend Teuchos::RCP<SparseMatrix> MatrixMultiply(const SparseMatrix& A, bool transA,
-        const SparseMatrix& B, bool transB, bool completeoutput);
-
-
-    /// Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
-    /*!
-      Multiply one matrix with another. Both matrices must be completed.
-      Respective Range, Row and Domain maps of A(^T) and B(^T) have to match.
-
-      \note This is a true parallel multiplication, even in the transposed case.
-
-      \note Does call complete on C upon exit by default.
-
-      \note In this version the flags explicitdirichlet and savegraph must be handed in.
-            Thus, they can be defined explicitly, while in the standard version of Multipliy()
-            above, result matrix C automatically inherits these flags from input matrix A
-
-      \param A              (in)     : Matrix to multiply with B (must have Filled()==true)
-      \param transA         (in)     : flag indicating whether transposed of A should be used
-      \param B              (in)     : Matrix to multiply with A (must have Filled()==true)
-      \param transB         (in)     : flag indicating whether transposed of B should be used
-      \param explicitdirichlet (in)  : flag deciding on explicitdirichlet flag of C
-      \param savegraph      (in)     : flag deciding on savegraph flag of C
-      \param completeoutput (in)     : flag indicating whether Complete(...) shall be called on C
-      upon output \return Matrix product A(^T)*B(^T)
-    */
-    friend Teuchos::RCP<SparseMatrix> MatrixMultiply(const SparseMatrix& A, bool transA,
-        const SparseMatrix& B, bool transB, bool explicitdirichlet, bool savegraph,
-        bool completeoutput);
 
     /*! @brief Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
 
