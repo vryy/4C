@@ -866,13 +866,8 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
         if ((actdis_->get_comm()).MyPID() == 0)
           Core::IO::cout << "Using StructureNOXCorrectionWrapper()..." << Core::IO::endl;
 
-        if (coupling == fsi_iter_constr_monolithicstructuresplit or
-            coupling == fsi_iter_constr_monolithicfluidsplit)
-          str_wrapper_ = Teuchos::rcp(new FSIStructureWrapper(
-              Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))));
-        else
-          str_wrapper_ = Teuchos::rcp(new StructureConstrMerged(
-              Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))));
+        str_wrapper_ = Teuchos::rcp(new StructureConstrMerged(
+            Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))));
       }
       else
       {

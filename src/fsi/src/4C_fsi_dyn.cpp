@@ -32,8 +32,6 @@
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_xfluid.hpp"
 #include "4C_fluid_xfluid_fluid.hpp"
-#include "4C_fsi_constrmonolithic_fluidsplit.hpp"
-#include "4C_fsi_constrmonolithic_structuresplit.hpp"
 #include "4C_fsi_dirichletneumann_disp.hpp"
 #include "4C_fsi_dirichletneumann_factory.hpp"
 #include "4C_fsi_dirichletneumann_vel.hpp"
@@ -573,8 +571,6 @@ void fsi_ale_drt()
     case fsi_iter_monolithicstructuresplit:
     case fsi_iter_lung_monolithicstructuresplit:
     case fsi_iter_lung_monolithicfluidsplit:
-    case fsi_iter_constr_monolithicfluidsplit:
-    case fsi_iter_constr_monolithicstructuresplit:
     case fsi_iter_mortar_monolithicstructuresplit:
     case fsi_iter_mortar_monolithicfluidsplit:
     case fsi_iter_mortar_monolithicfluidsplit_saddlepoint:
@@ -607,14 +603,6 @@ void fsi_ale_drt()
       else if (coupling == fsi_iter_lung_monolithicfluidsplit)
       {
         fsi = Teuchos::rcp(new FSI::LungMonolithicFluidSplit(comm, fsidyn));
-      }
-      else if (coupling == fsi_iter_constr_monolithicfluidsplit)
-      {
-        fsi = Teuchos::rcp(new FSI::ConstrMonolithicFluidSplit(comm, fsidyn));
-      }
-      else if (coupling == fsi_iter_constr_monolithicstructuresplit)
-      {
-        fsi = Teuchos::rcp(new FSI::ConstrMonolithicStructureSplit(comm, fsidyn));
       }
       else if (coupling == fsi_iter_mortar_monolithicstructuresplit)
       {

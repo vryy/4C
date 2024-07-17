@@ -44,8 +44,6 @@ typedef enum FsiCoupling
   fsi_iter_lung_monolithicfluidsplit,
   fsi_iter_mortar_monolithicstructuresplit,
   fsi_iter_mortar_monolithicfluidsplit,
-  fsi_iter_constr_monolithicstructuresplit,
-  fsi_iter_constr_monolithicfluidsplit,
   fsi_iter_xfem_monolithic,
   fsi_iter_stagg_NLCG, /*!< nonlinear CG solver (pretty much steepest descent with finite difference
                           Jacobian */

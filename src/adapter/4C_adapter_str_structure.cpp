@@ -387,13 +387,8 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
 
         if (tmpstr->have_constraint())
         {
-          if (coupling == fsi_iter_constr_monolithicstructuresplit or
-              coupling == fsi_iter_constr_monolithicfluidsplit)
-            structure_ = Teuchos::rcp(
-                new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
-          else
-            structure_ = Teuchos::rcp(
-                new StructureConstrMerged(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
+          structure_ = Teuchos::rcp(
+              new StructureConstrMerged(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
         }
         else
         {
