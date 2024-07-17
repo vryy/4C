@@ -199,24 +199,6 @@ namespace FSI
 
     //@}
 
-    /*! \brief Find future / desired owner for each node at the interface
-     *
-     *  The relation is saved in the map \c nodeOwner as node -- owner.
-     *
-     *  In \c inverseNodeOwner the same information is contained in the form
-     *  owner -- nodes.
-     *
-     *  The maps are built for interface nodes of the domain \c domain, where
-     *  domain = {fluid, structure}.
-     */
-    void create_node_owner_relationship(std::map<int, int>* nodeOwner,
-        std::map<int, std::list<int>>* inverseNodeOwner,
-        std::map<int, Core::Nodes::Node*>* fluidnodesPtr,
-        std::map<int, Core::Nodes::Node*>* structuregnodesPtr,
-        Teuchos::RCP<Core::FE::Discretization> structuredis,
-        Teuchos::RCP<Core::FE::Discretization> fluiddis,
-        const Inpar::FSI::Redistribute domain) override;
-
     Teuchos::RCP<Adapter::FluidFSIMsht> fsi_fluid_field()
     {
       return Teuchos::rcp_static_cast<Adapter::FluidFSIMsht>(fluid_field());

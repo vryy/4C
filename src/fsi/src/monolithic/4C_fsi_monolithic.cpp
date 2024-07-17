@@ -25,7 +25,6 @@
 #include "4C_fsi_nox_linearsystem.hpp"
 #include "4C_fsi_nox_newton.hpp"
 #include "4C_fsi_overlapprec_fsiamg.hpp"
-#include "4C_fsi_overlapprec_hybrid.hpp"
 #include "4C_fsi_statustest.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
@@ -1223,16 +1222,6 @@ void FSI::BlockMonolithic::create_system_matrix(
           verbosity_));
       break;
     }
-    case Inpar::FSI::HybridSchwarz:
-    {
-      mat = Teuchos::rcp(new OverlappingBlockMatrixHybridSchwarz(extractor(), *structure_field(),
-          *fluid_field(), *ale_field(), structuresplit,
-          Core::UTILS::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), blocksmoother, schuromega,
-          pcomega, pciter, spcomega, spciter, fpcomega, fpciter, apcomega, apciter,
-          Core::UTILS::IntegralValue<int>(fsimono, "FSIAMGANALYZE"), linearsolverstrategy,
-          interfaceprocs_, verbosity_));
-      break;
-    }
     case Inpar::FSI::LinalgSolver:
     {
       mat = Teuchos::rcp(
@@ -1274,7 +1263,6 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
   switch (linearsolverstrategy)
   {
     case Inpar::FSI::PreconditionedKrylov:
-    case Inpar::FSI::HybridSchwarz:
     {
       linSys = Teuchos::rcp(new ::NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
           Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));

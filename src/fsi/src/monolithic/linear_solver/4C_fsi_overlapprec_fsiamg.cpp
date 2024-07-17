@@ -13,12 +13,12 @@
 #include "4C_adapter_fld_fluid.hpp"
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_comm_utils.hpp"
-#include "4C_fsi_overlapprec_hybrid.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_linear_solver_preconditioner_linalg.hpp"
 
 #include <EpetraExt_SolverMap_CrsMatrix.h>
+#include <Ifpack.h>
 #include <ml_MultiLevelPreconditioner.h>
 #include <MLAPI_CompObject.h>
 #include <MLAPI_Expressions.h>
@@ -39,8 +39,7 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
     std::vector<double>& omega, std::vector<int>& iterations, std::vector<double>& somega,
     std::vector<int>& siterations, std::vector<double>& fomega, std::vector<int>& fiterations,
     std::vector<double>& aomega, std::vector<int>& aiterations, int analyze,
-    Inpar::FSI::LinearBlockSolver strategy, Inpar::FSI::Verbosity verbosity,
-    OverlappingBlockMatrixHybridSchwarz* hybridPrec)
+    Inpar::FSI::LinearBlockSolver strategy, Inpar::FSI::Verbosity verbosity)
     : OverlappingBlockMatrix(Teuchos::null, maps, structure, fluid, ale, structuresplit, symmetric,
           omega[0], iterations[0], somega[0],
           siterations[0] - 1,  // base class counts iterations starting from 0
@@ -64,8 +63,7 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
       fiterations_(fiterations),
       aomega_(aomega),
       aiterations_(aiterations),
-      verbosity_(verbosity),
-      hybridPrec_(hybridPrec)
+      verbosity_(verbosity)
 {
   if (strategy_ != Inpar::FSI::PreconditionedKrylov && strategy_ != Inpar::FSI::LinalgSolver)
     FOUR_C_THROW("Type of LINEARBLOCKSOLVER parameter not recognized by this class");
@@ -91,15 +89,11 @@ void FSI::OverlappingBlockMatrixFSIAMG::setup_preconditioner()
 
   // MLAPI::Init() without arguments uses internally MPI_COMM_WOLRD
   MLAPI::Init();
-  const int myrank = (hybridPrec_ == nullptr) ? matrix(0, 0).Comm().MyPID()
-                                              : hybridPrec_->matrix(0, 0).Comm().MyPID();
+  const int myrank = matrix(0, 0).Comm().MyPID();
 
-  const Core::LinAlg::SparseMatrix& structInnerOp =
-      (hybridPrec_ == nullptr) ? matrix(0, 0) : hybridPrec_->matrix(0, 0);
-  const Core::LinAlg::SparseMatrix& fluidInnerOp =
-      (hybridPrec_ == nullptr) ? matrix(1, 1) : hybridPrec_->matrix(1, 1);
-  const Core::LinAlg::SparseMatrix& aleInnerOp =
-      (hybridPrec_ == nullptr) ? matrix(2, 2) : hybridPrec_->matrix(2, 2);
+  const Core::LinAlg::SparseMatrix& structInnerOp = matrix(0, 0);
+  const Core::LinAlg::SparseMatrix& fluidInnerOp = matrix(1, 1);
+  const Core::LinAlg::SparseMatrix& aleInnerOp = matrix(2, 2);
 
   Teuchos::RCP<Core::LinAlg::MapExtractor> fsidofmapex = Teuchos::null;
   Teuchos::RCP<Epetra_Map> irownodes = Teuchos::null;
@@ -415,24 +409,21 @@ void FSI::OverlappingBlockMatrixFSIAMG::setup_preconditioner()
   //-----------------------------------------------------------------
   // wrap the off-diagonal matrix blocks into MLAPI operators
   {
-    const Core::LinAlg::SparseMatrix& Matrix01 =
-        (hybridPrec_ == nullptr) ? matrix(0, 1) : hybridPrec_->matrix(0, 1);
+    const Core::LinAlg::SparseMatrix& Matrix01 = matrix(0, 1);
     MLAPI::Space dspace(Matrix01.epetra_matrix()->DomainMap());
     MLAPI::Space rspace(Matrix01.epetra_matrix()->RangeMap());
     Asf_.Reshape(dspace, rspace, Matrix01.epetra_matrix().get(), false);
     ASF_[0] = Asf_;
   }
   {
-    const Core::LinAlg::SparseMatrix& Matrix10 =
-        (hybridPrec_ == nullptr) ? matrix(1, 0) : hybridPrec_->matrix(1, 0);
+    const Core::LinAlg::SparseMatrix& Matrix10 = matrix(1, 0);
     MLAPI::Space dspace(Matrix10.epetra_matrix()->DomainMap());
     MLAPI::Space rspace(Matrix10.epetra_matrix()->RangeMap());
     Afs_.Reshape(dspace, rspace, Matrix10.epetra_matrix().get(), false);
     AFS_[0] = Afs_;
   }
   {
-    const Core::LinAlg::SparseMatrix& Matrix12 =
-        (hybridPrec_ == nullptr) ? matrix(1, 2) : hybridPrec_->matrix(1, 2);
+    const Core::LinAlg::SparseMatrix& Matrix12 = matrix(1, 2);
     MLAPI::Space dspace(Matrix12.epetra_matrix()->DomainMap());
     MLAPI::Space rspace(Matrix12.epetra_matrix()->RangeMap());
     Afa_.Reshape(dspace, rspace, Matrix12.epetra_matrix().get(), false);
@@ -441,8 +432,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::setup_preconditioner()
 
   if (structuresplit_)
   {
-    const Core::LinAlg::SparseMatrix& Matrix21 =
-        (hybridPrec_ == nullptr) ? matrix(2, 1) : hybridPrec_->matrix(2, 1);
+    const Core::LinAlg::SparseMatrix& Matrix21 = matrix(2, 1);
     MLAPI::Space dspace(Matrix21.epetra_matrix()->DomainMap());
     MLAPI::Space rspace(Matrix21.epetra_matrix()->RangeMap());
     Aaf_.Reshape(dspace, rspace, Matrix21.epetra_matrix().get(), false);
@@ -450,8 +440,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::setup_preconditioner()
   }
   else
   {
-    const Core::LinAlg::SparseMatrix& Matrix20 =
-        (hybridPrec_ == nullptr) ? matrix(2, 0) : hybridPrec_->matrix(2, 0);
+    const Core::LinAlg::SparseMatrix& Matrix20 = matrix(2, 0);
     MLAPI::Space dspace(Matrix20.epetra_matrix()->DomainMap());
     MLAPI::Space rspace(Matrix20.epetra_matrix()->RangeMap());
     Aaf_.Reshape(dspace, rspace, Matrix20.epetra_matrix().get(), false);
@@ -501,8 +490,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::setup_preconditioner()
   else
   {
     // setup direct solver/ILU prec and do a dummy solve to create factorization/preconditioner
-    const Core::LinAlg::SparseMatrix& Matrix00 =
-        (hybridPrec_ == nullptr) ? matrix(0, 0) : hybridPrec_->matrix(0, 0);
+    const Core::LinAlg::SparseMatrix& Matrix00 = matrix(0, 0);
     structuresolver_->setup(Matrix00.epetra_matrix());
     Teuchos::RCP<Epetra_Vector> b = Teuchos::rcp(new Epetra_Vector(Matrix00.range_map(), true));
     Teuchos::RCP<Epetra_Vector> x = Teuchos::rcp(new Epetra_Vector(Matrix00.domain_map(), true));
@@ -571,8 +559,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::setup_preconditioner()
     // setup direct solver/ILU prec and do a dummy solve to create factorization/preconditioner
     Teuchos::RCP<Core::LinAlg::MapExtractor> fsidofmapex = Teuchos::null;
     Teuchos::RCP<Epetra_Map> irownodes = Teuchos::null;
-    const Core::LinAlg::SparseMatrix& Matrix11 =
-        (hybridPrec_ == nullptr) ? matrix(1, 1) : hybridPrec_->matrix(1, 1);
+    const Core::LinAlg::SparseMatrix& Matrix11 = matrix(1, 1);
     fluidsolver_->setup(
         Matrix11.epetra_matrix(), fsidofmapex, fluid_.discretization(), irownodes, structuresplit_);
     Teuchos::RCP<Epetra_Vector> b = Teuchos::rcp(new Epetra_Vector(Matrix11.range_map(), true));
@@ -619,8 +606,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::setup_preconditioner()
   else
   {
     // setup direct solver/ILU prec and do a dummy solve to create factorization/preconditioner
-    const Core::LinAlg::SparseMatrix& Matrix22 =
-        (hybridPrec_ == nullptr) ? matrix(2, 2) : hybridPrec_->matrix(2, 2);
+    const Core::LinAlg::SparseMatrix& Matrix22 = matrix(2, 2);
     alesolver_->setup(Matrix22.epetra_matrix());
     Teuchos::RCP<Epetra_Vector> b = Teuchos::rcp(new Epetra_Vector(Matrix22.range_map(), true));
     Teuchos::RCP<Epetra_Vector> x = Teuchos::rcp(new Epetra_Vector(Matrix22.domain_map(), true));
@@ -757,21 +743,11 @@ void FSI::OverlappingBlockMatrixFSIAMG::schur_complement_operator(MLAPI::Operato
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::ra_poffdiagonals()
 {
-  Teuchos::RCP<Epetra_CrsMatrix> Matrix01 = (hybridPrec_ == nullptr)
-                                                ? matrix(0, 1).epetra_matrix()
-                                                : hybridPrec_->matrix(0, 1).epetra_matrix();
-  Teuchos::RCP<Epetra_CrsMatrix> Matrix10 = (hybridPrec_ == nullptr)
-                                                ? matrix(1, 0).epetra_matrix()
-                                                : hybridPrec_->matrix(1, 0).epetra_matrix();
-  Teuchos::RCP<Epetra_CrsMatrix> Matrix12 = (hybridPrec_ == nullptr)
-                                                ? matrix(1, 2).epetra_matrix()
-                                                : hybridPrec_->matrix(1, 2).epetra_matrix();
-  Teuchos::RCP<Epetra_CrsMatrix> Matrix21 = (hybridPrec_ == nullptr)
-                                                ? matrix(2, 1).epetra_matrix()
-                                                : hybridPrec_->matrix(2, 1).epetra_matrix();
-  Teuchos::RCP<Epetra_CrsMatrix> Matrix20 = (hybridPrec_ == nullptr)
-                                                ? matrix(2, 0).epetra_matrix()
-                                                : hybridPrec_->matrix(2, 0).epetra_matrix();
+  Teuchos::RCP<Epetra_CrsMatrix> Matrix01 = matrix(0, 1).epetra_matrix();
+  Teuchos::RCP<Epetra_CrsMatrix> Matrix10 = matrix(1, 0).epetra_matrix();
+  Teuchos::RCP<Epetra_CrsMatrix> Matrix12 = matrix(1, 2).epetra_matrix();
+  Teuchos::RCP<Epetra_CrsMatrix> Matrix21 = matrix(2, 1).epetra_matrix();
+  Teuchos::RCP<Epetra_CrsMatrix> Matrix20 = matrix(2, 0).epetra_matrix();
 
   for (int i = 0; i < maxnlevel_ - 1; ++i)
   {
@@ -1136,43 +1112,33 @@ void FSI::OverlappingBlockMatrixFSIAMG::sgs(
   // rewrap the matrix every time as it is killed irrespective
   // of whether the precond is reused or not.
   {
-    Teuchos::RCP<Epetra_CrsMatrix> Matrix00 = (hybridPrec_ == nullptr)
-                                                  ? matrix(0, 0).epetra_matrix()
-                                                  : hybridPrec_->matrix(0, 0).epetra_matrix();
+    Teuchos::RCP<Epetra_CrsMatrix> Matrix00 = matrix(0, 0).epetra_matrix();
     MLAPI::Space dspace(Matrix00->DomainMap());
     MLAPI::Space rspace(Matrix00->RangeMap());
     Ass_[0].Reshape(dspace, rspace, Matrix00.get(), false);
   }
   {
-    Teuchos::RCP<Epetra_CrsMatrix> Matrix01 = (hybridPrec_ == nullptr)
-                                                  ? matrix(0, 1).epetra_matrix()
-                                                  : hybridPrec_->matrix(0, 1).epetra_matrix();
+    Teuchos::RCP<Epetra_CrsMatrix> Matrix01 = matrix(0, 1).epetra_matrix();
     MLAPI::Space dspace(Matrix01->DomainMap());
     MLAPI::Space rspace(Matrix01->RangeMap());
     Asf_.Reshape(dspace, rspace, Matrix01.get(), false);
     ASF_[0] = Asf_;
   }
   {
-    Teuchos::RCP<Epetra_CrsMatrix> Matrix10 = (hybridPrec_ == nullptr)
-                                                  ? matrix(1, 0).epetra_matrix()
-                                                  : hybridPrec_->matrix(1, 0).epetra_matrix();
+    Teuchos::RCP<Epetra_CrsMatrix> Matrix10 = matrix(1, 0).epetra_matrix();
     MLAPI::Space dspace(Matrix10->DomainMap());
     MLAPI::Space rspace(Matrix10->RangeMap());
     Afs_.Reshape(dspace, rspace, Matrix10.get(), false);
     AFS_[0] = Afs_;
   }
   {
-    Teuchos::RCP<Epetra_CrsMatrix> Matrix11 = (hybridPrec_ == nullptr)
-                                                  ? matrix(1, 1).epetra_matrix()
-                                                  : hybridPrec_->matrix(1, 1).epetra_matrix();
+    Teuchos::RCP<Epetra_CrsMatrix> Matrix11 = matrix(1, 1).epetra_matrix();
     MLAPI::Space dspace(Matrix11->DomainMap());
     MLAPI::Space rspace(Matrix11->RangeMap());
     Aff_[0].Reshape(dspace, rspace, Matrix11.get(), false);
   }
   {
-    Teuchos::RCP<Epetra_CrsMatrix> Matrix12 = (hybridPrec_ == nullptr)
-                                                  ? matrix(1, 2).epetra_matrix()
-                                                  : hybridPrec_->matrix(1, 2).epetra_matrix();
+    Teuchos::RCP<Epetra_CrsMatrix> Matrix12 = matrix(1, 2).epetra_matrix();
     MLAPI::Space dspace(Matrix12->DomainMap());
     MLAPI::Space rspace(Matrix12->RangeMap());
     Afa_.Reshape(dspace, rspace, Matrix12.get(), false);
@@ -1180,9 +1146,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::sgs(
   }
   if (structuresplit_)
   {
-    Teuchos::RCP<Epetra_CrsMatrix> Matrix21 = (hybridPrec_ == nullptr)
-                                                  ? matrix(2, 1).epetra_matrix()
-                                                  : hybridPrec_->matrix(2, 1).epetra_matrix();
+    Teuchos::RCP<Epetra_CrsMatrix> Matrix21 = matrix(2, 1).epetra_matrix();
     MLAPI::Space dspace(Matrix21->DomainMap());
     MLAPI::Space rspace(Matrix21->RangeMap());
     Aaf_.Reshape(dspace, rspace, Matrix21.get(), false);
@@ -1190,18 +1154,14 @@ void FSI::OverlappingBlockMatrixFSIAMG::sgs(
   }
   else
   {
-    Teuchos::RCP<Epetra_CrsMatrix> Matrix20 = (hybridPrec_ == nullptr)
-                                                  ? matrix(2, 0).epetra_matrix()
-                                                  : hybridPrec_->matrix(2, 0).epetra_matrix();
+    Teuchos::RCP<Epetra_CrsMatrix> Matrix20 = matrix(2, 0).epetra_matrix();
     MLAPI::Space dspace(Matrix20->DomainMap());
     MLAPI::Space rspace(Matrix20->RangeMap());
     Aaf_.Reshape(dspace, rspace, Matrix20.get(), false);
     AAF_[0] = Aaf_;
   }
   {
-    Teuchos::RCP<Epetra_CrsMatrix> Matrix22 = (hybridPrec_ == nullptr)
-                                                  ? matrix(2, 2).epetra_matrix()
-                                                  : hybridPrec_->matrix(2, 2).epetra_matrix();
+    Teuchos::RCP<Epetra_CrsMatrix> Matrix22 = matrix(2, 2).epetra_matrix();
     MLAPI::Space dspace(Matrix22->DomainMap());
     MLAPI::Space rspace(Matrix22->RangeMap());
     Aaa_[0].Reshape(dspace, rspace, Matrix22.get(), false);
@@ -1210,12 +1170,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::sgs(
   const Epetra_Vector& x = Teuchos::dyn_cast<const Epetra_Vector>(X);
 
   // various range and domain spaces
-  const Core::LinAlg::SparseMatrix& Matrix00 =
-      (hybridPrec_ == nullptr) ? matrix(0, 0) : hybridPrec_->matrix(0, 0);
-  const Core::LinAlg::SparseMatrix& Matrix11 =
-      (hybridPrec_ == nullptr) ? matrix(1, 1) : hybridPrec_->matrix(1, 1);
-  const Core::LinAlg::SparseMatrix& Matrix22 =
-      (hybridPrec_ == nullptr) ? matrix(2, 2) : hybridPrec_->matrix(2, 2);
+  const Core::LinAlg::SparseMatrix& Matrix00 = matrix(0, 0);
+  const Core::LinAlg::SparseMatrix& Matrix11 = matrix(1, 1);
+  const Core::LinAlg::SparseMatrix& Matrix22 = matrix(2, 2);
   MLAPI::Space rsspace(Matrix00.range_map());
   MLAPI::Space rfspace(Matrix11.range_map());
   MLAPI::Space raspace(Matrix22.range_map());
@@ -1227,15 +1184,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::sgs(
   // initial guess has to be zero!
   Epetra_Vector& y = Teuchos::dyn_cast<Epetra_Vector>(Y);
 
-  Teuchos::RCP<Epetra_Vector> sy = (hybridPrec_ == nullptr)
-                                       ? range_extractor().extract_vector(y, 0)
-                                       : hybridPrec_->range_extractor().extract_vector(y, 0);
-  Teuchos::RCP<Epetra_Vector> fy = (hybridPrec_ == nullptr)
-                                       ? range_extractor().extract_vector(y, 1)
-                                       : hybridPrec_->range_extractor().extract_vector(y, 1);
-  Teuchos::RCP<Epetra_Vector> ay = (hybridPrec_ == nullptr)
-                                       ? range_extractor().extract_vector(y, 2)
-                                       : hybridPrec_->range_extractor().extract_vector(y, 2);
+  Teuchos::RCP<Epetra_Vector> sy = range_extractor().extract_vector(y, 0);
+  Teuchos::RCP<Epetra_Vector> fy = range_extractor().extract_vector(y, 1);
+  Teuchos::RCP<Epetra_Vector> ay = range_extractor().extract_vector(y, 2);
   MLAPI::MultiVector mlsy(rsspace, sy->Pointers());
   MLAPI::MultiVector mlfy(rfspace, fy->Pointers());
   MLAPI::MultiVector mlay(raspace, ay->Pointers());
@@ -1244,15 +1195,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::sgs(
   mlay = 0.0;
 
   // rhs
-  Teuchos::RCP<Epetra_Vector> sx = (hybridPrec_ == nullptr)
-                                       ? domain_extractor().extract_vector(x, 0)
-                                       : hybridPrec_->domain_extractor().extract_vector(x, 0);
-  Teuchos::RCP<Epetra_Vector> fx = (hybridPrec_ == nullptr)
-                                       ? domain_extractor().extract_vector(x, 1)
-                                       : hybridPrec_->domain_extractor().extract_vector(x, 1);
-  Teuchos::RCP<Epetra_Vector> ax = (hybridPrec_ == nullptr)
-                                       ? domain_extractor().extract_vector(x, 2)
-                                       : hybridPrec_->domain_extractor().extract_vector(x, 2);
+  Teuchos::RCP<Epetra_Vector> sx = domain_extractor().extract_vector(x, 0);
+  Teuchos::RCP<Epetra_Vector> fx = domain_extractor().extract_vector(x, 1);
+  Teuchos::RCP<Epetra_Vector> ax = domain_extractor().extract_vector(x, 2);
   MLAPI::MultiVector mlsx(dsspace, sx->Pointers());
   MLAPI::MultiVector mlfx(dfspace, fx->Pointers());
   MLAPI::MultiVector mlax(daspace, ax->Pointers());
@@ -1333,18 +1278,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::sgs(
   }
 
   // Note that mlsy, mlfy, mlay are views of sy, fy, ay, respectively.
-  if (hybridPrec_ == nullptr)
-  {
-    range_extractor().insert_vector(*sy, 0, y);
-    range_extractor().insert_vector(*fy, 1, y);
-    range_extractor().insert_vector(*ay, 2, y);
-  }
-  else
-  {
-    hybridPrec_->range_extractor().insert_vector(*sy, 0, y);
-    hybridPrec_->range_extractor().insert_vector(*fy, 1, y);
-    hybridPrec_->range_extractor().insert_vector(*ay, 2, y);
-  }
+  range_extractor().insert_vector(*sy, 0, y);
+  range_extractor().insert_vector(*fy, 1, y);
+  range_extractor().insert_vector(*ay, 2, y);
 
   return;
 }

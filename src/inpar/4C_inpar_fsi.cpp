@@ -222,28 +222,7 @@ void Inpar::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Core::UTILS::BoolParameter(
       "FSIAMGANALYZE", "No", "run analysis on fsiamg multigrid scheme", &fsimono);
 
-  setStringToIntegralParameter<int>("HYBRID_AS_TYPE", "ILU",
-      "Type of inverse in additive part of hybrid preconditioner.",
-      tuple<std::string>("ILU", "Amesos_LU"),
-      tuple<int>(Inpar::FSI::hybrid_as_type_ILU, Inpar::FSI::hybrid_as_type_Amesos_LU), &fsimono);
-
-  Core::UTILS::IntParameter(
-      "HYBRID_FILL_LEVEL", 0, "Level of fill of the hybrid ILU preconditioner.", &fsimono);
-
-  Core::UTILS::BoolParameter("HYBRIDFULL", "yes",
-      "Apply Additive Schwarz Preconditioner on all procs (yes)\n"
-      "or on interface procs only (no)",
-      &fsimono);
-
-  Core::UTILS::DoubleParameter("HYBRID_IMBALANCE_TOL", 1.1,
-      "Relative imbalance of sudomain size for repartitioning in hybrid preconditioner", &fsimono);
-
   Core::UTILS::BoolParameter("INFNORMSCALING", "Yes", "Scale Blocks with row infnorm?", &fsimono);
-
-  setStringToIntegralParameter<int>("INNERPREC", "PreconditionedKrylov",
-      "Inner preconditioner used in a hybrid Schwarz setting.",
-      tuple<std::string>("PreconditionedKrylov"), tuple<int>(Inpar::FSI::PreconditionedKrylov),
-      &fsimono);
 
   Core::UTILS::IntParameter(
       "ITEMAX", 100, "Maximum allowed number of nonlinear iterations", &fsimono);
@@ -254,10 +233,8 @@ void Inpar::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   setStringToIntegralParameter<int>("LINEARBLOCKSOLVER", "PreconditionedKrylov",
       "Linear block preconditioner for block system in monolithic FSI.",
-      tuple<std::string>("PreconditionedKrylov", "HybridSchwarz", "LinalgSolver"),
-      tuple<int>(
-          Inpar::FSI::PreconditionedKrylov, Inpar::FSI::HybridSchwarz, Inpar::FSI::LinalgSolver),
-      &fsimono);
+      tuple<std::string>("PreconditionedKrylov", "LinalgSolver"),
+      tuple<int>(Inpar::FSI::PreconditionedKrylov, Inpar::FSI::LinalgSolver), &fsimono);
 
   Core::UTILS::IntParameter("LINEAR_SOLVER", -1,
       "Number of SOLVER block describing the linear solver and preconditioner", &fsimono);
@@ -287,22 +264,6 @@ void Inpar::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   Core::UTILS::BoolParameter("REBUILDPRECEVERYSTEP", "Yes",
       "Enforce rebuilding the preconditioner at the beginning of every time step", &fsimono);
-
-  setStringToIntegralParameter<int>("REDISTRIBUTE", "off", "Redistribute domain decomposition.",
-      tuple<std::string>("off", "structure", "fluid", "both", "monolithic"),
-      tuple<int>(Inpar::FSI::Redistribute_off, Inpar::FSI::Redistribute_structure,
-          Inpar::FSI::Redistribute_fluid, Inpar::FSI::Redistribute_both,
-          Inpar::FSI::Redistribute_monolithic),
-      &fsimono);
-
-  Core::UTILS::DoubleParameter(
-      "REDIST_WEIGHT1", 1.0, "Weight for redistribution, general domain.", &fsimono);
-  Core::UTILS::DoubleParameter(
-      "REDIST_WEIGHT2", 50000.0, "Weight for redistribution, interface domain.", &fsimono);
-  Core::UTILS::DoubleParameter(
-      "REDIST_SECONDWEIGHT1", -1.0, "Weight for 2nd redistribution, general domain.", &fsimono);
-  Core::UTILS::DoubleParameter(
-      "REDIST_SECONDWEIGHT2", -1.0, "Weight for 2nd redistribution, interface domain.", &fsimono);
 
   Core::UTILS::BoolParameter("SHAPEDERIVATIVES", "No",
       "Include linearization with respect to mesh movement in Navier Stokes equation.", &fsimono);

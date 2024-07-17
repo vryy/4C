@@ -26,11 +26,6 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace FSI
 {
-  class OverlappingBlockMatrixHybridSchwarz;
-}
-
-namespace FSI
-{
   /*! \brief Special version of block matrix that includes the FSI block preconditioner
    *
    *  This one does coupling of coarse grids for fluid and structure
@@ -45,8 +40,7 @@ namespace FSI
         std::vector<double>& schuromega, std::vector<double>& omega, std::vector<int>& iterations,
         std::vector<double>& somega, std::vector<int>& siterations, std::vector<double>& fomega,
         std::vector<int>& fiterations, std::vector<double>& aomega, std::vector<int>& aiterations,
-        int analyze, Inpar::FSI::LinearBlockSolver strategy, Inpar::FSI::Verbosity verbosity,
-        OverlappingBlockMatrixHybridSchwarz* hybridPrec = nullptr);
+        int analyze, Inpar::FSI::LinearBlockSolver strategy, Inpar::FSI::Verbosity verbosity);
 
     /** \name Attribute access functions */
     //@{
@@ -282,9 +276,6 @@ namespace FSI
     std::vector<int> aiterations_;  ///< number of sweeps for ALE AMG hierarchy
 
     const Inpar::FSI::Verbosity verbosity_;  ///< verbosity level of FSI algorithm
-
-    //! hybrid additive/multiplicative Schwarz preconditioner
-    OverlappingBlockMatrixHybridSchwarz* hybridPrec_;
 
     /// @name AMG for structure
     int snlevel_;                     ///< num level in structure AMG

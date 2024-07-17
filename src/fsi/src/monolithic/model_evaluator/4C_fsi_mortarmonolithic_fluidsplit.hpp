@@ -186,37 +186,6 @@ namespace FSI
 
     //@}
 
-    /*! \brief Find future / desired owner for each node at the interface
-     *
-     *  The relation is saved in the map \c nodeOwner as node -- owner.
-     *
-     *  In \c inverseNodeOwner the same information is contained in the form
-     *  owner -- nodes.
-     *
-     *  The maps are built for interface nodes of the domain \c domain, where
-     *  domain = {fluid, structure}.
-     */
-    void create_node_owner_relationship(std::map<int, int>* nodeOwner,
-        std::map<int, std::list<int>>* inverseNodeOwner,
-        std::map<int, Core::Nodes::Node*>* fluidnodesPtr,
-        std::map<int, Core::Nodes::Node*>* structuregnodesPtr,
-        Teuchos::RCP<Core::FE::Discretization> structuredis,
-        Teuchos::RCP<Core::FE::Discretization> fluiddis,
-        const Inpar::FSI::Redistribute domain) override;
-
-
-    /*! \brief Find neighboring node of the opposing field for each node at the interface
-     *
-     * The relation is saved in the map \c fluidToStructureMap as fluidnode -- structurenode and
-     * in the map \c structureToFluidMap as structurenode -- fluidnode.
-     */
-    void create_interface_mapping(Teuchos::RCP<Core::FE::Discretization> structuredis,
-        Teuchos::RCP<Core::FE::Discretization> fluiddis,
-        std::map<int, Core::Nodes::Node*>* fluidnodesPtr,
-        std::map<int, Core::Nodes::Node*>* structuregnodesPtr,
-        std::map<int, std::vector<int>>& fluidToStructureMap,
-        std::map<int, std::vector<int>>& structureToFluidMap) override;
-
    protected:
     /// create the composed system matrix
     void create_system_matrix();
