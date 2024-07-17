@@ -23,6 +23,7 @@
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mortar_defines.hpp"
 #include "4C_mortar_utils.hpp"
 #include "4C_structure_new_model_evaluator_contact.hpp"
@@ -6902,7 +6903,7 @@ void CONTACT::LagrangeStrategy::run_pre_apply_jacobian_inverse(
   {
     if (not(systrafo_->domain_map().SameAs(kteff->domain_map()))) FOUR_C_THROW("stop");
 
-    *kteff = *Core::LinAlg::Multiply(*systrafo_, true, *kteff, false, false, false, true);
+    *kteff = *Core::LinAlg::MatrixMultiply(*systrafo_, true, *kteff, false, false, false, true);
     Epetra_Vector rhs_str(*problem_dofs());
     Epetra_Vector rhs_str2(*problem_dofs());
     Core::LinAlg::export_to(rhs, rhs_str);

@@ -1439,7 +1439,7 @@ void ScaTra::ScaTraTimIntImpl::av_m3_preparation()
     Core::LinAlg::SparseMatrix Ptent(crsPtent, Core::LinAlg::View);
 
     // compute scale-separation matrix: S = I - Ptent*Ptent^T
-    Sep_ = Core::LinAlg::Multiply(Ptent, false, Ptent, true);
+    Sep_ = Core::LinAlg::MatrixMultiply(Ptent, false, Ptent, true);
     Sep_->scale(-1.0);
     Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(Sep_->row_map(), false);
     tmp->PutScalar(1.0);
@@ -1459,7 +1459,7 @@ void ScaTra::ScaTraTimIntImpl::av_m3_preparation()
     // or one-sided M*S: only multiply M by S from left-hand side
     if (not incremental_)
     {
-      Mnsv_ = Core::LinAlg::Multiply(*sysmat_sd_, false, *Sep_, false);
+      Mnsv_ = Core::LinAlg::MatrixMultiply(*sysmat_sd_, false, *Sep_, false);
       // Mnsv_ = Core::LinAlg::Multiply(*Sep_,true,*Mnsv_,false);
     }
   }

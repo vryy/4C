@@ -4221,7 +4221,7 @@ void FLD::FluidImplicitTimeInt::av_m3_get_scale_separation_matrix()
   Core::LinAlg::SparseMatrix Ptent(crsPtent, Core::LinAlg::View);
 
   // compute scale-separation matrix: S = I - Ptent*Ptent^T
-  Sep_ = Core::LinAlg::Multiply(Ptent, false, Ptent, true);
+  Sep_ = Core::LinAlg::MatrixMultiply(Ptent, false, Ptent, true);
   Sep_->scale(-1.0);
   Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(Sep_->row_map(), false);
   tmp->PutScalar(1.0);

@@ -15,6 +15,7 @@
 #include "4C_fsi_debugwriter.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_linear_solver_preconditioner_linalg.hpp"
@@ -393,13 +394,13 @@ void FSI::ConstrOverlappingBlockMatrix::sgs(
     // S = - B^ * D^{-1} * B^T
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temps =
-        Core::LinAlg::Multiply(ConStructOp, false, invDiag.matrix(0, 0), false);
+        Core::LinAlg::MatrixMultiply(ConStructOp, false, invDiag.matrix(0, 0), false);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> interconA =
-        Core::LinAlg::Multiply(*temps, false, StructConOp, false, false);
+        Core::LinAlg::MatrixMultiply(*temps, false, StructConOp, false, false);
 
-    temps = Core::LinAlg::Multiply(ConFluidOp, false, invDiag.matrix(1, 1), false);
+    temps = Core::LinAlg::MatrixMultiply(ConFluidOp, false, invDiag.matrix(1, 1), false);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> tempss =
-        Core::LinAlg::Multiply(*temps, false, FluidConOp, false);
+        Core::LinAlg::MatrixMultiply(*temps, false, FluidConOp, false);
     interconA->add(*tempss, false, 1.0, 1.0);
     interconA->complete(StructConOp.domain_map(), ConStructOp.range_map());
     interconA->scale(-1.0);

@@ -524,7 +524,7 @@ void FLD::UTILS::StressManager::calc_sep_enr(Teuchos::RCP<Core::LinAlg::SparseOp
     Core::LinAlg::SparseMatrix Ptent(crsPtent, Core::LinAlg::View);
 
     // compute scale-separation matrix: S = Ptent*Ptent^T
-    sep_enr_ = Core::LinAlg::Multiply(Ptent, false, Ptent, true);
+    sep_enr_ = Core::LinAlg::MatrixMultiply(Ptent, false, Ptent, true);
     sep_enr_->complete();
   }
 

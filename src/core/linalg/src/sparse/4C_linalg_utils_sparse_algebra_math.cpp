@@ -223,63 +223,57 @@ Teuchos::RCP<Epetra_CrsMatrix> Core::LinAlg::Transpose(const Epetra_CrsMatrix& A
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsMatrix> Core::LinAlg::Multiply(
-    const Epetra_CrsMatrix& A, bool transA, const Epetra_CrsMatrix& B, bool transB, bool complete)
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::MatrixMultiply(
+    const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB, bool complete)
 {
-  /* ATTENTION (Q1/2013 and later)
-   *
-   * Be careful with Core::LinAlg::Multiply when using Trilinos Q1/2013.
-   * The new EpetraExt MMM routines are very fast, but not well tested and
-   * sometimes crash. To be on the safe side consider to use Core::LinAlg::MLMultiply
-   * which is based on ML and well tested over several years.
-   *
-   * For improving speed of MM operations (even beyond MLMultiply) we probably
-   * should rethink the design of our Multiply routines. As a starting point we
-   * should have a look at the new variants of the EpetraExt routines. See also
-   * the following personal communication with Chris Siefert
-   *
-   * "There are basically 3 different matrix-matrix-multiplies in the new EpetraExt MMM:
-   *
-   * 1) Re-use existing C.  I think this works, but it isn't well tested.
-   * 2) Start with a clean C and fill_complete.  This is the one we're using in MueLu that works
-   * fine. 3) Any other case.  This is the one you found a bug in.
-   *
-   * I'll try to track the bug in #3 down, but you really should be calling #2 (or #1) if at all
-   * possible.
-   *
-   * -Chris"
-   *
-   */
-
   // make sure fill_complete was called on the matrices
-  if (!A.Filled()) FOUR_C_THROW("A has to be fill_complete");
-  if (!B.Filled()) FOUR_C_THROW("B has to be fill_complete");
+  if (!A.filled()) FOUR_C_THROW("A has to be fill_complete");
+  if (!B.filled()) FOUR_C_THROW("B has to be fill_complete");
 
-  // do a very coarse guess of nonzeros per row (horrible memory consumption!)
-  // int guessnpr = A.MaxNumEntries()*B.MaxNumEntries();
-  // a first guess for the bandwidth of C leading to much less memory allocation:
-  const int guessnpr = std::max(A.MaxNumEntries(), B.MaxNumEntries());
+  // const int npr = A.EpetraMatrix()->MaxNumEntries()*B.EpetraMatrix()->MaxNumEntries();
+  // a first guess for the bandwidth of C leading to much less memory consumption:
+  const int npr = std::max(A.max_num_entries(), B.max_num_entries());
 
-  // create resultmatrix with correct rowmap
-  Epetra_CrsMatrix* C = nullptr;
+  // now create resultmatrix with correct rowmap
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> C;
   if (!transA)
-    C = new Epetra_CrsMatrix(::Copy, A.OperatorRangeMap(), guessnpr, false);
+    C = Teuchos::rcp(new SparseMatrix(A.range_map(), npr, A.explicitdirichlet_, A.savegraph_));
   else
-    C = new Epetra_CrsMatrix(::Copy, A.OperatorDomainMap(), guessnpr, false);
+    C = Teuchos::rcp(new SparseMatrix(A.domain_map(), npr, A.explicitdirichlet_, A.savegraph_));
 
-  int err = EpetraExt::MatrixMatrix::Multiply(A, transA, B, transB, *C, complete);
-  if (err) FOUR_C_THROW("EpetraExt::MatrixMatrix::Multiply returned err = &d", err);
+  int err = EpetraExt::MatrixMatrix::Multiply(
+      *A.sysmat_, transA, *B.sysmat_, transB, *C->sysmat_, complete);
+  if (err) FOUR_C_THROW("EpetraExt::MatrixMatrix::MatrixMultiply returned err = %d", err);
 
-  return Teuchos::rcp(C);
+  return C;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsMatrix> Core::LinAlg::Multiply(const Epetra_CrsMatrix& A, bool transA,
-    const Epetra_CrsMatrix& B, bool transB, const Epetra_CrsMatrix& C, bool transC, bool complete)
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::MatrixMultiply(const SparseMatrix& A,
+    bool transA, const SparseMatrix& B, bool transB, bool explicitdirichlet, bool savegraph,
+    bool complete)
 {
-  Teuchos::RCP<Epetra_CrsMatrix> tmp = Core::LinAlg::Multiply(B, transB, C, transC, true);
-  return Core::LinAlg::Multiply(A, transA, *tmp, false, complete);
+  // make sure fill_complete was called on the matrices
+  if (!A.filled()) FOUR_C_THROW("A has to be fill_complete");
+  if (!B.filled()) FOUR_C_THROW("B has to be fill_complete");
+
+  // const int npr = A.EpetraMatrix()->MaxNumEntries()*B.EpetraMatrix()->MaxNumEntries();
+  // a first guess for the bandwidth of C leading to much less memory consumption:
+  const int npr = std::max(A.max_num_entries(), B.max_num_entries());
+
+  // now create resultmatrix C with correct rowmap
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> C;
+  if (!transA)
+    C = Teuchos::rcp(new SparseMatrix(A.range_map(), npr, explicitdirichlet, savegraph));
+  else
+    C = Teuchos::rcp(new SparseMatrix(A.domain_map(), npr, explicitdirichlet, savegraph));
+
+  int err = EpetraExt::MatrixMatrix::Multiply(
+      *A.sysmat_, transA, *B.sysmat_, transB, *C->sysmat_, complete);
+  if (err) FOUR_C_THROW("EpetraExt::MatrixMatrix::MatrixMultiply returned err = %d", err);
+
+  return C;
 }
 
 FOUR_C_NAMESPACE_CLOSE

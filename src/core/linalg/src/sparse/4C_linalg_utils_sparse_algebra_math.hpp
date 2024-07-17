@@ -141,90 +141,53 @@ namespace Core::LinAlg
   }
 
   /*!
-   \brief Multiply a (transposed) Epetra_CrsMatrix with another (transposed): C = A(^T)*B(^T)
+   \brief Multiply a (transposed) sparse matrix with another (transposed): C = A(^T)*B(^T)
 
    Multiply one matrix with another. Both matrices must be completed. Sparsity
    Respective Range, Row and Domain maps of A(^T) and B(^T) have to match.
 
-   Note that this is a true parallel multiplication, even in the transposed case!
+   \note that this is a true parallel multiplication, even in the transposed case!
 
-   \param A          (in)     : Matrix to multiply with B (must have Filled()==true)
-   \param transA     (in)     : flag indicating whether transposed of A should be used
-   \param B          (in)     : Matrix to multiply with A (must have Filled()==true)
-   \param transB     (in)     : flag indicating whether transposed of B should be used
-   \param complete   (in)     : flag indicating whether fill_complete should be called on C upon
-   exit, (defaults to true) \return Matrix product A(^T)*B(^T)
+   \note Does call complete on C upon exit by default.
+
+   \param A          (in) : Matrix to multiply with B (must have Filled()==true)
+   \param transA     (in) : flag indicating whether transposed of A should be used
+   \param B          (in) : Matrix to multiply with A (must have Filled()==true)
+   \param transB     (in) : flag indicating whether transposed of B should be used
+   \param complete   (in) : flag indicating whether fill_complete should be called on C upon
+                            exit, (defaults to true)
+   \return Matrix product A(^T)*B(^T)
    */
-  Teuchos::RCP<Epetra_CrsMatrix> Multiply(const Epetra_CrsMatrix& A, bool transA,
-      const Epetra_CrsMatrix& B, bool transB, bool complete = true);
+  Teuchos::RCP<SparseMatrix> MatrixMultiply(
+      const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB, bool complete = true);
 
   /*!
-   \brief Multiply a (transposed) Epetra_CrsMatrix with another (transposed): C = A(^T)*B(^T)
+   \brief Multiply a (transposed) sparse matrix with another (transposed): C = A(^T)*B(^T)
 
    Multiply one matrix with another. Both matrices must be completed. Sparsity
    Respective Range, Row and Domain maps of A(^T) and B(^T) have to match.
 
-   Note that this is a true parallel multiplication, even in the transposed case!
-   This is the Teuchos::RCP wrapper of the above method.
+   \note that this is a true parallel multiplication, even in the transposed case!
 
-   \param A          (in)     : Matrix to multiply with B (must have Filled()==true)
-   \param transA     (in)     : flag indicating whether transposed of A should be used
-   \param B          (in)     : Matrix to multiply with A (must have Filled()==true)
-   \param transB     (in)     : flag indicating whether transposed of B should be used
-   \param complete   (in)     : flag indicating whether fill_complete should be called on C upon
-   exit, (defaults to true) \return Matrix product A(^T)*B(^T)
+   \note Does call complete on C upon exit by default.
+
+   \note In this version the flags explicitdirichlet and savegraph must be handed in.
+   Thus, they can be defined explicitly, while in the standard version of MatrixMultiply()
+   above, result matrix C automatically inherits these flags from input matrix A.
+
+   \param A                 (in) : Matrix to multiply with B (must have Filled()==true)
+   \param transA            (in) : flag indicating whether transposed of A should be used
+   \param B                 (in) : Matrix to multiply with A (must have Filled()==true)
+   \param transB            (in) : flag indicating whether transposed of B should be used
+   \param explicitdirichlet (in) : flag deciding on explicitdirichlet flag of C
+   \param savegraph         (in) : flag deciding on savegraph flag of C
+   \param complete          (in) : flag indicating whether fill_complete should be called on C upon
+                                   exit, (defaults to true)
+   \return Matrix product A(^T)*B(^T)
    */
-  inline Teuchos::RCP<Epetra_CrsMatrix> Multiply(const Teuchos::RCP<Epetra_CrsMatrix>& A,
-      bool transA, const Teuchos::RCP<Epetra_CrsMatrix>& B, bool transB, bool complete = true)
-  {
-    return Multiply(*A, transA, *B, transB, complete);
-  }
-
-  /*!
-   \brief Triple matrix product: D = A(^T)*B(^T)*C(^T)
-
-   Multiply one matrix with another. All input matrices must be completed. Sparsity
-   Respective Range, Row and Domain maps of A(^T) and B(^T) C(^T) have to match.
-
-   Note that this is a true parallel multiplication, even in the transposed case!
-
-   \param A          (in)     : Matrix to multiply with B (must have Filled()==true)
-   \param transA     (in)     : flag indicating whether transposed of A should be used
-   \param B          (in)     : Matrix to multiply with C (must have Filled()==true)
-   \param transB     (in)     : flag indicating whether transposed of B should be used
-   \param C          (in)     : Matrix C (must have Filled()==true)
-   \param transC     (in)     : flag indicating whether transposed of C should be used
-   \param complete   (in)     : flag indicating whether fill_complete should be called on C upon
-   exit, (defaults to true) \return Matrix product A(^T)*B(^T)*C(^T)
-   */
-  Teuchos::RCP<Epetra_CrsMatrix> Multiply(const Epetra_CrsMatrix& A, bool transA,
-      const Epetra_CrsMatrix& B, bool transB, const Epetra_CrsMatrix& C, bool transC,
+  Teuchos::RCP<SparseMatrix> MatrixMultiply(const SparseMatrix& A, bool transA,
+      const SparseMatrix& B, bool transB, bool explicitdirichlet, bool savegraph,
       bool complete = true);
-
-  /*!
-   \brief Triple matrix product: D = A(^T)*B(^T)*C(^T)
-
-   Multiply one matrix with another. All input matrices must be completed. Sparsity
-   Respective Range, Row and Domain maps of A(^T) and B(^T) C(^T) have to match.
-
-   Note that this is a true parallel multiplication, even in the transposed case!
-   This is the Teuchos::RCP wrapper of the above method.
-
-   \param A          (in)     : Matrix to multiply with B (must have Filled()==true)
-   \param transA     (in)     : flag indicating whether transposed of A should be used
-   \param B          (in)     : Matrix to multiply with C (must have Filled()==true)
-   \param transB     (in)     : flag indicating whether transposed of B should be used
-   \param C          (in)     : Matrix C (must have Filled()==true)
-   \param transC     (in)     : flag indicating whether transposed of C should be used
-   \param complete   (in)     : flag indicating whether fill_complete should be called on C upon
-   exit, (defaults to true) \return Matrix product A(^T)*B(^T)*C(^T)
-   */
-  inline Teuchos::RCP<Epetra_CrsMatrix> Multiply(const Teuchos::RCP<Epetra_CrsMatrix>& A,
-      bool transA, const Teuchos::RCP<Epetra_CrsMatrix>& B, bool transB,
-      const Teuchos::RCP<Epetra_CrsMatrix>& C, bool transC, bool complete = true)
-  {
-    return Multiply(*A, transA, *B, transB, *C, transC, complete);
-  }
 
 }  // namespace Core::LinAlg
 

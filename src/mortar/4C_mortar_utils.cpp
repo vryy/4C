@@ -19,6 +19,7 @@
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -944,16 +945,16 @@ void Mortar::UTILS::MortarMatrixCondensation(Teuchos::RCP<Core::LinAlg::SparseMa
   kteffnew->add(*kmn, false, 1.0, 1.0);
   kteffnew->add(*kmm, false, 1.0, 1.0);
   kteffnew->add(
-      *Core::LinAlg::Multiply(*kns, false, *p_col, false, true, false, true), false, 1., 1.);
+      *Core::LinAlg::MatrixMultiply(*kns, false, *p_col, false, true, false, true), false, 1., 1.);
   kteffnew->add(
-      *Core::LinAlg::Multiply(*p_row, true, *ksn, false, true, false, true), false, 1., 1.);
+      *Core::LinAlg::MatrixMultiply(*p_row, true, *ksn, false, true, false, true), false, 1., 1.);
   kteffnew->add(
-      *Core::LinAlg::Multiply(*kms, false, *p_col, false, true, false, true), false, 1., 1.);
+      *Core::LinAlg::MatrixMultiply(*kms, false, *p_col, false, true, false, true), false, 1., 1.);
   kteffnew->add(
-      *Core::LinAlg::Multiply(*p_row, true, *ksm, false, true, false, true), false, 1., 1.);
-  kteffnew->add(*Core::LinAlg::Multiply(*p_row, true,
-                    *Core::LinAlg::Multiply(*kss, false, *p_col, false, true, false, true), false,
-                    true, false, true),
+      *Core::LinAlg::MatrixMultiply(*p_row, true, *ksm, false, true, false, true), false, 1., 1.);
+  kteffnew->add(*Core::LinAlg::MatrixMultiply(*p_row, true,
+                    *Core::LinAlg::MatrixMultiply(*kss, false, *p_col, false, true, false, true),
+                    false, true, false, true),
       false, 1., 1.);
   if (p_row == p_col) kteffnew->add(*Core::LinAlg::CreateIdentityMatrix(*gsrow), false, 1., 1.);
 
