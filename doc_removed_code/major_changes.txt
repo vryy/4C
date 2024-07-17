@@ -1,5 +1,10 @@
 List of major features that were removed from 4C, including date and revision where code was removed
 
+Solve FSI problem with constraints (FSI::ConstrMonolithic, with FSI::ConstrMonolithicFluidSplit and FSI::ConstrMonolithicStructureSplit)
+- removed in commit eec2d34fc2f506e425bfbdf8e6103a695382710c
+- reasons: code is unused and untested.
+- removed by Gabriela Loera
+
 Augmented Lagrangian contact formulation (Contact::Aug)
 - removed in commit 2329d32cf3b614ab00c6811adeede2415bcb0472
 - reasons: unused and unmaintained, no active research, interferes with refactoring effort in time integration
