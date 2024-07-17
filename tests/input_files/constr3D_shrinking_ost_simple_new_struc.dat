@@ -67,31 +67,15 @@ LINEAR_SOLVER                   2
 NAME                            Contact LINEAR solver (used for constraint simpler)
 AZBDIAG                         0
 AZCONV                          AZ_r0
-IFPACKGFILL                     2
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-IFPACKOVERLAP                   0
 AZPREC                          CheapSIMPLE
 AZREUSE                         0
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5
-ML_MAXLEVEL                     2
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          Belos
 SUB_SOLVER1                     4
 SUB_SOLVER2                     3
@@ -111,7 +95,6 @@ AZCONV                          AZ_r0
 NAME                            Contact SIMPLER solver (used for constraint simpler)
 AZBDIAG                         0
 AZCONV                          AZ_r0
-IFPACKGFILL                     0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
@@ -122,50 +105,21 @@ AZREUSE                         0
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5
-ML_MAXLEVEL                     2
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          Belos
 --------------------------------------------------------------------SOLVER 4
 NAME                            SIMPLE_predict
 AZBDIAG                         0
 AZCONV                          AZ_r0
-IFPACKGFILL                     2
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
 IFPACKOVERLAP                   0
-AZPREC ILU
+AZPREC                          ILU
 AZREUSE                         0
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5
-ML_MAXLEVEL                     2
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          Belos
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.02

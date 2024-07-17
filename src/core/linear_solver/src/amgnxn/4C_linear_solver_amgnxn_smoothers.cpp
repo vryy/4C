@@ -18,7 +18,6 @@
 #include "4C_utils_parameter_list.hpp"
 
 #include <MueLu_EpetraOperator.hpp>
-#include <MueLu_MLParameterListInterpreter_decl.hpp>
 #include <MueLu_ParameterListInterpreter.hpp>
 #include <Teuchos_PtrDecl.hpp>
 #include <Teuchos_Time.hpp>
