@@ -11,7 +11,6 @@
 #include "4C_linear_solver_preconditioner_cheapsimple.hpp"
 
 #include "4C_linalg_blocksparsematrix.hpp"
-#include "4C_linalg_downwindmatrix.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linear_solver_preconditioner_linalg_ana.hpp"
 
@@ -53,8 +52,6 @@ Core::LinearSolver::CheapSimpleBlockPreconditioner::CheapSimpleBlockPrecondition
     : predict_solver_list_(predict_list),
       schur_solver_list_(correct_list),
       alpha_(SIMPLER_ALPHA),
-      vdw_(false),
-      pdw_(false),
       label_(setup_label())
 {
   // remove the SIMPLER sublist from the predictSolver_list_,
@@ -501,25 +498,13 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::cheap_simple(Core::LinA
   Core::LinAlg::SparseMatrix& diagAinv = *diag_ainv_;
 
   //------------------------------------------------------------ L-solve
-  if (vdw_)
-  {
-    vdwind_->permute(&vb, &*vdwin_);
-    ppredict_->ApplyInverse(*vdwin_, *vdwout_);
-    vdwind_->inv_permute(&*vdwout_, &*vwork1_);
-  }
-  else
-    ppredict_->ApplyInverse(vb, *vwork1_);
+
+  ppredict_->ApplyInverse(vb, *vwork1_);
 
   *pwork1_ = pb - A10 * vwork1_;
 
-  if (pdw_)
-  {
-    pdwind_->permute(&*pwork1_, &*pdwin_);
-    pschur_->ApplyInverse(*pdwin_, *pdwout_);
-    pdwind_->inv_permute(&*pdwout_, &px);
-  }
-  else
-    pschur_->ApplyInverse(*pwork1_, px);
+
+  pschur_->ApplyInverse(*pwork1_, px);
 
   //------------------------------------------------------------ U-solve
 

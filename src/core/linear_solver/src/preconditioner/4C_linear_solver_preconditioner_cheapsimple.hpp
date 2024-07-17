@@ -270,16 +270,11 @@ namespace Core::LinearSolver
     Teuchos::RCP<Core::LinAlg::Solver> vsolver_;  // velocity solver // not used for CheapSIMPLE
     Teuchos::RCP<Core::LinAlg::Solver> psolver_;  // pressure solver // not used for CheapSIMPLE
 
-    bool vdw_;  // indicate downwinding for velocity subproblem
-    Teuchos::RCP<Core::LinAlg::DownwindMatrix>
-        vdwind_;  // downwinding reindexer for velocity subproblem
+
     Teuchos::RCP<Epetra_CrsMatrix> dw_a00_;
     Teuchos::RCP<Core::LinAlg::Ana::Vector> vdwin_;   // working vector
     Teuchos::RCP<Core::LinAlg::Ana::Vector> vdwout_;  // working vector
 
-    bool pdw_;  // indicate downwinding for velocity subproblem
-    Teuchos::RCP<Core::LinAlg::DownwindMatrix>
-        pdwind_;  // downwinding reindexer for velocity subproblem
     Teuchos::RCP<Epetra_CrsMatrix> dw_s_;
     Teuchos::RCP<Core::LinAlg::Ana::Vector> pdwin_;   // working vector
     Teuchos::RCP<Core::LinAlg::Ana::Vector> pdwout_;  // working vector
