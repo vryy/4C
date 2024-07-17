@@ -5681,31 +5681,32 @@ void CONTACT::Interface::export_nodal_normals() const
 {
   // create empty data objects
   std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>> triad;
+  std::map<int, std::map<int, std::vector<double>>> node_data_collection;
 
-  std::map<int, std::vector<int>> n_x_key;
-  std::map<int, std::vector<int>> n_y_key;
-  std::map<int, std::vector<int>> n_z_key;
-  std::map<int, std::vector<int>> txi_x_key;
-  std::map<int, std::vector<int>> txi_y_key;
-  std::map<int, std::vector<int>> txi_z_key;
-  std::map<int, std::vector<int>> teta_x_key;
-  std::map<int, std::vector<int>> teta_y_key;
-  std::map<int, std::vector<int>> teta_z_key;
+  // Define keys for the nodal data map
+  enum NodalQuantity
+  {
+    N_X_KEY,
+    N_Y_KEY,
+    N_Z_KEY,
+    TXI_X_KEY,
+    TXI_Y_KEY,
+    TXI_Z_KEY,
+    TETA_X_KEY,
+    TETA_Y_KEY,
+    TETA_Z_KEY,
+    N_X_VAL,
+    N_Y_VAL,
+    N_Z_VAL,
+    TXI_X_VAL,
+    TXI_Y_VAL,
+    TXI_Z_VAL,
+    TETA_X_VAL,
+    TETA_Y_VAL,
+    TETA_Z_VAL
+  };
 
-  std::map<int, std::vector<double>> n_x_val;
-  std::map<int, std::vector<double>> n_y_val;
-  std::map<int, std::vector<double>> n_z_val;
-  std::map<int, std::vector<double>> txi_x_val;
-  std::map<int, std::vector<double>> txi_y_val;
-  std::map<int, std::vector<double>> txi_z_val;
-  std::map<int, std::vector<double>> teta_x_val;
-  std::map<int, std::vector<double>> teta_y_val;
-  std::map<int, std::vector<double>> teta_z_val;
-
-  std::map<int, double>::iterator iter;
-  Core::Gen::Pairedvector<int, double>::iterator _iter;
-
-  // build info on row map
+  // Build info on row map
   for (int i = 0; i < snoderowmapbound_->NumMyElements(); ++i)
   {
     int gid = snoderowmapbound_->GID(i);
@@ -5713,7 +5714,7 @@ void CONTACT::Interface::export_nodal_normals() const
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
-    // fill nodal matrix
+    // Fill nodal matrix
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc =
         Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, 3));
     (*loc)(0, 0) = cnode->mo_data().n()[0];
@@ -5728,86 +5729,66 @@ void CONTACT::Interface::export_nodal_normals() const
 
     triad[gid] = loc;
 
-    // fill nodal derivative vectors
+    // Fill nodal derivative vectors
     std::vector<Core::Gen::Pairedvector<int, double>>& derivn = cnode->data().get_deriv_n();
     std::vector<Core::Gen::Pairedvector<int, double>>& derivtxi = cnode->data().get_deriv_txi();
     std::vector<Core::Gen::Pairedvector<int, double>>& derivteta = cnode->data().get_deriv_teta();
 
-    for (_iter = derivn[0].begin(); _iter != derivn[0].end(); ++_iter)
+    std::map<int, std::vector<double>>& node_data = node_data_collection[gid];
+
+    for (const auto& _iter : derivn[0])
     {
-      n_x_key[gid].push_back(_iter->first);
-      n_x_val[gid].push_back(_iter->second);
+      node_data[N_X_KEY].push_back(_iter.first);
+      node_data[N_X_VAL].push_back(_iter.second);
     }
-    for (_iter = derivn[1].begin(); _iter != derivn[1].end(); ++_iter)
+    for (const auto& _iter : derivn[1])
     {
-      n_y_key[gid].push_back(_iter->first);
-      n_y_val[gid].push_back(_iter->second);
+      node_data[N_Y_KEY].push_back(_iter.first);
+      node_data[N_Y_VAL].push_back(_iter.second);
     }
-    for (_iter = derivn[2].begin(); _iter != derivn[2].end(); ++_iter)
+    for (const auto& _iter : derivn[2])
     {
-      n_z_key[gid].push_back(_iter->first);
-      n_z_val[gid].push_back(_iter->second);
+      node_data[N_Z_KEY].push_back(_iter.first);
+      node_data[N_Z_VAL].push_back(_iter.second);
     }
 
-    for (_iter = derivtxi[0].begin(); _iter != derivtxi[0].end(); ++_iter)
+    for (const auto& _iter : derivtxi[0])
     {
-      txi_x_key[gid].push_back(_iter->first);
-      txi_x_val[gid].push_back(_iter->second);
+      node_data[TXI_X_KEY].push_back(_iter.first);
+      node_data[TXI_X_VAL].push_back(_iter.second);
     }
-    for (_iter = derivtxi[1].begin(); _iter != derivtxi[1].end(); ++_iter)
+    for (const auto& _iter : derivtxi[1])
     {
-      txi_y_key[gid].push_back(_iter->first);
-      txi_y_val[gid].push_back(_iter->second);
+      node_data[TXI_Y_KEY].push_back(_iter.first);
+      node_data[TXI_Y_VAL].push_back(_iter.second);
     }
-    for (_iter = derivtxi[2].begin(); _iter != derivtxi[2].end(); ++_iter)
+    for (const auto& _iter : derivtxi[2])
     {
-      txi_z_key[gid].push_back(_iter->first);
-      txi_z_val[gid].push_back(_iter->second);
+      node_data[TXI_Z_KEY].push_back(_iter.first);
+      node_data[TXI_Z_VAL].push_back(_iter.second);
     }
 
-    for (_iter = derivteta[0].begin(); _iter != derivteta[0].end(); ++_iter)
+    for (const auto& _iter : derivteta[0])
     {
-      teta_x_key[gid].push_back(_iter->first);
-      teta_x_val[gid].push_back(_iter->second);
+      node_data[TETA_X_KEY].push_back(_iter.first);
+      node_data[TETA_X_VAL].push_back(_iter.second);
     }
-    for (_iter = derivteta[1].begin(); _iter != derivteta[1].end(); ++_iter)
+    for (const auto& _iter : derivteta[1])
     {
-      teta_y_key[gid].push_back(_iter->first);
-      teta_y_val[gid].push_back(_iter->second);
+      node_data[TETA_Y_KEY].push_back(_iter.first);
+      node_data[TETA_Y_VAL].push_back(_iter.second);
     }
-    for (_iter = derivteta[2].begin(); _iter != derivteta[2].end(); ++_iter)
+    for (const auto& _iter : derivteta[2])
     {
-      teta_z_key[gid].push_back(_iter->first);
-      teta_z_val[gid].push_back(_iter->second);
+      node_data[TETA_Z_KEY].push_back(_iter.first);
+      node_data[TETA_Z_VAL].push_back(_iter.second);
     }
   }
 
-
   // communicate from slave node row to column map
   Core::Communication::Exporter& ex = interface_data_->exporter();
-
   ex.do_export(triad);
-
-  ex.do_export(n_x_key);
-  ex.do_export(n_x_val);
-  ex.do_export(n_y_key);
-  ex.do_export(n_y_val);
-  ex.do_export(n_z_key);
-  ex.do_export(n_z_val);
-
-  ex.do_export(txi_x_key);
-  ex.do_export(txi_x_val);
-  ex.do_export(txi_y_key);
-  ex.do_export(txi_y_val);
-  ex.do_export(txi_z_key);
-  ex.do_export(txi_z_val);
-
-  ex.do_export(teta_x_key);
-  ex.do_export(teta_x_val);
-  ex.do_export(teta_y_key);
-  ex.do_export(teta_y_val);
-  ex.do_export(teta_z_key);
-  ex.do_export(teta_z_val);
+  ex.do_export(node_data_collection);
 
   // extract info on column map
   for (int i = 0; i < snodecolmapbound_->NumMyElements(); ++i)
@@ -5819,7 +5800,6 @@ void CONTACT::Interface::export_nodal_normals() const
     Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
-    int linsize = cnode->get_linsize() + (int)(n_x_key[gid].size());
 
     // extract info
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc = triad[gid];
@@ -5838,57 +5818,47 @@ void CONTACT::Interface::export_nodal_normals() const
     std::vector<Core::Gen::Pairedvector<int, double>>& derivtxi = cnode->data().get_deriv_txi();
     std::vector<Core::Gen::Pairedvector<int, double>>& derivteta = cnode->data().get_deriv_teta();
 
-    for (int k = 0; k < (int)(derivn.size()); ++k) derivn[k].clear();
+    std::map<int, std::vector<double>>& node_data = node_data_collection[gid];
+    size_t linsize = static_cast<size_t>(cnode->get_linsize()) + node_data[N_X_KEY].size();
+
+    // Clear and resize operations on vectors derivn, derivtxi, derivteta
+    for (size_t k = 0; k < derivn.size(); ++k) derivn[k].clear();
     derivn.resize(3, linsize);
-    for (int k = 0; k < (int)(derivtxi.size()); ++k) derivtxi[k].clear();
+
+    for (size_t k = 0; k < derivtxi.size(); ++k) derivtxi[k].clear();
     derivtxi.resize(3, linsize);
-    for (int k = 0; k < (int)(derivteta.size()); ++k) derivteta[k].clear();
+
+    for (size_t k = 0; k < derivteta.size(); ++k) derivteta[k].clear();
     derivteta.resize(3, linsize);
 
-    for (int k = 0; k < (int)(n_x_key[gid].size()); ++k)
-      (cnode->data().get_deriv_n()[0])[n_x_key[gid][k]] = n_x_val[gid][k];
-    for (int k = 0; k < (int)(n_y_key[gid].size()); ++k)
-      (cnode->data().get_deriv_n()[1])[n_y_key[gid][k]] = n_y_val[gid][k];
-    for (int k = 0; k < (int)(n_z_key[gid].size()); ++k)
-      (cnode->data().get_deriv_n()[2])[n_z_key[gid][k]] = n_z_val[gid][k];
+    // Assignments using node_data arrays
+    for (size_t k = 0; k < node_data[N_X_KEY].size(); ++k)
+      (cnode->data().get_deriv_n()[0])[node_data[N_X_KEY][k]] = node_data[N_X_VAL][k];
 
-    for (int k = 0; k < (int)(txi_x_key[gid].size()); ++k)
-      (cnode->data().get_deriv_txi()[0])[txi_x_key[gid][k]] = txi_x_val[gid][k];
-    for (int k = 0; k < (int)(txi_y_key[gid].size()); ++k)
-      (cnode->data().get_deriv_txi()[1])[txi_y_key[gid][k]] = txi_y_val[gid][k];
-    for (int k = 0; k < (int)(txi_z_key[gid].size()); ++k)
-      (cnode->data().get_deriv_txi()[2])[txi_z_key[gid][k]] = txi_z_val[gid][k];
+    for (size_t k = 0; k < node_data[N_Y_KEY].size(); ++k)
+      (cnode->data().get_deriv_n()[1])[node_data[N_Y_KEY][k]] = node_data[N_Y_VAL][k];
 
-    for (int k = 0; k < (int)(teta_x_key[gid].size()); ++k)
-      (cnode->data().get_deriv_teta()[0])[teta_x_key[gid][k]] = teta_x_val[gid][k];
-    for (int k = 0; k < (int)(teta_y_key[gid].size()); ++k)
-      (cnode->data().get_deriv_teta()[1])[teta_y_key[gid][k]] = teta_y_val[gid][k];
-    for (int k = 0; k < (int)(teta_z_key[gid].size()); ++k)
-      (cnode->data().get_deriv_teta()[2])[teta_z_key[gid][k]] = teta_z_val[gid][k];
+    for (size_t k = 0; k < node_data[N_Z_KEY].size(); ++k)
+      (cnode->data().get_deriv_n()[2])[node_data[N_Z_KEY][k]] = node_data[N_Z_VAL][k];
+
+    for (size_t k = 0; k < node_data[TXI_X_KEY].size(); ++k)
+      (cnode->data().get_deriv_txi()[0])[node_data[TXI_X_KEY][k]] = node_data[TXI_X_VAL][k];
+
+    for (size_t k = 0; k < node_data[TXI_Y_KEY].size(); ++k)
+      (cnode->data().get_deriv_txi()[1])[node_data[TXI_Y_KEY][k]] = node_data[TXI_Y_VAL][k];
+
+    for (size_t k = 0; k < node_data[TXI_Z_KEY].size(); ++k)
+      (cnode->data().get_deriv_txi()[2])[node_data[TXI_Z_KEY][k]] = node_data[TXI_Z_VAL][k];
+
+    for (size_t k = 0; k < node_data[TETA_X_KEY].size(); ++k)
+      (cnode->data().get_deriv_teta()[0])[node_data[TETA_X_KEY][k]] = node_data[TETA_X_VAL][k];
+
+    for (size_t k = 0; k < node_data[TETA_Y_KEY].size(); ++k)
+      (cnode->data().get_deriv_teta()[1])[node_data[TETA_Y_KEY][k]] = node_data[TETA_Y_VAL][k];
+
+    for (size_t k = 0; k < node_data[TETA_Z_KEY].size(); ++k)
+      (cnode->data().get_deriv_teta()[2])[node_data[TETA_Z_KEY][k]] = node_data[TETA_Z_VAL][k];
   }
-
-  // free memory
-  triad.clear();
-
-  n_x_key.clear();
-  n_y_key.clear();
-  n_z_key.clear();
-  txi_x_key.clear();
-  txi_y_key.clear();
-  txi_z_key.clear();
-  teta_x_key.clear();
-  teta_y_key.clear();
-  teta_z_key.clear();
-
-  n_x_val.clear();
-  n_y_val.clear();
-  n_z_val.clear();
-  txi_x_val.clear();
-  txi_y_val.clear();
-  txi_z_val.clear();
-  teta_x_val.clear();
-  teta_y_val.clear();
-  teta_z_val.clear();
   return;
 }
 
