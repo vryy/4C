@@ -26,7 +26,6 @@ namespace Core::LinAlg
 {
   class SparseMatrix;
   class SparseOperator;
-  class DownwindMatrix;
   class KrylovProjector;
 }  // namespace Core::LinAlg
 
