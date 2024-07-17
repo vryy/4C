@@ -5819,34 +5819,44 @@ void CONTACT::Interface::export_nodal_normals() const
     std::vector<Core::Gen::Pairedvector<int, double>>& derivteta = cnode->data().get_deriv_teta();
 
     std::map<int, std::vector<double>>& node_data = node_data_collection[gid];
-    int linsize = cnode->get_linsize() + (int)(node_data[N_X_KEY].size());
+    size_t linsize = static_cast<size_t>(cnode->get_linsize()) + node_data[N_X_KEY].size();
 
-    for (int k = 0; k < (int)(derivn.size()); ++k) derivn[k].clear();
+    // Clear and resize operations on vectors derivn, derivtxi, derivteta
+    for (size_t k = 0; k < derivn.size(); ++k) derivn[k].clear();
     derivn.resize(3, linsize);
-    for (int k = 0; k < (int)(derivtxi.size()); ++k) derivtxi[k].clear();
+
+    for (size_t k = 0; k < derivtxi.size(); ++k) derivtxi[k].clear();
     derivtxi.resize(3, linsize);
-    for (int k = 0; k < (int)(derivteta.size()); ++k) derivteta[k].clear();
+
+    for (size_t k = 0; k < derivteta.size(); ++k) derivteta[k].clear();
     derivteta.resize(3, linsize);
 
-    for (int k = 0; k < (int)(node_data[N_X_KEY].size()); ++k)
+    // Assignments using node_data arrays
+    for (size_t k = 0; k < node_data[N_X_KEY].size(); ++k)
       (cnode->data().get_deriv_n()[0])[node_data[N_X_KEY][k]] = node_data[N_X_VAL][k];
-    for (int k = 0; k < (int)(node_data[N_Y_KEY].size()); ++k)
+
+    for (size_t k = 0; k < node_data[N_Y_KEY].size(); ++k)
       (cnode->data().get_deriv_n()[1])[node_data[N_Y_KEY][k]] = node_data[N_Y_VAL][k];
-    for (int k = 0; k < (int)(node_data[N_Z_KEY].size()); ++k)
+
+    for (size_t k = 0; k < node_data[N_Z_KEY].size(); ++k)
       (cnode->data().get_deriv_n()[2])[node_data[N_Z_KEY][k]] = node_data[N_Z_VAL][k];
 
-    for (int k = 0; k < (int)(node_data[TXI_X_KEY].size()); ++k)
+    for (size_t k = 0; k < node_data[TXI_X_KEY].size(); ++k)
       (cnode->data().get_deriv_txi()[0])[node_data[TXI_X_KEY][k]] = node_data[TXI_X_VAL][k];
-    for (int k = 0; k < (int)(node_data[TXI_Y_KEY].size()); ++k)
+
+    for (size_t k = 0; k < node_data[TXI_Y_KEY].size(); ++k)
       (cnode->data().get_deriv_txi()[1])[node_data[TXI_Y_KEY][k]] = node_data[TXI_Y_VAL][k];
-    for (int k = 0; k < (int)(node_data[TXI_Z_KEY].size()); ++k)
+
+    for (size_t k = 0; k < node_data[TXI_Z_KEY].size(); ++k)
       (cnode->data().get_deriv_txi()[2])[node_data[TXI_Z_KEY][k]] = node_data[TXI_Z_VAL][k];
 
-    for (int k = 0; k < (int)(node_data[TETA_X_KEY].size()); ++k)
+    for (size_t k = 0; k < node_data[TETA_X_KEY].size(); ++k)
       (cnode->data().get_deriv_teta()[0])[node_data[TETA_X_KEY][k]] = node_data[TETA_X_VAL][k];
-    for (int k = 0; k < (int)(node_data[TETA_Y_KEY].size()); ++k)
+
+    for (size_t k = 0; k < node_data[TETA_Y_KEY].size(); ++k)
       (cnode->data().get_deriv_teta()[1])[node_data[TETA_Y_KEY][k]] = node_data[TETA_Y_VAL][k];
-    for (int k = 0; k < (int)(node_data[TETA_Z_KEY].size()); ++k)
+
+    for (size_t k = 0; k < node_data[TETA_Z_KEY].size(); ++k)
       (cnode->data().get_deriv_teta()[2])[node_data[TETA_Z_KEY][k]] = node_data[TETA_Z_VAL][k];
   }
   return;
