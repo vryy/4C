@@ -209,20 +209,6 @@ void Core::LinAlg::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsMatrix> Core::LinAlg::Transpose(const Epetra_CrsMatrix& A)
-{
-  if (!A.Filled()) FOUR_C_THROW("fill_complete was not called on A");
-
-  Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans =
-      Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(/*false,nullptr,false*/));
-  Epetra_CrsMatrix* Aprime =
-      &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
-
-  return Teuchos::rcp(new Epetra_CrsMatrix(*Aprime));
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::MatrixMultiply(
     const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB, bool complete)
 {
