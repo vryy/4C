@@ -53,10 +53,6 @@ namespace FSI
 {
   namespace UTILS
   {
-    /// write interface jacobian to file
-    void DumpJacobian(::NOX::Epetra::Interface::Required& interface, double alpha, double beta,
-        Teuchos::RCP<Epetra_Vector> soln, std::string filename);
-
     /// Check whether fluid node numbers and ALE node numbers are equal.
     bool FluidAleNodesDisjoint(
         Teuchos::RCP<Core::FE::Discretization> fluiddis,  ///< pointer to fluid discretization
