@@ -18,7 +18,6 @@
 
 #include <EpetraExt_RowMatrixOut.h>
 #include <MueLu_EpetraOperator.hpp>
-#include <MueLu_MLParameterListInterpreter_decl.hpp>
 #include <MueLu_ParameterListInterpreter.hpp>
 #include <Teuchos_PtrDecl.hpp>
 #include <Teuchos_Time.hpp>

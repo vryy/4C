@@ -16,7 +16,6 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <EpetraExt_RowMatrixOut.h>
-#include <MueLu_MLParameterListInterpreter_decl.hpp>
 #include <MueLu_ParameterListInterpreter.hpp>
 #include <Teuchos_PtrDecl.hpp>
 #include <Teuchos_Time.hpp>

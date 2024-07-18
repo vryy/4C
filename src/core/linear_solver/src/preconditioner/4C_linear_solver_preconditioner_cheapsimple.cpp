@@ -17,19 +17,7 @@
 #include <EpetraExt_OperatorOut.h>
 #include <Ifpack.h>
 #include <ml_MultiLevelPreconditioner.h>
-#include <MueLu_AggregationExportFactory.hpp>
-#include <MueLu_CoalesceDropFactory.hpp>
-#include <MueLu_EpetraOperator.hpp>
-#include <MueLu_MLParameterListInterpreter_decl.hpp>
-#include <MueLu_ParameterListInterpreter.hpp>
-#include <MueLu_RAPFactory.hpp>
-#include <MueLu_SaPFactory.hpp>
-#include <MueLu_SmootherFactory.hpp>
-#include <MueLu_TentativePFactory.hpp>
-#include <MueLu_TrilinosSmoother.hpp>
-#include <MueLu_UseDefaultTypes.hpp>
-#include <MueLu_VerbosityLevel.hpp>
-#include <Xpetra_MultiVectorFactory.hpp>
+#include <Teuchos_Time.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -38,11 +26,6 @@ FOUR_C_NAMESPACE_OPEN
 #define SIMPLER_ALGORITHM 0      // 1: triple solve 0: double solve
 #define SIMPLER_ALPHA 0.8        // simple pressure damping parameter
 #define SIMPLER_TIMING 0         // printout timing of setup
-
-using SC = Scalar;
-using LO = LocalOrdinal;
-using GO = GlobalOrdinal;
-using NO = Node;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -54,21 +37,6 @@ Core::LinearSolver::CheapSimpleBlockPreconditioner::CheapSimpleBlockPrecondition
       alpha_(SIMPLER_ALPHA),
       label_(setup_label())
 {
-  // remove the SIMPLER sublist from the predictSolver_list_,
-  // otherwise it will try to recursively create a SIMPLE
-  // preconditioner when we do the subblock solvers
-  // if (predictSolver_list_.isSublist("SIMPLER")) predictSolver_list_.remove("SIMPLER");
-
-  // check for contact, meshtying or constraints
-  // (no special functionality yet, only checking)
-  //  const int myrank = A->Comm().MyPID();
-  //  bool mt = schurSolver_list_.get<bool>("MESHTYING",false);
-  //  if (!myrank && mt) cout << "\n**********\nMESHTYING SIMPLER\n**********\n\n";
-  //  bool co = schurSolver_list_.get<bool>("CONTACT",false);
-  //  if (!myrank && co) cout << "\n**********\nCONTACT SIMPLER\n**********\n\n";
-  //  bool cstr = schurSolver_list_.get<bool>("CONSTRAINT",false);
-  //  if (!myrank && cstr) cout << "\n**********\nCONSTRAINT SIMPLER\n**********\n\n";
-
   setup(A, predict_list, correct_list);
 }
 
@@ -78,22 +46,16 @@ Core::LinearSolver::CheapSimpleBlockPreconditioner::CheapSimpleBlockPrecondition
 void Core::LinearSolver::CheapSimpleBlockPreconditioner::setup(Teuchos::RCP<Epetra_Operator> A,
     const Teuchos::ParameterList& origvlist, const Teuchos::ParameterList& origplist)
 {
-  using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
-
   const int myrank = A->Comm().MyPID();
   Teuchos::Time time("", true);
   Teuchos::Time totaltime("", true);
   const bool visml = predict_solver_list_.isSublist("ML Parameters");
   const bool pisml = schur_solver_list_.isSublist("ML Parameters");
-  const bool vismuelu = predict_solver_list_.isSublist("MueLu Parameters");
-  const bool pismuelu = schur_solver_list_.isSublist("MueLu Parameters");
   const bool visifpack = predict_solver_list_.isSublist("IFPACK Parameters");
   const bool pisifpack = schur_solver_list_.isSublist("IFPACK Parameters");
 
-  if (!visml && !visifpack && !vismuelu)
-    FOUR_C_THROW("Have to use either ML or Ifpack for velocities");
-  if (!pisml && !pisifpack && !pismuelu)
-    FOUR_C_THROW("Have to use either ML or Ifpack for pressure");
+  if (!visml && !visifpack) FOUR_C_THROW("Have to use either ML or Ifpack for velocities");
+  if (!pisml && !pisifpack) FOUR_C_THROW("Have to use either ML or Ifpack for pressure");
 
   //-------------------------------------------------------------------------
   // either do manual split or use provided BlockSparseMatrixBase
@@ -197,63 +159,6 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::setup(Teuchos::RCP<Epet
       ppredict_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(
           *A00, predict_solver_list_.sublist("ML Parameters"), true));
     }
-    else if (vismuelu)
-    {
-      // create a copy of the scaled matrix
-      // so we can reuse the preconditioner
-      Teuchos::RCP<Epetra_CrsMatrix> Pmatrix = Teuchos::rcp(new Epetra_CrsMatrix(*A00));
-
-      // wrap Epetra_CrsMatrix to Xpetra::Matrix for use in MueLu
-      Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> mueluA =
-          Teuchos::rcp(new EpetraCrsMatrix(Pmatrix));
-      Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> mueluOp =
-          Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(mueluA));
-
-      // Create MueLu preconditioner:  using ML like input or xml files
-      Teuchos::RCP<MueLu::Hierarchy<SC, LO, GO, NO>> H = Teuchos::null;
-      Teuchos::ParameterList& MueLuList = predict_solver_list_.sublist("MueLu Parameters");
-      std::string xmlFileName = MueLuList.get<std::string>("xml file", "none");
-      if (xmlFileName == "none")
-      {
-        MueLu::MLParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(MueLuList);
-        H = mueLuFactory.CreateHierarchy();
-        H->GetLevel(0)->Set("A", mueluOp);
-        mueLuFactory.SetupHierarchy(*H);
-      }
-      else
-      {
-        // Exctract info from list
-        int numdf = MueLuList.get<int>("PDE equations", -1);
-        int dimns = MueLuList.get<int>("null space: dimension", -1);
-
-        Teuchos::RCP<Epetra_MultiVector> nsdata =
-            MueLuList.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
-        if (numdf < 1 or dimns < 1)
-          FOUR_C_THROW("Error: PDE equations or null space dimension wrong.");
-        if (nsdata == Teuchos::null) FOUR_C_THROW("Error: null space data is empty");
-
-        Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nspVector =
-            Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GO, NO>(nsdata));
-
-        Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> rowMap = mueluA->getRowMap();
-        nspVector->replaceMap(rowMap);
-
-        // Create Hierarchy
-        mueluOp->SetFixedBlockSize(numdf);
-        MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(
-            xmlFileName, *(mueluOp->getRowMap()->getComm()));
-        H = mueLuFactory.CreateHierarchy();
-        H->SetDefaultVerbLevel(MueLu::Extreme);
-        H->GetLevel(0)->Set("A", mueluOp);
-        H->GetLevel(0)->Set("Nullspace", nspVector);
-        H->GetLevel(0)->setlib(Xpetra::UseEpetra);
-        H->setlib(Xpetra::UseEpetra);
-        mueLuFactory.SetupHierarchy(*H);
-      }
-
-      // set preconditioner
-      ppredict_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
-    }
     else
     {
       std::string type =
@@ -274,63 +179,6 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::setup(Teuchos::RCP<Epet
       schur_solver_list_.sublist("ML Parameters").remove("init smoother", false);
       pschur_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(
           *A11, schur_solver_list_.sublist("ML Parameters"), true));
-    }
-    else if (pismuelu)
-    {
-      // create a copy of the scaled matrix
-      // so we can reuse the preconditioner
-      Teuchos::RCP<Epetra_CrsMatrix> Pmatrix = Teuchos::rcp(new Epetra_CrsMatrix(*A11));
-
-      // wrap Epetra_CrsMatrix to Xpetra::Matrix for use in MueLu
-      Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> mueluA =
-          Teuchos::rcp(new EpetraCrsMatrix(Pmatrix));
-      Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> mueluOp =
-          Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(mueluA));
-
-      // Create MueLu preconditioner:  using ML like input or xml files
-      Teuchos::RCP<MueLu::Hierarchy<SC, LO, GO, NO>> H = Teuchos::null;
-      Teuchos::ParameterList& MueLuList = schur_solver_list_.sublist("MueLu Parameters");
-      std::string xmlFileName = MueLuList.get<std::string>("xml file", "none");
-      if (xmlFileName == "none")
-      {
-        MueLu::MLParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(MueLuList);
-        H = mueLuFactory.CreateHierarchy();
-        H->GetLevel(0)->Set("A", mueluOp);
-        mueLuFactory.SetupHierarchy(*H);
-      }
-      else
-      {
-        // Exctract info from list
-        int numdf = MueLuList.get<int>("PDE equations", -1);
-        int dimns = MueLuList.get<int>("null space: dimension", -1);
-
-        Teuchos::RCP<Epetra_MultiVector> nsdata =
-            MueLuList.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
-        if (numdf < 1 or dimns < 1)
-          FOUR_C_THROW("Error: PDE equations or null space dimension wrong.");
-        if (nsdata == Teuchos::null) FOUR_C_THROW("Error: null space data is empty");
-
-        Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nspVector =
-            Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GO, NO>(nsdata));
-
-        Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> rowMap = mueluA->getRowMap();
-        nspVector->replaceMap(rowMap);
-
-        // Create Hierarchy
-        mueluOp->SetFixedBlockSize(numdf);
-        MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(
-            xmlFileName, *(mueluOp->getRowMap()->getComm()));
-        H = mueLuFactory.CreateHierarchy();
-        H->SetDefaultVerbLevel(MueLu::Extreme);
-        H->GetLevel(0)->Set("A", mueluOp);
-        H->GetLevel(0)->Set("Nullspace", nspVector);
-        H->GetLevel(0)->setlib(Xpetra::UseEpetra);
-        H->setlib(Xpetra::UseEpetra);
-        mueLuFactory.SetupHierarchy(*H);
-      }
-
-      // set preconditioner
-      pschur_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
     }
     else
     {
