@@ -18,7 +18,6 @@
 #include "4C_mortar_element.hpp"
 #include "4C_utils_pairedvector.hpp"
 
-#include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
 
 FOUR_C_NAMESPACE_OPEN

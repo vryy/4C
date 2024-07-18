@@ -19,7 +19,6 @@
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_mortar_element.hpp"
 
-#include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
 #include <Teuchos_RCP.hpp>
 

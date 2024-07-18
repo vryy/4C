@@ -26,7 +26,6 @@
 #include "4C_mortar_defines.hpp"
 #include "4C_mortar_utils.hpp"
 
-#include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
 #include <Epetra_Operator.h>
 
