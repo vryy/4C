@@ -111,37 +111,6 @@ void Core::LinAlg::AssembleMyVector(
 }
 
 /*----------------------------------------------------------------------*
- |  assemble a vector  (wrapper for Core::LinAlg::Matrix<3,1>)     katta 10/16|
- *----------------------------------------------------------------------*/
-void Core::LinAlg::Assemble(Epetra_Vector& V, Core::LinAlg::Matrix<3, 1>& Vele,
-    const std::vector<int>& lm, const std::vector<int>& lmowner)
-{
-  const Core::LinAlg::SerialDenseVector VeleNew(Teuchos::View, &(Vele(0)), 3);
-  Core::LinAlg::Assemble(V, VeleNew, lm, lmowner);
-}
-
-/*----------------------------------------------------------------------*
- |  assemble a vector  (wrapper for 1 owner)                 katta 10/16|
- *----------------------------------------------------------------------*/
-void Core::LinAlg::Assemble(Epetra_Vector& V, Core::LinAlg::Matrix<3, 1>& Vele,
-    const std::vector<int>& lm, const int& lmowner)
-{
-  const std::vector<int> lmownerNew(3, lmowner);
-  Core::LinAlg::Assemble(V, Vele, lm, lmownerNew);
-}
-
-/*----------------------------------------------------------------------*
- |  assemble a vector  (wrapper, node-based)                 katta 10/16|
- *----------------------------------------------------------------------*/
-void Core::LinAlg::Assemble(Epetra_Vector& V, double& Vele, const int& lm, const int& lmowner)
-{
-  const Core::LinAlg::SerialDenseVector VeleNew(Teuchos::View, &Vele, 1);
-  const std::vector<int> lmNew(1, lm);
-  const std::vector<int> lmownerNew(1, lmowner);
-  Core::LinAlg::Assemble(V, VeleNew, lmNew, lmownerNew);
-}
-
-/*----------------------------------------------------------------------*
  |  assemble a vector into MultiVector (public)              mwgee 01/08|
  *----------------------------------------------------------------------*/
 void Core::LinAlg::Assemble(Epetra_MultiVector& V, const int n,
