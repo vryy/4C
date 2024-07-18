@@ -117,30 +117,6 @@ namespace Core::LinAlg
       Core::LinAlg::SparseMatrixBase& B, const double scalarB);
 
   /*!
-   \brief Compute transposed matrix of an Epetra_CrsMatrix explicitly
-
-   Returns Teuchos::RCP to the transposed matrix of the input matrix A.
-
-   \param A          (in)     : Matrix to transpose (must have Filled()==true)
-
-   */
-  Teuchos::RCP<Epetra_CrsMatrix> Transpose(const Epetra_CrsMatrix& A);
-
-  /*!
-   \brief Compute transposed matrix of an Epetra_CrsMatrix explicitly
-
-   Returns Teuchos::RCP to the transposed matrix of the input matrix A.
-   This is the Teuchos::RCP wrapper of the above method.
-
-   \param A          (in)     : Matrix to transpose (must have Filled()==true)
-
-   */
-  inline Teuchos::RCP<Epetra_CrsMatrix> Transpose(const Teuchos::RCP<Epetra_CrsMatrix> A)
-  {
-    return Core::LinAlg::Transpose(*A);
-  }
-
-  /*!
    \brief Multiply a (transposed) sparse matrix with another (transposed): C = A(^T)*B(^T)
 
    Multiply one matrix with another. Both matrices must be completed. Sparsity
