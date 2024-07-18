@@ -457,9 +457,7 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
     const int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
 
     if (coupling == fsi_iter_lung_monolithicstructuresplit or
-        coupling == fsi_iter_lung_monolithicfluidsplit or
-        coupling == fsi_iter_constr_monolithicstructuresplit or
-        coupling == fsi_iter_constr_monolithicfluidsplit)
+        coupling == fsi_iter_lung_monolithicfluidsplit)
     {
       // No explicit predictor for these monolithic FSI schemes, yet.
       // Check, whether fluid predictor is 'steady_state'. Otherwise, throw
@@ -645,8 +643,6 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
           coupling == fsi_iter_monolithicstructuresplit or
           coupling == fsi_iter_lung_monolithicstructuresplit or
           coupling == fsi_iter_lung_monolithicfluidsplit or
-          coupling == fsi_iter_constr_monolithicstructuresplit or
-          coupling == fsi_iter_constr_monolithicfluidsplit or
           coupling == fsi_iter_mortar_monolithicstructuresplit or
           coupling == fsi_iter_mortar_monolithicfluidsplit or
           coupling == fsi_iter_mortar_monolithicfluidsplit_saddlepoint or

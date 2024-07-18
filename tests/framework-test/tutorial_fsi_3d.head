@@ -713,8 +713,6 @@ LINEAR_SOLVER                   1
 //     iter_lung_monolithicfluidsplit
 //     iter_xfem_monolithic
 //     pseudo_structure
-//     iter_constr_monolithicfluidsplit
-//     iter_constr_monolithicstructuresplit
 //     iter_mortar_monolithicstructuresplit
 //     iter_mortar_monolithicfluidsplit
 //     iter_fluidfluid_monolithicstructuresplit

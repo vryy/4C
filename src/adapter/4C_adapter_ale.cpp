@@ -174,8 +174,6 @@ void Adapter::AleBaseAlgorithm::setup_ale(
       int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithicstructuresplit or
-          coupling == fsi_iter_constr_monolithicfluidsplit or
-          coupling == fsi_iter_constr_monolithicstructuresplit or
           coupling == fsi_iter_lung_monolithicfluidsplit or
           coupling == fsi_iter_lung_monolithicstructuresplit or
           coupling == fsi_iter_mortar_monolithicstructuresplit or
@@ -238,8 +236,6 @@ void Adapter::AleBaseAlgorithm::setup_ale(
       int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithicstructuresplit or
-          coupling == fsi_iter_constr_monolithicfluidsplit or
-          coupling == fsi_iter_constr_monolithicstructuresplit or
           coupling == fsi_iter_mortar_monolithicstructuresplit or
           coupling == fsi_iter_mortar_monolithicfluidsplit or
           coupling == fsi_iter_sliding_monolithicfluidsplit or
