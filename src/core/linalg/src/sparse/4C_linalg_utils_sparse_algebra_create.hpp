@@ -54,15 +54,6 @@ namespace Core::LinAlg
   Teuchos::RCP<Epetra_Vector> CreateVector(const Epetra_BlockMap& rowmap, const bool init = true);
 
   /*!
-   \brief Create a new Epetra_IntVector and return RefcountPtr to it
-
-   \param rowmap (in): row map of vector
-   \param init (in): initialize vector to zero upon construction
-   */
-  Teuchos::RCP<Epetra_IntVector> CreateIntVector(
-      const Epetra_BlockMap& rowmap, const bool init = true);
-
-  /*!
    \brief Create a new Epetra_MultiVector and return RefcountPtr to it
 
    \param rowmap (in): row map of vector

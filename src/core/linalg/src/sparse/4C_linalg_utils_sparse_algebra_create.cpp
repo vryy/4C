@@ -52,14 +52,6 @@ Teuchos::RCP<Epetra_Vector> Core::LinAlg::CreateVector(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_IntVector> Core::LinAlg::CreateIntVector(
-    const Epetra_BlockMap& rowmap, const bool init)
-{
-  return Teuchos::rcp(new Epetra_IntVector(rowmap, init));
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> Core::LinAlg::CreateMultiVector(
     const Epetra_BlockMap& rowmap, const int numrows, const bool init)
 {
