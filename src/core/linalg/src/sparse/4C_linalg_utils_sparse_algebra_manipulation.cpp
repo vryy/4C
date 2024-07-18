@@ -197,33 +197,6 @@ void Core::LinAlg::ExtractMyVector(const Epetra_Vector& source, Epetra_Vector& t
   }
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void Core::LinAlg::ExtractMyVector(
-    double scalar_source, const Epetra_Vector& source, double scalar_target, Epetra_Vector& target)
-{
-  const int my_num_target_gids = target.Map().NumMyElements();
-  const int* my_target_gids = target.Map().MyGlobalElements();
-
-  double* target_values = target.Values();
-
-  const double* src_values = source.Values();
-
-  for (int tar_lid = 0; tar_lid < my_num_target_gids; ++tar_lid)
-  {
-    const int target_gid = my_target_gids[tar_lid];
-
-    const int src_lid = source.Map().LID(target_gid);
-    // check if the target_map is a local sub-set of the source map on each proc
-    if (src_lid == -1)
-      FOUR_C_THROW("Couldn't find the target GID %d in the source map on proc %d.", target_gid,
-          source.Comm().MyPID());
-
-    target_values[tar_lid] *= scalar_target;
-    target_values[tar_lid] += scalar_source * src_values[src_lid];
-  }
-}
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool Core::LinAlg::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,

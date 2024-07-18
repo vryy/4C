@@ -104,20 +104,6 @@ namespace Core::LinAlg
    *  \author hiermeier \date 03/17 */
   void ExtractMyVector(const Epetra_Vector& source, Epetra_Vector& target);
 
-  /*! \brief Extract a partial Epetra_Vector from a given source vector
-   *         and scale the entries on each proc without communication
-   *
-   *  \param scalar_source (in) : scale the target entries by this factor
-   *  \param source        (in) : source vector ( read-only )
-   *  \param scalar_target (in) : scale the source entries by this factor
-   *  \param target        (out): this target vector is going to be filled with
-   *                              the combined scaled values of the source and
-   *                              target vectors
-   *
-   *  \author hiermeier \date 03/17 */
-  void ExtractMyVector(double scalar_source, const Epetra_Vector& source, double scalar_target,
-      Epetra_Vector& target);
-
   /*!
    \brief Call fill_complete on a Epetra_CrsMatrix (for square matrices only!)
    */
