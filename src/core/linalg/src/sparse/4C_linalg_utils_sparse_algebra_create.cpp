@@ -12,6 +12,9 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <MLAPI_Aggregation.h>
+#include <MLAPI_Workspace.h>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
@@ -40,6 +43,22 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::CreateIdentityMatrix(cons
 
   return eye;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Core::LinAlg::SparseMatrix Core::LinAlg::CreateInterpolationMatrix(
+    const SparseMatrix& matrix, double* nullspace, Teuchos::ParameterList& params)
+{
+  Teuchos::RCP<Epetra_CrsMatrix> prolongation_operator;
+
+  MLAPI::Init();
+  MLAPI::GetPtent(*matrix.epetra_matrix(), params, nullspace, prolongation_operator);
+
+  Core::LinAlg::SparseMatrix prolongator(prolongation_operator, Core::LinAlg::View);
+
+  return prolongator;
+}
+
 
 /*----------------------------------------------------------------------*
  |  create a Epetra_Vector                                   mwgee 12/06|

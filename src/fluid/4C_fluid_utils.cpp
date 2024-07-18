@@ -24,8 +24,6 @@
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 
-#include <MLAPI_Aggregation.h>
-#include <MLAPI_Workspace.h>
 #include <stdio.h>
 
 FOUR_C_NAMESPACE_OPEN
@@ -443,8 +441,6 @@ void FLD::UTILS::StressManager::calc_sep_enr(Teuchos::RCP<Core::LinAlg::SparseOp
     if (discret_->get_comm().MyPID() == 0)
       std::cout << "Calculating mean WSS via ML-aggregation:" << std::endl;
 
-    MLAPI::Init();
-
     int ML_solver =
         (Global::Problem::instance()->fluid_dynamic_params()).get<int>("WSS_ML_AGR_SOLVER");
 
@@ -519,9 +515,8 @@ void FLD::UTILS::StressManager::calc_sep_enr(Teuchos::RCP<Core::LinAlg::SparseOp
     }
 
     // get plain aggregation Ptent
-    Teuchos::RCP<Epetra_CrsMatrix> crsPtent;
-    MLAPI::GetPtent(*sysmat2->epetra_matrix(), mlparams, nullspace, crsPtent);
-    Core::LinAlg::SparseMatrix Ptent(crsPtent, Core::LinAlg::View);
+    Core::LinAlg::SparseMatrix Ptent =
+        Core::LinAlg::CreateInterpolationMatrix(*sysmat2, nullspace, mlparams);
 
     // compute scale-separation matrix: S = Ptent*Ptent^T
     sep_enr_ = Core::LinAlg::MatrixMultiply(Ptent, false, Ptent, true);

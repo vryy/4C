@@ -28,9 +28,6 @@
 #include "4C_scatra_turbulence_hit_scalar_forcing.hpp"
 #include "4C_utils_parameter_list.hpp"
 
-#include <MLAPI_Aggregation.h>
-#include <MLAPI_Workspace.h>
-
 FOUR_C_NAMESPACE_OPEN
 
 
@@ -1392,10 +1389,6 @@ void ScaTra::ScaTraTimIntImpl::av_m3_preparation()
 
   // get normalized fine-scale subgrid-diffusivity matrix
   {
-    // this is important to have!!!
-    // MLAPI::Init() without arguments uses internally MPI_COMM_WOLRD
-    MLAPI::Init();
-
     // extract the ML parameters
     Teuchos::ParameterList& mlparams = solver_->params().sublist("ML Parameters");
     // remark: we create a new solver with ML preconditioner here, since this allows for also using
@@ -1434,9 +1427,8 @@ void ScaTra::ScaTraTimIntImpl::av_m3_preparation()
     }
 
     // get plain aggregation Ptent
-    Teuchos::RCP<Epetra_CrsMatrix> crsPtent;
-    MLAPI::GetPtent(*sysmat_sd_->epetra_matrix(), mlparams, nullspace, crsPtent);
-    Core::LinAlg::SparseMatrix Ptent(crsPtent, Core::LinAlg::View);
+    Core::LinAlg::SparseMatrix Ptent =
+        Core::LinAlg::CreateInterpolationMatrix(*sysmat_sd_, nullspace, mlparams);
 
     // compute scale-separation matrix: S = I - Ptent*Ptent^T
     Sep_ = Core::LinAlg::MatrixMultiply(Ptent, false, Ptent, true);

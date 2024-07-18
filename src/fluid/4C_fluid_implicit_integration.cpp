@@ -65,9 +65,6 @@
 #include "4C_mat_par_bundle.hpp"
 #include "4C_utils_function.hpp"
 
-#include <MLAPI_Aggregation.h>
-#include <MLAPI_Workspace.h>
-
 #include <cmath>
 #include <fstream>
 #include <iostream>
@@ -4171,10 +4168,6 @@ void FLD::FluidImplicitTimeInt::av_m3_assemble_mat_and_rhs(Teuchos::ParameterLis
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::av_m3_get_scale_separation_matrix()
 {
-  // this is important to have!!!
-  // MLAPI::Init() without arguments uses internally MPI_COMM_WOLRD
-  MLAPI::Init();
-
   // extract the ML parameters:
   Teuchos::ParameterList& mlparams = solver_->params().sublist("ML Parameters");
   // remark: we create a new solver with ML preconditioner here, since this allows for also using
@@ -4216,9 +4209,8 @@ void FLD::FluidImplicitTimeInt::av_m3_get_scale_separation_matrix()
   }
 
   // get plain aggregation Ptent
-  Teuchos::RCP<Epetra_CrsMatrix> crsPtent;
-  MLAPI::GetPtent(*system_matrix()->epetra_matrix(), mlparams, nullspace, crsPtent);
-  Core::LinAlg::SparseMatrix Ptent(crsPtent, Core::LinAlg::View);
+  Core::LinAlg::SparseMatrix Ptent =
+      Core::LinAlg::CreateInterpolationMatrix(*system_matrix(), nullspace, mlparams);
 
   // compute scale-separation matrix: S = I - Ptent*Ptent^T
   Sep_ = Core::LinAlg::MatrixMultiply(Ptent, false, Ptent, true);
