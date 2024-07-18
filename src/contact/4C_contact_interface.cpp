@@ -32,7 +32,6 @@
 #include "4C_rebalance_graph_based.hpp"
 #include "4C_scatra_ele_parameter_boundary.hpp"
 
-#include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
