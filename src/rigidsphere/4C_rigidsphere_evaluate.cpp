@@ -23,8 +23,6 @@
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_CrsMatrix.h>
-
 FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------------------*
