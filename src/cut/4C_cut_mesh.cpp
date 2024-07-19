@@ -492,6 +492,7 @@ Core::Geo::Cut::Tri3BoundaryCell* Core::Geo::Cut::Mesh::new_tri3_cell(
   }
 
   Tri3BoundaryCell* bc = new Tri3BoundaryCell(xyz, facet, points);
+  bc->set_new_cubature_degree(options_.bc_cubaturedegree());
   boundarycells_.push_back(Teuchos::rcp(bc));
 
   return bc;
@@ -515,6 +516,7 @@ Core::Geo::Cut::Quad4BoundaryCell* Core::Geo::Cut::Mesh::new_quad4_cell(
   }
 
   Quad4BoundaryCell* bc = new Quad4BoundaryCell(xyz, facet, points);
+  bc->set_new_cubature_degree(options_.bc_cubaturedegree());
   boundarycells_.push_back(Teuchos::rcp(bc));
 
   return bc;

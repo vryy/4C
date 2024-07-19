@@ -21,9 +21,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::BoundaryCell::BoundaryCell(
-    const Core::LinAlg::SerialDenseMatrix& xyz, Facet* facet, const std::vector<Point*>& points)
-    : facet_(facet), points_(Teuchos::rcp(new Cycle(points)))
+Core::Geo::Cut::BoundaryCell::BoundaryCell(const Core::LinAlg::SerialDenseMatrix& xyz, Facet* facet,
+    const std::vector<Point*>& points, int cubature_degree)
+    : facet_(facet), points_(Teuchos::rcp(new Cycle(points))), cubature_degree_(cubature_degree)
 {
   xyz_.shape(3, xyz.numCols());
 
@@ -47,6 +47,10 @@ void Core::Geo::Cut::BoundaryCell::clear() { points_->clear(); }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Core::Geo::Cut::BoundaryCell::is_valid() const { return points_->size() > 0; }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int Core::Geo::Cut::BoundaryCell::get_global_boundary_cell_id() { return facet_->side_id(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -377,15 +381,7 @@ void Core::Geo::Cut::Quad4BoundaryCell::normal(
 void Core::Geo::Cut::ArbitraryBoundaryCell::normal(
     const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const
 {
-  FOUR_C_THROW("Call GetNormalVector() to get normal for arbitrary boundarycells");
-  exit(1);
-  /*// cross product to get the normal at the point
-  normal( 0 ) = A( 0, 1 )*A( 1, 2 ) - A( 0, 2 )*A( 1, 1 );
-  normal( 1 ) = A( 0, 2 )*A( 1, 0 ) - A( 0, 0 )*A( 1, 2 );
-  normal( 2 ) = A( 0, 0 )*A( 1, 1 ) - A( 0, 1 )*A( 1, 0 );*/
-
-  //   double norm = normal.norm2();
-  //   normal.scale( 1./norm );
+  FOUR_C_THROW("Call get_normal_vector() to get normal for arbitrary boundarycells");
 }
 
 /*----------------------------------------------------------------------------*

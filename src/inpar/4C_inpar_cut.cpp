@@ -86,6 +86,10 @@ void Inpar::Cut::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Core::UTILS::IntParameter("BOUNDARYCELL_CUBATURDEGREE", 20,
       "Cubaturedegree utilized for the numerical integration on the CUT BoundaryCells.",
       &cut_general);
+
+  // Integrate inside volume cells
+  Core::UTILS::BoolParameter("INTEGRATE_INSIDE_CELLS", "Yes",
+      "Should the integration be done on inside cells", &cut_general);
 }
 
 FOUR_C_NAMESPACE_CLOSE

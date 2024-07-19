@@ -16,6 +16,8 @@ surface meshes
 #include "4C_cut_volumecell.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_nurbs_discretization_utils.hpp"
+#include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
 
@@ -361,22 +363,158 @@ void Core::Geo::CutWizard::add_mesh_cutting_side()
   }
 }
 
+/*
+ * Helper function to evaluate the position on a nurbs9 face, so it can be represented as a quad9
+ * cell
+ */
+void evaluate_position_on_nurbs9(Core::Elements::Element* element,
+    Core::LinAlg::SerialDenseMatrix& element_current_position,
+    Teuchos::RCP<Core::FE::Discretization>& cutterdis,
+    Teuchos::RCP<const Epetra_Vector>& cutter_disp_col)
+{
+  // Initialize the information needed for NURBS elements
+  Core::LinAlg::Matrix<9, 1, double> weights(true);
+  std::vector<Core::LinAlg::SerialDenseVector> myknots(2);
+  std::vector<Core::LinAlg::SerialDenseVector> mypknots(3);
 
+  const int num_nodes = Core::FE::num_nodes<Core::FE::CellType::nurbs9>;
+  const int nurbs_dim = Core::FE::dim<Core::FE::CellType::nurbs9>;
+  const int prob_dim = 3;
 
-/*-------------------------------------------------------------*
- * add all cutting sides from the cut-discretization
- *--------------------------------------------------------------*/
+  // The element pointer has to be a face element.
+  auto face_element = dynamic_cast<const Core::Elements::FaceElement*>(element);
+  FOUR_C_THROW_UNLESS(
+      face_element, "Element given in evaluate_position_on_nurbs9 has to be a face element.");
+
+  // Factor for surface orientation.
+  double normalfac = 1.0;
+
+  // Get the knots and weights for this element.
+  const bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(element,
+      face_element->face_master_number(), face_element->parent_element_id(), *cutterdis.get(),
+      mypknots, myknots, weights, normalfac);
+  if (zero_size)
+    FOUR_C_THROW("GetKnotVectorAndWeightsForNurbsBoundary has to return a non zero size.");
+
+  // Get the position of the control points in the reference configuration and their
+  // displacements.
+  std::vector<int> lm;
+  std::vector<double> mydisp;
+  Core::LinAlg::Matrix<num_nodes * prob_dim, 1, double> ref_pos_controlpoints;
+  Core::LinAlg::Matrix<num_nodes * prob_dim, 1, double> displacement_controlpoints;
+
+  for (unsigned int i_controlpoint = 0; i_controlpoint < (unsigned int)element->num_node();
+       ++i_controlpoint)
+  {
+    const Core::Nodes::Node* controlpoint = element->nodes()[i_controlpoint];
+
+    // Obtain the reference position of the control point
+    for (int i_dim = 0; i_dim < prob_dim; ++i_dim)
+      ref_pos_controlpoints(prob_dim * i_controlpoint + i_dim) = controlpoint->x()[i_dim];
+
+    lm.clear();
+    mydisp.clear();
+    cutterdis->dof(controlpoint, lm);
+    Core::FE::ExtractMyValues(*cutter_disp_col, mydisp, lm);
+
+    // Obtain the displacements on control points
+    for (int i_dim = 0; i_dim < prob_dim; ++i_dim)
+      displacement_controlpoints(prob_dim * i_controlpoint + i_dim) = mydisp[i_dim];
+  }
+
+  // Evaluate the NURBS shape functions to obtain the reference nodal positions and displacement
+  Core::LinAlg::Matrix<prob_dim, 1, double> nodal_position;
+  Core::LinAlg::Matrix<prob_dim, 1, double> nodal_displacement;
+  Core::LinAlg::Matrix<prob_dim, 1, double> current_nodal_position;
+  for (unsigned int i_node = 0; i_node < num_nodes; i_node++)
+  {
+    Core::LinAlg::Matrix<nurbs_dim, 1, double> xi;
+    for (unsigned int i = 0; i < nurbs_dim; i++)
+      xi(i) = Core::FE::eleNodeNumbering_quad9_nodes_reference[i_node][i];
+
+    nodal_position = Core::FE::Nurbs::EvalNurbsInterpolation<num_nodes, nurbs_dim, prob_dim>(
+        ref_pos_controlpoints, xi, weights, myknots, element->shape());
+
+    nodal_displacement = Core::FE::Nurbs::EvalNurbsInterpolation<num_nodes, nurbs_dim, prob_dim>(
+        displacement_controlpoints, xi, weights, myknots, element->shape());
+
+    for (unsigned int i_dim = 0; i_dim < prob_dim; i_dim++)
+      current_nodal_position(i_dim) = nodal_position(i_dim) + nodal_displacement(i_dim);
+
+    // Save current nodal position in element_current_position
+    std::copy(current_nodal_position.data(), current_nodal_position.data() + 3,
+        &element_current_position(0, i_node));
+  }
+}
+
+/*
+ * Helper function to evaluate the position of a classic Lagrange element
+ */
+void evaluate_position_on_lagrange_element(Core::Elements::Element* element,
+    Core::LinAlg::SerialDenseMatrix& element_current_position,
+    Teuchos::RCP<Core::FE::Discretization>& cutterdis,
+    Teuchos::RCP<const Epetra_Vector>& cutter_disp_col)
+{
+  std::vector<int> lm;
+  std::vector<double> mydisp;
+  const int numnode = element->num_node();
+  Core::Nodes::Node** nodes = element->nodes();
+
+  for (int i_node = 0; i_node < numnode; ++i_node)
+  {
+    Core::Nodes::Node& node = *nodes[i_node];
+
+    lm.clear();
+    mydisp.clear();
+    cutterdis->dof(&node, lm);
+
+    // Initialize the current nodal position with its reference position
+    Core::LinAlg::Matrix<3, 1> current_nodal_position(node.x().data());
+
+    if (cutter_disp_col != Teuchos::null)
+    {
+      if (lm.size() == 3)  // case for BELE3 boundary elements
+      {
+        Core::FE::ExtractMyValues(*cutter_disp_col, mydisp, lm);
+      }
+      else if (lm.size() == 4)  // case for BELE3_4 boundary elements
+      {
+        // copy the first three entries for the displacement, the fourth entry should be zero if
+        // BELE3_4 is used for cutdis instead of BELE3
+        std::vector<int> lm_red;  // reduced local map
+        lm_red.clear();
+        for (int k = 0; k < 3; k++) lm_red.push_back(lm[k]);
+
+        Core::FE::ExtractMyValues(*cutter_disp_col, mydisp, lm_red);
+      }
+      else
+        FOUR_C_THROW("wrong number of dofs for node %i", lm.size());
+
+      Core::LinAlg::Matrix<3, 1> disp(mydisp.data(), true);
+
+      // update the reference nodal position of cutter node for current time step (update with
+      // displacement)
+      current_nodal_position.update(1, disp, 1);
+    }
+
+    // Save the current nodal position of i_node in element_current_position
+    std::copy(current_nodal_position.data(), current_nodal_position.data() + 3,
+        &element_current_position(0, i_node));
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void Core::Geo::CutWizard::add_mesh_cutting_side(Teuchos::RCP<Core::FE::Discretization> cutterdis,
     Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
     const int start_ele_gid  ///< mesh coupling index
 )
 {
   if (cutterdis == Teuchos::null)
-    FOUR_C_THROW("cannot add mesh cutting sides for invalid cutter discretiaztion!");
+    FOUR_C_THROW("cannot add mesh cutting sides for invalid cutter discretization!");
 
   std::vector<int> lm;
   std::vector<double> mydisp;
-
   int numcutelements = cutterdis->num_my_col_elements();
 
 
@@ -385,52 +523,36 @@ void Core::Geo::CutWizard::add_mesh_cutting_side(Teuchos::RCP<Core::FE::Discreti
     Core::Elements::Element* element = cutterdis->l_col_element(lid);
 
     const int numnode = element->num_node();
-    Core::Nodes::Node** nodes = element->nodes();
+    Core::LinAlg::SerialDenseMatrix element_current_position(3, numnode);
 
-    Core::LinAlg::SerialDenseMatrix xyze(3, numnode);
+    // obtain the current position of the cutting element depending on its cell type
+    if (element->shape() == Core::FE::CellType::nurbs9)
+      evaluate_position_on_nurbs9(element, element_current_position, cutterdis, cutter_disp_col);
+    else if (element->shape() == Core::FE::CellType::nurbs4)
+      FOUR_C_THROW(
+          "This type of NURBS element is not implemented to be used as a cutter discretization.");
+    else
+      evaluate_position_on_lagrange_element(
+          element, element_current_position, cutterdis, cutter_disp_col);
 
-    for (int i = 0; i < numnode; ++i)
+    // Determine the cutting side id. For embedded mesh cases, we use the id of the parent element
+    // of the cutter discretization. Otherwise, we use directly the id of the cutter discretization
+    int sid;
+    std::vector<Core::Conditions::Condition*> embeddedmesh_cond;
+    cutterdis->get_condition("EmbeddedMeshSolidSurfCoupling", embeddedmesh_cond);
+
+    if (embeddedmesh_cond.size() == 0)
+      sid = element->id() + start_ele_gid;
+    else
     {
-      Core::Nodes::Node& node = *nodes[i];
+      Core::Elements::FaceElement* face_ele = dynamic_cast<Core::Elements::FaceElement*>(element);
+      if (!face_ele) FOUR_C_THROW("Cast to FaceElement failed!");
 
-      lm.clear();
-      mydisp.clear();
-      cutterdis->dof(&node, lm);
-
-      Core::LinAlg::Matrix<3, 1> x(node.x().data());
-
-      if (cutter_disp_col != Teuchos::null)
-      {
-        if (lm.size() == 3)  // case for BELE3 boundary elements
-        {
-          Core::FE::ExtractMyValues(*cutter_disp_col, mydisp, lm);
-        }
-        else if (lm.size() == 4)  // case for BELE3_4 boundary elements
-        {
-          // copy the first three entries for the displacement, the fourth entry should be zero if
-          // BELE3_4 is used for cutdis instead of BELE3
-          std::vector<int> lm_red;  // reduced local map
-          lm_red.clear();
-          for (int k = 0; k < 3; k++) lm_red.push_back(lm[k]);
-
-          Core::FE::ExtractMyValues(*cutter_disp_col, mydisp, lm_red);
-        }
-        else
-          FOUR_C_THROW("wrong number of dofs for node %i", lm.size());
-
-        if (mydisp.size() != 3) FOUR_C_THROW("we need 3 displacements here");
-
-        Core::LinAlg::Matrix<3, 1> disp(mydisp.data(), true);
-
-        // update x-position of cutter node for current time step (update with displacement)
-        x.update(1, disp, 1);
-      }
-
-      std::copy(x.data(), x.data() + 3, &xyze(0, i));
+      sid = face_ele->parent_element_id();
     }
 
     // add the side of the cutter-discretization
-    add_mesh_cutting_side(0, element, xyze, start_ele_gid);
+    add_mesh_cutting_side(0, element, element_current_position, sid);
   }
 }
 
@@ -438,23 +560,55 @@ void Core::Geo::CutWizard::add_mesh_cutting_side(Teuchos::RCP<Core::FE::Discreti
  * prepare the cut, add background elements and cutting sides
  *--------------------------------------------------------------*/
 void Core::Geo::CutWizard::add_mesh_cutting_side(int mi, Core::Elements::Element* ele,
-    const Core::LinAlg::SerialDenseMatrix& xyze, const int start_ele_gid)
+    const Core::LinAlg::SerialDenseMatrix& element_current_position, int sid)
 {
   const int numnode = ele->num_node();
   const int* nodeids = ele->node_ids();
 
-  std::vector<int> nids(nodeids, nodeids + numnode);
+  std::vector<int> nids(numnode);
+  if (ele->shape() != Core::FE::CellType::nurbs9)
+  {
+    for (int iter = 0; iter < numnode; ++iter) nids[iter] = nodeids[iter];
 
-  const int eid = ele->id();            // id of cutting side based on the cutter discretization
-  const int sid = eid + start_ele_gid;  // id of cutting side within the cut library
+    intersection_->add_mesh_cutting_side(sid, nids, element_current_position, ele->shape(), mi);
+  }
+  else
+  {
+    // For element_current_position, new nodal ids are assigned to them.
+    // These nodal ids are generated by looking to the last id number
+    // in the mesh and start counting from there
+    auto cutmesh_nodes = intersection_->MeshIntersection::cut_mesh(0).nodes();
 
-  intersection_->add_mesh_cutting_side(sid, nids, xyze, ele->shape(), mi);
+    // Find the highest value of the ids of the nodes in the cutmesh
+    auto max = std::max_element(std::begin(cutmesh_nodes), std::end(cutmesh_nodes),
+        [](const auto& p1, const auto& p2) { return p1.second->id() < p2.second->id(); });
+
+    // Fill out the vector of nodes ids by counting from the maximum id value found
+    // in the cut mesh
+    int start_id = max->first + 1;
+    std::iota(std::begin(nids), std::end(nids), start_id);
+
+    intersection_->add_mesh_cutting_side(sid, nids, element_current_position, ele->shape(), mi);
+  }
 }
 
-/*-------------------------------------------------------------*
- * add elements from the background discretization
- *-------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void Core::Geo::CutWizard::add_background_elements()
+{
+  // Check if the background mesh has an embedded mesh coupling condition
+  std::vector<Core::Conditions::Condition*> embeddedmesh_cond;
+  back_mesh_->get().get_condition("EmbeddedMeshSolidVolBackground", embeddedmesh_cond);
+
+  if (!embeddedmesh_cond.size())
+    add_background_elements_general();
+  else
+    add_background_elements_embeddedmesh(embeddedmesh_cond);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void Core::Geo::CutWizard::add_background_elements_general()
 {
   // vector with nodal level-set values
   std::vector<double> myphinp;
@@ -467,28 +621,55 @@ void Core::Geo::CutWizard::add_background_elements()
   {
     const Core::Elements::Element* element = back_mesh_->l_col_element(lid);
 
-    Core::LinAlg::SerialDenseMatrix xyze;
-
-    get_physical_nodal_coordinates(element, xyze);
+    Core::LinAlg::SerialDenseMatrix current_element_position =
+        get_current_element_position(element);
 
     if (back_mesh_->is_level_set())
     {
       myphinp.clear();
 
       Core::FE::ExtractMyNodeBasedValues(element, myphinp, back_mesh_->back_level_set_col());
-      add_element(element, xyze, myphinp.data(), lsv_only_plus_domain_);
+      add_element(element, current_element_position, myphinp.data(), lsv_only_plus_domain_);
     }
     else
     {
-      add_element(element, xyze, nullptr);
+      add_element(element, current_element_position, nullptr);
     }
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::CutWizard::get_physical_nodal_coordinates(
-    const Core::Elements::Element* element, Core::LinAlg::SerialDenseMatrix& xyze) const
+void Core::Geo::CutWizard::add_background_elements_embeddedmesh(
+    std::vector<Core::Conditions::Condition*>& embeddedmesh_cond)
+{
+  // Loop over all Elements to find background elements for embedded mesh condition
+  int numelements = back_mesh_->num_my_col_elements();
+
+  for (int lid = 0; lid < numelements; ++lid)
+  {
+    const Core::Elements::Element* element = back_mesh_->l_col_element(lid);
+    Core::LinAlg::SerialDenseMatrix element_position = get_current_element_position(element);
+
+    // Checking if an element is part of the background mesh
+    if (embeddedmesh_cond.size())
+    {
+      for (unsigned int i = 0; i < embeddedmesh_cond.size(); ++i)
+      {
+        for (int num_node = 0; num_node < element->num_node(); ++num_node)
+        {
+          if (embeddedmesh_cond[i]->contains_node(element->nodes()[num_node]->id()))
+            add_element(element, element_position, nullptr);
+        }
+      }
+    }
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Core::LinAlg::SerialDenseMatrix Core::Geo::CutWizard::get_current_element_position(
+    const Core::Elements::Element* element)
 {
   std::vector<int> lm;
   std::vector<double> mydisp;
@@ -496,12 +677,15 @@ void Core::Geo::CutWizard::get_physical_nodal_coordinates(
   const int numnode = element->num_node();
   const Core::Nodes::Node* const* nodes = element->nodes();
 
-  xyze.shape(3, numnode);
+  Core::LinAlg::SerialDenseMatrix current_element_position;
+  current_element_position.shape(3, numnode);
+
   for (int i = 0; i < numnode; ++i)
   {
     const Core::Nodes::Node& node = *nodes[i];
 
-    Core::LinAlg::Matrix<3, 1> x(node.x().data());
+    // Initialize node_current_position with its reference position
+    Core::LinAlg::Matrix<3, 1> node_current_position(node.x().data());
 
     if (back_mesh_->is_back_disp())
     {
@@ -522,13 +706,16 @@ void Core::Geo::CutWizard::get_physical_nodal_coordinates(
 
       if (mydisp.size() != 3) FOUR_C_THROW("we need 3 displacements here");
 
-      Core::LinAlg::Matrix<3, 1> disp(mydisp.data(), true);
+      Core::LinAlg::Matrix<3, 1> node_displacement(mydisp.data(), true);
 
-      // update x-position of cutter node for current time step (update with displacement)
-      x.update(1, disp, 1);
+      // update position of cutter node for current time step (update with displacement)
+      node_current_position.update(1, node_displacement, 1);
     }
-    std::copy(x.data(), x.data() + 3, &xyze(0, i));
+    std::copy(node_current_position.data(), node_current_position.data() + 3,
+        &current_element_position(0, i));
   }
+
+  return current_element_position;
 }
 
 
@@ -637,6 +824,8 @@ void Core::Geo::CutWizard::run_cut(
     if (myrank_ == 0 and screenoutput_)
       Core::IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << Core::IO::endl;
   }
+
+  is_cut_perfomed_ = true;
 }
 
 
@@ -951,6 +1140,27 @@ int Core::Geo::CutWizard::get_bc_cubaturedegree() const
   else
     FOUR_C_THROW("get_bc_cubaturedegree: Options are not set!");
   return -1;  // dummy to make compiler happy :)
+}
+
+bool Core::Geo::CutWizard::do_inside_cells_have_physical_meaning()
+{
+  return intersection_->get_options().do_inside_cells_have_physical_meaning();
+}
+
+Teuchos::RCP<Core::Geo::Cut::CombIntersection> Core::Geo::CutWizard::get_intersection()
+{
+  if (intersection_.is_null()) FOUR_C_THROW("nullptr pointer!");
+
+  return intersection_;
+}
+
+void Core::Geo::CutWizard::check_if_mesh_intersection_and_cut()
+{
+  if (!do_mesh_intersection_ or !is_cut_perfomed_)
+  {
+    FOUR_C_THROW(
+        "Not possible to create coupling pairs, first perform cut using a mesh intersection.");
+  }
 }
 
 FOUR_C_NAMESPACE_CLOSE

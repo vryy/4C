@@ -41,7 +41,7 @@ namespace Core::Geo
      public:
       /// constructor
       BoundaryCell(const Core::LinAlg::SerialDenseMatrix& xyz, Facet* facet,
-          const std::vector<Point*>& points);
+          const std::vector<Point*>& points, int cubature_degree);
 
       /// destructor
       virtual ~BoundaryCell() = default;
@@ -50,12 +50,6 @@ namespace Core::Geo
        */
 
       virtual Core::FE::CellType shape() const = 0;
-
-      /*! \brief Returns the cubature degree to generate quadrature rule for the cell
-       *
-       *  This is the maximal polynomial degree which is integrate exactly by the used
-       *  gaussion quadrature rule. */
-      virtual int cubature_degree() const = 0;
 
       /*!
       \brief Writes the geometry of boundarycell, and the constant scalar "value" in GMSH format
@@ -143,8 +137,7 @@ namespace Core::Geo
       /*!
       \brief Get the Gaussian integration rule for the boundarycell
        */
-      virtual Core::FE::GaussIntegration gauss_rule() { return gauss_rule(cubature_degree()); }
-
+      virtual Core::FE::GaussIntegration gauss_rule() { return gauss_rule(get_cubature_degree()); }
       /*!
       \brief Get the normal vector for the arbitrary boundarycell alone
        */
@@ -159,6 +152,16 @@ namespace Core::Geo
        */
       void print(std::ostream& stream);
       void print() { print(std::cout); }
+
+      /*!
+      \brief Set a different cubature degree
+       */
+      void set_new_cubature_degree(int cubature_degree) { cubature_degree_ = cubature_degree; }
+
+      /*!
+      \brief Returns the cubature degree to generate quadrature rule for the cell
+       */
+      int get_cubature_degree() { return cubature_degree_; }
 
       /*!
       \brief Computes the location of Gauss points on the boundarycell (x_gp_lin) from the standard
@@ -227,6 +230,19 @@ namespace Core::Geo
           Core::LinAlg::Matrix<3, 1>& x_gp_lin, Core::LinAlg::Matrix<3, 1>& normal, double& drs,
           bool shadow = false);
 
+      /*!
+      \brief Get the global id of this boundary cell
+       */
+      int get_global_boundary_cell_id();
+
+      /*!
+      \brief Set a pointer to the background element of this boundary cell
+       */
+      void set_background_ele_ptr(Teuchos::RCP<Geo::Cut::Element> background_ele_ptr)
+      {
+        background_ele_ptr_ = background_ele_ptr;
+      }
+
      protected:
       virtual Core::FE::GaussRule2D my_simple_gauss_rule() = 0;
 
@@ -278,6 +294,12 @@ namespace Core::Geo
       Core::LinAlg::SerialDenseMatrix xyz_ref_;
       Facet* facet_;
       Teuchos::RCP<Cycle> points_;
+
+      /// Pointer to the background element of this boundary cell
+      Teuchos::RCP<Geo::Cut::Element> background_ele_ptr_;
+
+      /// Cubature degree
+      int cubature_degree_;
     };
 
     /*----------------------------------------------------------------------------*/
@@ -285,16 +307,16 @@ namespace Core::Geo
     class Point1BoundaryCell : public BoundaryCell
     {
      public:
+      /// Default value for the cubature degree of a Point1BoundaryCell
+      static constexpr int cubature_degree_default = 0;
+
       Point1BoundaryCell(const Core::LinAlg::SerialDenseMatrix& xyz, Facet* facet,
           const std::vector<Point*>& points)
-          : BoundaryCell(xyz, facet, points)
+          : BoundaryCell(xyz, facet, points, cubature_degree_default)
       {
-        /* intentionally left blank */
       }
 
       Core::FE::CellType shape() const override { return Core::FE::CellType::point1; }
-
-      int cubature_degree() const override { return 0; }
 
       void dump_gmsh_normal(std::ofstream& file) override;
 
@@ -323,16 +345,16 @@ namespace Core::Geo
     class Line2BoundaryCell : public BoundaryCell
     {
      public:
+      /// Default value for the cubature degree of a Line2BoundaryCell
+      static constexpr int cubature_degree_default = 4;
+
       Line2BoundaryCell(const Core::LinAlg::SerialDenseMatrix& xyz, Facet* facet,
           const std::vector<Point*>& points)
-          : BoundaryCell(xyz, facet, points)
+          : BoundaryCell(xyz, facet, points, cubature_degree_default)
       {
-        /* intentionally left blank */
       }
 
       Core::FE::CellType shape() const override { return Core::FE::CellType::line2; }
-
-      int cubature_degree() const override { return 4; }
 
       void dump_gmsh_normal(std::ofstream& file) override;
 
@@ -361,15 +383,16 @@ namespace Core::Geo
     class Tri3BoundaryCell : public BoundaryCell
     {
      public:
+      /// Default value for the cubature degree of a Tri3BoundaryCell
+      static constexpr int cubature_degree_default = 20;
+
       Tri3BoundaryCell(const Core::LinAlg::SerialDenseMatrix& xyz, Facet* facet,
           const std::vector<Point*>& points)
-          : BoundaryCell(xyz, facet, points)
+          : BoundaryCell(xyz, facet, points, cubature_degree_default)
       {
       }
 
       Core::FE::CellType shape() const override { return Core::FE::CellType::tri3; }
-
-      int cubature_degree() const override { return 20; }
 
       void dump_gmsh_normal(std::ofstream& file) override;
 
@@ -402,15 +425,16 @@ namespace Core::Geo
     class Quad4BoundaryCell : public BoundaryCell
     {
      public:
+      /// Default value for the cubature degree of a Quad4BoundaryCell
+      static constexpr int cubature_degree_default = 20;
+
       Quad4BoundaryCell(const Core::LinAlg::SerialDenseMatrix& xyz, Facet* facet,
           const std::vector<Point*>& points)
-          : BoundaryCell(xyz, facet, points)
+          : BoundaryCell(xyz, facet, points, cubature_degree_default)
       {
       }
 
       Core::FE::CellType shape() const override { return Core::FE::CellType::quad4; }
-
-      int cubature_degree() const override { return 20; }
 
       void dump_gmsh_normal(std::ofstream& file) override;
 
@@ -441,16 +465,19 @@ namespace Core::Geo
     class ArbitraryBoundaryCell : public BoundaryCell
     {
      public:
+      /// Default value for the cubature degree of an ArbitraryBoundaryCell
+      static constexpr int cubature_degree_default = 0;
+
       ArbitraryBoundaryCell(const Core::LinAlg::SerialDenseMatrix& xyz, Facet* facet,
           const std::vector<Point*>& points, const Core::FE::GaussIntegration& gaussRule,
           const Core::LinAlg::Matrix<3, 1>& normal)
-          : BoundaryCell(xyz, facet, points), gauss_rule_(gaussRule), normal_(normal)
+          : BoundaryCell(xyz, facet, points, cubature_degree_default),
+            gauss_rule_(gaussRule),
+            normal_(normal)
       {
       }
 
       Core::FE::CellType shape() const override { return Core::FE::CellType::dis_none; }
-
-      int cubature_degree() const override { return 0; }
 
       void dump_gmsh_normal(std::ofstream& file) override;
 

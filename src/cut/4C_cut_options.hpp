@@ -45,6 +45,7 @@ namespace Core::Geo
             genwedge6_(genwedge6),
             genpyramid5_(genpyramid5),
             do_selfcut_(true),
+            integrate_inside_cells_(true),
             selfcut_do_meshcorrection_(true),
             selfcut_island_geom_multiplicator_(2),
             gen_bcell_position_(bcells_on_cut_side),
@@ -131,6 +132,11 @@ namespace Core::Geo
       /** \brief Run the SelfCut Algorithm*/
       bool do_self_cut() { return do_selfcut_; }
 
+      /** \brief Get if the cells marked as inside cells have a physical meaning
+       * and if they should be integrated
+       */
+      bool do_inside_cells_have_physical_meaning() { return integrate_inside_cells_; }
+
       /** \brief perform the mesh correction in the selfcut algorithm*/
       bool self_cut_do_mesh_correction() { return selfcut_do_meshcorrection_; }
 
@@ -186,6 +192,10 @@ namespace Core::Geo
 
       /** \brief Run the SelfCut Algorithm*/
       bool do_selfcut_;
+
+      /** \brief After tesselation, should the integration of the background cells should be done
+       *  in the inside cells or in the outside cells? If false, it's done in the outside cells. */
+      bool integrate_inside_cells_;
 
       /** \brief perform the mesh correction in the selfcut algorithm*/
       bool selfcut_do_meshcorrection_;

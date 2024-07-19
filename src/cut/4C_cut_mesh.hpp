@@ -344,6 +344,9 @@ namespace Core::Geo
           Core::FE::CellType shape, Element& e, bool fatal, VCellGaussPts VCellGP);
 
 
+      //! Return the elements of this mesh
+      std::map<int, Teuchos::RCP<Element>> get_mesh_elements() { return elements_; }
+
       /*========================================================================*/
       //! @name print statistics
       /*========================================================================*/
