@@ -83,7 +83,7 @@ namespace Core::Geo
         }
 
         Teuchos::RCP<Core::FE::GaussPoints> gp =
-            Core::FE::GaussIntegration::create_projected<distype>(xie, bc->cubature_degree());
+            Core::FE::GaussIntegration::create_projected<distype>(xie, bc->get_cubature_degree());
         return gp;
       }
 

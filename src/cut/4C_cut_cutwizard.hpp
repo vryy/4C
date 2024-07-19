@@ -141,6 +141,8 @@ namespace Core::Geo
       {
       }
 
+      Teuchos::RCP<Core::FE::Discretization> get_cutter_discretization() { return cutterdis_; }
+
       //---------------------------------discretization-----------------------------
 
       //! @name cutter discretization
@@ -266,6 +268,16 @@ namespace Core::Geo
     //! Cubaturedegree for creating of integrationpoints on boundarycells
     int get_bc_cubaturedegree() const;
 
+    //! From the cut options, get if the cells marked as inside cells have a physical meaning
+    //! and if they should be integrated
+    bool do_inside_cells_have_physical_meaning();
+
+    //! Get the main intersection
+    Teuchos::RCP<Core::Geo::Cut::CombIntersection> get_intersection();
+
+    //! Check if the construction of the coupling pairs can be perfomed
+    void check_if_mesh_intersection_and_cut();
+
    protected:
     /** \brief hidden constructor for derived classes only
      *
@@ -276,8 +288,9 @@ namespace Core::Geo
 
     Teuchos::RCP<const BackMesh> back_mesh_ptr() const { return back_mesh_.getConst(); }
 
-    virtual void get_physical_nodal_coordinates(
-        const Core::Elements::Element* element, Core::LinAlg::SerialDenseMatrix& xyze) const;
+    //! Get the current position of a given element
+    Core::LinAlg::SerialDenseMatrix get_current_element_position(
+        const Core::Elements::Element* element);
 
     Core::Geo::Cut::CombIntersection& intersection()
     {
@@ -303,6 +316,14 @@ namespace Core::Geo
     //! add elements from the background discretization
     void add_background_elements();
 
+    //! add elements from the background discretization for the cases of mesh and level set
+    //! intersection
+    void add_background_elements_general();
+
+    //! add elements from the background discretization for embedded mesh applications,
+    void add_background_elements_embeddedmesh(
+        std::vector<Core::Conditions::Condition*>& embeddedmesh_cond);
+
     //! Add all cutting side elements of given cutter discretization with given displacement field
     //! to the intersection class
     void add_mesh_cutting_side(Teuchos::RCP<Core::FE::Discretization> cutterdis,
@@ -311,8 +332,8 @@ namespace Core::Geo
     );
 
     //! Add this cutting side element with given global coordinates to the intersection class
-    void add_mesh_cutting_side(int mi, Core::Elements::Element* ele,
-        const Core::LinAlg::SerialDenseMatrix& xyze, const int start_ele_gid);
+    void add_mesh_cutting_side(int mi, Core::Elements::Element* element,
+        const Core::LinAlg::SerialDenseMatrix& element_current_position, int sid);
 
     //! Add this background mesh element to the intersection class
     void add_element(const Core::Elements::Element* ele,
@@ -403,6 +424,9 @@ namespace Core::Geo
     //! @name Flags whether wizard is initialized correctly
     bool is_set_options_;
     bool is_cut_prepare_performed_;
+
+    //! @name Flag to check that the cut operation was done
+    bool is_cut_perfomed_;
     //@}
 
   };  // class CutWizard

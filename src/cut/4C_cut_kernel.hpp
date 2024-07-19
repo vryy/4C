@@ -150,6 +150,8 @@ namespace Core::Geo::Cut::Kernel
         break;
       }
       case Core::FE::CellType::quad4:
+      case Core::FE::CellType::quad9:
+      case Core::FE::CellType::nurbs9:
       {
         if (Core::MathOperations<typename T::scalar_type>::abs(xsi(1) + 1.0) <=
             Core::MathOperations<typename FloatType::scalar_type>::abs(tol(1)))
@@ -207,6 +209,8 @@ namespace Core::Geo::Cut::Kernel
         break;
       }
       case Core::FE::CellType::quad4:
+      case Core::FE::CellType::quad9:
+      case Core::FE::CellType::nurbs9:
       {
         if ((Core::MathOperations<typename T::scalar_type>::abs(xsi(1) + 1.0) <=
                 Core::MathOperations<typename FloatType::scalar_type>::abs(tol(1))) and
@@ -276,6 +280,7 @@ namespace Core::Geo::Cut::Kernel
       case Core::FE::CellType::quad4:
       case Core::FE::CellType::quad8:
       case Core::FE::CellType::quad9:
+      case Core::FE::CellType::nurbs9:
       {
         return (Core::MathOperations<typename T::scalar_type>::abs(xsi(0) + 1) < tol or
                 Core::MathOperations<typename T::scalar_type>::abs(xsi(1) + 1) < tol or
@@ -350,6 +355,7 @@ namespace Core::Geo::Cut::Kernel
       case Core::FE::CellType::quad4:
       case Core::FE::CellType::quad8:
       case Core::FE::CellType::quad9:
+      case Core::FE::CellType::nurbs9:
       {
         return xsi(0) >=
                    -1.0 - Core::MathOperations<typename std::decay<decltype(tol(0))>::type>::abs(
@@ -473,6 +479,7 @@ namespace Core::Geo::Cut::Kernel
       case Core::FE::CellType::quad4:
       case Core::FE::CellType::quad8:
       case Core::FE::CellType::quad9:
+      case Core::FE::CellType::nurbs9:
       {
         return xsi(0) >= -1.0 - tol and xsi(1) >= -1.0 - tol and xsi(0) <= 1.0 + tol and
                xsi(1) <= 1.0 + tol;

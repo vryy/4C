@@ -172,6 +172,21 @@ namespace Core::Geo
           std::vector<std::vector<int>>& nds_sets,
           std::vector<std::vector<Core::FE::GaussIntegration>>& intpoints_sets, bool include_inner);
 
+      /*!
+      \brief Get the Gauss rule for integration cells.
+       *
+       * The volume cells outside the integration domain are ignored. Sometimes, after the
+       * cut, cells marked as inside cells are actually outside the integration domain. If
+       * the parameter integrate_inside_cells == true, the cells marked as inside cells are
+       * integrated. Otherwise, the cells marked as outside cells are integrated.
+       *
+       * @param[out] intpoints_vec                 vector with gauss integration rule
+       * @param[in]  integrate_inside_volumecells  boolean value to check if the inside cells should
+       * be integrated
+       */
+      virtual bool get_gauss_rule_integration_cells(
+          std::vector<Core::FE::GaussIntegration>& intpoints_vec,
+          bool integrate_inside_volumecells);
 
       //! get the element's sets of volume-cells ordered by inside/outside position
       virtual void volume_cell_sets() = 0;

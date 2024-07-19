@@ -41,7 +41,8 @@ Core::Geo::Cut::SideHandle* Core::Geo::Cut::MeshHandle::create_side(int sid,
     return &lsh;
   }
   else if (distype == Core::FE::CellType::quad4 || distype == Core::FE::CellType::quad8 ||
-           distype == Core::FE::CellType::quad9 || distype == Core::FE::CellType::tri6)
+           distype == Core::FE::CellType::quad9 || distype == Core::FE::CellType::tri6 ||
+           distype == Core::FE::CellType::nurbs9)
   {
     // each non-tri3 side will be subdivided into tri3-subsides carrying the same side id as the
     // parent side
@@ -65,6 +66,11 @@ Core::Geo::Cut::SideHandle* Core::Geo::Cut::MeshHandle::create_side(int sid,
         break;
       }
       case Core::FE::CellType::quad9:
+      {
+        qsh = new Quad9SideHandle(mesh_, sid, nids);
+        break;
+      }
+      case Core::FE::CellType::nurbs9:
       {
         qsh = new Quad9SideHandle(mesh_, sid, nids);
         break;

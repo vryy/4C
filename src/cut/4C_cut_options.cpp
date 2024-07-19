@@ -36,6 +36,7 @@ void Core::Geo::Cut::Options::init_by_paramlist(const Teuchos::ParameterList& cu
       Core::UTILS::IntegralValue<bool>(cutparams, "SELFCUT_DO_MESHCORRECTION");
   selfcut_island_geom_multiplicator_ = cutparams.get<int>("SELFCUT_MESHCORRECTION_MULTIPLICATOR");
   bc_cubaturedegree_ = cutparams.get<int>("BOUNDARYCELL_CUBATURDEGREE");
+  integrate_inside_cells_ = Core::UTILS::IntegralValue<bool>(cutparams, "INTEGRATE_INSIDE_CELLS");
 }
 
 /// Initializes Cut Parameters for Cuttests (use full cln) -- slowest option
