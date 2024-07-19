@@ -16,6 +16,8 @@
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_utils_function_of_time.hpp"
 
+#include <Epetra_Export.h>
+
 #include <iostream>
 
 FOUR_C_NAMESPACE_OPEN

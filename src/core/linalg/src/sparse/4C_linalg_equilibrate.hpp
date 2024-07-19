@@ -12,8 +12,10 @@
 
 #include "4C_config.hpp"
 
-#include <Epetra_CrsMatrix.h>
 #include <Teuchos_RCP.hpp>
+
+class Epetra_Map;
+class Epetra_Vector;
 
 FOUR_C_NAMESPACE_OPEN
 

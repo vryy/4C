@@ -17,8 +17,9 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
-#include <Epetra_CrsMatrix.h>
 #include <Epetra_FECrsMatrix.h>
+
+class Epetra_CrsMatrix;
 
 FOUR_C_NAMESPACE_OPEN
 

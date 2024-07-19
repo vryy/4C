@@ -16,10 +16,6 @@
 #include "4C_linalg_blocksparsematrix.hpp"
 
 #include <Epetra_Comm.h>
-#include <Epetra_CrsGraph.h>
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_Export.h>
-#include <Epetra_Import.h>
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 
