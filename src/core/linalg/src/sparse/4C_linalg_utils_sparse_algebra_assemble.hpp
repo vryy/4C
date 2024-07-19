@@ -70,47 +70,6 @@ namespace Core::LinAlg
       const std::vector<int>& lm, const std::vector<int>& lmowner);
 
   /*!
-   \brief Assemble a Core::LinAlg::Matrix<3,1> into an Epetra_Vector
-
-   This is a wrapper that converts Core::LinAlg::Matrix<3,1> to
-   Core::LinAlg::SerialDenseVector (view version)
-
-   \param V (out)   : Vector to be assembled on
-   \param Vele (in) : dense vector to be assembled
-   \param lm (in) : vector with gids
-   \param lmowner (in) : vector with owner procs of gids
-   */
-  void Assemble(Epetra_Vector& V, Core::LinAlg::Matrix<3, 1>& Vele, const std::vector<int>& lm,
-      const std::vector<int>& lmowner);
-
-  /*!
-   \brief Assemble a Core::LinAlg::Matrix<3,1> into an Epetra_Vector in case the
-   owner is always the same
-
-   This is a wrapper that converts Core::LinAlg::Matrix<3,1> to
-   Core::LinAlg::SerialDenseVector (view version)
-
-   \param V (out)   : Vector to be assembled on
-   \param Vele (in) : dense vector to be assembled
-   \param lm (in) : vector with gids
-   \param lmowner (in) : vector with owner procs of gids
-   */
-  void Assemble(Epetra_Vector& V, Core::LinAlg::Matrix<3, 1>& Vele, const std::vector<int>& lm,
-      const int& lmowner);
-
-  /*!
-   \brief Assemble a double into an Epetra_Vector
-
-   This is an wrapper.
-
-   \param V (out)   : Vector to be assembled on
-   \param Vele (in) : dense vector to be assembled
-   \param lm (in) : vector with gids
-   \param lmowner (in) : vector with owner procs of gids
-   */
-  void Assemble(Epetra_Vector& V, double& Vele, const int& lm, const int& lmowner);
-
-  /*!
    \brief Assemble a Core::LinAlg::SerialDenseVector into a Epetra_MultiVector
 
    This is an individual call.
