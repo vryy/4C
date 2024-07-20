@@ -34,9 +34,6 @@ namespace Input
   /// construct list with all parameters and documentation
   Teuchos::RCP<const Teuchos::ParameterList> ValidParameters();
 
-  /// print all parameters that have a default value
-  void PrintDefaultParameters(Core::IO::Pstream& stream, const Teuchos::ParameterList& list);
-
   /// print flag sections of dat file with given list
   void PrintDatHeader(std::ostream& stream, const Teuchos::ParameterList& list,
       std::string parentname = "", bool comment = true);

@@ -25,8 +25,6 @@ FSI::FluidAleAlgorithm::FluidAleAlgorithm(const Epetra_Comm& comm)
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
 
-  if (comm_.MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, fsidyn);
-
   step_ = 0;
   time_ = 0.;
   dt_ = fsidyn.get<double>("TIMESTEP");

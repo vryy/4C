@@ -135,8 +135,6 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
   // const Teuchos::ParameterList& probsize = Global::Problem::instance()->ProblemSizeParams();
   // const Teuchos::ParameterList& ioflags  = Global::Problem::instance()->IOParams();
 
-  if (actdis->get_comm().MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, fdyn);
-
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
@@ -1288,8 +1286,6 @@ void Adapter::FluidBaseAlgorithm::setup_inflow_fluid(
   // set some pointers and variables
   // -------------------------------------------------------------------
   const Teuchos::ParameterList& fdyn = Global::Problem::instance()->fluid_dynamic_params();
-
-  if (discret->get_comm().MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, fdyn);
 
   // -------------------------------------------------------------------
   // create a solver

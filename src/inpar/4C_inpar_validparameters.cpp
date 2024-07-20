@@ -259,33 +259,6 @@ void PrintDefaultDatHeader()
   Input::PrintDatHeader(std::cout, *list);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void Input::PrintDefaultParameters(Core::IO::Pstream& stream, const Teuchos::ParameterList& list)
-{
-  bool hasDefault = false;
-  for (Teuchos::ParameterList::ConstIterator i = list.begin(); i != list.end(); ++i)
-  {
-    const Teuchos::ParameterEntry& entry = list.entry(i);
-    if (entry.isDefault())
-    {
-      if (not hasDefault)
-      {
-        hasDefault = true;
-        stream << "default parameters in list '" << list.name() << "':\n";
-      }
-      const Teuchos::any& v = entry.getAny(false);
-      int l = list.name(i).length();
-      stream << "    " << list.name(i);
-      stream << std::string(std::max<int>(31 - l, 0), ' ');
-      stream << ' ' << v << "\n";
-    }
-  }
-  if (hasDefault) stream << "\n";
-}
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Teuchos::ParameterList> Input::ValidParameters()

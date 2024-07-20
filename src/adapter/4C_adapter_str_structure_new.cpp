@@ -673,11 +673,6 @@ void Adapter::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
   Core::ProblemType probtype = problem->get_problem_type();
 
   // ---------------------------------------------------------------------------
-  // show default parameters
-  // ---------------------------------------------------------------------------
-  if ((actdis_->get_comm()).MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, *sdyn_);
-
-  // ---------------------------------------------------------------------------
   // get input parameter lists and copy them,
   // because a few parameters are overwritten
   // ---------------------------------------------------------------------------

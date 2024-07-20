@@ -71,12 +71,6 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   const Teuchos::ParameterList& rawdyn =
       Global::Problem::instance()->reduced_d_airway_dynamic_params();
 
-  // Print default parameters
-  if (actdis->get_comm().MyPID() == 0)
-  {
-    Input::PrintDefaultParameters(Core::IO::cout, rawdyn);
-  }
-
   // 4. Create a linear solver
   // Get the solver number for the LINEAR_SOLVER
   const int linsolvernumber = rawdyn.get<int>("LINEAR_SOLVER");

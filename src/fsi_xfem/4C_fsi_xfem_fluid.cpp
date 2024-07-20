@@ -24,8 +24,6 @@ FSI::FluidXFEMAlgorithm::FluidXFEMAlgorithm(const Epetra_Comm& comm)
 {
   const Teuchos::ParameterList& fluiddyn = Global::Problem::instance()->fluid_dynamic_params();
 
-  if (comm_.MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, fluiddyn);
-
   step_ = 0;
   time_ = 0.;
   dt_ = fluiddyn.get<double>("TIMESTEP");
