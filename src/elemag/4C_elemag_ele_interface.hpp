@@ -17,7 +17,6 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 

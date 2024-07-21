@@ -13,7 +13,6 @@
 
 #include "4C_linalg_fixedsizematrix.hpp"
 
-#include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 

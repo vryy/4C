@@ -17,8 +17,6 @@ equations
 #include "4C_cut_least_squares.hpp"
 #include "4C_cut_options.hpp"
 
-#include <Epetra_MultiVector.h>
-
 #include <algorithm>
 #include <cmath>
 #include <fstream>

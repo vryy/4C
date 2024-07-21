@@ -18,7 +18,6 @@
 #include "4C_fbi_fluid_assembly_strategy.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_FEVector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <vector>

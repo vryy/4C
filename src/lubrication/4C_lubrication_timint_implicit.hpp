@@ -20,7 +20,6 @@
 #include "4C_linalg_serialdensevector.hpp"
 
 #include <Epetra_Map.h>
-#include <Epetra_MultiVector.h>
 #include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN

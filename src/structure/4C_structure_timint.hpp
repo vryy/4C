@@ -23,10 +23,6 @@
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
 #include <Epetra_Vector.h>
-// #include <ml_common.h>
-// #include <ml_include.h>
-// #include <NOX.H>
-// #include <NOX_Epetra.H>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>

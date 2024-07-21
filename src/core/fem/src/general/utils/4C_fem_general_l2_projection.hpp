@@ -14,7 +14,7 @@
 
 #include "4C_config.hpp"
 
-#include <Epetra_Vector.h>
+#include <Epetra_MultiVector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 

@@ -21,8 +21,6 @@
 #include "4C_binstrategy_utils.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
-#include <Epetra_CrsGraph.h>
-#include <Epetra_MpiComm.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>

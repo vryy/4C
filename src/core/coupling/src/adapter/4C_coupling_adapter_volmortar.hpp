@@ -19,7 +19,6 @@
 #include "4C_coupling_adapter.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
