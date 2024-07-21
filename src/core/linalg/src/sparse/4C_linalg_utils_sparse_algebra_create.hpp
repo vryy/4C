@@ -23,6 +23,7 @@
 #include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -44,6 +45,16 @@ namespace Core::LinAlg
    \param rowmap (in): row map of matrix
    */
   Teuchos::RCP<Core::LinAlg::SparseMatrix> CreateIdentityMatrix(const Epetra_Map& map);
+
+  /*! \brief Create prolongation matrix using an external algebraic multigrid package
+   *
+   * \param matrix Input matrix (= fine level operator)
+   * \param nullspace Set of nullspace vectors
+   * \param params Additional configuration parameters for algebraic multigrid setup
+   * \return Prolongation matrix
+   */
+  Core::LinAlg::SparseMatrix CreateInterpolationMatrix(
+      const SparseMatrix& matrix, double* nullspace, Teuchos::ParameterList& params);
 
   /*!
    \brief Create a new Epetra_Vector and return RefcountPtr to it

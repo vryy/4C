@@ -32,9 +32,6 @@
 #include "4C_mat_par_bundle.hpp"
 #include "4C_rebalance_graph_based.hpp"
 
-#include <MLAPI_Aggregation.h>
-#include <MLAPI_Workspace.h>
-
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
