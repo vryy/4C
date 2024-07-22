@@ -15,6 +15,7 @@
 #include "4C_fem_condition_utils.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 
+#include <Epetra_Export.h>
 #include <Epetra_IntVector.h>
 
 #include <algorithm>

@@ -15,7 +15,6 @@
 #include "4C_linear_solver_method.hpp"
 
 #include <Amesos_BaseSolver.h>
-#include <Epetra_CrsMatrix.h>
 #include <EpetraExt_Reindex_LinearProblem2.h>
 
 FOUR_C_NAMESPACE_OPEN

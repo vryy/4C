@@ -19,6 +19,8 @@
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_utils_function_of_time.hpp"
 
+#include <Epetra_Export.h>
+
 #include <iostream>
 
 FOUR_C_NAMESPACE_OPEN

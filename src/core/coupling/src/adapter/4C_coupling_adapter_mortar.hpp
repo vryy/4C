@@ -17,7 +17,6 @@
 #include "4C_fem_general_shape_function_type.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_CrsMatrix.h>
 #include <Epetra_Map.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>

@@ -19,9 +19,7 @@
 #include <AztecOO_StatusTestCombo.h>
 #include <AztecOO_StatusTestMaxIters.h>
 #include <AztecOO_StatusTestResNorm.h>
-#include <Epetra_CrsMatrix.h>
 #include <Epetra_LinearProblem.h>
-#include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 #include <Epetra_Vector.h>
 #include <NOX_Epetra_Interface_Jacobian.H>

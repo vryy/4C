@@ -19,17 +19,11 @@
 #include "4C_fsi_algorithm.hpp"
 #include "4C_io.hpp"
 
-#include <AztecOO.h>
 #include <Epetra_CrsGraph.h>
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_LinearProblem.h>
-#include <Epetra_Map.h>
-#include <Epetra_RowMatrix.h>
 #include <Epetra_Vector.h>
 #include <NOX.H>
 #include <NOX_Epetra.H>
 #include <NOX_Epetra_Interface_Required.H>
-#include <NOX_Epetra_LinearSystem_AztecOO.H>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 

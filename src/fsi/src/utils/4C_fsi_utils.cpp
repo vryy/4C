@@ -22,19 +22,13 @@
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
-#include "4C_mat_par_bundle.hpp"
 #include "4C_mortar_interface.hpp"
 #include "4C_so3_line.hpp"
 #include "4C_so3_surface.hpp"
-
-#include <Epetra_CrsMatrix.h>
-#include <NOX.H>
-#include <NOX_Epetra.H>
 
 #include <map>
 #include <set>
