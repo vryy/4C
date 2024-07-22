@@ -9,15 +9,15 @@
 */
 /*-----------------------------------------------------------*/
 
+#ifndef FOUR_C_FLUID_FUNCTIONS_HPP
+#define FOUR_C_FLUID_FUNCTIONS_HPP
+
 #include "4C_config.hpp"
 
 #include "4C_mat_fluid_weakly_compressible.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_stvenantkirchhoff.hpp"
 #include "4C_utils_function.hpp"
-
-#ifndef FOUR_C_FLUID_FUNCTIONS_HPP
-#define FOUR_C_FLUID_FUNCTIONS_HPP
 
 FOUR_C_NAMESPACE_OPEN
 
