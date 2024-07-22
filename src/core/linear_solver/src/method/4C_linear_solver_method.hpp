@@ -67,8 +67,7 @@ namespace Core::LinearSolver
     multigrid_ml_fluid2,  ///< energy optimal multigrid for unsymmetric fluid problems (ML package,
                           ///< outdated)
     multigrid_muelu,      ///< multigrid preconditioner (MueLu package, recommended!)
-    multigrid_muelu_fluid,  ///< multigrid preconditioner for blocked fluid problems (MueLu package)
-    multigrid_muelu_tsi,    ///< multigrid preconditioner for blocked tsi problems (MueLu package)
+    multigrid_muelu_tsi,  ///< multigrid preconditioner for blocked tsi problems (MueLu package)
     multigrid_muelu_contactsp,  ///< multigrid preconditioner for blocked contact problems in saddle
                                 ///< point formulation (MueLu package)
     multigrid_muelu_beamsolid,  ///< multigrid preconditioner for blocked beam solid interaction

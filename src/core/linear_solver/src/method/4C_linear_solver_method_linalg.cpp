@@ -661,9 +661,6 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& i
     case Core::LinearSolver::PreconditionerType::multigrid_muelu:
       beloslist.set("Preconditioner Type", "ML");
       break;
-    case Core::LinearSolver::PreconditionerType::multigrid_muelu_fluid:
-      beloslist.set("Preconditioner Type", "Fluid");
-      break;
     case Core::LinearSolver::PreconditionerType::multigrid_muelu_tsi:
       beloslist.set("Preconditioner Type", "TSI");
       break;
@@ -720,11 +717,6 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& i
   if (azprectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
-    muelulist = translate_four_c_to_muelu(inparams, &beloslist);
-  }
-  if (azprectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu_fluid)
-  {
-    Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Fluid) Parameters");
     muelulist = translate_four_c_to_muelu(inparams, &beloslist);
   }
   if (azprectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu_tsi)
