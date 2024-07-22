@@ -19,11 +19,7 @@
 #include "4C_fsi_overlapprec.hpp"
 
 #include <NOX.H>
-#include <NOX_Direction_UserDefinedFactory.H>
 #include <NOX_Epetra.H>
-#include <NOX_Epetra_Group.H>
-#include <NOX_Epetra_Interface_Jacobian.H>
-#include <NOX_Epetra_Interface_Preconditioner.H>
 #include <Teuchos_TimeMonitor.hpp>
 
 // debug flag to merge the MFSI block matrix to one sparse matrix

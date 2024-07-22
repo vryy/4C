@@ -18,7 +18,6 @@
 
 #include "4C_io_inputreader.hpp"
 
-#include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 
 #include <memory>

@@ -12,7 +12,6 @@
 #include "4C_linalg_blocksparsematrix.hpp"
 
 #include <Epetra_CrsMatrix.h>
-#include <Epetra_MultiVector.h>
 
 #include <fstream>
 

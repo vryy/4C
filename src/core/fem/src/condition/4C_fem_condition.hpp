@@ -18,7 +18,6 @@
 #include "4C_io_input_parameter_container.hpp"
 #include "4C_legacy_enum_definitions_conditions.hpp"
 
-#include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 
 #include <tuple>

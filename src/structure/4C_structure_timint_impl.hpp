@@ -19,6 +19,7 @@
 #include "4C_structure_timint.hpp"
 
 #include <NOX_Direction_UserDefinedFactory.H>
+#include <NOX_Epetra.H>
 #include <NOX_Epetra_Group.H>
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>

@@ -16,8 +16,6 @@
 
 #include "4C_structure_new_impl_generic.hpp"
 
-#include <Epetra_MultiVector.h>
-
 FOUR_C_NAMESPACE_OPEN
 
 namespace Solid

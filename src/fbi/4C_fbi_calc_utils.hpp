@@ -13,7 +13,6 @@
 
 #include "4C_config.hpp"
 
-#include <Epetra_FEVector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <vector>

@@ -47,7 +47,6 @@
 #include "4C_utils_function.hpp"
 
 #include <Epetra_MultiVector.h>
-#include <impl/Kokkos_Traits.hpp>
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

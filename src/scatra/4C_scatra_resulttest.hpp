@@ -15,8 +15,6 @@
 
 #include "4C_utils_result_test.hpp"
 
-#include <Epetra_MultiVector.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN

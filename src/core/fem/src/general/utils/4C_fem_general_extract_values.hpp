@@ -17,6 +17,9 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"
 
+#include <Epetra_Comm.h>
+#include <Epetra_Vector.h>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::FE

@@ -20,8 +20,6 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
-#include <Teuchos_SerialDenseSolver.hpp>
-
 FOUR_C_NAMESPACE_OPEN
 
 

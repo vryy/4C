@@ -22,9 +22,6 @@
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_utils_result_test.hpp"
 
-#include <Epetra_CrsGraph.h>
-#include <Epetra_Map.h>
-#include <Epetra_Operator.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>

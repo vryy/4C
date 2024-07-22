@@ -15,7 +15,6 @@
 #include <Epetra_CrsGraph.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Map.h>
-#include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_RCPDecl.hpp>
 

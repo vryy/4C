@@ -22,8 +22,6 @@
 #include "4C_cut_point.hpp"
 #include "4C_fem_geometry_geo_utils.hpp"
 
-#include <Epetra_MpiComm.h>
-#include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
