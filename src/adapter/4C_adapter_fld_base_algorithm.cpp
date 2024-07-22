@@ -1651,20 +1651,6 @@ void Adapter::FluidBaseAlgorithm::create_second_solver(
         solver->params().set("FLUID", true);
       }
       break;
-      case Core::LinearSolver::PreconditionerType::multigrid_muelu_fluid:
-      {
-        // add Inverse1 block for velocity dofs
-        // tell Inverse1 block about nodal_block_information
-        // In contrary to contact/meshtying problems this is necessary here, since we originally
-        // have built the null space for the whole problem (velocity and pressure dofs). However, if
-        // we split the matrix into velocity and pressure block, we have to adapt the null space
-        // information for the subblocks. Therefore we need the nodal block information in the first
-        // subblock for the velocities. The pressure null space is trivial to be built using a
-        // constant vector
-        solver->params().sublist("MueLu (Fluid) Parameters").sublist("nodal_block_information") =
-            solver->params().sublist("nodal_block_information");
-      }
-      break;
       default:
         FOUR_C_THROW(
             "If SIMPLER flag is set to YES you can only use CheapSIMPLE as preconditioners in your "

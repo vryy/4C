@@ -302,11 +302,6 @@ Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::create_precondition
       preconditioner = Teuchos::rcp(
           new Core::LinearSolver::BGSPreconditioner(params(), params().sublist("BGS Parameters")));
     }
-    else if (params().isSublist("MueLu (Fluid) Parameters"))
-    {
-      preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuFluidBlockPreconditioner(
-          params().sublist("MueLu (Fluid) Parameters")));
-    }
     else if (params().isSublist("MueLu (TSI) Parameters"))
     {
       preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuTsiBlockPreconditioner(params()));
