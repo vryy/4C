@@ -1,7 +1,6 @@
 ---
 name: Enhancement
 about: Help us to improve the code's capabilities or structure
-title: "General Summary of the Proposed Enhancement"
 labels: "type: enhancement"
 assignees: ''
 
@@ -15,6 +14,8 @@ Tell us about
 - the motivation and context: What are you trying to accomplish? Why do we need to address this?
 
 Providing all this information helps all of us to come up with a solution that is most useful in the real world.
+
+Link other issues or pull requests by mentioning their relation to this issue (Related to, Blocks, Follows, Closes, ...), if applicable
 -->
 
 ## Possible Solution and Definition of Done
@@ -23,23 +24,6 @@ Tell us what needs to happen and outline a possible solution. If possible, provi
 - [ ] First do this.
 - [ ] Then do that.
 - [ ] Also this other thing.
--->
-
-## Related Issues and Merge Requests
-<!---
-If applicable, let everybody know how this is related to any other open issues:
--->
-* Blocks
-* Is blocked by
-* Follows
-* Precedes
-* Related to
-* Part of
-* Composed of
-
-## Additional Information
-<!---
-Anything else that might be helpful to know in addressing this issue.
 -->
 
 ## Interested Parties

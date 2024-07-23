@@ -1,7 +1,7 @@
 ---
 name: Bug Report
 about: Help us fix something that's broken.
-title: "General Summary of the Bug"
+title: "[BUG] "
 labels: "type: bug"
 assignees: ''
 
