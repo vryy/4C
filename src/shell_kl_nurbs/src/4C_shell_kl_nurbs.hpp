@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------------*/
 /*! \file
-\brief A Kirchhoff-Love shell element based on Kiendl, Josef & Bletzinger, Kai-Uwe & Linhard, J. &
-Wuechner, Roland. (2009). Isogeometric shell analysis with Kirchhoff-Love elements.
+\brief A Kirchhoff-Love shell element based
 
 \level 1
 
@@ -196,8 +195,8 @@ namespace Discret
       /**
        * @brief Calculate the residuum of this shell element
        *
-       * The code is automatically generated with AceGen, the corresponding script is in the script/
-       * subfolder of this directory.
+       * The code is automatically generated with AceGen. The corresponding AceGen script is located
+       * in the `script` subfolder. Functional changes should only be made there.
        */
       static void evaluate_residuum_auto_generated(const double young, const double poisson,
           const double thickness, const Core::FE::IntegrationPoints1D& intpointsXi,
@@ -209,8 +208,8 @@ namespace Discret
       /**
        * @brief Calculate the residuum and Jacobian of this shell element
        *
-       * The code is automatically generated with AceGen, the corresponding script is in the script/
-       * subfolder of this directory.
+       * The code is automatically generated with AceGen. The corresponding AceGen script is located
+       * in the `script` subfolder. Functional changes should only be made there.
        */
       static void evaluate_residuum_and_jacobian_auto_generated(const double young,
           const double poisson, const double thickness,
@@ -224,8 +223,8 @@ namespace Discret
       /**
        * @brief Calculate a body load on this shell element
        *
-       * The code is automatically generated with AceGen, the corresponding script is in the script/
-       * subfolder of this directory.
+       * The code is automatically generated with AceGen. The corresponding AceGen script is located
+       * in the `script` subfolder. Functional changes should only be made there.
        */
       static void evaluate_body_load_auto_generated(const Core::FE::IntegrationPoints1D& intpoints,
           const std::vector<Core::LinAlg::SerialDenseVector>& knots,

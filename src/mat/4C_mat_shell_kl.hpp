@@ -79,7 +79,7 @@ namespace Mat
     /**
      * @brief Construct empty material object
      */
-    KirchhoffLoveShell();
+    KirchhoffLoveShell() = default;
 
     /**
      * @brief Construct the material object given material parameters

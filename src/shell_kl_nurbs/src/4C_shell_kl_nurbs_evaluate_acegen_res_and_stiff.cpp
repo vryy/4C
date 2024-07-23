@@ -3,9 +3,6 @@
 \brief This file contains functions for the NURBS Kirchhoff-Love shell which are generated
 with AceGen.
 
-The corresponding AceGen script is located in the ./script subfolder. Functional changes
-should only be made there.
-
 \level 1
 */
 /*----------------------------------------------------------------------*/

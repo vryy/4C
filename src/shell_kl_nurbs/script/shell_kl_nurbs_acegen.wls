@@ -1,6 +1,11 @@
 #!/usr/bin/env wolframscript
 (* ::Package:: *)
 
+(* ::Text:: *)
+(*This script was created with Mathematica 14.0. It can be run with the command in the first line of this file or just be opened with Mathematica.*)
+(*This script uses the AceGen package http://symech.fgg.uni-lj.si to generate the c++ finite element code*)
+
+
 (* ::Title:: *)
 (*IGA Kirchhoff-Love shell*)
 

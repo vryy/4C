@@ -27,10 +27,10 @@ Mat::PAR::KirchhoffLoveShell::KirchhoffLoveShell(const Core::Mat::PAR::Parameter
       poisson_ratio_(matdata.parameters.get<double>("POISSON_RATIO")),
       thickness_(matdata.parameters.get<double>("THICKNESS"))
 {
-  if (young_modulus_ < 0.0)
+  if (young_modulus_ <= 0.0)
     FOUR_C_THROW("Young's modulus has to be positive. Got %f", young_modulus_);
-  if (poisson_ratio_ < -1.0 or poisson_ratio_ > 0.5)
-    FOUR_C_THROW("Poisson's ration has to be in the range [-1,1/2]. Got %f", poisson_ratio_);
+  if (poisson_ratio_ <= -1.0 or poisson_ratio_ > 0.5)
+    FOUR_C_THROW("Poisson's ration has to be in the range (-1,1/2]. Got %f", poisson_ratio_);
   if (thickness_ < 0.0) FOUR_C_THROW("Thickness has to be positive. Got %f", thickness_);
 }
 
@@ -56,11 +56,6 @@ Core::Communication::ParObject* Mat::KirchhoffLoveShellType::create(const std::v
   shell->unpack(data);
   return shell;
 }
-
-/**
- *
- */
-Mat::KirchhoffLoveShell::KirchhoffLoveShell() : params_(nullptr) {}
 
 /**
  *

@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------------*/
 /*! \file
-\brief A Kirchhoff-Love shell element based on Kiendl, Josef & Bletzinger, Kai-Uwe & Linhard, J. &
-Wuechner, Roland. (2009). Isogeometric shell analysis with Kirchhoff-Love elements.
+\brief A Kirchhoff-Love shell element
 
 \level 1
 
