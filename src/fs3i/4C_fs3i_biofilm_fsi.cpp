@@ -40,9 +40,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// #define SCATRABLOCKMATRIXMERGE
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm) : PartFS3I1Wc(comm), comm_(comm)

@@ -569,12 +569,6 @@ void FS3I::PartFS3I::setup_system()
   // scatra solver
   Teuchos::RCP<Core::FE::Discretization> firstscatradis =
       (scatravec_[0])->scatra_field()->discretization();
-#ifdef SCATRABLOCKMATRIXMERGE
-  Teuchos::RCP<Teuchos::ParameterList> scatrasolvparams = Teuchos::rcp(new Teuchos::ParameterList);
-  Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
-      "SOLVER", Core::LinearSolver::SolverType::umfpack, scatrasolvparams);
-  scatrasolver_ = Teuchos::rcp(new Core::LinAlg::Solver(scatrasolvparams, firstscatradis->Comm()));
-#else
   const Teuchos::ParameterList& fs3idyn = Global::Problem::instance()->f_s3_i_dynamic_params();
   // get solver number used for fs3i
   const int linsolvernumber = fs3idyn.get<int>("COUPLED_LINEAR_SOLVER");
@@ -638,7 +632,6 @@ void FS3I::PartFS3I::setup_system()
       ->scatra_field()
       ->discretization()
       ->compute_null_space_if_necessary(scatrasolver_->params().sublist("Inverse2"));
-#endif
 }
 
 
