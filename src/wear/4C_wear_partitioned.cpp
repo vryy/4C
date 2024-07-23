@@ -722,7 +722,7 @@ void Wear::Partitioned::wear_spatial_master_map(
 
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
-    solver.solve(dmat->epetra_matrix(), disinterface_m, wear_master, solver_params);
+    solver.solve(dmat->epetra_operator(), disinterface_m, wear_master, solver_params);
 
     disinterface_m->Scale(-fac);
   }
@@ -908,7 +908,7 @@ void Wear::Partitioned::wear_spatial_slave(Teuchos::RCP<Epetra_Vector>& disinter
         Core::LinAlg::SolverParams solver_params;
         solver_params.refactor = true;
 
-        solver.solve(daa->epetra_matrix(), zref, wear_vectora, solver_params);
+        solver.solve(daa->epetra_operator(), zref, wear_vectora, solver_params);
       }
 
       // different wear coefficients on both sides...

@@ -240,7 +240,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::richardson_mixed(const std::string fie
     bool refactor = false;
     if (!run) refactor = true;
     tmpx = 0.0;
-    solver->solve(matrix.epetra_matrix(), etmpx, er, refactor, false);
+    solver->solve(matrix.epetra_operator(), etmpx, er, refactor, false);
     x = x + damp * tmpx;
     if (i < sweeps || analysis)
     {

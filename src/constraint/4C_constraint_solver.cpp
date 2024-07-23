@@ -162,7 +162,7 @@ void CONSTRAINTS::ConstraintSolver::solve_uzawa(Teuchos::RCP<Core::LinAlg::Spars
 
     solver_params.refactor = true;
     solver_params.reset = numiter_uzawa == 0 && counter_ == 0;
-    solver_->solve(stiff->epetra_matrix(), dispinc, fresmcopy, solver_params);
+    solver_->solve(stiff->epetra_operator(), dispinc, fresmcopy, solver_params);
     solver_->reset_tolerance();
 
     // compute Lagrange multiplier increment
@@ -283,7 +283,7 @@ void CONSTRAINTS::ConstraintSolver::solve_direct(Teuchos::RCP<Core::LinAlg::Spar
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = counter_ == 0;
-  solver_->solve(mergedmatrix->epetra_matrix(), mergedsol, mergedrhs, solver_params);
+  solver_->solve(mergedmatrix->epetra_operator(), mergedsol, mergedrhs, solver_params);
   solver_->reset_tolerance();
   // store results in smaller vectors
   mapext.extract_cond_vector(mergedsol, dispinc);

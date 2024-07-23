@@ -445,7 +445,7 @@ void MultiScale::MicroStatic::predict_tang_dis(Core::LinAlg::Matrix<3, 3>* defgr
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
-  solver_->solve(stiff_->epetra_matrix(), disi_, fresn_, solver_params);
+  solver_->solve(stiff_->epetra_operator(), disi_, fresn_, solver_params);
   solver_->reset();
 
   // store norm of displacement increments
@@ -556,7 +556,7 @@ void MultiScale::MicroStatic::full_newton()
     }
     solver_params.refactor = true;
     solver_params.reset = numiter_ == 0;
-    solver_->solve(stiff_->epetra_matrix(), disi_, fresn_, solver_params);
+    solver_->solve(stiff_->epetra_operator(), disi_, fresn_, solver_params);
     solver_->reset_tolerance();
 
     //---------------------------------- update mid configuration values

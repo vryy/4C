@@ -1082,8 +1082,8 @@ void FSI::BlockPreconditioningMatrixFS::setup_preconditioner()
   const Core::LinAlg::SparseMatrix& fluidInnerOp = matrix(0, 0);
   const Core::LinAlg::SparseMatrix& aleInnerOp = matrix(1, 1);
 
-  fluidsolver_->setup(fluidInnerOp.epetra_matrix());
-  if (constalesolver_ == Teuchos::null) alesolver_->setup(aleInnerOp.epetra_matrix());
+  fluidsolver_->setup(fluidInnerOp.epetra_operator());
+  if (constalesolver_ == Teuchos::null) alesolver_->setup(aleInnerOp.epetra_operator());
 #endif
 }
 
@@ -1113,7 +1113,7 @@ void FSI::BlockPreconditioningMatrixFS::local_block_richardson(
         if (comm.MyPID() == 0) fprintf(err, " %e", n);
       }
 
-      solver->solve(innerOp.epetra_matrix(), tmpy, tmpx, false);
+      solver->solve(innerOp.epetra_operator(), tmpy, tmpx, false);
       y->Update(omega, *tmpy, 1.0);
     }
     if (err != nullptr)
@@ -1152,9 +1152,9 @@ void FSI::OverlappingBlockMatrixFS::setup_preconditioner()
   Teuchos::RCP<Core::LinAlg::MapExtractor> fsidofmapex = Teuchos::null;
   Teuchos::RCP<Epetra_Map> irownodes = Teuchos::null;
 
-  fluidsolver_->setup(fluidInnerOp.epetra_matrix(), fsidofmapex, fluid_.discretization(), irownodes,
-      structuresplit_);
-  if (constalesolver_ == Teuchos::null) alesolver_->setup(aleInnerOp.epetra_matrix());
+  fluidsolver_->setup(fluidInnerOp.epetra_operator(), fsidofmapex, fluid_.discretization(),
+      irownodes, structuresplit_);
+  if (constalesolver_ == Teuchos::null) alesolver_->setup(aleInnerOp.epetra_operator());
 #endif
 }
 
@@ -1205,7 +1205,7 @@ void FSI::OverlappingBlockMatrixFS::sgs(const Epetra_MultiVector& X, Epetra_Mult
         ax->Update(-1.0, *tmpax, 1.0);
       }
 
-      alesolver_->solve(aleInnerOp.epetra_matrix(), az, ax, true);
+      alesolver_->solve(aleInnerOp.epetra_operator(), az, ax, true);
 
       if (run > 0)
       {
@@ -1227,7 +1227,7 @@ void FSI::OverlappingBlockMatrixFS::sgs(const Epetra_MultiVector& X, Epetra_Mult
 
       fluidMeshOp.multiply(false, *ay, *tmpfx);
       fx->Update(-1.0, *tmpfx, 1.0);
-      fluidsolver_->solve(fluidInnerOp.epetra_matrix(), fz, fx, true);
+      fluidsolver_->solve(fluidInnerOp.epetra_operator(), fz, fx, true);
 
       local_block_richardson(
           fluidsolver_, fluidInnerOp, fx, fz, tmpfx, fiterations_, fomega_, err_, Comm());
@@ -1259,7 +1259,7 @@ void FSI::OverlappingBlockMatrixFS::sgs(const Epetra_MultiVector& X, Epetra_Mult
         fluidMeshOp.multiply(false, *ay, *tmpfx);
         fx->Update(-1.0, *tmpfx, 1.0);
 
-        fluidsolver_->solve(fluidInnerOp.epetra_matrix(), fz, fx, true);
+        fluidsolver_->solve(fluidInnerOp.epetra_operator(), fz, fx, true);
 
         local_block_richardson(
             fluidsolver_, fluidInnerOp, fx, fz, tmpfx, fiterations_, fomega_, err_, Comm());
@@ -1272,7 +1272,7 @@ void FSI::OverlappingBlockMatrixFS::sgs(const Epetra_MultiVector& X, Epetra_Mult
         aleBoundOp.multiply(false, *fy, *tmpax);
         ax->Update(-1.0, *tmpax, 1.0);
 
-        alesolver_->solve(aleInnerOp.epetra_matrix(), az, ax, true);
+        alesolver_->solve(aleInnerOp.epetra_operator(), az, ax, true);
         ay->Update(omega_, *az, 1.0);
       }
     }

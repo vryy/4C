@@ -135,7 +135,7 @@ void FSI::BlockPreconditioningMatrix::local_block_richardson(
         if (comm.MyPID() == 0) fprintf(err, " %e", n);
       }
 
-      solver->solve(innerOp.epetra_matrix(), tmpy, tmpx, false);
+      solver->solve(innerOp.epetra_operator(), tmpy, tmpx, false);
       y->Update(omega, *tmpy, 1.0);
     }
     if (err != nullptr)

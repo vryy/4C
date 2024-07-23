@@ -75,13 +75,13 @@ void Core::LinAlg::BgS2x2Operator::setup_block_preconditioners()
       list1_, a_->Comm(), nullptr, Core::IO::Verbositylevel::standard, false));
   solver1_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(s1));
   const Core::LinAlg::SparseMatrix& Op11 = a_->matrix(firstind_, firstind_);
-  solver1_->setup(Op11.epetra_matrix());
+  solver1_->setup(Op11.epetra_operator());
 
   Teuchos::RCP<Core::LinAlg::Solver> s2 = Teuchos::rcp(new Core::LinAlg::Solver(
       list2_, a_->Comm(), nullptr, Core::IO::Verbositylevel::standard, false));
   solver2_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(s2));
   const Core::LinAlg::SparseMatrix& Op22 = a_->matrix(secind_, secind_);
-  solver2_->setup(Op22.epetra_matrix());
+  solver2_->setup(Op22.epetra_operator());
 
   return;
 }
@@ -127,7 +127,7 @@ int Core::LinAlg::BgS2x2Operator::ApplyInverse(
       x1->Update(-1.0, *tmpx1, 1.0);
     }
 
-    solver1_->solve(Op11.epetra_matrix(), z1, x1, true);
+    solver1_->solve(Op11.epetra_operator(), z1, x1, true);
 
     local_block_richardson(solver1_, Op11, x1, z1, tmpx1, block1_iter_, block1_omega_);
 
@@ -152,7 +152,7 @@ int Core::LinAlg::BgS2x2Operator::ApplyInverse(
     Op21.multiply(false, *y1, *tmpx2);
     x2->Update(-1.0, *tmpx2, 1.0);
 
-    solver2_->solve(Op22.epetra_matrix(), z2, x2, true);
+    solver2_->solve(Op22.epetra_operator(), z2, x2, true);
 
     local_block_richardson(solver2_, Op22, x2, z2, tmpx2, block2_iter_, block2_omega_);
 
@@ -191,7 +191,7 @@ void Core::LinAlg::BgS2x2Operator::local_block_richardson(
       Op.epetra_matrix()->Multiply(false, *y, *tmpx);
       tmpx->Update(1.0, *x, -1.0);
 
-      solver->solve(Op.epetra_matrix(), tmpy, tmpx, false);
+      solver->solve(Op.epetra_operator(), tmpy, tmpx, false);
       y->Update(omega, *tmpy, 1.0);
     }
   }
