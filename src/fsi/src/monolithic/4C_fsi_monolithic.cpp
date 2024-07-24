@@ -1289,16 +1289,12 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
 
       switch (azprectype)
       {
-        case Core::LinearSolver::PreconditionerType::multigrid_muelu_fsi:
+        case Core::LinearSolver::PreconditionerType::multigrid_muelu:
         {
           solver->put_solver_params_to_sub_params("Inverse1", fsisolverparams,
               Global::Problem::instance()->solver_params_callback(),
               Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY"));
-          // This might be an alternative to "Core::LinAlg::FixNullspace()", directly calculate
-          // nullspace on correct map
-          // solver->Params().sublist("Inverse1").set<Teuchos::RCP<Epetra_Map>>("null space: map",
-          // Teuchos::rcp(new Epetra_Map(system_matrix()->Matrix(0,0).RowMap())));
           structure_field()->discretization()->compute_null_space_if_necessary(
               solver->params().sublist("Inverse1"));
           Core::LinearSolver::Parameters::fix_null_space("Structure",
@@ -1310,10 +1306,6 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
               Global::Problem::instance()->solver_params_callback(),
               Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY"));
-          // This might be an alternative to "Core::LinAlg::FixNullspace()", directly calculate
-          // nullspace on correct map
-          // solver->Params().sublist("Inverse2").set<Teuchos::RCP<Epetra_Map>>("null space: map",
-          // Teuchos::rcp(new Epetra_Map(system_matrix()->Matrix(1,1).RowMap())));
           fluid_field()->discretization()->compute_null_space_if_necessary(
               solver->params().sublist("Inverse2"));
           Core::LinearSolver::Parameters::fix_null_space("Fluid",
@@ -1325,11 +1317,6 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
               Global::Problem::instance()->solver_params_callback(),
               Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY"));
-          // This might be an alternative to "Core::LinAlg::FixNullspace()", directly calculate
-          // nullspace on correct map
-          // solver->Params().sublist("Inverse3").set<Teuchos::RCP<Epetra_Map>>("null space: map",
-          // Teuchos::rcp(new Epetra_Map(system_matrix()->Matrix(2,2).RowMap()))); we have to cast
-          // the const on the ale discretization away!
           const_cast<Core::FE::Discretization&>(*(ale_field()->discretization()))
               .compute_null_space_if_necessary(solver->params().sublist("Inverse3"));
           Core::LinearSolver::Parameters::fix_null_space("Ale",

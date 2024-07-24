@@ -661,17 +661,11 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& i
     case Core::LinearSolver::PreconditionerType::multigrid_muelu:
       beloslist.set("Preconditioner Type", "ML");
       break;
-    case Core::LinearSolver::PreconditionerType::multigrid_muelu_tsi:
-      beloslist.set("Preconditioner Type", "TSI");
-      break;
     case Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp:
       beloslist.set("Preconditioner Type", "ContactSP");
       break;
     case Core::LinearSolver::PreconditionerType::multigrid_muelu_beamsolid:
       beloslist.set("Preconditioner Type", "BeamSolid");
-      break;
-    case Core::LinearSolver::PreconditionerType::multigrid_muelu_fsi:
-      beloslist.set("Preconditioner Type", "FSI");
       break;
     case Core::LinearSolver::PreconditionerType::multigrid_nxn:
       beloslist.set("Preconditioner Type", "AMGnxn");
@@ -719,11 +713,6 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& i
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
     muelulist = translate_four_c_to_muelu(inparams, &beloslist);
   }
-  if (azprectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu_tsi)
-  {
-    Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (TSI) Parameters");
-    muelulist = translate_four_c_to_muelu(inparams, &beloslist);
-  }
   if (azprectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
@@ -732,11 +721,6 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& i
   if (azprectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu_beamsolid)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (BeamSolid) Parameters");
-    muelulist = translate_four_c_to_muelu(inparams, &beloslist);
-  }
-  if (azprectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu_fsi)
-  {
-    Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (FSI) Parameters");
     muelulist = translate_four_c_to_muelu(inparams, &beloslist);
   }
   if (azprectyp == Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2)

@@ -115,8 +115,8 @@ SOLVER                          UMFPACK
 NAME                            Thermo_Structure_Interaction_Solver
 SOLVER                          Belos
 SOLVER_XML_FILE                 xml/linear_solver/iterative_gmres_template.xml
-AZPREC                          MueLu_tsi
-MUELU_XML_FILE                  tsi_monolithic_muelu.xml
+AZPREC                          MueLu
+MUELU_XML_FILE                  xml/multigrid/thermo_solid.xml
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.48e8 NUE 0.3 DENS 9.130e-6 THEXPANS 1.72e-5 CAPA 3405.49 CONDUCT 3.1e5 INITTEMP 293.15
 MAT 3 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.93e8 NUE 0.3 DENS 8.910e-6 THEXPANS 1.22e-5 CAPA 3956.04 CONDUCT 7.5e4 INITTEMP 293.15

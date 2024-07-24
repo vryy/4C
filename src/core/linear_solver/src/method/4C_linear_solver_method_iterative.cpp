@@ -302,17 +302,13 @@ Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::create_precondition
       preconditioner = Teuchos::rcp(
           new Core::LinearSolver::BGSPreconditioner(params(), params().sublist("BGS Parameters")));
     }
-    else if (params().isSublist("MueLu (TSI) Parameters"))
+    else if (params().isSublist("MueLu Parameters"))
     {
-      preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuTsiBlockPreconditioner(params()));
+      preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuPreconditioner(params()));
     }
     else if (params().isSublist("MueLu (Contact) Parameters"))
     {
       preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuContactSpPreconditioner(params()));
-    }
-    else if (params().isSublist("MueLu (FSI) Parameters"))
-    {
-      preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuFsiBlockPreconditioner(params()));
     }
     else if (params().isSublist("AMGnxn Parameters"))
     {

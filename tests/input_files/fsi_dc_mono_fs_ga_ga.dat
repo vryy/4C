@@ -83,8 +83,8 @@ SOLVER                          UMFPACK
 NAME                            Fsi_Solver
 SOLVER                          Belos
 AZSOLVE                         GMRES
-AZPREC                          MueLu_fsi
-MUELU_XML_FILE                  fsi_monolithic_muelu.xml
+AZPREC                          MueLu
+MUELU_XML_FILE                  xml/multigrid/fluid_solid.xml
 AZOUTPUT                        10
 AZTOL                           1.0e-7
 AZCONV                          AZ_r0
