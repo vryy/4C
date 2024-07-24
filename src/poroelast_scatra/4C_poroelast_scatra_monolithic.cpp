@@ -1241,7 +1241,7 @@ void PoroElastScaTra::PoroScatraMono::fd_check()
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse_copy =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(sparse->epetra_matrix(), Core::LinAlg::Copy));
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*sparse, Core::LinAlg::Copy));
 
   if (false)
   {
