@@ -798,9 +798,7 @@ void Core::FE::Discretization::compute_null_space_if_necessary(
   // see whether we have a sublist indicating usage of Trilinos::ML or Trilinos::MueLu
   if (!solveparams.isSublist("ML Parameters") && !solveparams.isSublist("MueLu Parameters") &&
       !solveparams.isSublist("MueLu (Contact) Parameters") &&
-      !solveparams.isSublist("MueLu (TSI) Parameters") &&
-      !solveparams.isSublist("MueLu (BeamSolid) Parameters") &&
-      !solveparams.isSublist("MueLu (FSI) Parameters"))
+      !solveparams.isSublist("MueLu (BeamSolid) Parameters"))
     return;
   Teuchos::ParameterList* mllist_ptr = nullptr;
   if (solveparams.isSublist("ML Parameters"))
@@ -809,11 +807,7 @@ void Core::FE::Discretization::compute_null_space_if_necessary(
     mllist_ptr = &(solveparams.sublist("MueLu Parameters"));
   else if (solveparams.isSublist("MueLu (Contact) Parameters"))
     mllist_ptr = &(solveparams.sublist("MueLu (Contact) Parameters"));
-  else if (solveparams.isSublist("MueLu (TSI) Parameters"))
-    mllist_ptr = &(solveparams);
   else if (solveparams.isSublist("MueLu (BeamSolid) Parameters"))
-    mllist_ptr = &(solveparams);
-  else if (solveparams.isSublist("MueLu (FSI) Parameters"))
     mllist_ptr = &(solveparams);
   else
     return;

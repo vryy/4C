@@ -77,35 +77,6 @@ namespace Core::LinearSolver
 
   };  // class MueLuPreconditioner
 
-
-  /*! \brief Specialized MueLu preconditioner for blocked tsi systems.
-   */
-  class MueLuTsiBlockPreconditioner : public MueLuPreconditioner
-  {
-   public:
-    MueLuTsiBlockPreconditioner(Teuchos::ParameterList& muelulist);
-
-    /*! \brief Create and compute the preconditioner
-     *
-     * The Muelu block-preconditioner only works for matrices of the type
-     * Epetra_BlockCrsMatrix. We check whether the input matrix is of proper type
-     * and throw an error if not!
-     *
-     * @param create Boolean flag to enforce (re-)creation of the preconditioner
-     * @param matrix BlockSparseMatrixBase to be used as input for the preconditioner
-     * @param x Solution of the linear system
-     * @param b Right-hand side of the linear system
-     */
-    void setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
-        Epetra_MultiVector* b) override;
-
-   private:
-    //! system of equations used for preconditioning used by P_ only
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> pmatrix_;
-
-  };  // class MueLuTsiBlockPreconditioner
-
-
   /*! \brief MueLu preconditioner for blocked linear systems of equations for contact problems
    * in saddlepoint formulation.
    *
@@ -188,32 +159,6 @@ namespace Core::LinearSolver
 
   };  // class MueLuBeamCpPreconditioner
 
-  /*! \brief MueLu preconditioner for blocked linear systems of equations for fluid structure
-   * interaction
-   */
-  class MueLuFsiBlockPreconditioner : public MueLuPreconditioner
-  {
-   public:
-    MueLuFsiBlockPreconditioner(Teuchos::ParameterList& muelulist);
-
-    /*! \brief Create and compute the preconditioner
-     *
-     * The Muelu block-preconditioner only works for matrices of the type
-     * Epetra_BlockCrsMatrix. We check whether the input matrix is of proper type
-     * and throw an error if not!
-     *
-     * @param create Boolean flag to enforce (re-)creation of the preconditioner
-     * @param matrix BlockSparseMatrixBase to be used as input for the preconditioner
-     * @param x Solution of the linear system
-     * @param b Right-hand side of the linear system
-     */
-    void setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
-        Epetra_MultiVector* b) override;
-
-   private:
-    //! system of equations used for preconditioning used by P_ only
-    Teuchos::RCP<Xpetra::BlockedCrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> pmatrix_;
-  };
 }  // namespace Core::LinearSolver
 
 FOUR_C_NAMESPACE_CLOSE
