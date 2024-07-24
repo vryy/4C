@@ -33,7 +33,7 @@ namespace Mortar
 
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class ContactData;
 
@@ -189,8 +189,8 @@ namespace Solid
       //!@}
 
      protected:
-      Solid::MODELEVALUATOR::ContactData& eval_contact();
-      const Solid::MODELEVALUATOR::ContactData& eval_contact() const;
+      Solid::ModelEvaluator::ContactData& eval_contact();
+      const Solid::ModelEvaluator::ContactData& eval_contact() const;
 
       virtual void check_pseudo2d() const;
 
@@ -205,13 +205,13 @@ namespace Solid
       void extend_lagrange_multiplier_domain(Teuchos::RCP<Epetra_Vector>& lm_vec) const;
 
       //! contact evaluation data container
-      Teuchos::RCP<Solid::MODELEVALUATOR::ContactData> eval_contact_ptr_;
+      Teuchos::RCP<Solid::ModelEvaluator::ContactData> eval_contact_ptr_;
 
       //! contact strategy
       Teuchos::RCP<CONTACT::AbstractStrategy> strategy_ptr_;
 
     };  // class Contact
-  }     // namespace MODELEVALUATOR
+  }     // namespace ModelEvaluator
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

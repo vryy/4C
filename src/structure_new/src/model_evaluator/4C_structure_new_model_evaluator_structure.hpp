@@ -36,7 +36,7 @@ namespace Core::LinAlg
 
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class Structure : public Generic
     {
@@ -47,7 +47,7 @@ namespace Solid
 
       void setup() override;
 
-      //! @name Derived public Solid::MODELEVALUATOR::Generic methods
+      //! @name Derived public Solid::ModelEvaluator::Generic methods
       //! @{
 
       //! derived
@@ -432,7 +432,7 @@ namespace Solid
       void write_output_runtime_beams(const Teuchos::RCP<Epetra_Vector>& displacement_state_vector,
           int timestep_number, double time) const;
 
-      /*! \brief Write the parameters from the Solid::MODELEVALUATOR::Data
+      /*! \brief Write the parameters from the Solid::ModelEvaluator::Data
        *         to the Teuchos::ParameterList
        *
        *  todo: This function is temporary! It converts back to the old
@@ -444,7 +444,7 @@ namespace Solid
        *  \date 12/16
        *  \author seitz */
       void params_interface2_parameter_list(
-          Teuchos::RCP<Solid::MODELEVALUATOR::Data> interface_ptr, Teuchos::ParameterList& params);
+          Teuchos::RCP<Solid::ModelEvaluator::Data> interface_ptr, Teuchos::ParameterList& params);
 
      private:
       //! @name Accessors to the data container content
@@ -538,7 +538,7 @@ namespace Solid
       //! @}
     };
 
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

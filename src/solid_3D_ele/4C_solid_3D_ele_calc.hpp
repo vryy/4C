@@ -31,7 +31,7 @@ namespace Mat
 {
   class So3Material;
 }
-namespace Solid::MODELEVALUATOR
+namespace Solid::ModelEvaluator
 {
   class GaussPointDataOutputManager;
 }
@@ -99,11 +99,11 @@ namespace Discret::ELEMENTS
 
     void initialize_gauss_point_data_output(const Core::Elements::Element& ele,
         const Mat::So3Material& solid_material,
-        Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
+        Solid::ModelEvaluator::GaussPointDataOutputManager& gp_data_output_manager) const;
 
     void evaluate_gauss_point_data_output(const Core::Elements::Element& ele,
         const Mat::So3Material& solid_material,
-        Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
+        Solid::ModelEvaluator::GaussPointDataOutputManager& gp_data_output_manager) const;
 
     void update_prestress(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
         const Core::FE::Discretization& discretization, const std::vector<int>& lm,

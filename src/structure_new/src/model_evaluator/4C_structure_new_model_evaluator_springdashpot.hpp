@@ -30,7 +30,7 @@ namespace Core::LinAlg
 
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class SpringDashpot : public Generic
     {
@@ -141,7 +141,7 @@ namespace Solid
       Teuchos::RCP<Epetra_Vector> fspring_np_ptr_;
     };
 
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

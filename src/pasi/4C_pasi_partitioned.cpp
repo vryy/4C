@@ -290,8 +290,8 @@ void PaSI::PartitionedAlgo::build_structure_model_evaluator()
   if (not struct_adapterbase_ptr_->is_setup())
   {
     // build and register pasi model evaluator
-    Teuchos::RCP<Solid::MODELEVALUATOR::Generic> pasi_model_ptr =
-        Teuchos::rcp(new Solid::MODELEVALUATOR::PartitionedPASI());
+    Teuchos::RCP<Solid::ModelEvaluator::Generic> pasi_model_ptr =
+        Teuchos::rcp(new Solid::ModelEvaluator::PartitionedPASI());
 
     struct_adapterbase_ptr_->register_model_evaluator("Partitioned Coupling Model", pasi_model_ptr);
 
@@ -307,7 +307,7 @@ void PaSI::PartitionedAlgo::build_structure_model_evaluator()
 
     // set pointer to model evaluator in PASIStructureWrapper
     structurefield_->set_model_evaluator_ptr(
-        Teuchos::rcp_dynamic_cast<Solid::MODELEVALUATOR::PartitionedPASI>(pasi_model_ptr));
+        Teuchos::rcp_dynamic_cast<Solid::ModelEvaluator::PartitionedPASI>(pasi_model_ptr));
   }
 }
 

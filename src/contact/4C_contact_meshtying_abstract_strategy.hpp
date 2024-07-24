@@ -203,7 +203,7 @@ namespace CONTACT
       FOUR_C_THROW("Not yet considered for meshtying!");
     };
 
-    /*! \brief Global evaluation method called from Solid::MODELEVALUATOR::Contact class [derived]
+    /*! \brief Global evaluation method called from Solid::ModelEvaluator::Contact class [derived]
      *
      *  Evaluation of the right-hand-side only. Necessary and meaningful for line search strategies
      *  for example.
@@ -216,7 +216,7 @@ namespace CONTACT
       return false;
     };
 
-    /*! \brief Global evaluation method called from Solid::MODELEVALUATOR::Contact class [derived]
+    /*! \brief Global evaluation method called from Solid::ModelEvaluator::Contact class [derived]
      *
      *  Evaluation of the mesh-tying right-hand-side and the mesh-tying jacobian. We call this
      * method also, when we are only interested in the jacobian, since the created overhead is

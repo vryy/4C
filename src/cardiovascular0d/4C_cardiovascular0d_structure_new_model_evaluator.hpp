@@ -29,7 +29,7 @@ namespace Core::LinAlg
 
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class Cardiovascular0D : public Generic
     {
@@ -138,7 +138,7 @@ namespace Solid
       Teuchos::RCP<Epetra_Vector> fstructcardio_np_ptr_;
     };
 
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 

@@ -49,15 +49,15 @@ namespace Core::IO
 
 namespace Solid
 {
-  class ModelEvaluator;
+  class ModelEvaluatorManager;
   class Dbc;
   class MonitorDbc;
 
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class Data;
     class Generic;
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 
   namespace TimeInt
   {
@@ -322,23 +322,23 @@ namespace Solid
     int get_condensed_dof_number(const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
     //! Return the model evaluator control object (read and write)
-    Solid::ModelEvaluator& model_eval();
+    Solid::ModelEvaluatorManager& model_eval();
 
     //! Return the model evaluator control object (read-only)
-    const Solid::ModelEvaluator& model_eval() const;
-    Teuchos::RCP<const Solid::ModelEvaluator> model_eval_ptr() const;
+    const Solid::ModelEvaluatorManager& model_eval() const;
+    Teuchos::RCP<const Solid::ModelEvaluatorManager> model_eval_ptr() const;
 
     //! Return the model evaluator object for the given model type
-    Solid::MODELEVALUATOR::Generic& evaluator(const Inpar::Solid::ModelType& mt);
+    Solid::ModelEvaluator::Generic& evaluator(const Inpar::Solid::ModelType& mt);
 
     //! Return the model evaluator object for the given model type
-    const Solid::MODELEVALUATOR::Generic& evaluator(const Inpar::Solid::ModelType& mt) const;
+    const Solid::ModelEvaluator::Generic& evaluator(const Inpar::Solid::ModelType& mt) const;
 
     //! Return the model evaluator data object (read-only)
-    const Solid::MODELEVALUATOR::Data& eval_data() const;
+    const Solid::ModelEvaluator::Data& eval_data() const;
 
     //! Return the model evaluator data object (read and write access)
-    Solid::MODELEVALUATOR::Data& eval_data();
+    Solid::ModelEvaluator::Data& eval_data();
 
     //! Return the Dirichlet boundary condition object (read-only)
     const Solid::Dbc& get_dbc() const;
@@ -461,10 +461,10 @@ namespace Solid
 
    private:
     //! pointer to the model evaluator
-    Teuchos::RCP<Solid::ModelEvaluator> modelevaluator_ptr_;
+    Teuchos::RCP<Solid::ModelEvaluatorManager> modelevaluator_ptr_;
 
     //! pointer to model evaluator data
-    Teuchos::RCP<Solid::MODELEVALUATOR::Data> eval_data_ptr_;
+    Teuchos::RCP<Solid::ModelEvaluator::Data> eval_data_ptr_;
 
     //! pointer to the structural dynamic data container
     Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> sdyn_ptr_;

@@ -51,7 +51,7 @@ namespace Solid
     class BaseDataIO;
     class Base;
   }  // namespace TimeInt
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class BeamData;
     class ContactData;
@@ -1109,7 +1109,7 @@ namespace Solid
       ContactData();
 
       //! initialize the stuff coming from outside
-      void init(const Teuchos::RCP<const Solid::MODELEVALUATOR::Data>& str_data_ptr);
+      void init(const Teuchos::RCP<const Solid::ModelEvaluator::Data>& str_data_ptr);
 
       //! setup member variables
       void setup();
@@ -1313,7 +1313,7 @@ namespace Solid
 
       enum Inpar::CONTACT::CouplingScheme coupling_scheme_;
 
-      Teuchos::RCP<const Solid::MODELEVALUATOR::Data> str_data_ptr_;
+      Teuchos::RCP<const Solid::ModelEvaluator::Data> str_data_ptr_;
 
     };  // class ContactData
 
@@ -1328,7 +1328,7 @@ namespace Solid
       BrownianDynData();
 
       //! initialize the stuff coming from outside
-      void init(Teuchos::RCP<const Solid::MODELEVALUATOR::Data> const& str_data_ptr);
+      void init(Teuchos::RCP<const Solid::ModelEvaluator::Data> const& str_data_ptr);
 
       //! setup member variables
       void setup();
@@ -1438,7 +1438,7 @@ namespace Solid
 
       bool issetup_;
 
-      Teuchos::RCP<const Solid::MODELEVALUATOR::Data> str_data_ptr_;
+      Teuchos::RCP<const Solid::ModelEvaluator::Data> str_data_ptr_;
 
       /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
       double viscosity_;
@@ -1462,7 +1462,7 @@ namespace Solid
       Teuchos::RCP<Epetra_MultiVector> randomforces_;
     };
 
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

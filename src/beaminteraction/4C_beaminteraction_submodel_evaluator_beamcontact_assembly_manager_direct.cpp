@@ -39,7 +39,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::evaluate_force_stiff(
     Teuchos::RCP<Core::FE::Discretization> discret,
-    const Teuchos::RCP<const Solid::MODELEVALUATOR::BeamInteractionDataState>& data_state,
+    const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
     Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<Core::LinAlg::SparseMatrix> fe_sysmat)
 {
   // resulting discrete element force vectors of the two interacting elements

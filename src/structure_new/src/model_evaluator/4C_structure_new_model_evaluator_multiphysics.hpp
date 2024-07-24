@@ -43,16 +43,17 @@ namespace Core::FE
 namespace Solid
 {
   class Integrator;
+
   namespace TimeInt
   {
     class BaseDataGlobalState;
     class BaseDataIO;
     class Base;
   }  // namespace TimeInt
-  namespace MODELEVALUATOR
+
+  namespace ModelEvaluator
   {
     class Data;
-
 
     //! supported multiphysic problems
     enum MultiphysicType
@@ -78,7 +79,7 @@ namespace Solid
 
 
       //! initialize the class variables
-      void init(const Teuchos::RCP<Solid::MODELEVALUATOR::Data>& eval_data_ptr,
+      void init(const Teuchos::RCP<Solid::ModelEvaluator::Data>& eval_data_ptr,
           const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
           const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
           const Teuchos::RCP<Solid::Integrator>& int_ptr,
@@ -91,7 +92,7 @@ namespace Solid
       //! set the active model type wrapped in this class.
       //! only active model type is evaluated.
       //! e.g. mt_fsi in case fluid-structure interaction is to be evaluated
-      void set_active_model_type(enum Solid::MODELEVALUATOR::MultiphysicType mtype)
+      void set_active_model_type(enum Solid::ModelEvaluator::MultiphysicType mtype)
       {
         active_mt_ = mtype;
       };
@@ -206,16 +207,16 @@ namespace Solid
 
      protected:
       //! map containing the model evaluators of the sub modules
-      std::map<enum Solid::MODELEVALUATOR::MultiphysicType,
-          Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>
+      std::map<enum Solid::ModelEvaluator::MultiphysicType,
+          Teuchos::RCP<Solid::ModelEvaluator::Generic>>
           me_map_;
 
       //! currently active model evaluator type
-      Solid::MODELEVALUATOR::MultiphysicType active_mt_;
+      Solid::ModelEvaluator::MultiphysicType active_mt_;
 
       //! return reference to map containing the model evaluators
-      std::map<enum Solid::MODELEVALUATOR::MultiphysicType,
-          Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>&
+      std::map<enum Solid::ModelEvaluator::MultiphysicType,
+          Teuchos::RCP<Solid::ModelEvaluator::Generic>>&
       get_model_evalutaor_map()
       {
         return me_map_;
@@ -223,8 +224,8 @@ namespace Solid
 
      public:
       //! return RCP to model evaluator of specific MultiphysicType
-      Teuchos::RCP<Solid::MODELEVALUATOR::Generic> get_model_evaluator_from_map(
-          enum Solid::MODELEVALUATOR::MultiphysicType mtype) const
+      Teuchos::RCP<Solid::ModelEvaluator::Generic> get_model_evaluator_from_map(
+          enum Solid::ModelEvaluator::MultiphysicType mtype) const
       {
         return me_map_.at(mtype);
       }
@@ -232,7 +233,7 @@ namespace Solid
 
     };  // class Multiphysics
 
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

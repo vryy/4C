@@ -41,13 +41,13 @@ namespace Adapter
 }
 namespace Solid
 {
-  class ModelEvaluator;
+  class ModelEvaluatorManager;
   class Dbc;
   class Integrator;
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class Generic;
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
   namespace TimeInt
   {
     /** \brief Abstract class for all time integration strategies
@@ -136,11 +136,11 @@ namespace Solid
       Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() override;
 
       //! Return the desired model evaluator (read-only)
-      [[nodiscard]] const Solid::MODELEVALUATOR::Generic& model_evaluator(
+      [[nodiscard]] const Solid::ModelEvaluator::Generic& model_evaluator(
           Inpar::Solid::ModelType mtype) const override;
 
       //! Return the desired model evaluator (read and write)
-      Solid::MODELEVALUATOR::Generic& model_evaluator(Inpar::Solid::ModelType mtype) override;
+      Solid::ModelEvaluator::Generic& model_evaluator(Inpar::Solid::ModelType mtype) override;
 
       ///@}
 
@@ -919,7 +919,6 @@ namespace Solid
     };  // class Base
   }     // namespace TimeInt
 }  // namespace Solid
-
 
 FOUR_C_NAMESPACE_CLOSE
 

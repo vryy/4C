@@ -44,10 +44,10 @@ namespace Solid
   {
     class BaseDataGlobalState;
   }  // namespace TimeInt
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class Data;
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 
   /*! \brief Structure specific result test class */
   class ResultTest : public Core::UTILS::ResultTest
@@ -75,7 +75,7 @@ namespace Solid
 
     //! initialization of class variables
     virtual void init(
-        const Solid::TimeInt::BaseDataGlobalState& gstate, const Solid::MODELEVALUATOR::Data& data);
+        const Solid::TimeInt::BaseDataGlobalState& gstate, const Solid::ModelEvaluator::Data& data);
 
     //! setup of class variables
     virtual void setup();
@@ -194,7 +194,7 @@ namespace Solid
     /** \brief Get the value for a specific energy (internal, kinetic, total, etc.)
      *
      *  If the energy is accessible, it will be returned and special_status flag is set to
-     *  evaluated. If not, error is thrown in Solid::MODELEVALUATOR::Data
+     *  evaluated. If not, error is thrown in Solid::ModelEvaluator::Data
      *
      *  \param[in]  quantity        name of the energy
      *  \param[out] special_status  status of the special result test
@@ -238,7 +238,7 @@ namespace Solid
     //! pointer to the global state object of the structural time integration
     Teuchos::RCP<const Solid::TimeInt::BaseDataGlobalState> gstate_;
     //! pointer to the data container of the structural time integration
-    Teuchos::RCP<const Solid::MODELEVALUATOR::Data> data_;
+    Teuchos::RCP<const Solid::ModelEvaluator::Data> data_;
   };  // class ResultTest
 
   /*----------------------------------------------------------------------------*/

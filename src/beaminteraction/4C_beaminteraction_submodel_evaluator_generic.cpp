@@ -47,7 +47,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::init(
     Teuchos::RCP<Core::FE::Discretization> const& bindis,
     Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> const& gstate,
     Teuchos::RCP<Solid::TimeInt::BaseDataIO> const& gio_ptr,
-    Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
+    Teuchos::RCP<Solid::ModelEvaluator::BeamInteractionDataState> const& ia_gstate_ptr,
     Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> const& beamcrosslinkerhandler,
     Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy,
     Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox,
@@ -193,7 +193,7 @@ Solid::TimeInt::BaseDataIO const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::g
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::MODELEVALUATOR::BeamInteractionDataState&
+Solid::ModelEvaluator::BeamInteractionDataState&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state()
 {
   check_init();
@@ -202,7 +202,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteractionDataState>&
+Teuchos::RCP<Solid::ModelEvaluator::BeamInteractionDataState>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state_ptr()
 {
   check_init();
@@ -211,7 +211,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::MODELEVALUATOR::BeamInteractionDataState const&
+Solid::ModelEvaluator::BeamInteractionDataState const&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state() const
 {
   check_init();

@@ -73,10 +73,10 @@ namespace TimeInt
   class TimIntMStep;
 }
 
-namespace Solid::MODELEVALUATOR
+namespace Solid::ModelEvaluator
 {
   class Generic;
-}  // namespace Solid::MODELEVALUATOR
+}  // namespace Solid::ModelEvaluator
 
 namespace Adapter
 {
@@ -220,7 +220,7 @@ namespace Adapter
     }
 
     /// return model evaluator
-    virtual Solid::MODELEVALUATOR::Generic& model_evaluator(Inpar::Solid::ModelType mtype) = 0;
+    virtual Solid::ModelEvaluator::Generic& model_evaluator(Inpar::Solid::ModelType mtype) = 0;
 
     // access to locsys manager
     virtual Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() = 0;

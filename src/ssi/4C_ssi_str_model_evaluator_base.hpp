@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Solid::MODELEVALUATOR
+namespace Solid::ModelEvaluator
 {
   class BaseSSI : public Generic
   {
@@ -107,7 +107,7 @@ namespace Solid::MODELEVALUATOR
     //! mechanical stress state
     Teuchos::RCP<Epetra_Vector> mechanical_stress_state_;
   };
-}  // namespace Solid::MODELEVALUATOR
+}  // namespace Solid::ModelEvaluator
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

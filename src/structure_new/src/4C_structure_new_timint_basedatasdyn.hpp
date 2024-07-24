@@ -49,10 +49,10 @@ namespace Core::Geo
 }  // namespace Core::Geo
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class Generic;
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
   namespace TimeInt
   {
     /** \brief Structural dynamics data container for the structural (time) integration
@@ -651,7 +651,7 @@ namespace Solid
       };
 
       /// Return a pointer to the coupling model evaluator
-      const Teuchos::RCP<Solid::MODELEVALUATOR::Generic>& coupling_model_ptr()
+      const Teuchos::RCP<Solid::ModelEvaluator::Generic>& coupling_model_ptr()
       {
         return coupling_model_ptr_;
       }
@@ -752,7 +752,7 @@ namespace Solid
       Teuchos::RCP<std::set<enum Inpar::Solid::EleTech>> eletechs_;
 
       /// pointer to the coupling model evaluator object
-      Teuchos::RCP<Solid::MODELEVALUATOR::Generic> coupling_model_ptr_;
+      Teuchos::RCP<Solid::ModelEvaluator::Generic> coupling_model_ptr_;
 
       ///@}
 
@@ -1152,7 +1152,6 @@ namespace Solid
 
   }  // namespace TimeInt
 }  // namespace Solid
-
 
 FOUR_C_NAMESPACE_CLOSE
 

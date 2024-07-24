@@ -24,8 +24,8 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_group_prepostoperator.hpp"
-#include "4C_structure_new_model_evaluator.hpp"
 #include "4C_structure_new_model_evaluator_generic.hpp"
+#include "4C_structure_new_model_evaluator_manager.hpp"
 #include "4C_structure_new_model_evaluator_meshtying.hpp"
 #include "4C_structure_new_timint_basedatasdyn.hpp"
 #include "4C_structure_new_utils.hpp"
@@ -34,7 +34,6 @@
 #include <NOX_Epetra_Vector.H>
 
 FOUR_C_NAMESPACE_OPEN
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -261,7 +260,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
-    const Solid::MODELEVALUATOR::Generic& me, const Inpar::Solid::ModelType& mt)
+    const Solid::ModelEvaluator::Generic& me, const Inpar::Solid::ModelType& mt)
 {
   check_init();
   Global::Problem* problem = Global::Problem::instance();
@@ -312,8 +311,8 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
     }
     case Inpar::Solid::model_meshtying:
     {
-      const Solid::MODELEVALUATOR::Meshtying& mt_me =
-          dynamic_cast<const Solid::MODELEVALUATOR::Meshtying&>(me);
+      const Solid::ModelEvaluator::Meshtying& mt_me =
+          dynamic_cast<const Solid::ModelEvaluator::Meshtying&>(me);
 
       enum Inpar::CONTACT::SystemType systype = mt_me.strategy().system_type();
 
@@ -595,7 +594,7 @@ const Core::LinAlg::MultiMapExtractor& Solid::TimeInt::BaseDataGlobalState::bloc
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_global_vector(
     const enum VecInitType& vecinittype,
-    const Teuchos::RCP<const Solid::ModelEvaluator>& modeleval) const
+    const Teuchos::RCP<const Solid::ModelEvaluatorManager>& modeleval) const
 {
   check_init();
   Teuchos::RCP<Epetra_Vector> xvec_ptr =
@@ -607,7 +606,8 @@ Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_
     /* use the last converged state to construct a new solution vector */
     case VecInitType::last_time_step:
     {
-      FOUR_C_ASSERT(!modeleval.is_null(), "We need access to the Solid::ModelEvaluator object!");
+      FOUR_C_ASSERT(
+          !modeleval.is_null(), "We need access to the Solid::ModelEvaluatorManager object!");
 
       std::map<Inpar::Solid::ModelType, int>::const_iterator ci;
       for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
@@ -625,7 +625,8 @@ Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_
     /* use the current global state to construct a new solution vector */
     case VecInitType::init_current_state:
     {
-      FOUR_C_ASSERT(!modeleval.is_null(), "We need access to the Solid::ModelEvaluator object!");
+      FOUR_C_ASSERT(
+          !modeleval.is_null(), "We need access to the Solid::ModelEvaluatorManager object!");
 
       std::map<Inpar::Solid::ModelType, int>::const_iterator ci;
       for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)

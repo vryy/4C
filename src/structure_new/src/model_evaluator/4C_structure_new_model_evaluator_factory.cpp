@@ -27,10 +27,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::MODELEVALUATOR::Factory::Factory()
+Solid::ModelEvaluator::Factory::Factory()
 {
   // empty constructor
 }
@@ -38,13 +37,14 @@ Solid::MODELEVALUATOR::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::ModelEvaluator::Map> Solid::MODELEVALUATOR::Factory::build_model_evaluators(
+Teuchos::RCP<Solid::ModelEvaluatorManager::Map>
+Solid::ModelEvaluator::Factory::build_model_evaluators(
     const std::set<enum Inpar::Solid::ModelType>& modeltypes,
-    const Teuchos::RCP<Solid::MODELEVALUATOR::Generic>& coupling_model_ptr) const
+    const Teuchos::RCP<Solid::ModelEvaluator::Generic>& coupling_model_ptr) const
 {
   // create a new standard map
-  Teuchos::RCP<Solid::ModelEvaluator::Map> model_map =
-      Teuchos::rcp(new Solid::ModelEvaluator::Map());
+  Teuchos::RCP<Solid::ModelEvaluatorManager::Map> model_map =
+      Teuchos::rcp(new Solid::ModelEvaluatorManager::Map());
 
   std::set<enum Inpar::Solid::ModelType>::const_iterator mt_iter;
   for (mt_iter = modeltypes.begin(); mt_iter != modeltypes.end(); ++mt_iter)
@@ -55,13 +55,13 @@ Teuchos::RCP<Solid::ModelEvaluator::Map> Solid::MODELEVALUATOR::Factory::build_m
         (*model_map)[*mt_iter] = build_structure_model_evaluator();
         break;
       case Inpar::Solid::model_springdashpot:
-        (*model_map)[*mt_iter] = Teuchos::rcp(new Solid::MODELEVALUATOR::SpringDashpot());
+        (*model_map)[*mt_iter] = Teuchos::rcp(new Solid::ModelEvaluator::SpringDashpot());
         break;
       case Inpar::Solid::model_browniandyn:
-        (*model_map)[*mt_iter] = Teuchos::rcp(new Solid::MODELEVALUATOR::BrownianDyn());
+        (*model_map)[*mt_iter] = Teuchos::rcp(new Solid::ModelEvaluator::BrownianDyn());
         break;
       case Inpar::Solid::model_beaminteraction:
-        (*model_map)[*mt_iter] = Teuchos::rcp(new Solid::MODELEVALUATOR::BeamInteraction());
+        (*model_map)[*mt_iter] = Teuchos::rcp(new Solid::ModelEvaluator::BeamInteraction());
         break;
       case Inpar::Solid::model_contact:
       {
@@ -69,13 +69,13 @@ Teuchos::RCP<Solid::ModelEvaluator::Map> Solid::MODELEVALUATOR::Factory::build_m
         break;
       }
       case Inpar::Solid::model_beam_interaction_old:
-        (*model_map)[*mt_iter] = Teuchos::rcp(new Solid::MODELEVALUATOR::BeamInteractionOld());
+        (*model_map)[*mt_iter] = Teuchos::rcp(new Solid::ModelEvaluator::BeamInteractionOld());
         break;
       case Inpar::Solid::model_lag_pen_constraint:
-        (*model_map)[*mt_iter] = Teuchos::rcp(new Solid::MODELEVALUATOR::LagPenConstraint());
+        (*model_map)[*mt_iter] = Teuchos::rcp(new Solid::ModelEvaluator::LagPenConstraint());
         break;
       case Inpar::Solid::model_cardiovascular0d:
-        (*model_map)[*mt_iter] = Teuchos::rcp(new Solid::MODELEVALUATOR::Cardiovascular0D());
+        (*model_map)[*mt_iter] = Teuchos::rcp(new Solid::ModelEvaluator::Cardiovascular0D());
         break;
       case Inpar::Solid::model_monolithic_coupling:
       {
@@ -99,10 +99,10 @@ Teuchos::RCP<Solid::ModelEvaluator::Map> Solid::MODELEVALUATOR::Factory::build_m
         break;
       }
       case Inpar::Solid::model_meshtying:
-        (*model_map)[*mt_iter] = Teuchos::rcp(new Solid::MODELEVALUATOR::Meshtying());
+        (*model_map)[*mt_iter] = Teuchos::rcp(new Solid::ModelEvaluator::Meshtying());
         break;
       case Inpar::Solid::model_constraints:
-        (*model_map)[*mt_iter] = Teuchos::rcp(new Solid::MODELEVALUATOR::Constraints());
+        (*model_map)[*mt_iter] = Teuchos::rcp(new Solid::ModelEvaluator::Constraints());
         break;
       default:
         FOUR_C_THROW("Not yet implemented!");
@@ -115,26 +115,26 @@ Teuchos::RCP<Solid::ModelEvaluator::Map> Solid::MODELEVALUATOR::Factory::build_m
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::MODELEVALUATOR::Generic>
-Solid::MODELEVALUATOR::Factory::build_contact_model_evaluator() const
+Teuchos::RCP<Solid::ModelEvaluator::Generic>
+Solid::ModelEvaluator::Factory::build_contact_model_evaluator() const
 {
-  return Teuchos::rcp(new Solid::MODELEVALUATOR::Contact());
+  return Teuchos::rcp(new Solid::ModelEvaluator::Contact());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::MODELEVALUATOR::Generic>
-Solid::MODELEVALUATOR::Factory::build_structure_model_evaluator() const
+Teuchos::RCP<Solid::ModelEvaluator::Generic>
+Solid::ModelEvaluator::Factory::build_structure_model_evaluator() const
 {
-  return Teuchos::rcp(new Solid::MODELEVALUATOR::Structure());
+  return Teuchos::rcp(new Solid::ModelEvaluator::Structure());
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::ModelEvaluator::Map> Solid::MODELEVALUATOR::build_model_evaluators(
+Teuchos::RCP<Solid::ModelEvaluatorManager::Map> Solid::ModelEvaluator::build_model_evaluators(
     const std::set<enum Inpar::Solid::ModelType>& modeltypes,
-    const Teuchos::RCP<Solid::MODELEVALUATOR::Generic>& coupling_model_ptr)
+    const Teuchos::RCP<Solid::ModelEvaluator::Generic>& coupling_model_ptr)
 {
   Factory factory;
   return factory.build_model_evaluators(modeltypes, coupling_model_ptr);

@@ -26,7 +26,7 @@ namespace Adapter
 
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class PartitionedFSI : public Generic
     {
@@ -173,7 +173,7 @@ namespace Solid
 
     };  // class PartitionedFSI
 
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 

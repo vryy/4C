@@ -216,7 +216,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
 
       Inpar::Solid::MassLin mass_lin = Inpar::Solid::MassLin::ml_none;
       auto modelevaluator_data =
-          Teuchos::rcp_dynamic_cast<Solid::MODELEVALUATOR::Data>(params_interface_ptr());
+          Teuchos::rcp_dynamic_cast<Solid::ModelEvaluator::Data>(params_interface_ptr());
       if (modelevaluator_data != Teuchos::null)
         mass_lin = modelevaluator_data->sdyn().get_mass_lin_type();
       if (mass_lin == Inpar::Solid::MassLin::ml_rotations)

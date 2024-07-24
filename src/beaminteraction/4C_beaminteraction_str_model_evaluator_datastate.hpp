@@ -46,7 +46,7 @@ namespace Discret
 
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     /** \brief Global state data container for the beaminteraction model
      *
@@ -366,7 +366,7 @@ namespace Solid
 
       ///@}
     };
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 

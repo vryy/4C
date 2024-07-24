@@ -673,7 +673,6 @@ void Solid::Nln::SOLVER::set_norm_f_params(Teuchos::ParameterList& qlist,
   if (isscaled) qlist.set("Scale Type", "Scaled");
 }
 
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::Nln::SOLVER::set_active_set_params(

@@ -513,7 +513,7 @@ namespace Adapter
     }
 
     /// return model evaluator
-    Solid::MODELEVALUATOR::Generic& model_evaluator(Inpar::Solid::ModelType mtype) override
+    Solid::ModelEvaluator::Generic& model_evaluator(Inpar::Solid::ModelType mtype) override
     {
       return structure_->model_evaluator(mtype);
     }

@@ -643,7 +643,7 @@ template <Core::FE::CellType celltype, typename SolidFormulation>
 void Discret::ELEMENTS::SolidScatraEleCalc<celltype,
     SolidFormulation>::initialize_gauss_point_data_output(const Core::Elements::Element& ele,
     const Mat::So3Material& solid_material,
-    Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
+    Solid::ModelEvaluator::GaussPointDataOutputManager& gp_data_output_manager) const
 {
   FOUR_C_ASSERT(ele.is_params_interface(),
       "This action type should only be called from the new time integration framework!");
@@ -656,7 +656,7 @@ template <Core::FE::CellType celltype, typename SolidFormulation>
 void Discret::ELEMENTS::SolidScatraEleCalc<celltype,
     SolidFormulation>::evaluate_gauss_point_data_output(const Core::Elements::Element& ele,
     const Mat::So3Material& solid_material,
-    Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
+    Solid::ModelEvaluator::GaussPointDataOutputManager& gp_data_output_manager) const
 {
   FOUR_C_ASSERT(ele.is_params_interface(),
       "This action type should only be called from the new time integration framework!");

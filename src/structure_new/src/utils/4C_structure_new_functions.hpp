@@ -28,7 +28,6 @@ namespace Core::UTILS
   class FunctionManager;
 }
 
-
 namespace Solid
 {
   /// add valid structure-specific function lines
@@ -66,7 +65,6 @@ namespace Solid
     double poissonratio_;
     double strucdensity_;
   };
-
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

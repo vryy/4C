@@ -34,7 +34,7 @@ namespace LAGPENCONSTRAINT
 
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class LagPenConstraint : public Generic
     {
@@ -166,9 +166,8 @@ namespace Solid
       Teuchos::RCP<LAGPENCONSTRAINT::NoxInterfacePrec> noxinterface_prec_ptr_;
     };
 
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 }  // namespace Solid
-
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -22,7 +22,7 @@ namespace Solid
 {
   class MapExtractor;
 
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class PartitionedFSI;
   }
@@ -83,7 +83,7 @@ namespace Adapter
     virtual void rebuild_interface();
 
     /// set pointer to model evaluator
-    void set_model_evaluator_ptr(Teuchos::RCP<Solid::MODELEVALUATOR::PartitionedFSI> me)
+    void set_model_evaluator_ptr(Teuchos::RCP<Solid::ModelEvaluator::PartitionedFSI> me)
     {
       fsi_model_evaluator_ = me;
       return;
@@ -97,7 +97,7 @@ namespace Adapter
     int predictor_;
 
     /// access the fsi model evaluator
-    Teuchos::RCP<Solid::MODELEVALUATOR::PartitionedFSI> fsi_model_evaluator();
+    Teuchos::RCP<Solid::ModelEvaluator::PartitionedFSI> fsi_model_evaluator();
 
    private:
     /// The structural model evaluator object.
@@ -106,7 +106,7 @@ namespace Adapter
     /// a corresponding method in the model evaluator may be
     /// called, if necessary.
     /// See e.g. \ref Adapter::FSIStructureWrapper::RelaxationSolve()
-    Teuchos::RCP<Solid::MODELEVALUATOR::PartitionedFSI> fsi_model_evaluator_;
+    Teuchos::RCP<Solid::ModelEvaluator::PartitionedFSI> fsi_model_evaluator_;
 
   };  // class FSIStructureWrapper
 }  // namespace Adapter

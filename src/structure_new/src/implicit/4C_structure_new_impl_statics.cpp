@@ -16,8 +16,8 @@
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_structure_new_dbc.hpp"
-#include "4C_structure_new_model_evaluator.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
+#include "4C_structure_new_model_evaluator_manager.hpp"
 #include "4C_structure_new_model_evaluator_structure.hpp"
 #include "4C_structure_new_predict_generic.hpp"
 #include "4C_structure_new_timint_implicit.hpp"
@@ -321,8 +321,8 @@ double Solid::IMPLICIT::Statics::get_model_value(const Epetra_Vector& x)
   set_state(disnp);
 
   eval_data().clear_values_for_all_energy_types();
-  Solid::MODELEVALUATOR::Structure& str_model =
-      dynamic_cast<Solid::MODELEVALUATOR::Structure&>(evaluator(Inpar::Solid::model_structure));
+  Solid::ModelEvaluator::Structure& str_model =
+      dynamic_cast<Solid::ModelEvaluator::Structure&>(evaluator(Inpar::Solid::model_structure));
 
   str_model.determine_strain_energy(disnp, true);
   const double int_energy_np = eval_data().get_energy_data(Solid::internal_energy);

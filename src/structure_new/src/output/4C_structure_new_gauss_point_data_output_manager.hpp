@@ -32,7 +32,7 @@ namespace Discret
 
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class GaussPointDataOutputManager
     {
@@ -152,7 +152,7 @@ namespace Solid
       //! unordered map holding the quantities and its sizes
       std::unordered_map<std::string, int> quantities_;
     };
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

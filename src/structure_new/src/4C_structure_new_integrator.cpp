@@ -16,8 +16,8 @@
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_solver_nonlin_nox_aux.hpp"
 #include "4C_structure_new_dbc.hpp"
-#include "4C_structure_new_model_evaluator.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
+#include "4C_structure_new_model_evaluator_manager.hpp"
 #include "4C_structure_new_model_evaluator_structure.hpp"
 #include "4C_structure_new_monitor_dbc.hpp"
 #include "4C_structure_new_nox_nln_str_linearsystem.hpp"
@@ -73,14 +73,14 @@ void Solid::Integrator::setup()
   // ---------------------------------------------------------------------------
   // build model evaluator data container
   // ---------------------------------------------------------------------------
-  eval_data_ptr_ = Teuchos::rcp(new Solid::MODELEVALUATOR::Data());
+  eval_data_ptr_ = Teuchos::rcp(new Solid::ModelEvaluator::Data());
   eval_data_ptr_->init(timint_ptr_);
   eval_data_ptr_->setup();
 
   // ---------------------------------------------------------------------------
   // build model evaluator
   // ---------------------------------------------------------------------------
-  modelevaluator_ptr_ = Teuchos::rcp(new Solid::ModelEvaluator());
+  modelevaluator_ptr_ = Teuchos::rcp(new Solid::ModelEvaluatorManager());
   modelevaluator_ptr_->init(
       eval_data_ptr_, sdyn_ptr_, gstate_ptr_, io_ptr_, Teuchos::rcp(this, false), timint_ptr_);
   modelevaluator_ptr_->setup();
@@ -397,8 +397,8 @@ double Solid::Integrator::get_total_mid_time_str_energy(const Epetra_Vector& x)
   const Epetra_Vector& velnp = *velnp_ptr;
 
   eval_data().clear_values_for_all_energy_types();
-  Solid::MODELEVALUATOR::Structure& str_model =
-      dynamic_cast<Solid::MODELEVALUATOR::Structure&>(evaluator(Inpar::Solid::model_structure));
+  Solid::ModelEvaluator::Structure& str_model =
+      dynamic_cast<Solid::ModelEvaluator::Structure&>(evaluator(Inpar::Solid::model_structure));
 
   Teuchos::RCP<const Epetra_Vector> dis_avg =
       mt_energy_.average(disnp, *global_state().get_dis_n(), get_int_param());
@@ -440,8 +440,8 @@ bool Solid::Integrator::determine_element_volumes(
     const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols)
 {
   check_init_setup();
-  Solid::MODELEVALUATOR::Generic& model = evaluator(Inpar::Solid::model_structure);
-  Solid::MODELEVALUATOR::Structure& smodel = dynamic_cast<Solid::MODELEVALUATOR::Structure&>(model);
+  Solid::ModelEvaluator::Generic& model = evaluator(Inpar::Solid::model_structure);
+  Solid::ModelEvaluator::Structure& smodel = dynamic_cast<Solid::ModelEvaluator::Structure&>(model);
 
   return smodel.determine_element_volumes(x, ele_vols);
 }
@@ -585,7 +585,7 @@ double Solid::Integrator::get_condensed_global_norm(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::ModelEvaluator& Solid::Integrator::model_eval()
+Solid::ModelEvaluatorManager& Solid::Integrator::model_eval()
 {
   check_init();
   return *modelevaluator_ptr_;
@@ -593,7 +593,7 @@ Solid::ModelEvaluator& Solid::Integrator::model_eval()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Solid::ModelEvaluator& Solid::Integrator::model_eval() const
+const Solid::ModelEvaluatorManager& Solid::Integrator::model_eval() const
 {
   check_init();
   return *modelevaluator_ptr_;
@@ -601,7 +601,7 @@ const Solid::ModelEvaluator& Solid::Integrator::model_eval() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Solid::ModelEvaluator> Solid::Integrator::model_eval_ptr() const
+Teuchos::RCP<const Solid::ModelEvaluatorManager> Solid::Integrator::model_eval_ptr() const
 {
   check_init();
   return modelevaluator_ptr_;
@@ -609,7 +609,7 @@ Teuchos::RCP<const Solid::ModelEvaluator> Solid::Integrator::model_eval_ptr() co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::MODELEVALUATOR::Generic& Solid::Integrator::evaluator(const Inpar::Solid::ModelType& mt)
+Solid::ModelEvaluator::Generic& Solid::Integrator::evaluator(const Inpar::Solid::ModelType& mt)
 {
   check_init_setup();
   return model_eval().evaluator(mt);
@@ -617,7 +617,7 @@ Solid::MODELEVALUATOR::Generic& Solid::Integrator::evaluator(const Inpar::Solid:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Solid::MODELEVALUATOR::Generic& Solid::Integrator::evaluator(
+const Solid::ModelEvaluator::Generic& Solid::Integrator::evaluator(
     const Inpar::Solid::ModelType& mt) const
 {
   check_init_setup();
@@ -626,7 +626,7 @@ const Solid::MODELEVALUATOR::Generic& Solid::Integrator::evaluator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Solid::MODELEVALUATOR::Data& Solid::Integrator::eval_data() const
+const Solid::ModelEvaluator::Data& Solid::Integrator::eval_data() const
 {
   check_init();
   return *eval_data_ptr_;
@@ -634,7 +634,7 @@ const Solid::MODELEVALUATOR::Data& Solid::Integrator::eval_data() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::MODELEVALUATOR::Data& Solid::Integrator::eval_data()
+Solid::ModelEvaluator::Data& Solid::Integrator::eval_data()
 {
   check_init();
   return *eval_data_ptr_;

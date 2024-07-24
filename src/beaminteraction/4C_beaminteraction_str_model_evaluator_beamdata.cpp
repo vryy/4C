@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Solid::MODELEVALUATOR::BeamData::BeamData()
+Solid::ModelEvaluator::BeamData::BeamData()
     : isinit_(false), issetup_(false), beta_(-1.0), gamma_(-1.0), alphaf_(-1.0), alpham_(-1.0)
 {
   // empty constructor
@@ -22,7 +22,7 @@ Solid::MODELEVALUATOR::BeamData::BeamData()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BeamData::init()
+void Solid::ModelEvaluator::BeamData::init()
 {
   issetup_ = false;
   isinit_ = true;
@@ -30,7 +30,7 @@ void Solid::MODELEVALUATOR::BeamData::init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BeamData::setup()
+void Solid::ModelEvaluator::BeamData::setup()
 {
   check_init();
 

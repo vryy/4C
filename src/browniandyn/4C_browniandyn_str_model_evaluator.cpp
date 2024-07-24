@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::MODELEVALUATOR::BrownianDyn::BrownianDyn()
+Solid::ModelEvaluator::BrownianDyn::BrownianDyn()
     : eval_browniandyn_ptr_(Teuchos::null),
       f_brown_np_ptr_(Teuchos::null),
       f_ext_np_ptr_(Teuchos::null),
@@ -47,7 +47,7 @@ Solid::MODELEVALUATOR::BrownianDyn::BrownianDyn()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDyn::setup()
+void Solid::ModelEvaluator::BrownianDyn::setup()
 {
   check_init();
 
@@ -109,7 +109,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDyn::reset(const Epetra_Vector& x)
+void Solid::ModelEvaluator::BrownianDyn::reset(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -135,7 +135,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::reset(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::MODELEVALUATOR::BrownianDyn::evaluate_force()
+bool Solid::ModelEvaluator::BrownianDyn::evaluate_force()
 {
   check_init_setup();
   bool ok = true;
@@ -155,7 +155,7 @@ bool Solid::MODELEVALUATOR::BrownianDyn::evaluate_force()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::MODELEVALUATOR::BrownianDyn::evaluate_stiff()
+bool Solid::ModelEvaluator::BrownianDyn::evaluate_stiff()
 {
   check_init_setup();
   bool ok = true;
@@ -185,7 +185,7 @@ bool Solid::MODELEVALUATOR::BrownianDyn::evaluate_stiff()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::MODELEVALUATOR::BrownianDyn::evaluate_force_stiff()
+bool Solid::ModelEvaluator::BrownianDyn::evaluate_force_stiff()
 {
   check_init_setup();
   bool ok = true;
@@ -206,7 +206,7 @@ bool Solid::MODELEVALUATOR::BrownianDyn::evaluate_force_stiff()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::MODELEVALUATOR::BrownianDyn::assemble_force(
+bool Solid::ModelEvaluator::BrownianDyn::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   check_init_setup();
@@ -231,7 +231,7 @@ bool Solid::MODELEVALUATOR::BrownianDyn::assemble_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::MODELEVALUATOR::BrownianDyn::assemble_jacobian(
+bool Solid::ModelEvaluator::BrownianDyn::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   check_init_setup();
@@ -246,7 +246,7 @@ bool Solid::MODELEVALUATOR::BrownianDyn::assemble_jacobian(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::MODELEVALUATOR::BrownianDyn::apply_force_external()
+bool Solid::ModelEvaluator::BrownianDyn::apply_force_external()
 {
   check_init_setup();
   bool ok = true;
@@ -270,7 +270,7 @@ bool Solid::MODELEVALUATOR::BrownianDyn::apply_force_external()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::MODELEVALUATOR::BrownianDyn::apply_force_brownian()
+bool Solid::ModelEvaluator::BrownianDyn::apply_force_brownian()
 {
   check_init_setup();
   bool ok = true;
@@ -306,7 +306,7 @@ bool Solid::MODELEVALUATOR::BrownianDyn::apply_force_brownian()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::MODELEVALUATOR::BrownianDyn::apply_force_stiff_external()
+bool Solid::ModelEvaluator::BrownianDyn::apply_force_stiff_external()
 {
   /* so far brownian specific neumann loads need no linearization,
    therefore apply_force_stiff_external is equal to apply_force_external*/
@@ -333,7 +333,7 @@ bool Solid::MODELEVALUATOR::BrownianDyn::apply_force_stiff_external()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Solid::MODELEVALUATOR::BrownianDyn::apply_force_stiff_brownian()
+bool Solid::ModelEvaluator::BrownianDyn::apply_force_stiff_brownian()
 {
   check_init_setup();
   bool ok = true;
@@ -369,7 +369,7 @@ bool Solid::MODELEVALUATOR::BrownianDyn::apply_force_stiff_brownian()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDyn::evaluate_brownian(
+void Solid::ModelEvaluator::BrownianDyn::evaluate_brownian(
     Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   check_init_setup();
@@ -385,7 +385,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::evaluate_brownian(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDyn::evaluate_brownian(Teuchos::ParameterList& p,
+void Solid::ModelEvaluator::BrownianDyn::evaluate_brownian(Teuchos::ParameterList& p,
     Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   check_init_setup();
@@ -404,7 +404,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::evaluate_brownian(Teuchos::ParameterLis
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDyn::evaluate_neumann_brownian_dyn(
+void Solid::ModelEvaluator::BrownianDyn::evaluate_neumann_brownian_dyn(
     Teuchos::RCP<Epetra_Vector> eval_vec, Teuchos::RCP<Core::LinAlg::SparseOperator> eval_mat)
 {
   check_init_setup();
@@ -423,7 +423,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::evaluate_neumann_brownian_dyn(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDyn::write_restart(
+void Solid::ModelEvaluator::BrownianDyn::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   // nothing to do
@@ -431,14 +431,14 @@ void Solid::MODELEVALUATOR::BrownianDyn::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDyn::read_restart(Core::IO::DiscretizationReader& ioreader)
+void Solid::ModelEvaluator::BrownianDyn::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   // nothing to do
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDyn::run_post_compute_x(
+void Solid::ModelEvaluator::BrownianDyn::run_post_compute_x(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   // empty
@@ -446,7 +446,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::run_post_compute_x(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDyn::update_step_state(const double& timefac_n)
+void Solid::ModelEvaluator::BrownianDyn::update_step_state(const double& timefac_n)
 {
   check_init_setup();
   // -------------------------------------------------------------------------
@@ -462,7 +462,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::update_step_state(const double& timefac
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDyn::update_step_element()
+void Solid::ModelEvaluator::BrownianDyn::update_step_element()
 {
   // -------------------------------------------------------------------------
   // check if timestep changes according to action dt in input file
@@ -477,7 +477,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::update_step_element()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDyn::determine_stress_strain()
+void Solid::ModelEvaluator::BrownianDyn::determine_stress_strain()
 {
   // nothing to do
   return;
@@ -485,7 +485,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::determine_stress_strain()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDyn::determine_energy()
+void Solid::ModelEvaluator::BrownianDyn::determine_energy()
 {
   // nothing to do
   return;
@@ -493,7 +493,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::determine_energy()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDyn::determine_optional_quantity()
+void Solid::ModelEvaluator::BrownianDyn::determine_optional_quantity()
 {
   // nothing to do
   return;
@@ -501,7 +501,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::determine_optional_quantity()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDyn::output_step_state(
+void Solid::ModelEvaluator::BrownianDyn::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
   // nothing to do
@@ -510,7 +510,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::output_step_state(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> Solid::MODELEVALUATOR::BrownianDyn::get_block_dof_row_map_ptr() const
+Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::BrownianDyn::get_block_dof_row_map_ptr() const
 {
   check_init_setup();
   return global_state().dof_row_map();
@@ -518,7 +518,7 @@ Teuchos::RCP<const Epetra_Map> Solid::MODELEVALUATOR::BrownianDyn::get_block_dof
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> Solid::MODELEVALUATOR::BrownianDyn::get_current_solution_ptr()
+Teuchos::RCP<const Epetra_Vector> Solid::ModelEvaluator::BrownianDyn::get_current_solution_ptr()
     const
 {
   // there are no model specific solution entries
@@ -528,7 +528,7 @@ Teuchos::RCP<const Epetra_Vector> Solid::MODELEVALUATOR::BrownianDyn::get_curren
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-Solid::MODELEVALUATOR::BrownianDyn::get_last_time_step_solution_ptr() const
+Solid::ModelEvaluator::BrownianDyn::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries
   return Teuchos::null;
@@ -536,7 +536,7 @@ Solid::MODELEVALUATOR::BrownianDyn::get_last_time_step_solution_ptr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDyn::post_output()
+void Solid::ModelEvaluator::BrownianDyn::post_output()
 {
   check_init_setup();
   // -------------------------------------------------------------------------
@@ -547,7 +547,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::post_output()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDyn::reset_step_state()
+void Solid::ModelEvaluator::BrownianDyn::reset_step_state()
 {
   check_init_setup();
 
@@ -591,7 +591,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::reset_step_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDyn::random_numbers_per_element()
+void Solid::ModelEvaluator::BrownianDyn::random_numbers_per_element()
 {
   check_init();
   // -------------------------------------------------------------------------
@@ -637,7 +637,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::random_numbers_per_element()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDyn::generate_gaussian_random_numbers()
+void Solid::ModelEvaluator::BrownianDyn::generate_gaussian_random_numbers()
 {
   check_init();
 
@@ -712,7 +712,7 @@ void Solid::MODELEVALUATOR::BrownianDyn::generate_gaussian_random_numbers()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::MODELEVALUATOR::BrownianDyn::
+bool Solid::ModelEvaluator::BrownianDyn::
     is_any_beam_element_length_larger_than_min_half_pbb_edge_length() const
 {
   const int numroweles = discret().num_my_row_elements();
@@ -746,7 +746,7 @@ bool Solid::MODELEVALUATOR::BrownianDyn::
  | method at a certain point in the program always the same number            |
  | whenever the program is used                                               |
  *----------------------------------------------------------------------------
-void Solid::MODELEVALUATOR::BrownianDyn::SeedRandomGenerator()
+void Solid::ModelEvaluator::BrownianDyn::SeedRandomGenerator()
 {
   check_init();
 

@@ -154,7 +154,7 @@ Solid::ResultTest::ResultTest()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ResultTest::init(
-    const Solid::TimeInt::BaseDataGlobalState& gstate, const Solid::MODELEVALUATOR::Data& data)
+    const Solid::TimeInt::BaseDataGlobalState& gstate, const Solid::ModelEvaluator::Data& data)
 {
   issetup_ = false;
 

@@ -205,7 +205,6 @@ namespace Solid
   }  // namespace IMPLICIT
 }  // namespace Solid
 
-
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

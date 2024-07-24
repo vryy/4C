@@ -26,7 +26,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Solid::Dbc::Dbc()
@@ -216,8 +215,6 @@ void Solid::Dbc::apply_dirichlet_bc(const double& time, Teuchos::RCP<Epetra_Vect
   if (dis != Teuchos::null) rotate_local_to_global(dis, true);
   if (vel != Teuchos::null) rotate_local_to_global(vel);
   if (acc != Teuchos::null) rotate_local_to_global(acc);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -228,8 +225,6 @@ void Solid::Dbc::apply_dirichlet_to_local_system(
   check_init_setup();
   apply_dirichlet_to_local_rhs(b);
   apply_dirichlet_to_local_jacobian(A);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -256,9 +251,6 @@ void Solid::Dbc::apply_dirichlet_to_local_rhs(Teuchos::RCP<Epetra_Vector>& b) co
 
   extract_freact(b);
   Core::LinAlg::apply_dirichlet_to_system(*b, *zeros_ptr_, *(dbcmap_ptr_->cond_map()));
-
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -271,8 +263,6 @@ void Solid::Dbc::apply_dirichlet_to_rhs(Teuchos::RCP<Epetra_Vector>& b) const
 
   // rotate back: local --> global
   rotate_local_to_global(b);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -305,8 +295,6 @@ void Solid::Dbc::apply_dirichlet_to_local_jacobian(
   }
   else
     A->apply_dirichlet(*(dbcmap_ptr_->cond_map()));
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -480,7 +468,6 @@ void Solid::Dbc::add_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
   condmaps.push_back(dbcmap_ptr_->cond_map());
   Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
   *dbcmap_ptr_ = Core::LinAlg::MapExtractor(*(discret_ptr_->dof_row_map()), condmerged);
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -492,7 +479,6 @@ void Solid::Dbc::remove_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptore
   othermaps.push_back(dbcmap_ptr_->other_map());
   Teuchos::RCP<Epetra_Map> othermerged = Core::LinAlg::MultiMapExtractor::merge_maps(othermaps);
   *dbcmap_ptr_ = Core::LinAlg::MapExtractor(*(discret_ptr_->dof_row_map()), othermerged, false);
-  return;
 }
 
 /*----------------------------------------------------------------------------*
