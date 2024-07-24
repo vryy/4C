@@ -177,9 +177,9 @@ namespace Mat
      * @brief Set up for materials with GP data (e.g., history variables)
      *
      * @param[in] numgp   Current Gauss point
-     * @param[in] linedef Linedefinition
+     * @param[in] container Input parameter container
      */
-    virtual void setup(int numgp, Input::LineDefinition* linedef) {}
+    virtual void setup(int numgp, const Core::IO::InputParameterContainer& container) {}
 
     /*!
      * @brief Post setup routine which will be called after all elements were read and set up

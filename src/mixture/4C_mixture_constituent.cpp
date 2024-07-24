@@ -103,7 +103,8 @@ MIXTURE::MixtureConstituent::MixtureConstituent(MIXTURE::PAR::MixtureConstituent
 }
 
 //! Init is called once at the beginning to setup the number of GPs and the Parameter List
-void MIXTURE::MixtureConstituent::read_element(int numgp, Input::LineDefinition* linedef)
+void MIXTURE::MixtureConstituent::read_element(
+    int numgp, const Core::IO::InputParameterContainer& container)
 {
   // Init must only be called once
   if (has_read_element_)

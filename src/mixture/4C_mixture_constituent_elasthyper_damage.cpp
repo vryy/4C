@@ -69,9 +69,9 @@ void MIXTURE::MixtureConstituentElastHyperDamage::unpack_constituent(
 
 // Reads the element from the input file
 void MIXTURE::MixtureConstituentElastHyperDamage::read_element(
-    int numgp, Input::LineDefinition* linedef)
+    int numgp, const Core::IO::InputParameterContainer& container)
 {
-  MixtureConstituentElastHyperBase::read_element(numgp, linedef);
+  MixtureConstituentElastHyperBase::read_element(numgp, container);
 
   current_reference_growth_.resize(numgp, 1.0);
 }

@@ -14,6 +14,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_io_input_parameter_container.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_anisotropy_cylinder_coordinate_system_manager.hpp"
 
@@ -156,11 +157,12 @@ namespace Mat
     void set_gauss_point_fibers(const std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>& fibers);
 
     /*!
-     * Reads the line definition of an element to get the fibers defined on the element
+     * Reads the input parameter container of an element to get the coordinate system defined on the
+     * element
      *
-     * @param linedef (in) : Input line of the corresponding element
+     * @param container (in) : a container of data to create the corresponding element
      */
-    void read_anisotropy_from_element(Input::LineDefinition* linedef);
+    void read_anisotropy_from_element(const Core::IO::InputParameterContainer& container);
 
     /*!
      * This method extracts the Gauss-point fibers written by the elements into the ParameterList

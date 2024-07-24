@@ -126,10 +126,10 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::print(std::ostream& os) cons
  | read this element, get the material (public)              dano 08/12 |
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-bool Discret::ELEMENTS::So3Thermo<So3Ele, distype>::read_element(
-    const std::string& eletype, const std::string& eledistype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::So3Thermo<So3Ele, distype>::read_element(const std::string& eletype,
+    const std::string& eledistype, const Core::IO::InputParameterContainer& container)
 {
-  So3Ele::read_element(eletype, eledistype, linedef);
+  So3Ele::read_element(eletype, eledistype, container);
 
   return true;
 

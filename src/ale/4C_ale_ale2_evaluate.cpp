@@ -144,7 +144,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
       if (so3mat->material_type() == Core::Materials::m_elasthyper)
       {
         so3mat = Teuchos::rcp_dynamic_cast<Mat::ElastHyper>(mat, true);
-        so3mat->setup(0, nullptr);
+        so3mat->setup(0, Core::IO::InputParameterContainer());
       }
       break;  // no setup for St-Venant / classic_lin required
     }

@@ -227,23 +227,18 @@ void Discret::ELEMENTS::Elemag::print(std::ostream& os) const
 {
   os << "Elemag ";
   Element::print(os);
-  return;
 }
 
 
-bool Discret::ELEMENTS::Elemag::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::Elemag::read_element(const std::string& eletype, const std::string& distype,
+    const Core::IO::InputParameterContainer& container)
 {
   // read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
   set_material(0, Mat::Factory(material_id));
-  int degree;
-  linedef->extract_int("DEG", degree);
-  degree_ = degree;
+  degree_ = container.get<int>("DEG");
 
-  linedef->extract_int("SPC", degree);
-  completepol_ = degree;
+  completepol_ = container.get<int>("SPC");
 
   // set discretization type (setOptimalgaussrule is pushed into element
   // routine)

@@ -44,9 +44,10 @@ namespace STI
 
     //! test special quantity not associated with a particular element or node
     void test_special(
-        Input::LineDefinition& res,  //!< input file line containing result test specification
-        int& nerr,                   //!< number of failed result tests
-        int& test_count              ///< number of result tests
+        const Core::IO::InputParameterContainer&
+            container,   ///< container with expected results as specified in the input file
+        int& nerr,       //!< number of failed result tests
+        int& test_count  ///< number of result tests
         ) override;
 
    private:

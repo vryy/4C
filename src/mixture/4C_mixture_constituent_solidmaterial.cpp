@@ -132,10 +132,10 @@ void MIXTURE::MixtureConstituentSolidMaterial::unpack_constituent(
 Core::Materials::MaterialType material_type() { return Core::Materials::mix_solid_material; }
 
 void MIXTURE::MixtureConstituentSolidMaterial::read_element(
-    int numgp, Input::LineDefinition* linedef)
+    int numgp, const Core::IO::InputParameterContainer& container)
 {
-  MixtureConstituent::read_element(numgp, linedef);
-  material_->setup(numgp, linedef);
+  MixtureConstituent::read_element(numgp, container);
+  material_->setup(numgp, container);
 }
 
 void MIXTURE::MixtureConstituentSolidMaterial::update(Core::LinAlg::Matrix<3, 3> const& defgrd,

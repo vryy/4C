@@ -142,7 +142,7 @@ namespace Mat
     }
 
     /// Initialize internal stress variables
-    void setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
 
     /// Update internal stress variables
     void update() override;

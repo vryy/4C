@@ -11,16 +11,17 @@
 
 #include "4C_comm_pack_buffer.hpp"
 #include "4C_comm_parobject.hpp"
-#include "4C_io_inputreader.hpp"
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"
+
+#include <iostream>
 
 FOUR_C_NAMESPACE_OPEN
 
-void Mat::read_anisotropy_fiber(
-    Input::LineDefinition* linedef, std::string specifier, Core::LinAlg::Matrix<3, 1>& fiber_vector)
+void Mat::read_anisotropy_fiber(const Core::IO::InputParameterContainer& container,
+    std::string specifier, Core::LinAlg::Matrix<3, 1>& fiber_vector)
 {
-  std::vector<double> fiber;
-  linedef->extract_double_vector(std::move(specifier), fiber);
+  auto fiber = container.get<std::vector<double>>(std::move(specifier));
+
   double f1norm = 0.;
   // normalization
   for (std::vector<double>::size_type i = 0; i < 3; ++i)

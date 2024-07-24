@@ -374,14 +374,14 @@ namespace Mat
     //-----------------------------------------------------------------------------
 
     //! setup and initialize internal and variables
-    void setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
 
     //! set up the slip/twinning directions and slip/twinning plane normals for the given lattice
     //! type
     void setup_lattice_vectors();
 
     //! read lattice orientation matrix from .dat file
-    void setup_lattice_orientation(Input::LineDefinition* linedef);
+    void setup_lattice_orientation(const Core::IO::InputParameterContainer& container);
 
     //! update internal variables
     void update() override;

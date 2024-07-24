@@ -14,7 +14,6 @@
 #include "4C_fem_general_fiber_node_holder.hpp"
 #include "4C_mat_anisotropy_extension.hpp"
 #include "4C_mat_anisotropy_utils.hpp"
-#include "4C_mat_service.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -82,40 +81,38 @@ void Mat::Anisotropy::unpack_anisotropy(
 
 void Mat::Anisotropy::set_number_of_gauss_points(int numgp) { numgp_ = numgp; }
 
-void Mat::Anisotropy::read_anisotropy_from_element(Input::LineDefinition* lineDefinition)
+void Mat::Anisotropy::read_anisotropy_from_element(
+    const Core::IO::InputParameterContainer& container)
 {
-  if (lineDefinition == nullptr)
-  {
-    // Line definition is not given, so I cannot read anything from the line definition
-    return;
-  }
   // Read coordinate system
-
-  if (lineDefinition->has_named("RAD") and lineDefinition->has_named("AXI") and
-      lineDefinition->has_named("CIR"))
+  if (container.get_if<std::vector<double>>("RAD") != nullptr and
+      container.get_if<std::vector<double>>("AXI") != nullptr and
+      container.get_if<std::vector<double>>("CIR") != nullptr)
   {
+    // read fibers in RAD AXI CIR notation
     if (!element_cylinder_coordinate_system_manager_)
     {
       element_cylinder_coordinate_system_manager_ = CylinderCoordinateSystemManager();
     }
 
-    element_cylinder_coordinate_system_manager_->read_from_element_line_definition(lineDefinition);
+    element_cylinder_coordinate_system_manager_->read_from_element_line_definition(container);
   }
 
-  // read fibers in FIBERi notation
-  // determine number of fibers
-  unsigned i = 0;
-  while (true)
+  else
   {
-    if (!lineDefinition->has_named("FIBER" + std::to_string(i + 1)))
+    // read fibers in FIBERi notation and determine number of fibers
+    for (int fiber_index = 1;; ++fiber_index)
     {
-      break;
-    }
-    element_fibers_.resize(i + 1);
-    read_anisotropy_fiber(lineDefinition, "FIBER" + std::to_string(i + 1), element_fibers_[i]);
-    i += 1;
-  }
+      std::string fiber_name = "FIBER" + std::to_string(fiber_index);
+      if (container.get_if<std::vector<double>>(fiber_name) == nullptr)
+      {
+        break;
+      }
 
+      element_fibers_.resize(fiber_index);
+      read_anisotropy_fiber(container, fiber_name, element_fibers_[fiber_index - 1]);
+    }
+  }
   on_element_fibers_initialized();
 }
 

@@ -38,14 +38,13 @@ void ParticleRigidBody::RigidBodyResultTest::setup(
 }
 
 void ParticleRigidBody::RigidBodyResultTest::test_special(
-    Input::LineDefinition& res, int& nerr, int& test_count)
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // get owned rigid bodies by this processor
   const std::vector<int>& ownedrigidbodies = particlerigidbodyinterface_->get_owned_rigid_bodies();
 
   // extract global id of rigid body
-  int globalid;
-  res.extract_int("ID", globalid);
+  int globalid = container.get<int>("ID");
 
   // rigid body owned by this processor
   if (std::find(ownedrigidbodies.begin(), ownedrigidbodies.end(), globalid) !=
@@ -56,8 +55,7 @@ void ParticleRigidBody::RigidBodyResultTest::test_special(
         particlerigidbodyinterface_->get_rigid_body_data_state();
 
     // get result
-    std::string quantity;
-    res.extract_string("QUANTITY", quantity);
+    std::string quantity = container.get<std::string>("QUANTITY");
 
     // init actual result
     double actresult = 0.0;
@@ -118,7 +116,7 @@ void ParticleRigidBody::RigidBodyResultTest::test_special(
       FOUR_C_THROW("result check failed with unknown quantity '%s'!", quantity.c_str());
 
     // compare values
-    const int err = compare_values(actresult, "SPECIAL", res);
+    const int err = compare_values(actresult, "SPECIAL", container);
     nerr += err;
     test_count++;
   }

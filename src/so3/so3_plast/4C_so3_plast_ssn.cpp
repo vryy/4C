@@ -491,11 +491,10 @@ void Discret::ELEMENTS::So3Plast<distype>::print(std::ostream& os) const
  | read this element, get the material (public)             seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::So3Plast<distype>::read_element(
-    const std::string& eletype, const std::string& eledistype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::So3Plast<distype>::read_element(const std::string& eletype,
+    const std::string& eledistype, const Core::IO::InputParameterContainer& container)
 {
-  std::string buffer;
-  linedef->extract_string("KINEM", buffer);
+  std::string buffer = container.get<std::string>("KINEM");
 
   // geometrically linear
   if (buffer == "linear")
@@ -512,10 +511,9 @@ bool Discret::ELEMENTS::So3Plast<distype>::read_element(
     FOUR_C_THROW("Reading of SO3_PLAST element failed! KINEM unknown");
 
   // fbar
-  if (linedef->has_named("FBAR"))
+  if (container.get_if<std::string>("FBAR") != nullptr)
   {
-    std::string fb;
-    linedef->extract_string("FBAR", fb);
+    auto fb = container.get<std::string>("FBAR");
     if (fb == "yes")
       fbar_ = true;
     else if (fb == "no")
@@ -525,15 +523,14 @@ bool Discret::ELEMENTS::So3Plast<distype>::read_element(
   }
 
   // quadrature
-  if (linedef->has_named("NUMGP"))
+  if (container.get_if<int>("NUMGP") != nullptr)
   {
     if (distype != Core::FE::CellType::hex8)
       FOUR_C_THROW("You may only choose the Gauss point number for SOLIDH8PLAST");
     if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::tsi)
       FOUR_C_THROW("You may not choose the Gauss point number in TSI problems");
 
-    int ngp = 0;
-    linedef->extract_int("NUMGP", ngp);
+    int ngp = container.get<int>("NUMGP");
 
     switch (ngp)
     {
@@ -604,15 +601,13 @@ bool Discret::ELEMENTS::So3Plast<distype>::read_element(
   }
 
   // read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
 
   set_material(0, Mat::Factory(material_id));
 
   Teuchos::RCP<Mat::So3Material> so3mat = solid_material();
-  so3mat->setup(numgpt_, linedef);
+  so3mat->setup(numgpt_, container);
   so3mat->valid_kinematics(Inpar::Solid::KinemType::nonlinearTotLag);
-
 
   // Validate that materials doesn't use extended update call.
   if (solid_material()->uses_extended_update())
@@ -627,26 +622,29 @@ bool Discret::ELEMENTS::So3Plast<distype>::read_element(
     plspintype_ = zerospin;
 
   // EAS
-  if (linedef->has_named("EAS"))
+  buffer = container.get_or<std::string>("EAS", "none");
+
+  if (buffer == "none")
+    eastype_ = soh8p_easnone;
+  else if (buffer == "mild")
   {
     if (distype != Core::FE::CellType::hex8)
       FOUR_C_THROW("EAS in so3 plast currently only for HEX8 elements");
-
-    linedef->extract_string("EAS", buffer);
-
-    if (buffer == "none")
-      eastype_ = soh8p_easnone;
-    else if (buffer == "mild")
-      eastype_ = soh8p_easmild;
-    else if (buffer == "full")
-      eastype_ = soh8p_easfull;
     else
-      FOUR_C_THROW("unknown EAS type for so3_plast");
+      eastype_ = soh8p_easmild;
+  }
 
-    if (fbar_ && eastype_ != soh8p_easnone) FOUR_C_THROW("no combination of Fbar and EAS");
+  else if (buffer == "full")
+  {
+    if (distype != Core::FE::CellType::hex8)
+      FOUR_C_THROW("EAS in so3 plast currently only for HEX8 elements");
+    else
+      eastype_ = soh8p_easfull;
   }
   else
-    eastype_ = soh8p_easnone;
+    FOUR_C_THROW("unknown EAS type for so3_plast");
+
+  if (fbar_ && eastype_ != soh8p_easnone) FOUR_C_THROW("no combination of Fbar and EAS");
 
   // initialize EAS data
   eas_init();

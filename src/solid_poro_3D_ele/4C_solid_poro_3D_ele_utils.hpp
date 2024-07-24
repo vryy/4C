@@ -17,12 +17,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Solid::UTILS::ReadElement
+namespace Solid::UTILS::read_element
 {
-  Inpar::ScaTra::ImplType read_type(Input::LineDefinition* linedef)
+  Inpar::ScaTra::ImplType read_type(const Core::IO::InputParameterContainer& container)
   {
-    std::string impltype;
-    linedef->extract_string("TYPE", impltype);
+    auto impltype = container.get_or<std::string>("TYPE", "Undefined");
 
     if (impltype == "Undefined")
       return Inpar::ScaTra::impltype_undefined;
@@ -55,12 +54,13 @@ namespace Solid::UTILS::ReadElement
     }
   }
 
-  Inpar::Poro::PoroType ReadPoroType(Input::LineDefinition* linedef)
+  Inpar::Poro::PoroType read_poro_type(const Core::IO::InputParameterContainer& container)
   {
-    std::string impltype;
-    linedef->extract_string("POROTYPE", impltype);
+    auto impltype = container.get_or<std::string>("POROTYPE", "Undefined");
 
-    if (impltype == "PressureVelocityBased")
+    if (impltype == "Undefined")
+      return Inpar::Poro::PoroType::undefined;
+    else if (impltype == "PressureVelocityBased")
       return Inpar::Poro::PoroType::pressure_velocity_based;
     else if (impltype == "PressureBased")
       return Inpar::Poro::PoroType::pressure_based;
@@ -73,7 +73,7 @@ namespace Solid::UTILS::ReadElement
 
 
 
-}  // namespace Solid::UTILS::ReadElement
+}  // namespace Solid::UTILS::read_element
 
 FOUR_C_NAMESPACE_CLOSE
 

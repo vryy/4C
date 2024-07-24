@@ -1694,7 +1694,7 @@ void Discret::ELEMENTS::Wall1::w1_boplin_cure(Core::LinAlg::SerialDenseMatrix& b
 
 
 //{
-//  Teuchos::RCP<Core::Mat::Material> mat = Material();
+//  Teuchos::RCP<Core::Mat::Material> mat = material();
 //  Core::LinAlg::SerialDenseMatrix cmat;
 //
 //  switch(material->mattyp)

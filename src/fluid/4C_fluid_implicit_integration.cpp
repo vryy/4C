@@ -1168,7 +1168,7 @@ void FLD::FluidImplicitTimeInt::evaluate_mat_and_rhs(Teuchos::ParameterList& ele
     for (int i = 0; i < numrowele; ++i)
     {
       Core::Elements::Element* actele = discret_->l_row_element(i);
-      // Teuchos::RCP<Core::Mat::Material> mat = actele->Material();
+      // Teuchos::RCP<Core::Mat::Material> mat = actele->material();
       Teuchos::RCP<Core::Mat::Material> mat = actele->material();
       if (mat->material_type() == Core::Materials::m_matlist)
         FOUR_C_THROW("No matlists allowed here!!");

@@ -21,11 +21,11 @@ namespace
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
 
-    if (function_line_defs.front().has_named("ZALESAKSDISK"))
+    if (function_line_defs.front().container().get_or("ZALESAKSDISK", false))
     {
       return Teuchos::rcp(new Discret::UTILS::ZalesaksDiskFunction());
     }
-    else if (function_line_defs.front().has_named("COLLAPSINGWATERCOLUMN"))
+    else if (function_line_defs.front().container().get_or("COLLAPSINGWATERCOLUMN", false))
     {
       return Teuchos::rcp(new Discret::UTILS::CollapsingWaterColumnFunction());
     }

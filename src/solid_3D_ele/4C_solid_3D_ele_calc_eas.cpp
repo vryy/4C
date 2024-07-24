@@ -1005,9 +1005,9 @@ Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::calculate
 template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype,
     Inpar::Solid::KinemType kinematic_type>
 void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::setup(
-    Mat::So3Material& solid_material, Input::LineDefinition* linedef)
+    Mat::So3Material& solid_material, const Core::IO::InputParameterContainer& container)
 {
-  solid_material.setup(stiffness_matrix_integration_.num_points(), linedef);
+  solid_material.setup(stiffness_matrix_integration_.num_points(), container);
 }
 
 template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype,

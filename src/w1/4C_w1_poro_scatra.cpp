@@ -108,15 +108,14 @@ void Discret::ELEMENTS::Wall1PoroScatra<distype>::print(std::ostream& os) const
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::Wall1PoroScatra<distype>::read_element(
-    const std::string& eletype, const std::string& eledistype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::Wall1PoroScatra<distype>::read_element(const std::string& eletype,
+    const std::string& eledistype, const Core::IO::InputParameterContainer& container)
 {
   // read base element
-  my::read_element(eletype, eledistype, linedef);
+  my::read_element(eletype, eledistype, container);
 
   // read implementation type
-  std::string impltype;
-  linedef->extract_string("TYPE", impltype);
+  auto impltype = container.get<std::string>("TYPE");
 
   if (impltype == "Undefined")
     impltype_ = Inpar::ScaTra::impltype_undefined;

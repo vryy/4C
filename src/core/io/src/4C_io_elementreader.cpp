@@ -243,8 +243,8 @@ void Core::IO::ElementReader::get_and_distribute_elements(const int nblock, cons
                     "failed to read element %d %s %s", elenumber, eletype.c_str(), distype.c_str());
               }
 
-              ele->set_node_ids(distype, linedef);
-              ele->read_element(eletype, distype, linedef);
+              ele->set_node_ids(distype, linedef->container());
+              ele->read_element(eletype, distype, linedef->container());
             }
             else
             {

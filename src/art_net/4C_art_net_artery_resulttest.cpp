@@ -39,15 +39,14 @@ Arteries::ArteryResultTest::ArteryResultTest(ArtNetImplStationary& art_net)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Arteries::ArteryResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
+void Arteries::ArteryResultTest::test_node(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
-  std::string dis;
-  res.extract_string("DIS", dis);
+  std::string dis = container.get<std::string>("DIS");
   if (dis != dis_->name()) return;
 
-  int node;
-  res.extract_int("NODE", node);
+  int node = container.get<int>("NODE");
   node -= 1;
 
   int havenode(dis_->have_global_node(node));
@@ -71,8 +70,7 @@ void Arteries::ArteryResultTest::test_node(Input::LineDefinition& res, int& nerr
 
       double result = 0.;
       const Epetra_BlockMap& pnpmap = mysol_->Map();
-      std::string position;
-      res.extract_string("QUANTITY", position);
+      std::string position = container.get<std::string>("QUANTITY");
 
       // test result value of single scalar field
       if (position == "area")
@@ -87,7 +85,7 @@ void Arteries::ArteryResultTest::test_node(Input::LineDefinition& res, int& nerr
             position.c_str());
       }
 
-      nerr += compare_values(result, "NODE", res);
+      nerr += compare_values(result, "NODE", container);
       test_count++;
     }
   }
@@ -96,16 +94,14 @@ void Arteries::ArteryResultTest::test_node(Input::LineDefinition& res, int& nerr
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Arteries::ArteryResultTest::test_element(
-    Input::LineDefinition& res, int& nerr, int& test_count)
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
-  std::string dis;
-  res.extract_string("DIS", dis);
+  std::string dis = container.get<std::string>("DIS");
 
   if (dis != dis_->name()) return;
 
-  int element;
-  res.extract_int("ELEMENT", element);
+  int element = container.get<int>("ELEMENT");
   element -= 1;
 
   int haveelement(dis_->have_global_element(element));
@@ -127,8 +123,7 @@ void Arteries::ArteryResultTest::test_element(
       if (actelement->owner() != dis_->get_comm().MyPID()) return;
 
       // extract name of quantity to be tested
-      std::string quantity;
-      res.extract_string("QUANTITY", quantity);
+      std::string quantity = container.get<std::string>("QUANTITY");
 
       double result = 0.;
       // test result value of single scalar field
@@ -148,7 +143,7 @@ void Arteries::ArteryResultTest::test_element(
             quantity.c_str());
       }
 
-      nerr += compare_values(result, "ELEMENT", res);
+      nerr += compare_values(result, "ELEMENT", container);
       test_count++;
     }
   }

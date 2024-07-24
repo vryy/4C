@@ -326,14 +326,14 @@ void Mat::ViscoElastHyper::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ViscoElastHyper::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::ViscoElastHyper::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   // read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
-  anisotropy_.read_anisotropy_from_element(linedef);
+  anisotropy_.read_anisotropy_from_element(container);
 
   // Setup summands
-  for (auto& p : potsum_) p->setup(numgp, linedef);
+  for (auto& p : potsum_) p->setup(numgp, container);
 
   // find out which formulations are used
   isovisco_ = false;

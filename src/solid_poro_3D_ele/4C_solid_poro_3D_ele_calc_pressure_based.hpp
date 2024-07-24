@@ -57,7 +57,8 @@ namespace Discret
           const Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params);
 
-      void poro_setup(Mat::StructPoro& porostructmat, Input::LineDefinition* linedef);
+      void poro_setup(
+          Mat::StructPoro& porostructmat, const Core::IO::InputParameterContainer& container);
 
      private:
       /// static values for matrix sizes

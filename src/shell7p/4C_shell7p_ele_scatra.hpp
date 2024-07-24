@@ -122,7 +122,7 @@ namespace Discret::ELEMENTS
     [[nodiscard]] Core::FE::CellType shape() const override { return distype_; };
 
     bool read_element(const std::string& eletype, const std::string& distype,
-        Input::LineDefinition* linedef) override;
+        const Core::IO::InputParameterContainer& container) override;
 
     //! @name Evaluation
     //! @{

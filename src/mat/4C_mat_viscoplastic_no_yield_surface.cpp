@@ -149,9 +149,10 @@ void Mat::ViscoPlasticNoYieldSurface::unpack(const std::vector<char>& data)
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
-void Mat::ViscoPlasticNoYieldSurface::setup(const int numgp, Input::LineDefinition* linedef)
+void Mat::ViscoPlasticNoYieldSurface::setup(
+    const int numgp, const Core::IO::InputParameterContainer& container)
 {
-  // read initial flow resistance from line definition
+  // read initial flow resistance from input parameter container
   last_flowres_isotropic_.resize(numgp, params_->init_flow_res());
 
   // initialize last inverse plastic deformation gradient as identity

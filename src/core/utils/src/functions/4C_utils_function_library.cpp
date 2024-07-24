@@ -39,17 +39,16 @@ namespace
 
     const auto& function_lin_def = function_line_defs.front();
 
-    if (function_lin_def.has_named("FASTPOLYNOMIAL"))
+    if (function_lin_def.container().get_or<bool>("FASTPOLYNOMIAL", false))
     {
-      std::vector<double> coefficients;
-      function_lin_def.extract_double_vector("COEFF", coefficients);
+      std::vector<double> coefficients =
+          function_lin_def.container().get<std::vector<double>>("COEFF");
 
       return Teuchos::rcp(new Core::UTILS::FastPolynomialFunction(std::move(coefficients)));
     }
-    else if (function_lin_def.has_named("CUBIC_SPLINE_FROM_CSV"))
+    else if (function_lin_def.container().get_or<bool>("CUBIC_SPLINE_FROM_CSV", false))
     {
-      std::string csv_file;
-      function_lin_def.extract_string("CSV", csv_file);
+      std::string csv_file = function_lin_def.container().get<std::string>("CSV");
 
       // safety check
       if (csv_file.empty())

@@ -331,22 +331,20 @@ void Mat::PlasticElastHyper::unpack(const std::vector<char>& data)
   // -> position check cannot be done in this case
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::PlasticElastHyper::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::PlasticElastHyper::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   // Read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
-  anisotropy_.read_anisotropy_from_element(linedef);
+  anisotropy_.read_anisotropy_from_element(container);
 
   // Setup summands
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
-    potsum_[p]->setup(numgp, linedef);
+    potsum_[p]->setup(numgp, container);
   }
 
   // find out which formulations are used
@@ -365,13 +363,16 @@ void Mat::PlasticElastHyper::setup(int numgp, Input::LineDefinition* linedef)
     FOUR_C_THROW("no visco-elasticity in PlasticElastHyper...yet(?)");
 
   // check if either zero or three fiber directions are given
-  if (linedef->has_named("FIBER1") || linedef->has_named("FIBER2") || linedef->has_named("FIBER3"))
-    if (!linedef->has_named("FIBER1") || !linedef->has_named("FIBER2") ||
-        !linedef->has_named("FIBER3"))
-      FOUR_C_THROW("so3 expects no fibers or 3 fiber directions");
+  if ((container.get_if<std::vector<double>>("FIBER1") == nullptr ||
+          container.get_if<std::vector<double>>("FIBER2") == nullptr ||
+          container.get_if<std::vector<double>>("FIBER3") == nullptr) &&
+      (container.get_if<std::vector<double>>("FIBER1") != nullptr ||
+          container.get_if<std::vector<double>>("FIBER2") != nullptr ||
+          container.get_if<std::vector<double>>("FIBER3") != nullptr))
+    FOUR_C_THROW("so3 expects no fibers or 3 fiber directions");
 
   // plastic anisotropy
-  setup_hill_plasticity(linedef);
+  setup_hill_plasticity(container);
 
   // setup plastic history variables
   Core::LinAlg::Matrix<3, 3> tmp(true);
@@ -381,8 +382,6 @@ void Mat::PlasticElastHyper::setup(int numgp, Input::LineDefinition* linedef)
   last_plastic_defgrd_inverse_.resize(numgp, tmp);
   activity_state_.resize(numgp, false);
   delta_alpha_i_.resize(numgp, 0.);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -425,13 +424,13 @@ void Mat::PlasticElastHyper::setup_tsi(const int numgp, const int numdofpereleme
   /// viscoplastic TSI only with  pl_flow dissipation
   if (visc() != 0. && mode == Inpar::TSI::pl_multiplier)
     FOUR_C_THROW("thermo-visco-plasticity not with dissipation mode pl_multiplier");
-  return;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::PlasticElastHyper::setup_hill_plasticity(Input::LineDefinition* linedef)
+void Mat::PlasticElastHyper::setup_hill_plasticity(
+    const Core::IO::InputParameterContainer& container)
 {
   // check if parameters are valid
   if (mat_params()->rY_11_ != 0. || mat_params()->rY_22_ != 0. || mat_params()->rY_33_ != 0. ||
@@ -461,47 +460,26 @@ void Mat::PlasticElastHyper::setup_hill_plasticity(Input::LineDefinition* linede
     // anisotropy directions
     std::vector<Core::LinAlg::Matrix<3, 1>> directions(3);
 
-    // first anisotropy direction
-    if (linedef->has_named("FIBER1"))
-    {
-      std::vector<double> fiber;
-      linedef->extract_double_vector("FIBER1", fiber);
-      double fnorm = 0.;
-      // normalization
-      for (int i = 0; i < 3; ++i) fnorm += fiber[i] * fiber[i];
-      fnorm = sqrt(fnorm);
-      if (fnorm == 0.) FOUR_C_THROW("Fiber vector has norm zero");
+    // compute fiber directions
+    const auto* fiber1 = container.get_if<std::vector<double>>("FIBER1");
+    const auto* fiber2 = container.get_if<std::vector<double>>("FIBER2");
+    const auto* fiber3 = container.get_if<std::vector<double>>("FIBER3");
 
-      // fill final fiber vector
-      for (int i = 0; i < 3; ++i) directions.at(0)(i) = fiber[i] / fnorm;
-    }
-    // second anisotropy direction
-    if (linedef->has_named("FIBER2"))
+    std::size_t dir_index = 0;
+    for (const auto* fiber : {fiber1, fiber2, fiber3})
     {
-      std::vector<double> fiber;
-      linedef->extract_double_vector("FIBER2", fiber);
-      double fnorm = 0.;
-      // normalization
-      for (int i = 0; i < 3; ++i) fnorm += fiber[i] * fiber[i];
-      fnorm = sqrt(fnorm);
-      if (fnorm == 0.) FOUR_C_THROW("Fiber vector has norm zero");
+      if (fiber != nullptr)
+      {
+        double fnorm = 0.;
+        // normalization
+        for (int i = 0; i < 3; ++i) fnorm += (*fiber)[i] * (*fiber)[i];
+        fnorm = sqrt(fnorm);
+        if (fnorm == 0.) FOUR_C_THROW("Fiber vector has norm zero");
 
-      // fill final fiber vector
-      for (int i = 0; i < 3; ++i) directions.at(1)(i) = fiber[i] / fnorm;
-    }
-    // third anisotropy direction
-    if (linedef->has_named("FIBER3"))
-    {
-      std::vector<double> fiber;
-      linedef->extract_double_vector("FIBER3", fiber);
-      double fnorm = 0.;
-      // normalization
-      for (int i = 0; i < 3; ++i) fnorm += fiber[i] * fiber[i];
-      fnorm = sqrt(fnorm);
-      if (fnorm == 0.) FOUR_C_THROW("Fiber vector has norm zero");
-
-      // fill final fiber vector
-      for (int i = 0; i < 3; ++i) directions.at(2)(i) = fiber[i] / fnorm;
+        // fill final fiber vector
+        for (int i = 0; i < 3; ++i) directions.at(dir_index)(i) = (*fiber)[i] / fnorm;
+        dir_index++;
+      }
     }
 
     // check orthogonality
@@ -580,8 +558,6 @@ void Mat::PlasticElastHyper::setup_hill_plasticity(Input::LineDefinition* linede
     tmp.multiply_nt(red, tmp55);
     InvPlAniso_full_.multiply_nt(tmp, red);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

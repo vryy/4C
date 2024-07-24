@@ -16,28 +16,26 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoHex8P1J1::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::SoHex8P1J1::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   // read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
   set_material(0, Mat::Factory(material_id));
 
   // set up of materials with GP data (e.g., history variables)
-  solid_material()->setup(NUMGPT_SOH8, linedef);
+  solid_material()->setup(NUMGPT_SOH8, container);
 
-  // temporary variable for read-in
-  std::string buffer;
   // read kinematic flag
-  linedef->extract_string("KINEM", buffer);
+  std::string kinem = container.get<std::string>("KINEM");
+
   // no linear case implemented so far, hence just a dummy check
-  if (buffer == "linear")
+  if (kinem == "linear")
   {
     // kintype_ = soh8_linear;
     FOUR_C_THROW("Only nonlinear kinematics for SO_HEX8p1j1 implemented!");
   }
-  else if (buffer == "nonlinear")
+  else if (kinem == "nonlinear")
   {
     kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
   }

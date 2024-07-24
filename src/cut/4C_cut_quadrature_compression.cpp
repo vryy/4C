@@ -68,7 +68,7 @@ void Core::Geo::Cut::QuadratureCompression::form_matrix_system(Core::FE::GaussPo
   int ma = mat->numRows();
   int na = mat->numCols();
 
-  // std::cout<<"number of original quadrature points = "<<gin.NumPoints()<<"\n";
+  // std::cout<<"number of original quadrature points = "<<gin.num_points()<<"\n";
 
   rhs->shape(na, 1);
 

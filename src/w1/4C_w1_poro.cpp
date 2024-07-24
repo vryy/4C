@@ -18,6 +18,8 @@
 #include "4C_mat_structporo.hpp"
 #include "4C_poroelast_utils.hpp"
 
+#include <vector>
+
 FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType distype>
@@ -173,20 +175,20 @@ void Discret::ELEMENTS::Wall1Poro<distype>::print(std::ostream& os) const
 }
 
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::Wall1Poro<distype>::read_element(
-    const std::string& eletype, const std::string& eledistype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::Wall1Poro<distype>::read_element(const std::string& eletype,
+    const std::string& eledistype, const Core::IO::InputParameterContainer& container)
 {
   // read base element
-  Wall1::read_element(eletype, eledistype, linedef);
+  Wall1::read_element(eletype, eledistype, container);
 
   // setup poro material
   Teuchos::RCP<Mat::StructPoro> poromat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(material());
   if (poromat == Teuchos::null)
     FOUR_C_THROW("material assigned to poro element is not a poro material!");
-  poromat->poro_setup(numgpt_, linedef);
+  poromat->poro_setup(numgpt_, container);
 
-  read_anisotropic_permeability_directions_from_element_line_definition(linedef);
-  read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(linedef);
+  read_anisotropic_permeability_directions_from_element_line_definition(container);
+  read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(container);
 
   return true;
 }
@@ -194,26 +196,28 @@ bool Discret::ELEMENTS::Wall1Poro<distype>::read_element(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Wall1Poro<distype>::
     read_anisotropic_permeability_directions_from_element_line_definition(
-        Input::LineDefinition* linedef)
+        const Core::IO::InputParameterContainer& container)
 {
   for (int dim = 0; dim < 2; ++dim)
   {
     std::string definition_name = "POROANISODIR" + std::to_string(dim + 1);
-    if (linedef->has_named(definition_name))
-      linedef->extract_double_vector(definition_name, anisotropic_permeability_directions_[dim]);
+    if (container.get_if<std::vector<double>>(definition_name) != nullptr)
+      anisotropic_permeability_directions_[dim] =
+          container.get<std::vector<double>>(definition_name);
   }
 }
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Wall1Poro<distype>::
     read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(
-        Input::LineDefinition* linedef)
+        const Core::IO::InputParameterContainer& container)
 {
   for (int dim = 0; dim < 2; ++dim)
   {
     std::string definition_name = "POROANISONODALCOEFFS" + std::to_string(dim + 1);
-    if (linedef->has_named(definition_name))
-      linedef->extract_double_vector(definition_name, anisotropic_permeability_nodal_coeffs_[dim]);
+    if (container.get_if<std::vector<double>>(definition_name) != nullptr)
+      anisotropic_permeability_nodal_coeffs_[dim] =
+          container.get<std::vector<double>>(definition_name);
   }
 }
 

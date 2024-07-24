@@ -27,9 +27,9 @@ Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::SolidPoroPressureBas
 
 template <Core::FE::CellType celltype>
 void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::poro_setup(
-    Mat::StructPoro& porostructmat, Input::LineDefinition* linedef)
+    Mat::StructPoro& porostructmat, const Core::IO::InputParameterContainer& container)
 {
-  porostructmat.poro_setup(gauss_integration_.num_points(), linedef);
+  porostructmat.poro_setup(gauss_integration_.num_points(), container);
 }
 
 template <Core::FE::CellType celltype>

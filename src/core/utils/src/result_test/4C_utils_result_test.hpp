@@ -15,6 +15,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_io_input_parameter_container.hpp"
+
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 
@@ -59,51 +61,55 @@ namespace Core::UTILS
     virtual ~ResultTest() = default;
 
     /// perform element value test
-    virtual void test_element(Input::LineDefinition& res, int& nerr, int& test_count);
+    virtual void test_element(
+        const Core::IO::InputParameterContainer& container, int& nerr, int& test_count);
 
     /*!
      * @brief  perform nodal value test
      *
-     * @param[in] res         input file line containing result test specification
+     * @param[in] container   container containing result test specification
      * @param[in] nerr        number of failed result tests
      * @param[in] test_count  number of result tests
      */
-    virtual void test_node(Input::LineDefinition& res, int& nerr, int& test_count);
+    virtual void test_node(
+        const Core::IO::InputParameterContainer& container, int& nerr, int& test_count);
 
     /*!
      * @brief  perform nodal value test on a geometry. The operation can be e.g., sum, max and min
      *
-     * @param[in] res         input file line containing result test specification
+     * @param[in] container   container containing result test specification
      * @param[in] nerr        number of failed result tests
      * @param[in] test_count  number of result tests
      */
-    virtual void test_node_on_geometry(Input::LineDefinition& res, int& nerr, int& test_count,
-        const std::vector<std::vector<std::vector<int>>>& nodeset);
+    virtual void test_node_on_geometry(const Core::IO::InputParameterContainer& container,
+        int& nerr, int& test_count, const std::vector<std::vector<std::vector<int>>>& nodeset);
 
     /// perform special case test
-    virtual void test_special(
-        Input::LineDefinition& res, int& nerr, int& test_count, int& unevaluated_test_count);
+    virtual void test_special(const Core::IO::InputParameterContainer& container, int& nerr,
+        int& test_count, int& unevaluated_test_count);
 
     /*!
      * @brief  perform special case test
      *
-     * @param[in] res         input file line containing result test specification
+     * @param[in] container   container containing result test specification
      * @param[in] nerr        number of failed result tests
      * @param[in] test_count  number of result tests
      */
-    virtual void test_special(Input::LineDefinition& res, int& nerr, int& test_count);
+    virtual void test_special(
+        const Core::IO::InputParameterContainer& container, int& nerr, int& test_count);
 
     /// tell whether this field test matches to a given line
-    virtual bool match(Input::LineDefinition& res);
+    virtual bool match(const Core::IO::InputParameterContainer& container);
 
    protected:
-    //! compare a calculated value with the expected one
+    //! compare a calculated @param actresult with the expected one stored in the @param container
     //!
     //! There is a difference between node/element based results and special results.
     //! Node/element based results have to be compared at a specific node/element.
     //! Special results are not attached to a specific node/element, but to the
     //! overall algorithm.
-    virtual int compare_values(double actresult, std::string type, Input::LineDefinition& res);
+    virtual int compare_values(
+        double actresult, std::string type, const Core::IO::InputParameterContainer& container);
 
    private:
     /// specific name of a field test
@@ -117,8 +123,6 @@ namespace Core::UTILS
     your calculation. For each field involved you will want to add a
     specific field test class (derived from ResultTest). Afterwards
     just start testing...
-
-    \author u.kue
   */
   class ResultTestManager
   {
@@ -136,7 +140,10 @@ namespace Core::UTILS
     void set_node_set(const std::vector<std::vector<std::vector<int>>>& nodeset);
 
     /// Get the node set (design topology)
-    const std::vector<std::vector<std::vector<int>>>& get_node_set() const { return nodeset_; }
+    [[nodiscard]] const std::vector<std::vector<std::vector<int>>>& get_node_set() const
+    {
+      return nodeset_;
+    }
 
    private:
     /// set of field specific result test objects

@@ -217,7 +217,7 @@ namespace Mat
 
 
     /// setup
-    void setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
 
     /*!
      * \brief Post setup routine called before the first Evaluate call
@@ -267,7 +267,7 @@ namespace Mat
 
    private:
     /// Setup circumferential, radial and axial structural tensor
-    void setup_axi_cir_rad_structural_tensor(Input::LineDefinition* linedef);
+    void setup_axi_cir_rad_structural_tensor(const Core::IO::InputParameterContainer& container);
 
     /// Setup prestretch (optional: setup element axi-, circ-, and rad-directions) for 3D elements
     void setup_g_r_3d(Core::LinAlg::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
@@ -291,7 +291,7 @@ namespace Mat
     void setup_aniso_growth_tensors();
 
     /// Read AXI CIR RAD direction
-    void read_dir(Input::LineDefinition* linedef, const std::string& specifier,
+    void read_dir(const Core::IO::InputParameterContainer& container, const std::string& specifier,
         Core::LinAlg::Matrix<3, 1>& dir);
 
     /// Evaluate Prestretches

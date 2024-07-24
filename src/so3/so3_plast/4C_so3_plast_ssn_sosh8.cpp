@@ -391,7 +391,6 @@ void Discret::ELEMENTS::SoSh8Plast::unpack(const std::vector<char>& data)
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
-  return;
 }
 
 void Discret::ELEMENTS::SoSh8Plast::print(std::ostream& os) const
@@ -399,17 +398,15 @@ void Discret::ELEMENTS::SoSh8Plast::print(std::ostream& os) const
   os << "So_sh8Plast ";
   Element::print(os);
   std::cout << std::endl;
-  return;
 }
 
 /*----------------------------------------------------------------------*
  | read this element, get the material (public)             seitz 05/14 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoSh8Plast::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::SoSh8Plast::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
-  std::string buffer;
-  linedef->extract_string("KINEM", buffer);
+  std::string buffer = container.get<std::string>("KINEM");
 
   // geometrically linear
   if (buffer == "linear")
@@ -440,13 +437,12 @@ bool Discret::ELEMENTS::SoSh8Plast::read_element(
   fbar_ = false;
 
   // read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
 
   set_material(0, Mat::Factory(material_id));
 
   Teuchos::RCP<Mat::So3Material> so3mat = solid_material();
-  so3mat->setup(numgpt_, linedef);
+  so3mat->setup(numgpt_, container);
   so3mat->valid_kinematics(Inpar::Solid::KinemType::nonlinearTotLag);
   if (have_plastic_spin())
     plspintype_ = plspin;
@@ -454,7 +450,7 @@ bool Discret::ELEMENTS::SoSh8Plast::read_element(
     plspintype_ = zerospin;
 
   // EAS
-  linedef->extract_string("EAS", buffer);
+  buffer = container.get<std::string>("EAS");
 
   if (buffer == "none")
     eastype_ = soh8p_easnone;
@@ -467,7 +463,7 @@ bool Discret::ELEMENTS::SoSh8Plast::read_element(
   eas_init();
 
   // read ANS technology flag
-  linedef->extract_string("ANS", buffer);
+  buffer = container.get<std::string>("ANS");
   if (buffer == "sosh8")
   {
     anstype_ = anssosh8_p;
@@ -480,7 +476,7 @@ bool Discret::ELEMENTS::SoSh8Plast::read_element(
   else
     FOUR_C_THROW("Reading of SO_SH8 ANS technology failed");
 
-  linedef->extract_string("THICKDIR", buffer);
+  buffer = container.get<std::string>("THICKDIR");
   nodes_rearranged_ = false;
 
   // global X

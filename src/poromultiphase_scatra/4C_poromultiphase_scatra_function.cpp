@@ -17,6 +17,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+#include <string>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace
@@ -71,14 +73,14 @@ namespace
 
     const auto& function_lin_def = function_line_defs.front();
 
-    if (function_lin_def.has_named("POROMULTIPHASESCATRA_FUNCTION"))
+    if (function_lin_def.container().get_if<std::string>("POROMULTIPHASESCATRA_FUNCTION") !=
+        nullptr)
     {
-      std::string type;
-      function_lin_def.extract_string("POROMULTIPHASESCATRA_FUNCTION", type);
+      std::string type =
+          function_lin_def.container().get<std::string>("POROMULTIPHASESCATRA_FUNCTION");
 
-      std::vector<std::pair<std::string, double>> params;
-      if (function_lin_def.has_named("PARAMS"))
-        function_lin_def.extract_pair_of_string_and_double_vector("PARAMS", params);
+      auto params =
+          function_lin_def.container().get<std::vector<std::pair<std::string, double>>>("PARAMS");
 
       return CreatePoroFunction<dim>(type, params);
     }

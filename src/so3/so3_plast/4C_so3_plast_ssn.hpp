@@ -222,8 +222,7 @@ namespace Discret
       //! read input for this element
       bool read_element(const std::string& eletype,  //!< so3plast(fbar)
           const std::string& eledistype,             //!< hex8,tet4,...
-          Input::LineDefinition* linedef             //!< what parameters have to be read
-          ) override;
+          const Core::IO::InputParameterContainer& container) override;
 
       //@}
 

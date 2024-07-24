@@ -41,32 +41,31 @@ FLD::XFluidResultTest::XFluidResultTest(const FLD::XFluidFluid& xfluid)
   // adapt the test cases!
 }
 
-void FLD::XFluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
+void FLD::XFluidResultTest::test_node(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
-  std::string dis;
-  res.extract_string("DIS", dis);
+  std::string dis = container.get<std::string>("DIS");
 
-  int node;
-  res.extract_int("NODE", node);
+  int node = container.get<int>("NODE");
 
   // Todo: remove!
   if (node_from_zero_) node -= 1;
 
   if (dis == discret_->name())
   {
-    test_node(res, nerr, test_count, node, discret_, velnp_);
+    test_node(container, nerr, test_count, node, discret_, velnp_);
   }
   else if (dis == coupl_discret_->name())
   {
-    test_node(res, nerr, test_count, node, coupl_discret_, coupl_velnp_);
+    test_node(container, nerr, test_count, node, coupl_discret_, coupl_velnp_);
   }
   else
     return;
 }
 
-void FLD::XFluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count,
-    int node, const Teuchos::RCP<const Core::FE::Discretization>& discret,
+void FLD::XFluidResultTest::test_node(const Core::IO::InputParameterContainer& container, int& nerr,
+    int& test_count, int node, const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<const Epetra_Vector>& velnp)
 {
   int havenode(discret->have_global_node(node));
@@ -89,8 +88,7 @@ void FLD::XFluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int
 
       const Epetra_BlockMap& velnpmap = velnp->Map();
 
-      std::string position;
-      res.extract_string("QUANTITY", position);
+      std::string position = container.get<std::string>("QUANTITY");
       if (position == "velx")
       {
         result = (*velnp)[velnpmap.LID(discret->dof(0, actnode, 0))];
@@ -112,7 +110,7 @@ void FLD::XFluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int
         FOUR_C_THROW("Quantity '%s' not supported in ale testing", position.c_str());
       }
 
-      nerr += compare_values(result, "NODE", res);
+      nerr += compare_values(result, "NODE", container);
       test_count++;
     }
   }

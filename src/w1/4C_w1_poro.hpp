@@ -215,7 +215,7 @@ namespace Discret
       \brief Read input for this element
       */
       bool read_element(const std::string& eletype, const std::string& eledistype,
-          Input::LineDefinition* linedef) override;
+          const Core::IO::InputParameterContainer& container) override;
 
       //!@}
 
@@ -616,11 +616,11 @@ namespace Discret
 
       //! anisotropic permeability directions in the element definition
       void read_anisotropic_permeability_directions_from_element_line_definition(
-          Input::LineDefinition* linedef);
+          const Core::IO::InputParameterContainer& container);
 
       //! read nodal anisotropic permeability scaling coefficients in the element definition
       void read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(
-          Input::LineDefinition* linedef);
+          const Core::IO::InputParameterContainer& container);
 
       //! interpolate the anisotropic permeability coefficients at GP from nodal values
       std::vector<double> compute_anisotropic_permeability_coeffs_at_gp(

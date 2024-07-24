@@ -665,7 +665,7 @@ namespace Core::FE
         // We need to set material and gauss points to complete element setup.
         // This is again really ugly as we have to extract the actual
         // element type in order to access the material property
-        // note: SetMaterial() was reimplemented by the transport element!
+        // note: set_material() was reimplemented by the transport element!
 
         int src_matid = sourceele->material()->parameter()->id();
         std::map<int, int>::iterator mat_iter = matmap.find(src_matid);
@@ -780,7 +780,7 @@ namespace Core::FE
         // We need to set material and gauss points to complete element setup.
         // This is again really ugly as we have to extract the actual
         // element type in order to access the material property
-        // note: SetMaterial() was reimplemented by the transport element!
+        // note: set_material() was reimplemented by the transport element!
         Teuchos::RCP<Core::Mat::Material> mat_ptr = sourceele->material();
         /* Check if the material pointer is null. If necessary, try to cast
          * the condition element to a FaceElement and ask the parent element for

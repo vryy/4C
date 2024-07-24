@@ -49,12 +49,13 @@ namespace FLD
       Possible position flags are "velx", "vely", "velz" and
       "pressure". With the obvious meaning.
      */
-    void test_node(Input::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(
+        const Core::IO::InputParameterContainer& container, int& nerr, int& test_count) override;
 
    private:
     /// nodal value test (one can specify discretization and corresponding solution here!)
-    void test_node(Input::LineDefinition& res, int& nerr, int& test_count, int node,
-        const Teuchos::RCP<const Core::FE::Discretization>& discret,
+    void test_node(const Core::IO::InputParameterContainer& container, int& nerr, int& test_count,
+        int node, const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const Teuchos::RCP<const Epetra_Vector>& velnp);
 
     /// XFEM discretization

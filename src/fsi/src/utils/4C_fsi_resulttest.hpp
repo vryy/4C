@@ -63,22 +63,28 @@ namespace FSI
     //! \brief fsi version of nodal value tests
     //!
     //! Possible position flags are "lambdax", "lambday", "lambdaz"
-    void test_node(Input::LineDefinition& res,  ///< the line definition from input file
-        int& nerr,                              ///< number of tests with errors
-        int& test_count                         ///< number of tests performed
+    void test_node(
+        const Core::IO::InputParameterContainer&
+            container,   ///< container with expected results as specified in the input file
+        int& nerr,       ///< number of tests with errors
+        int& test_count  ///< number of tests performed
         ) override;
 
     //! \brief fsi version of element value tests
-    void test_element(Input::LineDefinition& res,  ///< the line definition from input file
-        int& nerr,                                 ///< number of tests with errors
-        int& test_count                            ///< number of tests performed
+    void test_element(
+        const Core::IO::InputParameterContainer&
+            container,   ///< container with expected results as specified in the input file
+        int& nerr,       ///< number of tests with errors
+        int& test_count  ///< number of tests performed
         ) override;
 
 
     //! \brief fsi version of special tests
-    void test_special(Input::LineDefinition& res,  ///< the line definition from input file
-        int& nerr,                                 ///< number of tests with errors
-        int& test_count                            ///< number of tests performed
+    void test_special(
+        const Core::IO::InputParameterContainer&
+            container,   ///< container with expected results as specified in the input file
+        int& nerr,       ///< number of tests with errors
+        int& test_count  ///< number of tests performed
         ) override;
 
    private:

@@ -246,8 +246,8 @@ namespace Mat
     }
 
     /// Setup
-    void setup(int numgp,               ///< number of Gauss points
-        Input::LineDefinition* linedef  ///< definition of element line
+    void setup(int numgp,                                   ///< number of Gauss points
+        const Core::IO::InputParameterContainer& container  ///< input parameter container
         ) override;
 
     /// SetupHistory

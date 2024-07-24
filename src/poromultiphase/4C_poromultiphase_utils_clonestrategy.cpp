@@ -59,7 +59,7 @@ void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::set_element_data(
   // This is again really ugly as we have to extract the actual
   // element type in order to access the material property
 
-  // note: SetMaterial() was reimplemented by the PoroFluidMultiPhase element!
+  // note: set_material() was reimplemented by the PoroFluidMultiPhase element!
   Discret::ELEMENTS::PoroFluidMultiPhase* porofluidele =
       dynamic_cast<Discret::ELEMENTS::PoroFluidMultiPhase*>(newele.get());
   if (porofluidele != nullptr)

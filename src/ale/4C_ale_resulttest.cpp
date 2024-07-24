@@ -26,15 +26,14 @@ ALE::AleResultTest::AleResultTest(ALE::Ale& ale)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::AleResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
+void ALE::AleResultTest::test_node(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
-  std::string dis;
-  res.extract_string("DIS", dis);
+  std::string dis = container.get<std::string>("DIS");
   if (dis != aledis_->name()) return;
 
-  int node;
-  res.extract_int("NODE", node);
+  int node = container.get<int>("NODE");
   node -= 1;
 
   int havenode(aledis_->have_global_node(node));
@@ -58,8 +57,7 @@ void ALE::AleResultTest::test_node(Input::LineDefinition& res, int& nerr, int& t
 
       const Epetra_BlockMap& dispnpmap = dispnp_->Map();
 
-      std::string position;
-      res.extract_string("QUANTITY", position);
+      std::string position = container.get<std::string>("QUANTITY");
       if (position == "dispx")
       {
         result = (*dispnp_)[dispnpmap.LID(aledis_->dof(actnode, 0))];
@@ -77,7 +75,7 @@ void ALE::AleResultTest::test_node(Input::LineDefinition& res, int& nerr, int& t
         FOUR_C_THROW("Quantity '%s' not supported in ALE testing", position.c_str());
       }
 
-      nerr += compare_values(result, "NODE", res);
+      nerr += compare_values(result, "NODE", container);
       test_count++;
     }
   }

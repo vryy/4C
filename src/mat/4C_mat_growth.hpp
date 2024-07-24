@@ -133,7 +133,7 @@ namespace Mat
     Teuchos::RCP<Core::Mat::Material> clone() const override = 0;
 
     /// Setup
-    void setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
 
     /// Update
     void update() override;
@@ -367,7 +367,7 @@ namespace Mat
     }
 
     /// Setup
-    void setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
 
     /// Update
     void update() override;
@@ -413,7 +413,7 @@ namespace Mat
         Teuchos::ParameterList& params, int gp, int eleGID);
 
     /// Function which reads in the given fiber value due to the FIBER1 nomenclature
-    void read_fiber(Input::LineDefinition* linedef, std::string specifier,
+    void read_fiber(const Core::IO::InputParameterContainer& container, std::string specifier,
         Core::LinAlg::Matrix<3, 1>& fiber_vector);
 
     /*! \brief Evaluate mass change

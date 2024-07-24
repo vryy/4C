@@ -1234,7 +1234,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_output_runtime_stru
   //
   //  // reset time and time step and geometry name in the writer object
   //  vtp_writer_ptr->SetupForNewTimeStepAndGeometry(
-  //      global_state().get_time_n(), global_state().get_step_n(), BinDiscretPtr()->Name() );
+  //      global_state().get_time_n(), global_state().get_step_n(), BinDiscretPtr()->name() );
   //
   //
   //

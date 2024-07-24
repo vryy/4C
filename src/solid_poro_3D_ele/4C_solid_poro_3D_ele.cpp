@@ -146,57 +146,41 @@ void Discret::ELEMENTS::SolidPoro::set_params_interface_ptr(const Teuchos::Param
     interface_ptr_ = Teuchos::null;
 }
 
-bool Discret::ELEMENTS::SolidPoro::read_element(
-    const std::string& eletype, const std::string& elecelltype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::SolidPoro::read_element(const std::string& eletype,
+    const std::string& elecelltype, const Core::IO::InputParameterContainer& container)
 {
   // read base element
   // set cell type
   celltype_ = Core::FE::StringToCellType(elecelltype);
 
   // read number of material model
-  set_material(0, Mat::Factory(FourC::Solid::UTILS::ReadElement::read_element_material(linedef)));
+  set_material(
+      0, Mat::Factory(FourC::Solid::UTILS::read_element::read_element_material(container)));
 
-  // kinematic type
+  // read kinematic type
   solid_ele_property_.kintype =
-      FourC::Solid::UTILS::ReadElement::read_element_kinematic_type(linedef);
+      FourC::Solid::UTILS::read_element::read_element_kinematic_type(container);
 
   // check element technology
-  if (linedef->has_named("TECH"))
-  {
-    if (FourC::Solid::UTILS::ReadElement::read_element_technology(linedef) !=
-        ElementTechnology::none)
-      FOUR_C_THROW("SOLIDPORO elements do not support any element technology!");
-  }
+  if (FourC::Solid::UTILS::read_element::read_element_technology(container) !=
+      ElementTechnology::none)
+    FOUR_C_THROW("SOLIDPORO elements do not support any element technology!");
 
   // read scalar transport implementation type
-  if (linedef->has_named("POROTYPE"))
-  {
-    poro_ele_property_.porotype = FourC::Solid::UTILS::ReadElement::ReadPoroType(linedef);
-  }
-  else
-  {
-    poro_ele_property_.porotype = Inpar::Poro::PoroType::undefined;
-  }
+  poro_ele_property_.porotype = FourC::Solid::UTILS::read_element::read_poro_type(container);
 
   // read scalar transport implementation type
-  if (linedef->has_named("TYPE"))
-  {
-    poro_ele_property_.impltype = FourC::Solid::UTILS::ReadElement::read_type(linedef);
-  }
-  else
-  {
-    poro_ele_property_.impltype = Inpar::ScaTra::impltype_undefined;
-  }
+  poro_ele_property_.impltype = FourC::Solid::UTILS::read_element::read_type(container);
 
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_);
   solidporo_calc_variant_ = create_solid_poro_calculation_interface(*this, get_ele_poro_type());
 
   // setup solid material
   std::visit(
-      [&](auto& solid) { solid->setup(struct_poro_material(), linedef); }, solid_calc_variant_);
+      [&](auto& solid) { solid->setup(struct_poro_material(), container); }, solid_calc_variant_);
 
   // setup poro material
-  std::visit([&](auto& solidporo) { solidporo->poro_setup(struct_poro_material(), linedef); },
+  std::visit([&](auto& solidporo) { solidporo->poro_setup(struct_poro_material(), container); },
       solidporo_calc_variant_);
 
   return true;

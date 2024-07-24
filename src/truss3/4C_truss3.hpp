@@ -182,7 +182,7 @@ namespace Discret
       Teuchos::RCP<Core::Elements::ParamsInterface> params_interface_ptr() override;
 
       bool read_element(const std::string& eletype, const std::string& distype,
-          Input::LineDefinition* linedef) override;
+          const Core::IO::InputParameterContainer& container) override;
 
       //! scale truss reference length
       void scale_reference_length(double scalefac);

@@ -133,10 +133,10 @@ void Mat::Maxwell0dAcinusOgden::unpack(const std::vector<char>& data)
  | Setup routine to add Ogden material specific parameters kappa and    |
  | beta to material                                         roth 10/2014|
  *----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusOgden::setup(Input::LineDefinition* linedef)
+void Mat::Maxwell0dAcinusOgden::setup(const Core::IO::InputParameterContainer& container)
 {
-  linedef->extract_double("KAPPA", kappa_);
-  linedef->extract_double("BETA", beta_);
+  kappa_ = container.get<double>("KAPPA");
+  beta_ = container.get<double>("BETA");
   // TODO bool -variable init, in Evaluate abfragen ob init=true
 }
 

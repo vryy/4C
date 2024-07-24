@@ -1788,7 +1788,7 @@ void Discret::ELEMENTS::So3Plast<distype>::recover_plasticity_and_eas(
     //    if (eastype_!=soh8p_easnone)
     //      reduce_eas_step(new_step_length,old_step_length_);
     //
-    //    if (Material()->material_type()==Core::Materials::m_plelasthyper)
+    //    if (material()->material_type()==Core::Materials::m_plelasthyper)
     //      for (int gp=0;gp<numgpt_;++gp)
     //        reduce_plasticity_step(new_step_length,old_step_length_,gp);
     //

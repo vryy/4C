@@ -70,7 +70,7 @@ namespace Discret
       const Inpar::ScaTra::ImplType& impl_type() const { return impltype_; };
 
       bool read_element(const std::string& eletype, const std::string& distype,
-          Input::LineDefinition* linedef) override;
+          const Core::IO::InputParameterContainer& container) override;
 
       int unique_par_object_id() const override
       {

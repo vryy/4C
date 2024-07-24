@@ -106,7 +106,7 @@ namespace Discret
 
       //! read input for this element
       bool read_element(const std::string& eletype, const std::string& distype,
-          Input::LineDefinition* linedef) override;
+          const Core::IO::InputParameterContainer& container) override;
 
       //! definition of shell-thickness direction
       enum ThicknessDirection

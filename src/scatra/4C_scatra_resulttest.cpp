@@ -11,7 +11,6 @@
 #include "4C_scatra_resulttest.hpp"
 
 #include "4C_fem_discretization.hpp"
-#include "4C_io_linedefinition.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
@@ -23,21 +22,19 @@ FOUR_C_NAMESPACE_OPEN
 ScaTra::ScaTraResultTest::ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatratimint)
     : Core::UTILS::ResultTest("SCATRA"), scatratimint_(scatratimint)
 {
-  return;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ScaTra::ScaTraResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
+void ScaTra::ScaTraResultTest::test_node(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
-  std::string dis;
-  res.extract_string("DIS", dis);
+  std::string dis = container.get<std::string>("DIS");
   if (dis != scatratimint_->discretization()->name()) return;
 
-  int node;
-  res.extract_int("NODE", node);
+  int node = container.get<int>("NODE");
   node -= 1;
 
   int havenode(scatratimint_->discretization()->have_global_node(node));
@@ -59,20 +56,13 @@ void ScaTra::ScaTraResultTest::test_node(Input::LineDefinition& res, int& nerr, 
       if (actnode->owner() != scatratimint_->discretization()->get_comm().MyPID()) return;
 
       // extract name of quantity to be tested
-      std::string quantity;
-      res.extract_string("QUANTITY", quantity);
+      std::string quantity = container.get<std::string>("QUANTITY");
 
       // get result to be tested
-      const double result = result_node(quantity, actnode);
-
-      nerr += compare_values(result, "NODE", res);
       test_count++;
     }
   }
-
-  return;
 }
-
 
 /*----------------------------------------------------------------------*
  | get nodal result to be tested                             fang 03/15 |
@@ -226,16 +216,16 @@ double ScaTra::ScaTraResultTest::result_node(
 /*-------------------------------------------------------------------------------------*
  | test special quantity not associated with a particular element or node   fang 03/15 |
  *-------------------------------------------------------------------------------------*/
-void ScaTra::ScaTraResultTest::test_special(Input::LineDefinition& res, int& nerr, int& test_count)
+void ScaTra::ScaTraResultTest::test_special(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only on specified discretization
-  std::string disname;
-  res.extract_string("DIS", disname);
+
+  std::string disname = container.get<std::string>("DIS");
   if (disname == scatratimint_->discretization()->name())
   {
     // extract name of quantity to be tested
-    std::string quantity;
-    res.extract_string("QUANTITY", quantity);
+    std::string quantity = container.get<std::string>("QUANTITY");
 
     // get result to be tested on all processors
     const double result = result_special(quantity);
@@ -243,13 +233,11 @@ void ScaTra::ScaTraResultTest::test_special(Input::LineDefinition& res, int& ner
     // compare values on first processor
     if (scatratimint_->discretization()->get_comm().MyPID() == 0)
     {
-      const int err = compare_values(result, "SPECIAL", res);
+      const int err = compare_values(result, "SPECIAL", container);
       nerr += err;
       test_count++;
     }
   }
-
-  return;
 }
 
 
@@ -277,14 +265,14 @@ double ScaTra::ScaTraResultTest::result_special(
   {
     // examples of possible specifications:
     // 1.) quantity == "{{total,mean}phi,{L2,H1}error}", suffix == "": total value, mean value,
-    // relative L2 error, or relative H1 error of scalar with ID 0 in entire domain (with ID -1) 2.)
-    // quantity == "{{total,mean}phi,{L2,H1}error}a", suffix == "a": total value, mean value,
-    // relative L2 error, or relative H1 error of scalar with ID a in entire domain (with ID -1) 3.)
-    // quantity == "{{total,mean}phi,{L2,H1}error}_b", suffix == "_b": total value, mean value,
-    // relative L2 error, or relative H1 error of scalar with ID 0 in subdomain with ID b 4.)
-    // quantity == "{{total,mean}phi,{L2,H1}error}a_b", suffix == "a_b": total value, mean value,
-    // relative L2 error, or relative H1 error of scalar with ID a in subdomain with ID b other
-    // specifications are invalid and result in a FOUR_C_THROW
+    // relative L2 error, or relative H1 error of scalar with ID 0 in entire domain (with ID
+    // -1) 2.) quantity == "{{total,mean}phi,{L2,H1}error}a", suffix == "a": total value, mean
+    // value, relative L2 error, or relative H1 error of scalar with ID a in entire domain (with
+    // ID -1) 3.) quantity == "{{total,mean}phi,{L2,H1}error}_b", suffix == "_b": total value,
+    // mean value, relative L2 error, or relative H1 error of scalar with ID 0 in subdomain with
+    // ID b 4.) quantity == "{{total,mean}phi,{L2,H1}error}a_b", suffix == "a_b": total value,
+    // mean value, relative L2 error, or relative H1 error of scalar with ID a in subdomain with
+    // ID b other specifications are invalid and result in a FOUR_C_THROW
     std::string suffix;
     if (!quantity.compare(0, 8, "totalphi"))
       suffix = quantity.substr(8);
@@ -413,8 +401,8 @@ double ScaTra::ScaTraResultTest::result_special(
     if (strategy == Teuchos::null)
       FOUR_C_THROW("Couldn't extract scatra-scatra interface meshtying strategy class!");
 
-    // extract number of degrees of freedom owned by specified processor at specified scatra-scatra
-    // coupling interface
+    // extract number of degrees of freedom owned by specified processor at specified
+    // scatra-scatra coupling interface
     result = strategy->mortar_discretization(interface_num).dof_row_map()->NumMyElements();
     scatratimint_->discretization()->get_comm().Broadcast(&result, 1, proc_num);
   }

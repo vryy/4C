@@ -37,15 +37,14 @@ Airway::RedAirwayResultTest::RedAirwayResultTest(RedAirwayImplicitTimeInt& airwa
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Airway::RedAirwayResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
+void Airway::RedAirwayResultTest::test_node(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
-  std::string dis;
-  res.extract_string("DIS", dis);
+  std::string dis = container.get<std::string>("DIS");
   if (dis != dis_->name()) return;
 
-  int node;
-  res.extract_int("NODE", node);
+  int node = container.get<int>("NODE");
   node -= 1;
 
   int havenode(dis_->have_global_node(node));
@@ -67,8 +66,7 @@ void Airway::RedAirwayResultTest::test_node(Input::LineDefinition& res, int& ner
 
       double result = 0.;
       const Epetra_BlockMap& nodemap = mynodesol_pressure_->Map();
-      std::string position;
-      res.extract_string("QUANTITY", position);
+      std::string position = container.get<std::string>("QUANTITY");
 
       // test result value of single scalar field
       if (position == "pressure")
@@ -90,7 +88,7 @@ void Airway::RedAirwayResultTest::test_node(Input::LineDefinition& res, int& ner
             "Quantity '%s' not supported in result-test of red_airway problems", position.c_str());
       }
 
-      nerr += compare_values(result, "NODE", res);
+      nerr += compare_values(result, "NODE", container);
       test_count++;
     }
   }
@@ -103,15 +101,13 @@ void Airway::RedAirwayResultTest::test_node(Input::LineDefinition& res, int& ner
  *                                                         roth 11/2014 *
  *----------------------------------------------------------------------*/
 void Airway::RedAirwayResultTest::test_element(
-    Input::LineDefinition& res, int& nerr, int& test_count)
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
-  std::string dis;
-  res.extract_string("DIS", dis);
+  std::string dis = container.get<std::string>("DIS");
   if (dis != dis_->name()) return;
 
-  int element;
-  res.extract_int("ELEMENT", element);
+  int element = container.get<int>("ELEMENT");
   element -= 1;
 
   int haveelement(dis_->have_global_element(element));
@@ -133,8 +129,7 @@ void Airway::RedAirwayResultTest::test_element(
 
       double result = 0.;
       const Epetra_BlockMap& elementmap = myelemsol_acinivol_->Map();
-      std::string position;
-      res.extract_string("QUANTITY", position);
+      std::string position = container.get<std::string>("QUANTITY");
       if (position == "pressure_external")
       {
         result = (*myelemsol_pressure_external_)[elementmap.LID(actelement->id())];
@@ -161,7 +156,7 @@ void Airway::RedAirwayResultTest::test_element(
             "Quantity '%s' not supported in result-test of red_airway problems.", position.c_str());
       }
 
-      nerr += compare_values(result, "ELEMENT", res);
+      nerr += compare_values(result, "ELEMENT", container);
       test_count++;
     }
   }

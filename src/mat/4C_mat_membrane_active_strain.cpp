@@ -204,21 +204,20 @@ void Mat::MembraneActiveStrain::unpack(const std::vector<char>& data)
     extract_from_pack(position, data, activation_gp);
     activation_->at(gp) = activation_gp;
   }
-  return;
 }  // Mat::MembraneActiveStrain::unpack()
 
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneActiveStrain::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::MembraneActiveStrain::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   // setup fibervectors
-  setup_fiber_vectors(numgp, linedef);
+  setup_fiber_vectors(numgp, container);
 
   // setup of passive material
   matpassive_ =
       Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->matid_passive_), true);
-  matpassive_->setup(numgp, linedef);
+  matpassive_->setup(numgp, container);
 
   // setup internal variables
   voltage_ = Teuchos::rcp(new std::vector<double>);
@@ -234,7 +233,6 @@ void Mat::MembraneActiveStrain::setup(int numgp, Input::LineDefinition* linedef)
   }
 
   isinit_ = true;
-  return;
 }  // Mat::MembraneActiveStrain::setup()
 
 /*----------------------------------------------------------------------*
@@ -414,27 +412,31 @@ bool Mat::MembraneActiveStrain::vis_data(
 /*----------------------------------------------------------------------*
  | setup fiber vectors                                                  |
  *----------------------------------------------------------------------*/
-void Mat::MembraneActiveStrain::setup_fiber_vectors(int numgp, Input::LineDefinition* linedef)
+void Mat::MembraneActiveStrain::setup_fiber_vectors(
+    int numgp, const Core::IO::InputParameterContainer& container)
 {
   Core::LinAlg::Matrix<3, 1> dir;
 
   // CIR-AXI-RAD nomenclature
-  if (linedef->has_named("RAD") and linedef->has_named("AXI") and linedef->has_named("CIR"))
+  if (container.get_if<std::vector<double>>("RAD") != nullptr and
+      container.get_if<std::vector<double>>("AXI") != nullptr and
+      container.get_if<std::vector<double>>("CIR") != nullptr)
   {
     // Axial direction
-    read_dir(linedef, "AXI", dir);
+    read_dir(container, "AXI", dir);
     fibervecs_.push_back(dir);
 
     // Circumferential direction
-    read_dir(linedef, "CIR", dir);
+    read_dir(container, "CIR", dir);
     fibervecs_.push_back(dir);
 
     // Radial direction
-    read_dir(linedef, "RAD", dir);
+    read_dir(container, "RAD", dir);
     fibervecs_.push_back(dir);
   }
   // FIBER nomenclature
-  else if (linedef->has_named("FIBER1") and linedef->has_named("FIBER2"))
+  else if (container.get_if<std::vector<double>>("FIBER1") != nullptr and
+           container.get_if<std::vector<double>>("FIBER2") != nullptr)
   {
     for (int i = 1; i < 3; ++i)
     {
@@ -442,7 +444,7 @@ void Mat::MembraneActiveStrain::setup_fiber_vectors(int numgp, Input::LineDefini
       ss << i;
       std::string fibername = "FIBER" + ss.str();  // FIBER Name
                                                    // FiberN direction
-      read_dir(linedef, fibername, dir);
+      read_dir(container, fibername, dir);
       fibervecs_.push_back(dir);
     }
 
@@ -478,11 +480,11 @@ void Mat::MembraneActiveStrain::setup_fiber_vectors(int numgp, Input::LineDefini
 /*----------------------------------------------------------------------*
  * Function which reads in the fiber direction
  *----------------------------------------------------------------------*/
-void Mat::MembraneActiveStrain::read_dir(
-    Input::LineDefinition* linedef, std::string specifier, Core::LinAlg::Matrix<3, 1>& dir)
+void Mat::MembraneActiveStrain::read_dir(const Core::IO::InputParameterContainer& container,
+    std::string specifier, Core::LinAlg::Matrix<3, 1>& dir)
 {
-  std::vector<double> fiber;
-  linedef->extract_double_vector(specifier, fiber);
+  std::vector<double> fiber = container.get<std::vector<double>>(specifier);
+
   double fnorm = 0.;
   // normalization
   for (int i = 0; i < 3; ++i)

@@ -216,7 +216,7 @@ void Mat::PlasticLinElast::unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
  | initialise / allocate internal stress variables (public)      04/11 |
  *---------------------------------------------------------------------*/
-void Mat::PlasticLinElast::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::PlasticLinElast::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   // initialise history variables
   strainpllast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);

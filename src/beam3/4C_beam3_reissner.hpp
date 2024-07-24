@@ -29,6 +29,7 @@
 #include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fem_general_utils_integration.hpp"
+#include "4C_io_input_parameter_container.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_utils_fad.hpp"
@@ -477,7 +478,7 @@ namespace Discret
       \brief Read input for this element
       */
       bool read_element(const std::string& eletype, const std::string& distype,
-          Input::LineDefinition* linedef) override;
+          const Core::IO::InputParameterContainer& container) override;
 
       //@}
 

@@ -12,8 +12,9 @@
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_factory.hpp"
 #include "4C_fluid_ele_interface.hpp"
-#include "4C_inpar_fluid.hpp"
+#include "4C_io_input_parameter_container.hpp"
 #include "4C_io_linedefinition.hpp"
+#include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -179,21 +180,13 @@ void Discret::ELEMENTS::FluidHDGWeakComp::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::FluidHDGWeakComp::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::FluidHDGWeakComp::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
-  bool success = Fluid::read_element(eletype, distype, linedef);
-  int degree;
-  linedef->extract_int("DEG", degree);
-  degree_ = degree;
+  bool success = Fluid::read_element(eletype, distype, container);
+  degree_ = container.get<int>("DEG");
 
-  if (linedef->has_named("SPC"))
-  {
-    linedef->extract_int("SPC", degree);
-    completepol_ = degree;
-  }
-  else
-    completepol_ = false;
+  completepol_ = container.get_or<int>("SPC", false);
 
   return success;
 }

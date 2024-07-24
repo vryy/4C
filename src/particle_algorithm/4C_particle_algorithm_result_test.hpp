@@ -65,13 +65,12 @@ namespace PARTICLEALGORITHM
     /*!
      * \brief test special quantity
      *
-     * \author Sebastian Fuchs \date 07/2018
-     *
-     * \param[in]  res        result line definition
+     * \param[in]  parameter_container        result container
      * \param[out] nerr       number of tests with errors
      * \param[out] test_count number of tests performed
      */
-    void test_special(Input::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_special(const Core::IO::InputParameterContainer& result_container, int& nerr,
+        int& test_count) override;
 
    private:
     //! interface to particle engine

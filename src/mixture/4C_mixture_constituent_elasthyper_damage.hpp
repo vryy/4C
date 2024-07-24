@@ -106,7 +106,7 @@ namespace MIXTURE
      * @param numgp (in) Number of Gauss-points
      * @param params (in/out) Parameter list for exchange of parameters
      */
-    void read_element(int numgp, Input::LineDefinition* linedef) override;
+    void read_element(int numgp, const Core::IO::InputParameterContainer& container) override;
 
 
     /*!

@@ -16,20 +16,20 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Nurbs::SoNurbs27::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::Nurbs::SoNurbs27::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   // read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
   set_material(0, Mat::Factory(material_id));
 
   const int numgp = 27;
-  solid_material()->setup(numgp, linedef);
+  solid_material()->setup(numgp, container);
 
   // read possible gaussian points, obsolete for computation
-  std::vector<int> ngp;
-  linedef->extract_int_vector("GP", ngp);
+  std::vector<int> ngp = container.get<std::vector<int>>("GP");
+
+
   for (int i = 0; i < 3; ++i)
     if (ngp[i] != 3) FOUR_C_THROW("Only version with 3 GP for So_N27 implemented");
 

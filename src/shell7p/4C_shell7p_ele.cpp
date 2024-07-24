@@ -8,6 +8,7 @@
 
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_cell_type.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_shell7p_ele_factory.hpp"
 #include "4C_shell7p_ele_interface_serializable.hpp"
@@ -328,8 +329,8 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Shell7p::s
   return {Teuchos::rcpFromRef(*this)};
 }
 
-bool Discret::ELEMENTS::Shell7p::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::Shell7p::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   Solid::ELEMENTS::ShellData shell_data = {};
 
@@ -337,36 +338,40 @@ bool Discret::ELEMENTS::Shell7p::read_element(
   distype_ = Core::FE::StringToCellType(distype);
 
   // set thickness in reference frame
-  linedef->extract_double("THICK", thickness_);
+  thickness_ = container.get<double>("THICK");
   if (thickness_ <= 0) FOUR_C_THROW("Shell element thickness needs to be > 0");
   shell_data.thickness = thickness_;
 
   // extract number of EAS parameters for different locking types
   Solid::ELEMENTS::ShellLockingTypes locking_types = {};
-  if (linedef->has_named("EAS"))
+  if (container.get_if<std::string>("EAS") != nullptr)
   {
     eletech_.insert(Inpar::Solid::EleTech::eas);
-    Solid::UTILS::Shell::ReadElement::ReadAndSetLockingTypes(distype_, linedef, locking_types);
+    Solid::UTILS::Shell::read_element::ReadAndSetLockingTypes(distype_, container, locking_types);
   }
 
   // set calculation interface pointer
   shell_interface_ = Shell7pFactory::provide_shell7p_calculation_interface(*this, eletech_);
 
   // read and set ANS technology for element
-  if (linedef->has_named("ANS"))
+  if (distype_ == Core::FE::CellType::quad4 or distype_ == Core::FE::CellType::quad6 or
+      distype_ == Core::FE::CellType::quad9)
   {
-    shell_data.num_ans = Solid::UTILS::Shell::ReadElement::ReadAndSetNumANS(distype_);
+    if (container.get<bool>("ANS"))
+    {
+      shell_data.num_ans = Solid::UTILS::Shell::read_element::ReadAndSetNumANS(distype_);
+    }
   }
 
   // read SDC
-  linedef->extract_double("SDC", shell_data.sdc);
+  shell_data.sdc = container.get<double>("SDC");
 
   // read and set number of material model
   set_material(
-      0, Mat::Factory(Solid::UTILS::Shell::ReadElement::ReadAndSetElementMaterial(linedef)));
+      0, Mat::Factory(Solid::UTILS::Shell::read_element::ReadAndSetElementMaterial(container)));
 
   // setup shell calculation interface
-  shell_interface_->setup(*this, *solid_material(), linedef, locking_types, shell_data);
+  shell_interface_->setup(*this, *solid_material(), container, locking_types, shell_data);
   if (!material_post_setup_)
   {
     shell_interface_->material_post_setup(*this, *solid_material());

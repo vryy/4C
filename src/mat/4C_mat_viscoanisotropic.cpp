@@ -201,13 +201,11 @@ void Mat::ViscoAnisotropic::unpack(const std::vector<char>& data)
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoAnisotropic::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::ViscoAnisotropic::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   /*fiber directions can be defined in the element line
     or by element thickness direction.
@@ -223,12 +221,9 @@ void Mat::ViscoAnisotropic::setup(int numgp, Input::LineDefinition* linedef)
   const double gamma = (params_->gamma_ * M_PI) / 180.;  // convert
 
   // read local (cylindrical) cosy-directions at current element
-  std::vector<double> rad;
-  std::vector<double> axi;
-  std::vector<double> cir;
-  linedef->extract_double_vector("RAD", rad);
-  linedef->extract_double_vector("AXI", axi);
-  linedef->extract_double_vector("CIR", cir);
+  auto rad = container.get<std::vector<double>>("RAD");
+  auto axi = container.get<std::vector<double>>("AXI");
+  auto cir = container.get<std::vector<double>>("CIR");
 
   Core::LinAlg::Matrix<3, 3> locsys;
   // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir

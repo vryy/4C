@@ -16,16 +16,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Artery::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::Artery::read_element(const std::string& eletype, const std::string& distype,
+    const Core::IO::InputParameterContainer& container)
 {
   // read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
   set_material(0, Mat::Factory(material_id));
 
-  int ngp;
-  linedef->extract_int("GP", ngp);
+  int ngp = container.get<int>("GP");
 
   switch (ngp)
   {
@@ -64,8 +62,7 @@ bool Discret::ELEMENTS::Artery::read_element(
   }
 
   // read artery implementation type
-  std::string impltype;
-  linedef->extract_string("TYPE", impltype);
+  std::string impltype = container.get<std::string>("TYPE");
 
   if (impltype == "Undefined")
     impltype_ = Inpar::ArtDyn::impltype_undefined;
@@ -77,8 +74,7 @@ bool Discret::ELEMENTS::Artery::read_element(
     FOUR_C_THROW("Invalid implementation type for ARTERY elements!");
 
   // extract diameter
-  double diam = 0.0;
-  linedef->extract_double("DIAM", diam);
+  double diam = container.get<double>("DIAM");
 
   // set diameter in material
   set_diam_in_material(diam);

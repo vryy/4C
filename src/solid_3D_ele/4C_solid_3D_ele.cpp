@@ -224,19 +224,20 @@ void Discret::ELEMENTS::Solid::set_params_interface_ptr(const Teuchos::Parameter
     interface_ptr_ = Teuchos::null;
 }
 
-bool Discret::ELEMENTS::Solid::read_element(
-    const std::string& eletype, const std::string& celltype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::Solid::read_element(const std::string& eletype, const std::string& celltype,
+    const Core::IO::InputParameterContainer& container)
 {
   // set cell type
   celltype_ = Core::FE::StringToCellType(celltype);
 
   // read number of material model
-  set_material(0, Mat::Factory(FourC::Solid::UTILS::ReadElement::read_element_material(linedef)));
+  set_material(
+      0, Mat::Factory(FourC::Solid::UTILS::read_element::read_element_material(container)));
 
   // kinematic type
-  set_kinematic_type(FourC::Solid::UTILS::ReadElement::read_element_kinematic_type(linedef));
+  set_kinematic_type(FourC::Solid::UTILS::read_element::read_element_kinematic_type(container));
 
-  solid_ele_property_ = FourC::Solid::UTILS::ReadElement::read_solid_element_properties(linedef);
+  solid_ele_property_ = FourC::Solid::UTILS::read_element::read_solid_element_properties(container);
 
   if (shape() == Core::FE::CellType::nurbs27)
   {
@@ -244,8 +245,8 @@ bool Discret::ELEMENTS::Solid::read_element(
   }
 
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_);
-  std::visit(
-      [&](auto& interface) { interface->setup(*solid_material(), linedef); }, solid_calc_variant_);
+  std::visit([&](auto& interface) { interface->setup(*solid_material(), container); },
+      solid_calc_variant_);
   return true;
 }
 

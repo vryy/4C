@@ -17,18 +17,40 @@ namespace
 {
   using namespace FourC;
 
-  TEST(LineDefinitionTest, add_tag)
+
+  TEST(LineDefinitionTest, AddReadGetTag)
   {
     std::istringstream input("OMEGA");
     auto line_definition = Input::LineDefinition::Builder().add_tag("OMEGA").build();
-    EXPECT_TRUE(line_definition.read(input));
+    auto container = line_definition.read(input);
+    ASSERT_TRUE(container.has_value());
+    EXPECT_TRUE(container->get<bool>("OMEGA"));
   }
 
-  TEST(LineDefinitionTest, ReadFalseWhenTagRequiredButNothingGiven)
+  TEST(LineDefinitionTest, AddReadGetTagNonExistent)
   {
     std::istringstream input("");
     auto line_definition = Input::LineDefinition::Builder().add_tag("OMEGA").build();
-    EXPECT_FALSE(line_definition.read(input));
+    auto container = line_definition.read(input);
+    EXPECT_FALSE(container.has_value());
+  }
+
+  TEST(LineDefinitionTest, AddReadGetOptionalTag)
+  {
+    std::istringstream input("OMEGA");
+    auto line_definition = Input::LineDefinition::Builder().add_optional_tag("OMEGA").build();
+    auto container = line_definition.read(input);
+    ASSERT_TRUE(container.has_value());
+    EXPECT_TRUE(container->get<bool>("OMEGA"));
+  }
+
+  TEST(LineDefinitionTest, AddReadGetOptionalTagNotExistent)
+  {
+    std::istringstream input("");
+    auto line_definition = Input::LineDefinition::Builder().add_optional_tag("OMEGA").build();
+    auto container = line_definition.read(input);
+    ASSERT_TRUE(container.has_value());
+    EXPECT_FALSE(container->get<bool>("OMEGA"));
   }
 
   TEST(LineDefinitionTest, ReadFalseWhenTagRequiredButIntGiven)
@@ -192,7 +214,7 @@ namespace
   }
 
   // Named Int Vector
-  TEST(LineDefinitionTest, add_named_int_vector)
+  TEST(LineDefinitionTest, AddNamedIntVector)
   {
     std::istringstream input("OMEGA 1 2 3");
     auto line_definition =

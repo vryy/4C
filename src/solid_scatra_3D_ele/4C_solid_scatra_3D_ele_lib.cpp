@@ -11,10 +11,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 Inpar::ScaTra::ImplType Discret::ELEMENTS::ReadScatraImplType(
-    const Input::LineDefinition& line_definition)
+    const Core::IO::InputParameterContainer& container)
 {
-  std::string impltype;
-  line_definition.extract_string("TYPE", impltype);
+  auto impltype = container.get<std::string>("TYPE");
 
   if (impltype == "Undefined")
     return Inpar::ScaTra::impltype_undefined;

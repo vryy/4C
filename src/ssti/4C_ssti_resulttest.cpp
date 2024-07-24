@@ -24,20 +24,20 @@ SSTI::SSTIResultTest::SSTIResultTest(const SSTI::SSTIAlgorithm& ssti_algorithm)
 
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
-void SSTI::SSTIResultTest::test_special(Input::LineDefinition& res, int& nerr, int& test_count)
+void SSTI::SSTIResultTest::test_special(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only by one processor
   if (ssti_algorithm_.get_comm().MyPID() == 0)
   {
     // extract name of quantity to be tested
-    std::string quantity;
-    res.extract_string("QUANTITY", quantity);
+    std::string quantity = container.get<std::string>("QUANTITY");
 
     // get result to be tested
     const double result = result_special(quantity);
 
     // compare values
-    const int err = compare_values(result, "SPECIAL", res);
+    const int err = compare_values(result, "SPECIAL", container);
     nerr += err;
     ++test_count;
   }

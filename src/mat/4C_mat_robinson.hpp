@@ -188,7 +188,7 @@ namespace Mat
 
     //! initialise internal stress variables
     void setup(const int numgp,  //!< number of Gauss points
-        Input::LineDefinition* linedef) override;
+        const Core::IO::InputParameterContainer& container) override;
 
     //! update internal stress variables
     void update() override;

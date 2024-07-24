@@ -9,6 +9,9 @@
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_symbolic_expression.hpp"
 
+#include <string>
+#include <vector>
+
 FOUR_C_NAMESPACE_OPEN
 
 
@@ -106,9 +109,11 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
   bool found_function_of_time(false);
   for (const auto& ith_function_lin_def : function_line_defs)
   {
-    ignore_errors_in([&]() { ith_function_lin_def.extract_int("COMPONENT", maxcomp); });
-    ignore_errors_in([&]() { ith_function_lin_def.extract_int("VARIABLE", maxvar); });
-    if (ith_function_lin_def.has_named("SYMBOLIC_FUNCTION_OF_TIME")) found_function_of_time = true;
+    ignore_errors_in([&]() { maxcomp = ith_function_lin_def.container().get<int>("COMPONENT"); });
+    ignore_errors_in([&]() { maxvar = ith_function_lin_def.container().get<int>("VARIABLE"); });
+    if (ith_function_lin_def.container().get_if<std::string>("SYMBOLIC_FUNCTION_OF_TIME") !=
+        nullptr)
+      found_function_of_time = true;
   }
 
   if (!found_function_of_time) return Teuchos::null;
@@ -127,11 +132,11 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
 
     // check the validity of the n-th component
     int compid = 0;
-    ignore_errors_in([&]() { functcomp.extract_int("COMPONENT", compid); });
+    ignore_errors_in([&]() { compid = functcomp.container().get<int>("COMPONENT"); });
     if (compid != n) FOUR_C_THROW("expected COMPONENT %d but got COMPONENT %d", n, compid);
 
     // read the expression of the n-th component of the i-th function
-    functcomp.extract_string("SYMBOLIC_FUNCTION_OF_TIME", functstring[n]);
+    functstring[n] = functcomp.container().get<std::string>("SYMBOLIC_FUNCTION_OF_TIME");
   }
 
   std::map<int, std::vector<Teuchos::RCP<FunctionVariable>>> variable_pieces;
@@ -144,27 +149,25 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
 
     // read the number of the variable
     int varid;
-    ignore_errors_in([&]() { line.extract_int("VARIABLE", varid); });
+    ignore_errors_in([&]() { varid = line.container().get<int>("VARIABLE"); });
 
     const auto variable = std::invoke(
         [&line]() -> Teuchos::RCP<Core::UTILS::FunctionVariable>
         {
           // read the name of the variable
-          std::string varname;
-          line.extract_string("NAME", varname);
+          std::string varname = line.container().get<std::string>("NAME");
 
           // read the type of the variable
-          std::string vartype;
-          line.extract_string("TYPE", vartype);
+          std::string vartype = line.container().get<std::string>("TYPE");
 
           // read periodicity data
           Periodicstruct periodicdata{};
 
-          periodicdata.periodic = line.has_string("PERIODIC");
+          periodicdata.periodic = line.container().get<bool>("PERIODIC");
           if (periodicdata.periodic)
           {
-            line.extract_double("T1", periodicdata.t1);
-            line.extract_double("T2", periodicdata.t2);
+            periodicdata.t1 = line.container().get<double>("T1");
+            periodicdata.t2 = line.container().get<double>("T2");
           }
           else
           {
@@ -175,8 +178,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
           // distinguish the type of the variable
           if (vartype == "expression")
           {
-            std::vector<std::string> description_vec;
-            line.extract_string_vector("DESCRIPTION", description_vec);
+            auto description_vec = line.container().get<std::vector<std::string>>("DESCRIPTION");
 
             if (description_vec.size() != 1)
             {
@@ -194,8 +196,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
             std::vector<double> times = INTERNAL::extract_time_vector(line);
 
             // read values
-            std::vector<double> values;
-            line.extract_double_vector("VALUES", values);
+            auto values = line.container().get<std::vector<double>>("VALUES");
 
             return Teuchos::rcp(
                 new LinearInterpolationVariable(varname, times, values, periodicdata));
@@ -206,8 +207,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
             std::vector<double> times = INTERNAL::extract_time_vector(line);
 
             // read descriptions (strings separated with spaces)
-            std::vector<std::string> description_vec;
-            line.extract_string_vector("DESCRIPTION", description_vec);
+            auto description_vec = line.container().get<std::vector<std::string>>("DESCRIPTION");
 
             // check if the number of times = number of descriptions + 1
             std::size_t numtimes = times.size();
@@ -224,8 +224,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
             std::vector<double> times = INTERNAL::extract_time_vector(line);
 
             // read values
-            std::vector<double> values;
-            line.extract_double_vector("VALUES", values);
+            auto values = line.container().get<std::vector<double>>("VALUES");
 
             return Teuchos::rcp(
                 new FourierInterpolationVariable(varname, times, values, periodicdata));

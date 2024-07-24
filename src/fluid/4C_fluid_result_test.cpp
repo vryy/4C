@@ -41,15 +41,14 @@ FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::FluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
+void FLD::FluidResultTest::test_node(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
-  std::string dis;
-  res.extract_string("DIS", dis);
+  std::string dis = container.get<std::string>("DIS");
   if (dis != fluiddis_->name()) return;
 
-  int node;
-  res.extract_int("NODE", node);
+  int node = container.get<int>("NODE");
   node -= 1;
 
   int havenode(fluiddis_->have_global_node(node));
@@ -76,8 +75,7 @@ void FLD::FluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int&
 
       const int numdim = Global::Problem::instance()->n_dim();
 
-      std::string position;
-      res.extract_string("QUANTITY", position);
+      std::string position = container.get<std::string>("QUANTITY");
       if (position == "velx")
         result = (*mysol_)[velnpmap.LID(fluiddis_->dof(0, actnode, 0))];
       else if (position == "vely")
@@ -128,7 +126,7 @@ void FLD::FluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int&
       else
         FOUR_C_THROW("Quantity '%s' not supported in fluid testing", position.c_str());
 
-      nerr += compare_values(result, "NODE", res);
+      nerr += compare_values(result, "NODE", container);
       test_count++;
     }
   }

@@ -620,9 +620,9 @@ Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::get_normal_ca
 
 template <Core::FE::CellType celltype, typename SolidFormulation>
 void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::setup(
-    Mat::So3Material& solid_material, Input::LineDefinition* linedef)
+    Mat::So3Material& solid_material, const Core::IO::InputParameterContainer& container)
 {
-  solid_material.setup(stiffness_matrix_integration_.num_points(), linedef);
+  solid_material.setup(stiffness_matrix_integration_.num_points(), container);
 }
 
 template <Core::FE::CellType celltype, typename SolidFormulation>

@@ -717,14 +717,14 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_cmat(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void Mat::MultiplicativeSplitDefgradElastHyper::setup(
-    const int numgp, Input::LineDefinition* linedef)
+    const int numgp, const Core::IO::InputParameterContainer& container)
 {
   // Read anisotropy
   anisotropy_->set_number_of_gauss_points(numgp);
-  anisotropy_->read_anisotropy_from_element(linedef);
+  anisotropy_->read_anisotropy_from_element(container);
 
   // elastic materials
-  for (const auto& summand : potsumel_) summand->setup(numgp, linedef);
+  for (const auto& summand : potsumel_) summand->setup(numgp, container);
 }
 
 /*--------------------------------------------------------------------*

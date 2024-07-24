@@ -24,6 +24,7 @@ of errors, turbulence statistics etc.).
 
 #include "4C_fem_general_elementtype.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_io_input_parameter_container.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 #include <Teuchos_RCP.hpp>
@@ -272,7 +273,7 @@ namespace Discret
       \brief Read input for this element
       */
       bool read_element(const std::string& eletype, const std::string& distype,
-          Input::LineDefinition* linedef) override;
+          const Core::IO::InputParameterContainer& container) override;
 
       //@}
 

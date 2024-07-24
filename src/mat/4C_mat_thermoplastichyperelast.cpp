@@ -265,7 +265,8 @@ void Mat::ThermoPlasticHyperElast::unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
  | initialise / allocate internal variables (public)                   |
  *---------------------------------------------------------------------*/
-void Mat::ThermoPlasticHyperElast::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::ThermoPlasticHyperElast::setup(
+    int numgp, const Core::IO::InputParameterContainer& container)
 {
   // initialise hist variables
   defgrdlast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);

@@ -38,17 +38,16 @@ StruResultTest::StruResultTest(Solid::TimInt& tintegrator)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StruResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
+void StruResultTest::test_node(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // this implementation does not allow testing of stresses !
 
   // care for the case of multiple discretizations of the same field type
-  std::string dis;
-  res.extract_string("DIS", dis);
+  std::string dis = container.get<std::string>("DIS");
   if (dis != strudisc_->name()) return;
 
-  int node;
-  res.extract_int("NODE", node);
+  int node = container.get<int>("NODE");
   node -= 1;
 
   int havenode(strudisc_->have_global_node(node));
@@ -69,8 +68,7 @@ void StruResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_
       // Here we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->owner() != strudisc_->get_comm().MyPID()) return;
 
-      std::string position;
-      res.extract_string("QUANTITY", position);
+      std::string position = container.get<std::string>("QUANTITY");
       bool unknownpos = true;  // make sure the result value std::string can be handled
       double result = 0.0;     // will hold the actual result of run
 
@@ -173,7 +171,7 @@ void StruResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_
         FOUR_C_THROW("Quantity '%s' not supported in structure testing", position.c_str());
 
       // compare values
-      const int err = compare_values(result, "NODE", res);
+      const int err = compare_values(result, "NODE", container);
       nerr += err;
       test_count++;
     }
@@ -182,11 +180,11 @@ void StruResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StruResultTest::test_special(Input::LineDefinition& res, int& nerr, int& test_count)
+void StruResultTest::test_special(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // extract name of quantity to be tested
-  std::string quantity;
-  res.extract_string("QUANTITY", quantity);
+  std::string quantity = container.get<std::string>("QUANTITY");
 
   // get result to be tested on all processors
   const double result = get_special_result_for_testing(quantity);
@@ -194,7 +192,7 @@ void StruResultTest::test_special(Input::LineDefinition& res, int& nerr, int& te
   // compare values on one processor only, as they are the same everywhere
   if (strudisc_->get_comm().MyPID() == 0)
   {
-    const int err = compare_values(result, "SPECIAL", res);
+    const int err = compare_values(result, "SPECIAL", container);
     nerr += err;
     test_count++;
   }

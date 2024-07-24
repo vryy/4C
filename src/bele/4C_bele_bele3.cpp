@@ -295,16 +295,14 @@ Core::FE::GaussRule2D Discret::ELEMENTS::Bele3::get_optimal_gaussrule() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Bele3::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::Bele3::read_element(const std::string& eletype, const std::string& distype,
+    const Core::IO::InputParameterContainer& container)
 {
   // check if material is defined
-  if (linedef->has_named("MAT"))
+  int material = container.get_or("MAT", -1);
+  if (material != -1)
   {
-    int material_id = 0;
-    // read number of material model
-    linedef->extract_int("MAT", material_id);
-    set_material(0, Mat::Factory(material_id));
+    set_material(0, Mat::Factory(material));
   }
   return true;
 }

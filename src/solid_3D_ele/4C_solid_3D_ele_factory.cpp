@@ -176,7 +176,7 @@ Discret::ELEMENTS::SolidCalcVariant Discret::ELEMENTS::create_solid_calculation_
 
                           FOUR_C_THROW(
                               "Your element formulation with cell type %s, kinematic type %s,"
-                              " elememt technology %s and prestress type %s oes not exist ",
+                              " element technology %s and prestress type %s does not exist ",
                               Core::FE::celltype_string<celltype_t()>,
                               Inpar::Solid::KinemTypeString(element_properties.kintype).c_str(),
                               element_technology_string(element_properties.element_technology)

@@ -43,7 +43,8 @@ namespace EleMag
     /*!
       Possible position flags is only "pressure"
      */
-    void test_node(Input::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(
+        const Core::IO::InputParameterContainer& container, int& nerr, int& test_count) override;
 
    private:
     /// Teuchos::RCP to elemagstical discretization

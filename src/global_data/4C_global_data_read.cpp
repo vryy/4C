@@ -41,6 +41,8 @@
 #include "4C_xfem_discretization.hpp"
 #include "4C_xfem_discretization_utils.hpp"
 
+#include <string>
+
 FOUR_C_NAMESPACE_OPEN
 
 void Global::ReadFields(
@@ -2303,14 +2305,10 @@ void Global::ReadCloningMaterialMap(Global::Problem& problem, Core::IO::DatFileR
   for (const auto& input_line : input_line_vec)
   {
     // extract what was read from the input file
-    std::string src_field;
-    input_line.extract_string("SRC_FIELD", src_field);
-    int src_matid(-1);
-    input_line.extract_int("SRC_MAT", src_matid);
-    std::string tar_field;
-    input_line.extract_string("TAR_FIELD", tar_field);
-    int tar_matid(-1);
-    input_line.extract_int("TAR_MAT", tar_matid);
+    std::string src_field = input_line.container().get<std::string>("SRC_FIELD");
+    int src_matid = input_line.container().get_or<int>("SRC_MAT", -1);
+    std::string tar_field = input_line.container().get<std::string>("TAR_FIELD");
+    int tar_matid = input_line.container().get_or<int>("TAR_MAT", -1);
 
     // create the key pair
     std::pair<std::string, std::string> fields(src_field, tar_field);

@@ -62,7 +62,7 @@ namespace MIXTURE
 
     Core::Materials::MaterialType material_type() const override;
 
-    void read_element(int numgp, Input::LineDefinition* linedef) override;
+    void read_element(int numgp, const Core::IO::InputParameterContainer& container) override;
 
     void update(Core::LinAlg::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
         const int gp, const int eleGID) override;

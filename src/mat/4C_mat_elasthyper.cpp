@@ -22,6 +22,8 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
 
+#include <iostream>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
@@ -245,16 +247,16 @@ void Mat::ElastHyper::setup_aaa(Teuchos::ParameterList& params, const int eleGID
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::ElastHyper::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   // Read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
-  anisotropy_.read_anisotropy_from_element(linedef);
+  anisotropy_.read_anisotropy_from_element(container);
 
   // Setup summands
   for (auto& p : potsum_)
   {
-    p->setup(numgp, linedef);
+    p->setup(numgp, container);
   }
   summandProperties_.clear();
   ElastHyperProperties(potsum_, summandProperties_);

@@ -220,24 +220,24 @@ void Mat::Mixture::unpack(const std::vector<char>& data)
 }
 
 // Read element and create arrays for the quantities at the Gauss points
-void Mat::Mixture::setup(const int numgp, Input::LineDefinition* linedef)
+void Mat::Mixture::setup(const int numgp, const Core::IO::InputParameterContainer& container)
 {
-  So3Material::setup(numgp, linedef);
+  So3Material::setup(numgp, container);
 
   // resize preevaluation flag
   is_pre_evaluated_.resize(numgp, false);
 
   // Setup anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
-  anisotropy_.read_anisotropy_from_element(linedef);
+  anisotropy_.read_anisotropy_from_element(container);
 
-  // Let all constituents read the line definition
+  // Let all constituents read the element input parameter container
   for (const auto& constituent : *constituents_)
   {
-    constituent->read_element(numgp, linedef);
+    constituent->read_element(numgp, container);
   }
 
-  mixture_rule_->read_element(numgp, linedef);
+  mixture_rule_->read_element(numgp, container);
 }
 
 // Post setup routine -> Call Setup of constituents and mixture rule

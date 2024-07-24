@@ -16,12 +16,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Rigidsphere::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::Rigidsphere::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   // currently only rotationally symmetric profiles for beam --> Iyy = Izz
-  linedef->extract_double("RADIUS", radius_);
-  linedef->extract_double("DENSITY", rho_);
+  radius_ = container.get<double>("RADIUS");
+  rho_ = container.get<double>("DENSITY");
 
   return (true);
 }

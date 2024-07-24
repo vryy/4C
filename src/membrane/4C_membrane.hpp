@@ -199,7 +199,7 @@ namespace Discret
       \brief Return the material of this element
 
       Note: The input parameter nummat is not the material number from input file
-            as in SetMaterial(int matnum), but the number of the material within
+            as in set_material(int matnum), but the number of the material within
             the vector of materials the element holds
 
       \param nummat (in): number of requested material
@@ -314,7 +314,7 @@ namespace Discret
       \brief Read input for this element
       */
       bool read_element(const std::string& eletype, const std::string& eledistype,
-          Input::LineDefinition* linedef) override;
+          const Core::IO::InputParameterContainer& container) override;
 
       //@}
 

@@ -38,7 +38,7 @@ If the function cannot easily be given as a symbolic expression, the function ma
    VARIABLE <num> NAME <varname> TYPE expression DESCRIPTION
    VARIABLE <num> NAME <varname> TYPE linearinterpolation NUMPOINTS <num> TIMES num*{time} VALUES num*{value}
    VARIABLE <num> NAME <varname> TYPE multifunction NUMPOINTS <num> TIMES num*{time} DESCRIPTION (num-1)*{function}
-   VARIABLE <num> NAME <varname> TYPE fourierinterpolation NUMPOINTS <num> BYNUM yes|no TIMERANGE {starttime} {endtime} VALUES num*{value} PERIODIC yes|no T1 <time1> T2 <time2>
+   VARIABLE <num> NAME <varname> TYPE fourierinterpolation NUMPOINTS <num> [BYNUM] TIMERANGE {starttime} {endtime} VALUES num*{value} [PERIODIC] T1 <time1> T2 <time2>
 
 where
 

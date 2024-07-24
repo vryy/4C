@@ -12,15 +12,12 @@
 #include "4C_io_linedefinition.hpp"
 
 #include "4C_io_input_parameter_container.hpp"
-#include "4C_utils_demangle.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <functional>
 #include <iterator>
 #include <memory>
-#include <stdexcept>
 #include <utility>
-#include <variant>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -51,11 +48,6 @@ namespace Input::INTERNAL
     }
   }
 
-  /**
-   * Typedef which allows to have no value in ComponentValue. This is useful to represent a tag
-   * without a value.
-   */
-  using Empty = std::monostate;
 
   //! Decide on behavior of the component name when reading or printing.
   enum class Behavior
@@ -72,8 +64,6 @@ namespace Input::INTERNAL
    */
   struct ReadValue
   {
-    bool operator()(Empty& /*unused*/) { return true; }
-
     template <typename T>
     bool operator()(T& value)
     {
@@ -139,11 +129,6 @@ namespace Input::INTERNAL
    */
   struct PrintComponent
   {
-    void operator()(const Empty& /*unused*/)
-    {
-      if (behavior == Behavior::read_print_name) out << name;
-    }
-
     template <typename T>
     void operator()(const T& value)
     {
@@ -197,6 +182,8 @@ namespace Input::INTERNAL
           std::istream& stream) = 0;
 
       [[nodiscard]] virtual bool is_named(const std::string& name) const = 0;
+
+      virtual void store_default(Core::IO::InputParameterContainer& container) const = 0;
     };
 
     //! The wrapper for a concrete type T compatible with the interface.
@@ -235,6 +222,11 @@ namespace Input::INTERNAL
       [[nodiscard]] bool is_named(const std::string& name) const override
       {
         return component_.is_named(name);
+      }
+
+      void store_default(Core::IO::InputParameterContainer& container) const override
+      {
+        component_.store_default(container);
       }
 
      private:
@@ -291,6 +283,12 @@ namespace Input::INTERNAL
 
     /// tell if the component has the specified name tag
     [[nodiscard]] bool is_named(const std::string& name) const { return pimpl_->is_named(name); }
+
+    /// store the default value in the container
+    void store_default(Core::IO::InputParameterContainer& container) const
+    {
+      return pimpl_->store_default(container);
+    }
 
    private:
     std::unique_ptr<LineDefinitionComponentConcept> pimpl_;
@@ -354,6 +352,13 @@ namespace Input::INTERNAL
 
     [[nodiscard]] bool is_named(const std::string& name) const { return name == name_; }
 
+    void store_default(Core::IO::InputParameterContainer& container) const
+    {
+      // In the current state, GenericComponents do not store a name and the default value for
+      // non-existent optional components. For optional components that are non-existent in the
+      // input stream, the name key does not exist in the container.
+    }
+
    private:
     //! Name of the component.
     std::string name_;
@@ -366,6 +371,49 @@ namespace Input::INTERNAL
     std::function<void(Core::IO::InputParameterContainer&, T&)> value_prepare_;
 
     T default_value_;
+  };
+
+
+  /**
+   * Tag component that behaves like a boolean: an existing tag is treated as a true value
+   */
+  class TagComponent
+  {
+   public:
+    TagComponent(std::string name) : name_(std::move(name)) {}
+
+    void print(std::ostream& stream) const { stream << name_; }
+
+    bool read_optional(
+        Core::IO::InputParameterContainer& container, std::string& name, std::istream& stream)
+    {
+      if (name != name_) return false;
+
+      // if we read a tag means we can store true
+      container.add(name, true);
+
+      return true;
+    }
+
+    bool read_required(Core::IO::InputParameterContainer& container, std::istream& stream)
+    {
+      std::string name;
+      stream >> name;
+      if (name != name_) return false;
+      return read_optional(container, name_, stream);
+    }
+
+    [[nodiscard]] bool is_named(const std::string& name) const { return name == name_; }
+
+    void store_default(Core::IO::InputParameterContainer& container) const
+    {
+      // if we did not read an optional tag, we store the default false
+      container.add(name_, false);
+    }
+
+   private:
+    //! Name of the component.
+    std::string name_;
   };
 }  // namespace Input::INTERNAL
 
@@ -380,39 +428,6 @@ namespace Input
     class LineDefinitionImplementation
     {
      public:
-      [[nodiscard]] const LineDefinitionComponent* find_named(const std::string& name) const
-      {
-        if (readtailcomponents_.find(name) != readtailcomponents_.end())
-        {
-          const auto i = optionaltail_.find(name);
-          if (i != optionaltail_.end()) return &i->second;
-        }
-        else
-        {
-          for (const auto& component : components_)
-          {
-            if (component.is_named(name))
-            {
-              return &component;
-            }
-          }
-        }
-        return nullptr;
-      }
-
-      //! Return if a component of given name and type T exists.
-      template <typename T>
-      bool has_named(const std::string& name)
-      {
-        return container_.get_if<T>(name) != nullptr;
-      }
-
-      template <typename T>
-      void try_extract(const std::string& name, T& dst)
-      {
-        dst = container_.get<T>(name);
-      }
-
       /// Gather all added required components.
       std::vector<LineDefinitionComponent> components_;
 
@@ -503,8 +518,7 @@ namespace Input
 
   LineDefinition::Builder& LineDefinition::Builder::add_tag(std::string name)
   {
-    pimpl_->components_.emplace_back(
-        INTERNAL::GenericComponent<INTERNAL::Empty>{std::move(name), INTERNAL::Empty()});
+    pimpl_->components_.emplace_back(INTERNAL::TagComponent{std::move(name)});
     return *this;
   }
 
@@ -612,8 +626,7 @@ namespace Input
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       FOUR_C_THROW("optional component '%s' already defined", name.c_str());
-    pimpl_->optionaltail_.emplace(
-        name, INTERNAL::GenericComponent<INTERNAL::Empty>{name, INTERNAL::Empty()});
+    pimpl_->optionaltail_.emplace(name, INTERNAL::TagComponent{name});
     return *this;
   }
 
@@ -773,6 +786,8 @@ namespace Input
 
   std::optional<Core::IO::InputParameterContainer> LineDefinition::read(std::istream& stream)
   {
+    pimpl_->container_ = Core::IO::InputParameterContainer();
+
     pimpl_->readtailcomponents_.clear();
     for (auto& component : pimpl_->components_)
     {
@@ -799,6 +814,16 @@ namespace Input
       pimpl_->readtailcomponents_.insert(name);
     }
 
+    // for any optional added TagComponents that have not been read, store the default value in the
+    // container
+    for (const auto& [name, component] : pimpl_->optionaltail_)
+    {
+      if (pimpl_->readtailcomponents_.count(name) == 0)
+      {
+        component.store_default(pimpl_->container_);
+      }
+    }
+
     // check if any other unused strings except from comments and whitespaces are given
     std::string superfluousstring;
     stream >> superfluousstring;  // stream strips whitespaces
@@ -811,72 +836,10 @@ namespace Input
       return pimpl_->container_;
   }
 
-
-
-  bool LineDefinition::has_named(const std::string& name) const
+  const Core::IO::InputParameterContainer& LineDefinition::container() const
   {
-    return pimpl_->find_named(name) != nullptr;
+    return pimpl_->container_;
   }
-
-
-
-  void LineDefinition::extract_string(const std::string& name, std::string& value) const
-  {
-    pimpl_->try_extract(name, value);
-  }
-
-
-
-  bool LineDefinition::has_string(const std::string& name) const
-  {
-    return pimpl_->has_named<std::string>(name);
-  }
-
-
-
-  void LineDefinition::extract_int(const std::string& name, int& value) const
-  {
-    pimpl_->try_extract(name, value);
-  }
-
-
-
-  void LineDefinition::extract_int_vector(const std::string& name, std::vector<int>& v) const
-  {
-    pimpl_->try_extract(name, v);
-  }
-
-
-
-  void LineDefinition::extract_double(const std::string& name, double& value) const
-  {
-    pimpl_->try_extract(name, value);
-  }
-
-
-
-  void LineDefinition::extract_double_vector(const std::string& name, std::vector<double>& v) const
-  {
-    pimpl_->try_extract(name, v);
-  }
-
-
-
-  void LineDefinition::extract_string_vector(
-      const std::string& name, std::vector<std::string>& v) const
-  {
-    // special case: search for a string vector first but fall back to a string value
-    pimpl_->try_extract(name, v);
-  }
-
-
-
-  void LineDefinition::extract_pair_of_string_and_double_vector(
-      const std::string& name, std::vector<std::pair<std::string, double>>& v) const
-  {
-    pimpl_->try_extract(name, v);
-  }
-
 
 
   LengthFromIntNamed::LengthFromIntNamed(std::string definition_name)

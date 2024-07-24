@@ -127,7 +127,7 @@ namespace Mat
     /*!
       \brief
     */
-    void setup(Input::LineDefinition* linedef) override;
+    void setup(const Core::IO::InputParameterContainer& container) override;
 
     /*!
        \brief

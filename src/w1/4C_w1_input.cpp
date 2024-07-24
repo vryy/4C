@@ -12,22 +12,25 @@
 #include "4C_mat_elasthyper.hpp"
 #include "4C_w1.hpp"
 
+#include <vector>
+
 FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Wall1::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::Wall1::read_element(const std::string& eletype, const std::string& distype,
+    const Core::IO::InputParameterContainer& container)
 {
   // set discretization type
   set_dis_type(Core::FE::StringToCellType(distype));
 
-  linedef->extract_double("THICK", thickness_);
+  thickness_ = container.get<double>("THICK");
   if (thickness_ <= 0) FOUR_C_THROW("WALL element thickness needs to be < 0");
 
-  std::vector<int> ngp;
-  linedef->extract_int_vector("GP", ngp);
+  std::vector<int> ngp = container.get<std::vector<int>>("GP");
+
+
 
   if ((num_node() == 4) and ((ngp[0] < 2) or (ngp[1] < 2)))
     FOUR_C_THROW("Insufficient number of Gauss points");
@@ -41,8 +44,7 @@ bool Discret::ELEMENTS::Wall1::read_element(
   gaussrule_ = get_gaussrule(ngp.data());
 
   // read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get_or<int>("MAT", 0);
   set_material(0, Mat::Factory(material_id));
 
   Teuchos::RCP<Core::Mat::Material> mat = material();
@@ -50,12 +52,13 @@ bool Discret::ELEMENTS::Wall1::read_element(
   {
     const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
     const int numgp = intpoints.nquad;
-    solid_material()->setup(numgp, linedef);
+    solid_material()->setup(numgp, container);
   }
 
   std::string buffer;
   // reduced dimension assumption
-  linedef->extract_string("STRESS_STRAIN", buffer);
+  buffer = container.get<std::string>("STRESS_STRAIN");
+
   if (buffer == "plane_stress")
     wtype_ = plane_stress;
   else if (buffer == "plane_strain")
@@ -64,7 +67,7 @@ bool Discret::ELEMENTS::Wall1::read_element(
     FOUR_C_THROW("Illegal strain/stress type '%s'", buffer.c_str());
 
   // kinematics type
-  linedef->extract_string("KINEM", buffer);
+  buffer = container.get<std::string>("KINEM");
   // geometrically linear
   if (buffer == "linear") kintype_ = Inpar::Solid::KinemType::linear;
   // geometrically non-linear with Total Lagrangean approach
@@ -74,7 +77,8 @@ bool Discret::ELEMENTS::Wall1::read_element(
     FOUR_C_THROW("Illegal KINEM type '%s'", buffer.c_str());
 
   // EAS type
-  linedef->extract_string("EAS", buffer);
+  buffer = container.get<std::string>("EAS");
+
   if (buffer == "none")
   {
     iseas_ = false;

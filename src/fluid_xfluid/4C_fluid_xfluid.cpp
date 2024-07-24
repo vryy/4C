@@ -853,7 +853,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
   for (int i = 0; i < numrowele; ++i)
   {
     Core::Elements::Element* actele = discret_->l_row_element(i);
-    // Teuchos::RCP<Core::Mat::Material> mat = actele->Material();
+    // Teuchos::RCP<Core::Mat::Material> mat = actele->material();
 
     Discret::ELEMENTS::Fluid* ele = dynamic_cast<Discret::ELEMENTS::Fluid*>(actele);
     if (ele == nullptr)

@@ -40,12 +40,10 @@ namespace
 
     const auto& function_lin_def = function_line_defs.front();
 
-    if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE"))
+    if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE", false))
     {
       // read data
-      int mat_id_struc = -1;
-
-      function_lin_def.extract_int("MAT_STRUC", mat_id_struc);
+      int mat_id_struc = function_lin_def.container().get_or<int>("MAT_STRUC", -1);
 
       if (mat_id_struc <= 0)
         FOUR_C_THROW(
@@ -56,12 +54,11 @@ namespace
 
       return Teuchos::rcp(new Solid::WeaklyCompressibleEtienneFSIStructureFunction(fparams));
     }
-    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE"))
+    else if (function_lin_def.container().get_or(
+                 "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE", false))
     {
       // read data
-      int mat_id_struc = -1;
-
-      function_lin_def.extract_int("MAT_STRUC", mat_id_struc);
+      int mat_id_struc = function_lin_def.container().get_or<int>("MAT_STRUC", -1);
 
       if (mat_id_struc <= 0)
       {

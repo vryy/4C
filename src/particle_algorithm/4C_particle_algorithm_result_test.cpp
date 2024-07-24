@@ -38,11 +38,10 @@ void PARTICLEALGORITHM::ParticleResultTest::setup(
 }
 
 void PARTICLEALGORITHM::ParticleResultTest::test_special(
-    Input::LineDefinition& res, int& nerr, int& test_count)
+    const Core::IO::InputParameterContainer& result_container, int& nerr, int& test_count)
 {
   // extract global particle id
-  int globalid;
-  res.extract_int("ID", globalid);
+  int globalid = result_container.get<int>("ID");
 
   // get local index in specific particle container
   PARTICLEENGINE::LocalIndexTupleShrdPtr localindextuple =
@@ -69,8 +68,7 @@ void PARTICLEALGORITHM::ParticleResultTest::test_special(
           particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
       // get result
-      std::string quantity;
-      res.extract_string("QUANTITY", quantity);
+      std::string quantity = result_container.get<std::string>("QUANTITY");
 
       // init actual result
       double actresult = 0.0;
@@ -205,7 +203,7 @@ void PARTICLEALGORITHM::ParticleResultTest::test_special(
       actresult = state[statedim * index + dim];
 
       // compare values
-      const int err = compare_values(actresult, "SPECIAL", res);
+      const int err = compare_values(actresult, "SPECIAL", result_container);
       nerr += err;
       test_count++;
     }
