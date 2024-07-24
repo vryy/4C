@@ -22,10 +22,6 @@
 #include <NOX_Epetra.H>
 #include <Teuchos_TimeMonitor.hpp>
 
-// debug flag to merge the MFSI block matrix to one sparse matrix
-// and use the fluid solver to solve for it
-// #define BLOCKMATRIXMERGE
-
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
@@ -83,9 +79,6 @@ namespace FSI
     /// (symmetric) Gauss-Seidel block preconditioner
     virtual void sgs(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const = 0;
 
-    /// merge block matrix for direct solve
-    void merge_solve(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
-
     /// Richardson iteration on one block using the given flags
     static void local_block_richardson(Teuchos::RCP<Core::LinAlg::Preconditioner> solver,
         const Core::LinAlg::SparseMatrix& innerOp, Teuchos::RCP<Epetra_Vector> x,
@@ -117,11 +110,6 @@ namespace FSI
 
     /// log file
     FILE* err_;
-
-#ifdef BLOCKMATRIXMERGE
-    /// debug merged sparse
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse_;
-#endif
   };
 
 

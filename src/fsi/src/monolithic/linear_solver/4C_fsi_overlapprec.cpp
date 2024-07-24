@@ -42,12 +42,9 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(
       err_(err),
       pcdbg_(pcdbg)
 {
-  fluidsolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(fluid.linear_solver()));
-
-#ifndef BLOCKMATRIXMERGE
   structuresolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(structure.linear_solver()));
+  fluidsolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(fluid.linear_solver()));
   alesolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(ale.linear_solver()));
-#endif
 
   // check and fix ml nullspace if neccessary
   {
@@ -91,12 +88,7 @@ int FSI::BlockPreconditioningMatrix::ApplyInverse(
     r = Teuchos::rcp(new Epetra_Vector(y.Map()));
     Apply(X, *r);
   }
-
-#ifdef BLOCKMATRIXMERGE
-  MergeSolve(X, Y);
-#else
   sgs(X, Y);
-#endif
 
   if (pcdbg_ != Teuchos::null)
   {

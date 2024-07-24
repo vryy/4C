@@ -75,10 +75,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::setup_preconditioner()
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner");
 
-#ifdef BLOCKMATRIXMERGE
-  FOUR_C_THROW("class OverlappingBlockMatrixFSIAMG does not support #define BLOCKMATRIXMERGE");
-#endif
-
   if (Global::Problem::instance()->get_communicators()->num_groups() != 1)
     FOUR_C_THROW(
         "No nested parallelism for AMG FSI. See comments in "

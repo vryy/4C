@@ -17,10 +17,6 @@
 #include "4C_linalg_blocksparsematrix.hpp"
 
 
-// debug flag to merge the MFSI block matrix to one sparse matrix
-// and use the fluid solver to solve for it
-// #define BLOCKMATRIXMERGE
-
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
@@ -108,11 +104,6 @@ namespace FSI
 
     /// debug writer
     Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg_;
-
-#ifdef BLOCKMATRIXMERGE
-    /// debug merged sparse
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse_;
-#endif
   };
 
 

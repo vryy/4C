@@ -65,17 +65,6 @@ FSI::LungOverlappingBlockMatrix::LungOverlappingBlockMatrix(
  *----------------------------------------------------------------------*/
 void FSI::LungOverlappingBlockMatrix::setup_preconditioner()
 {
-#ifdef BLOCKMATRIXMERGE
-
-  // this is really evil :)
-  // note that this only works with UMFPACK as fluid solver (saddle
-  // point problem!)
-
-  sparse_ = Merge();
-  fluidsolver_->setup(sparse_->EpetraMatrix());
-
-#else
-
   const Core::LinAlg::SparseMatrix& structInnerOp = matrix(0, 0);
   const Core::LinAlg::SparseMatrix& fluidInnerOp = matrix(1, 1);
   const Core::LinAlg::SparseMatrix& aleInnerOp = matrix(2, 2);
@@ -165,10 +154,6 @@ void FSI::LungOverlappingBlockMatrix::setup_preconditioner()
 
   interconA_->complete(StructConOp.domain_map(), ConStructOp.range_map());
   interconA_->scale(-1.0);
-
-
-
-#endif
 }
 
 
