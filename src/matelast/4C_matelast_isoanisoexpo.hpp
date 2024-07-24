@@ -113,7 +113,7 @@ namespace Mat
       //@}
 
       /// Setup of summand
-      void setup(int numgp, Input::LineDefinition* linedef) override;
+      void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
 
       /// Add anisotropic modified stresses
       void add_stress_aniso_modified(

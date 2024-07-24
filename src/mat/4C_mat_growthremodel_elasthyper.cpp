@@ -406,11 +406,12 @@ void Mat::GrowthRemodelElastHyper::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::GrowthRemodelElastHyper::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::GrowthRemodelElastHyper::setup(
+    int numgp, const Core::IO::InputParameterContainer& container)
 {
   // read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
-  anisotropy_.read_anisotropy_from_element(linedef);
+  anisotropy_.read_anisotropy_from_element(container);
 
   // Initialize some variables
   v_.resize(numgp, 1.0);
@@ -429,22 +430,22 @@ void Mat::GrowthRemodelElastHyper::setup(int numgp, Input::LineDefinition* lined
 
   // Setup summands
   // remodelfiber
-  for (auto& p : potsumrf_) p->setup(numgp, params_->density_, linedef);
+  for (auto& p : potsumrf_) p->setup(numgp, params_->density_, container);
 
   // 2D elastin matrix
-  for (auto& p : potsumelmem_) p->setup(numgp, linedef);
+  for (auto& p : potsumelmem_) p->setup(numgp, container);
 
   if (params_->membrane_ != 1)
   {
     // 3D elastin matrix
-    for (auto& p : potsumeliso_) p->setup(numgp, linedef);
+    for (auto& p : potsumeliso_) p->setup(numgp, container);
 
     // volpenalty
-    potsumelpenalty_->setup(numgp, linedef);
+    potsumelpenalty_->setup(numgp, container);
   }
 
   // Setup circumferential, radial and axial structural tensor
-  setup_axi_cir_rad_structural_tensor(linedef);
+  setup_axi_cir_rad_structural_tensor(container);
 
   // Setup growth tensors in the case of anisotropic growth (--> growth in thickness direction)
   if (params_->growthtype_ == 1) setup_aniso_growth_tensors();
@@ -464,27 +465,29 @@ void Mat::GrowthRemodelElastHyper::post_setup(Teuchos::ParameterList& params, co
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Mat::GrowthRemodelElastHyper::setup_axi_cir_rad_structural_tensor(
-    Input::LineDefinition* linedef)
+    const Core::IO::InputParameterContainer& container)
 {
   // CIR-AXI-RAD nomenclature
-  if (linedef->has_named("RAD") and linedef->has_named("AXI") and linedef->has_named("CIR"))
+  if (container.get_if<std::vector<double>>("RAD") != nullptr and
+      container.get_if<std::vector<double>>("AXI") != nullptr and
+      container.get_if<std::vector<double>>("CIR") != nullptr)
   {
     // Read in of data
     // read local (cylindrical) cosy-directions at current element
     Core::LinAlg::Matrix<3, 1> dir;
 
     // Axial direction
-    read_dir(linedef, "AXI", dir);
+    read_dir(container, "AXI", dir);
     for (int i = 0; i < 3; ++i) radaxicirc_(i, 1) = dir(i);
     aax_m_.multiply_nt(1.0, dir, dir, 0.0);
 
     // Circumferential direction
-    read_dir(linedef, "CIR", dir);
+    read_dir(container, "CIR", dir);
     for (int i = 0; i < 3; ++i) radaxicirc_(i, 2) = dir(i);
     acir_m_.multiply_nt(1.0, dir, dir, 0.0);
 
     // Radial direction
-    read_dir(linedef, "RAD", dir);
+    read_dir(container, "RAD", dir);
     for (int i = 0; i < 3; ++i) radaxicirc_(i, 0) = dir(i);
     arad_m_.multiply_nt(1.0, dir, dir, 0.0);
 
@@ -526,11 +529,11 @@ void Mat::GrowthRemodelElastHyper::setup_aniso_growth_tensors()
 /*----------------------------------------------------------------------*
  * Function which reads in the AXI CIR RAD directions
  *----------------------------------------------------------------------*/
-void Mat::GrowthRemodelElastHyper::read_dir(
-    Input::LineDefinition* linedef, const std::string& specifier, Core::LinAlg::Matrix<3, 1>& dir)
+void Mat::GrowthRemodelElastHyper::read_dir(const Core::IO::InputParameterContainer& container,
+    const std::string& specifier, Core::LinAlg::Matrix<3, 1>& dir)
 {
-  std::vector<double> fiber;
-  linedef->extract_double_vector(specifier, fiber);
+  auto fiber = container.get<std::vector<double>>(specifier);
+
   double fnorm = 0.;
   // normalization
   for (int i = 0; i < 3; ++i)

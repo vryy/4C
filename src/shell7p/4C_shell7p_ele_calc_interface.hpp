@@ -67,10 +67,11 @@ namespace Discret
        * @param solid_material (in) : Solid material of the element
        * @param locking_types (in) : Shell locking types
        * @param shell_data (in) : Shell data (thickness, number of ANS, SDC)
-       * @param linedef (in) : Input line of the corresponding element
+       * @param container (in) : Element input container
        */
       virtual void setup(Core::Elements::Element& ele, Mat::So3Material& solid_material,
-          Input::LineDefinition* linedef, const Solid::ELEMENTS::ShellLockingTypes& locking_types,
+          const Core::IO::InputParameterContainer& container,
+          const Solid::ELEMENTS::ShellLockingTypes& locking_types,
           const Solid::ELEMENTS::ShellData& shell_data) = 0;
 
       /*!

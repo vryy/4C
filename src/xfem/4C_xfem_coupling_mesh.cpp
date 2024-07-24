@@ -2401,8 +2401,8 @@ void XFEM::MeshCouplingFSI::get_stress_tangent_slave(
     Core::Elements::Element* coup_ele,  ///< solid ele
     double& e_s)                        ///< stress tangent slavesided
 {
-  //  if (coup_ele->Material()->material_type() == Core::Materials::m_elasthyper)
-  //    e_s = Teuchos::rcp_dynamic_cast<Mat::ElastHyper>(coup_ele->Material())->GetYoung();
+  //  if (coup_ele->material()->material_type() == Core::Materials::m_elasthyper)
+  //    e_s = Teuchos::rcp_dynamic_cast<Mat::ElastHyper>(coup_ele->material())->GetYoung();
   //  else
   //    FOUR_C_THROW("get_coupling_specific_average_weights: Slave Material not a Elasthyper
   //    material?");

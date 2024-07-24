@@ -159,9 +159,9 @@ namespace Discret
       bool vis_data(const std::string& name, std::vector<double>& data) override;
 
       //! read input for this element
-      bool read_element(const std::string& eletype,  //!< so3thermo
-          const std::string& eledistype,             //!< hex8,tet4,...
-          Input::LineDefinition* linedef             //!< what parameters have to be read
+      bool read_element(const std::string& eletype,           //!< so3thermo
+          const std::string& eledistype,                      //!< hex8,tet4,...
+          const Core::IO::InputParameterContainer& container  //!< what parameters have to be read
           ) override;
 
       //@}

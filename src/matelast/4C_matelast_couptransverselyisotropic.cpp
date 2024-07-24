@@ -51,7 +51,8 @@ Mat::Elastic::CoupTransverselyIsotropic::CoupTransverselyIsotropic(my_params* pa
   /* empty */
 }
 
-void Mat::Elastic::CoupTransverselyIsotropic::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::Elastic::CoupTransverselyIsotropic::setup(
+    int numgp, const Core::IO::InputParameterContainer& container)
 {
   switch (params_->init_)
   {
@@ -72,21 +73,23 @@ void Mat::Elastic::CoupTransverselyIsotropic::setup(int numgp, Input::LineDefini
       ss << params_->fiber_gid_;
       std::string fibername = "FIBER" + ss.str();  // FIBER Name
       // CIR-AXI-RAD nomenclature
-      if (linedef->has_named("RAD") and linedef->has_named("AXI") and linedef->has_named("CIR"))
+      if (container.get_if<std::vector<double>>("RAD") != nullptr and
+          container.get_if<std::vector<double>>("AXI") != nullptr and
+          container.get_if<std::vector<double>>("CIR") != nullptr)
       {
         // Read in of data
         Core::LinAlg::Matrix<3, 3> locsys(true);
-        read_rad_axi_cir(linedef, locsys);
+        read_rad_axi_cir(container, locsys);
         Core::LinAlg::Matrix<3, 3> Id(true);
         for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
         // final setup of fiber data
         set_fiber_vecs(0.0, locsys, Id);
       }
       // FIBERi nomenclature
-      else if (linedef->has_named(fibername))
+      else if (container.get_if<std::vector<double>>(fibername) != nullptr)
       {
         // Read in of data
-        read_fiber(linedef, fibername, a_);
+        read_fiber(container, fibername, a_);
         params_->structural_tensor_strategy()->setup_structural_tensor(a_, aa_);
       }
       // error path

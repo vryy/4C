@@ -44,10 +44,9 @@ Cardiovascular0DResultTest::Cardiovascular0DResultTest(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Cardiovascular0DResultTest::test_special(
-    Input::LineDefinition& res, int& nerr, int& test_count)
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
-  std::string quantity;
-  res.extract_string("QUANTITY", quantity);
+  std::string quantity = container.get<std::string>("QUANTITY");
   bool unknownquantity = true;  // make sure the result value std::string can be handled
   double result = 0.0;          // will hold the actual result of run
 
@@ -185,7 +184,7 @@ void Cardiovascular0DResultTest::test_special(
     if (havegid)
     {
       // compare values
-      const int err = compare_values(result, "SPECIAL", res);
+      const int err = compare_values(result, "SPECIAL", container);
       nerr += err;
       test_count++;
     }
@@ -441,14 +440,11 @@ void Cardiovascular0DResultTest::test_special(
     if (havegid)
     {
       // compare values
-      const int err = compare_values(result, "SPECIAL", res);
+      const int err = compare_values(result, "SPECIAL", container);
       nerr += err;
       test_count++;
     }
   }
-
-
-  return;
 }
 
 FOUR_C_NAMESPACE_CLOSE

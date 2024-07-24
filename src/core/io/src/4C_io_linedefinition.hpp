@@ -247,21 +247,7 @@ namespace Input
      */
     std::optional<Core::IO::InputParameterContainer> read(std::istream& stream);
 
-    /// tell if there is a named component with the given name
-    [[nodiscard]] bool has_named(const std::string& name) const;
-
-    /// @name Extract values from read LineDefinition
-    /// There has to be a named component of the given type
-
-    void extract_string(const std::string& name, std::string& value) const;
-    [[nodiscard]] bool has_string(const std::string& name) const;
-    void extract_int(const std::string& name, int& value) const;
-    void extract_int_vector(const std::string& name, std::vector<int>& v) const;
-    void extract_double(const std::string& name, double& value) const;
-    void extract_double_vector(const std::string& name, std::vector<double>& v) const;
-    void extract_string_vector(const std::string& name, std::vector<std::string>& v) const;
-    void extract_pair_of_string_and_double_vector(
-        const std::string& name, std::vector<std::pair<std::string, double>>& v) const;
+    [[nodiscard]] const Core::IO::InputParameterContainer& container() const;
 
     //@}
 

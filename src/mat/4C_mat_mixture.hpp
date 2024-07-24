@@ -165,14 +165,14 @@ namespace Mat
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     /*!
-     * \brief Setup of the material (Read the input line definition of the element)
+     * \brief Setup of the material (Read the a container of data to create the element)
      *
      * This method will be called during reading of the elements. Here, we create all local tensors.
      *
      * @param numgp Number of Gauss-points
-     * @param linedef Line definition of the element
+     * @param container Input parameter container of the element
      */
-    void setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
 
     /*!
      * \brief Post setup routine that will be called before the first Evaluate call

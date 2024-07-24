@@ -192,12 +192,12 @@ void Discret::ELEMENTS::SoSh18Plast::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | read this element, get the material (public)             seitz 11/14 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoSh18Plast::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::SoSh18Plast::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   bool read = (Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>::read_element(
-                   eletype, distype, linedef) &&
-               Discret::ELEMENTS::SoSh18::read_element(eletype, distype, linedef));
+                   eletype, distype, container) &&
+               Discret::ELEMENTS::SoSh18::read_element(eletype, distype, container));
 
   // sync the EAS info
   sync_eas();

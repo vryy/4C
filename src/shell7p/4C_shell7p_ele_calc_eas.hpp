@@ -57,7 +57,8 @@ namespace Discret
       Shell7pEleCalcEas();
 
       void setup(Core::Elements::Element& ele, Mat::So3Material& solid_material,
-          Input::LineDefinition* linedef, const Solid::ELEMENTS::ShellLockingTypes& locking_types,
+          const Core::IO::InputParameterContainer& container,
+          const Solid::ELEMENTS::ShellLockingTypes& locking_types,
           const Solid::ELEMENTS::ShellData& shell_data) override;
 
       void pack(Core::Communication::PackBuffer& data) const override;

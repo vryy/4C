@@ -156,11 +156,11 @@ namespace Mat
       return Teuchos::rcp(new Myocard(*this));
     }
 
-    /// material call from Discret::ELEMENTS::Transport::ReadElement function
+    /// material call from Discret::ELEMENTS::Transport::read_element function
     /// to setup conductivity tensor for each element
     void setup(const Core::LinAlg::Matrix<3, 1>& fiber1);
     void setup(const Core::LinAlg::Matrix<2, 1>& fiber1);
-    void setup(Input::LineDefinition* linedef);
+    void setup(const Core::IO::InputParameterContainer& container);
 
     void setup_diffusion_tensor(const std::vector<double>& fiber1);
     void setup_diffusion_tensor(const Core::LinAlg::Matrix<3, 1>& fiber1);

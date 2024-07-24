@@ -137,15 +137,14 @@ void Discret::ELEMENTS::Truss3Scatra::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Truss3Scatra::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::Truss3Scatra::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   // read base element
-  Truss3::read_element(eletype, distype, linedef);
+  Truss3::read_element(eletype, distype, container);
 
   // read scalar transport implementation type
-  std::string impltype;
-  linedef->extract_string("TYPE", impltype);
+  auto impltype = container.get<std::string>("TYPE");
 
   if (impltype == "ElchDiffCond")
     impltype_ = Inpar::ScaTra::impltype_elch_diffcond;

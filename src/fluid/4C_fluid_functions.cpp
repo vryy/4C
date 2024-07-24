@@ -66,33 +66,27 @@ namespace
 
     const auto& function_lin_def = function_line_defs.front();
 
-    if (function_lin_def.has_named("BELTRAMI"))
+    if (function_lin_def.container().get_or("BELTRAMI", false))
     {
-      double c1;
-      function_lin_def.extract_double("c1", c1);
+      double c1 = function_lin_def.container().get<double>("c1");
 
       return Teuchos::rcp(new FLD::BeltramiFunction(c1));
     }
-    else if (function_lin_def.has_named("CHANNELWEAKLYCOMPRESSIBLE"))
+    else if (function_lin_def.container().get_or("CHANNELWEAKLYCOMPRESSIBLE", false))
     {
       return Teuchos::rcp(new FLD::ChannelWeaklyCompressibleFunction());
     }
-    else if (function_lin_def.has_named("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE"))
+    else if (function_lin_def.container().get_or("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE", false))
     {
       return Teuchos::rcp(new FLD::CorrectionTermChannelWeaklyCompressibleFunction());
     }
-    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_POISEUILLE"))
+    else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_POISEUILLE", false))
     {
       // read data
-      int mat_id = -1;
-      double L = 0.0;
-      double R = 0.0;
-      double U = 0.0;
-
-      function_lin_def.extract_int("MAT", mat_id);
-      function_lin_def.extract_double("L", L);
-      function_lin_def.extract_double("R", R);
-      function_lin_def.extract_double("U", U);
+      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
+      auto L = function_lin_def.container().get_or<double>("L", 0);
+      auto R = function_lin_def.container().get_or<double>("R", 0);
+      auto U = function_lin_def.container().get_or<double>("U", 0);
 
       if (mat_id <= 0)
         FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE");
@@ -105,18 +99,13 @@ namespace
 
       return Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleFunction(fparams, L, R, U));
     }
-    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE"))
+    else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE", false))
     {
       // read data
-      int mat_id = -1;
-      double L = 0.0;
-      double R = 0.0;
-      double U = 0.0;
-
-      function_lin_def.extract_int("MAT", mat_id);
-      function_lin_def.extract_double("L", L);
-      function_lin_def.extract_double("R", R);
-      function_lin_def.extract_double("U", U);
+      auto mat_id = function_lin_def.container().get_or<int>("MAT", -1);
+      auto L = function_lin_def.container().get_or<double>("L", 0);
+      auto R = function_lin_def.container().get_or<double>("R", 0);
+      auto U = function_lin_def.container().get_or<double>("U", 0);
 
       if (mat_id <= 0)
         FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
@@ -132,12 +121,10 @@ namespace
 
       return Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleForceFunction(fparams, L, R, U));
     }
-    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW"))
+    else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW", false))
     {
       // read data
-      int mat_id = -1;
-
-      function_lin_def.extract_int("MAT", mat_id);
+      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
 
       if (mat_id <= 0)
         FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW");
@@ -147,12 +134,11 @@ namespace
 
       return Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowFunction(fparams));
     }
-    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE"))
+    else if (function_lin_def.container().get_or(
+                 "WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE", false))
     {
       // read data
-      int mat_id = -1;
-
-      function_lin_def.extract_int("MAT", mat_id);
+      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
 
       if (mat_id <= 0)
         FOUR_C_THROW(
@@ -163,12 +149,10 @@ namespace
 
       return Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowForceFunction(fparams));
     }
-    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_ETIENNE_CFD"))
+    else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_CFD", false))
     {
       // read data
-      int mat_id = -1;
-
-      function_lin_def.extract_int("MAT", mat_id);
+      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
 
       if (mat_id <= 0)
         FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD");
@@ -178,12 +162,10 @@ namespace
 
       return Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDFunction(fparams));
     }
-    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE"))
+    else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE", false))
     {
       // read data
-      int mat_id = -1;
-
-      function_lin_def.extract_int("MAT", mat_id);
+      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
 
       if (mat_id <= 0)
         FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE");
@@ -193,12 +175,10 @@ namespace
 
       return Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDForceFunction(fparams));
     }
-    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY"))
+    else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY", false))
     {
       // read data
-      int mat_id = -1;
-
-      function_lin_def.extract_int("MAT", mat_id);
+      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
 
       if (mat_id <= 0)
         FOUR_C_THROW(
@@ -209,14 +189,11 @@ namespace
 
       return Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDViscosityFunction(fparams));
     }
-    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID"))
+    else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID", false))
     {
       // read data
-      int mat_id_fluid = -1;
-      int mat_id_struc = -1;
-
-      function_lin_def.extract_int("MAT_FLUID", mat_id_fluid);
-      function_lin_def.extract_int("MAT_STRUC", mat_id_struc);
+      int mat_id_fluid = function_lin_def.container().get_or<int>("MAT_FLUID", -1);
+      int mat_id_struc = function_lin_def.container().get_or<int>("MAT_STRUC", -1);
 
       if (mat_id_fluid <= 0)
         FOUR_C_THROW(
@@ -232,14 +209,12 @@ namespace
       return Teuchos::rcp(
           new FLD::WeaklyCompressibleEtienneFSIFluidFunction(fparams_fluid, fparams_struc));
     }
-    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE"))
+    else if (function_lin_def.container().get_or(
+                 "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE", false))
     {
       // read data
-      int mat_id_fluid = -1;
-      int mat_id_struc = -1;
-
-      function_lin_def.extract_int("MAT_FLUID", mat_id_fluid);
-      function_lin_def.extract_int("MAT_STRUC", mat_id_struc);
+      int mat_id_fluid = function_lin_def.container().get_or<int>("MAT_FLUID", -1);
+      int mat_id_struc = function_lin_def.container().get_or<int>("MAT_STRUC", -1);
 
       if (mat_id_fluid <= 0)
       {
@@ -261,14 +236,12 @@ namespace
       return Teuchos::rcp(
           new FLD::WeaklyCompressibleEtienneFSIFluidForceFunction(fparams_fluid, fparams_struc));
     }
-    else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY"))
+    else if (function_lin_def.container().get_or(
+                 "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY", false))
     {
       // read data
-      int mat_id_fluid = -1;
-      int mat_id_struc = -1;
-
-      function_lin_def.extract_int("MAT_FLUID", mat_id_fluid);
-      function_lin_def.extract_int("MAT_STRUC", mat_id_struc);
+      int mat_id_fluid = function_lin_def.container().get_or<int>("MAT_FLUID", -1);
+      int mat_id_struc = function_lin_def.container().get_or<int>("MAT_STRUC", -1);
 
       if (mat_id_fluid <= 0)
       {
@@ -290,12 +263,10 @@ namespace
       return Teuchos::rcp(new FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction(
           fparams_fluid, fparams_struc));
     }
-    else if (function_lin_def.has_named("BELTRAMI-UP"))
+    else if (function_lin_def.container().get_or("BELTRAMI-UP", false))
     {
-      // read material
-      int mat_id = -1;
-
-      function_lin_def.extract_int("MAT", mat_id);
+      // read data
+      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
 
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in BELTRAMI-UP");
 
@@ -304,14 +275,11 @@ namespace
 
       return Teuchos::rcp(new FLD::BeltramiUP(fparams));
     }
-    else if (function_lin_def.has_named("BELTRAMI-RHS"))
+    else if (function_lin_def.container().get_or("BELTRAMI-RHS", false))
     {
       // read material
-      int mat_id = -1;
-      int is_stokes = 0;
-
-      function_lin_def.extract_int("MAT", mat_id);
-      function_lin_def.extract_int("ISSTOKES", is_stokes);
+      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
+      int is_stokes = function_lin_def.container().get_or<int>("ISSTOKES", 0);
 
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in BELTRAMI-RHS");
 
@@ -320,14 +288,11 @@ namespace
 
       return Teuchos::rcp(new FLD::BeltramiRHS(fparams, (bool)is_stokes));
     }
-    else if (function_lin_def.has_named("KIMMOIN-UP"))
+    else if (function_lin_def.container().get_or("KIMMOIN-UP", false))
     {
       // read material
-      int mat_id = -1;
-      int is_stationary = 0;
-
-      function_lin_def.extract_int("MAT", mat_id);
-      function_lin_def.extract_int("ISSTAT", is_stationary);
+      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
+      int is_stationary = function_lin_def.container().get_or<int>("ISSTAT", 0);
 
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in KIMMOIN-UP");
 
@@ -336,16 +301,12 @@ namespace
 
       return Teuchos::rcp(new FLD::KimMoinUP(fparams, (bool)is_stationary));
     }
-    else if (function_lin_def.has_named("KIMMOIN-RHS"))
+    else if (function_lin_def.container().get_or("KIMMOIN-RHS", false))
     {
       // read material
-      int mat_id = -1;
-      int is_stationary = 0;
-      int is_stokes = 0;
-
-      function_lin_def.extract_int("MAT", mat_id);
-      function_lin_def.extract_int("ISSTAT", is_stationary);
-      function_lin_def.extract_int("ISSTOKES", is_stokes);
+      int mat_id = function_lin_def.container().get_or<int>("MAT", -1);
+      int is_stationary = function_lin_def.container().get_or<int>("ISSTAT", 0);
+      int is_stokes = function_lin_def.container().get_or<int>("ISSTOKES", 0);
 
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in KIMMOIN-RHS");
 
@@ -354,16 +315,12 @@ namespace
 
       return Teuchos::rcp(new FLD::KimMoinRHS(fparams, (bool)is_stationary, (bool)is_stokes));
     }
-    else if (function_lin_def.has_named("KIMMOIN-STRESS"))
+    else if (function_lin_def.container().get_or("KIMMOIN-STRESS", false))
     {
       // read material
-      int mat_id = -1;
-      int is_stationary = 0;
-      double amplitude = 1.0;
-
-      function_lin_def.extract_int("MAT", mat_id);
-      function_lin_def.extract_int("ISSTAT", is_stationary);
-      function_lin_def.extract_double("AMPLITUDE", amplitude);
+      auto mat_id = function_lin_def.container().get_or<int>("MAT", -1);
+      auto is_stationary = function_lin_def.container().get_or<int>("ISSTAT", 0);
+      auto amplitude = function_lin_def.container().get_or<double>("AMPLITUDE", 1.0);
 
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in KIMMOIN-STRESS");
 

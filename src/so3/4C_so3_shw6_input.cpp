@@ -10,25 +10,23 @@
 #include "4C_so3_shw6.hpp"  //**
 #include "4C_mat_so3_material.hpp"
 #include "4C_io_linedefinition.hpp"
+#include <string>
 
 FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoShw6::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::SoShw6::read_element(const std::string& eletype, const std::string& distype,
+    const Core::IO::InputParameterContainer& container)
 {
   // read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
   set_material(0, Mat::Factory(material_id));
 
-  solid_material()->setup(NUMGPT_WEG6, linedef);
+  solid_material()->setup(NUMGPT_WEG6, container);
 
-  std::string buffer;
-  linedef->extract_string("KINEM", buffer);
-
+  std::string buffer = container.get<std::string>("KINEM");
 
   // geometrically non-linear with Total Lagrangean approach
   if (buffer == "nonlinear")
@@ -53,7 +51,7 @@ bool Discret::ELEMENTS::SoShw6::read_element(
   if (solid_material()->uses_extended_update())
     FOUR_C_THROW("This element currently does not support the extended update call.");
 
-  linedef->extract_string("EAS", buffer);
+  buffer = container.get<std::string>("EAS");
 
   // full sohw6 EAS technology
   if (buffer == "soshw6")
@@ -73,9 +71,8 @@ bool Discret::ELEMENTS::SoShw6::read_element(
     FOUR_C_THROW("Reading of SOLIDSHW6 EAS technology failed");
 
   // check for automatically align material space optimally with parameter space
-  optimal_parameterspace_map_ = false;
   nodes_rearranged_ = false;
-  if (linedef->has_named("OPTORDER")) optimal_parameterspace_map_ = true;
+  optimal_parameterspace_map_ = container.get<bool>("OPTORDER");
 
   return true;
 }

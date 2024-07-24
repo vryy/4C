@@ -81,7 +81,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::set_element_data(
   else
     FOUR_C_THROW("oldele is neither a So_base element!");
 
-  // note: SetMaterial() was reimplemented by the thermo element!
+  // note: set_material() was reimplemented by the thermo element!
 
   Teuchos::RCP<Discret::ELEMENTS::Thermo> therm =
       Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::Thermo>(newele);

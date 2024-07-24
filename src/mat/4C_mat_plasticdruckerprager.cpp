@@ -130,7 +130,7 @@ void Mat::PlasticDruckerPrager::unpack(const std::vector<char>& data)
       FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
   }
 }
-void Mat::PlasticDruckerPrager::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::PlasticDruckerPrager::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   strainpllast_.resize(numgp);
   strainplcurr_.resize(numgp);

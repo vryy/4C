@@ -33,15 +33,14 @@ EleMag::ElemagResultTest::ElemagResultTest(ElemagTimeInt& elemagalgo)
 /*----------------------------------------------------------------------*
  |                                                     berardocco 10/18 |
  *----------------------------------------------------------------------*/
-void EleMag::ElemagResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
+void EleMag::ElemagResultTest::test_node(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
-  std::string dis;
-  res.extract_string("DIS", dis);
+  std::string dis = container.get<std::string>("DIS");
   if (dis != dis_->name()) return;
 
-  int node;
-  res.extract_int("NODE", node);
+  int node = container.get<int>("NODE");
   node -= 1;
 
   int havenode(dis_->have_global_node(node));
@@ -63,8 +62,7 @@ void EleMag::ElemagResultTest::test_node(Input::LineDefinition& res, int& nerr, 
 
       double result = 0.;
       // const Epetra_BlockMap& map = mysol_->Map();
-      std::string variable;
-      res.extract_string("QUANTITY", variable);
+      std::string variable = container.get<std::string>("QUANTITY");
 
       if (variable == "electric")
       {
@@ -141,10 +139,9 @@ void EleMag::ElemagResultTest::test_node(Input::LineDefinition& res, int& nerr, 
             variable.c_str());
       }
 
-      nerr += compare_values(result, "NODE", res);
+      nerr += compare_values(result, "NODE", container);
       test_count++;
     }
   }
-  return;
 }
 FOUR_C_NAMESPACE_CLOSE

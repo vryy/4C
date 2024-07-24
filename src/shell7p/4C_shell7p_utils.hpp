@@ -152,16 +152,17 @@ namespace Solid::UTILS::Shell
 
   }  // namespace Director
 
-  namespace ReadElement
+  namespace read_element
   {
-    int ReadAndSetElementMaterial(Input::LineDefinition* linedef);
+    int ReadAndSetElementMaterial(const Core::IO::InputParameterContainer& container);
 
-    void ReadAndSetLockingTypes(const Core::FE::CellType& distype, Input::LineDefinition* linedef,
+    void ReadAndSetLockingTypes(const Core::FE::CellType& distype,
+        const Core::IO::InputParameterContainer& container,
         Solid::ELEMENTS::ShellLockingTypes& locking_types);
 
     int ReadAndSetNumANS(const Core::FE::CellType& distype);
 
-  }  // namespace ReadElement
+  }  // namespace read_element
 
 }  // namespace Solid::UTILS::Shell
 

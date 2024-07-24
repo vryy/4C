@@ -21,48 +21,43 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
 | Read in the RED_AIRWAY elements                                       |
 *-----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedAirway::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::RedAirway::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   const int ndim = Global::Problem::instance()->n_dim();
   if (ndim != 3)
     FOUR_C_THROW("Problem defined as %dd, but found Reduced dimensional AIRWAY element.", ndim);
 
   // Read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
   set_material(0, Mat::Factory(material_id));
 
   // Read the element type, the element specific variables and store them to airwayParams_
-  linedef->extract_string("TYPE", elem_type_);
+  elem_type_ = container.get<std::string>("TYPE");
   if (elem_type_ == "Resistive" || elem_type_ == "InductoResistive" ||
       elem_type_ == "ComplientResistive" || elem_type_ == "RLC" ||
       elem_type_ == "ViscoElasticRLC" || elem_type_ == "ConvectiveViscoElasticRLC")
   {
-    linedef->extract_string("Resistance", resistance_);
-    linedef->extract_string("ElemSolvingType", elemsolving_type_);
+    resistance_ = container.get<std::string>("Resistance");
+    elemsolving_type_ = container.get<std::string>("ElemSolvingType");
 
-    double Ew, tw, A, Ts, Phis, nu, velPow;
-    int generation;
-    linedef->extract_double("PowerOfVelocityProfile", velPow);
-    linedef->extract_double("WallElasticity", Ew);
-    linedef->extract_double("PoissonsRatio", nu);
-    linedef->extract_double("ViscousTs", Ts);
-    linedef->extract_double("ViscousPhaseShift", Phis);
-    linedef->extract_double("WallThickness", tw);
-    linedef->extract_double("Area", A);
-    linedef->extract_int("Generation", generation);
+    double velPow = container.get<double>("PowerOfVelocityProfile");
+    double Ew = container.get<double>("WallElasticity");
+    double nu = container.get<double>("PoissonsRatio");
+    double Ts = container.get<double>("ViscousTs");
+    double Phis = container.get<double>("ViscousPhaseShift");
+    double tw = container.get<double>("WallThickness");
+    double A = container.get<double>("Area");
+    int generation = container.get<int>("Generation");
 
-    if (linedef->has_named("AirwayColl"))
+    if (container.get_if<double>("AirwayColl") != nullptr)
     {
-      double airwayColl;
-      linedef->extract_double("AirwayColl", airwayColl);
-      double sc, so, Pcrit_c, Pcrit_o, open_init;
-      linedef->extract_double("S_Close", sc);
-      linedef->extract_double("S_Open", so);
-      linedef->extract_double("Pcrit_Open", Pcrit_o);
-      linedef->extract_double("Pcrit_Close", Pcrit_c);
-      linedef->extract_double("Open_Init", open_init);
+      double airwayColl = container.get<double>("AirwayColl");
+      double sc = container.get<double>("S_Close");
+      double so = container.get<double>("S_Open");
+      double Pcrit_o = container.get<double>("Pcrit_Open");
+      double Pcrit_c = container.get<double>("Pcrit_Close");
+      double open_init = container.get<double>("Open_Init");
       airway_params_.airway_coll = airwayColl;
       airway_params_.s_close = sc;
       airway_params_.s_open = so;
@@ -82,12 +77,7 @@ bool Discret::ELEMENTS::RedAirway::read_element(
     airway_params_.viscous_Ts = Ts;
     airway_params_.viscous_phase_shift = Phis;
     airway_params_.generation = generation;
-    if (linedef->has_named("BranchLength"))
-    {
-      double l_branch = 0.0;
-      linedef->extract_double("BranchLength", l_branch);
-      airway_params_.branch_length = l_branch;
-    }
+    airway_params_.branch_length = container.get_or<double>("BranchLength", -1);
   }
   else
   {
@@ -105,40 +95,34 @@ bool Discret::ELEMENTS::RedAirway::read_element(
 /*----------------------------------------------------------------------*
 | Read in the RED_ACINUS elements                                       |
 *-----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedAcinus::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::RedAcinus::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   const int ndim = Global::Problem::instance()->n_dim();
   if (ndim != 3)
     FOUR_C_THROW("Problem defined as %dd, but found Reduced dimensional ACINUS element.", ndim);
 
   // Read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
   set_material(0, Mat::Factory(material_id));
 
   // Read the element type, the element specific variables and store them to acinusParams_
-  linedef->extract_string("TYPE", elem_type_);
+  elem_type_ = container.get<std::string>("TYPE");
+
   if (elem_type_ == "NeoHookean" || elem_type_ == "Exponential" ||
       elem_type_ == "DoubleExponential" || elem_type_ == "VolumetricOgden")
   {
-    double acinusVol, alveolarDuctVol, A;
-    const int generation = -1;
-    linedef->extract_double("AcinusVolume", acinusVol);
-    linedef->extract_double("AlveolarDuctVolume", alveolarDuctVol);
-    linedef->extract_double("Area", A);
-
-    acinus_params_.volume_relaxed = acinusVol;
-    acinus_params_.alveolar_duct_volume = alveolarDuctVol;
-    acinus_params_.area = A;
-    acinus_params_.volume_init = acinusVol;
-    acinus_params_.generation = generation;
+    acinus_params_.volume_relaxed = container.get<double>("AcinusVolume");
+    acinus_params_.alveolar_duct_volume = container.get<double>("AlveolarDuctVolume");
+    acinus_params_.area = container.get<double>("Area");
+    acinus_params_.volume_init = acinus_params_.volume_relaxed;
+    acinus_params_.generation = -1;
 
     // Setup material, calls overloaded function setup(linedef) for each Maxwell_0d_acinus material
     Teuchos::RCP<Core::Mat::Material> mat = material();
     Teuchos::RCP<Mat::Maxwell0dAcinus> acinus_mat =
         Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(material());
-    acinus_mat->setup(linedef);
+    acinus_mat->setup(container);
   }
   else
   {
@@ -155,8 +139,8 @@ bool Discret::ELEMENTS::RedAcinus::read_element(
 /*----------------------------------------------------------------------*
 | Read in the RED_ACINAR_INTER_DEP elements                             |
 *-----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedInterAcinarDep::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::RedInterAcinarDep::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   const int ndim = Global::Problem::instance()->n_dim();
   if (ndim != 3)
@@ -169,8 +153,7 @@ bool Discret::ELEMENTS::RedInterAcinarDep::read_element(
   generation_ = generation;
 
   // Read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
   set_material(0, Mat::Factory(material_id));
 
 
@@ -181,8 +164,8 @@ bool Discret::ELEMENTS::RedInterAcinarDep::read_element(
 /*----------------------------------------------------------------------*
 | Read in the Scatra elements                                           |
 *-----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedAirBloodScatra::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::RedAirBloodScatra::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   const int ndim = Global::Problem::instance()->n_dim();
   if (ndim != 3)
@@ -192,17 +175,9 @@ bool Discret::ELEMENTS::RedAirBloodScatra::read_element(
   const int generation = -2;
   generation_ = generation;
 
-  double diff = 0.0;
-  linedef->extract_double("DiffusionCoefficient", diff);
-  elem_params_["DiffusionCoefficient"] = diff;
-
-  double th = 0.0;
-  linedef->extract_double("WallThickness", th);
-  elem_params_["WallThickness"] = th;
-
-  double percDiffArea = 0.0;
-  linedef->extract_double("PercentageOfDiffusionArea", percDiffArea);
-  elem_params_["PercentageOfDiffusionArea"] = percDiffArea;
+  elem_params_["DiffusionCoefficient"] = container.get<double>("DiffusionCoefficient");
+  elem_params_["WallThickness"] = container.get<double>("WallThickness");
+  elem_params_["PercentageOfDiffusionArea"] = container.get<double>("PercentageOfDiffusionArea");
 
   return true;
 }
@@ -211,24 +186,16 @@ bool Discret::ELEMENTS::RedAirBloodScatra::read_element(
 /*----------------------------------------------------------------------*
 | Read in the Scatra elements                                           |
 *-----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedAirBloodScatraLine3::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::RedAirBloodScatraLine3::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   const int ndim = Global::Problem::instance()->n_dim();
   if (ndim != 3)
     FOUR_C_THROW("Problem defined as %dd, but found Reduced dimensional Scatra element.", ndim);
 
-  double diff = 0.0;
-  linedef->extract_double("DiffusionCoefficient", diff);
-  elem_params_["DiffusionCoefficient"] = diff;
-
-  double th = 0.0;
-  linedef->extract_double("WallThickness", th);
-  elem_params_["WallThickness"] = th;
-
-  double percDiffArea = 0.0;
-  linedef->extract_double("PercentageOfDiffusionArea", percDiffArea);
-  elem_params_["PercentageOfDiffusionArea"] = percDiffArea;
+  elem_params_["DiffusionCoefficient"] = container.get<double>("DiffusionCoefficient");
+  elem_params_["WallThickness"] = container.get<double>("WallThickness");
+  elem_params_["PercentageOfDiffusionArea"] = container.get<double>("PercentageOfDiffusionArea");
 
   return true;
 }

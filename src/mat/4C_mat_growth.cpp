@@ -267,7 +267,7 @@ void Mat::Growth::unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::Growth::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::Growth::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   if (isinit_)
     FOUR_C_THROW("This function should just be called if the material is not yet initialized.");
@@ -282,7 +282,7 @@ void Mat::Growth::setup(int numgp, Input::LineDefinition* linedef)
 
   // Setup of elastic material
   matelastic_ = Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->idmatelastic_));
-  matelastic_->setup(numgp, linedef);
+  matelastic_->setup(numgp, container);
 
   isinit_ = true;
 }
@@ -941,7 +941,7 @@ void Mat::GrowthVolumetric::unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthVolumetric::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::GrowthVolumetric::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   tr_mandel_e_ = Teuchos::rcp(new std::vector<double>(numgp));
   lambda_fib_e_ = Teuchos::rcp(new std::vector<double>(numgp));
@@ -958,14 +958,14 @@ void Mat::GrowthVolumetric::setup(int numgp, Input::LineDefinition* linedef)
     case Core::Materials::m_growth_ac_radial_refconc:
     {
       // CIR-AXI-RAD nomenclature
-      if (not(linedef->has_named("RAD")))
+      if (container.get_if<std::vector<double>>("RAD") == nullptr)
       {
         FOUR_C_THROW(
             "If you want growth into the radial direction you need to specify RAD in your input "
             "file!");
       }
 
-      read_fiber(linedef, "RAD", refdir_);
+      read_fiber(container, "RAD", refdir_);
       curdir_ = std::vector<Core::LinAlg::Matrix<3, 1>>(numgp, refdir_);
       curdir_for_update_ = std::vector<Core::LinAlg::Matrix<3, 1>>(numgp, refdir_);
 
@@ -978,11 +978,11 @@ void Mat::GrowthVolumetric::setup(int numgp, Input::LineDefinition* linedef)
     case Core::Materials::m_growth_aniso_stress:
     {
       // FIBER1 nomenclature
-      if (not(linedef->has_named("FIBER1")))
+      if (container.get_if<std::vector<double>>("FIBER1") == nullptr)
         FOUR_C_THROW(
             "If you want growth in fiber direction you need to specify FIBER1 in your input file!");
 
-      read_fiber(linedef, "FIBER1", refdir_);
+      read_fiber(container, "FIBER1", refdir_);
 
       // only refdir is used - rest remains unused...
       curdir_ = std::vector<Core::LinAlg::Matrix<3, 1>>(numgp, refdir_);
@@ -996,15 +996,16 @@ void Mat::GrowthVolumetric::setup(int numgp, Input::LineDefinition* linedef)
     case Core::Materials::m_growth_aniso_stress_const_trig:
     {
       // FIBER1 nomenclature
-      if (not(linedef->has_named("FIBER1")))
+      if (container.get_if<std::vector<double>>("FIBER1") == nullptr)
         FOUR_C_THROW(
             "If you want growth in fiber direction you need to specify FIBER1 in your input file!");
 
-      read_fiber(linedef, "FIBER1", refdir_);
+      read_fiber(container, "FIBER1", refdir_);
 
-      linedef->extract_double("GROWTHTRIG", growthtrig_const_);
-      if (not(linedef->has_named("GROWTHTRIG")))
+      if (container.get_if<double>("GROWTHTRIG") == nullptr)
         FOUR_C_THROW("You need to specify GROWTHTRIG in your input file!");
+
+      growthtrig_const_ = container.get<double>("GROWTHTRIG");
 
       // only refdir is used - rest remains unused...
       curdir_ = std::vector<Core::LinAlg::Matrix<3, 1>>(numgp, refdir_);
@@ -1028,7 +1029,7 @@ void Mat::GrowthVolumetric::setup(int numgp, Input::LineDefinition* linedef)
   }
 
   // setup base class
-  Growth::setup(numgp, linedef);
+  Growth::setup(numgp, container);
 }
 
 
@@ -1072,11 +1073,11 @@ void Mat::GrowthVolumetric::update()
 /*----------------------------------------------------------------------*
  | Function which reads in the given fiber value             Thon 01/15 |
  *----------------------------------------------------------------------*/
-void Mat::GrowthVolumetric::read_fiber(
-    Input::LineDefinition* linedef, std::string specifier, Core::LinAlg::Matrix<3, 1>& fiber_vector)
+void Mat::GrowthVolumetric::read_fiber(const Core::IO::InputParameterContainer& container,
+    std::string specifier, Core::LinAlg::Matrix<3, 1>& fiber_vector)
 {
-  std::vector<double> fiber1;
-  linedef->extract_double_vector(std::move(specifier), fiber1);
+  auto fiber1 = container.get<std::vector<double>>(std::move(specifier));
+
   double f1norm = 0.;
   // normalization
   for (int i = 0; i < 3; ++i)

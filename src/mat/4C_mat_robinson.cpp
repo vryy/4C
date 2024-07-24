@@ -256,7 +256,7 @@ void Mat::Robinson::unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
  | initialise / allocate internal stress variables (public) dano 11/11 |
  *---------------------------------------------------------------------*/
-void Mat::Robinson::setup(const int numgp, Input::LineDefinition* linedef)
+void Mat::Robinson::setup(const int numgp, const Core::IO::InputParameterContainer& container)
 {
   // temporary variable for read-in
   std::string buffer;

@@ -333,7 +333,7 @@ void Mat::ConstraintMixture::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Setup                                         (public)         12/10|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixture::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::ConstraintMixture::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   if (params_->integration_ != "Implicit" && params_->integration_ != "Explicit")
     FOUR_C_THROW("unknown option for integration");
@@ -386,12 +386,9 @@ void Mat::ConstraintMixture::setup(int numgp, Input::LineDefinition* linedef)
   a4_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
 
   // read local (cylindrical) cosy-directions at current element
-  std::vector<double> rad;
-  std::vector<double> axi;
-  std::vector<double> cir;
-  linedef->extract_double_vector("RAD", rad);
-  linedef->extract_double_vector("AXI", axi);
-  linedef->extract_double_vector("CIR", cir);
+  auto rad = container.get<std::vector<double>>("RAD");
+  auto axi = container.get<std::vector<double>>("AXI");
+  auto cir = container.get<std::vector<double>>("CIR");
 
   Core::LinAlg::Matrix<3, 3> locsys;
   // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir

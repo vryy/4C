@@ -78,7 +78,7 @@ Mat::ScalarDepInterp::ScalarDepInterp(Mat::PAR::ScalarDepInterp* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScalarDepInterp::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::ScalarDepInterp::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   if (isinit_)
     FOUR_C_THROW("This function should just be called, if the material is jet not initialized.");
@@ -86,12 +86,12 @@ void Mat::ScalarDepInterp::setup(int numgp, Input::LineDefinition* linedef)
   // Setup of elastic material for zero concentration
   lambda_zero_mat_ =
       Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->id_lambda_zero_));
-  lambda_zero_mat_->setup(numgp, linedef);
+  lambda_zero_mat_->setup(numgp, container);
 
   // Setup of elastic material for zero concentration
   lambda_unit_mat_ =
       Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->id_lambda_unit_));
-  lambda_unit_mat_->setup(numgp, linedef);
+  lambda_unit_mat_->setup(numgp, container);
 
   // Some safety check
   const double density1 = lambda_zero_mat_->density();
@@ -100,17 +100,13 @@ void Mat::ScalarDepInterp::setup(int numgp, Input::LineDefinition* linedef)
     FOUR_C_THROW(
         "The densities of the materials specified in IDMATZEROSC and IDMATUNITSC must be equal!");
 
-
-  double lambda = 1.0;
   // Read lambda from input file, if available
-  if (linedef->has_named("lambda")) read_lambda(linedef, "lambda", lambda);
+  auto lambda = container.get_or<double>("lambda", 1.0);
 
   lambda_ = std::vector<double>(numgp, lambda);
 
   // initialization done
   isinit_ = true;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -353,11 +349,6 @@ bool Mat::ScalarDepInterp::vis_data(
   return (tmp1 and tmp2);
 }
 
-void Mat::ScalarDepInterp::read_lambda(
-    Input::LineDefinition* linedef, std::string specifier, double& lambda)
-{
-  linedef->extract_double(specifier, lambda);
-}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -379,7 +370,6 @@ void Mat::ScalarDepInterp::strain_energy(
   lambda = lambda / (lambda_.size());
 
   psi += (1 - lambda) * psi_lambda_zero + lambda * psi_lambda_unit;
-  return;
 }
 
 FOUR_C_NAMESPACE_CLOSE

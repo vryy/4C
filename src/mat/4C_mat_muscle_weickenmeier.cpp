@@ -197,11 +197,11 @@ void Mat::MuscleWeickenmeier::unpack(const std::vector<char>& data)
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
-void Mat::MuscleWeickenmeier::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::MuscleWeickenmeier::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   // Read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
-  anisotropy_.read_anisotropy_from_element(linedef);
+  anisotropy_.read_anisotropy_from_element(container);
 }
 
 void Mat::MuscleWeickenmeier::update(Core::LinAlg::Matrix<3, 3> const& defgrd, int const gp,

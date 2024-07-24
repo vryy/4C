@@ -43,12 +43,12 @@ namespace Mat
   /*!
    * Reads a fiber with a specification from the input file definition
    *
-   * @param linedef (in) : Input line definition
+   * @param container (in): Input parameter container of the element
    * @param specifier (in) : Identifier of the fiber
    * @param fiber_vector (out) : Fiber vector
    */
-  void read_anisotropy_fiber(Input::LineDefinition* linedef, std::string specifier,
-      Core::LinAlg::Matrix<3, 1>& fiber_vector);
+  void read_anisotropy_fiber(const Core::IO::InputParameterContainer& container,
+      std::string specifier, Core::LinAlg::Matrix<3, 1>& fiber_vector);
 
   /*!
    * \brief Compute structural tensors of a 2D vector of fibers with the structural tensor

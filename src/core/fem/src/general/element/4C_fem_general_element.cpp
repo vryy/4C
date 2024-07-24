@@ -25,6 +25,7 @@
 #include <Shards_BasicTopologies.hpp>
 
 #include <utility>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -158,8 +159,6 @@ Core::Elements::Element::Element(const Element& old)
   }
   else
     mat_[0] = Teuchos::null;
-
-  return;
 }
 
 
@@ -185,14 +184,12 @@ void Core::Elements::Element::print(std::ostream& os) const
     os << " Nodes ";
     for (int i = 0; i < nnode; ++i) os << std::setw(10) << nodeids[i] << " ";
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Core::Elements::Element::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Core::Elements::Element::read_element(const std::string& eletype, const std::string& distype,
+    const Core::IO::InputParameterContainer& container)
 {
   FOUR_C_THROW("subclass implementations missing");
   return false;
@@ -207,16 +204,15 @@ void Core::Elements::Element::set_node_ids(const int nnode, const int* nodes)
   nodeid_.resize(nnode);
   for (int i = 0; i < nnode; ++i) nodeid_[i] = nodes[i];
   node_.resize(0);
-  return;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::Elements::Element::set_node_ids(
-    const std::string& distype, Input::LineDefinition* linedef)
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
-  linedef->extract_int_vector(distype, nodeid_);
+  nodeid_ = container.get<std::vector<int>>(distype);
   for (int& i : nodeid_) i -= 1;
   node_.resize(0);
 }
@@ -280,8 +276,6 @@ void Core::Elements::Element::pack(Core::Communication::PackBuffer& data) const
     int size = 0;
     add_to_pack(data, size);
   }
-
-  return;
 }
 
 
@@ -327,7 +321,6 @@ void Core::Elements::Element::unpack(const std::vector<char>& data)
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
-  return;
 }
 
 
@@ -415,8 +408,6 @@ void Core::Elements::Element::nodal_connectivity(
   else
     FOUR_C_THROW("implementation is missing for this distype (%s)",
         Core::FE::CellTypeToString(shape()).c_str());
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -434,7 +425,6 @@ void Core::Elements::Element::get_condition(
   std::multimap<std::string, Teuchos::RCP<Core::Conditions::Condition>>::const_iterator curr;
   for (curr = startit; curr != endit; ++curr) out[count++] = curr->second.get();
   if (count != num) FOUR_C_THROW("Mismatch in number of conditions found");
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -748,8 +738,6 @@ void Core::Elements::Element::location_vector(
     }
 
   }  // for (int dofset=0; dofset<la.Size(); ++dofset)
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -865,8 +853,6 @@ void Core::Elements::Element::location_vector(const Core::FE::Discretization& di
     lmowner.push_back(owner);
     lm.push_back(dof[j]);
   }
-
-  return;
 }
 
 
@@ -920,8 +906,6 @@ void Core::Elements::Element::location_vector(const Core::FE::Discretization& di
       }
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1143,8 +1127,6 @@ void Core::Elements::FaceElement::pack(Core::Communication::PackBuffer& data) co
   add_to_pack(data, lface_master_);
   // Pack Parent Id, used to set parent_master_ after parallel communication!
   add_to_pack(data, parent_id_);
-
-  return;
 }
 
 
@@ -1170,7 +1152,6 @@ void Core::Elements::FaceElement::unpack(const std::vector<char>& data)
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
-  return;
 }
 
 /*----------------------------------------------------------------------*

@@ -48,7 +48,8 @@ namespace THR
     //!
     //! Possible position flags are "temp",
     //!                             "rate",
-    void test_node(Input::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(
+        const Core::IO::InputParameterContainer& container, int& nerr, int& test_count) override;
 
    private:
     //! our discretisation

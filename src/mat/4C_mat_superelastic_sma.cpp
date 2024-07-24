@@ -272,7 +272,7 @@ void Mat::SuperElasticSMA::unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
  | initialize / allocate internal variables (public)     hemmler 09/16 |
  *---------------------------------------------------------------------*/
-void Mat::SuperElasticSMA::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::SuperElasticSMA::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   druckerpragerloadingcurr_ = Teuchos::rcp(new std::vector<double>);
   druckerpragerloadinglast_ = Teuchos::rcp(new std::vector<double>);

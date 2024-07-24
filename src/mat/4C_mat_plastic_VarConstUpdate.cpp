@@ -185,10 +185,10 @@ void Mat::PlasticElastHyperVCU::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::PlasticElastHyperVCU::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::PlasticElastHyperVCU::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   // setup the plasticelasthyper data
-  PlasticElastHyper::setup(numgp, linedef);
+  PlasticElastHyper::setup(numgp, container);
 
   // setup history
   plastic_defgrd_inverse_.resize(numgp);

@@ -259,12 +259,11 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Lubricatio
 /*----------------------------------------------------------------------*
  | read element input                                       wirtz 10/15 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Lubrication::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::Lubrication::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   // read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
   set_material(0, Mat::Factory(material_id));
 
   // set discretization type

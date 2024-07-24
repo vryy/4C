@@ -17,18 +17,16 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Truss3::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::Truss3::read_element(const std::string& eletype, const std::string& distype,
+    const Core::IO::InputParameterContainer& container)
 {
   // read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
   set_material(0, Mat::Factory(material_id));
 
-  linedef->extract_double("CROSS", crosssec_);
+  crosssec_ = container.get<double>("CROSS");
 
-  std::string buffer;
-  linedef->extract_string("KINEM", buffer);
+  std::string buffer = container.get<std::string>("KINEM");
 
   if (buffer == "totlag")  // geometrically non-linear with Total Lagrangean approach
     kintype_ = KinematicType::tr3_totlag;

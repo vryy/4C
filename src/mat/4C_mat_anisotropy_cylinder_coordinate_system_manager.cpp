@@ -39,13 +39,15 @@ void Mat::CylinderCoordinateSystemManager::unpack(
 }
 
 void Mat::CylinderCoordinateSystemManager::read_from_element_line_definition(
-    Input::LineDefinition* linedef)
+    const Core::IO::InputParameterContainer& container)
 {
-  if (linedef->has_named("RAD") and linedef->has_named("AXI") and linedef->has_named("CIR"))
+  if (container.get_if<std::vector<double>>("RAD") != nullptr and
+      container.get_if<std::vector<double>>("AXI") != nullptr and
+      container.get_if<std::vector<double>>("CIR") != nullptr)
   {
-    read_anisotropy_fiber(linedef, "RAD", radial_);
-    read_anisotropy_fiber(linedef, "AXI", axial_);
-    read_anisotropy_fiber(linedef, "CIR", circumferential_);
+    read_anisotropy_fiber(container, "RAD", radial_);
+    read_anisotropy_fiber(container, "AXI", axial_);
+    read_anisotropy_fiber(container, "CIR", circumferential_);
     is_defined_ = true;
   }
 }

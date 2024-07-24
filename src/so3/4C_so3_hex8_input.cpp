@@ -16,28 +16,24 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoHex8::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::SoHex8::read_element(const std::string& eletype, const std::string& distype,
+    const Core::IO::InputParameterContainer& container)
 {
   // read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
 
   set_material(0, Mat::Factory(material_id));
 
   // set up of materials with GP data (e.g., history variables)
-  solid_material()->setup(NUMGPT_SOH8, linedef);
-
-  // temporary variable for read-in
-  std::string buffer;
+  solid_material()->setup(NUMGPT_SOH8, container);
 
   // read kinematic flag
-  linedef->extract_string("KINEM", buffer);
-  if (buffer == "linear")
+  std::string kinem = container.get<std::string>("KINEM");
+  if (kinem == "linear")
   {
     kintype_ = Inpar::Solid::KinemType::linear;
   }
-  else if (buffer == "nonlinear")
+  else if (kinem == "nonlinear")
   {
     kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
   }
@@ -48,24 +44,24 @@ bool Discret::ELEMENTS::SoHex8::read_element(
   solid_material()->valid_kinematics(kintype_);
 
   // read EAS technology flag
-  linedef->extract_string("EAS", buffer);
+  std::string eas = container.get<std::string>("EAS");
 
   // full EAS technology
-  if (buffer == "full")
+  if (eas == "full")
   {
     eastype_ = soh8_easfull;
     neas_ = 21;  // number of eas parameters for full EAS
     soh8_easinit();
   }
   // mild EAS technology
-  else if (buffer == "mild")
+  else if (eas == "mild")
   {
     eastype_ = soh8_easmild;
     neas_ = 9;  // number of eas parameters for mild EAS
     soh8_easinit();
   }
   // no EAS technology
-  else if (buffer == "none")
+  else if (eas == "none")
   {
     eastype_ = soh8_easnone;
     neas_ = 0;

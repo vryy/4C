@@ -47,7 +47,8 @@ class StruResultTest : public Core::UTILS::ResultTest
   - velocitites "velx", "vely", "velz",
   - accelerations "accx", "accy", "accz"
   */
-  void test_node(Input::LineDefinition& res, int& nerr, int& test_count) final;
+  void test_node(
+      const Core::IO::InputParameterContainer& container, int& nerr, int& test_count) final;
 
   /*!
   \brief Test special quantities of structure discretization / time integration
@@ -55,7 +56,8 @@ class StruResultTest : public Core::UTILS::ResultTest
   See get_special_result_for_testing() for a list and extraction mechanisms of special results to be
   tested.
   */
-  void test_special(Input::LineDefinition& res, int& nerr, int& test_count) final;
+  void test_special(
+      const Core::IO::InputParameterContainer& container, int& nerr, int& test_count) final;
 
  private:
   //! Extract specified quantity from the structure field

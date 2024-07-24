@@ -121,7 +121,7 @@ namespace Discret::ELEMENTS
     [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
     bool read_element(const std::string& eletype, const std::string& celltype,
-        Input::LineDefinition* linedef) override;
+        const Core::IO::InputParameterContainer& container) override;
 
     int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
         std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,

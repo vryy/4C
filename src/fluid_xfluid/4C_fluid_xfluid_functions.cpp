@@ -14,6 +14,7 @@
 #include "4C_utils_function_manager.hpp"
 
 #include <utility>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -28,74 +29,61 @@ namespace
 
     const auto& function_lin_def = function_line_defs.front();
 
-    if (function_lin_def.has_named("FORWARDFACINGSTEP"))
+    if (function_lin_def.container().get_or<bool>("FORWARDFACINGSTEP", false))
     {
       return Teuchos::rcp(new GerstenbergerForwardfacingStep());
     }
-    else if (function_lin_def.has_named("MOVINGLEVELSETCYLINDER"))
+    else if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETCYLINDER", false))
     {
-      std::vector<double> origin;
-      function_lin_def.extract_double_vector("ORIGIN", origin);
+      auto origin = function_lin_def.container().get<std::vector<double>>("ORIGIN");
 
-      double radius;
-      function_lin_def.extract_double("RADIUS", radius);
+      auto radius = function_lin_def.container().get<double>("RADIUS");
 
-      std::vector<double> direction;
-      function_lin_def.extract_double_vector("DIRECTION", direction);
+      auto direction = function_lin_def.container().get<std::vector<double>>("DIRECTION");
 
-      double distance;
-      function_lin_def.extract_double("DISTANCE", distance);
+      auto distance = function_lin_def.container().get<double>("DISTANCE");
 
-      double maxspeed;
-      function_lin_def.extract_double("MAXSPEED", maxspeed);
+      auto maxspeed = function_lin_def.container().get<double>("MAXSPEED");
 
       return Teuchos::rcp(
           new MovingLevelSetCylinder(&origin, radius, &direction, distance, maxspeed));
     }
-    else if (function_lin_def.has_named("MOVINGLEVELSETTORUS") or
-             function_lin_def.has_named("MOVINGLEVELSETTORUSVELOCITY") or
-             function_lin_def.has_named("MOVINGLEVELSETTORUSSLIPLENGTH"))
+    else if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUS", false) or
+             function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUSVELOCITY", false) or
+             function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUSSLIPLENGTH", false))
     {
-      std::vector<double> origin;
-      function_lin_def.extract_double_vector("ORIGIN", origin);
+      auto origin = function_lin_def.container().get<std::vector<double>>("ORIGIN");
 
-      std::vector<double> orient_vec_torus;
-      function_lin_def.extract_double_vector("ORIENTVEC_TORUS", orient_vec_torus);
+      auto orient_vec_torus =
+          function_lin_def.container().get<std::vector<double>>("ORIENTVEC_TORUS");
 
-      double radius;
-      function_lin_def.extract_double("RADIUS", radius);
+      auto radius = function_lin_def.container().get<double>("RADIUS");
 
-      double radius_tube;
-      function_lin_def.extract_double("RADIUS_TUBE", radius_tube);
+      auto radius_tube = function_lin_def.container().get<double>("RADIUS_TUBE");
 
-      std::vector<double> direction;
-      function_lin_def.extract_double_vector("DIRECTION", direction);
+      auto direction = function_lin_def.container().get<std::vector<double>>("DIRECTION");
 
-      double distance;
-      function_lin_def.extract_double("DISTANCE", distance);
+      auto distance = function_lin_def.container().get<double>("DISTANCE");
 
-      double maxspeed;
-      function_lin_def.extract_double("MAXSPEED", maxspeed);
+      auto maxspeed = function_lin_def.container().get<double>("MAXSPEED");
 
-      std::vector<double> rot_vec_torus;
-      function_lin_def.extract_double_vector("ROTATION_VEC", rot_vec_torus);
+      auto rot_vec_torus = function_lin_def.container().get<std::vector<double>>("ROTATION_VEC");
 
-      double rotspeed;
-      function_lin_def.extract_double("ROTATION_SPEED", rotspeed);  // revolutions per second
+      auto rotspeed =
+          function_lin_def.container().get<double>("ROTATION_SPEED");  // revolutions per second
 
-      double rotramptime;
-      function_lin_def.extract_double("ROTATION_RAMPTIME", rotramptime);  // revolutions per second
+      auto rotramptime =
+          function_lin_def.container().get<double>("ROTATION_RAMPTIME");  // revolutions per second
 
-      if (function_lin_def.has_named("MOVINGLEVELSETTORUS"))
+      if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUS", false))
         return Teuchos::rcp(new MovingLevelSetTorus(&origin, &orient_vec_torus, radius, radius_tube,
             &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime));
-      else if (function_lin_def.has_named("MOVINGLEVELSETTORUSVELOCITY"))
+      else if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUSVELOCITY", false))
         return Teuchos::rcp(new MovingLevelSetTorusVelocity(&origin, &orient_vec_torus, radius,
             radius_tube, &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime));
-      else if (function_lin_def.has_named("MOVINGLEVELSETTORUSSLIPLENGTH"))
+      else if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUSSLIPLENGTH", false))
       {
-        int slipfunct;
-        function_lin_def.extract_int("SLIP_FUNCT", slipfunct);
+        auto slipfunct = function_lin_def.container().get<int>("SLIP_FUNCT");
         return Teuchos::rcp(
             new MovingLevelSetTorusSliplength(&origin, &orient_vec_torus, radius, radius_tube,
                 &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime, slipfunct));
@@ -106,55 +94,40 @@ namespace
         return Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime>(nullptr);
       }
     }
-    else if (function_lin_def.has_named("TAYLORCOUETTEFLOW"))
+    else if (function_lin_def.container().get_or<bool>("TAYLORCOUETTEFLOW", false))
     {
-      double radius_i;
-      function_lin_def.extract_double("RADIUS_I", radius_i);
-      double radius_o;
-      function_lin_def.extract_double("RADIUS_O", radius_o);
+      auto radius_i = function_lin_def.container().get<double>("RADIUS_I");
+      auto radius_o = function_lin_def.container().get<double>("RADIUS_O");
 
-      double vel_theta_i;
-      function_lin_def.extract_double("VEL_THETA_I", vel_theta_i);
-      double vel_theta_o;
-      function_lin_def.extract_double("VEL_THETA_O", vel_theta_o);
+      auto vel_theta_i = function_lin_def.container().get<double>("VEL_THETA_I");
+      auto vel_theta_o = function_lin_def.container().get<double>("VEL_THETA_O");
 
-      double sliplength_i;
-      function_lin_def.extract_double("SLIPLENGTH_I", sliplength_i);
-      double sliplength_o;
-      function_lin_def.extract_double("SLIPLENGTH_O", sliplength_o);
+      auto sliplength_i = function_lin_def.container().get<double>("SLIPLENGTH_I");
+      auto sliplength_o = function_lin_def.container().get<double>("SLIPLENGTH_O");
 
-      double traction_theta_i;
-      function_lin_def.extract_double("TRACTION_THETA_I", traction_theta_i);
-      double traction_theta_o;
-      function_lin_def.extract_double("TRACTION_THETA_O", traction_theta_o);
+      auto traction_theta_i = function_lin_def.container().get<double>("TRACTION_THETA_I");
+      auto traction_theta_o = function_lin_def.container().get<double>("TRACTION_THETA_O");
 
-      double viscosity;
-      function_lin_def.extract_double("VISCOSITY", viscosity);
+      auto viscosity = function_lin_def.container().get<double>("VISCOSITY");
 
       return Teuchos::rcp(new TaylorCouetteFlow(radius_i, radius_o, vel_theta_i, vel_theta_o,
           sliplength_i, sliplength_o, traction_theta_i, traction_theta_o, viscosity));
     }
-    else if (function_lin_def.has_named("URQUIZABOXFLOW"))
+    else if (function_lin_def.container().get_or<bool>("URQUIZABOXFLOW", false))
     {
-      double lengthx;
-      function_lin_def.extract_double("LENGTHX", lengthx);
-      double lengthy;
-      function_lin_def.extract_double("LENGTHY", lengthy);
+      auto lengthx = function_lin_def.container().get<double>("LENGTHX");
+      auto lengthy = function_lin_def.container().get<double>("LENGTHY");
 
-      double rotation;
-      function_lin_def.extract_double("ROTATION", rotation);
-      double viscosity;
-      function_lin_def.extract_double("VISCOSITY", viscosity);
-      double density;
-      function_lin_def.extract_double("DENSITY", density);
+      auto rotation = function_lin_def.container().get<double>("ROTATION");
+      auto viscosity = function_lin_def.container().get<double>("VISCOSITY");
+      auto density = function_lin_def.container().get<double>("DENSITY");
 
-      int functno;
-      function_lin_def.extract_int("CASE", functno);
+      auto functno = function_lin_def.container().get<int>("CASE");
 
       std::vector<double> lin_comb(2, 0.0);
-      if (function_lin_def.has_named("COMBINATION"))
+      if (function_lin_def.container().get_if<std::vector<double>>("COMBINATION") != nullptr)
       {
-        function_lin_def.extract_double_vector("COMBINATION", lin_comb);
+        lin_comb = function_lin_def.container().get<std::vector<double>>("COMBINATION");
       }
       else if (functno == 3)
         FOUR_C_THROW(
@@ -164,26 +137,22 @@ namespace
       return Teuchos::rcp(
           new UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, lin_comb));
     }
-    else if (function_lin_def.has_named("URQUIZABOXFLOW_FORCE"))
+    else if (function_lin_def.container().get_or<bool>("URQUIZABOXFLOW_FORCE", false))
     {
-      double lengthx;
-      function_lin_def.extract_double("LENGTHX", lengthx);
-      double lengthy;
-      function_lin_def.extract_double("LENGTHY", lengthy);
+      auto lengthx = function_lin_def.container().get<double>("LENGTHX");
+      auto lengthy = function_lin_def.container().get<double>("LENGTHY");
 
-      double rotation;
-      function_lin_def.extract_double("ROTATION", rotation);
-      double viscosity;
-      function_lin_def.extract_double("VISCOSITY", viscosity);
-      double density;
-      function_lin_def.extract_double("DENSITY", density);
+      auto rotation = function_lin_def.container().get<double>("ROTATION");
+      auto viscosity = function_lin_def.container().get<double>("VISCOSITY");
+      auto density = function_lin_def.container().get<double>("DENSITY");
 
-      int functno;
-      function_lin_def.extract_int("CASE", functno);
+      auto functno = function_lin_def.container().get<int>("CASE");
 
       std::vector<double> lin_comb(2, 0.0);
-      if (function_lin_def.has_named("COMBINATION"))
-        function_lin_def.extract_double_vector("COMBINATION", lin_comb);
+      if (function_lin_def.container().get_if<std::vector<double>>("COMBINATION") != nullptr)
+      {
+        lin_comb = function_lin_def.container().get<std::vector<double>>("COMBINATION");
+      }
       else if (functno == 3)
         FOUR_C_THROW(
             "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
@@ -192,26 +161,22 @@ namespace
       return Teuchos::rcp(new UrquizaBoxFlowForce(
           lengthx, lengthy, rotation, viscosity, density, functno, lin_comb));
     }
-    else if (function_lin_def.has_named("URQUIZABOXFLOW_TRACTION"))
+    else if (function_lin_def.container().get_or<bool>("URQUIZABOXFLOW_TRACTION", false))
     {
-      double lengthx;
-      function_lin_def.extract_double("LENGTHX", lengthx);
-      double lengthy;
-      function_lin_def.extract_double("LENGTHY", lengthy);
+      auto lengthx = function_lin_def.container().get<double>("LENGTHX");
+      auto lengthy = function_lin_def.container().get<double>("LENGTHY");
 
-      double rotation;
-      function_lin_def.extract_double("ROTATION", rotation);
-      double viscosity;
-      function_lin_def.extract_double("VISCOSITY", viscosity);
-      double density;
-      function_lin_def.extract_double("DENSITY", density);
+      auto rotation = function_lin_def.container().get<double>("ROTATION");
+      auto viscosity = function_lin_def.container().get<double>("VISCOSITY");
+      auto density = function_lin_def.container().get<double>("DENSITY");
 
-      int functno;
-      function_lin_def.extract_int("CASE", functno);
+      auto functno = function_lin_def.container().get<int>("CASE");
 
       std::vector<double> lin_comb(2, 0.0);
-      if (function_lin_def.has_named("COMBINATION"))
-        function_lin_def.extract_double_vector("COMBINATION", lin_comb);
+      if (function_lin_def.container().get_if<std::vector<double>>("COMBINATION") != nullptr)
+      {
+        lin_comb = function_lin_def.container().get<std::vector<double>>("COMBINATION");
+      }
       else if (functno == 3)
         FOUR_C_THROW(
             "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "

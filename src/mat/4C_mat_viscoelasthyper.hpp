@@ -194,7 +194,7 @@ namespace Mat
         const int eleGID) override;  ///< Constitutive matrix
 
     /// setup material description
-    void setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
 
     /// update history variables
     void update() override;

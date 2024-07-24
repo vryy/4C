@@ -126,7 +126,7 @@ namespace Mat
     /*!
       \brief
     */
-    virtual void setup(Input::LineDefinition* linedef)
+    virtual void setup(const Core::IO::InputParameterContainer& container)
     {
       FOUR_C_THROW(
           "Setup not implemented yet! Check your material type, "

@@ -202,10 +202,10 @@ FSI::FSIResultTest::FSIResultTest(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FSIResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
+void FSI::FSIResultTest::test_node(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
-  int node;
-  res.extract_int("NODE", node);
+  int node = container.get<int>("NODE");
   node -= 1;
 
   int havenode(slavedisc_->have_global_node(node));
@@ -228,8 +228,7 @@ void FSI::FSIResultTest::test_node(Input::LineDefinition& res, int& nerr, int& t
       // interested in our nodes!
       if (actnode->owner() != slavedisc_->get_comm().MyPID()) return;
 
-      std::string quantity;
-      res.extract_string("QUANTITY", quantity);
+      std::string quantity = container.get<std::string>("QUANTITY");
       bool unknownquantity = true;  // make sure the result value std::string can be handled
       double result = 0.0;          // will hold the actual result of run
 
@@ -259,30 +258,27 @@ void FSI::FSIResultTest::test_node(Input::LineDefinition& res, int& nerr, int& t
         FOUR_C_THROW("Quantity '%s' not supported in fsi testing", quantity.c_str());
 
       // compare values
-      const int err = compare_values(result, "NODE", res);
+      const int err = compare_values(result, "NODE", container);
       nerr += err;
       test_count++;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FSIResultTest::test_element(Input::LineDefinition& res, int& nerr, int& test_count)
+void FSI::FSIResultTest::test_element(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   FOUR_C_THROW("FSI ELEMENT test not implemented, yet.");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FSIResultTest::test_special(Input::LineDefinition& res, int& nerr, int& test_count)
+void FSI::FSIResultTest::test_special(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
-  std::string quantity;
-  res.extract_string("QUANTITY", quantity);
+  std::string quantity = container.get<std::string>("QUANTITY");
   bool unknownquantity = true;  // make sure the result value std::string can be handled
   double result = 0.0;          // will hold the actual result of run
 
@@ -311,11 +307,9 @@ void FSI::FSIResultTest::test_special(Input::LineDefinition& res, int& nerr, int
   if (unknownquantity) FOUR_C_THROW("Quantity '%s' not supported in fsi testing", quantity.c_str());
 
   // compare values
-  const int err = compare_values(result, "SPECIAL", res);
+  const int err = compare_values(result, "SPECIAL", container);
   nerr += err;
   test_count++;
-
-  return;
 }
 
 FOUR_C_NAMESPACE_CLOSE

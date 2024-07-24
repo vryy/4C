@@ -125,7 +125,7 @@ namespace Discret::ELEMENTS
     }
 
     bool read_element(const std::string& eletype, const std::string& celltype,
-        Input::LineDefinition* linedef) override;
+        const Core::IO::InputParameterContainer& container) override;
 
     int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
         Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,

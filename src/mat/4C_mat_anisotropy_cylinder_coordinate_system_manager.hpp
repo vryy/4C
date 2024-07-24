@@ -14,6 +14,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_io_input_parameter_container.hpp"
 #include "4C_mat_anisotropy_cylinder_coordinate_system_provider.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -63,11 +64,12 @@ namespace Mat
 
 
     /*!
-     * Reads the line definition of an element to get the coordinate system defined on the element
+     * Reads the input parameter container of an element to get the coordinate system defined on the
+     * element
      *
-     * @param linedef (in) : Input line of the corresponding element
+     * @param container (in) : a container of data to create the corresponding element
      */
-    void read_from_element_line_definition(Input::LineDefinition* linedef);
+    void read_from_element_line_definition(const Core::IO::InputParameterContainer& container);
 
     /*!
      * \brief Flag

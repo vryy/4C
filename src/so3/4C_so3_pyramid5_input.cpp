@@ -15,20 +15,18 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoPyramid5::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::SoPyramid5::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   // read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
   set_material(0, Mat::Factory(material_id));
 
   Teuchos::RCP<Core::Mat::Material> mat = material();
 
-  solid_material()->setup(NUMGPT_SOP5, linedef);
+  solid_material()->setup(NUMGPT_SOP5, container);
 
-  std::string buffer;
-  linedef->extract_string("KINEM", buffer);
+  std::string buffer = container.get<std::string>("KINEM");
 
   if (buffer == "linear")
   {

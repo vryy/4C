@@ -70,7 +70,8 @@ namespace Discret::ELEMENTS
 
     void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
-    void setup(Mat::So3Material& solid_material, Input::LineDefinition* linedef);
+    void setup(
+        Mat::So3Material& solid_material, const Core::IO::InputParameterContainer& container);
 
     void material_post_setup(const Core::Elements::Element& ele, Mat::So3Material& solid_material);
 

@@ -168,12 +168,12 @@ void MIXTURE::MixtureConstituentElastHyperBase::register_anisotropy_extensions(
 
 // Reads the element from the input file
 void MIXTURE::MixtureConstituentElastHyperBase::read_element(
-    int numgp, Input::LineDefinition* linedef)
+    int numgp, const Core::IO::InputParameterContainer& container)
 {
-  MixtureConstituent::read_element(numgp, linedef);
+  MixtureConstituent::read_element(numgp, container);
 
   // Setup summands
-  for (const auto& summand : potsum_) summand->setup(numgp, linedef);
+  for (const auto& summand : potsum_) summand->setup(numgp, container);
 
   // find out which formulations are used
   Mat::ElastHyperProperties(potsum_, summand_properties_);

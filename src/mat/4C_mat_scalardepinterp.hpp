@@ -200,7 +200,7 @@ namespace Mat
         ) override;
 
     /// setup
-    void setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
 
     /// Return quick accessible material parameter data
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }
@@ -211,9 +211,6 @@ namespace Mat
     /// Return visualization data
     bool vis_data(
         const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
-
-    /// Reading material weights (lambda) from input file
-    void read_lambda(Input::LineDefinition* linedef, std::string specifier, double& lambda);
 
     /// evaluate strain energy function
     void strain_energy(const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp,

@@ -17,17 +17,15 @@ FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Torsion3::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::Torsion3::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   // read type of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
   set_material(0, Mat::Factory(material_id));
 
   // read type of bending potential
-  std::string buffer;
-  linedef->extract_string("BENDINGPOTENTIAL", buffer);
+  auto buffer = container.get<std::string>("BENDINGPOTENTIAL");
 
   // bending potential E_bend = 0.5*SPRING*\theta^2
   if (buffer == "quadratic") bendingpotential_ = quadratic;

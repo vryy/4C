@@ -21,12 +21,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Beam3k::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::Beam3k::read_element(const std::string& eletype, const std::string& distype,
+    const Core::IO::InputParameterContainer& container)
 {
   // read number of material model and cross-sections specs
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
   set_material(0, Mat::Factory(material_id));
 
   const auto mat_type = material()->parameter()->type();
@@ -36,12 +35,9 @@ bool Discret::ELEMENTS::Beam3k::read_element(
       "Choose MAT_BeamKirchhoffElastHyper or MAT_BeamKirchhoffElastHyper_ByModes!",
       to_string(mat_type).data());
 
+  int rotvec = container.get<int>("ROTVEC");
 
-  int rotvec = 0;
-  linedef->extract_int("ROTVEC", rotvec);
-
-  int wk = 0;
-  linedef->extract_int("WK", wk);
+  int wk = container.get<int>("WK");
 
   if (rotvec == 0)
     rotvec_ = false;
@@ -72,12 +68,12 @@ bool Discret::ELEMENTS::Beam3k::read_element(
 
   // extract triads at element nodes in reference configuration as rotation vectors and save them as
   // quaternions at each node, respectively
-  std::vector<double> nodal_thetas;
-  linedef->extract_double_vector("TRIADS", nodal_thetas);
+  auto nodal_thetas = container.get<std::vector<double>>("TRIADS");
+
   this->set_up_initial_rotations(nodal_thetas);
 
   // read whether automatic differentiation via Sacado::Fad package shall be used
-  use_fad_ = linedef->has_named("FAD") ? true : false;
+  use_fad_ = container.get<bool>("FAD");
 
   return true;
 }

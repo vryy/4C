@@ -227,7 +227,7 @@ void Mat::Damage::unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
  | initialise / allocate internal stress variables (public)      04/11 |
  *---------------------------------------------------------------------*/
-void Mat::Damage::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::Damage::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   // initialise history variables
 

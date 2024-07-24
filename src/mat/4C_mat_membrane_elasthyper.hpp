@@ -158,7 +158,7 @@ namespace Mat
     }
 
     /// setup
-    void setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
 
     void update_membrane(const Core::LinAlg::Matrix<3, 3>& defgrd, Teuchos::ParameterList& params,
         const Core::LinAlg::Matrix<3, 3>& Q_trafo, int gp, int eleGID) override

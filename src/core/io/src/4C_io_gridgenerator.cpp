@@ -396,7 +396,7 @@ namespace Core::IO::GridGenerator
     Teuchos::RCP<Core::Elements::Element> ele =
         Core::Communication::Factory(elementtype, distype, eleid, myrank);
     ele->set_node_ids(nodeids.size(), &(nodeids[0]));
-    ele->read_element(elementtype, distype, linedef);
+    ele->read_element(elementtype, distype, linedef->container());
     return ele;
   }
 
@@ -494,7 +494,7 @@ namespace Core::IO::GridGenerator
     Teuchos::RCP<Core::Elements::Element> ele =
         Core::Communication::Factory(elementtype, distype, eleid, myrank);
     ele->set_node_ids(nodeids.size(), &(nodeids[0]));
-    ele->read_element(elementtype, distype, linedef);
+    ele->read_element(elementtype, distype, linedef->container());
     return ele;
   }
 

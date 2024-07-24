@@ -666,37 +666,38 @@ void Solid::UTILS::Shell::LumpMassMatrix(Core::LinAlg::SerialDenseMatrix& mass_m
 }
 
 
-void Solid::UTILS::Shell::ReadElement::ReadAndSetLockingTypes(const Core::FE::CellType& distype,
-    Input::LineDefinition* linedef, Solid::ELEMENTS::ShellLockingTypes& locking_types)
+void Solid::UTILS::Shell::read_element::ReadAndSetLockingTypes(const Core::FE::CellType& distype,
+    const Core::IO::InputParameterContainer& container,
+    Solid::ELEMENTS::ShellLockingTypes& locking_types)
 {
   std::string type;
   switch (distype)
   {
     case Core::FE::CellType::quad4:
     {
-      linedef->extract_string("EAS", type);
+      type = container.get<std::string>("EAS");
       SetMembraneLockingSizeQuad4(locking_types.membrane, type);
-      linedef->extract_string("EAS2", type);
+      type = container.get<std::string>("EAS2");
       SetBendingLockingSizeQuad4(locking_types.bending, type);
-      linedef->extract_string("EAS3", type);
+      type = container.get<std::string>("EAS3");
       SetThicknessLockingSizeQuad4(locking_types.thickness, type);
-      linedef->extract_string("EAS4", type);
+      type = container.get<std::string>("EAS4");
       SetShearStrainLockingSizeQuad4(locking_types.transverse_shear_strain_const, type);
-      linedef->extract_string("EAS5", type);
+      type = container.get<std::string>("EAS5");
       SetShearStrainLockingSizeQuad4(locking_types.transverse_shear_strain_lin, type);
       break;
     }
     case Core::FE::CellType::quad9:
     {
-      linedef->extract_string("EAS", type);
+      type = container.get<std::string>("EAS");
       SetMembraneLockingSizeQuad9(locking_types.membrane, type);
-      linedef->extract_string("EAS2", type);
+      type = container.get<std::string>("EAS2");
       SetBendingLockingSizeQuad9(locking_types.bending, type);
-      linedef->extract_string("EAS3", type);
+      type = container.get<std::string>("EAS3");
       SetThicknessLockingSizeQuad9(locking_types.thickness, type);
-      linedef->extract_string("EAS4", type);
+      type = container.get<std::string>("EAS4");
       SetShearStrainLockingSizeQuad9(locking_types.transverse_shear_strain_const, type);
-      linedef->extract_string("EAS5", type);
+      type = container.get<std::string>("EAS5");
       SetShearStrainLockingSizeQuad9(locking_types.transverse_shear_strain_lin, type);
       break;
     }
@@ -708,14 +709,14 @@ void Solid::UTILS::Shell::ReadElement::ReadAndSetLockingTypes(const Core::FE::Ce
                         locking_types.transverse_shear_strain_lin;
 }
 
-int Solid::UTILS::Shell::ReadElement::ReadAndSetElementMaterial(Input::LineDefinition* linedef)
+int Solid::UTILS::Shell::read_element::ReadAndSetElementMaterial(
+    const Core::IO::InputParameterContainer& container)
 {
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
-  return material_id;
+  int material = container.get<int>("MAT");
+  return material;
 }
 
-int Solid::UTILS::Shell::ReadElement::ReadAndSetNumANS(const Core::FE::CellType& distype)
+int Solid::UTILS::Shell::read_element::ReadAndSetNumANS(const Core::FE::CellType& distype)
 {
   switch (distype)
   {

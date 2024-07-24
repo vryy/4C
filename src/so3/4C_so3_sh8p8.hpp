@@ -245,7 +245,7 @@ namespace Discret
 
       /// Read input for this element
       bool read_element(const std::string& eletype, const std::string& distype,
-          Input::LineDefinition* linedef) override;
+          const Core::IO::InputParameterContainer& container) override;
 
 
 

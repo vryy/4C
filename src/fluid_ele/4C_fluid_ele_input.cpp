@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief ReadElement method of the fluid element implementation
+\brief read_element method of the fluid element implementation
 
 
 \level 1
@@ -19,20 +19,18 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Fluid::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::Fluid::read_element(const std::string& eletype, const std::string& distype,
+    const Core::IO::InputParameterContainer& container)
 {
   // read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
   set_material(0, Mat::Factory(material_id));
 
   // set discretization type (setOptimalgaussrule is pushed into element
   // routine)
   set_dis_type(Core::FE::StringToCellType(distype));
 
-  std::string na;
-  linedef->extract_string("NA", na);
+  std::string na = container.get<std::string>("NA");
   if (na == "ale" or na == "ALE" or na == "Ale")
   {
     is_ale_ = true;

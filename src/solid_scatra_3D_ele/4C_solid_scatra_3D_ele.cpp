@@ -143,27 +143,26 @@ void Discret::ELEMENTS::SolidScatra::set_params_interface_ptr(const Teuchos::Par
     interface_ptr_ = Teuchos::null;
 }
 
-bool Discret::ELEMENTS::SolidScatra::read_element(
-    const std::string& eletype, const std::string& celltype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::SolidScatra::read_element(const std::string& eletype,
+    const std::string& celltype, const Core::IO::InputParameterContainer& container)
 {
   // read base element
   // set cell type
   celltype_ = Core::FE::StringToCellType(celltype);
 
   // read number of material model
-  set_material(0, Mat::Factory(Solid::UTILS::ReadElement::read_element_material(linedef)));
+  set_material(0, Mat::Factory(Solid::UTILS::read_element::read_element_material(container)));
 
   // read scalar transport implementation type
-  properties_.impltype = ReadScatraImplType(*linedef);
+  properties_.impltype = ReadScatraImplType(container);
 
-
-  properties_.solid = Solid::UTILS::ReadElement::read_solid_element_properties(linedef);
+  properties_.solid = Solid::UTILS::read_element::read_solid_element_properties(container);
 
   solid_scatra_calc_variant_ =
       create_solid_scatra_calculation_interface(celltype_, properties_.solid);
 
   // setup solid material
-  std::visit([&](auto& solid_scatra) { solid_scatra->setup(solid_material(), linedef); },
+  std::visit([&](auto& solid_scatra) { solid_scatra->setup(solid_material(), container); },
       solid_scatra_calc_variant_);
 
   return true;

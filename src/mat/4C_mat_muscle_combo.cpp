@@ -231,11 +231,11 @@ void Mat::MuscleCombo::unpack(const std::vector<char>& data)
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
-void Mat::MuscleCombo::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::MuscleCombo::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   // Read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
-  anisotropy_.read_anisotropy_from_element(linedef);
+  anisotropy_.read_anisotropy_from_element(container);
 
   activation_evaluator_ = std::visit(ActivationParamsVisitor(), params_->activationParams_);
 }

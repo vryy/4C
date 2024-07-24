@@ -107,10 +107,10 @@ void Mat::MembraneElastHyper::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |                                                       sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneElastHyper::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::MembraneElastHyper::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   // call setup of base class
-  Mat::ElastHyper::setup(numgp, linedef);
+  Mat::ElastHyper::setup(numgp, container);
 
   get_fiber_vecs(fibervecs_);
 

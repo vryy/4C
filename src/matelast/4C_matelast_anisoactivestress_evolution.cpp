@@ -69,7 +69,8 @@ void Mat::Elastic::AnisoActiveStressEvolution::register_anisotropy_extensions(
   anisotropy.register_anisotropy_extension(anisotropy_extension_);
 }
 
-void Mat::Elastic::AnisoActiveStressEvolution::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::Elastic::AnisoActiveStressEvolution::setup(
+    int numgp, const Core::IO::InputParameterContainer& container)
 {
   // Setup of active stress model
   tauc_n_ = params_->tauc0_;

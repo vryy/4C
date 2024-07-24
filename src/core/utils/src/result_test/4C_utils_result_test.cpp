@@ -22,69 +22,54 @@ FOUR_C_NAMESPACE_OPEN
 
 Core::UTILS::ResultTest::ResultTest(std::string name) : myname_(std::move(name)) {}
 
-void Core::UTILS::ResultTest::test_element(Input::LineDefinition& res, int& nerr, int& test_count)
+void Core::UTILS::ResultTest::test_element(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   FOUR_C_THROW("no element test available");
 }
 
-void Core::UTILS::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
+void Core::UTILS::ResultTest::test_node(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   FOUR_C_THROW("no node test available");
 }
 
-void Core::UTILS::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& nerr,
-    int& test_count, const std::vector<std::vector<std::vector<int>>>& nodeset)
+void Core::UTILS::ResultTest::test_node_on_geometry(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count,
+    const std::vector<std::vector<std::vector<int>>>& nodeset)
 {
   FOUR_C_THROW("no geometry test available");
 }
 
-void Core::UTILS::ResultTest::test_special(Input::LineDefinition& res, int& nerr, int& test_count)
+void Core::UTILS::ResultTest::test_special(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   FOUR_C_THROW("no special case test available");
 }
 
-void Core::UTILS::ResultTest::test_special(
-    Input::LineDefinition& res, int& nerr, int& test_count, int& unevaluated_test_count)
+void Core::UTILS::ResultTest::test_special(const Core::IO::InputParameterContainer& container,
+    int& nerr, int& test_count, int& unevaluated_test_count)
 {
-  test_special(res, nerr, test_count);
+  test_special(container, nerr, test_count);
 }
 
 
-/*----------------------------------------------------------------------*/
-/*!
- \brief Compare \a actresult with \a givenresult and return 0 if they are
- considered to be equal.
-
- Compare \a actresult with \a givenresult and return 0 if they are
- considered to be equal.
-
- \param err        the file where to document both values
- \param res        the describtion of the expected result including name and tolerance
-
- \author uk
- \date 06/04
- */
-/*----------------------------------------------------------------------*/
 int Core::UTILS::ResultTest::compare_values(
-    double actresult, std::string type, Input::LineDefinition& res)
+    double actresult, std::string type, const Core::IO::InputParameterContainer& container)
 {
   int gid;
 
   if (type != "SPECIAL")
   {
-    res.extract_int(type, gid);
+    gid = container.get<int>(type);
   }
-  std::string quantity;
-  res.extract_string("QUANTITY", quantity);
-  double givenresult;
-  res.extract_double("VALUE", givenresult);
-  double tolerance;
-  res.extract_double("TOLERANCE", tolerance);
+  std::string quantity = container.get<std::string>("QUANTITY");
+  double givenresult = container.get<double>("VALUE");
+  double tolerance = container.get<double>("TOLERANCE");
   // safety check
   if (tolerance <= 0.) FOUR_C_THROW("Tolerance for result test must be strictly positive!");
   // name is an optional input argument!
-  std::string name = "";
-  if (res.has_named("NAME")) res.extract_string("NAME", name);
+  auto name = container.get_or<std::string>("NAME", "");
 
   // return value (0 if results are correct, 1 if results are not correct)
   int ret = 0;
@@ -136,7 +121,11 @@ int Core::UTILS::ResultTest::compare_values(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Core::UTILS::ResultTest::match(Input::LineDefinition& res) { return res.has_named(myname_); }
+bool Core::UTILS::ResultTest::match(const Core::IO::InputParameterContainer& container)
+{
+  return container.get_or<bool>(myname_, false);
+}
+
 
 
 /*----------------------------------------------------------------------*/
@@ -162,17 +151,18 @@ void Core::UTILS::ResultTestManager::test_all(const Epetra_Comm& comm)
   {
     for (const auto& fieldtest : fieldtest_)
     {
-      if (fieldtest->match(result))
+      if (fieldtest->match(result.container()))
       {
-        if (result.has_named("ELEMENT"))
-          fieldtest->test_element(result, nerr, test_count);
-        else if (result.has_named("NODE"))
-          fieldtest->test_node(result, nerr, test_count);
-        else if (result.has_named("LINE") || result.has_named("SURFACE") ||
-                 result.has_named("VOLUME"))
-          fieldtest->test_node_on_geometry(result, nerr, test_count, get_node_set());
+        if (result.container().get_if<int>("ELEMENT") != nullptr)
+          fieldtest->test_element(result.container(), nerr, test_count);
+        else if (result.container().get_if<int>("NODE") != nullptr)
+          fieldtest->test_node(result.container(), nerr, test_count);
+        else if (result.container().get_if<int>("LINE") != nullptr ||
+                 result.container().get_if<int>("SURFACE") != nullptr ||
+                 result.container().get_if<int>("VOLUME") != nullptr)
+          fieldtest->test_node_on_geometry(result.container(), nerr, test_count, get_node_set());
         else
-          fieldtest->test_special(result, nerr, test_count, uneval_test_count);
+          fieldtest->test_special(result.container(), nerr, test_count, uneval_test_count);
       }
     }
   }

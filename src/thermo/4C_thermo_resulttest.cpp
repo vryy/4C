@@ -35,15 +35,14 @@ THR::ResultTest::ResultTest(TimInt& tintegrator) : Core::UTILS::ResultTest("THER
 /*----------------------------------------------------------------------*
  |                                                           dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
+void THR::ResultTest::test_node(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
-  std::string dis;
-  res.extract_string("DIS", dis);
+  std::string dis = container.get<std::string>("DIS");
   if (dis != thrdisc_->name()) return;
 
-  int node;
-  res.extract_int("NODE", node);
+  int node = container.get<int>("NODE");
   node -= 1;
 
   int havenode(thrdisc_->have_global_node(node));
@@ -65,8 +64,7 @@ void THR::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test
       // Here we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->owner() != thrdisc_->get_comm().MyPID()) return;
 
-      std::string position;
-      res.extract_string("QUANTITY", position);
+      std::string position = container.get<std::string>("QUANTITY");
       bool unknownpos = true;  // make sure the result value std::string can be handled
       double result = 0.0;     // will hold the actual result of run
 
@@ -111,7 +109,7 @@ void THR::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test
         FOUR_C_THROW("Quantity '%s' not supported in thermo testing", position.c_str());
 
       // compare values
-      const int err = compare_values(result, "NODE", res);
+      const int err = compare_values(result, "NODE", container);
       nerr += err;
       test_count++;
     }

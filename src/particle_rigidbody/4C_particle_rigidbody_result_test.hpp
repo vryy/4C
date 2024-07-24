@@ -66,13 +66,12 @@ namespace ParticleRigidBody
     /*!
      * \brief test special quantity
      *
-     * \author Sebastian Fuchs \date 09/2020
-     *
-     * \param[in]  res        result line definition
+     * \param[in]  res        result parameter container
      * \param[out] nerr       number of tests with errors
      * \param[out] test_count number of tests performed
      */
-    void test_special(Input::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_special(
+        const Core::IO::InputParameterContainer& container, int& nerr, int& test_count) override;
 
    private:
     //! interface to rigid body handler

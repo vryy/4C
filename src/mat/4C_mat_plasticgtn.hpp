@@ -13,6 +13,7 @@
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_inpar_material.hpp"
 #include "4C_inpar_structure.hpp"
+#include "4C_io_input_parameter_container.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_material_parameter_base.hpp"
 
@@ -130,7 +131,7 @@ namespace Mat
 
     Teuchos::RCP<Material> clone() const override { return Teuchos::rcp(new PlasticGTN(*this)); }
 
-    void setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
     void update() override;
 
     void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,

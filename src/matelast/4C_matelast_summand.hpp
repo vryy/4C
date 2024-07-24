@@ -13,6 +13,7 @@
 
 #include "4C_comm_parobject.hpp"
 #include "4C_inpar_material.hpp"
+#include "4C_io_input_parameter_container.hpp"
 #include "4C_legacy_enum_definitions_materials.hpp"
 #include "4C_linalg_FADmatrix_utils.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
@@ -86,10 +87,7 @@ namespace Mat
       virtual void pack_summand(Core::Communication::PackBuffer& data) const { return; };
 
       virtual void unpack_summand(
-          const std::vector<char>& data, std::vector<char>::size_type& position)
-      {
-        return;
-      };
+          const std::vector<char>& data, std::vector<char>::size_type& position){};
 
       //@}
 
@@ -119,7 +117,7 @@ namespace Mat
        * @param numgp Number of Gauss points
        * @param linedef Input line of the element
        */
-      virtual void setup(int numgp, Input::LineDefinition* linedef){};
+      virtual void setup(int numgp, const Core::IO::InputParameterContainer& container){};
 
       //! Dummy routine for setup of patient-specific materials
       virtual void setup_aaa(Teuchos::ParameterList& params, const int eleGID){};
@@ -132,7 +130,7 @@ namespace Mat
       virtual void post_setup(Teuchos::ParameterList& params){};
 
       //! Dummy routine for setup update of summand
-      virtual void update() { return; };
+      virtual void update(){};
 
       //! add strain energy
       virtual void add_strain_energy(double& psi,  ///< strain energy functions
@@ -717,17 +715,15 @@ namespace Mat
       //! Get fiber directions
       virtual void get_fiber_vecs(
           std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
-      )
-      {
-        return;  // do nothing
-      };
+      ){};
 
       //! Read FIBERn
-      void read_fiber(Input::LineDefinition* linedef, const std::string& specifier,
-          Core::LinAlg::Matrix<3, 1>& fiber_vector);
+      void read_fiber(const Core::IO::InputParameterContainer& container,
+          const std::string& specifier, Core::LinAlg::Matrix<3, 1>& fiber_vector);
 
       //! Read RAD-AXI-CIR
-      void read_rad_axi_cir(Input::LineDefinition* linedef, Core::LinAlg::Matrix<3, 3>& locsys);
+      void read_rad_axi_cir(
+          const Core::IO::InputParameterContainer& container, Core::LinAlg::Matrix<3, 3>& locsys);
 
       //! Indicator for the chosen formulations
       virtual void specify_formulation(

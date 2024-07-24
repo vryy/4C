@@ -150,17 +150,18 @@ void Mat::Maxwell0dAcinusDoubleExponential::unpack(const std::vector<char>& data
  | E1_01, E1_LIN1, E1_EXP1, TAU1 and                                    |
  | E1_02, E1_LIN2, E1_EXP2, TAU2 to material                roth 10/2014|
  *----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusDoubleExponential::setup(Input::LineDefinition* linedef)
+void Mat::Maxwell0dAcinusDoubleExponential::setup(
+    const Core::IO::InputParameterContainer& container)
 {
-  linedef->extract_double("E1_01", e1_01_);
-  linedef->extract_double("E1_LIN1", e1_lin1_);
-  linedef->extract_double("E1_EXP1", e1_exp1_);
-  linedef->extract_double("TAU1", tau1_);
+  e1_01_ = container.get<double>("E1_01");
+  e1_lin1_ = container.get<double>("E1_LIN1");
+  e1_exp1_ = container.get<double>("E1_EXP1");
+  tau1_ = container.get<double>("TAU1");
 
-  linedef->extract_double("E1_02", e1_02_);
-  linedef->extract_double("E1_LIN2", e1_lin2_);
-  linedef->extract_double("E1_EXP2", e1_exp2_);
-  linedef->extract_double("TAU2", tau2_);
+  e1_02_ = container.get<double>("E1_02");
+  e1_lin2_ = container.get<double>("E1_LIN2");
+  e1_exp2_ = container.get<double>("E1_EXP2");
+  tau2_ = container.get<double>("TAU2");
   // TODO bool -variable init, in Evaluate abfragen ob init=true
 }
 

@@ -8,6 +8,7 @@
 #include "4C_solid_3D_ele_utils.hpp"
 
 #include "4C_fem_general_element.hpp"
+#include "4C_io_input_parameter_container.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
@@ -77,18 +78,18 @@ Core::LinAlg::Matrix<6, 1> Solid::UTILS::green_lagrange_to_log_strain(
   return log_strain_voigt;
 }
 
-int Solid::UTILS::ReadElement::read_element_material(Input::LineDefinition* linedef)
+int Solid::UTILS::read_element::read_element_material(
+    const Core::IO::InputParameterContainer& container)
 {
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
-  return material_id;
+  int material = container.get<int>("MAT");
+  return material;
 }
 
-Inpar::Solid::KinemType Solid::UTILS::ReadElement::read_element_kinematic_type(
-    Input::LineDefinition* linedef)
+Inpar::Solid::KinemType Solid::UTILS::read_element::read_element_kinematic_type(
+    const Core::IO::InputParameterContainer& container)
 {
-  std::string kinem;
-  linedef->extract_string("KINEM", kinem);
+  auto kinem = container.get<std::string>("KINEM");
+
   if (kinem == "nonlinear")
     return Inpar::Solid::KinemType::nonlinearTotLag;
   else if (kinem == "linear")
@@ -100,11 +101,11 @@ Inpar::Solid::KinemType Solid::UTILS::ReadElement::read_element_kinematic_type(
   }
 }
 
-Discret::ELEMENTS::ElementTechnology Solid::UTILS::ReadElement::read_element_technology(
-    Input::LineDefinition* linedef)
+Discret::ELEMENTS::ElementTechnology Solid::UTILS::read_element::read_element_technology(
+    const Core::IO::InputParameterContainer& container)
 {
-  std::string type;
-  linedef->extract_string("TECH", type);
+  auto type = container.get_or<std::string>("TECH", "none");
+
   if (type == "fbar")
   {
     return Discret::ELEMENTS::ElementTechnology::fbar;
@@ -125,11 +126,11 @@ Discret::ELEMENTS::ElementTechnology Solid::UTILS::ReadElement::read_element_tec
     FOUR_C_THROW("unrecognized element technology type %s", type.c_str());
 }
 
-Discret::ELEMENTS::PrestressTechnology Solid::UTILS::ReadElement::read_prestress_technology(
-    Input::LineDefinition* linedef)
+Discret::ELEMENTS::PrestressTechnology Solid::UTILS::read_element::read_prestress_technology(
+    const Core::IO::InputParameterContainer& container)
 {
-  std::string type;
-  linedef->extract_string("PRESTRESS_TECH", type);
+  auto type = container.get_or<std::string>("PRESTRESS_TECH", "none");
+
   if (type == "none")
   {
     return Discret::ELEMENTS::PrestressTechnology::none;
@@ -142,25 +143,21 @@ Discret::ELEMENTS::PrestressTechnology Solid::UTILS::ReadElement::read_prestress
   FOUR_C_THROW("unrecognized prestress technology type %s", type.c_str());
 }
 
-Discret::ELEMENTS::SolidElementProperties Solid::UTILS::ReadElement::read_solid_element_properties(
-    Input::LineDefinition* linedef)
+Discret::ELEMENTS::SolidElementProperties Solid::UTILS::read_element::read_solid_element_properties(
+    const Core::IO::InputParameterContainer& container)
 {
   Discret::ELEMENTS::SolidElementProperties solid_properties{};
+
   // element technology
-  if (linedef->has_named("TECH"))
-  {
-    solid_properties.element_technology =
-        Solid::UTILS::ReadElement::read_element_technology(linedef);
-  }
+  solid_properties.element_technology =
+      Solid::UTILS::read_element::read_element_technology(container);
 
   // prestress technology
-  if (linedef->has_named("PRESTRESS_TECH"))
-  {
-    solid_properties.prestress_technology =
-        Solid::UTILS::ReadElement::read_prestress_technology(linedef);
-  }
+  solid_properties.prestress_technology =
+      Solid::UTILS::read_element::read_prestress_technology(container);
+
   // kinematic type
-  solid_properties.kintype = Solid::UTILS::ReadElement::read_element_kinematic_type(linedef);
+  solid_properties.kintype = Solid::UTILS::read_element::read_element_kinematic_type(container);
 
   return solid_properties;
 }

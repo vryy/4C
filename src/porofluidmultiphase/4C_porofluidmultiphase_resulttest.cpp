@@ -32,15 +32,13 @@ POROFLUIDMULTIPHASE::ResultTest::ResultTest(TimIntImpl& porotimint)
  | test node                                                vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::ResultTest::test_node(
-    Input::LineDefinition& res, int& nerr, int& test_count)
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
-  std::string dis;
-  res.extract_string("DIS", dis);
+  std::string dis = container.get<std::string>("DIS");
   if (dis != porotimint_.discretization()->name()) return;
 
-  int node;
-  res.extract_int("NODE", node);
+  int node = container.get<int>("NODE");
   node -= 1;
 
   int havenode(porotimint_.discretization()->have_global_node(node));
@@ -62,13 +60,12 @@ void POROFLUIDMULTIPHASE::ResultTest::test_node(
       if (actnode->owner() != porotimint_.discretization()->get_comm().MyPID()) return;
 
       // extract name of quantity to be tested
-      std::string quantity;
-      res.extract_string("QUANTITY", quantity);
+      std::string quantity = container.get<std::string>("QUANTITY");
 
       // get result to be tested
       const double result = result_node(quantity, actnode);
 
-      nerr += compare_values(result, "NODE", res);
+      nerr += compare_values(result, "NODE", container);
       test_count++;
     }
   }
@@ -80,16 +77,14 @@ void POROFLUIDMULTIPHASE::ResultTest::test_node(
  | test element                                        kremheller 10/19 |
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::ResultTest::test_element(
-    Input::LineDefinition& res, int& nerr, int& test_count)
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
-  std::string dis;
-  res.extract_string("DIS", dis);
+  std::string dis = container.get<std::string>("DIS");
 
   if (dis != porotimint_.discretization()->name()) return;
 
-  int element;
-  res.extract_int("ELEMENT", element);
+  int element = container.get<int>("ELEMENT");
   element -= 1;
 
   int haveelement(porotimint_.discretization()->have_global_element(element));
@@ -111,18 +106,15 @@ void POROFLUIDMULTIPHASE::ResultTest::test_element(
       if (actelement->owner() != porotimint_.discretization()->get_comm().MyPID()) return;
 
       // extract name of quantity to be tested
-      std::string quantity;
-      res.extract_string("QUANTITY", quantity);
+      std::string quantity = container.get<std::string>("QUANTITY");
 
       // get result to be tested
       const double result = result_element(quantity, actelement);
 
-      nerr += compare_values(result, "ELEMENT", res);
+      nerr += compare_values(result, "ELEMENT", container);
       test_count++;
     }
   }
-
-  return;
 }
 
 
@@ -254,25 +246,22 @@ double POROFLUIDMULTIPHASE::ResultTest::result_element(
  | test special quantity not associated with a particular element or node  vuong 08/16 |
  *-------------------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::ResultTest::test_special(
-    Input::LineDefinition& res, int& nerr, int& test_count)
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only once
   if (porotimint_.discretization()->get_comm().MyPID() == 0)
   {
     // extract name of quantity to be tested
-    std::string quantity;
-    res.extract_string("QUANTITY", quantity);
+    std::string quantity = container.get<std::string>("QUANTITY");
 
     // get result to be tested
     const double result = result_special(quantity);
 
     // compare values
-    const int err = compare_values(result, "SPECIAL", res);
+    const int err = compare_values(result, "SPECIAL", container);
     nerr += err;
     test_count++;
   }
-
-  return;
 }
 
 

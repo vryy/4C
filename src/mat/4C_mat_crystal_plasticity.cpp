@@ -15,9 +15,10 @@ See the header file for a detailed description.
 
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix_generators.hpp"
-#include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
+
+#include <Teuchos_ENull.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -303,7 +304,7 @@ void Mat::CrystalPlasticity::unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
  | initialize / allocate internal variables (public)                   |
  *---------------------------------------------------------------------*/
-void Mat::CrystalPlasticity::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::CrystalPlasticity::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   // import material / model parameters and calculate derived values
 
@@ -334,7 +335,7 @@ void Mat::CrystalPlasticity::setup(int numgp, Input::LineDefinition* linedef)
   this->setup_lattice_vectors();
 
   //  read Lattice orientation matrix from .dat file
-  this->setup_lattice_orientation(linedef);
+  this->setup_lattice_orientation(container);
 
   // rotate lattice vectors according to lattice orientation
   for (int i = 0; i < slip_system_count_; i++)
@@ -1108,25 +1109,22 @@ void Mat::CrystalPlasticity::setup_lattice_vectors()
  | Read Lattice orientation matrix from .dat file                                    |
  *---------------------------------------------------------------------------------*/
 
-void Mat::CrystalPlasticity::setup_lattice_orientation(Input::LineDefinition* linedef)
+void Mat::CrystalPlasticity::setup_lattice_orientation(
+    const Core::IO::InputParameterContainer& container)
 {
-  std::vector<double> fiber1;
-  std::vector<double> fiber2;
-  std::vector<double> fiber3;
+  // extract fiber vectors as columns of the rotation matrix
+  const auto* fiber1 = container.get_if<std::vector<double>>("FIBER1");
+  const auto* fiber2 = container.get_if<std::vector<double>>("FIBER2");
+  const auto* fiber3 = container.get_if<std::vector<double>>("FIBER3");
 
-  if (linedef->has_named("FIBER1"))
+  if (fiber1 != nullptr and fiber2 != nullptr and fiber3 != nullptr)
   {
-    // extract fiber vectors as columns of the rotation matrix
-    linedef->extract_double_vector("FIBER1", fiber1);
-    linedef->extract_double_vector("FIBER2", fiber2);
-    linedef->extract_double_vector("FIBER3", fiber3);
-
     // assemble rotation matrix
     for (int i = 0; i < 3; i++)
     {
-      lattice_orientation_(i, 0) = fiber1[i];
-      lattice_orientation_(i, 1) = fiber2[i];
-      lattice_orientation_(i, 2) = fiber3[i];
+      lattice_orientation_(i, 0) = (*fiber1)[i];
+      lattice_orientation_(i, 1) = (*fiber2)[i];
+      lattice_orientation_(i, 2) = (*fiber3)[i];
     }
   }
   else
@@ -1134,8 +1132,6 @@ void Mat::CrystalPlasticity::setup_lattice_orientation(Input::LineDefinition* li
         "No lattice orientation matrix provided! Please add 'FIBER1', 'FIBER2' and 'FIBER3' as "
         "columns of the rotation matrix that relates the lattice orientation to the global "
         "coordinate system");
-
-  return;
 }
 
 

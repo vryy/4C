@@ -17,12 +17,14 @@
 #include "4C_material_base.hpp"
 #include "4C_material_parameter_base.hpp"
 
+#include <vector>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Beam3r::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::Beam3r::read_element(const std::string& eletype, const std::string& distype,
+    const Core::IO::InputParameterContainer& container)
 {
   /* the triad field is discretized with Lagrange polynomials of order num_node()-1;
    * the centerline is either discretized in the same way or with 3rd order Hermite polynomials;
@@ -32,10 +34,8 @@ bool Discret::ELEMENTS::Beam3r::read_element(
    * field*/
   const int nnodetriad = num_node();
 
-
   // read number of material model and cross-section specs
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
   set_material(0, Mat::Factory(material_id));
 
   const auto mat_type = material()->parameter()->type();
@@ -48,14 +48,16 @@ bool Discret::ELEMENTS::Beam3r::read_element(
       to_string(mat_type).data());
 
 
-  if (linedef->has_named("HERM2LINE2") or linedef->has_named("HERM2LINE3") or
-      linedef->has_named("HERM2LINE4") or linedef->has_named("HERM2LINE5"))
+  if (container.get_if<std::vector<int>>("HERM2LINE2") != nullptr or
+      container.get_if<std::vector<int>>("HERM2LINE3") != nullptr or
+      container.get_if<std::vector<int>>("HERM2LINE4") != nullptr or
+      container.get_if<std::vector<int>>("HERM2LINE5") != nullptr)
     centerline_hermite_ = true;
   else
     centerline_hermite_ = false;
 
   // read whether automatic differentiation via Sacado::Fad package shall be used
-  use_fad_ = linedef->has_named("FAD") ? true : false;
+  use_fad_ = container.get<bool>("FAD");
 
 
   // store nodal triads according to input file
@@ -67,8 +69,7 @@ bool Discret::ELEMENTS::Beam3r::read_element(
    * (relative to the global reference coordinate system)*/
   /* extract rotational pseudovectors at element nodes in reference configuration
    *  and save them as quaternions at each node, respectively*/
-  std::vector<double> nodal_rotvecs;
-  linedef->extract_double_vector("TRIADS", nodal_rotvecs);
+  auto nodal_rotvecs = container.get<std::vector<double>>("TRIADS");
 
   for (int node = 0; node < nnodetriad; node++)
     for (int dim = 0; dim < 3; dim++) theta0node_[node](dim) = nodal_rotvecs[3 * node + dim];

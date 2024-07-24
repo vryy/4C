@@ -394,7 +394,7 @@ namespace Mat
         const int eleGID, const double temp);
 
     /// setup material data
-    void setup(int numgp, Input::LineDefinition* linedef) override;
+    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
 
     /*!
      * \brief Post setup routine, will be called after the complete inout is already befire the
@@ -410,7 +410,7 @@ namespace Mat
         const Inpar::TSI::DissipationMode mode);
 
     /// setup plastic orthotropy tensor H
-    virtual void setup_hill_plasticity(Input::LineDefinition* linedef);
+    virtual void setup_hill_plasticity(const Core::IO::InputParameterContainer& container);
 
     /// update sumands
     void update() override

@@ -186,17 +186,16 @@ void Solid::ResultTest::setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Solid::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
+void Solid::ResultTest::test_node(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   check_init_setup();
 
   // care for the case of multiple discretizations of the same field type
-  std::string dis;
-  res.extract_string("DIS", dis);
+  std::string dis = container.get<std::string>("DIS");
   if (dis != strudisc_->name()) return;
 
-  int node;
-  res.extract_int("NODE", node);
+  int node = container.get<int>("NODE");
   node -= 1;
 
   int havenode(strudisc_->have_global_node(node));
@@ -209,8 +208,7 @@ void Solid::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& te
         "Node %d does not belong to discretization %s", node + 1, strudisc_->name().c_str());
   }
 
-  std::string position;
-  res.extract_string("QUANTITY", position);
+  std::string position = container.get<std::string>("QUANTITY");
 
   if (strudisc_->have_global_node(node))
   {
@@ -220,7 +218,7 @@ void Solid::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& te
     if (error_code == 0)
     {
       // compare values
-      const int err = compare_values(result, "NODE", res);
+      const int err = compare_values(result, "NODE", container);
       nerr += err;
       test_count++;
     }
@@ -408,45 +406,44 @@ int Solid::ResultTest::get_nodal_result(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Solid::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& nerr,
-    int& test_count, const std::vector<std::vector<std::vector<int>>>& nodeset)
+void Solid::ResultTest::test_node_on_geometry(const Core::IO::InputParameterContainer& container,
+    int& nerr, int& test_count, const std::vector<std::vector<std::vector<int>>>& nodeset)
 {
   check_init_setup();
 
   // care for the case of multiple discretizations of the same field type
-  std::string dis;
-  res.extract_string("DIS", dis);
+  std::string dis = container.get<std::string>("DIS");
   if (dis != strudisc_->name()) return;
 
-  auto get_geometry_info = [res]() -> std::tuple<int, int>
+  auto get_geometry_info = [container]() -> std::tuple<int, int>
   {
     int geometry_type = 0, geometry_id = 0;
-    if (res.has_named("NODE"))
+    if (container.get_if<int>("NODE") != nullptr)
     {
-      res.extract_int("NODE", geometry_id);
+      geometry_id = container.get<int>("NODE");
       geometry_id -= 1;
       geometry_type = 0;
     }
-    else if (res.has_named("LINE"))
+    else if (container.get_if<int>("LINE") != nullptr)
     {
-      res.extract_int("LINE", geometry_id);
+      geometry_id = container.get<int>("LINE");
       geometry_id -= 1;
       geometry_type = 1;
     }
-    else if (res.has_named("SURFACE"))
+    else if (container.get_if<int>("SURFACE") != nullptr)
     {
-      res.extract_int("SURFACE", geometry_id);
+      geometry_id = container.get<int>("SURFACE");
       geometry_id -= 1;
       geometry_type = 2;
     }
-    else if (res.has_named("VOLUME"))
+    else if (container.get_if<int>("VOLUME") != nullptr)
     {
-      res.extract_int("VOLUME", geometry_id);
+      geometry_id = container.get<int>("VOLUME");
       geometry_id -= 1;
       geometry_type = 3;
     }
     else
-      FOUR_C_THROW("Invalid line definition found");
+      FOUR_C_THROW("Invalid input parameter container found");
 
     return {geometry_type, geometry_id};
   };
@@ -458,9 +455,8 @@ void Solid::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& n
 
   const std::vector<int>& nodes = nodeset[geometry_type][geometry_id];
 
-  std::string op_str;
   TestOp op = TestOp::unknown;
-  res.extract_string("OP", op_str);
+  std::string op_str = container.get<std::string>("OP");
   if (op_str == "sum")
     op = TestOp::sum;
   else if (op_str == "max")
@@ -469,9 +465,7 @@ void Solid::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& n
     op = TestOp::min;
   else
     FOUR_C_THROW("Invalid operation %s", op_str.c_str());
-
-  std::string position;
-  res.extract_string("QUANTITY", position);
+  std::string position = container.get<std::string>("QUANTITY");
 
   // collect the local result
   double tmp_result;
@@ -538,16 +532,16 @@ void Solid::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& n
     switch (geometry_type)
     {
       case 0:
-        err = compare_values(result, "NODE", res);
+        err = compare_values(result, "NODE", container);
         break;
       case 1:
-        err = compare_values(result, "LINE", res);
+        err = compare_values(result, "LINE", container);
         break;
       case 2:
-        err = compare_values(result, "SURFACE", res);
+        err = compare_values(result, "SURFACE", container);
         break;
       case 3:
-        err = compare_values(result, "VOLUME", res);
+        err = compare_values(result, "VOLUME", container);
         break;
       default:
         break;
@@ -559,13 +553,12 @@ void Solid::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& n
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ResultTest::test_special(
-    Input::LineDefinition& res, int& nerr, int& test_count, int& uneval_test_count)
+void Solid::ResultTest::test_special(const Core::IO::InputParameterContainer& container, int& nerr,
+    int& test_count, int& uneval_test_count)
 {
   check_init_setup();
 
-  std::string quantity;
-  res.extract_string("QUANTITY", quantity);
+  std::string quantity = container.get<std::string>("QUANTITY");
 
   Status special_status = Status::unevaluated;
   const std::optional<double> result = get_special_result(quantity, special_status);
@@ -575,10 +568,10 @@ void Solid::ResultTest::test_special(
     case Status::evaluated:
     {
       if (result.has_value())
-        nerr += compare_values(*result, "SPECIAL", res);
+        nerr += compare_values(*result, "SPECIAL", container);
       else
         FOUR_C_THROW(
-            "Solid::ResultTest::TestSpecial: Special result has no defined value assigned to it!");
+            "Solid::ResultTest::test_special: Special result has no defined value assigned to it!");
       ++test_count;
       break;
     }
@@ -590,7 +583,7 @@ void Solid::ResultTest::test_special(
     default:
     {
       FOUR_C_THROW(
-          "Solid::ResultTest::TestSpecial: Undefined status type (enum=%d)!", special_status);
+          "Solid::ResultTest::test_special: Undefined status type (enum=%d)!", special_status);
       exit(EXIT_FAILURE);
     }
   }

@@ -55,10 +55,12 @@ namespace Arteries
     /*!
       Possible position flags is only "phi"
      */
-    void test_node(Input::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(
+        const Core::IO::InputParameterContainer& container, int& nerr, int& test_count) override;
 
     /// our version of element value tests
-    void test_element(Input::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_element(
+        const Core::IO::InputParameterContainer& container, int& nerr, int& test_count) override;
 
    private:
     /// Teuchos::RCP to scalar transport discretization

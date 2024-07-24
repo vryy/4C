@@ -125,9 +125,9 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::initialize()
 }
 
 void MIXTURE::MixtureConstituentRemodelFiberExpl::read_element(
-    int numgp, Input::LineDefinition* linedef)
+    int numgp, const Core::IO::InputParameterContainer& container)
 {
-  MIXTURE::MixtureConstituent::read_element(numgp, linedef);
+  MIXTURE::MixtureConstituent::read_element(numgp, container);
   initialize();
 }
 

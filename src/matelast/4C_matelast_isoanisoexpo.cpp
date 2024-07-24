@@ -47,7 +47,8 @@ void Mat::Elastic::IsoAnisoExpo::unpack_summand(
   extract_from_pack(position, data, structural_tensor_);
 }
 
-void Mat::Elastic::IsoAnisoExpo::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::Elastic::IsoAnisoExpo::setup(
+    int numgp, const Core::IO::InputParameterContainer& container)
 {
   if (params_->init_ == 0)
   {
@@ -61,11 +62,13 @@ void Mat::Elastic::IsoAnisoExpo::setup(int numgp, Input::LineDefinition* linedef
   else if (params_->init_ == 1)
   {
     // CIR-AXI-RAD nomenclature
-    if (linedef->has_named("RAD") and linedef->has_named("AXI") and linedef->has_named("CIR"))
+    if (container.get_if<std::vector<double>>("RAD") != nullptr and
+        container.get_if<std::vector<double>>("AXI") != nullptr and
+        container.get_if<std::vector<double>>("CIR") != nullptr)
     {
       // Read in of data
       Core::LinAlg::Matrix<3, 3> locsys(true);
-      read_rad_axi_cir(linedef, locsys);
+      read_rad_axi_cir(container, locsys);
 
       Core::LinAlg::Matrix<3, 3> Id(true);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
@@ -74,10 +77,10 @@ void Mat::Elastic::IsoAnisoExpo::setup(int numgp, Input::LineDefinition* linedef
     }
 
     // FIBER1 nomenclature
-    else if (linedef->has_named("FIBER1"))
+    else if (container.get_if<std::vector<double>>("FIBER1") != nullptr)
     {
       // Read in of data
-      read_fiber(linedef, "FIBER1", a_);
+      read_fiber(container, "FIBER1", a_);
       params_->structural_tensor_strategy()->setup_structural_tensor(a_, structural_tensor_);
     }
 

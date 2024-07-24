@@ -89,7 +89,8 @@ namespace Solid
     //!                             "stress_yz"
     //!
     //! \note The type of stress that is used for testing has to be specified in IO->STRUCT_STRESS
-    void test_node(Input::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(
+        const Core::IO::InputParameterContainer& container, int& nerr, int& test_count) override;
 
     //! \brief structure version of nodal value tests on geometry
     //!
@@ -100,8 +101,8 @@ namespace Solid
     //!                             "stress_yz"
     //!
     //! \note The type of stress that is used for testing has to be specified in IO->STRUCT_STRESS
-    void test_node_on_geometry(Input::LineDefinition& res, int& nerr, int& test_count,
-        const std::vector<std::vector<std::vector<int>>>& nodeset) override;
+    void test_node_on_geometry(const Core::IO::InputParameterContainer& container, int& nerr,
+        int& test_count, const std::vector<std::vector<std::vector<int>>>& nodeset) override;
 
     /*! \brief test special quantity not associated with a particular element or node
      *
@@ -110,9 +111,9 @@ namespace Solid
      *  \param[out] test_count  updated number of result tests
      *  \param[out] uneval_test_count  updated number of unevaluated tests
      *
-     *  \author hiermeier \date 11/17 */
-    void test_special(
-        Input::LineDefinition& res, int& nerr, int& test_count, int& uneval_test_count) override;
+     */
+    void test_special(const Core::IO::InputParameterContainer& container, int& nerr,
+        int& test_count, int& uneval_test_count) override;
 
    protected:
     /// get the indicator state

@@ -14,12 +14,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoSh18::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::SoSh18::read_element(const std::string& eletype, const std::string& distype,
+    const Core::IO::InputParameterContainer& container)
 {
   // read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
 
   set_material(0, Mat::Factory(material_id));
 
@@ -27,13 +26,13 @@ bool Discret::ELEMENTS::SoSh18::read_element(
 
   Teuchos::RCP<Core::Mat::Material> mat = material();
 
-  solid_material()->setup(NUMGPT_SOH18, linedef);
+  solid_material()->setup(NUMGPT_SOH18, container);
 
   // temporary variable for read-in
   std::string buffer;
 
   // read kinematic flag
-  linedef->extract_string("KINEM", buffer);
+  buffer = container.get<std::string>("KINEM");
   if (buffer == "linear")
   {
     // kintype_ = soh8_linear;
@@ -50,7 +49,8 @@ bool Discret::ELEMENTS::SoSh18::read_element(
   solid_material()->valid_kinematics(Inpar::Solid::KinemType::nonlinearTotLag);
 
   // transverse shear locking
-  linedef->extract_string("TSL", buffer);
+  buffer = container.get<std::string>("TSL");
+
   if (buffer == "dsg")
     dsg_shear_ = true;
   else if (buffer == "none")
@@ -59,7 +59,7 @@ bool Discret::ELEMENTS::SoSh18::read_element(
     FOUR_C_THROW("unknown transverse shear locking method");
 
   // membrane locking
-  linedef->extract_string("MEL", buffer);
+  buffer = container.get<std::string>("MEL");
   if (buffer == "dsg")
     dsg_membrane_ = true;
   else if (buffer == "none")
@@ -68,7 +68,7 @@ bool Discret::ELEMENTS::SoSh18::read_element(
     FOUR_C_THROW("unknown membrane locking method");
 
   // curvature thickness locking
-  linedef->extract_string("CTL", buffer);
+  buffer = container.get<std::string>("CTL");
   if (buffer == "dsg")
     dsg_ctl_ = true;
   else if (buffer == "none")
@@ -77,7 +77,8 @@ bool Discret::ELEMENTS::SoSh18::read_element(
     FOUR_C_THROW("unknown curvature thickness locking method");
 
   // volumetric locking
-  linedef->extract_string("VOL", buffer);
+  buffer = container.get<std::string>("VOL");
+
   if (buffer == "eas9")
     eas_ = true;
   else if (buffer == "none")

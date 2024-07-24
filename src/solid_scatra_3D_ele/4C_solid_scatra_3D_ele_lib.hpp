@@ -19,12 +19,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace Discret::ELEMENTS
 {
   /*!
-   * @brief Read the scatra implementation type from the input line definition of the element
+   * @brief Read the scatra implementation type from the a container of data to create the element
    *
-   * @param line_definition
+   * @param container
    * @return Inpar::ScaTra::ImplType
    */
-  Inpar::ScaTra::ImplType ReadScatraImplType(const Input::LineDefinition& line_definition);
+  Inpar::ScaTra::ImplType ReadScatraImplType(const Core::IO::InputParameterContainer& container);
 }  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE

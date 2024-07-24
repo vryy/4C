@@ -14,7 +14,6 @@
 #include "4C_mat_myocard.hpp"
 
 #include "4C_global_data.hpp"
-#include "4C_io_linedefinition.hpp"
 #include "4C_mat_myocard_fitzhugh_nagumo.hpp"
 #include "4C_mat_myocard_inada.hpp"
 #include "4C_mat_myocard_minimal.hpp"
@@ -22,7 +21,8 @@
 #include "4C_mat_myocard_tentusscher.hpp"
 #include "4C_mat_par_bundle.hpp"
 
-#include <fstream>  // For plotting ion concentrations
+#include <Teuchos_ENull.hpp>
+
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -262,13 +262,14 @@ void Mat::Myocard::setup(const Core::LinAlg::Matrix<2, 1>& fiber1)
   setup_diffusion_tensor(fiber1);
 }
 
-void Mat::Myocard::setup(Input::LineDefinition* linedef)
+void Mat::Myocard::setup(const Core::IO::InputParameterContainer& container)
 {
   std::vector<double> fiber1(3);
-  if (linedef->has_named("FIBER1"))
+  if (container.get_if<std::vector<double>>("FIBER1") != nullptr)
   {
     diff_at_ele_center_ = true;
-    linedef->extract_double_vector("FIBER1", fiber1);
+    fiber1 = container.get<std::vector<double>>("FIBER1");
+
     setup_diffusion_tensor(fiber1);
   }
 }

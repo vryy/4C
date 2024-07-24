@@ -44,7 +44,8 @@ class Cardiovascular0DResultTest : public Core::UTILS::ResultTest
   Cardiovascular0DResultTest(
       UTILS::Cardiovascular0DManager& cardvasc0dman, Teuchos::RCP<Core::FE::Discretization> discr);
 
-  void test_special(Input::LineDefinition& res, int& nerr, int& test_count) override;
+  void test_special(
+      const Core::IO::InputParameterContainer& container, int& nerr, int& test_count) override;
 
 
 

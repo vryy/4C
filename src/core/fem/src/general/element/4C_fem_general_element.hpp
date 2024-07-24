@@ -19,6 +19,7 @@
 #include "4C_fem_condition.hpp"
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_fem_general_elements_paramsinterface.hpp"
+#include "4C_io_input_parameter_container.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
@@ -601,7 +602,7 @@ might become invalid after a redistribution of the discretization.
     \brief Return the material of this element
 
     Note: The input parameter nummat is not the material number from input file
-          as in SetMaterial(int matnum), but the number of the material within
+          as in set_material(int matnum), but the number of the material within
           the vector of materials the element holds
 
     \param nummat (in): number of requested material
@@ -703,8 +704,8 @@ might become invalid after a redistribution of the discretization.
     /*!
     \brief Read input for this element
     */
-    virtual bool read_element(
-        const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef);
+    virtual bool read_element(const std::string& eletype, const std::string& distype,
+        const Core::IO::InputParameterContainer& container);
 
     /*!
       \brief Set processor local col id
@@ -747,7 +748,8 @@ might become invalid after a redistribution of the discretization.
 
     Here the node ids are directly taken from an input line.
     */
-    void set_node_ids(const std::string& distype, Input::LineDefinition* linedef);
+    void set_node_ids(
+        const std::string& distype, const Core::IO::InputParameterContainer& container);
 
     /*!
     \brief Set a the face with index faceindex this element is connected to

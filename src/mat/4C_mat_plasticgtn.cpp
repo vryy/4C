@@ -157,7 +157,7 @@ void Mat::PlasticGTN::unpack(const std::vector<char>& data)
   }
 }
 
-void Mat::PlasticGTN::setup(int numgp, Input::LineDefinition* linedef)
+void Mat::PlasticGTN::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   elastic_strain_n_.resize(numgp);
   elastic_strain_n1_.resize(numgp);

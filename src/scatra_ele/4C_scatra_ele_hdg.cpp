@@ -345,22 +345,14 @@ int Discret::ELEMENTS::ScaTraHDG::initialize()
 /*----------------------------------------------------------------------*
  |  Read element from input (public)                     hoermann 09/15 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::ScaTraHDG::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::ScaTraHDG::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
-  bool success = Transport::read_element(eletype, distype, linedef);
-  int degree;
-  linedef->extract_int("DEG", degree);
-  degree_ = degree;
+  bool success = Transport::read_element(eletype, distype, container);
+  degree_ = container.get<int>("DEG");
   degree_old_ = degree_;
 
-  if (linedef->has_named("SPC"))
-  {
-    linedef->extract_int("SPC", degree);
-    completepol_ = degree;
-  }
-  else
-    completepol_ = false;
+  completepol_ = container.get_or<int>("SPC", false);
 
   return success;
 }

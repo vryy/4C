@@ -35,29 +35,27 @@ STI::STIResultTest::STIResultTest(const Teuchos::RCP<STI::Algorithm>&
  | test special quantity not associated with a particular element or node   fang 01/17 |
  *-------------------------------------------------------------------------------------*/
 void STI::STIResultTest::test_special(
-    Input::LineDefinition& res,  //!< input file line containing result test specification
-    int& nerr,                   //!< number of failed result tests
-    int& test_count              ///< number of result tests
+    const Core::IO::InputParameterContainer&
+        container,   ///< container with expected results as specified in the input file
+    int& nerr,       //!< number of failed result tests
+    int& test_count  ///< number of result tests
 )
 {
   // make sure that quantity is tested only by one processor
   if (sti_algorithm_->get_comm().MyPID() == 0)
   {
     // extract name of quantity to be tested
-    std::string quantity;
-    res.extract_string("QUANTITY", quantity);
+    std::string quantity = container.get<std::string>("QUANTITY");
 
     // get result to be tested
     const double result = result_special(quantity);
 
     // compare values
-    const int err = compare_values(result, "SPECIAL", res);
+    const int err = compare_values(result, "SPECIAL", container);
     nerr += err;
     ++test_count;
   }
-
-  return;
-}  // STI::STIResultTest::TestSpecial
+}  // STI::STIResultTest::test_special
 
 
 /*----------------------------------------------------------------------*

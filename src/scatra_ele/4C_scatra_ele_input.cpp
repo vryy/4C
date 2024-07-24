@@ -11,18 +11,19 @@
 #include "4C_mat_myocard.hpp"
 #include "4C_scatra_ele.hpp"
 
+#include <string>
+
 FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
  | read element input                                        fang 02/15 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Transport::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::Transport::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   // read implementation type
-  std::string impltype;
-  linedef->extract_string("TYPE", impltype);
+  auto impltype = container.get<std::string>("TYPE");
   if (impltype == "Std")
     impltype_ = Inpar::ScaTra::impltype_std;
   else if (impltype == "AdvReac")
@@ -73,8 +74,7 @@ bool Discret::ELEMENTS::Transport::read_element(
     FOUR_C_THROW("Transport element received invalid implementation type!");
 
   // read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
   set_material(0, Mat::Factory(material_id));
 
   // set discretization type
@@ -83,7 +83,7 @@ bool Discret::ELEMENTS::Transport::read_element(
   if (material()->material_type() == Core::Materials::m_myocard)
   {
     Teuchos::RCP<Mat::Myocard> myocard = Teuchos::rcp_dynamic_cast<Mat::Myocard>(material());
-    myocard->setup(linedef);
+    myocard->setup(container);
   }
 
   return true;

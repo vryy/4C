@@ -212,7 +212,7 @@ namespace Discret
       //! @}
 
       bool read_element(const std::string& eletype, const std::string& eledistype,
-          Input::LineDefinition* linedef) override;
+          const Core::IO::InputParameterContainer& container) override;
 
       [[nodiscard]] const std::set<Inpar::Solid::EleTech>& get_ele_tech() const { return eletech_; }
 

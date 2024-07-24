@@ -146,7 +146,7 @@ namespace Mat
 
     /// Setup and Initialize internal stress variables
     void setup(int numgp,  ///< number of Gauss points
-        Input::LineDefinition* linedef) override;
+        const Core::IO::InputParameterContainer& container) override;
 
     /// Setup and Initialize internal stress variables and align fibers based on a given vector
     void setup(const int numgp,             ///< number of Gauss points

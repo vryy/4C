@@ -125,7 +125,8 @@ void MIXTURE::MixtureRule::unpack_mixture_rule(
 }
 
 // reads the element definition and set up all quantities
-void MIXTURE::MixtureRule::read_element(int numgp, Input::LineDefinition* linedef)
+void MIXTURE::MixtureRule::read_element(
+    int numgp, const Core::IO::InputParameterContainer& container)
 {
   // Init must only be called once
   if (has_read_element_)

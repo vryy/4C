@@ -239,12 +239,11 @@ bool Discret::ELEMENTS::SoHex18::vis_data(const std::string& name, std::vector<d
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoHex18::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::SoHex18::read_element(const std::string& eletype,
+    const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   // read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
 
   set_material(0, Mat::Factory(material_id));
 
@@ -252,19 +251,17 @@ bool Discret::ELEMENTS::SoHex18::read_element(
 
   Teuchos::RCP<Core::Mat::Material> mat = material();
 
-  solid_material()->setup(NUMGPT_SOH18, linedef);
+  solid_material()->setup(NUMGPT_SOH18, container);
 
-  // temporary variable for read-in
-  std::string buffer;
 
   // read kinematic flag
-  linedef->extract_string("KINEM", buffer);
-  if (buffer == "linear")
+  std::string kinem = container.get<std::string>("KINEM");
+  if (kinem == "linear")
   {
     // kintype_ = soh8_linear;
     FOUR_C_THROW("Only nonlinear kinematics for SO_SH8 implemented!");
   }
-  else if (buffer == "nonlinear")
+  else if (kinem == "nonlinear")
   {
     kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
   }

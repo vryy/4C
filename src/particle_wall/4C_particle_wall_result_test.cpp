@@ -40,16 +40,15 @@ void PARTICLEWALL::WallResultTest::setup(
   walldiscretization_ = particlewallinterface_->get_wall_discretization();
 }
 
-void PARTICLEWALL::WallResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
+void PARTICLEWALL::WallResultTest::test_node(
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // extract and check discretization name
-  std::string dis;
-  res.extract_string("DIS", dis);
+  std::string dis = container.get<std::string>("DIS");
   if (dis != walldiscretization_->name()) return;
 
   // extract node id
-  int node;
-  res.extract_int("NODE", node);
+  int node = container.get<int>("NODE");
   node -= 1;
 
   int havenode(walldiscretization_->have_global_node(node));
@@ -74,8 +73,7 @@ void PARTICLEWALL::WallResultTest::test_node(Input::LineDefinition& res, int& ne
         particlewallinterface_->get_wall_data_state();
 
     // extract test quantity
-    std::string quantity;
-    res.extract_string("QUANTITY", quantity);
+    std::string quantity = container.get<std::string>("QUANTITY");
 
     // init actual result
     double actresult = 0.0;
@@ -139,26 +137,24 @@ void PARTICLEWALL::WallResultTest::test_node(Input::LineDefinition& res, int& ne
       FOUR_C_THROW("result check failed with unknown quantity '%s'!", quantity.c_str());
 
     // compare values
-    const int err = compare_values(actresult, "NODE", res);
+    const int err = compare_values(actresult, "NODE", container);
     nerr += err;
     test_count++;
   }
 }
 
 void PARTICLEWALL::WallResultTest::test_special(
-    Input::LineDefinition& res, int& nerr, int& test_count)
+    const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // check results only for processor 0
   if (walldiscretization_->get_comm().MyPID() != 0) return;
 
   // extract and check discretization name
-  std::string dis;
-  res.extract_string("DIS", dis);
+  std::string dis = container.get<std::string>("DIS");
   if (dis != walldiscretization_->name()) return;
 
   // extract test quantity
-  std::string quantity;
-  res.extract_string("QUANTITY", quantity);
+  std::string quantity = container.get<std::string>("QUANTITY");
 
   // init actual result
   double actresult = 0.0;
@@ -172,7 +168,7 @@ void PARTICLEWALL::WallResultTest::test_special(
     FOUR_C_THROW("result check failed with unknown quantity '%s'!", quantity.c_str());
 
   // compare values
-  const int err = compare_values(actresult, "SPECIAL", res);
+  const int err = compare_values(actresult, "SPECIAL", container);
   nerr += err;
   test_count++;
 }

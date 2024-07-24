@@ -15,28 +15,24 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoSh8::read_element(
-    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
+bool Discret::ELEMENTS::SoSh8::read_element(const std::string& eletype, const std::string& distype,
+    const Core::IO::InputParameterContainer& container)
 {
   // read number of material model
-  int material_id = 0;
-  linedef->extract_int("MAT", material_id);
+  int material_id = container.get<int>("MAT");
   set_material(0, Mat::Factory(material_id));
 
-  solid_material()->setup(NUMGPT_SOH8, linedef);
-
-  // temporary variable for read-in
-  std::string buffer;
-
+  solid_material()->setup(NUMGPT_SOH8, container);
 
   // read kinematic flag
-  linedef->extract_string("KINEM", buffer);
-  if (buffer == "linear")
+  std::string kinem = container.get<std::string>("KINEM");
+
+  if (kinem == "linear")
   {
     // kintype_ = soh8_linear;
     FOUR_C_THROW("Only nonlinear kinematics for SO_SH8 implemented!");
   }
-  else if (buffer == "nonlinear")
+  else if (kinem == "nonlinear")
   {
     kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
   }
@@ -47,17 +43,17 @@ bool Discret::ELEMENTS::SoSh8::read_element(
   solid_material()->valid_kinematics(kintype_);
 
   // read EAS technology flag
-  linedef->extract_string("EAS", buffer);
+  std::string eas = container.get<std::string>("EAS");
 
   // full EAS technology
-  if (buffer == "sosh8")
+  if (eas == "sosh8")
   {
     eastype_ = soh8_eassosh8;
     neas_ = 7;  // number of eas parameters for EAS_SOSH8
     soh8_easinit();
   }
   // no EAS technology
-  else if (buffer == "none")
+  else if (eas == "none")
   {
     eastype_ = soh8_easnone;
     neas_ = 0;  // number of eas parameters for EAS_SOSH8
@@ -66,44 +62,47 @@ bool Discret::ELEMENTS::SoSh8::read_element(
     FOUR_C_THROW("Reading of SO_SH8 EAS technology failed");
 
   // read ANS technology flag
-  linedef->extract_string("ANS", buffer);
-  if (buffer == "sosh8")
+  std::string ans = container.get<std::string>("ANS");
+
+  if (ans == "sosh8")
   {
     anstype_ = anssosh8;
   }
   // no ANS technology
-  else if (buffer == "none")
+  else if (ans == "none")
   {
     anstype_ = ansnone;
   }
   else
     FOUR_C_THROW("Reading of SO_SH8 ANS technology failed");
 
-  linedef->extract_string("THICKDIR", buffer);
+
+  // read THICKDIR flag
+  std::string thickdir = container.get<std::string>("THICKDIR");
   nodes_rearranged_ = false;
 
   // global X
-  if (buffer == "xdir") thickdir_ = globx;
+  if (thickdir == "xdir") thickdir_ = globx;
   // global Y
-  else if (buffer == "ydir")
+  else if (thickdir == "ydir")
     thickdir_ = globy;
   // global Z
-  else if (buffer == "zdir")
+  else if (thickdir == "zdir")
     thickdir_ = globz;
   // find automatically through Jacobian of Xrefe
-  else if (buffer == "auto")
+  else if (thickdir == "auto")
     thickdir_ = autoj;
   // local r
-  else if (buffer == "rdir")
+  else if (thickdir == "rdir")
     thickdir_ = enfor;
   // local s
-  else if (buffer == "sdir")
+  else if (thickdir == "sdir")
     thickdir_ = enfos;
   // local t
-  else if (buffer == "tdir")
+  else if (thickdir == "tdir")
     thickdir_ = enfot;
   // no noderearrangement
-  else if (buffer == "none")
+  else if (thickdir == "none")
   {
     thickdir_ = none;
     nodes_rearranged_ = true;

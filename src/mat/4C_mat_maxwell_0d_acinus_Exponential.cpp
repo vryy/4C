@@ -136,12 +136,12 @@ void Mat::Maxwell0dAcinusExponential::unpack(const std::vector<char>& data)
  | Setup routine to add Exponential material specific parameters E1_0   |
  | E1_LIN, E1_EXP, TAU to material                          roth 10/2014|
  *----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusExponential::setup(Input::LineDefinition* linedef)
+void Mat::Maxwell0dAcinusExponential::setup(const Core::IO::InputParameterContainer& container)
 {
-  linedef->extract_double("E1_0", e1_0_);
-  linedef->extract_double("E1_LIN", e1_lin_);
-  linedef->extract_double("E1_EXP", e1_exp_);
-  linedef->extract_double("TAU", tau_);
+  e1_0_ = container.get<double>("E1_0");
+  e1_lin_ = container.get<double>("E1_LIN");
+  e1_exp_ = container.get<double>("E1_EXP");
+  tau_ = container.get<double>("TAU");
   // TODO bool -variable init, in Evaluate abfragen ob init=true
 }
 

@@ -3628,7 +3628,7 @@ namespace Core::Geo::Cut::Kernel
       // If it is not edge-edge interseciton we explicitely notify, that Newton's method failed
       if (probDim == dimEdge + dimSide)
       {
-        std::cout << "Current type is " << typeid(floatType).Name() << std::endl;
+        std::cout << "Current type is " << typeid(floatType).name() << std::endl;
         std::cout << "Newton method failed" << std::endl;
         std::cout << "Residual is" << residual_ << std::endl;
         std::cout << "Tolerance is" << tol_ << std::endl;

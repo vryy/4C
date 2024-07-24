@@ -85,7 +85,7 @@ void SSI::ScatraStructureCloneStrategy::set_element_data(
   // This is again really ugly as we have to extract the actual
   // element type in order to access the material property
 
-  // note: SetMaterial() was reimplemented by the transport element!
+  // note: set_material() was reimplemented by the transport element!
   auto* trans = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
   if (trans != nullptr)
   {
