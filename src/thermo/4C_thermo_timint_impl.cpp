@@ -333,7 +333,7 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
-  solver_->solve(tang_->epetra_matrix(), tempi_, fres_, solver_params);
+  solver_->solve(tang_->epetra_operator(), tempi_, fres_, solver_params);
   solver_->reset();
 
   // build residual temperature norm
@@ -524,7 +524,7 @@ Inpar::THR::ConvergenceStatus THR::TimIntImpl::newton_full()
     }
     solver_params.refactor = true;
     solver_params.reset = iter_ == 1;
-    solver_->solve(tang_->epetra_matrix(), tempi_, fres_, solver_params);
+    solver_->solve(tang_->epetra_operator(), tempi_, fres_, solver_params);
     solver_->reset_tolerance();
 
     // recover condensed variables

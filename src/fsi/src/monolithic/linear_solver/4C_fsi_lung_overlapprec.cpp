@@ -83,10 +83,10 @@ void FSI::LungOverlappingBlockMatrix::setup_preconditioner()
   Teuchos::RCP<Core::LinAlg::MapExtractor> fsidofmapex = Teuchos::null;
   Teuchos::RCP<Epetra_Map> irownodes = Teuchos::null;
 
-  structuresolver_->setup(structInnerOp.epetra_matrix());
-  fluidsolver_->setup(fluidInnerOp.epetra_matrix(), fsidofmapex, fluid_.discretization(), irownodes,
-      structuresplit_);
-  if (constalesolver_ == Teuchos::null) alesolver_->setup(aleInnerOp.epetra_matrix());
+  structuresolver_->setup(structInnerOp.epetra_operator());
+  fluidsolver_->setup(fluidInnerOp.epetra_operator(), fsidofmapex, fluid_.discretization(),
+      irownodes, structuresplit_);
+  if (constalesolver_ == Teuchos::null) alesolver_->setup(aleInnerOp.epetra_operator());
 
 
   // We can compute the schur complement only once
@@ -241,7 +241,7 @@ void FSI::LungOverlappingBlockMatrix::sgs(const Epetra_MultiVector& X, Epetra_Mu
         }
 
         // Solve structure equations for sy with the rhs sx
-        structuresolver_->solve(StructInnerOp.epetra_matrix(), sz, sx, true);
+        structuresolver_->solve(StructInnerOp.epetra_operator(), sz, sx, true);
 
         // do Richardson iteration
         local_block_richardson(
@@ -286,7 +286,7 @@ void FSI::LungOverlappingBlockMatrix::sgs(const Epetra_MultiVector& X, Epetra_Mu
           ax->Update(-1.0, *tmpax, 1.0);
         }
 
-        alesolver_->solve(AleInnerOp.epetra_matrix(), az, ax, true);
+        alesolver_->solve(AleInnerOp.epetra_operator(), az, ax, true);
 
         // do Richardson iteration
         local_block_richardson(
@@ -319,7 +319,7 @@ void FSI::LungOverlappingBlockMatrix::sgs(const Epetra_MultiVector& X, Epetra_Mu
         FluidMeshOp.multiply(false, *ay, *tmpfx);
         fx->Update(-1.0, *tmpfx, 1.0);
 
-        fluidsolver_->solve(FluidInnerOp.epetra_matrix(), fz, fx, true);
+        fluidsolver_->solve(FluidInnerOp.epetra_operator(), fz, fx, true);
 
         local_block_richardson(
             fluidsolver_, FluidInnerOp, fx, fz, tmpfx, fiterations_, fomega_, err_, Comm());

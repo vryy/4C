@@ -24,8 +24,8 @@ namespace Core::LinAlg
   class SparseMatrixBase : public SparseOperator
   {
    public:
-    /// return the internal Epetra_Operator
-    /*!
+    /*! \brief return the internal Epetra_Operator
+
       The internal Epetra_Operator here is the internal Epetra_CrsMatrix or Epetra_FECrsMatrix. This
       way the solver can down-cast to Epetra_CrsMatrix or Epetra_FECrsMatrix and access the matrix
       rows directly.
@@ -33,6 +33,9 @@ namespace Core::LinAlg
       \note This method is here for performance reasons.
      */
     Teuchos::RCP<Epetra_Operator> epetra_operator() override { return sysmat_; }
+
+    /// return the internal Epetra matrix as Epetra_Operator
+    Teuchos::RCP<Epetra_Operator> epetra_operator() const { return sysmat_; }
 
     /// return the internal Epetra_CrsMatrix or Epetra_FECrsMatrix
     /// (down-cast from Epetra_CrsMatrix !) (you should not need this!)
