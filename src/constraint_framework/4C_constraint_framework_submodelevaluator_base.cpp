@@ -36,7 +36,7 @@ bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_force_stiff(
     sme_stiff_ptr->complete();
 
     // add it to the modelevaluator stiffness
-    me_stiff_ptr->add(*sme_stiff_ptr->epetra_matrix(), false, 1., 1.);
+    me_stiff_ptr->add(*sme_stiff_ptr, false, 1., 1.);
   }
 
   if (me_force_ptr != Teuchos::null)

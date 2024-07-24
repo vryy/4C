@@ -1436,16 +1436,6 @@ void Core::LinAlg::SparseMatrix::add(const Core::LinAlg::SparseMatrixBase& A, co
   Core::LinAlg::Add(*A.epetra_matrix(), transposeA, scalarA, *this, scalarB);
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void Core::LinAlg::SparseMatrix::add(
-    const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA, const double scalarB)
-{
-  Core::LinAlg::Add(A, transposeA, scalarA, *this, scalarB);
-}
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::LinAlg::SparseMatrix::put(const Core::LinAlg::SparseMatrix& A, const double scalarA,

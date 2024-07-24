@@ -372,10 +372,6 @@ namespace Core::LinAlg
     void add(const SparseMatrixBase& A, const bool transposeA, const double scalarA,
         const double scalarB);
 
-    /// Add a (transposed) Epetra_CrsMatrix to another: (*this) = (*this)*scalarB + A(^T)*scalarA
-    void add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
-        const double scalarB);
-
     /// Put a Epetra_CrsMatrix (partially) onto another: (*this) = B*scalarB
     /*!
 
