@@ -146,7 +146,7 @@ checkcode:
     # Run pre-commit checks without caches on all files
     - source ./utilities/python-venv/bin/activate
     - pre-commit clean
-    - pre-commit run --all-files
+    - pre-commit run --all-files --show-diff-on-failure
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
