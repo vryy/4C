@@ -1030,10 +1030,7 @@ FSI::BlockPreconditioningMatrixFS::BlockPreconditioningMatrixFS(
       err_(err)
 {
   fluidsolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(fluid.linear_solver()));
-
-#ifndef BLOCKMATRIXMERGE
   alesolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(ale.linear_solver()));
-#endif
 }
 
 
@@ -1044,11 +1041,7 @@ int FSI::BlockPreconditioningMatrixFS::ApplyInverse(
 {
   if (UseTranspose()) FOUR_C_THROW("no transpose preconditioning");
 
-#ifdef BLOCKMATRIXMERGE
-  MergeSolve(X, Y);
-#else
   sgs(X, Y);
-#endif
 
   return 0;
 }
@@ -1056,35 +1049,13 @@ int FSI::BlockPreconditioningMatrixFS::ApplyInverse(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::BlockPreconditioningMatrixFS::merge_solve(
-    const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
-{
-#ifdef BLOCKMATRIXMERGE
-  const Epetra_Vector& x = Teuchos::dyn_cast<const Epetra_Vector>(X);
-  Epetra_Vector& y = Teuchos::dyn_cast<Epetra_Vector>(Y);
-
-  fluidsolver_->Solve(
-      sparse_->epetra_matrix(), Teuchos::rcp(&y, false), Teuchos::rcp(new Epetra_Vector(x)), true);
-#endif
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void FSI::BlockPreconditioningMatrixFS::setup_preconditioner()
 {
-#ifdef BLOCKMATRIXMERGE
-  // this is really evil :)
-  sparse_ = Merge();
-  fluidsolver_->setup(sparse_->EpetraMatrix());
-
-#else
   const Core::LinAlg::SparseMatrix& fluidInnerOp = matrix(0, 0);
   const Core::LinAlg::SparseMatrix& aleInnerOp = matrix(1, 1);
 
   fluidsolver_->setup(fluidInnerOp.epetra_operator());
   if (constalesolver_ == Teuchos::null) alesolver_->setup(aleInnerOp.epetra_operator());
-#endif
 }
 
 
@@ -1139,13 +1110,6 @@ FSI::OverlappingBlockMatrixFS::OverlappingBlockMatrixFS(const Core::LinAlg::Mult
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFS::setup_preconditioner()
 {
-#ifdef BLOCKMATRIXMERGE
-
-  // this is really evil :)
-  sparse_ = Merge();
-  fluidsolver_->setup(sparse_->EpetraMatrix());
-
-#else
   const Core::LinAlg::SparseMatrix& fluidInnerOp = matrix(0, 0);
   const Core::LinAlg::SparseMatrix& aleInnerOp = matrix(1, 1);
 
@@ -1155,7 +1119,6 @@ void FSI::OverlappingBlockMatrixFS::setup_preconditioner()
   fluidsolver_->setup(fluidInnerOp.epetra_operator(), fsidofmapex, fluid_.discretization(),
       irownodes, structuresplit_);
   if (constalesolver_ == Teuchos::null) alesolver_->setup(aleInnerOp.epetra_operator());
-#endif
 }
 
 
