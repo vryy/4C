@@ -18,9 +18,6 @@
 #include "4C_so3_base.hpp"
 
 
-// #define SYMMETRIC
-// #define SYMMETRIC_C
-
 #define NUMNOD_SOTET4av 4       ///< number of nodes
 #define NODDOF_SOTET4av 4       ///< number of dofs per node
 #define NUMDOF_SOTET4av 16      ///< total dofs per element
