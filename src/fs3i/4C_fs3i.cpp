@@ -749,17 +749,11 @@ void FS3I::FS3IBase::linear_solve_scatra()
 {
   scatraincrement_->PutScalar(0.0);
 
-#ifdef SCATRABLOCKMATRIXMERGE
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = scatrasystemmatrix_->Merge();
-
-  scatrasolver_->Solve(sparse->epetra_matrix(), scatraincrement_, scatrarhs_, true);
-#else
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
   scatrasolver_->solve(
       scatrasystemmatrix_->epetra_operator(), scatraincrement_, scatrarhs_, solver_params);
-#endif
 }
 
 /*----------------------------------------------------------------------*/
