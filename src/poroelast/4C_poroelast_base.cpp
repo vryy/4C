@@ -29,7 +29,6 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mortar_manager_base.hpp"
-#include "4C_poroelast_defines.hpp"
 #include "4C_poroelast_utils.hpp"
 #include "4C_so3_base.hpp"
 #include "4C_solid_3D_ele.hpp"
