@@ -19,9 +19,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// deactivate for ascii output. Only do this for debugging.
-// #define BIN_VTK_OUT
-
 PostVtkWriter::PostVtkWriter(PostField *field, const std::string &filename)
     : PostWriterBase(field, filename),
       currentPhase_(INIT),

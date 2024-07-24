@@ -17,8 +17,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// #define FREESURFFLOW
-
 namespace FLD
 {
   class XFluid;
