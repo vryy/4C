@@ -84,8 +84,6 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   const Teuchos::ParameterList& artdyn = problem->arterial_dynamic_params();
 
-  if (actdis->get_comm().MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, artdyn);
-
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------

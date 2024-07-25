@@ -25,8 +25,6 @@ Adapter::AlgorithmBase::AlgorithmBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : comm_(comm), printscreen_(Global::Problem::instance()->io_params().get<int>("STDOUTEVRY"))
 {
-  if (comm_.MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, timeparams);
-
   step_ = 0;
   time_ = 0.;
   dt_ = timeparams.get<double>("TIMESTEP");

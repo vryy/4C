@@ -52,9 +52,6 @@ void elch_dyn(int restart)
   // access the problem-specific parameter list
   const auto& elchcontrol = problem->elch_control_params();
 
-  // print default parameters to screen
-  if (comm.MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, elchcontrol);
-
   // access the scalar transport parameter list
   const auto& scatradyn = problem->scalar_transport_dynamic_params();
   const auto veltype =

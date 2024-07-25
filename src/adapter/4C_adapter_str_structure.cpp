@@ -126,9 +126,6 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   Teuchos::RCP<Teuchos::ParameterList> snox =
       Teuchos::rcp(new Teuchos::ParameterList(problem->structural_nox_params()));
 
-  // show default parameters
-  if ((actdis->get_comm()).MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, sdyn);
-
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
   Teuchos::ParameterList& nox = xparams->sublist("NOX");

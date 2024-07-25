@@ -95,9 +95,6 @@ void Adapter::ThermoBaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& p
   //  //const Teuchos::ParameterList& size
   //  //  = Global::Problem::instance()->ProblemSizeParams();
 
-  // show default parameters of thermo parameter list
-  if ((actdis->get_comm()).MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, *tdyn);
-
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
 
