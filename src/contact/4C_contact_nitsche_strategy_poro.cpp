@@ -55,22 +55,21 @@ void CONTACT::NitscheStrategyPoro::set_state(
 {
   if (statename == Mortar::state_svelocity)
   {
-    set_parent_state(statename, vec);
+    Teuchos::RCP<Core::FE::Discretization> dis = Global::Problem::instance()->get_dis("structure");
+    if (dis == Teuchos::null) FOUR_C_THROW("didn't get my discretization");
+    set_parent_state(statename, vec, *dis);
   }
   else
     CONTACT::NitscheStrategy::set_state(statename, vec);
 }
 
-void CONTACT::NitscheStrategyPoro::set_parent_state(
-    const enum Mortar::StateType& statename, const Epetra_Vector& vec)
+void CONTACT::NitscheStrategyPoro::set_parent_state(const enum Mortar::StateType& statename,
+    const Epetra_Vector& vec, const Core::FE::Discretization& dis)
 {
   //
   if (statename == Mortar::state_fvelocity || statename == Mortar::state_fpressure)
   {
-    Teuchos::RCP<Core::FE::Discretization> dis = Global::Problem::instance()->get_dis("porofluid");
-    if (dis == Teuchos::null) FOUR_C_THROW("didn't get my discretization");
-
-    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->dof_col_map(), true));
+    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis.dof_col_map(), true));
     Core::LinAlg::export_to(vec, *global);
 
     // set state on interfaces
@@ -91,7 +90,7 @@ void CONTACT::NitscheStrategyPoro::set_parent_state(
         if (ele->parent_slave_element())  // if this pointer is nullptr, this parent is impermeable
         {
           // this gets values in local order
-          ele->parent_slave_element()->location_vector(*dis, lm, lmowner, lmstride);
+          ele->parent_slave_element()->location_vector(dis, lm, lmowner, lmstride);
 
           std::vector<double> myval;
           Core::FE::ExtractMyValues(*global, myval, lm);
@@ -116,7 +115,7 @@ void CONTACT::NitscheStrategyPoro::set_parent_state(
     }
   }
   else
-    CONTACT::NitscheStrategy::set_parent_state(statename, vec);
+    CONTACT::NitscheStrategy::set_parent_state(statename, vec, dis);
 }
 
 Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyPoro::setup_rhs_block_vec(

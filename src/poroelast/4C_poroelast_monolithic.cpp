@@ -1823,14 +1823,17 @@ void PoroElast::Monolithic::set_poro_contact_states()
 
           Teuchos::RCP<Epetra_Vector> dis =
               Teuchos::rcp(new Epetra_Vector(*structure_field()->dispnp()));
-          costrategy.set_parent_state("displacement", dis,
-              structure_field()->discretization());  // add displacements of the parent element!!!
+          costrategy.set_parent_state(Mortar::StateType::state_new_displacement, *dis,
+              *structure_field()->discretization());  // add displacements of the parent element!!!
         }
         else
         {
           CONTACT::NitscheStrategyPoro& costrategy = dynamic_cast<CONTACT::NitscheStrategyPoro&>(
               structure_field()->meshtying_contact_bridge()->contact_manager()->get_strategy());
-          costrategy.set_parent_state(Mortar::state_fvelocity, *fluid_field()->velnp());
+          Teuchos::RCP<Core::FE::Discretization> dis =
+              Global::Problem::instance()->get_dis("porofluid");
+          if (dis == Teuchos::null) FOUR_C_THROW("didn't get my discretization");
+          costrategy.set_parent_state(Mortar::state_fvelocity, *fluid_field()->velnp(), *dis);
         }
       }
     }

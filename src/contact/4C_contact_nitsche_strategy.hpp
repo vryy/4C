@@ -121,9 +121,10 @@ namespace CONTACT
      *
      * @param[in] statename  name of state to be set
      * @param[in] vec        corresponding state vector
+     * @param[in] dis        corresponding discretization
      */
-    virtual void set_parent_state(
-        const enum Mortar::StateType& statename, const Epetra_Vector& vec);
+    void set_parent_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec,
+        const Core::FE::Discretization& dis) override;
 
     Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_n(const bool& redist) const override
     {

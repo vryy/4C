@@ -812,8 +812,8 @@ namespace CONTACT
      \param dbcmaps (in): MapExtractor carrying global dbc map */
     void store_dirichlet_status(Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps) override;
 
-    virtual void set_parent_state(const std::string& statename,
-        const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Core::FE::Discretization> dis){
+    virtual void set_parent_state(const enum Mortar::StateType& statetype, const Epetra_Vector& vec,
+        const Core::FE::Discretization& dis){
         /* standard contact methods don't need the corresponding bulk element */
     };
 

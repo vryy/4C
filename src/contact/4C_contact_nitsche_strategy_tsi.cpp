@@ -47,7 +47,9 @@ void CONTACT::NitscheStrategyTsi::set_state(
     {
       curr_state_eval_ = false;
       (*curr_state_temp_) = vec;
-      set_parent_state(statename, vec);
+      Teuchos::RCP<Core::FE::Discretization> disT = Global::Problem::instance()->get_dis("thermo");
+      if (disT.is_null()) FOUR_C_THROW("set state temperature, but no thermo-discretization???");
+      set_parent_state(statename, vec, *disT);
     }
   }
   else
@@ -57,16 +59,12 @@ void CONTACT::NitscheStrategyTsi::set_state(
 /*------------------------------------------------------------------------*
  |                                                             seitz 10/16|
  *------------------------------------------------------------------------*/
-void CONTACT::NitscheStrategyTsi::set_parent_state(
-    const enum Mortar::StateType& statename, const Epetra_Vector& vec)
+void CONTACT::NitscheStrategyTsi::set_parent_state(const enum Mortar::StateType& statename,
+    const Epetra_Vector& vec, const Core::FE::Discretization& dis)
 {
   if (statename == Mortar::state_temperature)
   {
-    Teuchos::RCP<Core::FE::Discretization> disT = Global::Problem::instance()->get_dis("thermo");
-    if (disT.is_null()) FOUR_C_THROW("set state temperature, but no thermo-discretization???");
-
-    Teuchos::RCP<Epetra_Vector> global =
-        Teuchos::rcp(new Epetra_Vector(*disT->dof_col_map(), true));
+    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis.dof_col_map(), true));
     Core::LinAlg::export_to(vec, *global);
 
     // set state on interfaces
@@ -82,10 +80,10 @@ void CONTACT::NitscheStrategyTsi::set_parent_state(
         if (e == nullptr) FOUR_C_THROW("basic element not found");
 
         auto* ele = dynamic_cast<Mortar::Element*>(idiscret.g_element(gid));
-        Core::Elements::Element* ele_parentT = disT->g_element(ele->parent_element_id());
+        Core::Elements::Element* ele_parentT = dis.g_element(ele->parent_element_id());
 
         std::vector<int> lm, lmowner, lmstride;
-        ele_parentT->location_vector(*disT, lm, lmowner, lmstride);
+        ele_parentT->location_vector(dis, lm, lmowner, lmstride);
 
         std::vector<double> myval;
         Core::FE::ExtractMyValues(*global, myval, lm);
@@ -96,7 +94,7 @@ void CONTACT::NitscheStrategyTsi::set_parent_state(
     }
   }
   else
-    CONTACT::NitscheStrategy::set_parent_state(statename, vec);
+    CONTACT::NitscheStrategy::set_parent_state(statename, vec, dis);
 }
 
 void CONTACT::NitscheStrategyTsi::setup(bool redistributed, bool init)

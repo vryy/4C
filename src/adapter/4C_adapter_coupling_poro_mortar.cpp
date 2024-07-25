@@ -420,7 +420,7 @@ void Adapter::CouplingPoroMortar::evaluate_poro_mt(Teuchos::RCP<Epetra_Vector> f
 
   // store displacements of parent elements for deformation gradient determinant and its
   // linearization
-  porolagstrategy_->set_parent_state("displacement", sdisp, sdis);
+  porolagstrategy_->set_parent_state(Mortar::StateType::state_new_displacement, *sdisp, *sdis);
 
   interface_->initialize();
   // in the end of Evaluate coupling condition residuals and linearizations are computed in contact
