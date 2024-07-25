@@ -71,8 +71,8 @@ void SSI::SSIPart::setup()
 void SSI::SSIPart::setup_model_evaluator()
 {
   // build and register ssi model evaluator
-  Teuchos::RCP<Solid::MODELEVALUATOR::Generic> ssi_model_ptr =
-      Teuchos::rcp(new Solid::MODELEVALUATOR::PartitionedSSI(Teuchos::rcp(this, false)));
+  Teuchos::RCP<Solid::ModelEvaluator::Generic> ssi_model_ptr =
+      Teuchos::rcp(new Solid::ModelEvaluator::PartitionedSSI(Teuchos::rcp(this, false)));
   structure_base_algorithm()->register_model_evaluator("Partitioned Coupling Model", ssi_model_ptr);
 
   if (is_s2_i_kinetics_with_pseudo_contact()) set_modelevaluator_base_ssi(ssi_model_ptr);

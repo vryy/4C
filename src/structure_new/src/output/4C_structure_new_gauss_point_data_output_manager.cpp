@@ -10,7 +10,7 @@
 #include "4C_comm_exporter.hpp"
 #include "4C_comm_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_structure_new_model_evaluator.hpp"
+#include "4C_structure_new_model_evaluator_manager.hpp"
 
 #include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Solid::MODELEVALUATOR::GaussPointDataOutputManager::GaussPointDataOutputManager(
+Solid::ModelEvaluator::GaussPointDataOutputManager::GaussPointDataOutputManager(
     Inpar::Solid::GaussPointDataOutputType output_type)
     : output_type_(output_type),
       max_num_gp_(0),
@@ -32,7 +32,7 @@ Solid::MODELEVALUATOR::GaussPointDataOutputManager::GaussPointDataOutputManager(
 {
 }
 
-void Solid::MODELEVALUATOR::GaussPointDataOutputManager::add_quantity_if_not_existant(
+void Solid::ModelEvaluator::GaussPointDataOutputManager::add_quantity_if_not_existant(
     const std::string& name, int size)
 {
   const auto item = quantities_.find(name);
@@ -59,7 +59,7 @@ void Solid::MODELEVALUATOR::GaussPointDataOutputManager::add_quantity_if_not_exi
   }
 }
 
-void Solid::MODELEVALUATOR::GaussPointDataOutputManager::merge_quantities(
+void Solid::ModelEvaluator::GaussPointDataOutputManager::merge_quantities(
     const std::unordered_map<std::string, int>& quantities)
 {
   for (const auto& name_and_size : quantities)
@@ -71,7 +71,7 @@ void Solid::MODELEVALUATOR::GaussPointDataOutputManager::merge_quantities(
   }
 }
 
-void Solid::MODELEVALUATOR::GaussPointDataOutputManager::add_element_number_of_gauss_points(
+void Solid::ModelEvaluator::GaussPointDataOutputManager::add_element_number_of_gauss_points(
     const int numgp)
 {
   if (numgp > max_num_gp_)
@@ -80,7 +80,7 @@ void Solid::MODELEVALUATOR::GaussPointDataOutputManager::add_element_number_of_g
   }
 }
 
-void Solid::MODELEVALUATOR::GaussPointDataOutputManager::prepare_data(
+void Solid::ModelEvaluator::GaussPointDataOutputManager::prepare_data(
     const Epetra_Map& node_col_map, const Epetra_Map& element_row_map)
 {
   switch (output_type_)
@@ -101,7 +101,7 @@ void Solid::MODELEVALUATOR::GaussPointDataOutputManager::prepare_data(
   }
 }
 
-void Solid::MODELEVALUATOR::GaussPointDataOutputManager::prepare_nodal_data_vectors(
+void Solid::ModelEvaluator::GaussPointDataOutputManager::prepare_nodal_data_vectors(
     const Epetra_Map& node_col_map)
 {
   for (const auto& name_and_size : quantities_)
@@ -114,7 +114,7 @@ void Solid::MODELEVALUATOR::GaussPointDataOutputManager::prepare_nodal_data_vect
   }
 }
 
-void Solid::MODELEVALUATOR::GaussPointDataOutputManager::prepare_element_center_data_vectors(
+void Solid::ModelEvaluator::GaussPointDataOutputManager::prepare_element_center_data_vectors(
     const Epetra_Map& element_col_map)
 {
   for (const auto& name_and_size : quantities_)
@@ -126,7 +126,7 @@ void Solid::MODELEVALUATOR::GaussPointDataOutputManager::prepare_element_center_
   }
 }
 
-void Solid::MODELEVALUATOR::GaussPointDataOutputManager::prepare_gauss_point_data_vectors(
+void Solid::ModelEvaluator::GaussPointDataOutputManager::prepare_gauss_point_data_vectors(
     const Epetra_Map& element_col_map)
 {
   for (const auto& name_and_size : quantities_)
@@ -145,7 +145,7 @@ void Solid::MODELEVALUATOR::GaussPointDataOutputManager::prepare_gauss_point_dat
   }
 }
 
-void Solid::MODELEVALUATOR::GaussPointDataOutputManager::post_evaluate()
+void Solid::ModelEvaluator::GaussPointDataOutputManager::post_evaluate()
 {
   if (output_type_ == Inpar::Solid::GaussPointDataOutputType::nodes)
   {
@@ -173,7 +173,7 @@ void Solid::MODELEVALUATOR::GaussPointDataOutputManager::post_evaluate()
   }
 }
 
-void Solid::MODELEVALUATOR::GaussPointDataOutputManager::distribute_quantities(
+void Solid::ModelEvaluator::GaussPointDataOutputManager::distribute_quantities(
     const Epetra_Comm& comm)
 {
   const Core::Communication::Exporter exporter(comm);
@@ -211,7 +211,7 @@ void Solid::MODELEVALUATOR::GaussPointDataOutputManager::distribute_quantities(
   broadcast_my_quantitites(exporter);
 }
 
-void Solid::MODELEVALUATOR::GaussPointDataOutputManager::send_my_quantities_to_proc(
+void Solid::ModelEvaluator::GaussPointDataOutputManager::send_my_quantities_to_proc(
     const Core::Communication::Exporter& exporter, int to_proc) const
 {
   // Pack quantities
@@ -224,7 +224,7 @@ void Solid::MODELEVALUATOR::GaussPointDataOutputManager::send_my_quantities_to_p
 }
 
 std::unique_ptr<std::unordered_map<std::string, int>>
-Solid::MODELEVALUATOR::GaussPointDataOutputManager::receive_quantities_from_proc(
+Solid::ModelEvaluator::GaussPointDataOutputManager::receive_quantities_from_proc(
     const Core::Communication::Exporter& exporter, int from_proc) const
 {
   std::vector<char> rdata(0);
@@ -240,7 +240,7 @@ Solid::MODELEVALUATOR::GaussPointDataOutputManager::receive_quantities_from_proc
   return quantities;
 }
 
-void Solid::MODELEVALUATOR::GaussPointDataOutputManager::broadcast_my_quantitites(
+void Solid::ModelEvaluator::GaussPointDataOutputManager::broadcast_my_quantitites(
     const Core::Communication::Exporter& exporter)
 {
   std::vector<char> data(0);
@@ -261,7 +261,7 @@ void Solid::MODELEVALUATOR::GaussPointDataOutputManager::broadcast_my_quantitite
   }
 }
 
-void Solid::MODELEVALUATOR::GaussPointDataOutputManager::pack_my_quantities(
+void Solid::ModelEvaluator::GaussPointDataOutputManager::pack_my_quantities(
     std::vector<char>& data) const
 {
   Core::Communication::PackBuffer packBuffer;
@@ -269,7 +269,7 @@ void Solid::MODELEVALUATOR::GaussPointDataOutputManager::pack_my_quantities(
   std::swap(data, packBuffer());
 }
 
-void Solid::MODELEVALUATOR::GaussPointDataOutputManager::unpack_quantities(std::size_t pos,
+void Solid::ModelEvaluator::GaussPointDataOutputManager::unpack_quantities(std::size_t pos,
     const std::vector<char>& data, std::unordered_map<std::string, int>& quantities) const
 {
   Core::Communication::ParObject::extract_from_pack(pos, data, quantities);

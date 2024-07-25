@@ -152,7 +152,6 @@ namespace Solid
     bool isinit_ = false;
     bool issetup_ = false;
   };
-
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

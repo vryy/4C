@@ -120,7 +120,6 @@ namespace Solid
         return "unknown matrix block type";
     }
   }
-
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

@@ -1027,7 +1027,7 @@ namespace CONTACT
      *  \author hiermeier \date 12/17 */
     virtual void evaluate_static_constraint_rhs(CONTACT::ParamsInterface& cparams);
 
-    /** \brief Run at the very beginning of a call to Solid::ModelEvaluator::Evalute*
+    /** \brief Run at the very beginning of a call to Solid::ModelEvaluatorManager::Evalute*
      *
      *  \param cparams (in): parameter interface between the contact objects and
      *                       the structural time integration
@@ -1036,7 +1036,8 @@ namespace CONTACT
      *  \author hiermeier */
     virtual void run_pre_evaluate(CONTACT::ParamsInterface& cparams);
 
-    /** \brief Run in the end of a call to Solid::ModelEvaluator::EvaluteForce/Stiff/ForceStiff
+    /** \brief Run in the end of a call to
+     * Solid::ModelEvaluatorManager::EvaluteForce/Stiff/ForceStiff
      *
      *  \param cparams (in): parameter interface between the contact objects and the structural time
      *                       integration

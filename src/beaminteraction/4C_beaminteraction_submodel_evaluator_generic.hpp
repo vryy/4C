@@ -56,7 +56,7 @@ namespace Solid
     class BaseDataGlobalState;
     class BaseDataIO;
   }  // namespace TimeInt
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class BeamInteractionDataState;
   }
@@ -94,7 +94,7 @@ namespace BEAMINTERACTION
           Teuchos::RCP<Core::FE::Discretization> const& bindis,
           Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> const& gstate,
           Teuchos::RCP<Solid::TimeInt::BaseDataIO> const& gio_ptr,
-          Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
+          Teuchos::RCP<Solid::ModelEvaluator::BeamInteractionDataState> const& ia_gstate_ptr,
           Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> const& beamcrosslinkerhandler,
           Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy,
           Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox,
@@ -181,7 +181,7 @@ namespace BEAMINTERACTION
 
       //! reset routine for model evlaluator
       virtual void init_submodel_dependencies(
-          Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Map> const submodelvector) = 0;
+          Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map> const submodelvector) = 0;
 
       //! \brief add subproblem specific contributions to bin col map
       virtual void add_bins_to_bin_col_map(std::set<int>& colbins) = 0;
@@ -222,10 +222,10 @@ namespace BEAMINTERACTION
       Solid::TimeInt::BaseDataIO const& g_in_output() const;
 
       //! Returns the global state data container
-      Solid::MODELEVALUATOR::BeamInteractionDataState& beam_interaction_data_state();
-      Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteractionDataState>&
+      Solid::ModelEvaluator::BeamInteractionDataState& beam_interaction_data_state();
+      Teuchos::RCP<Solid::ModelEvaluator::BeamInteractionDataState>&
       beam_interaction_data_state_ptr();
-      Solid::MODELEVALUATOR::BeamInteractionDataState const& beam_interaction_data_state() const;
+      Solid::ModelEvaluator::BeamInteractionDataState const& beam_interaction_data_state() const;
 
       BEAMINTERACTION::BeamCrosslinkerHandler& beam_crosslinker_handler();
       Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler>& beam_crosslinker_handler_ptr();
@@ -265,7 +265,7 @@ namespace BEAMINTERACTION
       Teuchos::RCP<Solid::TimeInt::BaseDataIO> gio_ptr_;
 
       //! pointer to the global state data container
-      Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteractionDataState> beaminteractiondatastate_;
+      Teuchos::RCP<Solid::ModelEvaluator::BeamInteractionDataState> beaminteractiondatastate_;
 
       //! beam crosslinker handler
       Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> beam_crosslinker_handler_;

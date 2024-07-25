@@ -18,8 +18,8 @@
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_structure_new_dbc.hpp"
-#include "4C_structure_new_model_evaluator.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
+#include "4C_structure_new_model_evaluator_manager.hpp"
 #include "4C_structure_new_model_evaluator_structure.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_utils.hpp"
@@ -29,7 +29,6 @@
 #include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -207,8 +206,8 @@ double Solid::IMPLICIT::GenAlpha::get_model_value(const Epetra_Vector& x)
 
   // --- internal energy
   eval_data().clear_values_for_all_energy_types();
-  Solid::MODELEVALUATOR::Structure& str_model =
-      dynamic_cast<Solid::MODELEVALUATOR::Structure&>(evaluator(Inpar::Solid::model_structure));
+  Solid::ModelEvaluator::Structure& str_model =
+      dynamic_cast<Solid::ModelEvaluator::Structure&>(evaluator(Inpar::Solid::model_structure));
 
   Teuchos::RCP<const Epetra_Vector> disnp_ptr = global_state().extract_displ_entries(x);
   const Epetra_Vector& disnp = *disnp_ptr;

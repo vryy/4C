@@ -170,7 +170,6 @@ namespace Solid
   }  // namespace Nln
 }  // namespace Solid
 
-
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

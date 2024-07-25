@@ -223,7 +223,7 @@ void Adapter::FSIStructureWrapper::apply_interface_forces_temporary_deprecated(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Solid::MODELEVALUATOR::PartitionedFSI>
+Teuchos::RCP<Solid::ModelEvaluator::PartitionedFSI>
 Adapter::FSIStructureWrapper::fsi_model_evaluator()
 {
   return fsi_model_evaluator_;

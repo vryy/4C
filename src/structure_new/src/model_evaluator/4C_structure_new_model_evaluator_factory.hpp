@@ -15,7 +15,7 @@
 #include "4C_config.hpp"
 
 #include "4C_inpar_structure.hpp"
-#include "4C_structure_new_model_evaluator.hpp"  // typedef
+#include "4C_structure_new_model_evaluator_manager.hpp"  // typedef
 
 #include <Teuchos_RCP.hpp>
 
@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class Generic;
 
@@ -42,25 +42,25 @@ namespace Solid
       virtual ~Factory() = default;
 
 
-      Teuchos::RCP<Solid::ModelEvaluator::Map> build_model_evaluators(
+      Teuchos::RCP<Solid::ModelEvaluatorManager::Map> build_model_evaluators(
           const std::set<enum Inpar::Solid::ModelType>& modeltypes,
-          const Teuchos::RCP<Solid::MODELEVALUATOR::Generic>& coupling_model_ptr) const;
+          const Teuchos::RCP<Solid::ModelEvaluator::Generic>& coupling_model_ptr) const;
 
      private:
       //! return the proper type for the contact model evaluator
-      Teuchos::RCP<Solid::MODELEVALUATOR::Generic> build_contact_model_evaluator() const;
+      Teuchos::RCP<Solid::ModelEvaluator::Generic> build_contact_model_evaluator() const;
 
       //! return the proper type for the standard structural model evaluator
-      Teuchos::RCP<Solid::MODELEVALUATOR::Generic> build_structure_model_evaluator() const;
+      Teuchos::RCP<Solid::ModelEvaluator::Generic> build_structure_model_evaluator() const;
 
     };  // class Factory
 
-    //! non-member function, which relates to the Solid::MODELEVALUATOR::Factory
-    Teuchos::RCP<Solid::ModelEvaluator::Map> build_model_evaluators(
+    //! non-member function, which relates to the Solid::ModelEvaluator::Factory
+    Teuchos::RCP<Solid::ModelEvaluatorManager::Map> build_model_evaluators(
         const std::set<enum Inpar::Solid::ModelType>& modeltypes,
-        const Teuchos::RCP<Solid::MODELEVALUATOR::Generic>& coupling_model_ptr);
+        const Teuchos::RCP<Solid::ModelEvaluator::Generic>& coupling_model_ptr);
 
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

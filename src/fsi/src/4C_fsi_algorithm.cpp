@@ -58,8 +58,8 @@ void FSI::Algorithm::setup()
       const_cast<Teuchos::ParameterList&>(Global::Problem::instance()->fsi_dynamic_params());
 
   // build and register fsi model evaluator
-  Teuchos::RCP<Solid::MODELEVALUATOR::Generic> fsi_model_ptr =
-      Teuchos::rcp(new Solid::MODELEVALUATOR::PartitionedFSI());
+  Teuchos::RCP<Solid::ModelEvaluator::Generic> fsi_model_ptr =
+      Teuchos::rcp(new Solid::ModelEvaluator::PartitionedFSI());
 
   // todo FIX THIS !!!!
   // Decide whether to use old structural time integration or new structural time integration.
@@ -81,7 +81,7 @@ void FSI::Algorithm::setup()
 
     // set pointer in FSIStructureWrapper
     structure_->set_model_evaluator_ptr(
-        Teuchos::rcp_dynamic_cast<Solid::MODELEVALUATOR::PartitionedFSI>(fsi_model_ptr));
+        Teuchos::rcp_dynamic_cast<Solid::ModelEvaluator::PartitionedFSI>(fsi_model_ptr));
 
     if (structure_ == Teuchos::null)
       FOUR_C_THROW("cast from Adapter::Structure to Adapter::FSIStructureWrapper failed");

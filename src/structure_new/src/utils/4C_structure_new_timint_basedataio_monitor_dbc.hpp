@@ -127,7 +127,6 @@ namespace Solid
   }  // namespace TimeInt
 }  // namespace Solid
 
-
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

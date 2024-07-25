@@ -52,7 +52,7 @@
 #include "4C_solid_3D_ele.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_group_prepostoperator.hpp"
-#include "4C_structure_new_model_evaluator.hpp"
+#include "4C_structure_new_model_evaluator_manager.hpp"
 #include "4C_structure_new_solver_factory.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_timint_factory.hpp"
@@ -128,7 +128,7 @@ void Adapter::StructureBaseAlgorithmNew::setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Adapter::StructureBaseAlgorithmNew::register_model_evaluator(
-    const std::string name, Teuchos::RCP<Solid::MODELEVALUATOR::Generic> me)
+    const std::string name, Teuchos::RCP<Solid::ModelEvaluator::Generic> me)
 {
   // safety checks
   if (not is_init())
@@ -136,7 +136,7 @@ void Adapter::StructureBaseAlgorithmNew::register_model_evaluator(
   if (is_setup()) FOUR_C_THROW("register_model_evaluator(...) must be called before setup() !");
 
   // set RCP ptr to model evaluator in problem dynamic parameter list
-  const_cast<Teuchos::ParameterList&>(*prbdyn_).set<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
+  const_cast<Teuchos::ParameterList&>(*prbdyn_).set<Teuchos::RCP<Solid::ModelEvaluator::Generic>>(
       name, me);
 }
 
@@ -443,14 +443,14 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
     case Core::ProblemType::ssi:
     case Core::ProblemType::ssti:
     {
-      if (prbdyn_->INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
+      if (prbdyn_->INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<Solid::ModelEvaluator::Generic>>(
               "Partitioned Coupling Model"))
       {
         if (prbdyn_->INVALID_TEMPLATE_QUALIFIER
-                isType<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>("Monolithic Coupling Model"))
+                isType<Teuchos::RCP<Solid::ModelEvaluator::Generic>>("Monolithic Coupling Model"))
           FOUR_C_THROW("Cannot have both partitioned and monolithic coupling at the same time!");
         const auto coupling_model_ptr =
-            prbdyn_->INVALID_TEMPLATE_QUALIFIER get<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
+            prbdyn_->INVALID_TEMPLATE_QUALIFIER get<Teuchos::RCP<Solid::ModelEvaluator::Generic>>(
                 "Partitioned Coupling Model");
         if (coupling_model_ptr.is_null())
           FOUR_C_THROW(
@@ -458,38 +458,38 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
         // set the model type
         modeltypes.insert(Inpar::Solid::model_partitioned_coupling);
         // copy the coupling model object pointer into the (temporal) sdyn parameter list
-        sdyn_->set<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
+        sdyn_->set<Teuchos::RCP<Solid::ModelEvaluator::Generic>>(
             "Partitioned Coupling Model", coupling_model_ptr);
       }
 
       else if (prbdyn_->INVALID_TEMPLATE_QUALIFIER
-                   isType<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
+                   isType<Teuchos::RCP<Solid::ModelEvaluator::Generic>>(
                        "Monolithic Coupling Model"))
       {
         const auto coupling_model_ptr =
-            prbdyn_->INVALID_TEMPLATE_QUALIFIER get<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
+            prbdyn_->INVALID_TEMPLATE_QUALIFIER get<Teuchos::RCP<Solid::ModelEvaluator::Generic>>(
                 "Monolithic Coupling Model");
         if (coupling_model_ptr.is_null())
           FOUR_C_THROW("The monolithic coupling model pointer is not allowed to be Teuchos::null!");
         // set the model type
         modeltypes.insert(Inpar::Solid::model_monolithic_coupling);
         // copy the coupling model object pointer into the (temporal) sdyn parameter list
-        sdyn_->set<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
+        sdyn_->set<Teuchos::RCP<Solid::ModelEvaluator::Generic>>(
             "Monolithic Coupling Model", coupling_model_ptr);
       }
 
       else if (prbdyn_->INVALID_TEMPLATE_QUALIFIER
-                   isType<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>("Basic Coupling Model"))
+                   isType<Teuchos::RCP<Solid::ModelEvaluator::Generic>>("Basic Coupling Model"))
       {
         const auto coupling_model_ptr =
-            prbdyn_->INVALID_TEMPLATE_QUALIFIER get<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
+            prbdyn_->INVALID_TEMPLATE_QUALIFIER get<Teuchos::RCP<Solid::ModelEvaluator::Generic>>(
                 "Basic Coupling Model");
         if (coupling_model_ptr.is_null())
           FOUR_C_THROW("The basic coupling model pointer is not allowed to be Teuchos::null!");
         // set the model type
         modeltypes.insert(Inpar::Solid::model_basic_coupling);
         // copy the coupling model object pointer into the (temporal) sdyn parameter list
-        sdyn_->set<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
+        sdyn_->set<Teuchos::RCP<Solid::ModelEvaluator::Generic>>(
             "Basic Coupling Model", coupling_model_ptr);
       }
       break;

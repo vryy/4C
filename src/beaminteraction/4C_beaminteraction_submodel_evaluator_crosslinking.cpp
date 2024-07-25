@@ -233,7 +233,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_setup()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::init_submodel_dependencies(
-    Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Map> const submodelmap)
+    Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap)
 {
   check_init_setup();
   // no active influence on other submodels

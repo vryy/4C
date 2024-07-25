@@ -13,7 +13,7 @@
 #include "4C_structure_new_predict_constdisvelaccpress.hpp"
 
 #include "4C_structure_new_impl_generic.hpp"
-#include "4C_structure_new_model_evaluator.hpp"
+#include "4C_structure_new_model_evaluator_manager.hpp"
 #include "4C_structure_new_predict_factory.hpp"
 #include "4C_structure_new_timint_base.hpp"
 
@@ -21,14 +21,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Solid::Predict::ConstDisVelAccPress::ConstDisVelAccPress()
 {
   // empty
 }
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -44,7 +42,6 @@ void Solid::Predict::ConstDisVelAccPress::setup()
 
   issetup_ = true;
 }
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

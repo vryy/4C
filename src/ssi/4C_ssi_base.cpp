@@ -955,7 +955,7 @@ void SSI::SSIBase::setup_model_evaluator()
   // register the model evaluator if s2i condition with pseudo contact is available
   if (is_s2_i_kinetics_with_pseudo_contact())
   {
-    modelevaluator_ssi_base_ = Teuchos::rcp(new Solid::MODELEVALUATOR::BaseSSI());
+    modelevaluator_ssi_base_ = Teuchos::rcp(new Solid::ModelEvaluator::BaseSSI());
     structure_base_algorithm()->register_model_evaluator(
         "Basic Coupling Model", modelevaluator_ssi_base_);
   }
@@ -977,7 +977,7 @@ void SSI::SSIBase::setup_contact_strategy()
       FOUR_C_THROW("ssi contact only with new structural time integration");
 
     // get the contact model evaluator and store a pointer to the strategy
-    auto& model_evaluator_contact = dynamic_cast<Solid::MODELEVALUATOR::Contact&>(
+    auto& model_evaluator_contact = dynamic_cast<Solid::ModelEvaluator::Contact&>(
         structure_field()->model_evaluator(Inpar::Solid::model_contact));
     contact_strategy_nitsche_ = Teuchos::rcp_dynamic_cast<CONTACT::NitscheStrategySsi>(
         model_evaluator_contact.strategy_ptr(), true);

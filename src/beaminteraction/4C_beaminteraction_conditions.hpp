@@ -52,7 +52,7 @@ namespace GEOMETRYPAIR
 }
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class BeamInteractionDataState;
   }
@@ -102,7 +102,7 @@ namespace BEAMINTERACTION
      * @param beaminteraction_data_state (in) Datastate of the beaminteraction model evaluator.
      */
     virtual void set_state(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        const Teuchos::RCP<const Solid::MODELEVALUATOR::BeamInteractionDataState>&
+        const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>&
             beaminteraction_data_state)
     {
     }
@@ -185,7 +185,7 @@ namespace BEAMINTERACTION
      * @param beaminteraction_data_state (in) Datastate of the beaminteraction model evaluator.
      */
     virtual void set_state(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        const Teuchos::RCP<const Solid::MODELEVALUATOR::BeamInteractionDataState>&
+        const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>&
             beaminteraction_data_state);
 
     /**

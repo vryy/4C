@@ -62,11 +62,11 @@ namespace Core::LinAlg
 
 namespace Solid
 {
-  class ModelEvaluator;
-  namespace MODELEVALUATOR
+  class ModelEvaluatorManager;
+  namespace ModelEvaluator
   {
     class Generic;
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
   namespace TimeInt
   {
     class BaseDataSDyn;
@@ -131,7 +131,7 @@ namespace Solid
        * @return Max GID in the entire problem
        */
       int setup_block_information(
-          const Solid::MODELEVALUATOR::Generic& me, const Inpar::Solid::ModelType& mt);
+          const Solid::ModelEvaluator::Generic& me, const Inpar::Solid::ModelType& mt);
 
       /// setup the multi map extractor for saddle point problems
       void setup_multi_map_extractor();
@@ -251,7 +251,7 @@ namespace Solid
       /// Create the global solution vector
       Teuchos::RCP<::NOX::Epetra::Vector> create_global_vector() const;
       Teuchos::RCP<::NOX::Epetra::Vector> create_global_vector(const enum VecInitType& vecinittype,
-          const Teuchos::RCP<const Solid::ModelEvaluator>& modeleval) const;
+          const Teuchos::RCP<const Solid::ModelEvaluatorManager>& modeleval) const;
 
       /// Create the structural stiffness matrix block
       Core::LinAlg::SparseOperator* create_structural_stiffness_matrix_block();

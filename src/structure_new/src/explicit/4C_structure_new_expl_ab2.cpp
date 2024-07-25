@@ -14,7 +14,7 @@
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
-#include "4C_structure_new_model_evaluator.hpp"
+#include "4C_structure_new_model_evaluator_manager.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 

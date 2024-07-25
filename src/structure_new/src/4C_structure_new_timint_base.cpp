@@ -38,7 +38,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Solid::TimeInt::Base::Base()
@@ -56,7 +55,6 @@ Solid::TimeInt::Base::Base()
   Epetra_Object::SetTracebackMode(1);
   // empty constructor
 }
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -129,7 +127,7 @@ void Solid::TimeInt::Base::reset()
   FOUR_C_THROW(
       "Reset of all class variables is not yet implemented for "
       "the modelevaluator!");
-  // ModelEvaluator().reset();
+  // ModelEvaluatorManager().reset();
 }
 
 /*----------------------------------------------------------------------------*
@@ -211,7 +209,7 @@ Teuchos::RCP<Core::Conditions::LocsysManager> Solid::TimeInt::Base::locsys_manag
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Solid::MODELEVALUATOR::Generic& Solid::TimeInt::Base::model_evaluator(
+const Solid::ModelEvaluator::Generic& Solid::TimeInt::Base::model_evaluator(
     Inpar::Solid::ModelType mtype) const
 {
   return integrator().model_eval().evaluator(mtype);
@@ -219,7 +217,7 @@ const Solid::MODELEVALUATOR::Generic& Solid::TimeInt::Base::model_evaluator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::MODELEVALUATOR::Generic& Solid::TimeInt::Base::model_evaluator(Inpar::Solid::ModelType mtype)
+Solid::ModelEvaluator::Generic& Solid::TimeInt::Base::model_evaluator(Inpar::Solid::ModelType mtype)
 {
   return integrator().model_eval().evaluator(mtype);
 }
@@ -310,7 +308,7 @@ void Solid::TimeInt::Base::set_number_of_nonlinear_iterations()
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::Base::select_energy_types_to_be_written()
 {
-  Solid::MODELEVALUATOR::Data& evaldata = int_ptr_->eval_data();
+  Solid::ModelEvaluator::Data& evaldata = int_ptr_->eval_data();
 
   // decide which types of energy contributions shall be written separately
   const std::set<enum Inpar::Solid::ModelType>& mtypes = datasdyn_->get_model_types();
@@ -328,8 +326,8 @@ void Solid::TimeInt::Base::select_energy_types_to_be_written()
       }
       case Inpar::Solid::model_beaminteraction:
       {
-        Solid::MODELEVALUATOR::BeamInteraction const beaminteraction_evaluator =
-            dynamic_cast<Solid::MODELEVALUATOR::BeamInteraction const&>(
+        Solid::ModelEvaluator::BeamInteraction const beaminteraction_evaluator =
+            dynamic_cast<Solid::ModelEvaluator::BeamInteraction const&>(
                 int_ptr_->model_eval_ptr()->evaluator(Inpar::Solid::model_beaminteraction));
 
         if (beaminteraction_evaluator.have_sub_model_type(
@@ -450,7 +448,7 @@ void Solid::TimeInt::Base::prepare_output(bool force_prepare_timestep)
           (force_prepare_timestep ||
               dataglobalstate_->get_step_np() % dataio_->get_write_energy_every_n_step() == 0)))
   {
-    Solid::MODELEVALUATOR::Data& evaldata = int_ptr_->eval_data();
+    Solid::ModelEvaluator::Data& evaldata = int_ptr_->eval_data();
     evaldata.clear_values_for_all_energy_types();
 
     int_ptr_->determine_energy();
@@ -644,7 +642,7 @@ void Solid::TimeInt::Base::output_element_volume(Core::IO::DiscretizationWriter&
 {
   check_init_setup();
 
-  Solid::MODELEVALUATOR::Data& evaldata = int_ptr_->eval_data();
+  Solid::ModelEvaluator::Data& evaldata = int_ptr_->eval_data();
 
   iowriter.write_vector("current_ele_volumes",
       Teuchos::rcpFromRef(evaldata.current_element_volume_data()), Core::IO::elementvector);
@@ -658,7 +656,7 @@ void Solid::TimeInt::Base::output_stress_strain()
 {
   check_init_setup();
 
-  Solid::MODELEVALUATOR::Data& evaldata = int_ptr_->eval_data();
+  Solid::ModelEvaluator::Data& evaldata = int_ptr_->eval_data();
   Teuchos::RCP<Core::IO::DiscretizationWriter> output_ptr = dataio_->get_output_ptr();
 
   // ---------------------------------------------------------------------------
@@ -773,7 +771,7 @@ void Solid::TimeInt::Base::output_energy() const
                          << std::scientific << std::setprecision(14) << std::setw(23)
                          << dataglobalstate_->get_time_n() << std::setw(1) << ",";
 
-    Solid::MODELEVALUATOR::Data& evaldata = int_ptr_->eval_data();
+    Solid::ModelEvaluator::Data& evaldata = int_ptr_->eval_data();
 
     double total_energy = 0.0;
 
@@ -795,7 +793,7 @@ void Solid::TimeInt::Base::output_optional_quantity()
 {
   check_init_setup();
 
-  Solid::MODELEVALUATOR::Data& evaldata = int_ptr_->eval_data();
+  Solid::ModelEvaluator::Data& evaldata = int_ptr_->eval_data();
   Teuchos::RCP<Core::IO::DiscretizationWriter> output_ptr = dataio_->get_output_ptr();
 
   // ---------------------------------------------------------------------------

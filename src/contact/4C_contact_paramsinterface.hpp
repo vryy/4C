@@ -41,10 +41,10 @@ namespace Inpar
 
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class Generic;
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 namespace CONTACT
@@ -79,7 +79,7 @@ namespace CONTACT
     virtual double get_delta_time() const = 0;
 
     //! get a pointer to the contact model evaluator
-    virtual const Solid::MODELEVALUATOR::Generic& get_model_evaluator() const = 0;
+    virtual const Solid::ModelEvaluator::Generic& get_model_evaluator() const = 0;
 
     //! get the output file path
     virtual std::string get_output_file_path() const = 0;

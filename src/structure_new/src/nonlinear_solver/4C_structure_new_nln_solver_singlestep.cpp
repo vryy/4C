@@ -20,7 +20,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::Nln::SOLVER::SingleStep::setup()
@@ -36,7 +35,6 @@ void Solid::Nln::SOLVER::SingleStep::setup()
 
   FOUR_C_ASSERT(is_setup(), "issetup_ should be \"true\" at this point!");
 }
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -63,7 +61,6 @@ void Solid::Nln::SOLVER::SingleStep::set_single_step_params()
         data_sdyn().get_nox_params().sublist("Status Test"), data_sdyn(), qtypes);
   }
 }
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -96,14 +93,12 @@ void Solid::Nln::SOLVER::SingleStep::set_single_step_params(Teuchos::ParameterLi
   lsParams.set("Number of Nonlinear Iterations", 1);
 }
 
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::Nln::SOLVER::SingleStep::reset_params()
 {
   set_single_step_params(nlnglobaldata_->get_nln_parameter_list());
 }
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

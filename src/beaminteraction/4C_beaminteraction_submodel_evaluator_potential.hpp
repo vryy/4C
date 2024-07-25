@@ -111,7 +111,7 @@ namespace BEAMINTERACTION
 
       //! derived
       void init_submodel_dependencies(
-          Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Map> const submodelmap) override;
+          Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap) override;
 
       //! derived
       void add_bins_to_bin_col_map(std::set<int>& colbins) override;

@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::evaluate_force_stiff(
     Teuchos::RCP<Core::FE::Discretization> discret,
-    const Teuchos::RCP<const Solid::MODELEVALUATOR::BeamInteractionDataState>& data_state,
+    const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
     Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<Core::LinAlg::SparseMatrix> fe_sysmat)
 {
   mortar_manager_->evaluate_force_stiff_penalty_regularization(data_state, fe_sysmat, fe_sysvec);

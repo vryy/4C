@@ -469,7 +469,7 @@ void TSI::Algorithm::prepare_contact_strategy()
 
     if (coupST_ == Teuchos::null) FOUR_C_THROW("coupST_ not yet here");
 
-    Solid::MODELEVALUATOR::Contact& a = static_cast<Solid::MODELEVALUATOR::Contact&>(
+    Solid::ModelEvaluator::Contact& a = static_cast<Solid::ModelEvaluator::Contact&>(
         structure_field()->model_evaluator(Inpar::Solid::model_contact));
     contact_strategy_nitsche_ =
         Teuchos::rcp_dynamic_cast<CONTACT::NitscheStrategyTsi>(a.strategy_ptr(), false);

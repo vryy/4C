@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Solid::MODELEVALUATOR
+namespace Solid::ModelEvaluator
 {
   class GaussPointDataOutputManager;
 }

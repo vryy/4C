@@ -89,12 +89,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::post_setup()
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::init_submodel_dependencies(
-    Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Map> const submodelmap)
+    Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap)
 {
   check_init_setup();
 
   // init pointer to crosslinker submodel
-  Solid::MODELEVALUATOR::BeamInteraction::Map::const_iterator miter;
+  Solid::ModelEvaluator::BeamInteraction::Map::const_iterator miter;
   for (miter = (*submodelmap).begin(); miter != (*submodelmap).end(); ++miter)
     if (miter->first == Inpar::BEAMINTERACTION::submodel_crosslinking)
       sm_crosslinkink_ptr_ =

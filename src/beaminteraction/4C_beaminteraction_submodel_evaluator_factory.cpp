@@ -31,13 +31,13 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Map>
+Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map>
 BEAMINTERACTION::SUBMODELEVALUATOR::Factory::build_model_evaluators(
     const std::set<enum Inpar::BEAMINTERACTION::SubModelType>& submodeltypes) const
 {
   // create a new standard map
-  Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Map> model_map =
-      Teuchos::rcp(new Solid::MODELEVALUATOR::BeamInteraction::Map());
+  Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map> model_map =
+      Teuchos::rcp(new Solid::ModelEvaluator::BeamInteraction::Map());
 
   std::set<enum Inpar::BEAMINTERACTION::SubModelType>::const_iterator mt_iter;
   for (mt_iter = submodeltypes.begin(); mt_iter != submodeltypes.end(); ++mt_iter)
@@ -71,7 +71,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Factory::build_model_evaluators(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Map>
+Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map>
 BEAMINTERACTION::SUBMODELEVALUATOR::build_model_evaluators(
     const std::set<enum Inpar::BEAMINTERACTION::SubModelType>& submodeltypes)
 {

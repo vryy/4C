@@ -43,7 +43,7 @@ namespace BROWNIANDYN
 }
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class GaussPointDataOutputManager;
   }
@@ -179,7 +179,7 @@ namespace Solid
       //! get the current coupling stress type
       virtual enum Inpar::Solid::StressType get_coupling_stress_output_type() const = 0;
 
-      virtual Teuchos::RCP<MODELEVALUATOR::GaussPointDataOutputManager>&
+      virtual Teuchos::RCP<ModelEvaluator::GaussPointDataOutputManager>&
       gauss_point_data_output_manager_ptr() = 0;
 
       //! add contribution to energy of specified type

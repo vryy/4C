@@ -327,7 +327,6 @@ namespace NOX
   }         // namespace Nln
 }  // namespace NOX
 
-
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

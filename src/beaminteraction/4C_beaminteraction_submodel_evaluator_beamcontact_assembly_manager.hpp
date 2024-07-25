@@ -39,7 +39,7 @@ namespace BEAMINTERACTION
 }
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class BeamInteractionDataState;
   }
@@ -76,7 +76,7 @@ namespace BEAMINTERACTION
        * @param fe_sysmat (out) Global stiffness matrix.
        */
       virtual void evaluate_force_stiff(Teuchos::RCP<Core::FE::Discretization> discret,
-          const Teuchos::RCP<const Solid::MODELEVALUATOR::BeamInteractionDataState>& data_state,
+          const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
           Teuchos::RCP<Epetra_FEVector> fe_sysvec,
           Teuchos::RCP<Core::LinAlg::SparseMatrix> fe_sysmat)
       {

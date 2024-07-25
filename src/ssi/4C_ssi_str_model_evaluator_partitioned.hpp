@@ -30,7 +30,7 @@ namespace SSI
 
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class PartitionedSSI : public BaseSSI
     {
@@ -65,7 +65,7 @@ namespace Solid
       const Teuchos::RCP<const SSI::SSIPart> ssi_part_;
     };  // class PartitionedSSI
 
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 

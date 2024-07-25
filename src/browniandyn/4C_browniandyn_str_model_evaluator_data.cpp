@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Solid::MODELEVALUATOR::BrownianDynData::BrownianDynData()
+Solid::ModelEvaluator::BrownianDynData::BrownianDynData()
     : isinit_(false),
       issetup_(false),
       str_data_ptr_(Teuchos::null),
@@ -38,8 +38,8 @@ Solid::MODELEVALUATOR::BrownianDynData::BrownianDynData()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDynData::init(
-    const Teuchos::RCP<const Solid::MODELEVALUATOR::Data>& str_data_ptr)
+void Solid::ModelEvaluator::BrownianDynData::init(
+    const Teuchos::RCP<const Solid::ModelEvaluator::Data>& str_data_ptr)
 {
   issetup_ = false;
 
@@ -112,7 +112,7 @@ void Solid::MODELEVALUATOR::BrownianDynData::init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDynData::setup()
+void Solid::ModelEvaluator::BrownianDynData::setup()
 {
   check_init();
 
@@ -124,7 +124,7 @@ void Solid::MODELEVALUATOR::BrownianDynData::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::BrownianDynData::resize_random_force_m_vector(
+void Solid::ModelEvaluator::BrownianDynData::resize_random_force_m_vector(
     Teuchos::RCP<Core::FE::Discretization> discret_ptr, int maxrandnumelement)
 {
   check_init_setup();

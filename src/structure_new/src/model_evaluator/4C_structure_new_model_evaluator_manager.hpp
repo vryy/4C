@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_HPP
-#define FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_MANAGER_HPP
+#define FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_MANAGER_HPP
 
 #include "4C_config.hpp"
 
@@ -64,30 +64,30 @@ namespace Solid
     class BaseDataIO;
   }  // namespace TimeInt
 
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class Data;
     class Generic;
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 
-  /*! \brief Wrapper class for the Solid::MODELEVALUATOR::Generic derived objects.
+  /*! \brief Wrapper class for the Solid::ModelEvaluator::Generic derived objects.
    *
    * Manages the access to the different distinct model evaluators. Calling any routine on this
    * evaluator basically will trigger a loop over all active model evaluators that also implement
    * this routine.
    */
-  class ModelEvaluator
+  class ModelEvaluatorManager
   {
    public:
-    typedef std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>
+    typedef std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Solid::ModelEvaluator::Generic>>
         Map;
-    typedef std::vector<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>> Vector;
+    typedef std::vector<Teuchos::RCP<Solid::ModelEvaluator::Generic>> Vector;
 
     //! constructor
-    ModelEvaluator();
+    ModelEvaluatorManager();
 
     //! destructor
-    virtual ~ModelEvaluator() = default;
+    virtual ~ModelEvaluatorManager() = default;
 
     /*! \brief Initialize
      *
@@ -100,7 +100,7 @@ namespace Solid
      * \param[in] int_ptr ??
      * \param[in] timint_ptr Pointer to the underlying time integrator (read-only)
      */
-    void init(const Teuchos::RCP<Solid::MODELEVALUATOR::Data>& eval_data_ptr,
+    void init(const Teuchos::RCP<Solid::ModelEvaluator::Data>& eval_data_ptr,
         const Teuchos::RCP<Solid::TimeInt::BaseDataSDyn>& sdyn_ptr,
         const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
         const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
@@ -343,8 +343,8 @@ namespace Solid
      *
      * \param[in] mt Type of model evaluator to be accessed
      */
-    Solid::MODELEVALUATOR::Generic& evaluator(const enum Inpar::Solid::ModelType& mt);
-    const Solid::MODELEVALUATOR::Generic& evaluator(const enum Inpar::Solid::ModelType& mt) const;
+    Solid::ModelEvaluator::Generic& evaluator(const enum Inpar::Solid::ModelType& mt);
+    const Solid::ModelEvaluator::Generic& evaluator(const enum Inpar::Solid::ModelType& mt) const;
 
     //!@}
 
@@ -452,8 +452,8 @@ namespace Solid
     void check_init() const;
 
    private:
-    Teuchos::RCP<Solid::ModelEvaluator::Vector> transform_to_vector(
-        const Solid::ModelEvaluator::Map& model_map) const;
+    Teuchos::RCP<Solid::ModelEvaluatorManager::Vector> transform_to_vector(
+        const Solid::ModelEvaluatorManager::Map& model_map) const;
 
     /** \brief Assembly of all force contributions
      *
@@ -501,7 +501,7 @@ namespace Solid
 
     /** \brief Extract from the internally stored model vector all models
      *  with the desired types */
-    void extract_model_vector(Solid::ModelEvaluator::Vector& partial_me_vec,
+    void extract_model_vector(Solid::ModelEvaluatorManager::Vector& partial_me_vec,
         const std::vector<Inpar::Solid::ModelType>& only_these_models) const;
 
    private:
@@ -511,11 +511,11 @@ namespace Solid
     //! Flag to indicate whether setup() has been called
     bool issetup_;
 
-    Teuchos::RCP<Solid::ModelEvaluator::Map> me_map_ptr_;
+    Teuchos::RCP<Solid::ModelEvaluatorManager::Map> me_map_ptr_;
 
-    Teuchos::RCP<Solid::ModelEvaluator::Vector> me_vec_ptr_;
+    Teuchos::RCP<Solid::ModelEvaluatorManager::Vector> me_vec_ptr_;
 
-    Teuchos::RCP<Solid::MODELEVALUATOR::Data> eval_data_ptr_;
+    Teuchos::RCP<Solid::ModelEvaluator::Data> eval_data_ptr_;
 
     //! Pointer to the structural dynamic data container
     Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> sdyn_ptr_;
@@ -531,7 +531,7 @@ namespace Solid
     //! Pointer to the underlying time integrator (read-only)
     Teuchos::RCP<const Solid::TimeInt::Base> timint_ptr_;
 
-  };  // class ModelEvaluator
+  };  // class ModelEvaluatorManager
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

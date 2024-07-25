@@ -26,7 +26,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
 }
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     /**
      * \brief This class serves as a model evaluator for different types
@@ -52,7 +52,7 @@ namespace Solid
        */
       void setup() override;
 
-      //! @name Derived public Solid::MODELEVALUATOR::Generic methods
+      //! @name Derived public Solid::ModelEvaluator::Generic methods
       //! @{
       Inpar::Solid::ModelType type() const override { return Inpar::Solid::model_constraints; }
 
@@ -156,7 +156,7 @@ namespace Solid
       Teuchos::RCP<Epetra_Vector> constraint_force_ptr_;
       //! @}
     };
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

@@ -37,7 +37,7 @@ namespace Core::LinAlg
 
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class BrownianDynData;
 
@@ -49,7 +49,7 @@ namespace Solid
 
       void setup() override;
 
-      //! @name Derived public Solid::MODELEVALUATOR::Generic methods
+      //! @name Derived public Solid::ModelEvaluator::Generic methods
       //! @{
       //! derived
 
@@ -185,7 +185,7 @@ namespace Solid
       };
 
       //! brownian dyn evaluation data container
-      Teuchos::RCP<Solid::MODELEVALUATOR::BrownianDynData> eval_browniandyn_ptr_;
+      Teuchos::RCP<Solid::ModelEvaluator::BrownianDynData> eval_browniandyn_ptr_;
 
       //! global internal force at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> f_brown_np_ptr_;
@@ -206,7 +206,7 @@ namespace Solid
       Teuchos::RCP<Core::FE::Discretization> discret_ptr_;
 
     };  // class BrownianDyn
-  }     // namespace MODELEVALUATOR
+  }     // namespace ModelEvaluator
 }  // namespace Solid
 
 

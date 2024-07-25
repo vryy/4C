@@ -298,7 +298,7 @@ namespace SSI
         Teuchos::RCP<const Epetra_Vector> mechanical_stress_state) const;
 
     void set_modelevaluator_base_ssi(
-        Teuchos::RCP<Solid::MODELEVALUATOR::Generic> modelevaluator_ssi_base)
+        Teuchos::RCP<Solid::ModelEvaluator::Generic> modelevaluator_ssi_base)
     {
       modelevaluator_ssi_base_ = modelevaluator_ssi_base;
     }
@@ -406,7 +406,7 @@ namespace SSI
     Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
 
     //! structure model evaluator for ssi problems
-    Teuchos::RCP<Solid::MODELEVALUATOR::Generic> modelevaluator_ssi_base_;
+    Teuchos::RCP<Solid::ModelEvaluator::Generic> modelevaluator_ssi_base_;
 
     //! underlying scatra problem base algorithm
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_base_algorithm_;

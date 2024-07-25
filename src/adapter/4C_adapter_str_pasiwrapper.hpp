@@ -32,10 +32,10 @@ namespace Solid
 {
   class MapExtractor;
 
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class PartitionedPASI;
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 /*----------------------------------------------------------------------*
@@ -50,7 +50,7 @@ namespace Adapter
     explicit PASIStructureWrapper(Teuchos::RCP<Structure> structure);
 
     //! set pointer to model evaluator
-    void set_model_evaluator_ptr(Teuchos::RCP<Solid::MODELEVALUATOR::PartitionedPASI> me)
+    void set_model_evaluator_ptr(Teuchos::RCP<Solid::ModelEvaluator::PartitionedPASI> me)
     {
       pasi_model_evaluator_ = me;
       return;
@@ -68,10 +68,10 @@ namespace Adapter
     //! If this method is related to the structural field,
     //! a corresponding method in the model evaluator may be
     //! called, if necessary.
-    Teuchos::RCP<Solid::MODELEVALUATOR::PartitionedPASI> pasi_model_evaluator_;
+    Teuchos::RCP<Solid::ModelEvaluator::PartitionedPASI> pasi_model_evaluator_;
 
     //! access the pasi model evaluator
-    Teuchos::RCP<Solid::MODELEVALUATOR::PartitionedPASI> pasi_model_evaluator()
+    Teuchos::RCP<Solid::ModelEvaluator::PartitionedPASI> pasi_model_evaluator()
     {
       return pasi_model_evaluator_;
     };

@@ -1030,7 +1030,7 @@ template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype,
 void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype,
     kinematic_type>::initialize_gauss_point_data_output(const Core::Elements::Element& ele,
     const Mat::So3Material& solid_material,
-    FourC::Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
+    FourC::Solid::ModelEvaluator::GaussPointDataOutputManager& gp_data_output_manager) const
 {
   FOUR_C_ASSERT(ele.is_params_interface(),
       "This action type should only be called from the new time integration framework!");
@@ -1044,7 +1044,7 @@ template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype,
 void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype,
     kinematic_type>::evaluate_gauss_point_data_output(const Core::Elements::Element& ele,
     const Mat::So3Material& solid_material,
-    FourC::Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
+    FourC::Solid::ModelEvaluator::GaussPointDataOutputManager& gp_data_output_manager) const
 {
   FOUR_C_ASSERT(ele.is_params_interface(),
       "This action type should only be called from the new time integration framework!");

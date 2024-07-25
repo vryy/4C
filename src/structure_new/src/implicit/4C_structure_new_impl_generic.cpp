@@ -17,12 +17,11 @@
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_group_prepostoperator.hpp"
 #include "4C_solver_nonlin_nox_solver_linesearchbased.hpp"
-#include "4C_structure_new_model_evaluator.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
+#include "4C_structure_new_model_evaluator_manager.hpp"
 #include "4C_structure_new_timint_implicit.hpp"
 
 FOUR_C_NAMESPACE_OPEN
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -253,8 +252,8 @@ void NOX::Nln::PrePostOp::IMPLICIT::Generic::run_post_apply_jacobian_inverse(
   impl_.condition_number(grp);
 
   // reset any possible set correction type at this point
-  const Solid::MODELEVALUATOR::Data& eval_data = impl_.eval_data();
-  const_cast<Solid::MODELEVALUATOR::Data&>(eval_data).set_correction_type(
+  const Solid::ModelEvaluator::Data& eval_data = impl_.eval_data();
+  const_cast<Solid::ModelEvaluator::Data&>(eval_data).set_correction_type(
       NOX::Nln::CorrectionType::vague);
 }
 

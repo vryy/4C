@@ -33,7 +33,7 @@ namespace CONTACT
 
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class BeamInteractionOld : public Generic
     {
@@ -145,7 +145,7 @@ namespace Solid
       Teuchos::RCP<CONTACT::Beam3cmanager> beamcman_;
     };
 
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

@@ -37,10 +37,10 @@ namespace Solid
     class BaseDataSDyn;
     class BaseDataIO;
   }  // namespace TimeInt
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class Generic;
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 namespace Core::LinAlg
@@ -347,7 +347,7 @@ namespace Adapter
           "In the new structural timeintegration this method is"
           "no longer needed inside the structure. Since this is"
           "FSI specific, the functionality is shifted to the"
-          "Solid::MODELEVALUATOR::PartitionedFSI.");
+          "Solid::ModelEvaluator::PartitionedFSI.");
       return Teuchos::null;
     };
 
@@ -429,11 +429,11 @@ namespace Adapter
     Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() override = 0;
 
     /// access the desired model evaluator (read-only)
-    [[nodiscard]] virtual const Solid::MODELEVALUATOR::Generic& model_evaluator(
+    [[nodiscard]] virtual const Solid::ModelEvaluator::Generic& model_evaluator(
         Inpar::Solid::ModelType mtype) const = 0;
 
     /// access the desired model evaluator (read and write)
-    Solid::MODELEVALUATOR::Generic& model_evaluator(Inpar::Solid::ModelType mtype) override = 0;
+    Solid::ModelEvaluator::Generic& model_evaluator(Inpar::Solid::ModelType mtype) override = 0;
 
     /// direct access to discretization
     Teuchos::RCP<Core::FE::Discretization> discretization() override = 0;
@@ -558,7 +558,7 @@ namespace Adapter
      *
      *  \date 11/16 */
     void register_model_evaluator(
-        const std::string name, Teuchos::RCP<Solid::MODELEVALUATOR::Generic> me);
+        const std::string name, Teuchos::RCP<Solid::ModelEvaluator::Generic> me);
 
     /// structural field solver
     Teuchos::RCP<Structure> structure_field() { return str_wrapper_; }
@@ -577,8 +577,8 @@ namespace Adapter
      *  The inherent structural models are identified by the corresponding conditions and/or
      *  other unique criteria. If your intention is to solve a partitioned coupled problem and
      *  you need to modify the structural right-hand-side in any way, then you have to implement
-     *  your own concrete implementation of a Solid::MODELEVALUATOR::Generic class and register it
-     *  as a Teuchos::RCP<Solid::MODELEVALUATOR::Generic> pointer in your problem dynamic parameter-
+     *  your own concrete implementation of a Solid::ModelEvaluator::Generic class and register it
+     *  as a Teuchos::RCP<Solid::ModelEvaluator::Generic> pointer in your problem dynamic parameter-
      *  list. For partitioned problems you have to use the parameter-name
      *  \"Partitioned Coupling Model\".
      *
@@ -588,11 +588,11 @@ namespace Adapter
      *  <ol>
      *
      *  <li> Create a model evaluator that derives from
-     *  Solid::MODELEVALUATOR::Generic. For example, the model evaluator
+     *  Solid::ModelEvaluator::Generic. For example, the model evaluator
      *  \c FSI_Partitioned might be defined as shown below.
      *
      *  \code
-     *  class FSI_Partitioned : public Solid::MODELEVALUATOR::Generic
+     *  class FSI_Partitioned : public Solid::ModelEvaluator::Generic
      *  {
      *  // Insert class definition here
      *  }
@@ -605,15 +605,15 @@ namespace Adapter
      *  Teuchos::RCP<FSI_Partitioned> fsi_model_ptr = Teuchos::rcp(new FSI_Partitioned());
      *  // optional: call of your own 2-nd init() method
      *  fsi_model_ptr->init(stuff_you_need_inside_the_model_evaluator);
-     *  prbdyn.set<Teuchos::RCP<Solid::MODELEVALUATOR::Generic> >("Partitioned Coupling Model",
+     *  prbdyn.set<Teuchos::RCP<Solid::ModelEvaluator::Generic> >("Partitioned Coupling Model",
      *      fsi_model_ptr);
      *  \endcode
      *
      *  </ol>
      *
      *  \remark Please keep in mind, that the prescribed Generic::init() and Generic::setup()
-     *  methods will be called automatically in the Solid::ModelEvaluator::setup() routine. If
-     *  you need a different init() method, just define a second init() function with different
+     *  methods will be called automatically in the Solid::ModelEvaluatorManager::setup() routine.
+     * If you need a different init() method, just define a second init() function with different
      *  input variables in your concrete class implementation and call it somewhere in your code
      *  (see upper example code).
      *  The constructor is supposed to stay empty. If you need a safety check, you can overload

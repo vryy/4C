@@ -25,7 +25,6 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Solid
 {
   namespace TimeInt

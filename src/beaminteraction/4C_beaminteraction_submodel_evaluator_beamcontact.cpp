@@ -244,7 +244,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::post_setup()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::init_submodel_dependencies(
-    Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Map> const submodelmap)
+    Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap)
 {
   check_init_setup();
   // no active influence on other submodels
@@ -379,7 +379,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::pre_update_step_element(bo
    * from previous time step */
   /* Fixme
    * writing this output also must be done BEFORE re-distribution which
-   * currently happens in Solid::MODELEVALUATOR::BeamInteraction::update_step_element()
+   * currently happens in Solid::ModelEvaluator::BeamInteraction::update_step_element()
    * before calling update_step_element() on all submodels.
    * Hence, the only option currently is to call it from pre_update_step_element() */
   /* Note: another option would be to not use any data from state vectors or elements and only

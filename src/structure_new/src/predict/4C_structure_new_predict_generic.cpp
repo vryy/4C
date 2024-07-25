@@ -15,7 +15,7 @@
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_structure_new_dbc.hpp"
 #include "4C_structure_new_impl_generic.hpp"
-#include "4C_structure_new_model_evaluator.hpp"
+#include "4C_structure_new_model_evaluator_manager.hpp"
 #include "4C_structure_new_timint_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -32,7 +32,6 @@ Solid::Predict::Generic::Generic()
 {
   // empty
 }
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

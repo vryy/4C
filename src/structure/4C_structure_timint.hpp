@@ -922,7 +922,7 @@ namespace Solid
       return false;
     }
 
-    Solid::MODELEVALUATOR::Generic& model_evaluator(Inpar::Solid::ModelType mtype) override
+    Solid::ModelEvaluator::Generic& model_evaluator(Inpar::Solid::ModelType mtype) override
     {
       FOUR_C_THROW("new time integration only");
       exit(EXIT_FAILURE);

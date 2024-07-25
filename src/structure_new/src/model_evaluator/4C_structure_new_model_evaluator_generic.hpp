@@ -71,7 +71,7 @@ namespace Solid
     class Base;
   }  // namespace TimeInt
 
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class Data;
 
@@ -79,7 +79,7 @@ namespace Solid
      *
      *  This class summarizes the functionality which all model evaluators share
      *  and/or have to implement. Look in the derived classes for examples. A minimal
-     *  example can be found at \ref Solid::MODELEVALUATOR::PartitionedFSI.
+     *  example can be found at \ref Solid::ModelEvaluator::PartitionedFSI.
      *
      *  \date 08/15
      *  \author hiermeier */
@@ -103,7 +103,7 @@ namespace Solid
        * @param timint_ptr
        * @param[in] dof_offset
        */
-      virtual void init(const Teuchos::RCP<Solid::MODELEVALUATOR::Data>& eval_data_ptr,
+      virtual void init(const Teuchos::RCP<Solid::ModelEvaluator::Data>& eval_data_ptr,
           const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
           const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
           const Teuchos::RCP<Solid::Integrator>& int_ptr,
@@ -179,7 +179,7 @@ namespace Solid
       /*! \brief Perform actions just before the evaluate() call
        *
        * Called in the very beginning of each call to one of the
-       * Solid::ModelEvaluator::Evaluate routines, such as evaluate_force,
+       * Solid::ModelEvaluatorManager::Evaluate routines, such as evaluate_force,
        * evaluate_stiff, evaluate_force_stiff.
        *
        * \author hiermeier \date 03/17
@@ -189,7 +189,7 @@ namespace Solid
       /*! \brief Perform actions right after the evaluate() call
        *
        * Called at the end of each call to one of the
-       * Solid::ModelEvaluator::Evaluate routines, i.e. evaluate_force,
+       * Solid::ModelEvaluatorManager::Evaluate routines, i.e. evaluate_force,
        * evaluate_stiff, evaluate_force_stiff.
        *
        * \author hiermeier \date 03/17
@@ -450,7 +450,7 @@ namespace Solid
       //! @name internal accessors
       //! @{
       //! Returns the model evaluator data container
-      const Solid::MODELEVALUATOR::Data& eval_data() const;
+      const Solid::ModelEvaluator::Data& eval_data() const;
 
       //! Returns the global state data container
       const Solid::TimeInt::BaseDataGlobalState& global_state() const;
@@ -485,8 +485,8 @@ namespace Solid
       //! @name internal accessors
       //! @{
       //! Returns the model evaluator data container
-      Solid::MODELEVALUATOR::Data& eval_data();
-      Teuchos::RCP<Solid::MODELEVALUATOR::Data>& eval_data_ptr();
+      Solid::ModelEvaluator::Data& eval_data();
+      Teuchos::RCP<Solid::ModelEvaluator::Data>& eval_data_ptr();
 
       //! Returns the global state data container
       Solid::TimeInt::BaseDataGlobalState& global_state();
@@ -515,7 +515,7 @@ namespace Solid
 
      private:
       //! pointer to the model evaluator data container
-      Teuchos::RCP<Solid::MODELEVALUATOR::Data> eval_data_ptr_;
+      Teuchos::RCP<Solid::ModelEvaluator::Data> eval_data_ptr_;
 
       //! pointer to the global state data container
       Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
@@ -541,7 +541,7 @@ namespace Solid
 
     };  // class Generic
 
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

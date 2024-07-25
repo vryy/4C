@@ -164,18 +164,18 @@ void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretizat
     {
       if (modeltypes_->find(Inpar::Solid::model_monolithic_coupling) != modeltypes->end())
         FOUR_C_THROW("Cannot have both monolithic and partitioned coupling at the same time!");
-      coupling_model_ptr_ = sdynparams.get<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
+      coupling_model_ptr_ = sdynparams.get<Teuchos::RCP<Solid::ModelEvaluator::Generic>>(
           "Partitioned Coupling Model");
     }
     else if (modeltypes_->find(Inpar::Solid::model_monolithic_coupling) != modeltypes->end())
     {
       coupling_model_ptr_ =
-          sdynparams.get<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>("Monolithic Coupling Model");
+          sdynparams.get<Teuchos::RCP<Solid::ModelEvaluator::Generic>>("Monolithic Coupling Model");
     }
     else if (modeltypes_->find(Inpar::Solid::model_basic_coupling) != modeltypes->end())
     {
       coupling_model_ptr_ =
-          sdynparams.get<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>("Basic Coupling Model");
+          sdynparams.get<Teuchos::RCP<Solid::ModelEvaluator::Generic>>("Basic Coupling Model");
     }
   }
   // ---------------------------------------------------------------------------

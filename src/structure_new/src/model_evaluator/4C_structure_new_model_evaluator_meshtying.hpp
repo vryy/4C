@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief Evaluation and assembly of all meshtying terms
+\brief Evaluation and assembly of all mesh-tying terms
 
 
 \level 3
@@ -33,7 +33,7 @@ namespace Mortar
 
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class MeshtyingData;
 
@@ -56,7 +56,7 @@ namespace Solid
        * @param timint_ptr
        * @param dof_offset
        */
-      void init(const Teuchos::RCP<Solid::MODELEVALUATOR::Data>& eval_data_ptr,
+      void init(const Teuchos::RCP<Solid::ModelEvaluator::Data>& eval_data_ptr,
           const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
           const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
           const Teuchos::RCP<Solid::Integrator>& int_ptr,
@@ -229,9 +229,9 @@ namespace Solid
 
       //! Mesh relocation for conservation of angular momentum
       Teuchos::RCP<Epetra_Vector> mesh_relocation_;
-    };  // namespace MODELEVALUATOR
+    };  // namespace ModelEvaluator
 
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 }  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE

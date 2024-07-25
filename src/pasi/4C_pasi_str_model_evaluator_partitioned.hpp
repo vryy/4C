@@ -33,7 +33,7 @@ namespace Adapter
  *---------------------------------------------------------------------------*/
 namespace Solid
 {
-  namespace MODELEVALUATOR
+  namespace ModelEvaluator
   {
     class PartitionedPASI : public Generic
     {
@@ -158,7 +158,7 @@ namespace Solid
       Teuchos::RCP<Epetra_Vector> interface_force_np_ptr_;
     };
 
-  }  // namespace MODELEVALUATOR
+  }  // namespace ModelEvaluator
 
 }  // namespace Solid
 

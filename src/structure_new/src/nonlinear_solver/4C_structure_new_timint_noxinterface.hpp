@@ -23,6 +23,7 @@
 #include <NOX_Epetra_Interface_Preconditioner.H>  // (3) base class: preconditioner stuff
 
 FOUR_C_NAMESPACE_OPEN
+
 // forward declaration ...
 namespace NOX
 {
@@ -200,7 +201,6 @@ namespace Solid
     };  // class nox_interface
   }     // namespace TimeInt
 }  // namespace Solid
-
 
 FOUR_C_NAMESPACE_CLOSE
 

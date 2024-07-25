@@ -220,7 +220,7 @@ namespace Discret::ELEMENTS
    */
   inline void ask_and_add_quantities_to_gauss_point_data_output(const int num_gp,
       const Mat::So3Material& solid_material,
-      Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager)
+      Solid::ModelEvaluator::GaussPointDataOutputManager& gp_data_output_manager)
   {
     // Save number of Gauss Points of the element for gauss point data output
     gp_data_output_manager.add_element_number_of_gauss_points(num_gp);
@@ -250,7 +250,7 @@ namespace Discret::ELEMENTS
   inline void collect_and_assemble_gauss_point_data_output(
       const Core::FE::GaussIntegration& stiffness_matrix_integration,
       const Mat::So3Material& solid_material, const Core::Elements::Element& ele,
-      Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager)
+      Solid::ModelEvaluator::GaussPointDataOutputManager& gp_data_output_manager)
   {
     // Collection and assembly of gauss point data
     for (const auto& quantity : gp_data_output_manager.get_quantities())
