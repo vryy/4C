@@ -25,7 +25,8 @@
 #include "4C_poroelast_utils.hpp"
 #include "4C_so3_poro_p1_scatra_eletypes.hpp"
 #include "4C_so3_poro_scatra_eletypes.hpp"
-#include "4C_solid_poro_3D_ele.hpp"
+#include "4C_solid_poro_3D_ele_pressure_based.hpp"
+#include "4C_solid_poro_3D_ele_pressure_velocity_based.hpp"
 #include "4C_w1_poro_p1_scatra_eletypes.hpp"
 #include "4C_w1_poro_scatra_eletypes.hpp"
 
@@ -38,7 +39,9 @@ bool PoroElastScaTra::UTILS::IsPoroScatraElement(const Core::Elements::Element* 
 {
   // checks if element is a poro scatra element (new elements need to be listed here)
   return actele->element_type() == Discret::ELEMENTS::SoHex8PoroScatraType::instance() or
-         actele->element_type() == Discret::ELEMENTS::SolidPoroType::instance() or
+         actele->element_type() == Discret::ELEMENTS::SolidPoroPressureBasedType::instance() or
+         actele->element_type() ==
+             Discret::ELEMENTS::SolidPoroPressureVelocityBasedType::instance() or
          actele->element_type() == Discret::ELEMENTS::SoTet4PoroScatraType::instance() or
          actele->element_type() == Discret::ELEMENTS::SoTet10PoroScatraType::instance() or
          actele->element_type() == Discret::ELEMENTS::SoHex27PoroScatraType::instance() or

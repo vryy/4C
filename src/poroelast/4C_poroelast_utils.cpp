@@ -27,7 +27,8 @@
 #include "4C_poroelast_utils_clonestrategy.hpp"
 #include "4C_so3_poro_eletypes.hpp"
 #include "4C_so3_poro_p1_eletypes.hpp"
-#include "4C_solid_poro_3D_ele.hpp"
+#include "4C_solid_poro_3D_ele_pressure_based.hpp"
+#include "4C_solid_poro_3D_ele_pressure_velocity_based.hpp"
 #include "4C_w1_poro_eletypes.hpp"
 #include "4C_w1_poro_p1_eletypes.hpp"
 
@@ -37,7 +38,9 @@ bool PoroElast::UTILS::IsPoroElement(const Core::Elements::Element* actele)
 {
   // all poro elements need to be listed here
   return actele->element_type() == Discret::ELEMENTS::SoHex8PoroType::instance() or
-         actele->element_type() == Discret::ELEMENTS::SolidPoroType::instance() or
+         actele->element_type() == Discret::ELEMENTS::SolidPoroPressureBasedType::instance() or
+         actele->element_type() ==
+             Discret::ELEMENTS::SolidPoroPressureVelocityBasedType::instance() or
          actele->element_type() == Discret::ELEMENTS::SoTet4PoroType::instance() or
          actele->element_type() == Discret::ELEMENTS::SoTet10PoroType::instance() or
          actele->element_type() == Discret::ELEMENTS::SoHex27PoroType::instance() or
