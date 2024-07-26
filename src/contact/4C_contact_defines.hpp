@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 // #define CONTACTEXPORT             /* flag for export of inttime, active set... to textfiles. USE
 // WITH CONTACTASOUTPUT AND CONTACTFORCEOUTPUT */ #define CONTACTASOUTPUT           /* flag for
 // detailed active set output */ #define CONTACTFORCEOUTPUT        /* flag for output of contact
-// forces */ #define CHECKCONSERVATIONLAWS     /* check linear and angular conservation laws */
+// forces */
 // #define CONTACTSTATUS             /* flag for contact segmentation measurement */
 // #define CONTACTEIG                /* flag for eigenvalue+condition analysis */
 // #define CONTACTFDNORMAL           /* flag for FD check of normal derivative */

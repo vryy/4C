@@ -1301,11 +1301,6 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
       Teuchos::RCP<Epetra_Vector> fmoldexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
       Core::LinAlg::export_to(*fmold, *fmoldexp);
       feff->Update(alphaf_, *fmoldexp, 1.0);
-
-      // Check linear and angular momentum conservation
-#ifdef CHECKCONSERVATIONLAWS
-      check_conservation_laws(*fs, *fm);
-#endif
     }
   }
 
@@ -2904,14 +2899,6 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
       Core::LinAlg::export_to(*fm, *fmexp);
       feff->Update(1.0 - alphaf_, *fmexp, 1.0);
 
-      // Check linear and angular momentum conservation
-#ifdef CHECKCONSERVATIONLAWS
-      check_conservation_laws(*fs, *fm);
-//      double normlambda = 0.0;
-//      z_->Norm1(&normlambda);
-//      std::cout << "normlambda =  " << normlambda << std::endl;
-#endif
-
       // add old contact forces (t_n)
       Teuchos::RCP<Epetra_Vector> fsold = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
       dold_->multiply(true, *zold_, *fsold);
@@ -4037,7 +4024,6 @@ void CONTACT::LagrangeStrategy::eval_str_contact_rhs()
     // add contact force terms
     Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     dmatrix_->multiply(true, *z_, *fs);
-    //    Core::LinAlg::MLMultiply(*lindmatrix_,false,*trafo_,false,false,false,true);
     Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::export_to(*fs, *fsexp);
     strcontactrhs_->Update(+1., *fsexp, 1.0);
@@ -4047,11 +4033,6 @@ void CONTACT::LagrangeStrategy::eval_str_contact_rhs()
     Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::export_to(*fm, *fmexp);
     strcontactrhs_->Update(-1., *fmexp, 1.0);
-
-    // Check linear and angular momentum conservation
-#ifdef CHECKCONSERVATIONLAWS
-    check_conservation_laws(*fs, *fm);
-#endif
   }
 
 
@@ -5210,65 +5191,6 @@ void CONTACT::LagrangeStrategy::update(Teuchos::RCP<const Epetra_Vector> dis)
   //    FOUR_C_THROW("File could not be opened.");
   //
   //  ++step;
-
-  return;
-}
-/*----------------------------------------------------------------------*
- |  Check conservation laws                              hiermeier 06/14|
- *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::check_conservation_laws(
-    const Epetra_Vector& fs, const Epetra_Vector& fm)
-{
-  // change sign (adapt sign convention from the augmented Lagrange formulation)
-  Teuchos::RCP<Epetra_Vector> tmpFm = Teuchos::rcp(new Epetra_Vector(fm));
-  tmpFm->Scale(-1.0);
-
-  double lssum = 0.0;  // local slave sum
-  double gssum = 0.0;  // global slave sum
-  double lmsum = 0.0;  // local master sum
-  double gmsum = 0.0;  // global master sum
-  double gcsum = 0.0;  // global complete sum
-  // slave
-  for (int i = 0; i < fs.MyLength(); ++i) lssum += (fs)[i];
-  get_comm().SumAll(&lssum, &gssum, 1);
-  // master
-  for (int i = 0; i < tmpFm->MyLength(); ++i) lmsum += (*tmpFm)[i];
-  get_comm().SumAll(&lmsum, &gmsum, 1);
-  // complete balance check
-  gcsum = gssum + gmsum;
-  if (abs(gcsum) > 1.0e-11) FOUR_C_THROW("Conservation of linear momentum is not fulfilled!");
-  if (get_comm().MyPID() == 0)
-  {
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
-    std::cout << ">>      Linear Momentum Conservation      <<" << std::endl;
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
-    std::cout << ">>      Standard terms (lm)               <<" << std::endl;
-    std::cout << "SLAVE:   " << std::setw(14) << gssum << std::endl;
-    std::cout << "MASTER:  " << std::setw(14) << gmsum << std::endl;
-    std::cout << "Balance: " << std::setw(14) << gcsum << std::endl;
-    std::cout << "--------------------------------------------" << std::endl;
-  }
-
-
-
-  if (get_comm().MyPID() == 0)
-  {
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
-    std::cout << ">>      Angular Momentum Conservation     <<" << std::endl;
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
-  }
-  for (std::size_t i = 0; i < interface_.size(); ++i)
-  {
-    if (get_comm().MyPID() == 0)
-    {
-      std::cout << ">>----- Interface " << std::setw(2) << i;
-      std::cout << " ---------------------<<" << std::endl;
-      std::cout << ">>      Standard terms (lm)               <<" << std::endl;
-    }
-    interface_[i]->eval_resultant_moment(fs, *tmpFm);
-  }
-  if (get_comm().MyPID() == 0)
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
 
   return;
 }
