@@ -64,10 +64,6 @@ FOUR_C_NAMESPACE_OPEN
 // T (Master side) */ #define CONTACTFDMORTARE_MASTER   /* flag for FD check of mortar matrix E
 //(Master side) */
 
-// PRINTING OF SPECIFIC INFORMATION
-// #define PRINTSTRUCTDEFORMEDNODECOORDS  /* flag
-// for printing all nodes and xspatial in current configuration - only works for 1 processor*/
-
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

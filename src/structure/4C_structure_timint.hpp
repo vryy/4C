@@ -465,9 +465,6 @@ namespace Solid
     //! Active set, energy and momentum output for contact
     void output_contact();
 
-    //! Nodal positions output
-    void output_nodal_positions();
-
     //! Output volume mass
     void output_volume_mass();
 
