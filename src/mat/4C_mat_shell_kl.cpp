@@ -30,8 +30,10 @@ Mat::PAR::KirchhoffLoveShell::KirchhoffLoveShell(const Core::Mat::PAR::Parameter
   if (young_modulus_ <= 0.0)
     FOUR_C_THROW("Young's modulus has to be positive. Got %f", young_modulus_);
   if (poisson_ratio_ <= -1.0 or poisson_ratio_ > 0.5)
-    FOUR_C_THROW("Poisson's ration has to be in the range (-1,1/2]. Got %f", poisson_ratio_);
-  if (thickness_ < 0.0) FOUR_C_THROW("Thickness has to be positive. Got %f", thickness_);
+    FOUR_C_THROW(
+        "Poisson's ratio has to be in the range (-1,1/2]. Got invalid value %f", poisson_ratio_);
+  if (thickness_ < 0.0)
+    FOUR_C_THROW("Thickness has to be positive. Got invalid value %f", thickness_);
 }
 
 /**
