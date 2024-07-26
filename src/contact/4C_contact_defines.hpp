@@ -27,10 +27,8 @@ FOUR_C_NAMESPACE_OPEN
 /************************************************************************/
 
 // GENERAL DEBUGGING OPTIONS
-// #define CONTACTEXPORT             /* flag for export of inttime, active set... to textfiles. USE
-// WITH CONTACTASOUTPUT AND CONTACTFORCEOUTPUT */ #define CONTACTASOUTPUT           /* flag for
-// detailed active set output */ #define CONTACTFORCEOUTPUT        /* flag for output of contact
-// forces */
+
+// #define CONTACTFORCEOUTPUT        /* flag for output of contact forces */
 // #define CONTACTSTATUS             /* flag for contact segmentation measurement */
 // #define CONTACTFDNORMAL           /* flag for FD check of normal derivative */
 // #define CONTACTFDMORTARD          /* flag for FD check of mortar matrix D */

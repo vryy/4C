@@ -4021,14 +4021,6 @@ void Solid::TimIntImpl::export_contact_quantities()
 /* print statistics of converged NRI */
 void Solid::TimIntImpl::print_newton_conv()
 {
-#ifdef CONTACTEXPORT
-  // output integration time for contact and more...
-  if (have_contact_meshtying())
-  {
-    export_contact_quantities();
-  }
-#endif
-
   // print constraint manager's lore
   if (conman_->have_monitor())
   {

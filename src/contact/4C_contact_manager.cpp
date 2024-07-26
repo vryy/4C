@@ -1410,36 +1410,6 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   output.write_vector("tanslaveforce", fcslavetanexp);
   output.write_vector("normasterforce", fcmasternorexp);
   output.write_vector("tanmasterforce", fcmastertanexp);
-
-#ifdef CONTACTEXPORT
-  // export averaged node forces to xxx.force
-  double resultnor[fcslavenor->NumVectors()];
-  double resulttan[fcslavetan->NumVectors()];
-  fcslavenor->Norm2(resultnor);
-  fcslavetan->Norm2(resulttan);
-
-  if (Comm().MyPID() == 0)
-  {
-    std::cout << "resultnor= " << resultnor[0] << std::endl;
-    std::cout << "resulttan= " << resulttan[0] << std::endl;
-
-    FILE* MyFile = nullptr;
-    std::ostringstream filename;
-    const std::string filebase =
-        Global::Problem::instance()->OutputControlFile()->file_name_only_prefix();
-    filename << filebase << ".force";
-    MyFile = fopen(filename.str().c_str(), "at+");
-    if (MyFile)
-    {
-      // fprintf(MyFile,valuename.c_str());
-      fprintf(MyFile, "%g\t", resultnor[0]);
-      fprintf(MyFile, "%g\n", resulttan[0]);
-      fclose(MyFile);
-    }
-    else
-      FOUR_C_THROW("File for Output could not be opened.");
-  }
-#endif  // CONTACTEXPORT
 #endif  // CONTACTFORCEOUTPUT
 
   // *********************************************************************
