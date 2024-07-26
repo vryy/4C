@@ -1382,54 +1382,6 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   GetStrategy().MMatrix()->Multiply(true, *normalstresses, *fcmasternor);
   GetStrategy().MMatrix()->Multiply(true, *tangentialstresses, *fcmastertan);
 
-#ifdef MASTERNODESINCONTACT
-  // BEGIN: to output the global ID's of the master nodes in contact - devaal 02.2011
-
-  int dim = Global::Problem::instance()->NDim();
-
-  if (dim == 2) FOUR_C_THROW("Only working for 3D");
-
-  std::vector<int> lnid, gnid;
-
-  // std::cout << "MasterNor" << fcmasternor->MyLength() << std::endl;
-
-  for (int i = 0; i < fcmasternor->MyLength(); i = i + 3)
-  {
-    // check if master node in contact
-    if (sqrt(((*fcmasternor)[i]) * ((*fcmasternor)[i]) +
-             ((*fcmasternor)[i + 1]) * ((*fcmasternor)[i + 1]) +
-             ((*fcmasternor)[i + 2]) * ((*fcmasternor)[i] + 2)) > 0.00001)
-    {
-      lnid.push_back((fcmasternor->Map()).GID(i) / 3);
-    }
-  }
-
-  // we want to gather data from on all procs
-  std::vector<int> allproc(Comm().NumProc());
-  for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
-
-  // communicate all data to proc 0
-  Core::LinAlg::Gather<int>(lnid, gnid, static_cast<int>(llproc.size()), allproc.data(), Comm());
-
-  // std::cout << " size of gnid:" << gnid.size() << std::endl;
-
-  ////////////////
-  ///// attempt at obtaining the nid and relative displacement u of master nodes in contact - devaal
-  // define my own interface
-  Mortar::StrategyBase& myStrategy = GetStrategy();
-  AbstractStrategy& myContactStrategy = dynamic_cast<AbstractStrategy&>(myStrategy);
-
-  std::vector<Teuchos::RCP<CONTACT::Interface>> myInterface = myContactStrategy.ContactInterfaces();
-
-  // check interface size - just doing this now for a single interface
-
-  if (myInterface.size() != 1) FOUR_C_THROW("Interface size should be 1");
-
-  std::cout << "OUTPUT OF MASTER NODE IN CONTACT" << std::endl;
-  for (const auto& globalNodeId : gnid) std::cout << globalNodeId << std::endl;
-
-#endif
-
   //  // when we do a boundary modification we shift slave entries to the M matrix with
   //  // negative sign. Therefore, we have to extract the right force entries from the
   //  // master force which correcpond to the slave force!

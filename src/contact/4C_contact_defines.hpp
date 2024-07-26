@@ -65,8 +65,7 @@ FOUR_C_NAMESPACE_OPEN
 //(Master side) */
 
 // PRINTING OF SPECIFIC INFORMATION
-// #define MASTERNODESINCONTACT           /* flag for printing master nodes in contact -
-// CONTACTFORCEOUTPUT also has to be switched on*/ #define PRINTSTRUCTDEFORMEDNODECOORDS  /* flag
+// #define PRINTSTRUCTDEFORMEDNODECOORDS  /* flag
 // for printing all nodes and xspatial in current configuration - only works for 1 processor*/
 
 FOUR_C_NAMESPACE_CLOSE
