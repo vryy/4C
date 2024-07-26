@@ -57,22 +57,9 @@ namespace Core::Rebalance
     \return void */
   void GhostDiscretizationOnAllProcs(const Teuchos::RCP<Core::FE::Discretization> distobeghosted);
 
-  /*! \brief Rebalance nodes matching to another discretization.
-   *
-   * \note The discretization serving as template and the discretization
-   *       supposed to be rebalanced have to be matching! That means,
-   *       nodal positions have to coincide.
-   *
-  \param dis_template        (in) : discretization with parallel distr., serving as template
-  \param dis_to_rebalance    (in) : discretization which is rebalanced matching to dis_template
-*/
-  void MatchNodalDistributionOfMatchingDiscretizations(
-      Core::FE::Discretization& dis_template, Core::FE::Discretization& dis_to_rebalance);
-
   /*! \brief Rebalance elements matching to another discretization.
    *
-   *    The difference to \ref MatchNodalDistributionOfMatchingDiscretizations
-   *    is, that a equal distribution of nodes may lead to unequal distribution
+   *    A equal distribution of nodes may lead to unequal distribution
    *    of elements, depending on the algorithm, determining which elements are
    *    owned and which elements are ghosted. This method makes sure, that element
    *    ownerships match and nodes are distributed accordingly.
@@ -151,30 +138,6 @@ namespace Core::Rebalance
   void MatchNodalRowColDistribution(const Core::FE::Discretization& dis_template,
       const Core::FE::Discretization& dis_to_rebalance, std::vector<int>& row_id_vec_to_fill,
       std::vector<int>& col_id_vec_to_fill);
-
-  /// \brief rebalance a map in accordance with a already rebalanced reference map
-  /** \note This function is supposed to work for row as well as for column maps.
-   *
-   *  \param(in) ref_red_map : already rebalanced reference map. This map
-   *                           can be larger than the non-rebalanced map but has to
-   *                           contain the non-rebalanced map as a subset.
-   *  \param(in) unred_map   : original non-rebalanced map
-   *  \param(out) red_map    : rebalanced map, following the same parallel
-   *                           distribution as the reference map
-   *
-   *  \author hiermeier \date 01/18 */
-  void RebalanceInAccordanceWithReference(const Epetra_Map& ref_red_map,
-      const Epetra_Map& unred_map, Teuchos::RCP<Epetra_Map>& red_map);
-
-  /// \brief rebalance a map in accordance with a already rebalanced reference map
-  /** This is a short function wrapper which first generates a new Epetra_Map
-   *  RCP before the magic is happening. See the called function for more info.
-   *
-   *  \return the rebalanced version of the non-rebalanced map in accordance
-   *  with the already rebalanced reference map.
-   */
-  Teuchos::RCP<Epetra_Map> RebalanceInAccordanceWithReference(
-      const Epetra_Map& ref_red_map, const Epetra_Map& unred_map);
 }  // namespace Core::Rebalance
 
 
