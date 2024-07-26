@@ -1200,25 +1200,14 @@ void Mortar::Interface::redistribute_master_side(Teuchos::RCP<Epetra_Map>& rowno
     Teuchos::RCP<Epetra_Map>& colnodes, const Teuchos::RCP<Epetra_Map>& roweles,
     const Teuchos::RCP<Epetra_Comm>& comm, const int parts, const double imbalance) const
 {
-  if (not has_ma_sharing_ref_interface())
-  {
-    // call parallel redistribution
-    Teuchos::RCP<const Epetra_CrsGraph> nodegraph = Core::Rebalance::BuildGraph(idiscret_, roweles);
+  // call parallel redistribution
+  Teuchos::RCP<const Epetra_CrsGraph> nodegraph = Core::Rebalance::BuildGraph(idiscret_, roweles);
 
-    Teuchos::ParameterList rebalanceParams;
-    rebalanceParams.set<std::string>("num parts", std::to_string(parts));
-    rebalanceParams.set<std::string>("imbalance tol", std::to_string(imbalance));
+  Teuchos::ParameterList rebalanceParams;
+  rebalanceParams.set<std::string>("num parts", std::to_string(parts));
+  rebalanceParams.set<std::string>("imbalance tol", std::to_string(imbalance));
 
-    std::tie(rownodes, colnodes) = Core::Rebalance::RebalanceNodeMaps(nodegraph, rebalanceParams);
-  }
-  else
-  {
-    Core::Rebalance::RebalanceInAccordanceWithReference(
-        *get_ma_sharing_ref_interface_ptr()->master_row_nodes(), *master_row_nodes(), rownodes);
-
-    Core::Rebalance::RebalanceInAccordanceWithReference(
-        *get_ma_sharing_ref_interface_ptr()->master_col_nodes(), *master_col_nodes(), colnodes);
-  }
+  std::tie(rownodes, colnodes) = Core::Rebalance::RebalanceNodeMaps(nodegraph, rebalanceParams);
 }
 
 /*----------------------------------------------------------------------*
