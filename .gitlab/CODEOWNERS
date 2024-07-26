@@ -263,6 +263,8 @@ scatra_ele/4C_scatra_ele_calc_artery*         @baci/team_scatra @baci/team_reduc
 scatra_ele/4C_scatra_ele_calc_multiporo*      @baci/team_scatra @baci/team_poro
 scatra_ele/4C_scatra_ele_calc_poro*           @baci/team_scatra @baci/team_poro
 
+shell_kl_nurbs/            @baci/team_structure
+
 shell7p/                   @baci/team_structure
 
 so3/                       @baci/team_structure

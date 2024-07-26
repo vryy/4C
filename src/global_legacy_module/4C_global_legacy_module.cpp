@@ -94,6 +94,7 @@
 #include "4C_mat_scatra.hpp"
 #include "4C_mat_scatra_multiporo.hpp"
 #include "4C_mat_scatra_poro_ecm.hpp"
+#include "4C_mat_shell_kl.hpp"
 #include "4C_mat_spring.hpp"
 #include "4C_mat_structporo.hpp"
 #include "4C_mat_structporo_reaction.hpp"
@@ -118,6 +119,7 @@
 #include "4C_scatra_ele.hpp"
 #include "4C_shell7p_ele.hpp"
 #include "4C_shell7p_ele_scatra.hpp"
+#include "4C_shell_kl_nurbs.hpp"
 #include "4C_so3_hex18.hpp"
 #include "4C_so3_hex20.hpp"
 #include "4C_so3_hex27.hpp"
@@ -189,6 +191,7 @@ namespace
       << Discret::ELEMENTS::Torsion3Type::instance().name() << " "
       << Discret::ELEMENTS::Shell7pType::instance().name() << " "
       << Discret::ELEMENTS::Shell7pScatraType::instance().name() << " "
+      << Discret::ELEMENTS::KirchhoffLoveShellNurbsType::instance().name() << " "
       << Discret::ELEMENTS::MembraneTri3Type::instance().name() << " "
       << Discret::ELEMENTS::MembraneTri6Type::instance().name() << " "
       << Discret::ELEMENTS::MembraneQuad4Type::instance().name() << " "
@@ -341,6 +344,7 @@ namespace
       << Mat::ViscoNeoHookeType::instance().name() << " " << Mat::SpringType::instance().name()
       << " " << Mat::BeamElastHyperMaterialType<double>::instance().name() << " "
       << Mat::BeamElastHyperMaterialType<Sacado::Fad::DFad<double>>::instance().name() << " "
+      << Discret::ELEMENTS::KirchhoffLoveShellNurbsType::instance().name() << " "
       << Mat::PlasticLinElastType::instance().name() << " " << Mat::RobinsonType::instance().name()
       << " " << Mat::DamageType::instance().name() << " "
       << Mat::ElectromagneticMatType::instance().name() << " "
