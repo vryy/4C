@@ -32,7 +32,6 @@ FOUR_C_NAMESPACE_OPEN
 // detailed active set output */ #define CONTACTFORCEOUTPUT        /* flag for output of contact
 // forces */
 // #define CONTACTSTATUS             /* flag for contact segmentation measurement */
-// #define CONTACTEIG                /* flag for eigenvalue+condition analysis */
 // #define CONTACTFDNORMAL           /* flag for FD check of normal derivative */
 // #define CONTACTFDMORTARD          /* flag for FD check of mortar matrix D */
 // #define CONTACTFDMORTARM          /* flag for FD check of mortar matrix M */

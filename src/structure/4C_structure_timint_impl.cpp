@@ -3147,23 +3147,6 @@ void Solid::TimIntImpl::cmt_linear_solve()
     }
   }  // end: feed solver with contact/meshtying information
 
-  // analysis of eigenvalues and condition number
-#ifdef CONTACTEIG
-     // global counter
-  static int globindex = 0;
-  ++globindex;
-
-  // print to file in matlab format
-  std::ostringstream filename;
-  const std::string filebase = "sparsematrix";
-  filename << "o/matlab_output/" << filebase << "_" << globindex << ".mtl";
-  Core::LinAlg::PrintMatrixInMatlabFormat(
-      filename.str().c_str(), *(SystemMatrix()->EpetraMatrix()));
-
-  // print sparsity pattern to file
-  Core::LinAlg::PrintSparsityToPostscript(*(SystemMatrix()->EpetraMatrix()));
-#endif  // #ifdef CONTACTEIG
-
   //**********************************************************************
   // Solving a saddle point system
   // (1) Standard / Dual Lagrange multipliers -> SaddlePoint
@@ -4553,23 +4536,6 @@ int Solid::TimIntImpl::cmt_windk_constr_linear_solve(const double k_ptc)
     }
 
   }  // end: feed solver with contact/meshtying information
-
-  // analysis of eigenvalues and condition number
-#ifdef CONTACTEIG
-     // global counter
-  static int globindex = 0;
-  ++globindex;
-
-  // print to file in matlab format
-  std::ostringstream filename;
-  const std::string filebase = "sparsematrix";
-  filename << "o/matlab_output/" << filebase << "_" << globindex << ".mtl";
-  Core::LinAlg::PrintMatrixInMatlabFormat(
-      filename.str().c_str(), *(SystemMatrix()->EpetraMatrix()));
-
-  // print sparsity pattern to file
-  Core::LinAlg::PrintSparsityToPostscript(*(SystemMatrix()->EpetraMatrix()));
-#endif  // #ifdef CONTACTEIG
 
   //**********************************************************************
   // Solving a saddle point system
