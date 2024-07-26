@@ -545,47 +545,6 @@ void Solid::ModelEvaluator::Contact::output_step_state(
   iowriter.write_vector("norcontactstress", normalstressesexp);
   iowriter.write_vector("tancontactstress", tangentialstressesexp);
 
-#ifdef CONTACTFORCEOUTPUT
-  FOUR_C_THROW("Untested in the new structural framework!");
-  // *********************************************************************
-  // contact forces on slave non master side,
-  // in normal and tangential direction
-  // *********************************************************************
-  // vectors for contact forces
-  Teuchos::RCP<Epetra_Vector> fcslavenor =
-      Teuchos::rcp(new Epetra_Vector(Strategy().DMatrix()->RowMap()));
-  Teuchos::RCP<Epetra_Vector> fcslavetan =
-      Teuchos::rcp(new Epetra_Vector(Strategy().DMatrix()->RowMap()));
-  Teuchos::RCP<Epetra_Vector> fcmasternor =
-      Teuchos::rcp(new Epetra_Vector(Strategy().MMatrix()->DomainMap()));
-  Teuchos::RCP<Epetra_Vector> fcmastertan =
-      Teuchos::rcp(new Epetra_Vector(Strategy().MMatrix()->DomainMap()));
-
-  // vectors with problem dof row map
-  Teuchos::RCP<Epetra_Vector> fcslavenorexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  Teuchos::RCP<Epetra_Vector> fcslavetanexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  Teuchos::RCP<Epetra_Vector> fcmasternorexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  Teuchos::RCP<Epetra_Vector> fcmastertanexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-
-  // multiplication
-  Strategy().DMatrix()->Multiply(true, *normalstresses, *fcslavenor);
-  Strategy().DMatrix()->Multiply(true, *tangentialstresses, *fcslavetan);
-  Strategy().MMatrix()->Multiply(true, *normalstresses, *fcmasternor);
-  Strategy().MMatrix()->Multiply(true, *tangentialstresses, *fcmastertan);
-
-  // export
-  Core::LinAlg::export_to(*fcslavenor, *fcslavenorexp);
-  Core::LinAlg::export_to(*fcslavetan, *fcslavetanexp);
-  Core::LinAlg::export_to(*fcmasternor, *fcmasternorexp);
-  Core::LinAlg::export_to(*fcmastertan, *fcmastertanexp);
-
-  // contact forces on slave and master side
-  iowriter.write_vector("norslaveforce", fcslavenorexp);
-  iowriter.write_vector("tanslaveforce", fcslavetanexp);
-  iowriter.write_vector("normasterforce", fcmasternorexp);
-  iowriter.write_vector("tanmasterforce", fcmastertanexp);
-#endif  // CONTACTFORCEOUTPUT
-
   // *********************************************************************
   // wear with internal state variable approach
   // *********************************************************************

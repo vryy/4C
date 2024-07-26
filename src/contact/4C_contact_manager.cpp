@@ -1353,65 +1353,6 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
     output.write_vector("tanslaveforce", tangentialforceexp);
   }
 
-
-#ifdef CONTACTFORCEOUTPUT
-
-  // *********************************************************************
-  // contact forces on slave non master side,
-  // in normal and tangential direction
-  // *********************************************************************
-  // vectors for contact forces
-  Teuchos::RCP<Epetra_Vector> fcslavenor =
-      Teuchos::rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap()));
-  Teuchos::RCP<Epetra_Vector> fcslavetan =
-      Teuchos::rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap()));
-  Teuchos::RCP<Epetra_Vector> fcmasternor =
-      Teuchos::rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap()));
-  Teuchos::RCP<Epetra_Vector> fcmastertan =
-      Teuchos::rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap()));
-
-  // vectors with problem dof row map
-  Teuchos::RCP<Epetra_Vector> fcslavenorexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  Teuchos::RCP<Epetra_Vector> fcslavetanexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  Teuchos::RCP<Epetra_Vector> fcmasternorexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  Teuchos::RCP<Epetra_Vector> fcmastertanexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-
-  // multiplication
-  GetStrategy().DMatrix()->Multiply(true, *normalstresses, *fcslavenor);
-  GetStrategy().DMatrix()->Multiply(true, *tangentialstresses, *fcslavetan);
-  GetStrategy().MMatrix()->Multiply(true, *normalstresses, *fcmasternor);
-  GetStrategy().MMatrix()->Multiply(true, *tangentialstresses, *fcmastertan);
-
-  //  // when we do a boundary modification we shift slave entries to the M matrix with
-  //  // negative sign. Therefore, we have to extract the right force entries from the
-  //  // master force which correcpond to the slave force!
-  //  Teuchos::RCP<Epetra_Vector> slavedummy =
-  //      Teuchos::rcp(new Epetra_Vector(GetStrategy().d_matrix()->RowMap(),true));
-  //  Core::LinAlg::export_to(*fcmasternor,*slavedummy);
-  //  int err = fcslavenor->Update(-1.0,*slavedummy,1.0);
-  //  if(err!=0)
-  //    FOUR_C_THROW("ERROR");
-  //
-  //  Teuchos::RCP<Epetra_Vector> masterdummy =
-  //      Teuchos::rcp(new Epetra_Vector(GetStrategy().m_matrix()->DomainMap(),true));
-  //  Core::LinAlg::export_to(*slavedummy,*masterdummy);
-  //  err = fcmasternor->Update(-1.0,*masterdummy,1.0);
-  //  if(err!=0)
-  //    FOUR_C_THROW("ERROR");
-
-  // export
-  Core::LinAlg::export_to(*fcslavenor, *fcslavenorexp);
-  Core::LinAlg::export_to(*fcslavetan, *fcslavetanexp);
-  Core::LinAlg::export_to(*fcmasternor, *fcmasternorexp);
-  Core::LinAlg::export_to(*fcmastertan, *fcmastertanexp);
-
-  // contact forces on slave and master side
-  output.write_vector("norslaveforce", fcslavenorexp);
-  output.write_vector("tanslaveforce", fcslavetanexp);
-  output.write_vector("normasterforce", fcmasternorexp);
-  output.write_vector("tanmasterforce", fcmastertanexp);
-#endif  // CONTACTFORCEOUTPUT
-
   // *********************************************************************
   // wear with internal state variable approach
   // *********************************************************************
