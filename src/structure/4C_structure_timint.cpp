@@ -2046,9 +2046,6 @@ void Solid::TimInt::output_step(const bool forced_writerestart)
 
   output_volume_mass();
 
-  // output of nodal positions in current configuration
-  output_nodal_positions();
-
   // write output on micro-scale (multi-scale analysis)
   if (havemicromat_) output_micro();
 }
@@ -2844,77 +2841,6 @@ void Solid::TimInt::prepare_output_micro()
       micro->prepare_output();
     }
   }
-}
-
-/*----------------------------------------------------------------------*/
-/* output nodal positions */
-void Solid::TimInt::output_nodal_positions()
-{
-#ifdef PRINTSTRUCTDEFORMEDNODECOORDS
-
-  /////////////////////////////////////////////////////////////////
-  // from here I want to output my ale displacements - devaal 14.12.2010
-  /////////////////////////////////////////////////////////////////
-
-  if (discret_->Comm().NumProc() != 1)
-    FOUR_C_THROW("The flag PRINTSTRUCTDEFORMEDNODECOORDS is on and only works with 1 processor");
-
-  std::cout << "STRUCT DISCRETIZATION IN THE DEFORMED CONFIGURATIONS" << std::endl;
-  // does discret_ exist here?
-  // std::cout << "discret_->NodeRowMap()" << discret_->NodeRowMap() << std::endl;
-
-  // Teuchos::RCP<Epetra_Vector> mynoderowmap = Teuchos::rcp(new
-  // Epetra_Vector(discret_->NodeRowMap())); Teuchos::RCP<Epetra_Vector> noderowmap_ =
-  // Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap())); dof_row_map_view()  = Teuchos::rcp(new
-  // discret_->dof_row_map());
-  const Epetra_Map* noderowmap = discret_->NodeRowMap();
-  const Epetra_Map* dofrowmap = discret_->dof_row_map();
-
-
-  for (int lid = 0; lid < noderowmap->NumGlobalPoints(); lid++)
-  {
-    int gid;
-    // get global id of a node
-    gid = noderowmap->GID(lid);
-    // get the node
-    Core::Nodes::Node* node = discret_->gNode(gid);
-    // std::cout<<"mynode"<<*node<<std::endl;
-
-    // get the coordinates of the node
-    const double* X = node->X();
-    // get degrees of freedom of a node
-
-    std::vector<int> gdofs = discret_->Dof(node);
-    // std::cout << "for node:" << *node << std::endl;
-    // std::cout << "this is my gdof vector" << gdofs[0] << " " << gdofs[1] << " " << gdofs[2] <<
-    // std::endl;
-
-    // get displacements of a node
-    std::vector<double> mydisp(3, 0.0);
-    for (int ldof = 0; ldof < 3; ldof++)
-    {
-      int displid = dofrowmap->LID(gdofs[ldof]);
-
-      // std::cout << "displacement local id - in the rowmap" << displid << std::endl;
-      mydisp[ldof] = ((*dis_)[0])[displid];
-      // std::cout << "at node" << gid << "mydisplacement in each direction" << mydisp[ldof] <<
-      // std::endl; make zero if it is too small
-      if (abs(mydisp[ldof]) < 0.00001)
-      {
-        mydisp[ldof] = 0.0;
-      }
-    }
-
-    // Export disp, X
-    double newX = mydisp[0] + X[0];
-    double newY = mydisp[1] + X[1];
-    double newZ = mydisp[2] + X[2];
-    // std::cout << "NODE " << gid << "  COORD  " << newX << " " << newY << " " << newZ <<
-    // std::endl;
-    std::cout << gid << " " << newX << " " << newY << " " << newZ << std::endl;
-  }
-
-#endif  // PRINTSTRUCTDEFORMEDNODECOORDS
 }
 
 /*----------------------------------------------------------------------*/

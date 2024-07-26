@@ -558,15 +558,6 @@ void Solid::TimeInt::Base::output_step(bool forced_writerestart)
   {
     output_energy();
   }
-
-  //  OutputVolumeMass();
-
-  // ToDo output of nodal positions in current configuration
-  //  output_nodal_positions();
-
-  // ToDo write output on micro-scale (multi-scale analysis)
-  //  if (HaveMicroMat())
-  //    FOUR_C_THROW("OutputMicro() is not yet implemented!"); // OutputMicro();
 }
 
 /*----------------------------------------------------------------------------*

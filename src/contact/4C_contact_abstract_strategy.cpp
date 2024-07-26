@@ -2659,14 +2659,6 @@ void CONTACT::AbstractStrategy::print_active_set() const
     //--------------------------------------------------------------------
     else
     {
-#ifdef CONTACTEXPORT
-      // export variables
-      double sum_jumpx = 0.0;
-      double sum_jumpe = 0.0;
-      double sum_jumpall = 0.0;
-      double iter_slip = 0.0;
-#endif
-
       // loop over all nodes
       for (int k = 0; k < (int)gnid.size(); ++k)
       {
@@ -2676,13 +2668,6 @@ void CONTACT::AbstractStrategy::print_active_set() const
           printf("SLIP:  %d \t lm_n: % e \t lm_t: % e \t jump1: % e \t jump2: % e \t wear: % e \n",
               gnid[k], glmn[k], glmt[k], gjtx[k], gjte[k], gwear[k]);
           fflush(stdout);
-#ifdef CONTACTEXPORT
-          // preparation for output
-          sum_jumpx += gjtx[k];
-          sum_jumpe += gjte[k];
-          sum_jumpall += sqrt(gjtx[k] * gjtx[k] + gjte[k] * gjte[k]);
-          iter_slip = iter_slip + 1.0;
-#endif
         }
 
         // print nodes of stick set *************************************
@@ -2703,37 +2688,6 @@ void CONTACT::AbstractStrategy::print_active_set() const
         else
           FOUR_C_THROW("Invalid node status %i for frictional case", gsta[k]);
       }
-
-#ifdef CONTACTEXPORT
-      // export averaged slip increments to xxx.jump
-      double sum_jumpx_final = 0.0;
-      double sum_jumpe_final = 0.0;
-      double sum_jumpall_final = 0.0;
-
-      if (iter_slip > 0.0)
-      {
-        sum_jumpx_final = sum_jumpx / iter_slip;
-        sum_jumpe_final = sum_jumpe / iter_slip;
-        sum_jumpall_final = sum_jumpall / iter_slip;
-      }
-
-      FILE* MyFile = nullptr;
-      std::ostringstream filename;
-      const std::string filebase =
-          Global::Problem::instance()->OutputControlFile()->file_name_only_prefix();
-      filename << filebase << ".jump";
-      MyFile = fopen(filename.str().c_str(), "at+");
-      if (MyFile)
-      {
-        // fprintf(MyFile,valuename.c_str());
-        fprintf(MyFile, "%g\t", sum_jumpx_final);
-        fprintf(MyFile, "%g\t", sum_jumpe_final);
-        fprintf(MyFile, "%g\n", sum_jumpall_final);
-        fclose(MyFile);
-      }
-      else
-        FOUR_C_THROW("File for Output could not be opened.");
-#endif
     }
   }
 

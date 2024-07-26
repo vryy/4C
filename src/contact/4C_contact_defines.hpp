@@ -27,12 +27,8 @@ FOUR_C_NAMESPACE_OPEN
 /************************************************************************/
 
 // GENERAL DEBUGGING OPTIONS
-// #define CONTACTEXPORT             /* flag for export of inttime, active set... to textfiles. USE
-// WITH CONTACTASOUTPUT AND CONTACTFORCEOUTPUT */ #define CONTACTASOUTPUT           /* flag for
-// detailed active set output */ #define CONTACTFORCEOUTPUT        /* flag for output of contact
-// forces */ #define CHECKCONSERVATIONLAWS     /* check linear and angular conservation laws */
+
 // #define CONTACTSTATUS             /* flag for contact segmentation measurement */
-// #define CONTACTEIG                /* flag for eigenvalue+condition analysis */
 // #define CONTACTFDNORMAL           /* flag for FD check of normal derivative */
 // #define CONTACTFDMORTARD          /* flag for FD check of mortar matrix D */
 // #define CONTACTFDMORTARM          /* flag for FD check of mortar matrix M */
@@ -64,11 +60,6 @@ FOUR_C_NAMESPACE_OPEN
 // wear cond (Master side)*/ #define CONTACTFDMORTART_MASTER   /* flag for FD check of mortar matrix
 // T (Master side) */ #define CONTACTFDMORTARE_MASTER   /* flag for FD check of mortar matrix E
 //(Master side) */
-
-// PRINTING OF SPECIFIC INFORMATION
-// #define MASTERNODESINCONTACT           /* flag for printing master nodes in contact -
-// CONTACTFORCEOUTPUT also has to be switched on*/ #define PRINTSTRUCTDEFORMEDNODECOORDS  /* flag
-// for printing all nodes and xspatial in current configuration - only works for 1 processor*/
 
 FOUR_C_NAMESPACE_CLOSE
 

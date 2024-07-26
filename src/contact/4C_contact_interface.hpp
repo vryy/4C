@@ -1135,29 +1135,6 @@ namespace CONTACT
 
     //@}
 
-    //! @name Visualization and Debugging methods
-
-    /*!
-    \brief Calculate the resultant angular momentum
-
-    Necessary to check the angular momentum conservation
-
-    */
-    void eval_resultant_moment(const Epetra_Vector& fs, const Epetra_Vector& fm,
-        Core::LinAlg::SerialDenseMatrix* conservation_data_ptr = nullptr) const;
-
-    /*!
-    \brief Get the nodal interface force
-
-    \todo Complete documentation of input parameters.
-
-    @param nodal_force ??
-    @param force ??
-    @param node Node that is queried
-    */
-    void get_force_of_node(Core::LinAlg::Matrix<3, 1>& nodal_force, const Epetra_Vector& force,
-        const Core::Nodes::Node& node) const;
-
     /*!
     \brief Visualize contact stuff with gmsh
 
