@@ -13,8 +13,6 @@
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
-#include <EpetraExt_MatrixMatrix.h>
-#include <EpetraExt_Transpose_RowMatrix.h>
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN
