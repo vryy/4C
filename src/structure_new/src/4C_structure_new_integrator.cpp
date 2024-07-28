@@ -241,9 +241,6 @@ void Solid::Integrator::equilibrate_initial_state()
   stiff_ptr->add(*global_state().get_mass_matrix(), false, 1.0, 0.0);
   stiff_ptr->complete();
 
-  // treatment of elements with special element technology (e.g. pressure DOFs)
-  global_state().apply_element_technology_to_acceleration_system(*stiff_ptr, *rhs_ptr);
-
   // ---------------------------------------------------------------------------
   // build a NOX::Nln::Solid::LinearSystem
   // ---------------------------------------------------------------------------

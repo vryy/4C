@@ -206,9 +206,6 @@ double Solid::TimeInt::NoxInterface::get_primary_rhs_norms(const Epetra_Vector& 
       // export the model specific solution if necessary
       Teuchos::RCP<Epetra_Vector> rhs_ptr = gstate_ptr_->extract_model_entries(mt, F);
 
-      // remove entries specific to element technology
-      gstate_ptr_->remove_element_technologies(rhs_ptr);
-
       int_ptr_->remove_condensed_contributions_from_rhs(*rhs_ptr);
 
       rhsnorm = calculate_norm(rhs_ptr, type, isscaled);
@@ -219,9 +216,6 @@ double Solid::TimeInt::NoxInterface::get_primary_rhs_norms(const Epetra_Vector& 
     {
       // export the model specific solution if necessary
       Teuchos::RCP<Epetra_Vector> rhs_ptr = gstate_ptr_->extract_model_entries(mt, F);
-
-      // extract entries specific to element technology
-      gstate_ptr_->extract_element_technologies(NOX::Nln::StatusTest::quantity_pressure, rhs_ptr);
 
       rhsnorm = calculate_norm(rhs_ptr, type, isscaled);
 
@@ -261,10 +255,6 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_rms(const Epetr
           Teuchos::rcp(new Epetra_Vector(*gstate_ptr_->extract_model_entries(mt, xold)));
       Teuchos::RCP<Epetra_Vector> model_xnew_ptr = gstate_ptr_->extract_model_entries(mt, xnew);
 
-      // remove entries specific to element technology
-      gstate_ptr_->remove_element_technologies(model_incr_ptr);
-      gstate_ptr_->remove_element_technologies(model_xnew_ptr);
-
       model_incr_ptr->Update(1.0, *model_xnew_ptr, -1.0);
       rms = NOX::Nln::Aux::root_mean_square_norm(
           atol, rtol, model_xnew_ptr, model_incr_ptr, disable_implicit_weighting);
@@ -277,12 +267,6 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_rms(const Epetr
       Teuchos::RCP<Epetra_Vector> model_incr_ptr =
           Teuchos::rcp(new Epetra_Vector(*gstate_ptr_->extract_model_entries(mt, xold)));
       Teuchos::RCP<Epetra_Vector> model_xnew_ptr = gstate_ptr_->extract_model_entries(mt, xnew);
-
-      // extract entries specific to element technology
-      gstate_ptr_->extract_element_technologies(
-          NOX::Nln::StatusTest::quantity_pressure, model_incr_ptr);
-      gstate_ptr_->extract_element_technologies(
-          NOX::Nln::StatusTest::quantity_pressure, model_xnew_ptr);
 
       model_incr_ptr->Update(1.0, *model_xnew_ptr, -1.0);
       rms = NOX::Nln::Aux::root_mean_square_norm(
@@ -327,10 +311,6 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_norms(const Epe
       Teuchos::RCP<Epetra_Vector> model_incr_ptr = gstate_ptr_->extract_model_entries(mt, xold);
       Teuchos::RCP<Epetra_Vector> model_xnew_ptr = gstate_ptr_->extract_model_entries(mt, xnew);
 
-      // remove entries specific to element technology
-      gstate_ptr_->remove_element_technologies(model_incr_ptr);
-      gstate_ptr_->remove_element_technologies(model_xnew_ptr);
-
       model_incr_ptr->Update(1.0, *model_xnew_ptr, -1.0);
       updatenorm = calculate_norm(model_incr_ptr, type, isscaled);
 
@@ -341,12 +321,6 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_norms(const Epe
       // export the displacement solution if necessary
       Teuchos::RCP<Epetra_Vector> model_incr_ptr = gstate_ptr_->extract_model_entries(mt, xold);
       Teuchos::RCP<Epetra_Vector> model_xnew_ptr = gstate_ptr_->extract_model_entries(mt, xnew);
-
-      // extract entries specific to element technology
-      gstate_ptr_->extract_element_technologies(
-          NOX::Nln::StatusTest::quantity_pressure, model_incr_ptr);
-      gstate_ptr_->extract_element_technologies(
-          NOX::Nln::StatusTest::quantity_pressure, model_xnew_ptr);
 
       model_incr_ptr->Update(1.0, *model_xnew_ptr, -1.0);
       updatenorm = calculate_norm(model_incr_ptr, type, isscaled);
@@ -397,9 +371,6 @@ double Solid::TimeInt::NoxInterface::get_previous_primary_solution_norms(const E
       // export the displacement solution if necessary
       Teuchos::RCP<Epetra_Vector> model_xold_ptr = gstate_ptr_->extract_model_entries(mt, xold);
 
-      // remove entries specific to element technology
-      gstate_ptr_->remove_element_technologies(model_xold_ptr);
-
       xoldnorm = calculate_norm(model_xold_ptr, type, isscaled);
 
       break;
@@ -408,10 +379,6 @@ double Solid::TimeInt::NoxInterface::get_previous_primary_solution_norms(const E
     {
       // export the displacement solution if necessary
       Teuchos::RCP<Epetra_Vector> model_xold_ptr = gstate_ptr_->extract_model_entries(mt, xold);
-
-      // extract entries specific to element technology
-      gstate_ptr_->extract_element_technologies(
-          NOX::Nln::StatusTest::quantity_pressure, model_xold_ptr);
 
       xoldnorm = calculate_norm(model_xold_ptr, type, isscaled);
 

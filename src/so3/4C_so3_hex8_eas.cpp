@@ -9,7 +9,6 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_so3_hex8.hpp"
-#include "4C_so3_sh8p8.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -63,9 +62,6 @@ void Discret::ELEMENTS::SoHex8::soh8_reiniteas(const Discret::ELEMENTS::SoHex8::
       break;
     case Discret::ELEMENTS::SoHex8::soh8_eassosh8:
       neas_ = 7;
-      break;
-    case Discret::ELEMENTS::SoHex8::soh8_easa:
-      neas_ = Discret::ELEMENTS::SoSh8p8::NUMEAS_A_;
       break;
     case Discret::ELEMENTS::SoHex8::soh8_easnone:
       neas_ = 0;
@@ -308,52 +304,6 @@ void Discret::ELEMENTS::SoHex8::soh8_eassetup(
 
         M_sosh8[i](3, 3) = r[i];
         M_sosh8[i](3, 4) = s[i];
-      }
-      M_sosh8_eval = true;  // now the array is filled statically
-    }
-    // return adress of just evaluated matrix
-    *M_GP = &M_sosh8;  // return adress of static object to target of pointer
-  }
-  else if (eastype_ == soh8_easa)
-  {
-    static std::vector<Core::LinAlg::SerialDenseMatrix> M_sosh8(NUMGPT_SOH8);
-    static bool M_sosh8_eval = false;
-    /* eassosh8 is the EAS interpolation for the Solid-Shell with t=thickness dir.
-    ** consisting of 7 modes, based on
-    **            r 0 0   0 0 0  0             // E_rr
-    **            0 s 0   0 0 0  0             // E_ss
-    **    M =     0 0 t   0 0 rt st            // E_tt
-    **            0 0 0   r s 0  0             // E_rs
-    **            0 0 0   0 0 0  0             // E_st
-    **            0 0 0   0 0 0  0             // E_tr
-    */
-    if (!M_sosh8_eval)
-    {  // if true M already evaluated
-      // (r,s,t) gp-locations of fully integrated linear 8-node Hex
-      const double* t = soh8_get_coordinate_of_gausspoints(2);
-
-      // fill up M at each gp
-      for (unsigned i = 0; i < NUMGPT_SOH8; ++i)
-      {
-        M_sosh8[i].shape(Mat::NUM_STRESS_3D, neas_);
-        int e = 0;
-        M_sosh8[i](2, e++) = t[i] * t[i] * t[i];
-
-        // sosh8
-        // M_sosh8[i](0,e++) = r[i];
-        // M_sosh8[i](1,e++) = s[i];
-        // M_sosh8[i](2,e++) = t[i]; M_sosh8[i](2,e++) = r[i]*t[i]; M_sosh8[i](2,e++) = s[i]*t[i];
-        // M_sosh8[i](3,e++) = r[i]; M_sosh8[i](3,e++) = s[i];
-
-        // mild
-        // M_sosh8[i](0,e++) = r[i];
-        // M_sosh8[i](1,e++) = s[i];
-        // M_sosh8[i](2,e++) = t[i];
-        // M_sosh8[i](3,e++) = r[i]; M_sosh8[i](3,e++) = s[i];
-        // M_sosh8[i](4,e++) = s[i]; M_sosh8[i](4,e++) = t[i];
-        // M_sosh8[i](5,e++) = r[i]; M_sosh8[i](5,e++) = t[i];
-
-        if (e != neas_) FOUR_C_THROW("Too many/few EAS shape functions: %d != %d", e, neas_);
       }
       M_sosh8_eval = true;  // now the array is filled statically
     }

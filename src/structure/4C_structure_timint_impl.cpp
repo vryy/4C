@@ -45,7 +45,6 @@
 #include "4C_mortar_manager_base.hpp"
 #include "4C_mortar_strategy_base.hpp"
 #include "4C_so3_hex8.hpp"
-#include "4C_so3_sh8p8.hpp"
 #include "4C_so3_shw6.hpp"
 #include "4C_structure_aux.hpp"
 #include "4C_structure_timint.hpp"
@@ -566,10 +565,6 @@ void Solid::TimIntImpl::prepare_line_search()
     if ((ele_hex8 != nullptr && ele_hex8->have_eas() == true) ||
         (actele->element_type() == Discret::ELEMENTS::SoShw6Type::instance()))
       haveCondensationLocal = 1;
-    if (actele->element_type() == Discret::ELEMENTS::SoSh8p8Type::instance())
-      FOUR_C_THROW(
-          "no line search for this element implemented.\n"
-          "Feel free to implement similar to hex8 with EAS");
   }
   discret_->get_comm().MaxAll(&haveCondensationLocal, &haveCondensationGlobal, 1);
   if (haveCondensationGlobal)

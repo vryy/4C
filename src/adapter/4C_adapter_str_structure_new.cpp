@@ -48,7 +48,6 @@
 #include "4C_so3_plast_ssn_eletypes.hpp"
 #include "4C_so3_plast_ssn_sosh18.hpp"
 #include "4C_so3_plast_ssn_sosh8.hpp"
-#include "4C_so3_sh8p8.hpp"
 #include "4C_solid_3D_ele.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_group_prepostoperator.hpp"
@@ -588,9 +587,6 @@ void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
   int isfbar_local = 0;
   int isfbar_global = 0;
 
-  int ispressure_local = 0;
-  int ispressure_global = 0;
-
   int isrotvec_local = 0;
   int isrotvec_global = 0;
 
@@ -624,9 +620,6 @@ void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
     if (solid != nullptr)
       if (solid->have_eas()) iseas_local = 1;
 
-    // Detect additional pressure dofs -----------------------------------------
-    if (actele->element_type() == Discret::ELEMENTS::SoSh8p8Type::instance()) ispressure_local = 1;
-
     // Detect fbar
     Discret::ELEMENTS::SoHex8fbar* so_hex8fbar_ele =
         dynamic_cast<Discret::ELEMENTS::SoHex8fbar*>(actele);
@@ -648,10 +641,6 @@ void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
   // eas - sum over all processors
   actdis_->get_comm().SumAll(&iseas_local, &iseas_global, 1);
   if (iseas_global > 0) eletechs.insert(Inpar::Solid::EleTech::eas);
-
-  // pressure - sum over all processors
-  actdis_->get_comm().SumAll(&ispressure_local, &ispressure_global, 1);
-  if (ispressure_global > 0) eletechs.insert(Inpar::Solid::EleTech::pressure);
 
   // fbar - sum over all processors
   actdis_->get_comm().SumAll(&isfbar_local, &isfbar_global, 1);

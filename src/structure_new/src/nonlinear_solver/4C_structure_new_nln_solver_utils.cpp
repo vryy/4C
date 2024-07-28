@@ -183,12 +183,6 @@ void Solid::Nln::SOLVER::convert_ele_tech_to_quantity_type(
       qt.push_back(NOX::Nln::StatusTest::quantity_plasticity);
       break;
     }
-    // --- Pressure case -------------------------------------------------------
-    case Inpar::Solid::EleTech::pressure:
-    {
-      qt.push_back(NOX::Nln::StatusTest::quantity_pressure);
-      break;
-    }
     default:
     {
       // no representation in the quantity type list

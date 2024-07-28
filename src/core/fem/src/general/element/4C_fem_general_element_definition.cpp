@@ -73,7 +73,6 @@ void Core::Elements::ElementDefinition::print_element_dat_header_to_stream(std::
   print_element_lines(stream, "SOLIDSH18PLAST");
   print_element_lines(stream, "SOLIDSH8");
   print_element_lines(stream, "SOLIDSH8PLAST");
-  print_element_lines(stream, "SOLIDSH8P8");
   print_element_lines(stream, "SOLIDSHW6");
   print_element_lines(stream, "SOLIDT10_DEPRECATED");
   print_element_lines(stream, "SOLIDT4_DEPRECATED");
