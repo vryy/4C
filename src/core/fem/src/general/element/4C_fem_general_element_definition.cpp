@@ -59,7 +59,6 @@ void Core::Elements::ElementDefinition::print_element_dat_header_to_stream(std::
   print_element_lines(stream, "SONURBS27");
   print_element_lines(stream, "SOLIDH8_DEPRECATED");
   print_element_lines(stream, "MEMBRANE");
-  print_element_lines(stream, "SOLIDH8P1J1");
   print_element_lines(stream, "SOLIDH8FBAR_DEPRECATED");
   print_element_lines(stream, "SOLIDH8FBARSCATRA_DEPRECATED");
   print_element_lines(stream, "SOLIDH8FBARTHERMO");

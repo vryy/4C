@@ -595,25 +595,6 @@ SOLIDH8_DEPRECATED
 | lambda (opt.)     |  1 x number |
 +-------------------+-------------+
 
-.. _structuresolidh8p1j1:
-
-SOLIDH8P1J1
-^^^^^^^^^^^
-
-*Shapes:*
-
-- :ref:`HEX8 <hex8>` (8 nodes)
-
-**Parameters**
-
-+--------------+-------------+
-| Parameter    | Values      |
-+==============+=============+
-| MAT          |  1 x number |
-+--------------+-------------+
-| KINEM        |  1 x string |
-+--------------+-------------+
-
 .. _structuresolidh8fbar:
 
 SOLIDH8FBAR_DEPRECATED
