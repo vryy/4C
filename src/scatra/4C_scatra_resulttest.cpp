@@ -59,6 +59,10 @@ void ScaTra::ScaTraResultTest::test_node(
       std::string quantity = container.get<std::string>("QUANTITY");
 
       // get result to be tested
+      const double result = result_node(quantity, actnode);
+
+      nerr += compare_values(result, "NODE", container);
+
       test_count++;
     }
   }
