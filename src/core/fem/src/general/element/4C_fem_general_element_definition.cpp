@@ -42,7 +42,6 @@ void Core::Elements::ElementDefinition::print_element_dat_header_to_stream(std::
   print_element_lines(stream, "BEAM3K");
   print_element_lines(stream, "BELE3");
   print_element_lines(stream, "RIGIDSPHERE");
-  print_element_lines(stream, "NSTET5");
   print_element_lines(stream, "SHELL7P");
   print_element_lines(stream, "SHELL7PSCATRA");
   print_element_lines(stream, "SHELL_KIRCHHOFF_LOVE_NURBS");
