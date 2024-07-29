@@ -47,7 +47,6 @@ namespace Discret
       friend class SoHex8fbarScatraType;
       friend class SoHex27ScatraType;
       friend class SoWeg6ScatraType;
-      // friend class NStet5ScatraType;
 
      public:
       //@}

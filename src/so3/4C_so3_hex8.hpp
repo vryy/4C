@@ -470,8 +470,6 @@ namespace Discret
                             //!< Equivalent to all 30 parameters to fully complete element
                             //!< with quadratic modes (see Andelfinger 1993 for details) and
                             //!< therefore also suitable for distorted elements. (for Solid Hex8)
-        soh8_easa = 1000    //!< A-type EAS for sosh8p8
-                            //!< NOTE: not the actual number of EAS parameters
       };
 
       //! type of EAS technology

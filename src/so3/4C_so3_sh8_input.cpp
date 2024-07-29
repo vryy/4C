@@ -37,7 +37,7 @@ bool Discret::ELEMENTS::SoSh8::read_element(const std::string& eletype, const st
     kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
   }
   else
-    FOUR_C_THROW("Reading SO_HEX8p1j1 element failed KINEM unknown");
+    FOUR_C_THROW("Reading SO_SH8 element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
   solid_material()->valid_kinematics(kintype_);

@@ -460,11 +460,6 @@ void Solid::TimeInt::BaseDataGlobalState::setup_element_technology_map_extractor
         setup_rot_vec_map_extractor(mapext);
         break;
       }
-      case (Inpar::Solid::EleTech::pressure):
-      {
-        setup_press_extractor(mapext);
-        break;
-      }
       // element technology doesn't require a map extractor: skip
       default:
         continue;
@@ -568,17 +563,6 @@ void Solid::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
   maps[1] = rotvecdofmap;
 
   multimapext.setup(*dof_row_map_view(), maps);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void Solid::TimeInt::BaseDataGlobalState::setup_press_extractor(
-    Core::LinAlg::MultiMapExtractor& multimapext)
-{
-  check_init();
-
-  // identify pressure DOFs
-  Core::LinAlg::CreateMapExtractorFromDiscretization(*discret_, 3, multimapext);
 }
 
 /*----------------------------------------------------------------------------*
@@ -787,97 +771,6 @@ Teuchos::RCP<Epetra_Vector> Solid::TimeInt::BaseDataGlobalState::extract_model_e
 
 
   return model_ptr;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void Solid::TimeInt::BaseDataGlobalState::remove_element_technologies(
-    Teuchos::RCP<Epetra_Vector>& rhs_ptr) const
-{
-  // loop all active element technologies
-  const std::set<enum Inpar::Solid::EleTech> ele_techs = datasdyn_->get_element_technologies();
-
-  for (const Inpar::Solid::EleTech et : ele_techs)
-  {
-    switch (et)
-    {
-      case (Inpar::Solid::EleTech::pressure):
-      {
-        rhs_ptr = get_element_technology_map_extractor(et).extract_vector(rhs_ptr, 0);
-        break;
-      }
-      // element technology doesn't use extra DOFs: skip
-      default:
-        continue;
-    }
-  }
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void Solid::TimeInt::BaseDataGlobalState::extract_element_technologies(
-    const NOX::Nln::StatusTest::QuantityType checkquantity,
-    Teuchos::RCP<Epetra_Vector>& rhs_ptr) const
-{
-  // convert the given quantity type to an element technology
-  enum Inpar::Solid::EleTech eletech = Solid::Nln::ConvertQuantityType2EleTech(checkquantity);
-  switch (eletech)
-  {
-    case Inpar::Solid::EleTech::pressure:
-    {
-      rhs_ptr = get_element_technology_map_extractor(eletech).extract_vector(rhs_ptr, 1);
-      break;
-    }
-    default:
-    {
-      FOUR_C_THROW("Element technology doesn't use any extra DOFs.");
-      exit(EXIT_FAILURE);
-    }
-  }
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void Solid::TimeInt::BaseDataGlobalState::apply_element_technology_to_acceleration_system(
-    Core::LinAlg::SparseOperator& mass, Epetra_Vector& rhs) const
-{
-  // loop all active element technologies
-  const std::set<enum Inpar::Solid::EleTech>& ele_techs = datasdyn_->get_element_technologies();
-
-  for (const enum Inpar::Solid::EleTech et : ele_techs)
-  {
-    switch (et)
-    {
-      case Inpar::Solid::EleTech::pressure:
-      {
-        // get map extractor
-        const Core::LinAlg::MultiMapExtractor& mapext = get_element_technology_map_extractor(et);
-
-        // set 1 on pressure DOFs in mass matrix
-        mass.apply_dirichlet(*mapext.Map(1));
-
-        // set 0 on pressure DOFs in rhs
-        const Epetra_Vector zeros(*mapext.Map(1), true);
-        mapext.insert_vector(zeros, 1, rhs);
-
-        break;
-      }
-      // element technology doesn't use extra DOFs: skip
-      default:
-        break;
-    }
-  }
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Solid::TimeInt::BaseDataGlobalState::extract_additive_entries(
-    const Epetra_Vector& source) const
-{
-  Teuchos::RCP<Epetra_Vector> addit_ptr =
-      get_element_technology_map_extractor(Inpar::Solid::EleTech::rotvec).extract_vector(source, 0);
-
-  return addit_ptr;
 }
 
 /*----------------------------------------------------------------------------*

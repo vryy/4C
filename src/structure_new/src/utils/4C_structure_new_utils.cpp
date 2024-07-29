@@ -208,12 +208,9 @@ enum Inpar::Solid::ModelType Solid::Nln::ConvertQuantityType2ModelType(
 enum Inpar::Solid::EleTech Solid::Nln::ConvertQuantityType2EleTech(
     const enum NOX::Nln::StatusTest::QuantityType& qtype)
 {
-  enum Inpar::Solid::EleTech eletech = Inpar::Solid::EleTech::pressure;
+  enum Inpar::Solid::EleTech eletech;
   switch (qtype)
   {
-    case NOX::Nln::StatusTest::quantity_pressure:
-      eletech = Inpar::Solid::EleTech::pressure;
-      break;
     case NOX::Nln::StatusTest::quantity_plasticity:
       eletech = Inpar::Solid::EleTech::plasticity;
       break;

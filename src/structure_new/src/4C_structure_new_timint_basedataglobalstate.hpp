@@ -152,8 +152,6 @@ namespace Solid
        *                              (additive)    <->  (non-additive)      */
       void setup_rot_vec_map_extractor(Core::LinAlg::MultiMapExtractor& multimapext);
 
-      void setup_press_extractor(Core::LinAlg::MultiMapExtractor& multimapext);
-
       /*! \brief Extract the part of a vector which belongs to the displacement dofs.
        *
        * \todo ToDo "displacement dofs" might be misleading, since this could also be applied to
@@ -168,22 +166,6 @@ namespace Solid
        * \param source (in) : full vector to extract from. */
       Teuchos::RCP<Epetra_Vector> extract_model_entries(
           const Inpar::Solid::ModelType& mt, const Epetra_Vector& source) const;
-
-      //! Remove DOFs that are specific to element technologies (e.g. pressure DOFs)
-      void remove_element_technologies(Teuchos::RCP<Epetra_Vector>& rhs_ptr) const;
-
-      //! Get DOFs that are specific to element technologies (e.g. pressure DOFs)
-      void extract_element_technologies(const NOX::Nln::StatusTest::QuantityType checkquantity,
-          Teuchos::RCP<Epetra_Vector>& rhs_ptr) const;
-
-      //! Modify mass matrix and rhs according to element technologies
-      void apply_element_technology_to_acceleration_system(
-          Core::LinAlg::SparseOperator& mass, Epetra_Vector& rhs) const;
-
-      /* \brief Extract the part of a vector which belongs to the additive dofs.
-       *
-       * \param source (in) : full vector to extract from. */
-      Teuchos::RCP<Epetra_Vector> extract_additive_entries(const Epetra_Vector& source) const;
 
       /* \brief Extract the part of a vector which belongs to non-additive rotation
        * (pseudo-)vector dofs.

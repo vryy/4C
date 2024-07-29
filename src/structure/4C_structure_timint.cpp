@@ -44,7 +44,6 @@
 #include "4C_mortar_strategy_base.hpp"
 #include "4C_mortar_utils.hpp"
 #include "4C_poroelast_utils.hpp"
-#include "4C_so3_sh8p8.hpp"
 #include "4C_solid_3D_ele.hpp"
 #include "4C_stru_multi_microstatic.hpp"
 #include "4C_structure_resulttest.hpp"
@@ -286,30 +285,6 @@ void Solid::TimInt::setup()
       // in case we have no time dependent locsys conditions in our problem,
       // this is the only time where the whole setup routine is conducted.
       locsysman_->update(-1.0, {}, Global::Problem::instance()->function_manager());
-    }
-  }
-
-  // check if we have elements which use a continuous displacement and pressure
-  // field
-  {
-    int locnumsosh8p8 = 0;
-    // Loop through all elements on processor
-    for (int i = 0; i < discret_->num_my_col_elements(); ++i)
-    {
-      // get the actual element
-
-      if (discret_->l_col_element(i)->element_type() == Discret::ELEMENTS::SoSh8p8Type::instance())
-        locnumsosh8p8 += 1;
-    }
-    // Was at least one SoSh8P8 found on one processor?
-    int glonumsosh8p8 = 0;
-    discret_->get_comm().MaxAll(&locnumsosh8p8, &glonumsosh8p8, 1);
-    // Yes, it was. Go ahead for all processors (even if they do not carry any SoSh8P8 elements)
-    if (glonumsosh8p8 > 0)
-    {
-      pressure_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
-      const int ndim = 3;
-      Core::LinAlg::CreateMapExtractorFromDiscretization(*discret_, ndim, *pressure_);
     }
   }
 

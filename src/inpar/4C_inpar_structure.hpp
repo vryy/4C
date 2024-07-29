@@ -53,9 +53,6 @@ namespace Inpar
         case EleTech::plasticity:
           return "plasticity";
           break;
-        case EleTech::pressure:
-          return "pressure";
-          break;
         case EleTech::rotvec:
           return "rotationvectorDOFs";
           break;
