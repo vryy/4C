@@ -9,8 +9,8 @@ set -e
 INSTALL_DIR="$1"
 # Number of procs for building (default 4)
 NPROCS=${NPROCS:=4}
-# verison 15.0.0
-VERSION="3703c194db5ba3d9f2353aa0f1bb4731c7e53d45"
+# git sha from Trilinos repository:
+VERSION="1eab15637f2998d1e86fe127b78200f2c9687cb5"
 #CHECKSUM=""
 
 
@@ -44,36 +44,46 @@ $CMAKE_COMMAND \
   -D Trilinos_ASSERT_MISSING_PACKAGES=OFF \
   -D Trilinos_ENABLE_Gtest:BOOL=OFF \
   -D Trilinos_ENABLE_Amesos:BOOL=ON \
+    -D Amesos_SHOW_DEPRECATED_WARNINGS:BOOL=OFF \
   -D Trilinos_ENABLE_Amesos2:BOOL=ON \
   -D Trilinos_ENABLE_AztecOO:BOOL=ON \
+    -D AztecOO_SHOW_DEPRECATED_WARNINGS:BOOL=OFF \
   -D Trilinos_ENABLE_Belos:BOOL=ON \
   -D Trilinos_ENABLE_Epetra:BOOL=ON \
-    -D Epetra_HIDE_DEPRECATED_CODE:BOOL=ON \
+    -D Epetra_SHOW_DEPRECATED_WARNINGS:BOOL=OFF \
   -D Trilinos_ENABLE_EpetraExt:BOOL=ON \
-    -D EpetraExt_BUILD_GRAPH_REORDERINGS:BOOL=ON \
-    -D EpetraExt_ENABLE_HDF5:BOOL=OFF \
+    -D EpetraExt_SHOW_DEPRECATED_WARNINGS:BOOL=OFF \
   -D Trilinos_ENABLE_Intrepid:BOOL=ON \
+    -D Intrepid_SHOW_DEPRECATED_WARNINGS:BOOL=OFF \
+  -D Trilinos_ENABLE_Intrepid2:BOOL=ON \
   -D Trilinos_ENABLE_Ifpack:BOOL=ON \
+    -D Ifpack_SHOW_DEPRECATED_WARNINGS:BOOL=OFF \
   -D Trilinos_ENABLE_Ifpack2:BOOL=ON \
   -D Trilinos_ENABLE_Isorropia:BOOL=ON \
+    -D Isorropia_SHOW_DEPRECATED_WARNINGS:BOOL=OFF \
   -D Trilinos_ENABLE_Kokkos:BOOL=ON \
   -D Trilinos_ENABLE_ML:BOOL=ON \
-  -D Trilinos_ENABLE_Galeri:BOOL=OFF \
+    -D ML_SHOW_DEPRECATED_WARNINGS:BOOL=OFF \
   -D Trilinos_ENABLE_MueLu:BOOL=ON \
   -D Trilinos_ENABLE_NOX:BOOL=ON \
   -D Trilinos_ENABLE_Sacado:BOOL=ON \
   -D Trilinos_ENABLE_SEACASExodus:BOOL=ON \
   -D Trilinos_ENABLE_SEACASNemesis:BOOL=OFF \
   -D Trilinos_ENABLE_Shards:BOOL=ON \
+  -D Trilinos_ENABLE_Stratimikos:BOOL=ON \
+  -D Trilinos_ENABLE_Teko:BOOL=ON \
   -D Trilinos_ENABLE_Teuchos:BOOL=ON \
-    -D Teuchos_HIDE_DEPRECATED_CODE:BOOL=ON \
+    -D Teuchos_MODIFY_DEFAULTS_DURING_VALIDATION:BOOL=OFF \
+  -D Trilinos_ENABLE_Thyra:BOOL=ON \
+    -D Thyra_SHOW_DEPRECATED_WARNINGS:BOOL=OFF \
+  -D Trilinos_ENABLE_ThyraEpetraAdapters:BOOL=ON \
+  -D Trilinos_ENABLE_ThyraEpetraExtAdapters:BOOL=ON \
   -D Trilinos_ENABLE_Tpetra:BOOL=ON \
-    -D Tpetra_ENABLE_DEPRECATED_CODE:BOOL=OFF \
     -D Tpetra_INST_INT_INT:BOOL=ON \
   -D Trilinos_ENABLE_Xpetra:BOOL=ON \
-    -D Xpetra_ENABLE_DEPRECATED_CODE:BOOL=OFF \
     -D Xpetra_ENABLE_Epetra:BOOL=ON \
     -D Xpetra_ENABLE_EpetraExt:BOOL=ON \
+    -D Xpetra_SHOW_DEPRECATED_WARNINGS:BOOL=OFF \
   -D Trilinos_ENABLE_Zoltan:BOOL=ON \
   -D Trilinos_ENABLE_Zoltan2:BOOL=ON \
   \
