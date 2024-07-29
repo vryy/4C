@@ -144,7 +144,6 @@ void Core::LinAlg::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
   Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans = Teuchos::null;
   if (transposeA)
   {
-    // Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(false,nullptr,false));
     Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose());
     Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
   }
@@ -187,7 +186,6 @@ void Core::LinAlg::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
   Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans = Teuchos::null;
   if (transposeA)
   {
-    // Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(false,nullptr,false));
     Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose());
     Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
   }

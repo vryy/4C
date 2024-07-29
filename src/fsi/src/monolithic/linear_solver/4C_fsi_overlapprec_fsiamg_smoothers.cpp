@@ -12,7 +12,6 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_linear_solver_preconditioner_linalg.hpp"
 
-#include <EpetraExt_SolverMap_CrsMatrix.h>
 #include <MLAPI_Expressions.h>
 #include <MLAPI_LoadBalanceInverseOperator.h>
 #include <MLAPI_LoadBalanceOperator.h>

@@ -13,7 +13,6 @@
 #include "4C_linear_solver_amgnxn_smoothers.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <EpetraExt_RowMatrixOut.h>
 #include <MueLu_EpetraOperator.hpp>
 #include <MueLu_ParameterListInterpreter.hpp>
 #include <Teuchos_PtrDecl.hpp>
