@@ -98,10 +98,12 @@ void Core::LinearSolver::TekoPreconditioner::setup(
     auto comm = pmatrix_->getRowMap()->getComm();
     Teuchos::updateParametersFromXmlFileAndBroadcast(xmlFileName, tekoParams.ptr(), *comm);
 
-    // Check if multigrid is used as preconditioner for single inverses and attach nullspace and
-    // coordinate information to the respective inverse parameter list.
+    // Check if multigrid is used as preconditioner for single field inverse approximation and
+    // attach nullspace and coordinate information to the respective inverse parameter list.
     for (size_t block = 0; block < pmatrix_->Rows(); block++)
     {
+      // Get the single field preconditioner sub-list of a matrix block hardwired under
+      // "Inverse<1...n>".
       std::string inverse = "Inverse" + std::to_string(block + 1);
       Teuchos::ParameterList& inverseList = tekolist_.sublist(inverse);
 
@@ -130,6 +132,7 @@ void Core::LinearSolver::TekoPreconditioner::setup(
     Teuchos::RCP<Teko::InverseLibrary> invLib =
         Teko::InverseLibrary::buildFromParameterList(*tekoParams, builder);
 
+    // Get the block preconditioner definition parameter sub-list hardwired under "Preconditioner".
     Teuchos::RCP<const Teko::InverseFactory> inverse = invLib->getInverseFactory("Preconditioner");
     Teuchos::RCP<const Thyra::LinearOpBase<double>> inverseOp =
         Teko::buildInverse(*inverse, pmatrix_->getThyraOperator());

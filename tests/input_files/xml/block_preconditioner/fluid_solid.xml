@@ -5,6 +5,9 @@
   field inverses.
   -->
   <!-- ===========  BLOCK PRECONDITIONER ================ -->
+  <!-- Definition of the block preconditioner, which has to be defined under sub-list "Preconditioner",
+       which is used by Teko. The single field inverse approximation methods have to be given under
+       sub-lists "Inverse<1..n>". -->
   <ParameterList name="Preconditioner">
     <Parameter name="Type" type="string" value="Block Gauss-Seidel"/>
     <Parameter name="Use Upper Triangle" type="bool" value="false"/>
