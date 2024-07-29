@@ -1290,6 +1290,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
       switch (azprectype)
       {
         case Core::LinearSolver::PreconditionerType::multigrid_muelu:
+        case Core::LinearSolver::PreconditionerType::block_teko:
         {
           solver->put_solver_params_to_sub_params("Inverse1", fsisolverparams,
               Global::Problem::instance()->solver_params_callback(),

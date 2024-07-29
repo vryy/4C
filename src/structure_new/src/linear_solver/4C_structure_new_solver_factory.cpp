@@ -478,6 +478,23 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_cardiovascular0
           linsolver->params().set("CONSTRAINT", true);
         }
         break;
+        case Core::LinearSolver::PreconditionerType::block_teko:
+        {
+          linsolver->put_solver_params_to_sub_params("Inverse1",
+              Global::Problem::instance()->solver_params(linsolvernumber),
+              Global::Problem::instance()->solver_params_callback(),
+              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                  Global::Problem::instance()->io_params(), "VERBOSITY"));
+          actdis.compute_null_space_if_necessary(linsolver->params().sublist("Inverse1"), true);
+
+          linsolver->put_solver_params_to_sub_params("Inverse2",
+              Global::Problem::instance()->solver_params(linsolvernumber),
+              Global::Problem::instance()->solver_params_callback(),
+              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                  Global::Problem::instance()->io_params(), "VERBOSITY"));
+          actdis.compute_null_space_if_necessary(linsolver->params().sublist("Inverse2"), true);
+        }
+        break;
         default:
           // do nothing
           break;

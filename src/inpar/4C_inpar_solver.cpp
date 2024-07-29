@@ -52,7 +52,7 @@ namespace Inpar::SOLVER
           "supports the Epetra_RowMatrix interface and the client does not pass\n"
           "in an external preconditioner!",
           Teuchos::tuple<std::string>("ILU", "ML", "MLFLUID2", "MueLu", "MueLu_contactSP",
-              "MueLu_BeamSolid", "AMGnxn", "BGS2x2", "CheapSIMPLE"),
+              "MueLu_BeamSolid", "AMGnxn", "BGS2x2", "CheapSIMPLE", "Teko"),
           Teuchos::tuple<Core::LinearSolver::PreconditionerType>(
               Core::LinearSolver::PreconditionerType::ilu,
               Core::LinearSolver::PreconditionerType::multigrid_ml,
@@ -62,7 +62,8 @@ namespace Inpar::SOLVER
               Core::LinearSolver::PreconditionerType::multigrid_muelu_beamsolid,
               Core::LinearSolver::PreconditionerType::multigrid_nxn,
               Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2,
-              Core::LinearSolver::PreconditionerType::cheap_simple),
+              Core::LinearSolver::PreconditionerType::cheap_simple,
+              Core::LinearSolver::PreconditionerType::block_teko),
           &list);
     }
 
@@ -174,6 +175,12 @@ namespace Inpar::SOLVER
     {
       Core::UTILS::StringParameter(
           "MUELU_XML_FILE", "none", "xml file defining any MueLu preconditioner", &list);
+    }
+
+    // Teko options
+    {
+      Core::UTILS::StringParameter(
+          "TEKO_XML_FILE", "none", "xml file defining any Teko preconditioner", &list);
     }
 
     // BGS2x2 options

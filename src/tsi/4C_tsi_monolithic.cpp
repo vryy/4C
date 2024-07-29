@@ -352,6 +352,7 @@ void TSI::Monolithic::create_linear_solver()
       break;
     }
     case Core::LinearSolver::PreconditionerType::multigrid_muelu:
+    case Core::LinearSolver::PreconditionerType::block_teko:
     {
       solver_->put_solver_params_to_sub_params("Inverse1", tsisolverparams,
           Global::Problem::instance()->solver_params_callback(),
