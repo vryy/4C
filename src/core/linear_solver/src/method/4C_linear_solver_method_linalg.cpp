@@ -575,6 +575,19 @@ Teuchos::ParameterList translate_four_c_to_muelu(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
+Teuchos::ParameterList translate_four_c_to_teko(
+    const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist)
+{
+  Teuchos::ParameterList tekolist;
+
+  std::string xmlfile = inparams.get<std::string>("TEKO_XML_FILE");
+  if (xmlfile != "none") tekolist.set("TEKO_XML_FILE", xmlfile);
+
+  return tekolist;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------*/
 Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& inparams,
     const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
     Core::IO::Verbositylevel verbosity)
@@ -676,6 +689,9 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& i
     case Core::LinearSolver::PreconditionerType::cheap_simple:
       beloslist.set("Preconditioner Type", "CheapSIMPLE");
       break;
+    case Core::LinearSolver::PreconditionerType::block_teko:
+      beloslist.set("Preconditioner Type", "Teko");
+      break;
     default:
       FOUR_C_THROW("Unknown preconditioner for Belos");
       break;
@@ -745,6 +761,11 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& i
     bgslist.set("block1_omega", inparams.get<double>("BGS2X2_BLOCK1_DAMPING"));
     bgslist.set("block2_iter", 1);
     bgslist.set("block2_omega", inparams.get<double>("BGS2X2_BLOCK2_DAMPING"));
+  }
+  if (azprectyp == Core::LinearSolver::PreconditionerType::block_teko)
+  {
+    Teuchos::ParameterList& tekolist = outparams.sublist("Teko Parameters");
+    tekolist = translate_four_c_to_teko(inparams, &beloslist);
   }
   if (azprectyp == Core::LinearSolver::PreconditionerType::multigrid_nxn)
   {

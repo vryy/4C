@@ -21,7 +21,6 @@ FOUR_C_NAMESPACE_OPEN
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-
 void Core::LinearSolver::Parameters::compute_solver_parameters(
     Core::FE::Discretization& dis, Teuchos::ParameterList& solverlist)
 {
@@ -109,7 +108,9 @@ void Core::LinearSolver::Parameters::fix_null_space(std::string field, const Epe
     const Epetra_Map& newmap, Teuchos::ParameterList& solveparams)
 {
   // there is no ML or MueLu list, do nothing
-  if (!solveparams.isSublist("ML Parameters") && !solveparams.isSublist("MueLu Parameters")) return;
+  if (!solveparams.isSublist("ML Parameters") && !solveparams.isSublist("MueLu Parameters") &&
+      !solveparams.isSublist("Teko Parameters"))
+    return;
 
   if (!oldmap.Comm().MyPID()) printf("Fixing %s Nullspace\n", field.c_str());
 

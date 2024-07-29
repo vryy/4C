@@ -16,6 +16,7 @@
 #include "4C_linear_solver_preconditioner_krylovprojection.hpp"
 #include "4C_linear_solver_preconditioner_ml.hpp"
 #include "4C_linear_solver_preconditioner_muelu.hpp"
+#include "4C_linear_solver_preconditioner_teko.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <BelosBiCGStabSolMgr.hpp>
@@ -116,6 +117,7 @@ int Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::solve()
       {
         belosSolverList->set("Convergence Tolerance", belist.get<double>("Convergence Tolerance"));
       }
+
       newSolver = Teuchos::rcp(
           new Belos::PseudoBlockCGSolMgr<double, VectorType, MatrixType>(problem, belosSolverList));
     }
@@ -126,6 +128,7 @@ int Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::solve()
       {
         belosSolverList->set("Convergence Tolerance", belist.get<double>("Convergence Tolerance"));
       }
+
       newSolver = Teuchos::rcp(
           new Belos::BiCGStabSolMgr<double, VectorType, MatrixType>(problem, belosSolverList));
     }
@@ -305,6 +308,10 @@ Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::create_precondition
     else if (params().isSublist("MueLu Parameters"))
     {
       preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuPreconditioner(params()));
+    }
+    else if (params().isSublist("Teko Parameters"))
+    {
+      preconditioner = Teuchos::rcp(new Core::LinearSolver::TekoPreconditioner(params()));
     }
     else if (params().isSublist("MueLu (Contact) Parameters"))
     {
