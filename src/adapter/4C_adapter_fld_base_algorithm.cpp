@@ -13,7 +13,6 @@
 #include "4C_adapter_fld_base_algorithm.hpp"
 
 #include "4C_adapter_fld_fbi_wrapper.hpp"
-#include "4C_adapter_fld_fluid_ac_fsi.hpp"
 #include "4C_adapter_fld_fluid_fluid_fsi.hpp"
 #include "4C_adapter_fld_fluid_fpsi.hpp"
 #include "4C_adapter_fld_fluid_fsi.hpp"
@@ -24,7 +23,6 @@
 #include "4C_fem_condition_periodic.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fluid_implicit_integration.hpp"
-#include "4C_fluid_timint_ac_ost.hpp"
 #include "4C_fluid_timint_hdg.hpp"
 #include "4C_fluid_timint_hdg_weak_comp.hpp"
 #include "4C_fluid_timint_loma_bdf2.hpp"
@@ -434,9 +432,8 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
 
   // sanity checks and default flags
   if (probtype == Core::ProblemType::fsi or probtype == Core::ProblemType::fsi_lung or
-      probtype == Core::ProblemType::gas_fsi or probtype == Core::ProblemType::ac_fsi or
-      probtype == Core::ProblemType::biofilm_fsi or probtype == Core::ProblemType::thermo_fsi or
-      probtype == Core::ProblemType::fsi_xfem or
+      probtype == Core::ProblemType::gas_fsi or probtype == Core::ProblemType::biofilm_fsi or
+      probtype == Core::ProblemType::thermo_fsi or probtype == Core::ProblemType::fsi_xfem or
       (probtype == Core::ProblemType::fpsi_xfem and disname == "fluid") or
       probtype == Core::ProblemType::fsi_redmodels)
   {
@@ -630,9 +627,8 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
 
     bool dirichletcond = true;
     if (probtype == Core::ProblemType::fsi or probtype == Core::ProblemType::fsi_lung or
-        probtype == Core::ProblemType::gas_fsi or probtype == Core::ProblemType::ac_fsi or
-        probtype == Core::ProblemType::biofilm_fsi or probtype == Core::ProblemType::thermo_fsi or
-        probtype == Core::ProblemType::fsi_redmodels)
+        probtype == Core::ProblemType::gas_fsi or probtype == Core::ProblemType::biofilm_fsi or
+        probtype == Core::ProblemType::thermo_fsi or probtype == Core::ProblemType::fsi_redmodels)
     {
       // FSI input parameters
       const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
@@ -1017,19 +1013,6 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
         else
           fluid_ = Teuchos::rcp(new FluidFSI(
               tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
-      }
-      break;
-      case Core::ProblemType::ac_fsi:
-      {  //
-        Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
-        if (timeint == Inpar::FLUID::timeint_one_step_theta)
-          tmpfluid =
-              Teuchos::rcp(new FLD::TimIntACOst(actdis, solver, fluidtimeparams, output, isale));
-        else
-          FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
-
-        fluid_ = Teuchos::rcp(new FluidACFSI(
-            tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
       }
       break;
       case Core::ProblemType::fsi_redmodels:

@@ -151,7 +151,6 @@ void Global::ReadFields(
       break;
     }
     case Core::ProblemType::gas_fsi:
-    case Core::ProblemType::ac_fsi:
     case Core::ProblemType::thermo_fsi:
     {
       switch (distype)
@@ -1988,7 +1987,6 @@ void Global::ReadParameter(Global::Problem& problem, Core::IO::DatFileReader& re
   reader.read_section("--FS3I DYNAMIC", *list);
   reader.read_section("--FS3I DYNAMIC/PARTITIONED", *list);
   reader.read_section("--FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION", *list);
-  reader.read_section("--FS3I DYNAMIC/AC", *list);
   reader.read_section("--ALE DYNAMIC", *list);
   reader.read_section("--FSI DYNAMIC", *list);
   reader.read_section("--FSI DYNAMIC/CONSTRAINT", *list);

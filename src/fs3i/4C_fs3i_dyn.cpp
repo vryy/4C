@@ -14,7 +14,6 @@
 #include "4C_comm_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fs3i.hpp"
-#include "4C_fs3i_ac_fsi.hpp"
 #include "4C_fs3i_biofilm_fsi.hpp"
 #include "4C_fs3i_fps3i_partitioned_1wc.hpp"
 #include "4C_fs3i_partitioned_1wc.hpp"
@@ -43,11 +42,6 @@ void fs3i_dyn()
     case Core::ProblemType::gas_fsi:
     {
       fs3i = Teuchos::rcp(new FS3I::PartFS3I1Wc(comm));
-    }
-    break;
-    case Core::ProblemType::ac_fsi:
-    {
-      fs3i = Teuchos::rcp(new FS3I::ACFSI(comm));
     }
     break;
     case Core::ProblemType::thermo_fsi:

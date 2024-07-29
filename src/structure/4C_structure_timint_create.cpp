@@ -129,8 +129,7 @@ Teuchos::RCP<Solid::TimIntExpl> Solid::TimIntExplCreate(const Teuchos::Parameter
 
   if (probtype == Core::ProblemType::fsi or probtype == Core::ProblemType::fsi_redmodels or
       probtype == Core::ProblemType::fsi_lung or probtype == Core::ProblemType::gas_fsi or
-      probtype == Core::ProblemType::ac_fsi or probtype == Core::ProblemType::biofilm_fsi or
-      probtype == Core::ProblemType::thermo_fsi)
+      probtype == Core::ProblemType::biofilm_fsi or probtype == Core::ProblemType::thermo_fsi)
   {
     FOUR_C_THROW("no explicit time integration with fsi");
   }

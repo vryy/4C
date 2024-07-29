@@ -61,7 +61,6 @@ namespace
         break;
       }
       case Core::ProblemType::gas_fsi:
-      case Core::ProblemType::ac_fsi:
       case Core::ProblemType::thermo_fsi:
       {
         std::string basename = problem.outname();

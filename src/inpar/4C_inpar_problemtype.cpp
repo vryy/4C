@@ -69,7 +69,6 @@ std::map<std::string, Core::ProblemType> Inpar::PROBLEMTYPE::StringToProblemType
     // problem types in alphabetical order
     string2prbtype["Ale"] = Core::ProblemType::ale;
     string2prbtype["ArterialNetwork"] = Core::ProblemType::art_net;
-    string2prbtype["Atherosclerosis_Fluid_Structure_Interaction"] = Core::ProblemType::ac_fsi;
     string2prbtype["Biofilm_Fluid_Structure_Interaction"] = Core::ProblemType::biofilm_fsi;
     string2prbtype["Cardiac_Monodomain"] = Core::ProblemType::cardiac_monodomain;
     string2prbtype["Elastohydrodynamic_Lubrication"] = Core::ProblemType::ehl;
