@@ -27,7 +27,6 @@
 #include "4C_rigidsphere.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <EpetraExt_Transpose_CrsGraph.h>
 
 #include <stack>
 

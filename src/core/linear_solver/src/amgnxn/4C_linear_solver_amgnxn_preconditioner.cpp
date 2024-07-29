@@ -15,7 +15,6 @@
 #include "4C_linear_solver_amgnxn_vcycle.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <EpetraExt_RowMatrixOut.h>
 #include <MueLu_ParameterListInterpreter.hpp>
 #include <Teuchos_PtrDecl.hpp>
 #include <Teuchos_Time.hpp>

@@ -395,7 +395,7 @@ namespace Core::LinAlg
 
       \note This is a true parallel multiplication, even in the transposed case.
 
-      \note Uses ML as multiplication kernel, not EpetraExt.
+      \note Uses ML as multiplication kernel.
 
       \note In this version the flags explicitdirichlet and savegraph must be handed in.
             Thus, they can be defined explicitly, while in the standard version of Multipliy()
@@ -423,7 +423,7 @@ namespace Core::LinAlg
 
       \note This is a true parallel multiplication, even in the transposed case.
 
-      \note Uses ML as multiplication kernel, not EpetraExt.
+      \note Uses ML as multiplication kernel.
 
       \note This function allocates memory for the output matrix C.
 

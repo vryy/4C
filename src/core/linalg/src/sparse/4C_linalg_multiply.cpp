@@ -49,8 +49,6 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::MLMultiply(
   if (!A.filled()) FOUR_C_THROW("A has to be fill_complete");
   if (!B.filled()) FOUR_C_THROW("B has to be fill_complete");
 
-  // EpetraExt::RowMatrix_Transpose transposera(true,nullptr,false);
-  // EpetraExt::RowMatrix_Transpose transposerb(true,nullptr,false);
   EpetraExt::RowMatrix_Transpose transposera;
   EpetraExt::RowMatrix_Transpose transposerb;
   Epetra_CrsMatrix* Atrans = nullptr;

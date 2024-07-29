@@ -14,7 +14,6 @@
 #include "4C_linalg_multiply.hpp"
 #include "4C_linear_solver_preconditioner_linalg_ana.hpp"
 
-#include <EpetraExt_OperatorOut.h>
 #include <Ifpack.h>
 #include <ml_MultiLevelPreconditioner.h>
 #include <Teuchos_Time.hpp>
@@ -115,18 +114,13 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::setup(Teuchos::RCP<Epet
   //-------------------------------------------------------------------------
   {
     Teuchos::Time ltime("", true);
-    // with Trilinos Q1/2013 there are some improvements in EpetraExt MM.
-    // However, they lead to a crash here -> use MLMultiply instead.
-    // S_ = Core::LinAlg::Multiply(*diagAinv_,false,(*A_)(0,1),false,true);
+
     s_ = Core::LinAlg::MLMultiply(*diag_ainv_, (*a_)(0, 1), true);
     if (!myrank && SIMPLER_TIMING)
       printf("*** S = diagAinv * A(0,1) %10.3E\n", ltime.totalElapsedTime(true));
     ltime.reset();
     s_ = Core::LinAlg::MLMultiply((*a_)(1, 0), *s_, false);
-    // The Core::LinAlg::Multiply method would consume a HUGE amount of memory!!!
-    // So always use Core::LinAlg::MLMultiply in the line above! Otherwise you won't be able
-    // to solve any large linear problem since you'll definitely run out of memory.
-    // S_ = Core::LinAlg::Multiply((*A_)(1,0),false,*S_,false,false);
+
     if (!myrank && SIMPLER_TIMING)
       printf("*** S = A(1,0) * S (ML)   %10.3E\n", ltime.totalElapsedTime(true));
     ltime.reset();
