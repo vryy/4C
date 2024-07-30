@@ -111,6 +111,8 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
       flux_boundary_maps_(Teuchos::null),
       sumnormfluxintegral_(Teuchos::null),
       lastfluxoutputstep_(-1),
+      output_element_material_id_(Core::UTILS::IntegralValue<bool>(
+          Global::Problem::instance()->io_params(), "ELEMENT_MAT_ID")),
       outputscalars_(
           Core::UTILS::IntegralValue<Inpar::ScaTra::OutputScalarType>(*params, "OUTPUTSCALARS")),
       outputgmsh_(Core::UTILS::IntegralValue<int>(*params, "OUTPUT_GMSH")),
@@ -1811,6 +1813,8 @@ void ScaTra::ScaTraTimIntImpl::collect_runtime_output_data()
     visualization_writer_->append_result_data_vector_with_context(
         dispnp_multi, Core::IO::OutputEntity::node, context);
   }
+
+  if (output_element_material_id_) visualization_writer_->append_element_material_id();
 
   if (nds_micro() != -1)
   {
