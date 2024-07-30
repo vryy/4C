@@ -51,7 +51,7 @@ MIXTURE::PAR::MixtureConstituentRemodelFiberExpl::MixtureConstituentRemodelFiber
       gamma_(matdata.parameters.get<double>("GAMMA")),
       fiber_material_id_(matdata.parameters.get<int>("FIBER_MATERIAL_ID")),
       fiber_material_(FiberMaterialFactory(fiber_material_id_)),
-      growth_enabled_(matdata.parameters.get<bool>("GROWTH_ENABLED")),
+      enable_growth_(matdata.parameters.get<bool>("ENABLE_GROWTH")),
       poisson_decay_time_(matdata.parameters.get<double>("DECAY_TIME")),
       growth_constant_(matdata.parameters.get<double>("GROWTH_CONSTANT")),
       deposition_stretch_(matdata.parameters.get<double>("DEPOSITION_STRETCH")),
@@ -156,7 +156,7 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::update_elastic_part(
   remodel_fiber_[gp].set_state(lambda_f, lambda_ext);
   remodel_fiber_[gp].update();
 
-  if (params_->growth_enabled_)
+  if (params_->enable_growth_)
   {
     const double dt = params.get<double>("delta time");
 
@@ -179,7 +179,7 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::update(const Core::LinAlg::Mat
     remodel_fiber_[gp].update();
 
     update_homeostatic_values(params, eleGID);
-    if (params_->growth_enabled_)
+    if (params_->enable_growth_)
     {
       const double dt = params.get<double>("delta time");
 

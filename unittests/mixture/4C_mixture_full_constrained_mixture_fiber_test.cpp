@@ -43,13 +43,13 @@ namespace
     template <typename Number>
     MIXTURE::FullConstrainedMixtureFiber<Number> generate_fiber(const double decay_time = 12.0,
         const double growth_constant = 0.1, const Number lambda_pre = 1.1,
-        const bool growth_enabled = true,
+        const bool enable_growth = true,
         const MIXTURE::HistoryAdaptionStrategy adaptive_strategy =
             MIXTURE::HistoryAdaptionStrategy::none)
     {
       return {std::make_shared<MIXTURE::RemodelFiberMaterialExponential<Number>>(
                   create_material<Number>()),
-          {growth_constant, decay_time}, lambda_pre, adaptive_strategy, growth_enabled};
+          {growth_constant, decay_time}, lambda_pre, adaptive_strategy, enable_growth};
     }
 
     MIXTURE::Implementation::RemodelFiberImplementation<2, double> generate_remodel_fiber(
@@ -870,7 +870,7 @@ namespace
       fiber.update();
     }
 
-    fiber.growth_enabled_ = false;
+    fiber.enable_growth_ = false;
 
     const double growth_scalar = fiber.computed_growth_scalar_;
     const double sigma = fiber.computed_sigma_;
@@ -901,7 +901,7 @@ namespace
 
       fiber.update();
     }
-    fiber.growth_enabled_ = true;
+    fiber.enable_growth_ = true;
 
     EXPECT_DOUBLE_EQ(fiber.computed_growth_scalar_, 1.0);
 
@@ -914,7 +914,7 @@ namespace
       fiber.update();
     }
 
-    fiber.growth_enabled_ = false;
+    fiber.enable_growth_ = false;
 
     const double growth_scalar = fiber.computed_growth_scalar_;
     const double sigma = fiber.computed_sigma_;

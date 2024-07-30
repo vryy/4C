@@ -203,11 +203,11 @@ template <typename Number>
 MIXTURE::FullConstrainedMixtureFiber<Number>::FullConstrainedMixtureFiber(
     std::shared_ptr<const MIXTURE::RemodelFiberMaterial<Number>> material,
     MIXTURE::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<Number> growth_evolution,
-    Number lambda_pre, HistoryAdaptionStrategy adaptive_history_strategy, bool growth_enabled)
+    Number lambda_pre, HistoryAdaptionStrategy adaptive_history_strategy, bool enable_growth)
     : lambda_pre_(lambda_pre),
       fiber_material_(std::move(material)),
       growth_evolution_(growth_evolution),
-      growth_enabled_(growth_enabled),
+      enable_growth_(enable_growth),
       adaptive_history_strategy_(adaptive_history_strategy),
       current_time_(0),
       computed_growth_scalar_(1.0)
@@ -315,7 +315,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::recompute_state(
 {
   ReinitializeState(*this, lambda_f, time);
 
-  if (!growth_enabled_)
+  if (!enable_growth_)
   {
     current_time_shift_ = get_last_time_in_history() - current_time_;
   }
@@ -324,7 +324,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::recompute_state(
     current_time_shift_ = 0.0;
   }
 
-  if (growth_enabled_ && history_.size() > 0) UpdateBaseDeltaTime(history_.back(), dt);
+  if (enable_growth_ && history_.size() > 0) UpdateBaseDeltaTime(history_.back(), dt);
   compute_internal_variables();
 }
 
@@ -621,7 +621,7 @@ Number MIXTURE::FullConstrainedMixtureFiber<Number>::evaluate_d_lambda_ref_sq_d_
 template <typename Number>
 void MIXTURE::FullConstrainedMixtureFiber<Number>::compute_internal_variables()
 {
-  if (!growth_enabled_)
+  if (!enable_growth_)
   {
     // in this case, I don't need to solve a local Newton method. I just need to do the integration
     // over the history until the moment.
@@ -791,7 +791,7 @@ double MIXTURE::FullConstrainedMixtureFiber<Number>::get_last_time_in_history() 
 template <typename Number>
 void MIXTURE::FullConstrainedMixtureFiber<Number>::update()
 {
-  if (growth_enabled_)
+  if (enable_growth_)
   {
     FOUR_C_ASSERT(
         current_time_shift_ == 0.0, "The time shift should be zero if growth is enabled!");
