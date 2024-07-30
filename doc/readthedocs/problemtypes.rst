@@ -262,11 +262,6 @@ Multi field problems:
 
 These problems combine a number of single field problems, and are therefore sometimes called *Coupled Problems*.
 
-Atherosclerosis_Fluid_Structure_Interaction
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-One has to define solvers for the following dynamics:
-
 Biofilm_Fluid_Structure_Interaction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

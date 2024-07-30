@@ -1913,7 +1913,6 @@ int main(int argc, char** argv)
       break;
     }
     case Core::ProblemType::gas_fsi:
-    case Core::ProblemType::ac_fsi:
     case Core::ProblemType::biofilm_fsi:
     case Core::ProblemType::thermo_fsi:
     {

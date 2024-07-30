@@ -221,8 +221,6 @@ std::string_view Core::Materials::to_string(Core::Materials::MaterialType materi
       return "THERM_FourierIso";
     case m_soret:
       return "MAT_soret";
-    case m_growth_volumetric:
-      return "MAT_GrowthVolumetric";
     case m_membrane_elasthyper:
       return "MAT_Membrane_ElastHyper";
     case m_membrane_activestrain:
@@ -247,24 +245,6 @@ std::string_view Core::Materials::to_string(Core::Materials::MaterialType materi
       return "MAT_InelasticDefgradTimeFunct";
     case m_sc_dep_interp:
       return "MAT_ScDepInterp";
-    case m_growth_aniso_strain:
-      return "MAT_GrowthAnisoStrain";
-    case m_growth_aniso_stress:
-      return "MAT_GrowthAnisoStress";
-    case m_growth_aniso_strain_const_trig:
-      return "MAT_GrowthAnisoStrainConstTrig";
-    case m_growth_aniso_stress_const_trig:
-      return "MAT_GrowthAnisoStressConstTrig";
-    case m_growth_iso_stress:
-      return "MAT_GrowthIsoStress";
-    case m_growth_ac:
-      return "MAT_GrowthAC";
-    case m_growth_ac_radial:
-      return "MAT_GrowthACRadial";
-    case m_growth_ac_radial_refconc:
-      return "MAT_GrowthACRadialRefConc";
-    case m_growth_const:
-      return "MAT_GrowthConst";
     case m_constraintmixture:
       return "MAT_ConstraintMixture";
     case m_structporo:

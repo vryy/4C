@@ -88,13 +88,6 @@ namespace Core::Materials
     m_fluidporo_phaselaw_constraint,    ///< the saturation constraint
     m_fluidporo_phaselaw_byfunction,    ///< pressure-saturation relationship defined by functions
                                         ///< in input file
-    m_growth_aniso_strain,              ///< anisotropic strain-dependent growth law
-    m_growth_aniso_stress,              ///< anisotropic stress-dependent growth law
-    m_growth_aniso_strain_const_trig,   ///< anisotropic strain-dependent growth law with constant
-                                        ///< prescribed trigger (for multiscale in time)
-    m_growth_aniso_stress_const_trig,   ///< anisotropic stress-dependent growth law with constant
-                                        ///< prescribed trigger (for multiscale in time)
-    m_growth_iso_stress,                ///< isotropic stress-dependent growth law
     m_fluidporo_relpermeabilitylaw_constant,  ///< permeability law for constant permeability in
                                               ///< porous multiphase medium
     m_fluidporo_relpermeabilitylaw_exp,       ///< permeability law for permeability depending on
@@ -102,12 +95,6 @@ namespace Core::Materials
     m_fluidporo_viscositylaw_constant,  ///< viscosity law for constant viscosity in porous
                                         ///< multiphase medium
     m_fluidporo_viscositylaw_celladh,   ///< viscosity law modelling cell adherence
-    m_growth_ac,                        ///< simple scalar depended growth law
-    m_growth_ac_radial,                 ///< scalar depended growth in radial direction
-    m_growth_ac_radial_refconc,  ///< scalar depended growth in radial direction using reference
-                                 ///< concentrations
-    m_growth_const,              ///< growth factor given as material parameter via input
-    m_growth_volumetric,         ///< volumetric growth base material
     m_sc_dep_interp,  ///< integration point based and scalar dependent interpolation between to
                       ///< materials
     m_membrane_elasthyper,       ///< collection of hyperelastic materials for membranes

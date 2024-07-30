@@ -36,8 +36,6 @@
 #include "4C_mat_fluidporo_singlephaselaw.hpp"
 #include "4C_mat_fluidporo_viscosity_law.hpp"
 #include "4C_mat_fourieriso.hpp"
-#include "4C_mat_growth.hpp"
-#include "4C_mat_growth_law.hpp"
 #include "4C_mat_growthremodel_elasthyper.hpp"
 #include "4C_mat_herschelbulkley.hpp"
 #include "4C_mat_inelastic_defgrad_factors.hpp"
@@ -557,42 +555,6 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     {
       return make_parameter_impl<Mat::PAR::StructPoroReactionECM>(id, type, input_data);
     }
-    case Core::Materials::m_growth_aniso_strain:
-    {
-      return make_parameter_impl<Mat::PAR::GrowthLawAnisoStrain>(id, type, input_data);
-    }
-    case Core::Materials::m_growth_aniso_stress:
-    {
-      return make_parameter_impl<Mat::PAR::GrowthLawAnisoStress>(id, type, input_data);
-    }
-    case Core::Materials::m_growth_aniso_strain_const_trig:
-    {
-      return make_parameter_impl<Mat::PAR::GrowthLawAnisoStrainConstTrig>(id, type, input_data);
-    }
-    case Core::Materials::m_growth_aniso_stress_const_trig:
-    {
-      return make_parameter_impl<Mat::PAR::GrowthLawAnisoStressConstTrig>(id, type, input_data);
-    }
-    case Core::Materials::m_growth_iso_stress:
-    {
-      return make_parameter_impl<Mat::PAR::GrowthLawIsoStress>(id, type, input_data);
-    }
-    case Core::Materials::m_growth_ac:
-    {
-      return make_parameter_impl<Mat::PAR::GrowthLawAC>(id, type, input_data);
-    }
-    case Core::Materials::m_growth_ac_radial:
-    {
-      return make_parameter_impl<Mat::PAR::GrowthLawACRadial>(id, type, input_data);
-    }
-    case Core::Materials::m_growth_ac_radial_refconc:
-    {
-      return make_parameter_impl<Mat::PAR::GrowthLawACRadialRefConc>(id, type, input_data);
-    }
-    case Core::Materials::m_growth_const:
-    {
-      return make_parameter_impl<Mat::PAR::GrowthLawConst>(id, type, input_data);
-    }
     case Core::Materials::mfi_no_growth:
     {
       return make_parameter_impl<Mat::PAR::InelasticDefgradNoGrowth>(id, type, input_data);
@@ -942,10 +904,6 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     {
       return make_parameter_impl<Mat::PAR::MultiplicativeSplitDefgradElastHyper>(
           id, type, input_data);
-    }
-    case Core::Materials::m_growth_volumetric:
-    {
-      return make_parameter_impl<Mat::PAR::Growth>(id, type, input_data);
     }
     case Core::Materials::m_constraintmixture:
     {

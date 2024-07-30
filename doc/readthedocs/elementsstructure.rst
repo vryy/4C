@@ -19,7 +19,6 @@ The following materials are used in combination with Structure elements in the i
 - MAT_Struct_ThrPlasticLinElast
 - MAT_BeamKirchhoffTorsionFreeElastHyper
 - MAT_ConstraintMixture
-- MAT_GrowthVolumetric
 - MAT_Struct_Multiscale
 - MAT_PlasticElastHyperVCU
 - MAT_BeamKirchhoffElastHyper

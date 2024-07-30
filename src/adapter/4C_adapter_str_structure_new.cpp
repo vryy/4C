@@ -434,7 +434,6 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
     case Core::ProblemType::fsi_redmodels:
     case Core::ProblemType::fsi_lung:
     case Core::ProblemType::gas_fsi:
-    case Core::ProblemType::ac_fsi:
     case Core::ProblemType::biofilm_fsi:
     case Core::ProblemType::thermo_fsi:
     case Core::ProblemType::fsi_xfem:
@@ -834,7 +833,6 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
     case Core::ProblemType::fsi_redmodels:
     case Core::ProblemType::fsi_lung:
     case Core::ProblemType::gas_fsi:
-    case Core::ProblemType::ac_fsi:
     case Core::ProblemType::biofilm_fsi:
     case Core::ProblemType::thermo_fsi:
     case Core::ProblemType::fsi_xfem:

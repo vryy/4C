@@ -107,9 +107,8 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // overrule flags for solid-based scalar transport!
   // (assumed disname = "scatra2" for solid-based scalar transport)
   // -------------------------------------------------------------------
-  if (probtype == Core::ProblemType::ac_fsi or probtype == Core::ProblemType::biofilm_fsi or
-      probtype == Core::ProblemType::gas_fsi or probtype == Core::ProblemType::fps3i or
-      probtype == Core::ProblemType::thermo_fsi)
+  if (probtype == Core::ProblemType::biofilm_fsi or probtype == Core::ProblemType::gas_fsi or
+      probtype == Core::ProblemType::fps3i or probtype == Core::ProblemType::thermo_fsi)
   {
     // scatra1 (=fluid scalar) get's inputs from SCALAR TRANSPORT DYNAMIC/STABILIZATION, hence
     // nothing is to do here

@@ -12,7 +12,6 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_global_data.hpp"
-#include "4C_mat_growth_law.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_list_reactions.hpp"
 #include "4C_mat_scatra.hpp"

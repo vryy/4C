@@ -167,7 +167,6 @@ void Adapter::AleBaseAlgorithm::setup_ale(
     case Core::ProblemType::fsi:
     case Core::ProblemType::gas_fsi:
     case Core::ProblemType::thermo_fsi:
-    case Core::ProblemType::ac_fsi:
     case Core::ProblemType::biofilm_fsi:
     {
       const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();

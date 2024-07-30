@@ -372,7 +372,6 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
       case Core::ProblemType::fsi_redmodels:
       case Core::ProblemType::fsi_lung:
       case Core::ProblemType::gas_fsi:
-      case Core::ProblemType::ac_fsi:
       case Core::ProblemType::biofilm_fsi:
       case Core::ProblemType::thermo_fsi:
       {

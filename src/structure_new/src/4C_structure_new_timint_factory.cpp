@@ -92,8 +92,7 @@ Teuchos::RCP<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_explicit_strat
 
   if (probtype == Core::ProblemType::fsi or probtype == Core::ProblemType::fsi_redmodels or
       probtype == Core::ProblemType::fsi_lung or probtype == Core::ProblemType::gas_fsi or
-      probtype == Core::ProblemType::ac_fsi or probtype == Core::ProblemType::biofilm_fsi or
-      probtype == Core::ProblemType::thermo_fsi)
+      probtype == Core::ProblemType::biofilm_fsi or probtype == Core::ProblemType::thermo_fsi)
     FOUR_C_THROW("No explicit time integration with fsi");
 
   const enum Inpar::Solid::DynamicType dyntype =

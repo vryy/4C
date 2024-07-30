@@ -121,45 +121,6 @@ void Inpar::FS3I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "SCALAR TRANSPORT DYNAMIC", true, "control parameters for scalar transport problems\n");
   fs3idynstructscalstab = scatradyn.sublist("STABILIZATION", true,
       "control parameters for the stabilization of scalar transport problems");
-
-  /*----------------------------------------------------------------------*/
-  /* parameters for Atherosclerosis FSI */
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& fs3idynac = fs3idyn.sublist(
-      "AC", false, "Atherosclerosis fluid-structure-scalar-scalar interaction control section");
-
-  // FSI time steps per SSI time step
-  Core::UTILS::IntParameter(
-      "FSI_STEPS_PER_SCATRA_STEP", 1, "FSI time steps per SSI time step", &fs3idynac);
-
-  // Periodicity of the FSI problem
-  Core::UTILS::DoubleParameter("PERIODICITY", -1.0, "Periodicity of the FSI problem", &fs3idynac);
-
-  // relative tolerance for the WK of the fluid sub-problem. Determines if the fsi problem is
-  // already periodic
-  Core::UTILS::DoubleParameter("WINDKESSEL_REL_TOL", -1.0,
-      "Tolerance for the fluid windkessel to decide if the FSI problem is periodic", &fs3idynac);
-
-  // relative tolerance for the fluid scatra. Determines if the fluid scatra is already periodic
-  Core::UTILS::DoubleParameter("FLUID_SCATRA_REL_TOL", -1.0,
-      "Tolerance for the fluid scatra field to decide if it is periodic", &fs3idynac);
-
-  // relative tolerance for the fluid scatra. Determines if the fluid scatra is already periodic
-  Core::UTILS::DoubleParameter("WSS_REL_TOL", -1.0,
-      "Tolerance for the wall shear stresses to decide if the FSI problem is periodic", &fs3idynac);
-
-  // amount of growth updates in the large time scale loop
-  Core::UTILS::IntParameter(
-      "GROWTH_UPDATES", 1.0, "Amount of growth updates in the large time scale loop", &fs3idynac);
-
-  // realtive tolerance for the structure scatra field to decide if a FSI update is necessary
-  Core::UTILS::DoubleParameter("FSI_UPDATE_TOL", -1.0,
-      "Tolerance for the structure scatra field to decide if a FSI update is necessary",
-      &fs3idynac);
-
-  // time step of the large time scale
-  Core::UTILS::DoubleParameter(
-      "LARGE_TIMESCALE_TIMESTEP", -1.0, "time step of the large time scale", &fs3idynac);
 }
 
 FOUR_C_NAMESPACE_CLOSE

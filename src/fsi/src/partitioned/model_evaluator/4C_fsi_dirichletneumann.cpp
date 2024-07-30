@@ -41,18 +41,6 @@ void FSI::DirichletNeumann::setup()
 void FSI::DirichletNeumann::fsi_op(
     const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
 {
-  // Check if the test case uses the new Structural time integration or if it is one of our legacy
-  // test cases
-  if (Core::UTILS::IntegralValue<int>(Global::Problem::instance()->structural_dynamic_params(),
-          "INT_STRATEGY") == Inpar::Solid::int_old &&
-      Global::Problem::instance()->output_control_file()->input_file_name().find(
-          "fs3i_ac_prestress") == std::string::npos)
-  {
-    FOUR_C_THROW(
-        "You are using the old structural time integration! Partitioned FSI is already migrated to "
-        "the new structural time integration! Please update your Input file with INT_STRATEGY "
-        "Standard!\n");
-  }
   if (kinematiccoupling_)  // coupling variable: interface displacements/velocity
   {
     const Teuchos::RCP<Epetra_Vector> icoupn = Teuchos::rcp(new Epetra_Vector(x));
