@@ -3597,6 +3597,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "FIBER_ID", "Id of the fiber");
     add_named_int(m, "FIBER_MATERIAL_ID", "Id of fiber material");
     add_named_bool(m, "ENABLE_GROWTH", "Switch for the growth (default true)", true, true);
+    add_named_bool(m, "ENABLE_BASAL_MASS_PRODUCTION",
+        "Switch to enable the basal mass production rate (default true)", true, true);
     add_named_real(m, "DECAY_TIME", "Decay time of deposited tissue");
     add_named_real(m, "GROWTH_CONSTANT", "Growth constant of the tissue");
     add_named_real(m, "DEPOSITION_STRETCH", "Stretch at which the fiber is deposited");
@@ -3622,6 +3624,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "FIBER_MATERIAL_ID", "Id of fiber material");
 
     add_named_bool(m, "ENABLE_GROWTH", "Switch for the growth (default true)", true, true);
+    add_named_bool(m, "ENABLE_BASAL_MASS_PRODUCTION",
+        "Switch to enable the basal mass production rate (default true)", true, true);
     add_named_real(m, "DECAY_TIME", "Decay time of deposited tissue");
     add_named_real(m, "GROWTH_CONSTANT", "Growth constant of the tissue");
     add_named_real(m, "DEPOSITION_STRETCH", "Stretch at with the fiber is deposited");
@@ -3646,6 +3650,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "FIBER_MATERIAL_ID", "Id of fiber material");
 
     add_named_bool(m, "ENABLE_GROWTH", "Switch for the growth (default true)", true, true);
+    add_named_bool(m, "ENABLE_BASAL_MASS_PRODUCTION",
+        "Switch to enable the basal mass production rate (default true)", true, true);
     add_named_real(m, "DECAY_TIME", "Decay time of deposited tissue");
     add_named_real(m, "GROWTH_CONSTANT", "Growth constant of the tissue");
     add_named_real(m, "DEPOSITION_STRETCH", "Stretch at with the fiber is deposited");

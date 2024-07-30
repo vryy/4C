@@ -49,7 +49,7 @@ namespace
     {
       return {std::make_shared<MIXTURE::RemodelFiberMaterialExponential<Number>>(
                   create_material<Number>()),
-          {growth_constant, decay_time}, lambda_pre, adaptive_strategy, enable_growth};
+          {growth_constant, decay_time, true}, lambda_pre, adaptive_strategy, enable_growth};
     }
 
     MIXTURE::Implementation::RemodelFiberImplementation<2, double> generate_remodel_fiber(
@@ -58,7 +58,7 @@ namespace
     {
       return {std::make_unique<const MIXTURE::RemodelFiberMaterialExponential<double>>(
                   create_material<double>()),
-          {growth_constant, decay_time}, lambda_pre};
+          {growth_constant, decay_time, true}, lambda_pre};
     }
   };
 

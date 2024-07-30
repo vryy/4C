@@ -45,6 +45,7 @@ namespace MIXTURE
       const MIXTURE::PAR::RemodelFiberMaterial<double>* fiber_material_;
 
       const bool enable_growth_;
+      const bool enable_basal_mass_production_;
       const double poisson_decay_time_;
       const double growth_constant_;
 

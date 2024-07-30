@@ -43,6 +43,7 @@ MIXTURE::PAR::MixtureConstituentRemodelFiberImpl::MixtureConstituentRemodelFiber
       fiber_material_id_(matdata.parameters.get<int>("FIBER_MATERIAL_ID")),
       fiber_material_(FiberMaterialFactory(fiber_material_id_)),
       enable_growth_(matdata.parameters.get<bool>("ENABLE_GROWTH")),
+      enable_basal_mass_production_(matdata.parameters.get<bool>("ENABLE_BASAL_MASS_PRODUCTION")),
       poisson_decay_time_(matdata.parameters.get<double>("DECAY_TIME")),
       growth_constant_(matdata.parameters.get<double>("GROWTH_CONSTANT")),
       deposition_stretch_(matdata.parameters.get<double>("DEPOSITION_STRETCH")),
@@ -111,7 +112,8 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::initialize()
   for (int gp = 0; gp < num_gp(); ++gp)
   {
     LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
-        params_->growth_constant_, params_->poisson_decay_time_);
+        params_->growth_constant_, params_->poisson_decay_time_,
+        params_->enable_basal_mass_production_);
     remodel_fiber_.emplace_back(material, growth_evolution, evaluate_deposition_stretch(0.0));
   }
 }
