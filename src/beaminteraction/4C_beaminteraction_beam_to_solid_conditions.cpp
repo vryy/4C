@@ -379,11 +379,19 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::build_id_sets(
   surface_ids_.clear();
   for (const auto& map_item : condition_other_->geometry())
   {
-    if (!map_item.second->is_face_element()) FOUR_C_THROW("Expected FaceElement");
-    Teuchos::RCP<const Core::Elements::FaceElement> face_element =
-        Teuchos::rcp_dynamic_cast<const Core::Elements::FaceElement>(map_item.second);
-    const int solid_id = face_element->parent_element_id();
-    surface_ids_[solid_id] = face_element;
+    if (!map_item.second->is_face_element())
+    {
+      // This is the case if the solid is a pure surface, which is not a face element
+      surface_ids_[map_item.second->id()] = map_item.second;
+    }
+    else
+    {
+      // This is the case if the solid element is the face of a 3D solid volume
+      const Teuchos::RCP<const Core::Elements::FaceElement> face_element =
+          Teuchos::rcp_dynamic_cast<const Core::Elements::FaceElement>(map_item.second);
+      const int solid_id = face_element->parent_element_id();
+      surface_ids_[solid_id] = face_element;
+    }
   }
 
   // The size of the surface id set and the geometry in the conditions have to match, otherwise
@@ -471,10 +479,8 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::setup(
   for (const auto& face_element_iterator : pair_face_elemets)
   {
     // Loop over the nodes of the face element.
-    const Core::Nodes::Node* const* nodes =
-        face_element_iterator.second->get_drt_face_element()->nodes();
-    for (int i_node = 0; i_node < face_element_iterator.second->get_drt_face_element()->num_node();
-         i_node++)
+    const Core::Nodes::Node* const* nodes = face_element_iterator.second->get_element()->nodes();
+    for (int i_node = 0; i_node < face_element_iterator.second->get_element()->num_node(); i_node++)
     {
       // Loop over the elements connected to that node and check if they are in this condition.
       const Core::Elements::Element* const* elements = nodes[i_node]->elements();
@@ -548,9 +554,8 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
   const auto* beam_element = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele_ptrs[0]);
   const bool beam_is_hermite = beam_element->hermite_centerline_interpolation();
 
-  const Teuchos::RCP<const Core::Elements::FaceElement>& face_element =
-      surface_ids_[ele_ptrs[1]->id()];
-  const Core::FE::CellType shape = face_element->shape();
+  const auto& core_element = surface_ids_[ele_ptrs[1]->id()];
+  const auto shape = core_element->shape();
 
   auto line_to_surface_evaluation_data =
       Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::LineToSurfaceEvaluationData>(

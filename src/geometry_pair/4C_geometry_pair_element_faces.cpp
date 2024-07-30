@@ -32,15 +32,14 @@ void GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>::setup(
   patch_dof_gid_.clear();
   std::vector<int> lmrowowner;
   std::vector<int> lmstride;
-  this->get_drt_face_element()->location_vector(
-      *discret, this->patch_dof_gid_, lmrowowner, lmstride);
+  this->get_element()->location_vector(*discret, this->patch_dof_gid_, lmrowowner, lmstride);
 
   // Set the reference position from the nodes connected to this face.
   // At the moment we need to get the structure discretization at this point since the beam
   // interaction discretization is a copy - without the nurbs information
-  face_reference_position_ = GEOMETRYPAIR::InitializeElementData<Surface, double>::initialize(
-      this->get_drt_face_element());
-  const Core::Nodes::Node* const* nodes = drt_face_element_->nodes();
+  face_reference_position_ =
+      GEOMETRYPAIR::InitializeElementData<Surface, double>::initialize(this->core_element_.get());
+  const Core::Nodes::Node* const* nodes = core_element_->nodes();
   for (unsigned int i_node = 0; i_node < Surface::n_nodes_; i_node++)
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       face_reference_position_.element_position_(i_node * 3 + i_dim) = nodes[i_node]->x()[i_dim];
@@ -60,7 +59,7 @@ void GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>::set_state(
 
   // Create the full length FAD types.
   face_position_ = GEOMETRYPAIR::InitializeElementData<Surface, ScalarType>::initialize(
-      this->get_drt_face_element());
+      this->core_element_.get());
   const unsigned int n_patch_dof = patch_dof_gid_.size();
   std::vector<ScalarType> patch_displacement_fad(n_patch_dof);
   for (unsigned int i_dof = 0; i_dof < n_patch_dof; i_dof++)
@@ -135,38 +134,45 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::setup(
   // Call setup of the base class.
   base_class::setup(discret, face_elements);
 
+  // We need to get a UID for the surface element. If the surface is a face element (at the moment
+  // the only suported case), we simply take the GID of the parent element.
+  const auto face_element =
+      Teuchos::rcp_dynamic_cast<const Core::Elements::FaceElement>(this->core_element_);
+  if (face_element == Teuchos::null)
+    FOUR_C_THROW("For FaceElementPatchTemplate the surface must be a Core::Elements::FaceElement");
+  const int element_uid = face_element->parent_element_id();
+
   // Initialize class variables.
   connected_faces_.clear();
 
   // Initialize variables for this method.
   std::vector<int> my_node_gid, other_faces_node_gid;
   my_node_gid.clear();
-  my_node_gid.reserve(this->drt_face_element_->num_node());
+  my_node_gid.reserve(this->core_element_->num_node());
   other_faces_node_gid.clear();
 
   // Temporary variables.
   std::vector<int> temp_node_dof_gid(3);
 
   // First add the node GIDs of this face.
-  for (int i_node = 0; i_node < this->drt_face_element_->num_node(); i_node++)
+  for (int i_node = 0; i_node < this->core_element_->num_node(); i_node++)
   {
-    const Core::Nodes::Node* my_node = this->drt_face_element_->nodes()[i_node];
+    const Core::Nodes::Node* my_node = this->core_element_->nodes()[i_node];
     my_node_gid.push_back(my_node->id());
     discret->dof(my_node, 0, temp_node_dof_gid);
   }
 
   // Add the node GIDs of the connected faces.
   ConnectedFace temp_connected_face;
-  for (int i_node = 0; i_node < this->drt_face_element_->num_node(); i_node++)
+  for (int i_node = 0; i_node < this->core_element_->num_node(); i_node++)
   {
     // Loop over all elements connected to a node of this face.
-    const Core::Nodes::Node* node = this->drt_face_element_->nodes()[i_node];
+    const Core::Nodes::Node* node = this->core_element_->nodes()[i_node];
     for (int i_element = 0; i_element < node->num_element(); i_element++)
     {
       const Core::Elements::Element* element = node->elements()[i_element];
 
-      // Do nothing for this element.
-      if (element->id() == this->drt_face_element_->parent_element_id()) continue;
+      if (element->id() == element_uid) continue;
 
       // Check if the element was already searched for.
       if (connected_faces_.find(element->id()) == connected_faces_.end())
@@ -180,11 +186,11 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::setup(
         {
           // Add the node GIDs of this element.
           for (int i_node_connected_element = 0;
-               i_node_connected_element < find_in_faces->second->get_drt_face_element()->num_node();
+               i_node_connected_element < find_in_faces->second->get_element()->num_node();
                i_node_connected_element++)
           {
             const Core::Nodes::Node* other_node =
-                find_in_faces->second->get_drt_face_element()->nodes()[i_node_connected_element];
+                find_in_faces->second->get_element()->nodes()[i_node_connected_element];
             const int other_node_id = other_node->id();
 
             // Check if the other node is part of this face element.
@@ -234,7 +240,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::setup(
   // GID of the connected faces in the GID vector of this face. The connectivity to the other patch
   // faces is still required for the calculation of the averaged reference normals.
   if (not evaluate_current_normals_)
-    this->patch_dof_gid_.resize(3 * this->drt_face_element_->num_node());
+    this->patch_dof_gid_.resize(3 * this->core_element_->num_node());
 }
 
 
@@ -252,7 +258,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::set_state(
 
   // Create the full length FAD types.
   this->face_position_ = GEOMETRYPAIR::InitializeElementData<Surface, ScalarType>::initialize(
-      this->get_drt_face_element());
+      this->core_element_.get());
   const unsigned int n_patch_dof = this->patch_dof_gid_.size();
   std::vector<ScalarType> patch_displacement_fad(n_patch_dof);
   for (unsigned int i_dof = 0; i_dof < n_patch_dof; i_dof++)
@@ -288,8 +294,8 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::set_state(
 
       // Setup an element data container for the other element, but with the FAD type and ordering
       // for this patch
-      auto q_other_face = InitializeElementData<Surface, ScalarType>::initialize(
-          face_element->get_drt_face_element());
+      auto q_other_face =
+          InitializeElementData<Surface, ScalarType>::initialize(face_element->get_element());
       for (unsigned int i_node = 0; i_node < Surface::n_nodes_; i_node++)
       {
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -418,13 +424,18 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType, Volume
     const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
+  const auto face_element =
+      Teuchos::rcp_dynamic_cast<const Core::Elements::FaceElement>(this->core_element_, true);
+  if (face_element == Teuchos::null)
+    FOUR_C_THROW("For ExtendedVolume coupling the surface must be a Core::Elements::FaceElement");
+
   // Get the DOF GIDs of this face and volume element.
   this->patch_dof_gid_.clear();
   std::vector<int> surface_gid;
   std::vector<int> lmrowowner;
   std::vector<int> lmstride;
-  this->get_drt_face_element()->location_vector(*discret, surface_gid, lmrowowner, lmstride);
-  this->get_drt_face_element()->parent_element()->location_vector(
+  face_element->location_vector(*discret, surface_gid, lmrowowner, lmstride);
+  face_element->parent_element()->location_vector(
       *discret, this->patch_dof_gid_, lmrowowner, lmstride);
 
   // Safety checks.
@@ -450,7 +461,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType, Volume
       GEOMETRYPAIR::InitializeElementData<Volume, double>::initialize(nullptr);
   this->face_reference_position_ =
       GEOMETRYPAIR::InitializeElementData<Surface, double>::initialize(nullptr);
-  const Core::Nodes::Node* const* nodes = this->drt_face_element_->parent_element()->nodes();
+  const Core::Nodes::Node* const* nodes = face_element->parent_element()->nodes();
   for (unsigned int i_node = 0; i_node < Volume::n_nodes_; i_node++)
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       volume_reference_position_.element_position_(i_node * 3 + i_dim) = nodes[i_node]->x()[i_dim];
@@ -651,38 +662,38 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType,
  *
  */
 Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
-    const Teuchos::RCP<const Core::Elements::FaceElement>& face_element, const int fad_order,
+    const Teuchos::RCP<const Core::Elements::Element>& core_element, const int fad_order,
     const Inpar::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy)
 {
   const bool is_fad = fad_order > 0;
   if (not is_fad)
   {
-    switch (face_element->shape())
+    switch (core_element->shape())
     {
       case Core::FE::CellType::quad4:
         return Teuchos::rcp(
             new FaceElementPatchTemplate<t_quad4, line_to_surface_scalar_type<t_hermite, t_quad4>>(
-                face_element, false));
+                core_element, false));
       case Core::FE::CellType::quad8:
         return Teuchos::rcp(
             new FaceElementPatchTemplate<t_quad8, line_to_surface_scalar_type<t_hermite, t_quad8>>(
-                face_element, false));
+                core_element, false));
       case Core::FE::CellType::quad9:
         return Teuchos::rcp(
             new FaceElementPatchTemplate<t_quad9, line_to_surface_scalar_type<t_hermite, t_quad9>>(
-                face_element, false));
+                core_element, false));
       case Core::FE::CellType::tri3:
         return Teuchos::rcp(
             new FaceElementPatchTemplate<t_tri3, line_to_surface_scalar_type<t_hermite, t_tri3>>(
-                face_element, false));
+                core_element, false));
       case Core::FE::CellType::tri6:
         return Teuchos::rcp(
             new FaceElementPatchTemplate<t_tri6, line_to_surface_scalar_type<t_hermite, t_tri6>>(
-                face_element, false));
+                core_element, false));
       case Core::FE::CellType::nurbs9:
         return Teuchos::rcp(
             new FaceElementTemplate<t_nurbs9, line_to_surface_scalar_type<t_hermite, t_nurbs9>>(
-                face_element));
+                core_element));
       default:
         FOUR_C_THROW("Wrong discretization type given.");
     }
@@ -695,29 +706,29 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
       {
         case 1:
         {
-          switch (face_element->shape())
+          switch (core_element->shape())
           {
             case Core::FE::CellType::quad4:
               return Teuchos::rcp(new FaceElementPatchTemplate<t_quad4,
-                  line_to_surface_patch_scalar_type_1st_order>(face_element, true));
+                  line_to_surface_patch_scalar_type_1st_order>(core_element, true));
             case Core::FE::CellType::quad8:
               return Teuchos::rcp(new FaceElementPatchTemplate<t_quad8,
-                  line_to_surface_patch_scalar_type_1st_order>(face_element, true));
+                  line_to_surface_patch_scalar_type_1st_order>(core_element, true));
             case Core::FE::CellType::quad9:
               return Teuchos::rcp(new FaceElementPatchTemplate<t_quad9,
-                  line_to_surface_patch_scalar_type_1st_order>(face_element, true));
+                  line_to_surface_patch_scalar_type_1st_order>(core_element, true));
             case Core::FE::CellType::tri3:
               return Teuchos::rcp(
                   new FaceElementPatchTemplate<t_tri3, line_to_surface_patch_scalar_type_1st_order>(
-                      face_element, true));
+                      core_element, true));
             case Core::FE::CellType::tri6:
               return Teuchos::rcp(
                   new FaceElementPatchTemplate<t_tri6, line_to_surface_patch_scalar_type_1st_order>(
-                      face_element, true));
+                      core_element, true));
             case Core::FE::CellType::nurbs9:
               return Teuchos::rcp(new FaceElementTemplate<t_nurbs9,
                   line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>>(
-                  face_element));
+                  core_element));
             default:
               FOUR_C_THROW("Wrong discretization type given.");
           }
@@ -725,31 +736,31 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
         }
         case 2:
         {
-          switch (face_element->shape())
+          switch (core_element->shape())
           {
             case Core::FE::CellType::quad4:
               return Teuchos::rcp(
                   new FaceElementPatchTemplate<t_quad4, line_to_surface_patch_scalar_type>(
-                      face_element, true));
+                      core_element, true));
             case Core::FE::CellType::quad8:
               return Teuchos::rcp(
                   new FaceElementPatchTemplate<t_quad8, line_to_surface_patch_scalar_type>(
-                      face_element, true));
+                      core_element, true));
             case Core::FE::CellType::quad9:
               return Teuchos::rcp(
                   new FaceElementPatchTemplate<t_quad9, line_to_surface_patch_scalar_type>(
-                      face_element, true));
+                      core_element, true));
             case Core::FE::CellType::tri3:
               return Teuchos::rcp(
                   new FaceElementPatchTemplate<t_tri3, line_to_surface_patch_scalar_type>(
-                      face_element, true));
+                      core_element, true));
             case Core::FE::CellType::tri6:
               return Teuchos::rcp(
                   new FaceElementPatchTemplate<t_tri6, line_to_surface_patch_scalar_type>(
-                      face_element, true));
+                      core_element, true));
             case Core::FE::CellType::nurbs9:
               return Teuchos::rcp(new FaceElementTemplate<t_nurbs9,
-                  line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>>(face_element));
+                  line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>>(core_element));
             default:
               FOUR_C_THROW("Wrong discretization type given.");
           }
@@ -761,20 +772,20 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
     }
     else if (surface_normal_strategy == Inpar::GEOMETRYPAIR::SurfaceNormals::extended_volume)
     {
-      switch (face_element->shape())
+      switch (core_element->shape())
       {
         case Core::FE::CellType::quad4:
           return Teuchos::rcp(new FaceElementTemplateExtendedVolume<t_quad4,
               line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hex8>(
-              face_element));
+              core_element));
         case Core::FE::CellType::quad8:
           return Teuchos::rcp(new FaceElementTemplateExtendedVolume<t_quad8,
               line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hex20>(
-              face_element));
+              core_element));
         case Core::FE::CellType::quad9:
           return Teuchos::rcp(new FaceElementTemplateExtendedVolume<t_quad9,
               line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hex27>(
-              face_element));
+              core_element));
         default:
           FOUR_C_THROW("Got unexpected face type for extended volume coupling.");
       }

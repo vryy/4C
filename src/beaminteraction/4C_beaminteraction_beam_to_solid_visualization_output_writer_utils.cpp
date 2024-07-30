@@ -109,11 +109,11 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
       Core::LinAlg::Matrix<2, 1, double> xi(true);
       Core::LinAlg::SerialDenseMatrix nodal_coordinates =
           Core::FE::getEleNodeNumbering_nodes_paramspace(
-              face_element_iterator.second->get_drt_face_element()->shape());
+              face_element_iterator.second->get_element()->shape());
 
       // Loop over element nodes.
-      for (int i_node = 0;
-           i_node < face_element_iterator.second->get_drt_face_element()->num_node(); i_node++)
+      for (int i_node = 0; i_node < face_element_iterator.second->get_element()->num_node();
+           i_node++)
       {
         for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
           xi(i_dim) = nodal_coordinates(i_dim, i_node);
@@ -134,8 +134,7 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
         }
         coupling_id.push_back(condition_coupling_id);
 
-        if (write_unique_ids)
-          face_id->push_back(face_element_iterator.second->get_drt_face_element()->id());
+        if (write_unique_ids) face_id->push_back(face_element_iterator.second->get_element()->id());
       }
     }
   }

@@ -252,7 +252,7 @@ namespace BEAMINTERACTION
 
     //! Map containing the global volume element IDs for each face element of the surface in this
     //! condition.
-    std::unordered_map<int, Teuchos::RCP<const Core::Elements::FaceElement>> surface_ids_;
+    std::unordered_map<int, Teuchos::RCP<const Core::Elements::Element>> surface_ids_;
   };
 
 

@@ -91,10 +91,10 @@ namespace GEOMETRYPAIR
    public:
     /**
      * \brief Constructor.
-     * @param face_element (in) Pointer to the DRT face element.
+     * @param core_element (in) Pointer to the DRT element.
      */
-    FaceElement(const Teuchos::RCP<const Core::Elements::FaceElement>& face_element)
-        : drt_face_element_(face_element), part_of_pair_(false), patch_dof_gid_(){};
+    FaceElement(const Teuchos::RCP<const Core::Elements::Element>& core_element)
+        : core_element_(core_element), part_of_pair_(false), patch_dof_gid_(){};
 
     /**
      * \brief Destructor.
@@ -102,13 +102,9 @@ namespace GEOMETRYPAIR
     virtual ~FaceElement() = default;
 
     /**
-     * \brief Get the RCP to the DRT face element.
-     * @return RCP to the DRT face element.
+     * \brief Get the RCP to the DRT element.
      */
-    const Core::Elements::FaceElement* get_drt_face_element() const
-    {
-      return drt_face_element_.getRawPtr();
-    }
+    const Core::Elements::Element* get_element() const { return core_element_.getRawPtr(); }
 
     /**
      * \brief Setup the object. Has to be implemented in derived class.
@@ -182,8 +178,8 @@ namespace GEOMETRYPAIR
     const std::vector<int>& get_patch_gid() const { return patch_dof_gid_; }
 
    protected:
-    //! Pointer to the drt face element.
-    Teuchos::RCP<const Core::Elements::FaceElement> drt_face_element_;
+    //! Pointer to the drt element.
+    Teuchos::RCP<const Core::Elements::Element> core_element_;
 
     //! Flag if this face element is part of a contact pair, i.e. if it has evaluate it's averaged
     //! normals.
@@ -212,8 +208,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor (derived).
      */
-    FaceElementTemplate(const Teuchos::RCP<const Core::Elements::FaceElement>& face_element)
-        : FaceElement(face_element), n_dof_other_element_(0){};
+    FaceElementTemplate(const Teuchos::RCP<const Core::Elements::Element>& core_element)
+        : FaceElement(core_element), n_dof_other_element_(0){};
 
 
     /**
@@ -339,9 +335,9 @@ namespace GEOMETRYPAIR
      * \brief Constructor (derived).
      * @param evaluate_current_normals (in) If the current normals should be evaluated.
      */
-    FaceElementPatchTemplate(const Teuchos::RCP<const Core::Elements::FaceElement>& face_element,
+    FaceElementPatchTemplate(const Teuchos::RCP<const Core::Elements::Element>& core_element,
         const bool evaluate_current_normals)
-        : base_class(face_element),
+        : base_class(core_element),
           connected_faces_(),
           evaluate_current_normals_(evaluate_current_normals)
     {
@@ -423,8 +419,8 @@ namespace GEOMETRYPAIR
      * \brief Constructor (derived).
      */
     FaceElementTemplateExtendedVolume(
-        const Teuchos::RCP<const Core::Elements::FaceElement>& face_element)
-        : base_class(face_element),
+        const Teuchos::RCP<const Core::Elements::Element>& core_element)
+        : base_class(core_element),
           surface_dof_lid_map_(true),
           face_to_volume_coordinate_axis_map_(true),
           face_to_volume_coordinate_axis_factor_(true),
@@ -502,13 +498,13 @@ namespace GEOMETRYPAIR
 
   /**
    * \brief Create the templated version of the face element.
-   * @param drt_face_element (in) Pointer to the DRT face element.
+   * @param core_element (in) Pointer to the DRT element.
    * @param fad_order (in) Order of the created FAD type (0 means double).
    * @param surface_normal_strategy (in) strategy to be used for surface normals.
    * @return RCP to the created GEOMETRYPAIR FaceElement.
    */
   Teuchos::RCP<FaceElement> FaceElementFactory(
-      const Teuchos::RCP<const Core::Elements::FaceElement>& drt_face_element, const int fad_order,
+      const Teuchos::RCP<const Core::Elements::Element>& core_element, const int fad_order,
       const Inpar::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy);
 
 }  // namespace GEOMETRYPAIR
