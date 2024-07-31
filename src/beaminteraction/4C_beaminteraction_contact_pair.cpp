@@ -19,6 +19,7 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_geometry_pair.hpp"
 #include "4C_rigidsphere.hpp"
+#include "4C_shell_kl_nurbs.hpp"
 #include "4C_so3_base.hpp"
 #include "4C_solid_3D_ele.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -77,7 +78,8 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
       dynamic_cast<Discret::ELEMENTS::Beam3Base const*>(ele_ptrs[1]) != nullptr;
   const bool other_is_solid =
       dynamic_cast<Discret::ELEMENTS::SoBase const*>(ele_ptrs[1]) != nullptr ||
-      dynamic_cast<Discret::ELEMENTS::Solid const*>(ele_ptrs[1]) != nullptr;
+      dynamic_cast<Discret::ELEMENTS::Solid const*>(ele_ptrs[1]) != nullptr ||
+      dynamic_cast<Discret::ELEMENTS::KirchhoffLoveShellNurbs const*>(ele_ptrs[1]) != nullptr;
   const bool other_is_sphere =
       ele_ptrs[1]->element_type() == Discret::ELEMENTS::RigidsphereType::instance();
 

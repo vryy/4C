@@ -26,6 +26,7 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_rigidsphere.hpp"
+#include "4C_shell_kl_nurbs.hpp"
 #include "4C_so3_base.hpp"
 #include "4C_solid_3D_ele.hpp"
 
@@ -1201,7 +1202,8 @@ namespace BEAMINTERACTION
           eletypeset[1].insert(eleptr->id());
         }
         else if (dynamic_cast<Discret::ELEMENTS::SoBase const*>(eleptr) != nullptr ||
-                 dynamic_cast<Discret::ELEMENTS::Solid const*>(eleptr) != nullptr)
+                 dynamic_cast<Discret::ELEMENTS::Solid const*>(eleptr) != nullptr ||
+                 dynamic_cast<Discret::ELEMENTS::KirchhoffLoveShellNurbs const*>(eleptr) != nullptr)
         {
           eletypeset[2].insert(eleptr->id());
         }
@@ -1286,7 +1288,8 @@ namespace BEAMINTERACTION
         return Core::Binstrategy::Utils::BinContentType::RigidSphere;
       }
       else if (dynamic_cast<Discret::ELEMENTS::SoBase const*>(ele) != nullptr ||
-               dynamic_cast<Discret::ELEMENTS::Solid const*>(ele) != nullptr)
+               dynamic_cast<Discret::ELEMENTS::Solid const*>(ele) != nullptr ||
+               dynamic_cast<Discret::ELEMENTS::KirchhoffLoveShellNurbs const*>(ele) != nullptr)
       {
         return Core::Binstrategy::Utils::BinContentType::Solid;
       }

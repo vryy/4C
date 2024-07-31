@@ -404,24 +404,30 @@ namespace GEOMETRYPAIR
       const auto* discretization = Global::Problem::instance()->get_dis("structure").get();
       if (dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(discretization) == nullptr)
         FOUR_C_THROW(
-            "Evaluation of the shape function data for nurbs requires a valid nurbs "
-            "discretization "
+            "Evaluation of the shape function data for nurbs requires a valid nurbs discretization "
             "pointer");
 
       auto face_element = dynamic_cast<const Core::Elements::FaceElement*>(element);
       if (face_element == nullptr)
-        FOUR_C_THROW(
-            "GEOMETRYPAIR::SetShapeFunctionData<t_nurbs9, scalar_type>::Get needs a face element "
-            "pointer.");
-
-      std::vector<Core::LinAlg::SerialDenseVector> my_parent_knots(3);
-      shape_function_data.myknots_.resize(2);
-      const bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(face_element,
-          face_element->face_master_number(), face_element->parent_element_id(), *(discretization),
-          my_parent_knots, shape_function_data.myknots_, shape_function_data.weights_,
-          shape_function_data.surface_normal_factor_);
-      if (zero_size)
-        FOUR_C_THROW("GetKnotVectorAndWeightsForNurbsBoundary has to return a non zero size.");
+      {
+        // The element is a direct surface element, e.g., shell
+        const bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
+            *(discretization), element, shape_function_data.myknots_, shape_function_data.weights_);
+        if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
+        shape_function_data.surface_normal_factor_ = 1.0;
+      }
+      else
+      {
+        // The element is the face of a nurbs27 element
+        std::vector<Core::LinAlg::SerialDenseVector> my_parent_knots(3);
+        shape_function_data.myknots_.resize(2);
+        const bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(
+            face_element, face_element->face_master_number(), face_element->parent_element_id(),
+            *(discretization), my_parent_knots, shape_function_data.myknots_,
+            shape_function_data.weights_, shape_function_data.surface_normal_factor_);
+        if (zero_size)
+          FOUR_C_THROW("GetKnotVectorAndWeightsForNurbsBoundary has to return a non zero size.");
+      }
     }
   };
 
@@ -437,8 +443,8 @@ namespace GEOMETRYPAIR
       const auto* discretization = Global::Problem::instance()->get_dis("structure").get();
       if (dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(discretization) == nullptr)
         FOUR_C_THROW(
-            "Evaluation of the shape function data for nurbs requires a valid nurbs "
-            "discretization pointer");
+            "Evaluation of the shape function data for nurbs requires a valid nurbs discretization "
+            "pointer");
 
       const bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
           *discretization, element, shape_function_data.myknots_, shape_function_data.weights_);

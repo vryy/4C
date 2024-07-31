@@ -95,8 +95,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
   face_element_->set_number_of_dof_other_element(
       UTILS::GetNumberOfElementCenterlineDof(this->element1()));
 
-  // The second element in the pair has to be the face element.
-  cast_geometry_pair()->set_element2(face_element_->get_drt_face_element());
+  // If the solid surface is the surface of a 3D volume we set the face element here. Otherwise we
+  // simply set the same element again.
+  cast_geometry_pair()->set_element2(face_element_->get_element());
 }
 
 /**

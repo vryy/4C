@@ -993,8 +993,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarTyp
   // Get the GIDs of the surface and beam.
   std::vector<int> lm_beam, lmowner, lmstride;
   this->element1()->location_vector(discret, lm_beam, lmowner, lmstride);
-  this->face_element_->get_drt_face_element()->location_vector(
-      discret, gid_surface, lmowner, lmstride);
+  this->face_element_->get_element()->location_vector(discret, gid_surface, lmowner, lmstride);
   std::array<int, n_dof_rot_> rot_dof_indices = {3, 4, 5, 12, 13, 14, 18, 19, 20};
   for (unsigned int i = 0; i < n_dof_rot_; i++) gid_rot(i) = lm_beam[rot_dof_indices[i]];
 }
