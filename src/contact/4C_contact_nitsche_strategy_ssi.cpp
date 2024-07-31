@@ -81,7 +81,9 @@ void CONTACT::NitscheStrategySsi::set_state(
       {
         curr_state_eval_ = false;
         *curr_state_scalar_ = vec;
-        set_parent_state(statename, vec);
+        auto scatra_dis = Global::Problem::instance()->get_dis("scatra");
+        if (scatra_dis == Teuchos::null) FOUR_C_THROW("didn't get scatra discretization");
+        set_parent_state(statename, vec, *scatra_dis);
       }
       break;
     }
@@ -95,18 +97,15 @@ void CONTACT::NitscheStrategySsi::set_state(
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
-void CONTACT::NitscheStrategySsi::set_parent_state(
-    const enum Mortar::StateType& statename, const Epetra_Vector& vec)
+void CONTACT::NitscheStrategySsi::set_parent_state(const enum Mortar::StateType& statename,
+    const Epetra_Vector& vec, const Core::FE::Discretization& dis)
 {
   switch (statename)
   {
     case Mortar::state_elch:
     case Mortar::state_scalar:
     {
-      auto scatra_dis = Global::Problem::instance()->get_dis("scatra");
-      if (scatra_dis == Teuchos::null) FOUR_C_THROW("didn't get scatra discretization");
-
-      auto scatra_dofcolmap = Teuchos::rcp(new Epetra_Vector(*scatra_dis->dof_col_map(), true));
+      auto scatra_dofcolmap = Teuchos::rcp(new Epetra_Vector(*dis.dof_col_map(), true));
       Core::LinAlg::export_to(vec, *scatra_dofcolmap);
 
       // set state on interfaces
@@ -124,7 +123,7 @@ void CONTACT::NitscheStrategySsi::set_parent_state(
           if (interface_ele == nullptr) FOUR_C_THROW("Did not find element.");
 
           auto* mortar_ele = dynamic_cast<Mortar::Element*>(interface_ele);
-          auto* mortar_parent_ele = scatra_dis->g_element(mortar_ele->parent_element_id());
+          auto* mortar_parent_ele = dis.g_element(mortar_ele->parent_element_id());
 
           std::vector<int> lm;
           std::vector<int> lmowner;
@@ -133,7 +132,7 @@ void CONTACT::NitscheStrategySsi::set_parent_state(
           if (mortar_parent_ele == nullptr)
             FOUR_C_THROW("Did not get parent element to extract scalar values");
           else
-            mortar_parent_ele->location_vector(*scatra_dis, lm, lmowner, lmstride);
+            mortar_parent_ele->location_vector(dis, lm, lmowner, lmstride);
 
           std::vector<double> myval;
           Core::FE::ExtractMyValues(*scatra_dofcolmap, myval, lm);
@@ -146,7 +145,7 @@ void CONTACT::NitscheStrategySsi::set_parent_state(
     }
     default:
     {
-      CONTACT::NitscheStrategy::set_parent_state(statename, vec);
+      CONTACT::NitscheStrategy::set_parent_state(statename, vec, dis);
       break;
     }
   }

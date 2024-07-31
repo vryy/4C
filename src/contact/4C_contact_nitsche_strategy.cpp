@@ -127,7 +127,10 @@ void CONTACT::NitscheStrategy::set_state(
       curr_state_eval_ = false;
       (*curr_state_) = vec;
       AbstractStrategy::set_state(statename, vec);
-      set_parent_state(statename, vec);
+      Teuchos::RCP<Core::FE::Discretization> dis =
+          Global::Problem::instance()->get_dis("structure");
+      if (dis == Teuchos::null) FOUR_C_THROW("didn't get my discretization");
+      set_parent_state(statename, vec, *dis);
     }
   }
   else
@@ -140,14 +143,12 @@ void CONTACT::NitscheStrategy::set_state(
 /*------------------------------------------------------------------------*
  |                                                             seitz 10/16|
  *------------------------------------------------------------------------*/
-void CONTACT::NitscheStrategy::set_parent_state(
-    const enum Mortar::StateType& statename, const Epetra_Vector& vec)
+void CONTACT::NitscheStrategy::set_parent_state(const enum Mortar::StateType& statename,
+    const Epetra_Vector& vec, const Core::FE::Discretization& dis)
 {
-  Teuchos::RCP<Core::FE::Discretization> dis = Global::Problem::instance()->get_dis("structure");
-  if (dis == Teuchos::null) FOUR_C_THROW("didn't get my discretization");
   if (statename == Mortar::state_new_displacement || statename == Mortar::state_svelocity)
   {
-    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->dof_col_map(), true));
+    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis.dof_col_map(), true));
     Core::LinAlg::export_to(vec, *global);
 
     // set state on interfaces
@@ -166,7 +167,7 @@ void CONTACT::NitscheStrategy::set_parent_state(
         std::vector<int> lmstride;
 
         // this gets values in local order
-        ele->parent_element()->location_vector(*dis, lm, lmowner, lmstride);
+        ele->parent_element()->location_vector(dis, lm, lmowner, lmstride);
 
         std::vector<double> myval;
         Core::FE::ExtractMyValues(*global, myval, lm);

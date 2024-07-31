@@ -1046,11 +1046,10 @@ void Solid::TimIntImpl::apply_force_stiff_contact_meshtying(
     if (cmtbridge_->have_contact())
     {
       dynamic_cast<CONTACT::AbstractStrategy&>(cmtbridge_->contact_manager()->get_strategy())
-          .set_parent_state("displacement", dis, discret_);
+          .set_parent_state(Mortar::StateType::state_new_displacement, *dis, *discret_);
       cmtbridge_->contact_manager()->get_strategy().apply_force_stiff_cmt(
           dis, stiff, fresm, stepn_, iter_, predict);
     }
-
 
     // scaling back
     fresm->Scale(-1.0);

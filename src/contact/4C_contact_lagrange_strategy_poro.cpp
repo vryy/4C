@@ -67,7 +67,7 @@ void CONTACT::LagrangeStrategyPoro::do_read_restart(Core::IO::DiscretizationRead
   // it's clear that we get some zeros here ... but poroelast monolithic fixes this a little bit
   // later by doing the same thing with correct displacements again :-)
   Core::LinAlg::export_to(*dis, *global);
-  set_parent_state("displacement", global, discret);
+  set_parent_state(Mortar::StateType::state_new_displacement, *global, *discret);
 
   // Call (nearly absolute)Base Class
   CONTACT::AbstractStrategy::do_read_restart(reader, dis, cparams_ptr);
@@ -1467,13 +1467,13 @@ void CONTACT::LagrangeStrategyPoro::set_state(
 /*------------------------------------------------------------------------*
  | Assign generell poro contact state!                          ager 10/14|
  *------------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategyPoro::set_parent_state(const std::string& statename,
-    const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Core::FE::Discretization> dis)
+void CONTACT::LagrangeStrategyPoro::set_parent_state(const enum Mortar::StateType& statetype,
+    const Epetra_Vector& vec, const Core::FE::Discretization& dis)
 {
-  if (statename == "displacement")
+  if (statetype == Mortar::StateType::state_new_displacement)
   {
-    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->dof_col_map(), true));
-    Core::LinAlg::export_to(*vec, *global);
+    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis.dof_col_map(), true));
+    Core::LinAlg::export_to(vec, *global);
 
     // set state on interfaces
     for (int i = 0; i < (int)interface_.size(); ++i)
@@ -1495,7 +1495,7 @@ void CONTACT::LagrangeStrategyPoro::set_parent_state(const std::string& statenam
           std::vector<int> lmstride;
 
           // this gets values in local order
-          ele->parent_element()->location_vector(*dis, lm, lmowner, lmstride);
+          ele->parent_element()->location_vector(dis, lm, lmowner, lmstride);
 
           std::vector<double> myval;
           Core::FE::ExtractMyValues(*global, myval, lm);
@@ -1517,7 +1517,7 @@ void CONTACT::LagrangeStrategyPoro::set_parent_state(const std::string& statenam
           std::vector<int> lmstride;
 
           // this gets values in local order
-          mele->parent_element()->location_vector(*dis, lm, lmowner, lmstride);
+          mele->parent_element()->location_vector(dis, lm, lmowner, lmstride);
 
           std::vector<double> myval;
           Core::FE::ExtractMyValues(*global, myval, lm);
