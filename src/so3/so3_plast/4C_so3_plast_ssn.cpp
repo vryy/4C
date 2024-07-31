@@ -52,11 +52,6 @@ Discret::ELEMENTS::So3Plast<distype>::So3Plast(int id, int owner)
       tsi_(false),
       is_nitsche_contact_(false)
 {
-  if (distype == Core::FE::CellType::nurbs27)
-    set_nurbs_element() = true;
-  else
-    set_nurbs_element() = false;
-  return;
 }
 
 
@@ -67,11 +62,6 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::So3Plast<distype>::So3Plast(const Discret::ELEMENTS::So3Plast<distype>& old)
     : SoBase(old)
 {
-  if (distype == Core::FE::CellType::nurbs27)
-    set_nurbs_element() = true;
-  else
-    set_nurbs_element() = false;
-  return;
 }
 
 

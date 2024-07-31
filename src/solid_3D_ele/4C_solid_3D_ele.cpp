@@ -197,11 +197,6 @@ void Discret::ELEMENTS::Solid::unpack(const std::vector<char>& data)
 
   Discret::ELEMENTS::ExtractFromPack(position, data, solid_ele_property_);
 
-  if (shape() == Core::FE::CellType::nurbs27)
-  {
-    set_nurbs_element() = true;
-  }
-
   Core::Communication::ParObject::extract_from_pack(position, data, material_post_setup_);
 
   // reset solid interface
@@ -239,10 +234,6 @@ bool Discret::ELEMENTS::Solid::read_element(const std::string& eletype, const st
 
   solid_ele_property_ = FourC::Solid::UTILS::read_element::read_solid_element_properties(container);
 
-  if (shape() == Core::FE::CellType::nurbs27)
-  {
-    set_nurbs_element() = true;
-  }
 
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_);
   std::visit([&](auto& interface) { interface->setup(*solid_material(), container); },

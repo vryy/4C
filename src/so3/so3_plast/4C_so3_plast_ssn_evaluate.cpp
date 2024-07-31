@@ -3290,7 +3290,7 @@ void Discret::ELEMENTS::So3Plast<distype>::heat_flux(const std::vector<double>& 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Plast<distype>::get_nurbs_ele_info(Core::FE::Discretization* dis)
 {
-  if (!is_nurbs_element()) return;
+  if (!Core::FE::is_nurbs_celltype(shape())) return;
 
   if (dis == nullptr) dis = Global::Problem::instance()->get_dis("structure").get();
 

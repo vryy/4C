@@ -111,7 +111,6 @@ Discret::ELEMENTS::KirchhoffLoveShellNurbs::KirchhoffLoveShellNurbs(int id, int 
       material_(0),
       gaussrule_({Core::FE::GaussRule1D::undefined, Core::FE::GaussRule1D::undefined})
 {
-  set_nurbs_element() = true;
 }
 
 /**
@@ -121,7 +120,6 @@ Discret::ELEMENTS::KirchhoffLoveShellNurbs::KirchhoffLoveShellNurbs(
     const Discret::ELEMENTS::KirchhoffLoveShellNurbs& old)
     : Core::Elements::Element(old), material_(old.material_), gaussrule_(old.gaussrule_)
 {
-  set_nurbs_element() = true;
 }
 
 /**

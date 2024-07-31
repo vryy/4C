@@ -27,8 +27,6 @@ bool Discret::ELEMENTS::Thermo::read_element(const std::string& eletype, const s
 
   set_dis_type(Core::FE::StringToCellType(distype));
 
-  if (shape() == Core::FE::CellType::nurbs27) set_nurbs_element() = true;
-
   return true;
 }
 
