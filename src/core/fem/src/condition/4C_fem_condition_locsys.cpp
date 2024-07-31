@@ -325,13 +325,7 @@ void Core::Conditions::LocsysManager::update(const double time,
 
       // Check for zero-diagonal elements
       if (fabs(vec1(0)) < 1e-9 || fabs(vec2(1)) < 1e-9 || fabs(vec3(2)) < 1e-9) sanity_check = true;
-      // test how big numdofs are
-      if (numdof > 3)
-      {
-        FOUR_C_THROW(
-            "The locsys condition is not implemented for elements with numdof "
-            "exceeding 3");
-      }
+
       // trafo for 2D case
       if (n_dim() == 2)
       {
@@ -353,11 +347,23 @@ void Core::Conditions::LocsysManager::update(const double time,
       }
 
       // Assemble the rotation of this dofs ('nodetrafo') into the global matrix
-      for (int r = 0; r < numdof; ++r)
-        for (int c = 0; c < numdof; ++c) trafo_->set_value(nodetrafo(r, c), dofs[r], dofs[c]);
+      for (int r = 0; r < n_dim(); ++r)
+      {
+        for (int c = 0; c < n_dim(); ++c)
+        {
+          trafo_->set_value(nodetrafo(r, c), dofs[r], dofs[c]);
+        }
+      }
+      for (int r = n_dim(); r < numdof; ++r)
+      {
+        trafo_->set_value(1.0, dofs[r], dofs[r]);
+      }
 
       // store the DOF with locsys
-      for (int r = 0; r < numdof; ++r) locsysdofset.insert(dofs[r]);
+      for (int r = 0; r < numdof; ++r)
+      {
+        locsysdofset.insert(dofs[r]);
+      }
 
       // node dofs are marked now as already processed
       for (int rr = 0; rr < numdof; ++rr) (*already_processed)[dofrowmap->LID(dofs[rr])] = 1.0;
