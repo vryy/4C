@@ -623,6 +623,48 @@ namespace Input
     definition->add_component(Teuchos::rcp(
         new Input::ProcessedComponent(name, process_operation, print_string, optional)));
   }
+
+
+  /*!
+   * @brief Add a separator followed by a selection component
+   *
+   * This function adds two components to the @p definition:
+   *  1. A SeparatorComponent with a provided @p name, and a @p separator_description .
+   *  2. A SelectionComponent with the same @p name , @p datfilevalues, @p condvalues and an @p
+   * optional tag.
+   */
+  template <typename DefinitionType>
+  inline void add_named_selection_component(const Teuchos::RCP<DefinitionType>& definition,
+      const std::string& name, const std::string& separator_description,
+      const std::string& defaultvalue, const Teuchos::Array<std::string>& datfilevalues,
+      const Teuchos::Array<std::string>& condvalues, bool optional = false)
+  {
+    definition->add_component(
+        Teuchos::rcp(new Input::SeparatorComponent(name, separator_description, optional)));
+    definition->add_component(Teuchos::rcp(
+        new Input::SelectionComponent(name, defaultvalue, datfilevalues, condvalues, optional)));
+  }
+
+  /*!
+   * @brief Add a separator followed by a selection component
+   *
+   * This function adds two components to the @p definition:
+   *  1. A SeparatorComponent with a provided @p name, and a @p separator_description .
+   *  2. A SelectionComponent with the same @p name , @p datfilevalues, @p condvalues and an @p
+   * optional tag.
+   */
+  template <typename DefinitionType>
+  inline void add_named_selection_component(const Teuchos::RCP<DefinitionType>& definition,
+      const std::string& name, const std::string& separator_description,
+      const std::string& defaultvalue, const Teuchos::Array<std::string>& datfilevalues,
+      const Teuchos::Array<int>& condvalues, bool optional = false)
+  {
+    definition->add_component(
+        Teuchos::rcp(new Input::SeparatorComponent(name, separator_description, optional)));
+    definition->add_component(Teuchos::rcp(
+        new Input::SelectionComponent(name, defaultvalue, datfilevalues, condvalues, optional)));
+  }
+
 }  // namespace Input
 
 FOUR_C_NAMESPACE_CLOSE
