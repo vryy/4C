@@ -571,26 +571,11 @@ void Core::FE::Nurbs::apply_nurbs_initial_condition(Core::FE::Discretization& di
     return;
   }
 
-  // Owing to experience a very accurate solution has to be enforced here!
-  // Thus, we allocate an own solver with VERY strict tolerance!
-  Teuchos::ParameterList p(solverparams);
-  const double origtol = p.get<double>("AZTOL");
-  const double newtol = 1.0e-11;
-  p.set("AZTOL", newtol);
+  Core::LinAlg::Solver lssolver(
+      solverparams, dis.get_comm(), nullptr, Core::IO::Verbositylevel::standard);
+  dis.compute_null_space_if_necessary(lssolver.params());
 
-  Teuchos::RCP<Core::LinAlg::Solver> lssolver = Teuchos::rcp(
-      new Core::LinAlg::Solver(p, dis.get_comm(), nullptr, Core::IO::Verbositylevel::standard));
-  dis.compute_null_space_if_necessary(lssolver->params());
-
-  // get the processor ID from the communicator
-  const int myrank = dis.get_comm().MyPID();
-
-  if (myrank == 0)
-    std::cout << "\nSolver tolerance for least squares problem set to " << newtol
-              << " (orig: " << origtol << ")";
-
-  apply_nurbs_initial_condition_solve(dis, *lssolver, start_function, initialvals);
-  return;
+  apply_nurbs_initial_condition_solve(dis, lssolver, start_function, initialvals);
 }
 
 FOUR_C_NAMESPACE_CLOSE

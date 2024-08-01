@@ -34,6 +34,7 @@
 #include "4C_fem_discretization_utils.hpp"
 #include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_fem_geometry_position_array.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_fem_nurbs_discretization_initial_condition.hpp"
 #include "4C_fluid_DbcHDG.hpp"
 #include "4C_fluid_ele.hpp"
@@ -4221,11 +4222,34 @@ void FLD::FluidImplicitTimeInt::set_initial_flow_field(
 
     // for NURBS discretizations we have to solve a least squares problem,
     // with high accuracy! (do nothing for Lagrangian polynomials)
-    Core::FE::Nurbs::apply_nurbs_initial_condition(*discret_,
-        Global::Problem::instance()->umfpack_solver_params(),
-        Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
-            startfuncno - 1),
-        velnp_);
+    Teuchos::ParameterList solver_params;
+    if (!dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(discret_.get()))
+    {
+      const Teuchos::ParameterList& nurbs_params = Global::Problem::instance()->nurbs_params();
+
+      const bool is_ls_dbc_needed =
+          Core::UTILS::IntegralValue<bool>(nurbs_params, "DO_LS_DBC_PROJECTION");
+
+      if (is_ls_dbc_needed)
+      {
+        const int ls_dbc_solver_num = nurbs_params.get<int>("SOLVER_LS_DBC_PROJECTION");
+
+        if (ls_dbc_solver_num == (-1))
+          FOUR_C_THROW(
+              "No linear solver defined for the projection of least squares Dirichlet "
+              "boundary conditions for the NURBS discretization. Please set "
+              "SOLVER_LS_DBC_PROJECTION in NURBS to a valid number!");
+
+        // Save solver parameters
+        solver_params.sublist("ls_dbc_solver_params")
+            .setParameters(Global::Problem::instance()->solver_params(ls_dbc_solver_num));
+      }
+
+      Core::FE::Nurbs::apply_nurbs_initial_condition(*discret_, solver_params,
+          Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+              startfuncno - 1),
+          velnp_);
+    }
 
     // initialize veln_ as well. That's what we actually want to do here!
     veln_->Update(1.0, *velnp_, 0.0);

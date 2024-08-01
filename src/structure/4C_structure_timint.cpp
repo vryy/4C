@@ -358,7 +358,31 @@ void Solid::TimInt::create_fields()
     p.set("total time", timen_);
     p.set<const Core::UTILS::FunctionManager*>(
         "function_manager", &Global::Problem::instance()->function_manager());
-    p.sublist("solver_params") = Global::Problem::instance()->umfpack_solver_params();
+
+    // if this is a NURBS discretization, get the solver parameters for solving the least squares
+    // problem
+    if (Teuchos::rcp_dynamic_cast<Core::FE::Nurbs::NurbsDiscretization>(discret_) != Teuchos::null)
+    {
+      const Teuchos::ParameterList& nurbs_params = Global::Problem::instance()->nurbs_params();
+
+      const bool is_ls_dbc_needed =
+          Core::UTILS::IntegralValue<bool>(nurbs_params, "DO_LS_DBC_PROJECTION");
+
+      if (is_ls_dbc_needed)
+      {
+        const int ls_dbc_solver_num = nurbs_params.get<int>("SOLVER_LS_DBC_PROJECTION");
+
+        if (ls_dbc_solver_num == (-1))
+          FOUR_C_THROW(
+              "No linear solver defined for the projection of least squares Dirichlet "
+              "boundary conditions for the NURBS discretization. Please set "
+              "SOLVER_LS_DBC_PROJECTION in NURBS to a valid number!");
+
+        // Save solver parameters
+        p.sublist("ls_dbc_solver_params")
+            .setParameters(Global::Problem::instance()->solver_params(ls_dbc_solver_num));
+      }
+    }
 
     discret_->evaluate_dirichlet(p, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
@@ -1174,7 +1198,31 @@ void Solid::TimInt::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Ve
   p.set("total time", time);  // target time
   p.set<const Core::UTILS::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
-  p.sublist("solver_params") = Global::Problem::instance()->umfpack_solver_params();
+
+  // if this is a NURBS discretization, get the solver parameters for solving the least squares
+  // problem
+  if (Teuchos::rcp_dynamic_cast<Core::FE::Nurbs::NurbsDiscretization>(discret_) != Teuchos::null)
+  {
+    const Teuchos::ParameterList& nurbs_params = Global::Problem::instance()->nurbs_params();
+
+    const bool is_ls_dbc_needed =
+        Core::UTILS::IntegralValue<bool>(nurbs_params, "DO_LS_DBC_PROJECTION");
+
+    if (is_ls_dbc_needed)
+    {
+      const int ls_dbc_solver_num = nurbs_params.get<int>("SOLVER_LS_DBC_PROJECTION");
+
+      if (ls_dbc_solver_num == (-1))
+        FOUR_C_THROW(
+            "No linear solver defined for the projection of least squares Dirichlet "
+            "boundary conditions for the NURBS discretization. Please set "
+            "SOLVER_LS_DBC_PROJECTION in NURBS to a valid number!");
+
+      // Save solver parameters
+      p.sublist("ls_dbc_solver_params")
+          .setParameters(Global::Problem::instance()->solver_params(ls_dbc_solver_num));
+    }
+  }
 
   // predicted Dirichlet values
   // \c dis then also holds prescribed new Dirichlet displacements

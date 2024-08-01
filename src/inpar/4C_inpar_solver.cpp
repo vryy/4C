@@ -234,15 +234,6 @@ namespace Inpar::SOLVER
       Teuchos::ParameterList& solverlist = list->sublist(ss.str(), false, ss_description.str());
       SetValidSolverParameters(solverlist);
     }
-
-    /*----------------------------------------------------------------------*/
-    // UMFPACK solver section
-    // some people just need a solver quickly. We provide a special parameter set
-    // for UMFPACK that users can just use temporarily without introducing a
-    // separate solver block.
-    Teuchos::ParameterList& solver_u =
-        list->sublist("UMFPACK SOLVER", false, "solver parameters for UMFPACK");
-    SetValidSolverParameters(solver_u);
   }
 
 }  // namespace Inpar::SOLVER

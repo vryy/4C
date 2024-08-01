@@ -460,6 +460,7 @@ namespace Global
     {
       return parameters_->sublist("MESH PARTITIONING");
     }
+    const Teuchos::ParameterList& nurbs_params() const { return parameters_->sublist("NURBS"); }
 
     const Teuchos::ParameterList& problem_type_params() const
     {
@@ -474,8 +475,6 @@ namespace Global
     const Teuchos::ParameterList& solver_params(int solverNr) const;
 
     std::function<const Teuchos::ParameterList&(int)> solver_params_callback() const;
-
-    const Teuchos::ParameterList& umfpack_solver_params();
 
     //@}
 

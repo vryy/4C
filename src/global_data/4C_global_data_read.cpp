@@ -2033,6 +2033,7 @@ void Global::ReadParameter(Global::Problem& problem, Core::IO::DatFileReader& re
   reader.read_section("--MOR", *list);
   reader.read_section("--MESH PARTITIONING", *list);
   reader.read_section("--MULTI POINT CONSTRAINTS", *list);
+  reader.read_section("--NURBS", *list);
   reader.read_section("--STRUCT NOX", *list);
   reader.read_section("--STRUCT NOX/Direction", *list);
   reader.read_section("--STRUCT NOX/Direction/Newton", *list);
@@ -2084,9 +2085,6 @@ void Global::ReadParameter(Global::Problem& problem, Core::IO::DatFileReader& re
       }
     }
   }
-
-  reader.read_section("--UMFPACK SOLVER", *list);
-
 
   // read in STRUCT NOX/Status Test and modify the xml file name, if there
   // is one.
