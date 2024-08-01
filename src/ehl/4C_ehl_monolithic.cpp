@@ -81,7 +81,6 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       systemmatrix_(Teuchos::null),
       k_sl_(Teuchos::null),
       k_ls_(Teuchos::null),
-      soltech_(Core::UTILS::IntegralValue<Inpar::EHL::NlnSolTech>(ehldynmono_, "NLNSOL")),
       iternorm_(Core::UTILS::IntegralValue<Inpar::EHL::VectorNorm>(ehldynmono_, "ITERNORM")),
       iter_(0),
       sdyn_(structparams),
@@ -127,29 +126,9 @@ void EHL::Monolithic::prepare_time_step()
 
 }  // prepare_time_step()
 
-
 /*----------------------------------------------------------------------*
- | non-linear solve, i.e. (multiple) corrector (public)     wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void EHL::Monolithic::solve()
-{
-  // choose solution technique according to input file
-  switch (soltech_)
-  {
-    // Newton-Raphson iteration
-    case Inpar::EHL::soltech_newtonfull:
-      newton_full();
-      break;
-    // catch problems
-    default:
-      FOUR_C_THROW("Solution technique \"%s\" is not implemented",
-          Inpar::EHL::NlnSolTechString(soltech_).c_str());
-      break;
-  }  // end switch (soltechnique_)
-
-  return;
-}  // Solve()
-
+void EHL::Monolithic::solve() { newton_full(); }
 
 /*----------------------------------------------------------------------*
  | time loop of the monolithic system                       wirtz 01/16 |

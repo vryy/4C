@@ -101,7 +101,6 @@ NORM_INC                        Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFINC               And
 ITERNORM                        L2
-NLNSOL                          fullnewton
 PTCDT                           0.1
 LINEAR_SOLVER                   1
 INFNORMSCALING                  yes

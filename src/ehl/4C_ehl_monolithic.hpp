@@ -299,9 +299,6 @@ namespace EHL
 
     //! @name iterative solution technique
 
-    enum Inpar::EHL::NlnSolTech soltech_;  //!< kind of iteration technique or
-                                           //!< nonlinear solution technique
-
     enum Inpar::EHL::ConvNorm normtypeinc_;       //!< convergence check for increments
     enum Inpar::EHL::ConvNorm normtyperhs_;       //!< convergence check for residual forces
     enum Inpar::Solid::ConvNorm normtypedisi_;    //!< convergence check for residual displacements
