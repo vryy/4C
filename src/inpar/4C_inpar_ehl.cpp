@@ -89,9 +89,6 @@ void Inpar::EHL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
       tuple<int>(norm_l1, norm_l1_scaled, norm_l2, norm_rms, norm_inf), &ehldynmono);
 
-  setStringToIntegralParameter<int>("NLNSOL", "fullnewton", "Nonlinear solution technique",
-      tuple<std::string>("fullnewton"), tuple<int>(soltech_newtonfull), &ehldynmono);
-
   Core::UTILS::DoubleParameter("PTCDT", 0.1,
       "pseudo time step for pseudo-transient continuation (PTC) stabilised Newton procedure",
       &ehldynmono);
@@ -110,10 +107,6 @@ void Inpar::EHL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   Core::UTILS::BoolParameter(
       "INFNORMSCALING", "yes", "Scale blocks of matrix with row infnorm?", &ehldynmono);
-
-  // merge EHL block matrix to enable use of direct solver in monolithic EHL
-  // default: "No", i.e. use block matrix
-  Core::UTILS::BoolParameter("MERGE_EHL_BLOCK_MATRIX", "No", "Merge EHL block matrix", &ehldynmono);
 
   /*----------------------------------------------------------------------*/
   /* parameters for partitioned EHL */
