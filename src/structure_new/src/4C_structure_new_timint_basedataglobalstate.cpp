@@ -41,6 +41,7 @@ Solid::TimeInt::BaseDataGlobalState::BaseDataGlobalState()
     : isinit_(false),
       issetup_(false),
       datasdyn_(Teuchos::null),
+      dim_(Global::Problem::instance()->n_dim()),
       discret_(Teuchos::null),
       comm_(Teuchos::null),
       my_rank_(-1),

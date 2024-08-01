@@ -3446,27 +3446,26 @@ void FLD::FluidImplicitTimeInt::statistics_output()
 
 void FLD::FluidImplicitTimeInt::write_runtime_output()
 {
-  Teuchos::RCP<Epetra_Vector> col_version =
-      Teuchos::rcp(new Epetra_Vector(*(discretization()->dof_col_map()), true));
+  auto col_version = Epetra_Vector(*(discretization()->dof_col_map()), true);
 
   runtime_output_writer_->reset();
 
   if (runtime_output_params_.output_velocity_state())
   {
-    Core::LinAlg::export_to(*velnp_, *col_version);
+    Core::LinAlg::export_to(*velnp_, col_version);
     runtime_output_writer_->append_dof_based_result_data_vector(col_version, 3, 0, "velocity");
   }
 
   if (runtime_output_params_.output_pressure_state())
   {
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_->extract_cond_vector(velnp_);
-    Core::LinAlg::export_to(*pressure, *col_version);
+    Core::LinAlg::export_to(*pressure, col_version);
     runtime_output_writer_->append_dof_based_result_data_vector(col_version, 1, 3, "pressure");
   }
 
   if (runtime_output_params_.output_acceleration_state())
   {
-    Core::LinAlg::export_to(*accnp_, *col_version);
+    Core::LinAlg::export_to(*accnp_, col_version);
     runtime_output_writer_->append_dof_based_result_data_vector(col_version, 3, 0, "acceleration");
   }
 
@@ -3474,14 +3473,14 @@ void FLD::FluidImplicitTimeInt::write_runtime_output()
   {
     if (runtime_output_params_.output_displacement_state())
     {
-      Core::LinAlg::export_to(*dispnp_, *col_version);
+      Core::LinAlg::export_to(*dispnp_, col_version);
       runtime_output_writer_->append_dof_based_result_data_vector(
           col_version, 3, 0, "displacement");
     }
 
     if (runtime_output_params_.output_grid_velocity_state())
     {
-      Core::LinAlg::export_to(*gridvn_, *col_version);
+      Core::LinAlg::export_to(*gridvn_, col_version);
       runtime_output_writer_->append_dof_based_result_data_vector(
           col_version, 3, 0, "grid-velocity");
     }

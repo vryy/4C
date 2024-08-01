@@ -13,25 +13,14 @@ to disk
 
 #include "4C_config.hpp"
 
+#include "4C_fem_discretization.hpp"
+#include "4C_io_visualization_manager.hpp"
+#include "4C_io_visualization_parameters.hpp"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
-
-namespace Core::FE
-{
-  class Discretization;
-}  // namespace Core::FE
-namespace Core::Elements
-{
-  class Element;
-}
-
-namespace Core::IO
-{
-  class VisualizationManager;
-  struct VisualizationParameters;
-}  // namespace Core::IO
 
 namespace Core::IO
 {
@@ -80,8 +69,7 @@ namespace Core::IO
      * used if not all nodal DOFs should be output, e.g., velocity or pressure in fluid.
      * @param resultname (in) Name of the field to be written to the visualization file
      */
-    void append_dof_based_result_data_vector(
-        const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
+    void append_dof_based_result_data_vector(const Epetra_Vector& result_data_dofbased,
         unsigned int result_num_dofs_per_node, unsigned int read_result_data_from_dofindex,
         const std::string& resultname);
 
@@ -101,8 +89,7 @@ namespace Core::IO
      * @param result_num_components_per_node (in) Number of scalar values per node
      * @param resultname (in) Name of the field to be written to the visualization file
      */
-    void append_node_based_result_data_vector(
-        const Teuchos::RCP<Epetra_MultiVector>& result_data_nodebased,
+    void append_node_based_result_data_vector(const Epetra_MultiVector& result_data_nodebased,
         unsigned int result_num_components_per_node, const std::string& resultname);
 
     /**
@@ -116,8 +103,7 @@ namespace Core::IO
      * @param result_num_components_per_element (in) Number of scalar values per element
      * @param resultname (in) Name of the field to be written to the visualization file
      */
-    void append_element_based_result_data_vector(
-        const Teuchos::RCP<Epetra_MultiVector>& result_data_elementbased,
+    void append_element_based_result_data_vector(const Epetra_MultiVector& result_data_elementbased,
         unsigned int result_num_components_per_element, const std::string& resultname);
 
     /**
@@ -129,7 +115,7 @@ namespace Core::IO
      *
      * @param resultname (in) Name of the owner field in the visualization file
      */
-    void append_element_owner(const std::string resultname);
+    void append_element_owner(const std::string& resultname);
 
     /**
      * \brief Write the 4C internal element GIDs for each element
@@ -160,7 +146,7 @@ namespace Core::IO
    private:
     /** \brief Determine and set geometry data from elements based on reference configuration
      *
-     * To simplify parallel ouput, we loop over each row element and let the element write its
+     * To simplify parallel output, we loop over each row element and let the element write its
      * topology to the the output file. This results in a "discontinuous" visualization, i.e., the
      * nodes of adjacent elements are not connected in the output file. In ParaView the global
      * nodal connectivity can be restored with the CleanToGrid filter.

@@ -263,6 +263,9 @@ namespace Solid
       /// @name Get general purpose algorithm members (read only access)
       ///@{
 
+      //! return the dimension of the problem
+      [[nodiscard]] unsigned int get_dim() const { return dim_; }
+
       /// attached discretisation
       Teuchos::RCP<const Core::FE::Discretization> get_discret() const
       {
@@ -920,6 +923,9 @@ namespace Solid
      private:
       /// @name General purpose algorithm members
       ///@{
+
+      //! dimension of the problem
+      const unsigned int dim_;
 
       /// attached discretisation
       Teuchos::RCP<Core::FE::Discretization> discret_;

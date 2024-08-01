@@ -1213,16 +1213,15 @@ might become invalid after a redistribution of the discretization.
      *
      * @param discret (in) discretization
      * @param result_data_dofbased (in) Global vector with results
-     * @param result_num_dofs_per_node (in/out) Number of scalar values per point.
+     * @param result_num_dofs_per_node (in) Number of scalar values per point.
      * @param read_result_data_from_dofindex (in) Starting DOF index for the nodal DOFs. This is
      * used if not all nodal DOFs should be output, e.g., velocity or pressure in fluid.
      * @param vtu_point_result_data (in/out) Result data vector.
      * @return Number of points added by this element.
      */
     virtual unsigned int append_visualization_dof_based_result_data_vector(
-        const Core::FE::Discretization& discret,
-        const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
-        unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
+        const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+        unsigned int result_num_dofs_per_node, unsigned int read_result_data_from_dofindex,
         std::vector<double>& vtu_point_result_data) const;
 
     /**
