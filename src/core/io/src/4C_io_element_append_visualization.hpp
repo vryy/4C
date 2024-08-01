@@ -38,7 +38,7 @@ namespace Core::IO
       std::vector<double>& point_coordinates)
   {
     const unsigned int num_spatial_dimensions = 3;
-    auto vtk_cell_info = GetVtkCellTypeFromFourCElementShapeType(ele.shape());
+    auto vtk_cell_info = get_vtk_cell_type_from_element_cell_type(ele.shape());
     const std::vector<int>& numbering = vtk_cell_info.second;
 
     // Add the cell type to the output.
@@ -64,15 +64,12 @@ namespace Core::IO
     switch (celltype)
     {
       case Core::FE::CellType::nurbs9:
-        return GetVtkCellTypeFromFourCElementShapeType(Core::FE::CellType::quad9);
-        break;
+        return get_vtk_cell_type_from_element_cell_type(Core::FE::CellType::quad9);
       case Core::FE::CellType::nurbs27:
-        return GetVtkCellTypeFromFourCElementShapeType(Core::FE::CellType::hex27);
-        break;
+        return get_vtk_cell_type_from_element_cell_type(Core::FE::CellType::hex27);
       default:
         FOUR_C_THROW("The VTK cell type for the NURBS element %s is not implemented",
             Core::FE::CellTypeToString(celltype).c_str());
-        break;
     }
   }
 
@@ -193,7 +190,8 @@ namespace Core::IO
       const Epetra_Vector& result_data_dofbased, const unsigned int result_num_dofs_per_node,
       const unsigned int read_result_data_from_dofindex, std::vector<double>& vtu_point_result_data)
   {
-    const std::vector<int>& numbering = GetVtkCellTypeFromFourCElementShapeType(ele.shape()).second;
+    const std::vector<int>& numbering =
+        get_vtk_cell_type_from_element_cell_type(ele.shape()).second;
 
     for (unsigned int inode = 0; inode < (unsigned int)ele.num_node(); ++inode)
     {
