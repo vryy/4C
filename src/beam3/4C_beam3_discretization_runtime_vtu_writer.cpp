@@ -115,16 +115,15 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
   // need to adjust order of filling in the coordinates).
   auto& visualization_data = visualization_manager_->get_visualization_data();
 
+  visualization_data.clear_data();
+
   std::vector<double>& point_coordinates = visualization_data.get_point_coordinates();
-  point_coordinates.clear();
   point_coordinates.reserve(num_spatial_dimensions * num_visualization_points);
 
   std::vector<uint8_t>& cell_types = visualization_data.get_cell_types();
-  cell_types.clear();
   cell_types.reserve(num_beam_row_elements);
 
   std::vector<int32_t>& cell_offsets = visualization_data.get_cell_offsets();
-  cell_offsets.clear();
   cell_offsets.reserve(num_beam_row_elements);
 
   std::vector<bool> dummy_shift_in_dim(3, false);
