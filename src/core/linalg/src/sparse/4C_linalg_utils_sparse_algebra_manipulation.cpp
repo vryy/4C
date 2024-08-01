@@ -372,24 +372,6 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::SplitMap(const Epetra_Map& Amap, const Ep
 }
 
 /*----------------------------------------------------------------------*
- | fill matrix row and check for success                     farah 06/14|
- *----------------------------------------------------------------------*/
-void Core::LinAlg::InsertGlobalValues(
-    Teuchos::RCP<Epetra_CrsMatrix> mat, int GlobalRow, int NumEntries, double* Values, int* Indices)
-{
-  int err;
-
-  if (NumEntries > 0)
-    err = mat->InsertGlobalValues(GlobalRow, NumEntries, Values, Indices);
-  else
-    err = mat->InsertGlobalValues(GlobalRow, NumEntries, Values, nullptr);
-
-  if (err) FOUR_C_THROW("InsertGlobalValues err=%d", err);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  | merge two given maps to one map                            popp 01/08|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> Core::LinAlg::MergeMap(

@@ -58,19 +58,6 @@ namespace Core::LinAlg
    */
   void export_to(const Epetra_IntVector& source, Epetra_IntVector& target);
 
-  /*
-   \brief Insert a list of elements in a given global row of the matrix with
-   out-of-bound and error check
-
-   \param A (in):           Considered matrix
-   \param GlobalRow(in):    Row number (in global coordinates) to put elements.
-   \param NumEntries(in):   Number of entries.
-   \param Values(in):       Values to enter.
-   \param Indices(in):      Global column indices corresponding to values.
-   */
-  void InsertGlobalValues(Teuchos::RCP<Epetra_CrsMatrix> mat, int GlobalRow, int NumEntries,
-      double* Values, int* Indices);
-
   /*! \brief Extract a partial Epetra_Vector from a given source vector
    *         on each proc without communication
    *
