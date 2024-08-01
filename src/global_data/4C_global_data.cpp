@@ -141,17 +141,6 @@ std::function<const Teuchos::ParameterList&(int)> Global::Problem::solver_params
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Teuchos::ParameterList& Global::Problem::umfpack_solver_params()
-{
-  Teuchos::ParameterList& subParams = parameters_->sublist("UMFPACK SOLVER");
-  subParams.set("SOLVER", "UMFPACK");
-  subParams.set("NAME", "temporary UMFPACK solver");
-
-  return parameters_->sublist("UMFPACK SOLVER");
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void Global::Problem::set_communicators(
     Teuchos::RCP<Core::Communication::Communicators> communicators)
 {

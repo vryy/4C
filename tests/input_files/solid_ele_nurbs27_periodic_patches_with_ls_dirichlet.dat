@@ -21,6 +21,13 @@ SHAPEFCT                        Nurbs
 NUMSTRUCDIS                     1
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          Belos
+--------------------------------------------------------------------SOLVER 2
+NAME                            nurbs_ls_dbc
+SOLVER                          Belos
+SOLVER_XML_FILE                 xml/linear_solver/iterative_gmres_template.xml
+----------------------------------------------------------------NURBS
+DO_LS_DBC_PROJECTION            Yes
+SOLVER_LS_DBC_PROJECTION        2
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         no
 DIVERCONT                       stop

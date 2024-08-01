@@ -294,6 +294,21 @@ Teuchos::RCP<const Teuchos::ParameterList> Input::ValidParameters()
   Inpar::PROBLEMTYPE::SetValidParameters(list);
 
   /*----------------------------------------------------------------------*/
+
+  Teuchos::ParameterList& nurbs_param = list->sublist(
+      "NURBS", false, "Section to define information related to NURBS discretizations.");
+
+  Core::UTILS::BoolParameter("DO_LS_DBC_PROJECTION", "No",
+      "Determines if a projection is needed for least square Dirichlet boundary conditions.",
+      &nurbs_param);
+
+  Core::UTILS::IntParameter("SOLVER_LS_DBC_PROJECTION", -1,
+      "Number of linear solver for the projection of least squares Dirichlet boundary conditions "
+      "for NURBS "
+      "discretizations",
+      &nurbs_param);
+
+  /*----------------------------------------------------------------------*/
   /* Finally call the problem-specific SetValidParameter functions        */
   /*----------------------------------------------------------------------*/
 

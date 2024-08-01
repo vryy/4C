@@ -474,39 +474,30 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   // -------------------------------------------------------------------
   // solve system
   // -------------------------------------------------------------------
-  // Owing to experience a very accurate solution has to be enforced here!
-  // Thus, we allocate an own solver with VERY strict tolerance!
-  // One could think of verifiying an extra solver in the input file...
-  const Teuchos::ParameterList& p = params.sublist("solver_params");
-  //  const double origtol = p.get<double>("AZTOL");
-  //  const double newtol  = 1.0e-11;
-  //  p.set("AZTOL",newtol);
+  // Get the solver parameters for the least squares problem
+  const Teuchos::ParameterList& ls_dbc_solver_params = params.sublist("ls_dbc_solver_params");
 
-  //  if(myrank==0)
-  //    cout<<"\nSolver tolerance for least squares problem set to "<<newtol<<"\n";
-
-  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(
-      new Core::LinAlg::Solver(p, discret.get_comm(), nullptr, Core::IO::Verbositylevel::standard));
+  Core::LinAlg::Solver solver(
+      ls_dbc_solver_params, discret.get_comm(), nullptr, Core::IO::Verbositylevel::standard);
   // FixMe actually the const qualifier could stay, if someone adds to each single
   // related ComputeNullSpace routine a "const"....
-  const_cast<Core::FE::Discretization&>(discret).compute_null_space_if_necessary(solver->params());
+  const_cast<Core::FE::Discretization&>(discret).compute_null_space_if_necessary(solver.params());
 
   // solve for control point values
   // always refactor and reset the matrix before a single new solver call
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
-  solver->solve(massmatrix->epetra_operator(), dbcvector, rhs, solver_params);
+  solver.solve(massmatrix->epetra_operator(), dbcvector, rhs, solver_params);
 
   // solve for first derivatives in time
-  if (assemblevecd) solver->solve(massmatrix->epetra_operator(), dbcvectord, rhsd, solver_params);
+  if (assemblevecd) solver.solve(massmatrix->epetra_operator(), dbcvectord, rhsd, solver_params);
 
   // solve for second derivatives in time
-  if (assemblevecdd)
-    solver->solve(massmatrix->epetra_operator(), dbcvectordd, rhsdd, solver_params);
+  if (assemblevecdd) solver.solve(massmatrix->epetra_operator(), dbcvectordd, rhsdd, solver_params);
 
   // perform resets for solver and matrix
-  solver->reset();
+  solver.reset();
   massmatrix->reset();
 
   // insert nodal values to sysvec
