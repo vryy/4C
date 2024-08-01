@@ -75,8 +75,6 @@ std::string_view Core::Conditions::to_string(const Core::Conditions::ConditionTy
       return "XFEM Levelset Neumann boundary condition";
     case Core::Conditions::XFEM_Levelset_Twophase:
       return "XFEM Levelset Twophase coupling condition";
-    case Core::Conditions::XFEM_Levelset_Combustion:
-      return "XFEM Levelset Combustion coupling condition";
     case Core::Conditions::XFEM_Surf_FSIPart:
       return "XFEM Surface partitioned XFSI boundary condition";
     case Core::Conditions::XFEM_Surf_FSIMono:

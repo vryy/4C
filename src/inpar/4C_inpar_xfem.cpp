@@ -639,52 +639,6 @@ void Inpar::XFEM::SetValidConditions(
   condlist.push_back(xfem_levelset_twophase);
 
   //*----------------*/
-  // Levelset based Combustion conditions
-
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> xfem_levelset_combustion =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
-          "DESIGN XFEM LEVELSET COMBUSTION VOL CONDITIONS", "XFEMLevelsetCombustion",
-          "XFEM Levelset Combustion", Core::Conditions::XFEM_Levelset_Combustion, true,
-          Core::Conditions::geometry_type_volume));
-
-  for (unsigned i = 0; i < levelsetfield_components.size(); ++i)
-  {
-    xfem_levelset_combustion->add_component(levelsetfield_components[i]);
-  }
-
-  // "The laminar flamespeed incorporates all chemical kinetics into the problem for now"
-  xfem_levelset_combustion->add_component(
-      Teuchos::rcp(new Input::SeparatorComponent("LAMINAR_FLAMESPEED", "", false)));
-  xfem_levelset_combustion->add_component(
-      Teuchos::rcp(new Input::RealComponent("laminar_flamespeed")));
-
-  // "Molecular diffusivity"
-  xfem_levelset_combustion->add_component(
-      Teuchos::rcp(new Input::SeparatorComponent("MOL_DIFFUSIVITY", "", false)));
-  xfem_levelset_combustion->add_component(
-      Teuchos::rcp(new Input::RealComponent("mol_diffusivity")));
-
-  // "The Markstein length takes flame curvature into account"
-  xfem_levelset_combustion->add_component(
-      Teuchos::rcp(new Input::SeparatorComponent("MARKSTEIN_LENGTH", "", false)));
-  xfem_levelset_combustion->add_component(
-      Teuchos::rcp(new Input::RealComponent("markstein_length")));
-
-  // interface transport in all directions or just in normal direction?
-  xfem_levelset_combustion->add_component(
-      Teuchos::rcp(new Input::SeparatorComponent("TRANSPORT_DIRECTIONS")));
-
-
-  // define if the curvature shall be accounted for in computing the transport velocity
-  xfem_levelset_combustion->add_component(
-      Teuchos::rcp(new Input::SeparatorComponent("TRANSPORT_CURVATURE")));
-  xfem_levelset_combustion->add_component(
-      Teuchos::rcp(new Input::IntComponent("transport_curvature")));
-
-
-  condlist.push_back(xfem_levelset_combustion);
-
-  //*----------------*/
   // Surface Fluid-Fluid coupling conditions
 
 
