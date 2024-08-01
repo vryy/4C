@@ -62,16 +62,16 @@ namespace Core::IO
     // need to adjust order of filling in the coordinates).
     auto& visualization_data = visualization_manager_->get_visualization_data();
 
+    // Clear the visualization data, especially the cell connectivity such that it is rebuilt later.
+    visualization_data.clear_data();
+
     std::vector<double>& point_coordinates = visualization_data.get_point_coordinates();
-    point_coordinates.clear();
     point_coordinates.reserve(num_spatial_dimensions * num_nodes);
 
     std::vector<uint8_t>& cell_types = visualization_data.get_cell_types();
-    cell_types.clear();
     cell_types.reserve(num_row_elements);
 
     std::vector<int32_t>& cell_offsets = visualization_data.get_cell_offsets();
-    cell_offsets.clear();
     cell_offsets.reserve(num_row_elements);
 
 
