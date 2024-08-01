@@ -81,8 +81,6 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       systemmatrix_(Teuchos::null),
       k_sl_(Teuchos::null),
       k_ls_(Teuchos::null),
-      merge_ehl_blockmatrix_(
-          Core::UTILS::IntegralValue<bool>(ehldynmono_, "MERGE_EHL_BLOCK_MATRIX")),
       soltech_(Core::UTILS::IntegralValue<Inpar::EHL::NlnSolTech>(ehldynmono_, "NLNSOL")),
       iternorm_(Core::UTILS::IntegralValue<Inpar::EHL::VectorNorm>(ehldynmono_, "ITERNORM")),
       iter_(0),
@@ -93,24 +91,18 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
 
   // --------------------------------- EHL solver: create a linear solver
 
-  // get iterative solver
-  if (merge_ehl_blockmatrix_ == false) create_linear_solver();
-  // get direct solver, e.g. UMFPACK
-  else  // (merge_ehl_blockmatrix_ == true)
-  {
-    // get solver parameter list of linear TSI solver
-    const int linsolvernumber = ehldynmono_.get<int>("LINEAR_SOLVER");
-    const Teuchos::ParameterList& ehlsolverparams =
-        Global::Problem::instance()->solver_params(linsolvernumber);
+  // get solver parameter list of linear TSI solver
+  const int linsolvernumber = ehldynmono_.get<int>("LINEAR_SOLVER");
+  const Teuchos::ParameterList& ehlsolverparams =
+      Global::Problem::instance()->solver_params(linsolvernumber);
 
-    Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
-    *solverparams = ehlsolverparams;
+  Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
+  *solverparams = ehlsolverparams;
 
-    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(*solverparams, Monolithic::get_comm(),
-        Global::Problem::instance()->solver_params_callback(),
-        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-            Global::Problem::instance()->io_params(), "VERBOSITY")));
-  }  // end BlockMatrixMerge
+  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(*solverparams, Monolithic::get_comm(),
+      Global::Problem::instance()->solver_params_callback(),
+      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::instance()->io_params(), "VERBOSITY")));
 
 }  // Monolithic()
 
@@ -134,196 +126,6 @@ void EHL::Monolithic::prepare_time_step()
   lubrication_->lubrication_field()->prepare_time_step();
 
 }  // prepare_time_step()
-
-
-/*----------------------------------------------------------------------*
- | create linear solver                                     wirtz 01/16 |
- *----------------------------------------------------------------------*/
-void EHL::Monolithic::create_linear_solver()
-{
-  // get the solver number used for linear EHL solver
-  const int linsolvernumber = ehldynmono_.get<int>("LINEAR_SOLVER");
-  // check if the EHL solver has a valid solver number
-  if (linsolvernumber == (-1))
-    FOUR_C_THROW(
-        "no linear solver defined for monolithic EHL. Please set LINEAR_SOLVER in ELASTO HYDRO "
-        "DYNAMIC to a valid number!");
-
-  // get parameter list of structural dynamics
-  const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
-  // use solver blocks for structure
-  // get the solver number used for structural solver
-  const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
-  // check if the structural solver has a valid solver number
-  if (slinsolvernumber == (-1))
-    FOUR_C_THROW(
-        "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
-        "DYNAMIC to a valid number!");
-
-  // get parameter list of lubrication dynamics
-  const Teuchos::ParameterList& ldyn = Global::Problem::instance()->lubrication_dynamic_params();
-  // use solver blocks for pressure (lubrication field)
-  // get the solver number used for lubrication solver
-  const int tlinsolvernumber = ldyn.get<int>("LINEAR_SOLVER");
-  // check if the EHL solver has a valid solver number
-  if (tlinsolvernumber == (-1))
-    FOUR_C_THROW(
-        "no linear solver defined for lubrication field. Please set LINEAR_SOLVER in THERMAL "
-        "DYNAMIC to a valid number!");
-
-  // get solver parameter list of linear EHL solver
-  const Teuchos::ParameterList& ehlsolverparams =
-      Global::Problem::instance()->solver_params(linsolvernumber);
-
-  const auto solvertype =
-      Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(ehlsolverparams, "SOLVER");
-
-  if (solvertype != Core::LinearSolver::SolverType::belos)
-  {
-    std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
-    std::cout << " uses the structural solver and lubrication solver blocks" << std::endl;
-    std::cout << " for building the internal inverses" << std::endl;
-    std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries " << std::endl;
-    std::cout << " in the dat files!" << std::endl;
-    std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    FOUR_C_THROW("Iterative solver expected");
-  }
-  const auto azprectype =
-      Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(ehlsolverparams, "AZPREC");
-
-  // plausibility check
-  switch (azprectype)
-  {
-    case Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2:
-      break;
-    case Core::LinearSolver::PreconditionerType::multigrid_muelu:
-    case Core::LinearSolver::PreconditionerType::multigrid_nxn:
-    case Core::LinearSolver::PreconditionerType::cheap_simple:
-    {
-      // no plausibility checks here
-      // if you forget to declare an xml file you will get an error message anyway
-    }
-    break;
-    default:
-      FOUR_C_THROW(
-          "Block Gauss-Seidel BGS2x2 preconditioner expected. Alternatively you can define your "
-          "own AMG block preconditioner (using an xml file). This is experimental.");
-      break;
-  }
-
-
-  // prepare linear solvers and preconditioners
-  switch (azprectype)
-  {
-    case Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2:
-    case Core::LinearSolver::PreconditionerType::multigrid_nxn:
-    case Core::LinearSolver::PreconditionerType::cheap_simple:
-    {
-      // This should be the default case (well-tested and used)
-      solver_ = Teuchos::rcp(new Core::LinAlg::Solver(ehlsolverparams,
-          // ggfs. explizit Comm von STR wie lungscatra
-          get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY")));
-
-      // use solver blocks for structure and pressure (lubrication field)
-      const Teuchos::ParameterList& ssolverparams =
-          Global::Problem::instance()->solver_params(slinsolvernumber);
-      const Teuchos::ParameterList& tsolverparams =
-          Global::Problem::instance()->solver_params(tlinsolvernumber);
-
-      solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
-          Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
-      solver_->put_solver_params_to_sub_params("Inverse2", tsolverparams,
-          Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
-
-      // prescribe rigid body modes
-      structure_field()->discretization()->compute_null_space_if_necessary(
-          solver_->params().sublist("Inverse1"));
-      lubrication_->lubrication_field()->discretization()->compute_null_space_if_necessary(
-          solver_->params().sublist("Inverse2"));
-
-
-      if (azprectype == Core::LinearSolver::PreconditionerType::cheap_simple)
-      {
-        // Tell to the Core::LinAlg::SOLVER::SimplePreconditioner that we use the general
-        // implementation
-        solver_->params().set<bool>("GENERAL", true);
-      }
-
-      break;
-    }
-    case Core::LinearSolver::PreconditionerType::multigrid_muelu:
-    {
-      solver_ = Teuchos::rcp(new Core::LinAlg::Solver(ehlsolverparams,
-          // ggfs. explizit Comm von STR wie lungscatra
-          get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY")));
-
-      // use solver blocks for structure and pressure (lubrication field)
-      const Teuchos::ParameterList& ssolverparams =
-          Global::Problem::instance()->solver_params(slinsolvernumber);
-      const Teuchos::ParameterList& tsolverparams =
-          Global::Problem::instance()->solver_params(tlinsolvernumber);
-
-      // This is not very elegant:
-      // first read in solver parameters. These have to contain ML parameters such that...
-      solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
-          Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
-      solver_->put_solver_params_to_sub_params("Inverse2", tsolverparams,
-          Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
-
-      // ... 4C calculates the null space vectors. These are then stored in the sublists
-      //     Inverse1 and Inverse2 from where they...
-      structure_field()->discretization()->compute_null_space_if_necessary(
-          solver_->params().sublist("Inverse1"));
-      lubrication_->lubrication_field()->discretization()->compute_null_space_if_necessary(
-          solver_->params().sublist("Inverse2"));
-
-      // ... are copied from here to ...
-      const Teuchos::ParameterList& inv1source =
-          solver_->params().sublist("Inverse1").sublist("ML Parameters");
-      const Teuchos::ParameterList& inv2source =
-          solver_->params().sublist("Inverse2").sublist("ML Parameters");
-
-      // ... here. The "MueLu Parameters" sublists "Inverse1" and "Inverse2" only contain the basic
-      //     information about the corresponding null space vectors, which are actually copied ...
-      Teuchos::ParameterList& inv1 =
-          solver_->params().sublist("MueLu Parameters").sublist("Inverse1");
-      Teuchos::ParameterList& inv2 =
-          solver_->params().sublist("MueLu Parameters").sublist("Inverse2");
-
-      // ... here.
-      inv1.set<int>("PDE equations", inv1source.get<int>("PDE equations"));
-      inv2.set<int>("PDE equations", inv2source.get<int>("PDE equations"));
-      inv1.set<int>("null space: dimension", inv1source.get<int>("null space: dimension"));
-      inv2.set<int>("null space: dimension", inv2source.get<int>("null space: dimension"));
-      inv1.set<double*>("null space: vectors", inv1source.get<double*>("null space: vectors"));
-      inv2.set<double*>("null space: vectors", inv2source.get<double*>("null space: vectors"));
-      inv1.set<Teuchos::RCP<Epetra_MultiVector>>(
-          "nullspace", inv1source.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace"));
-      inv2.set<Teuchos::RCP<Epetra_MultiVector>>(
-          "nullspace", inv2source.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace"));
-
-      solver_->params().sublist("MueLu Parameters").set("EHL", true);
-      break;
-    }
-    default:
-      FOUR_C_THROW("Block Gauss-Seidel BGS2x2 preconditioner expected");
-      break;
-  }
-
-}  // create_linear_solver()
 
 
 /*----------------------------------------------------------------------*
@@ -933,38 +735,19 @@ void EHL::Monolithic::linear_solve()
   // apply Dirichlet BCs to system of equations
   iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
 
-  // default: use block matrix
-  if (merge_ehl_blockmatrix_ == false)
-  {
-    // Infnormscaling: scale system before solving
-    scale_system(*systemmatrix_, *rhs_);
+  // Infnormscaling: scale system before solving
+  scale_system(*systemmatrix_, *rhs_);
 
-    // solve the problem, work is done here!
-    solver_params.refactor = true;
-    solver_params.reset = iter_ == 1;
-    solver_->solve(systemmatrix_->epetra_operator(), iterinc_, rhs_, solver_params);
+  // merge blockmatrix to SparseMatrix and solve
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
 
-    // Infnormscaling: unscale system after solving
-    unscale_solution(*systemmatrix_, *iterinc_, *rhs_);
+  // standard solver call
+  solver_params.refactor = true;
+  solver_params.reset = iter_ == 1;
+  solver_->solve(sparse->epetra_operator(), iterinc_, rhs_, solver_params);
 
-  }  // use block matrix
-
-  else  // (merge_ehl_blockmatrix_ == true)
-  {
-    // Infnormscaling: scale system before solving
-    scale_system(*systemmatrix_, *rhs_);
-
-    // merge blockmatrix to SparseMatrix and solve
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
-
-    // standard solver call
-    solver_params.refactor = true;
-    solver_params.reset = iter_ == 1;
-    solver_->solve(sparse->epetra_operator(), iterinc_, rhs_, solver_params);
-
-    // Infnormscaling: unscale system after solving
-    unscale_solution(*systemmatrix_, *iterinc_, *rhs_);
-  }  // MergeBlockMatrix
+  // Infnormscaling: unscale system after solving
+  unscale_solution(*systemmatrix_, *iterinc_, *rhs_);
 
 }  // linear_solve()
 

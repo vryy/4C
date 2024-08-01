@@ -139,9 +139,6 @@ namespace EHL
     //! solve linear EHL system
     void linear_solve();
 
-    //! create linear solver (setup of parameter lists, etc...)
-    void create_linear_solver();
-
     //! Evaluate lubrication-mechanical system matrix
     void apply_lubrication_coupl_matrix(
         Teuchos::RCP<Core::LinAlg::SparseMatrix>
@@ -299,8 +296,6 @@ namespace EHL
     //! off diagonal matrixes
     Teuchos::RCP<Core::LinAlg::SparseMatrix> k_sl_;
     Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ls_;
-
-    bool merge_ehl_blockmatrix_;  //!< bool whether EHL block matrix is merged
 
     //! @name iterative solution technique
 

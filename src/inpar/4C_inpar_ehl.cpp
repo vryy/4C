@@ -111,10 +111,6 @@ void Inpar::EHL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Core::UTILS::BoolParameter(
       "INFNORMSCALING", "yes", "Scale blocks of matrix with row infnorm?", &ehldynmono);
 
-  // merge EHL block matrix to enable use of direct solver in monolithic EHL
-  // default: "No", i.e. use block matrix
-  Core::UTILS::BoolParameter("MERGE_EHL_BLOCK_MATRIX", "No", "Merge EHL block matrix", &ehldynmono);
-
   /*----------------------------------------------------------------------*/
   /* parameters for partitioned EHL */
   /*----------------------------------------------------------------------*/

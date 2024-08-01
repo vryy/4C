@@ -57,7 +57,6 @@ NLNSOL                          fullnewton
 PTCDT                           0.1
 LINEAR_SOLVER                   3
 INFNORMSCALING                  yes
-MERGE_EHL_BLOCK_MATRIX          yes
 ------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   3
 STRATEGY                        Ehl

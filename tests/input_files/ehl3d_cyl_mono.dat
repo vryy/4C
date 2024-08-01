@@ -101,7 +101,6 @@ NLNSOL                          fullnewton
 PTCDT                           0.1
 LINEAR_SOLVER                   1
 INFNORMSCALING                  yes
-MERGE_EHL_BLOCK_MATRIX          yes
 -----------------------------------ELASTO HYDRO DYNAMIC/PARTITIONED
 MAXOMEGA                        10
 MINOMEGA                        0.1
