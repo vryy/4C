@@ -45,6 +45,8 @@ void Inpar::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Do you want to write extended Gmsh output for each timestep?", &xfem_general);
   Core::UTILS::BoolParameter("GMSH_CUT_OUT", "No",
       "Do you want to write extended Gmsh output for each timestep?", &xfem_general);
+  Core::UTILS::BoolParameter(
+      "PRINT_OUTPUT", "No", "Is the output of the cut process desired?", &xfem_general);
 
   Core::UTILS::IntParameter(
       "MAX_NUM_DOFSETS", 3, "Maximum number of volumecells in the XFEM element", &xfem_general);
@@ -1035,6 +1037,32 @@ void Inpar::XFEM::SetValidConditions(
   }
 
   condlist.push_back(xfem_navier_slip_robin_neumann_surf);
+
+  //*----------------*/
+  // Solid to solid embedded mesh coupling conditions
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> solid_surf_coupling =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+          "DESIGN EMBEDDED MESH SOLID SURF COUPLING CONDITIONS", "EmbeddedMeshSolidSurfCoupling",
+          "Embedded Mesh Solid Surface Coupling",
+          Core::Conditions::Embedded_Mesh_Solid_Surf_Coupling, true,
+          Core::Conditions::geometry_type_surface));
+
+  solid_surf_coupling->add_component(Teuchos::rcp(new Input::SeparatorComponent("COUPLINGID")));
+  solid_surf_coupling->add_component(Teuchos::rcp(new Input::IntComponent("label")));
+  condlist.push_back(solid_surf_coupling);
+
+  // Solid to solid embedded mesh volume background mesh condition
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> solid_vol_background_coupling = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN EMBEDDED SOLID VOL BACKGROUND CONDITIONS",
+          "EmbeddedMeshSolidVolBackground", "Embedded Mesh Solid Volume Background",
+          Core::Conditions::Embedded_Mesh_Solid_Volume_Background, true,
+          Core::Conditions::geometry_type_volume));
+
+  solid_vol_background_coupling->add_component(
+      Teuchos::rcp(new Input::SeparatorComponent("COUPLINGID")));
+  solid_vol_background_coupling->add_component(Teuchos::rcp(new Input::IntComponent("label")));
+
+  condlist.push_back(solid_vol_background_coupling);
 }
 
 FOUR_C_NAMESPACE_CLOSE

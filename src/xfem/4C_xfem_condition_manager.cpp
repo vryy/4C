@@ -73,6 +73,8 @@ XFEM::ConditionManager::ConditionManager(
     conditions_to_check.push_back("XFEMSurfFluidFluid");
     conditions_to_check.push_back("XFEMSurfNavierSlip");
     conditions_to_check.push_back("XFEMSurfNavierSlipTwoPhase");
+    conditions_to_check.push_back("EmbeddedMeshSolidSurfCoupling");
+    conditions_to_check.push_back("EmbeddedMeshSolidVolBackground");
 
     create_couplings(meshcoupl_dis, conditions_to_check, true);
   }

@@ -244,7 +244,9 @@ namespace Core::Conditions
     ScatraPartitioning,
     SilverMueller,
     ElementTag,
-    NodeTag
+    NodeTag,
+    Embedded_Mesh_Solid_Surf_Coupling,
+    Embedded_Mesh_Solid_Volume_Background
   };
 
   std::string_view to_string(ConditionType condition_type);

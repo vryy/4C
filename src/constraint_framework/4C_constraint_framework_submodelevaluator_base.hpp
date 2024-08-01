@@ -43,7 +43,9 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
 
     /*! Evaluate the current right-hand-side vector and tangential stiffness matrix at \f$t_{n+1}\f$
      */
-    bool evaluate_force_stiff(Teuchos::RCP<Core::LinAlg::SparseMatrix> me_stiff_ptr,
+    virtual bool evaluate_force_stiff(const Epetra_Vector& displacement_vector,
+        Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> me_stiff_ptr,
         Teuchos::RCP<Epetra_Vector> me_force_ptr);
 
     //! Evaluate the matrices of the saddle-point system
@@ -54,6 +56,9 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
 
     //! Return the Penalty-Parameter
     double& get_penalty_parameter_ptr() { return penalty_parameter_; }
+
+    //! Generate the runtime output
+    virtual void runtime_output_step_state(std::pair<double, int> output_time_and_step){};
 
    private:
     //! Colum Map

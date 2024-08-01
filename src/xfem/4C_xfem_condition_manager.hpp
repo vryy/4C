@@ -169,6 +169,17 @@ namespace XFEM
         mesh_coupl_.push_back(Teuchos::rcp(
             new MeshCouplingFluidFluid(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
       }
+      else if (CondType_stringToEnum(cond_name) ==
+               Inpar::XFEM::CouplingCond_EMBEDDEDMESH_SOLID_SURF)
+      {
+        mesh_coupl_.push_back(Teuchos::rcp(
+            new MeshCoupling(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, "", false)));
+      }
+      else if (CondType_stringToEnum(cond_name) ==
+               Inpar::XFEM::CouplingCond_EMBEDDEDMESH_BACKGROUND_SOLID_VOL)
+      {
+        // do nothing
+      }
       else
       {
         mesh_coupl_.push_back(Teuchos::rcp(new MeshCoupling(

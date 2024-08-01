@@ -231,6 +231,8 @@ namespace Inpar
       CouplingCond_SURF_NEUMANN,
       CouplingCond_SURF_NAVIER_SLIP,
       CouplingCond_SURF_NAVIER_SLIP_TWOPHASE,
+      CouplingCond_EMBEDDEDMESH_BACKGROUND_SOLID_VOL,
+      CouplingCond_EMBEDDEDMESH_SOLID_SURF,
       CouplingCond_LEVELSET_WEAK_DIRICHLET,
       CouplingCond_LEVELSET_NEUMANN,
       CouplingCond_LEVELSET_NAVIER_SLIP,

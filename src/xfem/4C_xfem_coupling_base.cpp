@@ -53,6 +53,10 @@ Inpar::XFEM::EleCouplingCondType XFEM::CondType_stringToEnum(const std::string& 
     return Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP;
   else if (condname == "XFEMSurfNavierSlipTwoPhase")
     return Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE;
+  else if (condname == "EmbeddedMeshSolidSurfCoupling")
+    return Inpar::XFEM::CouplingCond_EMBEDDEDMESH_SOLID_SURF;
+  else if (condname == "EmbeddedMeshSolidVolBackground")
+    return Inpar::XFEM::CouplingCond_EMBEDDEDMESH_BACKGROUND_SOLID_VOL;
   // else FOUR_C_THROW("condition type not supported: %s", condname.c_str());
 
   return Inpar::XFEM::CouplingCond_NONE;
@@ -104,9 +108,6 @@ void XFEM::CouplingBase::init()
   // ---------------------------------------------------------------------------
   // do Init
   // ---------------------------------------------------------------------------
-
-  if (dofset_coupling_map_.empty()) FOUR_C_THROW("Call set_dof_set_coupling_map() first!");
-
   set_coupling_dofsets();
 
   // set the name of the coupling object to allow access from outside via the name
@@ -420,6 +421,12 @@ void XFEM::CouplingBase::set_averaging_strategy()
       averaging_strategy_ = Inpar::XFEM::Xfluid_Sided;
       break;
     }
+    case Inpar::XFEM::CouplingCond_EMBEDDEDMESH_BACKGROUND_SOLID_VOL:
+    case Inpar::XFEM::CouplingCond_EMBEDDEDMESH_SOLID_SURF:
+    {
+      averaging_strategy_ = Inpar::XFEM::Mean;
+      break;
+    }
     default:
       FOUR_C_THROW("which is the averaging strategy for this type of coupling %i?", cond_type);
       break;
@@ -479,6 +486,13 @@ void XFEM::CouplingBase::set_coupling_discretization()
       coupl_dis_ = Teuchos::null;
       break;
     }
+    case Inpar::XFEM::CouplingCond_EMBEDDEDMESH_BACKGROUND_SOLID_VOL:
+    case Inpar::XFEM::CouplingCond_EMBEDDEDMESH_SOLID_SURF:
+    {
+      coupl_dis_ = cond_dis_;
+      break;
+    }
+
     default:
       FOUR_C_THROW("which is the coupling discretization for this type of coupling %i?", cond_type);
       break;

@@ -341,6 +341,10 @@ namespace Global
     {
       return parameters_->sublist("XFEM GENERAL");
     }
+    const Teuchos::ParameterList& embedded_mesh_coupling_params() const
+    {
+      return parameters_()->sublist("EMBEDDED MESH COUPLING");
+    }
     const Teuchos::ParameterList& x_fluid_dynamic_params() const
     {
       return parameters_->sublist("XFLUID DYNAMIC");
@@ -450,6 +454,10 @@ namespace Global
     const Teuchos::ParameterList& electromagnetic_params() const
     {
       return parameters_->sublist("ELECTROMAGNETIC DYNAMIC");
+    }
+    const Teuchos::ParameterList& embedded_mesh_params() const
+    {
+      return parameters_()->sublist("EMBEDDED MESH COUPLING");
     }
     const Teuchos::ParameterList& volmortar_params() const
     {

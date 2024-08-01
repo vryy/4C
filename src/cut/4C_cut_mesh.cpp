@@ -255,8 +255,6 @@ void Core::Geo::Cut::Mesh::new_line(Point* p1, Point* p2, Side* cut_side1, Side*
       {
         for (std::vector<Point*>::iterator it = line_points.begin(); it != line_points.end(); ++it)
         {
-          double coord = (*it)->t(e);
-          std::cout << "Id = " << (*it)->id() << "Coord = " << std::setprecision(15) << coord;
           if (not((*it)->is_cut(cut_side1, cut_side2)))
           {
             (*it)->dump_connectivity_info();
@@ -265,66 +263,6 @@ void Core::Geo::Cut::Mesh::new_line(Point* p1, Point* p2, Side* cut_side1, Side*
         }
         FOUR_C_THROW("Point does lie on edge!");
         throw err;
-      }
-
-      // if there was new point extracted between these two, we check if it belongs here
-      // NOTE: Used for easier debugging and problem identification. Can be removed later on for
-      // perfomance.
-      if (line_points.size() > 2)
-      {
-        for (std::vector<Point*>::iterator it = line_points.begin(); it != line_points.end(); /* */)
-        {
-          if (not(*it)->is_cut(cut_side1, cut_side2))
-          {
-            std::stringstream err_msg;
-            err_msg << "This point does not belong here!\n ";
-            // output all line points
-            std::ofstream file("additional_point_on_line.pos");
-
-            err_msg << "Line points are: \n";
-            for (std::vector<Point*>::iterator jt = line_points.begin(); jt != line_points.end();
-                 ++jt)
-            {
-              double coord = (*jt)->t(e);
-              err_msg << "Id = " << (*jt)->id() << "Coord = " << std::setprecision(15) << coord
-                      << std::endl;
-              (*jt)->dump_connectivity_info();
-
-              std::stringstream section_name;
-              section_name << "CutPoint" << (*jt)->id();
-              Core::Geo::Cut::Output::GmshNewSection(file, section_name.str());
-              Core::Geo::Cut::Output::GmshPointDump(file, *jt, (*jt)->id(), false, nullptr);
-              Core::Geo::Cut::Output::GmshEndSection(file, false);
-              if ((*it) == (*jt)) file << " //Wrong point!!" << std::endl;
-            }
-
-            file.close();
-
-            err_msg << "Wrong point is: \n";
-            double coord = (*it)->t(e);
-            err_msg << "Id = " << (*it)->id() << "Coord = " << std::setprecision(15) << coord
-                    << std::endl;
-
-
-            Core::Geo::Cut::Output::GmshNewSection(file, "CutSide1");
-            Core::Geo::Cut::Output::GmshSideDump(file, cut_side1, false, nullptr);
-            Core::Geo::Cut::Output::GmshEndSection(file, false);
-            Core::Geo::Cut::Output::GmshNewSection(file, "CutSide2");
-            Core::Geo::Cut::Output::GmshSideDump(file, cut_side2, false, nullptr);
-            Core::Geo::Cut::Output::GmshEndSection(file, false);
-
-            Core::Geo::Cut::Output::GmshNewSection(file, "CommonEdge");
-            Core::Geo::Cut::Output::GmshEdgeDump(file, e, false, nullptr);
-            Core::Geo::Cut::Output::GmshEndSection(file, true);
-
-            // it = line_points.erase(it);
-            // ++it;
-            // not really certain what to do now, for now throw an error
-            FOUR_C_THROW(err_msg.str());
-          }
-          else
-            ++it;
-        }
       }
       new_lines_between(line_points, cut_side1, cut_side2, cut_element, newlines);
     }

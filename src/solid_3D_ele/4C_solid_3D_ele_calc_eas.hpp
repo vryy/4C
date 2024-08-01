@@ -160,6 +160,12 @@ namespace Discret
           const std::function<void(Mat::So3Material&, double integration_factor, int gp)>&
               integrator) const;
 
+      void set_integration_rule(const Core::FE::GaussIntegration& integration_rule)
+      {
+        stiffness_matrix_integration_ = integration_rule;
+        mass_matrix_integration_ = integration_rule;
+      }
+
      private:
       /// EAS matrices and vectors to be stored between iterations
       Discret::ELEMENTS::EasIterationData<celltype, eastype> eas_iteration_data_ = {};

@@ -3,6 +3,8 @@ four_c_auto_define_module()
 set(_dependencies
     # cmake-format: sortable
     config
+    cut
+    geometry_pair
     inpar
     structure_new
     )

@@ -1955,6 +1955,7 @@ void Global::ReadParameter(Global::Problem& problem, Core::IO::DatFileReader& re
   reader.read_section("--ELASTO HYDRO DYNAMIC", *list);
   reader.read_section("--ELASTO HYDRO DYNAMIC/PARTITIONED", *list);
   reader.read_section("--ELASTO HYDRO DYNAMIC/MONOLITHIC", *list);
+  reader.read_section("--EMBEDDED MESH COUPLING", *list);
   reader.read_section("--SSI CONTROL", *list);
   reader.read_section("--SSI CONTROL/ELCH", *list);
   reader.read_section("--SSI CONTROL/MANIFOLD", *list);
