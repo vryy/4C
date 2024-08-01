@@ -96,7 +96,6 @@ Discret::ELEMENTS::Nurbs::SoNurbs27::SoNurbs27(int id, int owner) : SoBase(id, o
 {
   invJ_.resize(NUMGPT_SONURBS27, Core::LinAlg::Matrix<NUMDIM_SONURBS27, NUMDIM_SONURBS27>(true));
   detJ_.resize(NUMGPT_SONURBS27, 0.0);
-  set_nurbs_element() = true;
 
   Teuchos::RCP<const Teuchos::ParameterList> params =
       Global::Problem::instance()->get_parameter_list();
@@ -121,7 +120,6 @@ Discret::ELEMENTS::Nurbs::SoNurbs27::SoNurbs27(const Discret::ELEMENTS::Nurbs::S
   {
     invJ_[i] = old.invJ_[i];
   }
-  set_nurbs_element() = true;
 
   return;
 }

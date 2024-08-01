@@ -18,6 +18,7 @@
 #include "4C_comm_parobject.hpp"
 #include "4C_fem_condition.hpp"
 #include "4C_fem_general_cell_type.hpp"
+#include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_fem_general_elements_paramsinterface.hpp"
 #include "4C_io_input_parameter_container.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
@@ -421,17 +422,6 @@ might become invalid after a redistribution of the discretization.
     {
       return std::vector<Teuchos::RCP<Element>>(0);
     }
-
-    /*!
-    \brief Set whether the given element is a nurbs element
-    */
-    virtual bool& set_nurbs_element() { return is_nurbs_; }
-
-
-    /*!
-    \brief Get whether the given element is a nurbs element
-    */
-    virtual bool is_nurbs_element() const { return is_nurbs_; }
 
     /*!
     \brief Returns whether the given element actually is a face element with degrees of freedom
@@ -1280,9 +1270,6 @@ might become invalid after a redistribution of the discretization.
 
     //! vector of material objects of element
     std::vector<Teuchos::RCP<Core::Mat::Material>> mat_;
-
-    //! is this a nurbs element?
-    bool is_nurbs_;
   };  // class Element
 
 

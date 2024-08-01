@@ -312,7 +312,10 @@ namespace Core::FE::Details
       celltype == Core::FE::CellType::hex27>;
 
   template <Core::FE::CellType celltype>
-  using is_nurbs = std::bool_constant<celltype == Core::FE::CellType::nurbs27>;
+  using is_nurbs = std::bool_constant<
+      celltype == Core::FE::CellType::nurbs2 || celltype == Core::FE::CellType::nurbs3 ||
+      celltype == Core::FE::CellType::nurbs4 || celltype == Core::FE::CellType::nurbs8 ||
+      celltype == Core::FE::CellType::nurbs9 || celltype == Core::FE::CellType::nurbs27>;
 
   template <Core::FE::CellType celltype>
   using is_wedge = std::bool_constant<celltype == Core::FE::CellType::wedge6 ||

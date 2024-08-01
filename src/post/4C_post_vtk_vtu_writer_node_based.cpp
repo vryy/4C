@@ -110,7 +110,7 @@ void PostVtuWriterNode::write_geo()
     const Discret::ELEMENTS::Beam3Base* beamele =
         dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
-    if (ele->is_nurbs_element())
+    if (Core::FE::is_nurbs_celltype(ele->shape()))
     {
       write_geo_nurbs_ele(ele, celltypes, outNodeId, celloffset, coordinates);
     }

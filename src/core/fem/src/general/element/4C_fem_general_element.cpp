@@ -127,7 +127,7 @@ Core::FE::CellType Core::Elements::ShardsKeyToDisType(const unsigned& key)
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
 Core::Elements::Element::Element(int id, int owner)
-    : ParObject(), id_(id), lid_(-1), owner_(owner), mat_(1, Teuchos::null), is_nurbs_(false)
+    : ParObject(), id_(id), lid_(-1), owner_(owner), mat_(1, Teuchos::null)
 {
 }
 
@@ -142,8 +142,7 @@ Core::Elements::Element::Element(const Element& old)
       nodeid_(old.nodeid_),
       node_(old.node_),
       face_(old.face_),
-      mat_(1, Teuchos::null),
-      is_nurbs_(old.is_nurbs_)
+      mat_(1, Teuchos::null)
 {
   // we do NOT want a deep copy of the condition_ as the condition
   // is only a reference in the elements anyway
@@ -1023,7 +1022,7 @@ unsigned int Core::Elements::Element::append_visualization_geometry(
     const Core::FE::Discretization& discret, std::vector<uint8_t>& cell_types,
     std::vector<double>& point_coordinates) const
 {
-  if (is_nurbs_element())
+  if (Core::FE::is_nurbs_celltype(shape()))
     return IO::AppendVisualizationGeometryNURBSEle(*this, discret, cell_types, point_coordinates);
   else
     return IO::AppendVisualizationGeometryLagrangeEle(
@@ -1038,7 +1037,7 @@ unsigned int Core::Elements::Element::append_visualization_dof_based_result_data
     const unsigned int read_result_data_from_dofindex,
     std::vector<double>& vtu_point_result_data) const
 {
-  if (is_nurbs_element())
+  if (Core::FE::is_nurbs_celltype(shape()))
     return IO::AppendVisualizationDofBasedResultDataVectorNURBSEle(*this, discret,
         result_data_dofbased, result_num_dofs_per_node, read_result_data_from_dofindex,
         vtu_point_result_data);

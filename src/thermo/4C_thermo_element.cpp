@@ -192,8 +192,6 @@ Discret::ELEMENTS::Thermo::Thermo(int id, int owner)
 Discret::ELEMENTS::Thermo::Thermo(const Discret::ELEMENTS::Thermo& old)
     : Core::Elements::Element(old), kintype_(old.kintype_), distype_(old.distype_)
 {
-  if (old.shape() == Core::FE::CellType::nurbs27) set_nurbs_element() = true;
-  return;
 }  // copy-ctor
 
 
@@ -252,7 +250,6 @@ void Discret::ELEMENTS::Thermo::unpack(const std::vector<char>& data)
   kintype_ = static_cast<Inpar::Solid::KinemType>(extract_int(position, data));
   // distype
   distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
-  if (distype_ == Core::FE::CellType::nurbs27) set_nurbs_element() = true;
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

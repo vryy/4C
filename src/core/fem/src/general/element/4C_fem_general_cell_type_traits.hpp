@@ -403,6 +403,18 @@ namespace Core::FE
   template <CellType celltype>
   static constexpr CellType order = Details::CellTypeInformation<celltype>::order;
 
+  /*!
+   * @brief Check whether the celltype is a nurbs cell type
+   *
+   * @param celltype
+   * @return true
+   * @return false
+   */
+  inline bool is_nurbs_celltype(CellType celltype)
+  {
+    return CellTypeSwitch<all_physical_celltypes>(
+        celltype, [&](auto celltype_t) { return is_nurbs<celltype_t()>; });
+  }
 }  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE

@@ -100,8 +100,6 @@ void Discret::ELEMENTS::Nurbs::Wall1NurbsType::setup_element_definition(
 Discret::ELEMENTS::Nurbs::Wall1Nurbs::Wall1Nurbs(int id, int owner)
     : Discret::ELEMENTS::Wall1::Wall1(id, owner)
 {
-  set_nurbs_element() = true;
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -111,8 +109,6 @@ Discret::ELEMENTS::Nurbs::Wall1Nurbs::Wall1Nurbs(int id, int owner)
 Discret::ELEMENTS::Nurbs::Wall1Nurbs::Wall1Nurbs(const Discret::ELEMENTS::Nurbs::Wall1Nurbs& old)
     : Discret::ELEMENTS::Wall1::Wall1(old)
 {
-  set_nurbs_element() = true;
-  return;
 }
 
 
