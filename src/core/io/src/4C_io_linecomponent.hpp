@@ -467,13 +467,16 @@ namespace Input
   /// the parsed container.
   template <typename DefinitionType>
   inline void add_named_int(const Teuchos::RCP<DefinitionType>& definition, const std::string& name,
-      const std::string& description = {}, const int defaultvalue = 0, const bool optional = false)
+      const std::string& description = {}, const int defaultvalue = 0, const bool optional = false,
+      const bool none_allowed = false, const bool fortran_style = false)
   {
     definition->add_component(
         Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
     IntComponentData data{};
     data.default_value = defaultvalue;
     data.optional = optional;
+    data.none_allowed = none_allowed;
+    data.fortran_style = fortran_style;
     definition->add_component(Teuchos::rcp(new Input::IntComponent(name, data)));
   }
 
@@ -484,13 +487,14 @@ namespace Input
   template <typename DefinitionType>
   inline void add_named_int_vector(const Teuchos::RCP<DefinitionType>& definition,
       const std::string& name, const std::string& description, const int size,
-      const int defaultvalue = 0, const bool optional = false)
+      const int defaultvalue = 0, const bool optional = false, const bool none_allowed = false)
   {
     definition->add_component(
         Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
     IntComponentData data{};
     data.default_value = defaultvalue;
     data.optional = optional;
+    data.none_allowed = none_allowed;
     definition->add_component(Teuchos::rcp(new Input::IntVectorComponent(name, size, data)));
   }
 
@@ -501,13 +505,14 @@ namespace Input
   template <typename DefinitionType>
   inline void add_named_int_vector(const Teuchos::RCP<DefinitionType>& definition,
       const std::string& name, const std::string& description, const std::string& sizename,
-      const int defaultvalue = 0, const bool optional = false)
+      const int defaultvalue = 0, const bool optional = false, const bool none_allowed = false)
   {
     definition->add_component(
         Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
     IntComponentData data{};
     data.default_value = defaultvalue;
     data.optional = optional;
+    data.none_allowed = none_allowed;
     definition->add_component(
         Teuchos::rcp(new Input::IntVectorComponent(name, LengthFromInt(sizename), data)));
   }
