@@ -123,6 +123,12 @@ namespace Discret::ELEMENTS
         const std::function<void(Mat::So3Material&, double integration_factor, int gp)>& integrator)
         const;
 
+    void set_integration_rule(const Core::FE::GaussIntegration& integration_rule)
+    {
+      stiffness_matrix_integration_ = integration_rule;
+      mass_matrix_integration_ = integration_rule;
+    }
+
    private:
     /// static values for matrix sizes
     static constexpr int num_nodes_ = Core::FE::num_nodes<celltype>;

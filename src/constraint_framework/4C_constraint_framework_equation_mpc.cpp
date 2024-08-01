@@ -28,7 +28,6 @@ void CONSTRAINTS::SUBMODELEVALUATOR::LinearCoupledEquation::evaluate_equation(
   for (const auto& [coefficient, rowId, dofId] : equation_data_)
   {
     // stiffness contribution
-    // FixMe: Switch to FEAssemble
     Q_dL.assemble(coefficient, dofId, rowId);
     Q_Ld.assemble(coefficient, rowId, dofId);
 

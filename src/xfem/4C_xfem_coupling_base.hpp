@@ -168,6 +168,10 @@ namespace XFEM
         return "NAVIER SLIP BC    / MESH";
       else if (type == Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
         return "NAVIER SLIP TWOPHASE BC    / MESH";
+      else if (type == Inpar::XFEM::CouplingCond_EMBEDDEDMESH_SOLID_SURF)
+        return "EMBEDDEDMESH SOLID SURF COUPLING / MESH";
+      else if (type == Inpar::XFEM::CouplingCond_EMBEDDEDMESH_BACKGROUND_SOLID_VOL)
+        return "XFEM Background Solid Volume";
       else
         FOUR_C_THROW("unsupported coupling condition type %i", type);
 

@@ -19,6 +19,7 @@
 #include "4C_inpar_browniandyn.hpp"
 #include "4C_inpar_cardiac_monodomain.hpp"
 #include "4C_inpar_cardiovascular0d.hpp"
+#include "4C_inpar_constraint_framework.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_cut.hpp"
 #include "4C_inpar_ehl.hpp"
@@ -339,6 +340,7 @@ Teuchos::RCP<const Teuchos::ParameterList> Input::ValidParameters()
   Inpar::LowMach::SetValidParameters(list);
   Inpar::Cut::SetValidParameters(list);
   Inpar::XFEM::SetValidParameters(list);
+  Inpar::CONSTRAINTS::SetValidParameters(list);
 
   Inpar::LUBRICATION::SetValidParameters(list);
   Inpar::ScaTra::SetValidParameters(list);

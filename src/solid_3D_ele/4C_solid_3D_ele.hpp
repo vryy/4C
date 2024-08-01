@@ -160,6 +160,8 @@ namespace Discret::ELEMENTS
 
     void vis_names(std::map<std::string, int>& names) override;
 
+    void set_integration_rule(const Core::FE::GaussIntegration& integration_rule);
+
     bool vis_data(const std::string& name, std::vector<double>& data) override;
 
     /*!

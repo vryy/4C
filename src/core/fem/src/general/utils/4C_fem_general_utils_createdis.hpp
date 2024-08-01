@@ -138,8 +138,18 @@ namespace Core::FE
       const int myrank = com->MyPID();
       const Epetra_Map* sourcenoderowmap = sourcedis.node_row_map();
 
-      Teuchos::RCP<Core::FE::Discretization> targetdis =
-          Teuchos::rcp(new Core::FE::Discretization(discret_name, com, sourcedis.n_dim()));
+      Teuchos::RCP<Core::FE::Discretization> targetdis;
+
+      // try to cast sourcedis to NurbsDiscretization
+      const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+          dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&sourcedis);
+
+      if (nurbsdis != nullptr)
+        targetdis = Teuchos::rcp(
+            new Core::FE::Nurbs::NurbsDiscretization(discret_name, com, sourcedis.n_dim()));
+      else
+        targetdis =
+            Teuchos::rcp(new Core::FE::Discretization(discret_name, com, sourcedis.n_dim()));
 
       // construct new elements
       for (std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator sourceele_iter =
@@ -203,7 +213,17 @@ namespace Core::FE
         if (rownodeset_.find(gid) != rownodeset_.end())
         {
           const Core::Nodes::Node* sourcenode = sourcedis.l_row_node(i);
-          targetdis->add_node(Teuchos::rcp(new Core::Nodes::Node(gid, sourcenode->x(), myrank)));
+
+          // check if this node is a NURBS control point
+          const Core::FE::Nurbs::ControlPoint* control_point =
+              dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(sourcenode);
+
+          // if the node cannot be dynamic casted to a control point, add the point as a node
+          if (!control_point)
+            targetdis->add_node(Teuchos::rcp(new Core::Nodes::Node(gid, sourcenode->x(), myrank)));
+          else
+            targetdis->add_node(Teuchos::rcp(new Core::FE::Nurbs::ControlPoint(
+                gid, control_point->x(), control_point->w(), myrank)));
         }
       }
 

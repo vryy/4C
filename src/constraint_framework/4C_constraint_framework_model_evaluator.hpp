@@ -15,6 +15,7 @@
 
 #include "4C_constraint_framework_submodelevaluator_base.hpp"
 #include "4C_inpar_constraint_framework.hpp"
+#include "4C_io_visualization_parameters.hpp"
 #include "4C_structure_new_model_evaluator_generic.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -154,6 +155,9 @@ namespace Solid
 
       //! constraint force vector
       Teuchos::RCP<Epetra_Vector> constraint_force_ptr_;
+
+      //! visualization parameters
+      Core::IO::VisualizationParameters visualization_params_;
       //! @}
     };
   }  // namespace ModelEvaluator

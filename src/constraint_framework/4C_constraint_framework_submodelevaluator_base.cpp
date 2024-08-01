@@ -19,6 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 
 
 bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_force_stiff(
+    const Epetra_Vector& displacement_vector,
+    Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> me_stiff_ptr, Teuchos::RCP<Epetra_Vector> me_force_ptr)
 {
   if (me_stiff_ptr == Teuchos::null && me_force_ptr == Teuchos::null)

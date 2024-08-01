@@ -258,6 +258,14 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
 
   return 0;
 }
+
+void Discret::ELEMENTS::Solid::set_integration_rule(
+    const Core::FE::GaussIntegration& integration_rule)
+{
+  std::visit([&](auto& interface) { interface->set_integration_rule(integration_rule); },
+      solid_calc_variant_);
+}
+
 int Discret::ELEMENTS::Solid::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,

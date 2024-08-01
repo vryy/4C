@@ -12,6 +12,7 @@
 
 #include "4C_constraint_framework_model_evaluator.hpp"
 
+#include "4C_constraint_framework_submodelevaluator_embeddedmesh.hpp"
 #include "4C_constraint_framework_submodelevaluator_mpc.hpp"
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_fem_general_utils_createdis.hpp"
@@ -39,6 +40,9 @@ void Solid::ModelEvaluator::Constraints::setup()
   set_sub_model_types();
   create_sub_model_evaluators();
 
+  visualization_params_ = Core::IO::VisualizationParametersFactory(
+      Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
+      *Global::Problem::instance()->output_control_file(), global_state().get_time_n());
 
   issetup_ = true;
 }
@@ -55,16 +59,21 @@ void Solid::ModelEvaluator::Constraints::set_sub_model_types()
   // check for multi point constraints
   // ---------------------------------------------------------------------------
   std::vector<Teuchos::RCP<Core::Conditions::Condition>> linePeriodicRve, surfPeriodicRve,
-      pointLinearCoupledEquation;
+      pointLinearCoupledEquation, embeddedMeshConditions;
 
   discret_ptr()->get_condition("LinePeriodicRve", linePeriodicRve);
   discret_ptr()->get_condition("SurfacePeriodicRve", surfPeriodicRve);
   discret_ptr()->get_condition("PointLinearCoupledEquation", pointLinearCoupledEquation);
+  discret_ptr()->get_condition("EmbeddedMeshSolidSurfCoupling", embeddedMeshConditions);
 
   if (linePeriodicRve.size() > 0 || surfPeriodicRve.size() > 0 ||
       pointLinearCoupledEquation.size() > 0)
   {
     submodeltypes_.insert(Inpar::CONSTRAINTS::SubModelType::submodel_pbc_rve);
+  }
+  if (embeddedMeshConditions.size() > 0)
+  {
+    submodeltypes_.insert(Inpar::CONSTRAINTS::SubModelType::submodel_embeddedmesh);
   }
 }
 /*----------------------------------------------------------------------------*
@@ -77,9 +86,9 @@ void Solid::ModelEvaluator::Constraints::create_sub_model_evaluators()
   // Create vector with the Sub-model-evaluators
   sub_model_vec_ptr_ = Solid::ModelEvaluator::Constraints::SubmodelevaluatorVector(0);
 
-  for (const auto& mt : submodeltypes_)
+  for (const auto& submodeltype : submodeltypes_)
   {
-    switch (mt)
+    switch (submodeltype)
     {
       case Inpar::CONSTRAINTS::SubModelType::submodel_pbc_rve:
       {
@@ -89,7 +98,14 @@ void Solid::ModelEvaluator::Constraints::create_sub_model_evaluators()
 
         break;
       }
+      case Inpar::CONSTRAINTS::SubModelType::submodel_embeddedmesh:
+      {
+        sub_model_vec_ptr_.emplace_back(
+            Teuchos::rcp(new CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager(
+                discret_ptr(), *global_state().get_dis_np().get())));
 
+        break;
+      }
       default:
       {
         FOUR_C_THROW(
@@ -119,7 +135,8 @@ bool Solid::ModelEvaluator::Constraints::evaluate_force()
   pre_evaluate();
   for (auto& sme_iter : sub_model_vec_ptr_)
   {
-    sme_iter->evaluate_force_stiff(Teuchos::null, constraint_force_ptr_);
+    sme_iter->evaluate_force_stiff(*global_state().get_dis_np().get(), global_state_ptr(),
+        Teuchos::null, constraint_force_ptr_);
   }
 
   return true;
@@ -134,7 +151,8 @@ bool Solid::ModelEvaluator::Constraints::evaluate_stiff()
   constraint_stiff_ptr_->un_complete();
   for (auto& sme_iter : sub_model_vec_ptr_)
   {
-    sme_iter->evaluate_force_stiff(constraint_stiff_ptr_, Teuchos::null);
+    sme_iter->evaluate_force_stiff(*global_state().get_dis_np().get(), global_state_ptr(),
+        constraint_stiff_ptr_, Teuchos::null);
   }
   if (not constraint_stiff_ptr_->filled()) constraint_stiff_ptr_->complete();
   return true;
@@ -149,7 +167,8 @@ bool Solid::ModelEvaluator::Constraints::evaluate_force_stiff()
   constraint_stiff_ptr_->un_complete();
   for (auto& sme_iter : sub_model_vec_ptr_)
   {
-    sme_iter->evaluate_force_stiff(constraint_stiff_ptr_, constraint_force_ptr_);
+    sme_iter->evaluate_force_stiff(*global_state().get_dis_np().get(), global_state_ptr(),
+        constraint_stiff_ptr_, constraint_force_ptr_);
   }
   if (not constraint_stiff_ptr_->filled()) constraint_stiff_ptr_->complete();
 
@@ -159,9 +178,9 @@ bool Solid::ModelEvaluator::Constraints::evaluate_force_stiff()
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Constraints::pre_evaluate()
 {
-  for (auto& sme : sub_model_vec_ptr_)
+  for (auto& sme_iter : sub_model_vec_ptr_)
   {
-    sme->evaluate_coupling_terms(*global_state_ptr());
+    sme_iter->evaluate_coupling_terms(*global_state_ptr());
   }
 }
 /*----------------------------------------------------------------------------*
@@ -254,7 +273,26 @@ void Solid::ModelEvaluator::Constraints::runtime_pre_output_step_state() {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Constraints::runtime_output_step_state() const {}
+void Solid::ModelEvaluator::Constraints::runtime_output_step_state() const
+{
+  // Write output vtk of lagrange multipliers
+  std::pair<double, int> output_time_and_step;
+  if (visualization_params_.every_iteration_ == true)
+  {
+    output_time_and_step = Core::IO::GetTimeAndTimeStepIndexForOutput(visualization_params_,
+        global_state().get_time_n(), global_state().get_step_n(), eval_data().get_nln_iter());
+  }
+  else
+  {
+    output_time_and_step = Core::IO::GetTimeAndTimeStepIndexForOutput(
+        visualization_params_, global_state().get_time_n(), global_state().get_step_n());
+  }
+
+  for (auto& sme_iter : sub_model_vec_ptr_)
+  {
+    sme_iter->runtime_output_step_state(output_time_and_step);
+  }
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
