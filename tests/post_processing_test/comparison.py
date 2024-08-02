@@ -4,6 +4,7 @@ from paraview import servermanager as sm
 import sys
 import csv
 import operator
+import numpy as np
 
 
 def isEqual(ref, line, tol):
@@ -12,6 +13,7 @@ def isEqual(ref, line, tol):
         sys.exit(1)
     for j in range(0, len(ref)):
         if abs(float(line[j]) - float(ref[j])) > float(tol):
+            print("not equal in column {0}".format(j + 1))
             return False
     return True
 
@@ -250,15 +252,37 @@ for ele1, ele2 in zip(sortlist1, sortlist2):
         sys.exit(1)
 print("files are identical")
 
+
+if len(sortlist1) != len(sortlist_ref):
+    # remove all rows where the position does not exist in the reference file
+    def get_position_from_row(row):
+        return np.array(
+            [
+                float(result_row[index1]),
+                float(result_row[index1 + 1]),
+                float(result_row[index1 + 2]),
+            ]
+        )
+
+    rows_to_remove = []
+    for result_row in sortlist1:
+        position = get_position_from_row(result_row)
+
+        for result_ref_row in sortlist_ref:
+            if np.linalg.norm(position - get_position_from_row(result_ref_row)) < 1e-8:
+                rows_to_remove.append(result_row)
+                break
+
+    for row_to_remove in rows_to_remove:
+        sortlist1.remove(row_to_remove)
+
+
 # verification of results
-for i in range(0, len(sortlist_ref)):
-    for j in range(0, len(sortlist1)):
-        if isEqual(sortlist_ref[i], sortlist1[j], tol[i]):
-            break
-        if j == (len(sortlist1) - 1):
-            print("results in csv-files are NOT correct")
-            print(
-                sortlist_ref[i], "in", sys.argv[3], "is not being found in xxx_par.csv"
-            )
-            sys.exit(1)
+for i, (results_ref, results) in enumerate(zip(sortlist_ref, sortlist1)):
+    if not isEqual(results_ref, results, tol[i]):
+        print("results in csv-files are NOT correct")
+        print("reference: " + str(results_ref))
+        print("vs.")
+        print("actual:    " + str(results))
+        sys.exit(1)
 print("results in csv-files are correct")
