@@ -9,7 +9,6 @@ to disk
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-/* headers */
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 
 #include "4C_fem_discretization.hpp"
@@ -93,25 +92,15 @@ namespace Core::IO
 
 
     // safety checks
-    if (point_coordinates.size() != num_spatial_dimensions * pointcounter)
-    {
-      FOUR_C_THROW(
-          "DiscretizationVisualizationWriterMesh expected %d coordinate values, but got %d",
-          num_spatial_dimensions * pointcounter, point_coordinates.size());
-    }
+    FOUR_C_THROW_UNLESS(point_coordinates.size() == num_spatial_dimensions * pointcounter,
+        "Expected %i coordinate values, but got %i.", num_spatial_dimensions * pointcounter,
+        point_coordinates.size());
 
-    if (cell_types.size() != num_row_elements - num_skipped_eles)
-    {
-      FOUR_C_THROW("DiscretizationVisualizationWriterMesh expected %d cell type values, but got %d",
-          num_row_elements, cell_types.size());
-    }
+    FOUR_C_THROW_UNLESS(cell_types.size() == num_row_elements - num_skipped_eles,
+        "Expected %i cell type values, but got %i.", num_row_elements, cell_types.size());
 
-    if (cell_offsets.size() != num_row_elements - num_skipped_eles)
-    {
-      FOUR_C_THROW(
-          "DiscretizationVisualizationWriterMesh expected %d cell offset values, but got %d",
-          num_row_elements, cell_offsets.size());
-    }
+    FOUR_C_THROW_UNLESS(cell_offsets.size() == num_row_elements - num_skipped_eles,
+        "Expected %i cell offset values, but got %i.", num_row_elements, cell_offsets.size());
 
     // store node row and col maps (needed to check for changed parallel distribution)
     noderowmap_last_geometry_set_ = Teuchos::rcp(new Epetra_Map(*discretization_->node_row_map()));
@@ -136,20 +125,17 @@ namespace Core::IO
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterMesh::append_dof_based_result_data_vector(
-      const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
-      unsigned int result_num_dofs_per_node, unsigned int read_result_data_from_dofindex,
-      const std::string& resultname)
+      const Epetra_Vector& result_data_dofbased, const unsigned int result_num_dofs_per_node,
+      const unsigned int read_result_data_from_dofindex, const std::string& resultname)
   {
     /* the idea is to transform the given data to a 'point data vector' and append it to the
-     * collected solution data vectors by calling AppendVisualizationPointDataVector() */
+     * collected solution data vectors by calling
+     * append_visualization_dof_based_result_data_vector() */
 
     // safety checks
-    if (!discretization_->dof_col_map()->SameAs(result_data_dofbased->Map()))
-    {
-      FOUR_C_THROW(
-          "DiscretizationVisualizationWriterMesh: Received DofBasedResult's map does not match the "
-          "discretization's dof col map.");
-    }
+    FOUR_C_ASSERT(discretization_->dof_col_map()->SameAs(result_data_dofbased.Map()),
+        "Received map of dof-based result data vector does not match the discretization's dof col "
+        "map.");
 
     // count number of nodes for this visualization
     unsigned int num_nodes = 0;
@@ -174,11 +160,9 @@ namespace Core::IO
     }
 
     // sanity check
-    if (point_result_data.size() != result_num_dofs_per_node * pointcounter)
-    {
-      FOUR_C_THROW("DiscretizationVisualizationWriterMesh expected %d result values, but got %d",
-          result_num_dofs_per_node * pointcounter, point_result_data.size());
-    }
+    FOUR_C_THROW_UNLESS(point_result_data.size() == result_num_dofs_per_node * pointcounter,
+        "Expected %i result values, but got %i.", result_num_dofs_per_node * pointcounter,
+        point_result_data.size());
 
     visualization_manager_->get_visualization_data().set_point_data_vector(
         resultname, point_result_data, result_num_dofs_per_node);
@@ -187,26 +171,21 @@ namespace Core::IO
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterMesh::append_node_based_result_data_vector(
-      const Teuchos::RCP<Epetra_MultiVector>& result_data_nodebased,
-      unsigned int result_num_components_per_node, const std::string& resultname)
+      const Epetra_MultiVector& result_data_nodebased,
+      const unsigned int result_num_components_per_node, const std::string& resultname)
   {
     /* the idea is to transform the given data to a 'point data vector' and append it to the
      * collected solution data vectors by calling AppendVisualizationPointDataVector() */
 
     // safety checks
-    if ((unsigned int)result_data_nodebased->NumVectors() != result_num_components_per_node)
-      FOUR_C_THROW(
-          "DiscretizationVisualizationWriterMesh: expected Epetra_MultiVector with %d columns but "
-          "got %d",
-          result_num_components_per_node, result_data_nodebased->NumVectors());
+    FOUR_C_ASSERT(static_cast<unsigned int>(result_data_nodebased.NumVectors()) ==
+                      result_num_components_per_node,
+        "Expected Epetra_MultiVector with %i columns but got %i.", result_num_components_per_node,
+        result_data_nodebased.NumVectors());
 
-    if (!discretization_->node_col_map()->SameAs(result_data_nodebased->Map()))
-    {
-      FOUR_C_THROW(
-          "DiscretizationVisualizationWriterMesh: Received NodeBasedResult's map does not match "
-          "the "
-          "discretization's node col map.");
-    }
+    FOUR_C_ASSERT(discretization_->node_col_map()->SameAs(result_data_nodebased.Map()),
+        "Received map of node-based result data vector does not match the discretization's node "
+        "col map.");
 
     // count number of nodes
     unsigned int num_nodes = 0;
@@ -235,12 +214,12 @@ namespace Core::IO
 
         for (unsigned int icpn = 0; icpn < result_num_components_per_node; ++icpn)
         {
-          Epetra_Vector* column = (*result_data_nodebased)(icpn);
+          const auto* column = result_data_nodebased(icpn);
 
           if (lid > -1)
             point_result_data.push_back((*column)[lid]);
           else
-            FOUR_C_THROW("received illegal node local id: %d", lid);
+            FOUR_C_THROW("Received illegal node local id: %d", lid);
         }
       }
 
@@ -248,11 +227,9 @@ namespace Core::IO
     }
 
     // sanity check
-    if (point_result_data.size() != result_num_components_per_node * pointcounter)
-    {
-      FOUR_C_THROW("DiscretizationVisualizationWriterMesh expected %d result values, but got %d",
-          result_num_components_per_node * pointcounter, point_result_data.size());
-    }
+    FOUR_C_THROW_UNLESS(point_result_data.size() == result_num_components_per_node * pointcounter,
+        "Expected %i result values, but got %i.", result_num_components_per_node * pointcounter,
+        point_result_data.size());
 
     visualization_manager_->get_visualization_data().set_point_data_vector<double>(
         resultname, point_result_data, result_num_components_per_node);
@@ -261,29 +238,24 @@ namespace Core::IO
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterMesh::append_element_based_result_data_vector(
-      const Teuchos::RCP<Epetra_MultiVector>& result_data_elementbased,
+      const Epetra_MultiVector& result_data_elementbased,
       unsigned int result_num_components_per_element, const std::string& resultname)
   {
     /* the idea is to transform the given data to a 'cell data vector' and append it to the
      *  collected solution data vectors by calling AppendVisualizationCellDataVector() */
 
     // safety check
-    if ((unsigned int)result_data_elementbased->NumVectors() != result_num_components_per_element)
-      FOUR_C_THROW(
-          "DiscretizationVisualizationWriterMesh: expected Epetra_MultiVector with %d columns but "
-          "got %d",
-          result_num_components_per_element, result_data_elementbased->NumVectors());
+    FOUR_C_ASSERT(static_cast<unsigned int>(result_data_elementbased.NumVectors()) ==
+                      result_num_components_per_element,
+        "Expected Epetra_MultiVector with %i columns but got %i.",
+        result_num_components_per_element, result_data_elementbased.NumVectors());
 
-    if (!discretization_->element_row_map()->SameAs(result_data_elementbased->Map()))
-    {
-      FOUR_C_THROW(
-          "DiscretizationVisualizationWriterMesh: Received ElementBasedResult's map does not match "
-          "the "
-          "discretization's element row map.");
-    }
+    FOUR_C_ASSERT(discretization_->element_row_map()->SameAs(result_data_elementbased.Map()),
+        "Received map of element-based result data vector does not match the discretization's "
+        "element row map.");
 
     // count number of elements for each processor
-    unsigned int num_row_elements = (unsigned int)discretization_->num_my_row_elements();
+    auto num_row_elements = static_cast<unsigned int>(discretization_->num_my_row_elements());
 
     std::vector<double> cell_result_data;
     cell_result_data.reserve(result_num_components_per_element * num_row_elements);
@@ -298,7 +270,7 @@ namespace Core::IO
 
       for (unsigned int icpe = 0; icpe < result_num_components_per_element; ++icpe)
       {
-        Epetra_Vector* column = (*result_data_elementbased)(icpe);
+        const auto* column = (result_data_elementbased)(icpe);
 
         cell_result_data.push_back((*column)[iele]);
       }
@@ -307,11 +279,9 @@ namespace Core::IO
     }
 
     // sanity check
-    if (cell_result_data.size() != result_num_components_per_element * cellcounter)
-    {
-      FOUR_C_THROW("DiscretizationVisualizationWriterMesh expected %d result values, but got %d",
-          result_num_components_per_element * cellcounter, cell_result_data.size());
-    }
+    FOUR_C_THROW_UNLESS(cell_result_data.size() == result_num_components_per_element * cellcounter,
+        "Expected %i result values, but got %i.", result_num_components_per_element * cellcounter,
+        cell_result_data.size());
 
     visualization_manager_->get_visualization_data().set_cell_data_vector(
         resultname, cell_result_data, result_num_components_per_element);
@@ -319,7 +289,7 @@ namespace Core::IO
 
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
-  void DiscretizationVisualizationWriterMesh::append_element_owner(const std::string resultname)
+  void DiscretizationVisualizationWriterMesh::append_element_owner(const std::string& resultname)
   {
     // Vector with element owner for elements in the row map.
     std::vector<double> owner_of_row_elements;

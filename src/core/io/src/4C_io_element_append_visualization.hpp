@@ -190,9 +190,8 @@ namespace Core::IO
    */
   unsigned int AppendVisualizationDofBasedResultDataVectorLagrangeEle(
       const Core::Elements::Element& ele, const Core::FE::Discretization& discret,
-      const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
-      unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
-      std::vector<double>& vtu_point_result_data)
+      const Epetra_Vector& result_data_dofbased, const unsigned int result_num_dofs_per_node,
+      const unsigned int read_result_data_from_dofindex, std::vector<double>& vtu_point_result_data)
   {
     const std::vector<int>& numbering = GetVtkCellTypeFromFourCElementShapeType(ele.shape()).second;
 
@@ -202,21 +201,15 @@ namespace Core::IO
       nodedofs.clear();
 
       // local storage position of desired dof gid in dofset number 0
-      discret.dof((unsigned)0, ele.nodes()[numbering[inode]], nodedofs);
-
-      // adjust resultdofs according to elements dof
-      if (nodedofs.size() < result_num_dofs_per_node)
-      {
-        result_num_dofs_per_node = nodedofs.size();
-      }
+      discret.dof(0u, ele.nodes()[numbering[inode]], nodedofs);
 
       for (unsigned int idof = 0; idof < result_num_dofs_per_node; ++idof)
       {
         const int lid =
-            result_data_dofbased->Map().LID(nodedofs[idof + read_result_data_from_dofindex]);
+            result_data_dofbased.Map().LID(nodedofs[idof + read_result_data_from_dofindex]);
 
         if (lid > -1)
-          vtu_point_result_data.push_back((*result_data_dofbased)[lid]);
+          vtu_point_result_data.push_back((result_data_dofbased)[lid]);
         else
           FOUR_C_THROW("received illegal dof local id: %d", lid);
       }
@@ -239,8 +232,7 @@ namespace Core::IO
    */
   template <Core::FE::CellType celltype, unsigned int result_num_dofs_per_node>
   unsigned int AppendVisualizationDofBasedResultDataVectorNURBS(const Core::Elements::Element& ele,
-      const Core::FE::Discretization& discret,
-      const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
+      const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
       const unsigned int read_result_data_from_dofindex, std::vector<double>& vtu_point_result_data)
   {
     if (read_result_data_from_dofindex != 0)
@@ -268,7 +260,7 @@ namespace Core::IO
       std::vector<double> eledisp;
       std::vector<int> lm, lmowner, lmstride;
       ele.location_vector(discret, lm, lmowner, lmstride);
-      Core::FE::ExtractMyValues(*result_data_dofbased, eledisp, lm);
+      Core::FE::ExtractMyValues(result_data_dofbased, eledisp, lm);
       dof_result.set_view(eledisp.data());
 
       // Loop over the nodes of the nurbs element.
@@ -319,9 +311,8 @@ namespace Core::IO
    */
   unsigned int AppendVisualizationDofBasedResultDataVectorNURBSEle(
       const Core::Elements::Element& ele, const Core::FE::Discretization& discret,
-      const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
-      unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
-      std::vector<double>& vtu_point_result_data)
+      const Epetra_Vector& result_data_dofbased, const unsigned int result_num_dofs_per_node,
+      const unsigned int read_result_data_from_dofindex, std::vector<double>& vtu_point_result_data)
   {
     using implemented_celltypes =
         Core::FE::CelltypeSequence<Core::FE::CellType::nurbs9, Core::FE::CellType::nurbs27>;

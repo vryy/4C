@@ -1032,19 +1032,22 @@ unsigned int Core::Elements::Element::append_visualization_geometry(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 unsigned int Core::Elements::Element::append_visualization_dof_based_result_data_vector(
-    const Core::FE::Discretization& discret,
-    const Teuchos::RCP<Epetra_Vector>& result_data_dofbased, unsigned int& result_num_dofs_per_node,
-    const unsigned int read_result_data_from_dofindex,
+    const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+    const unsigned int result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
     std::vector<double>& vtu_point_result_data) const
 {
   if (Core::FE::is_nurbs_celltype(shape()))
+  {
     return IO::AppendVisualizationDofBasedResultDataVectorNURBSEle(*this, discret,
         result_data_dofbased, result_num_dofs_per_node, read_result_data_from_dofindex,
         vtu_point_result_data);
+  }
   else
+  {
     return IO::AppendVisualizationDofBasedResultDataVectorLagrangeEle(*this, discret,
         result_data_dofbased, result_num_dofs_per_node, read_result_data_from_dofindex,
         vtu_point_result_data);
+  }
 }
 
 /*----------------------------------------------------------------------*

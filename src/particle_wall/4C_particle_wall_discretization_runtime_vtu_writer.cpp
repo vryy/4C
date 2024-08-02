@@ -49,17 +49,16 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::write_wall_discretization
   {
     if (walldatastate_->get_disp_col() != Teuchos::null)
       runtime_vtuwriter_->append_dof_based_result_data_vector(
-          walldatastate_->get_ref_disp_col(), 3, 0, "disp");
+          *walldatastate_->get_ref_disp_col(), 3, 0, "disp");
   }
 
   // node owner
   {
-    Teuchos::RCP<Epetra_Vector> nodeowner =
-        Teuchos::rcp(new Epetra_Vector(*walldiscretization_->node_col_map(), true));
+    auto nodeowner = Epetra_Vector(*walldiscretization_->node_col_map(), true);
     for (int inode = 0; inode < walldiscretization_->num_my_col_nodes(); ++inode)
     {
       const Core::Nodes::Node* node = walldiscretization_->l_col_node(inode);
-      (*nodeowner)[inode] = node->owner();
+      (nodeowner)[inode] = node->owner();
     }
     runtime_vtuwriter_->append_node_based_result_data_vector(nodeowner, 1, "owner");
   }
@@ -71,12 +70,11 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::write_wall_discretization
 
   // element id
   {
-    Teuchos::RCP<Epetra_Vector> eleid =
-        Teuchos::rcp(new Epetra_Vector(*walldiscretization_->element_row_map(), true));
+    auto eleid = Epetra_Vector(*walldiscretization_->element_row_map(), true);
     for (int iele = 0; iele < walldiscretization_->num_my_row_elements(); ++iele)
     {
       const Core::Elements::Element* ele = walldiscretization_->l_row_element(iele);
-      (*eleid)[iele] = ele->id();
+      (eleid)[iele] = ele->id();
     }
     runtime_vtuwriter_->append_element_based_result_data_vector(eleid, 1, "id");
   }

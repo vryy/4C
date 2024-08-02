@@ -707,11 +707,12 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
   // append displacement if desired
   if (structure_output_params.output_displacement_state())
     vtu_writer_ptr_->append_dof_based_result_data_vector(
-        displacement_state_vector, 3, 0, "displacement");
+        *displacement_state_vector, global_state().get_dim(), 0, "displacement");
 
   // append velocity if desired
   if (structure_output_params.output_velocity_state())
-    vtu_writer_ptr_->append_dof_based_result_data_vector(velocity_state_vector, 3, 0, "velocity");
+    vtu_writer_ptr_->append_dof_based_result_data_vector(
+        *velocity_state_vector, global_state().get_dim(), 0, "velocity");
 
   // append element owner if desired
   if (structure_output_params.output_element_owner())
@@ -748,11 +749,11 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
 
     // Write nodal stress data.
     vtu_writer_ptr_->append_node_based_result_data_vector(
-        eval_data().get_stress_data_node_postprocessed(), 6, name_nodal);
+        *eval_data().get_stress_data_node_postprocessed(), 6, name_nodal);
 
     // Write element stress data.
     vtu_writer_ptr_->append_element_based_result_data_vector(
-        eval_data().get_stress_data_element_postprocessed(), 6, name_element);
+        *eval_data().get_stress_data_element_postprocessed(), 6, name_element);
   }
 
   // append strain if desired.
@@ -780,11 +781,11 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
 
     // Write nodal strain data.
     vtu_writer_ptr_->append_node_based_result_data_vector(
-        eval_data().get_strain_data_node_postprocessed(), 6, name_nodal);
+        *eval_data().get_strain_data_node_postprocessed(), 6, name_nodal);
 
     // Write element strain data.
     vtu_writer_ptr_->append_element_based_result_data_vector(
-        eval_data().get_strain_data_element_postprocessed(), 6, name_element);
+        *eval_data().get_strain_data_element_postprocessed(), 6, name_element);
   }
 
   // Add gauss point data if desired
@@ -804,7 +805,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
         {
           Teuchos::RCP<Epetra_MultiVector> data =
               elementDataManager.get_element_center_data().at(name);
-          vtu_writer_ptr_->append_element_based_result_data_vector(data, size, name);
+          vtu_writer_ptr_->append_element_based_result_data_vector(*data, size, name);
           break;
         }
         case Inpar::Solid::GaussPointDataOutputType::gauss_points:
@@ -815,14 +816,14 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
           {
             const std::string name_with_gp = name + "_gp_" + std::to_string(gp);
             vtu_writer_ptr_->append_element_based_result_data_vector(
-                data_list[gp], size, name_with_gp);
+                *data_list[gp], size, name_with_gp);
           }
           break;
         }
         case Inpar::Solid::GaussPointDataOutputType::nodes:
         {
           Teuchos::RCP<Epetra_MultiVector> data = elementDataManager.get_nodal_data().at(name);
-          vtu_writer_ptr_->append_node_based_result_data_vector(data, size, name);
+          vtu_writer_ptr_->append_node_based_result_data_vector(*data, size, name);
           break;
         }
         case Inpar::Solid::GaussPointDataOutputType::none:
