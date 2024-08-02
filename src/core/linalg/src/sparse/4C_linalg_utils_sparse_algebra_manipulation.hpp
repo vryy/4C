@@ -26,16 +26,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::IO
-{
-  class DiscretizationWriter;
-}
-
-namespace Core::FE
-{
-  class Discretization;
-}  // namespace Core::FE
-
 namespace Core::LinAlg
 {
   /*!
@@ -103,39 +93,6 @@ namespace Core::LinAlg
    *
    *  \author hiermeier \date 03/17 */
   void ExtractMyVector(const Epetra_Vector& source, Epetra_Vector& target);
-
-  /*!
-   \brief Call fill_complete on a Epetra_CrsMatrix (for square matrices only!)
-   */
-  void Complete(Epetra_CrsMatrix& A);
-
-  /*!
-   \brief Call fill_complete on a Epetra_CrsMatrix (for square matrices only!)
-
-   This is the Teuchos::RCP wrapper of the above method.
-   */
-  inline void Complete(Teuchos::RCP<Epetra_CrsMatrix> A)
-  {
-    Core::LinAlg::Complete(*A);
-    return;
-  }
-
-  /*!
-   \brief Call fill_complete on a Epetra_CrsMatrix (for rectangular and square matrices)
-   */
-  void Complete(Epetra_CrsMatrix& A, const Epetra_Map& domainmap, const Epetra_Map& rangemap);
-
-  /*!
-   \brief Call fill_complete on a Epetra_CrsMatrix (for rectangular and square matrices)
-
-   This is the Teuchos::RCP wrapper of the above method.
-   */
-  inline void Complete(
-      Teuchos::RCP<Epetra_CrsMatrix> A, const Epetra_Map& domainmap, const Epetra_Map& rangemap)
-  {
-    Core::LinAlg::Complete(*A, domainmap, rangemap);
-    return;
-  }
 
   /*!
    \brief split a matrix into a 2x2 block system where the rowmap of one of the blocks is given
