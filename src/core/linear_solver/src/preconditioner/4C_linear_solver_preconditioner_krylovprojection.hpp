@@ -13,7 +13,6 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_krylov_projector.hpp"
-#include "4C_linalg_projected_operator.hpp"
 #include "4C_linear_solver_preconditioner_type.hpp"
 
 #include <Epetra_MultiVector.h>
@@ -45,10 +44,6 @@ namespace Core::LinearSolver
 
     /// Peter's projector object that does the actual work
     Teuchos::RCP<Core::LinAlg::KrylovProjector> projector_;
-
-    /// linear operator that calls a "real" preconditioning operator and does
-    /// a projection afterwards.
-    Teuchos::RCP<Core::LinAlg::LinalgProjectedOperator> a_;
 
     Teuchos::RCP<Epetra_Operator> p_;
   };
