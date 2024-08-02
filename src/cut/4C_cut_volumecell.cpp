@@ -11,7 +11,6 @@
 #include "4C_cut_volumecell.hpp"
 
 #include "4C_cut_boundarycell.hpp"
-#include "4C_cut_boundarycell_integration.hpp"
 #include "4C_cut_cycle.hpp"
 #include "4C_cut_direct_divergence.hpp"
 #include "4C_cut_integrationcell.hpp"
@@ -1177,62 +1176,11 @@ void Core::Geo::Cut::VolumeCell::generate_boundary_cells(Mesh& mesh,
             FOUR_C_THROW("Triangulation created neither tri3 or quad4");
         }
       }
-
       else if (BCellgausstype ==
                Core::Geo::Cut::BCellGaussPts_MomentFitting)  // generate boundarycell gausspoints by
                                                              // solving moment fitting equations
       {
-        BoundarycellIntegration bcell_inte(elem, fac, posi, BaseNos);
-        bcellweights_ = bcell_inte.generate_boundary_cell_integration_rule();
-        bcellgaus_pts_ = bcell_inte.get_bcell_gauss_point_location();
-
-        // the boundarycell integration is carriedout in the local coord of the element
-        // to project the coordinates of Gauss points, shape functions of element can be used
-        //
-        //                                            area of facet in global coordinates
-        // but to transform the weight, the jacobian = -----------------------------------
-        //                                            area of facet in local coordinates
-        FacetIntegration bcellLocal(fac, elem, posi, true, false);
-        bcellLocal.set_integ_number(1);
-        double areaLocal = bcellLocal.integrate_facet();
-
-        FacetIntegration bcellGlobal(fac, elem, posi, true, true);
-        bcellGlobal.set_integ_number(1);
-        double areaGlobal = bcellGlobal.integrate_facet();
-        double jaco = areaGlobal / areaLocal;
-
-        int numBcellpts = bcellgaus_pts_.size();
-        Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp =
-            Teuchos::rcp(new Core::FE::CollectedGaussPoints(numBcellpts));
-
-        Core::LinAlg::Matrix<3, 1> xeLocal, xeGlobal;
-        for (unsigned i = 0; i < bcellgaus_pts_.size(); i++)
-        {
-          xeLocal(0, 0) = bcellgaus_pts_[i][0];
-          xeLocal(1, 0) = bcellgaus_pts_[i][1];
-          xeLocal(2, 0) = bcellgaus_pts_[i][2];
-
-          elem->global_coordinates(xeLocal, xeGlobal);
-
-          cgp->append(xeGlobal, bcellweights_(i) * jaco);
-        }
-
-        Core::LinAlg::Matrix<3, 1> normal;
-        double normalFac;
-        if (rever)
-        {
-          // std::reverse(corners.begin(),corners.end());
-          normalFac = -1.0;
-        }
-        else
-          normalFac = 1.0;
-
-        normalFac =
-            normalFac * sqrt(eqnfac[0] * eqnfac[0] + eqnfac[1] * eqnfac[1] + eqnfac[2] * eqnfac[2]);
-        for (unsigned i = 0; i < 3; i++) normal(i, 0) = eqnfac[i] / normalFac;
-
-        Core::FE::GaussIntegration gi(cgp);
-        new_arbitrary_cell(mesh, fac, corners, gi, normal);
+        FOUR_C_THROW("Not supported.");
       }
     }
   }

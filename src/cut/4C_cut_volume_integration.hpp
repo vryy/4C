@@ -51,12 +51,6 @@ namespace Core::Geo
       }
 
       /*!
-      \brief Compute Gauss point weights by solving the moment fitting equations and returns the
-      coordinates of Gauss points and their corresponding weights
-      */
-      Core::LinAlg::SerialDenseVector compute_weights();
-
-      /*!
       \brief Computes the RHS of the moment fitting matrix (performs integration of base functions
       over the volumecell)
       */
@@ -81,12 +75,6 @@ namespace Core::Geo
       bool compute_gaussian_points(int numeach);
 
       /*!
-      \brief Computes the moment fitting matrix
-      */
-      void moment_fitting_matrix(
-          std::vector<std::vector<double>>& mom, std::vector<std::vector<double>> gauspts);
-
-      /*!
       \brief Check whether the generated ray intersect the facets of the volumecell, if so
       distribute Gauss points along this ray
       */
@@ -101,12 +89,6 @@ namespace Core::Geo
       bool is_contain_area(double minn[3], double maxx[3], double& zmin,
           std::vector<std::vector<double>>& pts, std::vector<std::vector<double>> zcoord,
           std::vector<std::vector<double>> ycoord, double toler, int numeach);
-
-      /*!
-      \brief Writes the Geometry of volumecell and location of Gauss points in GMSH format output
-      file
-      */
-      void gauss_point_gmsh();
 
       /*!
       \brief Generates equally spaced "num" number of points on the line whose end points are
@@ -134,55 +116,6 @@ namespace Core::Geo
       */
       int pnpoly(const std::vector<std::vector<double>>& xp, const Core::LinAlg::Matrix<3, 1>& pt,
           Core::Geo::Cut::ProjectionDirection projType);
-
-      /*!
-      \brief Adds linear combination of first order base function to the moment fitting system of
-      equations
-      */
-      void first_order_additional_terms(
-          std::vector<std::vector<double>>& mat, Core::LinAlg::SerialDenseVector& rhs);
-
-      /*!
-      \brief Adds linear combination of second order base function to the moment fitting system of
-      equations
-      */
-      void second_order_additional_terms(
-          std::vector<std::vector<double>>& mat, Core::LinAlg::SerialDenseVector& rhs);
-
-      /*!
-      \brief Adds linear combination of third order base function to the moment fitting system of
-      equations
-      */
-      void third_order_additional_terms(
-          std::vector<std::vector<double>>& mat, Core::LinAlg::SerialDenseVector& rhs);
-
-      /*!
-      \brief Adds linear combination of fourth order base function to the moment fitting system of
-      equations
-      */
-      void fourth_order_additional_terms(
-          std::vector<std::vector<double>>& mat, Core::LinAlg::SerialDenseVector& rhs);
-
-      /*!
-      \brief Adds linear combination of fifth order base function to the moment fitting system of
-      equations
-      */
-      void fifth_order_additional_terms(
-          std::vector<std::vector<double>>& mat, Core::LinAlg::SerialDenseVector& rhs);
-
-      /*!
-      \brief Adds linear combination of sixth order base function to the moment fitting system of
-      equations
-      */
-      void sixth_order_additional_terms(
-          std::vector<std::vector<double>>& mat, Core::LinAlg::SerialDenseVector& rhs);
-
-      /*!
-      \brief Computes the error introduced by the generated integration rule for integrating some
-      specific functions
-      */
-      void error_for_specific_function(Core::LinAlg::SerialDenseVector rhs_moment,
-          Core::LinAlg::SerialDenseVector weights, int numeach);
 
       //! considered volumecell
       VolumeCell* volcell_;

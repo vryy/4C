@@ -10,7 +10,6 @@
 
 #include "4C_cut_facetgraph.hpp"
 
-#include "4C_cut_facetgraph_simple.hpp"
 #include "4C_cut_mesh.hpp"
 #include "4C_cut_output.hpp"
 #include "4C_cut_side.hpp"
@@ -290,12 +289,6 @@ Teuchos::RCP<Core::Geo::Cut::FacetGraph> Core::Geo::Cut::FacetGraph::create(
   const unsigned dim = sides[0]->elements()[0]->n_dim();
   switch (dim)
   {
-    case 1:
-      fg = Teuchos::rcp(new SimpleFacetGraph1D(sides, facets));
-      break;
-    case 2:
-      fg = Teuchos::rcp(new SimpleFacetGraph2D(sides, facets));
-      break;
     case 3:
       fg = Teuchos::rcp(new FacetGraph(sides, facets));
       break;

@@ -8,8 +8,9 @@ equations
 
 
 *----------------------------------------------------------------------*/
+#include "4C_cut_facet_integration.hpp"
+
 #include "4C_cut_boundarycell.hpp"
-#include "4C_cut_boundarycell_integration.hpp"
 #include "4C_cut_kernel.hpp"
 #include "4C_cut_line_integration.hpp"
 #include "4C_cut_options.hpp"
