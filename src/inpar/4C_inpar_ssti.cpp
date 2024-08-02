@@ -13,6 +13,7 @@
 #include "4C_fem_condition_definition.hpp"
 #include "4C_inpar_s2i.hpp"
 #include "4C_inpar_scatra.hpp"
+#include "4C_io_linecomponent.hpp"
 #include "4C_linalg_equilibrate.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_utils_parameter_list.hpp"
@@ -153,28 +154,19 @@ void Inpar::SSTI::SetValidConditions(
           "SSTIInterfaceMeshtying", "SSTI Interface Meshtying",
           Core::Conditions::SSTIInterfaceMeshtying, true, Core::Conditions::geometry_type_surface));
 
-  // equip condition definitions with input file line components
-  std::vector<Teuchos::RCP<Input::LineComponent>> sstiinterfacemeshtyingcomponents;
-  sstiinterfacemeshtyingcomponents.emplace_back(
-      Teuchos::rcp(new Input::IntComponent("ConditionID")));
-  sstiinterfacemeshtyingcomponents.emplace_back(Teuchos::rcp(new Input::SelectionComponent(
-      "interface side", "Undefined", Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
-      Teuchos::tuple<int>(
-          Inpar::S2I::side_undefined, Inpar::S2I::side_slave, Inpar::S2I::side_master))));
-  sstiinterfacemeshtyingcomponents.emplace_back(
-      Teuchos::rcp(new Input::SeparatorComponent("S2I_KINETICS_ID")));
-  sstiinterfacemeshtyingcomponents.emplace_back(
-      Teuchos::rcp(new Input::IntComponent("S2IKineticsID")));
-
   // insert input file line components into condition definitions
-  for (const auto& sstiinterfacemeshtyingcomponent : sstiinterfacemeshtyingcomponents)
+  for (const auto& cond : {linesstiinterfacemeshtying, surfsstiinterfacemeshtying})
   {
-    linesstiinterfacemeshtying->add_component(sstiinterfacemeshtyingcomponent);
-    surfsstiinterfacemeshtying->add_component(sstiinterfacemeshtyingcomponent);
-  }
+    cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+    cond->add_component(Teuchos::rcp(new Input::SelectionComponent("interface side", "Undefined",
+        Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
+        Teuchos::tuple<int>(
+            Inpar::S2I::side_undefined, Inpar::S2I::side_slave, Inpar::S2I::side_master))));
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("S2I_KINETICS_ID")));
+    cond->add_component(Teuchos::rcp(new Input::IntComponent("S2IKineticsID")));
 
-  condlist.emplace_back(linesstiinterfacemeshtying);
-  condlist.emplace_back(surfsstiinterfacemeshtying);
+    condlist.push_back(cond);
+  }
 }
 
 FOUR_C_NAMESPACE_CLOSE

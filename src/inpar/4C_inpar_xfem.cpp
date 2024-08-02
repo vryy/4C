@@ -456,32 +456,12 @@ void Inpar::XFEM::SetValidConditions(
           "DESIGN ALE FLUID COUPLING SURF CONDITIONS", "ALEFluidCoupling", "ALE FLUID Coupling",
           Core::Conditions::ALEFluidCoupling, true, Core::Conditions::geometry_type_surface));
 
-  std::vector<Teuchos::RCP<Input::LineComponent>> xfemcomponents;
-
-  xfemcomponents.push_back(Teuchos::rcp(new Input::IntComponent("label")));
-
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> movingfluid = Teuchos::rcp(
-      new Core::Conditions::ConditionDefinition("DESIGN FLUID MESH VOL CONDITIONS", "FluidMesh",
-          "Fluid Mesh", Core::Conditions::FluidMesh, true, Core::Conditions::geometry_type_volume));
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> fluidfluidcoupling = Teuchos::rcp(
-      new Core::Conditions::ConditionDefinition("DESIGN FLUID FLUID COUPLING SURF CONDITIONS",
-          "FluidFluidCoupling", "FLUID FLUID Coupling", Core::Conditions::FluidFluidCoupling, true,
-          Core::Conditions::geometry_type_surface));
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> ALEfluidcoupling =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
-          "DESIGN ALE FLUID COUPLING SURF CONDITIONS", "ALEFluidCoupling", "ALE FLUID Coupling",
-          Core::Conditions::ALEFluidCoupling, true, Core::Conditions::geometry_type_surface));
-
-  for (unsigned i = 0; i < xfemcomponents.size(); ++i)
+  for (const auto& cond : {movingfluid, fluidfluidcoupling, ALEfluidcoupling})
   {
-    movingfluid->add_component(xfemcomponents[i]);
-    fluidfluidcoupling->add_component(xfemcomponents[i]);
-    ALEfluidcoupling->add_component(xfemcomponents[i]);
-  }
+    cond->add_component(Teuchos::rcp(new Input::IntComponent("label")));
 
-  condlist.push_back(fluidfluidcoupling);
-  condlist.push_back(movingfluid);
-  condlist.push_back(ALEfluidcoupling);
+    condlist.push_back(cond);
+  }
 
 
   /*--------------------------------------------------------------------*/

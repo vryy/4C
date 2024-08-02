@@ -12,6 +12,7 @@
 #include "4C_inpar_ale.hpp"
 
 #include "4C_fem_condition_definition.hpp"
+#include "4C_io_linecomponent.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -85,22 +86,6 @@ void Inpar::ALE::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Ale update boundary condition
 
-  std::vector<Teuchos::RCP<Input::LineComponent>> aleupdatecomponents;
-
-  aleupdatecomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("COUPLING")));
-  aleupdatecomponents.push_back(Teuchos::rcp(new Input::SelectionComponent("coupling", "lagrange",
-      Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
-          "meantangentialvelocity", "meantangentialvelocityscaled"),
-      Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
-          "meantangentialvelocity", "meantangentialvelocityscaled"),
-      true)));
-
-  aleupdatecomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("VAL")));
-  aleupdatecomponents.push_back(Teuchos::rcp(new Input::RealComponent("val")));
-
-  aleupdatecomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("NODENORMALFUNCT")));
-  aleupdatecomponents.push_back(Teuchos::rcp(new Input::IntComponent("nodenormalfunct")));
-
   Teuchos::RCP<Core::Conditions::ConditionDefinition> linealeupdate =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN ALE UPDATE LINE CONDITIONS",
           "ALEUPDATECoupling", "ALEUPDATE Coupling", Core::Conditions::ALEUPDATECoupling, true,
@@ -110,14 +95,24 @@ void Inpar::ALE::SetValidConditions(
           "ALEUPDATECoupling", "ALEUPDATE Coupling", Core::Conditions::ALEUPDATECoupling, true,
           Core::Conditions::geometry_type_surface));
 
-  for (unsigned i = 0; i < aleupdatecomponents.size(); ++i)
+  for (const auto& cond : {linealeupdate, surfaleupdate})
   {
-    linealeupdate->add_component(aleupdatecomponents[i]);
-    surfaleupdate->add_component(aleupdatecomponents[i]);
-  }
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("COUPLING")));
+    cond->add_component(Teuchos::rcp(new Input::SelectionComponent("coupling", "lagrange",
+        Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
+            "meantangentialvelocity", "meantangentialvelocityscaled"),
+        Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
+            "meantangentialvelocity", "meantangentialvelocityscaled"),
+        true)));
 
-  condlist.push_back(linealeupdate);
-  condlist.push_back(surfaleupdate);
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("VAL")));
+    cond->add_component(Teuchos::rcp(new Input::RealComponent("val")));
+
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("NODENORMALFUNCT")));
+    cond->add_component(Teuchos::rcp(new Input::IntComponent("nodenormalfunct")));
+
+    condlist.emplace_back(cond);
+  }
 }
 
 FOUR_C_NAMESPACE_CLOSE

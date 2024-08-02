@@ -429,10 +429,6 @@ void Inpar::FSI::SetValidConditions(
 {
   using namespace Input;
 
-  std::vector<Teuchos::RCP<Input::LineComponent>> fsicomponents;
-
-  fsicomponents.push_back(Teuchos::rcp(new Input::IntComponent("coupling id")));
-
   Teuchos::RCP<Core::Conditions::ConditionDefinition> linefsi =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN FSI COUPLING LINE CONDITIONS",
           "FSICoupling", "FSI Coupling", Core::Conditions::FSICoupling, true,
@@ -442,11 +438,8 @@ void Inpar::FSI::SetValidConditions(
           "FSICoupling", "FSI Coupling", Core::Conditions::FSICoupling, true,
           Core::Conditions::geometry_type_surface));
 
-  for (unsigned i = 0; i < fsicomponents.size(); ++i)
-  {
-    linefsi->add_component(fsicomponents[i]);
-    surffsi->add_component(fsicomponents[i]);
-  }
+  linefsi->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
+  surffsi->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
 
   condlist.push_back(linefsi);
   condlist.push_back(surffsi);
@@ -484,31 +477,20 @@ void Inpar::FSI::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Additional coupling of structure and ale fields (for lung fsi)
 
-  std::vector<Teuchos::RCP<Input::LineComponent>> saccomponents;
-
-  saccomponents.push_back(Teuchos::rcp(new Input::IntComponent("coupling id")));
-  saccomponents.push_back(Teuchos::rcp(new Input::SelectionComponent("field", "structure",
-      Teuchos::tuple<std::string>("structure", "fluid"),
-      Teuchos::tuple<std::string>("structure", "fluid"))));
-
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surfsac =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN STRUCTURE ALE COUPLING SURF CONDITIONS", "StructAleCoupling", "StructAleCoupling",
           Core::Conditions::StructAleCoupling, true, Core::Conditions::geometry_type_surface));
 
-  for (unsigned i = 0; i < saccomponents.size(); ++i) surfsac->add_component(saccomponents[i]);
+  surfsac->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
+  surfsac->add_component(Teuchos::rcp(new Input::SelectionComponent("field", "structure",
+      Teuchos::tuple<std::string>("structure", "fluid"),
+      Teuchos::tuple<std::string>("structure", "fluid"))));
 
   condlist.push_back(surfsac);
 
   /*--------------------------------------------------------------------*/
   // Additional coupling of structure and fluid volumes (for lung fsi)
-
-  std::vector<Teuchos::RCP<Input::LineComponent>> sfvcomponents;
-
-  sfvcomponents.push_back(Teuchos::rcp(new Input::IntComponent("coupling id")));
-  sfvcomponents.push_back(Teuchos::rcp(new Input::SelectionComponent("field", "structure",
-      Teuchos::tuple<std::string>("structure", "fluid"),
-      Teuchos::tuple<std::string>("structure", "fluid"))));
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surfsfv =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition(
@@ -521,14 +503,15 @@ void Inpar::FSI::SetValidConditions(
           "StructFluidVolCoupling", Core::Conditions::StructFluidVolCoupling, false,
           Core::Conditions::geometry_type_volume));
 
-  for (unsigned i = 0; i < sfvcomponents.size(); ++i)
+  for (const auto& cond : {surfsfv, volsfv})
   {
-    surfsfv->add_component(sfvcomponents[i]);
-    volsfv->add_component(sfvcomponents[i]);
-  }
+    cond->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
+    cond->add_component(Teuchos::rcp(new Input::SelectionComponent("field", "structure",
+        Teuchos::tuple<std::string>("structure", "fluid"),
+        Teuchos::tuple<std::string>("structure", "fluid"))));
 
-  condlist.push_back(surfsfv);
-  condlist.push_back(volsfv);
+    condlist.push_back(cond);
+  }
 }
 
 FOUR_C_NAMESPACE_CLOSE

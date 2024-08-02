@@ -132,10 +132,6 @@ void Inpar::FPSI::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // FPSI
 
-  std::vector<Teuchos::RCP<Input::LineComponent>> fpsicomponents;
-
-  fpsicomponents.push_back(Teuchos::rcp(new Input::IntComponent("coupling id")));
-
   Teuchos::RCP<Core::Conditions::ConditionDefinition> linefpsi =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN FPSI COUPLING LINE CONDITIONS",
           "fpsi_coupling", "FPSI Coupling", Core::Conditions::fpsi_coupling, true,
@@ -145,11 +141,8 @@ void Inpar::FPSI::SetValidConditions(
           "fpsi_coupling", "FPSI Coupling", Core::Conditions::fpsi_coupling, true,
           Core::Conditions::geometry_type_surface));
 
-  for (unsigned i = 0; i < fpsicomponents.size(); ++i)
-  {
-    linefpsi->add_component(fpsicomponents[i]);
-    surffpsi->add_component(fpsicomponents[i]);
-  }
+  linefpsi->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
+  surffpsi->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
 
   condlist.push_back(linefpsi);
   condlist.push_back(surffpsi);

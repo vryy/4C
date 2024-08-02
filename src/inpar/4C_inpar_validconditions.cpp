@@ -38,6 +38,7 @@
 #include "4C_inpar_structure.hpp"
 #include "4C_inpar_thermo.hpp"
 #include "4C_inpar_xfem.hpp"
+#include "4C_io_linecomponent.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -104,35 +105,7 @@ Input::ValidConditions()
   std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist = *vc;
 
   /*--------------------------------------------------------------------*/
-  // Neumann
-  std::vector<Teuchos::RCP<LineComponent>> neumanncomponents;
-
-  neumanncomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("NUMDOF")));
-  neumanncomponents.emplace_back(Teuchos::rcp(new IntComponent("numdof")));
-
-  neumanncomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("ONOFF")));
-  neumanncomponents.emplace_back(
-      Teuchos::rcp(new IntVectorComponent("onoff", LengthFromInt("numdof"))));
-  neumanncomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("VAL")));
-  neumanncomponents.emplace_back(
-      Teuchos::rcp(new RealVectorComponent("val", LengthFromInt("numdof"))));
-  neumanncomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("FUNCT")));
-  neumanncomponents.emplace_back(Teuchos::rcp(
-      new IntVectorComponent("funct", LengthFromInt("numdof"), {0, false, true, false})));
-
-  // optional
-  neumanncomponents.emplace_back(Teuchos::rcp(new SelectionComponent("type", "Live",
-      Teuchos::tuple<std::string>("Live", "Dead", "PrescribedDomainLoad", "constHydro_z",
-          "increaseHydro_z", "pseudo_orthopressure", "orthopressure", "LAS", "PressureGrad",
-          "Torque"),
-      Teuchos::tuple<std::string>("neum_live", "neum_dead", "pres_domain_load", "neum_consthydro_z",
-          "neum_increhydro_z", "neum_pseudo_orthopressure", "neum_orthopressure", "neum_LAS",
-          "neum_pgrad", "neum_torque"),
-      true)));
-  neumanncomponents.emplace_back(Teuchos::rcp(
-      new SelectionComponent("surface", "Mid", Teuchos::tuple<std::string>("Mid", "Top", "Bot"),
-          Teuchos::tuple<std::string>("mid", "top", "bot"), true)));
-
+  // Neumann conditions
   Teuchos::RCP<Core::Conditions::ConditionDefinition> pointneumann =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN POINT NEUMANN CONDITIONS",
           "PointNeumann", "Point Neumann", Core::Conditions::PointNeumann, false,
@@ -208,75 +181,44 @@ Input::ValidConditions()
           "PoroVolumeNeumann", "Volume Neumann", Core::Conditions::VolumeNeumann, true,
           Core::Conditions::geometry_type_volume));
 
-  for (const auto& neumanncomponent : neumanncomponents)
+  auto all_neumann_conditions = {pointneumann, pointneumanneb, lineneumann, surfneumann, volneumann,
+      pointtransportneumann, linetransportneumann, surftransportneumann, voltransportneumann,
+      pointthermoneumann, linethermoneumann, surfthermoneumann, volthermoneumann, pointporoneumann,
+      lineporoneumann, surfporoneumann, volporoneumann};
+
+  for (const auto& cond : all_neumann_conditions)
   {
-    pointneumann->add_component(neumanncomponent);
-    pointneumanneb->add_component(neumanncomponent);
-    lineneumann->add_component(neumanncomponent);
-    surfneumann->add_component(neumanncomponent);
-    volneumann->add_component(neumanncomponent);
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("NUMDOF")));
+    cond->add_component(Teuchos::rcp(new IntComponent("numdof")));
 
-    pointtransportneumann->add_component(neumanncomponent);
-    linetransportneumann->add_component(neumanncomponent);
-    surftransportneumann->add_component(neumanncomponent);
-    voltransportneumann->add_component(neumanncomponent);
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("ONOFF")));
+    cond->add_component(Teuchos::rcp(new IntVectorComponent("onoff", LengthFromInt("numdof"))));
 
-    pointthermoneumann->add_component(neumanncomponent);
-    linethermoneumann->add_component(neumanncomponent);
-    surfthermoneumann->add_component(neumanncomponent);
-    volthermoneumann->add_component(neumanncomponent);
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("VAL")));
+    cond->add_component(Teuchos::rcp(new RealVectorComponent("val", LengthFromInt("numdof"))));
 
-    pointporoneumann->add_component(neumanncomponent);
-    lineporoneumann->add_component(neumanncomponent);
-    surfporoneumann->add_component(neumanncomponent);
-    volporoneumann->add_component(neumanncomponent);
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("FUNCT")));
+    cond->add_component(Teuchos::rcp(
+        new IntVectorComponent("funct", LengthFromInt("numdof"), {0, false, true, false})));
+
+    // optional
+    cond->add_component(Teuchos::rcp(new SelectionComponent("type", "Live",
+        Teuchos::tuple<std::string>("Live", "Dead", "PrescribedDomainLoad", "constHydro_z",
+            "increaseHydro_z", "pseudo_orthopressure", "orthopressure", "LAS", "PressureGrad",
+            "Torque"),
+        Teuchos::tuple<std::string>("neum_live", "neum_dead", "pres_domain_load",
+            "neum_consthydro_z", "neum_increhydro_z", "neum_pseudo_orthopressure",
+            "neum_orthopressure", "neum_LAS", "neum_pgrad", "neum_torque"),
+        true)));
+    cond->add_component(Teuchos::rcp(
+        new SelectionComponent("surface", "Mid", Teuchos::tuple<std::string>("Mid", "Top", "Bot"),
+            Teuchos::tuple<std::string>("mid", "top", "bot"), true)));
+
+    condlist.emplace_back(cond);
   }
 
-  condlist.push_back(pointneumann);
-  condlist.push_back(pointneumanneb);
-  condlist.push_back(lineneumann);
-  condlist.push_back(surfneumann);
-  condlist.push_back(volneumann);
-
-  condlist.push_back(pointtransportneumann);
-  condlist.push_back(linetransportneumann);
-  condlist.push_back(surftransportneumann);
-  condlist.push_back(voltransportneumann);
-
-  condlist.push_back(pointthermoneumann);
-  condlist.push_back(linethermoneumann);
-  condlist.push_back(surfthermoneumann);
-  condlist.push_back(volthermoneumann);
-
-  condlist.push_back(pointporoneumann);
-  condlist.push_back(lineporoneumann);
-  condlist.push_back(surfporoneumann);
-  condlist.push_back(volporoneumann);
-
   /*--------------------------------------------------------------------*/
-  // Dirichlet
-
-  std::vector<Teuchos::RCP<LineComponent>> dirichletbundcomponents;
-
-  dirichletbundcomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("NUMDOF")));
-  dirichletbundcomponents.emplace_back(Teuchos::rcp(new IntComponent("numdof")));
-
-  dirichletbundcomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("ONOFF")));
-  dirichletbundcomponents.emplace_back(
-      Teuchos::rcp(new IntVectorComponent("onoff", LengthFromInt("numdof"))));
-  dirichletbundcomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("VAL")));
-  dirichletbundcomponents.emplace_back(
-      Teuchos::rcp(new RealVectorComponent("val", LengthFromInt("numdof"))));
-  dirichletbundcomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("FUNCT")));
-  dirichletbundcomponents.emplace_back(Teuchos::rcp(
-      new IntVectorComponent("funct", LengthFromInt("numdof"), {0, false, true, false})));
-
-  // optional
-  dirichletbundcomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("TAG", "", true)));
-  dirichletbundcomponents.emplace_back(Teuchos::rcp(
-      new SelectionComponent("tag", "none", Teuchos::tuple<std::string>("none", "monitor_reaction"),
-          Teuchos::tuple<std::string>("none", "monitor_reaction"), true)));
-
+  // Dirichlet conditions
   Teuchos::RCP<Core::Conditions::ConditionDefinition> pointdirichlet =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN POINT DIRICH CONDITIONS",
           "Dirichlet", "Point Dirichlet", Core::Conditions::PointDirichlet, false,
@@ -382,79 +324,38 @@ Input::ValidConditions()
           "DESIGN VOL NURBS LS DIRICH CONDITIONS", "NurbsLSDirichlet", "Volume Dirichlet",
           Core::Conditions::VolumeDirichlet, true, Core::Conditions::geometry_type_volume));
 
-  for (unsigned i = 0; i < dirichletbundcomponents.size(); ++i)
+  auto all_dirichlet_conditions = {pointdirichlet, linedirichlet, surfdirichlet, voldirichlet,
+      pointaledirichlet, linealedirichlet, surfaledirichlet, volaledirichlet,
+      pointtransportdirichlet, linetransportdirichlet, surftransportdirichlet,
+      voltransportdirichlet, pointthermodirichlet, linethermodirichlet, surfthermodirichlet,
+      volthermodirichlet, pointporodirichlet, lineporodirichlet, surfporodirichlet,
+      volporodirichlet, pointnurbslsdirichlet, linenurbslsdirichlet, surfnurbslsdirichlet,
+      volnurbslsdirichlet};
+
+  for (const auto& cond : all_dirichlet_conditions)
   {
-    pointdirichlet->add_component(dirichletbundcomponents[i]);
-    linedirichlet->add_component(dirichletbundcomponents[i]);
-    surfdirichlet->add_component(dirichletbundcomponents[i]);
-    voldirichlet->add_component(dirichletbundcomponents[i]);
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("NUMDOF")));
+    cond->add_component(Teuchos::rcp(new IntComponent("numdof")));
 
-    pointaledirichlet->add_component(dirichletbundcomponents[i]);
-    linealedirichlet->add_component(dirichletbundcomponents[i]);
-    surfaledirichlet->add_component(dirichletbundcomponents[i]);
-    volaledirichlet->add_component(dirichletbundcomponents[i]);
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("ONOFF")));
+    cond->add_component(Teuchos::rcp(new IntVectorComponent("onoff", LengthFromInt("numdof"))));
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("VAL")));
+    cond->add_component(Teuchos::rcp(new RealVectorComponent("val", LengthFromInt("numdof"))));
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("FUNCT")));
+    cond->add_component(Teuchos::rcp(
+        new IntVectorComponent("funct", LengthFromInt("numdof"), {0, false, true, false})));
 
-    pointtransportdirichlet->add_component(dirichletbundcomponents[i]);
-    linetransportdirichlet->add_component(dirichletbundcomponents[i]);
-    surftransportdirichlet->add_component(dirichletbundcomponents[i]);
-    voltransportdirichlet->add_component(dirichletbundcomponents[i]);
+    // optional
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("TAG", "", true)));
+    cond->add_component(Teuchos::rcp(new SelectionComponent("tag", "none",
+        Teuchos::tuple<std::string>("none", "monitor_reaction"),
+        Teuchos::tuple<std::string>("none", "monitor_reaction"), true)));
 
-    pointthermodirichlet->add_component(dirichletbundcomponents[i]);
-    linethermodirichlet->add_component(dirichletbundcomponents[i]);
-    surfthermodirichlet->add_component(dirichletbundcomponents[i]);
-    volthermodirichlet->add_component(dirichletbundcomponents[i]);
-
-    pointporodirichlet->add_component(dirichletbundcomponents[i]);
-    lineporodirichlet->add_component(dirichletbundcomponents[i]);
-    surfporodirichlet->add_component(dirichletbundcomponents[i]);
-    volporodirichlet->add_component(dirichletbundcomponents[i]);
-
-    pointnurbslsdirichlet->add_component(dirichletbundcomponents[i]);
-    linenurbslsdirichlet->add_component(dirichletbundcomponents[i]);
-    surfnurbslsdirichlet->add_component(dirichletbundcomponents[i]);
-    volnurbslsdirichlet->add_component(dirichletbundcomponents[i]);
+    condlist.emplace_back(cond);
   }
-
-  condlist.push_back(pointdirichlet);
-  condlist.push_back(linedirichlet);
-  condlist.push_back(surfdirichlet);
-  condlist.push_back(voldirichlet);
-
-  condlist.push_back(pointaledirichlet);
-  condlist.push_back(linealedirichlet);
-  condlist.push_back(surfaledirichlet);
-  condlist.push_back(volaledirichlet);
-
-  condlist.push_back(pointtransportdirichlet);
-  condlist.push_back(linetransportdirichlet);
-  condlist.push_back(surftransportdirichlet);
-  condlist.push_back(voltransportdirichlet);
-
-  condlist.push_back(pointthermodirichlet);
-  condlist.push_back(linethermodirichlet);
-  condlist.push_back(surfthermodirichlet);
-  condlist.push_back(volthermodirichlet);
-
-  condlist.push_back(pointporodirichlet);
-  condlist.push_back(lineporodirichlet);
-  condlist.push_back(surfporodirichlet);
-  condlist.push_back(volporodirichlet);
-
-  condlist.push_back(pointnurbslsdirichlet);
-  condlist.push_back(linenurbslsdirichlet);
-  condlist.push_back(surfnurbslsdirichlet);
-  condlist.push_back(volnurbslsdirichlet);
 
   /*--------------------------------------------------------------------*/
   // Point coupling (e.g. joints - couple X out of Y nodal DoFs)
-
-  std::vector<Teuchos::RCP<LineComponent>> couplingcomponents;
-
-  couplingcomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("NUMDOF")));
-  couplingcomponents.emplace_back(Teuchos::rcp(new IntComponent("numdof")));
-  couplingcomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("ONOFF")));
-  couplingcomponents.emplace_back(
-      Teuchos::rcp(new IntVectorComponent("onoff", LengthFromInt("numdof"))));
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> pointcoupling =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN POINT COUPLING CONDITIONS",
@@ -466,29 +367,18 @@ Input::ValidConditions()
           "DESIGN POINT THERMO COUPLING CONDITIONS", "PointThermoCoupling", "Point Coupling",
           Core::Conditions::PointCoupling, false, Core::Conditions::geometry_type_point));
 
-  for (const auto& couplingcomponent : couplingcomponents)
+  for (const auto& cond : {pointcoupling, pointthermocoupling})
   {
-    pointcoupling->add_component(couplingcomponent);
-    pointthermocoupling->add_component(couplingcomponent);
-  }
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("NUMDOF")));
+    cond->add_component(Teuchos::rcp(new IntComponent("numdof")));
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("ONOFF")));
+    cond->add_component(Teuchos::rcp(new IntVectorComponent("onoff", LengthFromInt("numdof"))));
 
-  condlist.push_back(pointcoupling);
-  condlist.push_back(pointthermocoupling);
+    condlist.push_back(cond);
+  }
 
   /*--------------------------------------------------------------------*/
   // Initial fields
-
-  // define initial fields that can be set
-  std::vector<Teuchos::RCP<LineComponent>> initial_field_components;
-  initial_field_components.emplace_back(Teuchos::rcp(new SelectionComponent("Field", "Undefined",
-      Teuchos::tuple<std::string>("Undefined", "Velocity", "Pressure", "Temperature", "ScaTra",
-          "Porosity", "PoroMultiFluid", "Artery"),
-      Teuchos::tuple<std::string>("Undefined", "Velocity", "Pressure", "Temperature", "ScaTra",
-          "Porosity", "PoroMultiFluid", "Artery"))));
-
-  // give function id - always one single integer
-  // (for initial vector fields, use the COMPONENT option of our functions)
-  initial_field_components.emplace_back(Teuchos::rcp(new IntComponent("funct")));
 
   // general initial field conditions
   Teuchos::RCP<Core::Conditions::ConditionDefinition> pointinitfields =
@@ -508,30 +398,24 @@ Input::ValidConditions()
           "Initfield", "Volume Initfield", Core::Conditions::VolumeInitfield, false,
           Core::Conditions::geometry_type_volume));
 
-  for (const auto& initial_field_component : initial_field_components)
+  for (const auto& cond : {pointinitfields, lineinitfields, surfinitfields, volinitfields})
   {
-    pointinitfields->add_component(initial_field_component);
-    lineinitfields->add_component(initial_field_component);
-    surfinitfields->add_component(initial_field_component);
-    volinitfields->add_component(initial_field_component);
-  }
+    cond->add_component(Teuchos::rcp(new SelectionComponent("Field", "Undefined",
+        Teuchos::tuple<std::string>("Undefined", "Velocity", "Pressure", "Temperature", "ScaTra",
+            "Porosity", "PoroMultiFluid", "Artery"),
+        Teuchos::tuple<std::string>("Undefined", "Velocity", "Pressure", "Temperature", "ScaTra",
+            "Porosity", "PoroMultiFluid", "Artery"))));
 
-  condlist.push_back(pointinitfields);
-  condlist.push_back(lineinitfields);
-  condlist.push_back(surfinitfields);
-  condlist.push_back(volinitfields);
+    // give function id - always one single integer
+    // (for initial vector fields, use the COMPONENT option of our functions)
+    cond->add_component(Teuchos::rcp(new IntComponent("funct")));
+
+    condlist.push_back(cond);
+  }
 
   /*--------------------------------------------------------------------*/
   // define initial field that can be set on thermo simulations that use the ScaTra
   // discretization e.g. STI, SSTI
-  std::vector<Teuchos::RCP<LineComponent>> initial_field_components_thermo_on_scatra_dis;
-  initial_field_components_thermo_on_scatra_dis.emplace_back(Teuchos::rcp(new SelectionComponent(
-      "Field", "Undefined", Teuchos::tuple<std::string>("Undefined", "ScaTra"),
-      Teuchos::tuple<std::string>("Undefined", "ScaTra"))));
-
-  // give function id - always one single integer
-  initial_field_components_thermo_on_scatra_dis.emplace_back(
-      Teuchos::rcp(new IntComponent("funct")));
 
   // initial field conditions for temperature on ScaTra discretizations
   Teuchos::RCP<Core::Conditions::ConditionDefinition> pointthermoinitfields =
@@ -559,77 +443,59 @@ Input::ValidConditions()
           "discretization (e.g. STI, SSTI) on volumes",
           Core::Conditions::VolumeInitfield, false, Core::Conditions::geometry_type_volume));
 
-  for (const auto& component : initial_field_components_thermo_on_scatra_dis)
+  for (const auto& cond :
+      {pointthermoinitfields, linethermoinitfields, surfthermoinitfields, volthermoinitfields})
   {
-    pointthermoinitfields->add_component(component);
-    linethermoinitfields->add_component(component);
-    surfthermoinitfields->add_component(component);
-    volthermoinitfields->add_component(component);
-  }
+    cond->add_component(Teuchos::rcp(new SelectionComponent("Field", "Undefined",
+        Teuchos::tuple<std::string>("Undefined", "ScaTra"),
+        Teuchos::tuple<std::string>("Undefined", "ScaTra"))));
 
-  condlist.push_back(pointthermoinitfields);
-  condlist.push_back(linethermoinitfields);
-  condlist.push_back(surfthermoinitfields);
-  condlist.push_back(volthermoinitfields);
+    // give function id - always one single integer
+    cond->add_component(Teuchos::rcp(new IntComponent("funct")));
+
+    condlist.push_back(cond);
+  }
 
   /*--------------------------------------------------------------------*/
   // compute domain integrals, i.e., cumulative volumes of 3D domain elements or cumulative
   // surface areas of 2D domain elements
+
+  // definition of surface and volume conditions for domain integral computation
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> domainintegralsurf = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN DOMAIN INTEGRAL SURF CONDITIONS",
+          "DomainIntegral", "compute cumulative surface areas of 2D domain elements",
+          Core::Conditions::DomainIntegral, true, Core::Conditions::geometry_type_surface));
+
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> domainintegralvol = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN DOMAIN INTEGRAL VOL CONDITIONS",
+          "DomainIntegral", "compute cumulative volumes of 3D domain elements",
+          Core::Conditions::DomainIntegral, true, Core::Conditions::geometry_type_volume));
+
+  for (const auto& cond : {domainintegralsurf, domainintegralvol})
   {
-    // definition of surface and volume conditions for domain integral computation
-    Teuchos::RCP<Core::Conditions::ConditionDefinition> domainintegralsurf = Teuchos::rcp(
-        new Core::Conditions::ConditionDefinition("DESIGN DOMAIN INTEGRAL SURF CONDITIONS",
-            "DomainIntegral", "compute cumulative surface areas of 2D domain elements",
-            Core::Conditions::DomainIntegral, true, Core::Conditions::geometry_type_surface));
-
-    Teuchos::RCP<Core::Conditions::ConditionDefinition> domainintegralvol = Teuchos::rcp(
-        new Core::Conditions::ConditionDefinition("DESIGN DOMAIN INTEGRAL VOL CONDITIONS",
-            "DomainIntegral", "compute cumulative volumes of 3D domain elements",
-            Core::Conditions::DomainIntegral, true, Core::Conditions::geometry_type_volume));
-
-    // equip condition definitions with input file line components
-    std::vector<Teuchos::RCP<LineComponent>> domainintegralcomponents;
-
-    {
-      domainintegralcomponents.push_back(Teuchos::rcp(new SeparatorComponent("ID")));
-      domainintegralcomponents.push_back(Teuchos::rcp(new IntComponent("ConditionID")));
-    }
-
-    // insert input file line components into condition definitions
-    for (unsigned i = 0; i < domainintegralcomponents.size(); ++i)
-    {
-      domainintegralsurf->add_component(domainintegralcomponents[i]);
-      domainintegralvol->add_component(domainintegralcomponents[i]);
-    }
+    // add input file line components to condition definitions
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("ID")));
+    cond->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
 
     // insert condition definitions into global list of valid condition definitions
-    condlist.push_back(domainintegralsurf);
-    condlist.push_back(domainintegralvol);
+    condlist.push_back(cond);
   }
 
   /*--------------------------------------------------------------------*/
   // compute boundary integrals, i.e., cumulative surface areas of 2D boundary elements
-  {
-    Teuchos::RCP<Core::Conditions::ConditionDefinition> boundaryintegralsurf = Teuchos::rcp(
-        new Core::Conditions::ConditionDefinition("DESIGN BOUNDARY INTEGRAL SURF CONDITIONS",
-            "BoundaryIntegral", "compute cumulative surface areas of 2D boundary elements",
-            Core::Conditions::BoundaryIntegral, true, Core::Conditions::geometry_type_surface));
 
-    // equip condition definition with input file line components
-    std::vector<Teuchos::RCP<LineComponent>> boundaryintegralcomponents;
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> boundaryintegralsurf = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN BOUNDARY INTEGRAL SURF CONDITIONS",
+          "BoundaryIntegral", "compute cumulative surface areas of 2D boundary elements",
+          Core::Conditions::BoundaryIntegral, true, Core::Conditions::geometry_type_surface));
 
-    {
-      boundaryintegralcomponents.push_back(Teuchos::rcp(new SeparatorComponent("ID")));
-      boundaryintegralcomponents.push_back(Teuchos::rcp(new IntComponent("ConditionID")));
-    }
+  // add input file line components to condition definition
+  boundaryintegralsurf->add_component(Teuchos::rcp(new SeparatorComponent("ID")));
+  boundaryintegralsurf->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
 
-    // insert input file line components into condition definition
-    for (unsigned i = 0; i < boundaryintegralcomponents.size(); ++i)
-      boundaryintegralsurf->add_component(boundaryintegralcomponents[i]);
+  // insert condition definition into global list of valid condition definitions
+  condlist.push_back(boundaryintegralsurf);
 
-    // insert condition definition into global list of valid condition definitions
-    condlist.push_back(boundaryintegralsurf);
-  }
 
   /*--------------------------------------------------------------------*/
   // wear in ALE description
@@ -647,17 +513,6 @@ Input::ValidConditions()
 
   /*--------------------------------------------------------------------*/
   // local coordinate systems
-
-  std::vector<Teuchos::RCP<LineComponent>> locsyscomponents;
-
-  locsyscomponents.push_back(Teuchos::rcp(new SeparatorComponent("ROTANGLE")));
-  locsyscomponents.push_back(Teuchos::rcp(new RealVectorComponent("rotangle", 3)));
-  locsyscomponents.push_back(Teuchos::rcp(new SeparatorComponent("FUNCT")));
-  locsyscomponents.push_back(Teuchos::rcp(new IntVectorComponent("funct", 3)));
-  locsyscomponents.push_back(Teuchos::rcp(new SeparatorComponent("USEUPDATEDNODEPOS")));
-  locsyscomponents.push_back(Teuchos::rcp(new IntComponent("useupdatednodepos")));
-  locsyscomponents.push_back(Teuchos::rcp(new SeparatorComponent("USECONSISTENTNODENORMAL")));
-  locsyscomponents.push_back(Teuchos::rcp(new IntComponent("useconsistentnodenormal")));
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> pointlocsys =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN POINT LOCSYS CONDITIONS",
@@ -694,67 +549,34 @@ Input::ValidConditions()
           "AleLocsys", "Volume local coordinate system", Core::Conditions::VolumeLocsys, true,
           Core::Conditions::geometry_type_volume));
 
-  for (unsigned i = 0; i < locsyscomponents.size() - 2; ++i)
+  // add components to condition definitions
+  for (const auto& cond : {pointlocsys, linelocsys, surflocsys, vollocsys, pointalelocsys,
+           linealelocsys, surfalelocsys, volalelocsys})
   {
-    pointlocsys->add_component(locsyscomponents[i]);
-    linelocsys->add_component(locsyscomponents[i]);
-    surflocsys->add_component(locsyscomponents[i]);
-    vollocsys->add_component(locsyscomponents[i]);
-
-    // Ale
-    pointalelocsys->add_component(locsyscomponents[i]);
-    linealelocsys->add_component(locsyscomponents[i]);
-    surfalelocsys->add_component(locsyscomponents[i]);
-    volalelocsys->add_component(locsyscomponents[i]);
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("ROTANGLE")));
+    cond->add_component(Teuchos::rcp(new RealVectorComponent("rotangle", 3)));
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("FUNCT")));
+    cond->add_component(Teuchos::rcp(new IntVectorComponent("funct", 3)));
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("USEUPDATEDNODEPOS")));
+    cond->add_component(Teuchos::rcp(new IntComponent("useupdatednodepos")));
   }
 
-  // Add node normal system option only for lines and surfaces
-  linelocsys->add_component(locsyscomponents[locsyscomponents.size() - 2]);
-  linelocsys->add_component(locsyscomponents[locsyscomponents.size() - 1]);
-  surflocsys->add_component(locsyscomponents[locsyscomponents.size() - 2]);
-  surflocsys->add_component(locsyscomponents[locsyscomponents.size() - 1]);
-  linealelocsys->add_component(locsyscomponents[locsyscomponents.size() - 2]);
-  linealelocsys->add_component(locsyscomponents[locsyscomponents.size() - 1]);
-  surfalelocsys->add_component(locsyscomponents[locsyscomponents.size() - 2]);
-  surfalelocsys->add_component(locsyscomponents[locsyscomponents.size() - 1]);
+  // add node normal system option only for lines and surfaces
+  for (const auto& cond : {linelocsys, surflocsys, linealelocsys, surfalelocsys})
+  {
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("USECONSISTENTNODENORMAL")));
+    cond->add_component(Teuchos::rcp(new IntComponent("useconsistentnodenormal")));
+  }
 
-  condlist.push_back(pointlocsys);
-  condlist.push_back(linelocsys);
-  condlist.push_back(surflocsys);
-  condlist.push_back(vollocsys);
-
-  // Ale
-  condlist.push_back(pointalelocsys);
-  condlist.push_back(linealelocsys);
-  condlist.push_back(surfalelocsys);
-  condlist.push_back(volalelocsys);
+  // add conditions to global list of conditions
+  for (const auto& cond : {pointlocsys, linelocsys, surflocsys, vollocsys, pointalelocsys,
+           linealelocsys, surfalelocsys, volalelocsys})
+  {
+    condlist.push_back(cond);
+  }
 
   /*--------------------------------------------------------------------*/
   // periodic boundary
-
-  std::vector<Teuchos::RCP<LineComponent>> pbccomponents;
-
-  pbccomponents.push_back(
-      Teuchos::rcp(new IntComponent("Id of periodic boundary condition", {0, true})));
-  pbccomponents.push_back(
-      Teuchos::rcp(new SelectionComponent("Is slave periodic boundary condition", "Master",
-          Teuchos::tuple<std::string>("Master", "Slave"),
-          Teuchos::tuple<std::string>("Master", "Slave"))));
-  pbccomponents.push_back(Teuchos::rcp(new SeparatorComponent("PLANE")));
-  pbccomponents.push_back(
-      Teuchos::rcp(new SelectionComponent("degrees of freedom for the pbc plane", "xy",
-          Teuchos::tuple<std::string>("xy", "yx", "yz", "zy", "xz", "zx", "xyz"),
-          Teuchos::tuple<std::string>("xy", "xy", "yz", "yz", "xz", "xz", "xyz"))));
-
-  pbccomponents.push_back(Teuchos::rcp(new SeparatorComponent("LAYER")));
-  pbccomponents.push_back(
-      Teuchos::rcp(new IntComponent("Layer of periodic boundary condition", {0, true})));
-
-  pbccomponents.push_back(Teuchos::rcp(new SeparatorComponent("ANGLE")));
-  pbccomponents.push_back(Teuchos::rcp(new RealComponent("Angle of rotation")));
-
-  pbccomponents.push_back(Teuchos::rcp(new SeparatorComponent("ABSTREETOL")));
-  pbccomponents.push_back(Teuchos::rcp(new RealComponent("Tolerance for nodematching in octree")));
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> lineperiodic =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition(
@@ -765,61 +587,33 @@ Input::ValidConditions()
           "DESIGN SURF PERIODIC BOUNDARY CONDITIONS", "SurfacePeriodic", "Surface Periodic",
           Core::Conditions::SurfacePeriodic, false, Core::Conditions::geometry_type_surface));
 
-  for (unsigned i = 0; i < pbccomponents.size(); ++i)
+  for (const auto& cond : {lineperiodic, surfperiodic})
   {
-    lineperiodic->add_component(pbccomponents[i]);
-    surfperiodic->add_component(pbccomponents[i]);
-  }
+    cond->add_component(
+        Teuchos::rcp(new IntComponent("Id of periodic boundary condition", {0, true})));
+    cond->add_component(Teuchos::rcp(new SelectionComponent("Is slave periodic boundary condition",
+        "Master", Teuchos::tuple<std::string>("Master", "Slave"),
+        Teuchos::tuple<std::string>("Master", "Slave"))));
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("PLANE")));
+    cond->add_component(Teuchos::rcp(new SelectionComponent("degrees of freedom for the pbc plane",
+        "xy", Teuchos::tuple<std::string>("xy", "yx", "yz", "zy", "xz", "zx", "xyz"),
+        Teuchos::tuple<std::string>("xy", "xy", "yz", "yz", "xz", "xz", "xyz"))));
 
-  condlist.push_back(lineperiodic);
-  condlist.push_back(surfperiodic);
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("LAYER")));
+    cond->add_component(
+        Teuchos::rcp(new IntComponent("Layer of periodic boundary condition", {0, true})));
+
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("ANGLE")));
+    cond->add_component(Teuchos::rcp(new RealComponent("Angle of rotation")));
+
+    cond->add_component(Teuchos::rcp(new SeparatorComponent("ABSTREETOL")));
+    cond->add_component(Teuchos::rcp(new RealComponent("Tolerance for nodematching in octree")));
+
+    condlist.push_back(cond);
+  }
 
   /*--------------------------------------------------------------------*/
   // weak Dirichlet conditions
-
-  std::vector<Teuchos::RCP<LineComponent>> weakDirichletcomponents;
-
-  // weak DBCs can be imposed adjoint consistent or adjoint inconsistent
-  weakDirichletcomponents.push_back(Teuchos::rcp(new SelectionComponent("Choice of gamma parameter",
-      "adjoint-consistent", Teuchos::tuple<std::string>("adjoint-consistent", "diffusive-optimal"),
-      Teuchos::tuple<std::string>("adjoint-consistent", "diffusive-optimal"))));
-
-  // weak DBCs can be imposed in all directions or only in normal direction
-  // (SCATRA: not checked, only in all_directions so far)
-  weakDirichletcomponents.push_back(
-      Teuchos::rcp(new SelectionComponent("Directions to apply weak dbc", "all_directions",
-          Teuchos::tuple<std::string>("all_directions", "only_in_normal_direction"),
-          Teuchos::tuple<std::string>("all_directions", "only_in_normal_direction"))));
-
-  // FLUID: penalty parameter either computed dynamically (using Spaldings law of
-  // the wall) or by a fixed value; SCATRA: not checked, only constant value so far
-  weakDirichletcomponents.push_back(
-      Teuchos::rcp(new SelectionComponent("Definition of penalty parameter", "constant",
-          Teuchos::tuple<std::string>("constant", "Spalding"),
-          Teuchos::tuple<std::string>("constant", "Spalding"))));
-
-  // scaling factor for penalty parameter tauB or
-  // stabilization parameter alpha for Nitsche term
-  // (SCATRA: if stabilization parameter negative -> mixed-hybrid formulation)
-  weakDirichletcomponents.push_back(Teuchos::rcp(new RealComponent("TauBscaling")));
-
-  // linearisation strategies --- the linearisation (i.e. the matrix
-  // contribution) of the convective term on the inflow could be
-  // suppressed, since the flux is a kink function and including this one
-  // might result in even worse convergence behaviour
-  // (SCATRA: not checked)
-  weakDirichletcomponents.push_back(Teuchos::rcp(new SelectionComponent("Linearisation", "lin_all",
-      Teuchos::tuple<std::string>("lin_all", "no_lin_conv_inflow"),
-      Teuchos::tuple<std::string>("lin_all", "no_lin_conv_inflow"))));
-
-  // we provide a vector of 3 values for velocities
-  weakDirichletcomponents.push_back(Teuchos::rcp(new RealVectorComponent("val", 3)));
-
-  // and optional spatial functions
-  weakDirichletcomponents.push_back(
-      Teuchos::rcp(new IntVectorComponent("funct", 3, {0, false, false, true})));
-
-
   Teuchos::RCP<Core::Conditions::ConditionDefinition> lineweakdirichlet =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN LINE WEAK DIRICHLET CONDITIONS", "LineWeakDirichlet", "LineWeakDirichlet",
@@ -830,21 +624,53 @@ Input::ValidConditions()
           "SurfaceWeakDirichlet", "SurfaceWeakDirichlet", Core::Conditions::SurfaceWeakDirichlet,
           true, Core::Conditions::geometry_type_surface));
 
-  // we attach all the components of this condition to this weak line DBC
-  for (unsigned i = 0; i < weakDirichletcomponents.size(); ++i)
+  // attach all components to those condition
+  for (const auto& cond : {lineweakdirichlet, surfweakdirichlet})
   {
-    lineweakdirichlet->add_component(weakDirichletcomponents[i]);
-    surfweakdirichlet->add_component(weakDirichletcomponents[i]);
-  }
+    // weak DBCs can be imposed adjoint consistent or adjoint inconsistent
+    cond->add_component(
+        Teuchos::rcp(new SelectionComponent("Choice of gamma parameter", "adjoint-consistent",
+            Teuchos::tuple<std::string>("adjoint-consistent", "diffusive-optimal"),
+            Teuchos::tuple<std::string>("adjoint-consistent", "diffusive-optimal"))));
 
-  // and append it to the list of all conditions
-  condlist.push_back(lineweakdirichlet);
-  condlist.push_back(surfweakdirichlet);
+    // weak DBCs can be imposed in all directions or only in normal direction
+    // (SCATRA: not checked, only in all_directions so far)
+    cond->add_component(Teuchos::rcp(new SelectionComponent("Directions to apply weak dbc",
+        "all_directions", Teuchos::tuple<std::string>("all_directions", "only_in_normal_direction"),
+        Teuchos::tuple<std::string>("all_directions", "only_in_normal_direction"))));
+
+    // FLUID: penalty parameter either computed dynamically (using Spaldings law of
+    // the wall) or by a fixed value; SCATRA: not checked, only constant value so far
+    cond->add_component(Teuchos::rcp(new SelectionComponent("Definition of penalty parameter",
+        "constant", Teuchos::tuple<std::string>("constant", "Spalding"),
+        Teuchos::tuple<std::string>("constant", "Spalding"))));
+
+    // scaling factor for penalty parameter tauB or
+    // stabilization parameter alpha for Nitsche term
+    // (SCATRA: if stabilization parameter negative -> mixed-hybrid formulation)
+    cond->add_component(Teuchos::rcp(new RealComponent("TauBscaling")));
+
+    // linearisation strategies --- the linearisation (i.e. the matrix
+    // contribution) of the convective term on the inflow could be
+    // suppressed, since the flux is a kink function and including this one
+    // might result in even worse convergence behaviour
+    // (SCATRA: not checked)
+    cond->add_component(Teuchos::rcp(new SelectionComponent("Linearisation", "lin_all",
+        Teuchos::tuple<std::string>("lin_all", "no_lin_conv_inflow"),
+        Teuchos::tuple<std::string>("lin_all", "no_lin_conv_inflow"))));
+
+    // we provide a vector of 3 values for velocities
+    cond->add_component(Teuchos::rcp(new RealVectorComponent("val", 3)));
+
+    // and optional spatial functions
+    cond->add_component(Teuchos::rcp(new IntVectorComponent("funct", 3, {0, false, false, true})));
+
+    // append the condition to the list of all conditions
+    condlist.push_back(cond);
+  }
 
   /*--------------------------------------------------------------------*/
   // boundary for superconvergent patch recovery (SPR)
-
-  std::vector<Teuchos::RCP<LineComponent>> sprcomponents;
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> linespr =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition(
@@ -854,12 +680,6 @@ Input::ValidConditions()
       Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN PATCH RECOVERY BOUNDARY SURF CONDITIONS", "SPRboundary", "Boundary for SPR",
           Core::Conditions::SPRboundary, false, Core::Conditions::geometry_type_surface));
-
-  for (unsigned i = 0; i < sprcomponents.size(); ++i)
-  {
-    linespr->add_component(sprcomponents[i]);
-    surfspr->add_component(sprcomponents[i]);
-  }
 
   condlist.push_back(linespr);
   condlist.push_back(surfspr);
@@ -1064,124 +884,82 @@ Input::ValidConditions()
   nodeonlineconst2D->add_component(Teuchos::rcp(new RealComponent("activTime")));
   condlist.push_back(nodeonlineconst2D);
 
+  /*--------------------------------------------------------------------*/
+  // Krylov Space Projection:
+  // ========================
+  // specify an unsupported (i.e. rigid body or zero energy) mode orthogonal
+  // that is not excited by the body force
+  //
+  // examples are:
+  // fluid:  pure Dirichlet (i.e. velocity) boundary conditions - pressure
+  //         level is undetermined
+  // scatra: pure Neumann boundary condition - level of scalar quantity is
+  //         undetermined
+  // solid:  insufficient support of translational or rotational rigid body
+  //         modes
+  //
+  // for fluid and scatra, NUMDOF needs to be the number of dofs per node. the
+  // following ONOFF values trigger the fixation of the quantity level (for
+  // fluid, only pressure is allowed).
+  // for solid NUMDOF is the number of potential rigid body modes (e.g. 6 for
+  // 3-D solid, 3 for 2-D solid), where ONOFF triggers first the
+  // translational followed by the rotational modes, each in/around x to z
 
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfrigidbodymode =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+          "DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION", "KrylovSpaceProjection",
+          "Surface mode for Krylov space projection", Core::Conditions::SurfaceModeKrylovProjection,
+          true, Core::Conditions::geometry_type_surface));
+
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> volrigidbodymode =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+          "DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION", "KrylovSpaceProjection",
+          "Volume mode for Krylov space projection", Core::Conditions::VolumeModeKrylovProjection,
+          true, Core::Conditions::geometry_type_volume));
+
+  for (const auto& cond : {surfrigidbodymode, volrigidbodymode})
   {
-    /*--------------------------------------------------------------------*/
-    // Krylov Space Projection:
-    // ========================
-    // specify an unsupported (i.e. rigid body or zero energy) mode orthogonal
-    // that is not excited by the body force
-    //
-    // examples are:
-    // fluid:  pure Dirichlet (i.e. velocity) boundary conditions - pressure
-    //         level is undetermined
-    // scatra: pure Neumann boundary condition - level of scalar quantity is
-    //         undetermined
-    // solid:  insufficient support of translational or rotational rigid body
-    //         modes
-    //
-    // for fluid and scatra, NUMDOF needs to be the number of dofs per node. the
-    // following ONOFF values trigger the fixation of the quantity level (for
-    // fluid, only pressure is allowed).
-    // for solid NUMDOF is the number of potential rigid body modes (e.g. 6 for
-    // 3-D solid, 3 for 2-D solid), where ONOFF triggers first the
-    // translational followed by the rotational modes, each in/around x to z
-
-
-    std::vector<Teuchos::RCP<LineComponent>> rigidbodymodecomponents;
-
-    rigidbodymodecomponents.emplace_back(Teuchos::rcp(new SelectionComponent("discretization",
-        "fluid", Teuchos::tuple<std::string>("fluid", "scatra", "solid"),
+    cond->add_component(Teuchos::rcp(new SelectionComponent("discretization", "fluid",
+        Teuchos::tuple<std::string>("fluid", "scatra", "solid"),
         Teuchos::tuple<std::string>("fluid", "scatra", "solid"))));
+    add_named_int(cond, "NUMMODES");
+    add_named_int_vector(cond, "ONOFF", "", "NUMMODES");
+    cond->add_component(Teuchos::rcp(new SelectionComponent("weight vector definition",
+        "integration", Teuchos::tuple<std::string>("integration", "pointvalues"),
+        Teuchos::tuple<std::string>("integration", "pointvalues"))));
 
-    rigidbodymodecomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("NUMMODES")));
-    rigidbodymodecomponents.emplace_back(Teuchos::rcp(new IntComponent("NUMMODES")));
-    rigidbodymodecomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("ONOFF")));
-    rigidbodymodecomponents.emplace_back(
-        Teuchos::rcp(new IntVectorComponent("ONOFF", LengthFromInt("NUMMODES"))));
-
-    rigidbodymodecomponents.emplace_back(
-        Teuchos::rcp(new SelectionComponent("weight vector definition", "integration",
-            Teuchos::tuple<std::string>("integration", "pointvalues"),
-            Teuchos::tuple<std::string>("integration", "pointvalues"))));
-
-    Teuchos::RCP<Core::Conditions::ConditionDefinition> surfrigidbodymode = Teuchos::rcp(
-        new Core::Conditions::ConditionDefinition("DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION",
-            "KrylovSpaceProjection", "Surface mode for Krylov space projection",
-            Core::Conditions::SurfaceModeKrylovProjection, true,
-            Core::Conditions::geometry_type_surface));
-
-    Teuchos::RCP<Core::Conditions::ConditionDefinition> volrigidbodymode =
-        Teuchos::rcp(new Core::Conditions::ConditionDefinition(
-            "DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION", "KrylovSpaceProjection",
-            "Volume mode for Krylov space projection", Core::Conditions::VolumeModeKrylovProjection,
-            true, Core::Conditions::geometry_type_volume));
-
-    for (unsigned i = 0; i < rigidbodymodecomponents.size(); ++i)
-    {
-      surfrigidbodymode->add_component(rigidbodymodecomponents[i]);
-      volrigidbodymode->add_component(rigidbodymodecomponents[i]);
-    }
-    condlist.push_back(surfrigidbodymode);
-    condlist.push_back(volrigidbodymode);
+    condlist.push_back(cond);
   }
 
+
   // Finally, add the problem-specific conditions from the various modules
-
   Inpar::Mortar::SetValidConditions(condlist);
-
   Inpar::S2I::SetValidConditions(condlist);
-
   Inpar::ScaTra::SetValidConditions(condlist);
-
   Inpar::STI::SetValidConditions(condlist);
-
   Inpar::ElCh::SetValidConditions(condlist);
-
   Inpar::ElectroPhysiology::SetValidConditions(condlist);
-
   Inpar::FLUID::SetValidConditions(condlist);
-
   Inpar::ALE::SetValidConditions(condlist);
-
   Inpar::FSI::SetValidConditions(condlist);
-
   Inpar::FPSI::SetValidConditions(condlist);
-
   Inpar::Immersed::SetValidConditions(condlist);
-
   Inpar::XFEM::SetValidConditions(condlist);
-
   Inpar::BioFilm::SetValidConditions(condlist);
-
   Inpar::ArteryNetwork::SetValidConditions(condlist);
-
   Inpar::ReducedLung::SetValidConditions(condlist);
-
   Inpar::CARDIOVASCULAR0D::SetValidConditions(condlist);
-
   Inpar::Solid::SetValidConditions(condlist);
-
   Inpar::THR::SetValidConditions(condlist);
-
   Inpar::SSI::SetValidConditions(condlist);
-
   Inpar::SSTI::SetValidConditions(condlist);
-
   Inpar::PARTICLE::SetValidConditions(condlist);
-
   Inpar::LevelSet::SetValidConditions(condlist);
-
   Inpar::EleMag::SetValidConditions(condlist);
-
   Inpar::BEAMPOTENTIAL::SetValidConditions(condlist);
-
   Inpar::RveMpc::SetValidConditions(condlist);
-
   Inpar::BEAMINTERACTION::SetValidConditions(condlist);
-
   Inpar::EHL::SetValidConditions(condlist);
-
   Inpar::PoroMultiPhaseScaTra::SetValidConditions(condlist);
 
   // finally some conditions that do not have their own files yet are problem-specific

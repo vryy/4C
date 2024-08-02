@@ -549,17 +549,12 @@ void Inpar::PARTICLE::SetValidConditions(
   /*-------------------------------------------------------------------------*
    | particle wall condition                                                 |
    *-------------------------------------------------------------------------*/
-  std::vector<Teuchos::RCP<Input::LineComponent>> particlewallcomponents;
-  particlewallcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("MAT")));
-  particlewallcomponents.push_back(Teuchos::rcp(new Input::IntComponent("MAT")));
-
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surfpartwall =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN SURFACE PARTICLE WALL",
           "ParticleWall", "Wall for particle interaction with (optional) material definition",
           Core::Conditions::ParticleWall, true, Core::Conditions::geometry_type_surface));
 
-  for (unsigned i = 0; i < particlewallcomponents.size(); ++i)
-    surfpartwall->add_component(particlewallcomponents[i]);
+  add_named_int(surfpartwall, "MAT");
 
   condlist.push_back(surfpartwall);
 }

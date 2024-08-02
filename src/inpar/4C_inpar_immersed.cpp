@@ -124,10 +124,6 @@ void Inpar::Immersed::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // IMMERSED COUPLING
 
-  std::vector<Teuchos::RCP<Input::LineComponent>> immersedcomponents;
-
-  immersedcomponents.push_back(Teuchos::rcp(new Input::IntComponent("coupling id")));
-
   Teuchos::RCP<Core::Conditions::ConditionDefinition> lineimmersed =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN IMMERSED COUPLING LINE CONDITIONS", "IMMERSEDCoupling", "IMMERSED Coupling",
@@ -137,11 +133,8 @@ void Inpar::Immersed::SetValidConditions(
           "DESIGN IMMERSED COUPLING SURF CONDITIONS", "IMMERSEDCoupling", "IMMERSED Coupling",
           Core::Conditions::IMMERSEDCoupling, true, Core::Conditions::geometry_type_surface));
 
-  for (unsigned i = 0; i < immersedcomponents.size(); ++i)
-  {
-    lineimmersed->add_component(immersedcomponents[i]);
-    surfimmersed->add_component(immersedcomponents[i]);
-  }
+  lineimmersed->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
+  surfimmersed->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
 
   condlist.push_back(lineimmersed);
   condlist.push_back(surfimmersed);
