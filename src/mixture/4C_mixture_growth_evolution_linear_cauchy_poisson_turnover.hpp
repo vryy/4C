@@ -33,14 +33,17 @@ namespace MIXTURE
      *
      * \param k_sig Gain parameter of linear growth equation
      */
-    LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution(double k_sig, double decay_time)
-        : k_sig_(k_sig), decay_time_(decay_time)
+    LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution(
+        double k_sig, double decay_time, bool enable_basal_mass_production)
+        : k_sig_(k_sig),
+          decay_time_(decay_time),
+          enable_basal_mass_production_(enable_basal_mass_production)
     {
     }
 
     [[nodiscard]] Number evaluate_true_mass_production_rate(Number delta_sig) const
     {
-      return k_sig_ * delta_sig + 1.0 / decay_time_;
+      return k_sig_ * delta_sig + enable_basal_mass_production_ / decay_time_;
     }
 
     [[nodiscard]] Number evaluate_true_mass_removal_rate(Number delta_sig) const
@@ -75,6 +78,9 @@ namespace MIXTURE
 
     /// decay time controlling the speed of turnover
     double decay_time_;
+
+    /// a swtich to enable the basal mass production rate
+    bool enable_basal_mass_production_;
   };
 }  // namespace MIXTURE
 

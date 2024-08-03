@@ -43,7 +43,8 @@ namespace
           std::make_shared<const MIXTURE::RemodelFiberMaterialExponential<FADdouble>>(
               fiber_material_parameter_.get());
 
-      MIXTURE::Implementation::RemodelFiberImplementation<2, T> fiber(material, {3.4, 12.0}, 1.1);
+      MIXTURE::Implementation::RemodelFiberImplementation<2, T> fiber(
+          material, {3.4, 12.0, true}, 1.1);
       return fiber;
     }
 

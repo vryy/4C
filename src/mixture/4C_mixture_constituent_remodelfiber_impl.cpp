@@ -42,7 +42,8 @@ MIXTURE::PAR::MixtureConstituentRemodelFiberImpl::MixtureConstituentRemodelFiber
       init_(matdata.parameters.get<int>("INIT")),
       fiber_material_id_(matdata.parameters.get<int>("FIBER_MATERIAL_ID")),
       fiber_material_(FiberMaterialFactory(fiber_material_id_)),
-      growth_enabled_(matdata.parameters.get<bool>("GROWTH_ENABLED")),
+      enable_growth_(matdata.parameters.get<bool>("ENABLE_GROWTH")),
+      enable_basal_mass_production_(matdata.parameters.get<bool>("ENABLE_BASAL_MASS_PRODUCTION")),
       poisson_decay_time_(matdata.parameters.get<double>("DECAY_TIME")),
       growth_constant_(matdata.parameters.get<double>("GROWTH_CONSTANT")),
       deposition_stretch_(matdata.parameters.get<double>("DEPOSITION_STRETCH")),
@@ -111,7 +112,8 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::initialize()
   for (int gp = 0; gp < num_gp(); ++gp)
   {
     LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
-        params_->growth_constant_, params_->poisson_decay_time_);
+        params_->growth_constant_, params_->poisson_decay_time_,
+        params_->enable_basal_mass_production_);
     remodel_fiber_.emplace_back(material, growth_evolution, evaluate_deposition_stretch(0.0));
   }
 }
@@ -218,7 +220,7 @@ Core::LinAlg::Matrix<6, 6> MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate
       anisotropy_extension_.get_structural_tensor_stress(gp, 0));
 
   // additional linearization from implicit integration
-  if (params_->growth_enabled_)
+  if (params_->enable_growth_)
   {
     const double dpk2dlambdar = remodel_fiber_[gp].evaluate_d_current_fiber_p_k2_stress_d_lambdar();
     cmat.multiply_nn(2.0 * dpk2dlambdar, anisotropy_extension_.get_structural_tensor_stress(gp, 0),
@@ -231,7 +233,7 @@ Core::LinAlg::Matrix<6, 6> MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate
 void MIXTURE::MixtureConstituentRemodelFiberImpl::integrate_local_evolution_equations(
     const double dt, int gp, int eleGID)
 {
-  FOUR_C_ASSERT(params_->growth_enabled_,
+  FOUR_C_ASSERT(params_->enable_growth_,
       "The integration of the local evolution equation should only be called if growth is "
       "enabled!");
 
@@ -293,7 +295,7 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate(const Core::LinAlg::M
   const double lambda_f = evaluate_lambdaf(C, gp, eleGID);
   remodel_fiber_[gp].set_state(lambda_f, 1.0);
 
-  if (params_->growth_enabled_) integrate_local_evolution_equations(dt, gp, eleGID);
+  if (params_->enable_growth_) integrate_local_evolution_equations(dt, gp, eleGID);
 
   S_stress.update(evaluate_current_p_k2(gp, eleGID));
   cmat.update(evaluate_current_cmat(gp, eleGID));
@@ -318,7 +320,7 @@ double MIXTURE::MixtureConstituentRemodelFiberImpl::get_growth_scalar(int gp) co
 Core::LinAlg::Matrix<1, 6> MIXTURE::MixtureConstituentRemodelFiberImpl::get_d_growth_scalar_d_cg(
     int gp, int eleGID) const
 {
-  if (!params_->growth_enabled_) return Core::LinAlg::Matrix<1, 6>(true);
+  if (!params_->enable_growth_) return Core::LinAlg::Matrix<1, 6>(true);
   return dgrowthscalard_c_[gp];
 }
 

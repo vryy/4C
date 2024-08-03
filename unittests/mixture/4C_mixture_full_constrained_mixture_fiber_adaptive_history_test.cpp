@@ -172,7 +172,7 @@ namespace
   {
     MIXTURE::TimestepAdaptivityInfo level{};
     const MIXTURE::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
-        0.0, 1.0);
+        0.0, 1.0, true);
     const double time = 30;
     const double dt = 1.0;
     const double tolerance = 1e-8 / 24;
@@ -204,7 +204,7 @@ namespace
     level.emplace_back(1, 2);
 
     const MIXTURE::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
-        0.0, 1.0);
+        0.0, 1.0, true);
     const double time = 30;
     const double dt = 1.0;
     const double tolerance = 1e-8 / 24;
@@ -234,7 +234,7 @@ namespace
     level.emplace_back(2, 1);
     level.emplace_back(1, 1);
     const MIXTURE::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
-        0.0, 1.0);
+        0.0, 1.0, true);
     const double time = 30;
     const double dt = 1.0;
     const double tolerance = 1e-8 / 24;

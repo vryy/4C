@@ -51,7 +51,8 @@ MIXTURE::PAR::MixtureConstituentRemodelFiberExpl::MixtureConstituentRemodelFiber
       gamma_(matdata.parameters.get<double>("GAMMA")),
       fiber_material_id_(matdata.parameters.get<int>("FIBER_MATERIAL_ID")),
       fiber_material_(FiberMaterialFactory(fiber_material_id_)),
-      growth_enabled_(matdata.parameters.get<bool>("GROWTH_ENABLED")),
+      enable_growth_(matdata.parameters.get<bool>("ENABLE_GROWTH")),
+      enable_basal_mass_production_(matdata.parameters.get<bool>("ENABLE_BASAL_MASS_PRODUCTION")),
       poisson_decay_time_(matdata.parameters.get<double>("DECAY_TIME")),
       growth_constant_(matdata.parameters.get<double>("GROWTH_CONSTANT")),
       deposition_stretch_(matdata.parameters.get<double>("DEPOSITION_STRETCH")),
@@ -119,7 +120,8 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::initialize()
   for (int gp = 0; gp < num_gp(); ++gp)
   {
     LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
-        params_->growth_constant_, params_->poisson_decay_time_);
+        params_->growth_constant_, params_->poisson_decay_time_,
+        params_->enable_basal_mass_production_);
     remodel_fiber_.emplace_back(material, growth_evolution, evaluate_deposition_stretch(0.0));
   }
 }
@@ -156,7 +158,7 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::update_elastic_part(
   remodel_fiber_[gp].set_state(lambda_f, lambda_ext);
   remodel_fiber_[gp].update();
 
-  if (params_->growth_enabled_)
+  if (params_->enable_growth_)
   {
     const double dt = params.get<double>("delta time");
 
@@ -179,7 +181,7 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::update(const Core::LinAlg::Mat
     remodel_fiber_[gp].update();
 
     update_homeostatic_values(params, eleGID);
-    if (params_->growth_enabled_)
+    if (params_->enable_growth_)
     {
       const double dt = params.get<double>("delta time");
 

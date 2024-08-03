@@ -78,7 +78,8 @@ MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber::
       init_(matdata.parameters.get<int>("INIT")),
       fiber_material_id_(matdata.parameters.get<int>("FIBER_MATERIAL_ID")),
       fiber_material_(FiberMaterialFactory(fiber_material_id_)),
-      growth_enabled_(matdata.parameters.get<bool>("GROWTH_ENABLED")),
+      enable_growth_(matdata.parameters.get<bool>("ENABLE_GROWTH")),
+      enable_basal_mass_production_(matdata.parameters.get<bool>("ENABLE_BASAL_MASS_PRODUCTION")),
       poisson_decay_time_(matdata.parameters.get<double>("DECAY_TIME")),
       growth_constant_(matdata.parameters.get<double>("GROWTH_CONSTANT")),
       deposition_stretch_(matdata.parameters.get<double>("DEPOSITION_STRETCH")),
@@ -142,7 +143,7 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::unpack_constituent(
 
   Core::Communication::ParObject::extract_from_pack(position, data, last_lambda_f_);
 
-  if (params_->growth_enabled_)
+  if (params_->enable_growth_)
   {
     for (auto gp = 0; gp < num_gp(); ++gp)
     {
@@ -169,10 +170,11 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::initialize()
   for (int gp = 0; gp < num_gp(); ++gp)
   {
     LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
-        params_->growth_constant_, params_->poisson_decay_time_);
+        params_->growth_constant_, params_->poisson_decay_time_,
+        params_->enable_basal_mass_production_);
     full_constrained_mixture_fiber_.emplace_back(material, growth_evolution,
         evaluate_initial_deposition_stretch(0.0), params_->adaptive_history_strategy_,
-        params_->growth_enabled_);
+        params_->enable_growth_);
     full_constrained_mixture_fiber_[gp].adaptive_tolerance_ = params_->adaptive_history_tolerance_;
   }
 }
@@ -189,7 +191,7 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::setup(
 {
   MIXTURE::MixtureConstituent::setup(params, eleGID);
 
-  if (params_->growth_enabled_)
+  if (params_->enable_growth_)
   {
     for (auto& fiber : full_constrained_mixture_fiber_)
     {
@@ -336,7 +338,7 @@ Core::LinAlg::Matrix<1, 6>
 MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::get_d_growth_scalar_d_cg(
     int gp, int eleGID) const
 {
-  if (!params_->growth_enabled_) return Core::LinAlg::Matrix<1, 6>(true);
+  if (!params_->enable_growth_) return Core::LinAlg::Matrix<1, 6>(true);
   Core::LinAlg::Matrix<1, 6> dGrowthScalarDE = evaluate_d_lambdafsq_dc(gp, eleGID);
   dGrowthScalarDE.scale(
       2.0 * full_constrained_mixture_fiber_[gp].computed_dgrowth_scalar_dlambda_f_sq_);

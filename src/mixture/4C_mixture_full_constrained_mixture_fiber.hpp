@@ -100,7 +100,7 @@ namespace MIXTURE
    public:
     FullConstrainedMixtureFiber(std::shared_ptr<const RemodelFiberMaterial<Number>> material,
         LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<Number> growth_evolution,
-        Number lambda_pre, HistoryAdaptionStrategy adaptive_history_strategy, bool growth_enabled);
+        Number lambda_pre, HistoryAdaptionStrategy adaptive_history_strategy, bool enable_growth);
 
     /*!
      * @brief Pack all internal data into tha #data
@@ -276,7 +276,7 @@ namespace MIXTURE
     LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<Number> growth_evolution_;
 
     /// Flag whether growth is enabled
-    bool growth_enabled_ = true;
+    bool enable_growth_ = true;
 
     /// The deposition time of the initially present mass
     double reference_time_ = 0.0;
