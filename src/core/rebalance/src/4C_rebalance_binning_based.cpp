@@ -12,10 +12,10 @@
 #include "4C_rebalance_binning_based.hpp"
 
 #include "4C_binstrategy.hpp"
-#include "4C_coupling_matchingoctree.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_createdis.hpp"
+#include "4C_fem_geometric_search_matchingoctree.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -337,7 +337,7 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
 
 
     // initialize search tree for matching with template (source,master) elements
-    auto elementmatchingtree = Core::COUPLING::ElementMatchingOctree();
+    auto elementmatchingtree = Core::GeometricSearch::ElementMatchingOctree();
     elementmatchingtree.init(*dis_from_template_condition, my_template_colelegid_vec, 150, 1e-06);
     elementmatchingtree.setup();
 
@@ -448,7 +448,7 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
     }
 
     // initialize search tree for matching with template (source) nodes
-    auto nodematchingtree = Core::COUPLING::NodeMatchingOctree();
+    auto nodematchingtree = Core::GeometricSearch::NodeMatchingOctree();
     nodematchingtree.init(dis_template, my_template_nodegid_vec, 150, 1e-06);
     nodematchingtree.setup();
 
@@ -624,7 +624,7 @@ void Core::Rebalance::MatchElementRowColDistribution(const Core::FE::Discretizat
     my_rebalance_elegid_vec.push_back(rebalance_elerowmap->GID(lid));
 
   // initialize search tree for matching with template (source,master) elements
-  auto elementmatchingtree = Core::COUPLING::ElementMatchingOctree();
+  auto elementmatchingtree = Core::GeometricSearch::ElementMatchingOctree();
   elementmatchingtree.init(dis_template, my_template_elegid_vec, 150, 1e-07);
   elementmatchingtree.setup();
 
@@ -681,7 +681,7 @@ void Core::Rebalance::MatchNodalRowColDistribution(const Core::FE::Discretizatio
     my_rebalance_nodegid_vec.push_back(rebalance_noderowmap->GID(lid));
 
   // initialize search tree for matching with template (source) nodes
-  auto nodematchingtree = Core::COUPLING::NodeMatchingOctree();
+  auto nodematchingtree = Core::GeometricSearch::NodeMatchingOctree();
   nodematchingtree.init(dis_template, my_template_nodegid_vec, 150, 1e-07);
   nodematchingtree.setup();
 

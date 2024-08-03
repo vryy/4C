@@ -10,7 +10,7 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "4C_coupling_matchingoctree.hpp"
+#include "4C_fem_geometric_search_matchingoctree.hpp"
 
 #include "4C_comm_exporter.hpp"
 #include "4C_fem_discretization.hpp"
@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::COUPLING::MatchingOctree::MatchingOctree()
+Core::GeometricSearch::MatchingOctree::MatchingOctree()
     : discret_(nullptr),
       tol_(-1.0),
       masterentityids_(nullptr),
@@ -32,7 +32,7 @@ Core::COUPLING::MatchingOctree::MatchingOctree()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::COUPLING::MatchingOctree::init(const Core::FE::Discretization& actdis,
+int Core::GeometricSearch::MatchingOctree::init(const Core::FE::Discretization& actdis,
     const std::vector<int>& masternodeids, const int maxnodeperleaf, const double tol)
 {
   set_is_setup(false);
@@ -48,7 +48,7 @@ int Core::COUPLING::MatchingOctree::init(const Core::FE::Discretization& actdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::COUPLING::MatchingOctree::setup()
+int Core::GeometricSearch::MatchingOctree::setup()
 {
   check_is_init();
 
@@ -116,7 +116,7 @@ int Core::COUPLING::MatchingOctree::setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Core::COUPLING::MatchingOctree::search_closest_entity_on_this_proc(
+bool Core::GeometricSearch::MatchingOctree::search_closest_entity_on_this_proc(
     const std::vector<double>& x, int& idofclosestpoint, double& distofclosestpoint,
     bool searchsecond)
 {
@@ -157,7 +157,7 @@ bool Core::COUPLING::MatchingOctree::search_closest_entity_on_this_proc(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::COUPLING::MatchingOctree::create_global_entity_matching(
+void Core::GeometricSearch::MatchingOctree::create_global_entity_matching(
     const std::vector<int>& slavenodeids, const std::vector<int>& dofsforpbcplane,
     const double rotangle, std::map<int, std::vector<int>>& midtosid)
 {
@@ -399,7 +399,7 @@ void Core::COUPLING::MatchingOctree::create_global_entity_matching(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::COUPLING::MatchingOctree::find_match(const Core::FE::Discretization& slavedis,
+void Core::GeometricSearch::MatchingOctree::find_match(const Core::FE::Discretization& slavedis,
     const std::vector<int>& slavenodeids, std::map<int, std::pair<int, double>>& coupling)
 {
   check_is_init();
@@ -557,7 +557,7 @@ void Core::COUPLING::MatchingOctree::find_match(const Core::FE::Discretization& 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::COUPLING::MatchingOctree::fill_slave_to_master_gid_mapping(
+void Core::GeometricSearch::MatchingOctree::fill_slave_to_master_gid_mapping(
     const Core::FE::Discretization& slavedis, const std::vector<int>& slavenodeids,
     std::map<int, std::vector<double>>& coupling)
 {
@@ -719,12 +719,12 @@ void Core::COUPLING::MatchingOctree::fill_slave_to_master_gid_mapping(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::COUPLING::NodeMatchingOctree::NodeMatchingOctree()
+Core::GeometricSearch::NodeMatchingOctree::NodeMatchingOctree()
     : MatchingOctree() {}  // NodeMatchingOctree::NodeMatchingOctree
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::COUPLING::NodeMatchingOctree::calc_point_coordinate(
+void Core::GeometricSearch::NodeMatchingOctree::calc_point_coordinate(
     const Core::FE::Discretization* dis, const int id, double* coord)
 {
   Core::Nodes::Node* actnode = dis->g_node(id);
@@ -737,7 +737,7 @@ void Core::COUPLING::NodeMatchingOctree::calc_point_coordinate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 //! calc unique coordinate of entity
-void Core::COUPLING::NodeMatchingOctree::calc_point_coordinate(
+void Core::GeometricSearch::NodeMatchingOctree::calc_point_coordinate(
     Core::Communication::ParObject* entity, double* coord)
 {
   auto* actnode = dynamic_cast<Core::Nodes::Node*>(entity);
@@ -750,7 +750,7 @@ void Core::COUPLING::NodeMatchingOctree::calc_point_coordinate(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Core::COUPLING::NodeMatchingOctree::check_have_entity(
+bool Core::GeometricSearch::NodeMatchingOctree::check_have_entity(
     const Core::FE::Discretization* dis, const int id)
 {
   return dis->have_global_node(id);
@@ -758,7 +758,7 @@ bool Core::COUPLING::NodeMatchingOctree::check_have_entity(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Core::COUPLING::NodeMatchingOctree::check_entity_owner(
+bool Core::GeometricSearch::NodeMatchingOctree::check_entity_owner(
     const Core::FE::Discretization* dis, const int id)
 {
   return (dis->g_node(id)->owner() == dis->get_comm().MyPID());
@@ -766,7 +766,7 @@ bool Core::COUPLING::NodeMatchingOctree::check_entity_owner(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::COUPLING::NodeMatchingOctree::pack_entity(
+void Core::GeometricSearch::NodeMatchingOctree::pack_entity(
     Core::Communication::PackBuffer& data, const Core::FE::Discretization* dis, const int id)
 {
   // get the slavenode
@@ -777,7 +777,7 @@ void Core::COUPLING::NodeMatchingOctree::pack_entity(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::COUPLING::NodeMatchingOctree::un_pack_entity(
+void Core::GeometricSearch::NodeMatchingOctree::un_pack_entity(
     std::vector<char>::size_type& index, std::vector<char>& rblockofnodes, std::vector<char>& data)
 {
   Core::Communication::ParObject::extract_from_pack(index, rblockofnodes, data);
@@ -785,7 +785,7 @@ void Core::COUPLING::NodeMatchingOctree::un_pack_entity(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::COUPLING::NodeMatchingOctree::check_valid_entity_type(
+int Core::GeometricSearch::NodeMatchingOctree::check_valid_entity_type(
     Teuchos::RCP<Core::Communication::ParObject> o)
 {
   // cast ParObject to Node
@@ -797,11 +797,11 @@ int Core::COUPLING::NodeMatchingOctree::check_valid_entity_type(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::COUPLING::OctreeElement>
-Core::COUPLING::NodeMatchingOctree::create_octree_element(
+Teuchos::RCP<Core::GeometricSearch::OctreeElement>
+Core::GeometricSearch::NodeMatchingOctree::create_octree_element(
     std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
-  Teuchos::RCP<Core::COUPLING::OctreeElement> newtreeelement =
+  Teuchos::RCP<Core::GeometricSearch::OctreeElement> newtreeelement =
       Teuchos::rcp(new OctreeNodalElement());
 
   newtreeelement->init(
@@ -815,12 +815,12 @@ Core::COUPLING::NodeMatchingOctree::create_octree_element(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::COUPLING::ElementMatchingOctree::ElementMatchingOctree()
+Core::GeometricSearch::ElementMatchingOctree::ElementMatchingOctree()
     : MatchingOctree() {}  // ElementMatchingOctree::ElementMatchingOctree
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::COUPLING::ElementMatchingOctree::calc_point_coordinate(
+void Core::GeometricSearch::ElementMatchingOctree::calc_point_coordinate(
     const Core::FE::Discretization* dis, const int id, double* coord)
 {
   Core::Elements::Element* actele = dis->g_element(id);
@@ -836,7 +836,7 @@ void Core::COUPLING::ElementMatchingOctree::calc_point_coordinate(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::COUPLING::ElementMatchingOctree::calc_point_coordinate(
+void Core::GeometricSearch::ElementMatchingOctree::calc_point_coordinate(
     Core::Communication::ParObject* entity, double* coord)
 {
   auto* actele = dynamic_cast<Core::Elements::Element*>(entity);
@@ -856,7 +856,7 @@ void Core::COUPLING::ElementMatchingOctree::calc_point_coordinate(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Core::COUPLING::ElementMatchingOctree::check_have_entity(
+bool Core::GeometricSearch::ElementMatchingOctree::check_have_entity(
     const Core::FE::Discretization* dis, const int id)
 {
   return dis->have_global_element(id);
@@ -864,7 +864,7 @@ bool Core::COUPLING::ElementMatchingOctree::check_have_entity(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Core::COUPLING::ElementMatchingOctree::check_entity_owner(
+bool Core::GeometricSearch::ElementMatchingOctree::check_entity_owner(
     const Core::FE::Discretization* dis, const int id)
 {
   return (dis->g_element(id)->owner() == dis->get_comm().MyPID());
@@ -872,7 +872,7 @@ bool Core::COUPLING::ElementMatchingOctree::check_entity_owner(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::COUPLING::ElementMatchingOctree::pack_entity(
+void Core::GeometricSearch::ElementMatchingOctree::pack_entity(
     Core::Communication::PackBuffer& data, const Core::FE::Discretization* dis, const int id)
 {
   // get the slavenode
@@ -887,7 +887,7 @@ void Core::COUPLING::ElementMatchingOctree::pack_entity(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::COUPLING::ElementMatchingOctree::un_pack_entity(
+void Core::GeometricSearch::ElementMatchingOctree::un_pack_entity(
     std::vector<char>::size_type& index, std::vector<char>& rblockofnodes, std::vector<char>& data)
 {
   nodes_.clear();
@@ -909,7 +909,7 @@ void Core::COUPLING::ElementMatchingOctree::un_pack_entity(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::COUPLING::ElementMatchingOctree::check_valid_entity_type(
+int Core::GeometricSearch::ElementMatchingOctree::check_valid_entity_type(
     Teuchos::RCP<Core::Communication::ParObject> o)
 {
   // cast ParObject to element
@@ -924,11 +924,11 @@ int Core::COUPLING::ElementMatchingOctree::check_valid_entity_type(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::COUPLING::OctreeElement>
-Core::COUPLING::ElementMatchingOctree::create_octree_element(
+Teuchos::RCP<Core::GeometricSearch::OctreeElement>
+Core::GeometricSearch::ElementMatchingOctree::create_octree_element(
     std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
-  Teuchos::RCP<Core::COUPLING::OctreeElement> newtreeelement =
+  Teuchos::RCP<Core::GeometricSearch::OctreeElement> newtreeelement =
       Teuchos::rcp(new OctreeElementElement());
 
   newtreeelement->init(
@@ -942,11 +942,12 @@ Core::COUPLING::ElementMatchingOctree::create_octree_element(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::COUPLING::OctreeNodalElement::OctreeNodalElement() : OctreeElement() {}  // OctreeElement()
+Core::GeometricSearch::OctreeNodalElement::OctreeNodalElement()
+    : OctreeElement() {}  // OctreeElement()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::COUPLING::OctreeNodalElement::calc_point_coordinate(
+void Core::GeometricSearch::OctreeNodalElement::calc_point_coordinate(
     const Core::FE::Discretization* dis, const int id, double* coord)
 {
   Core::Nodes::Node* actnode = dis->g_node(id);
@@ -958,11 +959,11 @@ void Core::COUPLING::OctreeNodalElement::calc_point_coordinate(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::COUPLING::OctreeElement>
-Core::COUPLING::OctreeNodalElement::create_octree_element(
+Teuchos::RCP<Core::GeometricSearch::OctreeElement>
+Core::GeometricSearch::OctreeNodalElement::create_octree_element(
     std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
-  Teuchos::RCP<Core::COUPLING::OctreeElement> newtreeelement =
+  Teuchos::RCP<Core::GeometricSearch::OctreeElement> newtreeelement =
       Teuchos::rcp(new OctreeNodalElement());
 
   newtreeelement->init(
@@ -976,12 +977,12 @@ Core::COUPLING::OctreeNodalElement::create_octree_element(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::COUPLING::OctreeElementElement::OctreeElementElement()
+Core::GeometricSearch::OctreeElementElement::OctreeElementElement()
     : OctreeElement() {}  // OctreeElementElement::OctreeElementElement
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::COUPLING::OctreeElementElement::calc_point_coordinate(
+void Core::GeometricSearch::OctreeElementElement::calc_point_coordinate(
     const Core::FE::Discretization* dis, const int id, double* coord)
 {
   Core::Elements::Element* actele = dis->g_element(id);
@@ -997,11 +998,11 @@ void Core::COUPLING::OctreeElementElement::calc_point_coordinate(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::COUPLING::OctreeElement>
-Core::COUPLING::OctreeElementElement::create_octree_element(
+Teuchos::RCP<Core::GeometricSearch::OctreeElement>
+Core::GeometricSearch::OctreeElementElement::create_octree_element(
     std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
-  Teuchos::RCP<Core::COUPLING::OctreeElement> newtreeelement =
+  Teuchos::RCP<Core::GeometricSearch::OctreeElement> newtreeelement =
       Teuchos::rcp(new OctreeElementElement());
 
   newtreeelement->init(
@@ -1015,7 +1016,7 @@ Core::COUPLING::OctreeElementElement::create_octree_element(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::COUPLING::OctreeElement::OctreeElement()
+Core::GeometricSearch::OctreeElement::OctreeElement()
     : discret_(nullptr),
       layer_(-1),
       maxtreenodesperleaf_(-1),
@@ -1027,7 +1028,7 @@ Core::COUPLING::OctreeElement::OctreeElement()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::COUPLING::OctreeElement::init(const Core::FE::Discretization& actdis,
+int Core::GeometricSearch::OctreeElement::init(const Core::FE::Discretization& actdis,
     std::vector<int>& nodeidstoadd, const Core::LinAlg::SerialDenseMatrix& boundingboxtoadd,
     const int layer, const int maxnodeperleaf, const double tol)
 {
@@ -1046,7 +1047,7 @@ int Core::COUPLING::OctreeElement::init(const Core::FE::Discretization& actdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::COUPLING::OctreeElement::setup()
+int Core::GeometricSearch::OctreeElement::setup()
 {
   check_is_init();
 
@@ -1220,7 +1221,7 @@ int Core::COUPLING::OctreeElement::setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::COUPLING::OctreeElement::search_closest_node_in_leaf(const std::vector<double>& x,
+void Core::GeometricSearch::OctreeElement::search_closest_node_in_leaf(const std::vector<double>& x,
     int& idofclosestpoint, double& distofclosestpoint, const double& elesize, bool searchsecond)
 {
   check_is_init();
@@ -1270,7 +1271,7 @@ void Core::COUPLING::OctreeElement::search_closest_node_in_leaf(const std::vecto
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Core::COUPLING::OctreeElement::is_point_in_bounding_box(const std::vector<double>& x)
+bool Core::GeometricSearch::OctreeElement::is_point_in_bounding_box(const std::vector<double>& x)
 {
   check_is_init();
   check_is_setup();
@@ -1291,8 +1292,8 @@ bool Core::COUPLING::OctreeElement::is_point_in_bounding_box(const std::vector<d
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::COUPLING::OctreeElement>
-Core::COUPLING::OctreeElement::return_child_containing_point(const std::vector<double>& x)
+Teuchos::RCP<Core::GeometricSearch::OctreeElement>
+Core::GeometricSearch::OctreeElement::return_child_containing_point(const std::vector<double>& x)
 {
   check_is_init();
   check_is_setup();
@@ -1322,7 +1323,7 @@ Core::COUPLING::OctreeElement::return_child_containing_point(const std::vector<d
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Core::COUPLING::OctreeElement::is_leaf()
+bool Core::GeometricSearch::OctreeElement::is_leaf()
 {
   bool isleaf = true;
 
@@ -1336,7 +1337,7 @@ bool Core::COUPLING::OctreeElement::is_leaf()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::COUPLING::OctreeElement::print(std::ostream& os) const
+void Core::GeometricSearch::OctreeElement::print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Leaf in Layer " << layer_ << " Nodes ";

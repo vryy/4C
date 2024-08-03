@@ -17,7 +17,6 @@ algorithms
 #include "4C_contact_interface.hpp"
 #include "4C_contact_node.hpp"
 #include "4C_coupling_adapter.hpp"
-#include "4C_coupling_matchingoctree.hpp"
 #include "4C_ehl_partitioned.hpp"
 #include "4C_ehl_utils.hpp"
 #include "4C_fem_dofset_predefineddofnumber.hpp"

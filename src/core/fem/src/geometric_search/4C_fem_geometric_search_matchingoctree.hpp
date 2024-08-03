@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef FOUR_C_COUPLING_MATCHINGOCTREE_HPP
-#define FOUR_C_COUPLING_MATCHINGOCTREE_HPP
+#ifndef FOUR_C_FEM_GEOMETRIC_SEARCH_MATCHINGOCTREE_HPP
+#define FOUR_C_FEM_GEOMETRIC_SEARCH_MATCHINGOCTREE_HPP
 
 #include "4C_config.hpp"
 
@@ -44,7 +44,7 @@ namespace Core::Communication
   class ParObject;
 }  // namespace Core::Communication
 
-namespace Core::COUPLING
+namespace Core::GeometricSearch
 {
   class OctreeElement;
 
@@ -583,7 +583,7 @@ namespace Core::COUPLING
 
   };  // OctreeNodalElement
 
-}  // namespace Core::COUPLING
+}  // namespace Core::GeometricSearch
 
 FOUR_C_NAMESPACE_CLOSE
 

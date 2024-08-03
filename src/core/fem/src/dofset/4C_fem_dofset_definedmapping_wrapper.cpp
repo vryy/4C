@@ -13,10 +13,10 @@
 
 #include "4C_fem_dofset_definedmapping_wrapper.hpp"
 
-#include "4C_coupling_matchingoctree.hpp"
 #include "4C_fem_condition_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_dofset_base.hpp"
+#include "4C_fem_geometric_search_matchingoctree.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -96,7 +96,7 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
     if (iter_target != nodes.end()) targetnodes = *iter_target->second;
 
     // initialize search tree for search
-    Core::COUPLING::NodeMatchingOctree nodematchingtree;
+    Core::GeometricSearch::NodeMatchingOctree nodematchingtree;
     nodematchingtree.init(dis, targetnodes, 150, 1e-08);
     nodematchingtree.setup();
 

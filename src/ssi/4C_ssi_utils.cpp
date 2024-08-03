@@ -15,8 +15,8 @@
 #include "4C_comm_utils_gid_vector.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_coupling_matchingoctree.hpp"
 #include "4C_fem_general_utils_createdis.hpp"
+#include "4C_fem_geometric_search_matchingoctree.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_s2i.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -1116,7 +1116,7 @@ void SSI::UTILS::SSIMeshTying::find_matching_node_pairs(Teuchos::RCP<Core::FE::D
         *dis, *meshtying_condition_a->get_nodes(), inodegidvec_a);
 
     // init node matching octree with nodes from condition a
-    auto tree = Core::COUPLING::NodeMatchingOctree();
+    auto tree = Core::GeometricSearch::NodeMatchingOctree();
     tree.init(*dis, inodegidvec_a, 150, 1.0e-8);
     tree.setup();
 
@@ -1353,7 +1353,7 @@ void SSI::UTILS::SSIMeshTying::find_slave_slave_transformation_nodes(
     }
   }
 
-  auto tree = Core::COUPLING::NodeMatchingOctree();
+  auto tree = Core::GeometricSearch::NodeMatchingOctree();
   tree.init(*dis, inodegidvec_slave, 150, 1.0e-8);
   tree.setup();
   std::map<int, std::pair<int, double>> coupled_gid_nodes;
