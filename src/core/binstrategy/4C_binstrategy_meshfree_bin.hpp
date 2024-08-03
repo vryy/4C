@@ -35,8 +35,8 @@ namespace Core::FE::MeshFree
    * \date November, 2012
    */
   /*--------------------------------------------------------------------------*/
-  template <typename ELEMENT>
-  class MeshfreeBin : public ELEMENT
+  template <typename Element>
+  class MeshfreeBin : public Element
   {
    public:
     /*========================================================================*/
@@ -59,7 +59,7 @@ namespace Core::FE::MeshFree
      * Makes a deep copy of a meshfree bin
      *///                                                  (public) ghamm 11/12
     /*------------------------------------------------------------------------*/
-    MeshfreeBin(const Core::FE::MeshFree::MeshfreeBin<ELEMENT>& old);
+    MeshfreeBin(const Core::FE::MeshFree::MeshfreeBin<Element>& old);
 
     /*------------------------------------------------------------------------*/
     /*!
@@ -100,8 +100,8 @@ namespace Core::FE::MeshFree
     virtual void add_node(Core::Nodes::Node* nodeptr  //!< (in): pointer to node to be added
     )
     {
-      ELEMENT::nodeid_.push_back(nodeptr->id());
-      ELEMENT::node_.push_back(nodeptr);
+      Element::nodeid_.push_back(nodeptr->id());
+      Element::node_.push_back(nodeptr);
       return;
     }
 
@@ -119,8 +119,8 @@ namespace Core::FE::MeshFree
         Core::Nodes::Node* nodeptr        //!< (in): pointer to node to be added
     )
     {
-      ELEMENT::nodeid_.push_back(gid);
-      ELEMENT::node_.push_back(nodeptr);
+      Element::nodeid_.push_back(gid);
+      Element::node_.push_back(nodeptr);
     }
 
     /*------------------------------------------------------------------------*/
@@ -141,8 +141,8 @@ namespace Core::FE::MeshFree
     /*------------------------------------------------------------------------*/
     virtual inline void delete_nodes()
     {
-      ELEMENT::nodeid_.clear();
-      ELEMENT::node_.clear();
+      Element::nodeid_.clear();
+      Element::node_.clear();
     }
 
    private:
