@@ -199,7 +199,7 @@ double NOX::FSI::PartialNormF::compute_norm(const ::NOX::Abstract::Group& grp)
 NOX::FSI::PartialSumNormF::PartialSumNormF(std::string name,
     const Core::LinAlg::MapExtractor& extractor1, double scale1,
     const Core::LinAlg::MapExtractor& extractor2, double scale2,
-    Teuchos::RCP<Core::Adapter::CouplingConverter> converter, double tolerance, ScaleType stype)
+    Teuchos::RCP<Coupling::Adapter::CouplingConverter> converter, double tolerance, ScaleType stype)
     : AdaptiveNewtonNormF(name, tolerance, ::NOX::Abstract::Vector::TwoNorm, stype),
       extractor1_(extractor1),
       extractor2_(extractor2),

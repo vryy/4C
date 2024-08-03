@@ -23,7 +23,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace Adapter
 {
   class ScaTraBaseAlgorithm;
-  class Coupling;
 }  // namespace Adapter
 
 namespace Core::LinAlg

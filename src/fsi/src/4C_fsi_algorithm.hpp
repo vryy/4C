@@ -101,10 +101,10 @@ namespace FSI
     //@}
 
     /// return the structure fluid coupling object
-    Core::Adapter::Coupling& structure_fluid_coupling();
+    Coupling::Adapter::Coupling& structure_fluid_coupling();
 
     /// return const version of structure fluid coupling object
-    const Core::Adapter::Coupling& structure_fluid_coupling() const;
+    const Coupling::Adapter::Coupling& structure_fluid_coupling() const;
 
    protected:
     /// underlying structure of the FSI problem
@@ -121,7 +121,7 @@ namespace FSI
 
    private:
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<Core::Adapter::Coupling> coupsf_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupsf_;
   };
 }  // namespace FSI
 

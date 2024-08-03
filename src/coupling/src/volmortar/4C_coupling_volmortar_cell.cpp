@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  | constructor                                             farah 01/14 |
  *---------------------------------------------------------------------*/
-Core::VolMortar::Cell::Cell(int id, int nvertices, const Core::LinAlg::SerialDenseMatrix& coords,
-    const Core::FE::CellType& shape)
+Coupling::VolMortar::Cell::Cell(int id, int nvertices,
+    const Core::LinAlg::SerialDenseMatrix& coords, const Core::FE::CellType& shape)
     : id_(id), coords_(coords), shape_(shape)
 {
   if (shape_ == Core::FE::CellType::tet4)
@@ -55,7 +55,7 @@ Core::VolMortar::Cell::Cell(int id, int nvertices, const Core::LinAlg::SerialDen
 /*---------------------------------------------------------------------*
  | calculate jacobian for hex elements                     farah 04/14 |
  *---------------------------------------------------------------------*/
-double Core::VolMortar::Cell::calc_jac(const double* xi)
+double Coupling::VolMortar::Cell::calc_jac(const double* xi)
 {
   double jac = 0.0;
 
@@ -87,7 +87,7 @@ double Core::VolMortar::Cell::calc_jac(const double* xi)
 /*---------------------------------------------------------------------*
  | mapping from parameter space to global space            farah 01/14 |
  *---------------------------------------------------------------------*/
-void Core::VolMortar::Cell::local_to_global(double* local, double* global)
+void Coupling::VolMortar::Cell::local_to_global(double* local, double* global)
 {
   if (shape_ == Core::FE::CellType::tet4)
   {
@@ -144,7 +144,7 @@ void Core::VolMortar::Cell::local_to_global(double* local, double* global)
 /*---------------------------------------------------------------------*
  | output                                                  farah 03/14 |
  *---------------------------------------------------------------------*/
-void Core::VolMortar::Cell::print()
+void Coupling::VolMortar::Cell::print()
 {
   for (int i = 0; i < 4; ++i)
     std::cout << "coords= " << coords_(0, i) << " " << coords_(1, i) << " " << coords_(2, i)

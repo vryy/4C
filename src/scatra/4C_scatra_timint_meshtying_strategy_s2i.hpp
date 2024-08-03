@@ -13,6 +13,7 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter.hpp"
+#include "4C_coupling_adapter_converter.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_fem_condition.hpp"
 #include "4C_fem_general_element.hpp"
@@ -28,12 +29,6 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Adapter
-{
-  class Coupling;
-  class CouplingMortar;
-}  // namespace Adapter
-
 namespace Discret
 {
   namespace ELEMENTS
@@ -118,7 +113,7 @@ namespace ScaTra
         const bool calcinittimederiv = false) const override;
 
     //! return interface coupling adapter
-    Teuchos::RCP<const Core::Adapter::Coupling> coupling_adapter() const { return icoup_; };
+    Teuchos::RCP<const Coupling::Adapter::Coupling> coupling_adapter() const { return icoup_; };
 
     //! return flag for meshtying method
     const Inpar::S2I::CouplingType& coupling_type() const { return couplingtype_; }
@@ -308,10 +303,10 @@ namespace ScaTra
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockmaps_master_;
 
     //! non-mortar interface coupling adapter
-    Teuchos::RCP<Core::Adapter::Coupling> icoup_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> icoup_;
 
     //! mortar interface coupling adapters
-    std::map<int, Teuchos::RCP<Core::Adapter::CouplingMortar>> icoupmortar_;
+    std::map<int, Teuchos::RCP<Coupling::Adapter::CouplingMortar>> icoupmortar_;
 
     //! mortar integration cells
     std::map<int, std::vector<std::pair<Teuchos::RCP<Mortar::IntCell>, Inpar::ScaTra::ImplType>>>
@@ -379,9 +374,9 @@ namespace ScaTra
     Teuchos::RCP<Epetra_Vector> lmincrement_;
 
     //! transformation operators for auxiliary system matrices
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> islavetomastercoltransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> islavetomasterrowtransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform> islavetomasterrowcoltransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> islavetomastercoltransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> islavetomasterrowtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform> islavetomasterrowcoltransform_;
 
     //! auxiliary residual vector for slave residuals
     Teuchos::RCP<Epetra_Vector> islaveresidual_;

@@ -59,7 +59,7 @@ namespace Core::LinAlg
 
 namespace Adapter
 {
-  class CouplingNonLinMortar : public Core::Adapter::CouplingMortar
+  class CouplingNonLinMortar : public Coupling::Adapter::CouplingMortar
   {
    public:
     /**

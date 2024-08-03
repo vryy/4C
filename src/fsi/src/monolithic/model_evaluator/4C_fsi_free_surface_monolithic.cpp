@@ -25,7 +25,6 @@
 #include "4C_inpar_fsi.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_control.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linear_solver_preconditioner_linalg.hpp"
 
 #include <Teuchos_Time.hpp>
@@ -51,17 +50,17 @@ FSI::MonolithicBaseFS::MonolithicBaseFS(
   if (ale_ == Teuchos::null)
     FOUR_C_THROW("cast from Adapter::Ale to Adapter::AleFluidWrapper failed");
 
-  coupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  coupfa_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::Adapter::Coupling& FSI::MonolithicBaseFS::fluid_ale_coupling() { return *coupfa_; }
+Coupling::Adapter::Coupling& FSI::MonolithicBaseFS::fluid_ale_coupling() { return *coupfa_; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Core::Adapter::Coupling& FSI::MonolithicBaseFS::fluid_ale_coupling() const
+const Coupling::Adapter::Coupling& FSI::MonolithicBaseFS::fluid_ale_coupling() const
 {
   return *coupfa_;
 }
@@ -460,9 +459,9 @@ void FSI::BlockMonolithicFS::prepare_time_step()
 FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : BlockMonolithicFS(comm, timeparams)
 {
-  aigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  fmgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
 
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
@@ -471,11 +470,11 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::Paramete
 
   set_default_parameters(fsidyn, nox_parameter_list());
 
-  Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
+  Coupling::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
   // fluid to ale at the free surface
 
-  icoupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  icoupfa_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
   const int ndim = Global::Problem::instance()->n_dim();
   icoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
       fluid_field()->interface()->fs_cond_map(), *ale_field()->discretization(),
@@ -662,7 +661,7 @@ void FSI::MonolithicFS::setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase&
   mat.assign(0, 0, Core::LinAlg::View, *f);
 
   (*aigtransform_)(a->full_row_map(), a->full_col_map(), aig, 1. / timescale,
-      Core::Adapter::CouplingSlaveConverter(*icoupfa_), mat.matrix(1, 0));
+      Coupling::Adapter::CouplingSlaveConverter(*icoupfa_), mat.matrix(1, 0));
   mat.assign(1, 1, Core::LinAlg::View, aii);
 
   /*----------------------------------------------------------------------*/
@@ -680,13 +679,13 @@ void FSI::MonolithicFS::setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase&
     mat.matrix(0, 0).add(fmgg, false, 1. / timescale, 1.0);
     mat.matrix(0, 0).add(fmig, false, 1. / timescale, 1.0);
 
-    const Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
+    const Coupling::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
     (*fmgitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmgi, 1.,
-        Core::Adapter::CouplingMasterConverter(coupfa), mat.matrix(0, 1), false, false);
+        Coupling::Adapter::CouplingMasterConverter(coupfa), mat.matrix(0, 1), false, false);
 
     (*fmiitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmii, 1.,
-        Core::Adapter::CouplingMasterConverter(coupfa), mat.matrix(0, 1), false, true);
+        Coupling::Adapter::CouplingMasterConverter(coupfa), mat.matrix(0, 1), false, true);
   }
 
   // done. make sure all blocks are filled.

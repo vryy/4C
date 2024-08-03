@@ -39,7 +39,7 @@ namespace Mortar
   class IntCell;
 }
 
-namespace Core::VolMortar
+namespace Coupling::VolMortar
 {
   class Cell;
 
@@ -83,7 +83,7 @@ namespace Core::VolMortar
 
     */
     void integrate_cells_3d(Core::Elements::Element& Aele, Core::Elements::Element& Bele,
-        Teuchos::RCP<Core::VolMortar::Cell> cell, Core::LinAlg::SparseMatrix& dmatrix_A,
+        Teuchos::RCP<Coupling::VolMortar::Cell> cell, Core::LinAlg::SparseMatrix& dmatrix_A,
         Core::LinAlg::SparseMatrix& mmatrix_A, Core::LinAlg::SparseMatrix& dmatrix_B,
         Core::LinAlg::SparseMatrix& mmatrix_B, Teuchos::RCP<const Core::FE::Discretization> Adis,
         Teuchos::RCP<const Core::FE::Discretization> Bdis, int sdofset_A, int mdofset_A,
@@ -405,7 +405,7 @@ namespace Core::VolMortar
         const Teuchos::RCP<const Epetra_Map>& P_dofcolmap);
   };
 
-}  // namespace Core::VolMortar
+}  // namespace Coupling::VolMortar
 
 FOUR_C_NAMESPACE_CLOSE
 

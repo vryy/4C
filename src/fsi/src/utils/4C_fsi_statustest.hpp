@@ -23,7 +23,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Core::Adapter
+namespace Coupling::Adapter
 {
   class CouplingConverter;
 }
@@ -202,7 +202,7 @@ namespace NOX
      public:
       PartialSumNormF(std::string name, const Core::LinAlg::MapExtractor& extractor1, double scale1,
           const Core::LinAlg::MapExtractor& extractor2, double scale2,
-          Teuchos::RCP<Core::Adapter::CouplingConverter> converter, double tolerance,
+          Teuchos::RCP<Coupling::Adapter::CouplingConverter> converter, double tolerance,
           ScaleType stype = Scaled);
 
      protected:
@@ -213,7 +213,7 @@ namespace NOX
       const Core::LinAlg::MapExtractor extractor2_;
       double scale1_;
       double scale2_;
-      Teuchos::RCP<Core::Adapter::CouplingConverter> converter_;
+      Teuchos::RCP<Coupling::Adapter::CouplingConverter> converter_;
     };
 
 

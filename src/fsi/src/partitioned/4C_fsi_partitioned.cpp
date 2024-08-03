@@ -82,9 +82,9 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
   if (get_comm().MyPID() == 0)
     std::cout << "\n setup_coupling in FSI::Partitioned ..." << std::endl;
 
-  Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
-  coupsfm_ = Teuchos::rcp(new Core::Adapter::CouplingMortar(Global::Problem::instance()->n_dim(),
-      Global::Problem::instance()->mortar_coupling_params(),
+  Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
+  coupsfm_ = Teuchos::rcp(new Coupling::Adapter::CouplingMortar(
+      Global::Problem::instance()->n_dim(), Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
       Global::Problem::instance()->spatial_approximation_type()));
 
@@ -878,7 +878,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::interface_velocity(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::struct_to_fluid(Teuchos::RCP<Epetra_Vector> iv)
 {
-  const Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
+  const Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
   if (matchingnodes_)
   {
     return coupsf.master_to_slave(iv);
@@ -894,7 +894,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::struct_to_fluid(Teuchos::RCP<Epetr
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::fluid_to_struct(Teuchos::RCP<Epetra_Vector> iv)
 {
-  const Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
+  const Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
   if (matchingnodes_)
   {
     return coupsf.slave_to_master(iv);
@@ -915,14 +915,14 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::fluid_to_struct(Teuchos::RCP<Epetr
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::Adapter::CouplingMortar& FSI::Partitioned::structure_fluid_coupling_mortar()
+Coupling::Adapter::CouplingMortar& FSI::Partitioned::structure_fluid_coupling_mortar()
 {
   return *coupsfm_;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Core::Adapter::CouplingMortar& FSI::Partitioned::structure_fluid_coupling_mortar() const
+const Coupling::Adapter::CouplingMortar& FSI::Partitioned::structure_fluid_coupling_mortar() const
 {
   return *coupsfm_;
 }

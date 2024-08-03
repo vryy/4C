@@ -10,9 +10,9 @@
 #include "4C_ssi_monolithic_dbc_handler.hpp"
 
 #include "4C_adapter_str_ssiwrapper.hpp"
+#include "4C_coupling_adapter_converter.hpp"
 #include "4C_fem_condition_locsys.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_ssi_monolithic.hpp"
@@ -146,7 +146,7 @@ void SSI::DBCHandlerSparse::apply_structure_dbc_with_loc_sys_rotation_to_system_
   // extract structure rows of global system matrix
   const auto systemmatrix_structure =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap_structure, 27, false, true));
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(*systemmatrix_sparse, *dofrowmap_structure,
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(*systemmatrix_sparse, *dofrowmap_structure,
       system_matrix->domain_map(), 1.0, nullptr, nullptr, *systemmatrix_structure);
   systemmatrix_structure->complete(system_matrix->domain_map(), *dofrowmap_structure);
 

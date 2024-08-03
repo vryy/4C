@@ -377,12 +377,12 @@ double PoroElast::UTILS::calculate_vector_norm(
 }
 
 void PoroElast::UTILS::PoroMaterialStrategy::assign_material2_to1(
-    const Core::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele1,
+    const Coupling::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele1,
     const std::vector<int>& ids_2, Teuchos::RCP<Core::FE::Discretization> dis1,
     Teuchos::RCP<Core::FE::Discretization> dis2)
 {
   // call default assignment
-  Core::VolMortar::UTILS::DefaultMaterialStrategy::assign_material2_to1(
+  Coupling::VolMortar::UTILS::DefaultMaterialStrategy::assign_material2_to1(
       volmortar, ele1, ids_2, dis1, dis2);
 
   // default strategy: take material of element with closest center in reference coordinates
@@ -424,12 +424,12 @@ void PoroElast::UTILS::PoroMaterialStrategy::assign_material2_to1(
 }
 
 void PoroElast::UTILS::PoroMaterialStrategy::assign_material1_to2(
-    const Core::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele2,
+    const Coupling::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele2,
     const std::vector<int>& ids_1, Teuchos::RCP<Core::FE::Discretization> dis1,
     Teuchos::RCP<Core::FE::Discretization> dis2)
 {
   // call default assignment
-  Core::VolMortar::UTILS::DefaultMaterialStrategy::assign_material1_to2(
+  Coupling::VolMortar::UTILS::DefaultMaterialStrategy::assign_material1_to2(
       volmortar, ele2, ids_1, dis1, dis2);
 
   // if no corresponding element found -> leave

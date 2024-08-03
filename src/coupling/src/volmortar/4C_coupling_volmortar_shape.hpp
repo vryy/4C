@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | Utils                                                    farah 01/14 |
  *----------------------------------------------------------------------*/
-namespace Core::VolMortar
+namespace Coupling::VolMortar
 {
   namespace UTILS
   {
@@ -1986,7 +1986,7 @@ namespace Core::VolMortar
     }
 
   }  // namespace UTILS
-}  // namespace Core::VolMortar
+}  // namespace Coupling::VolMortar
 
 FOUR_C_NAMESPACE_CLOSE
 

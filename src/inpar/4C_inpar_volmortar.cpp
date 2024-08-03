@@ -30,38 +30,40 @@ void Inpar::VolMortar::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
 
   setStringToIntegralParameter<int>("INTTYPE", "Elements", "Type of numerical integration scheme",
       tuple<std::string>("Elements", "elements", "Segments", "segments"),
-      tuple<int>(Core::VolMortar::inttype_elements, Core::VolMortar::inttype_elements,
-          Core::VolMortar::inttype_segments, Core::VolMortar::inttype_segments),
+      tuple<int>(Coupling::VolMortar::inttype_elements, Coupling::VolMortar::inttype_elements,
+          Coupling::VolMortar::inttype_segments, Coupling::VolMortar::inttype_segments),
       &volmortar);
 
   setStringToIntegralParameter<int>("COUPLINGTYPE", "Volmortar", "Type of coupling",
       tuple<std::string>("Volmortar", "volmortar", "consistentinterpolation", "consint"),
-      tuple<int>(Core::VolMortar::couplingtype_volmortar, Core::VolMortar::couplingtype_volmortar,
-          Core::VolMortar::couplingtype_coninter, Core::VolMortar::couplingtype_coninter),
+      tuple<int>(Coupling::VolMortar::couplingtype_volmortar,
+          Coupling::VolMortar::couplingtype_volmortar, Coupling::VolMortar::couplingtype_coninter,
+          Coupling::VolMortar::couplingtype_coninter),
       &volmortar);
 
   setStringToIntegralParameter<int>("SHAPEFCN", "Dual", "Type of employed set of shape functions",
       tuple<std::string>("Dual", "dual", "Standard", "standard", "std"),
-      tuple<int>(Core::VolMortar::shape_dual, Core::VolMortar::shape_dual,
-          Core::VolMortar::shape_std, Core::VolMortar::shape_std, Core::VolMortar::shape_std),
+      tuple<int>(Coupling::VolMortar::shape_dual, Coupling::VolMortar::shape_dual,
+          Coupling::VolMortar::shape_std, Coupling::VolMortar::shape_std,
+          Coupling::VolMortar::shape_std),
       &volmortar);
 
   setStringToIntegralParameter<int>("CUTTYPE", "dd",
       "Type of cut procedure/ integration point calculation",
       tuple<std::string>(
           "dd", "directdivergence", "DirectDivergence", "tessellation", "t", "Tessellation"),
-      tuple<int>(Core::VolMortar::cuttype_directdivergence,
-          Core::VolMortar::cuttype_directdivergence, Core::VolMortar::cuttype_directdivergence,
-          Core::VolMortar::cuttype_tessellation, Core::VolMortar::cuttype_tessellation,
-          Core::VolMortar::cuttype_tessellation),
+      tuple<int>(Coupling::VolMortar::cuttype_directdivergence,
+          Coupling::VolMortar::cuttype_directdivergence,
+          Coupling::VolMortar::cuttype_directdivergence, Coupling::VolMortar::cuttype_tessellation,
+          Coupling::VolMortar::cuttype_tessellation, Coupling::VolMortar::cuttype_tessellation),
       &volmortar);
 
   setStringToIntegralParameter<int>("DUALQUAD", "nomod",
       "Type of dual shape function for weighting function for quadr. problems",
       tuple<std::string>("nm", "nomod", "lm", "lin_mod", "qm", "quad_mod"),
-      tuple<int>(Core::VolMortar::dualquad_no_mod, Core::VolMortar::dualquad_no_mod,
-          Core::VolMortar::dualquad_lin_mod, Core::VolMortar::dualquad_lin_mod,
-          Core::VolMortar::dualquad_quad_mod, Core::VolMortar::dualquad_quad_mod),
+      tuple<int>(Coupling::VolMortar::dualquad_no_mod, Coupling::VolMortar::dualquad_no_mod,
+          Coupling::VolMortar::dualquad_lin_mod, Coupling::VolMortar::dualquad_lin_mod,
+          Coupling::VolMortar::dualquad_quad_mod, Coupling::VolMortar::dualquad_quad_mod),
       &volmortar);
 
   Core::UTILS::BoolParameter(

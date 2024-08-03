@@ -84,10 +84,10 @@ void FSI::MonolithicNoNOX::setup_system()
 {
   const int ndim = Global::Problem::instance()->n_dim();
 
-  Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
-  Core::Adapter::Coupling& coupsa = structure_ale_coupling();
-  Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
-  Core::Adapter::Coupling& icoupfa = interface_fluid_ale_coupling();
+  Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
+  Coupling::Adapter::Coupling& coupsa = structure_ale_coupling();
+  Coupling::Adapter::Coupling& coupfa = fluid_ale_coupling();
+  Coupling::Adapter::Coupling& icoupfa = interface_fluid_ale_coupling();
 
   // structure to fluid
 

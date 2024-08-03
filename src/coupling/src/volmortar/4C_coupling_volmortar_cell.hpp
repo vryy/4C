@@ -30,7 +30,7 @@ namespace Core::LinAlg
   class SerialDenseMatrix;
 }  // namespace Core::LinAlg
 
-namespace Core::VolMortar
+namespace Coupling::VolMortar
 {
   class Cell
   {
@@ -92,7 +92,7 @@ namespace Core::VolMortar
     double vol_;                              // integration cell volume
   };
 
-}  // namespace Core::VolMortar
+}  // namespace Coupling::VolMortar
 
 FOUR_C_NAMESPACE_CLOSE
 

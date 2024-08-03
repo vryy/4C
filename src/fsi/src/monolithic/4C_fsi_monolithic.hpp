@@ -29,7 +29,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace Adapter
 {
   class AleFsiWrapper;
-  class Coupling;
   class FluidFSI;
   class FSIStructureWrapper;
   class StructureFSITimIntAda;
@@ -213,15 +212,15 @@ namespace FSI
 
     //! @name Coupling objects
 
-    Core::Adapter::Coupling& structure_fluid_coupling() { return *coupsf_; }
-    Core::Adapter::Coupling& structure_ale_coupling() { return *coupsa_; }
-    Core::Adapter::Coupling& fluid_ale_coupling() { return *coupfa_; }
-    Core::Adapter::Coupling& interface_fluid_ale_coupling() { return *icoupfa_; }
+    Coupling::Adapter::Coupling& structure_fluid_coupling() { return *coupsf_; }
+    Coupling::Adapter::Coupling& structure_ale_coupling() { return *coupsa_; }
+    Coupling::Adapter::Coupling& fluid_ale_coupling() { return *coupfa_; }
+    Coupling::Adapter::Coupling& interface_fluid_ale_coupling() { return *icoupfa_; }
 
-    const Core::Adapter::Coupling& structure_fluid_coupling() const { return *coupsf_; }
-    const Core::Adapter::Coupling& structure_ale_coupling() const { return *coupsa_; }
-    const Core::Adapter::Coupling& fluid_ale_coupling() const { return *coupfa_; }
-    const Core::Adapter::Coupling& interface_fluid_ale_coupling() const { return *icoupfa_; }
+    const Coupling::Adapter::Coupling& structure_fluid_coupling() const { return *coupsf_; }
+    const Coupling::Adapter::Coupling& structure_ale_coupling() const { return *coupsa_; }
+    const Coupling::Adapter::Coupling& fluid_ale_coupling() const { return *coupfa_; }
+    const Coupling::Adapter::Coupling& interface_fluid_ale_coupling() const { return *icoupfa_; }
 
     //@}
 
@@ -260,16 +259,16 @@ namespace FSI
     //@{
 
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<Core::Adapter::Coupling> coupsf_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupsf_;
 
     /// coupling of structure and ale at the interface
-    Teuchos::RCP<Core::Adapter::Coupling> coupsa_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupsa_;
 
     /// coupling of fluid and ale in the entire fluid volume
-    Teuchos::RCP<Core::Adapter::Coupling> coupfa_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupfa_;
 
     /// coupling of fluid and ale at the interface
-    Teuchos::RCP<Core::Adapter::Coupling> icoupfa_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> icoupfa_;
 
     //@}
   };

@@ -33,7 +33,6 @@ namespace Core::FE
 }  // namespace Core::FE
 namespace Adapter
 {
-  class Coupling;
   class MortarVolCoupl;
   class ScaTraBaseAlgorithm;
 }  // namespace Adapter
@@ -90,7 +89,7 @@ namespace FS3I
     void redistribute_interface() override { return; };
 
     /// create a volmortar object
-    Teuchos::RCP<Core::Adapter::MortarVolCoupl> create_vol_mortar_object(
+    Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> create_vol_mortar_object(
         Teuchos::RCP<Core::FE::Discretization> masterdis,
         Teuchos::RCP<Core::FE::Discretization> slavedis);
 
@@ -170,7 +169,7 @@ namespace FS3I
 
    private:
     //! volume coupling (using mortar) adapter
-    std::vector<Teuchos::RCP<Core::Adapter::MortarVolCoupl>> volume_coupling_objects_;
+    std::vector<Teuchos::RCP<Coupling::Adapter::MortarVolCoupl>> volume_coupling_objects_;
 
     /// communication (mainly for screen output)
     const Epetra_Comm& comm_;

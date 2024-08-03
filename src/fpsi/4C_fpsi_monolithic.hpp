@@ -46,7 +46,6 @@ namespace PoroElast
 
 namespace Adapter
 {
-  class Coupling;
   class AleFpsiWrapper;
 }  // namespace Adapter
 
@@ -112,18 +111,18 @@ namespace FPSI
     Teuchos::RCP<FPSI::FpsiCoupling>& fpsi_coupl() { return fpsicoupl_; }
 
     //! @name Access General Couplings
-    Core::Adapter::Coupling& fluid_ale_coupling() { return *coupfa_; }
+    Coupling::Adapter::Coupling& fluid_ale_coupling() { return *coupfa_; }
 
-    const Core::Adapter::Coupling& fluid_ale_coupling() const { return *coupfa_; }
+    const Coupling::Adapter::Coupling& fluid_ale_coupling() const { return *coupfa_; }
 
     // Couplings for FSI
-    Core::Adapter::Coupling& structure_fluid_coupling_fsi() { return *coupsf_fsi_; }
-    Core::Adapter::Coupling& structure_ale_coupling_fsi() { return *coupsa_fsi_; }
-    Core::Adapter::Coupling& interface_fluid_ale_coupling_fsi() { return *icoupfa_fsi_; }
+    Coupling::Adapter::Coupling& structure_fluid_coupling_fsi() { return *coupsf_fsi_; }
+    Coupling::Adapter::Coupling& structure_ale_coupling_fsi() { return *coupsa_fsi_; }
+    Coupling::Adapter::Coupling& interface_fluid_ale_coupling_fsi() { return *icoupfa_fsi_; }
 
-    const Core::Adapter::Coupling& structure_fluid_coupling_fsi() const { return *coupsf_fsi_; }
-    const Core::Adapter::Coupling& structure_ale_coupling_fsi() const { return *coupsa_fsi_; }
-    const Core::Adapter::Coupling& interface_fluid_ale_coupling_fsi() const
+    const Coupling::Adapter::Coupling& structure_fluid_coupling_fsi() const { return *coupsf_fsi_; }
+    const Coupling::Adapter::Coupling& structure_ale_coupling_fsi() const { return *coupsa_fsi_; }
+    const Coupling::Adapter::Coupling& interface_fluid_ale_coupling_fsi() const
     {
       return *icoupfa_fsi_;
     }
@@ -155,19 +154,19 @@ namespace FPSI
    private:
     //! FPSI - COUPLING
     //! coupling of fluid and ale in the entire fluid volume
-    Teuchos::RCP<Core::Adapter::Coupling> coupfa_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupfa_;
 
     //! FSI - COUPLING
     //! coupling of structure and fluid at the interface
-    Teuchos::RCP<Core::Adapter::Coupling> coupsf_fsi_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupsf_fsi_;
     //! coupling of structure and ale at the interface
-    Teuchos::RCP<Core::Adapter::Coupling> coupsa_fsi_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupsa_fsi_;
     //! coupling of fluid and ale in the entire fluid volume
-    Teuchos::RCP<Core::Adapter::Coupling> coupfa_fsi_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupfa_fsi_;
     //! coupling of all interface fluid and ale dofs
-    Teuchos::RCP<Core::Adapter::Coupling> icoupfa_fsi_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> icoupfa_fsi_;
     //! coupling of FPSI+FSI interface overlapping dofs of structure and freefluid
-    Teuchos::RCP<Core::Adapter::Coupling> iffcoupsf_fsi_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> iffcoupsf_fsi_;
 
     //! FPSI Coupling Object
     Teuchos::RCP<FPSI::FpsiCoupling> fpsicoupl_;

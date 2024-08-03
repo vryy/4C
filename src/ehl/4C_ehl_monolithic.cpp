@@ -29,7 +29,6 @@
 #include "4C_inpar_solver.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -632,8 +631,8 @@ void EHL::Monolithic::setup_system_matrix()
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dh_dd = Teuchos::rcp(
       new Core::LinAlg::SparseMatrix(*ada_strDisp_to_lubDisp_->slave_dof_map(), 81, true, true));
 
-  Core::LinAlg::MatrixRowTransform()(*ddgap_dd, 1.0,
-      Core::Adapter::CouplingMasterConverter(*ada_strDisp_to_lubDisp_), *dh_dd, false);
+  Coupling::Adapter::MatrixRowTransform()(*ddgap_dd, 1.0,
+      Coupling::Adapter::CouplingMasterConverter(*ada_strDisp_to_lubDisp_), *dh_dd, false);
   dh_dd->complete(*(extractor()->Map(0)), *ada_strDisp_to_lubDisp_->slave_dof_map());
 
   // Multiply with associated matrix
@@ -649,8 +648,8 @@ void EHL::Monolithic::setup_system_matrix()
   Teuchos::RCP<Core::LinAlg::SparseMatrix> avTangVelDeriv = mortaradapter_->av_tang_vel_deriv();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dst = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
       *lubrication_->lubrication_field()->discretization()->dof_row_map(1), 81, true, false));
-  Core::LinAlg::MatrixRowTransform().operator()(*avTangVelDeriv, 1.,
-      Core::Adapter::CouplingMasterConverter(*ada_strDisp_to_lubDisp_), *dst, false);
+  Coupling::Adapter::MatrixRowTransform().operator()(*avTangVelDeriv, 1.,
+      Coupling::Adapter::CouplingMasterConverter(*ada_strDisp_to_lubDisp_), *dst, false);
   dst->complete(*structure_field()->dof_row_map(),
       *lubrication_->lubrication_field()->discretization()->dof_row_map(1));
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tmp = Core::LinAlg::MLMultiply(*k_ls_linV, *dst, true);
@@ -1758,8 +1757,8 @@ void EHL::Monolithic::lin_pressure_force_pres(Teuchos::RCP<Core::LinAlg::SparseM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tmp = Teuchos::rcp(
       new Core::LinAlg::SparseMatrix(*mortaradapter_->slave_dof_map(), 81, false, false));
 
-  Core::LinAlg::MatrixRowTransform().operator()(*lubrimaptransform_, 1.,
-      Core::Adapter::CouplingSlaveConverter(*ada_strDisp_to_lubDisp_), *tmp, false);
+  Coupling::Adapter::MatrixRowTransform().operator()(*lubrimaptransform_, 1.,
+      Coupling::Adapter::CouplingSlaveConverter(*ada_strDisp_to_lubDisp_), *tmp, false);
 
   tmp->complete(
       *lubrication_->lubrication_field()->dof_row_map(0), *mortaradapter_->slave_dof_map());
@@ -1800,8 +1799,8 @@ void EHL::Monolithic::lin_poiseuille_force_pres(Teuchos::RCP<Core::LinAlg::Spars
     Teuchos::RCP<Core::LinAlg::SparseMatrix> b =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(a->row_map(), 81, false, false));
 
-    Core::LinAlg::MatrixColTransform().operator()(a->row_map(), a->col_map(), *a, 1.,
-        Core::Adapter::CouplingMasterConverter(*ada_strDisp_to_lubPres_), *b, true, false);
+    Coupling::Adapter::MatrixColTransform().operator()(a->row_map(), a->col_map(), *a, 1.,
+        Coupling::Adapter::CouplingMasterConverter(*ada_strDisp_to_lubPres_), *b, true, false);
     b->complete(*d, *r);
 
     ds_dp->un_complete();
@@ -1818,8 +1817,8 @@ void EHL::Monolithic::lin_poiseuille_force_pres(Teuchos::RCP<Core::LinAlg::Spars
     Teuchos::RCP<Core::LinAlg::SparseMatrix> b =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(a->row_map(), 81, false, false));
 
-    Core::LinAlg::MatrixColTransform().operator()(a->row_map(), a->col_map(), *a, 1.,
-        Core::Adapter::CouplingMasterConverter(*ada_strDisp_to_lubPres_), *b, true, false);
+    Coupling::Adapter::MatrixColTransform().operator()(a->row_map(), a->col_map(), *a, 1.,
+        Coupling::Adapter::CouplingMasterConverter(*ada_strDisp_to_lubPres_), *b, true, false);
     b->complete(*d, *r);
 
     dm_dp->un_complete();
@@ -1871,8 +1870,8 @@ void EHL::Monolithic::lin_couette_force_pres(Teuchos::RCP<Core::LinAlg::SparseMa
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dVisc_str_dp =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*mortaradapter_->slave_dof_map(), 81));
 
-  Core::LinAlg::MatrixRowTransform().operator()(*dVisc_dp, 1.,
-      Core::Adapter::CouplingSlaveConverter(*ada_strDisp_to_lubDisp_), *dVisc_str_dp, false);
+  Coupling::Adapter::MatrixRowTransform().operator()(*dVisc_dp, 1.,
+      Coupling::Adapter::CouplingSlaveConverter(*ada_strDisp_to_lubDisp_), *dVisc_str_dp, false);
 
   dVisc_str_dp->complete(*lub_dis.dof_row_map(0), *mortaradapter_->slave_dof_map());
 

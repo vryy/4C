@@ -16,6 +16,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_coupling_adapter_converter.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_xfem_enum_lists.hpp"
 
@@ -50,9 +51,6 @@ namespace Core::LinAlg
   class SparseMatrix;
   class BlockSparseMatrixBase;
   class MultiMapExtractor;
-  class MatrixRowTransform;
-  class MatrixColTransform;
-  class MatrixRowColTransform;
 }  // namespace Core::LinAlg
 
 namespace XFEM
@@ -501,11 +499,11 @@ namespace XFEM
     /** \brief Access the interface matrix row transformer for the given field
      *
      *  \author hiermeier \date 10/16 */
-    Core::LinAlg::MatrixRowTransform& i_mat_row_transform(enum FieldName field)
+    Coupling::Adapter::MatrixRowTransform& i_mat_row_transform(enum FieldName field)
     {
       return i_mat_row_transform(slave_id(field));
     }
-    Core::LinAlg::MatrixRowTransform& i_mat_row_transform(unsigned dis_id)
+    Coupling::Adapter::MatrixRowTransform& i_mat_row_transform(unsigned dis_id)
     {
       check_init();
 
@@ -527,11 +525,11 @@ namespace XFEM
     /** \brief Access the interface matrix column transformer for the given field
      *
      *  \author hiermeier \date 10/16 */
-    Core::LinAlg::MatrixColTransform& i_mat_col_transform(enum FieldName field)
+    Coupling::Adapter::MatrixColTransform& i_mat_col_transform(enum FieldName field)
     {
       return i_mat_col_transform(slave_id(field));
     }
-    Core::LinAlg::MatrixColTransform& i_mat_col_transform(unsigned dis_id)
+    Coupling::Adapter::MatrixColTransform& i_mat_col_transform(unsigned dis_id)
     {
       check_init();
 
@@ -553,11 +551,11 @@ namespace XFEM
     /** \brief Access the interface matrix row and column transformer for the given field
      *
      *  \author hiermeier \date 10/16 */
-    Core::LinAlg::MatrixRowColTransform& i_mat_row_col_transform(enum FieldName field)
+    Coupling::Adapter::MatrixRowColTransform& i_mat_row_col_transform(enum FieldName field)
     {
       return i_mat_row_col_transform(slave_id(field));
     }
-    Core::LinAlg::MatrixRowColTransform& i_mat_row_col_transform(unsigned dis_id)
+    Coupling::Adapter::MatrixRowColTransform& i_mat_row_col_transform(unsigned dis_id)
     {
       check_init();
 
@@ -713,9 +711,11 @@ namespace XFEM
 
     std::vector<Teuchos::RCP<XFEM::XFieldField::Coupling>> interface_couplings_;
 
-    std::vector<Teuchos::RCP<Core::LinAlg::MatrixRowTransform>> interface_matrix_row_transformers_;
-    std::vector<Teuchos::RCP<Core::LinAlg::MatrixColTransform>> interface_matrix_col_transformers_;
-    std::vector<Teuchos::RCP<Core::LinAlg::MatrixRowColTransform>>
+    std::vector<Teuchos::RCP<Coupling::Adapter::MatrixRowTransform>>
+        interface_matrix_row_transformers_;
+    std::vector<Teuchos::RCP<Coupling::Adapter::MatrixColTransform>>
+        interface_matrix_col_transformers_;
+    std::vector<Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform>>
         interface_matrix_row_col_transformers_;
 
     std::set<int> xfem_dis_ids_;

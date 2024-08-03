@@ -50,7 +50,7 @@ namespace Mortar
   class Vertex;
 }  // namespace Mortar
 
-namespace Core::VolMortar
+namespace Coupling::VolMortar
 {
   class Cell;
 
@@ -124,7 +124,7 @@ namespace Core::VolMortar
         const Teuchos::ParameterList& cut_parameters, std::vector<int>* coupleddof12 = nullptr,
         std::vector<int>* coupleddof21 = nullptr, std::pair<int, int>* dofset12 = nullptr,
         std::pair<int, int>* dofset21 = nullptr,
-        Teuchos::RCP<Core::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy =
+        Teuchos::RCP<Coupling::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy =
             Teuchos::null);
 
     /*!
@@ -509,7 +509,7 @@ namespace Core::VolMortar
     DualQuad dualquad_;  /// type of quadratic weighting interpolation
 
     /// strategy for element information transfer (mainly material, but can be more)
-    Teuchos::RCP<Core::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy_;
+    Teuchos::RCP<Coupling::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy_;
 
     //! @name mesh initialization
 
@@ -527,7 +527,7 @@ namespace Core::VolMortar
     //@}
   };
 
-}  // namespace Core::VolMortar
+}  // namespace Coupling::VolMortar
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -102,16 +102,16 @@ namespace FS3I
     const Epetra_Comm& comm_;
 
     /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<Core::Adapter::Coupling> icoupfa_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> icoupfa_;
 
     /// coupling of fluid and ale (whole field)
-    Teuchos::RCP<Core::Adapter::Coupling> coupfa_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupfa_;
 
     /// coupling of structure and ale (interface only)
-    Teuchos::RCP<Core::Adapter::Coupling> icoupsa_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> icoupsa_;
 
     /// coupling of structure and ale (whole field)
-    Teuchos::RCP<Core::Adapter::Coupling> coupsa_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupsa_;
 
     // Teuchos::RCP< ::Adapter::FSIStructureWrapper> structure_;
 

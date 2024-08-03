@@ -24,7 +24,6 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_equilibrate.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -362,19 +361,19 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
             // transform linearizations of slave fluxes w.r.t. master dofs and assemble into global
             // system matrix
             (*islavetomastercoltransform_)(imastermatrix_->row_map(), imastermatrix_->col_map(),
-                *imastermatrix_, 1., Core::Adapter::CouplingSlaveConverter(*icoup_), *systemmatrix,
-                true, true);
+                *imastermatrix_, 1., Coupling::Adapter::CouplingSlaveConverter(*icoup_),
+                *systemmatrix, true, true);
 
             // derive linearizations of master fluxes w.r.t. slave dofs and assemble into global
             // system matrix
             (*islavetomasterrowtransform_)(*islavematrix_, -1.,
-                Core::Adapter::CouplingSlaveConverter(*icoup_), *systemmatrix, true);
+                Coupling::Adapter::CouplingSlaveConverter(*icoup_), *systemmatrix, true);
 
             // derive linearizations of master fluxes w.r.t. master dofs and assemble into global
             // system matrix
             (*islavetomasterrowcoltransform_)(*imastermatrix_, -1.,
-                Core::Adapter::CouplingSlaveConverter(*icoup_),
-                Core::Adapter::CouplingSlaveConverter(*icoup_), *systemmatrix, true, true);
+                Coupling::Adapter::CouplingSlaveConverter(*icoup_),
+                Coupling::Adapter::CouplingSlaveConverter(*icoup_), *systemmatrix, true, true);
           }
 
           // In case the interface linearizations and residuals are evaluated on slave side only,
@@ -439,7 +438,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
             // add slave-side rows of system matrix to corresponding master-side rows to finalize
             // matrix condensation of slave-side degrees of freedom
             (*islavetomasterrowtransform_)(systemmatrixrowsslave, 1.,
-                Core::Adapter::CouplingSlaveConverter(*icoup_), *systemmatrix, true);
+                Coupling::Adapter::CouplingSlaveConverter(*icoup_), *systemmatrix, true);
           }
           break;
         }
@@ -470,18 +469,18 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
 
             // transform linearizations of slave fluxes w.r.t. master dofs
             (*islavetomastercoltransform_)(imastermatrix_->row_map(), imastermatrix_->col_map(),
-                *imastermatrix_, 1., Core::Adapter::CouplingSlaveConverter(*icoup_), *ksm);
+                *imastermatrix_, 1., Coupling::Adapter::CouplingSlaveConverter(*icoup_), *ksm);
             ksm->complete(*icoup_->master_dof_map(), *icoup_->slave_dof_map());
 
             // derive linearizations of master fluxes w.r.t. slave dofs
             (*islavetomasterrowtransform_)(
-                *islavematrix_, -1., Core::Adapter::CouplingSlaveConverter(*icoup_), *kms);
+                *islavematrix_, -1., Coupling::Adapter::CouplingSlaveConverter(*icoup_), *kms);
             kms->complete(*icoup_->slave_dof_map(), *icoup_->master_dof_map());
 
             // derive linearizations of master fluxes w.r.t. master dofs
             (*islavetomasterrowcoltransform_)(*imastermatrix_, -1.,
-                Core::Adapter::CouplingSlaveConverter(*icoup_),
-                Core::Adapter::CouplingSlaveConverter(*icoup_), *kmm);
+                Coupling::Adapter::CouplingSlaveConverter(*icoup_),
+                Coupling::Adapter::CouplingSlaveConverter(*icoup_), *kmm);
             kmm->complete();
 
             Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockksm(
@@ -928,14 +927,14 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
 
             // derive linearizations of master fluxes w.r.t. slave dofs and assemble into global
             // system matrix
-            Core::LinAlg::MatrixRowTransform()(*islavematrix_, -1.,
-                Core::Adapter::CouplingSlaveConverter(*icoup_), *systemmatrix, true);
+            Coupling::Adapter::MatrixRowTransform()(*islavematrix_, -1.,
+                Coupling::Adapter::CouplingSlaveConverter(*icoup_), *systemmatrix, true);
 
             // derive linearizations of master fluxes w.r.t. master dofs and assemble into global
             // system matrix
-            Core::LinAlg::MatrixRowColTransform()(*imastermatrix_, -1.,
-                Core::Adapter::CouplingSlaveConverter(*icoup_),
-                Core::Adapter::CouplingSlaveConverter(*icoup_), *systemmatrix, true, true);
+            Coupling::Adapter::MatrixRowColTransform()(*imastermatrix_, -1.,
+                Coupling::Adapter::CouplingSlaveConverter(*icoup_),
+                Coupling::Adapter::CouplingSlaveConverter(*icoup_), *systemmatrix, true, true);
 
             break;
           }
@@ -957,8 +956,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
             // derive linearizations of master fluxes w.r.t. slave dofs
             Teuchos::RCP<Core::LinAlg::SparseMatrix> kms(
                 Teuchos::rcp(new Core::LinAlg::SparseMatrix(*icoup_->master_dof_map(), 81, false)));
-            Core::LinAlg::MatrixRowTransform()(
-                *islavematrix_, -1., Core::Adapter::CouplingSlaveConverter(*icoup_), *kms);
+            Coupling::Adapter::MatrixRowTransform()(
+                *islavematrix_, -1., Coupling::Adapter::CouplingSlaveConverter(*icoup_), *kms);
             kms->complete(*icoup_->slave_dof_map(), *icoup_->master_dof_map());
             Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockkms(
                 kms->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
@@ -968,9 +967,9 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
             // derive linearizations of master fluxes w.r.t. master dofs
             Teuchos::RCP<Core::LinAlg::SparseMatrix> kmm(
                 Teuchos::rcp(new Core::LinAlg::SparseMatrix(*icoup_->master_dof_map(), 81, false)));
-            Core::LinAlg::MatrixRowColTransform()(*imastermatrix_, -1.,
-                Core::Adapter::CouplingSlaveConverter(*icoup_),
-                Core::Adapter::CouplingSlaveConverter(*icoup_), *kmm);
+            Coupling::Adapter::MatrixRowColTransform()(*imastermatrix_, -1.,
+                Coupling::Adapter::CouplingSlaveConverter(*icoup_),
+                Coupling::Adapter::CouplingSlaveConverter(*icoup_), *kmm);
             kmm->complete();
             Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockkmm(
                 kmm->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
@@ -1080,8 +1079,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 // derive linearizations of master fluxes associated with scatra-scatra interface
                 // coupling w.r.t. scatra-scatra interface layer thicknesses and assemble into
                 // global matrix block
-                Core::LinAlg::MatrixRowTransform()(*islavematrix, -1.,
-                    Core::Adapter::CouplingSlaveConverter(*icoup_), *scatragrowthblock, false);
+                Coupling::Adapter::MatrixRowTransform()(*islavematrix, -1.,
+                    Coupling::Adapter::CouplingSlaveConverter(*icoup_), *scatragrowthblock, false);
 
                 // zero out auxiliary matrix block for subsequent evaluation
                 islavematrix->zero();
@@ -1103,8 +1102,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 // derive linearizations of master fluxes associated with scatra-scatra interface
                 // layer growth w.r.t. scatra-scatra interface layer thicknesses and assemble into
                 // global matrix block
-                Core::LinAlg::MatrixRowTransform()(*islavematrix, -1.,
-                    Core::Adapter::CouplingSlaveConverter(*icoup_), *scatragrowthblock, true);
+                Coupling::Adapter::MatrixRowTransform()(*islavematrix, -1.,
+                    Coupling::Adapter::CouplingSlaveConverter(*icoup_), *scatragrowthblock, true);
 
                 // finalize global matrix block
                 scatragrowthblock->complete(dofrowmap_growth, dofrowmap_scatra);
@@ -1161,9 +1160,10 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 // derive linearizations of scatra-scatra interface layer growth residuals w.r.t.
                 // master-side scalar transport degrees of freedom and assemble into global matrix
                 // block
-                Core::LinAlg::MatrixColTransform()(imastermatrix->row_map(),
+                Coupling::Adapter::MatrixColTransform()(imastermatrix->row_map(),
                     imastermatrix->col_map(), *imastermatrix, 1.,
-                    Core::Adapter::CouplingSlaveConverter(*icoup_), *growthscatrablock, true, true);
+                    Coupling::Adapter::CouplingSlaveConverter(*icoup_), *growthscatrablock, true,
+                    true);
 
                 // finalize global matrix block
                 growthscatrablock->complete(dofrowmap_scatra, dofrowmap_growth);
@@ -1218,8 +1218,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 // derive linearizations of master fluxes associated with scatra-scatra interface
                 // coupling w.r.t. scatra-scatra interface layer thicknesses
                 for (int iblock = 0; iblock < blockmaps_slave_->num_maps(); ++iblock)
-                  Core::LinAlg::MatrixRowTransform()(blockslavematrix->matrix(iblock, 0), -1.,
-                      Core::Adapter::CouplingSlaveConverter(*icoup_), mastermatrix, true);
+                  Coupling::Adapter::MatrixRowTransform()(blockslavematrix->matrix(iblock, 0), -1.,
+                      Coupling::Adapter::CouplingSlaveConverter(*icoup_), mastermatrix, true);
 
                 // zero out auxiliary matrices for subsequent evaluation
                 blockslavematrix->zero();
@@ -1233,8 +1233,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 // derive linearizations of master fluxes associated with scatra-scatra interface
                 // layer growth w.r.t. scatra-scatra interface layer thicknesses
                 for (int iblock = 0; iblock < blockmaps_slave_->num_maps(); ++iblock)
-                  Core::LinAlg::MatrixRowTransform()(blockslavematrix->matrix(iblock, 0), -1.,
-                      Core::Adapter::CouplingSlaveConverter(*icoup_), mastermatrix, true);
+                  Coupling::Adapter::MatrixRowTransform()(blockslavematrix->matrix(iblock, 0), -1.,
+                      Coupling::Adapter::CouplingSlaveConverter(*icoup_), mastermatrix, true);
 
                 // finalize auxiliary system matrix
                 mastermatrix.complete(dofrowmap_growth, *icoup_->master_dof_map());
@@ -1296,9 +1296,9 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
 
                 // derive linearizations of scatra-scatra interface layer growth residuals w.r.t.
                 // master-side scalar transport degrees of freedom
-                Core::LinAlg::MatrixColTransform()(imastermatrix->row_map(),
+                Coupling::Adapter::MatrixColTransform()(imastermatrix->row_map(),
                     imastermatrix->col_map(), *imastermatrix, 1.,
-                    Core::Adapter::CouplingSlaveConverter(*icoup_), kgm);
+                    Coupling::Adapter::CouplingSlaveConverter(*icoup_), kgm);
 
                 // finalize temporary matrix
                 kgm.complete(*icoup_->master_dof_map(), dofrowmap_growth);
@@ -1425,20 +1425,20 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
 
       // assemble additional components of linearizations of slave fluxes due to capacitance
       // w.r.t. master dofs into the global system matrix
-      Core::LinAlg::MatrixColTransform()(islavematrix_->row_map(), islavematrix_->col_map(),
-          *islavematrix_, -1.0, Core::Adapter::CouplingSlaveConverter(*icoup_), *systemmatrix, true,
-          true);
+      Coupling::Adapter::MatrixColTransform()(islavematrix_->row_map(), islavematrix_->col_map(),
+          *islavematrix_, -1.0, Coupling::Adapter::CouplingSlaveConverter(*icoup_), *systemmatrix,
+          true, true);
 
       // assemble additional components of linearizations of master fluxes due to capacitance
       // w.r.t. slave dofs into the global system matrix
-      Core::LinAlg::MatrixRowTransform()(*imasterslavematrix_, 1.0,
-          Core::Adapter::CouplingSlaveConverter(*icoup_), *systemmatrix, true);
+      Coupling::Adapter::MatrixRowTransform()(*imasterslavematrix_, 1.0,
+          Coupling::Adapter::CouplingSlaveConverter(*icoup_), *systemmatrix, true);
 
       // assemble additional components of linearizations of master fluxes due to capacitance
       // w.r.t. master dofs into the global system matrix
-      Core::LinAlg::MatrixRowColTransform()(*imasterslavematrix_, -1.0,
-          Core::Adapter::CouplingSlaveConverter(*icoup_),
-          Core::Adapter::CouplingSlaveConverter(*icoup_), *systemmatrix, true, true);
+      Coupling::Adapter::MatrixRowColTransform()(*imasterslavematrix_, -1.0,
+          Coupling::Adapter::CouplingSlaveConverter(*icoup_),
+          Coupling::Adapter::CouplingSlaveConverter(*icoup_), *systemmatrix, true, true);
       break;
     }
     case Core::LinAlg::MatrixType::block_condition:
@@ -1455,8 +1455,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
 
       // prepare linearizations of slave fluxes due to capacitance w.r.t. master dofs
       auto ksm = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*icoup_->slave_dof_map(), 81, false));
-      Core::LinAlg::MatrixColTransform()(islavematrix_->row_map(), islavematrix_->col_map(),
-          *islavematrix_, -1.0, Core::Adapter::CouplingSlaveConverter(*icoup_), *ksm);
+      Coupling::Adapter::MatrixColTransform()(islavematrix_->row_map(), islavematrix_->col_map(),
+          *islavematrix_, -1.0, Coupling::Adapter::CouplingSlaveConverter(*icoup_), *ksm);
       ksm->complete(*icoup_->master_dof_map(), *icoup_->slave_dof_map());
       auto blockksm = ksm->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *blockmaps_master_, *blockmaps_slave_);
@@ -1464,8 +1464,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
 
       // prepare linearizations of master fluxes due to capacitance w.r.t. slave dofs
       auto kms = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*icoup_->master_dof_map(), 81, false));
-      Core::LinAlg::MatrixRowTransform()(
-          *imasterslavematrix_, 1.0, Core::Adapter::CouplingSlaveConverter(*icoup_), *kms);
+      Coupling::Adapter::MatrixRowTransform()(
+          *imasterslavematrix_, 1.0, Coupling::Adapter::CouplingSlaveConverter(*icoup_), *kms);
       kms->complete(*icoup_->slave_dof_map(), *icoup_->master_dof_map());
       auto blockkms = kms->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *blockmaps_slave_, *blockmaps_master_);
@@ -1473,9 +1473,9 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
 
       // derive linearizations of master fluxes w.r.t. master dofs
       auto kmm = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*icoup_->master_dof_map(), 81, false));
-      Core::LinAlg::MatrixRowColTransform()(*imasterslavematrix_, -1.0,
-          Core::Adapter::CouplingSlaveConverter(*icoup_),
-          Core::Adapter::CouplingSlaveConverter(*icoup_), *kmm);
+      Coupling::Adapter::MatrixRowColTransform()(*imasterslavematrix_, -1.0,
+          Coupling::Adapter::CouplingSlaveConverter(*icoup_),
+          Coupling::Adapter::CouplingSlaveConverter(*icoup_), *kmm);
       kmm->complete();
       auto blockkmm = kmm->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *blockmaps_master_, *blockmaps_master_);
@@ -2034,7 +2034,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
         FOUR_C_THROW("Number of transported scalars not correctly set!");
 
       // construct new (empty coupling adapter)
-      icoup_ = Teuchos::rcp(new Core::Adapter::Coupling());
+      icoup_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
 
       int num_dof_per_condition = -1;
 
@@ -2150,11 +2150,11 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
       imastermatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(icoup_->slave_dof_map()), 81));
       imasterslavematrix_ =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(icoup_->slave_dof_map()), 81));
-      islavetomasterrowtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
+      islavetomasterrowtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
       if (not slaveonly_)
       {
-        islavetomastercoltransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-        islavetomasterrowcoltransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform);
+        islavetomastercoltransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+        islavetomasterrowcoltransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
       }
 
       // initialize auxiliary residual vector
@@ -2229,11 +2229,11 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
 
         // initialize mortar coupling adapter
         icoupmortar_[condid] =
-            Teuchos::rcp(new Core::Adapter::CouplingMortar(Global::Problem::instance()->n_dim(),
+            Teuchos::rcp(new Coupling::Adapter::CouplingMortar(Global::Problem::instance()->n_dim(),
                 Global::Problem::instance()->mortar_coupling_params(),
                 Global::Problem::instance()->contact_dynamic_params(),
                 Global::Problem::instance()->spatial_approximation_type()));
-        Core::Adapter::CouplingMortar& icoupmortar = *icoupmortar_[condid];
+        Coupling::Adapter::CouplingMortar& icoupmortar = *icoupmortar_[condid];
         std::vector<int> coupleddof(scatratimint_->num_dof_per_node(), 1);
         icoupmortar.setup_interface(scatratimint_->discretization(),
             scatratimint_->discretization(), coupleddof, mastergnodes, slavegnodes, masterelements,
@@ -4365,8 +4365,8 @@ double ScaTra::MortarCellCalc<distype_s, distype_m>::eval_shape_func_and_dom_int
           coordinates_global.data(), cell.auxn(), masterelement, coordinates_master.data(), dummy);
 
   // evaluate shape functions at current integration point on slave and master elements
-  Core::VolMortar::UTILS::shape_function<distype_s>(funct_slave_, coordinates_slave.data());
-  Core::VolMortar::UTILS::shape_function<distype_m>(funct_master_, coordinates_master.data());
+  Coupling::VolMortar::UTILS::shape_function<distype_s>(funct_slave_, coordinates_slave.data());
+  Coupling::VolMortar::UTILS::shape_function<distype_m>(funct_master_, coordinates_master.data());
   switch (couplingtype_)
   {
     case Inpar::S2I::coupling_mortar_standard:
@@ -4387,13 +4387,13 @@ double ScaTra::MortarCellCalc<distype_s, distype_m>::eval_shape_func_and_dom_int
       // functions
       if (lmside_ == Inpar::S2I::side_slave)
       {
-        Core::VolMortar::UTILS::dual_shape_function<distype_s>(
+        Coupling::VolMortar::UTILS::dual_shape_function<distype_s>(
             shape_lm_slave_, coordinates_slave.data(), slaveelement);
         test_lm_slave_ = funct_slave_;
       }
       else
       {
-        Core::VolMortar::UTILS::dual_shape_function<distype_m>(
+        Coupling::VolMortar::UTILS::dual_shape_function<distype_m>(
             shape_lm_master_, coordinates_master.data(), masterelement);
         test_lm_master_ = funct_master_;
       }
@@ -4408,13 +4408,13 @@ double ScaTra::MortarCellCalc<distype_s, distype_m>::eval_shape_func_and_dom_int
       // functions
       if (lmside_ == Inpar::S2I::side_slave)
       {
-        Core::VolMortar::UTILS::dual_shape_function<distype_s>(
+        Coupling::VolMortar::UTILS::dual_shape_function<distype_s>(
             shape_lm_slave_, coordinates_slave.data(), slaveelement);
         test_lm_slave_ = shape_lm_slave_;
       }
       else
       {
-        Core::VolMortar::UTILS::dual_shape_function<distype_m>(
+        Coupling::VolMortar::UTILS::dual_shape_function<distype_m>(
             shape_lm_master_, coordinates_master.data(), masterelement);
         test_lm_master_ = shape_lm_master_;
       }
@@ -4510,7 +4510,7 @@ void ScaTra::MortarCellCalc<distype_s, distype_m>::eval_shape_func_at_slave_node
           coordinates_master.data(), dummy);
 
   // evaluate master-side shape functions at projected node on master-side element
-  Core::VolMortar::UTILS::shape_function<distype_m>(funct_master_, coordinates_master.data());
+  Coupling::VolMortar::UTILS::shape_function<distype_m>(funct_master_, coordinates_master.data());
 }
 
 /*----------------------------------------------------------------------*

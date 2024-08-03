@@ -28,10 +28,6 @@ namespace Core::LinAlg
   class BlockSparseMatrixBase;
 }  // namespace Core::LinAlg
 
-namespace Adapter
-{
-  class Coupling;
-}
 
 namespace FSI
 {
@@ -112,7 +108,7 @@ namespace CONTACT
 
      */
     virtual void evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<Core::Adapter::Coupling> coupST,
+        Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<Coupling::Adapter::Coupling> coupST,
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> temp);
 
     /*!
@@ -124,10 +120,10 @@ namespace CONTACT
 
     virtual void recover_coupled(Teuchos::RCP<Epetra_Vector> sinc,  /// displacement  increment
         Teuchos::RCP<Epetra_Vector> tinc,                           /// thermal  increment
-        Teuchos::RCP<Core::Adapter::Coupling> coupST);
+        Teuchos::RCP<Coupling::Adapter::Coupling> coupST);
 
     void store_nodal_quantities(
-        Mortar::StrategyBase::QuantityType type, Teuchos::RCP<Core::Adapter::Coupling> coupST);
+        Mortar::StrategyBase::QuantityType type, Teuchos::RCP<Coupling::Adapter::Coupling> coupST);
 
     /*!
      \brief Update contact at end of time step
@@ -167,7 +163,7 @@ namespace CONTACT
         Teuchos::RCP<const Epetra_Vector> dis,
         Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
-    void set_coupling(Teuchos::RCP<Core::Adapter::Coupling> coupST) { coupST_ = coupST; };
+    void set_coupling(Teuchos::RCP<Coupling::Adapter::Coupling> coupST) { coupST_ = coupST; };
 
     //@}
 
@@ -216,7 +212,7 @@ namespace CONTACT
         rt_a_;  // Part of structural residual that corresponds to active slave rows
 
     // pointer to TSI coupling object
-    Teuchos::RCP<Core::Adapter::Coupling> coupST_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupST_;
   };  // class LagrangeStrategyTsi
 
   namespace UTILS

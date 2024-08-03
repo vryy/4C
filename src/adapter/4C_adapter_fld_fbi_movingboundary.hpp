@@ -28,7 +28,6 @@ namespace Core::LinAlg
 
 namespace Adapter
 {
-  class Coupling;
   class Fluid;
 
   /// fluid with moving interfaces

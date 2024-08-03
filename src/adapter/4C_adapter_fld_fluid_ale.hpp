@@ -29,8 +29,6 @@ FOUR_C_NAMESPACE_OPEN
 /* forward declarations */
 namespace Adapter
 {
-  class CouplingBase;
-  class Coupling;
   class AleFluidWrapper;
 }  // namespace Adapter
 
@@ -127,16 +125,16 @@ namespace Adapter
     //@}
 
     /// coupling of fluid and ale (whole field)
-    Teuchos::RCP<Core::Adapter::CouplingBase> coupfa_;
+    Teuchos::RCP<Coupling::Adapter::CouplingBase> coupfa_;
 
     /// coupling of fluid and ale (interface or volume...)
-    Teuchos::RCP<Core::Adapter::CouplingBase> icoupfa_;
+    Teuchos::RCP<Coupling::Adapter::CouplingBase> icoupfa_;
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<Core::Adapter::Coupling> fscoupfa_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> fscoupfa_;
 
     /// coupling of fluid and ale for the ale update condition
-    Teuchos::RCP<Core::Adapter::Coupling> aucoupfa_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> aucoupfa_;
 
    private:
     /// problem-specific Fluid-wrapper

@@ -9,6 +9,7 @@ set(_dependencies
     constraint
     contact
     core
+    coupling
     fluid
     fluid_ele
     fluid_turbulence

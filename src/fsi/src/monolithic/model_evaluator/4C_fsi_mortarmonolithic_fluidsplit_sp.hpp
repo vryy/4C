@@ -14,6 +14,7 @@ in saddle-point formulation with Lagrange multipliers discretized on the fluid i
 
 #include "4C_config.hpp"
 
+#include "4C_coupling_adapter_converter.hpp"
 #include "4C_fsi_monolithic.hpp"
 #include "4C_inpar_fsi.hpp"
 
@@ -39,16 +40,15 @@ namespace Teuchos
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Core::Adapter
+namespace Coupling::Adapter
 {
   class Coupling;
   class CouplingMortar;
-}  // namespace Core::Adapter
+}  // namespace Coupling::Adapter
 
 namespace Core::LinAlg
 {
   class BlockSparseMatrixBase;
-  class MatrixColTransform;
 }  // namespace Core::LinAlg
 
 namespace FSI
@@ -219,13 +219,13 @@ namespace FSI
     /// @name Matrix block transform objects to handle row and column map exchange for matrix blocks
 
     /// Coupling of structure and fluid at the interface
-    Teuchos::RCP<Core::Adapter::CouplingMortar> coupling_solid_fluid_mortar_;
+    Teuchos::RCP<Coupling::Adapter::CouplingMortar> coupling_solid_fluid_mortar_;
 
     /// Helper variable for the transformation of aleunknowns onto the slave side
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> ale_inner_interf_transform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> ale_inner_interf_transform_;
 
     /// Helper variable for the transformation of fluid unknowns onto the slave side
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fluid_mesh_inner_inner_transform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> fluid_mesh_inner_inner_transform_;
 
     ///@}
 

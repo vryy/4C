@@ -74,7 +74,7 @@ namespace PoroElast
 
     //! coupling of fluid and structure (interface only), only needed by algorithms, who perform a
     //! split, i.e. structure or fluid split.
-    Teuchos::RCP<Core::Adapter::Coupling> icoupfs_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> icoupfs_;
 
     //! flag indicating whether there are no slip conditions to be evaluated at the interface
     bool evaluateinterface_;

@@ -16,11 +16,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Adapter
-{
-  class Coupling;
-}
-
 namespace Core::IO
 {
   class OutputControl;
@@ -66,7 +61,7 @@ namespace FSI
       Teuchos::RCP<Core::FE::Discretization> dis_;
 
       /// coupling of field discretization and interface discretization
-      Teuchos::RCP<Core::Adapter::Coupling> coup_;
+      Teuchos::RCP<Coupling::Adapter::Coupling> coup_;
 
       /// current control file
       Teuchos::RCP<Core::IO::OutputControl> control_;

@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                            farah 02/15|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s>
-Core::VolMortar::VolMortarIntegratorEleBased<distype_s>::VolMortarIntegratorEleBased(
+Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::VolMortarIntegratorEleBased(
     Teuchos::ParameterList& params)
 {
   // get type of quadratic modification
@@ -45,7 +45,7 @@ Core::VolMortar::VolMortarIntegratorEleBased<distype_s>::VolMortarIntegratorEleB
  |  Initialize gauss points for ele-based integration        farah 02/15|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s>
-void Core::VolMortar::VolMortarIntegratorEleBased<distype_s>::initialize_gp()
+void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::initialize_gp()
 {
   // init shape of integration domain
   Core::FE::CellType intshape = distype_s;
@@ -260,7 +260,7 @@ void Core::VolMortar::VolMortarIntegratorEleBased<distype_s>::initialize_gp()
  |  Initialize gauss points for ele-based integration        farah 02/15|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s>
-void Core::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_based_3d(
+void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_based_3d(
     Core::Elements::Element& sele, std::vector<int>& foundeles, Core::LinAlg::SparseMatrix& D,
     Core::LinAlg::SparseMatrix& M, Teuchos::RCP<const Core::FE::Discretization> Adis,
     Teuchos::RCP<const Core::FE::Discretization> Bdis, int dofseta, int dofsetb,
@@ -421,28 +421,28 @@ void Core::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_base
 /*----------------------------------------------------------------------*
  |  possible elements for ele-based integration              farah 02/15|
  *----------------------------------------------------------------------*/
-template class Core::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::quad4>;
-template class Core::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::quad8>;
-template class Core::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::quad9>;
+template class Coupling::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::quad4>;
+template class Coupling::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::quad8>;
+template class Coupling::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::quad9>;
 
-template class Core::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::tri3>;
-template class Core::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::tri6>;
+template class Coupling::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::tri3>;
+template class Coupling::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::tri6>;
 
-template class Core::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::hex8>;
-template class Core::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::hex20>;
-template class Core::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::hex27>;
+template class Coupling::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::hex8>;
+template class Coupling::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::hex20>;
+template class Coupling::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::hex27>;
 
-template class Core::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::tet4>;
-template class Core::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::tet10>;
+template class Coupling::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::tet4>;
+template class Coupling::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::tet10>;
 
-template class Core::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::pyramid5>;
+template class Coupling::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::pyramid5>;
 
 
 /*----------------------------------------------------------------------*
  |  gp evaluation                                            farah 02/15|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-bool Core::VolMortar::VolMortarEleBasedGP(Core::Elements::Element& sele,
+bool Coupling::VolMortar::VolMortarEleBasedGP(Core::Elements::Element& sele,
     Core::Elements::Element* mele, std::vector<int>& foundeles, int& found, int& gpid, double& jac,
     double& wgt, double& gpdist, double* Axi, double* AuxXi, double* globgp, DualQuad& dq,
     Shapefcn& shape, Core::LinAlg::SparseMatrix& D, Core::LinAlg::SparseMatrix& M,
@@ -606,82 +606,82 @@ bool Core::VolMortar::VolMortarEleBasedGP(Core::Elements::Element& sele,
  *----------------------------------------------------------------------*/
 ////slave quad4
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::quad4,Core::FE::CellType::quad4>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::quad4,Core::FE::CellType::quad4>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::quad4,Core::FE::CellType::tri3>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::quad4,Core::FE::CellType::tri3>;
 //
 ////slave tri3
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tri3,Core::FE::CellType::quad4>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tri3,Core::FE::CellType::quad4>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tri3,Core::FE::CellType::tri3>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tri3,Core::FE::CellType::tri3>;
 //
 ////slave hex8
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex8,Core::FE::CellType::tet4>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex8,Core::FE::CellType::tet4>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex8,Core::FE::CellType::tet10>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex8,Core::FE::CellType::tet10>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex8,Core::FE::CellType::hex8>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex8,Core::FE::CellType::hex8>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex8,Core::FE::CellType::hex27>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex8,Core::FE::CellType::hex27>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex8,Core::FE::CellType::hex20>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex8,Core::FE::CellType::hex20>;
 //
 ////slave hex20
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex20,Core::FE::CellType::tet4>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex20,Core::FE::CellType::tet4>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex20,Core::FE::CellType::tet10>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex20,Core::FE::CellType::tet10>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex20,Core::FE::CellType::hex8>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex20,Core::FE::CellType::hex8>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex20,Core::FE::CellType::hex27>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex20,Core::FE::CellType::hex27>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex20,Core::FE::CellType::hex20>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex20,Core::FE::CellType::hex20>;
 //
 ////slave hex27
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex27,Core::FE::CellType::tet4>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex27,Core::FE::CellType::tet4>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex27,Core::FE::CellType::tet10>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex27,Core::FE::CellType::tet10>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex27,Core::FE::CellType::hex8>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex27,Core::FE::CellType::hex8>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex27,Core::FE::CellType::hex27>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex27,Core::FE::CellType::hex27>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex27,Core::FE::CellType::hex20>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex27,Core::FE::CellType::hex20>;
 //
 ////slave tet4
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet4,Core::FE::CellType::tet4>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet4,Core::FE::CellType::tet4>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet4,Core::FE::CellType::tet10>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet4,Core::FE::CellType::tet10>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet4,Core::FE::CellType::hex8>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet4,Core::FE::CellType::hex8>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet4,Core::FE::CellType::hex27>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet4,Core::FE::CellType::hex27>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet4,Core::FE::CellType::hex20>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet4,Core::FE::CellType::hex20>;
 //
 ////slave tet10
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet10,Core::FE::CellType::tet4>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet10,Core::FE::CellType::tet4>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet10,Core::FE::CellType::tet10>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet10,Core::FE::CellType::tet10>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet10,Core::FE::CellType::hex8>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet10,Core::FE::CellType::hex8>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet10,Core::FE::CellType::hex27>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet10,Core::FE::CellType::hex27>;
 // template class
-// Core::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet10,Core::FE::CellType::hex20>;
+// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet10,Core::FE::CellType::hex20>;
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 01/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::VolMortarIntegrator(
+Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::VolMortarIntegrator(
     Teuchos::ParameterList& params)
 {
   // get type of quadratic modification
@@ -699,7 +699,7 @@ Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::VolMortarIntegrator(
  |  Initialize gauss points                                  farah 01/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::initialize_gp(
+void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::initialize_gp(
     bool integrateele, int domain, Core::FE::CellType shape)
 {
   // init shape of integration domain
@@ -862,7 +862,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::initialize_gp(
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells_2d(
+void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells_2d(
     Core::Elements::Element& sele, Core::Elements::Element& mele,
     Teuchos::RCP<Mortar::IntCell> cell, Core::LinAlg::SparseMatrix& dmatrix,
     Core::LinAlg::SparseMatrix& mmatrix, Teuchos::RCP<const Core::FE::Discretization> slavedis,
@@ -1024,9 +1024,9 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells_3d(
+void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells_3d(
     Core::Elements::Element& Aele, Core::Elements::Element& Bele,
-    Teuchos::RCP<Core::VolMortar::Cell> cell, Core::LinAlg::SparseMatrix& dmatrix_A,
+    Teuchos::RCP<Coupling::VolMortar::Cell> cell, Core::LinAlg::SparseMatrix& dmatrix_A,
     Core::LinAlg::SparseMatrix& mmatrix_A, Core::LinAlg::SparseMatrix& dmatrix_B,
     Core::LinAlg::SparseMatrix& mmatrix_B, Teuchos::RCP<const Core::FE::Discretization> Adis,
     Teuchos::RCP<const Core::FE::Discretization> Bdis, int sdofset_A, int mdofset_A, int sdofset_B,
@@ -1163,7 +1163,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Core::VolMortar::VolMortarIntegrator<distype_s,
+void Coupling::VolMortar::VolMortarIntegrator<distype_s,
     distype_m>::integrate_cells_3d_direct_diveregence(Core::Elements::Element& Aele,
     Core::Elements::Element& Bele, Core::Geo::Cut::VolumeCell& vc,
     Teuchos::RCP<Core::FE::GaussPoints> intpoints, bool switched_conf,
@@ -1313,7 +1313,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s,
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_based_3d_a_dis(
+void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_based_3d_a_dis(
     Core::Elements::Element& Aele, std::vector<int>& foundeles,
     Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
     Teuchos::RCP<const Core::FE::Discretization> Adis,
@@ -1439,7 +1439,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_b
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_based_3d_b_dis(
+void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_based_3d_b_dis(
     Core::Elements::Element& Bele, std::vector<int>& foundeles,
     Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
     Teuchos::RCP<const Core::FE::Discretization> Adis,
@@ -1566,7 +1566,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_b
  |  element is completely located within an other element               |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_3d(int domain,
+void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_3d(int domain,
     Core::Elements::Element& Aele, Core::Elements::Element& Bele,
     Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
     Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
@@ -1713,7 +1713,7 @@ void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_3
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-bool Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::check_mapping_2d(
+bool Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::check_mapping_2d(
     Core::Elements::Element& sele, Core::Elements::Element& mele, double* sxi, double* mxi)
 {
   // check GP projection (SLAVE)
@@ -1777,7 +1777,7 @@ bool Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::check_mapping_2
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-bool Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::check_mapping_3d(
+bool Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::check_mapping_3d(
     Core::Elements::Element& sele, Core::Elements::Element& mele, double* sxi, double* mxi)
 {
   // check GP projection (SLAVE)
@@ -1934,105 +1934,105 @@ bool Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::check_mapping_3
  |  possible slave/master element pairs                       farah 01/14|
  *----------------------------------------------------------------------*/
 // slave quad4
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::quad4,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::quad4,
     Core::FE::CellType::quad4>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::quad4,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::quad4,
     Core::FE::CellType::tri3>;
 
 // slave tri3
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::tri3,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::tri3,
     Core::FE::CellType::quad4>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::tri3,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::tri3,
     Core::FE::CellType::tri3>;
 
 // slave hex8
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex8,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex8,
     Core::FE::CellType::tet4>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex8,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex8,
     Core::FE::CellType::tet10>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex8,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex8,
     Core::FE::CellType::hex8>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex8,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex8,
     Core::FE::CellType::hex27>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex8,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex8,
     Core::FE::CellType::hex20>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex8,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex8,
     Core::FE::CellType::pyramid5>;
 
 // slave hex20
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex20,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex20,
     Core::FE::CellType::tet4>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex20,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex20,
     Core::FE::CellType::tet10>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex20,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex20,
     Core::FE::CellType::hex8>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex20,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex20,
     Core::FE::CellType::hex27>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex20,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex20,
     Core::FE::CellType::hex20>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex20,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex20,
     Core::FE::CellType::pyramid5>;
 
 // slave hex27
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex27,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex27,
     Core::FE::CellType::tet4>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex27,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex27,
     Core::FE::CellType::tet10>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex27,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex27,
     Core::FE::CellType::hex8>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex27,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex27,
     Core::FE::CellType::hex27>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex27,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex27,
     Core::FE::CellType::hex20>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex27,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::hex27,
     Core::FE::CellType::pyramid5>;
 
 // slave tet4
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet4,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet4,
     Core::FE::CellType::tet4>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet4,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet4,
     Core::FE::CellType::tet10>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet4,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet4,
     Core::FE::CellType::hex8>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet4,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet4,
     Core::FE::CellType::hex27>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet4,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet4,
     Core::FE::CellType::hex20>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet4,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet4,
     Core::FE::CellType::pyramid5>;
 
 // slave tet10
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet10,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet10,
     Core::FE::CellType::tet4>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet10,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet10,
     Core::FE::CellType::tet10>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet10,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet10,
     Core::FE::CellType::hex8>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet10,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet10,
     Core::FE::CellType::hex27>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet10,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet10,
     Core::FE::CellType::hex20>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet10,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::tet10,
     Core::FE::CellType::pyramid5>;
 
 // slave pyramid 5
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::pyramid5,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::pyramid5,
     Core::FE::CellType::tet4>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::pyramid5,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::pyramid5,
     Core::FE::CellType::tet10>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::pyramid5,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::pyramid5,
     Core::FE::CellType::hex8>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::pyramid5,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::pyramid5,
     Core::FE::CellType::hex27>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::pyramid5,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::pyramid5,
     Core::FE::CellType::hex20>;
-template class Core::VolMortar::VolMortarIntegrator<Core::FE::CellType::pyramid5,
+template class Coupling::VolMortar::VolMortarIntegrator<Core::FE::CellType::pyramid5,
     Core::FE::CellType::pyramid5>;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 06/14|
  *----------------------------------------------------------------------*/
-Core::VolMortar::ConsInterpolator::ConsInterpolator()
+Coupling::VolMortar::ConsInterpolator::ConsInterpolator()
 {
   // empty
 }
@@ -2041,7 +2041,7 @@ Core::VolMortar::ConsInterpolator::ConsInterpolator()
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 06/14|
  *----------------------------------------------------------------------*/
-void Core::VolMortar::ConsInterpolator::interpolate(Core::Nodes::Node* node,
+void Coupling::VolMortar::ConsInterpolator::interpolate(Core::Nodes::Node* node,
     Core::LinAlg::SparseMatrix& pmatrix, Teuchos::RCP<const Core::FE::Discretization> nodediscret,
     Teuchos::RCP<const Core::FE::Discretization> elediscret, std::vector<int>& foundeles,
     std::pair<int, int>& dofset, const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
@@ -2169,8 +2169,9 @@ void Core::VolMortar::ConsInterpolator::interpolate(Core::Nodes::Node* node,
  |  node evaluation                                          farah 02/15|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Core::VolMortar::ConsInterpolatorEval(Core::Nodes::Node* node, Core::Elements::Element* ele,
-    Core::LinAlg::SparseMatrix& pmatrix, Teuchos::RCP<const Core::FE::Discretization> nodediscret,
+bool Coupling::VolMortar::ConsInterpolatorEval(Core::Nodes::Node* node,
+    Core::Elements::Element* ele, Core::LinAlg::SparseMatrix& pmatrix,
+    Teuchos::RCP<const Core::FE::Discretization> nodediscret,
     Teuchos::RCP<const Core::FE::Discretization> elediscret, std::vector<int>& foundeles,
     int& found, int& eleid, double& dist, double* AuxXi, double* nodepos,
     std::pair<int, int>& dofset, const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
@@ -2247,18 +2248,18 @@ bool Core::VolMortar::ConsInterpolatorEval(Core::Nodes::Node* node, Core::Elemen
 /*----------------------------------------------------------------------*
  |  possible elements for interpolation                      farah 06/14|
  *----------------------------------------------------------------------*/
-// template class Core::VolMortar::ConsInterpolator<Core::FE::CellType::quad4>;
-// template class Core::VolMortar::ConsInterpolator<Core::FE::CellType::quad8>;
-// template class Core::VolMortar::ConsInterpolator<Core::FE::CellType::quad9>;
+// template class Coupling::VolMortar::ConsInterpolator<Core::FE::CellType::quad4>;
+// template class Coupling::VolMortar::ConsInterpolator<Core::FE::CellType::quad8>;
+// template class Coupling::VolMortar::ConsInterpolator<Core::FE::CellType::quad9>;
 //
-// template class Core::VolMortar::ConsInterpolator<Core::FE::CellType::tri3>;
-// template class Core::VolMortar::ConsInterpolator<Core::FE::CellType::tri6>;
+// template class Coupling::VolMortar::ConsInterpolator<Core::FE::CellType::tri3>;
+// template class Coupling::VolMortar::ConsInterpolator<Core::FE::CellType::tri6>;
 //
-// template class Core::VolMortar::ConsInterpolator<Core::FE::CellType::hex8>;
-// template class Core::VolMortar::ConsInterpolator<Core::FE::CellType::hex20>;
-// template class Core::VolMortar::ConsInterpolator<Core::FE::CellType::hex27>;
+// template class Coupling::VolMortar::ConsInterpolator<Core::FE::CellType::hex8>;
+// template class Coupling::VolMortar::ConsInterpolator<Core::FE::CellType::hex20>;
+// template class Coupling::VolMortar::ConsInterpolator<Core::FE::CellType::hex27>;
 //
-// template class Core::VolMortar::ConsInterpolator<Core::FE::CellType::tet4>;
-// template class Core::VolMortar::ConsInterpolator<Core::FE::CellType::tet10>;
+// template class Coupling::VolMortar::ConsInterpolator<Core::FE::CellType::tet4>;
+// template class Coupling::VolMortar::ConsInterpolator<Core::FE::CellType::tet10>;
 
 FOUR_C_NAMESPACE_CLOSE

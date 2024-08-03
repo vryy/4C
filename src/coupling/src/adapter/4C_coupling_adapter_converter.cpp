@@ -1,34 +1,114 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*! \file
 
-\brief Utilities for matrix transformations
+\brief Converter to use Adapter::Coupling type objects in both coupling directions
 
 \level 1
 
 */
-/*---------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
-#include "4C_linalg_matrixtransform.hpp"
+/*----------------------------------------------------------------------------*/
+/* headers */
+#include "4C_coupling_adapter_converter.hpp"
 
 #include "4C_comm_exporter.hpp"
 #include "4C_coupling_adapter.hpp"
-#include "4C_coupling_adapter_converter.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
-#include "4C_utils_exceptions.hpp"
 
-#include <iterator>
-#include <vector>
+#include <Epetra_Export.h>
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
+/*----------------------------------------------------------------------------*/
+
+Teuchos::RCP<Epetra_Vector> Coupling::Adapter::CouplingMasterConverter::src_to_dst(
+    Teuchos::RCP<const Epetra_Vector> source_vector) const
+{
+  return coup_.master_to_slave(source_vector);
+}
+
+Teuchos::RCP<Epetra_Vector> Coupling::Adapter::CouplingMasterConverter::dst_to_src(
+    Teuchos::RCP<const Epetra_Vector> destination_vector) const
+{
+  return coup_.slave_to_master(destination_vector);
+}
+
+Teuchos::RCP<const Epetra_Map> Coupling::Adapter::CouplingMasterConverter::src_map() const
+{
+  return coup_.master_dof_map();
+}
+
+Teuchos::RCP<const Epetra_Map> Coupling::Adapter::CouplingMasterConverter::dst_map() const
+{
+  return coup_.slave_dof_map();
+}
+
+Teuchos::RCP<const Epetra_Map> Coupling::Adapter::CouplingMasterConverter::perm_src_map() const
+{
+  return coup_.perm_master_dof_map();
+}
+
+Teuchos::RCP<const Epetra_Map> Coupling::Adapter::CouplingMasterConverter::perm_dst_map() const
+{
+  return coup_.perm_slave_dof_map();
+}
+
+void Coupling::Adapter::CouplingMasterConverter::fill_src_to_dst_map(
+    std::map<int, int>& rowmap) const
+{
+  coup_.fill_master_to_slave_map(rowmap);
+}
+
+
+Teuchos::RCP<Epetra_Vector> Coupling::Adapter::CouplingSlaveConverter::src_to_dst(
+    Teuchos::RCP<const Epetra_Vector> source_vector) const
+{
+  return coup_.slave_to_master(source_vector);
+}
+
+Teuchos::RCP<Epetra_Vector> Coupling::Adapter::CouplingSlaveConverter::dst_to_src(
+    Teuchos::RCP<const Epetra_Vector> destination_vector) const
+{
+  return coup_.master_to_slave(destination_vector);
+}
+
+Teuchos::RCP<const Epetra_Map> Coupling::Adapter::CouplingSlaveConverter::src_map() const
+{
+  return coup_.slave_dof_map();
+}
+
+Teuchos::RCP<const Epetra_Map> Coupling::Adapter::CouplingSlaveConverter::dst_map() const
+{
+  return coup_.master_dof_map();
+}
+
+Teuchos::RCP<const Epetra_Map> Coupling::Adapter::CouplingSlaveConverter::perm_src_map() const
+{
+  return coup_.perm_slave_dof_map();
+}
+
+Teuchos::RCP<const Epetra_Map> Coupling::Adapter::CouplingSlaveConverter::perm_dst_map() const
+{
+  return coup_.perm_master_dof_map();
+}
+
+void Coupling::Adapter::CouplingSlaveConverter::fill_src_to_dst_map(
+    std::map<int, int>& rowmap) const
+{
+  coup_.fill_slave_to_master_map(rowmap);
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Core::LinAlg::MatrixLogicalSplitAndTransform::operator()(const Core::LinAlg::SparseMatrix& src,
-    const Epetra_Map& logical_range_map, const Epetra_Map& logical_domain_map, double scale,
-    const Core::Adapter::CouplingConverter* row_converter,
-    const Core::Adapter::CouplingConverter* col_converter, Core::LinAlg::SparseMatrix& dst,
-    bool exactmatch, bool addmatrix)
+bool Coupling::Adapter::MatrixLogicalSplitAndTransform::operator()(
+    const Core::LinAlg::SparseMatrix& src, const Epetra_Map& logical_range_map,
+    const Epetra_Map& logical_domain_map, double scale, const CouplingConverter* row_converter,
+    const CouplingConverter* col_converter, Core::LinAlg::SparseMatrix& dst, bool exactmatch,
+    bool addmatrix)
 {
   Teuchos::RCP<Epetra_CrsMatrix> esrc = src.epetra_matrix();
   const Epetra_Map* final_range_map = &logical_range_map;
@@ -87,9 +167,8 @@ bool Core::LinAlg::MatrixLogicalSplitAndTransform::operator()(const Core::LinAlg
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::MatrixLogicalSplitAndTransform::setup_gid_map(const Epetra_Map& rowmap,
-    const Epetra_Map& colmap, const Core::Adapter::CouplingConverter* converter,
-    const Epetra_Comm& comm)
+void Coupling::Adapter::MatrixLogicalSplitAndTransform::setup_gid_map(const Epetra_Map& rowmap,
+    const Epetra_Map& colmap, const CouplingConverter* converter, const Epetra_Comm& comm)
 {
   if (not havegidmap_)
   {
@@ -109,10 +188,10 @@ void Core::LinAlg::MatrixLogicalSplitAndTransform::setup_gid_map(const Epetra_Ma
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::MatrixLogicalSplitAndTransform::internal_add(Teuchos::RCP<Epetra_CrsMatrix> esrc,
-    const Epetra_Map& logical_range_map, const Epetra_Map& logical_domain_map,
-    const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,
-    double scale)
+void Coupling::Adapter::MatrixLogicalSplitAndTransform::internal_add(
+    Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
+    const Epetra_Map& logical_domain_map, const Epetra_Map& matching_dst_rows,
+    Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch, double scale)
 {
   if (not esrc->Filled()) FOUR_C_THROW("filled source matrix expected");
 
@@ -140,7 +219,7 @@ void Core::LinAlg::MatrixLogicalSplitAndTransform::internal_add(Teuchos::RCP<Epe
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::MatrixLogicalSplitAndTransform::add_into_filled(
+void Coupling::Adapter::MatrixLogicalSplitAndTransform::add_into_filled(
     Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
     const Epetra_Map& logical_domain_map, const Epetra_Vector& selector,
     const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,
@@ -228,7 +307,7 @@ void Core::LinAlg::MatrixLogicalSplitAndTransform::add_into_filled(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::MatrixLogicalSplitAndTransform::add_into_unfilled(
+void Coupling::Adapter::MatrixLogicalSplitAndTransform::add_into_unfilled(
     Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
     const Epetra_Map& logical_domain_map, const Epetra_Vector& selector,
     const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,
@@ -303,9 +382,9 @@ void Core::LinAlg::MatrixLogicalSplitAndTransform::add_into_unfilled(
 
 
 
-bool Core::LinAlg::MatrixRowTransform::operator()(const Core::LinAlg::SparseMatrix& src,
-    double scale, const Core::Adapter::CouplingConverter& converter,
-    Core::LinAlg::SparseMatrix& dst, bool addmatrix)
+bool Coupling::Adapter::MatrixRowTransform::operator()(const Core::LinAlg::SparseMatrix& src,
+    double scale, const CouplingConverter& converter, Core::LinAlg::SparseMatrix& dst,
+    bool addmatrix)
 {
   return transformer_(
       src, src.range_map(), src.domain_map(), scale, &converter, nullptr, dst, false, addmatrix);
@@ -313,10 +392,9 @@ bool Core::LinAlg::MatrixRowTransform::operator()(const Core::LinAlg::SparseMatr
 
 
 
-bool Core::LinAlg::MatrixColTransform::operator()(const Epetra_Map&, const Epetra_Map&,
-    const Core::LinAlg::SparseMatrix& src, double scale,
-    const Core::Adapter::CouplingConverter& converter, Core::LinAlg::SparseMatrix& dst,
-    bool exactmatch, bool addmatrix)
+bool Coupling::Adapter::MatrixColTransform::operator()(const Epetra_Map&, const Epetra_Map&,
+    const Core::LinAlg::SparseMatrix& src, double scale, const CouplingConverter& converter,
+    Core::LinAlg::SparseMatrix& dst, bool exactmatch, bool addmatrix)
 {
   return transformer_(src, src.range_map(), src.domain_map(), scale, nullptr, &converter, dst,
       exactmatch, addmatrix);
@@ -324,10 +402,9 @@ bool Core::LinAlg::MatrixColTransform::operator()(const Epetra_Map&, const Epetr
 
 
 
-bool Core::LinAlg::MatrixRowColTransform::operator()(const Core::LinAlg::SparseMatrix& src,
-    double scale, const Core::Adapter::CouplingConverter& rowconverter,
-    const Core::Adapter::CouplingConverter& colconverter, Core::LinAlg::SparseMatrix& dst,
-    bool exactmatch, bool addmatrix)
+bool Coupling::Adapter::MatrixRowColTransform::operator()(const Core::LinAlg::SparseMatrix& src,
+    double scale, const CouplingConverter& rowconverter, const CouplingConverter& colconverter,
+    Core::LinAlg::SparseMatrix& dst, bool exactmatch, bool addmatrix)
 {
   return transformer_(src, src.range_map(), src.domain_map(), scale, &rowconverter, &colconverter,
       dst, exactmatch, addmatrix);

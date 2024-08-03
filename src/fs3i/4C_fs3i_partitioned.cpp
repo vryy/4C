@@ -334,7 +334,7 @@ void FS3I::PartFS3I::setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_mortar_object(
+Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_mortar_object(
     Teuchos::RCP<Core::FE::Discretization> masterdis,
     Teuchos::RCP<Core::FE::Discretization> slavedis)
 {
@@ -377,8 +377,8 @@ Teuchos::RCP<Core::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_mortar_ob
 
 
   // Scheme: non matching meshes --> volumetric mortar coupling...
-  Teuchos::RCP<Core::Adapter::MortarVolCoupl> volume_coupling_object =
-      Teuchos::rcp(new Core::Adapter::MortarVolCoupl());
+  Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> volume_coupling_object =
+      Teuchos::rcp(new Coupling::Adapter::MortarVolCoupl());
 
   // setup projection matrices (use default material strategy)
   volume_coupling_object->init(Global::Problem::instance()->n_dim(), masterdis, slavedis);

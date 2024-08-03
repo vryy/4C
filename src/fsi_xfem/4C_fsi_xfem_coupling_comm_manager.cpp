@@ -15,7 +15,6 @@ transform matrixes, vectors, ...
 #include "4C_fem_condition_selector.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_linalg_mapextractor.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
@@ -261,13 +260,13 @@ void XFEM::CouplingCommManager::setup_full_map_extractors(
     Teuchos::RCP<Core::LinAlg::MapExtractor> me = Teuchos::rcp(new Core::LinAlg::MapExtractor());
     if (static_cast<std::size_t>(dit->first) < dis.size() - 1)
     {
-      Teuchos::RCP<Core::Adapter::Coupling> coup = get_coupling(dit->first, dit->first + 1);
+      Teuchos::RCP<Coupling::Adapter::Coupling> coup = get_coupling(dit->first, dit->first + 1);
       me->setup(*dit->second->dof_row_map(), coup->master_dof_map(),
           Core::LinAlg::SplitMap(*dit->second->dof_row_map(), *coup->master_dof_map()));
     }
     else
     {
-      Teuchos::RCP<Core::Adapter::Coupling> coup = get_coupling(dit->first - 1, dit->first);
+      Teuchos::RCP<Coupling::Adapter::Coupling> coup = get_coupling(dit->first - 1, dit->first);
       me->setup(*dit->second->dof_row_map(), coup->slave_dof_map(),
           Core::LinAlg::SplitMap(*dit->second->dof_row_map(), *coup->slave_dof_map()));
     }
@@ -297,7 +296,7 @@ void XFEM::CouplingCommManager::setup_couplings(
 
       std::pair<int, int> key = std::pair<int, int>((*mmealpha).first, (*mmebeta).first);
 
-      coup_[key] = Teuchos::rcp(new Core::Adapter::Coupling());
+      coup_[key] = Teuchos::rcp(new Coupling::Adapter::Coupling());
 
       std::map<int, Teuchos::RCP<const Core::FE::Discretization>>::iterator alphadis =
           dis.find((*mmealpha).first);
@@ -331,7 +330,7 @@ void XFEM::CouplingCommManager::setup_full_couplings(
 
       std::pair<int, int> key = std::pair<int, int>(idx_a, idx_b);
 
-      coup_[key] = Teuchos::rcp(new Core::Adapter::Coupling());
+      coup_[key] = Teuchos::rcp(new Coupling::Adapter::Coupling());
 
       std::map<int, Teuchos::RCP<const Core::FE::Discretization>>::iterator alphadis =
           dis.find(idx_a);
@@ -370,16 +369,16 @@ void XFEM::CouplingCommManager::setup_full_extractor(
 /*------------------------------------------------------------------------------------------------*
 | Get Coupling Converter between Discret A and B                                      ager 03/2016|
 *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Adapter::CouplingConverter> XFEM::CouplingCommManager::get_coupling_converter(
-    int idxA, int idxB)
+Teuchos::RCP<Coupling::Adapter::CouplingConverter>
+XFEM::CouplingCommManager::get_coupling_converter(int idxA, int idxB)
 {
   if (idxA < idxB)
   {
-    return Teuchos::rcp(new Core::Adapter::CouplingMasterConverter(*get_coupling(idxA, idxB)));
+    return Teuchos::rcp(new Coupling::Adapter::CouplingMasterConverter(*get_coupling(idxA, idxB)));
   }
   else if (idxA > idxB)
   {
-    return Teuchos::rcp(new Core::Adapter::CouplingSlaveConverter(*get_coupling(idxB, idxA)));
+    return Teuchos::rcp(new Coupling::Adapter::CouplingSlaveConverter(*get_coupling(idxB, idxA)));
   }
   else
   {
@@ -394,12 +393,13 @@ Teuchos::RCP<Core::Adapter::CouplingConverter> XFEM::CouplingCommManager::get_co
 /*------------------------------------------------------------------------------------------------*
 | Get Coupling Object between Discret A and B                                      -- ager 03/2016|
 *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Adapter::Coupling> XFEM::CouplingCommManager::get_coupling(int idxA, int idxB)
+Teuchos::RCP<Coupling::Adapter::Coupling> XFEM::CouplingCommManager::get_coupling(
+    int idxA, int idxB)
 {
   if (idxA < idxB)
   {
     std::pair<int, int> key = std::pair<int, int>(idxA, idxB);
-    std::map<std::pair<int, int>, Teuchos::RCP<Core::Adapter::Coupling>>::iterator cit =
+    std::map<std::pair<int, int>, Teuchos::RCP<Coupling::Adapter::Coupling>>::iterator cit =
         coup_.find(key);
     if (cit != coup_.end())
     {
@@ -422,10 +422,10 @@ Teuchos::RCP<Core::Adapter::Coupling> XFEM::CouplingCommManager::get_coupling(in
 /*------------------------------------------------------------------------------------------------*
 | Get Transform Object between Discret A and B                                        ager 03/2016|
 *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MatrixLogicalSplitAndTransform> XFEM::CouplingCommManager::get_transform(
-    int transform_id)
+Teuchos::RCP<Coupling::Adapter::MatrixLogicalSplitAndTransform>
+XFEM::CouplingCommManager::get_transform(int transform_id)
 {
-  std::map<int, Teuchos::RCP<Core::LinAlg::MatrixLogicalSplitAndTransform>>::iterator tit =
+  std::map<int, Teuchos::RCP<Coupling::Adapter::MatrixLogicalSplitAndTransform>>::iterator tit =
       transform_.find(transform_id);
   if (tit != transform_.end() && transform_id != -1)
   {
@@ -433,7 +433,8 @@ Teuchos::RCP<Core::LinAlg::MatrixLogicalSplitAndTransform> XFEM::CouplingCommMan
   }
   else
   {
-    transform_[transform_id] = Teuchos::rcp(new Core::LinAlg::MatrixLogicalSplitAndTransform());
+    transform_[transform_id] =
+        Teuchos::rcp(new Coupling::Adapter::MatrixLogicalSplitAndTransform());
     return transform_[transform_id];
   }
   return Teuchos::null;

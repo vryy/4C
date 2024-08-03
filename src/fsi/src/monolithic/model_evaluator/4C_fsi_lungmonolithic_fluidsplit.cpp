@@ -19,7 +19,6 @@
 #include "4C_fsi_lung_overlapprec.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_structure_aux.hpp"
 
@@ -102,31 +101,31 @@ FSI::LungMonolithicFluidSplit::LungMonolithicFluidSplit(
   }
   // ---------------------------------------------------------------------------
 
-  fggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform);
-  fgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-  fg_gtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-  figtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  f_ggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  fggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
+  fgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+  fg_gtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+  figtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  f_ggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
 
-  fmiitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  fm_gitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  fmgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform);
-  fmigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  fm_ggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  fmggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform);
-  fmi_gtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  fm_g_gtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  fmg_gtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform);
+  fmiitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fm_gitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
+  fmigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fm_ggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fmggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
+  fmi_gtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fm_g_gtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fmg_gtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
 
-  addfm_g_gtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  addfm_ggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  addfm_g_gtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  addfm_ggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
 
-  fcgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
+  fcgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
 
-  aigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  ai_gtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  ai_gtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
 
-  cai_gtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  cai_gtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
 
   return;
 }
@@ -271,9 +270,9 @@ void FSI::LungMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpars
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
 
-  const Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
-  const Core::Adapter::Coupling& coupsa = structure_ale_coupling();
-  const Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
+  const Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
+  const Coupling::Adapter::Coupling& coupsa = structure_ale_coupling();
+  const Coupling::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
   /*----------------------------------------------------------------------*/
 
@@ -311,16 +310,16 @@ void FSI::LungMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpars
   Core::LinAlg::SparseMatrix& fGG = blockf->matrix(3, 3);
 
   // mat.Matrix(0,0).UnComplete();
-  (*fggtransform_)(fgg, scale * timescale, Core::Adapter::CouplingSlaveConverter(coupsf),
-      Core::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(0, 0), true, true);
-  (*fgitransform_)(fgi, scale, Core::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(0, 1));
+  (*fggtransform_)(fgg, scale * timescale, Coupling::Adapter::CouplingSlaveConverter(coupsf),
+      Coupling::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(0, 0), true, true);
+  (*fgitransform_)(fgi, scale, Coupling::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(0, 1));
   (*fg_gtransform_)(
-      fgG, scale, Core::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(0, 1), true);
+      fgG, scale, Coupling::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(0, 1), true);
 
   (*figtransform_)(blockf->full_row_map(), blockf->full_col_map(), fig, timescale,
-      Core::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(1, 0));
+      Coupling::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(1, 0));
   (*f_ggtransform_)(blockf->full_row_map(), blockf->full_col_map(), fGg, timescale,
-      Core::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(1, 0), true, true);
+      Coupling::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(1, 0), true, true);
 
   mat.matrix(1, 1).add(fii, false, 1.0, 0.0);
   mat.matrix(1, 1).add(fiG, false, 1.0, 1.0);
@@ -348,37 +347,37 @@ void FSI::LungMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpars
     // We cannot copy the pressure value. It is not used anyway. So no exact
     // match here.
     (*fmiitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmii, 1.,
-        Core::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, false);
+        Coupling::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, false);
     (*fm_gitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmGi, 1.,
-        Core::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, true);
-    (*fmgitransform_)(fmgi, scale, Core::Adapter::CouplingSlaveConverter(coupsf),
-        Core::Adapter::CouplingMasterConverter(coupfa), mat.matrix(0, 2), false, false);
+        Coupling::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, true);
+    (*fmgitransform_)(fmgi, scale, Coupling::Adapter::CouplingSlaveConverter(coupsf),
+        Coupling::Adapter::CouplingMasterConverter(coupfa), mat.matrix(0, 2), false, false);
 
     (*fmigtransform_)(mmm->full_row_map(), mmm->full_col_map(), fmig, 1.,
-        Core::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(1, 0), true, true);
+        Coupling::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(1, 0), true, true);
     (*fm_ggtransform_)(mmm->full_row_map(), mmm->full_col_map(), fmGg, 1.,
-        Core::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(1, 0), true, true);
+        Coupling::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(1, 0), true, true);
 
-    (*fmggtransform_)(fmgg, scale, Core::Adapter::CouplingSlaveConverter(coupsf),
-        Core::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(0, 0), true, true);
+    (*fmggtransform_)(fmgg, scale, Coupling::Adapter::CouplingSlaveConverter(coupsf),
+        Coupling::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(0, 0), true, true);
 
     (*fmi_gtransform_)(*coupfsout_->master_dof_map(), fmiG.col_map(), fmiG, 1.,
-        Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(1, 0), true, true);
+        Coupling::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(1, 0), true, true);
     (*fm_g_gtransform_)(*coupfsout_->master_dof_map(), fmGG.col_map(), fmGG, 1.,
-        Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(1, 0), true, true);
-    (*fmg_gtransform_)(fmgG, scale, Core::Adapter::CouplingSlaveConverter(coupsf),
-        Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(0, 0), true, true);
+        Coupling::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(1, 0), true, true);
+    (*fmg_gtransform_)(fmgG, scale, Coupling::Adapter::CouplingSlaveConverter(coupsf),
+        Coupling::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(0, 0), true, true);
 
     Core::LinAlg::SparseMatrix& addfmGg = AddFluidShapeDerivMatrix_->matrix(3, 1);
     Core::LinAlg::SparseMatrix& addfmGG = AddFluidShapeDerivMatrix_->matrix(3, 3);
 
     (*addfm_g_gtransform_)(AddFluidShapeDerivMatrix_->full_row_map(),
         AddFluidShapeDerivMatrix_->full_col_map(), addfmGG, 1.,
-        Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(1, 0), true, true);
+        Coupling::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(1, 0), true, true);
 
     (*addfm_ggtransform_)(AddFluidShapeDerivMatrix_->full_row_map(),
         AddFluidShapeDerivMatrix_->full_col_map(), addfmGg, 1.,
-        Core::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(1, 0), true, true);
+        Coupling::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(1, 0), true, true);
   }
 
   /*----------------------------------------------------------------------*/
@@ -412,7 +411,7 @@ void FSI::LungMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpars
 
   mat.matrix(0, 3).un_complete();
   (*fcgitransform_)(
-      fcgi, scale, Core::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(0, 3), true);
+      fcgi, scale, Coupling::Adapter::CouplingSlaveConverter(coupsf), mat.matrix(0, 3), true);
 
   /*----------------------------------------------------------------------*/
   // ale part
@@ -430,10 +429,10 @@ void FSI::LungMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpars
   mat.assign(2, 2, Core::LinAlg::View, aii);
 
   (*aigtransform_)(a->full_row_map(), a->full_col_map(), aig, 1.,
-      Core::Adapter::CouplingSlaveConverter(coupsa), mat.matrix(2, 0));
+      Coupling::Adapter::CouplingSlaveConverter(coupsa), mat.matrix(2, 0));
 
   (*ai_gtransform_)(a->full_row_map(), a->full_col_map(), aiG, 1.,
-      Core::Adapter::CouplingSlaveConverter(*coupsaout_), mat.matrix(2, 0), true, true);
+      Coupling::Adapter::CouplingSlaveConverter(*coupsaout_), mat.matrix(2, 0), true, true);
 
   /*----------------------------------------------------------------------*/
   // constraint part -> structure
@@ -462,7 +461,7 @@ void FSI::LungMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpars
 
   Core::LinAlg::SparseMatrix& caiG = ConstrAleMatrix_->matrix(0, 3);
   (*cai_gtransform_)(*coupfsout_->master_dof_map(), caiG.col_map(), caiG, 1.0,
-      Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(3, 0), true, true);
+      Coupling::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(3, 0), true, true);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.

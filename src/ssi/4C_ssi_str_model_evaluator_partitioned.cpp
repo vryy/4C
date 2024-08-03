@@ -15,7 +15,6 @@
 #include "4C_adapter_str_ssiwrapper.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
@@ -53,19 +52,19 @@ bool Solid::ModelEvaluator::PartitionedSSI::assemble_jacobian(
     Core::LinAlg::SparseMatrix jac_new(*global_state().dof_row_map(), 81, true, true);
 
     // assemble interior rows and columns of original Jacobian into new Jacobian
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(jac_sparse, *map_structure_interior,
+    Coupling::Adapter::MatrixLogicalSplitAndTransform()(jac_sparse, *map_structure_interior,
         *map_structure_interior, 1.0, nullptr, nullptr, jac_new, true, true);
 
     // assemble interior rows and master-side columns of original Jacobian into new Jacobian
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(jac_sparse, *map_structure_interior,
+    Coupling::Adapter::MatrixLogicalSplitAndTransform()(jac_sparse, *map_structure_interior,
         *cond_master_dof_map, 1.0, nullptr, nullptr, jac_new, true, true);
 
     // assemble master-side rows and interior columns of original Jacobian into new Jacobian
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_master_dof_map,
+    Coupling::Adapter::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_master_dof_map,
         *map_structure_interior, 1.0, nullptr, nullptr, jac_new, true, true);
 
     // assemble master-side rows and columns of original Jacobian into new Jacobian
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_master_dof_map,
+    Coupling::Adapter::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_master_dof_map,
         *cond_master_dof_map, 1.0, nullptr, nullptr, jac_new, true, true);
 
     for (const auto& meshtying : ssi_part_->ssi_structure_mesh_tying()->mesh_tying_handlers())
@@ -75,22 +74,22 @@ bool Solid::ModelEvaluator::PartitionedSSI::assemble_jacobian(
 
       // transform and assemble slave-side rows of original Jacobian into new Jacobian (interior
       // columns)
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_slave_dof_map,
+      Coupling::Adapter::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_slave_dof_map,
           *map_structure_interior, 1.0, &(*converter), nullptr, jac_new, true, true);
 
       // transform and assemble slave-side rows of original Jacobian into new Jacobian (master-side
       // columns)
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_slave_dof_map,
+      Coupling::Adapter::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_slave_dof_map,
           *cond_master_dof_map, 1.0, &(*converter), nullptr, jac_new, true, true);
 
       // transform and assemble slave-side columns of original Jacobian into new Jacobian (interior
       // rows)
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(jac_sparse, *map_structure_interior,
+      Coupling::Adapter::MatrixLogicalSplitAndTransform()(jac_sparse, *map_structure_interior,
           *cond_slave_dof_map, 1.0, nullptr, &(*converter), jac_new, true, true);
 
       // transform and assemble slave-side columns of original Jacobian into new Jacobian
       // (master-side rows)
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_master_dof_map,
+      Coupling::Adapter::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_master_dof_map,
           *cond_slave_dof_map, 1.0, nullptr, &(*converter), jac_new, true, true);
 
       for (const auto& meshtying2 : ssi_part_->ssi_structure_mesh_tying()->mesh_tying_handlers())
@@ -99,7 +98,7 @@ bool Solid::ModelEvaluator::PartitionedSSI::assemble_jacobian(
         auto converter2 = meshtying2->slave_side_converter();
 
         // assemble derivatives of surface slave dofs w.r.t. line slave dofs (block l)
-        Core::LinAlg::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_slave_dof_map,
+        Coupling::Adapter::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_slave_dof_map,
             *cond_slave_dof_map2, 1.0, &(*converter), &(*converter2), jac_new, true, true);
       }
     }

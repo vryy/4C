@@ -17,6 +17,7 @@ Fluid-Poro-Coupling Matrixes!
 
 #include "4C_ale_utils_mapextractor.hpp"
 #include "4C_coupling_adapter.hpp"
+#include "4C_coupling_adapter_converter.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
@@ -38,13 +39,6 @@ namespace Adapter
   class Fluid;
   class AleFpsiWrapper;
 }  // namespace Adapter
-
-namespace Core::LinAlg
-{
-  class MatrixRowTransform;
-  class MatrixColTransform;
-  class MatrixRowColTransform;
-}  // namespace Core::LinAlg
 
 /*----------------------------------------------------------------------*/
 
@@ -137,11 +131,11 @@ namespace FPSI
 
     //! @name access coupling objects
 
-    Core::Adapter::Coupling& poro_fluid_fluid_coupling() { return *icoup_pf_f_; }
+    Coupling::Adapter::Coupling& poro_fluid_fluid_coupling() { return *icoup_pf_f_; }
 
-    Core::Adapter::Coupling& poro_structure_fluid_coupling() { return *icoup_ps_f_; }
+    Coupling::Adapter::Coupling& poro_structure_fluid_coupling() { return *icoup_ps_f_; }
 
-    Core::Adapter::Coupling& poro_structure_ale_coupling() { return *icoup_ps_a_; }
+    Coupling::Adapter::Coupling& poro_structure_ale_coupling() { return *icoup_ps_a_; }
 
     //@}
 
@@ -211,11 +205,11 @@ namespace FPSI
     Teuchos::RCP<Epetra_Vector> c_rhs_f_;
 
     // Interface Coupling PoroFluid - Fluid velocities and pressure are/is coupled
-    Teuchos::RCP<Core::Adapter::Coupling> icoup_pf_f_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> icoup_pf_f_;
     // Interface Coupling PoroStructure - Fluid
-    Teuchos::RCP<Core::Adapter::Coupling> icoup_ps_f_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> icoup_ps_f_;
     // Interface Coupling PoroStructure - Ale
-    Teuchos::RCP<Core::Adapter::Coupling> icoup_ps_a_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> icoup_ps_a_;
 
     // extractor for fpsi condition from fluid
     Teuchos::RCP<Core::LinAlg::MapExtractor> fluidvelpres_extractor_;
@@ -235,23 +229,23 @@ namespace FPSI
     Teuchos::RCP<std::map<int, int>> fluid_poro_fluid_interface_map_;
     Teuchos::RCP<std::map<int, int>> poro_fluid_fluid_interface_map_;
 
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform>
         couplingrowtransform_;  /// g_fpsi || F->PF transform (FPSI)
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform>
         couplingrowtransform2_;  /// g_fpsi || PF->F transform (FPSI)
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform>
         couplingrowtransform3_;  /// g_fpsi || PF->F transform (FPSI)
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform>
         couplingrowtransform4_;  /// g_fpsi || F->PS transform (FPSI)
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> couplingrowtransform5_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> couplingrowtransform5_;
     ;  /// g_fpsi || F->PS transform (FPSI)
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform>
         couplingcoltransform_;  /// for Row/Col-Map for Full - fluid_field & F->PS transform (FPSI)
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform>
         couplingcoltransform2_;  /// for Row/Col-Map for Full - ale_field & A->PS transform (FPSI)
-    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform>
         couplingrowcoltransform_;  /// g_fpsi/g_fpsi || F->PS/F->PS transform (FPSI/FPSI)
-    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform>
         couplingrowcoltransform2_;  /// g_fpsi/g_fpsi || F->PF/F->PS transform (FPSI/FPSI)
 
     // hydraulic conductivity (needed for coupling in case of probtype fps3i)

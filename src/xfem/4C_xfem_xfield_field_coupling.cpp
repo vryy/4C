@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 XFEM::XFieldField::Coupling::Coupling()
-    : Core::Adapter::Coupling(), isinit_(false), min_dof_dis_(min_dof_unknown)
+    : ::FourC::Coupling::Adapter::Coupling(), isinit_(false), min_dof_dis_(min_dof_unknown)
 {
   // intentionally left blank
 }
@@ -46,7 +46,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::XFieldField::Coupling::master_to_slave(
   switch (map_type)
   {
     case XFEM::map_dofs:
-      return Core::Adapter::Coupling::master_to_slave(mv);
+      return ::FourC::Coupling::Adapter::Coupling::master_to_slave(mv);
       break;
     case XFEM::map_nodes:
       sv = Teuchos::rcp(new Epetra_Vector(*slavenodemap_));
@@ -66,7 +66,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::XFieldField::Coupling::slave_to_master(
   switch (map_type)
   {
     case XFEM::map_dofs:
-      return Core::Adapter::Coupling::slave_to_master(sv);
+      return ::FourC::Coupling::Adapter::Coupling::slave_to_master(sv);
       break;
     case XFEM::map_nodes:
       mv = Teuchos::rcp(new Epetra_Vector(*masternodemap_));
@@ -86,7 +86,7 @@ Teuchos::RCP<Epetra_MultiVector> XFEM::XFieldField::Coupling::master_to_slave(
   switch (map_type)
   {
     case XFEM::map_dofs:
-      return Core::Adapter::Coupling::master_to_slave(mv);
+      return ::FourC::Coupling::Adapter::Coupling::master_to_slave(mv);
       break;
     case XFEM::map_nodes:
       sv = Teuchos::rcp(new Epetra_MultiVector(*slavenodemap_, mv->NumVectors()));
@@ -106,7 +106,7 @@ Teuchos::RCP<Epetra_MultiVector> XFEM::XFieldField::Coupling::slave_to_master(
   switch (map_type)
   {
     case XFEM::map_dofs:
-      return Core::Adapter::Coupling::slave_to_master(sv);
+      return ::FourC::Coupling::Adapter::Coupling::slave_to_master(sv);
       break;
     case XFEM::map_nodes:
       mv = Teuchos::rcp(new Epetra_MultiVector(*masternodemap_, sv->NumVectors()));
@@ -126,7 +126,7 @@ void XFEM::XFieldField::Coupling::master_to_slave(const Teuchos::RCP<const Epetr
   {
     case XFEM::map_dofs:
     {
-      return Core::Adapter::Coupling::master_to_slave(mv, sv);
+      return ::FourC::Coupling::Adapter::Coupling::master_to_slave(mv, sv);
       break;
     }
     case XFEM::map_nodes:
@@ -157,7 +157,7 @@ void XFEM::XFieldField::Coupling::slave_to_master(const Teuchos::RCP<const Epetr
   {
     case XFEM::map_dofs:
     {
-      return Core::Adapter::Coupling::slave_to_master(sv, mv);
+      return ::FourC::Coupling::Adapter::Coupling::slave_to_master(sv, mv);
       break;
     }
     case XFEM::map_nodes:
@@ -193,8 +193,9 @@ void XFEM::XFieldField::Coupling::build_dof_maps(const Core::FE::Discretization&
   // call base class implementation
   if (masterdofs[0] != -1)
   {
-    Core::Adapter::Coupling::build_dof_maps(masterdis, slavedis, masternodemap, slavenodemap,
-        permmasternodemap, permslavenodemap, masterdofs, slavedofs, nds_master, nds_slave);
+    ::FourC::Coupling::Adapter::Coupling::build_dof_maps(masterdis, slavedis, masternodemap,
+        slavenodemap, permmasternodemap, permslavenodemap, masterdofs, slavedofs, nds_master,
+        nds_slave);
     return;
   }
 

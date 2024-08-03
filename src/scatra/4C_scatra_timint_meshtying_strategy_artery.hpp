@@ -27,7 +27,6 @@ namespace Core::FE
 
 namespace Adapter
 {
-  class Coupling;
   class ArtNet;
 }  // namespace Adapter
 namespace FSI

@@ -68,7 +68,7 @@ namespace FSI
       /// constructor initializing internal variables
       SlideAleUtils(Teuchos::RCP<Core::FE::Discretization> structdis,  ///< structure discretization
           Teuchos::RCP<Core::FE::Discretization> fluiddis,             ///< fluid discretization
-          Core::Adapter::CouplingMortar& coupsf,                       ///< mortar adapter
+          Coupling::Adapter::CouplingMortar& coupsf,                   ///< mortar adapter
           bool structcoupmaster,            ///< is structure master of adapter coupling?
           Inpar::FSI::SlideALEProj aleproj  ///< projection enum
       );
@@ -78,16 +78,16 @@ namespace FSI
       /// remesh ALE corresponding
       void remeshing(Adapter::FSIStructureWrapper& structure,  ///< structure adapter
           Teuchos::RCP<Core::FE::Discretization> fluiddis,     ///< fluid discretization
-          Teuchos::RCP<Epetra_Vector> idispale,      ///< standard ALE interface displacement
-          Teuchos::RCP<Epetra_Vector> iprojdispale,  ///< projected ALE interface displacement
-          Core::Adapter::CouplingMortar& coupsf,     ///< mortar adapter
-          const Epetra_Comm& comm                    ///< communicator
+          Teuchos::RCP<Epetra_Vector> idispale,       ///< standard ALE interface displacement
+          Teuchos::RCP<Epetra_Vector> iprojdispale,   ///< projected ALE interface displacement
+          Coupling::Adapter::CouplingMortar& coupsf,  ///< mortar adapter
+          const Epetra_Comm& comm                     ///< communicator
       );
 
       /// Compute new coupling matrices D and M for solid/fluid
       void evaluate_mortar(Teuchos::RCP<Epetra_Vector> idispstruct,  ///< displacement of structure
-          Teuchos::RCP<Epetra_Vector> idispfluid,  ///< (proj.) displacement of ale
-          Core::Adapter::CouplingMortar& coupsf    ///< mortar adapter
+          Teuchos::RCP<Epetra_Vector> idispfluid,    ///< (proj.) displacement of ale
+          Coupling::Adapter::CouplingMortar& coupsf  ///< mortar adapter
       );
 
       /// Compute new coupling matrices D and M for solid/ale coupling
@@ -134,17 +134,17 @@ namespace FSI
       /// project ALE nodes onto the structure surface
       void slide_projection(Adapter::FSIStructureWrapper& structure,  ///< structure adapter
           Teuchos::RCP<Core::FE::Discretization> fluiddis,            ///< fluid discretization
-          Teuchos::RCP<Epetra_Vector> idispale,      ///< standard ALE interface displacement
-          Teuchos::RCP<Epetra_Vector> iprojdispale,  ///< projected ALE interface displacement
-          Core::Adapter::CouplingMortar& coupsf,     ///< mortar adapter
-          const Epetra_Comm& comm                    ///< communicator
+          Teuchos::RCP<Epetra_Vector> idispale,       ///< standard ALE interface displacement
+          Teuchos::RCP<Epetra_Vector> iprojdispale,   ///< projected ALE interface displacement
+          Coupling::Adapter::CouplingMortar& coupsf,  ///< mortar adapter
+          const Epetra_Comm& comm                     ///< communicator
       );
 
       /// Build full redundant structure and fluid elements.
       /// Necessary for search-trees since MORTAR elements do not know about their facets and edges.
       /// Furthermore, this function builds StructuralSurface elements from the fluid outer surface
       /// for rotation.
-      void redundant_elements(Core::Adapter::CouplingMortar& coupsf, const Epetra_Comm& comm);
+      void redundant_elements(Coupling::Adapter::CouplingMortar& coupsf, const Epetra_Comm& comm);
 
      private:
       const Inpar::FSI::SlideALEProj aletype_;
@@ -187,7 +187,7 @@ namespace FSI
       bool structcoupmaster_;  ///< is structure master of coupling?
 
       /// coupling of fluid before and fluid after the sliding
-      Teuchos::RCP<Core::Adapter::CouplingMortar> coupff_;
+      Teuchos::RCP<Coupling::Adapter::CouplingMortar> coupff_;
 
     };  // class SlideAleUtils
 

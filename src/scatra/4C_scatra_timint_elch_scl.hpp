@@ -30,7 +30,6 @@ namespace FLD
 
 namespace Adapter
 {
-  class Coupling;
   class ScaTraBaseAlgorithm;
 }  // namespace Adapter
 
@@ -129,7 +128,7 @@ namespace ScaTra
     Teuchos::RCP<Core::LinAlg::MapExtractor> macro_coupling_dofs_;
 
     //! coupling adapter between micro (slave) and macro discretization (master).
-    Teuchos::RCP<Core::Adapter::Coupling> macro_micro_coupling_adapter_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> macro_micro_coupling_adapter_;
 
     //! map extractor to get micro and macro dofs from global vector
     //! cond. map: micro, other map: macro

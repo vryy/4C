@@ -40,7 +40,7 @@ namespace Core::FE
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
-namespace Core::Adapter
+namespace Coupling::Adapter
 {
   /*! \class Coupling
    *  \brief Management of coupling between two (matching) sets of nodes from
@@ -573,7 +573,7 @@ namespace Core::Adapter
 
     //@}
   };
-}  // namespace Core::Adapter
+}  // namespace Coupling::Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

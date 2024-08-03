@@ -105,12 +105,13 @@ contact/4C_contact_lagrange_strategy_poro*   @baci/team_poro @baci/team_contact
 contact_constitutivelaw/   @baci/team_contact
 
 core/*                     @baci/team_infrastructure
-core/coupling/             @baci/team_discretization
 core/fem/                  @baci/team_discretization
 core/linalg/               @baci/team_solvers
 core/linear_solver/        @baci/team_solvers
 core/rebalance/            @baci/team_discretization
 core/utils/                @baci/team_infrastructure
+
+coupling/                  @baci/team_discretization
 
 create_rtdfiles/           @baci/team_infrastructure
 

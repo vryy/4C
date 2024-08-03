@@ -13,16 +13,10 @@
 
 #include "4C_config.hpp"
 
+#include "4C_coupling_adapter_converter.hpp"
 #include "4C_poroelast_monolithicsplit.hpp"
 
 FOUR_C_NAMESPACE_OPEN
-
-namespace Core::LinAlg
-{
-  class MatrixRowTransform;
-  class MatrixColTransform;
-  class MatrixRowColTransform;
-}  // namespace Core::LinAlg
 
 namespace PoroElast
 {
@@ -77,19 +71,19 @@ namespace PoroElast
 
     //! @name matrix transformation
     //! transform object for fluid interface matrix \f$F_{\Gamma \Gamma}\f$
-    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform> fggtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform> fggtransform_;
     //! transform object for fluid interface matrix \f$F_{\Gamma I}\f$
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> fgitransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> fgitransform_;
     //! transform object for fluid interface matrix \f$F_{I \Gamma}\f$
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> figtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> figtransform_;
     //! transform object for fluid coupling matrix \f$C_{\Gamma \Gamma}^F\f$
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> cfggtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> cfggtransform_;
     //! transform object for structure coupling matrix \f$C_{\Gamma \Gamma}^S\f$
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> csggtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> csggtransform_;
     //! transform object for fluid coupling matrix \f$C_{\Gamma I}^F\f$
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> cfgitransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> cfgitransform_;
     //! transform object for structure coupling matrix \f$C_{I \Gamma}^S\f$
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> csigtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> csigtransform_;
     //!@}
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$

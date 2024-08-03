@@ -1,78 +1,151 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*! \file
 
-\brief Utilities for matrix transformations
-
+\brief Converter to use Adapter::Coupling type objects in both coupling directions
 
 \level 1
+
 */
-/*---------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LINALG_MATRIXTRANSFORM_HPP
-#define FOUR_C_LINALG_MATRIXTRANSFORM_HPP
+#ifndef FOUR_C_COUPLING_ADAPTER_CONVERTER_HPP
+#define FOUR_C_COUPLING_ADAPTER_CONVERTER_HPP
 
+/*----------------------------------------------------------------------------*/
+/* headers */
 #include "4C_config.hpp"
 
-#include "4C_coupling_adapter.hpp"
+#include "4C_linalg_sparsematrix.hpp"
 
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_Export.h>
-#include <Epetra_Import.h>
+#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <map>
 
 FOUR_C_NAMESPACE_OPEN
 
-// forward declarations
-namespace Core::Adapter
+/*----------------------------------------------------------------------------*/
+/* forward declarations */
+namespace Coupling::Adapter
 {
   class Coupling;
-  class CouplingConverter;
-}  // namespace Core::Adapter
+}
 
-namespace Core::LinAlg
+/*----------------------------------------------------------------------------*/
+/* definition of classes */
+namespace Coupling::Adapter
 {
-  class SparseMatrix;
+  /*! \class CouplingConverter
+   *  \brief Abstract converter base for master/slave conversion of data
+   *
+   *  The point is that many generic coupling algorithms that transfer data
+   *  between master and slave might be used in both directions. These
+   *  algorithms can utilize a Converter to enable use in both directions.
+   */
+  class CouplingConverter
+  {
+   public:
+    virtual ~CouplingConverter() = default;
+    virtual Teuchos::RCP<Epetra_Vector> src_to_dst(Teuchos::RCP<const Epetra_Vector> s) const = 0;
 
+    virtual Teuchos::RCP<Epetra_Vector> dst_to_src(Teuchos::RCP<const Epetra_Vector> d) const = 0;
+
+    virtual Teuchos::RCP<const Epetra_Map> src_map() const = 0;
+
+    virtual Teuchos::RCP<const Epetra_Map> dst_map() const = 0;
+
+    virtual Teuchos::RCP<const Epetra_Map> perm_src_map() const = 0;
+
+    virtual Teuchos::RCP<const Epetra_Map> perm_dst_map() const = 0;
+
+    virtual void fill_src_to_dst_map(std::map<int, int>& rowmap) const = 0;
+  };
+
+  /// master to slave converter
+  class CouplingMasterConverter : public CouplingConverter
+  {
+   public:
+    explicit CouplingMasterConverter(const Coupling& coup) : coup_(coup) {}
+
+    Teuchos::RCP<Epetra_Vector> src_to_dst(Teuchos::RCP<const Epetra_Vector> s) const override;
+
+    Teuchos::RCP<Epetra_Vector> dst_to_src(Teuchos::RCP<const Epetra_Vector> d) const override;
+
+    Teuchos::RCP<const Epetra_Map> src_map() const override;
+
+    Teuchos::RCP<const Epetra_Map> dst_map() const override;
+
+    Teuchos::RCP<const Epetra_Map> perm_src_map() const override;
+
+    Teuchos::RCP<const Epetra_Map> perm_dst_map() const override;
+
+    void fill_src_to_dst_map(std::map<int, int>& rowmap) const override;
+
+   private:
+    const Coupling& coup_;
+  };
+
+  /// slave to master converter
+  class CouplingSlaveConverter : public CouplingConverter
+  {
+   public:
+    explicit CouplingSlaveConverter(const Coupling& coup) : coup_(coup) {}
+
+    Teuchos::RCP<Epetra_Vector> src_to_dst(Teuchos::RCP<const Epetra_Vector> s) const override;
+
+    Teuchos::RCP<Epetra_Vector> dst_to_src(Teuchos::RCP<const Epetra_Vector> d) const override;
+
+    Teuchos::RCP<const Epetra_Map> src_map() const override;
+
+    Teuchos::RCP<const Epetra_Map> dst_map() const override;
+
+    Teuchos::RCP<const Epetra_Map> perm_src_map() const override;
+
+    Teuchos::RCP<const Epetra_Map> perm_dst_map() const override;
+
+    void fill_src_to_dst_map(std::map<int, int>& rowmap) const override;
+
+   private:
+    const Coupling& coup_;
+  };
   /// extract submatrix of the src map and transform it to a new col map
   /*!
 
   Monolithic multiphysics add matrices from different fields at the interface. These matrices
-  belong to different row maps. Thus adding them requires moving one of them to a new row map. The
-  relations between these maps are managed by Adapter::Coupling objects. In a parallel setting
-  there is a master and a slave side (in case of matrix transformations we use source and
-  destination abstraction via Adapter::CouplingConverter). The parallel distribution of both
-  is arbitrary. And in addition there are permuted master and slave maps, that match the respective
-  other side. So the row map transformation requires a parallel redistribution followed by a row map
-  exchange.
+      belong to different row maps. Thus adding them requires moving one of them to a new row map.
+  The relations between these maps are managed by Adapter::Coupling objects. In a parallel setting
+              there is a master and a slave side (in case of matrix transformations we use source
+  and destination abstraction via Adapter::CouplingConverter). The parallel distribution of both is
+  arbitrary. And in addition there are permuted master and slave maps, that match the respective
+      other side. So the row map transformation requires a parallel redistribution followed by a row
+  map exchange.
 
-  This operator does not utilize Epetra_CrsMatrix::ReplaceRowMap() but
-  copies the temporary matrix. This is required both to preserve the
-  internal Epetra_CrsMatrix from the destination Core::LinAlg::SparseMatrix and
-  because the destination matrix row map may be much larger than the source
-  matrix row map.
+      This operator does not utilize Epetra_CrsMatrix::ReplaceRowMap() but
+      copies the temporary matrix. This is required both to preserve the
+      internal Epetra_CrsMatrix from the destination Core::LinAlg::SparseMatrix and
+      because the destination matrix row map may be much larger than the source
+      matrix row map.
 
-  The operator is meant to be usable on its own and operate on both row and
-  column transformations (if the respective converter is given).
+      The operator is meant to be usable on its own and operate on both row and
+      column transformations (if the respective converter is given).
 
-  An additional feature of this class is that it can assign matrix blocks
-  from one field to block matrix slots on another field. As opposed to
-  MatrixColTransform, this method extracts a logical block from the input
-  matrix without any split call.
+      An additional feature of this class is that it can assign matrix blocks
+      from one field to block matrix slots on another field. As opposed to
+      MatrixColTransform, this method extracts a logical block from the input
+              matrix without any split call.
 
   \note All matrix transformation operators work with filled and unfilled
-  destination matrices. The source matrix is never changed. The destination
-  matrix is not reallocated and its filled state is not explicitly
-  changed. There is a Core::LinAlg::SparseMatrix::Zero() call if addmatrix==false
-  and this can reset the filled state if the matrix graph is not preserved
-  by the Core::LinAlg::SparseMatrix object.
+              destination matrices. The source matrix is never changed. The destination
+              matrix is not reallocated and its filled state is not explicitly
+              changed. There is a Core::LinAlg::SparseMatrix::Zero() call if addmatrix==false
+          and this can reset the filled state if the matrix graph is not preserved
+              by the Core::LinAlg::SparseMatrix object.
 
 
   \sa MatrixColTransform, MatrixRowTransform, matrix_row_col_transform
   \author kronbichler
   \date 11/15
-   */
+                              */
   class MatrixLogicalSplitAndTransform
   {
    public:
@@ -96,9 +169,8 @@ namespace Core::LinAlg
      */
     bool operator()(const Core::LinAlg::SparseMatrix& src, const Epetra_Map& logical_range_map,
         const Epetra_Map& logical_domain_map, const double scale,
-        const Core::Adapter::CouplingConverter* row_converter,
-        const Core::Adapter::CouplingConverter* col_converter, Core::LinAlg::SparseMatrix& dst,
-        bool exactmatch = true, bool addmatrix = false);
+        const CouplingConverter* row_converter, const CouplingConverter* col_converter,
+        Core::LinAlg::SparseMatrix& dst, bool exactmatch = true, bool addmatrix = false);
 
    private:
     /// setup column map matching between source and destination gids
@@ -106,7 +178,7 @@ namespace Core::LinAlg
       Internal method.
      */
     void setup_gid_map(const Epetra_Map& rowmap, const Epetra_Map& colmap,
-        const Core::Adapter::CouplingConverter* converter, const Epetra_Comm& comm);
+        const CouplingConverter* converter, const Epetra_Comm& comm);
 
     /// copy values from source to destination matrix
     /*!
@@ -198,7 +270,7 @@ namespace Core::LinAlg
       \param addmatrix (i) remove current dst values if false
      */
     bool operator()(const Core::LinAlg::SparseMatrix& src, double scale,
-        const Core::Adapter::CouplingConverter& converter, Core::LinAlg::SparseMatrix& dst,
+        const CouplingConverter& converter, Core::LinAlg::SparseMatrix& dst,
         bool addmatrix = false);
 
    private:
@@ -254,9 +326,8 @@ namespace Core::LinAlg
       \param addmatrix (i) remove current dst values if false
      */
     bool operator()(const Epetra_Map& rowmap, const Epetra_Map& colmap,
-        const Core::LinAlg::SparseMatrix& src, double scale,
-        const Core::Adapter::CouplingConverter& converter, Core::LinAlg::SparseMatrix& dst,
-        bool exactmatch = true, bool addmatrix = false);
+        const Core::LinAlg::SparseMatrix& src, double scale, const CouplingConverter& converter,
+        Core::LinAlg::SparseMatrix& dst, bool exactmatch = true, bool addmatrix = false);
 
    private:
     /// object that does the actual work
@@ -300,16 +371,15 @@ namespace Core::LinAlg
       \param addmatrix    (i) remove current dst values if false
      */
     bool operator()(const Core::LinAlg::SparseMatrix& src, double scale,
-        const Core::Adapter::CouplingConverter& rowconverter,
-        const Core::Adapter::CouplingConverter& colconverter, Core::LinAlg::SparseMatrix& dst,
-        bool exactmatch = true, bool addmatrix = false);
+        const CouplingConverter& rowconverter, const CouplingConverter& colconverter,
+        Core::LinAlg::SparseMatrix& dst, bool exactmatch = true, bool addmatrix = false);
 
    private:
     /// object that does the actual work
     MatrixLogicalSplitAndTransform transformer_;
   };
 
-}  // namespace Core::LinAlg
+}  // namespace Coupling::Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

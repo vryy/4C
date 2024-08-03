@@ -26,12 +26,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::Adapter
+namespace Coupling::Adapter
 {
   class Coupling;
   class CouplingSlaveConverter;
   class CouplingMasterConverter;
-}  // namespace Core::Adapter
+}  // namespace Coupling::Adapter
 
 namespace Adapter
 {
@@ -91,7 +91,7 @@ namespace SSI
     Core::Conditions::Condition* condition_manifold() const { return condition_manifold_; }
 
     //! coupling adapter between manifold (slave) and scatra (master)
-    Teuchos::RCP<Core::Adapter::Coupling> coupling_adapter() const { return coupling_adapter_; }
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupling_adapter() const { return coupling_adapter_; }
 
     //! inverse of thickness of manifold
     double inv_thickness() const { return inv_thickness_; }
@@ -100,7 +100,7 @@ namespace SSI
     int manifold_condition_id() const { return manifold_condition_id_; }
 
     //! from master to slave side
-    Teuchos::RCP<Core::Adapter::CouplingMasterConverter> master_converter() const
+    Teuchos::RCP<Coupling::Adapter::CouplingMasterConverter> master_converter() const
     {
       return master_converter_;
     }
@@ -128,7 +128,7 @@ namespace SSI
     Core::Conditions::Condition* condition_manifold_;
 
     //! coupling adapter between manifold (slave) and scatra (master)
-    Teuchos::RCP<Core::Adapter::Coupling> coupling_adapter_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupling_adapter_;
 
     //! inverse of thickness of manifold
     const double inv_thickness_;
@@ -143,7 +143,7 @@ namespace SSI
     Teuchos::RCP<Core::LinAlg::MapExtractor> manifold_map_extractor_;
 
     //! Master converter for scatra - manifold coupling
-    Teuchos::RCP<Core::Adapter::CouplingMasterConverter> master_converter_;
+    Teuchos::RCP<Coupling::Adapter::CouplingMasterConverter> master_converter_;
 
     //! Map exctractor for dofs in this kinetics condition
     Teuchos::RCP<Core::LinAlg::MapExtractor> scatra_map_extractor_;
@@ -325,12 +325,13 @@ namespace SSI
 
   //! data types for mesh tying handlers for sparse case: coupling adapter and MultiMapExtractor
   //! splitting dofs into interior, master, and slave
-  using meshtying_handler_type = std::pair<Teuchos::RCP<Core::Adapter::Coupling>,
+  using meshtying_handler_type = std::pair<Teuchos::RCP<Coupling::Adapter::Coupling>,
       Teuchos::RCP<Core::LinAlg::MultiMapExtractor>>;
   //! data types for mesh tying handlers for block case: standard mesh tying handler and
   //! MultiMapExtractor splitting slave dofs into blocks
-  using meshtying_block_handler_type = std::pair<std::vector<Teuchos::RCP<Core::Adapter::Coupling>>,
-      std::vector<Teuchos::RCP<const Epetra_Map>>>;
+  using meshtying_block_handler_type =
+      std::pair<std::vector<Teuchos::RCP<Coupling::Adapter::Coupling>>,
+          std::vector<Teuchos::RCP<const Epetra_Map>>>;
 
   //! Base class to handle mesh tying between manifold fields
   class ManifoldMeshTyingStrategyBase

@@ -31,7 +31,6 @@ with condensed fluid interface velocities
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_mapextractor.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -155,14 +154,14 @@ FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(
 
   notsetup_ = true;
 
-  coupsfm_ = Teuchos::rcp(new Core::Adapter::CouplingMortar(Global::Problem::instance()->n_dim(),
-      Global::Problem::instance()->mortar_coupling_params(),
+  coupsfm_ = Teuchos::rcp(new Coupling::Adapter::CouplingMortar(
+      Global::Problem::instance()->n_dim(), Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
       Global::Problem::instance()->spatial_approximation_type()));
-  fscoupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  fscoupfa_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
 
-  aigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
 
   // Recovery of Lagrange multiplier happens on fluid field
   set_lambda();
@@ -237,7 +236,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system()
     const int ndim = Global::Problem::instance()->n_dim();
 
     // get coupling objects
-    Core::Adapter::Coupling& icoupfa = interface_fluid_ale_coupling();
+    Coupling::Adapter::Coupling& icoupfa = interface_fluid_ale_coupling();
 
     /* structure to fluid
      * coupling condition at the fsi interface:
@@ -264,7 +263,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system()
           ale_field()->interface()->fs_cond_map(), "FREESURFCoupling", ndim);
     }
 
-    Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
+    Coupling::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
     // the fluid-ale coupling always matches
     const Epetra_Map* fluidnodemap = fluid_field()->discretization()->node_row_map();
@@ -760,7 +759,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat = Teuchos::null;
   if (stcalgo != Inpar::Solid::stc_none) stcmat = structure_field()->get_stc_mat();
 
-  const Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
+  const Coupling::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
   // get single field block matrices
   Teuchos::RCP<Core::LinAlg::SparseMatrix> s =
@@ -863,7 +862,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
   Teuchos::RCP<Core::LinAlg::SparseMatrix> laig =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(aii.row_map(), 81, false));
   (*aigtransform_)(a->full_row_map(), a->full_col_map(), aig, 1.,
-      Core::Adapter::CouplingSlaveConverter(interface_fluid_ale_coupling()), *laig);
+      Coupling::Adapter::CouplingSlaveConverter(interface_fluid_ale_coupling()), *laig);
 
   laig->complete(f->matrix(1, 1).domain_map(), aii.range_map(), true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> llaig =
@@ -925,12 +924,12 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
     // We cannot copy the pressure value. It is not used anyway. So no exact
     // match here.
     (*fmiitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmii, 1.,
-        Core::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false);
+        Coupling::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false);
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> lfmgi =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(fmgi.row_map(), 81, false));
     (*fmiitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmgi, 1.0,
-        Core::Adapter::CouplingMasterConverter(coupfa), *lfmgi, false);
+        Coupling::Adapter::CouplingMasterConverter(coupfa), *lfmgi, false);
 
     // ---------Addressing contribution to block (2,4)
     lfmgi->complete(aii.domain_map(), mortarp->range_map(), true);

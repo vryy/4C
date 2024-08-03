@@ -65,7 +65,7 @@ namespace Adapter
         Teuchos::RCP<Epetra_Vector> svel, Teuchos::RCP<Epetra_Vector> fpres,
         Teuchos::RCP<Epetra_Vector> sdisp, const Teuchos::RCP<Core::FE::Discretization> sdis,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& f, Teuchos::RCP<Core::LinAlg::SparseMatrix>& k_fs,
-        Teuchos::RCP<Epetra_Vector>& frhs, Core::Adapter::Coupling& coupfs,
+        Teuchos::RCP<Epetra_Vector>& frhs, Coupling::Adapter::Coupling& coupfs,
         Teuchos::RCP<const Epetra_Map> fdofrowmap);
 
     void update_poro_mt();

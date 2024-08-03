@@ -24,11 +24,6 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Adapter
 {
-  // forward declarations
-
-  class Coupling;
-
-
   /// basis coupling algorithm for scalar transport with Navier-Stokes on moving meshes
   /*!
 
@@ -91,13 +86,13 @@ namespace Adapter
     Teuchos::RCP<AleFluidWrapper> ale_;
 
     /// coupling of fluid and ale (whole field)
-    Teuchos::RCP<Core::Adapter::Coupling> coupfa_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupfa_;
 
     /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<Core::Adapter::Coupling> icoupfa_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> icoupfa_;
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<Core::Adapter::Coupling> fscoupfa_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> fscoupfa_;
 
     /// condition name
     const std::string condname_;

@@ -14,7 +14,6 @@
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_fem_condition_locsys.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
 #include "4C_ssi_monolithic.hpp"
@@ -107,19 +106,19 @@ void SSI::MeshtyingStrategyBase::apply_meshtying_to_structure_matrix(
   auto master_dof_map = ssi_structure_meshtying_->full_master_side_map();
 
   // assemble derivatives of interior dofs w.r.t. interior dofs (block a)
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(*structure_matrix, *map_structure_interior,
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structure_matrix, *map_structure_interior,
       *map_structure_interior, 1.0, nullptr, nullptr, ssi_structure_matrix, true, true);
 
   // assemble derivatives of interior dofs w.r.t. master dofs (block b)
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(*structure_matrix, *map_structure_interior,
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structure_matrix, *map_structure_interior,
       *master_dof_map, 1.0, nullptr, nullptr, ssi_structure_matrix, true, true);
 
   // assemble derivatives of master dofs w.r.t. interior dofs (block e)
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(*structure_matrix, *master_dof_map,
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structure_matrix, *master_dof_map,
       *map_structure_interior, 1.0, nullptr, nullptr, ssi_structure_matrix, true, true);
 
   // assemble derivatives of master dofs w.r.t. master dofs (block f)
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(*structure_matrix, *master_dof_map,
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structure_matrix, *master_dof_map,
       *master_dof_map, 1.0, nullptr, nullptr, ssi_structure_matrix, true, true);
 
   for (const auto& meshtying : ssi_structure_meshtying_->mesh_tying_handlers())
@@ -128,19 +127,19 @@ void SSI::MeshtyingStrategyBase::apply_meshtying_to_structure_matrix(
     auto converter = meshtying->slave_side_converter();
 
     // assemble derivatives of slave dofs w.r.t. interior dofs (block i)
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(*structure_matrix, *cond_slave_dof_map,
+    Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structure_matrix, *cond_slave_dof_map,
         *map_structure_interior, 1.0, &(*converter), nullptr, ssi_structure_matrix, true, true);
 
     // assemble derivatives of slave dofs w.r.t. master dofs (block j)
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(*structure_matrix, *cond_slave_dof_map,
+    Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structure_matrix, *cond_slave_dof_map,
         *master_dof_map, 1.0, &(*converter), nullptr, ssi_structure_matrix, true, true);
 
     // assemble derivatives of interior w.r.t. slave dofs (block c)
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(*structure_matrix, *map_structure_interior,
+    Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structure_matrix, *map_structure_interior,
         *cond_slave_dof_map, 1.0, nullptr, &(*converter), ssi_structure_matrix, true, true);
 
     // assemble derivatives of master w.r.t. slave dofs (block g)
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(*structure_matrix, *master_dof_map,
+    Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structure_matrix, *master_dof_map,
         *cond_slave_dof_map, 1.0, nullptr, &(*converter), ssi_structure_matrix, true, true);
 
     for (const auto& meshtying2 : ssi_structure_meshtying_->mesh_tying_handlers())
@@ -149,7 +148,7 @@ void SSI::MeshtyingStrategyBase::apply_meshtying_to_structure_matrix(
       auto converter2 = meshtying2->slave_side_converter();
 
       // assemble derivatives of slave dofs w.r.t. other slave dofs (block l)
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(*structure_matrix, *cond_slave_dof_map,
+      Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structure_matrix, *cond_slave_dof_map,
           *cond_slave_dof_map2, 1.0, &(*converter), &(*converter2), ssi_structure_matrix, true,
           true);
     }
@@ -171,12 +170,12 @@ void SSI::MeshtyingStrategyBase::apply_meshtying_to_xxx_structure(
   auto master_dof_map = ssi_structure_meshtying_->full_master_side_map();
 
   // assemble derivatives of x w.r.t. structure interior dofs
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(xxx_structure_matrix,
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(xxx_structure_matrix,
       xxx_structure_matrix.range_map(), *map_structure_interior, 1.0, nullptr, nullptr,
       ssi_xxx_structure_matrix, true, true);
 
   // assemble derivatives of x w.r.t. structure master dofs
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(xxx_structure_matrix,
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(xxx_structure_matrix,
       xxx_structure_matrix.range_map(), *master_dof_map, 1.0, nullptr, nullptr,
       ssi_xxx_structure_matrix, true, true);
 
@@ -188,7 +187,7 @@ void SSI::MeshtyingStrategyBase::apply_meshtying_to_xxx_structure(
     auto converter = meshtying->slave_side_converter();
 
     // assemble derivatives of x w.r.t. structure slave dofs
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(xxx_structure_matrix,
+    Coupling::Adapter::MatrixLogicalSplitAndTransform()(xxx_structure_matrix,
         xxx_structure_matrix.range_map(), *cond_slave_dof_map, 1.0, nullptr, &(*converter),
         ssi_xxx_structure_matrix, true, true);
   }
@@ -373,11 +372,11 @@ void SSI::MeshtyingStrategyBase::apply_meshtying_to_structure_xxx(
   auto master_dof_map = ssi_structure_meshtying_->full_master_side_map();
 
   // assemble derivatives of structure interior dofs w.r.t. scatra dofs
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(structure_xxx_matrix, *map_structure_interior,
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(structure_xxx_matrix, *map_structure_interior,
       structure_xxx_matrix.domain_map(), 1.0, nullptr, nullptr, ssi_structure_xxx_matrix, true,
       true);
   // assemble derivatives of structure master dofs w.r.t. scatra dofs
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(structure_xxx_matrix, *master_dof_map,
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(structure_xxx_matrix, *master_dof_map,
       structure_xxx_matrix.domain_map(), 1.0, nullptr, nullptr, ssi_structure_xxx_matrix, true,
       true);
 
@@ -387,7 +386,7 @@ void SSI::MeshtyingStrategyBase::apply_meshtying_to_structure_xxx(
     auto converter = meshtying->slave_side_converter();
 
     // assemble derivatives of structure slave dofs & interior dofs w.r.t. scatra dofs
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(structure_xxx_matrix, *cond_slave_dof_map,
+    Coupling::Adapter::MatrixLogicalSplitAndTransform()(structure_xxx_matrix, *cond_slave_dof_map,
         structure_xxx_matrix.domain_map(), 1.0, &(*converter), nullptr, ssi_structure_xxx_matrix,
         true, true);
   }

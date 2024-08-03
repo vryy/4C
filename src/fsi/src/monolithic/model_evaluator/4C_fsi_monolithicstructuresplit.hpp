@@ -15,6 +15,7 @@ with condensed structure interface displacements
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter.hpp"
+#include "4C_coupling_adapter_converter.hpp"
 #include "4C_fsi_monolithic.hpp"
 #include "4C_inpar_fsi.hpp"
 
@@ -45,14 +46,6 @@ namespace FSI
 {
   class OverlappingBlockMatrix;
 }  // namespace FSI
-
-namespace Core::LinAlg
-{
-  class MatrixRowTransform;
-  class MatrixColTransform;
-  class MatrixRowColTransform;
-}  // namespace Core::LinAlg
-
 
 namespace FSI
 {
@@ -221,21 +214,21 @@ namespace FSI
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<Core::Adapter::Coupling> fscoupfa_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> fscoupfa_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform> sggtransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> sgitransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> sigtransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform> sggtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> sgitransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> sigtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> aigtransform_;
 
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fmgitransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> fmgitransform_;
 
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fsaigtransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fsmgitransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> fsaigtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> fsmgitransform_;
 
     ///@}
 

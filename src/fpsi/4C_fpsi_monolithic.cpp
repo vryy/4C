@@ -75,12 +75,12 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   if (ale_ == Teuchos::null)
     FOUR_C_THROW("cast from Adapter::Ale to Adapter::AleFpsiWrapper failed");
 
-  coupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  coupfa_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
 
-  coupsf_fsi_ = Teuchos::rcp(new Core::Adapter::Coupling());
-  coupsa_fsi_ = Teuchos::rcp(new Core::Adapter::Coupling());
-  coupfa_fsi_ = Teuchos::rcp(new Core::Adapter::Coupling());
-  icoupfa_fsi_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  coupsf_fsi_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  coupsa_fsi_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  coupfa_fsi_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  icoupfa_fsi_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
 
   Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::instance();
 
@@ -259,7 +259,7 @@ void FPSI::Monolithic::setup_system()
 {
   const int ndim = Global::Problem::instance()->n_dim();
 
-  Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
+  Coupling::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
   const Epetra_Map* fluidnodemap = fluid_field()->discretization()->node_row_map();
   const Epetra_Map* alenodemap = ale_field()->discretization()->node_row_map();
@@ -288,9 +288,9 @@ void FPSI::Monolithic::setup_system_fsi()
 
   const int ndim = Global::Problem::instance()->n_dim();
 
-  Core::Adapter::Coupling& coupsf_fsi = structure_fluid_coupling_fsi();
-  Core::Adapter::Coupling& coupsa_fsi = structure_ale_coupling_fsi();
-  Core::Adapter::Coupling& icoupfa_fsi = interface_fluid_ale_coupling_fsi();
+  Coupling::Adapter::Coupling& coupsf_fsi = structure_fluid_coupling_fsi();
+  Coupling::Adapter::Coupling& coupsa_fsi = structure_ale_coupling_fsi();
+  Coupling::Adapter::Coupling& icoupfa_fsi = interface_fluid_ale_coupling_fsi();
 
   // structure to fluid
   coupsf_fsi.setup_condition_coupling(*poro_field()->structure_field()->discretization(),

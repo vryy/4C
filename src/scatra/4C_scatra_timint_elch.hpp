@@ -29,7 +29,6 @@ namespace FLD
 
 namespace Adapter
 {
-  class Coupling;
   class ScaTraBaseAlgorithm;
 }  // namespace Adapter
 

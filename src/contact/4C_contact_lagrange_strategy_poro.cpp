@@ -20,7 +20,6 @@ interface
 #include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_io.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -123,7 +122,7 @@ void CONTACT::LagrangeStrategyPoro::setup_no_penetration_condition()
  |                            for next Newton step (public)   ager 08/14|
  *----------------------------------------------------------------------*/
 void CONTACT::LagrangeStrategyPoro::poro_initialize(
-    Core::Adapter::Coupling& coupfs, Teuchos::RCP<const Epetra_Map> fluiddofs, bool fullinit)
+    Coupling::Adapter::Coupling& coupfs, Teuchos::RCP<const Epetra_Map> fluiddofs, bool fullinit)
 {
   if (fullinit)  // fullinit is true by default, but needed when this method is called for
                  // meshtying, as the maps and matrix mapping stay the same for meshtying. would
@@ -227,17 +226,17 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
   //                                                               //
   if (no_penetration_ && (is_in_contact() || was_in_contact() || was_in_contact_last_time_step()))
   {
-    linncoupveltransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-    linncoupdisptransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-    tanginvtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform);
-    lintangentlambdatransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-    porolindmatrixtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-    porolinmmatrixtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-    mhataamtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform);  // h.Willmann
-    dhattransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-    doldtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-    moldtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-    invDatransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
+    linncoupveltransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+    linncoupdisptransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+    tanginvtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
+    lintangentlambdatransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+    porolindmatrixtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+    porolinmmatrixtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+    mhataamtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);  // h.Willmann
+    dhattransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+    doldtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+    moldtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+    invDatransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
   }
 
   //  (6)                                                          //
@@ -269,7 +268,7 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
     //
     fdoldtransp_ = Teuchos::rcp<Core::LinAlg::SparseMatrix>(
         new Core::LinAlg::SparseMatrix(*falldofrowmap_, 1, true, false));
-    (*doldtransform_)(*dold_->transpose(), 1.0, Core::Adapter::CouplingMasterConverter(coupfs),
+    (*doldtransform_)(*dold_->transpose(), 1.0, Coupling::Adapter::CouplingMasterConverter(coupfs),
         *fdoldtransp_, false);
     fdoldtransp_->complete(dold_->row_map(), *fgsdofrowmap_);
     //
@@ -279,8 +278,8 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
     {
       fmoldtransp_ = Teuchos::rcp<Core::LinAlg::SparseMatrix>(
           new Core::LinAlg::SparseMatrix(*falldofrowmap_, 1, true, false));
-      (*moldtransform_)(*mold_->transpose(), 1.0, Core::Adapter::CouplingMasterConverter(coupfs),
-          *fmoldtransp_, false);
+      (*moldtransform_)(*mold_->transpose(), 1.0,
+          Coupling::Adapter::CouplingMasterConverter(coupfs), *fmoldtransp_, false);
       fmoldtransp_->complete(mold_->row_map(), *fgmdofrowmap_);
     }
     //
@@ -289,7 +288,7 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
     fporolindmatrix_ = Teuchos::rcp<Core::LinAlg::SparseMatrix>(
         new Core::LinAlg::SparseMatrix(*falldofrowmap_, 1, true, false));
     (*porolindmatrixtransform_)(*porolindmatrix_, 1.0,
-        Core::Adapter::CouplingMasterConverter(coupfs), *fporolindmatrix_, false);
+        Coupling::Adapter::CouplingMasterConverter(coupfs), *fporolindmatrix_, false);
     fporolindmatrix_->complete(porolindmatrix_->domain_map(), *fgsdofrowmap_);
     //
     //************************************************************************************************
@@ -299,7 +298,7 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
       fporolinmmatrix_ = Teuchos::rcp<Core::LinAlg::SparseMatrix>(
           new Core::LinAlg::SparseMatrix(*falldofrowmap_, 1, true, false));
       (*porolinmmatrixtransform_)(*porolinmmatrix_, 1.0,
-          Core::Adapter::CouplingMasterConverter(coupfs), *fporolinmmatrix_, false);
+          Coupling::Adapter::CouplingMasterConverter(coupfs), *fporolinmmatrix_, false);
       fporolinmmatrix_->complete(porolinmmatrix_->domain_map(), *fgmdofrowmap_);
     }
     // porolinmmatrixtransform_ is no longer missing as twosided poro meshtying is considered!
@@ -314,8 +313,8 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
 
       fmhataam_ = Teuchos::rcp<Core::LinAlg::SparseMatrix>(
           new Core::LinAlg::SparseMatrix(*fgmdofrowmap_, 1, true, false));
-      (*mhataamtransform_)(*mhataam_, 1.0, Core::Adapter::CouplingMasterConverter(coupfs),
-          Core::Adapter::CouplingMasterConverter(coupfs), *tmpfmhataam, false, false);
+      (*mhataamtransform_)(*mhataam_, 1.0, Coupling::Adapter::CouplingMasterConverter(coupfs),
+          Coupling::Adapter::CouplingMasterConverter(coupfs), *tmpfmhataam, false, false);
 
       tmpfmhataam->complete(*fgmdofrowmap_, *falldofrowmap_);
 
@@ -335,7 +334,8 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
     //
     fdhat_ = Teuchos::rcp<Core::LinAlg::SparseMatrix>(
         new Core::LinAlg::SparseMatrix(*falldofrowmap_, 1, true, false));
-    (*dhattransform_)(*dhat_, 1.0, Core::Adapter::CouplingMasterConverter(coupfs), *fdhat_, false);
+    (*dhattransform_)(
+        *dhat_, 1.0, Coupling::Adapter::CouplingMasterConverter(coupfs), *fdhat_, false);
     fdhat_->complete(dhat_->domain_map(), *fgactivedofs_);
     // fdhat is expected to be zero in this method but still used for condensation
     //
@@ -348,8 +348,8 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
       Teuchos::RCP<Core::LinAlg::SparseMatrix> tmpftanginvD =
           Teuchos::rcp<Core::LinAlg::SparseMatrix>(
               new Core::LinAlg::SparseMatrix(*falldofrowmap_, 1, true, false));
-      (*tanginvtransform_)(*tanginvD, 1.0, Core::Adapter::CouplingMasterConverter(coupfs),
-          Core::Adapter::CouplingMasterConverter(coupfs), *tmpftanginvD, false, false);
+      (*tanginvtransform_)(*tanginvD, 1.0, Coupling::Adapter::CouplingMasterConverter(coupfs),
+          Coupling::Adapter::CouplingMasterConverter(coupfs), *tmpftanginvD, false, false);
       tmpftanginvD->complete(*fgactivedofs_, *falldofrowmap_);
       // better solution to get maps as wanted? -- for this matrix map as important as there will be
       // a matrix-matrix multiplication
@@ -366,15 +366,15 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
       //
       fNCoup_linvel_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*falldofrowmap_, 108, false));
 
-      (*linncoupveltransform_)(*NCoup_linvel_, 1.0, Core::Adapter::CouplingMasterConverter(coupfs),
-          *fNCoup_linvel_, false);
+      (*linncoupveltransform_)(*NCoup_linvel_, 1.0,
+          Coupling::Adapter::CouplingMasterConverter(coupfs), *fNCoup_linvel_, false);
       fNCoup_linvel_->complete(*falldofrowmap_, *fgactiven_);
       //
       //************************************************************************************************
       //
       fNCoup_lindisp_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*falldofrowmap_, 81, false));
       (*linncoupdisptransform_)(*NCoup_lindisp_, 1.0,
-          Core::Adapter::CouplingMasterConverter(coupfs), *fNCoup_lindisp_, false);
+          Coupling::Adapter::CouplingMasterConverter(coupfs), *fNCoup_lindisp_, false);
       fNCoup_lindisp_->complete(*problem_dofs(), *fgactiven_);
       //
       //************************************************************************************************
@@ -382,7 +382,7 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
       flinTangentiallambda_ =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*falldofrowmap_, 81, false));
       (*lintangentlambdatransform_)(*linTangentiallambda_, 1.0,
-          Core::Adapter::CouplingMasterConverter(coupfs), *flinTangentiallambda_, false);
+          Coupling::Adapter::CouplingMasterConverter(coupfs), *flinTangentiallambda_, false);
       flinTangentiallambda_->complete(*gsdofrowmap_, *fgactivet_);
 
       //
@@ -391,7 +391,7 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
       finvda_ = Teuchos::rcp<Core::LinAlg::SparseMatrix>(
           new Core::LinAlg::SparseMatrix(*falldofrowmap_, 1, true, false));
       (*invDatransform_)(
-          *invda_, 1.0, Core::Adapter::CouplingMasterConverter(coupfs), *finvda_, false);
+          *invda_, 1.0, Coupling::Adapter::CouplingMasterConverter(coupfs), *finvda_, false);
       finvda_->complete(invda_->domain_map(), *fgactivedofs_);
     }
   }

@@ -20,7 +20,6 @@
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_thermo.hpp"
 #include "4C_io.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -111,7 +110,7 @@ void CONTACT::LagrangeStrategyTsi::set_state(
 
 void CONTACT::LagrangeStrategyTsi::evaluate(
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-    Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<Core::Adapter::Coupling> coupST,
+    Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<Coupling::Adapter::Coupling> coupST,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> temp)
 {
   if (thr_s_dofs_ == Teuchos::null) thr_s_dofs_ = coupST->master_to_slave_map(gsdofrowmap_);
@@ -333,19 +332,19 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   kss->add(linMcontactLM, false, 1. - alphaf_, 1.);
 
   // transform and add to kts
-  Core::LinAlg::MatrixRowTransform()(
-      m_LinDissDISP, +tsi_alpha_, Core::Adapter::CouplingMasterConverter(*coupST), *kts, true);
-  Core::LinAlg::MatrixRowTransform()(linMdiss,
+  Coupling::Adapter::MatrixRowTransform()(
+      m_LinDissDISP, +tsi_alpha_, Coupling::Adapter::CouplingMasterConverter(*coupST), *kts, true);
+  Coupling::Adapter::MatrixRowTransform()(linMdiss,
       -tsi_alpha_,  // this minus sign is there, since assemble linM does not actually
-      Core::Adapter::CouplingMasterConverter(*coupST), *kts,
+      Coupling::Adapter::CouplingMasterConverter(*coupST), *kts,
       true);  // assemble the linearization of M but the negative linearization of M
-  Core::LinAlg::MatrixRowTransform()(
-      linMThermoLM, tsi_alpha_, Core::Adapter::CouplingMasterConverter(*coupST), *kts, true);
-  Core::LinAlg::MatrixRowTransform()(
-      linDThermoLM, tsi_alpha_, Core::Adapter::CouplingMasterConverter(*coupST), *kts, true);
+  Coupling::Adapter::MatrixRowTransform()(
+      linMThermoLM, tsi_alpha_, Coupling::Adapter::CouplingMasterConverter(*coupST), *kts, true);
+  Coupling::Adapter::MatrixRowTransform()(
+      linDThermoLM, tsi_alpha_, Coupling::Adapter::CouplingMasterConverter(*coupST), *kts, true);
 
-  Core::LinAlg::MatrixRowTransform().operator()(m_LinDissContactLM, 1.,
-      Core::Adapter::CouplingMasterConverter(*coupST), m_LinDissContactLM_thrRow, false);
+  Coupling::Adapter::MatrixRowTransform().operator()(m_LinDissContactLM, 1.,
+      Coupling::Adapter::CouplingMasterConverter(*coupST), m_LinDissContactLM_thrRow, false);
   m_LinDissContactLM_thrRow.complete(*gactivedofs_, *thr_m_dofs);
 
   // complete the matrix blocks again, now that we have added
@@ -594,11 +593,11 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
       *thr_act_dofs, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
   Core::LinAlg::SparseMatrix dcTdLMt_thr(
       *thr_act_dofs, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
-  Core::LinAlg::MatrixRowTransform()(
-      dcTdLMc, 1., Core::Adapter::CouplingMasterConverter(*coupST), dcTdLMc_thr, true);
-  Core::LinAlg::MatrixRowColTransform()(dcTdLMt, 1.,
-      Core::Adapter::CouplingMasterConverter(*coupST),
-      Core::Adapter::CouplingMasterConverter(*coupST), dcTdLMt_thr, true, false);
+  Coupling::Adapter::MatrixRowTransform()(
+      dcTdLMc, 1., Coupling::Adapter::CouplingMasterConverter(*coupST), dcTdLMc_thr, true);
+  Coupling::Adapter::MatrixRowColTransform()(dcTdLMt, 1.,
+      Coupling::Adapter::CouplingMasterConverter(*coupST),
+      Coupling::Adapter::CouplingMasterConverter(*coupST), dcTdLMt_thr, true, false);
   dcTdLMc_thr.complete(*gactivedofs_, *thr_act_dofs);
   dcTdLMt_thr.complete(*thr_act_dofs, *thr_act_dofs);
 
@@ -611,8 +610,9 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   // get dinv on thermal dofs
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dInvaThr = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
       *thr_act_dofs, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
-  Core::LinAlg::MatrixRowColTransform()(*dInvA, 1., Core::Adapter::CouplingMasterConverter(*coupST),
-      Core::Adapter::CouplingMasterConverter(*coupST), *dInvaThr, false, false);
+  Coupling::Adapter::MatrixRowColTransform()(*dInvA, 1.,
+      Coupling::Adapter::CouplingMasterConverter(*coupST),
+      Coupling::Adapter::CouplingMasterConverter(*coupST), *dInvaThr, false, false);
   dInvaThr->complete(*thr_act_dofs, *thr_act_dofs);
 
   // save some matrix blocks for recovery
@@ -633,9 +633,9 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   // get dinv * M on the thermal dofs
   Core::LinAlg::SparseMatrix dInvMaThr(
       *thr_act_dofs, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
-  Core::LinAlg::MatrixRowColTransform()(*dInvMa, 1.,
-      Core::Adapter::CouplingMasterConverter(*coupST),
-      Core::Adapter::CouplingMasterConverter(*coupST), dInvMaThr, false, false);
+  Coupling::Adapter::MatrixRowColTransform()(*dInvMa, 1.,
+      Coupling::Adapter::CouplingMasterConverter(*coupST),
+      Coupling::Adapter::CouplingMasterConverter(*coupST), dInvMaThr, false, false);
   dInvMaThr.complete(*thr_m_dofs, *thr_act_dofs);
 
   // apply contact symmetry conditions
@@ -703,12 +703,13 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   // (2)b active constraints in the active slave rows
   kss_new.add(*dcsdd, false, 1., 1.);
 
-  Core::LinAlg::MatrixColTransform()(*gactivedofs_, *gsmdofrowmap_, dcsdT, 1.,
-      Core::Adapter::CouplingMasterConverter(*coupST), kst_new, false, true);
-  Core::LinAlg::MatrixRowTransform()(
-      dcTdd, 1., Core::Adapter::CouplingMasterConverter(*coupST), kts_new, true);
-  Core::LinAlg::MatrixRowColTransform()(dcTdT, 1., Core::Adapter::CouplingMasterConverter(*coupST),
-      Core::Adapter::CouplingMasterConverter(*coupST), ktt_new, true, true);
+  Coupling::Adapter::MatrixColTransform()(*gactivedofs_, *gsmdofrowmap_, dcsdT, 1.,
+      Coupling::Adapter::CouplingMasterConverter(*coupST), kst_new, false, true);
+  Coupling::Adapter::MatrixRowTransform()(
+      dcTdd, 1., Coupling::Adapter::CouplingMasterConverter(*coupST), kts_new, true);
+  Coupling::Adapter::MatrixRowColTransform()(dcTdT, 1.,
+      Coupling::Adapter::CouplingMasterConverter(*coupST),
+      Coupling::Adapter::CouplingMasterConverter(*coupST), ktt_new, true, true);
   CONTACT::UTILS::add_vector(*rcsa, *combined_RHS);
 
   // (3) condensed parts
@@ -813,7 +814,7 @@ void CONTACT::UTILS::add_vector(Epetra_Vector& src, Epetra_Vector& dst)
 }
 
 void CONTACT::LagrangeStrategyTsi::recover_coupled(Teuchos::RCP<Epetra_Vector> sinc,
-    Teuchos::RCP<Epetra_Vector> tinc, Teuchos::RCP<Core::Adapter::Coupling> coupST)
+    Teuchos::RCP<Epetra_Vector> tinc, Teuchos::RCP<Coupling::Adapter::Coupling> coupST)
 {
   Teuchos::RCP<Epetra_Vector> z_old = Teuchos::null;
   if (z_ != Teuchos::null) z_old = Teuchos::rcp(new Epetra_Vector(*z_));
@@ -884,7 +885,7 @@ void CONTACT::LagrangeStrategyTsi::recover_coupled(Teuchos::RCP<Epetra_Vector> s
 };
 
 void CONTACT::LagrangeStrategyTsi::store_nodal_quantities(
-    Mortar::StrategyBase::QuantityType type, Teuchos::RCP<Core::Adapter::Coupling> coupST)
+    Mortar::StrategyBase::QuantityType type, Teuchos::RCP<Coupling::Adapter::Coupling> coupST)
 {
   Teuchos::RCP<Epetra_Vector> vectorglobal = Teuchos::null;
   // start type switch
@@ -949,9 +950,9 @@ void CONTACT::LagrangeStrategyTsi::update(Teuchos::RCP<const Epetra_Vector> dis)
 
   Core::LinAlg::SparseMatrix dThr(*coupST_->master_to_slave_map(gsdofrowmap_), 100, true, false,
       Core::LinAlg::SparseMatrix::FE_MATRIX);
-  Core::LinAlg::MatrixRowColTransform()(*dmatrix_, 1.,
-      Core::Adapter::CouplingMasterConverter(*coupST_),
-      Core::Adapter::CouplingMasterConverter(*coupST_), dThr, false, false);
+  Coupling::Adapter::MatrixRowColTransform()(*dmatrix_, 1.,
+      Coupling::Adapter::CouplingMasterConverter(*coupST_),
+      Coupling::Adapter::CouplingMasterConverter(*coupST_), dThr, false, false);
   dThr.complete();
   tmp = Teuchos::rcp(new Epetra_Vector(*coupST_->master_to_slave_map(gsdofrowmap_)));
   if (dThr.Apply(*z_thr_, *tmp) != 0) FOUR_C_THROW("apply went wrong");
@@ -959,9 +960,9 @@ void CONTACT::LagrangeStrategyTsi::update(Teuchos::RCP<const Epetra_Vector> dis)
 
   Core::LinAlg::SparseMatrix mThr(*coupST_->master_to_slave_map(gsdofrowmap_), 100, true, false,
       Core::LinAlg::SparseMatrix::FE_MATRIX);
-  Core::LinAlg::MatrixRowColTransform()(*mmatrix_, 1.,
-      Core::Adapter::CouplingMasterConverter(*coupST_),
-      Core::Adapter::CouplingMasterConverter(*coupST_), mThr, false, false);
+  Coupling::Adapter::MatrixRowColTransform()(*mmatrix_, 1.,
+      Coupling::Adapter::CouplingMasterConverter(*coupST_),
+      Coupling::Adapter::CouplingMasterConverter(*coupST_), mThr, false, false);
   mThr.complete(
       *coupST_->master_to_slave_map(gmdofrowmap_), *coupST_->master_to_slave_map(gsdofrowmap_));
   mThr.UseTranspose();

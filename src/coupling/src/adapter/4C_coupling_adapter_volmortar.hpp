@@ -43,22 +43,22 @@ namespace Core::LinAlg
   class SparseMatrix;
 }
 
-namespace Core::VolMortar
+namespace Coupling::VolMortar
 {
   namespace UTILS
   {
     class DefaultMaterialStrategy;
   }
-}  // namespace Core::VolMortar
+}  // namespace Coupling::VolMortar
 
 namespace Core::IO
 {
   class OutputControl;
 }
 
-namespace Core::Adapter
+namespace Coupling::Adapter
 {  /// Class for calling volmortar coupling and proper parallel redistr.
-  class MortarVolCoupl : public Core::Adapter::CouplingBase
+  class MortarVolCoupl : public CouplingBase
   {
    public:
     /*!
@@ -257,7 +257,7 @@ namespace Core::Adapter
 
     int spatial_dimension_{};
   };
-}  // namespace Core::Adapter
+}  // namespace Coupling::Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

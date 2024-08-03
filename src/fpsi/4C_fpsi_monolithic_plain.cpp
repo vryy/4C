@@ -29,7 +29,6 @@
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
@@ -50,25 +49,25 @@ FPSI::MonolithicPlain::MonolithicPlain(const Epetra_Comm& comm,
   // create transformation object for the condensation
 
 
-  fggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform);
-  fggtransform2_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform);
-  fmgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform);
+  fggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
+  fggtransform2_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
+  fmgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
 
-  fgitransform1_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-  fgitransform2_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-  cfgtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-  cfptransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-  cfptransform2_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
+  fgitransform1_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+  fgitransform2_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+  cfgtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+  cfptransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+  cfptransform2_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
 
-  figtransform1_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  figtransform2_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  figtransform3_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  figtransform4_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  aigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  aigtransform2_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  figtransform1_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  figtransform2_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  figtransform3_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  figtransform4_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  aigtransform2_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
 
-  couplingcoltransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  couplingcoltransformfs_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  couplingcoltransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  couplingcoltransformfs_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
 
   // Recovery of Lagrange multiplier happens on fluid field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*fluid_field()->interface()->fsi_cond_map(), true));
@@ -277,15 +276,15 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
   const int& aidx_fpsi = ALE::UTILS::MapExtractor::cond_fpsi;
 
   // FPSI Couplings
-  const Core::Adapter::Coupling& coupsa_fpsi = fpsi_coupl()->poro_structure_ale_coupling();
-  const Core::Adapter::Coupling& coupsf_fpsi = fpsi_coupl()->poro_structure_fluid_coupling();
+  const Coupling::Adapter::Coupling& coupsa_fpsi = fpsi_coupl()->poro_structure_ale_coupling();
+  const Coupling::Adapter::Coupling& coupsf_fpsi = fpsi_coupl()->poro_structure_fluid_coupling();
 
   // General Couplings
-  const Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
+  const Coupling::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
   // FSI Couplings
-  const Core::Adapter::Coupling& coupsf_fsi = structure_fluid_coupling_fsi();
-  const Core::Adapter::Coupling& coupsa_fsi = structure_ale_coupling_fsi();
+  const Coupling::Adapter::Coupling& coupsf_fsi = structure_fluid_coupling_fsi();
+  const Coupling::Adapter::Coupling& coupsa_fsi = structure_ale_coupling_fsi();
 
   ///////////ADD THE COUPLING HERE////////////////
   p->add(fpsi_coupl()->c_pp(), false, 1.0, 1.0);
@@ -342,7 +341,7 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
 
   // create transformation object for the ale condensation
   (*aigtransform2_)(a->full_row_map(), a->full_col_map(), ai_gfpsi, 1.,
-      Core::Adapter::CouplingSlaveConverter(coupsa_fpsi),
+      Coupling::Adapter::CouplingSlaveConverter(coupsa_fpsi),
       mat.matrix(ale_i_block_, structure_block_), true,
       false);  // Add
 
@@ -373,7 +372,7 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
     //                         true); //not required anymore --> done at (1)
 
     (*fgitransform1_)(fgi, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-        Core::Adapter::CouplingSlaveConverter(coupsf_fsi),
+        Coupling::Adapter::CouplingSlaveConverter(coupsf_fsi),
         mat.matrix(structure_block_, fluid_block_),
         true);  // Assign
 
@@ -382,7 +381,7 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
     Core::LinAlg::SparseMatrix& aig = a->matrix(aidx_other, aidx_fsi);
 
     (*aigtransform_)(a->full_row_map(), a->full_col_map(), aig, 1.,
-        Core::Adapter::CouplingSlaveConverter(coupsa_fsi),
+        Coupling::Adapter::CouplingSlaveConverter(coupsa_fsi),
         mat.matrix(ale_i_block_, structure_block_),
         true);  // as just fsi part is transfered
   }
@@ -411,7 +410,7 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
       // those two blocks are not condensed since they belong to the columns of the inner ale dofs
       (*couplingcoltransform_)(fluid_field()->block_system_matrix()->full_row_map(),
           fluid_field()->block_system_matrix()->full_col_map(), fluidalematrix_ii, 1.0,
-          Core::Adapter::CouplingMasterConverter(
+          Coupling::Adapter::CouplingMasterConverter(
               coupfa),  // row converter: important to use slave converter
           mat.matrix(fluid_block_, ale_i_block_),
           false,  // bool exactmatch = true (default)
@@ -434,29 +433,29 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
 
         (*figtransform1_)(fluid_field()->block_system_matrix()->full_row_map(),
             fluid_field()->block_system_matrix()->full_col_map(), fluidalematrix_ig_fsi, 1.0,
-            Core::Adapter::CouplingSlaveConverter(coupsf_fsi),
+            Coupling::Adapter::CouplingSlaveConverter(coupsf_fsi),
             mat.matrix(fluid_block_, structure_block_),
             false,  // bool exactmatch = true (default)
             true);
 
         (*figtransform2_)(fluid_field()->block_system_matrix()->full_row_map(),
             fluid_field()->block_system_matrix()->full_col_map(), fluidalematrix_gfpsigfsi, 1.0,
-            Core::Adapter::CouplingSlaveConverter(coupsf_fsi),
+            Coupling::Adapter::CouplingSlaveConverter(coupsf_fsi),
             mat.matrix(fluid_block_, structure_block_), false, true);
 
         (*fggtransform_)(fluidalematrix_gg_fsi, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-            Core::Adapter::CouplingSlaveConverter(coupsf_fsi),
-            Core::Adapter::CouplingSlaveConverter(coupsf_fsi),
+            Coupling::Adapter::CouplingSlaveConverter(coupsf_fsi),
+            Coupling::Adapter::CouplingSlaveConverter(coupsf_fsi),
             mat.matrix(structure_block_, structure_block_), false, true);
 
         (*fggtransform2_)(fluidalematrix_gfsigfpsi, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-            Core::Adapter::CouplingSlaveConverter(coupsf_fsi),
-            Core::Adapter::CouplingSlaveConverter(coupsf_fpsi),
+            Coupling::Adapter::CouplingSlaveConverter(coupsf_fsi),
+            Coupling::Adapter::CouplingSlaveConverter(coupsf_fpsi),
             mat.matrix(structure_block_, structure_block_), false, true);
 
         (*fmgitransform_)(fluidalematrix_gi_fsi, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-            Core::Adapter::CouplingSlaveConverter(coupsf_fsi),
-            Core::Adapter::CouplingMasterConverter(coupfa),
+            Coupling::Adapter::CouplingSlaveConverter(coupsf_fsi),
+            Coupling::Adapter::CouplingMasterConverter(coupfa),
             mat.matrix(structure_block_, ale_i_block_), false, true);
       }
     }
@@ -483,7 +482,7 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
     (*figtransform3_)(fluid_field()->block_system_matrix()->full_row_map(),
         fluid_field()->block_system_matrix()->full_col_map(),
         mat.matrix(fluid_block_, fluid_block_), timescale,
-        Core::Adapter::CouplingSlaveConverter(coupsf_fsi),
+        Coupling::Adapter::CouplingSlaveConverter(coupsf_fsi),
         mat.matrix(fluid_block_, structure_block_),  //--> goes into C_fp()
         false,  // no exactmatch! (just FSI Part should be extracted)
         true);  // Add
@@ -493,7 +492,7 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
         *ale_field()->interface()->other_map(), *fluid_field()->dof_row_map());
 
     (*cfgtransform_)(fpsi_coupl()->c_fa(), (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-        Core::Adapter::CouplingSlaveConverter(coupsf_fsi),
+        Coupling::Adapter::CouplingSlaveConverter(coupsf_fsi),
         mat.matrix(structure_block_, ale_i_block_),
         true);  // Addmatrix
 
@@ -507,14 +506,14 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
     (*cfptransform_)(fpsi_coupl()->c_fp().matrix(
                          0, 0),  //--> also the coupling terms from c_ff are inside here!!!
         (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-        Core::Adapter::CouplingSlaveConverter(coupsf_fsi),
+        Coupling::Adapter::CouplingSlaveConverter(coupsf_fsi),
         mat.matrix(structure_block_, structure_block_),
         true);  // Addmatrix
 
     (*cfptransform2_)(fpsi_coupl()->c_fp().matrix(
                           0, 1),  //--> also the coupling terms from c_ff are inside here!!!
         (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-        Core::Adapter::CouplingSlaveConverter(coupsf_fsi),
+        Coupling::Adapter::CouplingSlaveConverter(coupsf_fsi),
         mat.matrix(structure_block_, porofluid_block_),
         true);  // Addmatrix
 

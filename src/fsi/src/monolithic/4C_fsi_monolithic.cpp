@@ -71,10 +71,10 @@ FSI::MonolithicBase::MonolithicBase(
   create_structure_time_integrator(timeparams, structdis);
   create_fluid_and_ale_time_integrator(timeparams, fluiddis, aledis);
 
-  coupsf_ = Teuchos::rcp(new Core::Adapter::Coupling());
-  coupsa_ = Teuchos::rcp(new Core::Adapter::Coupling());
-  coupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
-  icoupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  coupsf_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  coupsa_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  coupfa_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  icoupfa_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
 }
 
 
@@ -374,10 +374,10 @@ void FSI::Monolithic::setup_system()
 
   const int ndim = Global::Problem::instance()->n_dim();
 
-  Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
-  Core::Adapter::Coupling& coupsa = structure_ale_coupling();
-  Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
-  Core::Adapter::Coupling& icoupfa = interface_fluid_ale_coupling();
+  Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
+  Coupling::Adapter::Coupling& coupsa = structure_ale_coupling();
+  Coupling::Adapter::Coupling& coupfa = fluid_ale_coupling();
+  Coupling::Adapter::Coupling& icoupfa = interface_fluid_ale_coupling();
 
   // structure to fluid
 

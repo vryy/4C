@@ -120,7 +120,7 @@ void FSI::Algorithm::setup()
           Global::Problem::instance()->fsi_dynamic_params(), "FSICoupling"));
   fluid_ = MBFluidbase->mb_fluid_field();
 
-  coupsf_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  coupsf_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
 }
 
 
@@ -195,12 +195,15 @@ Teuchos::RCP<Epetra_Vector> FSI::Algorithm::fluid_to_struct(Teuchos::RCP<Epetra_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::Adapter::Coupling& FSI::Algorithm::structure_fluid_coupling() { return *coupsf_; }
+Coupling::Adapter::Coupling& FSI::Algorithm::structure_fluid_coupling() { return *coupsf_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Core::Adapter::Coupling& FSI::Algorithm::structure_fluid_coupling() const { return *coupsf_; }
+const Coupling::Adapter::Coupling& FSI::Algorithm::structure_fluid_coupling() const
+{
+  return *coupsf_;
+}
 
 
 /*----------------------------------------------------------------------*/

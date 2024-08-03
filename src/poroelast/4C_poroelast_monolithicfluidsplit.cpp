@@ -14,7 +14,6 @@
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fsi_overlapprec_fsiamg.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_structure_aux.hpp"
@@ -31,13 +30,13 @@ PoroElast::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
     Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter)
     : MonolithicSplit(comm, timeparams, porosity_splitter)
 {
-  fggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform);
-  fgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-  figtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  cfggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-  csggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  cfgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-  csigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  fggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
+  fgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+  figtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  cfggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+  csggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  cfgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+  csigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
 
   // Recovering of Lagrange multiplier happens on structure field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*fluid_field()->interface()->fsi_cond_map()));
@@ -212,13 +211,13 @@ void PoroElast::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
     double timescale = fluid_field()->time_scaling();
 
     (*figtransform_)(f->full_row_map(), f->full_col_map(), f->matrix(0, 1), timescale,
-        Core::Adapter::CouplingSlaveConverter(*icoupfs_), k_fs->matrix(0, 1), true, true);
+        Coupling::Adapter::CouplingSlaveConverter(*icoupfs_), k_fs->matrix(0, 1), true, true);
 
     (*csggtransform_)(f->full_row_map(), f->full_col_map(), k_sf->matrix(1, 1), timescale,
-        Core::Adapter::CouplingSlaveConverter(*icoupfs_), *s, true, true);
+        Coupling::Adapter::CouplingSlaveConverter(*icoupfs_), *s, true, true);
 
     (*csigtransform_)(f->full_row_map(), f->full_col_map(), k_sf->matrix(0, 1), timescale,
-        Core::Adapter::CouplingSlaveConverter(*icoupfs_), *s, true, true);
+        Coupling::Adapter::CouplingSlaveConverter(*icoupfs_), *s, true, true);
   }
 
   /*----------------------------------------------------------------------*/

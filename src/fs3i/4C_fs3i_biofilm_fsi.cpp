@@ -184,26 +184,26 @@ void FS3I::BiofilmFSI::setup()
   const int ndim = Global::Problem::instance()->n_dim();
 
   // set up ale-fluid couplings
-  icoupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  icoupfa_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
   icoupfa_->setup_condition_coupling(*(fsi_->fluid_field()->discretization()),
       (fsi_->fluid_field()->interface()->fsi_cond_map()), *(fsi_->ale_field()->discretization()),
       (fsi_->ale_field()->interface()->fsi_cond_map()), condname, ndim);
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = fsi_->fluid_field()->discretization()->node_row_map();
   const Epetra_Map* fluidalenodemap = fsi_->ale_field()->discretization()->node_row_map();
-  coupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  coupfa_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
   coupfa_->setup_coupling(*(fsi_->fluid_field()->discretization()),
       *(fsi_->ale_field()->discretization()), *fluidnodemap, *fluidalenodemap, ndim);
 
   // set up structale-structure couplings
-  icoupsa_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  icoupsa_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
   icoupsa_->setup_condition_coupling(*(fsi_->structure_field()->discretization()),
       fsi_->structure_field()->interface()->fsi_cond_map(), *structaledis,
       ale_->interface()->fsi_cond_map(), condname, ndim);
   // the structure-structale coupling always matches
   const Epetra_Map* structurenodemap = fsi_->structure_field()->discretization()->node_row_map();
   const Epetra_Map* structalenodemap = structaledis->node_row_map();
-  coupsa_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  coupsa_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
   coupsa_->setup_coupling(*(fsi_->structure_field()->discretization()), *structaledis,
       *structurenodemap, *structalenodemap, ndim);
 

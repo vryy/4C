@@ -30,7 +30,6 @@ with condensed structure interface displacements
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_structure_aux.hpp"
@@ -148,18 +147,18 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(
   }
   // ---------------------------------------------------------------------------
 
-  sggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform);
-  sgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-  sigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  aigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  sggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
+  sgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+  sigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
 
-  fmiitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  fmgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
 
-  fsaigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  fsmgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  fsaigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fsmgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
 
-  fscoupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  fscoupfa_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
 
   // Recovery of Lagrange multiplier happens on structure field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*structure_field()->interface()->fsi_cond_map(), true));
@@ -663,9 +662,9 @@ void FSI::MonolithicStructureSplit::setup_system_matrix(Core::LinAlg::BlockSpars
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::setup_system_matrix");
 
-  const Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
-  const Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
-  const Core::Adapter::Coupling& icoupfa = interface_fluid_ale_coupling();
+  const Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
+  const Coupling::Adapter::Coupling& coupfa = fluid_ale_coupling();
+  const Coupling::Adapter::Coupling& icoupfa = interface_fluid_ale_coupling();
 
   // get single field block matrices
   const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> s =
@@ -715,22 +714,22 @@ void FSI::MonolithicStructureSplit::setup_system_matrix(Core::LinAlg::BlockSpars
   mat.assign(0, 0, Core::LinAlg::View, s->matrix(0, 0));
 
   (*sigtransform_)(s->full_row_map(), s->full_col_map(), s->matrix(0, 1), 1. / timescale,
-      Core::Adapter::CouplingMasterConverter(coupsf), mat.matrix(0, 1));
+      Coupling::Adapter::CouplingMasterConverter(coupsf), mat.matrix(0, 1));
   (*sggtransform_)(s->matrix(1, 1), (1.0 - ftiparam) / ((1.0 - stiparam) * scale * timescale),
-      Core::Adapter::CouplingMasterConverter(coupsf),
-      Core::Adapter::CouplingMasterConverter(coupsf), *f, true, true);
+      Coupling::Adapter::CouplingMasterConverter(coupsf),
+      Coupling::Adapter::CouplingMasterConverter(coupsf), *f, true, true);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> lsgi =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(f->row_map(), 81, false));
   (*sgitransform_)(s->matrix(1, 0), (1.0 - ftiparam) / ((1.0 - stiparam) * scale),
-      Core::Adapter::CouplingMasterConverter(coupsf), *lsgi);
+      Coupling::Adapter::CouplingMasterConverter(coupsf), *lsgi);
 
   lsgi->complete(s->matrix(1, 0).domain_map(), f->range_map());
 
   mat.assign(1, 0, Core::LinAlg::View, *lsgi);
 
   (*aigtransform_)(a->full_row_map(), a->full_col_map(), aig, 1. / timescale,
-      Core::Adapter::CouplingSlaveConverter(icoupfa), mat.matrix(2, 1));
+      Coupling::Adapter::CouplingSlaveConverter(icoupfa), mat.matrix(2, 1));
   mat.assign(2, 2, Core::LinAlg::View, aii);
 
   /*----------------------------------------------------------------------*/
@@ -750,10 +749,10 @@ void FSI::MonolithicStructureSplit::setup_system_matrix(Core::LinAlg::BlockSpars
     Teuchos::RCP<Core::LinAlg::SparseMatrix> lfmgi =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(f->row_map(), 81, false));
     (*fmgitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmgi, 1.,
-        Core::Adapter::CouplingMasterConverter(coupfa), *lfmgi, false, false);
+        Coupling::Adapter::CouplingMasterConverter(coupfa), *lfmgi, false, false);
 
     (*fmiitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmii, 1.,
-        Core::Adapter::CouplingMasterConverter(coupfa), *lfmgi, false, true);
+        Coupling::Adapter::CouplingMasterConverter(coupfa), *lfmgi, false, true);
 
     lfmgi->complete(aii.domain_map(), f->range_map());
 
@@ -767,7 +766,7 @@ void FSI::MonolithicStructureSplit::setup_system_matrix(Core::LinAlg::BlockSpars
     Core::LinAlg::SparseMatrix& aig = a->matrix(0, 2);
 
     (*fsaigtransform_)(a->full_row_map(), a->full_col_map(), aig, 1. / timescale,
-        Core::Adapter::CouplingSlaveConverter(*fscoupfa_), mat.matrix(2, 1));
+        Coupling::Adapter::CouplingSlaveConverter(*fscoupfa_), mat.matrix(2, 1));
 
     if (mmm != Teuchos::null)
     {
@@ -784,7 +783,7 @@ void FSI::MonolithicStructureSplit::setup_system_matrix(Core::LinAlg::BlockSpars
       mat.matrix(1, 1).add(fmig, false, 1. / timescale, 1.0);
 
       (*fsmgitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmgi, 1.,
-          Core::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, false);
+          Coupling::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, false);
     }
   }
 

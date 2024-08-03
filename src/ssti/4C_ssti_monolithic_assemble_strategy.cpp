@@ -12,7 +12,6 @@
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_fem_condition_locsys.hpp"
 #include "4C_io_control.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
 #include "4C_ssi_utils.hpp"
@@ -199,20 +198,20 @@ void SSTI::AssembleStrategyBase::assemble_structure_meshtying(
   auto master_dof_map = ssti_structure_meshtying()->full_master_side_map();
 
   // assemble derivs. of interior dofs w.r.t. interior dofs (block a)
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(*structuredomain, *map_structure_interior,
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structuredomain, *map_structure_interior,
       *map_structure_interior, 1.0, nullptr, nullptr, systemmatrix_structure, true, true);
 
   // assemble derivs. of interior dofs w.r.t. master dofs (block b)
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(*structuredomain, *map_structure_interior,
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structuredomain, *map_structure_interior,
       *master_dof_map, 1.0, nullptr, nullptr, systemmatrix_structure, true, true);
 
   // assemble derivs. of master dofs w.r.t. interior dofs (block e)
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(*structuredomain, *master_dof_map,
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structuredomain, *master_dof_map,
       *map_structure_interior, 1.0, nullptr, nullptr, systemmatrix_structure, true, true);
 
   // assemble derivs. of master dofs w.r.t. master dofs (block f)
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(*structuredomain, *master_dof_map, *master_dof_map,
-      1.0, nullptr, nullptr, systemmatrix_structure, true, true);
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structuredomain, *master_dof_map,
+      *master_dof_map, 1.0, nullptr, nullptr, systemmatrix_structure, true, true);
 
   for (const auto& meshtying : ssti_structure_meshtying()->mesh_tying_handlers())
   {
@@ -220,23 +219,23 @@ void SSTI::AssembleStrategyBase::assemble_structure_meshtying(
     auto converter = meshtying->slave_side_converter();
 
     // assemble derivs. of surface slave dofs w.r.t. interior dofs (block h)
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(*structuredomain, *cond_slave_dof_map,
+    Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structuredomain, *cond_slave_dof_map,
         *map_structure_interior, 1.0, &(*converter), nullptr, systemmatrix_structure, true, true);
 
     // assemble derivs. of surface slave dofs w.r.t. master dofs (block i)
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(*structuredomain, *cond_slave_dof_map,
+    Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structuredomain, *cond_slave_dof_map,
         *master_dof_map, 1.0, &(*converter), nullptr, systemmatrix_structure, true, true);
 
     // assemble derivs. of interior dofs w.r.t. surface slave dofs (block c)
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(*structuredomain, *map_structure_interior,
+    Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structuredomain, *map_structure_interior,
         *cond_slave_dof_map, 1.0, nullptr, &(*converter), systemmatrix_structure, true, true);
 
     // assemble derivs. of master dofs w.r.t. surface slave dofs (block g)
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(*structuredomain, *master_dof_map,
+    Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structuredomain, *master_dof_map,
         *cond_slave_dof_map, 1.0, nullptr, &(*converter), systemmatrix_structure, true, true);
 
     // assemble derivs. of surface slave dofs w.r.t. surface slave dofs (block j)
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(*structuredomain, *cond_slave_dof_map,
+    Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structuredomain, *cond_slave_dof_map,
         *cond_slave_dof_map, 1.0, &(*converter), &(*converter), systemmatrix_structure, true, true);
 
     for (const auto& meshtying2 : ssti_structure_meshtying()->mesh_tying_handlers())
@@ -247,7 +246,7 @@ void SSTI::AssembleStrategyBase::assemble_structure_meshtying(
         auto converter2 = meshtying2->slave_side_converter();
 
         // assemble derivatives of surface slave dofs w.r.t. line slave dofs (block l)
-        Core::LinAlg::MatrixLogicalSplitAndTransform()(*structuredomain, *cond_slave_dof_map,
+        Coupling::Adapter::MatrixLogicalSplitAndTransform()(*structuredomain, *cond_slave_dof_map,
             *cond_slave_dof_map2, 1.0, &(*converter), &(*converter2), systemmatrix_structure, true,
             true);
       }
@@ -418,12 +417,14 @@ void SSTI::AssembleStrategyBase::assemble_xxx_structure_meshtying(
   auto master_dof_map = ssti_structure_meshtying()->full_master_side_map();
 
   // assemble derivs. of x w.r.t. structural interior dofs
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(x_structurematrix, x_structurematrix.range_map(),
-      *map_structure_interior, 1.0, nullptr, nullptr, systemmatrix_x_structure, true, true);
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(x_structurematrix,
+      x_structurematrix.range_map(), *map_structure_interior, 1.0, nullptr, nullptr,
+      systemmatrix_x_structure, true, true);
 
   // assemble derivs. of x w.r.t. structural master dofs
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(x_structurematrix, x_structurematrix.range_map(),
-      *master_dof_map, 1.0, nullptr, nullptr, systemmatrix_x_structure, true, true);
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(x_structurematrix,
+      x_structurematrix.range_map(), *master_dof_map, 1.0, nullptr, nullptr,
+      systemmatrix_x_structure, true, true);
 
   for (const auto& meshtying : ssti_structure_meshtying()->mesh_tying_handlers())
   {
@@ -431,8 +432,9 @@ void SSTI::AssembleStrategyBase::assemble_xxx_structure_meshtying(
     auto converter = meshtying->slave_side_converter();
 
     // assemble derivs. of x w.r.t. structural surface slave dofs
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(x_structurematrix, x_structurematrix.range_map(),
-        *cond_slave_dof_map(), 1.0, nullptr, &(*converter), systemmatrix_x_structure, true, true);
+    Coupling::Adapter::MatrixLogicalSplitAndTransform()(x_structurematrix,
+        x_structurematrix.range_map(), *cond_slave_dof_map(), 1.0, nullptr, &(*converter),
+        systemmatrix_x_structure, true, true);
   }
 }
 
@@ -517,10 +519,10 @@ void SSTI::AssembleStrategyBlockBlock::assemble_scatra_thermo_interface(
 
       // assemble linearizations of slave- and master side scatra fluxes w.r.t. master temperatures
       // into system matrix
-      Core::Adapter::CouplingSlaveConverter thermo_converter(
+      Coupling::Adapter::CouplingSlaveConverter thermo_converter(
           *meshtying_thermo()->coupling_adapter());
 
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(scatrathermointerface_subblock,
+      Coupling::Adapter::MatrixLogicalSplitAndTransform()(scatrathermointerface_subblock,
           scatrathermointerface_subblock.range_map(),
           *meshtying_thermo()->coupling_adapter()->master_dof_map(), 1.0, nullptr,
           &thermo_converter, masterderiv, true, true);
@@ -566,9 +568,10 @@ void SSTI::AssembleStrategyBlockSparse::assemble_scatra_thermo_interface(
 
   // assemble linearizations of slave- and master side scatra fluxes w.r.t. master temperatures into
   // system matrix
-  Core::Adapter::CouplingSlaveConverter thermo_converter(*meshtying_thermo()->coupling_adapter());
+  Coupling::Adapter::CouplingSlaveConverter thermo_converter(
+      *meshtying_thermo()->coupling_adapter());
 
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(*scatrathermointerface_sparse,
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(*scatrathermointerface_sparse,
       scatrathermointerface_sparse->range_map(),
       *meshtying_thermo()->coupling_adapter()->master_dof_map(), 1.0, nullptr, &thermo_converter,
       systemmatrix_block->matrix(block_position_scatra().at(0), block_position_thermo().at(0)),
@@ -591,9 +594,10 @@ void SSTI::AssembleStrategySparse::assemble_scatra_thermo_interface(
 
   // assemble linearizations of slave- and master side scatra fluxes w.r.t. master temperatures into
   // system matrix
-  Core::Adapter::CouplingSlaveConverter thermo_converter(*meshtying_thermo()->coupling_adapter());
+  Coupling::Adapter::CouplingSlaveConverter thermo_converter(
+      *meshtying_thermo()->coupling_adapter());
 
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(*scatrathermointerface_sparse,
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(*scatrathermointerface_sparse,
       scatrathermointerface_sparse->range_map(),
       *meshtying_thermo()->coupling_adapter()->master_dof_map(), 1.0, nullptr, &thermo_converter,
       *systemmatrix_sparse, true, true);
@@ -685,12 +689,12 @@ void SSTI::AssembleStrategyBase::assemble_structure_xxx_meshtying(
   auto master_dof_map = ssti_structure_meshtying()->full_master_side_map();
 
   // assemble derivs. of structural interior dofs w.r.t. scatra dofs
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(structures_x_matrix, *map_structure_interior,
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(structures_x_matrix, *map_structure_interior,
       structures_x_matrix.domain_map(), 1.0, nullptr, nullptr, systemmatrix_structure_x, true,
       true);
 
   // assemble derivs. of structural master dofs w.r.t. scatra dofs
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(structures_x_matrix, *master_dof_map,
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(structures_x_matrix, *master_dof_map,
       structures_x_matrix.domain_map(), 1.0, nullptr, nullptr, systemmatrix_structure_x, true,
       true);
 
@@ -700,7 +704,7 @@ void SSTI::AssembleStrategyBase::assemble_structure_xxx_meshtying(
     auto converter = meshtying->slave_side_converter();
 
     // assemble derivs. of structural surface slave dofs w.r.t. scatra dofs
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(structures_x_matrix, *cond_slave_dof_map(),
+    Coupling::Adapter::MatrixLogicalSplitAndTransform()(structures_x_matrix, *cond_slave_dof_map(),
         structures_x_matrix.domain_map(), 1.0, &(*converter), nullptr, systemmatrix_structure_x,
         true, true);
   }
@@ -796,7 +800,7 @@ void SSTI::AssembleStrategyBlockBlock::assemble_thermo_scatra_interface(
 
       // assemble linearizations of master side thermo fluxes w.r.t. slave and master side elch
       // into system matrix
-      Core::Adapter::CouplingSlaveConverter thermo_converter(
+      Coupling::Adapter::CouplingSlaveConverter thermo_converter(
           *meshtying_thermo()->coupling_adapter());
 
       Core::LinAlg::SparseMatrix slaveflux(
@@ -808,7 +812,7 @@ void SSTI::AssembleStrategyBlockBlock::assemble_thermo_scatra_interface(
       slaveflux.complete(
           *all_maps()->block_map_scatra()->full_map(), *all_maps()->block_map_thermo()->full_map());
 
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(thermoscatrainterface_subblock,
+      Coupling::Adapter::MatrixLogicalSplitAndTransform()(thermoscatrainterface_subblock,
           *meshtying_thermo()->coupling_adapter()->master_dof_map(),
           thermoscatrainterface_subblock.domain_map(), -1.0, &thermo_converter, nullptr, masterflux,
           true, true);
@@ -856,9 +860,10 @@ void SSTI::AssembleStrategyBlockSparse::assemble_thermo_scatra_interface(
 
   // assemble linearizations of master side thermo fluxes w.r.t. slave and master side elch
   // into system matrix
-  Core::Adapter::CouplingSlaveConverter thermo_converter(*meshtying_thermo()->coupling_adapter());
+  Coupling::Adapter::CouplingSlaveConverter thermo_converter(
+      *meshtying_thermo()->coupling_adapter());
 
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(*thermoscatrainterface_sparse,
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(*thermoscatrainterface_sparse,
       *meshtying_thermo()->coupling_adapter()->master_dof_map(),
       thermoscatrainterface_sparse->domain_map(), -1.0, &thermo_converter, nullptr,
       systemmatrix_block->matrix(block_position_thermo().at(0), block_position_scatra().at(0)),
@@ -881,9 +886,10 @@ void SSTI::AssembleStrategySparse::assemble_thermo_scatra_interface(
 
   // assemble linearizations of master side scatra fluxes w.r.t. slave and master side elch
   // into system matrix
-  Core::Adapter::CouplingSlaveConverter thermo_converter(*meshtying_thermo()->coupling_adapter());
+  Coupling::Adapter::CouplingSlaveConverter thermo_converter(
+      *meshtying_thermo()->coupling_adapter());
 
-  Core::LinAlg::MatrixLogicalSplitAndTransform()(*thermoscatrainterface_sparse,
+  Coupling::Adapter::MatrixLogicalSplitAndTransform()(*thermoscatrainterface_sparse,
       *meshtying_thermo()->coupling_adapter()->master_dof_map(),
       thermoscatrainterface_sparse->domain_map(), -1.0, &thermo_converter, nullptr,
       *systemmatrix_sparse, true, true);
@@ -1196,7 +1202,7 @@ void SSTI::AssembleStrategySparse::apply_structural_dbc_system_matrix(
     // extract structural rows of global system matrix
     auto systemmatrix_structure =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap_structure, 27, false, true));
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(*systemmatrix_sparse, *dofrowmap_structure,
+    Coupling::Adapter::MatrixLogicalSplitAndTransform()(*systemmatrix_sparse, *dofrowmap_structure,
         systemmatrix->domain_map(), 1.0, nullptr, nullptr, *systemmatrix_structure);
     systemmatrix_structure->complete(systemmatrix->domain_map(), *dofrowmap_structure);
 

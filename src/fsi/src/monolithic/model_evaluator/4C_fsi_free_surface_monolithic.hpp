@@ -16,6 +16,7 @@
 #include "4C_adapter_fld_base_algorithm.hpp"
 #include "4C_ale.hpp"
 #include "4C_coupling_adapter.hpp"
+#include "4C_coupling_adapter_converter.hpp"
 #include "4C_fsi_overlapprec.hpp"
 
 #include <NOX.H>
@@ -29,12 +30,10 @@ namespace Core::LinAlg
 {
   class SparseMatrix;
   class MapExtractor;
-  class MatrixColTransform;
 }  // namespace Core::LinAlg
 
 namespace Adapter
 {
-  class Coupling;
   class AleFluidWrapper;
 }  // namespace Adapter
 
@@ -196,13 +195,13 @@ namespace FSI
 
     //@}
 
-    Core::Adapter::Coupling& fluid_ale_coupling();
+    Coupling::Adapter::Coupling& fluid_ale_coupling();
 
-    const Core::Adapter::Coupling& fluid_ale_coupling() const;
+    const Coupling::Adapter::Coupling& fluid_ale_coupling() const;
 
    private:
     /// coupling of fluid and ale
-    Teuchos::RCP<Core::Adapter::Coupling> coupfa_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupfa_;
 
     /// underlying fluid of the FS problem
     Teuchos::RCP<Adapter::Fluid> fluid_;
@@ -500,15 +499,15 @@ namespace FSI
     Teuchos::RCP<OverlappingBlockMatrixFS> systemmatrix_;
 
     /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<Core::Adapter::Coupling> icoupfa_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> icoupfa_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> aigtransform_;
 
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fmgitransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> fmgitransform_;
 
     ///@}
 
