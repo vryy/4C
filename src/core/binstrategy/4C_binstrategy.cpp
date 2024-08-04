@@ -24,6 +24,7 @@
 #include "4C_mortar_node.hpp"
 #include "4C_rebalance_graph_based.hpp"
 #include "4C_rebalance_print.hpp"
+#include "4C_utils_parameter_list.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -208,7 +209,7 @@ Core::Binstrategy::BinningStrategy::BinningStrategy(const Teuchos::ParameterList
   build_periodic_bc(binning_params);
 }
 
-void Core::Binstrategy::BinningStrategy::gids_inijk_range(
+void Core::Binstrategy::BinningStrategy::gids_in_ijk_range(
     const int* ijk_range, std::set<int>& binIds, bool checkexistence) const
 {
   if (checkexistence and bindis_ == Teuchos::null)
@@ -222,7 +223,7 @@ void Core::Binstrategy::BinningStrategy::gids_inijk_range(
       {
         std::array ijk = {i, j, k};
 
-        const int gid = convertijk_to_gid(ijk.data());
+        const int gid = convert_ijk_to_gid(ijk.data());
         if (gid != -1)
         {
           if (checkexistence)
@@ -239,7 +240,7 @@ void Core::Binstrategy::BinningStrategy::gids_inijk_range(
   }      // end for int i
 }
 
-void Core::Binstrategy::BinningStrategy::gids_inijk_range(
+void Core::Binstrategy::BinningStrategy::gids_in_ijk_range(
     const int* ijk_range, std::vector<int>& binIds, bool checkexistence) const
 {
   if (checkexistence and bindis_ == Teuchos::null)
@@ -253,7 +254,7 @@ void Core::Binstrategy::BinningStrategy::gids_inijk_range(
       {
         std::array ijk = {i, j, k};
 
-        const int gid = convertijk_to_gid(ijk.data());
+        const int gid = convert_ijk_to_gid(ijk.data());
         if (gid != -1)
         {
           if (checkexistence)
@@ -270,13 +271,14 @@ void Core::Binstrategy::BinningStrategy::gids_inijk_range(
   }      // end for int i
 }
 
-int Core::Binstrategy::BinningStrategy::get_number_of_bins_inijk_range(int const ijk_range[6]) const
+int Core::Binstrategy::BinningStrategy::get_number_of_bins_in_ijk_range(
+    int const ijk_range[6]) const
 {
   return ((ijk_range[1] - ijk_range[0] + 1) * (ijk_range[3] - ijk_range[2] + 1) *
           (ijk_range[5] - ijk_range[4] + 1));
 }
 
-int Core::Binstrategy::BinningStrategy::convertijk_to_gid(int* ijk) const
+int Core::Binstrategy::BinningStrategy::convert_ijk_to_gid(int* ijk) const
 {
   // might need to modify ijk connectivity in the presence of periodic boundary conditions
   if (havepbc_)
@@ -302,7 +304,7 @@ int Core::Binstrategy::BinningStrategy::convertijk_to_gid(int* ijk) const
          ijk[2] * id_calc_bin_per_dir_[0] * id_calc_bin_per_dir_[1];
 }
 
-void Core::Binstrategy::BinningStrategy::convert_gid_toijk(const int gid, int* ijk) const
+void Core::Binstrategy::BinningStrategy::convert_gid_to_ijk(const int gid, int* ijk) const
 {
   // in order to efficiently compute the ijk triple from a given bin id,
   // use of the shift operator is made (right shift by one equals division by two)
@@ -362,10 +364,10 @@ int Core::Binstrategy::BinningStrategy::convert_pos_to_gid(const double* pos) co
           (pos[dim] - domain_bounding_box_corner_positions_(dim, 0)) * inv_bin_size_[dim]));
   }
 
-  return convertijk_to_gid(ijk);
+  return convert_ijk_to_gid(ijk);
 }
 
-void Core::Binstrategy::BinningStrategy::convert_pos_toijk(const double* pos, int* ijk) const
+void Core::Binstrategy::BinningStrategy::convert_pos_to_ijk(const double* pos, int* ijk) const
 {
   double pos_ud[3];
   if (deforming_simulation_domain_handler_ != Teuchos::null)
@@ -384,7 +386,7 @@ void Core::Binstrategy::BinningStrategy::convert_pos_toijk(const double* pos, in
   }
 }
 
-void Core::Binstrategy::BinningStrategy::convert_pos_toijk(
+void Core::Binstrategy::BinningStrategy::convert_pos_to_ijk(
     const Core::LinAlg::Matrix<3, 1>& pos, int* ijk) const
 {
   Core::LinAlg::Matrix<3, 1> pos_ud;
@@ -424,14 +426,14 @@ int Core::Binstrategy::BinningStrategy::convert_pos_to_gid(
           (pos(dim) - domain_bounding_box_corner_positions_(dim, 0)) * inv_bin_size_[dim]));
   }
 
-  return convertijk_to_gid(ijk);
+  return convert_ijk_to_gid(ijk);
 }
 
 void Core::Binstrategy::BinningStrategy::get_neighbor_bin_ids(
     const int binId, std::vector<int>& binIds) const
 {
   int ijk_base[3];
-  convert_gid_toijk(binId, ijk_base);
+  convert_gid_to_ijk(binId, ijk_base);
 
   for (int i = ijk_base[0] - 1; i <= ijk_base[0] + 1; ++i)
   {
@@ -440,7 +442,7 @@ void Core::Binstrategy::BinningStrategy::get_neighbor_bin_ids(
       for (int k = ijk_base[2] - 1; k <= ijk_base[2] + 1; ++k)
       {
         std::array ijk = {i, j, k};
-        const int gid = convertijk_to_gid(ijk.data());
+        const int gid = convert_ijk_to_gid(ijk.data());
         if (gid != -1 and gid != binId)
         {
           binIds.push_back(gid);
@@ -474,7 +476,7 @@ void Core::Binstrategy::BinningStrategy::get_bin_corners(
   bincorners.clear();
   bincorners.reserve(8);
   int ijk_base[3];
-  convert_gid_toijk(binId, ijk_base);
+  convert_gid_to_ijk(binId, ijk_base);
 
   // order in bincorners is identical to ordering of i,j and k
   for (int k = ijk_base[2]; k < (ijk_base[2] + 2); ++k)
@@ -521,7 +523,7 @@ Core::LinAlg::Matrix<3, 1> Core::Binstrategy::BinningStrategy::get_bin_centroid(
     const int binId) const
 {
   int ijk[3];
-  convert_gid_toijk(binId, ijk);
+  convert_gid_to_ijk(binId, ijk);
   if (ijk[0] == -1)
     FOUR_C_THROW("given bin id is outside of bins; centroid of bin is does not make sense");
 
@@ -851,7 +853,7 @@ void Core::Binstrategy::BinningStrategy::fill_bins_into_bin_discretization(
   }
 }
 
-void Core::Binstrategy::BinningStrategy::addijk_to_axis_alignedijk_range_of_beam_element(
+void Core::Binstrategy::BinningStrategy::add_ijk_to_axis_aligned_ijk_range(
     int const ijk[3], int ijk_range[6]) const
 {
   // this should be large enough
@@ -908,7 +910,7 @@ void Core::Binstrategy::BinningStrategy::distribute_eles_to_bins(
       {
         Core::Nodes::Node* node = nodes[0];
         const double* coords = dynamic_cast<Mortar::Node*>(node)->xspatial();
-        convert_pos_toijk(coords, ijk);
+        convert_pos_to_ijk(coords, ijk);
       }
 
       // ijk_range contains: i_min i_max j_min j_max k_min k_max
@@ -920,7 +922,7 @@ void Core::Binstrategy::BinningStrategy::distribute_eles_to_bins(
         Core::Nodes::Node* node = nodes[j];
         const double* coords = dynamic_cast<Mortar::Node*>(node)->xspatial();
         int ijk[3];
-        convert_pos_toijk(coords, ijk);
+        convert_pos_to_ijk(coords, ijk);
 
         for (int dim = 0; dim < 3; ++dim)
         {
@@ -931,8 +933,8 @@ void Core::Binstrategy::BinningStrategy::distribute_eles_to_bins(
 
       // get corresponding bin ids in ijk range
       std::vector<int> binIds;
-      binIds.reserve(get_number_of_bins_inijk_range(ijk_range));
-      gids_inijk_range(ijk_range, binIds, false);
+      binIds.reserve(get_number_of_bins_in_ijk_range(ijk_range));
+      gids_in_ijk_range(ijk_range, binIds, false);
 
       // assign element to bins
       for (int binId : binIds) binelemap[binId].insert(ele->id());
@@ -948,17 +950,13 @@ void Core::Binstrategy::BinningStrategy::distribute_row_elements_to_bins_using_e
 
   // exploit bounding box idea for elements in underlying discretization and bins
   // loop over all row elements
-  for (int lid = 0; lid < discret->num_my_row_elements(); ++lid)
+  for (auto* eleptr : discret->my_row_element_range())
   {
-    Core::Elements::Element* eleptr = discret->l_row_element(lid);
     // get corresponding bin ids in ijk range
     std::vector<int> binIds;
     distribute_single_element_to_bins_using_ele_aabb(discret, eleptr, binIds, disnp);
 
-    // assign element to bins
-    std::vector<int>::const_iterator biniter;
-    for (biniter = binIds.begin(); biniter != binIds.end(); ++biniter)
-      bintorowelemap[*biniter].insert(eleptr->id());
+    for (const int b : binIds) bintorowelemap[b].insert(eleptr->id());
   }
 }
 
@@ -970,17 +968,14 @@ void Core::Binstrategy::BinningStrategy::distribute_col_elements_to_bins_using_e
 
   // exploit bounding box idea for elements in underlying discretization and bins
   // loop over all row elements
-  for (int lid = 0; lid < discret->num_my_col_elements(); ++lid)
+  for (auto* eleptr : discret->my_col_element_range())
   {
-    Core::Elements::Element* eleptr = discret->l_col_element(lid);
     // get corresponding bin ids in ijk range
     std::vector<int> binIds;
     distribute_single_element_to_bins_using_ele_aabb(discret, eleptr, binIds, disnp);
 
     // assign element to bins
-    std::vector<int>::const_iterator biniter;
-    for (biniter = binIds.begin(); biniter != binIds.end(); ++biniter)
-      bintocolelemap[*biniter].insert(eleptr->id());
+    for (const int b : binIds) bintocolelemap[b].insert(eleptr->id());
   }
 }
 
@@ -997,18 +992,18 @@ void Core::Binstrategy::BinningStrategy::distribute_single_element_to_bins_using
           *discret, *eleptr, disnp, determine_relevant_points_);
 
   int ijk[3];
-  convert_pos_toijk(aabb.first.data(), ijk);
+  convert_pos_to_ijk(aabb.first.data(), ijk);
   // Initialize the ijk range with the first point of the AABB.
   int ijk_range[] = {ijk[0], ijk[0], ijk[1], ijk[1], ijk[2], ijk[2]};
 
-  addijk_to_axis_alignedijk_range_of_beam_element(ijk, ijk_range);
-  convert_pos_toijk(aabb.second.data(), ijk);
-  addijk_to_axis_alignedijk_range_of_beam_element(ijk, ijk_range);
+  add_ijk_to_axis_aligned_ijk_range(ijk, ijk_range);
+  convert_pos_to_ijk(aabb.second.data(), ijk);
+  add_ijk_to_axis_aligned_ijk_range(ijk, ijk_range);
 
 
   // get corresponding bin ids in ijk range
-  binIds.reserve(get_number_of_bins_inijk_range(ijk_range));
-  gids_inijk_range(ijk_range, binIds, false);
+  binIds.reserve(get_number_of_bins_in_ijk_range(ijk_range));
+  gids_in_ijk_range(ijk_range, binIds, false);
 }
 
 void Core::Binstrategy::BinningStrategy::assign_eles_to_bins(
@@ -1097,8 +1092,8 @@ void Core::Binstrategy::BinningStrategy::distribute_row_nodes_to_bins(
 
     const double* coords = currpos;
     int ijk[3];
-    convert_pos_toijk(coords, ijk);
-    const int binid = convertijk_to_gid(ijk);
+    convert_pos_to_ijk(coords, ijk);
+    const int binid = convert_ijk_to_gid(ijk);
 
     FOUR_C_THROW_UNLESS(binid != -1,
         "Node %i in your discretization resides outside the binning \n"
@@ -1466,9 +1461,9 @@ void Core::Binstrategy::BinningStrategy::extend_ghosting_of_binning_discretizati
     {
       double const* pos = particles[iparticle]->x().data();
       std::array ijk = {-1, -1, -1};
-      convert_pos_toijk(pos, ijk.data());
+      convert_pos_to_ijk(pos, ijk.data());
 
-      int gidofbin = convertijk_to_gid(ijk.data());
+      int gidofbin = convert_ijk_to_gid(ijk.data());
       if (gidofbin != binid)
         FOUR_C_THROW(
             "after ghosting: particle which should be in bin no. %i is in %i", gidofbin, binid);

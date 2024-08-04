@@ -1162,7 +1162,7 @@ void PARTICLEENGINE::ParticleEngine::determine_bin_dis_dependent_maps_and_sets()
   int ijk_range[] = {ijk_min[0], ijk_max[0], ijk_min[1], ijk_max[1], ijk_min[2], ijk_max[2]};
 
   // get corresponding owned bin ids in ijk range
-  binstrategy_->gids_inijk_range(ijk_range, innerbinids, true);
+  binstrategy_->gids_in_ijk_range(ijk_range, innerbinids, true);
 
   // substract non-boundary bins from all owned bins to obtain boundary bins
   for (int currbin : innerbinids) boundarybins_.erase(currbin);
@@ -1247,7 +1247,7 @@ void PARTICLEENGINE::ParticleEngine::relate_half_neighboring_bins_to_owned_bins(
 
     // get ijk of current bin
     int ijk[3];
-    binstrategy_->convert_gid_toijk(gidofbin, ijk);
+    binstrategy_->convert_gid_to_ijk(gidofbin, ijk);
 
     // get reference to neighboring bins (including current bin) of current bin
     std::set<int>& neighboringbins = halfneighboringbinstobins_[rowlidofbin];
@@ -1257,13 +1257,13 @@ void PARTICLEENGINE::ParticleEngine::relate_half_neighboring_bins_to_owned_bins(
 
     // insert half of the surrounding bins following a specific stencil
     int ijk_range_9bin[] = {ijk[0] - 1, ijk[0] + 1, ijk[1] - 1, ijk[1] + 1, ijk[2] + 1, ijk[2] + 1};
-    binstrategy_->gids_inijk_range(ijk_range_9bin, neighboringbins, false);
+    binstrategy_->gids_in_ijk_range(ijk_range_9bin, neighboringbins, false);
 
     int ijk_range_3bin[] = {ijk[0] + 1, ijk[0] + 1, ijk[1] - 1, ijk[1] + 1, ijk[2], ijk[2]};
-    binstrategy_->gids_inijk_range(ijk_range_3bin, neighboringbins, false);
+    binstrategy_->gids_in_ijk_range(ijk_range_3bin, neighboringbins, false);
 
     int ijk_range_1bin[] = {ijk[0], ijk[0], ijk[1] + 1, ijk[1] + 1, ijk[2], ijk[2]};
-    binstrategy_->gids_inijk_range(ijk_range_1bin, neighboringbins, false);
+    binstrategy_->gids_in_ijk_range(ijk_range_1bin, neighboringbins, false);
   }
 
   // iterate over bins being ghosted on this processor

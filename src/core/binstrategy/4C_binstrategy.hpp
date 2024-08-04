@@ -280,7 +280,7 @@ namespace Core::Binstrategy
      * \param[out] binIds all bin ids in the specified range
      * \param[in] checkexistence check can be added whether the gids are woned from myrank
      */
-    void gids_inijk_range(const int* ijk_range, std::set<int>& binIds, bool checkexistence) const;
+    void gids_in_ijk_range(const int* ijk_range, std::set<int>& binIds, bool checkexistence) const;
     /*!
      * \brief get all bin ids for given range of ijk
      *
@@ -288,7 +288,7 @@ namespace Core::Binstrategy
      * \param[out] binIds all bin ids in the specified range
      * \param[in] checkexistence check can be added whether gids are owned from myrank
      */
-    void gids_inijk_range(
+    void gids_in_ijk_range(
         const int* ijk_range, std::vector<int>& binIds, bool checkexistence) const;
 
     /*!
@@ -298,7 +298,7 @@ namespace Core::Binstrategy
      *
      * \return number of bins in requested ijk range
      */
-    int get_number_of_bins_inijk_range(int const ijk_range[6]) const;
+    int get_number_of_bins_in_ijk_range(int const ijk_range[6]) const;
 
     /*!
      * \brief convert ijk reference to bin to its gid
@@ -307,7 +307,7 @@ namespace Core::Binstrategy
      *
      * \return gid of requested bin
      */
-    int convertijk_to_gid(int* ijk) const;
+    int convert_ijk_to_gid(int* ijk) const;
 
     /*!
      * \brief convert bin id into ijk specification of bin
@@ -315,7 +315,7 @@ namespace Core::Binstrategy
      * \param[in] gid bin id to be converted in ijk
      * \param[out] ijk  resulting ijk
      */
-    void convert_gid_toijk(int gid, int* ijk) const;
+    void convert_gid_to_ijk(int gid, int* ijk) const;
 
     /*!
      * \brief convert a position to its corresponding bin
@@ -332,7 +332,7 @@ namespace Core::Binstrategy
      * \param[in] pos  position to be converted into ijk
      * \param[out] ijk resulting ijk
      */
-    void convert_pos_toijk(const double* pos, int* ijk) const;
+    void convert_pos_to_ijk(const double* pos, int* ijk) const;
 
     /*!
      * \brief convert a position to its corresponding ijk
@@ -340,7 +340,7 @@ namespace Core::Binstrategy
      * \param[in] pos  position to be converted into ijk
      * \param[out] ijk resulting ijk
      */
-    void convert_pos_toijk(const Core::LinAlg::Matrix<3, 1>& pos, int* ijk) const;
+    void convert_pos_to_ijk(const Core::LinAlg::Matrix<3, 1>& pos, int* ijk) const;
 
     /*!
      * \brief convert position to bin id
@@ -472,7 +472,7 @@ namespace Core::Binstrategy
      * \param[in] ijk ijk to be added to ijk range
      * \param[out] ijk_range extended ijk range
      */
-    void addijk_to_axis_alignedijk_range_of_beam_element(int const ijk[3], int ijk_range[6]) const;
+    void add_ijk_to_axis_aligned_ijk_range(int const ijk[3], int ijk_range[6]) const;
 
 
     /// fixme: the following function needs to be replaced by
