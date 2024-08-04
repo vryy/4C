@@ -14,7 +14,6 @@
 #include "4C_fem_condition_selector.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -90,7 +89,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::init()
   check_dbc_on_coupled_dofs(arterydis_, artex_->Map(1));
 
   // setup coupling adapter
-  artcontfieldcoup_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  artcontfieldcoup_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
   artcontfieldcoup_->setup_condition_coupling(*contdis_, contfieldex_->Map(1), *arterydis_,
       artex_->Map(1), condname_, coupleddofs_cont_, coupleddofs_art_);
 
@@ -108,9 +107,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::init()
   globalex_->check_for_valid_map_extractor();
 
   // needed for matrix transformations
-  sbbtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform());
-  sbitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform());
-  sibtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform());
+  sbbtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform());
+  sbitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform());
+  sibtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform());
 }
 
 /*----------------------------------------------------------------------*
@@ -228,15 +227,15 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_matrix(
   sysmat->assign(1, 1, Core::LinAlg::View, blockartery->matrix(0, 0));
 
   (*sibtransform_)(blockartery->full_row_map(), blockartery->full_col_map(),
-      blockartery->matrix(0, 1), 1.0, Core::Adapter::CouplingSlaveConverter(*artcontfieldcoup_),
+      blockartery->matrix(0, 1), 1.0, Coupling::Adapter::CouplingSlaveConverter(*artcontfieldcoup_),
       sysmat->matrix(1, 0));
 
   (*sbitransform_)(blockartery->matrix(1, 0), 1.0,
-      Core::Adapter::CouplingSlaveConverter(*artcontfieldcoup_), sysmat->matrix(0, 1));
+      Coupling::Adapter::CouplingSlaveConverter(*artcontfieldcoup_), sysmat->matrix(0, 1));
 
   (*sbbtransform_)(blockartery->matrix(1, 1), 1.0,
-      Core::Adapter::CouplingSlaveConverter(*artcontfieldcoup_),
-      Core::Adapter::CouplingSlaveConverter(*artcontfieldcoup_), *sysmat_cont, true, true);
+      Coupling::Adapter::CouplingSlaveConverter(*artcontfieldcoup_),
+      Coupling::Adapter::CouplingSlaveConverter(*artcontfieldcoup_), *sysmat_cont, true, true);
 
   // continuous field
   sysmat->assign(0, 0, Core::LinAlg::View, *sysmat_cont);

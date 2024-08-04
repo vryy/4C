@@ -33,10 +33,10 @@ FSI::LungMonolithic::LungMonolithic(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : BlockMonolithic(comm, timeparams)
 {
-  icoupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
-  coupsaout_ = Teuchos::rcp(new Core::Adapter::Coupling());
-  coupfsout_ = Teuchos::rcp(new Core::Adapter::Coupling());
-  coupfaout_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  icoupfa_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  coupsaout_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  coupfsout_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  coupfaout_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
 
   //-----------------------------------------------------------------------------
   // additional fluid-structure volume constraints
@@ -212,9 +212,9 @@ void FSI::LungMonolithic::general_setup()
 
   // right now we use matching meshes at the interface
 
-  Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
-  Core::Adapter::Coupling& coupsa = structure_ale_coupling();
-  Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
+  Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
+  Coupling::Adapter::Coupling& coupsa = structure_ale_coupling();
+  Coupling::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
   const int ndim = Global::Problem::instance()->n_dim();
 

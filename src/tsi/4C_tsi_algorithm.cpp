@@ -72,9 +72,9 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   if (!matchinggrid_)
   {
     // Scheme: non matching meshes --> volumetric mortar coupling...
-    volcoupl_ = Teuchos::rcp(new Core::Adapter::MortarVolCoupl());
+    volcoupl_ = Teuchos::rcp(new Coupling::Adapter::MortarVolCoupl());
 
-    Teuchos::RCP<Core::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy =
+    Teuchos::RCP<Coupling::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy =
         Teuchos::rcp(new TSI::UTILS::TSIMaterialStrategy());
     // init coupling adapter projection matrices
     volcoupl_->init(Global::Problem::instance()->n_dim(), structdis, thermodis, nullptr, nullptr,
@@ -150,7 +150,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   // setup coupling object for matching discretization
   if (matchinggrid_)
   {
-    coupST_ = Teuchos::rcp(new Core::Adapter::Coupling());
+    coupST_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
     coupST_->setup_coupling(*structure_field()->discretization(), *thermo_field()->discretization(),
         *structure_field()->discretization()->node_row_map(),
         *thermo_field()->discretization()->node_row_map(), 1, true);

@@ -18,6 +18,7 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter.hpp"
+#include "4C_coupling_adapter_converter.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
@@ -29,7 +30,6 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 namespace Adapter
 {
-  class Coupling;
   class ScaTraBaseAlgorithm;
 }  // namespace Adapter
 
@@ -44,9 +44,6 @@ namespace Core::LinAlg
   class BlockSparseMatrixBase;
   class SparseMatrix;
   class Solver;
-  class MatrixRowTransform;
-  class MatrixColTransform;
-  class MatrixRowColTransform;
 }  // namespace Core::LinAlg
 
 namespace FS3I
@@ -168,7 +165,7 @@ namespace FS3I
     std::vector<Teuchos::RCP<Core::LinAlg::MultiMapExtractor>> scatrafieldexvec_;
 
     /// coupling of dofs at the scatra interface
-    Teuchos::RCP<Core::Adapter::Coupling> scatracoup_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> scatracoup_;
 
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> scatrasystemmatrix_;
 
@@ -209,10 +206,10 @@ namespace FS3I
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform> sbbtransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> sbitransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> sibtransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> fbitransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform> sbbtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> sbitransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> sibtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> fbitransform_;
     ///@}
 
    private:

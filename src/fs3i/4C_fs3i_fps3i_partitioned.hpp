@@ -32,7 +32,6 @@ namespace FPSI
 
 namespace Adapter
 {
-  class Coupling;
   class ScaTraBaseAlgorithm;
 }  // namespace Adapter
 

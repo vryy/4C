@@ -14,8 +14,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_coupling_adapter_converter.hpp"
 #include "4C_fsi_lungmonolithic.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -94,27 +94,27 @@ namespace FSI
     /// setup RHS contributions based on terms for first nonlinear iteration
     void setup_rhs_firstiter(Epetra_Vector& f) override;
 
-    Core::LinAlg::MatrixLogicalSplitAndTransform siitransform_;
-    Core::LinAlg::MatrixLogicalSplitAndTransform sggtransform_;
-    Core::LinAlg::MatrixLogicalSplitAndTransform sgitransform_;
-    Core::LinAlg::MatrixLogicalSplitAndTransform sigtransform_;
-    Core::LinAlg::MatrixColTransform aigtransform_;
-    Core::LinAlg::MatrixColTransform ai_gtransform_;
+    Coupling::Adapter::MatrixLogicalSplitAndTransform siitransform_;
+    Coupling::Adapter::MatrixLogicalSplitAndTransform sggtransform_;
+    Coupling::Adapter::MatrixLogicalSplitAndTransform sgitransform_;
+    Coupling::Adapter::MatrixLogicalSplitAndTransform sigtransform_;
+    Coupling::Adapter::MatrixColTransform aigtransform_;
+    Coupling::Adapter::MatrixColTransform ai_gtransform_;
 
-    Core::LinAlg::MatrixColTransform fmiitransform_;
-    Core::LinAlg::MatrixColTransform fm_gitransform_;
-    Core::LinAlg::MatrixColTransform fmgitransform_;
-    Core::LinAlg::MatrixColTransform fmi_gtransform_;
-    Core::LinAlg::MatrixColTransform fm_g_gtransform_;
-    Core::LinAlg::MatrixColTransform fmg_gtransform_;
-    Core::LinAlg::MatrixColTransform addfm_g_gtransform_;
+    Coupling::Adapter::MatrixColTransform fmiitransform_;
+    Coupling::Adapter::MatrixColTransform fm_gitransform_;
+    Coupling::Adapter::MatrixColTransform fmgitransform_;
+    Coupling::Adapter::MatrixColTransform fmi_gtransform_;
+    Coupling::Adapter::MatrixColTransform fm_g_gtransform_;
+    Coupling::Adapter::MatrixColTransform fmg_gtransform_;
+    Coupling::Adapter::MatrixColTransform addfm_g_gtransform_;
 
     /// split of constraint matrices
-    Core::LinAlg::MatrixLogicalSplitAndTransform sciitransform_;
-    Core::LinAlg::MatrixLogicalSplitAndTransform scgitransform_;
-    Core::LinAlg::MatrixLogicalSplitAndTransform csiitransform_;
-    Core::LinAlg::MatrixLogicalSplitAndTransform csigtransform_;
-    Core::LinAlg::MatrixColTransform cai_gtransform_;
+    Coupling::Adapter::MatrixLogicalSplitAndTransform sciitransform_;
+    Coupling::Adapter::MatrixLogicalSplitAndTransform scgitransform_;
+    Coupling::Adapter::MatrixLogicalSplitAndTransform csiitransform_;
+    Coupling::Adapter::MatrixLogicalSplitAndTransform csigtransform_;
+    Coupling::Adapter::MatrixColTransform cai_gtransform_;
   };
 }  // namespace FSI
 

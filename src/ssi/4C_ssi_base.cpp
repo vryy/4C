@@ -416,8 +416,8 @@ SSI::RedistributionType SSI::SSIBase::init_field_coupling(const std::string& str
     {
       const Teuchos::ParameterList& volmortarparams =
           Global::Problem::instance()->volmortar_params();
-      if (Core::UTILS::IntegralValue<Core::VolMortar::CouplingType>(
-              volmortarparams, "COUPLINGTYPE") != Core::VolMortar::couplingtype_coninter)
+      if (Core::UTILS::IntegralValue<Coupling::VolMortar::CouplingType>(
+              volmortarparams, "COUPLINGTYPE") != Coupling::VolMortar::couplingtype_coninter)
       {
         FOUR_C_THROW(
             "Volmortar coupling only tested for consistent interpolation, "

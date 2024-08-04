@@ -118,39 +118,41 @@ namespace FPSI
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform>
         fggtransform_;  // g_fsi/g_fsi || F->S/F->S transform (FSI/FSI)
-    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform>
         fggtransform2_;  // g_fis/g_fpsi || F->S/F->S transform (FSI/FPSI)
-    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform>
         fmgitransform_;  // g_fsi/i transform || F->S/F->A transform (FSI/FluidVolume)
 
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> fgitransform1_;  // g_fsi || F->S transform (FSI)
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> fgitransform2_;  // g_fsi || F->S transform (FSI)
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform>
+        fgitransform1_;  // g_fsi || F->S transform (FSI)
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform>
+        fgitransform2_;  // g_fsi || F->S transform (FSI)
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform>
         cfgtransform_;  // full fluid_field || F->S transform (FSI)
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform>
         cfptransform_;  // full fluid_field || F->S transform (FSI)
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform>
         cfptransform2_;  // full fluid_field || F->S transform (FSI)
 
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform>
         figtransform1_;  // for Row/Col-Map for Full - fluid_field & F->S transform (FSI)
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform>
         figtransform2_;  // for Row/Col-Map for Full - fluid_field & F->S transform (FSI)
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform>
         figtransform3_;  // for Row/Col-Map for Full - fluid_field & F->S transform (FSI)
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform>
         figtransform4_;  // for Row/Col-Map for Full - fluid_field & F->S transform (FSI)
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform>
         aigtransform_;  // for Row/Col-Map for Full - ale_field & F->S transform (FSI)
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform>
         aigtransform2_;  // for Row/Col-Map for Full - ale_field & F->S transform (FPSI)
 
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform>
         couplingcoltransform_;  // for Row/Col-Map for Full - fluid_field & F->A transform
                                 // (FluidVolume)
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform>
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform>
         couplingcoltransformfs_;  // for Row/Col-Map for Full - fluid_field & F->S transform (FPSI)
     ///@}
 

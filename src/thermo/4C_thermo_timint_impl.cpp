@@ -76,7 +76,7 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
     if (mrtrcond != nullptr)
     {
       adaptermeshtying_ =
-          Teuchos::rcp(new Core::Adapter::CouplingMortar(Global::Problem::instance()->n_dim(),
+          Teuchos::rcp(new Coupling::Adapter::CouplingMortar(Global::Problem::instance()->n_dim(),
               Global::Problem::instance()->mortar_coupling_params(),
               Global::Problem::instance()->contact_dynamic_params(),
               Global::Problem::instance()->spatial_approximation_type()));

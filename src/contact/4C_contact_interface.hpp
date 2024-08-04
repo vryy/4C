@@ -28,10 +28,6 @@ namespace Core::LinAlg
   class SerialDenseMatrix;
 }
 
-namespace Adapter
-{
-  class Coupling;
-}
 
 namespace Core::Nodes
 {
@@ -1094,7 +1090,7 @@ namespace CONTACT
 
     */
     virtual void assemble_normal_coupling_linearisation(
-        Core::LinAlg::SparseMatrix& sglobal, Core::Adapter::Coupling& coupfs,
+        Core::LinAlg::SparseMatrix& sglobal, Coupling::Adapter::Coupling& coupfs,
         bool AssembleVelocityLin = false  // if true velocity linearisation will be assembled into
                                           // sglobal, otherwise lin. w.r.t. displacements!
     );

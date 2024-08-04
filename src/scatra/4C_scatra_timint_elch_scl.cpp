@@ -18,7 +18,6 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_equilibrate.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -763,7 +762,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
           &my_micro_permuted_node_gids[0], 0, comm));
 
   // setup coupling adapter between micro (slave) and macro (master) for all dof of the nodes
-  auto macro_micro_coupling_adapter_temp = Teuchos::rcp(new Core::Adapter::Coupling());
+  auto macro_micro_coupling_adapter_temp = Teuchos::rcp(new Coupling::Adapter::Coupling());
   macro_micro_coupling_adapter_temp->setup_coupling(*discret_, *microdis, *master_node_map,
       *slave_node_map, *perm_slave_node_map, num_dof_per_node());
 
@@ -817,7 +816,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
       -1, static_cast<int>(my_perm_master_dofs.size()), &my_perm_master_dofs[0], 0, comm));
 
 
-  macro_micro_coupling_adapter_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  macro_micro_coupling_adapter_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
   macro_micro_coupling_adapter_->setup_coupling(
       slave_dof_map, perm_slave_dof_map, master_dof_map, perm_master_dof_map);
 
@@ -945,26 +944,26 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
 
       sparse_systemmatrix->add(*system_matrix(), false, 1.0, 1.0);
 
-      auto micro_side_converter =
-          Teuchos::rcp(new Core::Adapter::CouplingSlaveConverter(*macro_micro_coupling_adapter_));
+      auto micro_side_converter = Teuchos::rcp(
+          new Coupling::Adapter::CouplingSlaveConverter(*macro_micro_coupling_adapter_));
 
       // micro: interior - interior
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
+      Coupling::Adapter::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->other_map(), *micro_coupling_dofs_->other_map(), 1.0, nullptr,
           nullptr, *sparse_systemmatrix, true, true);
 
       // micro: interior - slave
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
+      Coupling::Adapter::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->other_map(), *micro_coupling_dofs_->cond_map(), 1.0, nullptr,
           &(*micro_side_converter), *sparse_systemmatrix, true, true);
 
       // micro: slave - interior
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
+      Coupling::Adapter::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->cond_map(), *micro_coupling_dofs_->other_map(), 1.0,
           &(*micro_side_converter), nullptr, *sparse_systemmatrix, true, true);
 
       // micro: slave - slave
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
+      Coupling::Adapter::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->cond_map(), *micro_coupling_dofs_->cond_map(), 1.0,
           &(*micro_side_converter), &(*micro_side_converter), *sparse_systemmatrix, true, true);
       break;
@@ -976,26 +975,26 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
 
       block_systemmatrix->matrix(0, 0).add(*system_matrix(), false, 1.0, 1.0);
 
-      auto micro_side_converter =
-          Teuchos::rcp(new Core::Adapter::CouplingSlaveConverter(*macro_micro_coupling_adapter_));
+      auto micro_side_converter = Teuchos::rcp(
+          new Coupling::Adapter::CouplingSlaveConverter(*macro_micro_coupling_adapter_));
 
       // micro: interior - interior
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
+      Coupling::Adapter::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->other_map(), *micro_coupling_dofs_->other_map(), 1.0, nullptr,
           nullptr, block_systemmatrix->matrix(1, 1), true, true);
 
       // micro: interior - slave
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
+      Coupling::Adapter::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->other_map(), *micro_coupling_dofs_->cond_map(), 1.0, nullptr,
           &(*micro_side_converter), block_systemmatrix->matrix(1, 0), true, true);
 
       // micro: slave - interior
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
+      Coupling::Adapter::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->cond_map(), *micro_coupling_dofs_->other_map(), 1.0,
           &(*micro_side_converter), nullptr, block_systemmatrix->matrix(0, 1), true, true);
 
       // micro: slave - slave
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
+      Coupling::Adapter::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->cond_map(), *micro_coupling_dofs_->cond_map(), 1.0,
           &(*micro_side_converter), &(*micro_side_converter), block_systemmatrix->matrix(0, 0),
           true, true);

@@ -140,8 +140,8 @@ namespace PoroElastScaTra
     const bool matchinggrid_;
 
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<Core::Adapter::MortarVolCoupl> volcoupl_structurescatra_;
-    Teuchos::RCP<Core::Adapter::MortarVolCoupl> volcoupl_fluidscatra_;
+    Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> volcoupl_structurescatra_;
+    Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> volcoupl_fluidscatra_;
     //@}
 
    private:

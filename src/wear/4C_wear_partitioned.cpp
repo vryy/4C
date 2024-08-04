@@ -69,15 +69,15 @@ Wear::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
   {
     // if there are two identical nodes (i.e. for initial contact) the nodes matching creates an
     // error !!!
-    coupalestru_ = Teuchos::rcp(new Core::Adapter::Coupling());
-    Teuchos::rcp_dynamic_cast<Core::Adapter::Coupling>(coupalestru_)
+    coupalestru_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+    Teuchos::rcp_dynamic_cast<Coupling::Adapter::Coupling>(coupalestru_)
         ->setup_coupling(*ale_field().discretization(), *structure_field()->discretization(),
             *aledofmap, *structdofmap, ndim);
   }
   else
   {
     // Scheme: non matching meshes --> volumetric mortar coupling...
-    coupalestru_ = Teuchos::rcp(new Core::Adapter::MortarVolCoupl());
+    coupalestru_ = Teuchos::rcp(new Coupling::Adapter::MortarVolCoupl());
 
     // projection ale -> structure : all ndim dofs (displacements)
     std::vector<int> coupleddof12 = std::vector<int>(ndim, 1);
@@ -89,7 +89,7 @@ Wear::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
     std::pair<int, int> dofset21(0, 0);
 
     // init coupling
-    Teuchos::rcp_dynamic_cast<Core::Adapter::MortarVolCoupl>(coupalestru_)
+    Teuchos::rcp_dynamic_cast<Coupling::Adapter::MortarVolCoupl>(coupalestru_)
         ->init(ndim, Global::Problem::instance()->get_dis("ale"),
             Global::Problem::instance()->get_dis("structure"), &coupleddof12, &coupleddof21,
             &dofset12, &dofset21, Teuchos::null, false);
@@ -98,13 +98,13 @@ Wear::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
     //    Teuchos::rcp_dynamic_cast<Adapter::MortarVolCoupl>(coupalestru_)->redistribute();
 
     // setup projection matrices
-    Teuchos::rcp_dynamic_cast<Core::Adapter::MortarVolCoupl>(coupalestru_)
+    Teuchos::rcp_dynamic_cast<Coupling::Adapter::MortarVolCoupl>(coupalestru_)
         ->setup(Global::Problem::instance()->volmortar_params(),
             Global::Problem::instance()->cut_general_params());
   }
 
   // create interface coupling
-  coupstrualei_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  coupstrualei_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
   coupstrualei_->setup_condition_coupling(*structure_field()->discretization(),
       structure_field()->interface()->ale_wear_cond_map(), *ale_field().discretization(),
       ale_field().interface()->Map(ale_field().interface()->cond_ale_wear), "AleWear", ndim);

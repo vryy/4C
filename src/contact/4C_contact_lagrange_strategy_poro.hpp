@@ -15,22 +15,10 @@ interface
 
 #include "4C_contact_monocoupled_lagrange_strategy.hpp"
 #include "4C_coupling_adapter.hpp"
+#include "4C_coupling_adapter_converter.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
-
-namespace Adapter
-{
-  class Coupling;
-}
-
-
-namespace Core::LinAlg
-{
-  class MatrixRowTransform;
-  class MatrixColTransform;
-  class MatrixRowColTransform;
-}  // namespace Core::LinAlg
 
 namespace CONTACT
 {
@@ -81,8 +69,8 @@ namespace CONTACT
     //Todo to be updated the global derivative matrices S and P and Tresca friction matrix L +
     vector r.
     */
-    void poro_initialize(Core::Adapter::Coupling& coupfs, Teuchos::RCP<const Epetra_Map> fluiddofs,
-        bool fullinit = true);
+    void poro_initialize(Coupling::Adapter::Coupling& coupfs,
+        Teuchos::RCP<const Epetra_Map> fluiddofs, bool fullinit = true);
 
     /*!
     \brief as D and M Matrices are initialized here
@@ -249,27 +237,27 @@ namespace CONTACT
 
     /// @name matrix transformation
     //! transform object for linearized ncoup matrix \f$linncoup\f$
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> linncoupveltransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> linncoupveltransform_;
     //! transform object for linearized ncoup matrix \f$linncoup\f$
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> linncoupdisptransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> linncoupdisptransform_;
     //! transform object for tangential times Dinv matrix \f$T*D^-1\f$
-    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform> tanginvtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform> tanginvtransform_;
     //! transform object for linearized tangentlambda matrix \f$lintanglambda\f$
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> lintangentlambdatransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> lintangentlambdatransform_;
     //! transform object for linearized Dlambda matrix \f$linDlambda\f$
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> porolindmatrixtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> porolindmatrixtransform_;
     //! transform object for linearized Mlambda matrix \f$linMlambda\f$
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> porolinmmatrixtransform_;  // h.Willmann
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> porolinmmatrixtransform_;  // h.Willmann
     //! transform object for mhataam = invda * mmatrixa
-    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform> mhataamtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform> mhataamtransform_;
     //! transform object for dhat
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> dhattransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> dhattransform_;
     //! transform object for mold
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> doldtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> doldtransform_;
     //! transform object for dold
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> moldtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> moldtransform_;
     //! transform object for active part of inverse D matrix \f$invDa\f$
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> invDatransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> invDatransform_;
 
 
     Teuchos::RCP<Epetra_Vector>

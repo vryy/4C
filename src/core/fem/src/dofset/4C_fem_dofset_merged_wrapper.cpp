@@ -13,8 +13,8 @@
 
 #include "4C_fem_dofset_merged_wrapper.hpp"
 
-#include "4C_coupling_matchingoctree.hpp"
 #include "4C_fem_condition_utils.hpp"
+#include "4C_fem_geometric_search_matchingoctree.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
 #include <Epetra_Export.h>
@@ -82,7 +82,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
   Core::Conditions::FindConditionedNodes(dis, couplingcond_slave_, slavenodes);
 
   // initialize search tree
-  auto tree = Core::COUPLING::NodeMatchingOctree();
+  auto tree = Core::GeometricSearch::NodeMatchingOctree();
   tree.init(*sourcedis_, masternodes, 150);
   tree.setup();
 

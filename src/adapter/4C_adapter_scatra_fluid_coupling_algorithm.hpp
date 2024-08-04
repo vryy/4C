@@ -26,8 +26,6 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Adapter
 {
-  class MortarVolCoupl;
-
   /// basis coupling algorithm for scalar transport with fluid velocity field
   /*!
 
@@ -88,7 +86,7 @@ namespace Adapter
     Inpar::ScaTra::FieldCoupling fieldcoupling_;
 
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<Core::Adapter::MortarVolCoupl> volcoupl_fluidscatra_;
+    Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> volcoupl_fluidscatra_;
 
     /// problem-specific parameter list
     const Teuchos::ParameterList& params_;

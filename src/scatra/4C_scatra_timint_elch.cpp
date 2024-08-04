@@ -14,7 +14,6 @@
 #include "4C_io_control.hpp"
 #include "4C_linalg_equilibrate.hpp"
 #include "4C_linalg_krylov_projector.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"

@@ -22,7 +22,6 @@
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -40,10 +39,10 @@ PoroElast::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(const Epet
     : MonolithicSplit(comm, timeparams, porosity_splitter), normrhs_nopenetration_(-1.0)
 {
   // Initialize Transformation Objects
-  k_d_transform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  k_inv_d_transform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
+  k_d_transform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  k_inv_d_transform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
 
-  k_d_lin_transform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  k_d_lin_transform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
 
   // Recovering of Lagrange multiplier happens on fluid field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*structure_field()->interface()->fsi_cond_map()));
@@ -536,10 +535,10 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
   // Transform also colum map of D-Matrix
   (*k_d_transform_)(*fluid_field()->interface()->fsi_cond_map(),
       fluid_field()->block_system_matrix()->matrix(1, 1).col_map(), *tmp_k_D, 1.0,
-      Core::Adapter::CouplingSlaveConverter(*icoupfs_), *k_d_);
+      Coupling::Adapter::CouplingSlaveConverter(*icoupfs_), *k_d_);
 
   (*k_inv_d_transform_)(
-      *invd, 1.0, Core::Adapter::CouplingSlaveConverter(*icoupfs_), *k_inv_d_, false);
+      *invd, 1.0, Coupling::Adapter::CouplingSlaveConverter(*icoupfs_), *k_inv_d_, false);
 
   double stiparam = structure_field()->tim_int_param();
 
@@ -550,7 +549,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
   (*k_d_lin_transform_)(*fluid_field()->interface()->fsi_cond_map(),
       fluid_field()->block_system_matrix()->matrix(1, 1).col_map(), *tmp_k_DLin,
       1.0 - stiparam,  // *= b
-      Core::Adapter::CouplingSlaveConverter(*icoupfs_),
+      Coupling::Adapter::CouplingSlaveConverter(*icoupfs_),
       (Teuchos::rcp_static_cast<Core::LinAlg::BlockSparseMatrixBase>(k_fs))->matrix(1, 1), true,
       true);
 

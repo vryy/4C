@@ -43,7 +43,7 @@ FOUR_C_NAMESPACE_OPEN
 Adapter::CouplingNonLinMortar::CouplingNonLinMortar(int spatial_dimension,
     Teuchos::ParameterList mortar_coupling_params, Teuchos::ParameterList contact_dynamic_params,
     Core::FE::ShapeFunctionType shape_function_type)
-    : Core::Adapter::CouplingMortar(
+    : Coupling::Adapter::CouplingMortar(
           spatial_dimension, mortar_coupling_params, contact_dynamic_params, shape_function_type),
       issetup_(false),
       comm_(Teuchos::null),
@@ -894,7 +894,7 @@ void Adapter::CouplingNonLinMortar::integrate_lin_dm(const std::string& statenam
 void Adapter::CouplingNonLinMortar::matrix_row_col_transform()
 {
   // call base function
-  Core::Adapter::CouplingMortar::matrix_row_col_transform();
+  Coupling::Adapter::CouplingMortar::matrix_row_col_transform();
 
   // safety check
   check_setup();

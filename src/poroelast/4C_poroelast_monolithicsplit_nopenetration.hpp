@@ -14,16 +14,10 @@
 
 #include "4C_config.hpp"
 
+#include "4C_coupling_adapter_converter.hpp"
 #include "4C_poroelast_monolithicsplit.hpp"
 
 FOUR_C_NAMESPACE_OPEN
-
-namespace Core::LinAlg
-{
-  class MatrixRowTransform;
-  class MatrixColTransform;
-  class MatrixRowColTransform;
-}  // namespace Core::LinAlg
 
 namespace Adapter
 {
@@ -124,12 +118,12 @@ namespace PoroElast
     Teuchos::RCP<Epetra_Vector> nopenetration_rhs_;
 
     //! transform object for k_D matrix \f$D\f$
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> k_d_transform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> k_d_transform_;
     //! transform object for k_D matrix \f$D\f$
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> k_inv_d_transform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> k_inv_d_transform_;
 
     //! transform object for linearization of k_D matrix \f$D\f$
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> k_d_lin_transform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> k_d_lin_transform_;
 
     //! Lagrange multiplier \f$\lambda_\Gamma^{n+1}\f$ at the interface (ie condensed forces onto
     //! the structure) evaluated at actual iteration step \f$t_{n+1}\f$ but needed for next

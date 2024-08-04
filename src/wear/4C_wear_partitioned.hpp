@@ -38,11 +38,7 @@ namespace Mortar
 {
   class ManagerBase;
 }
-namespace Adapter
-{
-  class CouplingBase;
-  class Coupling;
-}  // namespace Adapter
+
 namespace Discret
 {
   class LocationArray;
@@ -182,8 +178,9 @@ namespace Wear
     Teuchos::RCP<Epetra_Vector> delta_ale_;
     Teuchos::RCP<Epetra_Vector> ale_i_;
 
-    Teuchos::RCP<Core::Adapter::Coupling> coupstrualei_;     // ale struct coupling on ale interface
-    Teuchos::RCP<Core::Adapter::CouplingBase> coupalestru_;  // ale struct cpupling
+    Teuchos::RCP<Coupling::Adapter::Coupling>
+        coupstrualei_;  // ale struct coupling on ale interface
+    Teuchos::RCP<Coupling::Adapter::CouplingBase> coupalestru_;  // ale struct cpupling
 
     Teuchos::ParameterList alepara_;  // ale parameter list
 

@@ -84,7 +84,7 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> ale_to_structure(Teuchos::RCP<const Epetra_Vector> iv) const;
 
     /// coupling of structure and ale at the interface
-    Teuchos::RCP<Core::Adapter::MortarVolCoupl> coupsa_;
+    Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> coupsa_;
 
     /// coupling of structure and ale at the interface
     Teuchos::RCP<InterfaceCorrector> icorrector_;
@@ -104,14 +104,14 @@ namespace FSI
     virtual void setup(Teuchos::RCP<Adapter::FluidAle> fluidale);
 
     void set_interface_displacements(
-        Teuchos::RCP<Epetra_Vector>& idisp_struct, Core::Adapter::Coupling& icoupfs);
+        Teuchos::RCP<Epetra_Vector>& idisp_struct, Coupling::Adapter::Coupling& icoupfs);
 
     virtual void correct_interface_displacements(Teuchos::RCP<Epetra_Vector> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
    private:
     Teuchos::RCP<const Epetra_Vector> idisp_;
-    Teuchos::RCP<Core::Adapter::Coupling> icoupfs_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> icoupfs_;
 
     Teuchos::RCP<Epetra_Vector> deltadisp_;
     Teuchos::RCP<Adapter::FluidAle> fluidale_;

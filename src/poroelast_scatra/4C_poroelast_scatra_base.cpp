@@ -288,8 +288,8 @@ void PoroElastScaTra::PoroScatraBase::setup_coupling(
   if (not matchinggrid_)
   {
     // Scheme: non matching meshes --> volumetric mortar coupling...
-    volcoupl_structurescatra_ = Teuchos::rcp(new Core::Adapter::MortarVolCoupl());
-    volcoupl_fluidscatra_ = Teuchos::rcp(new Core::Adapter::MortarVolCoupl());
+    volcoupl_structurescatra_ = Teuchos::rcp(new Coupling::Adapter::MortarVolCoupl());
+    volcoupl_fluidscatra_ = Teuchos::rcp(new Coupling::Adapter::MortarVolCoupl());
 
     std::pair<int, int> dofsets12_structurescatra = std::pair<int, int>(2, 0);
     std::pair<int, int> dofsets21_structurescatra = std::pair<int, int>(1, 0);

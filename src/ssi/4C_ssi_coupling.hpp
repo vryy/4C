@@ -210,7 +210,7 @@ namespace SSI
 
    private:
     //! adapter to mortar framework
-    Teuchos::RCP<Core::Adapter::CouplingMortar> adaptermeshtying_;
+    Teuchos::RCP<Coupling::Adapter::CouplingMortar> adaptermeshtying_;
 
     //! extractor for coupled surface of structure discretization with surface scatra
     Teuchos::RCP<Core::LinAlg::MapExtractor> extractor_;
@@ -298,7 +298,7 @@ namespace SSI
 
    private:
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<Core::Adapter::MortarVolCoupl> volcoupl_structurescatra_;
+    Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> volcoupl_structurescatra_;
 
    private:
     //! flag indicating if class is setup

@@ -71,7 +71,7 @@ void FSI::DirichletNeumannVolCoupl::setup_coupling_struct_ale(
 {
   const int ndim = Global::Problem::instance()->n_dim();
 
-  coupsa_ = Teuchos::rcp(new Core::Adapter::MortarVolCoupl());
+  coupsa_ = Teuchos::rcp(new Coupling::Adapter::MortarVolCoupl());
 
   // do a dynamic cast here
   Teuchos::RCP<Adapter::FluidAle> fluidale = Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(fluid_);
@@ -189,7 +189,7 @@ void FSI::InterfaceCorrector::setup(Teuchos::RCP<Adapter::FluidAle> fluidale)
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::InterfaceCorrector::set_interface_displacements(
-    Teuchos::RCP<Epetra_Vector>& idisp_struct, Core::Adapter::Coupling& icoupfs)
+    Teuchos::RCP<Epetra_Vector>& idisp_struct, Coupling::Adapter::Coupling& icoupfs)
 {
   idisp_ = idisp_struct;
   icoupfs_ = Teuchos::rcpFromRef(icoupfs);

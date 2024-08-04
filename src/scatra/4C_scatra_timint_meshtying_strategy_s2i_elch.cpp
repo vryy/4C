@@ -1249,7 +1249,7 @@ void ScaTra::MeshtyingStrategyS2IElchSCL::setup_meshtying()
   std::vector<int> islavenodegidvec(islavenodegidset.begin(), islavenodegidset.end());
   std::vector<int> imasternodegidvec(imasternodegidset.begin(), imasternodegidset.end());
 
-  icoup_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  icoup_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
   icoup_->setup_coupling(*(scatratimint_->discretization()), *(scatratimint_->discretization()),
       imasternodegidvec, islavenodegidvec, 2, true, 1.0e-8);
 }

@@ -27,7 +27,7 @@ PoroElast::MonolithicSplit::MonolithicSplit(const Epetra_Comm& comm,
     Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter)
     : Monolithic(comm, timeparams, porosity_splitter)
 {
-  icoupfs_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  icoupfs_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
 
   evaluateinterface_ = false;
 

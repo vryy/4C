@@ -23,7 +23,6 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Adapter
 {
-  class Coupling;
   class SSIStructureWrapper;
 }  // namespace Adapter
 

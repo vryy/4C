@@ -16,6 +16,7 @@ with condensed fluid interface velocities
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter.hpp"
+#include "4C_coupling_adapter_converter.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_fsi_monolithic.hpp"
 #include "4C_inpar_fsi.hpp"
@@ -23,16 +24,9 @@ with condensed fluid interface velocities
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Adapter
-{
-  class Coupling;
-  class CouplingMortar;
-}  // namespace Adapter
-
 namespace Core::LinAlg
 {
   class BlockSparseMatrixBase;
-  class MatrixColTransform;
 }  // namespace Core::LinAlg
 
 namespace FSI
@@ -278,13 +272,13 @@ namespace FSI
     /// Handle row and column map exchange for matrix blocks
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<Core::Adapter::Coupling> fscoupfa_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> fscoupfa_;
 
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<Core::Adapter::CouplingMortar> coupsfm_;
+    Teuchos::RCP<Coupling::Adapter::CouplingMortar> coupsfm_;
 
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> aigtransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> fmiitransform_;
 
     ///@}
 

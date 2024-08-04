@@ -21,9 +21,6 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Adapter
 {
-  // forward declarations
-  class Coupling;
-
   /// fluid with moving interfaces
   class FluidImmersed : public FluidMovingBoundary
   {

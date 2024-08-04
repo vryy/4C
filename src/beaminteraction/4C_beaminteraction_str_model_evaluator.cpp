@@ -30,7 +30,6 @@
 #include "4C_inpar_beamcontact.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -136,8 +135,8 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
   // initialize coupling adapter to transform matrices between the two discrets
   // (with distinct parallel distribution)
   // -------------------------------------------------------------------------
-  coupsia_ = Teuchos::rcp(new Core::Adapter::Coupling());
-  siatransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
+  coupsia_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  siatransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
 
   // -------------------------------------------------------------------------
   // initialize and setup binning strategy and beam crosslinker handler
@@ -1102,7 +1101,7 @@ void Solid::ModelEvaluator::BeamInteraction::update_coupling_adapter_and_matrix_
 
   // reset transformation member variables (eg. exporter) by rebuilding
   // and provide new maps for coupling adapter
-  siatransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
+  siatransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
   coupsia_->setup_coupling(*ia_discret_, *discret_ptr_);
 }
 
@@ -1198,7 +1197,7 @@ void Solid::ModelEvaluator::BeamInteraction::transform_stiff()
   stiff_beaminteraction_->un_complete();
   // transform stiffness matrix to problem discret layout/distribution
   (*siatransform_)(*ia_state_ptr_->get_stiff(), 1.0,
-      Core::Adapter::CouplingMasterConverter(*coupsia_), *stiff_beaminteraction_, false);
+      Coupling::Adapter::CouplingMasterConverter(*coupsia_), *stiff_beaminteraction_, false);
 }
 
 /*-----------------------------------------------------------------------------*

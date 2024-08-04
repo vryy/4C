@@ -18,8 +18,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  assign material to discretization A                       vuong 09/14|
  *----------------------------------------------------------------------*/
-void Core::VolMortar::UTILS::DefaultMaterialStrategy::assign_material2_to1(
-    const Core::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele1,
+void Coupling::VolMortar::UTILS::DefaultMaterialStrategy::assign_material2_to1(
+    const Coupling::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele1,
     const std::vector<int>& ids_2, Teuchos::RCP<Core::FE::Discretization> dis1,
     Teuchos::RCP<Core::FE::Discretization> dis2)
 {
@@ -61,8 +61,8 @@ void Core::VolMortar::UTILS::DefaultMaterialStrategy::assign_material2_to1(
 /*----------------------------------------------------------------------*
  |  assign material to discretization B                       vuong 09/14|
  *----------------------------------------------------------------------*/
-void Core::VolMortar::UTILS::DefaultMaterialStrategy::assign_material1_to2(
-    const Core::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele2,
+void Coupling::VolMortar::UTILS::DefaultMaterialStrategy::assign_material1_to2(
+    const Coupling::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele2,
     const std::vector<int>& ids_1, Teuchos::RCP<Core::FE::Discretization> dis1,
     Teuchos::RCP<Core::FE::Discretization> dis2)
 {

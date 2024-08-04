@@ -320,7 +320,7 @@ void FSI::LungMonolithicStructureSplit::setup_system_matrix(
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
 
-  const Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
+  const Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> f = fluid_field()->system_matrix();
 
@@ -333,7 +333,7 @@ void FSI::LungMonolithicStructureSplit::setup_system_matrix(
 
   // fluid linearization with respect to mesh motion block
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> mmm = fluid_field()->shape_derivatives();
-  const Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
+  const Coupling::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
   if (mmm != Teuchos::null)
   {
@@ -357,24 +357,24 @@ void FSI::LungMonolithicStructureSplit::setup_system_matrix(
     mat.matrix(1, 1).add(fmGg, false, 1. / timescale, 1.0);
 
     fmiitransform_(mmm->full_row_map(), mmm->full_col_map(), fmii, 1.,
-        Core::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, false);
+        Coupling::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, false);
     fmgitransform_(mmm->full_row_map(), mmm->full_col_map(), fmgi, 1.,
-        Core::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, true);
+        Coupling::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, true);
     fm_gitransform_(mmm->full_row_map(), mmm->full_col_map(), fmGi, 1.,
-        Core::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, true);
+        Coupling::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, true);
 
     fmg_gtransform_(mmm->full_row_map(), mmm->full_col_map(), fmgG, 1.,
-        Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(1, 0), true, false);
+        Coupling::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(1, 0), true, false);
     fmi_gtransform_(mmm->full_row_map(), mmm->full_col_map(), fmiG, 1.,
-        Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(1, 0), true, true);
+        Coupling::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(1, 0), true, true);
     fm_g_gtransform_(mmm->full_row_map(), mmm->full_col_map(), fmGG, 1.,
-        Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(1, 0), true, true);
+        Coupling::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(1, 0), true, true);
 
     mat.matrix(1, 1).add(addfmGg, false, 1. / timescale, 1.0);
 
     addfm_g_gtransform_(AddFluidShapeDerivMatrix_->full_row_map(),
         AddFluidShapeDerivMatrix_->full_col_map(), addfmGG, 1.,
-        Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(1, 0), true, true);
+        Coupling::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(1, 0), true, true);
   }
 
   /*----------------------------------------------------------------------*/
@@ -389,7 +389,7 @@ void FSI::LungMonolithicStructureSplit::setup_system_matrix(
   siitransform_(s, *structfield->fsi_interface()->Map(0), *structfield->fsi_interface()->Map(0),
       1.0, nullptr, nullptr, mat.matrix(0, 0), true, false);
 
-  Core::Adapter::CouplingMasterConverter converter(coupsf);
+  Coupling::Adapter::CouplingMasterConverter converter(coupsf);
   sigtransform_(s, *structfield->fsi_interface()->Map(0), *structfield->fsi_interface()->Map(1),
       1. / timescale, nullptr, &converter, mat.matrix(0, 1), true, false);
 
@@ -431,9 +431,9 @@ void FSI::LungMonolithicStructureSplit::setup_system_matrix(
   Core::LinAlg::SparseMatrix& aiG = a->matrix(0, 3);
 
   ai_gtransform_(a->full_row_map(), a->full_col_map(), aiG, 1.,
-      Core::Adapter::CouplingSlaveConverter(*coupsaout_), mat.matrix(2, 0));
+      Coupling::Adapter::CouplingSlaveConverter(*coupsaout_), mat.matrix(2, 0));
   aigtransform_(a->full_row_map(), a->full_col_map(), aig, 1. / timescale,
-      Core::Adapter::CouplingSlaveConverter(*icoupfa_), mat.matrix(2, 1));
+      Coupling::Adapter::CouplingSlaveConverter(*icoupfa_), mat.matrix(2, 1));
   mat.assign(2, 2, Core::LinAlg::View, aii);
 
   /*----------------------------------------------------------------------*/
@@ -458,7 +458,7 @@ void FSI::LungMonolithicStructureSplit::setup_system_matrix(
 
   Core::LinAlg::SparseMatrix& caiG = ConstrAleMatrix_->matrix(0, 3);
   cai_gtransform_(*coupfsout_->master_dof_map(), caiG.col_map(), caiG, 1.0,
-      Core::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(3, 0), true, true);
+      Coupling::Adapter::CouplingMasterConverter(*coupfsout_), mat.matrix(3, 0), true, true);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.

@@ -19,7 +19,6 @@
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_mapextractor.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_xfem_discretization.hpp"
 #include "4C_xfem_xfield_field_coupling.hpp"
@@ -361,10 +360,12 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
   interface_matrix_row_col_transformers_.resize(num_sl_dis(), Teuchos::null);
   for (unsigned i = 0; i < num_sl_dis(); ++i)
   {
-    interface_matrix_row_transformers_[i] = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform());
-    interface_matrix_col_transformers_[i] = Teuchos::rcp(new Core::LinAlg::MatrixColTransform());
+    interface_matrix_row_transformers_[i] =
+        Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform());
+    interface_matrix_col_transformers_[i] =
+        Teuchos::rcp(new Coupling::Adapter::MatrixColTransform());
     interface_matrix_row_col_transformers_[i] =
-        Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform());
+        Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform());
   }
   isinit_ = true;
 }
@@ -1118,20 +1119,20 @@ void XFEM::MultiFieldMapExtractor::add_matrix(
   const Core::LinAlg::SparseMatrix& src_ni =
       partial_mat.matrix(MultiField::block_non_interface, MultiField::block_interface);
   i_mat_col_transform(block)(partial_mat.full_row_map(), partial_mat.full_col_map(), src_ni, scale,
-      Core::Adapter::CouplingSlaveConverter(i_coupling(block)), full_mat, false, true);
+      Coupling::Adapter::CouplingSlaveConverter(i_coupling(block)), full_mat, false, true);
 
   // (1) Add block interface/non_interface
   const Core::LinAlg::SparseMatrix& src_in =
       partial_mat.matrix(MultiField::block_interface, MultiField::block_non_interface);
   i_mat_row_transform(block)(
-      src_in, scale, Core::Adapter::CouplingSlaveConverter(i_coupling(block)), full_mat, true);
+      src_in, scale, Coupling::Adapter::CouplingSlaveConverter(i_coupling(block)), full_mat, true);
 
   // (2) Add block interface/interface
   const Core::LinAlg::SparseMatrix& src_ii =
       partial_mat.matrix(MultiField::block_interface, MultiField::block_interface);
   i_mat_row_col_transform(block)(src_ii, scale,
-      Core::Adapter::CouplingSlaveConverter(i_coupling(block)),
-      Core::Adapter::CouplingSlaveConverter(i_coupling(block)), full_mat, false, true);
+      Coupling::Adapter::CouplingSlaveConverter(i_coupling(block)),
+      Coupling::Adapter::CouplingSlaveConverter(i_coupling(block)), full_mat, false, true);
 
   return;
 }

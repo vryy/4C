@@ -14,7 +14,6 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_linalg_mapextractor.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -262,10 +261,10 @@ void SSI::ScatraStructureOffDiagCoupling::
           auto slave_dof_map = meshtying->slave_master_coupling()->slave_dof_map();
           auto slave_side_converter_struct = meshtying->slave_side_converter();
 
-          auto slave_side_converter_scatra =
-              Core::Adapter::CouplingSlaveConverter(*meshtying_strategy_s2i_->coupling_adapter());
+          auto slave_side_converter_scatra = Coupling::Adapter::CouplingSlaveConverter(
+              *meshtying_strategy_s2i_->coupling_adapter());
 
-          Core::LinAlg::MatrixLogicalSplitAndTransform()(blockslavematrix->matrix(iblock, 0),
+          Coupling::Adapter::MatrixLogicalSplitAndTransform()(blockslavematrix->matrix(iblock, 0),
               *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), *slave_dof_map, -1.0,
               &slave_side_converter_scatra, &(*slave_side_converter_struct), *mastermatrixsparse,
               true, true);
@@ -299,9 +298,9 @@ void SSI::ScatraStructureOffDiagCoupling::
         auto slave_dof_map = meshtying->slave_master_coupling()->slave_dof_map();
         auto slave_side_converter_struct = meshtying->slave_side_converter();
         auto slave_side_converter_scatra =
-            Core::Adapter::CouplingSlaveConverter(*meshtying_strategy_s2i_->coupling_adapter());
+            Coupling::Adapter::CouplingSlaveConverter(*meshtying_strategy_s2i_->coupling_adapter());
 
-        Core::LinAlg::MatrixLogicalSplitAndTransform()(*sparseslavematrix,
+        Coupling::Adapter::MatrixLogicalSplitAndTransform()(*sparseslavematrix,
             *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), *slave_dof_map, -1.0,
             &slave_side_converter_scatra, &(*slave_side_converter_struct), *sparsemastermatrix,
             true, true);
@@ -433,19 +432,19 @@ void SSI::ScatraStructureOffDiagCoupling::
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
         // adapter
         auto slave_slave_converter =
-            Core::Adapter::CouplingSlaveConverter(*slave_slave_transformation);
+            Coupling::Adapter::CouplingSlaveConverter(*slave_slave_transformation);
 
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->slave_dof_map();
 
         // add slave contributions to slave matrix
-        Core::LinAlg::MatrixLogicalSplitAndTransform()(
+        Coupling::Adapter::MatrixLogicalSplitAndTransform()(
             *scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix_sparse,
             *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), *slave_map, 1.0, nullptr,
             &slave_slave_converter, *slavematrix_sparse, true, true);
         // convert structure slave dofs on scatra discretization to slave dofs on structure
         // discretization
-        Core::LinAlg::MatrixLogicalSplitAndTransform()(
+        Coupling::Adapter::MatrixLogicalSplitAndTransform()(
             *scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix_sparse,
             *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), *slave_map, 1.0, nullptr,
             &slave_slave_converter,
@@ -458,9 +457,9 @@ void SSI::ScatraStructureOffDiagCoupling::
         auto slave_dof_map = meshtying->slave_master_coupling()->slave_dof_map();
         auto slave_side_converter_struct = meshtying->slave_side_converter();
         auto slave_side_converter_scatra =
-            Core::Adapter::CouplingSlaveConverter(*meshtying_strategy_s2i_->coupling_adapter());
+            Coupling::Adapter::CouplingSlaveConverter(*meshtying_strategy_s2i_->coupling_adapter());
 
-        Core::LinAlg::MatrixLogicalSplitAndTransform()(
+        Coupling::Adapter::MatrixLogicalSplitAndTransform()(
             *scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix_sparse,
             *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), *slave_dof_map, 1.0,
             &slave_side_converter_scatra, &(*slave_side_converter_struct), *mastermatrix_sparse,
@@ -507,7 +506,7 @@ void SSI::ScatraStructureOffDiagCoupling::
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
         // adapter
         auto slave_slave_converter =
-            Core::Adapter::CouplingSlaveConverter(*slave_slave_transformation);
+            Coupling::Adapter::CouplingSlaveConverter(*slave_slave_transformation);
 
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->slave_dof_map();
@@ -530,10 +529,10 @@ void SSI::ScatraStructureOffDiagCoupling::
               Core::LinAlg::IntersectMap(*scatra_field()->block_maps()->Map(iblock),
                   *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map());
 
-          Core::LinAlg::MatrixLogicalSplitAndTransform()(
+          Coupling::Adapter::MatrixLogicalSplitAndTransform()(
               scatra_slave_flux_structure_slave_dofs_on_scatra_slave_iblock, *scatra_block_mapi,
               *slave_map, 1.0, nullptr, &slave_slave_converter, slave_iblock, true, true);
-          Core::LinAlg::MatrixLogicalSplitAndTransform()(
+          Coupling::Adapter::MatrixLogicalSplitAndTransform()(
               scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_iblock,
               *scatra_block_mapi, *slave_map, 1.0, nullptr, &slave_slave_converter,
               scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_iblock, true, true);
@@ -542,10 +541,10 @@ void SSI::ScatraStructureOffDiagCoupling::
 
           auto slave_dof_map = meshtying->slave_master_coupling()->slave_dof_map();
           auto slave_side_converter_struct = meshtying->slave_side_converter();
-          auto slave_side_converter_scatra =
-              Core::Adapter::CouplingSlaveConverter(*meshtying_strategy_s2i_->coupling_adapter());
+          auto slave_side_converter_scatra = Coupling::Adapter::CouplingSlaveConverter(
+              *meshtying_strategy_s2i_->coupling_adapter());
 
-          Core::LinAlg::MatrixLogicalSplitAndTransform()(
+          Coupling::Adapter::MatrixLogicalSplitAndTransform()(
               scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_iblock,
               *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), *slave_dof_map, 1.0,
               &slave_side_converter_scatra, &(*slave_side_converter_struct), *mastermatrixsparse,
@@ -655,7 +654,7 @@ void SSI::ScatraStructureOffDiagCoupling::
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
         // adapter
         auto slave_slave_converter =
-            Core::Adapter::CouplingSlaveConverter(*slave_slave_transformation);
+            Coupling::Adapter::CouplingSlaveConverter(*slave_slave_transformation);
 
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->slave_dof_map();
@@ -669,8 +668,9 @@ void SSI::ScatraStructureOffDiagCoupling::
               Core::LinAlg::IntersectMap(*scatra_field()->block_maps()->Map(iblock),
                   *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map());
 
-          Core::LinAlg::MatrixLogicalSplitAndTransform()(evaluate_iblock, *scatra_slave_block_mapi,
-              *slave_map, 1.0, nullptr, &slave_slave_converter, slave_iblock, true, true);
+          Coupling::Adapter::MatrixLogicalSplitAndTransform()(evaluate_iblock,
+              *scatra_slave_block_mapi, *slave_map, 1.0, nullptr, &slave_slave_converter,
+              slave_iblock, true, true);
         }
       }
       slavematrix->complete();
@@ -694,12 +694,12 @@ void SSI::ScatraStructureOffDiagCoupling::
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
         // adapter
         auto slave_slave_converter =
-            Core::Adapter::CouplingSlaveConverter(*slave_slave_transformation);
+            Coupling::Adapter::CouplingSlaveConverter(*slave_slave_transformation);
 
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->slave_dof_map();
 
-        Core::LinAlg::MatrixLogicalSplitAndTransform()(*evaluate_matrix_sparse,
+        Coupling::Adapter::MatrixLogicalSplitAndTransform()(*evaluate_matrix_sparse,
             *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), *slave_map, 1.0, nullptr,
             &slave_slave_converter, *slavematrix_sparse, true, true);
       }

@@ -19,9 +19,9 @@
 #include "4C_fem_condition_periodic.hpp"
 
 #include "4C_comm_utils.hpp"
-#include "4C_coupling_matchingoctree.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_dofset_pbc.hpp"
+#include "4C_fem_geometric_search_matchingoctree.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_print.hpp"
@@ -631,7 +631,7 @@ void Core::Conditions::PeriodicBoundaryConditions::create_node_coupling_for_sing
   tm2_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcmidoct_));
 
   // build processor local octree
-  auto nodematchingoctree = Core::COUPLING::NodeMatchingOctree();
+  auto nodematchingoctree = Core::GeometricSearch::NodeMatchingOctree();
 
   nodematchingoctree.init(*discret_, masternodeids, maxnodeperleaf, tol);
   nodematchingoctree.setup();

@@ -390,7 +390,7 @@ namespace THR
     Teuchos::RCP<Epetra_Vector> tempinc_;  //!< sum of temperature vectors already applied,
                                            //!< i.e. the incremental temperature
     Teuchos::Time timer_;                  //!< timer for solution technique
-    Teuchos::RCP<Core::Adapter::CouplingMortar> adaptermeshtying_;  //!< mortar coupling adapter
+    Teuchos::RCP<Coupling::Adapter::CouplingMortar> adaptermeshtying_;  //!< mortar coupling adapter
     //@}
 
     //! @name Various global forces

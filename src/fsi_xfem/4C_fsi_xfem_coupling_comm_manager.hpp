@@ -11,6 +11,7 @@ transform matrixes, vectors, ...
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter.hpp"
+#include "4C_coupling_adapter_converter.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
@@ -32,17 +33,13 @@ namespace Core::LinAlg
 {
   class MultiMapExtractor;
   class SparseMatrix;
-  class MatrixRowTransform;
-  class MatrixColTransform;
-  class MatrixRowColTransform;
-  class MatrixLogicalSplitAndTransform;
 }  // namespace Core::LinAlg
 
-namespace Core::Adapter
+namespace Coupling::Adapter
 {
   class Coupling;
   class CouplingConverter;
-}  // namespace Core::Adapter
+}  // namespace Coupling::Adapter
 
 namespace XFEM
 {
@@ -111,16 +108,16 @@ namespace XFEM
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> get_map_extractor(int idx);
 
    protected:
-    Teuchos::RCP<Core::Adapter::CouplingConverter> get_coupling_converter(int idxA, int idxB);
+    Teuchos::RCP<Coupling::Adapter::CouplingConverter> get_coupling_converter(int idxA, int idxB);
 
-    Teuchos::RCP<Core::Adapter::Coupling> get_coupling(int idxA, int idxB);
+    Teuchos::RCP<Coupling::Adapter::Coupling> get_coupling(int idxA, int idxB);
 
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> get_full_map_extractor()
     {
       return fullextractor_;
     }
 
-    Teuchos::RCP<Core::LinAlg::MatrixLogicalSplitAndTransform> get_transform(int transform_id);
+    Teuchos::RCP<Coupling::Adapter::MatrixLogicalSplitAndTransform> get_transform(int transform_id);
 
     void debug_out(
         std::string str1, std::string str2 = "", std::string str3 = "", std::string str4 = "");
@@ -147,10 +144,10 @@ namespace XFEM
     std::map<int, Teuchos::RCP<Core::LinAlg::MultiMapExtractor>> mme_;
 
     // Couling Objects will just be initizalized in case we have more discretizations!
-    std::map<std::pair<int, int>, Teuchos::RCP<Core::Adapter::Coupling>> coup_;
+    std::map<std::pair<int, int>, Teuchos::RCP<Coupling::Adapter::Coupling>> coup_;
 
     // Transformation Objects will just be initizalized in case we use matrix transformations!
-    std::map<int, Teuchos::RCP<Core::LinAlg::MatrixLogicalSplitAndTransform>> transform_;
+    std::map<int, Teuchos::RCP<Coupling::Adapter::MatrixLogicalSplitAndTransform>> transform_;
 
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> fullextractor_;
   };

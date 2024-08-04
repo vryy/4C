@@ -40,7 +40,6 @@ namespace Core::LinAlg
 namespace Adapter
 {
   class FluidPoro;
-  class Coupling;
   class FPSIStructureWrapper;
   class MortarVolCoupl;
 }  // namespace Adapter
@@ -208,7 +207,7 @@ namespace PoroElast
     bool has_submeshes() { return submeshes_; }
 
     //! return coupling object
-    Core::Adapter::Coupling& fluid_structure_coupling() { return *coupling_fluid_structure_; }
+    Coupling::Adapter::Coupling& fluid_structure_coupling() { return *coupling_fluid_structure_; }
 
    protected:
     //! @name Transfer helpers
@@ -259,7 +258,7 @@ namespace PoroElast
     const bool matchinggrid_;
 
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<Core::Adapter::MortarVolCoupl> volcoupl_;
+    Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> volcoupl_;
     //!@}
 
     //! flag for old time integration
@@ -282,7 +281,7 @@ namespace PoroElast
     bool submeshes_;
 
     //! coupling of fluid and structure (whole field)
-    Teuchos::RCP<Core::Adapter::Coupling> coupling_fluid_structure_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupling_fluid_structure_;
 
     //! @name Underlying fields
 

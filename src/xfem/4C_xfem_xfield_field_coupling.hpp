@@ -27,7 +27,7 @@ namespace XFEM
 {
   namespace XFieldField
   {
-    class Coupling : public Core::Adapter::Coupling
+    class Coupling : public ::FourC::Coupling::Adapter::Coupling
     {
      public:
       /** \brief enumerator specifying which interface discretization (slave

@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
-namespace Core::Adapter
+namespace Coupling::Adapter
 {
   /*! \class CouplingBase
    *  \brief Abstract interface to coupling managers
@@ -108,7 +108,7 @@ namespace Core::Adapter
 
     //!@}
   };
-}  // namespace Core::Adapter
+}  // namespace Coupling::Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

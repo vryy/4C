@@ -5170,8 +5170,8 @@ void CONTACT::Interface::assemble_normal_coupling(Epetra_Vector& gglobal)
  |  Assemble linearisation of normal coupling                          |
  |          weighted condition for poro contact              ager 07/14|
  *--------------------------------------------------------------------*/
-void CONTACT::Interface::assemble_normal_coupling_linearisation(
-    Core::LinAlg::SparseMatrix& sglobal, Core::Adapter::Coupling& coupfs, bool AssembleVelocityLin)
+void CONTACT::Interface::assemble_normal_coupling_linearisation(Core::LinAlg::SparseMatrix& sglobal,
+    Coupling::Adapter::Coupling& coupfs, bool AssembleVelocityLin)
 {
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;

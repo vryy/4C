@@ -400,7 +400,7 @@ void ALE::Meshtying::multifield_split(Teuchos::RCP<Core::LinAlg::SparseOperator>
 /*-------------------------------------------------------*/
 void ALE::Meshtying::adapter_mortar(std::vector<int> coupleddof)
 {
-  adaptermeshtying_ = Teuchos::rcp(new Core::Adapter::CouplingMortar(
+  adaptermeshtying_ = Teuchos::rcp(new Coupling::Adapter::CouplingMortar(
       Global::Problem::instance()->n_dim(), Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
       Global::Problem::instance()->spatial_approximation_type()));

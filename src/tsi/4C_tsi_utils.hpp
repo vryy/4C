@@ -89,20 +89,20 @@ namespace TSI
 
      \author vuong 10/14
      */
-    class TSIMaterialStrategy : public Core::VolMortar::UTILS::DefaultMaterialStrategy
+    class TSIMaterialStrategy : public Coupling::VolMortar::UTILS::DefaultMaterialStrategy
     {
      public:
       //! constructor
       TSIMaterialStrategy(){};
 
       //! assignment of thermo material to structure material
-      void assign_material2_to1(const Core::VolMortar::VolMortarCoupl* volmortar,
+      void assign_material2_to1(const Coupling::VolMortar::VolMortarCoupl* volmortar,
           Core::Elements::Element* ele1, const std::vector<int>& ids_2,
           Teuchos::RCP<Core::FE::Discretization> dis1,
           Teuchos::RCP<Core::FE::Discretization> dis2) override;
 
       //! assignment of structure material to thermo material
-      void assign_material1_to2(const Core::VolMortar::VolMortarCoupl* volmortar,
+      void assign_material1_to2(const Coupling::VolMortar::VolMortarCoupl* volmortar,
           Core::Elements::Element* ele2, const std::vector<int>& ids_1,
           Teuchos::RCP<Core::FE::Discretization> dis1,
           Teuchos::RCP<Core::FE::Discretization> dis2) override;

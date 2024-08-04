@@ -13,25 +13,16 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter.hpp"
+#include "4C_coupling_adapter_converter.hpp"
 #include "4C_poromultiphase_scatra_artery_coupling_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Adapter
-{
-  class Coupling;
-}
 
 namespace FSI
 {
   class Monolithic;
 }  // namespace FSI
-namespace Core::LinAlg
-{
-  class MatrixRowTransform;
-  class MatrixColTransform;
-  class MatrixRowColTransform;
-}  // namespace Core::LinAlg
 
 
 namespace PoroMultiPhaseScaTra
@@ -152,12 +143,12 @@ namespace PoroMultiPhaseScaTra
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> artex_;
 
     //! coupling adapter
-    Teuchos::RCP<Core::Adapter::Coupling> artcontfieldcoup_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> artcontfieldcoup_;
 
     //! needed for matrix transforms
-    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform> sbbtransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> sbitransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> sibtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform> sbbtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> sbitransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> sibtransform_;
   };
 
 }  // namespace PoroMultiPhaseScaTra

@@ -34,10 +34,6 @@ namespace Core::LinAlg
   class BlockSparseMatrixBase;
 }
 
-namespace Adapter
-{
-  class Coupling;
-}
 
 namespace FSI
 {
@@ -93,7 +89,7 @@ namespace FSI
     /// Update everything
     void update() override;
 
-    Core::Adapter::Coupling& structure_ale_outflow_coupling() { return *coupsaout_; }
+    Coupling::Adapter::Coupling& structure_ale_outflow_coupling() { return *coupsaout_; }
 
     void read_restart(int step) override;
 
@@ -177,16 +173,16 @@ namespace FSI
     int writerestartevery_;
 
     /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<Core::Adapter::Coupling> icoupfa_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> icoupfa_;
 
     /// additional coupling of structure and ale fields at airway outflow
-    Teuchos::RCP<Core::Adapter::Coupling> coupsaout_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupsaout_;
 
     /// additional coupling of structure and ale/fluid fields at airway outflow
-    Teuchos::RCP<Core::Adapter::Coupling> coupfsout_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupfsout_;
 
     /// fluid and ale coupling at airway outflow
-    Teuchos::RCP<Core::Adapter::Coupling> coupfaout_;
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupfaout_;
 
     ///@}
 

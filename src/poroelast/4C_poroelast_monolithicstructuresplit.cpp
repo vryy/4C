@@ -13,7 +13,6 @@
 #include "4C_adapter_str_fpsiwrapper.hpp"
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_structure_aux.hpp"
@@ -28,13 +27,13 @@ PoroElast::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm&
     Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter)
     : MonolithicSplit(comm, timeparams, porosity_splitter)
 {
-  sggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform);
-  sgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-  sigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  csggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-  cfggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  csgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-  cfigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  sggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
+  sgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+  sigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  csggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+  cfggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  csgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+  cfigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
 
   // Recovering of Lagrange multiplier happens on structure field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*structure_field()->interface()->fsi_cond_map()));
@@ -144,34 +143,34 @@ void PoroElast::MonolithicStructureSplit::setup_system_matrix(
     double ftiparam = fluid_field()->tim_int_param();
 
     (*sigtransform_)(s->full_row_map(), s->full_col_map(), s->matrix(0, 1), 1. / timescale,
-        Core::Adapter::CouplingMasterConverter(*icoupfs_),
+        Coupling::Adapter::CouplingMasterConverter(*icoupfs_),
         k_sf->matrix(0, 1),  // k_sf->Matrix(0,1),mat.Matrix(0,1)
         true, true);
 
     (*sggtransform_)(s->matrix(1, 1), (1.0 - ftiparam) / ((1.0 - stiparam) * scale * timescale),
-        Core::Adapter::CouplingMasterConverter(*icoupfs_),
-        Core::Adapter::CouplingMasterConverter(*icoupfs_), *f, true, true);
+        Coupling::Adapter::CouplingMasterConverter(*icoupfs_),
+        Coupling::Adapter::CouplingMasterConverter(*icoupfs_), *f, true, true);
 
     (*sgitransform_)(s->matrix(1, 0), (1.0 - ftiparam) / ((1.0 - stiparam) * scale),
-        Core::Adapter::CouplingMasterConverter(*icoupfs_),
+        Coupling::Adapter::CouplingMasterConverter(*icoupfs_),
         k_fs->matrix(1, 0),  // k_fs->Matrix(1,0), mat.Matrix(1,0)
         true);
 
     (*cfggtransform_)(s->full_row_map(),  // k_fs->FullRowMap(),
         s->full_col_map(),                // k_fs->FullColMap(),
-        k_fs->matrix(1, 1), 1. / timescale, Core::Adapter::CouplingMasterConverter(*icoupfs_), *f,
-        true, true);
+        k_fs->matrix(1, 1), 1. / timescale, Coupling::Adapter::CouplingMasterConverter(*icoupfs_),
+        *f, true, true);
 
     (*cfigtransform_)(s->full_row_map(),  // k_fs->FullRowMap(),
         s->full_col_map(),                // k_fs->FullColMap(),
-        k_fs->matrix(0, 1), 1. / timescale, Core::Adapter::CouplingMasterConverter(*icoupfs_), *f,
-        true, true);
+        k_fs->matrix(0, 1), 1. / timescale, Coupling::Adapter::CouplingMasterConverter(*icoupfs_),
+        *f, true, true);
 
     (*csggtransform_)(k_sf->matrix(1, 1), (1.0 - ftiparam) / ((1.0 - stiparam) * scale),
-        Core::Adapter::CouplingMasterConverter(*icoupfs_), *f, true);
+        Coupling::Adapter::CouplingMasterConverter(*icoupfs_), *f, true);
 
     (*csgitransform_)(k_sf->matrix(1, 0), (1.0 - ftiparam) / ((1.0 - stiparam) * scale),
-        Core::Adapter::CouplingMasterConverter(*icoupfs_), *f, true);
+        Coupling::Adapter::CouplingMasterConverter(*icoupfs_), *f, true);
   }
 
   /*----------------------------------------------------------------------*/

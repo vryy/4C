@@ -32,7 +32,7 @@ namespace Core::Elements
   class Element;
 }
 
-namespace Core::VolMortar
+namespace Coupling::VolMortar
 {
   class VolMortarCoupl;
 
@@ -65,17 +65,17 @@ namespace Core::VolMortar
       virtual ~DefaultMaterialStrategy() = default;
 
       //! assign material of discretization B
-      virtual void assign_material2_to1(const Core::VolMortar::VolMortarCoupl* volmortar,
+      virtual void assign_material2_to1(const Coupling::VolMortar::VolMortarCoupl* volmortar,
           Core::Elements::Element* ele1, const std::vector<int>& ids_2,
           Teuchos::RCP<Core::FE::Discretization> dis1, Teuchos::RCP<Core::FE::Discretization> dis2);
 
       //! assign material of discretization B
-      virtual void assign_material1_to2(const Core::VolMortar::VolMortarCoupl* volmortar,
+      virtual void assign_material1_to2(const Coupling::VolMortar::VolMortarCoupl* volmortar,
           Core::Elements::Element* ele2, const std::vector<int>& ids_1,
           Teuchos::RCP<Core::FE::Discretization> dis1, Teuchos::RCP<Core::FE::Discretization> dis2);
     };
   }  // namespace UTILS
-}  // namespace Core::VolMortar
+}  // namespace Coupling::VolMortar
 
 
 FOUR_C_NAMESPACE_CLOSE

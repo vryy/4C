@@ -28,8 +28,8 @@ void Mortar::MultiFieldCoupling::push_back_coupling(
   if (!dis->get_condition("MortarMulti"))
     FOUR_C_THROW("this discretization does not have a Mortar-Muti condition");
 
-  Teuchos::RCP<Core::Adapter::CouplingMortar> adaptermeshtying =
-      Teuchos::rcp(new Core::Adapter::CouplingMortar(Global::Problem::instance()->n_dim(),
+  Teuchos::RCP<Coupling::Adapter::CouplingMortar> adaptermeshtying =
+      Teuchos::rcp(new Coupling::Adapter::CouplingMortar(Global::Problem::instance()->n_dim(),
           Global::Problem::instance()->mortar_coupling_params(),
           Global::Problem::instance()->contact_dynamic_params(),
           Global::Problem::instance()->spatial_approximation_type()));

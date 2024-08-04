@@ -20,7 +20,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace Adapter
 {
   class SSIStructureWrapper;
-  class Coupling;
 }  // namespace Adapter
 
 namespace Core::LinAlg

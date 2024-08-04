@@ -15,6 +15,7 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter.hpp"
+#include "4C_coupling_adapter_converter.hpp"
 #include "4C_inpar_beaminteraction.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_structure_new_enum_lists.hpp"
@@ -23,10 +24,6 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration ...
-namespace Adapter
-{
-  class Coupling;
-}
 
 namespace Core::FE
 {
@@ -36,7 +33,6 @@ namespace Core::FE
 namespace Core::LinAlg
 {
   class SparseMatrix;
-  class MatrixRowTransform;
 }  // namespace Core::LinAlg
 
 namespace Core::Binstrategy
@@ -261,10 +257,10 @@ namespace Solid
       int myrank_;
 
       //! coupling adapter to transfer vectors and matrices between discret() and intactids_
-      Teuchos::RCP<Core::Adapter::Coupling> coupsia_;
+      Teuchos::RCP<Coupling::Adapter::Coupling> coupsia_;
 
       //! transform object for structure stiffness matrix
-      Teuchos::RCP<Core::LinAlg::MatrixRowTransform> siatransform_;
+      Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> siatransform_;
       //! @}
 
 

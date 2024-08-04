@@ -30,7 +30,6 @@
 #include "4C_global_data.hpp"
 #include "4C_inpar_fs3i.hpp"
 #include "4C_inpar_validparameters.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_scatra_algorithm.hpp"
@@ -63,12 +62,12 @@ void FS3I::FS3IBase::init()
 {
   set_is_setup(false);
 
-  scatracoup_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  scatracoup_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
   scatraglobalex_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
-  sbbtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform());
-  sbitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform());
-  sibtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform());
-  fbitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform());
+  sbbtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform());
+  sbitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform());
+  sibtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform());
+  fbitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform());
 
   set_is_init(true);
   return;
@@ -681,13 +680,13 @@ void FS3I::FS3IBase::setup_coupled_scatra_matrix()
     scatrasystemmatrix_->assign(1, 1, Core::LinAlg::View, blockscatra2->matrix(0, 0));
 
     (*sibtransform_)(blockscatra2->full_row_map(), blockscatra2->full_col_map(),
-        blockscatra2->matrix(0, 1), 1.0, Core::Adapter::CouplingSlaveConverter(*scatracoup_),
+        blockscatra2->matrix(0, 1), 1.0, Coupling::Adapter::CouplingSlaveConverter(*scatracoup_),
         scatrasystemmatrix_->matrix(1, 0));
     (*sbitransform_)(blockscatra2->matrix(1, 0), 1.0,
-        Core::Adapter::CouplingSlaveConverter(*scatracoup_), scatrasystemmatrix_->matrix(0, 1));
+        Coupling::Adapter::CouplingSlaveConverter(*scatracoup_), scatrasystemmatrix_->matrix(0, 1));
     (*sbbtransform_)(blockscatra2->matrix(1, 1), 1.0,
-        Core::Adapter::CouplingSlaveConverter(*scatracoup_),
-        Core::Adapter::CouplingSlaveConverter(*scatracoup_), *scatra1, true, true);
+        Coupling::Adapter::CouplingSlaveConverter(*scatracoup_),
+        Coupling::Adapter::CouplingSlaveConverter(*scatracoup_), *scatra1, true, true);
 
     // fluid scatra
     scatrasystemmatrix_->assign(0, 0, Core::LinAlg::View, *scatra1);
@@ -713,14 +712,15 @@ void FS3I::FS3IBase::setup_coupled_scatra_matrix()
             *(scatrafieldexvec_[0]), *(scatrafieldexvec_[0]));
     coupblock1->complete();
     (*fbitransform_)(coupblock1->matrix(1, 1), -1.0,
-        Core::Adapter::CouplingMasterConverter(*scatracoup_), scatrasystemmatrix_->matrix(1, 0));
+        Coupling::Adapter::CouplingMasterConverter(*scatracoup_),
+        scatrasystemmatrix_->matrix(1, 0));
 
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> coupblock2 =
         coup2->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
             *(scatrafieldexvec_[1]), *(scatrafieldexvec_[1]));
     coupblock2->complete();
     (*sbitransform_)(coupblock2->matrix(1, 1), -1.0,
-        Core::Adapter::CouplingSlaveConverter(*scatracoup_), scatrasystemmatrix_->matrix(0, 1));
+        Coupling::Adapter::CouplingSlaveConverter(*scatracoup_), scatrasystemmatrix_->matrix(0, 1));
   }
 
   scatrasystemmatrix_->complete();

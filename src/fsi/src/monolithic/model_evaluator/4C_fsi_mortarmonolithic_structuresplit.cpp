@@ -29,7 +29,6 @@ with condensed structure interface displacements
 #include "4C_inpar_fsi.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
@@ -150,17 +149,17 @@ FSI::MortarMonolithicStructureSplit::MortarMonolithicStructureSplit(
 
   notsetup_ = true;
 
-  coupsfm_ = Teuchos::rcp(new Core::Adapter::CouplingMortar(Global::Problem::instance()->n_dim(),
-      Global::Problem::instance()->mortar_coupling_params(),
+  coupsfm_ = Teuchos::rcp(new Coupling::Adapter::CouplingMortar(
+      Global::Problem::instance()->n_dim(), Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
       Global::Problem::instance()->spatial_approximation_type()));
-  fscoupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  fscoupfa_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
 
-  aigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  fmgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  fsaigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  fsmgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fsaigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fsmgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
 
   set_lambda();
   ddiinc_ = Teuchos::null;
@@ -243,7 +242,7 @@ void FSI::MortarMonolithicStructureSplit::setup_system()
     const int ndim = Global::Problem::instance()->n_dim();
 
     // get coupling objects
-    Core::Adapter::Coupling& icoupfa = interface_fluid_ale_coupling();
+    Coupling::Adapter::Coupling& icoupfa = interface_fluid_ale_coupling();
 
     /* structure to fluid
      * coupling condition at the fsi interface:
@@ -273,7 +272,7 @@ void FSI::MortarMonolithicStructureSplit::setup_system()
     const Epetra_Map* fluidnodemap = fluid_field()->discretization()->node_row_map();
     const Epetra_Map* alenodemap = ale_field()->discretization()->node_row_map();
 
-    Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
+    Coupling::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
     coupfa.setup_coupling(*fluid_field()->discretization(), *ale_field()->discretization(),
         *fluidnodemap, *alenodemap, ndim);
@@ -837,7 +836,7 @@ void FSI::MortarMonolithicStructureSplit::setup_system_matrix(
   mat.assign(1, 1, Core::LinAlg::View, *f);
 
   (*aigtransform_)(a->full_row_map(), a->full_col_map(), aig, 1. / timescale,
-      Core::Adapter::CouplingSlaveConverter(interface_fluid_ale_coupling()), mat.matrix(2, 1));
+      Coupling::Adapter::CouplingSlaveConverter(interface_fluid_ale_coupling()), mat.matrix(2, 1));
   mat.assign(2, 2, Core::LinAlg::View, aii);
 
   /*--------------------------------------------------------------------------*/
@@ -858,13 +857,13 @@ void FSI::MortarMonolithicStructureSplit::setup_system_matrix(
     // ----------Addressing contribution to block (2,3)
     mat.matrix(1, 1).add(fmig, false, 1. / timescale, 1.0);
 
-    const Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
+    const Coupling::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
     (*fmgitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmgi, 1.,
-        Core::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, false);
+        Coupling::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, false);
 
     (*fmiitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmii, 1.,
-        Core::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, true);
+        Coupling::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, true);
   }
 
   // if there is a free surface
@@ -874,7 +873,7 @@ void FSI::MortarMonolithicStructureSplit::setup_system_matrix(
     Core::LinAlg::SparseMatrix& aig = a->matrix(0, 2);
 
     (*fsaigtransform_)(a->full_row_map(), a->full_col_map(), aig, 1. / timescale,
-        Core::Adapter::CouplingSlaveConverter(*fscoupfa_), mat.matrix(2, 1));
+        Coupling::Adapter::CouplingSlaveConverter(*fscoupfa_), mat.matrix(2, 1));
 
     if (mmm != Teuchos::null)
     {
@@ -890,10 +889,10 @@ void FSI::MortarMonolithicStructureSplit::setup_system_matrix(
       mat.matrix(1, 1).add(fmgg, false, 1. / timescale, 1.0);
       mat.matrix(1, 1).add(fmig, false, 1. / timescale, 1.0);
 
-      const Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
+      const Coupling::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
       (*fsmgitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmgi, 1.,
-          Core::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, false);
+          Coupling::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, false);
     }
   }
 

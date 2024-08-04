@@ -27,7 +27,6 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_aux.hpp"
@@ -104,14 +103,14 @@ FSI::FluidFluidMonolithicFluidSplitNoNOX::FluidFluidMonolithicFluidSplitNoNOX(
   // Initialization of row/column transformation objects
   // These are needed for the system matrix setup,
   // as matrices from 3 different fields (S,F,A) are set together.
-  fggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform);
-  fmggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform);
+  fggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
+  fmggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
 
-  fgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
-  figtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  fmgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform);
-  aigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  fgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+  figtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
+  aigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
 
   // Lagrange multiplier
   lambda_ = Teuchos::rcp(new Epetra_Vector(*fluid_field()->interface()->fsi_cond_map(), true));
@@ -414,9 +413,9 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::setup_rhs(Epetra_Vector& f, bool 
  ----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicFluidSplitNoNOX::setup_system_matrix()
 {
-  const Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
-  const Core::Adapter::Coupling& coupsa = structure_ale_coupling();
-  const Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
+  const Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
+  const Coupling::Adapter::Coupling& coupsa = structure_ale_coupling();
+  const Coupling::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
   // get single field block matrices
   Teuchos::RCP<Core::LinAlg::SparseMatrix> s =
@@ -469,13 +468,13 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::setup_system_matrix()
   s->un_complete();
 
   (*fggtransform_)(fgg, (1.0 - stiparam) / (1.0 - ftiparam) * scale * timescale,
-      Core::Adapter::CouplingSlaveConverter(coupsf), Core::Adapter::CouplingSlaveConverter(coupsf),
-      *s, true, true);
+      Coupling::Adapter::CouplingSlaveConverter(coupsf),
+      Coupling::Adapter::CouplingSlaveConverter(coupsf), *s, true, true);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> lfgi =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(s->row_map(), 81, false));
   (*fgitransform_)(fgi, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-      Core::Adapter::CouplingSlaveConverter(coupsf), *lfgi);
+      Coupling::Adapter::CouplingSlaveConverter(coupsf), *lfgi);
 
   lfgi->complete(fgi.domain_map(), s->range_map());
 
@@ -484,12 +483,12 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::setup_system_matrix()
   Teuchos::RCP<Core::LinAlg::SparseMatrix> lfig =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(fig.row_map(), 81, false));
   (*figtransform_)(f->full_row_map(), f->full_col_map(), fig, timescale,
-      Core::Adapter::CouplingSlaveConverter(coupsf), systemmatrix_->matrix(1, 0));
+      Coupling::Adapter::CouplingSlaveConverter(coupsf), systemmatrix_->matrix(1, 0));
 
   systemmatrix_->assign(1, 1, Core::LinAlg::View, fii);
 
   (*aigtransform_)(a->full_row_map(), a->full_col_map(), aig, 1.,
-      Core::Adapter::CouplingSlaveConverter(coupsa), systemmatrix_->matrix(2, 0));
+      Coupling::Adapter::CouplingSlaveConverter(coupsa), systemmatrix_->matrix(2, 0));
 
   systemmatrix_->assign(2, 2, Core::LinAlg::View, aii);
 
@@ -507,24 +506,25 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::setup_system_matrix()
 
     // reuse transform objects to add shape derivative matrices to structural blocks
     (*figtransform_)(f->full_row_map(), f->full_col_map(), fmig, 1.,
-        Core::Adapter::CouplingSlaveConverter(coupsf), systemmatrix_->matrix(1, 0), false, true);
+        Coupling::Adapter::CouplingSlaveConverter(coupsf), systemmatrix_->matrix(1, 0), false,
+        true);
 
 
     (*fmggtransform_)(fmgg, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-        Core::Adapter::CouplingSlaveConverter(coupsf),
-        Core::Adapter::CouplingSlaveConverter(coupsf), *s, false, true);
+        Coupling::Adapter::CouplingSlaveConverter(coupsf),
+        Coupling::Adapter::CouplingSlaveConverter(coupsf), *s, false, true);
 
     // We cannot copy the pressure value. It is not used anyway. So no exact
     // match here.
     (*fmiitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmii, 1.,
-        Core::Adapter::CouplingMasterConverter(coupfa), systemmatrix_->matrix(1, 2), false);
+        Coupling::Adapter::CouplingMasterConverter(coupfa), systemmatrix_->matrix(1, 2), false);
 
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> lfmgi =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(s->row_map(), 81, false));
       (*fmgitransform_)(fmgi, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-          Core::Adapter::CouplingSlaveConverter(coupsf),
-          Core::Adapter::CouplingMasterConverter(coupfa), *lfmgi, false, false);
+          Coupling::Adapter::CouplingSlaveConverter(coupsf),
+          Coupling::Adapter::CouplingMasterConverter(coupfa), *lfmgi, false, false);
 
       lfmgi->complete(aii.domain_map(), s->range_map());
 

@@ -30,10 +30,6 @@ namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
-namespace Adapter
-{
-  class Coupling;
-}
 
 namespace PoroMultiPhaseScaTra
 {

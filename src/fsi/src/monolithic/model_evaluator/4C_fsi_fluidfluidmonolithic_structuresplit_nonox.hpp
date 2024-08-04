@@ -13,22 +13,10 @@ using XFEM
 
 #include "4C_config.hpp"
 
+#include "4C_coupling_adapter_converter.hpp"
 #include "4C_fsi_monolithic_nonox.hpp"
 
 FOUR_C_NAMESPACE_OPEN
-
-// forward declarations
-namespace Adapter
-{
-  class Coupling;
-}
-
-namespace Core::LinAlg
-{
-  class MatrixRowTransform;
-  class MatrixColTransform;
-  class MatrixRowColTransform;
-}  // namespace Core::LinAlg
 
 namespace FSI
 {
@@ -148,16 +136,16 @@ namespace FSI
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform> sggtransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> sgitransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> sigtransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform> sggtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> sgitransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> sigtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> aigtransform_;
 
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fmgitransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> fmgitransform_;
 
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fsaigtransform_;
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fsmgitransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> fsaigtransform_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> fsmgitransform_;
 
     ///@}
 

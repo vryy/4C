@@ -30,7 +30,6 @@ in saddle-point formulation with Lagrange multipliers discretized on the fluid i
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_mapextractor.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_print.hpp"
 #include "4C_mortar_utils.hpp"
@@ -147,13 +146,13 @@ FSI::MortarMonolithicFluidSplitSaddlePoint::MortarMonolithicFluidSplitSaddlePoin
 
   notsetup_ = true;
 
-  coupling_solid_fluid_mortar_ = Teuchos::rcp(new Core::Adapter::CouplingMortar(
+  coupling_solid_fluid_mortar_ = Teuchos::rcp(new Coupling::Adapter::CouplingMortar(
       Global::Problem::instance()->n_dim(), Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
       Global::Problem::instance()->spatial_approximation_type()));
 
-  ale_inner_interf_transform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
-  fluid_mesh_inner_inner_transform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  ale_inner_interf_transform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fluid_mesh_inner_inner_transform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
 
   create_lagrange_multiplier_dof_row_map();
   set_lag_mult();
@@ -202,7 +201,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system()
     const int ndim = Global::Problem::instance()->n_dim();
 
     // get coupling objects
-    Core::Adapter::Coupling& interface_coup_fluid_ale = interface_fluid_ale_coupling();
+    Coupling::Adapter::Coupling& interface_coup_fluid_ale = interface_fluid_ale_coupling();
 
     /* structure to fluid
      * coupling condition at the fsi interface:
@@ -220,7 +219,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system()
         fluid_field()->interface()->fsi_cond_map(), *ale_field()->discretization(),
         ale_field()->interface()->fsi_cond_map(), "FSICoupling", ndim);
 
-    Core::Adapter::Coupling& coup_fluid_ale = fluid_ale_coupling();
+    Coupling::Adapter::Coupling& coup_fluid_ale = fluid_ale_coupling();
 
     // the fluid-ale coupling always matches
     const Epetra_Map* fluidnodemap = fluid_field()->discretization()->node_row_map();
@@ -871,7 +870,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> aux_ale_inner_interf =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(ale_inner_inner.row_map(), 81, false));
   (*ale_inner_interf_transform_)(aleblock->full_row_map(), aleblock->full_col_map(),
-      ale_inner_interf, 1., Core::Adapter::CouplingSlaveConverter(interface_fluid_ale_coupling()),
+      ale_inner_interf, 1.,
+      Coupling::Adapter::CouplingSlaveConverter(interface_fluid_ale_coupling()),
       *aux_ale_inner_interf);
 
   aux_ale_inner_interf->scale(1. / fluid_timescale);
@@ -921,7 +921,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
   // add optional fluid linearization with respect to mesh motion block
   if (fluid_shape_deriv != Teuchos::null)
   {
-    const Core::Adapter::Coupling& coup_fluid_ale = fluid_ale_coupling();
+    const Coupling::Adapter::Coupling& coup_fluid_ale = fluid_ale_coupling();
 
     // extract submatrices
     Core::LinAlg::SparseMatrix& fluid_mesh_inner_inner = fluid_shape_deriv->matrix(0, 0);
@@ -940,7 +940,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
     // Adressing contribution to block (3,5)
     (*fluid_mesh_inner_inner_transform_)(fluid_shape_deriv->full_row_map(),
         fluid_shape_deriv->full_col_map(), fluid_mesh_inner_inner, 1.,
-        Core::Adapter::CouplingSlaveConverter(coup_fluid_ale), mat.matrix(1, 2), false);
+        Coupling::Adapter::CouplingSlaveConverter(coup_fluid_ale), mat.matrix(1, 2), false);
 
     // Adressing contribution to block (4,4)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> aux_fluid_mesh_interf_interf =
@@ -953,7 +953,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
     // Adressing contribution to block (4,5)
     (*fluid_mesh_inner_inner_transform_)(fluid_shape_deriv->full_row_map(),
         fluid_shape_deriv->full_col_map(), fluid_mesh_interf_inner, 1.,
-        Core::Adapter::CouplingMasterConverter(coup_fluid_ale), mat.matrix(1, 2), false);
+        Coupling::Adapter::CouplingMasterConverter(coup_fluid_ale), mat.matrix(1, 2), false);
   }
 
   // finally assign fluid matrix to block (1,1)

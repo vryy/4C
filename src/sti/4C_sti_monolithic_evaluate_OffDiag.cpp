@@ -14,7 +14,6 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_linalg_mapextractor.hpp"
-#include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_scatra_ele_action.hpp"
@@ -371,8 +370,9 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::copy_slave_to_master_scatra_
       for (int iblock = 0; iblock < meshtying_strategy_scatra()->block_maps_slave().num_maps();
            ++iblock)
       {
-        Core::LinAlg::MatrixRowTransform()(blockslavematrix->matrix(iblock, 0), -1.0,
-            Core::Adapter::CouplingSlaveConverter(*meshtying_strategy_scatra()->coupling_adapter()),
+        Coupling::Adapter::MatrixRowTransform()(blockslavematrix->matrix(iblock, 0), -1.0,
+            Coupling::Adapter::CouplingSlaveConverter(
+                *meshtying_strategy_scatra()->coupling_adapter()),
             mastermatrixsparse, true);
       }
 
@@ -398,8 +398,9 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::copy_slave_to_master_scatra_
 
       // derive linearizations of master-side scatra fluxes w.r.t. slave-side thermo dofs
       // and assemble into scatra-thermo matrix block
-      Core::LinAlg::MatrixRowTransform()(*sparseslavematrix, -1.0,
-          Core::Adapter::CouplingSlaveConverter(*meshtying_strategy_scatra()->coupling_adapter()),
+      Coupling::Adapter::MatrixRowTransform()(*sparseslavematrix, -1.0,
+          Coupling::Adapter::CouplingSlaveConverter(
+              *meshtying_strategy_scatra()->coupling_adapter()),
           *sparsemastermatrix, false);
 
       // finalize master matrix
@@ -517,9 +518,10 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_ther
           *meshtying_strategy_thermo()->coupling_adapter()->slave_dof_map(), 27, false, true);
 
       // transform linearizations of slave-side thermo fluxes w.r.t. master-side scatra dofs
-      Core::LinAlg::MatrixColTransform()(mastermatrix->row_map(), mastermatrix->col_map(),
+      Coupling::Adapter::MatrixColTransform()(mastermatrix->row_map(), mastermatrix->col_map(),
           *mastermatrix, 1.0,
-          Core::Adapter::CouplingSlaveConverter(*meshtying_strategy_scatra()->coupling_adapter()),
+          Coupling::Adapter::CouplingSlaveConverter(
+              *meshtying_strategy_scatra()->coupling_adapter()),
           ksm, true, false);
 
       // finalize temporary matrix
@@ -550,9 +552,10 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_ther
 
       // derive linearizations of slave-side thermo fluxes w.r.t. master-side scatra dofs
       // and assemble into thermo-scatra matrix block
-      Core::LinAlg::MatrixColTransform()(mastermatrix->row_map(), mastermatrix->col_map(),
+      Coupling::Adapter::MatrixColTransform()(mastermatrix->row_map(), mastermatrix->col_map(),
           *mastermatrix, 1.0,
-          Core::Adapter::CouplingSlaveConverter(*meshtying_strategy_scatra()->coupling_adapter()),
+          Coupling::Adapter::CouplingSlaveConverter(
+              *meshtying_strategy_scatra()->coupling_adapter()),
           *Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(thermoscatrablockinterface), true,
           true);
 

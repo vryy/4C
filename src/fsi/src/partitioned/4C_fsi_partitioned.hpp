@@ -194,10 +194,10 @@ namespace FSI
     Teuchos::RCP<UTILS::DebugWriter> my_debug_writer() const { return debugwriter_; }
 
     /// return coupsfm_
-    Core::Adapter::CouplingMortar& structure_fluid_coupling_mortar();
+    Coupling::Adapter::CouplingMortar& structure_fluid_coupling_mortar();
 
     /// return coupsfm_
-    const Core::Adapter::CouplingMortar& structure_fluid_coupling_mortar() const;
+    const Coupling::Adapter::CouplingMortar& structure_fluid_coupling_mortar() const;
 
     /// access to iteration counter
     virtual std::vector<int> iteration_counter() { return counter_; };
@@ -254,7 +254,7 @@ namespace FSI
 
 
     /// coupling of structure and fluid at the interface, with mortar.
-    Teuchos::RCP<Core::Adapter::CouplingMortar> coupsfm_;
+    Teuchos::RCP<Coupling::Adapter::CouplingMortar> coupsfm_;
 
     /// nodes at the fluid-structure interface match
     bool matchingnodes_;

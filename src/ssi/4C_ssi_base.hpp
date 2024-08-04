@@ -23,8 +23,6 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 namespace Adapter
 {
-  class Coupling;
-  class CouplingSlaveConverter;
   class Structure;
   class ScaTraBaseAlgorithm;
   class SSIStructureWrapper;

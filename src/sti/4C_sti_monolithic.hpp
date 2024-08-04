@@ -13,6 +13,7 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter.hpp"
+#include "4C_coupling_adapter_converter.hpp"
 #include "4C_inpar_sti.hpp"
 #include "4C_sti_algorithm.hpp"
 
@@ -22,10 +23,6 @@ class Epetra_MultiVector;
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Adapter
-{
-  class Coupling;
-}
 
 namespace Core::LinAlg
 {
@@ -35,8 +32,6 @@ namespace Core::LinAlg
   class Solver;
   class SparseMatrix;
   class SparseOperator;
-  class MatrixColTransform;
-  class MatrixRowTransform;
   class Equilibration;
   enum class MatrixType;
 }  // namespace Core::LinAlg
@@ -180,20 +175,20 @@ namespace STI
     Teuchos::RCP<Epetra_Vector> invrowsums_;
 
     //! interface coupling adapter for scatra discretization
-    Teuchos::RCP<const Core::Adapter::Coupling> icoupscatra_;
+    Teuchos::RCP<const Coupling::Adapter::Coupling> icoupscatra_;
 
     //! interface coupling adapter for thermo discretization
-    Teuchos::RCP<const Core::Adapter::Coupling> icoupthermo_;
+    Teuchos::RCP<const Coupling::Adapter::Coupling> icoupthermo_;
 
     //! slave-to-master row transformation operator for scatra-thermo block of global system matrix
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> islavetomasterrowtransformscatraod_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> islavetomasterrowtransformscatraod_;
 
     //! slave-to-master column transformation operator for thermo-scatra block of global system
     //! matrix
-    Teuchos::RCP<Core::LinAlg::MatrixColTransform> islavetomastercoltransformthermood_;
+    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> islavetomastercoltransformthermood_;
 
     //! master-to-slave row transformation operator for thermo-scatra block of global system matrix
-    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> islavetomasterrowtransformthermood_;
+    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> islavetomasterrowtransformthermood_;
 
     //! evaluation of OD blocks for scatra-thermo coupling
     Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> scatrathermooffdiagcoupling_;

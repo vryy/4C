@@ -3810,7 +3810,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     std::array<double, 3> Axi = {0.0, 0.0, 0.0};
     for (int i = 0; i < Base::bdrynsd_; i++) Axi[i] = Base::xsi_(i);
     for (int i = Base::bdrynsd_; i < 3; i++) Axi[i] = 0.0;
-    Core::VolMortar::UTILS::dual_shape_function<distype>(dualfunct, Axi.data(), *ele);
+    Coupling::VolMortar::UTILS::dual_shape_function<distype>(dualfunct, Axi.data(), *ele);
 
     // dxyzdrs vector -> normal which is not normalized
     Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);

@@ -22,10 +22,6 @@ to be called!
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Adapter
-{
-  class Coupling;
-}
 
 namespace CONTACT
 {

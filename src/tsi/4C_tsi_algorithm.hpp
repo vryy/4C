@@ -45,7 +45,6 @@ namespace Adapter
   class Thermo;
   class Structure;
   class MortarVolCoupl;
-  class Coupling;
 }  // namespace Adapter
 
 namespace Mortar
@@ -139,7 +138,7 @@ namespace TSI
     virtual void prepare_contact_strategy();
 
     //! Access to the dof coupling for matching grid TSI
-    Core::Adapter::Coupling& structure_thermo_coupling() { return *coupST_; }
+    Coupling::Adapter::Coupling& structure_thermo_coupling() { return *coupST_; }
     //@}
 
     //! @name Access methods
@@ -176,9 +175,9 @@ namespace TSI
     //! flag for matchinggrid
     const bool matchinggrid_;
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<Core::Adapter::MortarVolCoupl> volcoupl_;
+    Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> volcoupl_;
 
-    Teuchos::RCP<Core::Adapter::Coupling> coupST_;  // S: master, T: slave
+    Teuchos::RCP<Coupling::Adapter::Coupling> coupST_;  // S: master, T: slave
     //@}
 
 

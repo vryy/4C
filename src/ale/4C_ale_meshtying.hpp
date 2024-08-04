@@ -193,7 +193,7 @@ namespace ALE
     Teuchos::RCP<Epetra_Vector> valuesdc_;
 
     //! adapter to mortar framework
-    Teuchos::RCP<Core::Adapter::CouplingMortar> adaptermeshtying_;
+    Teuchos::RCP<Coupling::Adapter::CouplingMortar> adaptermeshtying_;
 
     //! 2x2 (3x3) block matrix for solving condensed system (3x3 block matrix)
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmatsolve_;
