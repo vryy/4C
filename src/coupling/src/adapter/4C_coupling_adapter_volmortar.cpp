@@ -23,6 +23,8 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_rebalance_binning_based.hpp"
 
+#include <utility>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
@@ -142,10 +144,10 @@ void Coupling::Adapter::MortarVolCoupl::setup(
  *----------------------------------------------------------------------*/
 void Coupling::Adapter::MortarVolCoupl::redistribute(const Teuchos::ParameterList& binning_params,
     Teuchos::RCP<Core::IO::OutputControl> output_control,
-    std::function<Core::Binstrategy::Utils::SpecialElement(const Core::Elements::Element* element)>
-        element_filter,
-    std::function<double(const Core::Elements::Element* element)> rigid_sphere_radius,
-    std::function<Core::Nodes::Node const*(Core::Nodes::Node const* node)> correct_beam_center_node)
+    std::function<const Core::Nodes::Node&(const Core::Nodes::Node& node)> correct_node,
+    std::function<std::vector<std::array<double, 3>>(const Core::FE::Discretization&,
+        const Core::Elements::Element&, Teuchos::RCP<const Epetra_Vector> disnp)>
+        determine_relevant_points)
 {
   check_init();
 
@@ -155,9 +157,7 @@ void Coupling::Adapter::MortarVolCoupl::redistribute(const Teuchos::ParameterLis
   dis.push_back(slavedis_);
 
   Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params, output_control, dis,
-      element_filter, rigid_sphere_radius, correct_beam_center_node, false);
-
-  return;
+      std::move(correct_node), std::move(determine_relevant_points), false);
 }
 
 

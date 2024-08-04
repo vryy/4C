@@ -21,6 +21,7 @@
 #include "4C_adapter_structure_scatra_ele.hpp"
 #include "4C_ale_utils_clonestrategy.hpp"
 #include "4C_beam3_base.hpp"
+#include "4C_binstrategy.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
 #include "4C_fem_condition_selector.hpp"
 #include "4C_fem_condition_utils.hpp"
@@ -386,26 +387,33 @@ Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_morta
   Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
       "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
       binning_params);
-  auto element_filter = [](const Core::Elements::Element* element)
+
+  auto correct_node = [](const Core::Nodes::Node& node) -> decltype(auto)
   {
-    if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element))
-      return Core::Binstrategy::Utils::SpecialElement::beam;
-    else
-      return Core::Binstrategy::Utils::SpecialElement::none;
-  };
-  auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
-  auto correct_beam_center_node = [](const Core::Nodes::Node* node)
-  {
-    const Core::Elements::Element* element = node->elements()[0];
+    const Core::Elements::Element* element = node.elements()[0];
     const auto* beamelement = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
-    if (beamelement != nullptr and not beamelement->is_centerline_node(*node))
-      return element->nodes()[0];
+    if (beamelement != nullptr && !beamelement->is_centerline_node(node))
+      return *element->nodes()[0];
     else
       return node;
   };
+
+  auto determine_relevant_points =
+      [correct_node](const Core::FE::Discretization& discret, const Core::Elements::Element& ele,
+          Teuchos::RCP<const Epetra_Vector> disnp) -> std::vector<std::array<double, 3>>
+  {
+    if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(&ele))
+    {
+      return Core::Binstrategy::DefaultRelevantPoints{
+          .correct_node = correct_node,
+      }(discret, ele, disnp);
+    }
+    else
+      return Core::Binstrategy::DefaultRelevantPoints{}(discret, ele, disnp);
+  };
+
   volume_coupling_object->redistribute(binning_params,
-      Global::Problem::instance()->output_control_file(), element_filter, rigid_sphere_radius,
-      correct_beam_center_node);
+      Global::Problem::instance()->output_control_file(), correct_node, determine_relevant_points);
   volume_coupling_object->setup(Global::Problem::instance()->volmortar_params(),
       Global::Problem::instance()->cut_general_params());
 

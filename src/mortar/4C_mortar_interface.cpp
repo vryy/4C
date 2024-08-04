@@ -1058,15 +1058,9 @@ Teuchos::RCP<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_binnin
   Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
       "spatial_approximation_type", spatial_approximation_type, binning_params);
 
-  auto element_filter = [](const Core::Elements::Element* element)
-  { return Core::Binstrategy::Utils::SpecialElement::none; };
-
-  auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
-  auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
-
-  Teuchos::RCP<Core::Binstrategy::BinningStrategy> binningstrategy = Teuchos::rcp(
-      new Core::Binstrategy::BinningStrategy(binning_params, output_control, get_comm(),
-          get_comm().MyPID(), element_filter, rigid_sphere_radius, correct_beam_center_node));
+  Teuchos::RCP<Core::Binstrategy::BinningStrategy> binningstrategy =
+      Teuchos::rcp(new Core::Binstrategy::BinningStrategy(
+          binning_params, output_control, get_comm(), get_comm().MyPID()));
   return binningstrategy;
 }
 

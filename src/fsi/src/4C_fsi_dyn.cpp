@@ -329,24 +329,28 @@ void fsi_immersed_drt()
   Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis("structure");
   const Epetra_Comm& comm = structdis->get_comm();
 
-  // Redistribute beams in the case of point coupling conditions
-  auto element_filter = [](const Core::Elements::Element* element)
+  auto correct_node = [](const Core::Nodes::Node& node) -> decltype(auto)
   {
-    if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element))
-      return Core::Binstrategy::Utils::SpecialElement::beam;
-    else
-      return Core::Binstrategy::Utils::SpecialElement::none;
-  };
-
-  auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
-  auto correct_beam_center_node = [](const Core::Nodes::Node* node)
-  {
-    const Core::Elements::Element* element = node->elements()[0];
+    const Core::Elements::Element* element = node.elements()[0];
     const auto* beamelement = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
-    if (beamelement != nullptr and not beamelement->is_centerline_node(*node))
-      return element->nodes()[0];
+    if (beamelement != nullptr && !beamelement->is_centerline_node(node))
+      return *element->nodes()[0];
     else
       return node;
+  };
+
+  auto determine_relevant_points =
+      [correct_node](const Core::FE::Discretization& discret, const Core::Elements::Element& ele,
+          Teuchos::RCP<const Epetra_Vector> disnp) -> std::vector<std::array<double, 3>>
+  {
+    if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(&ele))
+    {
+      return Core::Binstrategy::DefaultRelevantPoints{
+          .correct_node = correct_node,
+      }(discret, ele, disnp);
+    }
+    else
+      return Core::Binstrategy::DefaultRelevantPoints{}(discret, ele, disnp);
   };
 
   if (structdis->get_condition("PointCoupling") != nullptr)
@@ -357,8 +361,8 @@ void fsi_immersed_drt()
         "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
         binning_params);
     Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
-        Global::Problem::instance()->output_control_file(), {structdis}, element_filter,
-        rigid_sphere_radius, correct_beam_center_node, true);
+        Global::Problem::instance()->output_control_file(), {structdis}, correct_node,
+        determine_relevant_points, true);
   }
   else if (not structdis->filled() || not structdis->have_dofs())
   {
@@ -383,8 +387,8 @@ void fsi_immersed_drt()
 
 
   auto binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
-      Global::Problem::instance()->output_control_file(), comm, comm.MyPID(), element_filter,
-      rigid_sphere_radius, correct_beam_center_node, dis));
+      Global::Problem::instance()->output_control_file(), comm, comm.MyPID(), correct_node,
+      determine_relevant_points, dis));
 
   const Teuchos::ParameterList& fbidyn = problem->fbi_params();
 
@@ -460,23 +464,28 @@ void fsi_ale_drt()
   //       structure dof < fluid dof < ale dof
   //
   // We rely on this ordering in certain non-intuitive places!
-  auto element_filter = [](const Core::Elements::Element* element)
+  auto correct_node = [](const Core::Nodes::Node& node) -> decltype(auto)
   {
-    if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element))
-      return Core::Binstrategy::Utils::SpecialElement::beam;
-    else
-      return Core::Binstrategy::Utils::SpecialElement::none;
-  };
-
-  auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
-  auto correct_beam_center_node = [](const Core::Nodes::Node* node)
-  {
-    const Core::Elements::Element* element = node->elements()[0];
+    const Core::Elements::Element* element = node.elements()[0];
     const auto* beamelement = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
-    if (beamelement != nullptr and not beamelement->is_centerline_node(*node))
-      return element->nodes()[0];
+    if (beamelement != nullptr && !beamelement->is_centerline_node(node))
+      return *element->nodes()[0];
     else
       return node;
+  };
+
+  auto determine_relevant_points =
+      [correct_node](const Core::FE::Discretization& discret, const Core::Elements::Element& ele,
+          Teuchos::RCP<const Epetra_Vector> disnp) -> std::vector<std::array<double, 3>>
+  {
+    if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(&ele))
+    {
+      return Core::Binstrategy::DefaultRelevantPoints{
+          .correct_node = correct_node,
+      }(discret, ele, disnp);
+    }
+    else
+      return Core::Binstrategy::DefaultRelevantPoints{}(discret, ele, disnp);
   };
 
   if (structdis->get_condition("PointCoupling") != nullptr)
@@ -488,8 +497,8 @@ void fsi_ale_drt()
         binning_params);
 
     Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
-        Global::Problem::instance()->output_control_file(), {structdis}, element_filter,
-        rigid_sphere_radius, correct_beam_center_node, true);
+        Global::Problem::instance()->output_control_file(), {structdis}, correct_node,
+        determine_relevant_points, true);
   }
   else if (not structdis->filled() || not structdis->have_dofs())
   {
@@ -553,8 +562,8 @@ void fsi_ale_drt()
             "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
             binning_params);
         auto binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
-            Global::Problem::instance()->output_control_file(), comm, comm.MyPID(), element_filter,
-            rigid_sphere_radius, correct_beam_center_node, dis));
+            Global::Problem::instance()->output_control_file(), comm, comm.MyPID(), correct_node,
+            determine_relevant_points, dis));
         binningstrategy
             ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
                 dis, stdelecolmap, stdnodecolmap);

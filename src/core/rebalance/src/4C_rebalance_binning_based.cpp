@@ -24,6 +24,8 @@
 
 #include <Epetra_IntVector.h>
 
+#include <utility>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
@@ -33,10 +35,10 @@ void Core::Rebalance::RebalanceDiscretizationsByBinning(
     const Teuchos::ParameterList& binning_params,
     Teuchos::RCP<Core::IO::OutputControl> output_control,
     const std::vector<Teuchos::RCP<Core::FE::Discretization>>& vector_of_discretizations,
-    std::function<Core::Binstrategy::Utils::SpecialElement(const Core::Elements::Element* element)>
-        element_filter,
-    std::function<double(const Core::Elements::Element* element)> rigid_sphere_radius,
-    std::function<Core::Nodes::Node const*(Core::Nodes::Node const* node)> correct_beam_center_node,
+    std::function<const Core::Nodes::Node&(const Core::Nodes::Node& node)> correct_node,
+    std::function<std::vector<std::array<double, 3>>(const Core::FE::Discretization&,
+        const Core::Elements::Element&, Teuchos::RCP<const Epetra_Vector> disnp)>
+        determine_relevant_points,
     bool revertextendedghosting)
 {
   // safety check
@@ -71,8 +73,8 @@ void Core::Rebalance::RebalanceDiscretizationsByBinning(
     // binning strategy is created and parallel redistribution is performed
     auto binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
         output_control, vector_of_discretizations[0]->get_comm(),
-        vector_of_discretizations[0]->get_comm().MyPID(), element_filter, rigid_sphere_radius,
-        correct_beam_center_node, vector_of_discretizations));
+        vector_of_discretizations[0]->get_comm().MyPID(), std::move(correct_node),
+        std::move(determine_relevant_points), vector_of_discretizations));
 
     binningstrategy
         ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(

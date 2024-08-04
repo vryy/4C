@@ -26,6 +26,7 @@
 #include "4C_adapter_str_wrapper.hpp"
 #include "4C_beam3_kirchhoff.hpp"
 #include "4C_beam3_reissner.hpp"
+#include "4C_binstrategy.hpp"
 #include "4C_comm_utils.hpp"
 #include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
@@ -170,35 +171,45 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
         "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
         binning_params);
     actdis_vec[0]->fill_complete(false, false, false);
-    auto element_filter = [](const Core::Elements::Element* element)
-    {
-      if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element))
-        return Core::Binstrategy::Utils::SpecialElement::beam;
-      else if (element->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
-        return Core::Binstrategy::Utils::SpecialElement::rigid_sphere;
-      else
-        return Core::Binstrategy::Utils::SpecialElement::none;
-    };
 
-    auto rigid_sphere_radius = [](const Core::Elements::Element* element)
+    // Different types of structural elements may be present, so we need to help the binning
+    // strategy understand their different shapes by providing the correct points to compute
+    // bounding boxes.
+    auto correct_node = [](const Core::Nodes::Node& node) -> decltype(auto)
     {
-      if (element->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
-        return dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(element)->radius();
-      else
-        return 0.0;
-    };
-    auto correct_beam_center_node = [](const Core::Nodes::Node* node)
-    {
-      const Core::Elements::Element* element = node->elements()[0];
+      const Core::Elements::Element* element = node.elements()[0];
       const auto* beamelement = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
-      if (beamelement != nullptr and not beamelement->is_centerline_node(*node))
-        return element->nodes()[0];
+      if (beamelement != nullptr && !beamelement->is_centerline_node(node))
+        return *element->nodes()[0];
       else
         return node;
     };
+
+    auto determine_relevant_points =
+        [correct_node](const Core::FE::Discretization& discret, const Core::Elements::Element& ele,
+            Teuchos::RCP<const Epetra_Vector> disnp) -> std::vector<std::array<double, 3>>
+    {
+      if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(&ele))
+      {
+        return Core::Binstrategy::DefaultRelevantPoints{
+            .correct_node = correct_node,
+        }(discret, ele, disnp);
+      }
+      else if (ele.element_type() == Discret::ELEMENTS::RigidsphereType::instance())
+      {
+        double currpos[3] = {0.0, 0.0, 0.0};
+        Core::Binstrategy::Utils::GetCurrentNodePos(discret, ele.nodes()[0], disnp, currpos);
+        const double radius = dynamic_cast<const Discret::ELEMENTS::Rigidsphere&>(ele).radius();
+        return {{currpos[0] - radius, currpos[1] - radius, currpos[2] - radius},
+            {currpos[0] + radius, currpos[1] + radius, currpos[2] + radius}};
+      }
+      else
+        return Core::Binstrategy::DefaultRelevantPoints{}(discret, ele, disnp);
+    };
+
     Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
-        Global::Problem::instance()->output_control_file(), actdis_vec, element_filter,
-        rigid_sphere_radius, correct_beam_center_node, true);
+        Global::Problem::instance()->output_control_file(), actdis_vec, correct_node,
+        determine_relevant_points, true);
   }
   else if (not actdis_->filled() || not actdis_->have_dofs())
   {
