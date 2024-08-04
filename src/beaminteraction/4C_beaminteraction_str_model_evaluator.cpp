@@ -468,8 +468,8 @@ void Solid::ModelEvaluator::BeamInteraction::partition_problem()
       Teuchos::rcp(new Epetra_Vector(*ia_discret_->dof_col_map()));
   Core::LinAlg::export_to(*ia_state_ptr_->get_dis_np(), *iadiscolnp);
 
-  binstrategy_->distribute_row_elements_to_bins_using_ele_aabb(
-      ia_discret_, ia_state_ptr_->get_bin_to_row_ele_map(), iadiscolnp);
+  binstrategy_->distribute_elements_to_bins_using_ele_aabb(*ia_discret_,
+      ia_discret_->my_row_element_range(), ia_state_ptr_->get_bin_to_row_ele_map(), iadiscolnp);
 
   // build row elements to bin map
   build_row_ele_to_bin_map();

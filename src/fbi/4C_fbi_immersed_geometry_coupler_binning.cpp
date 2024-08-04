@@ -59,8 +59,8 @@ void FBI::FBIBinningGeometryCoupler::partition_geometry(
 
   std::map<int, std::set<int>> bintorowelemap_fluid;
 
-  binstrategy_->distribute_row_elements_to_bins_using_ele_aabb(
-      discretizations[0], bintoelemap_, structure_displacement);
+  binstrategy_->distribute_elements_to_bins_using_ele_aabb(*discretizations[0],
+      discretizations[0]->my_row_element_range(), bintoelemap_, structure_displacement);
 
   binstrategy_->bin_discret()->fill_complete(false, false, false);
 
@@ -94,8 +94,9 @@ void FBI::FBIBinningGeometryCoupler::update_binning(
     Teuchos::RCP<Core::FE::Discretization>& structure_discretization,
     Teuchos::RCP<const Epetra_Vector> structure_column_displacement)
 {
-  binstrategy_->distribute_col_elements_to_bins_using_ele_aabb(
-      structure_discretization, bintoelemap_, structure_column_displacement);
+  binstrategy_->distribute_elements_to_bins_using_ele_aabb(*structure_discretization,
+      structure_discretization->my_col_element_range(), bintoelemap_,
+      structure_column_displacement);
 
 
   // assign Elements to bins

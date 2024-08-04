@@ -495,7 +495,7 @@ namespace Mortar
     \brief Return slave (true) or master status
 
     */
-    virtual bool is_slave() { return isslave_; }
+    virtual bool is_slave() const { return isslave_; }
 
     /*!
     \brief Return attached status

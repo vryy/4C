@@ -258,7 +258,7 @@ void PARTICLEWALL::WallHandlerBase::relate_bins_to_col_wall_eles()
     // get corresponding bin ids for element
     std::vector<int> binids;
     binstrategy_->distribute_single_element_to_bins_using_ele_aabb(
-        walldiscretization_, ele, binids, walldatastate_->get_disp_col());
+        *walldiscretization_, ele, binids, walldatastate_->get_disp_col());
 
     // relate ids of owned bins to column wall elements
     for (int gidofbin : binids)
@@ -491,8 +491,8 @@ void PARTICLEWALL::WallHandlerDiscretCondition::distribute_wall_elements_and_nod
 
   // determine bin to row wall element distribution
   std::map<int, std::set<int>> bintorowelemap;
-  binstrategy_->distribute_row_elements_to_bins_using_ele_aabb(
-      walldiscretization_, bintorowelemap, disn_col);
+  binstrategy_->distribute_elements_to_bins_using_ele_aabb(
+      *walldiscretization_, walldiscretization_->my_row_element_range(), bintorowelemap, disn_col);
 
   // extend wall element ghosting
   extend_wall_element_ghosting(bintorowelemap);

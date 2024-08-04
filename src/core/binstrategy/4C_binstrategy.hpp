@@ -474,41 +474,18 @@ namespace Core::Binstrategy
      */
     void add_ijk_to_axis_aligned_ijk_range(int const ijk[3], int ijk_range[6]) const;
 
-
-    /// fixme: the following function needs to be replaced by
-    /// distribute_row_elements_to_bins_using_ele_aabb()
-    /*!
-     * \brief elements are assigned to bins (either slave or master side of mortar interface)
-     *
-     * \param[in] mortardis mortar interface discretization
-     * \param[out] binelemap map of bins and assigned elements
-     * \param[in] isslave decide whether slave or master side is processed
-     */
-    void distribute_eles_to_bins(const Core::FE::Discretization& mortardis,
-        std::map<int, std::set<int>>& binelemap, bool isslave) const;
-
-    /*!
-     * \brief distribute all row elements to bins exploiting axis aligned bounding box idea
+    /**
+     * Distribute all elements in the @p element_range to bins by constructing axis-aligned bounding
+     * boxes.
      *
      * \param[in] discret discretization containing the elements that are distributed to bins
-     * \param[out] bintorowelemap map of bins and assigned row elements
+     * \param[in] element_range range of elements that are distributed to bins
+     * \param[out] bin_to_ele_map map of bins and assigned row elements
      * \param[in] disnp current col displacement state
      */
-    void distribute_row_elements_to_bins_using_ele_aabb(
-        Teuchos::RCP<Core::FE::Discretization> const& discret,
-        std::map<int, std::set<int>>& bintorowelemap,
-        Teuchos::RCP<const Epetra_Vector> disnp = Teuchos::null) const;
-
-    /*!
-     * \brief distribute all column elements to bins exploiting axis aligned bounding box idea
-     *
-     * \param[in] discret discretization containing the elements that are distributed to bins
-     * \param[out] bintocolelemap map of bins and assigned column elements
-     * \param[in] disnp current col displacement state
-     */
-    void distribute_col_elements_to_bins_using_ele_aabb(
-        Teuchos::RCP<Core::FE::Discretization> const& discret,
-        std::map<int, std::set<int>>& bintocolelemap,
+    template <typename Range>
+    void distribute_elements_to_bins_using_ele_aabb(const Core::FE::Discretization& discret,
+        Range element_range, std::map<int, std::set<int>>& bin_to_ele_map,
         Teuchos::RCP<const Epetra_Vector> disnp = Teuchos::null) const;
 
     /*!
@@ -519,9 +496,9 @@ namespace Core::Binstrategy
      * \param[out] binIds ids of bins tuuched by aabb of current element
      * \param[in] disnp current col displacement state
      */
-    void distribute_single_element_to_bins_using_ele_aabb(
-        Teuchos::RCP<Core::FE::Discretization> const& discret, Core::Elements::Element* eleptr,
-        std::vector<int>& binIds, Teuchos::RCP<const Epetra_Vector> const& disnp) const;
+    void distribute_single_element_to_bins_using_ele_aabb(const Core::FE::Discretization& discret,
+        Core::Elements::Element* eleptr, std::vector<int>& binIds,
+        Teuchos::RCP<const Epetra_Vector> const& disnp) const;
 
     /*!
      * \brief elements of input discretization are assigned to bins
@@ -861,6 +838,25 @@ namespace Core::Binstrategy
       return first->Id() < second->Id();
     }
   };
+
+
+  // --- template and inline functions --- //
+  template <typename Range>
+  void BinningStrategy::distribute_elements_to_bins_using_ele_aabb(
+      const Core::FE::Discretization& discret, Range element_range,
+      std::map<int, std::set<int>>& bin_to_ele_map, Teuchos::RCP<const Epetra_Vector> disnp) const
+  {
+    bin_to_ele_map.clear();
+
+    for (auto* eleptr : element_range)
+    {
+      // get corresponding bin ids in ijk range
+      std::vector<int> bin_ids;
+      distribute_single_element_to_bins_using_ele_aabb(discret, eleptr, bin_ids, disnp);
+
+      for (const int b : bin_ids) bin_to_ele_map[b].insert(eleptr->id());
+    }
+  }
 
 }  // namespace Core::Binstrategy
 

@@ -20,8 +20,6 @@
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
-#include "4C_mortar_element.hpp"
-#include "4C_mortar_node.hpp"
 #include "4C_rebalance_graph_based.hpp"
 #include "4C_rebalance_print.hpp"
 #include "4C_utils_parameter_list.hpp"
@@ -892,95 +890,8 @@ void Core::Binstrategy::BinningStrategy::add_ijk_to_axis_aligned_ijk_range(
 }
 
 
-void Core::Binstrategy::BinningStrategy::distribute_eles_to_bins(
-    const Core::FE::Discretization& mortardis, std::map<int, std::set<int>>& binelemap,
-    bool isslave) const
-{
-  // exploit bounding box idea for elements and bins
-  for (int lid = 0; lid < mortardis.num_my_col_elements(); ++lid)
-  {
-    Core::Elements::Element* ele = mortardis.l_col_element(lid);
-    if (dynamic_cast<Mortar::Element*>(ele)->is_slave() == isslave)
-    {
-      Core::Nodes::Node** nodes = ele->nodes();
-      const int numnode = ele->num_node();
-
-      // initialize ijk_range with ijk of first node of element
-      int ijk[3];
-      {
-        Core::Nodes::Node* node = nodes[0];
-        const double* coords = dynamic_cast<Mortar::Node*>(node)->xspatial();
-        convert_pos_to_ijk(coords, ijk);
-      }
-
-      // ijk_range contains: i_min i_max j_min j_max k_min k_max
-      int ijk_range[] = {ijk[0], ijk[0], ijk[1], ijk[1], ijk[2], ijk[2]};
-
-      // fill in remaining nodes
-      for (int j = 1; j < numnode; ++j)
-      {
-        Core::Nodes::Node* node = nodes[j];
-        const double* coords = dynamic_cast<Mortar::Node*>(node)->xspatial();
-        int ijk[3];
-        convert_pos_to_ijk(coords, ijk);
-
-        for (int dim = 0; dim < 3; ++dim)
-        {
-          if (ijk[dim] < ijk_range[dim * 2]) ijk_range[dim * 2] = ijk[dim];
-          if (ijk[dim] > ijk_range[dim * 2 + 1]) ijk_range[dim * 2 + 1] = ijk[dim];
-        }
-      }
-
-      // get corresponding bin ids in ijk range
-      std::vector<int> binIds;
-      binIds.reserve(get_number_of_bins_in_ijk_range(ijk_range));
-      gids_in_ijk_range(ijk_range, binIds, false);
-
-      // assign element to bins
-      for (int binId : binIds) binelemap[binId].insert(ele->id());
-    }
-  }
-}
-
-void Core::Binstrategy::BinningStrategy::distribute_row_elements_to_bins_using_ele_aabb(
-    Teuchos::RCP<Core::FE::Discretization> const& discret,
-    std::map<int, std::set<int>>& bintorowelemap, Teuchos::RCP<const Epetra_Vector> disnp) const
-{
-  bintorowelemap.clear();
-
-  // exploit bounding box idea for elements in underlying discretization and bins
-  // loop over all row elements
-  for (auto* eleptr : discret->my_row_element_range())
-  {
-    // get corresponding bin ids in ijk range
-    std::vector<int> binIds;
-    distribute_single_element_to_bins_using_ele_aabb(discret, eleptr, binIds, disnp);
-
-    for (const int b : binIds) bintorowelemap[b].insert(eleptr->id());
-  }
-}
-
-void Core::Binstrategy::BinningStrategy::distribute_col_elements_to_bins_using_ele_aabb(
-    Teuchos::RCP<Core::FE::Discretization> const& discret,
-    std::map<int, std::set<int>>& bintocolelemap, Teuchos::RCP<const Epetra_Vector> disnp) const
-{
-  bintocolelemap.clear();
-
-  // exploit bounding box idea for elements in underlying discretization and bins
-  // loop over all row elements
-  for (auto* eleptr : discret->my_col_element_range())
-  {
-    // get corresponding bin ids in ijk range
-    std::vector<int> binIds;
-    distribute_single_element_to_bins_using_ele_aabb(discret, eleptr, binIds, disnp);
-
-    // assign element to bins
-    for (const int b : binIds) bintocolelemap[b].insert(eleptr->id());
-  }
-}
-
 void Core::Binstrategy::BinningStrategy::distribute_single_element_to_bins_using_ele_aabb(
-    Teuchos::RCP<Core::FE::Discretization> const& discret, Core::Elements::Element* eleptr,
+    const Core::FE::Discretization& discret, Core::Elements::Element* eleptr,
     std::vector<int>& binIds, Teuchos::RCP<const Epetra_Vector> const& disnp) const
 {
   binIds.clear();
@@ -989,7 +900,7 @@ void Core::Binstrategy::BinningStrategy::distribute_single_element_to_bins_using
   // ((x_min, y_min, z_min), (x_max, y_max, z_max))
   const std::pair<std::array<double, 3>, std::array<double, 3>> aabb =
       BinningStrategyImplementation::compute_aabb(
-          *discret, *eleptr, disnp, determine_relevant_points_);
+          discret, *eleptr, disnp, determine_relevant_points_);
 
   int ijk[3];
   convert_pos_to_ijk(aabb.first.data(), ijk);
@@ -1160,7 +1071,8 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::
     // binelemap on each proc than contains all bins (not neccesarily owned by
     // this proc) that are cut by the procs row elements
     std::map<int, std::set<int>> bintoelemap;
-    distribute_row_elements_to_bins_using_ele_aabb(discret[i], bintoelemap, dummy2[i]);
+    distribute_elements_to_bins_using_ele_aabb(
+        *discret[i], discret[i]->my_row_element_range(), bintoelemap, dummy2[i]);
 
     // ghosting is extended to one layer (two layer ghosting is excluded as it
     // is not needed, this case is covered by other procs then) around bins that
@@ -1905,7 +1817,7 @@ void Core::Binstrategy::BinningStrategy::transfer_nodes_and_elements(
       currele->set_owner(newowner);
       toranktosendeles[newowner].push_back(currele);
       std::vector<int> binids;
-      distribute_single_element_to_bins_using_ele_aabb(discret, currele, binids, disnp);
+      distribute_single_element_to_bins_using_ele_aabb(*discret, currele, binids, disnp);
       std::pair<int, std::vector<int>> dummy(currele->id(), binids);
       toranktosendbinids[newowner].push_back(dummy);
     }
@@ -1922,7 +1834,7 @@ void Core::Binstrategy::BinningStrategy::transfer_nodes_and_elements(
 
     // get corresponding bin ids in ijk range
     std::vector<int> binIds;
-    distribute_single_element_to_bins_using_ele_aabb(discret, eleptr, binIds, disnp);
+    distribute_single_element_to_bins_using_ele_aabb(*discret, eleptr, binIds, disnp);
 
     // assign element to bins
     std::vector<int>::const_iterator biniter;
@@ -1937,6 +1849,7 @@ void Core::Binstrategy::BinningStrategy::transfer_nodes_and_elements(
   Utils::CommunicateDistributionOfTransferredElementsToBins(
       discret, toranktosendbinids, bintorowelemap);
 }
+
 
 
 FOUR_C_NAMESPACE_CLOSE
