@@ -14,7 +14,6 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_membrane_scatra.hpp"
 #include "4C_shell7p_ele_scatra.hpp"
-#include "4C_so3_scatra.hpp"
 #include "4C_solid_scatra_3D_ele.hpp"
 #include "4C_truss3_scatra.hpp"
 #include "4C_w1_scatra.hpp"
@@ -30,61 +29,7 @@ Inpar::ScaTra::ImplType Adapter::GetScaTraImplType(Core::Elements::Element* ele)
   // the element type name, needed to cast correctly in the following
   const std::string eletypename = ele->element_type().name();
 
-  // tet 4 solid scatra
-  if (eletypename == "So_tet4ScatraType")
-  {
-    impltype =
-        (dynamic_cast<
-             Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>*>(
-             ele))
-            ->impl_type();
-  }
-  // tet10 solid scatra
-  else if (eletypename == "So_tet10ScatraType")
-  {
-    impltype =
-        (dynamic_cast<
-             Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>*>(
-             ele))
-            ->impl_type();
-  }
-  // HEX 8 Elements
-  // hex8 solid scatra
-  else if (eletypename == "So_hex8ScatraType")
-  {
-    impltype =
-        (dynamic_cast<
-             Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>*>(
-             ele))
-            ->impl_type();
-  }
-  // hex8fbar solid scatra
-  else if (eletypename == "So_hex8fbarScatraType")
-  {
-    impltype = (dynamic_cast<Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoHex8fbar,
-                    Core::FE::CellType::hex8>*>(ele))
-                   ->impl_type();
-  }
-  // hex27 solid scatra
-  else if (eletypename == "So_hex27ScatraType")
-  {
-    impltype =
-        (dynamic_cast<
-             Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>*>(
-             ele))
-            ->impl_type();
-  }
-  // wedge6
-  else if (eletypename == "So_weg6ScatraType")
-  {
-    impltype =
-        (dynamic_cast<
-             Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoWeg6, Core::FE::CellType::wedge6>*>(
-             ele))
-            ->impl_type();
-  }
-  // wall scatra elements
-  else if (eletypename == "Wall1ScatraType")
+  if (eletypename == "Wall1ScatraType")
   {
     impltype = (dynamic_cast<Discret::ELEMENTS::Wall1Scatra*>(ele))->impl_type();
   }

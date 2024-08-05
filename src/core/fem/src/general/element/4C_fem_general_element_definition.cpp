@@ -60,7 +60,6 @@ void Core::Elements::ElementDefinition::print_element_dat_header_to_stream(std::
   print_element_lines(stream, "SOLIDH8_DEPRECATED");
   print_element_lines(stream, "MEMBRANE");
   print_element_lines(stream, "SOLIDH8FBAR_DEPRECATED");
-  print_element_lines(stream, "SOLIDH8FBARSCATRA_DEPRECATED");
   print_element_lines(stream, "SOLIDH8FBARTHERMO");
   print_element_lines(stream, "SOLIDH8PORO");
   print_element_lines(stream, "SOLIDH8POROSCATRA");
@@ -68,7 +67,6 @@ void Core::Elements::ElementDefinition::print_element_dat_header_to_stream(std::
   print_element_lines(stream, "SOLIDH8POROP1SCATRA");
   print_element_lines(stream, "SOLIDH8THERMO");
   print_element_lines(stream, "SOLIDH8PLAST");
-  print_element_lines(stream, "SOLIDH8SCATRA");
   print_element_lines(stream, "SOLIDSH18");
   print_element_lines(stream, "SOLIDSH18PLAST");
   print_element_lines(stream, "SOLIDSH8");
@@ -81,12 +79,9 @@ void Core::Elements::ElementDefinition::print_element_dat_header_to_stream(std::
   print_element_lines(stream, "SOLIDT4THERMO");
   print_element_lines(stream, "SOLIDT10THERMO");
   print_element_lines(stream, "SOLIDT4PLAST");
-  print_element_lines(stream, "SOLIDT4SCATRA_DEPRECATED");
-  print_element_lines(stream, "SOLIDT10SCATRA_DEPRECATED");
   print_element_lines(stream, "SOLIDW6_DEPRECATED");
   print_element_lines(stream, "SOLIDP5_DEPRECATED");
   print_element_lines(stream, "SOLIDP5FBAR_DEPRECATED");
-  print_element_lines(stream, "SOLIDW6SCATRA_DEPRECATED");
   print_element_lines(stream, "TORSION3");
   print_element_lines(stream, "TRUSS3");
   print_element_lines(stream, "TRUSS3SCATRA");
