@@ -89,17 +89,17 @@ namespace
       EXPECT_EQ(pairs_from_collision_search.size(), reference_map.size());
       for (const auto& pair : pairs_from_collision_search)
       {
-        if (reference_map.count({std::get<1>(pair), std::get<3>(pair)}))
+        if (reference_map.count({pair.gid_predicate, pair.gid_primitive}))
         {
-          const auto& reference_pair = reference_map.at({std::get<1>(pair), std::get<3>(pair)});
-          EXPECT_EQ(std::get<0>(pair), std::get<0>(reference_pair));
-          EXPECT_EQ(std::get<2>(pair), std::get<1>(reference_pair));
-          EXPECT_EQ(std::get<4>(pair), std::get<2>(reference_pair));
+          const auto& reference_pair = reference_map.at({pair.gid_predicate, pair.gid_primitive});
+          EXPECT_EQ(pair.lid_predicate, std::get<0>(reference_pair));
+          EXPECT_EQ(pair.lid_primitive, std::get<1>(reference_pair));
+          EXPECT_EQ(pair.pid_primitive, std::get<2>(reference_pair));
         }
         else
         {
           FOUR_C_THROW(
-              "Pair {%d, %d} not found in reference map", std::get<1>(pair), std::get<3>(pair));
+              "Pair {%d, %d} not found in reference map", pair.gid_predicate, pair.gid_primitive);
         }
       }
     };
@@ -169,17 +169,17 @@ namespace
     {
       EXPECT_EQ(pairs.size(), 2);
 
-      EXPECT_EQ(std::get<0>(pairs[0]), 0);
-      EXPECT_EQ(std::get<1>(pairs[0]), 3);
-      EXPECT_EQ(std::get<2>(pairs[0]), 1);
-      EXPECT_EQ(std::get<3>(pairs[0]), 1);
-      EXPECT_EQ(std::get<4>(pairs[0]), 0);
+      EXPECT_EQ(pairs[0].lid_predicate, 0);
+      EXPECT_EQ(pairs[0].gid_predicate, 3);
+      EXPECT_EQ(pairs[0].lid_primitive, 1);
+      EXPECT_EQ(pairs[0].gid_primitive, 1);
+      EXPECT_EQ(pairs[0].pid_primitive, 0);
 
-      EXPECT_EQ(std::get<0>(pairs[1]), 0);
-      EXPECT_EQ(std::get<1>(pairs[1]), 3);
-      EXPECT_EQ(std::get<2>(pairs[1]), 0);
-      EXPECT_EQ(std::get<3>(pairs[1]), 0);
-      EXPECT_EQ(std::get<4>(pairs[1]), 0);
+      EXPECT_EQ(pairs[1].lid_predicate, 0);
+      EXPECT_EQ(pairs[1].gid_predicate, 3);
+      EXPECT_EQ(pairs[1].lid_primitive, 0);
+      EXPECT_EQ(pairs[1].gid_primitive, 0);
+      EXPECT_EQ(pairs[1].pid_primitive, 0);
     }
     else
     {
