@@ -120,9 +120,9 @@ void PostVtuWriterNode::write_geo()
     }
     else
     {
-      celltypes.push_back(Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->shape()).first);
+      celltypes.push_back(Core::IO::get_vtk_cell_type_from_element_cell_type(ele->shape()).first);
       const std::vector<int>& numbering =
-          Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->shape()).second;
+          Core::IO::get_vtk_cell_type_from_element_cell_type(ele->shape()).second;
       const Core::Nodes::Node* const* nodes = ele->nodes();
       for (int n = 0; n < ele->num_node(); ++n)
       {

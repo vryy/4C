@@ -204,7 +204,7 @@ namespace Core::IO
       if (!element_filter_(ele)) continue;
 
       const std::vector<int>& numbering =
-          Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->shape()).second;
+          Core::IO::get_vtk_cell_type_from_element_cell_type(ele->shape()).second;
 
       for (unsigned int inode = 0; inode < (unsigned int)ele->num_node(); ++inode)
       {
@@ -355,7 +355,7 @@ namespace Core::IO
 
       // Add the node GIDs.
       const std::vector<int>& numbering =
-          Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->shape()).second;
+          Core::IO::get_vtk_cell_type_from_element_cell_type(ele->shape()).second;
       const Core::Nodes::Node* const* nodes = ele->nodes();
       for (int inode = 0; inode < ele->num_node(); ++inode)
         gid_of_nodes.push_back(nodes[numbering[inode]]->id());
