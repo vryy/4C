@@ -966,7 +966,10 @@ void Wear::Partitioned::redistribute_mat_interfaces()
       winterface->discret().export_column_nodes(*interfaces_[m]->discret().node_col_map());
       winterface->discret().export_column_elements(*interfaces_[m]->discret().element_col_map());
 
-      winterface->fill_complete(true);
+      winterface->fill_complete(Global::Problem::instance()->discretization_map(),
+          Global::Problem::instance()->binning_strategy_params(),
+          Global::Problem::instance()->output_control_file(),
+          Global::Problem::instance()->spatial_approximation_type(), true);
       winterface->print_parallel_distribution();
 
       if (get_comm().MyPID() == 0)

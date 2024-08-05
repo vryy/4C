@@ -11,6 +11,8 @@
 
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_contact_meshtying_noxinterface.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
@@ -95,7 +97,10 @@ void CONTACT::MtAbstractStrategy::redistribute_meshtying()
       interface_[i]->redistribute();
 
       // call fill complete again
-      interface_[i]->fill_complete(true, maxdof_);
+      interface_[i]->fill_complete(Global::Problem::instance()->discretization_map(),
+          Global::Problem::instance()->binning_strategy_params(),
+          Global::Problem::instance()->output_control_file(),
+          Global::Problem::instance()->spatial_approximation_type(), true, maxdof_);
 
       // print parallel distribution again
       if (get_comm().MyPID() == 0)
@@ -1207,7 +1212,9 @@ void CONTACT::MtAbstractStrategy::print_active_set() const
 void CONTACT::MtAbstractStrategy::visualize_gmsh(const int step, const int iter)
 {
   // visualization with gmsh
-  for (int i = 0; i < (int)interface_.size(); ++i) interface_[i]->visualize_gmsh(step, iter);
+  for (int i = 0; i < (int)interface_.size(); ++i)
+    interface_[i]->visualize_gmsh(
+        step, iter, Global::Problem::instance()->output_control_file()->file_name_only_prefix());
 }
 
 /*----------------------------------------------------------------------*

@@ -148,7 +148,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   {
     FOUR_C_THROW("writing energy not supported yet");
     //  TODO
-    //    std::string fileiter2 = Global::Problem::instance()->OutputControlFile()->file_name();
+    //    std::string fileiter2 = Global::Problem::instance()->output_control_file()->file_name();
     //    fileiter2.append(".fsienergy");
     //    logenergy_ = Teuchos::rcp(new std::ofstream(fileiter2.c_str()));
   }

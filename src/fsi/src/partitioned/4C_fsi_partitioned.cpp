@@ -139,7 +139,11 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
         (Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(mb_fluid_field()))
             ->ale_field()
             ->write_access_discretization(),
-        coupleddof, "FSICoupling", comm, Global::Problem::instance()->function_manager(), true);
+        coupleddof, "FSICoupling", comm, Global::Problem::instance()->function_manager(),
+        Global::Problem::instance()->binning_strategy_params(),
+        Global::Problem::instance()->discretization_map(),
+        Global::Problem::instance()->output_control_file(),
+        Global::Problem::instance()->spatial_approximation_type(), true);
   }
   else
   {

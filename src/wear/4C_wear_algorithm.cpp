@@ -494,7 +494,10 @@ void Wear::Algorithm::create_material_interface()
     }
 
     //-------------------- finalize the contact interface construction
-    interface->fill_complete(maxdof);
+    interface->fill_complete(Global::Problem::instance()->discretization_map(),
+        Global::Problem::instance()->binning_strategy_params(),
+        Global::Problem::instance()->output_control_file(),
+        Global::Problem::instance()->spatial_approximation_type(), maxdof);
 
   }  // for (int i=0; i<(int)contactconditions.size(); ++i)
   if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;

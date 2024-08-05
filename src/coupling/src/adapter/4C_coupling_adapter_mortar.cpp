@@ -49,7 +49,11 @@ void Coupling::Adapter::CouplingMortar::setup(
     const Teuchos::RCP<Core::FE::Discretization>& slavedis,
     const Teuchos::RCP<Core::FE::Discretization>& aledis, const std::vector<int>& coupleddof,
     const std::string& couplingcond, const Epetra_Comm& comm,
-    const Core::UTILS::FunctionManager& function_manager, const bool slavewithale,
+    const Core::UTILS::FunctionManager& function_manager,
+    const Teuchos::ParameterList& binning_params,
+    const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map,
+    Teuchos::RCP<Core::IO::OutputControl> output_control,
+    const Core::FE::ShapeFunctionType spatial_approximation_type, const bool slavewithale,
     const bool slidingale, const int nds_master, const int nds_slave)
 {
   // initialize maps for row nodes
@@ -113,7 +117,8 @@ void Coupling::Adapter::CouplingMortar::setup(
 
   // setup mortar interface
   setup_interface(masterdis, slavedis, coupleddof, mastergnodes, slavegnodes, masterelements,
-      slaveelements, comm, slavewithale, slidingale, nds_master, nds_slave);
+      slaveelements, comm, binning_params, discretization_map, output_control,
+      spatial_approximation_type, slavewithale, slidingale, nds_master, nds_slave);
 
   // all the following stuff has to be done once in setup
   // in order to get initial D_ and M_
@@ -251,21 +256,17 @@ void Coupling::Adapter::CouplingMortar::check_slave_dirichlet_overlap(
  | setup routine for mortar framework                        ehrl 08/13 |
  *----------------------------------------------------------------------*/
 void Coupling::Adapter::CouplingMortar::setup_interface(
-    const Teuchos::RCP<Core::FE::Discretization>& masterdis,  ///< master discretization
-    const Teuchos::RCP<Core::FE::Discretization>& slavedis,   ///< slave discretization
-    const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
-    const std::map<int, Core::Nodes::Node*>&
-        mastergnodes,  ///< master nodes, including ghosted nodes
-    const std::map<int, Core::Nodes::Node*>& slavegnodes,  ///< slave nodes, including ghosted nodes
-    const std::map<int, Teuchos::RCP<Core::Elements::Element>>&
-        masterelements,                                                         ///< master elements
-    const std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements,  ///< slave elements
-    const Epetra_Comm& comm,                                                    ///< communicator
-    const bool slavewithale,  ///< flag defining if slave is ALE
-    const bool slidingale,    ///< flag indicating sliding ALE case
-    const int nds_master,     ///< master dofset number
-    const int nds_slave       ///< slave dofset number
-)
+    const Teuchos::RCP<Core::FE::Discretization>& masterdis,
+    const Teuchos::RCP<Core::FE::Discretization>& slavedis, const std::vector<int>& coupleddof,
+    const std::map<int, Core::Nodes::Node*>& mastergnodes,
+    const std::map<int, Core::Nodes::Node*>& slavegnodes,
+    const std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
+    const std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements,
+    const Epetra_Comm& comm, const Teuchos::ParameterList& binning_params,
+    const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map,
+    Teuchos::RCP<Core::IO::OutputControl> output_control,
+    const Core::FE::ShapeFunctionType spatial_approximation_type, const bool slavewithale,
+    const bool slidingale, const int nds_master, const int nds_slave)
 {
   // vector coupleddof defines degree of freedom which are coupled (1: coupled; 0: not coupled),
   // e.g.:
@@ -291,7 +292,8 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
   input.set<int>("DIMENSION", spatial_dimension_);
 
   // create an empty mortar interface
-  interface_ = Mortar::Interface::create(0, comm, spatial_dimension_, input);
+  interface_ = Mortar::Interface::create(
+      0, comm, spatial_dimension_, input, output_control, spatial_approximation_type);
 
   // number of dofs per node based on the coupling vector coupleddof
   const int dof = coupleddof.size();
@@ -454,7 +456,8 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
     if (parallelRedist == Inpar::Mortar::ParallelRedist::redist_none or comm.NumProc() == 1)
       isFinalDistribution = true;
 
-    interface_->fill_complete(isFinalDistribution);
+    interface_->fill_complete(discretization_map, binning_params, output_control,
+        spatial_approximation_type, isFinalDistribution);
   }
 
   // set setup flag!
@@ -476,7 +479,8 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
     interface_->redistribute();
 
     // call fill complete again
-    interface_->fill_complete(true);
+    interface_->fill_complete(
+        discretization_map, binning_params, output_control, spatial_approximation_type, true);
 
     // print parallel distribution again
     interface_->print_parallel_distribution();

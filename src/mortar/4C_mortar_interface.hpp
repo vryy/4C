@@ -13,6 +13,7 @@
 
 #include "4C_comm_exporter.hpp"
 #include "4C_inpar_mortar.hpp"
+#include "4C_io_control.hpp"
 #include "4C_mortar_paramsinterface.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_pairedvector.hpp"
@@ -578,7 +579,9 @@ namespace Mortar
      *
      *  \author hiermeier \date 03/17 */
     static Teuchos::RCP<Interface> create(const int id, const Epetra_Comm& comm,
-        const int spatialDim, const Teuchos::ParameterList& imortar);
+        const int spatialDim, const Teuchos::ParameterList& imortar,
+        Teuchos::RCP<Core::IO::OutputControl> output_control,
+        Core::FE::ShapeFunctionType spatial_approximation_type);
 
     /*!
     \brief Standard constructor creating empty mortar interface
@@ -589,8 +592,10 @@ namespace Mortar
     \param spatialDim (in): Global problem dimension
     \param imortar (in): Global contact parameter list
     */
-    Interface(Teuchos::RCP<InterfaceDataContainer> interfaceData_ptr, const int id,
-        const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar);
+    Interface(Teuchos::RCP<InterfaceDataContainer> interfaceData_ptr, int id,
+        const Epetra_Comm& comm, int spatialDim, const Teuchos::ParameterList& imortar,
+        Teuchos::RCP<Core::IO::OutputControl> output_control,
+        Core::FE::ShapeFunctionType spatial_approximation_type);
 
     //! don't want = operator
     Interface operator=(const Interface& old) = delete;
@@ -1016,7 +1021,12 @@ namespace Mortar
 
     \return Filled()==true
     */
-    void fill_complete(const bool isFinalParallelDistribution, const int maxdof = 0,
+    void fill_complete(
+        const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map,
+        const Teuchos::ParameterList& binning_params,
+        Teuchos::RCP<Core::IO::OutputControl> output_control,
+        Core::FE::ShapeFunctionType spatial_approximation_type,
+        const bool isFinalParallelDistribution, const int maxdof = 0,
         const double meanVelocity = 0.0);
 
     /*!
@@ -1278,7 +1288,8 @@ namespace Mortar
     /*!
     \brief Ghost underlying volume elements
     */
-    void create_volume_ghosting();
+    void create_volume_ghosting(
+        const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map);
 
     /*!
     \brief Binary tree search algorithm for potentially coupling
@@ -1314,7 +1325,8 @@ namespace Mortar
     /*!
     \brief Visualize mortar stuff with gmsh (may be overloaded)
     */
-    virtual void visualize_gmsh(const int step, const int iter);
+    virtual void visualize_gmsh(
+        const int step, const int iter, const std::string& file_name_only_prefix);
 
     /*!
     \brief Print shape function type (enum)
@@ -1403,7 +1415,9 @@ namespace Mortar
     @return Binning strategy object ready to be used
     */
     Teuchos::RCP<Core::Binstrategy::BinningStrategy> setup_binning_strategy(
-        const double meanVelocity);
+        Teuchos::ParameterList binning_params, double meanVelocity,
+        Teuchos::RCP<Core::IO::OutputControl> output_control,
+        Core::FE::ShapeFunctionType spatial_approximation_type);
 
     //! @}
 
@@ -1616,8 +1630,10 @@ namespace Mortar
     \param[in] isFinalParallelDistribution Is this parallel distribution final?
     \param[in] meanVelocity Mean velocity of this interface (needed for contact with binning)
     */
-    void extend_interface_ghosting(
-        const bool isFinalParallelDistribution, const double meanVelocity);
+    void extend_interface_ghosting(const bool isFinalParallelDistribution,
+        const double meanVelocity, const Teuchos::ParameterList& binning_params,
+        Teuchos::RCP<Core::IO::OutputControl> output_control,
+        Core::FE::ShapeFunctionType spatial_approximation_type);
 
     //! @}
 
@@ -1733,7 +1749,8 @@ namespace Mortar
 
     Creates either a regular Core::FE::Discretization or a Discret::NurbsDiscretization.
     */
-    void create_interface_discretization();
+    void create_interface_discretization(Teuchos::RCP<Core::IO::OutputControl> output_control,
+        Core::FE::ShapeFunctionType spatial_approximation_type);
 
     /*!
     \brief Set type of shape functions

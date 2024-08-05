@@ -9,7 +9,6 @@
 
 #include "4C_mortar_projector.hpp"
 
-#include "4C_contact_element.hpp"
 #include "4C_contact_node.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
@@ -18,7 +17,6 @@
 #include "4C_mortar_calc_utils.hpp"
 #include "4C_mortar_defines.hpp"
 #include "4C_mortar_element.hpp"
-#include "4C_mortar_interface.hpp"
 #include "4C_mortar_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN

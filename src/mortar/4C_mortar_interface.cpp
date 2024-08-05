@@ -13,7 +13,6 @@
 #include "4C_contact_interpolator.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_nurbs_discretization.hpp"
-#include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
@@ -32,7 +31,6 @@
 #include "4C_mortar_node.hpp"
 #include "4C_mortar_utils.hpp"
 #include "4C_poroelast_scatra_utils.hpp"
-#include "4C_poroelast_utils.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_graph_based.hpp"
 
@@ -148,19 +146,24 @@ Mortar::Interface::Interface(Teuchos::RCP<Mortar::InterfaceDataContainer> interf
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Mortar::Interface> Mortar::Interface::create(const int id, const Epetra_Comm& comm,
-    const int spatialDim, const Teuchos::ParameterList& imortar)
+    const int spatialDim, const Teuchos::ParameterList& imortar,
+    Teuchos::RCP<Core::IO::OutputControl> output_control,
+    const Core::FE::ShapeFunctionType spatial_approximation_type)
 {
   Teuchos::RCP<Mortar::InterfaceDataContainer> interfaceData =
       Teuchos::rcp(new Mortar::InterfaceDataContainer());
 
-  return Teuchos::rcp(new Mortar::Interface(interfaceData, id, comm, spatialDim, imortar));
+  return Teuchos::rcp(new Mortar::Interface(
+      interfaceData, id, comm, spatialDim, imortar, output_control, spatial_approximation_type));
 }
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
 Mortar::Interface::Interface(Teuchos::RCP<InterfaceDataContainer> interfaceData, const int id,
-    const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar)
+    const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar,
+    Teuchos::RCP<Core::IO::OutputControl> output_control,
+    const Core::FE::ShapeFunctionType spatial_approximation_type)
     : interface_data_(std::move(interfaceData)),
       id_(interface_data_->id()),
       comm_(interface_data_->comm_ptr()),
@@ -219,13 +222,15 @@ Mortar::Interface::Interface(Teuchos::RCP<InterfaceDataContainer> interfaceData,
 
   procmap_.clear();
 
-  create_interface_discretization();
+  create_interface_discretization(output_control, spatial_approximation_type);
   set_shape_function_type();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Interface::create_interface_discretization()
+void Mortar::Interface::create_interface_discretization(
+    Teuchos::RCP<Core::IO::OutputControl> output_control,
+    const Core::FE::ShapeFunctionType spatial_approximation_type)
 {
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(get_comm().Clone());
 
@@ -236,8 +241,7 @@ void Mortar::Interface::create_interface_discretization()
   // Create the required type of discretization
   if (nurbs_)
   {
-    idiscret_ = Teuchos::rcp(new Core::FE::Nurbs::NurbsDiscretization(
-        dis_name.str(), comm, Global::Problem::instance()->n_dim()));
+    idiscret_ = Teuchos::rcp(new Core::FE::Nurbs::NurbsDiscretization(dis_name.str(), comm, dim_));
 
     /*
     Note: The NurbsDiscretization needs a Knotvector to be able to write output. This is probably
@@ -252,14 +256,12 @@ void Mortar::Interface::create_interface_discretization()
   }
   else
   {
-    idiscret_ = Teuchos::rcp(
-        new Core::FE::Discretization(dis_name.str(), comm, Global::Problem::instance()->n_dim()));
+    idiscret_ = Teuchos::rcp(new Core::FE::Discretization(dis_name.str(), comm, dim_));
   }
 
   // Prepare discretization writer
-  idiscret_->set_writer(Teuchos::rcp(new Core::IO::DiscretizationWriter(idiscret_,
-      Global::Problem::instance()->output_control_file(),
-      Global::Problem::instance()->spatial_approximation_type())));
+  idiscret_->set_writer(Teuchos::rcp(
+      new Core::IO::DiscretizationWriter(idiscret_, output_control, spatial_approximation_type)));
   FOUR_C_ASSERT(not idiscret_->writer().is_null(), "Setup of discretization writer failed.");
 }
 
@@ -529,6 +531,10 @@ void Mortar::Interface::fill_complete_new(const bool isFinalParallelDistribution
  |  finalize construction of interface (public)              mwgee 10/07|
  *----------------------------------------------------------------------*/
 void Mortar::Interface::fill_complete(
+    const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map,
+    const Teuchos::ParameterList& binning_params,
+    Teuchos::RCP<Core::IO::OutputControl> output_control,
+    const Core::FE::ShapeFunctionType spatial_approximation_type,
     const bool isFinalParallelDistribution, const int maxdof, const double meanVelocity)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Mortar::Interface::fill_complete");
@@ -571,7 +577,8 @@ void Mortar::Interface::fill_complete(
   // get standard element column map (overlap=1)
   oldelecolmap_ = Teuchos::rcp(new Epetra_Map(*(discret().element_col_map())));
 
-  extend_interface_ghosting(isFinalParallelDistribution, meanVelocity);
+  extend_interface_ghosting(isFinalParallelDistribution, meanVelocity, binning_params,
+      output_control, spatial_approximation_type);
 
   // make sure discretization is complete
   discret().fill_complete(isFinalParallelDistribution, false, false);
@@ -589,7 +596,7 @@ void Mortar::Interface::fill_complete(
   {
     if (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM") ==
         Inpar::Mortar::algorithm_gpts)
-      create_volume_ghosting();
+      create_volume_ghosting(discretization_map);
   }
 
   // need row and column maps of slave and master nodes / elements / dofs
@@ -967,7 +974,9 @@ void Mortar::Interface::initialize_data_container()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_binning_strategy(
-    const double meanVelocity)
+    Teuchos::ParameterList binning_params, const double meanVelocity,
+    Teuchos::RCP<Core::IO::OutputControl> output_control,
+    const Core::FE::ShapeFunctionType spatial_approximation_type)
 {
   // Initialize eXtendedAxisAlignedBoundingBox (XAABB)
   Core::LinAlg::Matrix<3, 2> XAABB(false);
@@ -1044,13 +1053,10 @@ Teuchos::RCP<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_binnin
     domain_bounding_box_stream << globmax[dim] + cutoff << " ";
   }
 
-  Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-
   binning_params.set<double>("BIN_SIZE_LOWER_BOUND", cutoff);
   binning_params.set<std::string>("DOMAINBOUNDINGBOX", domain_bounding_box_stream.str());
   Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
-      "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
-      binning_params);
+      "spatial_approximation_type", spatial_approximation_type, binning_params);
 
   auto element_filter = [](const Core::Elements::Element* element)
   { return Core::Binstrategy::Utils::SpecialElement::none; };
@@ -1058,11 +1064,9 @@ Teuchos::RCP<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_binnin
   auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
   auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
 
-  Teuchos::RCP<Core::Binstrategy::BinningStrategy> binningstrategy =
-      Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
-          Global::Problem::instance()->output_control_file(), get_comm(), get_comm().MyPID(),
-          element_filter, rigid_sphere_radius, correct_beam_center_node));
-
+  Teuchos::RCP<Core::Binstrategy::BinningStrategy> binningstrategy = Teuchos::rcp(
+      new Core::Binstrategy::BinningStrategy(binning_params, output_control, get_comm(),
+          get_comm().MyPID(), element_filter, rigid_sphere_radius, correct_beam_center_node));
   return binningstrategy;
 }
 
@@ -1227,8 +1231,10 @@ void Mortar::Interface::extend_interface_ghosting_safely(const double meanVeloci
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Interface::extend_interface_ghosting(
-    const bool isFinalParallelDistribution, const double meanVelocity)
+void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDistribution,
+    const double meanVelocity, const Teuchos::ParameterList& binning_params,
+    Teuchos::RCP<Core::IO::OutputControl> output_control,
+    const Core::FE::ShapeFunctionType spatial_approximation_type)
 {
   //*****REDUNDANT SLAVE AND MASTER STORAGE*****
   if (interface_data_->get_extend_ghosting() == Inpar::Mortar::ExtendGhosting::redundant_all)
@@ -1483,8 +1489,8 @@ void Mortar::Interface::extend_interface_ghosting(
       discret().fill_complete(false, isFinalParallelDistribution, false);
 
       // Create the binning strategy
-      Teuchos::RCP<Core::Binstrategy::BinningStrategy> binningstrategy =
-          setup_binning_strategy(meanVelocity);
+      Teuchos::RCP<Core::Binstrategy::BinningStrategy> binningstrategy = setup_binning_strategy(
+          binning_params, meanVelocity, output_control, spatial_approximation_type);
 
       // fill master and slave elements into bins
       std::map<int, std::set<int>> slavebinelemap;
@@ -4176,7 +4182,8 @@ void Mortar::Interface::detect_tied_slave_nodes(int& founduntied)
 /*----------------------------------------------------------------------*
  | create volume ghosting (public)                            ager 06/15|
  *----------------------------------------------------------------------*/
-void Mortar::Interface::create_volume_ghosting()
+void Mortar::Interface::create_volume_ghosting(
+    const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map)
 {
   Inpar::CONTACT::Problemtype prb = (Inpar::CONTACT::Problemtype)interface_params().get<int>(
       "PROBTYPE", (int)Inpar::CONTACT::other);
@@ -4186,9 +4193,13 @@ void Mortar::Interface::create_volume_ghosting()
     case Inpar::CONTACT::ssi:
     case Inpar::CONTACT::ssi_elch:
     {
-      std::vector<std::string> tar_dis;
-      tar_dis.emplace_back("structure");
-      tar_dis.emplace_back("scatra");
+      std::vector<Teuchos::RCP<Core::FE::Discretization>> tar_dis;
+      FOUR_C_ASSERT(discretization_map.find("structure") != discretization_map.end(),
+          "Could not find discretization 'structure'");
+      FOUR_C_ASSERT(discretization_map.find("scatra") != discretization_map.end(),
+          "Could not find discretization 'scatra'");
+      tar_dis.emplace_back(discretization_map.at("structure"));
+      tar_dis.emplace_back(discretization_map.at("scatra"));
       std::vector<std::pair<int, int>> material_map;
       material_map.emplace_back(std::pair<int, int>(0, 1));
       material_map.emplace_back(std::pair<int, int>(1, 0));
@@ -4196,16 +4207,19 @@ void Mortar::Interface::create_volume_ghosting()
       Mortar::UTILS::create_volume_ghosting(discret(), tar_dis, material_map);
 
       // we need to redistribute the scalar field since distribution has changed during setup
-      auto structdis = Global::Problem::instance()->get_dis("structure");
-      structdis->redistribute_state(1, "scalarfield");
+      discretization_map.at("structure")->redistribute_state(1, "scalarfield");
 
       break;
     }
     case Inpar::CONTACT::tsi:
     {
-      std::vector<std::string> tar_dis;
-      tar_dis.emplace_back("structure");
-      tar_dis.emplace_back("thermo");
+      std::vector<Teuchos::RCP<Core::FE::Discretization>> tar_dis;
+      FOUR_C_ASSERT(discretization_map.find("structure") != discretization_map.end(),
+          "Could not find discretization 'structure'");
+      FOUR_C_ASSERT(discretization_map.find("thermo") != discretization_map.end(),
+          "Could not find discretization 'thermo'");
+      tar_dis.emplace_back(discretization_map.at("structure"));
+      tar_dis.emplace_back(discretization_map.at("thermo"));
       std::vector<std::pair<int, int>> material_map;
       material_map.emplace_back(std::pair<int, int>(0, 1));
       material_map.emplace_back(std::pair<int, int>(1, 0));
@@ -4215,8 +4229,10 @@ void Mortar::Interface::create_volume_ghosting()
     }
     default:
     {
-      std::vector<std::string> tar_dis;
-      tar_dis.emplace_back("structure");
+      std::vector<Teuchos::RCP<Core::FE::Discretization>> tar_dis;
+      FOUR_C_ASSERT(discretization_map.find("structure") != discretization_map.end(),
+          "Could not find discretization 'structure'");
+      tar_dis.emplace_back(discretization_map.at("structure"));
       Mortar::UTILS::create_volume_ghosting(
           discret(), tar_dis, std::vector<std::pair<int, int>>(0));
 

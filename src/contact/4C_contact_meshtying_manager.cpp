@@ -185,7 +185,9 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
     }
 
     // create an empty meshtying interface and store it in this Manager
-    interfaces.push_back(Mortar::Interface::create(groupid1, get_comm(), spatialDim, mtparams));
+    interfaces.push_back(Mortar::Interface::create(groupid1, get_comm(), spatialDim, mtparams,
+        Global::Problem::instance()->output_control_file(),
+        Global::Problem::instance()->spatial_approximation_type()));
 
     // get it again
     Teuchos::RCP<Mortar::Interface> interface = interfaces.back();
@@ -306,7 +308,10 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
       if (parallelRedist == Inpar::Mortar::ParallelRedist::redist_none or comm_->NumProc() == 1)
         isFinalDistribution = true;
 
-      interface->fill_complete(isFinalDistribution, maxdof);
+      interface->fill_complete(Global::Problem::instance()->discretization_map(),
+          Global::Problem::instance()->binning_strategy_params(),
+          Global::Problem::instance()->output_control_file(),
+          Global::Problem::instance()->spatial_approximation_type(), isFinalDistribution, maxdof);
     }
   }
   if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;

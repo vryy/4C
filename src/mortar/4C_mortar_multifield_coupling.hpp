@@ -14,7 +14,12 @@
 
 #include "4C_config.hpp"
 
+#include "4C_fem_general_shape_function_type.hpp"
+#include "4C_io_control.hpp"
+#include "4C_utils_function_manager.hpp"
+
 #include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -42,9 +47,14 @@ namespace Mortar
 
     /// add a new discretization to perform coupling on
     void push_back_coupling(const Teuchos::RCP<Core::FE::Discretization>& dis,  ///< discretization
-        const int nodeset,                     ///< nodeset to couple
-        const std::vector<int> dofs_to_couple  ///< dofs to couple
-    );
+        const int nodeset,                       ///< nodeset to couple
+        const std::vector<int>& dofs_to_couple,  ///< dofs to couple
+        const Teuchos::ParameterList& mortar_params, const Teuchos::ParameterList& contact_params,
+        const Teuchos::ParameterList& binning_params,
+        const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map,
+        const Core::UTILS::FunctionManager& function_manager,
+        Teuchos::RCP<Core::IO::OutputControl> output_control,
+        Core::FE::ShapeFunctionType shape_function_typ, int ndim);
 
     /// Perform condensation in all blocks of the matrix
     void condense_matrix(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& mat);

@@ -20,6 +20,7 @@
 #include "4C_contact_nitsche_utils.hpp"
 #include "4C_contact_node.hpp"
 #include "4C_contact_selfcontact_binarytree_unbiased.hpp"
+#include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
@@ -130,7 +131,9 @@ CONTACT::Interface::Interface(const Teuchos::RCP<CONTACT::InterfaceDataContainer
 CONTACT::Interface::Interface(const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData,
     const int id, const Epetra_Comm& comm, const int spatialDim,
     const Teuchos::ParameterList& icontact, bool selfcontact)
-    : Mortar::Interface(interfaceData, id, comm, spatialDim, icontact),
+    : Mortar::Interface(interfaceData, id, comm, spatialDim, icontact,
+          Global::Problem::instance()->output_control_file(),
+          Global::Problem::instance()->spatial_approximation_type()),
       interface_data_(
           Teuchos::rcp_dynamic_cast<CONTACT::InterfaceDataContainer>(interfaceData, true)),
       selfcontact_(interface_data_->is_self_contact()),
@@ -656,7 +659,9 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
 
       // Create the binning strategy
       RCP<Core::Binstrategy::BinningStrategy> binningstrategy =
-          setup_binning_strategy(meanVelocity);
+          setup_binning_strategy(Global::Problem::instance()->binning_strategy_params(),
+              meanVelocity, Global::Problem::instance()->output_control_file(),
+              Global::Problem::instance()->spatial_approximation_type());
 
       // fill master and slave elements into bins
       std::map<int, std::set<int>> slavebinelemap;

@@ -206,13 +206,13 @@ namespace Mortar
   {
     /*!
     \brief copy the ghosting of dis_src to all discretizations with names in
-           vector dis_tar. They are fetched from the global problem, which is
-           not very safe, so be sure, what you do. Material pointers can be
-           added according to link_materials
+           vector voldis. Material pointers can be added according to
+           link_materials
     */
     void create_volume_ghosting(const Core::FE::Discretization& dis_src,
-        const std::vector<std::string> dis_tar, std::vector<std::pair<int, int>> material_links,
-        bool check_on_in = true, bool check_on_exit = true);
+        const std::vector<Teuchos::RCP<Core::FE::Discretization>>& voldis,
+        std::vector<std::pair<int, int>> material_links, bool check_on_in = true,
+        bool check_on_exit = true);
 
 
     /*!

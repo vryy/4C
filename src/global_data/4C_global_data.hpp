@@ -495,6 +495,11 @@ namespace Global
 
     auto discretization_range() const { return std_20::ranges::views::all(discretizationmap_); }
 
+    const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map() const
+    {
+      return discretizationmap_;
+    }
+
     /// tell number of known fields
     unsigned num_fields() const { return discretizationmap_.size(); }
 

@@ -47,10 +47,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::STRATEGY::Factory::setup()
+void CONTACT::STRATEGY::Factory::setup(const int dim)
 {
   check_init();
-  Mortar::STRATEGY::Factory::setup();
+  Mortar::STRATEGY::Factory::setup(dim);
 
   set_is_setup();
 }
@@ -1120,7 +1120,10 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
     }
 
     //-------------------- finalize the contact interface construction
-    interface->fill_complete(true, maxdof);
+    interface->fill_complete(Global::Problem::instance()->discretization_map(),
+        Global::Problem::instance()->binning_strategy_params(),
+        Global::Problem::instance()->output_control_file(),
+        Global::Problem::instance()->spatial_approximation_type(), true, maxdof);
 
     if (isporo)
       find_poro_interface_types(

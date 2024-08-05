@@ -40,7 +40,7 @@ namespace CONTACT
     class Factory : public Mortar::STRATEGY::Factory
     {
      public:
-      void setup() override;
+      void setup(int dim) override;
 
       /*! \brief Read and check contact input parameters
        *

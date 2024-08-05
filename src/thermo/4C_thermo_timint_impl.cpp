@@ -83,7 +83,11 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
 
       std::vector<int> coupleddof(1, 1);
       adaptermeshtying_->setup(actdis, actdis, Teuchos::null, coupleddof, "Mortar",
-          actdis->get_comm(), Global::Problem::instance()->function_manager(), false, false, 0, 0);
+          actdis->get_comm(), Global::Problem::instance()->function_manager(),
+          Global::Problem::instance()->binning_strategy_params(),
+          Global::Problem::instance()->discretization_map(),
+          Global::Problem::instance()->output_control_file(),
+          Global::Problem::instance()->spatial_approximation_type(), false, false, 0, 0);
       adaptermeshtying_->evaluate();
     }
   }

@@ -69,13 +69,8 @@ namespace Mortar
        * \note Since this is an abstract class, the setup flag stays false. It has to be set by
        * the Setup routing of the derived class.
        */
-      virtual void setup();
 
-      /*! \brief print strategy banner
-       *
-       *  \param[in] soltype contact solving strategy type
-       */
-      static void print_strategy_banner(const enum Inpar::CONTACT::SolvingStrategy soltype);
+      virtual void setup(int dim);
 
       /*! \brief Create the desired search tree object
        *
