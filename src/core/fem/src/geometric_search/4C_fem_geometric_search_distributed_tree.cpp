@@ -80,7 +80,7 @@ namespace Core::GeometricSearch
       const int gid_predicate = predicates[i_offset].first;
       for (int j = offset_full[i_offset]; j < offset_full[i_offset + 1]; j++)
       {
-        pairs.emplace_back(GlobalCollisionSearchResult{.lid_predicate = i_offset,
+        pairs.emplace_back(GlobalCollisionSearchResult{.lid_predicate = static_cast<int>(i_offset),
             .gid_predicate = gid_predicate,
             .lid_primitive = indices_ranks_full[j].first,
             .gid_primitive = indices_ranks_full[j].second.first,
