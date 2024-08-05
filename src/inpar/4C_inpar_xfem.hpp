@@ -320,8 +320,6 @@ namespace Inpar
 
     /// set specific xfem conditions
     void SetValidConditions(
-        const std::vector<Teuchos::RCP<Input::LineComponent>> &dirichletbundcomponents,
-        const std::vector<Teuchos::RCP<Input::LineComponent>> &neumanncomponents,
         std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>> &condlist);
 
   }  // namespace XFEM

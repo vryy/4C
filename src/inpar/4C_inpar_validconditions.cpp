@@ -1150,7 +1150,7 @@ Input::ValidConditions()
 
   Inpar::Immersed::SetValidConditions(condlist);
 
-  Inpar::XFEM::SetValidConditions(dirichletbundcomponents, neumanncomponents, condlist);
+  Inpar::XFEM::SetValidConditions(condlist);
 
   Inpar::BioFilm::SetValidConditions(condlist);
 
