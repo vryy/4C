@@ -1,16 +1,36 @@
 # Automatically create a library for the sources and headers in the current directory. The target
-# will be named based on the folder name and any parent modules. This name is returned in the variable
+# will be named based on the folder name. If this function is called revursively inside an already
+# defined module, the sources are appended to the already defined module. The module name is returned in the variable
 # AUTO_DEFINED_MODULE_NAME which is set at the call site.
 function(four_c_auto_define_module)
-  # Get a name based on the current folder
-  get_filename_component(_target ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
-  # Check if we are currently defining a part of a parent module. In this case, concatenate the module names
-  if(NOT "${FOUR_C_CURRENTLY_DEFINED_PARENT_MODULE}" STREQUAL "")
-    set(_target "${FOUR_C_CURRENTLY_DEFINED_PARENT_MODULE}_${_target}")
+  if("${FOUR_C_CURRENTLY_DEFINED_PARENT_MODULE}" STREQUAL "")
+    # No parent module is set, so this must be the first call in the hierarchy:
+    # create the necessary targets with a name based on the current folder
+    get_filename_component(_target ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+    message(VERBOSE "Defining module target: ${_target}")
+
+    # Define an interface library for usage requirements only
+    add_library(${_target}_deps INTERFACE)
+    # Link against all default external libraries
+    four_c_link_default_external_libraries(${_target}_deps INTERFACE)
+
+    # Define an object library containing the actual sources.
+    # We need to add a dummy file to have at least one file in case a module does not have any compiled sources.
+    add_library(${_target}_objs OBJECT ${PROJECT_SOURCE_DIR}/cmake/dummy.cpp)
+    target_link_libraries(${_target}_objs PUBLIC ${_target}_deps)
+    # Add all global compile settings as PRIVATE. We only want to use them to compile our own files and not force
+    # them on other users of the library.
+    target_link_libraries(${_target}_objs PRIVATE four_c_private_compile_interface)
+
+    # Collect all modules in the global library
+    target_link_libraries(${FOUR_C_LIBRARY_NAME} PUBLIC ${_target}_deps)
+    target_link_libraries(${FOUR_C_LIBRARY_NAME} PRIVATE ${_target}_objs)
+  else()
+    # Targets are already defined in parent scope, so we use the same name
+    set(_target "${FOUR_C_CURRENTLY_DEFINED_PARENT_MODULE}")
+    message(VERBOSE "Appending to module target: ${_target}")
   endif()
-
-  message(VERBOSE "Defining module target: ${_target}")
 
   list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
@@ -24,6 +44,7 @@ function(four_c_auto_define_module)
     LIST_DIRECTORIES false
     CONFIGURE_DEPENDS *.h *.hpp
     )
+
   # Remove headers that only contain template instantiations
   list(
     FILTER
@@ -33,18 +54,25 @@ function(four_c_auto_define_module)
     "_fwd\.h(pp)?|\.inst\.[hH]"
     )
 
-  four_c_add_library(
-    ${_target}
-    SOURCES
-    ${_sources}
-    HEADERS
-    ${_headers}
+  # Add the headers as a file set to the interface library. This will automatically add the current directory as a search directory.
+  # Since we append sources to a target successively, we need to add multiple file sets with a unique name. Use
+  # the current directory name for this.
+  string(REGEX REPLACE "[^a-zA-Z0-9]" "_" _file_set_name "${CMAKE_CURRENT_SOURCE_DIR}")
+  string(TOLOWER "${_file_set_name}" _file_set_name)
+  string(SUBSTRING "${_file_set_name}" 1 -1 _file_set_name)
+
+  target_sources(
+    ${_target}_deps
+    INTERFACE FILE_SET
+              ${_file_set_name}
+              TYPE
+              HEADERS
+              FILES
+              ${_headers}
     )
 
-  # Check if we are currently defining a part of a parent module and add ourselves as a dependency.
-  if(NOT "${FOUR_C_CURRENTLY_DEFINED_PARENT_MODULE}" STREQUAL "")
-    four_c_add_dependency(${FOUR_C_CURRENTLY_DEFINED_PARENT_MODULE} ${_target})
-  endif()
+  # Add the compiled sources to the object library
+  target_sources(${_target}_objs PRIVATE ${_sources})
 
   # Now check if there are more directories that contain CMakeLists.txt. If yes, we also add those.
   # For this action, we become the parent module of the submodules we are about to define.
@@ -63,10 +91,6 @@ function(four_c_auto_define_module)
   endforeach()
 
   list(POP_BACK CMAKE_MESSAGE_INDENT)
-
-  # Collect all modules in the global library
-  target_link_libraries(${FOUR_C_LIBRARY_NAME} PUBLIC ${_target}_deps)
-  target_link_libraries(${FOUR_C_LIBRARY_NAME} PRIVATE $<TARGET_NAME_IF_EXISTS:${_target}_objs>)
 
   # Simulate a "return" by setting a variable at the call site
   set(AUTO_DEFINED_MODULE_NAME
