@@ -874,7 +874,8 @@ void Core::LinAlg::SparseMatrix::un_complete()
       FOUR_C_ASSERT(idx[c] != -1, "illegal gid");
     }
     int rowgid = rowmap.GID(i);
-    Core::LinAlg::InsertGlobalValues(mat, rowgid, NumEntries, Values, idx.data());
+    err = mat->InsertGlobalValues(rowgid, NumEntries, Values, idx.data());
+    if (err) FOUR_C_THROW("InsertGlobalValues err=%d", err);
   }
   sysmat_ = mat;
   graph_ = Teuchos::null;
