@@ -17,7 +17,6 @@
 #include "4C_config.hpp"
 
 #include "4C_cut_enum.hpp"
-#include "4C_cut_memory_manager.hpp"
 #include "4C_cut_tolerance.hpp"
 #include "4C_cut_utils.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
