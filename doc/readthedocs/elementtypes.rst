@@ -632,44 +632,6 @@ SOLIDH8FBAR_DEPRECATED
 | lambda (opt.)     |  1 x number |
 +-------------------+-------------+
 
-.. _structuresolidh8fbarscatra:
-
-SOLIDH8FBARSCATRA_DEPRECATED
-^^^^^^^^^^^^^^^^^
-
-*Shapes:*
-
-- :ref:`HEX8 <hex8>` (8 nodes)
-
-**Parameters**
-
-+-------------------+-------------+
-| Parameter         | Values      |
-+===================+=============+
-| MAT               |  1 x number |
-+-------------------+-------------+
-| KINEM             |  1 x string |
-+-------------------+-------------+
-| TYPE              |  1 x string |
-+-------------------+-------------+
-| AXI (opt.)        |  3 x number |
-+-------------------+-------------+
-| CIR (opt.)        |  3 x number |
-+-------------------+-------------+
-| FIBER1 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER2 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER3 (opt.)     |  3 x number |
-+-------------------+-------------+
-| GROWTHTRIG (opt.) |  1 x number |
-+-------------------+-------------+
-| HU (opt.)         |  1 x number |
-+-------------------+-------------+
-| RAD (opt.)        |  3 x number |
-+-------------------+-------------+
-| lambda (opt.)     |  1 x number |
-+-------------------+-------------+
 
 .. _structuresolidh8fbarthermo:
 
@@ -1002,50 +964,6 @@ SOLIDSCATRA
 | FIBER3 (opt.)         |  3 x number |
 +-----------------------+-------------+
 
-.. _structuresolidh8scatra:
-
-SOLIDH8SCATRA_DEPRECATED
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-Note: This element is deprecated and should not be used. Use SOLIDSCATRA instead.
-
-*Shapes:*
-
-- :ref:`HEX8 <hex8>` (8 nodes)
-
-**Parameters**
-
-+-------------------+-------------+
-| Parameter         | Values      |
-+===================+=============+
-| MAT               |  1 x number |
-+-------------------+-------------+
-| KINEM             |  1 x string |
-+-------------------+-------------+
-| EAS               |  1 x string |
-+-------------------+-------------+
-| TYPE              |  1 x string |
-+-------------------+-------------+
-| AXI (opt.)        |  3 x number |
-+-------------------+-------------+
-| CIR (opt.)        |  3 x number |
-+-------------------+-------------+
-| FIBER1 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER2 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER3 (opt.)     |  3 x number |
-+-------------------+-------------+
-| GROWTHTRIG (opt.) |  1 x number |
-+-------------------+-------------+
-| HU (opt.)         |  1 x number |
-+-------------------+-------------+
-| RAD (opt.)        |  3 x number |
-+-------------------+-------------+
-| STRENGTH (opt.)   |  1 x number |
-+-------------------+-------------+
-| lambda (opt.)     |  1 x number |
-+-------------------+-------------+
 
 .. _structuresolidsh18:
 
@@ -1473,89 +1391,7 @@ SOLIDT10THERMO
 | lambda (opt.)     |  1 x number |
 +-------------------+-------------+
 
-.. _structuresolidt4scatra:
 
-SOLIDT4SCATRA_DEPRECATED
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-Note: This element is deprecated and should not be used. Use SOLIDSCATRA instead.
-
-*Shapes:*
-
-- :ref:`TET4 <tet4>` (4 nodes)
-
-**Parameters**
-
-+-------------------+-------------+
-| Parameter         | Values      |
-+===================+=============+
-| MAT               |  1 x number |
-+-------------------+-------------+
-| KINEM             |  1 x string |
-+-------------------+-------------+
-| TYPE              |  1 x string |
-+-------------------+-------------+
-| AXI (opt.)        |  3 x number |
-+-------------------+-------------+
-| CIR (opt.)        |  3 x number |
-+-------------------+-------------+
-| FIBER1 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER2 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER3 (opt.)     |  3 x number |
-+-------------------+-------------+
-| GROWTHTRIG (opt.) |  1 x number |
-+-------------------+-------------+
-| HU (opt.)         |  1 x number |
-+-------------------+-------------+
-| RAD (opt.)        |  3 x number |
-+-------------------+-------------+
-| lambda (opt.)     |  1 x number |
-+-------------------+-------------+
-
-.. _structuresolidt10scatra:
-
-SOLIDT10SCATRA_DEPRECATED
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-Note: This element is deprecated and should not be used. Use SOLIDSCATRA instead.
-
-*Shapes:*
-
-- :ref:`TET10 <tet10>` (10 nodes)
-
-**Parameters**
-
-+-------------------+-------------+
-| Parameter         | Values      |
-+===================+=============+
-| MAT               |  1 x number |
-+-------------------+-------------+
-| KINEM             |  1 x string |
-+-------------------+-------------+
-| TYPE              |  1 x string |
-+-------------------+-------------+
-| AXI (opt.)        |  3 x number |
-+-------------------+-------------+
-| CIR (opt.)        |  3 x number |
-+-------------------+-------------+
-| FIBER1 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER2 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER3 (opt.)     |  3 x number |
-+-------------------+-------------+
-| GROWTHTRIG (opt.) |  1 x number |
-+-------------------+-------------+
-| HU (opt.)         |  1 x number |
-+-------------------+-------------+
-| RAD (opt.)        |  3 x number |
-+-------------------+-------------+
-| STRENGTH (opt.)   |  1 x number |
-+-------------------+-------------+
-| lambda (opt.)     |  1 x number |
-+-------------------+-------------+
 
 .. _structuresolidw6:
 
@@ -1676,46 +1512,6 @@ Note: This element is deprecated and should not be used. Use SOLID instead.
 | lambda (opt.)     |  1 x number |
 +-------------------+-------------+
 
-.. _structuresolidw6scatra:
-
-SOLIDW6SCATRA_DEPRECATED
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-Note: This element is deprecated and should not be used. Use SOLIDSCATRA instead.
-
-*Shapes:*
-
-- :ref:`WEDGE6 <wedge6>` (6 nodes)
-
-**Parameters**
-
-+-------------------+-------------+
-| Parameter         | Values      |
-+===================+=============+
-| MAT               |  1 x number |
-+-------------------+-------------+
-| KINEM             |  1 x string |
-+-------------------+-------------+
-| TYPE              |  1 x string |
-+-------------------+-------------+
-| AXI (opt.)        |  3 x number |
-+-------------------+-------------+
-| CIR (opt.)        |  3 x number |
-+-------------------+-------------+
-| FIBER1 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER2 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER3 (opt.)     |  3 x number |
-+-------------------+-------------+
-| GROWTHTRIG (opt.) |  1 x number |
-+-------------------+-------------+
-| HU (opt.)         |  1 x number |
-+-------------------+-------------+
-| RAD (opt.)        |  3 x number |
-+-------------------+-------------+
-| lambda (opt.)     |  1 x number |
-+-------------------+-------------+
 
 .. _structuretorsion3:
 
