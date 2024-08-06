@@ -112,7 +112,6 @@ namespace Core::UTILS
    * \f$ \mathbf{x} \f$ is the spatial coordinate with `dim` components and where \f$ a_1(t), ...,
    * a_k(t) \f$ are time-dependent FunctionVariable objects.
    */
-  template <int dim>
   class SymbolicFunctionOfSpaceTime : public FunctionOfSpaceTime
   {
    public:
@@ -225,7 +224,6 @@ namespace Core::UTILS
    *
    * It is possible to predefine values of constants in the input file.
    */
-  template <int dim>
   class SymbolicFunctionOfAnything : public FunctionOfAnything
   {
    public:
@@ -261,12 +259,10 @@ namespace Core::UTILS
   };
 
   /// try to create SymbolicFunctionOfAnything from a given line definition
-  template <int dim>
   Teuchos::RCP<FunctionOfAnything> TryCreateSymbolicFunctionOfAnything(
       const std::vector<Input::LineDefinition>& function_line_defs);
 
   /// create a vector function from multiple expressions
-  template <int dim>
   Teuchos::RCP<FunctionOfSpaceTime> TryCreateSymbolicFunctionOfSpaceTime(
       const std::vector<Input::LineDefinition>& function_line_defs);
 }  // namespace Core::UTILS
