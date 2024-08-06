@@ -20,8 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /* Beam contact algorithm options                                       */
 /************************************************************************/
 #define RELCONSTRTOL /* flag for relative evaluation of the constraint tolerance */
-// #define MEASURETIME             /* flag for time measurement of octree setup and intermediate
-//  steps */ #define OCTREEDEBUG             /* flag for debug options in octree search routine*/
+// #define MEASURETIME /* flag for time measurement of octree setup and intermediate steps */
 
 /************************************************************************/
 /* Beam contact algorithm parameters                                    */
