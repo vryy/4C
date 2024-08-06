@@ -650,12 +650,12 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     // evaluate Base::unitnormal_ , Base::deriv_, ...
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_n_, Base::drs_, Base::xsi_, Base::xyze_n_, intpoints, gpid, nullptr,
-        nullptr, IsNurbs<distype>::isnurbs);
+        nullptr, Core::FE::is_nurbs<distype>);
 
     // evaluate Base::unitnormal_ , Base::deriv_, ...
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, nullptr, nullptr,
-        IsNurbs<distype>::isnurbs);
+        Core::FE::is_nurbs<distype>);
 
     const double timefac = Base::fldparatimint_->time_fac();
     const double timefacpre = Base::fldparatimint_->time_fac_pre();
@@ -1921,7 +1921,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
-  if (IsNurbs<distype>::isnurbs)
+  if (Core::FE::is_nurbs<distype>)
   {
     bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
         ele->surface_number(), discretization, mypknots, myknots, pweights, weights, normalfac);
@@ -1949,7 +1949,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
     for (int idim = 0; idim < nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
 
     // get shape functions and derivatives of the parent element
-    if (not IsNurbs<distype>::isnurbs)
+    if (not Core::FE::is_nurbs<distype>)
     {
       // shape functions and their first derivatives of parent element
       Core::FE::shape_function<pdistype>(pxsi, pfunct);
@@ -1980,10 +1980,10 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
     // Computation of nurb specific stuff is not activated here
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
-        IsNurbs<distype>::isnurbs);
+        Core::FE::is_nurbs<distype>);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.scale(normalfac);
+    if (Core::FE::is_nurbs<distype>) Base::unitnormal_.scale(normalfac);
 
     Base::velint_.multiply(evelnp, Base::funct_);
     gridvelint.multiply(egridvel, Base::funct_);
@@ -2109,7 +2109,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
     // Computation of nurb specific stuff is not activated here
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, nullptr, nullptr,
-        IsNurbs<distype>::isnurbs);
+        Core::FE::is_nurbs<distype>);
 
     for (int inode = 0; inode < Base::bdrynen_; ++inode)
     {
@@ -2186,7 +2186,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
       // points is not activated here Computation of nurb specific stuff is not activated here
       Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
           Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, nullptr, nullptr,
-          IsNurbs<distype>::isnurbs);
+          Core::FE::is_nurbs<distype>);
 
       // dxyzdrs vector -> normal which is not normalized
       Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
@@ -2332,7 +2332,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
     // Computation of nurb specific stuff is not activated here
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, nullptr, nullptr,
-        IsNurbs<distype>::isnurbs);
+        Core::FE::is_nurbs<distype>);
 
     for (int inode = 0; inode < Base::bdrynen_; ++inode)
     {
@@ -2632,7 +2632,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
-  if (IsNurbs<distype>::isnurbs)
+  if (Core::FE::is_nurbs<distype>)
   {
     bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
         ele->surface_number(), discretization, mypknots, myknots, pweights, weights, normalfac);
@@ -2660,7 +2660,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
     for (int idim = 0; idim < nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
 
     // get shape functions and derivatives of the parent element
-    if (not IsNurbs<distype>::isnurbs)
+    if (not Core::FE::is_nurbs<distype>)
     {
       // shape functions and their first derivatives of parent element
       Core::FE::shape_function<pdistype>(pxsi, pfunct);
@@ -2692,10 +2692,10 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
     // Computation of nurb specific stuff is not activated here
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
-        IsNurbs<distype>::isnurbs);
+        Core::FE::is_nurbs<distype>);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.scale(normalfac);
+    if (Core::FE::is_nurbs<distype>) Base::unitnormal_.scale(normalfac);
 
     const double timefacpre = Base::fldparatimint_->time_fac_pre();
     const double timefacfacpre = Base::fldparatimint_->time_fac_pre() * Base::fac_;
@@ -2764,7 +2764,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
     }
 
     // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs) normalderiv.scale(normalfac);
+    if (Core::FE::is_nurbs<distype>) normalderiv.scale(normalfac);
 
     //-------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J * N_x
     Core::LinAlg::Matrix<1, nsd_ * nenparent> dJ_dus;
@@ -2944,7 +2944,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
-  if (IsNurbs<distype>::isnurbs)
+  if (Core::FE::is_nurbs<distype>)
   {
     bool zero_size =
         Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(ele, ele->surface_number(),
@@ -2963,7 +2963,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
     // Computation of nurb specific stuff is not activated here
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
-        IsNurbs<distype>::isnurbs);
+        Core::FE::is_nurbs<distype>);
 
     const double timefac = Base::fldparatimint_->time_fac();
     const double timefacfac = Base::fldparatimint_->time_fac() * Base::fac_;
@@ -2977,7 +2977,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
     dxyzdrs.multiply_nt(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.scale(normalfac);
+    if (Core::FE::is_nurbs<distype>) Base::unitnormal_.scale(normalfac);
 
     //  derivatives of surface normals wrt mesh displacements
     Core::LinAlg::Matrix<nsd_, Base::bdrynen_ * nsd_> normalderiv(true);
@@ -3023,7 +3023,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
     }
 
     // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs) normalderiv.scale(normalfac);
+    if (Core::FE::is_nurbs<distype>) normalderiv.scale(normalfac);
 
     // fill element matrix
     for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -3334,7 +3334,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
-  if (IsNurbs<distype>::isnurbs)
+  if (Core::FE::is_nurbs<distype>)
   {
     bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
         ele->surface_number(), discretization, mypknots, myknots, pweights, weights, normalfac);
@@ -3357,7 +3357,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
     // Computation of nurb specific stuff is not activated here
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
-        IsNurbs<distype>::isnurbs);
+        Core::FE::is_nurbs<distype>);
 
     // --------------------------------------------------
     // parent element
@@ -3370,7 +3370,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
     for (int idim = 0; idim < nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
 
     // get shape functions and derivatives of the parent element
-    if (not IsNurbs<distype>::isnurbs)
+    if (not Core::FE::is_nurbs<distype>)
     {
       // shape functions and their first derivatives of parent element
       Core::FE::shape_function<pdistype>(pxsi, pfunct);
@@ -3412,7 +3412,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
     dxyzdrs.multiply_nt(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.scale(normalfac);
+    if (Core::FE::is_nurbs<distype>) Base::unitnormal_.scale(normalfac);
 
     convvel.multiply(econvvel, Base::funct_);
 
@@ -3727,7 +3727,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
-  if (IsNurbs<distype>::isnurbs)
+  if (Core::FE::is_nurbs<distype>)
   {
     bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
         ele->surface_number(), discretization, mypknots, myknots, pweights, weights, normalfac);
@@ -3756,7 +3756,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     // Computation of nurb specific stuff is not activated here
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
-        IsNurbs<distype>::isnurbs);
+        Core::FE::is_nurbs<distype>);
 
     // --------------------------------------------------
     // parent element
@@ -3770,7 +3770,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     for (int idim = 0; idim < nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
 
     // get shape functions and derivatives of the parent element
-    if (not IsNurbs<distype>::isnurbs)
+    if (not Core::FE::is_nurbs<distype>)
     {
       // shape functions and their first derivatives of parent element
       Core::FE::shape_function<pdistype>(pxsi, pfunct);
@@ -3817,7 +3817,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     dxyzdrs.multiply_nt(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.scale(normalfac);
+    if (Core::FE::is_nurbs<distype>) Base::unitnormal_.scale(normalfac);
 
     convvel.multiply(econvvel, Base::funct_);
     lambda.multiply(elambda, dualfunct);
@@ -3856,7 +3856,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
       }
 
       // in the case of nurbs the normal vector must be scaled with a special factor
-      if (IsNurbs<distype>::isnurbs) normalderiv.scale(normalfac);
+      if (Core::FE::is_nurbs<distype>) normalderiv.scale(normalfac);
 
       if (abs(Base::unitnormal_(0)) > 1.0e-6 || abs(Base::unitnormal_(1)) > 1.0e-6)
       {
@@ -3942,7 +3942,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
       }
 
       // in the case of nurbs the normal vector must be scaled with a special factor
-      if (IsNurbs<distype>::isnurbs) normalderiv.scale(normalfac);
+      if (Core::FE::is_nurbs<distype>) normalderiv.scale(normalfac);
 
       // simple definition for txi
       tangent1(0) = -Base::unitnormal_(1);
@@ -4316,7 +4316,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
-  if (IsNurbs<distype>::isnurbs)
+  if (Core::FE::is_nurbs<distype>)
   {
     bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
         ele->surface_number(), discretization, mypknots, myknots, pweights, weights, normalfac);
@@ -4337,7 +4337,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     // Computation of nurb specific stuff is not activated here
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
-        IsNurbs<distype>::isnurbs);
+        Core::FE::is_nurbs<distype>);
 
     // --------------------------------------------------
     // parent element
@@ -4351,7 +4351,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     for (int idim = 0; idim < nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
 
     // get shape functions and derivatives of the parent element
-    if (not IsNurbs<distype>::isnurbs)
+    if (not Core::FE::is_nurbs<distype>)
     {
       // shape functions and their first derivatives of parent element
       Core::FE::shape_function<pdistype>(pxsi, pfunct);
@@ -4393,7 +4393,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     dxyzdrs.multiply_nt(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.scale(normalfac);
+    if (Core::FE::is_nurbs<distype>) Base::unitnormal_.scale(normalfac);
 
     convvel.multiply(econvvel, Base::funct_);
     double normal_convel = 0.0;
@@ -4678,7 +4678,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
-  if (IsNurbs<distype>::isnurbs)
+  if (Core::FE::is_nurbs<distype>)
   {
     bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
         ele->surface_number(), discretization, mypknots, myknots, pweights, weights, normalfac);
@@ -4696,7 +4696,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     // Computation of nurb specific stuff is not activated here
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
-        IsNurbs<distype>::isnurbs);
+        Core::FE::is_nurbs<distype>);
 
     // --------------------------------------------------
     // parent element
@@ -4710,7 +4710,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     for (int idim = 0; idim < nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
 
     // get shape functions and derivatives of the parent element
-    if (not IsNurbs<distype>::isnurbs)
+    if (not Core::FE::is_nurbs<distype>)
     {
       // shape functions and their first derivatives of parent element
       Core::FE::shape_function<pdistype>(pxsi, pfunct);
@@ -4765,7 +4765,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     dxyzdrs.multiply_nt(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.scale(normalfac);
+    if (Core::FE::is_nurbs<distype>) Base::unitnormal_.scale(normalfac);
 
     convvel.multiply(econvvel, Base::funct_);
     double normal_convel = 0.0;

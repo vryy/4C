@@ -1341,9 +1341,6 @@ namespace Core::FE
    */
   Core::FE::CellType getShapeOfBoundaryElement(const int nen, const Core::FE::CellType parentshape);
 
-  /// return TRUE if the given dis_type is a NURBS type
-  bool IsNurbsDisType(const Core::FE::CellType dis_type);
-
 }  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE

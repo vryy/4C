@@ -3223,7 +3223,7 @@ namespace FLD
           }
       */
 
-      if (not Discret::ELEMENTS::IsNurbs<distype>::isnurbs)
+      if (not Core::FE::is_nurbs<distype>)
       {
         // get values of shape functions and derivatives in the gausspoint
         // Core::FE::shape_function_3D       (funct,gp(0),gp(1),gp(2),distype);

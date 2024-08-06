@@ -20,6 +20,7 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_volmortar.hpp"
+#include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_fem_general_element_integration_select.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fem_general_utils_integration.hpp"
@@ -313,47 +314,6 @@ namespace Coupling::VolMortar
     {
       static constexpr Core::FE::GaussRule1D rule = Core::FE::GaussRule1D::line_3point;
     };
-
-    /*----------------------------------------------------------------------*
-     | NURBS info                                                farah 09/14|
-     *----------------------------------------------------------------------*/
-    template <Core::FE::CellType distype>
-    bool IsNurbs()
-    {
-      bool isnurbs = true;
-      switch (distype)
-      {
-        case Core::FE::CellType::nurbs2:
-        case Core::FE::CellType::nurbs3:
-        case Core::FE::CellType::nurbs4:
-        case Core::FE::CellType::nurbs8:
-        case Core::FE::CellType::nurbs9:
-        case Core::FE::CellType::nurbs27:
-          isnurbs = true;
-          break;
-        case Core::FE::CellType::line2:
-        case Core::FE::CellType::line3:
-        case Core::FE::CellType::line4:
-        case Core::FE::CellType::line5:
-        case Core::FE::CellType::line6:
-        case Core::FE::CellType::quad4:
-        case Core::FE::CellType::quad8:
-        case Core::FE::CellType::quad9:
-        case Core::FE::CellType::hex8:
-        case Core::FE::CellType::hex20:
-        case Core::FE::CellType::hex27:
-        case Core::FE::CellType::tet4:
-        case Core::FE::CellType::tet10:
-        case Core::FE::CellType::wedge6:
-        case Core::FE::CellType::wedge15:
-        case Core::FE::CellType::pyramid5:
-          isnurbs = false;
-          break;
-        default:
-          FOUR_C_THROW("Distype unknown!");
-      }
-      return isnurbs;
-    }
 
     /*----------------------------------------------------------------------*
      |  Evaluate Jacobian determinant                            farah 01/14|
@@ -1813,7 +1773,7 @@ namespace Coupling::VolMortar
       // check input
       if (!xi) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
       if (!globcoord) FOUR_C_THROW("ERROR: LocalToGlobal called with globcoord=nullptr");
-      if (IsNurbs<distype>()) FOUR_C_THROW("ERROR: Lagr. LocalToGlobal called for NURBS!");
+      if (Core::FE::is_nurbs<distype>) FOUR_C_THROW("ERROR: Lagr. LocalToGlobal called for NURBS!");
 
       static constexpr int n = Core::FE::num_nodes<distype>;
       static constexpr int ndim = Core::FE::dim<distype>;

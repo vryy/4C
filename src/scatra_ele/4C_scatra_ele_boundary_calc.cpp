@@ -67,7 +67,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::setup_calc(
   Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // Now do the nurbs specific stuff (for isogeometric elements)
-  if (Core::FE::Nurbs::IsNurbs(distype))
+  if (Core::FE::is_nurbs<distype>)
   {
     // for isogeometric elements --- get knotvectors for parent
     // element and boundary element, get weights
@@ -974,7 +974,7 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::eval_shape_fu
       xyze_, deriv_, metrictensor_, drs, true, normalvec);
 
   // for nurbs elements the normal vector must be scaled with a special orientation factor!!
-  if (Core::FE::Nurbs::IsNurbs(distype))
+  if (Core::FE::is_nurbs<distype>)
   {
     if (normalvec != nullptr) normal_.scale(normalfac_);
   }
@@ -997,7 +997,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
     xsi_(idim) = gpcoord[idim];
   }
 
-  if (not Core::FE::Nurbs::IsNurbs(distype))
+  if (not Core::FE::is_nurbs<distype>)
   {
     // shape functions and their first derivatives
     Core::FE::shape_function<distype>(xsi_, funct_);
@@ -1016,7 +1016,7 @@ Core::LinAlg::Matrix<3, 1>
 Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
     const Core::LinAlg::Matrix<3, nen_>& xyze)
 {
-  if (Core::FE::Nurbs::IsNurbs(distype)) FOUR_C_THROW("Element normal not implemented for NURBS");
+  if (Core::FE::is_nurbs<distype>) FOUR_C_THROW("Element normal not implemented for NURBS");
 
   Core::LinAlg::Matrix<3, 1> normal(true), dist1(true), dist2(true);
   for (int i = 0; i < 3; i++)
@@ -1042,7 +1042,7 @@ Core::LinAlg::Matrix<2, 1>
 Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
     const Core::LinAlg::Matrix<2, nen_>& xyze)
 {
-  if (Core::FE::Nurbs::IsNurbs(distype)) FOUR_C_THROW("Element normal not implemented for NURBS");
+  if (Core::FE::is_nurbs<distype>) FOUR_C_THROW("Element normal not implemented for NURBS");
 
   Core::LinAlg::Matrix<2, 1> normal(true);
 
@@ -1064,7 +1064,7 @@ Core::LinAlg::Matrix<3, 1>
 Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
     const Core::LinAlg::Matrix<3, nen_>& xyze, const Core::LinAlg::Matrix<3, 3>& nodes_parent_ele)
 {
-  if (Core::FE::Nurbs::IsNurbs(distype)) FOUR_C_THROW("Element normal not implemented for NURBS");
+  if (Core::FE::is_nurbs<distype>) FOUR_C_THROW("Element normal not implemented for NURBS");
 
   Core::LinAlg::Matrix<3, 1> normal(true), normal_parent_ele(true), boundary_ele(true),
       parent_ele_v1(true), parent_ele_v2(true);
@@ -2519,7 +2519,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
         bxyze, bderiv, bmetrictensor, drs, &bnormal);
 
     // for nurbs elements the normal vector must be scaled with a special orientation factor!!
-    if (Core::FE::Nurbs::IsNurbs(distype)) bnormal.scale(normalfac_);
+    if (Core::FE::is_nurbs<distype>) bnormal.scale(normalfac_);
 
     // compute integration factor
     const double fac = bintpoints.ip().qwgt[iquad] * drs;
@@ -3030,7 +3030,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype,
         bxyze, bderiv, bmetrictensor, drs, &bnormal);
 
     // for nurbs elements the normal vector must be scaled with a special orientation factor!!
-    if (Core::FE::Nurbs::IsNurbs(distype)) bnormal.scale(normalfac_);
+    if (Core::FE::is_nurbs<distype>) bnormal.scale(normalfac_);
 
     // compute integration factor
     const double fac_surface = bintpoints.ip().qwgt[iquad] * drs;

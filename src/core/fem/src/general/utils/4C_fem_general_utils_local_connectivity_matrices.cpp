@@ -1687,23 +1687,6 @@ int Core::FE::getParentNodeNumberFromFaceNodeNumber(
 }
 
 
-bool Core::FE::IsNurbsDisType(const Core::FE::CellType dis_type)
-{
-  switch (dis_type)
-  {
-    case Core::FE::CellType::nurbs2:
-    case Core::FE::CellType::nurbs3:
-    case Core::FE::CellType::nurbs4:
-    case Core::FE::CellType::nurbs9:
-    case Core::FE::CellType::nurbs8:
-    case Core::FE::CellType::nurbs27:
-      return true;
-    default:
-      return false;
-  }
-}
-
-
 template Core::LinAlg::Matrix<3, 1> Core::FE::GetNodeCoordinates<3>(
     const int nodeId, const Core::FE::CellType distype);
 FOUR_C_NAMESPACE_CLOSE
