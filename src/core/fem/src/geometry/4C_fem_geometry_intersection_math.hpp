@@ -36,8 +36,6 @@ namespace Core::Geo
   //! named tolerance for easy search/grep
   const double TOL6 = 1e-6;
   //! named tolerance for easy search/grep
-  const double TOL2 = 1e-2;
-  //! named tolerance for easy search/grep
   const double TOLPLUS8 = 1e8;
   //! large number to start computations of nearest distance in tree
   const double LARGENUMBER = 1e30;
