@@ -74,6 +74,31 @@ namespace Core::Binstrategy
     cols
   };
 
+  /**
+   * Helper functor to determine relevant points for binning. By default, these are the element
+   * nodes. This behavior may be modified by setting the correct_node() function to select different
+   * nodes.
+   */
+  struct DefaultRelevantPoints
+  {
+    /**
+     * Determine relevant points for binning.
+     *
+     * @param discret Discretization to consider.
+     * @param ele Element to consider.
+     * @param disnp Displacement state.
+     * @return Vector of relevant points stored as array of length 3.
+     */
+    std::vector<std::array<double, 3>> operator()(const Core::FE::Discretization& discret,
+        const Core::Elements::Element& ele, Teuchos::RCP<const Epetra_Vector> disnp);
+
+    /**
+     * Additional function to determine select a different node. By default, the node is returned.
+     */
+    std::function<const Core::Nodes::Node&(const Core::Nodes::Node& node)> correct_node =
+        [](const auto& node) -> decltype(auto) { return node; };
+  };
+
   /*!
    *  \brief strategy for sorting data (e.g. finite elements) into spatial bins
    *  to enable tracking of interaction (e.g. contact) between them fully in
@@ -124,11 +149,9 @@ namespace Core::Binstrategy
      * \param[in] output_control output control file
      * \param[in] comm Epetra Communicator
      * \param[in] my_rank id of this process
-     * \param[in] element_filter function to get enum of elements that require special treatment
-     * \param[in] rigid_sphere_radius function to compute the radius of the rigid sphere
-     * \param[in] correct_beam_center_node if the center node of a beam element is used for binning,
-     * it must be corrected to a boundary node as the center node has no coordinates. This function
-     * is used for it
+     * \param[in] correct_node should a node be included into binning? If this function is not
+     * provided, all nodes are considered relevant.
+     * \param[in] determine_relevant_points function that determines the relevant points for binning
      * \param[in] discret vector of discretizations as basis for build up of binning domain
      * (optional, only needed if binning domain is not described via input file)
      * \param[in] disnp vector of column displacement states (belonging to input discrets) so that
@@ -137,10 +160,10 @@ namespace Core::Binstrategy
     BinningStrategy(const Teuchos::ParameterList& binning_params,
         Teuchos::RCP<Core::IO::OutputControl> output_control, const Epetra_Comm& comm,
         const int my_rank,
-        std::function<Utils::SpecialElement(const Core::Elements::Element* element)> element_filter,
-        std::function<double(const Core::Elements::Element* element)> rigid_sphere_radius,
-        std::function<Core::Nodes::Node const*(Core::Nodes::Node const* node)>
-            correct_beam_center_node,
+        std::function<const Core::Nodes::Node&(const Core::Nodes::Node& node)> correct_node = {},
+        std::function<std::vector<std::array<double, 3>>(const Core::FE::Discretization&,
+            const Core::Elements::Element&, Teuchos::RCP<const Epetra_Vector> disnp)>
+            determine_relevant_points = DefaultRelevantPoints{},
         const std::vector<Teuchos::RCP<Core::FE::Discretization>>& discret = {},
         std::vector<Teuchos::RCP<const Epetra_Vector>> disnp = {});
 
@@ -443,14 +466,6 @@ namespace Core::Binstrategy
     //! \{
 
     /*!
-     * \brief add ijk to a given axis aligned ijk range of an element
-     *
-     * \param[in] ijk ijk to be added to ijk range
-     * \param[out] ijk_range extended ijk range
-     */
-    void addijk_to_axis_alignedijk_range_of_element(int const ijk[3], int ijk_range[6]) const;
-
-    /*!
      *\brief add ijk to a given axis aligned ijk range of an beam element (this may need special
      *treatment if it is cut by a periodic boundary
      *
@@ -459,19 +474,6 @@ namespace Core::Binstrategy
      */
     void addijk_to_axis_alignedijk_range_of_beam_element(int const ijk[3], int ijk_range[6]) const;
 
-    /*!
-     * \brief build axis aligned bounding box for one noded rigid sphere element (bins can be
-     * smaller than the radius of the sphere, sphere element is assigned to all bins that are
-     * touched by it)
-     *
-     * \param[in] sphereele sphere element
-     * \param[in] currpos current position of center node of sphere element
-     * \param[in] ijk helper ijk of bins relevant for sphere
-     * \param[out] ijk_range ijk range for rigid sphere element
-     */
-    void build_axis_alignedijk_range_for_rigid_sphere(
-        Core::Elements::Element const* const sphereele, double currpos[3], int ijk[3],
-        int ijk_range[6], double radius) const;
 
     /// fixme: the following function needs to be replaced by
     /// distribute_row_elements_to_bins_using_ele_aabb()
@@ -548,18 +550,6 @@ namespace Core::Binstrategy
      * \brief remove all eles from bins
      */
     void remove_all_eles_from_bins();
-
-    /*!
-     * \brief get ijk of single node in its current position
-     *
-     * \param[in] discret discretization containing node
-     * \param[in] node node for which ijk is requested
-     * \param[in] disnp current column displacement state
-     * \param[out] ijk requested ijk
-     */
-    void getijk_of_single_node_in_current_position(
-        Teuchos::RCP<Core::FE::Discretization> const& discret, Core::Nodes::Node const* const node,
-        Teuchos::RCP<const Epetra_Vector> const& disnp, int ijk[3]) const;
 
     /*!
      * \brief assign node to bins
@@ -758,14 +748,6 @@ namespace Core::Binstrategy
     //! \}
 
    private:
-    /**
-     * Get an axis-aligned bounding box for an element.
-     * The coordinates are ordered as: ((x_min, y_min, z_min), (x_max, y_max, z_max))
-     */
-    [[nodiscard]] std::pair<std::array<double, 3>, std::array<double, 3>> compute_aabb(
-        const Core::FE::Discretization& discret, const Core::Elements::Element& ele,
-        Teuchos::RCP<const Epetra_Vector> disnp) const;
-
     /*!
      * \brief binning discretization with bins as elements
      */
@@ -856,18 +838,15 @@ namespace Core::Binstrategy
      */
     Teuchos::RCP<Epetra_Comm> comm_;
 
-    //! function to get enum of elements that require special treatment
-    const std::function<Utils::SpecialElement(const Core::Elements::Element* element)>
-        element_filter_;
 
-    //! rigid_sphere_radius function to compute the radius of the rigid sphere
-    const std::function<double(const Core::Elements::Element* element)> rigid_sphere_radius_;
+    //! Function that computes the points to consider as the bounding box of an element. May be
+    //! user-supplied for special elements. By default, the nodes of the element are used.
+    const std::function<std::vector<std::array<double, 3>>(const Core::FE::Discretization&,
+        const Core::Elements::Element&, Teuchos::RCP<const Epetra_Vector> disnp)>
+        determine_relevant_points_;
 
-    //! if the center node of a beam element is used for binning, it must be corrected to a boundary
-    //! node as the center node has no coordinates. This function is used for it
-    const std::function<Core::Nodes::Node const*(Core::Nodes::Node const* node)>
-        correct_beam_center_node_;
-
+    //! Function that allows selecting a different node to be used in binning.
+    const std::function<const Core::Nodes::Node&(const Core::Nodes::Node& node)> correct_node_;
   };  // namespace Core::Binstrategy
 
   /*!

@@ -154,38 +154,42 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
       "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
       binning_params);
 
-  auto element_filter = [](const Core::Elements::Element* element)
+  auto correct_node = [](const Core::Nodes::Node& node) -> decltype(auto)
   {
-    if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element))
-      return Core::Binstrategy::Utils::SpecialElement::beam;
-    else if (element->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
-      return Core::Binstrategy::Utils::SpecialElement::rigid_sphere;
-    else
-      return Core::Binstrategy::Utils::SpecialElement::none;
-  };
-
-  auto rigid_sphere_radius = [](const Core::Elements::Element* element)
-  {
-    if (element->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
-      return dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(element)->radius();
-    else
-      return 0.0;
-  };
-
-  auto correct_beam_center_node = [](const Core::Nodes::Node* node)
-  {
-    const Core::Elements::Element* element = node->elements()[0];
+    const Core::Elements::Element* element = node.elements()[0];
     const auto* beamelement = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
-    if (beamelement != nullptr and not beamelement->is_centerline_node(*node))
-      return element->nodes()[0];
+    if (beamelement != nullptr && !beamelement->is_centerline_node(node))
+      return *element->nodes()[0];
     else
       return node;
   };
 
+  auto determine_relevant_points =
+      [correct_node](const Core::FE::Discretization& discret, const Core::Elements::Element& ele,
+          Teuchos::RCP<const Epetra_Vector> disnp) -> std::vector<std::array<double, 3>>
+  {
+    if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(&ele))
+    {
+      return Core::Binstrategy::DefaultRelevantPoints{
+          .correct_node = correct_node,
+      }(discret, ele, disnp);
+    }
+    else if (ele.element_type() == Discret::ELEMENTS::RigidsphereType::instance())
+    {
+      double currpos[3] = {0.0, 0.0, 0.0};
+      Core::Binstrategy::Utils::GetCurrentNodePos(discret, ele.nodes()[0], disnp, currpos);
+      const double radius = dynamic_cast<const Discret::ELEMENTS::Rigidsphere&>(ele).radius();
+      return {{currpos[0] - radius, currpos[1] - radius, currpos[2] - radius},
+          {currpos[0] + radius, currpos[1] + radius, currpos[2] + radius}};
+    }
+    else
+      return Core::Binstrategy::DefaultRelevantPoints{}(discret, ele, disnp);
+  };
+
   binstrategy_ = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
       Global::Problem::instance()->output_control_file(), ia_discret_->get_comm(),
-      ia_discret_->get_comm().MyPID(), element_filter, rigid_sphere_radius,
-      correct_beam_center_node, discret_vec, disp_vec));
+      ia_discret_->get_comm().MyPID(), correct_node, determine_relevant_points, discret_vec,
+      disp_vec));
 
   binstrategy_->set_deforming_binning_domain_handler(
       tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box());
