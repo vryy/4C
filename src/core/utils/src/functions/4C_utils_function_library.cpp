@@ -12,7 +12,6 @@ The functions in this file are not problem-specific and may be useful for a numb
 /*----------------------------------------------------------------------*/
 #include "4C_utils_function_library.hpp"
 
-#include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_file_reader.hpp"
 #include "4C_io_linedefinition.hpp"
@@ -48,18 +47,13 @@ namespace
     }
     else if (function_lin_def.container().get_or<bool>("CUBIC_SPLINE_FROM_CSV", false))
     {
-      std::string csv_file = function_lin_def.container().get<std::string>("CSV");
+      const auto csv_file = function_lin_def.container().get<std::filesystem::path>("CSV");
 
       // safety check
       if (csv_file.empty())
         FOUR_C_THROW("You forgot to specify the *.csv file for cubic spline interpolation!");
 
-      // csv file needs to be placed in same folder as input file
-      std::filesystem::path input_file_path =
-          Global::Problem::instance()->output_control_file()->input_file_name();
-      const auto csv_file_path = input_file_path.replace_filename(csv_file);
-
-      return Teuchos::rcp(new Core::UTILS::CubicSplineFromCSV(csv_file_path.string()));
+      return Teuchos::rcp(new Core::UTILS::CubicSplineFromCSV(csv_file.string()));
     }
     else
       return {Teuchos::null};
