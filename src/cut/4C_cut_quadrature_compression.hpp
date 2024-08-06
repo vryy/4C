@@ -14,24 +14,20 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_general_utils_gausspoints.hpp"
+#include "4C_linalg_serialdensevector.hpp"
 
-namespace Teuchos
-{
-  template <typename OrdinalType, typename ScalarType>
-  class SerialDenseMatrix;
-
-  template <typename OrdinalType, typename ScalarType>
-  class SerialDenseVector;
-
-  template <class T>
-  class RCP;
-}  // namespace Teuchos
+#include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::Geo
+namespace Core
 {
-  namespace Cut
+  namespace LinAlg
+  {
+    class SerialDenseMatrix;
+  }
+
+  namespace Geo::Cut
   {
     class VolumeCell;
 
@@ -100,8 +96,8 @@ namespace Core::Geo
       Teuchos::RCP<Core::FE::GaussPoints> gout_;
     };
 
-  }  // namespace Cut
-}  // namespace Core::Geo
+  }  // namespace Geo::Cut
+}  // namespace Core
 FOUR_C_NAMESPACE_CLOSE
 
 #endif
