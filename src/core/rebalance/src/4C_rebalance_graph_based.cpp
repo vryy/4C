@@ -361,7 +361,7 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildMonolithicNodeGraph(
   std::set<int> my_colliding_primitives;
   for (const auto& item : result)
   {
-    my_colliding_primitives.insert(std::get<3>(item));
+    my_colliding_primitives.insert(item.gid_primitive);
   }
   std::vector<int> my_colliding_primitives_vec;
   for (const auto& item : my_colliding_primitives)

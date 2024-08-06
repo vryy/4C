@@ -27,8 +27,25 @@ namespace Core::GeometricSearch
 {
   struct BoundingVolume;
 
+  /*! \brief Structure to hold the resulting global/local ID pairings that are found during a global
+   * collision search
+   */
+  struct GlobalCollisionSearchResult
+  {
+    //! Local ID of the predicate (on this rank)
+    int lid_predicate;
+    //! Global ID of the predicate
+    int gid_predicate;
+    //! Local ID of the primitives (on the primitives rank)
+    int lid_primitive;
+    //! Global ID of the primitives
+    int gid_primitive;
+    //! Processor ID owning the primitive
+    int pid_primitive;
+  };
+
   /*! \brief Finds all primitives on different ranks meeting the locally owned predicates and
-   * records results in {lid_predicate, gid_predicate, lid_primitive, gid_primitive, pid_primitive}.
+   * return results.
    *
    * Hereby the local/global index of the given predicate and the local/global index as well as
    * the MPI processor rank of the found primitive is returned.
@@ -37,9 +54,9 @@ namespace Core::GeometricSearch
    * @param predicates Bounding volumes to intersect with
    * @param comm Communicator object of the discretization
    * @param verbosity Enabeling printout of the geometric search information
-   * @return {lid_predicate, gid_predicate, lid_primitive, gid_primitive, pid_primitive}
+   * @return Collision pairs found with their global and local IDs
    */
-  std::vector<std::tuple<int, int, int, int, int>> GlobalCollisionSearch(
+  std::vector<GlobalCollisionSearchResult> GlobalCollisionSearch(
       const std::vector<std::pair<int, BoundingVolume>>& primitives,
       const std::vector<std::pair<int, BoundingVolume>>& predicates, const Epetra_Comm& comm,
       const Core::IO::Verbositylevel verbosity);

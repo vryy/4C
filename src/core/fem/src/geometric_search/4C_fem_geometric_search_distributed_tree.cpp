@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::GeometricSearch
 {
-  std::vector<std::tuple<int, int, int, int, int>> GlobalCollisionSearch(
+  std::vector<GlobalCollisionSearchResult> GlobalCollisionSearch(
       const std::vector<std::pair<int, BoundingVolume>>& primitives,
       const std::vector<std::pair<int, BoundingVolume>>& predicates, const Epetra_Comm& comm,
       const Core::IO::Verbositylevel verbosity)
@@ -74,15 +74,17 @@ namespace Core::GeometricSearch
         indices_ranks_full, offset_full);
 
     // Create the vector with the pairs.
-    // {lid_predicate, gid_predicate, lid_primitive, gid_primitive, pid_primitive}
-    std::vector<std::tuple<int, int, int, int, int>> pairs;
+    std::vector<GlobalCollisionSearchResult> pairs;
     for (size_t i_offset = 0; i_offset < offset_full.size() - 1; i_offset++)
     {
       const int gid_predicate = predicates[i_offset].first;
       for (int j = offset_full[i_offset]; j < offset_full[i_offset + 1]; j++)
       {
-        pairs.emplace_back(std::tuple{i_offset, gid_predicate, indices_ranks_full[j].first,
-            indices_ranks_full[j].second.first, indices_ranks_full[j].second.second});
+        pairs.emplace_back(GlobalCollisionSearchResult{.lid_predicate = static_cast<int>(i_offset),
+            .gid_predicate = gid_predicate,
+            .lid_primitive = indices_ranks_full[j].first,
+            .gid_primitive = indices_ranks_full[j].second.first,
+            .pid_primitive = indices_ranks_full[j].second.second});
       }
     }
 
