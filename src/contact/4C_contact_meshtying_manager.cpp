@@ -9,7 +9,6 @@
 
 #include "4C_contact_meshtying_manager.hpp"
 
-#include "4C_contact_meshtying_defines.hpp"
 #include "4C_contact_meshtying_lagrange_strategy.hpp"
 #include "4C_contact_meshtying_penalty_strategy.hpp"
 #include "4C_contact_meshtying_poro_lagrange_strategy.hpp"

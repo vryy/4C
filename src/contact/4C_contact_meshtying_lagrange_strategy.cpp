@@ -10,7 +10,6 @@
 
 #include "4C_contact_meshtying_lagrange_strategy.hpp"
 
-#include "4C_contact_meshtying_defines.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_mortar.hpp"
