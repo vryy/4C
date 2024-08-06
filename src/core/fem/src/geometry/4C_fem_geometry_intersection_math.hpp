@@ -17,9 +17,6 @@
 
 #include "4C_config.hpp"
 
-#include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_linalg_serialdensevector.hpp"
-
 FOUR_C_NAMESPACE_OPEN
 
 

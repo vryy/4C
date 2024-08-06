@@ -12,6 +12,7 @@
 
 #include "4C_cut_element.hpp"
 #include "4C_cut_volumecell.hpp"
+#include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_utils_exceptions.hpp"
 
