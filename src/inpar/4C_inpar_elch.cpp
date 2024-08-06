@@ -11,6 +11,7 @@
 
 #include "4C_fem_condition_definition.hpp"
 #include "4C_inpar_scatra.hpp"
+#include "4C_io_linecomponent.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -176,87 +177,65 @@ void Inpar::ElCh::SetValidConditions(
 
   /*--------------------------------------------------------------------*/
   // electrode state of charge
+
+  // definition of electrode state of charge surface and volume conditions
+  auto electrodesocline = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN ELECTRODE STATE OF CHARGE LINE CONDITIONS",
+          "ElectrodeSOC", "electrode state of charge line condition",
+          Core::Conditions::ElectrodeSOC, true, Core::Conditions::geometry_type_line));
+
+  auto electrodesocsurf = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN ELECTRODE STATE OF CHARGE SURF CONDITIONS",
+          "ElectrodeSOC", "electrode state of charge surface condition",
+          Core::Conditions::ElectrodeSOC, true, Core::Conditions::geometry_type_surface));
+  auto electrodesocvol = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS",
+          "ElectrodeSOC", "electrode state of charge volume condition",
+          Core::Conditions::ElectrodeSOC, true, Core::Conditions::geometry_type_volume));
+
+  for (const auto& cond : {electrodesocline, electrodesocsurf, electrodesocvol})
   {
-    // definition of electrode state of charge surface and volume conditions
-    auto electrodesocline = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
-        "DESIGN ELECTRODE STATE OF CHARGE LINE CONDITIONS", "ElectrodeSOC",
-        "electrode state of charge line condition", Core::Conditions::ElectrodeSOC, true,
-        Core::Conditions::geometry_type_line));
-
-    auto electrodesocsurf = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
-        "DESIGN ELECTRODE STATE OF CHARGE SURF CONDITIONS", "ElectrodeSOC",
-        "electrode state of charge surface condition", Core::Conditions::ElectrodeSOC, true,
-        Core::Conditions::geometry_type_surface));
-    auto electrodesocvol = Teuchos::rcp(
-        new Core::Conditions::ConditionDefinition("DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS",
-            "ElectrodeSOC", "electrode state of charge volume condition",
-            Core::Conditions::ElectrodeSOC, true, Core::Conditions::geometry_type_volume));
-
-    // equip condition definitions with input file line components
-    std::vector<Teuchos::RCP<Input::LineComponent>> electrodesoccomponents;
-
-    {
-      electrodesoccomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ID")));
-      electrodesoccomponents.emplace_back(Teuchos::rcp(new Input::IntComponent("ConditionID")));
-      electrodesoccomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("C_0%")));
-      electrodesoccomponents.emplace_back(Teuchos::rcp(new Input::RealComponent("c_0%")));
-      electrodesoccomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("C_100%")));
-      electrodesoccomponents.emplace_back(Teuchos::rcp(new Input::RealComponent("c_100%")));
-      electrodesoccomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ONE_HOUR")));
-      electrodesoccomponents.emplace_back(Teuchos::rcp(new Input::RealComponent("one_hour")));
-    }
-
     // insert input file line components into condition definitions
-    for (auto& electrodesoccomponent : electrodesoccomponents)
-    {
-      electrodesocline->add_component(electrodesoccomponent);
-      electrodesocsurf->add_component(electrodesoccomponent);
-      electrodesocvol->add_component(electrodesoccomponent);
-    }
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("ID")));
+    cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("C_0%")));
+    cond->add_component(Teuchos::rcp(new Input::RealComponent("c_0%")));
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("C_100%")));
+    cond->add_component(Teuchos::rcp(new Input::RealComponent("c_100%")));
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("ONE_HOUR")));
+    cond->add_component(Teuchos::rcp(new Input::RealComponent("one_hour")));
 
     // insert condition definitions into global list of valid condition definitions
-    condlist.emplace_back(electrodesocline);
-    condlist.emplace_back(electrodesocsurf);
-    condlist.emplace_back(electrodesocvol);
+    condlist.emplace_back(cond);
   }
+
 
   /*--------------------------------------------------------------------*/
   // cell voltage
+
+  // definition of cell voltage point, line, and surface conditions
+  auto cellvoltagepoint = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      "DESIGN CELL VOLTAGE POINT CONDITIONS", "CellVoltagePoint", "cell voltage point condition",
+      Core::Conditions::CellVoltage, false, Core::Conditions::geometry_type_point));
+
+  auto cellvoltageline = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      "DESIGN CELL VOLTAGE LINE CONDITIONS", "CellVoltage", "cell voltage line condition",
+      Core::Conditions::CellVoltage, true, Core::Conditions::geometry_type_line));
+
+  auto cellvoltagesurf = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      "DESIGN CELL VOLTAGE SURF CONDITIONS", "CellVoltage", "cell voltage surface condition",
+      Core::Conditions::CellVoltage, true, Core::Conditions::geometry_type_surface));
+
+  for (const auto& cond : {cellvoltagepoint, cellvoltageline, cellvoltagesurf})
   {
-    // definition of cell voltage point, line, and surface conditions
-    auto cellvoltagepoint = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
-        "DESIGN CELL VOLTAGE POINT CONDITIONS", "CellVoltagePoint", "cell voltage point condition",
-        Core::Conditions::CellVoltage, false, Core::Conditions::geometry_type_point));
-
-    auto cellvoltageline = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
-        "DESIGN CELL VOLTAGE LINE CONDITIONS", "CellVoltage", "cell voltage line condition",
-        Core::Conditions::CellVoltage, true, Core::Conditions::geometry_type_line));
-
-    auto cellvoltagesurf = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
-        "DESIGN CELL VOLTAGE SURF CONDITIONS", "CellVoltage", "cell voltage surface condition",
-        Core::Conditions::CellVoltage, true, Core::Conditions::geometry_type_surface));
-
-    // equip condition definitions with input file line components
-    std::vector<Teuchos::RCP<Input::LineComponent>> cellvoltagecomponents;
-
-    {
-      cellvoltagecomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ID")));
-      cellvoltagecomponents.emplace_back(Teuchos::rcp(new Input::IntComponent("ConditionID")));
-    }
-
     // insert input file line components into condition definitions
-    for (auto& cellvoltagecomponent : cellvoltagecomponents)
-    {
-      cellvoltagepoint->add_component(cellvoltagecomponent);
-      cellvoltageline->add_component(cellvoltagecomponent);
-      cellvoltagesurf->add_component(cellvoltagecomponent);
-    }
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("ID")));
+    cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
     // insert condition definitions into global list of valid condition definitions
-    condlist.emplace_back(cellvoltagepoint);
-    condlist.emplace_back(cellvoltageline);
-    condlist.emplace_back(cellvoltagesurf);
+    condlist.emplace_back(cond);
   }
+
 
   /*--------------------------------------------------------------------*/
   // electrode kinetics as boundary condition on electrolyte
@@ -369,29 +348,6 @@ void Inpar::ElCh::SetValidConditions(
     nernst.emplace_back(Teuchos::rcp(new Input::RealComponent("dl_spec_cap")));
     reaction_model_choices.emplace(Inpar::ElCh::nernst, std::make_pair("Nernst", nernst));
 
-    std::vector<Teuchos::RCP<Input::LineComponent>> elechemcomponents;
-    elechemcomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ID")));
-    elechemcomponents.emplace_back(Teuchos::rcp(new Input::IntComponent("ConditionID")));
-    elechemcomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("POT")));
-    elechemcomponents.emplace_back(Teuchos::rcp(new Input::RealComponent("pot")));
-    elechemcomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("FUNCT")));
-    elechemcomponents.emplace_back(Teuchos::rcp(new Input::IntComponent("funct", {0, true, true})));
-    elechemcomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("NUMSCAL")));
-    elechemcomponents.emplace_back(Teuchos::rcp(new Input::IntComponent("numscal")));
-    elechemcomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("STOICH")));
-    elechemcomponents.emplace_back(
-        Teuchos::rcp(new Input::IntVectorComponent("stoich", Input::LengthFromInt("numscal"))));
-
-    elechemcomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("E-")));
-    elechemcomponents.emplace_back(Teuchos::rcp(new Input::IntComponent("e-")));
-    // porosity of electrode boundary, set to -1 if equal to porosity of electrolyte domain
-    elechemcomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("EPSILON")));
-    elechemcomponents.emplace_back(Teuchos::rcp(new Input::RealComponent("epsilon")));
-    elechemcomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ZERO_CUR")));
-    elechemcomponents.emplace_back(Teuchos::rcp(new Input::IntComponent("zero_cur")));
-    elechemcomponents.emplace_back(Teuchos::rcp(
-        new Input::SwitchComponent("kinetic model", butler_volmer, reaction_model_choices)));
-
     auto electrodeboundarykineticspoint = Teuchos::rcp(
         new Core::Conditions::ConditionDefinition("ELECTRODE BOUNDARY KINETICS POINT CONDITIONS",
             "ElchBoundaryKineticsPoint", "point electrode boundary kinetics",
@@ -407,16 +363,33 @@ void Inpar::ElCh::SetValidConditions(
             "ElchBoundaryKinetics", "surface electrode boundary kinetics",
             Core::Conditions::ElchBoundaryKinetics, true, Core::Conditions::geometry_type_surface));
 
-    for (auto& elechemcomponent : elechemcomponents)
+    for (const auto& cond : {electrodeboundarykineticspoint, electrodeboundarykineticsline,
+             electrodeboundarykineticssurf})
     {
-      electrodeboundarykineticspoint->add_component(elechemcomponent);
-      electrodeboundarykineticsline->add_component(elechemcomponent);
-      electrodeboundarykineticssurf->add_component(elechemcomponent);
-    }
+      cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("ID")));
+      cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+      cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("POT")));
+      cond->add_component(Teuchos::rcp(new Input::RealComponent("pot")));
+      cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("FUNCT")));
+      cond->add_component(Teuchos::rcp(new Input::IntComponent("funct", {0, true, true})));
+      cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("NUMSCAL")));
+      cond->add_component(Teuchos::rcp(new Input::IntComponent("numscal")));
+      cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("STOICH")));
+      cond->add_component(
+          Teuchos::rcp(new Input::IntVectorComponent("stoich", Input::LengthFromInt("numscal"))));
 
-    condlist.emplace_back(electrodeboundarykineticspoint);
-    condlist.emplace_back(electrodeboundarykineticsline);
-    condlist.emplace_back(electrodeboundarykineticssurf);
+      cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("E-")));
+      cond->add_component(Teuchos::rcp(new Input::IntComponent("e-")));
+      // porosity of electrode boundary, set to -1 if equal to porosity of electrolyte domain
+      cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("EPSILON")));
+      cond->add_component(Teuchos::rcp(new Input::RealComponent("epsilon")));
+      cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("ZERO_CUR")));
+      cond->add_component(Teuchos::rcp(new Input::IntComponent("zero_cur")));
+      cond->add_component(Teuchos::rcp(
+          new Input::SwitchComponent("kinetic model", butler_volmer, reaction_model_choices)));
+
+      condlist.emplace_back(cond);
+    }
   }
 
   /*--------------------------------------------------------------------*/
@@ -514,130 +487,98 @@ void Inpar::ElCh::SetValidConditions(
 
   /*--------------------------------------------------------------------*/
   // boundary condition for constant-current constant-voltage (CCCV) cell cycling
+
+  // definition of point, line and surface conditions for CCCV cell cycling
+  auto cccvcyclingpoint = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      "DESIGN CCCV CELL CYCLING POINT CONDITIONS", "CCCVCycling",
+      "line boundary condition for constant-current constant-voltage (CCCV) cell cycling",
+      Core::Conditions::CCCVCycling, true, Core::Conditions::geometry_type_point));
+
+  auto cccvcyclingline = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      "DESIGN CCCV CELL CYCLING LINE CONDITIONS", "CCCVCycling",
+      "line boundary condition for constant-current constant-voltage (CCCV) cell cycling",
+      Core::Conditions::CCCVCycling, true, Core::Conditions::geometry_type_line));
+
+  auto cccvcyclingsurf = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      "DESIGN CCCV CELL CYCLING SURF CONDITIONS", "CCCVCycling",
+      "surface boundary condition for constant-current constant-voltage (CCCV) cell cycling",
+      Core::Conditions::CCCVCycling, true, Core::Conditions::geometry_type_surface));
+
+  for (const auto& cond : {cccvcyclingpoint, cccvcyclingline, cccvcyclingsurf})
   {
-    // definition of point, line and surface conditions for CCCV cell cycling
-    auto cccvcyclingpoint = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
-        "DESIGN CCCV CELL CYCLING POINT CONDITIONS", "CCCVCycling",
-        "line boundary condition for constant-current constant-voltage (CCCV) cell cycling",
-        Core::Conditions::CCCVCycling, true, Core::Conditions::geometry_type_point));
-
-    auto cccvcyclingline = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
-        "DESIGN CCCV CELL CYCLING LINE CONDITIONS", "CCCVCycling",
-        "line boundary condition for constant-current constant-voltage (CCCV) cell cycling",
-        Core::Conditions::CCCVCycling, true, Core::Conditions::geometry_type_line));
-
-    auto cccvcyclingsurf = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
-        "DESIGN CCCV CELL CYCLING SURF CONDITIONS", "CCCVCycling",
-        "surface boundary condition for constant-current constant-voltage (CCCV) cell cycling",
-        Core::Conditions::CCCVCycling, true, Core::Conditions::geometry_type_surface));
-
-    // equip condition definitions with input file line components
-    std::vector<Teuchos::RCP<Input::LineComponent>> cccvcyclingcomponents;
-
-    {
-      cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("NUMBER_OF_HALF_CYCLES")));
-      cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new Input::IntComponent("NumberOfHalfCycles")));
-      cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("BEGIN_WITH_CHARGING")));
-      cccvcyclingcomponents.emplace_back(Teuchos::rcp(new Input::IntComponent(
-          "BeginWithCharging")));  // Boolean parameter represented by integer parameter
-      cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("CONDITION_ID_FOR_CHARGE")));
-      cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new Input::IntComponent("ConditionIDForCharge", {0, false, true})));
-      cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("CONDITION_ID_FOR_DISCHARGE")));
-      cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new Input::IntComponent("ConditionIDForDischarge", {0, false, true})));
-      cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("INIT_RELAX_TIME")));
-      cccvcyclingcomponents.emplace_back(Teuchos::rcp(new Input::RealComponent("InitRelaxTime")));
-      cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("ADAPTIVE_TIME_STEPPING_INIT_RELAX")));
-      cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new Input::IntComponent("AdaptiveTimeSteppingInitRelax")));
-      cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("NUM_ADD_ADAPT_TIME_STEPS")));
-      cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new Input::IntComponent("NumAddAdaptTimeSteps", {0, false, true})));
-      cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("MIN_TIME_STEPS_DURING_INIT_RELAX")));
-      cccvcyclingcomponents.emplace_back(Teuchos::rcp(
-          new Input::IntComponent("min_time_steps_during_init_relax", {0, false, true})));
-    }
-
     // insert input file line components into condition definitions
-    for (auto& cccvcyclingcomponent : cccvcyclingcomponents)
     {
-      cccvcyclingpoint->add_component(cccvcyclingcomponent);
-      cccvcyclingline->add_component(cccvcyclingcomponent);
-      cccvcyclingsurf->add_component(cccvcyclingcomponent);
-    }
+      cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("NUMBER_OF_HALF_CYCLES")));
+      cond->add_component(Teuchos::rcp(new Input::IntComponent("NumberOfHalfCycles")));
+      cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("BEGIN_WITH_CHARGING")));
+      cond->add_component(Teuchos::rcp(new Input::IntComponent(
+          "BeginWithCharging")));  // Boolean parameter represented by integer parameter
+      cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("CONDITION_ID_FOR_CHARGE")));
+      cond->add_component(
+          Teuchos::rcp(new Input::IntComponent("ConditionIDForCharge", {0, false, true})));
+      cond->add_component(
+          Teuchos::rcp(new Input::SeparatorComponent("CONDITION_ID_FOR_DISCHARGE")));
+      cond->add_component(
+          Teuchos::rcp(new Input::IntComponent("ConditionIDForDischarge", {0, false, true})));
+      cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("INIT_RELAX_TIME")));
+      cond->add_component(Teuchos::rcp(new Input::RealComponent("InitRelaxTime")));
+      cond->add_component(
+          Teuchos::rcp(new Input::SeparatorComponent("ADAPTIVE_TIME_STEPPING_INIT_RELAX")));
+      cond->add_component(Teuchos::rcp(new Input::IntComponent("AdaptiveTimeSteppingInitRelax")));
+      cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("NUM_ADD_ADAPT_TIME_STEPS")));
+      cond->add_component(
+          Teuchos::rcp(new Input::IntComponent("NumAddAdaptTimeSteps", {0, false, true})));
+      cond->add_component(
+          Teuchos::rcp(new Input::SeparatorComponent("MIN_TIME_STEPS_DURING_INIT_RELAX")));
+      cond->add_component(Teuchos::rcp(
+          new Input::IntComponent("min_time_steps_during_init_relax", {0, false, true})));
 
-    // insert condition definitions into global list of valid condition definitions
-    condlist.emplace_back(cccvcyclingpoint);
-    condlist.emplace_back(cccvcyclingline);
-    condlist.emplace_back(cccvcyclingsurf);
+      // insert condition definitions into global list of valid condition definitions
+      condlist.emplace_back(cond);
+    }
   }
 
   /*--------------------------------------------------------------------*/
   // boundary condition for constant-current constant-voltage (CCCV) half-cycle
+
+  // definition of point, line and surface conditions for CCCV half-cycle
+  auto cccvhalfcyclepoint = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      "DESIGN CCCV HALF-CYCLE POINT CONDITIONS", "CCCVHalfCycle",
+      "line boundary condition for constant-current constant-voltage (CCCV) half-cycle",
+      Core::Conditions::CCCVHalfCycle, true, Core::Conditions::geometry_type_point));
+
+  auto cccvhalfcycleline = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      "DESIGN CCCV HALF-CYCLE LINE CONDITIONS", "CCCVHalfCycle",
+      "line boundary condition for constant-current constant-voltage (CCCV) half-cycle",
+      Core::Conditions::CCCVHalfCycle, true, Core::Conditions::geometry_type_line));
+
+  auto cccvhalfcyclesurf = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      "DESIGN CCCV HALF-CYCLE SURF CONDITIONS", "CCCVHalfCycle",
+      "surface boundary condition for constant-current constant-voltage (CCCV) half-cycle",
+      Core::Conditions::CCCVHalfCycle, true, Core::Conditions::geometry_type_surface));
+
+  for (const auto& cond : {cccvhalfcyclepoint, cccvhalfcycleline, cccvhalfcyclesurf})
   {
-    // definition of point, line and surface conditions for CCCV half-cycle
-    auto cccvhalfcyclepoint = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
-        "DESIGN CCCV HALF-CYCLE POINT CONDITIONS", "CCCVHalfCycle",
-        "line boundary condition for constant-current constant-voltage (CCCV) half-cycle",
-        Core::Conditions::CCCVHalfCycle, true, Core::Conditions::geometry_type_point));
-
-    auto cccvhalfcycleline = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
-        "DESIGN CCCV HALF-CYCLE LINE CONDITIONS", "CCCVHalfCycle",
-        "line boundary condition for constant-current constant-voltage (CCCV) half-cycle",
-        Core::Conditions::CCCVHalfCycle, true, Core::Conditions::geometry_type_line));
-
-    auto cccvhalfcyclesurf = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
-        "DESIGN CCCV HALF-CYCLE SURF CONDITIONS", "CCCVHalfCycle",
-        "surface boundary condition for constant-current constant-voltage (CCCV) half-cycle",
-        Core::Conditions::CCCVHalfCycle, true, Core::Conditions::geometry_type_surface));
-
-    // equip condition definitions with input file line components
-    std::vector<Teuchos::RCP<Input::LineComponent>> cccvhalfcyclecomponents;
-
-    {
-      cccvhalfcyclecomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ID")));
-      cccvhalfcyclecomponents.emplace_back(Teuchos::rcp(new Input::IntComponent("ConditionID")));
-      cccvhalfcyclecomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("CURRENT")));
-      cccvhalfcyclecomponents.emplace_back(Teuchos::rcp(new Input::RealComponent("Current")));
-      cccvhalfcyclecomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("CUT_OFF_VOLTAGE")));
-      cccvhalfcyclecomponents.emplace_back(Teuchos::rcp(new Input::RealComponent("CutoffVoltage")));
-      cccvhalfcyclecomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("CUT_OFF_C_RATE")));
-      cccvhalfcyclecomponents.emplace_back(Teuchos::rcp(new Input::RealComponent("CutoffCRate")));
-      cccvhalfcyclecomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("RELAX_TIME")));
-      cccvhalfcyclecomponents.emplace_back(Teuchos::rcp(new Input::RealComponent("RelaxTime")));
-      // switch adaptive time stepping on for different phases of half cycle: 1st: end of constant
-      // current, 2nd: end of constant voltage, 3rd: end of relaxation
-      cccvhalfcyclecomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("ADAPTIVE_TIME_STEPPING_PHASE_ON_OFF")));
-      cccvhalfcyclecomponents.emplace_back(
-          Teuchos::rcp(new Input::IntVectorComponent("AdaptiveTimeSteppingPhaseOnOff", 3)));
-    }
-
     // insert input file line components into condition definitions
-    for (auto& cccvhalfcyclecomponent : cccvhalfcyclecomponents)
-    {
-      cccvhalfcyclepoint->add_component(cccvhalfcyclecomponent);
-      cccvhalfcycleline->add_component(cccvhalfcyclecomponent);
-      cccvhalfcyclesurf->add_component(cccvhalfcyclecomponent);
-    }
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("ID")));
+    cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("CURRENT")));
+    cond->add_component(Teuchos::rcp(new Input::RealComponent("Current")));
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("CUT_OFF_VOLTAGE")));
+    cond->add_component(Teuchos::rcp(new Input::RealComponent("CutoffVoltage")));
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("CUT_OFF_C_RATE")));
+    cond->add_component(Teuchos::rcp(new Input::RealComponent("CutoffCRate")));
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("RELAX_TIME")));
+    cond->add_component(Teuchos::rcp(new Input::RealComponent("RelaxTime")));
+    // switch adaptive time stepping on for different phases of half cycle: 1st: end of constant
+    // current, 2nd: end of constant voltage, 3rd: end of relaxation
+    cond->add_component(
+        Teuchos::rcp(new Input::SeparatorComponent("ADAPTIVE_TIME_STEPPING_PHASE_ON_OFF")));
+    cond->add_component(
+        Teuchos::rcp(new Input::IntVectorComponent("AdaptiveTimeSteppingPhaseOnOff", 3)));
 
     // insert condition definitions into global list of valid condition definitions
-    condlist.emplace_back(cccvhalfcyclepoint);
-    condlist.emplace_back(cccvhalfcycleline);
-    condlist.emplace_back(cccvhalfcyclesurf);
+    condlist.emplace_back(cond);
   }
 }
 

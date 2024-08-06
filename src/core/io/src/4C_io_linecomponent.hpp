@@ -467,13 +467,16 @@ namespace Input
   /// the parsed container.
   template <typename DefinitionType>
   inline void add_named_int(const Teuchos::RCP<DefinitionType>& definition, const std::string& name,
-      const std::string& description = {}, const int defaultvalue = 0, const bool optional = false)
+      const std::string& description = {}, const int defaultvalue = 0, const bool optional = false,
+      const bool none_allowed = false, const bool fortran_style = false)
   {
     definition->add_component(
         Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
     IntComponentData data{};
     data.default_value = defaultvalue;
     data.optional = optional;
+    data.none_allowed = none_allowed;
+    data.fortran_style = fortran_style;
     definition->add_component(Teuchos::rcp(new Input::IntComponent(name, data)));
   }
 
@@ -484,13 +487,14 @@ namespace Input
   template <typename DefinitionType>
   inline void add_named_int_vector(const Teuchos::RCP<DefinitionType>& definition,
       const std::string& name, const std::string& description, const int size,
-      const int defaultvalue = 0, const bool optional = false)
+      const int defaultvalue = 0, const bool optional = false, const bool none_allowed = false)
   {
     definition->add_component(
         Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
     IntComponentData data{};
     data.default_value = defaultvalue;
     data.optional = optional;
+    data.none_allowed = none_allowed;
     definition->add_component(Teuchos::rcp(new Input::IntVectorComponent(name, size, data)));
   }
 
@@ -501,13 +505,14 @@ namespace Input
   template <typename DefinitionType>
   inline void add_named_int_vector(const Teuchos::RCP<DefinitionType>& definition,
       const std::string& name, const std::string& description, const std::string& sizename,
-      const int defaultvalue = 0, const bool optional = false)
+      const int defaultvalue = 0, const bool optional = false, const bool none_allowed = false)
   {
     definition->add_component(
         Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
     IntComponentData data{};
     data.default_value = defaultvalue;
     data.optional = optional;
+    data.none_allowed = none_allowed;
     definition->add_component(
         Teuchos::rcp(new Input::IntVectorComponent(name, LengthFromInt(sizename), data)));
   }
@@ -623,6 +628,48 @@ namespace Input
     definition->add_component(Teuchos::rcp(
         new Input::ProcessedComponent(name, process_operation, print_string, optional)));
   }
+
+
+  /*!
+   * @brief Add a separator followed by a selection component
+   *
+   * This function adds two components to the @p definition:
+   *  1. A SeparatorComponent with a provided @p name, and a @p separator_description .
+   *  2. A SelectionComponent with the same @p name , @p datfilevalues, @p condvalues and an @p
+   * optional tag.
+   */
+  template <typename DefinitionType>
+  inline void add_named_selection_component(const Teuchos::RCP<DefinitionType>& definition,
+      const std::string& name, const std::string& separator_description,
+      const std::string& defaultvalue, const Teuchos::Array<std::string>& datfilevalues,
+      const Teuchos::Array<std::string>& condvalues, bool optional = false)
+  {
+    definition->add_component(
+        Teuchos::rcp(new Input::SeparatorComponent(name, separator_description, optional)));
+    definition->add_component(Teuchos::rcp(
+        new Input::SelectionComponent(name, defaultvalue, datfilevalues, condvalues, optional)));
+  }
+
+  /*!
+   * @brief Add a separator followed by a selection component
+   *
+   * This function adds two components to the @p definition:
+   *  1. A SeparatorComponent with a provided @p name, and a @p separator_description .
+   *  2. A SelectionComponent with the same @p name , @p datfilevalues, @p condvalues and an @p
+   * optional tag.
+   */
+  template <typename DefinitionType>
+  inline void add_named_selection_component(const Teuchos::RCP<DefinitionType>& definition,
+      const std::string& name, const std::string& separator_description,
+      const std::string& defaultvalue, const Teuchos::Array<std::string>& datfilevalues,
+      const Teuchos::Array<int>& condvalues, bool optional = false)
+  {
+    definition->add_component(
+        Teuchos::rcp(new Input::SeparatorComponent(name, separator_description, optional)));
+    definition->add_component(Teuchos::rcp(
+        new Input::SelectionComponent(name, defaultvalue, datfilevalues, condvalues, optional)));
+  }
+
 }  // namespace Input
 
 FOUR_C_NAMESPACE_CLOSE

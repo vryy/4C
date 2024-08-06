@@ -86,7 +86,6 @@ namespace Core::Conditions
     XFEM_Robin_Dirichlet_Volume,
     XFEM_Robin_Neumann_Volume,
     XFEM_Levelset_Twophase,
-    XFEM_Levelset_Combustion,
     XFEM_Surf_FSIPart,
     XFEM_Surf_FSIMono,
     XFEM_Surf_FPIMono,

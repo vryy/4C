@@ -389,15 +389,60 @@ void Inpar::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
 
 void Inpar::XFEM::SetValidConditions(
-    const std::vector<Teuchos::RCP<Input::LineComponent>>& dirichletbundcomponents,
-    const std::vector<Teuchos::RCP<Input::LineComponent>>& neumanncomponents,
     std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;
 
-  std::vector<Teuchos::RCP<Input::LineComponent>> xfemcomponents;
+  // define standard Dirichlet condition components
+  std::vector<Teuchos::RCP<LineComponent>> dirichletbundcomponents;
 
-  xfemcomponents.push_back(Teuchos::rcp(new Input::IntComponent("label")));
+  dirichletbundcomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("NUMDOF")));
+  dirichletbundcomponents.emplace_back(Teuchos::rcp(new IntComponent("numdof")));
+
+  dirichletbundcomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("ONOFF")));
+  dirichletbundcomponents.emplace_back(
+      Teuchos::rcp(new IntVectorComponent("onoff", LengthFromInt("numdof"))));
+  dirichletbundcomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("VAL")));
+  dirichletbundcomponents.emplace_back(
+      Teuchos::rcp(new RealVectorComponent("val", LengthFromInt("numdof"))));
+  dirichletbundcomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("FUNCT")));
+  dirichletbundcomponents.emplace_back(Teuchos::rcp(
+      new IntVectorComponent("funct", LengthFromInt("numdof"), {0, false, true, false})));
+
+  // optional
+  dirichletbundcomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("TAG", "", true)));
+  dirichletbundcomponents.emplace_back(Teuchos::rcp(
+      new SelectionComponent("tag", "none", Teuchos::tuple<std::string>("none", "monitor_reaction"),
+          Teuchos::tuple<std::string>("none", "monitor_reaction"), true)));
+
+  // define standard Neumann condition components
+  std::vector<Teuchos::RCP<LineComponent>> neumanncomponents;
+
+  neumanncomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("NUMDOF")));
+  neumanncomponents.emplace_back(Teuchos::rcp(new IntComponent("numdof")));
+
+  neumanncomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("ONOFF")));
+  neumanncomponents.emplace_back(
+      Teuchos::rcp(new IntVectorComponent("onoff", LengthFromInt("numdof"))));
+  neumanncomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("VAL")));
+  neumanncomponents.emplace_back(
+      Teuchos::rcp(new RealVectorComponent("val", LengthFromInt("numdof"))));
+  neumanncomponents.emplace_back(Teuchos::rcp(new SeparatorComponent("FUNCT")));
+  neumanncomponents.emplace_back(Teuchos::rcp(
+      new IntVectorComponent("funct", LengthFromInt("numdof"), {0, false, true, false})));
+
+  // optional
+  neumanncomponents.emplace_back(Teuchos::rcp(new SelectionComponent("type", "Live",
+      Teuchos::tuple<std::string>("Live", "Dead", "PrescribedDomainLoad", "constHydro_z",
+          "increaseHydro_z", "pseudo_orthopressure", "orthopressure", "LAS", "PressureGrad",
+          "Torque"),
+      Teuchos::tuple<std::string>("neum_live", "neum_dead", "pres_domain_load", "neum_consthydro_z",
+          "neum_increhydro_z", "neum_pseudo_orthopressure", "neum_orthopressure", "neum_LAS",
+          "neum_pgrad", "neum_torque"),
+      true)));
+  neumanncomponents.emplace_back(Teuchos::rcp(
+      new SelectionComponent("surface", "Mid", Teuchos::tuple<std::string>("Mid", "Top", "Bot"),
+          Teuchos::tuple<std::string>("mid", "top", "bot"), true)));
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> movingfluid = Teuchos::rcp(
       new Core::Conditions::ConditionDefinition("DESIGN FLUID MESH VOL CONDITIONS", "FluidMesh",
@@ -411,16 +456,12 @@ void Inpar::XFEM::SetValidConditions(
           "DESIGN ALE FLUID COUPLING SURF CONDITIONS", "ALEFluidCoupling", "ALE FLUID Coupling",
           Core::Conditions::ALEFluidCoupling, true, Core::Conditions::geometry_type_surface));
 
-  for (unsigned i = 0; i < xfemcomponents.size(); ++i)
+  for (const auto& cond : {movingfluid, fluidfluidcoupling, ALEfluidcoupling})
   {
-    movingfluid->add_component(xfemcomponents[i]);
-    fluidfluidcoupling->add_component(xfemcomponents[i]);
-    ALEfluidcoupling->add_component(xfemcomponents[i]);
-  }
+    cond->add_component(Teuchos::rcp(new Input::IntComponent("label")));
 
-  condlist.push_back(fluidfluidcoupling);
-  condlist.push_back(movingfluid);
-  condlist.push_back(ALEfluidcoupling);
+    condlist.push_back(cond);
+  }
 
 
   /*--------------------------------------------------------------------*/
@@ -637,52 +678,6 @@ void Inpar::XFEM::SetValidConditions(
   }
 
   condlist.push_back(xfem_levelset_twophase);
-
-  //*----------------*/
-  // Levelset based Combustion conditions
-
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> xfem_levelset_combustion =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
-          "DESIGN XFEM LEVELSET COMBUSTION VOL CONDITIONS", "XFEMLevelsetCombustion",
-          "XFEM Levelset Combustion", Core::Conditions::XFEM_Levelset_Combustion, true,
-          Core::Conditions::geometry_type_volume));
-
-  for (unsigned i = 0; i < levelsetfield_components.size(); ++i)
-  {
-    xfem_levelset_combustion->add_component(levelsetfield_components[i]);
-  }
-
-  // "The laminar flamespeed incorporates all chemical kinetics into the problem for now"
-  xfem_levelset_combustion->add_component(
-      Teuchos::rcp(new Input::SeparatorComponent("LAMINAR_FLAMESPEED", "", false)));
-  xfem_levelset_combustion->add_component(
-      Teuchos::rcp(new Input::RealComponent("laminar_flamespeed")));
-
-  // "Molecular diffusivity"
-  xfem_levelset_combustion->add_component(
-      Teuchos::rcp(new Input::SeparatorComponent("MOL_DIFFUSIVITY", "", false)));
-  xfem_levelset_combustion->add_component(
-      Teuchos::rcp(new Input::RealComponent("mol_diffusivity")));
-
-  // "The Markstein length takes flame curvature into account"
-  xfem_levelset_combustion->add_component(
-      Teuchos::rcp(new Input::SeparatorComponent("MARKSTEIN_LENGTH", "", false)));
-  xfem_levelset_combustion->add_component(
-      Teuchos::rcp(new Input::RealComponent("markstein_length")));
-
-  // interface transport in all directions or just in normal direction?
-  xfem_levelset_combustion->add_component(
-      Teuchos::rcp(new Input::SeparatorComponent("TRANSPORT_DIRECTIONS")));
-
-
-  // define if the curvature shall be accounted for in computing the transport velocity
-  xfem_levelset_combustion->add_component(
-      Teuchos::rcp(new Input::SeparatorComponent("TRANSPORT_CURVATURE")));
-  xfem_levelset_combustion->add_component(
-      Teuchos::rcp(new Input::IntComponent("transport_curvature")));
-
-
-  condlist.push_back(xfem_levelset_combustion);
 
   //*----------------*/
   // Surface Fluid-Fluid coupling conditions

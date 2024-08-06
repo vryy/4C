@@ -12,7 +12,6 @@
 #include "4C_inpar_ehl.hpp"
 
 #include "4C_fem_condition_definition.hpp"
-#include "4C_inpar_scatra.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -145,19 +144,6 @@ void Inpar::EHL::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // ehl mortar coupling
 
-  std::vector<Teuchos::RCP<Input::LineComponent>> ehlcomponents;
-
-  ehlcomponents.push_back(Teuchos::rcp(new Input::IntComponent("Interface ID")));
-  ehlcomponents.push_back(Teuchos::rcp(new Input::SelectionComponent("Side", "Master",
-      Teuchos::tuple<std::string>("Master", "Slave"),
-      Teuchos::tuple<std::string>("Master", "Slave"))));
-  ehlcomponents.push_back(Teuchos::rcp(new Input::SelectionComponent("Initialization", "Active",
-      Teuchos::tuple<std::string>("Inactive", "Active"),
-      Teuchos::tuple<std::string>("Inactive", "Active"), true)));
-
-  ehlcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("FrCoeffOrBound", "", true)));
-  ehlcomponents.push_back(Teuchos::rcp(new Input::RealComponent("FrCoeffOrBound")));
-
   Teuchos::RCP<Core::Conditions::ConditionDefinition> lineehl =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN LINE EHL MORTAR COUPLING CONDITIONS 2D", "EHLCoupling", "Line EHL Coupling",
@@ -167,15 +153,19 @@ void Inpar::EHL::SetValidConditions(
           "DESIGN SURF EHL MORTAR COUPLING CONDITIONS 3D", "EHLCoupling", "Surface EHL Coupling",
           Core::Conditions::EHLCoupling, true, Core::Conditions::geometry_type_surface));
 
-
-  for (unsigned i = 0; i < ehlcomponents.size(); ++i)
+  for (const auto& cond : {lineehl, surfehl})
   {
-    lineehl->add_component(ehlcomponents[i]);
-    surfehl->add_component(ehlcomponents[i]);
-  }
+    cond->add_component(Teuchos::rcp(new Input::IntComponent("Interface ID")));
+    cond->add_component(Teuchos::rcp(new Input::SelectionComponent("Side", "Master",
+        Teuchos::tuple<std::string>("Master", "Slave"),
+        Teuchos::tuple<std::string>("Master", "Slave"))));
+    cond->add_component(Teuchos::rcp(new Input::SelectionComponent("Initialization", "Active",
+        Teuchos::tuple<std::string>("Inactive", "Active"),
+        Teuchos::tuple<std::string>("Inactive", "Active"), true)));
+    add_named_real(cond, "FrCoeffOrBound", "", 0.0, true);
 
-  condlist.push_back(lineehl);
-  condlist.push_back(surfehl);
+    condlist.push_back(cond);
+  }
 }
 
 FOUR_C_NAMESPACE_CLOSE

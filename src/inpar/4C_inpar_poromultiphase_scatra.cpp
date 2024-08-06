@@ -9,8 +9,6 @@
 #include "4C_inpar_poromultiphase_scatra.hpp"
 
 #include "4C_fem_condition_definition.hpp"
-#include "4C_inpar_poroelast.hpp"
-#include "4C_inpar_scatra.hpp"
 #include "4C_linalg_equilibrate.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -166,40 +164,21 @@ void Inpar::PoroMultiPhaseScaTra::SetValidConditions(
             Core::Conditions::PoroMultiphaseScatraOxyPartPressCalcCond, true,
             Core::Conditions::geometry_type_volume));
 
-    // equip condition definitions with input file line components
-    std::vector<Teuchos::RCP<Input::LineComponent>> oxypartpresscomponents;
-
+    for (const auto& cond : {oxypartpressline, oxypartpresssurf, oxypartpressvol})
     {
-      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("SCALARID")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::IntComponent("SCALARID")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("n")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::RealComponent("n")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("Pb50")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::RealComponent("Pb50")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("CaO2_max")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::RealComponent("CaO2_max")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("alpha_bl_eff")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::RealComponent("alpha_bl_eff")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("rho_oxy")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::RealComponent("rho_oxy")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("rho_bl")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::RealComponent("rho_bl")));
-    }
+      // insert input file line components into condition definitions
+      add_named_int(cond, "SCALARID");
+      add_named_real(cond, "n");
+      add_named_real(cond, "Pb50");
+      add_named_real(cond, "CaO2_max");
+      add_named_real(cond, "alpha_bl_eff");
+      add_named_real(cond, "rho_oxy");
+      add_named_real(cond, "rho_bl");
 
-    // insert input file line components into condition definitions
-    for (unsigned i = 0; i < oxypartpresscomponents.size(); ++i)
-    {
-      oxypartpressline->add_component(oxypartpresscomponents[i]);
-      oxypartpresssurf->add_component(oxypartpresscomponents[i]);
-      oxypartpressvol->add_component(oxypartpresscomponents[i]);
+      // insert condition definitions into global list of valid condition definitions
+      condlist.push_back(cond);
     }
-
-    // insert condition definitions into global list of valid condition definitions
-    condlist.push_back(oxypartpressline);
-    condlist.push_back(oxypartpresssurf);
-    condlist.push_back(oxypartpressvol);
   }
-  return;
 }
 
 FOUR_C_NAMESPACE_CLOSE

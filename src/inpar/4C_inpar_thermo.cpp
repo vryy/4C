@@ -15,6 +15,7 @@
 
 #include "4C_fem_condition_definition.hpp"
 #include "4C_io_geometry_type.hpp"
+#include "4C_io_linecomponent.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -158,30 +159,6 @@ void Inpar::THR::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Convective heat transfer (Newton's law of heat transfer)
 
-  std::vector<Teuchos::RCP<Input::LineComponent>> thermoconvectcomponents;
-
-  // decide here if approximation is sufficient
-  // --> Tempn (old temperature T_n)
-  // or if the exact solution is needed
-  // --> Tempnp (current temperature solution T_n+1) with linearisation
-  thermoconvectcomponents.push_back(Teuchos::rcp(new Input::SelectionComponent("temperature state",
-      "Tempnp", Teuchos::tuple<std::string>("Tempnp", "Tempn"),
-      Teuchos::tuple<std::string>("Tempnp", "Tempn"))));
-  // heat transfer coefficient h
-  thermoconvectcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("coeff")));
-  thermoconvectcomponents.push_back(Teuchos::rcp(new Input::RealComponent("coeff")));
-  // surrounding (fluid) temperature T_oo
-  thermoconvectcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("surtemp")));
-  thermoconvectcomponents.push_back(Teuchos::rcp(new Input::RealComponent("surtemp")));
-  // time curve to increase the surrounding (fluid) temperature T_oo in time
-  thermoconvectcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("surtempfunct")));
-  thermoconvectcomponents.push_back(
-      Teuchos::rcp(new Input::IntComponent("surtempfunct", {0, true, true})));
-  // time curve to increase the complete boundary condition, i.e., the heat flux
-  thermoconvectcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("funct")));
-  thermoconvectcomponents.push_back(
-      Teuchos::rcp(new Input::IntComponent("funct", {0, true, true})));
-
   Teuchos::RCP<Core::Conditions::ConditionDefinition> linethermoconvect = Teuchos::rcp(
       new Core::Conditions::ConditionDefinition("DESIGN THERMO CONVECTION LINE CONDITIONS",
           "ThermoConvections", "Line Thermo Convections", Core::Conditions::ThermoConvections, true,
@@ -191,14 +168,28 @@ void Inpar::THR::SetValidConditions(
           "ThermoConvections", "Surface Thermo Convections", Core::Conditions::ThermoConvections,
           true, Core::Conditions::geometry_type_surface));
 
-  for (unsigned i = 0; i < thermoconvectcomponents.size(); ++i)
+  for (const auto& cond : {linethermoconvect, surfthermoconvect})
   {
-    linethermoconvect->add_component(thermoconvectcomponents[i]);
-    surfthermoconvect->add_component(thermoconvectcomponents[i]);
-  }
+    // decide here if approximation is sufficient
+    // --> Tempn (old temperature T_n)
+    // or if the exact solution is needed
+    // --> Tempnp (current temperature solution T_n+1) with linearisation
+    cond->add_component(Teuchos::rcp(new Input::SelectionComponent("temperature state", "Tempnp",
+        Teuchos::tuple<std::string>("Tempnp", "Tempn"),
+        Teuchos::tuple<std::string>("Tempnp", "Tempn"))));
 
-  condlist.push_back(linethermoconvect);
-  condlist.push_back(surfthermoconvect);
+    add_named_real(cond, "coeff", "heat transfer coefficient h");
+    add_named_real(cond, "surtemp", "surrounding (fluid) temperature T_oo");
+
+    // time curve to increase the surrounding (fluid) temperature T_oo in time
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("surtempfunct")));
+    cond->add_component(Teuchos::rcp(new Input::IntComponent("surtempfunct", {0, true, true})));
+    // time curve to increase the complete boundary condition, i.e., the heat flux
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("funct")));
+    cond->add_component(Teuchos::rcp(new Input::IntComponent("funct", {0, true, true})));
+
+    condlist.push_back(cond);
+  }
 
   /*--------------------------------------------------------------------*/
   // Robin boundary conditions for heat transfer
@@ -212,27 +203,21 @@ void Inpar::THR::SetValidConditions(
           "ThermoRobin", "Thermo Robin boundary condition", Core::Conditions::ThermoRobin, true,
           Core::Conditions::geometry_type_surface));
 
-  std::vector<Teuchos::RCP<Input::LineComponent>> thermorobincomponents;
-
-  thermorobincomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("NUMSCAL")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new Input::IntComponent("numscal")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ONOFF")));
-  thermorobincomponents.emplace_back(
-      Teuchos::rcp(new Input::IntVectorComponent("onoff", Input::LengthFromInt("numscal"))));
-
-  thermorobincomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("PREFACTOR")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new Input::RealComponent("prefactor")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("REFVALUE")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new Input::RealComponent("refvalue")));
-
-  for (const auto& thermorobincomponent : thermorobincomponents)
+  for (const auto& cond : {thermorobinline, thermorobinsurf})
   {
-    thermorobinline->add_component(thermorobincomponent);
-    thermorobinsurf->add_component(thermorobincomponent);
-  }
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("NUMSCAL")));
+    cond->add_component(Teuchos::rcp(new Input::IntComponent("numscal")));
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("ONOFF")));
+    cond->add_component(
+        Teuchos::rcp(new Input::IntVectorComponent("onoff", Input::LengthFromInt("numscal"))));
 
-  condlist.push_back(thermorobinline);
-  condlist.push_back(thermorobinsurf);
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("PREFACTOR")));
+    cond->add_component(Teuchos::rcp(new Input::RealComponent("prefactor")));
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("REFVALUE")));
+    cond->add_component(Teuchos::rcp(new Input::RealComponent("refvalue")));
+
+    condlist.emplace_back(cond);
+  }
 }
 
 FOUR_C_NAMESPACE_CLOSE

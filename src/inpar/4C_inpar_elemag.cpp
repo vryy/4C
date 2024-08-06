@@ -123,20 +123,6 @@ void Inpar::EleMag::SetValidConditions(
 {
   using namespace Input;
 
-  std::vector<Teuchos::RCP<Input::LineComponent>> abcbundcomponents;
-
-  abcbundcomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("NUMDOF")));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new Input::IntComponent("numdof")));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ONOFF")));
-  abcbundcomponents.emplace_back(
-      Teuchos::rcp(new Input::IntVectorComponent("onoff", Input::LengthFromInt("numdof"))));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("FUNCT")));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new Input::IntVectorComponent(
-      "funct", Input::LengthFromInt("numdof"), {0, false, true, false})));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("VAL")));
-  abcbundcomponents.emplace_back(
-      Teuchos::rcp(new Input::RealVectorComponent("val", Input::LengthFromInt("numdof"))));
-
   //*--------------------------------------------------------------------* /
   // absorbing boundary condition for electromagnetic problems
   // line
@@ -151,14 +137,22 @@ void Inpar::EleMag::SetValidConditions(
           "Silver-Mueller", "Absorbing-emitting surface for electromagnetics",
           Core::Conditions::SilverMueller, true, Core::Conditions::geometry_type_surface));
 
-  for (unsigned i = 0; i < abcbundcomponents.size(); ++i)
+  for (const auto& cond : {silvermueller_line, silvermueller_surface})
   {
-    silvermueller_line->add_component(abcbundcomponents[i]);
-    silvermueller_surface->add_component(abcbundcomponents[i]);
-  }
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("NUMDOF")));
+    cond->add_component(Teuchos::rcp(new Input::IntComponent("numdof")));
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("ONOFF")));
+    cond->add_component(
+        Teuchos::rcp(new Input::IntVectorComponent("onoff", Input::LengthFromInt("numdof"))));
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("FUNCT")));
+    cond->add_component(Teuchos::rcp(new Input::IntVectorComponent(
+        "funct", Input::LengthFromInt("numdof"), {0, false, true, false})));
+    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("VAL")));
+    cond->add_component(
+        Teuchos::rcp(new Input::RealVectorComponent("val", Input::LengthFromInt("numdof"))));
 
-  condlist.push_back(silvermueller_line);
-  condlist.push_back(silvermueller_surface);
+    condlist.push_back(cond);
+  }
 }
 
 FOUR_C_NAMESPACE_CLOSE
