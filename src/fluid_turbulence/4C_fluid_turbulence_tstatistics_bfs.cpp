@@ -16,8 +16,6 @@ turbulent flow over a backward-facing step
 
 FOUR_C_NAMESPACE_OPEN
 
-// #define COMBINE_SAMPLES
-
 /*----------------------------------------------------------------------*/
 /*!
   \brief Standard Constructor (public)
@@ -1548,10 +1546,6 @@ void FLD::TurbulenceStatisticsBfs::dump_loma_statistics(int step)
     (*log) << "# Statistics for turbulent variable-density flow over a backward-facing step at low "
               "Mach number (first- and second-order moments)";
     (*log) << "\n\n";
-#ifdef COMBINE_SAMPLES
-    (*log) << "# Statistics are prepared for combinations after restart!!!";
-    (*log) << "\n\n";
-#endif
     (*log) << "# Caution: The following statistics have to be used carefully:\n";
     (*log) << "#          rhoumean, uTmean, rhovmean, vTmean, rhou'T', rhov'T'\n";
     (*log) << "#          there are not any reference values for rhoumean, uTmean, rhovmean, "
@@ -1645,15 +1639,8 @@ void FLD::TurbulenceStatisticsBfs::dump_loma_statistics(int step)
                 "rhouTmean            rhovmean        rhovTmean";
       (*log) << "               urms                vrms                wrms                prms   "
                 "            rhorms                Trms";
-#ifndef COMBINE_SAMPLES
       (*log) << "                u'v'                u'w'                v'w'             rhou'T'  "
                 "           rhov'T'\n";
-#else
-      (*log) << "                u'v'                u'w'                v'w'             rhou'T'  "
-                "           rhov'T'";
-      (*log) << "                uu                vv                ww             pp         TT  "
-                "           rhorho\n";
-#endif
 
       for (unsigned j = 0; j < x2coordinates_->size(); ++j)
       {
@@ -1679,13 +1666,6 @@ void FLD::TurbulenceStatisticsBfs::dump_loma_statistics(int step)
         if (((*x2sumsqp_)(i, j) / numsamp_ - x2p * x2p) > 0.0)
           x2prms = std::sqrt((*x2sumsqp_)(i, j) / numsamp_ - x2p * x2p);
 
-#ifdef COMBINE_SAMPLES
-        double x2usq = (*x2sumsqu_)(i, j) / numsamp_;
-        double x2vsq = (*x2sumsqv_)(i, j) / numsamp_;
-        double x2wsq = (*x2sumsqw_)(i, j) / numsamp_;
-        double x2psq = (*x2sumsqp_)(i, j) / numsamp_;
-#endif
-
         // as T and rho are constant in the inflow section
         // <T(rho)^2>-<T(rho)>*<T(rho)> should be zero
         // however, due to small errors, <T(rho)^2>-<T(rho)>*<T(rho)>
@@ -1699,19 +1679,6 @@ void FLD::TurbulenceStatisticsBfs::dump_loma_statistics(int step)
         if (std::abs((*x2sumsq_t_)(i, j) / numsamp_ - x2T * x2T) > 1e-9)
           x2Trms = std::sqrt((*x2sumsq_t_)(i, j) / numsamp_ - x2T * x2T);
 
-#ifdef COMBINE_SAMPLES
-        double x2rhosq = (*x2sumsqrho_)(i, j) / numsamp_;
-        double x2Tsq = (*x2sumsqT_)(i, j) / numsamp_;
-
-        double x2uv = (*x2sumuv_)(i, j) / numsamp_;  //-x2u*x2v;
-        double x2uw = (*x2sumuw_)(i, j) / numsamp_;  //-x2u*x2w;
-        double x2vw = (*x2sumvw_)(i, j) / numsamp_;  //-x2v*x2w;
-
-        double x2rhou = (*x2sumrhou_)(i, j) / numsamp_;  //-x2u*x2rho;
-        double x2uT = (*x2sumuT_)(i, j) / numsamp_;      //-x2u*x2T;
-        double x2rhov = (*x2sumrhov_)(i, j) / numsamp_;  //-x2v*x2rho;
-        double x2vT = (*x2sumvT_)(i, j) / numsamp_;      //-x2v*x2T;
-#else
         double x2uv = (*x2sumuv_)(i, j) / numsamp_ - x2u * x2v;
         double x2uw = (*x2sumuw_)(i, j) / numsamp_ - x2u * x2w;
         double x2vw = (*x2sumvw_)(i, j) / numsamp_ - x2v * x2w;
@@ -1720,7 +1687,6 @@ void FLD::TurbulenceStatisticsBfs::dump_loma_statistics(int step)
         double x2uT = (*x2sumu_t_)(i, j) / numsamp_ - x2u * x2T;
         double x2rhov = (*x2sumrhov_)(i, j) / numsamp_ - x2v * x2rho;
         double x2vT = (*x2sumv_t_)(i, j) / numsamp_ - x2v * x2T;
-#endif
 
         double x2rhouppTpp = x2rho * (x2uT - x2u * x2T);
         double x2rhovppTpp = x2rho * (x2vT - x2v * x2T);
@@ -1747,14 +1713,6 @@ void FLD::TurbulenceStatisticsBfs::dump_loma_statistics(int step)
         (*log) << "   " << std::setw(17) << std::setprecision(10) << x2vw;
         (*log) << "   " << std::setw(17) << std::setprecision(10) << x2rhouppTpp;
         (*log) << "   " << std::setw(17) << std::setprecision(10) << x2rhovppTpp;
-#ifdef COMBINE_SAMPLES
-        (*log) << "   " << std::setw(17) << std::setprecision(10) << x2usq;
-        (*log) << "   " << std::setw(17) << std::setprecision(10) << x2vsq;
-        (*log) << "   " << std::setw(17) << std::setprecision(10) << x2wsq;
-        (*log) << "   " << std::setw(17) << std::setprecision(10) << x2psq;
-        (*log) << "   " << std::setw(17) << std::setprecision(10) << x2Tsq;
-        (*log) << "   " << std::setw(17) << std::setprecision(10) << x2rhosq;
-#endif
         (*log) << "\n";
       }
     }
