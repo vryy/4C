@@ -198,7 +198,7 @@ Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::FluidEleCalc()
   fldpara_ = Discret::ELEMENTS::FluidEleParameterStd::instance();
 
   // Nurbs
-  isNurbs_ = IsNurbs<distype>::isnurbs;
+  isNurbs_ = Core::FE::is_nurbs<distype>;
 }
 
 /*----------------------------------------------------------------------*

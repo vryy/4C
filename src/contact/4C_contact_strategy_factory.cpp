@@ -865,11 +865,11 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
               node->id());
         }
 
-        const bool nurbs = Core::FE::IsNurbsDisType(node->elements()[0]->shape());
+        const bool nurbs = Core::FE::is_nurbs_celltype(node->elements()[0]->shape());
         for (unsigned elid = 0; elid < static_cast<unsigned>(node->num_element()); ++elid)
         {
           const Core::Elements::Element* adj_ele = node->elements()[elid];
-          if (nurbs != Core::FE::IsNurbsDisType(adj_ele->shape()))
+          if (nurbs != Core::FE::is_nurbs_celltype(adj_ele->shape()))
           {
             FOUR_C_THROW(
                 "There are NURBS and non-NURBS adjacent elements to this "
@@ -1072,12 +1072,12 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
       get_comm().SumAll(&lsize, &gsize, 1);
 
       bool nurbs = false;
-      if (currele.size() > 0) nurbs = Core::FE::IsNurbsDisType(currele.begin()->second->shape());
+      if (currele.size() > 0) nurbs = Core::FE::is_nurbs_celltype(currele.begin()->second->shape());
 
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
         Teuchos::RCP<Core::Elements::Element> ele = fool->second;
-        if (Core::FE::IsNurbsDisType(ele->shape()) != nurbs)
+        if (Core::FE::is_nurbs_celltype(ele->shape()) != nurbs)
         {
           FOUR_C_THROW(
               "All elements of one interface side (i.e. slave or master) "

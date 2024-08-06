@@ -144,7 +144,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
       }
 
       Core::FE::ElementNodeNormal<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_, xyze_,
-          ele1, discretization, elevec1, mydispnp, IsNurbs<distype>::isnurbs,
+          ele1, discretization, elevec1, mydispnp, Core::FE::is_nurbs<distype>,
           ele1->parent_element()->is_ale());
       break;
     }
@@ -355,7 +355,7 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
-  if (IsNurbs<distype>::isnurbs)
+  if (Core::FE::is_nurbs<distype>)
   {
     std::vector<Core::LinAlg::SerialDenseVector> mypknots(nsd_);
 
@@ -376,7 +376,7 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
     // compute unit normal vector and infinitesimal area element drs
     // (evaluation of nurbs-specific stuff not activated here)
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, &myknots, &weights, IsNurbs<distype>::isnurbs);
+        xyze_, intpoints, gpid, &myknots, &weights, Core::FE::is_nurbs<distype>);
 
     // get the required material information
     Teuchos::RCP<Core::Mat::Material> material = ele->parent_element()->material();
@@ -637,7 +637,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
 
   // get knotvectors for parent element and surface element as well as weights
   // for isogeometric elements
-  if (IsNurbs<distype>::isnurbs)
+  if (Core::FE::is_nurbs<distype>)
   {
     bool zero_size =
         Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(ele, ele->surface_number(),
@@ -657,10 +657,10 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
     // compute unit normal vector and infinitesimal area element drs
     // (evaluation of nurbs-specific stuff not activated here)
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, &myknots, &weights, IsNurbs<distype>::isnurbs);
+        xyze_, intpoints, gpid, &myknots, &weights, Core::FE::is_nurbs<distype>);
 
     // normal vector scaled by special factor in case of nurbs
-    if (IsNurbs<distype>::isnurbs) unitnormal_.scale(normalfac);
+    if (Core::FE::is_nurbs<distype>) unitnormal_.scale(normalfac);
 
     // compute velocity vector and normal velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -815,7 +815,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::integrate_shape_function(
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // is not activated here Computation of nurb specific stuff is not activated here
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
+        xyze_, intpoints, gpid, nullptr, nullptr, Core::FE::is_nurbs<distype>);
 
     for (int inode = 0; inode < bdrynen_; ++inode)
     {
@@ -1070,7 +1070,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_surface_tension(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of nurb specific stuff is not activated here
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
+        xyze_, intpoints, gpid, nullptr, nullptr, Core::FE::is_nurbs<distype>);
 
     // fac multiplied by the timefac
     const double fac_timefac = fac_ * timefac;
@@ -1219,7 +1219,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::area_calculation(
   for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
   {
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
+        xyze_, intpoints, gpid, nullptr, nullptr, Core::FE::is_nurbs<distype>);
 
     // add to area integral
     area += fac_;
@@ -1293,7 +1293,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::pressure_boundary_integral(
   for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
   {
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
+        xyze_, intpoints, gpid, nullptr, nullptr, Core::FE::is_nurbs<distype>);
 
     // add to pressure boundary integral
     for (int inode = 0; inode < bdrynen_; ++inode)
@@ -1373,7 +1373,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::center_of_mass_calculation(
       // the shape function at the Gauss point Computation of the unit normal vector at the Gauss
       // points Computation of nurb specific stuff is not activated here
       Core::FE::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-          xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
+          xyze_, intpoints, gpid, nullptr, nullptr, Core::FE::is_nurbs<distype>);
 
       // global coordinates of gausspoint
       Core::LinAlg::Matrix<(nsd_), 1> coordgp(true);
@@ -1481,7 +1481,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::compute_flow_rate(
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
+        xyze_, intpoints, gpid, nullptr, nullptr, Core::FE::is_nurbs<distype>);
 
     // compute flowrate at gauss point
     velint_.multiply(evelnp, funct_);
@@ -1619,7 +1619,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::flow_rate_deriv(
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // is not activated here Computation of nurb specific stuff is not activated here
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
+        xyze_, intpoints, gpid, nullptr, nullptr, Core::FE::is_nurbs<distype>);
 
     // The integration factor is not multiplied with drs
     // since it is the same as the scaling factor for the unit normal
@@ -1864,7 +1864,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::impedance_integration(
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
+        xyze_, intpoints, gpid, nullptr, nullptr, Core::FE::is_nurbs<distype>);
 
     const double fac_facrhs_pres = fac_ * tfacrhs * pressure;
 
@@ -1925,7 +1925,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::d_qdu(Discret::ELEMENTS::Flu
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
+        xyze_, intpoints, gpid, nullptr, nullptr, Core::FE::is_nurbs<distype>);
 
     for (int node = 0; node < bdrynen_; ++node)
     {
@@ -2174,7 +2174,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::calc_traction_velocity_compo
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
     Core::FE::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_,
-        xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
+        xyze_, intpoints, gpid, nullptr, nullptr, Core::FE::is_nurbs<distype>);
 
     // Get the velocity value at the corresponding Gauss point.
     std::vector<double> vel_gps(nsd_, 0.0);

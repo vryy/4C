@@ -68,28 +68,6 @@ namespace Core::FE
       return zero_size;
     }  // GetMyNurbsKnotsAndWeights()
 
-
-    //! determine whether a given element is a NURBS element or not
-    inline bool IsNurbs(Core::FE::CellType distype)
-    {
-      switch (distype)
-      {
-        case Core::FE::CellType::nurbs8:
-        case Core::FE::CellType::nurbs27:
-        case Core::FE::CellType::nurbs4:
-        case Core::FE::CellType::nurbs9:
-        case Core::FE::CellType::nurbs2:
-        case Core::FE::CellType::nurbs3:
-        {
-          return true;
-          break;
-        }
-        default:
-          return false;
-      }
-    };
-
-
     /*!
     \brief A service method for accessing knotvector and weights for
            an isogeometric boundary element

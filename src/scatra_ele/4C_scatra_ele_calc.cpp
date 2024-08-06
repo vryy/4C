@@ -101,7 +101,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::setup_calc(
   read_element_coordinates(ele);
 
   // Now do the nurbs specific stuff (for isogeometric elements)
-  if (Core::FE::Nurbs::IsNurbs(distype))
+  if (Core::FE::is_nurbs_celltype(distype))
   {
     // access knots and weights for this element
     bool zero_size =
@@ -995,7 +995,7 @@ Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_i
 
   if (nsd_ == nsd_ele_)  // standard case
   {
-    if (not Core::FE::Nurbs::IsNurbs(distype))
+    if (not Core::FE::is_nurbs<distype>)
     {
       // shape functions and their first derivatives
       Core::FE::shape_function<distype>(xsi_, funct_);
@@ -1017,7 +1017,7 @@ Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_i
       {
         Core::FE::Nurbs::nurbs_get_funct_deriv(funct_, deriv_, xsi_, myknots_, weights_, distype);
       }
-    }  // IsNurbs()
+    }
 
     // compute Jacobian matrix and determinant
     // actually compute its transpose....
@@ -1044,7 +1044,7 @@ Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_i
   {
     static Core::LinAlg::Matrix<nsd_ele_, nen_> deriv_red;
 
-    if (not Core::FE::Nurbs::IsNurbs(distype))
+    if (not Core::FE::is_nurbs<distype>)
     {
       // shape functions and their first derivatives
       Core::FE::shape_function<distype>(xsi_, funct_);
@@ -1067,7 +1067,7 @@ Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_i
         Core::FE::Nurbs::nurbs_get_funct_deriv(
             funct_, deriv_red, xsi_, myknots_, weights_, distype);
       }
-    }  // IsNurbs()
+    }
 
     //! metric tensor at integration point
     static Core::LinAlg::Matrix<nsd_ele_, nsd_ele_> metrictensor;

@@ -110,7 +110,7 @@ void PostVtuWriter::write_geo()
     const Discret::ELEMENTS::Beam3Base* beamele =
         dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
-    if (Core::FE::IsNurbsDisType(ele->shape()))
+    if (Core::FE::is_nurbs_celltype(ele->shape()))
     {
       write_geo_nurbs_ele(ele, celltypes, outNodeId, celloffset, coordinates);
     }
@@ -294,7 +294,7 @@ void PostVtuWriter::write_dof_result_step(std::ofstream& file,
     const Discret::ELEMENTS::Beam3Base* beamele =
         dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
-    if (Core::FE::IsNurbsDisType(ele->shape()))
+    if (Core::FE::is_nurbs_celltype(ele->shape()))
     {
       wirte_dof_result_step_nurbs_ele(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
@@ -400,7 +400,7 @@ void PostVtuWriter::write_nodal_result_step(std::ofstream& file,
   {
     const Core::Elements::Element* ele = dis->l_row_element(e);
 
-    if (Core::FE::IsNurbsDisType(ele->shape()))
+    if (Core::FE::is_nurbs_celltype(ele->shape()))
     {
       write_nodal_result_step_nurbs_ele(ele, ncomponents, numdf, solution, ghostedData);
     }
