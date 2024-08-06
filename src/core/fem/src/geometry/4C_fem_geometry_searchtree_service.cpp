@@ -222,7 +222,7 @@ std::map<int, std::set<int>> Core::Geo::getElementsInRadius(const Core::FE::Disc
     for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
          nodeIter != (labelIter->second).end(); nodeIter++)
     {
-      double distance = Core::Geo::LARGENUMBER;
+      double distance = std::numeric_limits<double>::max();
       const Core::Nodes::Node* node = dis.g_node(*nodeIter);
       Core::Geo::getDistanceToPoint(node, currentpositions, querypoint, distance);
 
@@ -305,8 +305,8 @@ void Core::Geo::nearest2DObjectInNode(const Teuchos::RCP<Core::FE::Discretizatio
 {
   Core::Geo::NearestObject nearestObject;
   bool pointFound = false;
-  double min_distance = Core::Geo::LARGENUMBER;
-  double distance = Core::Geo::LARGENUMBER;
+  double min_distance = std::numeric_limits<double>::max();
+  double distance = std::numeric_limits<double>::max();
   Core::LinAlg::Matrix<3, 1> normal(true);
   Core::LinAlg::Matrix<3, 1> x_surface(true);
   std::map<int, std::set<int>> nodeList;
@@ -372,8 +372,8 @@ int Core::Geo::nearest3DObjectInNode(const Teuchos::RCP<Core::FE::Discretization
 {
   Core::Geo::NearestObject nearestObject;
   bool pointFound = false;
-  double min_distance = Core::Geo::LARGENUMBER;
-  double distance = Core::Geo::LARGENUMBER;
+  double min_distance = std::numeric_limits<double>::max();
+  double distance = std::numeric_limits<double>::max();
   Core::LinAlg::Matrix<3, 1> normal(true);
   Core::LinAlg::Matrix<3, 1> x_surface(true);
   std::map<int, std::set<int>> nodeList;
@@ -452,8 +452,8 @@ Core::Geo::ObjectType Core::Geo::nearest3DObjectOnElement(Core::Elements::Elemen
 {
   Core::Geo::NearestObject nearestObject;
   bool pointFound = false;
-  double min_distance = Core::Geo::LARGENUMBER;
-  double distance = Core::Geo::LARGENUMBER;
+  double min_distance = std::numeric_limits<double>::max();
+  double distance = std::numeric_limits<double>::max();
   Core::LinAlg::Matrix<3, 1> x_surface(true);
 
   pointFound =
@@ -517,7 +517,7 @@ bool Core::Geo::getDistanceToSurface(const Core::Elements::Element* surfaceEleme
     double& distance)
 {
   bool pointFound = false;
-  double min_distance = Core::Geo::LARGENUMBER;
+  double min_distance = std::numeric_limits<double>::max();
   Core::LinAlg::Matrix<3, 1> distance_vector(true);
   Core::LinAlg::Matrix<2, 1> elecoord(true);  // starting value at element center
 
@@ -584,7 +584,7 @@ bool Core::Geo::getDistanceToLine(const Core::Elements::Element* lineElement,
     double& distance)
 {
   bool pointFound = false;
-  double min_distance = Core::Geo::LARGENUMBER;
+  double min_distance = std::numeric_limits<double>::max();
   Core::LinAlg::Matrix<3, 1> distance_vector(true);
   Core::LinAlg::Matrix<1, 1> elecoord(true);  // starting value at element center
 
