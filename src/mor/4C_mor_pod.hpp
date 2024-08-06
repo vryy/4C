@@ -13,8 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include <Epetra_Operator.h>
-#include <Epetra_RowMatrix.h>
+#include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
@@ -29,8 +28,6 @@ namespace Core::FE
 namespace Core::LinAlg
 {
   class SparseMatrix;
-  //  class DefaultBlockMatrixStrategy;
-  //  class BlockSparseMatrix;
 }  // namespace Core::LinAlg
 namespace ModelOrderRed
 {
@@ -40,63 +37,75 @@ namespace ModelOrderRed
     /*!
         \brief Constructor
      */
-    ProperOrthogonalDecomposition(Teuchos::RCP<Core::FE::Discretization> discr);
+    ProperOrthogonalDecomposition(Teuchos::RCP<const Epetra_Map> full_model_dof_row_map_,
+        const std::string& pod_matrix_file_name, const std::string& absolute_path_to_input_file);
 
+    //! M_red = V^T * M * V
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> reduce_diagnoal(
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> M);
 
-    /*!
-        \brief Read in binary matrix from file
-     */
-    /* Read matrix from specified binary file
+    //! M_red = V^T * M
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> reduce_off_diagonal(
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> M);
+
+    //! v_red = V^T * v
+    Teuchos::RCP<Epetra_MultiVector> reduce_rhs(Teuchos::RCP<Epetra_MultiVector> v);
+
+    //! v_red = V^T * v
+    Teuchos::RCP<Epetra_Vector> reduce_residual(Teuchos::RCP<Epetra_Vector> v);
+
+    //! v = V * v_red
+    Teuchos::RCP<Epetra_Vector> extend_solution(Teuchos::RCP<Epetra_Vector> v);
+
+    bool have_mor() { return havemor_; };
+
+    int get_red_dim() { return projmatrix_->NumVectors(); };
+
+   private:
+    /*! \brief Read POD basis vectors from file
+     *
+     * Read matrix from specified binary file
      * The binary file has to be formatted like this:
      * Number of Rows: int
      * Number of Columns: int
      * Values (row-wise): float
      */
-    void read_matrix(std::string filename, Teuchos::RCP<Epetra_MultiVector>& projmatrix);
+    void read_pod_basis_vectors_from_file(
+        const std::string& absolute_path_to_pod_file, Teuchos::RCP<Epetra_MultiVector>& projmatrix);
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> reduce_diagnoal(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> M);
-
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> reduce_off_diagonal(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> M);
-
-    Teuchos::RCP<Epetra_MultiVector> reduce_rhs(Teuchos::RCP<Epetra_MultiVector> v);
-
-    Teuchos::RCP<Epetra_Vector> reduce_residual(Teuchos::RCP<Epetra_Vector> v);
-
-    Teuchos::RCP<Epetra_Vector> extend_solution(Teuchos::RCP<Epetra_Vector> v);
-
-    bool have_mor() { return havemor_; };
-
-    Teuchos::RCP<Epetra_MultiVector> get_pod_matrix() { return projmatrix_; };
-
-    int get_red_dim() { return projmatrix_->NumVectors(); };
-
-   private:
+    //! Multiply two Epetra MultiVectors
     void multiply_epetra_multi_vectors(Teuchos::RCP<Epetra_MultiVector>, char,
         Teuchos::RCP<Epetra_MultiVector>, char, Teuchos::RCP<Epetra_Map>,
         Teuchos::RCP<Epetra_Import>, Teuchos::RCP<Epetra_MultiVector>);
 
+    //! Epetra_MultiVector to Core::LinAlg::SparseMatrix
     void epetra_multi_vector_to_linalg_sparse_matrix(Teuchos::RCP<Epetra_MultiVector> multivect,
         Teuchos::RCP<Epetra_Map> rangemap, Teuchos::RCP<Epetra_Map> domainmap,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sparsemat);
 
-    bool is_orthogonal(Teuchos::RCP<Epetra_MultiVector> M);
+    //! Check orthogonality of POD basis vectors with M^T * M - I == 0
+    bool is_pod_basis_orthogonal(const Epetra_MultiVector& M);
 
-    Teuchos::RCP<Core::FE::Discretization> actdisc_;
-    int myrank_;  //!< ID of actual processor in parallel
-    Teuchos::ParameterList morparams_;
-    bool havemor_;
-    Teuchos::RCP<Epetra_MultiVector> projmatrix_;  //!< projection matrix for POD
+    /// DOF row map of the full model, i.e. map of POD basis vectors
+    Teuchos::RCP<const Epetra_Map> full_model_dof_row_map_;
 
+    //! Flag to indicate usage of model order reduction
+    bool havemor_ = false;
 
-    Teuchos::RCP<Epetra_Map> structmapr_;  ///< unique map of structure dofs after POD-MOR
-    Teuchos::RCP<Epetra_Map>
-        redstructmapr_;  ///< full redundant map of structure dofs after POD-MOR
-    Teuchos::RCP<Epetra_Import> structrimpo_;     ///< importer for fully redundant map of structure
-                                                  ///< dofs after POD-MOR into distributed one
-    Teuchos::RCP<Epetra_Import> structrinvimpo_;  ///< importer for distributed map of structure
-                                                  ///< dofs after POD-MOR into fully redundant one
+    //! Projection matrix for POD
+    Teuchos::RCP<Epetra_MultiVector> projmatrix_;
+
+    //! Unique map of structure dofs after POD-MOR
+    Teuchos::RCP<Epetra_Map> structmapr_;
+
+    //! Full redundant map of structure dofs after POD-MOR
+    Teuchos::RCP<Epetra_Map> redstructmapr_;
+
+    //! Importer for fully redundant map of structure dofs after POD-MOR into distributed one
+    Teuchos::RCP<Epetra_Import> structrimpo_;
+
+    //! Importer for distributed map of structure dofs after POD-MOR into fully redundant one
+    Teuchos::RCP<Epetra_Import> structrinvimpo_;
 
   };  // class
 }  // namespace ModelOrderRed
