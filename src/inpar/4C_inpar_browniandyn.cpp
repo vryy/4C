@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Inpar::BROWNIANDYN::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::BrownianDynamics::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
@@ -48,9 +48,9 @@ void Inpar::BROWNIANDYN::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       "In which way are damping coefficient values for beams specified?",
       tuple<std::string>(
           "cylinder_geometry_approx", "Cylinder_geometry_approx", "input_file", "Input_file"),
-      tuple<int>(Inpar::BROWNIANDYN::cylinder_geometry_approx,
-          Inpar::BROWNIANDYN::cylinder_geometry_approx, Inpar::BROWNIANDYN::input_file,
-          Inpar::BROWNIANDYN::input_file),
+      tuple<int>(Inpar::BrownianDynamics::cylinder_geometry_approx,
+          Inpar::BrownianDynamics::cylinder_geometry_approx, Inpar::BrownianDynamics::input_file,
+          Inpar::BrownianDynamics::input_file),
       &browniandyn_list);
 
   // values for damping coefficients of beams if they are specified via input file

@@ -51,7 +51,7 @@ namespace Solid
   }
 }  // namespace Solid
 
-namespace BROWNIANDYN
+namespace BrownianDynamics
 {
   class ParamsInterface;
 }
@@ -124,7 +124,8 @@ namespace Discret
        *  \author hiermeier
        *  \date 04/16 */
       Teuchos::RCP<Core::Elements::ParamsInterface> params_interface_ptr() override;
-      virtual Teuchos::RCP<BROWNIANDYN::ParamsInterface> brownian_dyn_params_interface_ptr() const;
+      virtual Teuchos::RCP<BrownianDynamics::ParamsInterface> brownian_dyn_params_interface_ptr()
+          const;
 
       //! computes the number of different random numbers required in each time step for generation
       //! of stochastic forces
@@ -418,7 +419,7 @@ namespace Discret
         return *interface_ptr_;
       }
 
-      inline BROWNIANDYN::ParamsInterface& brownian_dyn_params_interface() const
+      inline BrownianDynamics::ParamsInterface& brownian_dyn_params_interface() const
       {
         return *browndyn_interface_ptr_;
       }
@@ -717,7 +718,7 @@ namespace Discret
        *  data exchange between the element and the time integrator. */
       Teuchos::RCP<Solid::ELEMENTS::ParamsInterface> interface_ptr_;
 
-      Teuchos::RCP<BROWNIANDYN::ParamsInterface> browndyn_interface_ptr_;
+      Teuchos::RCP<BrownianDynamics::ParamsInterface> browndyn_interface_ptr_;
 
       /*!
       \brief Default Constructor must not be called

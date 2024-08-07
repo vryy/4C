@@ -37,7 +37,7 @@ namespace Core::Geo
   }
 }  // namespace Core::Geo
 // forward declaration
-namespace BROWNIANDYN
+namespace BrownianDynamics
 {
   class ParamsInterface;
 }
@@ -121,7 +121,7 @@ namespace Solid
 
       //! @name Model specific interfaces
       //! @{
-      virtual Teuchos::RCP<BROWNIANDYN::ParamsInterface> get_brownian_dyn_param_interface()
+      virtual Teuchos::RCP<BrownianDynamics::ParamsInterface> get_brownian_dyn_param_interface()
           const = 0;
 
       //! get pointer to special parameter interface for beam elements
@@ -220,7 +220,7 @@ namespace Solid
 
 }  // namespace Solid
 
-namespace BROWNIANDYN
+namespace BrownianDynamics
 {
   /*! \brief Parameter interface for brownian dynamic data exchange between integrator and structure
    * (beam) elements \author eichinger */
@@ -234,7 +234,7 @@ namespace BROWNIANDYN
     virtual double const& get_viscosity() const = 0;
 
     /// the way how damping coefficient values for beams are specified
-    virtual Inpar::BROWNIANDYN::BeamDampingCoefficientSpecificationType
+    virtual Inpar::BrownianDynamics::BeamDampingCoefficientSpecificationType
     how_beam_damping_coefficients_are_specified() const = 0;
 
     /// get prefactors for damping coefficients of beams if they are specified via input file
@@ -248,7 +248,7 @@ namespace BROWNIANDYN
     //! get the current step length
     virtual const Teuchos::RCP<Epetra_MultiVector>& get_random_forces() const = 0;
   };
-}  // namespace BROWNIANDYN
+}  // namespace BrownianDynamics
 
 FOUR_C_NAMESPACE_CLOSE
 

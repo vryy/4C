@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 namespace Inpar
 {
-  namespace BROWNIANDYN
+  namespace BrownianDynamics
   {
     /// the way how damping coefficient values for beams are specified
     enum BeamDampingCoefficientSpecificationType
@@ -32,7 +32,7 @@ namespace Inpar
     /// set the brownian dynamic parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-  }  // namespace BROWNIANDYN
+  }  // namespace BrownianDynamics
 
 }  // namespace Inpar
 

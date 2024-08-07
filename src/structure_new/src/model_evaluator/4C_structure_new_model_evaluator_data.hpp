@@ -243,7 +243,7 @@ namespace Solid
           const double value, const enum Solid::EnergyType type) override;
 
       //! get Interface to brownian dyn data [derived]
-      [[nodiscard]] inline Teuchos::RCP<BROWNIANDYN::ParamsInterface>
+      [[nodiscard]] inline Teuchos::RCP<BrownianDynamics::ParamsInterface>
       get_brownian_dyn_param_interface() const override
       {
         check_init_setup();
@@ -1321,7 +1321,7 @@ namespace Solid
      *
      * \author Jonas Eichinger
      * \date 06/16 */
-    class BrownianDynData : public BROWNIANDYN::ParamsInterface
+    class BrownianDynData : public BrownianDynamics::ParamsInterface
     {
      public:
       //! constructor
@@ -1390,7 +1390,7 @@ namespace Solid
       };
 
       /// the way how damping coefficient values for beams are specified
-      [[nodiscard]] Inpar::BROWNIANDYN::BeamDampingCoefficientSpecificationType
+      [[nodiscard]] Inpar::BrownianDynamics::BeamDampingCoefficientSpecificationType
       how_beam_damping_coefficients_are_specified() const override
       {
         check_init_setup();
@@ -1452,7 +1452,8 @@ namespace Solid
       double timeintconstrandnumb_;
 
       /// the way how damping coefficient values for beams are specified
-      Inpar::BROWNIANDYN::BeamDampingCoefficientSpecificationType beam_damping_coeff_specified_via_;
+      Inpar::BrownianDynamics::BeamDampingCoefficientSpecificationType
+          beam_damping_coeff_specified_via_;
 
       /// prefactors for damping coefficients of beams if they are specified via input file
       /// (per unit length, NOT yet multiplied by viscosity)

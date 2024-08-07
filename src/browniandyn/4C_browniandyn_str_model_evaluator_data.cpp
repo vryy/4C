@@ -29,7 +29,7 @@ Solid::ModelEvaluator::BrownianDynData::BrownianDynData()
       kt_(0.0),
       maxrandforce_(0.0),
       timeintconstrandnumb_(0.0),
-      beam_damping_coeff_specified_via_(Inpar::BROWNIANDYN::vague),
+      beam_damping_coeff_specified_via_(Inpar::BrownianDynamics::vague),
       beams_damping_coefficient_prefactors_perunitlength_(0),
       randomforces_(Teuchos::null)
 {
@@ -59,11 +59,11 @@ void Solid::ModelEvaluator::BrownianDynData::init(
 
   // the way how damping coefficient values for beams are specified
   beam_damping_coeff_specified_via_ =
-      Core::UTILS::IntegralValue<Inpar::BROWNIANDYN::BeamDampingCoefficientSpecificationType>(
+      Core::UTILS::IntegralValue<Inpar::BrownianDynamics::BeamDampingCoefficientSpecificationType>(
           browndyn_params_list, "BEAMS_DAMPING_COEFF_SPECIFIED_VIA");
 
   // if input file is chosen, get the required values and check them for sanity
-  if (beam_damping_coeff_specified_via_ == Inpar::BROWNIANDYN::input_file)
+  if (beam_damping_coeff_specified_via_ == Inpar::BrownianDynamics::input_file)
   {
     std::istringstream input_file_linecontent(Teuchos::getNumericStringParameter(
         browndyn_params_list, "BEAMS_DAMPING_COEFF_PER_UNITLENGTH"));
@@ -99,7 +99,7 @@ void Solid::ModelEvaluator::BrownianDynData::init(
     }
   }
   // safety check for valid input parameter
-  else if (beam_damping_coeff_specified_via_ == Inpar::BROWNIANDYN::vague)
+  else if (beam_damping_coeff_specified_via_ == Inpar::BrownianDynamics::vague)
   {
     FOUR_C_THROW("The way how beam damping coefficients are specified is not properly set!");
   }
