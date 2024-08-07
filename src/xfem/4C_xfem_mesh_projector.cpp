@@ -344,8 +344,8 @@ bool XFEM::MeshProjector::check_position_and_project(const Core::Elements::Eleme
   }
 
   // compute node position w.r.t. embedded element
-  Teuchos::RCP<Core::Geo::Cut::Position> pos =
-      Core::Geo::Cut::PositionFactory::build_position<3, distype>(src_xyze, node_xyz);
+  Teuchos::RCP<Cut::Position> pos =
+      Cut::PositionFactory::build_position<3, distype>(src_xyze, node_xyz);
   bool inside = pos->compute();
 
   if (inside)

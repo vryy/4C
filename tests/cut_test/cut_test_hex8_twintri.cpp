@@ -22,7 +22,7 @@
 
 void test_hex8_twintri()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -95,12 +95,12 @@ void test_hex8_twintri()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_twinQuad()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -191,12 +191,12 @@ void test_hex8_twinQuad()
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
 
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_chairCut()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -341,12 +341,12 @@ void test_hex8_chairCut()
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
 
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_VCut()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -436,5 +436,5 @@ void test_hex8_VCut()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }

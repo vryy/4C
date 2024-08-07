@@ -25,19 +25,17 @@ class Epetra_Vector;
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::Geo
+namespace Cut
 {
   class CutWizard;
-  namespace CUT
-  {
-    class BoundaryCell;
-    class Element;
-    class Mesh;
-    class Point;
-    class Side;
-    class VolumeCell;
-  }  // namespace CUT
-}  // namespace Core::Geo
+  class BoundaryCell;
+  class Element;
+  class Mesh;
+  class Point;
+  class Side;
+  class VolumeCell;
+}  // namespace Cut
+
 
 namespace Core::LinAlg
 {
@@ -67,7 +65,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
    * @param cutwizard (in) object of the cut library that performs the cut operation.
    * @param discret (in) Discretization
    */
-  void prepare_and_perform_cut(Teuchos::RCP<Core::Geo::CutWizard> cutwizard,
+  void prepare_and_perform_cut(Teuchos::RCP<Cut::CutWizard> cutwizard,
       Teuchos::RCP<Core::FE::Discretization>& discret,
       CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& embedded_mesh_coupling_params);
 
@@ -79,7 +77,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
    * @param embedded_mesh_solid_interaction_pairs (out) embedded mesh coupling pairs
    * @param cut_elements_vector (out) vector of cut elements
    */
-  void get_coupling_pairs_and_background_elements(Teuchos::RCP<Core::Geo::CutWizard>& cutwizard,
+  void get_coupling_pairs_and_background_elements(Teuchos::RCP<Cut::CutWizard>& cutwizard,
       CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr,
       Teuchos::RCP<Core::FE::Discretization>& discret,
       std::vector<Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair>>&
@@ -92,7 +90,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
    * @param cutwizard (in) object of the cut library that performs the cut operation.
    */
   void change_gauss_rule_of_cut_elements(std::vector<Core::Elements::Element*> cut_elements_vector,
-      Teuchos::RCP<Core::Geo::CutWizard>& cutwizard);
+      Teuchos::RCP<Cut::CutWizard>& cutwizard);
 
   /**
    * \brief Get the number of Lagrange multiplier values corresponding to the solid nodes and
@@ -105,8 +103,8 @@ namespace CONSTRAINTS::EMBEDDEDMESH
       unsigned int& n_lambda_node);
 
   /**
-   * \brief Assemble local mortar contributions from the classical mortar matrices D and M into the
-   * global matrices.
+   * \brief Assemble local mortar contributions from the classical mortar matrices D and M into
+   * the global matrices.
    *
    * This function assumes that the mortar contributions are symmetric, i.e. global_g_b =
    * global_fb_l^T and global_g_s = global_fs_l^T.
@@ -114,14 +112,15 @@ namespace CONSTRAINTS::EMBEDDEDMESH
    * @param pair (in) The beam-to-solid pair.
    * @param discret (in) Discretization
    * @param mortar_manager (in) Mortar manager for the solid-to-solid condition
-   * @param global_g_bl (in/out) Constraint equations derived w.r.t the interface (from the boundary
-   * layer) DOFs
+   * @param global_g_bl (in/out) Constraint equations derived w.r.t the interface (from the
+   * boundary layer) DOFs
    * @param global_g_bg (in/out) Constraint equations derived w.r.t the background solid DOFs
    * @param global_fbl_l (in/out) Interface force vector derived w.r.t the Lagrange multipliers
    * @param global_fbg_l (in/out) Background force vector derived w.r.t the Lagrange multipliers
    * @param global_constraint (in/out) Global constraint equations
    * @param global_kappa (in/out) Global penalty scaling vector equations
-   * @param global_lambda_active (in/out) Global vector keeping track of active lagrange multipliers
+   * @param global_lambda_active (in/out) Global vector keeping track of active lagrange
+   * multipliers
    * @param local_D (in) Local D matrix of the pair.
    * @param local_M (in) Local M matrix of the pair.
    * @param local_kappa (in) Local scaling vector of the pair.

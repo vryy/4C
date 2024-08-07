@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Geo::Cut::IntersectionBase> Core::Geo::Cut::IntersectionBase::create(
+Teuchos::RCP<Cut::IntersectionBase> Cut::IntersectionBase::create(
     const Core::FE::CellType& edge_type, const Core::FE::CellType& side_type)
 {
   const IntersectionFactory factory;
@@ -34,8 +34,8 @@ Teuchos::RCP<Core::Geo::Cut::IntersectionBase> Core::Geo::Cut::IntersectionBase:
  *--------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-void Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge, num_nodes_side>::set_coordinates()
+void Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
+    num_nodes_side>::set_coordinates()
 {
   get_edge().coordinates(xyze_lineElement_);
   get_side().coordinates(xyze_surfaceElement_);
@@ -45,9 +45,9 @@ void Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
  *--------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge, num_nodes_side>::compute_cut(Edge* sedge, Edge* eedge, Side* side,
-    PointSet& ee_cut_points, double& tolerance)
+bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
+    num_nodes_side>::compute_cut(Edge* sedge, Edge* eedge, Side* side, PointSet& ee_cut_points,
+    double& tolerance)
 {
   return eedge->compute_cut(get_mesh_ptr(), sedge, side, &ee_cut_points, tolerance);
 }
@@ -56,9 +56,8 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
  *--------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-void Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge, num_nodes_side>::get_connectivity_info(const Core::LinAlg::Matrix<probdim, 1>&
-                                                               xreal,
+void Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
+    num_nodes_side>::get_connectivity_info(const Core::LinAlg::Matrix<probdim, 1>& xreal,
     const std::vector<int>& touched_edges_ids, std::set<std::pair<Side*, Edge*>>& out)
 {
   const std::vector<Edge*> side_edges = get_side().edges();
@@ -89,9 +88,9 @@ void Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-void Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge, num_nodes_side>::add_connectivity_info(Point* p,
-    const Core::LinAlg::Matrix<probdim, 1>& xreal, const std::vector<int>& touched_edges_ids,
+void Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
+    num_nodes_side>::add_connectivity_info(Point* p, const Core::LinAlg::Matrix<probdim, 1>& xreal,
+    const std::vector<int>& touched_edges_ids,
     const std::set<std::pair<Side*, Edge*>>& touched_cut_pairs)
 {
   // original intersection pair
@@ -146,8 +145,8 @@ void Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
  *--------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge, num_nodes_side>::check_bounding_box_overlap()
+bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
+    num_nodes_side>::check_bounding_box_overlap()
 {
   Teuchos::RCP<BoundingBox> sbb = Teuchos::rcp(BoundingBox::create(get_side()));
   Teuchos::RCP<BoundingBox> ebb = Teuchos::rcp(BoundingBox::create(get_edge()));
@@ -159,9 +158,8 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
  *--------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge, num_nodes_side>::check_bounding_box_overlap(BoundingBox& ebb,
-    BoundingBox& sbb) const
+bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
+    num_nodes_side>::check_bounding_box_overlap(BoundingBox& ebb, BoundingBox& sbb) const
 {
   return (not sbb.within(1.0, ebb));
 }
@@ -170,8 +168,7 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
  *--------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge,
+bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
     num_nodes_side>::check_parallelism(std::vector<Core::LinAlg::Matrix<dimside, 1>>&
                                            side_rs_intersect,
     std::vector<Core::LinAlg::Matrix<dimedge, 1>>& edge_r_intersect, double& tolerance)
@@ -205,8 +202,8 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
  *--------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge, num_nodes_side>::
+bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
+    num_nodes_side>::
     check_parallelism_between_side_and_edge(
         std::vector<Core::LinAlg::Matrix<dimside, 1>>& side_rs_intersect,
         std::vector<Core::LinAlg::Matrix<dimedge, 1>>& edge_r_intersect, double& tolerance)
@@ -225,8 +222,8 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
  *--------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge, num_nodes_side>::check_angle_criterion_between_side_normal_and_edge()
+bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
+    num_nodes_side>::check_angle_criterion_between_side_normal_and_edge()
 {
   // calculate the normal at the side element center
   const Core::LinAlg::Matrix<dimside, 1> rst_side_center(
@@ -235,8 +232,8 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   Core::LinAlg::Matrix<probdim, num_nodes_side> side_deriv1;
   Core::LinAlg::Matrix<probdim, probdim> xjm;
   Core::LinAlg::Matrix<probdim, 1> normal_center;
-  Core::Geo::Cut::EvalDerivsInParameterSpace<probdim, sidetype, double>(xyze_surfaceElement_,
-      rst_side_center, side_deriv1, xjm, nullptr, &normal_center, nullptr, true);
+  Cut::EvalDerivsInParameterSpace<probdim, sidetype, double>(xyze_surfaceElement_, rst_side_center,
+      side_deriv1, xjm, nullptr, &normal_center, nullptr, true);
 
   // calcualte the direction vector of the edge element
   Core::LinAlg::Matrix<probdim, 1> dedge(&xyze_lineElement_(0, 0), false);
@@ -267,8 +264,7 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
  *--------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge,
+bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
     num_nodes_side>::check_collinearity(std::vector<Core::LinAlg::Matrix<dimside, 1>>&
                                             side_rs_corner_intersect,
     std::vector<Core::LinAlg::Matrix<dimedge, 1>>& edge_r_corner_intersect, double& tolerance)
@@ -302,8 +298,8 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   for (unsigned i = 0; i < 2; ++i)
   {
     const Core::LinAlg::Matrix<probdim, 1> e_cornerpoint(&xyze_lineElement_(0, i), true);
-    Teuchos::RCP<Core::Geo::Cut::Position> pos =
-        Core::Geo::Cut::Position::create(xyze_surfaceElement_, e_cornerpoint, sidetype);
+    Teuchos::RCP<Cut::Position> pos =
+        Cut::Position::create(xyze_surfaceElement_, e_cornerpoint, sidetype);
 
     bool withinlimits = pos->compute(true);
 
@@ -395,8 +391,8 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
  *--------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge, num_nodes_side>::check_angle_criterion_between_two_edges()
+bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
+    num_nodes_side>::check_angle_criterion_between_two_edges()
 {
   Core::LinAlg::Matrix<probdim, 1> deedge(&xyze_lineElement_(0, 0), false);
   Core::LinAlg::Matrix<probdim, 1> dsedge(&xyze_surfaceElement_(0, 0), false);
@@ -429,8 +425,8 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
  *--------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge, num_nodes_side>::find_local_coordinate_of_edge_end_point(double& pos,
+bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
+    num_nodes_side>::find_local_coordinate_of_edge_end_point(double& pos,
     const Core::LinAlg::Matrix<probdim, 1>& xyz, const double& tolerance) const
 {
   const std::array<double, 2> r_endpoints = {-1.0, 1.0};
@@ -453,9 +449,9 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-Core::Geo::Cut::ParallelIntersectionStatus
-Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
-    num_nodes_side>::handle_parallel_intersection(PointSet& cuts, int skip_id, bool output)
+Cut::ParallelIntersectionStatus Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge,
+    dimside, num_nodes_edge, num_nodes_side>::handle_parallel_intersection(PointSet& cuts,
+    int skip_id, bool output)
 {
   std::array<Node*, 2> id_to_node = {get_edge().begin_node(), get_edge().end_node()};
   int id_start = 0, id_end = 2;
@@ -497,7 +493,7 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
 
   for (int lp = id_start; lp < id_end; ++lp)
   {
-    Core::Geo::Cut::Point* actpoint = id_to_node[lp]->point();
+    Cut::Point* actpoint = id_to_node[lp]->point();
 
     switch (sidetype)
     {
@@ -876,8 +872,8 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
  *--------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-void Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge, num_nodes_side>::generate_gmsh_dump()
+void Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
+    num_nodes_side>::generate_gmsh_dump()
 {
   // just to create gmsh output of the failed intersection!!!
   try
@@ -900,8 +896,8 @@ void Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge, num_nodes_side>::handle_special_cases()
+bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
+    num_nodes_side>::handle_special_cases()
 {
   Core::LinAlg::Matrix<dimside + dimedge, 1> i_xsi;
   i_xsi = xsi_;
@@ -956,8 +952,8 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge, num_nodes_side>::triangulated_intersection(PointSet& cuts)
+bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
+    num_nodes_side>::triangulated_intersection(PointSet& cuts)
 {
   double itol = 0.0;
   switch (sidetype)
@@ -1136,8 +1132,8 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
  *--------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge, num_nodes_side>::intersect(PointSet& cuts)
+bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
+    num_nodes_side>::intersect(PointSet& cuts)
 {
   check_init();
   // ------------------------------------------------------------------------
@@ -1257,8 +1253,8 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
  *--------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    num_nodes_edge, num_nodes_side>::refined_bb_overlap_check(int maxstep)
+bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
+    num_nodes_side>::refined_bb_overlap_check(int maxstep)
 {
   if (sidetype != Core::FE::CellType::tri3)
     FOUR_C_THROW("refined_bb_overlap_check is made for distored tri3s!");
@@ -1392,8 +1388,7 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Geo::Cut::IntersectionBase>
-Core::Geo::Cut::IntersectionFactory::create_intersection(
+Teuchos::RCP<Cut::IntersectionBase> Cut::IntersectionFactory::create_intersection(
     Core::FE::CellType edge_type, Core::FE::CellType side_type) const
 {
   const int probdim = Global::Problem::instance()->n_dim();
@@ -1414,8 +1409,8 @@ Core::Geo::Cut::IntersectionFactory::create_intersection(
 
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
     unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
-std::pair<bool, bool> Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge,
-    dimside, num_nodes_edge, num_nodes_side>::is_quad4_distorted()
+std::pair<bool, bool> Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
+    num_nodes_edge, num_nodes_side>::is_quad4_distorted()
 {
   // we assume problem dimension equal to 3 here
   Kernel::PointOnSurfaceLoc loc[2];
@@ -1435,14 +1430,14 @@ std::pair<bool, bool> Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, 
     bool conv = false;
     switch (get_options_ptr()->geom_distance_floattype())
     {
-      case Core::Geo::Cut::floattype_double:
+      case Cut::floattype_double:
       {
         Kernel::ComputeDistance<3, Core::FE::CellType::tri3, false> cd(xsi);
         conv = cd(xyze_triElement, point, distance[tri_id], signeddistance);
         if (conv) loc[tri_id] = cd.get_side_location();
         break;
       }
-      case Core::Geo::Cut::floattype_cln:
+      case Cut::floattype_cln:
       {
         Kernel::ComputeDistance<3, Core::FE::CellType::tri3, true> cd(xsi);
         conv = cd(xyze_triElement, point, distance[tri_id], signeddistance);
@@ -1509,24 +1504,19 @@ std::pair<bool, bool> Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, 
 
 
 
-template class Core::Geo::Cut::Intersection<2, Core::FE::CellType::line2,
-    Core::FE::CellType::line2>;
-template class Core::Geo::Cut::Intersection<3, Core::FE::CellType::line2,
-    Core::FE::CellType::line2>;
+template class Cut::Intersection<2, Core::FE::CellType::line2, Core::FE::CellType::line2>;
+template class Cut::Intersection<3, Core::FE::CellType::line2, Core::FE::CellType::line2>;
 // template class
-// Core::Geo::Cut::intersection<2,Core::FE::CellType::line2,Core::FE::CellType::quad4>;
-template class Core::Geo::Cut::Intersection<3, Core::FE::CellType::line2,
-    Core::FE::CellType::quad4>;
+// Cut::intersection<2,Core::FE::CellType::line2,Core::FE::CellType::quad4>;
+template class Cut::Intersection<3, Core::FE::CellType::line2, Core::FE::CellType::quad4>;
 // template class
-// Core::Geo::Cut::intersection<2,Core::FE::CellType::line2,Core::FE::CellType::quad8>;
-template class Core::Geo::Cut::Intersection<3, Core::FE::CellType::line2,
-    Core::FE::CellType::quad8>;
+// Cut::intersection<2,Core::FE::CellType::line2,Core::FE::CellType::quad8>;
+template class Cut::Intersection<3, Core::FE::CellType::line2, Core::FE::CellType::quad8>;
 // template class
-// Core::Geo::Cut::intersection<2,Core::FE::CellType::line2,Core::FE::CellType::quad9>;
-template class Core::Geo::Cut::Intersection<3, Core::FE::CellType::line2,
-    Core::FE::CellType::quad9>;
+// Cut::intersection<2,Core::FE::CellType::line2,Core::FE::CellType::quad9>;
+template class Cut::Intersection<3, Core::FE::CellType::line2, Core::FE::CellType::quad9>;
 // template class
-// Core::Geo::Cut::intersection<2,Core::FE::CellType::line2,Core::FE::CellType::tri3>;
-template class Core::Geo::Cut::Intersection<3, Core::FE::CellType::line2, Core::FE::CellType::tri3>;
+// Cut::intersection<2,Core::FE::CellType::line2,Core::FE::CellType::tri3>;
+template class Cut::Intersection<3, Core::FE::CellType::line2, Core::FE::CellType::tri3>;
 
 FOUR_C_NAMESPACE_CLOSE

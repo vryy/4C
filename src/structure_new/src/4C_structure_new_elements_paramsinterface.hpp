@@ -29,13 +29,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace Core::Geo
+namespace Core::Geo::MeshFree
 {
-  namespace MeshFree
-  {
-    class BoundingBox;
-  }
-}  // namespace Core::Geo
+  class BoundingBox;
+}
+
 // forward declaration
 namespace BrownianDynamics
 {
@@ -88,11 +86,11 @@ namespace Solid
     /*! \brief Parameter interface for the structural elements and the Solid::Integrator data
      * exchange
      *
-     *  This class is a special case of the Core::Elements::ParamsInterface class and gives you all
-     * the basic function definitions which you can use to get access to the Solid::Integrator and
-     * many more objects. Please consider to derive a special interface class, if you need special
-     * parameters inside of your element. Keep the Evaluate call untouched and cast the interface
-     * object to the desired specification.
+     *  This class is a special case of the Core::Elements::ParamsInterface class and gives you
+     * all the basic function definitions which you can use to get access to the Solid::Integrator
+     * and many more objects. Please consider to derive a special interface class, if you need
+     * special parameters inside of your element. Keep the Evaluate call untouched and cast the
+     * interface object to the desired specification.
      *
      *  ToDo Currently we set the interface in the elements via the Teuchos::ParameterList.
      *  Theoretically, the Teuchos::ParameterList can be replaced by the interface itself!
@@ -128,7 +126,8 @@ namespace Solid
       virtual Teuchos::RCP<BeamParamsInterface> get_beam_params_interface_ptr() const = 0;
       //! @}
 
-      //! @name Access control parameters for the handling of element internal variables (e.g. EAS)
+      //! @name Access control parameters for the handling of element internal variables (e.g.
+      //! EAS)
       //! @{
 
       //! get the current step length
@@ -207,8 +206,8 @@ namespace Solid
       //! destructor
       virtual ~BeamParamsInterface() = default;
 
-      /*! @name time integration parameters required for element-internal update of angular velocity
-       *  and acceleration (in combination with GenAlphaLieGroup) */
+      /*! @name time integration parameters required for element-internal update of angular
+       * velocity and acceleration (in combination with GenAlphaLieGroup) */
       //! @{
       virtual double get_beta() const = 0;
       virtual double get_gamma() const = 0;
@@ -222,8 +221,8 @@ namespace Solid
 
 namespace BrownianDynamics
 {
-  /*! \brief Parameter interface for brownian dynamic data exchange between integrator and structure
-   * (beam) elements \author eichinger */
+  /*! \brief Parameter interface for brownian dynamic data exchange between integrator and
+   * structure (beam) elements \author eichinger */
   class ParamsInterface
   {
    public:

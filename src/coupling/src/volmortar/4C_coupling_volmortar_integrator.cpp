@@ -1165,7 +1165,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void Coupling::VolMortar::VolMortarIntegrator<distype_s,
     distype_m>::integrate_cells_3d_direct_diveregence(Core::Elements::Element& Aele,
-    Core::Elements::Element& Bele, Core::Geo::Cut::VolumeCell& vc,
+    Core::Elements::Element& Bele, Cut::VolumeCell& vc,
     Teuchos::RCP<Core::FE::GaussPoints> intpoints, bool switched_conf,
     Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
     Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,

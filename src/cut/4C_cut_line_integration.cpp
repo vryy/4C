@@ -2586,11 +2586,11 @@ double LineIntegration::integrate_line()
     else  // integration over boundarycell
     {
       double linein = 0.0;
-      if (int_type_ == Core::Geo::Cut::proj_x)
+      if (int_type_ == Cut::proj_x)
         linein = base_func_surfX(actCoord, inte_num_, alpha_);
-      else if (int_type_ == Core::Geo::Cut::proj_y)
+      else if (int_type_ == Cut::proj_y)
         linein = base_func_surfY(actCoord, inte_num_, alpha_);
-      else if (int_type_ == Core::Geo::Cut::proj_z)
+      else if (int_type_ == Cut::proj_z)
         linein = base_func_surfZ(actCoord, inte_num_, alpha_);
       else
         FOUR_C_THROW("Integration type unspecified");

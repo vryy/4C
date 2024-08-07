@@ -18,8 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Tri6SideHandle::Tri6SideHandle(
-    Mesh& mesh, int sid, const std::vector<int>& node_ids)
+Cut::Tri6SideHandle::Tri6SideHandle(Mesh& mesh, int sid, const std::vector<int>& node_ids)
 {
   subsides_.reserve(4);
 
@@ -57,8 +56,7 @@ Core::Geo::Cut::Tri6SideHandle::Tri6SideHandle(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Quad4SideHandle::Quad4SideHandle(
-    Mesh& mesh, int sid, const std::vector<int>& node_ids)
+Cut::Quad4SideHandle::Quad4SideHandle(Mesh& mesh, int sid, const std::vector<int>& node_ids)
 {
   subsides_.reserve(4);
 
@@ -111,7 +109,7 @@ Core::Geo::Cut::Quad4SideHandle::Quad4SideHandle(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Quad8SideHandle::Quad8SideHandle(
+Cut::Quad8SideHandle::Quad8SideHandle(
     Mesh& mesh, int sid, const std::vector<int>& node_ids, bool iscutside)
 {
   if (iscutside)
@@ -213,7 +211,7 @@ Core::Geo::Cut::Quad8SideHandle::Quad8SideHandle(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Quad9SideHandle::Quad9SideHandle(
+Cut::Quad9SideHandle::Quad9SideHandle(
     Mesh& mesh, int sid, const std::vector<int>& node_ids, bool iscutside)
 {
   if (iscutside)
@@ -303,7 +301,7 @@ Core::Geo::Cut::Quad9SideHandle::Quad9SideHandle(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Tri6SideHandle::local_coordinates(
+void Cut::Tri6SideHandle::local_coordinates(
     const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<2, 1>& rst)
 {
   Core::LinAlg::Matrix<3, 6> xyze;
@@ -325,7 +323,7 @@ void Core::Geo::Cut::Tri6SideHandle::local_coordinates(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Quad4SideHandle::local_coordinates(
+void Cut::Quad4SideHandle::local_coordinates(
     const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<2, 1>& rst)
 {
   Core::LinAlg::Matrix<3, 4> xyze;
@@ -347,7 +345,7 @@ void Core::Geo::Cut::Quad4SideHandle::local_coordinates(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Quad8SideHandle::local_coordinates(
+void Cut::Quad8SideHandle::local_coordinates(
     const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<2, 1>& rst)
 {
   Core::LinAlg::Matrix<3, 8> xyze;
@@ -369,7 +367,7 @@ void Core::Geo::Cut::Quad8SideHandle::local_coordinates(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Quad9SideHandle::local_coordinates(
+void Cut::Quad9SideHandle::local_coordinates(
     const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<2, 1>& rst)
 {
   Core::LinAlg::Matrix<3, 9> xyze;

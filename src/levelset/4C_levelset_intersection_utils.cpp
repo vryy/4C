@@ -95,7 +95,7 @@ void ScaTra::LevelSet::Intersection::get_zero_level_set(const Epetra_Vector& phi
     // ------------------------------------------------------------------------
     // Prepare cut
     // ------------------------------------------------------------------------
-    Core::Geo::Cut::LevelSetIntersection levelset(scatradis.get_comm());
+    Cut::LevelSetIntersection levelset(scatradis.get_comm());
     Core::LinAlg::SerialDenseMatrix xyze;
     std::vector<double> phi_nodes;
     std::vector<int> nids;
@@ -108,16 +108,16 @@ void ScaTra::LevelSet::Intersection::get_zero_level_set(const Epetra_Vector& phi
       continue;
 
     // ------------------------------------------------------------------------
-    // call Core::Geo::Cut algorithm and process cut data
+    // call Cut algorithm and process cut data
     // ------------------------------------------------------------------------
-    Core::Geo::Cut::ElementHandle* ehandle = cut(levelset, xyze, phi_nodes, cut_screenoutput);
+    Cut::ElementHandle* ehandle = cut(levelset, xyze, phi_nodes, cut_screenoutput);
 
     // =========================================================
     // cell is in contact with the interface (cut or touched)
     // =========================================================
     if (ehandle != nullptr)
     {
-      Core::Geo::Cut::plain_element_set cuteles;
+      Cut::plain_element_set cuteles;
 
       collect_cut_eles(*ehandle, cuteles, distype);
 
@@ -152,34 +152,34 @@ void ScaTra::LevelSet::Intersection::get_zero_level_set(const Epetra_Vector& phi
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ScaTra::LevelSet::Intersection::get_zero_level_set_contour(
-    const Core::Geo::Cut::plain_element_set& cuteles, const Core::LinAlg::SerialDenseMatrix& xyze,
+    const Cut::plain_element_set& cuteles, const Core::LinAlg::SerialDenseMatrix& xyze,
     Core::FE::CellType distype)
 {
-  for (Core::Geo::Cut::plain_element_set::const_iterator icutele = cuteles.begin();
-       icutele != cuteles.end(); ++icutele)
+  for (Cut::plain_element_set::const_iterator icutele = cuteles.begin(); icutele != cuteles.end();
+       ++icutele)
   {
     // get pointer to cut element
-    Core::Geo::Cut::Element* cutele = *icutele;
+    Cut::Element* cutele = *icutele;
 
-    Core::Geo::Cut::plain_volumecell_set volcells;
+    Cut::plain_volumecell_set volcells;
     volcells = cutele->volume_cells();
 
-    for (Core::Geo::Cut::plain_volumecell_set::const_iterator ivolcell = volcells.begin();
+    for (Cut::plain_volumecell_set::const_iterator ivolcell = volcells.begin();
          ivolcell != volcells.end(); ++ivolcell)
     {
-      Core::Geo::Cut::VolumeCell* volcell = *ivolcell;
-      const Core::Geo::Cut::Point::PointPosition vol_pos = volcell->position();
+      Cut::VolumeCell* volcell = *ivolcell;
+      const Cut::Point::PointPosition vol_pos = volcell->position();
       if (is_point_position(vol_pos))
       {
         add_to_volume(vol_pos, volcell->volume());
         // get boundary integration cells for this volume cell
         // we consider only the cells for one position, otherwise we would have the boundary
         // cells twice
-        const Core::Geo::Cut::plain_boundarycell_set& bcells = volcell->boundary_cells();
-        for (Core::Geo::Cut::plain_boundarycell_set::const_iterator ibcell = bcells.begin();
+        const Cut::plain_boundarycell_set& bcells = volcell->boundary_cells();
+        for (Cut::plain_boundarycell_set::const_iterator ibcell = bcells.begin();
              ibcell != bcells.end(); ++ibcell)
         {
-          Core::Geo::Cut::BoundaryCell* bcell = *ibcell;
+          Cut::BoundaryCell* bcell = *ibcell;
 
           add_to_boundary_int_cells_per_ele(xyze, *bcell, distype);
 
@@ -197,7 +197,7 @@ void ScaTra::LevelSet::Intersection::get_zero_level_set_contour(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ScaTra::LevelSet::Intersection::add_to_boundary_int_cells_per_ele(
-    const Core::LinAlg::SerialDenseMatrix& xyze, const Core::Geo::Cut::BoundaryCell& bcell,
+    const Core::LinAlg::SerialDenseMatrix& xyze, const Cut::BoundaryCell& bcell,
     Core::FE::CellType distype_ele)
 {
   Core::FE::CellType distype_bc = bcell.shape();
@@ -243,15 +243,14 @@ void ScaTra::LevelSet::Intersection::check_boundary_cell_type(Core::FE::CellType
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ScaTra::LevelSet::Intersection::add_to_volume(
-    Core::Geo::Cut::Point::PointPosition pos, double vol)
+void ScaTra::LevelSet::Intersection::add_to_volume(Cut::Point::PointPosition pos, double vol)
 {
   switch (pos)
   {
-    case Core::Geo::Cut::Point::outside:
+    case Cut::Point::outside:
       volume_plus() += vol;
       break;
-    case Core::Geo::Cut::Point::inside:
+    case Cut::Point::inside:
       volume_minus() += vol;
       break;
     default:
@@ -262,8 +261,8 @@ void ScaTra::LevelSet::Intersection::add_to_volume(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ScaTra::LevelSet::Intersection::collect_cut_eles(Core::Geo::Cut::ElementHandle& ehandle,
-    Core::Geo::Cut::plain_element_set& cuteles, Core::FE::CellType distype) const
+void ScaTra::LevelSet::Intersection::collect_cut_eles(
+    Cut::ElementHandle& ehandle, Cut::plain_element_set& cuteles, Core::FE::CellType distype) const
 {
   ehandle.collect_elements(cuteles);
 
@@ -352,9 +351,9 @@ void ScaTra::LevelSet::Intersection::prepare_cut(const Core::Elements::Element* 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::ElementHandle* ScaTra::LevelSet::Intersection::cut(
-    Core::Geo::Cut::LevelSetIntersection& levelset, const Core::LinAlg::SerialDenseMatrix& xyze,
-    const std::vector<double>& phi_nodes, bool cut_screenoutput) const
+Cut::ElementHandle* ScaTra::LevelSet::Intersection::cut(Cut::LevelSetIntersection& levelset,
+    const Core::LinAlg::SerialDenseMatrix& xyze, const std::vector<double>& phi_nodes,
+    bool cut_screenoutput) const
 {
   try
   {
@@ -376,11 +375,10 @@ Core::Geo::Cut::ElementHandle* ScaTra::LevelSet::Intersection::cut(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool ScaTra::LevelSet::Intersection::is_point_position(
-    const Core::Geo::Cut::Point::PointPosition& curr_pos,
-    const std::vector<Core::Geo::Cut::Point::PointPosition>& desired_pos) const
+bool ScaTra::LevelSet::Intersection::is_point_position(const Cut::Point::PointPosition& curr_pos,
+    const std::vector<Cut::Point::PointPosition>& desired_pos) const
 {
-  for (std::vector<Core::Geo::Cut::Point::PointPosition>::const_iterator cit = desired_pos.begin();
+  for (std::vector<Cut::Point::PointPosition>::const_iterator cit = desired_pos.begin();
        cit != desired_pos.end(); ++cit)
   {
     // OR - combination
@@ -392,19 +390,18 @@ bool ScaTra::LevelSet::Intersection::is_point_position(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::vector<Core::Geo::Cut::Point::PointPosition>&
-ScaTra::LevelSet::Intersection::desired_positions()
+const std::vector<Cut::Point::PointPosition>& ScaTra::LevelSet::Intersection::desired_positions()
 {
-  if (desired_positions_.empty()) desired_positions_.push_back(Core::Geo::Cut::Point::outside);
+  if (desired_positions_.empty()) desired_positions_.push_back(Cut::Point::outside);
   return desired_positions_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ScaTra::LevelSet::Intersection::set_desired_positions(
-    const std::vector<Core::Geo::Cut::Point::PointPosition>& desired_pos)
+    const std::vector<Cut::Point::PointPosition>& desired_pos)
 {
-  desired_positions_.resize(desired_pos.size(), Core::Geo::Cut::Point::undecided);
+  desired_positions_.resize(desired_pos.size(), Cut::Point::undecided);
   std::copy(desired_pos.begin(), desired_pos.end(), desired_positions_.begin());
 }
 

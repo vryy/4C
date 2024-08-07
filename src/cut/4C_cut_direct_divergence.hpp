@@ -21,80 +21,79 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::Geo
+
+namespace Cut
 {
-  namespace Cut
+  class Element;
+  class Facet;
+  class VolumeCell;
+  class Mesh;
+
+  /*!
+  \brief A class to construct Gaussian rule for volumecell by direct application of divergence
+  theorem. This generate only the integration points on the facets.
+  */
+  class DirectDivergence
   {
-    class Element;
-    class Facet;
-    class VolumeCell;
-    class Mesh;
+   public:
+    DirectDivergence(
+        VolumeCell* volcell, Element* elem, const Cut::Point::PointPosition posi, Mesh& mesh)
+        : volcell_(volcell), elem1_(elem), position_(posi), mesh_(mesh)
+    {
+    }
 
     /*!
-    \brief A class to construct Gaussian rule for volumecell by direct application of divergence
-    theorem. This generate only the integration points on the facets.
+    \brief Generate integration points on the facets of the volumecell
     */
-    class DirectDivergence
-    {
-     public:
-      DirectDivergence(VolumeCell* volcell, Element* elem,
-          const Core::Geo::Cut::Point::PointPosition posi, Mesh& mesh)
-          : volcell_(volcell), elem1_(elem), position_(posi), mesh_(mesh)
-      {
-      }
+    Teuchos::RCP<Core::FE::GaussPoints> vc_integration_rule(std::vector<double>& RefPlaneEqn);
 
-      /*!
-      \brief Generate integration points on the facets of the volumecell
-      */
-      Teuchos::RCP<Core::FE::GaussPoints> vc_integration_rule(std::vector<double>& RefPlaneEqn);
+    /*!
+    \brief Compute and set correspondingly the volume of the considered volumecell from the
+    generated integration rule and compare it with full application of divergence theorem
+     */
+    void debug_volume(const Core::FE::GaussIntegration& gpv, bool& isNeg);
 
-      /*!
-      \brief Compute and set correspondingly the volume of the considered volumecell from the
-      generated integration rule and compare it with full application of divergence theorem
-       */
-      void debug_volume(const Core::FE::GaussIntegration& gpv, bool& isNeg);
+    /*!
+    \brief Geometry of volumecell, reference facet, main and internal gauss points for gmsh
+    output.
+     */
+    void divengence_cells_gmsh(
+        const Core::FE::GaussIntegration& gpv, Teuchos::RCP<Core::FE::GaussPoints>& gpmain);
 
-      /*!
-      \brief Geometry of volumecell, reference facet, main and internal gauss points for gmsh
-      output.
-       */
-      void divengence_cells_gmsh(
-          const Core::FE::GaussIntegration& gpv, Teuchos::RCP<Core::FE::GaussPoints>& gpmain);
-
-     private:
-      /*!
-      \brief Identify the list of facets which need to be triangulated, and also get the reference
-      facet that will be used in xfluid part
-       */
-      void list_facets(std::vector<plain_facet_set::const_iterator>& facetIterator,
-          std::vector<double>& RefPlaneEqn, plain_facet_set::const_iterator& IteratorRefFacet,
-          bool& IsRefFacet);
+   private:
+    /*!
+    \brief Identify the list of facets which need to be triangulated, and also get the reference
+    facet that will be used in xfluid part
+     */
+    void list_facets(std::vector<plain_facet_set::const_iterator>& facetIterator,
+        std::vector<double>& RefPlaneEqn, plain_facet_set::const_iterator& IteratorRefFacet,
+        bool& IsRefFacet);
 
 
 
-      //! volumecell over which we construct integration scheme
-      VolumeCell* volcell_;
+    //! volumecell over which we construct integration scheme
+    VolumeCell* volcell_;
 
-      //! background element that contains this volumecell
-      Element* elem1_;
+    //! background element that contains this volumecell
+    Element* elem1_;
 
-      //! position of this volumecell
-      const Core::Geo::Cut::Point::PointPosition position_;
+    //! position of this volumecell
+    const Cut::Point::PointPosition position_;
 
-      //! mesh that contains the background element
-      Mesh& mesh_;
+    //! mesh that contains the background element
+    Mesh& mesh_;
 
-      //! reference facet identified for this volumecell
-      Facet* ref_facet_;
+    //! reference facet identified for this volumecell
+    Facet* ref_facet_;
 
-      //! true if the reference plane is on a facet of volumecell
-      bool is_ref_;
+    //! true if the reference plane is on a facet of volumecell
+    bool is_ref_;
 
-      //! Points that define the reference plane used for this volumecell
-      std::vector<Point*> ref_pts_gmsh_;
-    };
-  }  // namespace Cut
-}  // namespace Core::Geo
+    //! Points that define the reference plane used for this volumecell
+    std::vector<Point*> ref_pts_gmsh_;
+  };
+}  // namespace Cut
+
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -38,7 +38,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::Geo::Cut::Kernel
+namespace Cut::Kernel
 {
   // functions to compare determinant ot zero, e.g when computing the condition_number
   bool closeToZero(const double a);
@@ -584,8 +584,8 @@ namespace Core::Geo::Cut::Kernel
   bool IsOnLine(Point*& pt1, Point*& pt2, Point*& pt3, bool DeleteInlinePts = false);
 
   /*! \brief Check whether the polygon defined by the set of points is convex */
-  std::vector<int> CheckConvexity(const std::vector<Point*>& ptlist,
-      Core::Geo::Cut::FacetShape& geomType, bool InSplit = true, bool DeleteInlinePts = false);
+  std::vector<int> CheckConvexity(const std::vector<Point*>& ptlist, Cut::FacetShape& geomType,
+      bool InSplit = true, bool DeleteInlinePts = false);
 
   // std::vector<double> EqnPlanePolygon( const std::vector<Point*>& ptlist, bool
   // DeleteInlinePts = false );
@@ -1428,12 +1428,12 @@ namespace Core::Geo::Cut::Kernel
       if (all_distance_done_once_ and all_intersections_done_once_ and all_position_done_once_ and
           (!custom_allocator_run_))
       {
-        Core::Geo::Cut::MemorySingleton::getinstance().ReportAllocated();
+        Cut::MemorySingleton::getinstance().ReportAllocated();
         report_intersection_allocated();
         report_position_allocated();
         report_distance_allocated();
         report_total_allocated();
-        Core::Geo::Cut::MemorySingleton::getinstance().set_state(1, memory_allocations_);
+        Cut::MemorySingleton::getinstance().set_state(1, memory_allocations_);
         custom_allocator_run_ = true;
       }
       if (first_run_) std::cout << "In cut position statistics is" << std::endl;
@@ -1446,7 +1446,7 @@ namespace Core::Geo::Cut::Kernel
         // set current constainer for most frequenty byte size allocation for this iteration
         if (custom_allocator_run_)
 #endif
-          Core::Geo::Cut::MemorySingleton::getinstance().get_memory_pool_allocator().SetCurrent(
+          Cut::MemorySingleton::getinstance().get_memory_pool_allocator().SetCurrent(
               cln_byte_size_[iter]);
 #endif
 
@@ -1454,13 +1454,12 @@ namespace Core::Geo::Cut::Kernel
         // Report memory allocation of the class if doing this for the first time
         if (first_run_)
         {
-          if (Core::Geo::Cut::MemorySingleton::getinstance().IsRecording())
+          if (Cut::MemorySingleton::getinstance().IsRecording())
           {
-            update_memory_allocations(
-                Core::Geo::Cut::MemorySingleton::getinstance().GetMemoryPattern());
-            Core::Geo::Cut::MemorySingleton::getinstance().StopRecord();
+            update_memory_allocations(Cut::MemorySingleton::getinstance().GetMemoryPattern());
+            Cut::MemorySingleton::getinstance().StopRecord();
           }
-          Core::Geo::Cut::MemorySingleton::getinstance().StartRecord();
+          Cut::MemorySingleton::getinstance().StartRecord();
         }
 #endif
         // convertion to correspondent precison
@@ -1593,10 +1592,10 @@ namespace Core::Geo::Cut::Kernel
 #if DEBUG_MEMORY_ALLOCATION
       if (first_run_)
       {
-        Core::Geo::Cut::MemorySingleton::getinstance().StopRecord();
+        Cut::MemorySingleton::getinstance().StopRecord();
 
         std::unordered_map<size_t, int>& allocation_map =
-            Core::Geo::Cut::MemorySingleton::getinstance().GetMemoryPattern();
+            Cut::MemorySingleton::getinstance().GetMemoryPattern();
 
         // update the global number of allocations to the maximum
         int max_num = 0;
@@ -1625,7 +1624,7 @@ namespace Core::Geo::Cut::Kernel
         else
           FOUR_C_THROW("This should not be possible!");
 
-        Core::Geo::Cut::MemorySingleton::getinstance().ResetAllocated();
+        Cut::MemorySingleton::getinstance().ResetAllocated();
       }
 #endif
     }
@@ -1702,7 +1701,7 @@ namespace Core::Geo::Cut::Kernel
           Core::CLN::ClnWrapper::reset_precision();
         }
 #ifdef CUSTOM_MEMORY_ALLOCATOR
-        Core::Geo::Cut::MemorySingleton::getinstance().Finalize();
+        Cut::MemorySingleton::getinstance().Finalize();
 #endif
       }
 #endif
@@ -2508,15 +2507,15 @@ namespace Core::Geo::Cut::Kernel
           (!custom_allocator_run_))
       {
 #if DEBUG_MEMORY_ALLOCATION
-        Core::Geo::Cut::MemorySingleton::getinstance().ReportAllocated();
+        Cut::MemorySingleton::getinstance().ReportAllocated();
         report_intersection_allocated();
         report_position_allocated();
         report_distance_allocated();
         report_total_allocated();
         // start setting up the memory container
-        Core::Geo::Cut::MemorySingleton::getinstance().set_state(1, memory_allocations_);
+        Cut::MemorySingleton::getinstance().set_state(1, memory_allocations_);
 #else
-        Core::Geo::Cut::MemorySingleton::getinstance().SwitchState();
+        Cut::MemorySingleton::getinstance().SwitchState();
 #endif
         custom_allocator_run_ = true;
       }
@@ -2531,20 +2530,19 @@ namespace Core::Geo::Cut::Kernel
 #if DEBUG_MEMORY_ALLOCATION
         if (custom_allocator_run_)
 #endif
-          Core::Geo::Cut::MemorySingleton::getinstance().get_memory_pool_allocator().SetCurrent(
+          Cut::MemorySingleton::getinstance().get_memory_pool_allocator().SetCurrent(
               cln_byte_size_[iter]);
 #endif
 #if DEBUG_MEMORY_ALLOCATION
 
         if (first_run_)
         {
-          if (Core::Geo::Cut::MemorySingleton::getinstance().IsRecording())
+          if (Cut::MemorySingleton::getinstance().IsRecording())
           {
-            update_memory_allocations(
-                Core::Geo::Cut::MemorySingleton::getinstance().GetMemoryPattern());
-            Core::Geo::Cut::MemorySingleton::getinstance().StopRecord();
+            update_memory_allocations(Cut::MemorySingleton::getinstance().GetMemoryPattern());
+            Cut::MemorySingleton::getinstance().StopRecord();
           }
-          Core::Geo::Cut::MemorySingleton::getinstance().StartRecord();
+          Cut::MemorySingleton::getinstance().StartRecord();
         }
 
 #endif
@@ -2822,10 +2820,10 @@ namespace Core::Geo::Cut::Kernel
 
       if (first_run_)
       {
-        Core::Geo::Cut::MemorySingleton::getinstance().StopRecord();
+        Cut::MemorySingleton::getinstance().StopRecord();
 
         std::unordered_map<size_t, int>& allocation_map =
-            Core::Geo::Cut::MemorySingleton::getinstance().GetMemoryPattern();
+            Cut::MemorySingleton::getinstance().GetMemoryPattern();
         int max_num = 0;
         int size_max_num = 0;
         // update the global number of allocations to the maximum
@@ -2853,7 +2851,7 @@ namespace Core::Geo::Cut::Kernel
         else
           FOUR_C_THROW("This should not be possible");
 
-        Core::Geo::Cut::MemorySingleton::getinstance().ResetAllocated();
+        Cut::MemorySingleton::getinstance().ResetAllocated();
       }
 #endif
     }
@@ -3025,7 +3023,7 @@ namespace Core::Geo::Cut::Kernel
           }
           // finalize memory allocator
 #ifdef CUSTOM_MEMORY_ALLOCATOR
-          Core::Geo::Cut::MemorySingleton::getinstance().Finalize();
+          Cut::MemorySingleton::getinstance().Finalize();
 #endif
 #if DOUBLE_PLUS_CLN_COMPUTE
         }
@@ -3054,7 +3052,7 @@ namespace Core::Geo::Cut::Kernel
 
     bool surface_within_limits(double tolerance = REFERENCETOL) const
     {
-      return Core::Geo::Cut::Kernel::within_limits<side_type>(local_coordinates(), tolerance);
+      return Cut::Kernel::within_limits<side_type>(local_coordinates(), tolerance);
     }
 
     /// access the Newton tolerance
@@ -3657,7 +3655,7 @@ namespace Core::Geo::Cut::Kernel
 
         std::stringstream f_str;
         f_str << ".NewtonFailed_intersection.pos";
-        std::string filename(Core::Geo::Cut::Output::GenerateGmshOutputFilename(f_str.str()));
+        std::string filename(Cut::Output::GenerateGmshOutputFilename(f_str.str()));
         std::ofstream file(filename.c_str());
         write_to_gmsh(file);
       }
@@ -3951,14 +3949,14 @@ namespace Core::Geo::Cut::Kernel
           (!custom_allocator_run_))
       {
 #if DEBUG_MEMORY_ALLOCATION
-        Core::Geo::Cut::MemorySingleton::getinstance().ReportAllocated();
+        Cut::MemorySingleton::getinstance().ReportAllocated();
         report_intersection_allocated();
         report_position_allocated();
         report_distance_allocated();
         report_total_allocated();
-        Core::Geo::Cut::MemorySingleton::getinstance().set_state(1, memory_allocations_);
+        Cut::MemorySingleton::getinstance().set_state(1, memory_allocations_);
 #else
-        Core::Geo::Cut::MemorySingleton::getinstance().SwitchState();
+        Cut::MemorySingleton::getinstance().SwitchState();
 #endif
         custom_allocator_run_ = true;
       }
@@ -3974,20 +3972,19 @@ namespace Core::Geo::Cut::Kernel
 #if DEBUG_MEMORY_ALLOCATION
         if (custom_allocator_run_)
 #endif
-          Core::Geo::Cut::MemorySingleton::getinstance().get_memory_pool_allocator().SetCurrent(
+          Cut::MemorySingleton::getinstance().get_memory_pool_allocator().SetCurrent(
               cln_byte_size_[iter]);
 #endif
 #if DEBUG_MEMORY_ALLOCATION
 
         if (first_run_)
         {
-          if (Core::Geo::Cut::MemorySingleton::getinstance().IsRecording())
+          if (Cut::MemorySingleton::getinstance().IsRecording())
           {
-            update_memory_allocations(
-                Core::Geo::Cut::MemorySingleton::getinstance().GetMemoryPattern());
-            Core::Geo::Cut::MemorySingleton::getinstance().StopRecord();
+            update_memory_allocations(Cut::MemorySingleton::getinstance().GetMemoryPattern());
+            Cut::MemorySingleton::getinstance().StopRecord();
           }
-          Core::Geo::Cut::MemorySingleton::getinstance().StartRecord();
+          Cut::MemorySingleton::getinstance().StartRecord();
         }
 
 #endif
@@ -4277,10 +4274,10 @@ namespace Core::Geo::Cut::Kernel
       // if first run need also to run until the end
       if (first_run_)
       {
-        Core::Geo::Cut::MemorySingleton::getinstance().StopRecord();
+        Cut::MemorySingleton::getinstance().StopRecord();
 
         std::unordered_map<size_t, int>& allocation_map =
-            Core::Geo::Cut::MemorySingleton::getinstance().GetMemoryPattern();
+            Cut::MemorySingleton::getinstance().GetMemoryPattern();
 
         int max_num = 0;
         int size_max_num = 0;
@@ -4309,7 +4306,7 @@ namespace Core::Geo::Cut::Kernel
         else
           FOUR_C_THROW("This should not be possible!");
 
-        Core::Geo::Cut::MemorySingleton::getinstance().ResetAllocated();
+        Cut::MemorySingleton::getinstance().ResetAllocated();
       }
 #endif
     }
@@ -4413,7 +4410,7 @@ namespace Core::Geo::Cut::Kernel
             Core::CLN::ClnWrapper::reset_precision();
           }
 #ifdef CUSTOM_MEMORY_ALLOCATOR
-          Core::Geo::Cut::MemorySingleton::getinstance().Finalize();
+          Cut::MemorySingleton::getinstance().Finalize();
 #endif
 #if DOUBLE_PLUS_CLN_COMPUTE
         }
@@ -4674,165 +4671,158 @@ namespace Core::Geo::Cut::Kernel
 
   };  // class DebugComputeIntersection
 
-}  // namespace Core::Geo::Cut::Kernel
-
+}  // namespace Cut::Kernel
 
 
 // static members in KERNEL
 // in compute position strategy
 template <bool debug, unsigned prob_dim, Core::FE::CellType element_type,
     unsigned num_nodes_element, unsigned dim, typename FloatType>
-Core::LinAlg::Matrix<num_nodes_element, 1, FloatType>
-    Core::Geo::Cut::Kernel::ComputePositionStaticMembers<debug, prob_dim, element_type,
-        num_nodes_element, dim, FloatType>::funct_;
+Core::LinAlg::Matrix<num_nodes_element, 1, FloatType> Cut::Kernel::ComputePositionStaticMembers<
+    debug, prob_dim, element_type, num_nodes_element, dim, FloatType>::funct_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType element_type,
     unsigned num_nodes_element, unsigned dim, typename FloatType>
 Core::LinAlg::Matrix<prob_dim, num_nodes_element, FloatType>
-    Core::Geo::Cut::Kernel::ComputePositionStaticMembers<debug, prob_dim, element_type,
-        num_nodes_element, dim, FloatType>::deriv1_;
+    Cut::Kernel::ComputePositionStaticMembers<debug, prob_dim, element_type, num_nodes_element, dim,
+        FloatType>::deriv1_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType element_type,
     unsigned num_nodes_element, unsigned dim, typename FloatType>
-Core::LinAlg::Matrix<prob_dim, prob_dim, FloatType>
-    Core::Geo::Cut::Kernel::ComputePositionStaticMembers<debug, prob_dim, element_type,
-        num_nodes_element, dim, FloatType>::A_;
+Core::LinAlg::Matrix<prob_dim, prob_dim, FloatType> Cut::Kernel::ComputePositionStaticMembers<debug,
+    prob_dim, element_type, num_nodes_element, dim, FloatType>::A_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType element_type,
     unsigned num_nodes_element, unsigned dim, typename FloatType>
-Core::LinAlg::Matrix<prob_dim, 1, FloatType> Core::Geo::Cut::Kernel::ComputePositionStaticMembers<
-    debug, prob_dim, element_type, num_nodes_element, dim, FloatType>::b_;
+Core::LinAlg::Matrix<prob_dim, 1, FloatType> Cut::Kernel::ComputePositionStaticMembers<debug,
+    prob_dim, element_type, num_nodes_element, dim, FloatType>::b_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType element_type,
     unsigned num_nodes_element, unsigned dim, typename FloatType>
-Core::LinAlg::Matrix<prob_dim, 1, FloatType> Core::Geo::Cut::Kernel::ComputePositionStaticMembers<
-    debug, prob_dim, element_type, num_nodes_element, dim, FloatType>::dx_;
+Core::LinAlg::Matrix<prob_dim, 1, FloatType> Cut::Kernel::ComputePositionStaticMembers<debug,
+    prob_dim, element_type, num_nodes_element, dim, FloatType>::dx_;
 
 // in compute distance strategy
 template <bool debug, unsigned prob_dim, Core::FE::CellType side_type, unsigned dim_side,
     unsigned num_nodes_side, typename FloatType>
-Core::LinAlg::Matrix<num_nodes_side, 1, FloatType>
-    Core::Geo::Cut::Kernel::ComputeDistanceStaticMembers<debug, prob_dim, side_type, dim_side,
-        num_nodes_side, FloatType>::sideFunct_;
+Core::LinAlg::Matrix<num_nodes_side, 1, FloatType> Cut::Kernel::ComputeDistanceStaticMembers<debug,
+    prob_dim, side_type, dim_side, num_nodes_side, FloatType>::sideFunct_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType side_type, unsigned dim_side,
     unsigned num_nodes_side, typename FloatType>
-Core::LinAlg::Matrix<prob_dim, num_nodes_side, FloatType>
-    Core::Geo::Cut::Kernel::ComputeDistanceStaticMembers<debug, prob_dim, side_type, dim_side,
-        num_nodes_side, FloatType>::sideDeriv1_;
+Core::LinAlg::Matrix<prob_dim, num_nodes_side, FloatType> Cut::Kernel::ComputeDistanceStaticMembers<
+    debug, prob_dim, side_type, dim_side, num_nodes_side, FloatType>::sideDeriv1_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType side_type, unsigned dim_side,
     unsigned num_nodes_side, typename FloatType>
 Core::LinAlg::Matrix<2 * dim_side - 1, num_nodes_side, FloatType>
-    Core::Geo::Cut::Kernel::ComputeDistanceStaticMembers<debug, prob_dim, side_type, dim_side,
-        num_nodes_side, FloatType>::sideDeriv2_;
+    Cut::Kernel::ComputeDistanceStaticMembers<debug, prob_dim, side_type, dim_side, num_nodes_side,
+        FloatType>::sideDeriv2_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType side_type, unsigned dim_side,
     unsigned num_nodes_side, typename FloatType>
-Core::LinAlg::Matrix<prob_dim, prob_dim, FloatType>
-    Core::Geo::Cut::Kernel::ComputeDistanceStaticMembers<debug, prob_dim, side_type, dim_side,
-        num_nodes_side, FloatType>::A_;
+Core::LinAlg::Matrix<prob_dim, prob_dim, FloatType> Cut::Kernel::ComputeDistanceStaticMembers<debug,
+    prob_dim, side_type, dim_side, num_nodes_side, FloatType>::A_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType side_type, unsigned dim_side,
     unsigned num_nodes_side, typename FloatType>
-Core::LinAlg::Matrix<prob_dim, prob_dim, FloatType>
-    Core::Geo::Cut::Kernel::ComputeDistanceStaticMembers<debug, prob_dim, side_type, dim_side,
-        num_nodes_side, FloatType>::B_;
+Core::LinAlg::Matrix<prob_dim, prob_dim, FloatType> Cut::Kernel::ComputeDistanceStaticMembers<debug,
+    prob_dim, side_type, dim_side, num_nodes_side, FloatType>::B_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType side_type, unsigned dim_side,
     unsigned num_nodes_side, typename FloatType>
 Core::LinAlg::Matrix<prob_dim, 2 * dim_side - 1, FloatType>
-    Core::Geo::Cut::Kernel::ComputeDistanceStaticMembers<debug, prob_dim, side_type, dim_side,
-        num_nodes_side, FloatType>::C_;
+    Cut::Kernel::ComputeDistanceStaticMembers<debug, prob_dim, side_type, dim_side, num_nodes_side,
+        FloatType>::C_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType side_type, unsigned dim_side,
     unsigned num_nodes_side, typename FloatType>
-Core::LinAlg::Matrix<prob_dim, 1, FloatType> Core::Geo::Cut::Kernel::ComputeDistanceStaticMembers<
-    debug, prob_dim, side_type, dim_side, num_nodes_side, FloatType>::b_;
+Core::LinAlg::Matrix<prob_dim, 1, FloatType> Cut::Kernel::ComputeDistanceStaticMembers<debug,
+    prob_dim, side_type, dim_side, num_nodes_side, FloatType>::b_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType side_type, unsigned dim_side,
     unsigned num_nodes_side, typename FloatType>
-Core::LinAlg::Matrix<prob_dim, 1, FloatType> Core::Geo::Cut::Kernel::ComputeDistanceStaticMembers<
-    debug, prob_dim, side_type, dim_side, num_nodes_side, FloatType>::dx_;
+Core::LinAlg::Matrix<prob_dim, 1, FloatType> Cut::Kernel::ComputeDistanceStaticMembers<debug,
+    prob_dim, side_type, dim_side, num_nodes_side, FloatType>::dx_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType side_type, unsigned dim_side,
     unsigned num_nodes_side, typename FloatType>
-Core::LinAlg::Matrix<prob_dim, 2, FloatType> Core::Geo::Cut::Kernel::ComputeDistanceStaticMembers<
-    debug, prob_dim, side_type, dim_side, num_nodes_side, FloatType>::N_;
+Core::LinAlg::Matrix<prob_dim, 2, FloatType> Cut::Kernel::ComputeDistanceStaticMembers<debug,
+    prob_dim, side_type, dim_side, num_nodes_side, FloatType>::N_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType side_type, unsigned dim_side,
     unsigned num_nodes_side, typename FloatType>
-Core::LinAlg::Matrix<prob_dim, 2, FloatType> Core::Geo::Cut::Kernel::ComputeDistanceStaticMembers<
-    debug, prob_dim, side_type, dim_side, num_nodes_side, FloatType>::nvec_;
+Core::LinAlg::Matrix<prob_dim, 2, FloatType> Cut::Kernel::ComputeDistanceStaticMembers<debug,
+    prob_dim, side_type, dim_side, num_nodes_side, FloatType>::nvec_;
 
 // in compute intersection strategy
 template <bool debug, unsigned prob_dim, Core::FE::CellType edge_type, Core::FE::CellType side_type,
     unsigned dim_edge, unsigned dim_side, unsigned num_nodes_edge, unsigned num_nodes_side,
     typename FloatType>
 Core::LinAlg::Matrix<num_nodes_side, 1, FloatType>
-    Core::Geo::Cut::Kernel::ComputeIntersectionStaticMembers<debug, prob_dim, edge_type, side_type,
-        dim_edge, dim_side, num_nodes_edge, num_nodes_side, FloatType>::sideFunct_;
+    Cut::Kernel::ComputeIntersectionStaticMembers<debug, prob_dim, edge_type, side_type, dim_edge,
+        dim_side, num_nodes_edge, num_nodes_side, FloatType>::sideFunct_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType edge_type, Core::FE::CellType side_type,
     unsigned dim_edge, unsigned dim_side, unsigned num_nodes_edge, unsigned num_nodes_side,
     typename FloatType>
 Core::LinAlg::Matrix<num_nodes_edge, 1, FloatType>
-    Core::Geo::Cut::Kernel::ComputeIntersectionStaticMembers<debug, prob_dim, edge_type, side_type,
-        dim_edge, dim_side, num_nodes_edge, num_nodes_side, FloatType>::edgeFunct_;
+    Cut::Kernel::ComputeIntersectionStaticMembers<debug, prob_dim, edge_type, side_type, dim_edge,
+        dim_side, num_nodes_edge, num_nodes_side, FloatType>::edgeFunct_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType edge_type, Core::FE::CellType side_type,
     unsigned dim_edge, unsigned dim_side, unsigned num_nodes_edge, unsigned num_nodes_side,
     typename FloatType>
 Core::LinAlg::Matrix<dim_side, num_nodes_side, FloatType>
-    Core::Geo::Cut::Kernel::ComputeIntersectionStaticMembers<debug, prob_dim, edge_type, side_type,
-        dim_edge, dim_side, num_nodes_edge, num_nodes_side, FloatType>::sideDeriv1_;
+    Cut::Kernel::ComputeIntersectionStaticMembers<debug, prob_dim, edge_type, side_type, dim_edge,
+        dim_side, num_nodes_edge, num_nodes_side, FloatType>::sideDeriv1_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType edge_type, Core::FE::CellType side_type,
     unsigned dim_edge, unsigned dim_side, unsigned num_nodes_edge, unsigned num_nodes_side,
     typename FloatType>
 Core::LinAlg::Matrix<dim_edge, num_nodes_edge, FloatType>
-    Core::Geo::Cut::Kernel::ComputeIntersectionStaticMembers<debug, prob_dim, edge_type, side_type,
-        dim_edge, dim_side, num_nodes_edge, num_nodes_side, FloatType>::edgeDeriv1_;
+    Cut::Kernel::ComputeIntersectionStaticMembers<debug, prob_dim, edge_type, side_type, dim_edge,
+        dim_side, num_nodes_edge, num_nodes_side, FloatType>::edgeDeriv1_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType edge_type, Core::FE::CellType side_type,
     unsigned dim_edge, unsigned dim_side, unsigned num_nodes_edge, unsigned num_nodes_side,
     typename FloatType>
 Core::LinAlg::Matrix<dim_edge + dim_side, dim_edge + dim_side, FloatType>
-    Core::Geo::Cut::Kernel::ComputeIntersectionStaticMembers<debug, prob_dim, edge_type, side_type,
-        dim_edge, dim_side, num_nodes_edge, num_nodes_side, FloatType>::A_;
+    Cut::Kernel::ComputeIntersectionStaticMembers<debug, prob_dim, edge_type, side_type, dim_edge,
+        dim_side, num_nodes_edge, num_nodes_side, FloatType>::A_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType edge_type, Core::FE::CellType side_type,
     unsigned dim_edge, unsigned dim_side, unsigned num_nodes_edge, unsigned num_nodes_side,
     typename FloatType>
 Core::LinAlg::Matrix<prob_dim, dim_edge + dim_side, FloatType>
-    Core::Geo::Cut::Kernel::ComputeIntersectionStaticMembers<debug, prob_dim, edge_type, side_type,
-        dim_edge, dim_side, num_nodes_edge, num_nodes_side, FloatType>::B_;
+    Cut::Kernel::ComputeIntersectionStaticMembers<debug, prob_dim, edge_type, side_type, dim_edge,
+        dim_side, num_nodes_edge, num_nodes_side, FloatType>::B_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType edge_type, Core::FE::CellType side_type,
     unsigned dim_edge, unsigned dim_side, unsigned num_nodes_edge, unsigned num_nodes_side,
     typename FloatType>
 Core::LinAlg::Matrix<dim_edge + dim_side, 1, FloatType>
-    Core::Geo::Cut::Kernel::ComputeIntersectionStaticMembers<debug, prob_dim, edge_type, side_type,
-        dim_edge, dim_side, num_nodes_edge, num_nodes_side, FloatType>::b_;
+    Cut::Kernel::ComputeIntersectionStaticMembers<debug, prob_dim, edge_type, side_type, dim_edge,
+        dim_side, num_nodes_edge, num_nodes_side, FloatType>::b_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType edge_type, Core::FE::CellType side_type,
     unsigned dim_edge, unsigned dim_side, unsigned num_nodes_edge, unsigned num_nodes_side,
     typename FloatType>
 Core::LinAlg::Matrix<prob_dim, 1, FloatType>
-    Core::Geo::Cut::Kernel::ComputeIntersectionStaticMembers<debug, prob_dim, edge_type, side_type,
-        dim_edge, dim_side, num_nodes_edge, num_nodes_side, FloatType>::c_;
+    Cut::Kernel::ComputeIntersectionStaticMembers<debug, prob_dim, edge_type, side_type, dim_edge,
+        dim_side, num_nodes_edge, num_nodes_side, FloatType>::c_;
 template <bool debug, unsigned prob_dim, Core::FE::CellType edge_type, Core::FE::CellType side_type,
     unsigned dim_edge, unsigned dim_side, unsigned num_nodes_edge, unsigned num_nodes_side,
     typename FloatType>
 Core::LinAlg::Matrix<dim_edge + dim_side, 1, FloatType>
-    Core::Geo::Cut::Kernel::ComputeIntersectionStaticMembers<debug, prob_dim, edge_type, side_type,
-        dim_edge, dim_side, num_nodes_edge, num_nodes_side, FloatType>::dx_;
+    Cut::Kernel::ComputeIntersectionStaticMembers<debug, prob_dim, edge_type, side_type, dim_edge,
+        dim_side, num_nodes_edge, num_nodes_side, FloatType>::dx_;
 
 
 // for generic compute intersection
 template <class Strategy, unsigned prob_dim, Core::FE::CellType edge_type,
     Core::FE::CellType side_type, bool compute_cln, unsigned dim_edge, unsigned dim_side,
     unsigned num_nodes_edge, unsigned num_nodes_side>
-std::vector<int> Core::Geo::Cut::Kernel::GenericComputeIntersection<Strategy, prob_dim, edge_type,
-    side_type, compute_cln, dim_edge, dim_side, num_nodes_edge, num_nodes_side>::touched_edges_ids_;
+std::vector<int> Cut::Kernel::GenericComputeIntersection<Strategy, prob_dim, edge_type, side_type,
+    compute_cln, dim_edge, dim_side, num_nodes_edge, num_nodes_side>::touched_edges_ids_;
 
 // for generic compute distance
 template <class Strategy, unsigned prob_dim, Core::FE::CellType side_type, bool compute_cln,
     unsigned dim_side, unsigned num_nodes_side>
-std::vector<int> Core::Geo::Cut::Kernel::GenericComputeDistance<Strategy, prob_dim, side_type,
-    compute_cln, dim_side, num_nodes_side>::touched_edges_ids_;
+std::vector<int> Cut::Kernel::GenericComputeDistance<Strategy, prob_dim, side_type, compute_cln,
+    dim_side, num_nodes_side>::touched_edges_ids_;
 
 template <class Strategy, unsigned prob_dim, Core::FE::CellType side_type, bool compute_cln,
     unsigned dim_side, unsigned num_nodes_side>
-std::vector<int> Core::Geo::Cut::Kernel::GenericComputeDistance<Strategy, prob_dim, side_type,
-    compute_cln, dim_side, num_nodes_side>::touched_nodes_ids_;
+std::vector<int> Cut::Kernel::GenericComputeDistance<Strategy, prob_dim, side_type, compute_cln,
+    dim_side, num_nodes_side>::touched_nodes_ids_;
 
 #ifdef CUT_CLN_CALC
 // for generic compute position
 template <class Strategy, unsigned prob_dim, Core::FE::CellType element_type, bool compute_cln,
     unsigned num_nodes_element, unsigned dim>
-std::vector<int> Core::Geo::Cut::Kernel::GenericComputePosition<Strategy, prob_dim, element_type,
-    compute_cln, num_nodes_element, dim>::touched_edges_ids_;
+std::vector<int> Cut::Kernel::GenericComputePosition<Strategy, prob_dim, element_type, compute_cln,
+    num_nodes_element, dim>::touched_edges_ids_;
 #endif
 
 
@@ -4845,51 +4835,51 @@ std::vector<int> Core::Geo::Cut::Kernel::GenericComputePosition<Strategy, prob_d
 // ComputePosition
 template <class Strategy, unsigned prob_dim, Core::FE::CellType element_type,
     unsigned num_nodes_element, unsigned dim>
-bool Core::Geo::Cut::Kernel::ComputePositionAdaptivePrecision<Strategy, prob_dim, element_type,
+bool Cut::Kernel::ComputePositionAdaptivePrecision<Strategy, prob_dim, element_type,
     num_nodes_element, dim>::first_run_ = true;
 template <class Strategy, unsigned prob_dim, Core::FE::CellType element_type,
     unsigned num_nodes_element, unsigned dim>
-size_t Core::Geo::Cut::Kernel::ComputePositionAdaptivePrecision<Strategy, prob_dim, element_type,
+size_t Cut::Kernel::ComputePositionAdaptivePrecision<Strategy, prob_dim, element_type,
     num_nodes_element, dim>::cln_sizes_[];
 
-// Core::Geo::Cut::Kernel::compute_distance
+// Cut::Kernel::compute_distance
 
 template <class Strategy, unsigned prob_dim, Core::FE::CellType side_type, unsigned dim_side,
     unsigned num_nodes_side>
-std::vector<int> Core::Geo::Cut::Kernel::ComputeDistanceAdaptivePrecision<Strategy, prob_dim,
-    side_type, dim_side, num_nodes_side>::touched_edges_ids_;
+std::vector<int> Cut::Kernel::ComputeDistanceAdaptivePrecision<Strategy, prob_dim, side_type,
+    dim_side, num_nodes_side>::touched_edges_ids_;
 template <class Strategy, unsigned prob_dim, Core::FE::CellType side_type, unsigned dim_side,
     unsigned num_nodes_side>
-std::vector<int> Core::Geo::Cut::Kernel::ComputeDistanceAdaptivePrecision<Strategy, prob_dim,
-    side_type, dim_side, num_nodes_side>::touched_nodes_ids_;
+std::vector<int> Cut::Kernel::ComputeDistanceAdaptivePrecision<Strategy, prob_dim, side_type,
+    dim_side, num_nodes_side>::touched_nodes_ids_;
 template <class Strategy, unsigned prob_dim, Core::FE::CellType side_type, unsigned dim_side,
     unsigned num_nodes_side>
-bool Core::Geo::Cut::Kernel::ComputeDistanceAdaptivePrecision<Strategy, prob_dim, side_type,
-    dim_side, num_nodes_side>::first_run_ = true;
+bool Cut::Kernel::ComputeDistanceAdaptivePrecision<Strategy, prob_dim, side_type, dim_side,
+    num_nodes_side>::first_run_ = true;
 template <class Strategy, unsigned prob_dim, Core::FE::CellType side_type, unsigned dim_side,
     unsigned num_nodes_side>
-size_t Core::Geo::Cut::Kernel::ComputeDistanceAdaptivePrecision<Strategy, prob_dim, side_type,
-    dim_side, num_nodes_side>::cln_sizes_[];
+size_t Cut::Kernel::ComputeDistanceAdaptivePrecision<Strategy, prob_dim, side_type, dim_side,
+    num_nodes_side>::cln_sizes_[];
 
-// Core::Geo::Cut::Kernel::ComputeIntersection
+// Cut::Kernel::ComputeIntersection
 
 template <class Strategy, unsigned prob_dim, Core::FE::CellType edge_type,
     Core::FE::CellType side_type, unsigned dim_edge, unsigned dim_side, unsigned num_nodes_edge,
     unsigned num_nodes_side>
-std::vector<int> Core::Geo::Cut::Kernel::ComputeIntersectionAdaptivePrecision<Strategy, prob_dim,
-    edge_type, side_type, dim_edge, dim_side, num_nodes_edge, num_nodes_side>::touched_edges_ids_;
+std::vector<int> Cut::Kernel::ComputeIntersectionAdaptivePrecision<Strategy, prob_dim, edge_type,
+    side_type, dim_edge, dim_side, num_nodes_edge, num_nodes_side>::touched_edges_ids_;
 
 template <class Strategy, unsigned prob_dim, Core::FE::CellType edge_type,
     Core::FE::CellType side_type, unsigned dim_edge, unsigned dim_side, unsigned num_nodes_edge,
     unsigned num_nodes_side>
-bool Core::Geo::Cut::Kernel::ComputeIntersectionAdaptivePrecision<Strategy, prob_dim, edge_type,
-    side_type, dim_edge, dim_side, num_nodes_edge, num_nodes_side>::first_run_ = true;
+bool Cut::Kernel::ComputeIntersectionAdaptivePrecision<Strategy, prob_dim, edge_type, side_type,
+    dim_edge, dim_side, num_nodes_edge, num_nodes_side>::first_run_ = true;
 
 template <class Strategy, unsigned prob_dim, Core::FE::CellType edge_type,
     Core::FE::CellType side_type, unsigned dim_edge, unsigned dim_side, unsigned num_nodes_edge,
     unsigned num_nodes_side>
-size_t Core::Geo::Cut::Kernel::ComputeIntersectionAdaptivePrecision<Strategy, prob_dim, edge_type,
-    side_type, dim_edge, dim_side, num_nodes_edge, num_nodes_side>::cln_sizes_[];
+size_t Cut::Kernel::ComputeIntersectionAdaptivePrecision<Strategy, prob_dim, edge_type, side_type,
+    dim_edge, dim_side, num_nodes_edge, num_nodes_side>::cln_sizes_[];
 
 #endif
 

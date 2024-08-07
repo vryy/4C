@@ -21,13 +21,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int probdim>
-bool Core::Geo::Cut::LevelSetSide<probdim>::cut(Mesh& mesh, Edge& edge, PointSet& cut_points)
+bool Cut::LevelSetSide<probdim>::cut(Mesh& mesh, Edge& edge, PointSet& cut_points)
 {
   return edge.level_set_cut(mesh, *this, cut_points);
 }
 
 template <int probdim>
-bool Core::Geo::Cut::LevelSetSide<probdim>::find_cut_points_dispatch(
+bool Cut::LevelSetSide<probdim>::find_cut_points_dispatch(
     Mesh& mesh, Element* element, Side& side, Edge& e)
 {
   return e.find_cut_points_level_set(mesh, element, side, *this);
@@ -36,7 +36,7 @@ bool Core::Geo::Cut::LevelSetSide<probdim>::find_cut_points_dispatch(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int probdim>
-void Core::Geo::Cut::LevelSetSide<probdim>::make_internal_facets(
+void Cut::LevelSetSide<probdim>::make_internal_facets(
     Mesh& mesh, Element* element, plain_facet_set& facets)
 {
   Teuchos::RCP<Impl::PointGraph> pg = Teuchos::rcp(Impl::PointGraph::create(
@@ -52,7 +52,7 @@ void Core::Geo::Cut::LevelSetSide<probdim>::make_internal_facets(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int probdim>
-bool Core::Geo::Cut::LevelSetSide<probdim>::find_ambiguous_cut_lines(
+bool Cut::LevelSetSide<probdim>::find_ambiguous_cut_lines(
     Mesh& mesh, Element* element, Side& side, const PointSet& cut)
 {
   // More than two cut points show a touch.
@@ -60,7 +60,7 @@ bool Core::Geo::Cut::LevelSetSide<probdim>::find_ambiguous_cut_lines(
   // (1) If all nodes are caught and nothing else, the cut surface has hit this
   //     surface exactly. No need to cut anything. However, the surface might be
   //     required for integration.
-  if (Core::Geo::Cut::Side::find_touching_cut_lines(mesh, element, side, cut)) return true;
+  if (Cut::Side::find_touching_cut_lines(mesh, element, side, cut)) return true;
 
   switch (side.shape())
   {
@@ -281,7 +281,7 @@ bool Core::Geo::Cut::LevelSetSide<probdim>::find_ambiguous_cut_lines(
   return false;
 }
 
-template class Core::Geo::Cut::LevelSetSide<2>;
-template class Core::Geo::Cut::LevelSetSide<3>;
+template class Cut::LevelSetSide<2>;
+template class Cut::LevelSetSide<3>;
 
 FOUR_C_NAMESPACE_CLOSE

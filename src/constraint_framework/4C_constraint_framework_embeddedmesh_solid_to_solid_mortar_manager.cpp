@@ -38,7 +38,7 @@ CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::SolidToSolidMortarManager(
       lambda_visualization_manager_(visualization_manager)
 {
   // Initialize cutwizard instance and perform the cut
-  Teuchos::RCP<Core::Geo::CutWizard> cutwizard = Teuchos::rcp(new Core::Geo::CutWizard(discret_));
+  Teuchos::RCP<Cut::CutWizard> cutwizard = Teuchos::rcp(new Cut::CutWizard(discret_));
   CONSTRAINTS::EMBEDDEDMESH::prepare_and_perform_cut(
       cutwizard, discret_, embedded_mesh_coupling_params_);
 

@@ -57,17 +57,15 @@ namespace Core::LinAlg
   class BlockSparseMatrixBase;
   class SparseOperator;
 }  // namespace Core::LinAlg
-namespace Core::Geo
+
+
+namespace Cut
 {
   class CutWizard;
+  class ElementHandle;
+  class VolumeCell;
+}  // namespace Cut
 
-  namespace Cut
-  {
-    class ElementHandle;
-    class VolumeCell;
-
-  }  // namespace Cut
-}  // namespace Core::Geo
 
 namespace Core::IO
 {
@@ -252,9 +250,10 @@ namespace FLD
 
     Teuchos::RCP<const Epetra_Map> dof_row_map() override
     {
-      //      return state_->xfluiddofrowmap_; // no ownership, //TODO: otherwise we have to create
-      //      a new system all the time! return Teuchos::rcpFromRef(*state_->xfluiddofrowmap_); //
-      //      no ownership, //TODO: otherwise we have to create a new system all the time! return
+      //      return state_->xfluiddofrowmap_; // no ownership, //TODO: otherwise we have to
+      //      create a new system all the time! return
+      //      Teuchos::rcpFromRef(*state_->xfluiddofrowmap_); // no ownership, //TODO: otherwise
+      //      we have to create a new system all the time! return
       //      Teuchos::rcp((state_->xfluiddofrowmap_).get(), false);
       return state_->xfluiddofrowmap_.create_weak();  // return a weak rcp
     }
@@ -354,7 +353,7 @@ namespace FLD
     void set_evaluate_cut(bool evaluate_cut) { evaluate_cut_ = evaluate_cut; }
 
     /// Get Cut Wizard
-    Teuchos::RCP<Core::Geo::CutWizard> get_cut_wizard()
+    Teuchos::RCP<Cut::CutWizard> get_cut_wizard()
     {
       if (state_ != Teuchos::null)
         return state_->wizard();
@@ -394,8 +393,7 @@ namespace FLD
 
     /// evaluate and assemble face-oriented fluid and ghost penalty stabilizations
     void assemble_mat_and_rhs_face_terms(const Teuchos::RCP<Core::LinAlg::SparseMatrix>& sysmat,
-        const Teuchos::RCP<Epetra_Vector>& residual_col,
-        const Teuchos::RCP<Core::Geo::CutWizard>& wizard,
+        const Teuchos::RCP<Epetra_Vector>& residual_col, const Teuchos::RCP<Cut::CutWizard>& wizard,
         bool is_ghost_penalty_reconstruct = false);
 
     /// evaluate gradient penalty terms to reconstruct ghost values
@@ -496,8 +494,8 @@ namespace FLD
             oldRowStateVectors,  ///< row map based vectors w.r.t old interface position
         std::vector<Teuchos::RCP<Epetra_Vector>>&
             newRowStateVectors,  ///< row map based vectors w.r.t new interface position
-        Teuchos::RCP<std::set<int>>
-            dbcgids,  ///< set of dof gids that must not be changed by ghost penalty reconstruction
+        Teuchos::RCP<std::set<int>> dbcgids,  ///< set of dof gids that must not be changed by
+                                              ///< ghost penalty reconstruction
         bool fill_permutation_map,
         bool screen_out  ///< output to screen
     );
@@ -509,13 +507,13 @@ namespace FLD
             oldRowStateVectors,  ///< row map based vectors w.r.t old interface position
         std::vector<Teuchos::RCP<Epetra_Vector>>&
             newRowStateVectors,  ///< row map based vectors w.r.t new interface position
-        Teuchos::RCP<std::set<int>>
-            dbcgids,  ///< set of dof gids that must not be changed by ghost penalty reconstruction
-        bool screen_out  ///< output to screen
+        Teuchos::RCP<std::set<int>> dbcgids,  ///< set of dof gids that must not be changed by
+                                              ///< ghost penalty reconstruction
+        bool screen_out                       ///< output to screen
     );
 
-    /// decide if semi-Lagrangean back-tracking or ghost-penalty reconstruction has to be performed
-    /// on any processor
+    /// decide if semi-Lagrangean back-tracking or ghost-penalty reconstruction has to be
+    /// performed on any processor
     void x_timint_get_reconstruct_status(
         const Teuchos::RCP<XFEM::XFluidTimeInt>& xfluid_timeint,  ///< xfluid time integration class
         bool& timint_ghost_penalty,   ///< do we have to perform ghost penalty reconstruction of
@@ -563,8 +561,8 @@ namespace FLD
         const bool screen_out         ///< screen output?
     );
 
-    /// projection of history from other discretization - returns true if projection was successful
-    /// for all nodes
+    /// projection of history from other discretization - returns true if projection was
+    /// successful for all nodes
     virtual bool x_timint_project_from_embedded_discretization(
         const Teuchos::RCP<XFEM::XFluidTimeInt>& xfluid_timeint,  ///< xfluid time integration class
         std::vector<Teuchos::RCP<Epetra_Vector>>&
@@ -659,14 +657,14 @@ namespace FLD
     //
     //    \brief Element material for the volume cell, depending on element and position.
     //           If an element which is not a material list is given, the provided material is
-    //           chosen. If however a material list is given the material chosen for the volume cell
-    //           is depending on the point position.
+    //           chosen. If however a material list is given the material chosen for the volume
+    //           cell is depending on the point position.
     //
     //    */
     //    void get_volume_cell_material(Core::Elements::Element* actele,
     //                               Teuchos::RCP<Core::Mat::Material> & mat,
-    //                               const Core::Geo::Cut::Point::PointPosition position =
-    //                               Core::Geo::Cut::Point::outside);
+    //                               const Cut::Point::PointPosition position =
+    //                               Cut::Point::outside);
 
 
     //-------------------------------------------------------------------------------
@@ -829,11 +827,11 @@ namespace FLD
 
     //! @name old time-step state data w.r.t old interface position and dofsets from t^n used for
     //! XFEM time-integration
-    Teuchos::RCP<Epetra_Vector> veln_Intn_;           //!< velocity solution from last time-step t^n
-    Teuchos::RCP<Epetra_Vector> accn_Intn_;           //!< acceleration from last time-step t^n
-    Teuchos::RCP<Epetra_Vector> velnm_Intn_;          //!< velocity at t^{n-1} for BDF2 scheme
-    Teuchos::RCP<Core::Geo::CutWizard> wizard_Intn_;  //!< cut wizard from last time-step t^n
-    Teuchos::RCP<XFEM::XFEMDofSet> dofset_Intn_;      //!< dofset from last time-step t^n
+    Teuchos::RCP<Epetra_Vector> veln_Intn_;       //!< velocity solution from last time-step t^n
+    Teuchos::RCP<Epetra_Vector> accn_Intn_;       //!< acceleration from last time-step t^n
+    Teuchos::RCP<Epetra_Vector> velnm_Intn_;      //!< velocity at t^{n-1} for BDF2 scheme
+    Teuchos::RCP<Cut::CutWizard> wizard_Intn_;    //!< cut wizard from last time-step t^n
+    Teuchos::RCP<XFEM::XFEMDofSet> dofset_Intn_;  //!< dofset from last time-step t^n
 
     Teuchos::RCP<Epetra_Map> dofcolmap_Intn_;
     //@}
@@ -841,10 +839,9 @@ namespace FLD
 
     //! @name last iteration step state data from t^(n+1) used for pseudo XFEM time-integration
     //! during monolithic Newton or partitioned schemes
-    Teuchos::RCP<Epetra_Vector> velnp_Intnpi_;  //!< velocity solution from last iteration w.r.t
-                                                //!< last dofset and interface position
-    Teuchos::RCP<Core::Geo::CutWizard>
-        wizard_Intnpi_;                             //!< cut wizard from last iteration-step t^(n+1)
+    Teuchos::RCP<Epetra_Vector> velnp_Intnpi_;      //!< velocity solution from last iteration w.r.t
+                                                    //!< last dofset and interface position
+    Teuchos::RCP<Cut::CutWizard> wizard_Intnpi_;    //!< cut wizard from last iteration-step t^(n+1)
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_Intnpi_;  //!< dofset from last iteration-step t^(n+1)
 
     //! is a restart of the monolithic Newton necessary caused by changing dofsets?

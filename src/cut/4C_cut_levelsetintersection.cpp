@@ -17,8 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::LevelSetIntersection::LevelSetIntersection(
-    const Epetra_Comm& comm, bool create_side)
+Cut::LevelSetIntersection::LevelSetIntersection(const Epetra_Comm& comm, bool create_side)
     : ParentIntersection(comm.MyPID()), side_(Teuchos::null), comm_(&comm)
 {
   if (create_side) add_cut_side(1);
@@ -26,7 +25,7 @@ Core::Geo::Cut::LevelSetIntersection::LevelSetIntersection(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::LevelSetIntersection::LevelSetIntersection(int myrank, bool create_side)
+Cut::LevelSetIntersection::LevelSetIntersection(int myrank, bool create_side)
     : ParentIntersection(myrank), side_(Teuchos::null), comm_(nullptr)
 {
   if (create_side) add_cut_side(1);
@@ -34,7 +33,7 @@ Core::Geo::Cut::LevelSetIntersection::LevelSetIntersection(int myrank, bool crea
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::LevelSetIntersection::add_cut_side(int levelset_sid)
+void Cut::LevelSetIntersection::add_cut_side(int levelset_sid)
 {
   if (!side_.is_null()) FOUR_C_THROW("currently only one levelset-side is supported");
 
@@ -44,10 +43,9 @@ void Core::Geo::Cut::LevelSetIntersection::add_cut_side(int levelset_sid)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::ElementHandle* Core::Geo::Cut::LevelSetIntersection::add_element(int eid,
-    const std::vector<int>& nids, const Core::LinAlg::SerialDenseMatrix& xyz,
-    Core::FE::CellType distype, const double* lsv, const bool lsv_only_plus_domain,
-    const bool& check_lsv)
+Cut::ElementHandle* Cut::LevelSetIntersection::add_element(int eid, const std::vector<int>& nids,
+    const Core::LinAlg::SerialDenseMatrix& xyz, Core::FE::CellType distype, const double* lsv,
+    const bool lsv_only_plus_domain, const bool& check_lsv)
 {
   int numnode = nids.size();
   if (numnode != xyz.numCols()) FOUR_C_THROW("node coordinate number mismatch");
@@ -87,9 +85,9 @@ Core::Geo::Cut::ElementHandle* Core::Geo::Cut::LevelSetIntersection::add_element
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::LevelSetIntersection::cut_mesh(bool screenoutput)
+void Cut::LevelSetIntersection::cut_mesh(bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CUT --- 1/3 --- Cut");
+  TEUCHOS_FUNC_TIME_MONITOR("Cut --- 1/3 --- Cut");
 
   Mesh& m = normal_mesh();
 
@@ -161,8 +159,7 @@ void Core::Geo::Cut::LevelSetIntersection::cut_mesh(bool screenoutput)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::LevelSetIntersection::cut(
-    bool include_inner, bool screenoutput, VCellGaussPts VCellGP)
+void Cut::LevelSetIntersection::cut(bool include_inner, bool screenoutput, VCellGaussPts VCellGP)
 {
   // ###########################################################################
   //  STEP 1/3 CUT THE MESH
@@ -226,6 +223,6 @@ void Core::Geo::Cut::LevelSetIntersection::cut(
   }
   // ######################################################################################
 
-}  // Core::Geo::Cut::LevelSetIntersection::Cut
+}  // Cut::LevelSetIntersection::Cut
 
 FOUR_C_NAMESPACE_CLOSE

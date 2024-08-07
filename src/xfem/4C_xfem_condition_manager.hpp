@@ -26,20 +26,19 @@ builds the bridge between the xfluid class and the cut-library
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::Geo
+
+namespace Cut
 {
-  namespace Cut
-  {
-    class VolumeCell;
-  }
-}  // namespace Core::Geo
+  class VolumeCell;
+}
+
 
 namespace Discret
 {
   namespace ELEMENTS
   {
-    // finally this parameter list should go and all interface relevant parameters should be stored
-    // in the condition mangager or coupling objects
+    // finally this parameter list should go and all interface relevant parameters should be
+    // stored in the condition mangager or coupling objects
     class FluidEleParameterXFEM;
   }  // namespace ELEMENTS
 }  // namespace Discret
@@ -365,8 +364,8 @@ namespace XFEM
 
       if (is_level_set_coupling(coup_sid))
       {
-        //      FOUR_C_THROW("level-set side does not have a cutter discretization. Why do you call
-        //      this?");
+        //      FOUR_C_THROW("level-set side does not have a cutter discretization. Why do you
+        //      call this?");
         return -1;
       }
 
@@ -681,26 +680,26 @@ namespace XFEM
             NIT_visc_stab_fac_tang  ///< viscous part of Nitsche's penalty term in tang direction
     );
 
-    /// get the estimation of the penalty scaling in Nitsche's method from the trace inequality for
-    /// a specific coupling side
+    /// get the estimation of the penalty scaling in Nitsche's method from the trace inequality
+    /// for a specific coupling side
     double get_trace_estimate_max_eigenvalue(
         const int coup_sid  ///< the overall global coupling side id
     );
 
     /// set material pointer for volume
     void get_volume_cell_material(Core::Elements::Element* actele,
-        Teuchos::RCP<Core::Mat::Material>& mat, const Core::Geo::Cut::VolumeCell* vc);
+        Teuchos::RCP<Core::Mat::Material>& mat, const Cut::VolumeCell* vc);
 
     /// set material pointer for volume cell for (coupling) master side
     void get_interface_master_material(Core::Elements::Element* actele,
-        Teuchos::RCP<Core::Mat::Material>& mat, const Core::Geo::Cut::VolumeCell* vc);
+        Teuchos::RCP<Core::Mat::Material>& mat, const Cut::VolumeCell* vc);
 
     /// set material pointer for coupling slave side
     void get_interface_slave_material(
         Core::Elements::Element* actele, Teuchos::RCP<Core::Mat::Material>& mat, int coup_sid);
 
     /// Initialize Fluid intersection/Cut State
-    bool initialize_fluid_state(Teuchos::RCP<Core::Geo::CutWizard> cutwizard,
+    bool initialize_fluid_state(Teuchos::RCP<Cut::CutWizard> cutwizard,
         Teuchos::RCP<Core::FE::Discretization> fluiddis,
         Teuchos::RCP<XFEM::ConditionManager> condition_manager,
         Teuchos::RCP<Teuchos::ParameterList> fluidparams);
@@ -747,7 +746,8 @@ namespace XFEM
     void check_for_equal_maps(
         const Teuchos::RCP<Epetra_Vector>& vec1, const Teuchos::RCP<Epetra_Vector>& vec2);
 
-    /// combine two levelset fields via boolean type "union" set operation and put result into vec1
+    /// combine two levelset fields via boolean type "union" set operation and put result into
+    /// vec1
     void set_minimum(Teuchos::RCP<Epetra_Vector>& vec1, Teuchos::RCP<Epetra_Vector>& vec2,
         const int lsc_index_2, Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx);
 
@@ -755,8 +755,8 @@ namespace XFEM
     void set_maximum(Teuchos::RCP<Epetra_Vector>& vec1, Teuchos::RCP<Epetra_Vector>& vec2,
         const int lsc_index_2, Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx);
 
-    /// combine two levelset fields via boolean type "difference" set operation and put result into
-    /// vec1
+    /// combine two levelset fields via boolean type "difference" set operation and put result
+    /// into vec1
     void set_difference(Teuchos::RCP<Epetra_Vector>& vec1, Teuchos::RCP<Epetra_Vector>& vec2,
         const int lsc_index_2, Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx);
 

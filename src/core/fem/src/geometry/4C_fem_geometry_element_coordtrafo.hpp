@@ -646,7 +646,7 @@ namespace Core::Geo
     // if it works properly REMARK: tested this method for quite a while and seems to be fine now
     // (28.11.2012 ghamm)
     //  FOUR_C_THROW("This function seems to deliver wrong results! Check carefully before use or
-    //  use a different function, e.g. Core::Geo::Cut::Position");
+    //  use a different function, e.g. Core::Cut::Position");
     // REMARK: Added a scaling of the function -> biggest entry is 1 and thus this function should
     // work for elements far away from the origin as well. (27.07.2015 winter & seitz)
 

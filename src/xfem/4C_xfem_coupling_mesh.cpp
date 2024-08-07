@@ -2464,7 +2464,7 @@ void XFEM::MeshCouplingFSI::register_side_proc(int sid)
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-bool XFEM::MeshCouplingFSI::initialize_fluid_state(Teuchos::RCP<Core::Geo::CutWizard> cutwizard,
+bool XFEM::MeshCouplingFSI::initialize_fluid_state(Teuchos::RCP<Cut::CutWizard> cutwizard,
     Teuchos::RCP<Core::FE::Discretization> fluiddis,
     Teuchos::RCP<XFEM::ConditionManager> condition_manager,
     Teuchos::RCP<Teuchos::ParameterList> fluidparams)
@@ -2498,7 +2498,7 @@ XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
 void XFEM::MeshCouplingFluidFluid::get_interface_slave_material(
     Core::Elements::Element* actele, Teuchos::RCP<Core::Mat::Material>& mat)
 {
-  XFEM::UTILS::get_volume_cell_material(actele, mat, Core::Geo::Cut::Point::outside);
+  XFEM::UTILS::get_volume_cell_material(actele, mat, Cut::Point::outside);
 }
 
 /*--------------------------------------------------------------------------*
@@ -2606,7 +2606,7 @@ void XFEM::MeshCouplingFluidFluid::get_viscosity_slave(
     double& visc_s)                     ///< viscosity slavesided
 {
   Teuchos::RCP<Core::Mat::Material> mat_s;
-  XFEM::UTILS::get_volume_cell_material(coup_ele, mat_s, Core::Geo::Cut::Point::outside);
+  XFEM::UTILS::get_volume_cell_material(coup_ele, mat_s, Cut::Point::outside);
   if (mat_s->material_type() == Core::Materials::m_fluid)
     visc_s = Teuchos::rcp_dynamic_cast<Mat::NewtonianFluid>(mat_s)->viscosity();
   else

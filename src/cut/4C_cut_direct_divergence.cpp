@@ -25,10 +25,10 @@ FOUR_C_NAMESPACE_OPEN
   Create integration points on the facets of the volumecell by triangulating the facets
   A reference facet is identified on which integration weights are set to zero Sudhakar 04/12
 *--------------------------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::DirectDivergence::vc_integration_rule(
+Teuchos::RCP<Core::FE::GaussPoints> Cut::DirectDivergence::vc_integration_rule(
     std::vector<double>& RefPlaneEqn)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "Core::Geo::Cut::DirectDivergence::VCIntegrationRule" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "Cut::DirectDivergence::VCIntegrationRule" );
 
   std::vector<plain_facet_set::const_iterator>
       facetIterator;  // iterators of facets which need to be considered for integration rule
@@ -79,7 +79,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::DirectDivergence::vc_integra
 
       std::string filename1("element_x_normal_equal_0_CUTFAIL_DD.pos");
       std::ofstream file1(filename1.c_str());
-      Core::Geo::Cut::Output::GmshCompleteCutElement(file1, elem1_, false);
+      Cut::Output::GmshCompleteCutElement(file1, elem1_, false);
       file1.close();
 
       std::stringstream err_msg;
@@ -116,11 +116,11 @@ Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::DirectDivergence::vc_integra
 as possible, the reference facet is set on a cut side to reduce the no of Gauss pts Reference facet
 is selected so that all internal points are inside the volumecell
 *--------------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::DirectDivergence::list_facets(
-    std::vector<plain_facet_set::const_iterator>& facetIterator, std::vector<double>& RefPlaneEqn,
-    plain_facet_set::const_iterator& IteratorRefFacet, bool& IsRefFacet)
+void Cut::DirectDivergence::list_facets(std::vector<plain_facet_set::const_iterator>& facetIterator,
+    std::vector<double>& RefPlaneEqn, plain_facet_set::const_iterator& IteratorRefFacet,
+    bool& IsRefFacet)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "Core::Geo::Cut::DirectDivergence::list_facets" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "Cut::DirectDivergence::list_facets" );
 
   const plain_facet_set& facete = volcell_->facets();
 
@@ -174,7 +174,7 @@ void Core::Geo::Cut::DirectDivergence::list_facets(
     // consider only facet whose x-direction normal componenet is non-zero
     if (fabs(RefPlaneTemp[0]) > TOL_EQN_PLANE)  // This could give issues with non-planar facets?
     {
-      TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::Cut::DirectDivergence::list_facets-tmp1");
+      TEUCHOS_FUNC_TIME_MONITOR("Cut::DirectDivergence::list_facets-tmp1");
 
 #ifdef LOCAL
       if (warpFac.size() > 0)  // if there are warped facets that are not yet processed
@@ -268,7 +268,7 @@ void Core::Geo::Cut::DirectDivergence::list_facets(
   //   considered facet are in the same plane, so delete this facet
   if (RefOnCutSide)
   {
-    // TEUCHOS_FUNC_TIME_MONITOR( "Core::Geo::Cut::DirectDivergence::list_facets-tmp2" );
+    // TEUCHOS_FUNC_TIME_MONITOR( "Cut::DirectDivergence::list_facets-tmp2" );
 
     for (unsigned i = 0; i < facetIterator.size(); i++)
     {
@@ -309,7 +309,7 @@ void Core::Geo::Cut::DirectDivergence::list_facets(
 /*--------------------------------------------------------------------------------------------------------------*
                    Geometry of volumecell and main Gauss pts for visualization sudhakar 04/12
 *---------------------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::DirectDivergence::divengence_cells_gmsh(
+void Cut::DirectDivergence::divengence_cells_gmsh(
     const Core::FE::GaussIntegration& gpv, Teuchos::RCP<Core::FE::GaussPoints>& gpmain)
 {
 #ifdef LOCAL
@@ -332,7 +332,7 @@ void Core::Geo::Cut::DirectDivergence::divengence_cells_gmsh(
   for (plain_facet_set::const_iterator j = facete.begin(); j != facete.end(); j++)
   {
     // Writes only for GLOBAL Coordinates!
-    Core::Geo::Cut::Output::GmshEqnPlaneNormalDump(file, *j, true);
+    Cut::Output::GmshEqnPlaneNormalDump(file, *j, true);
   }
   file << "};\n";
 #endif
@@ -429,7 +429,7 @@ void Core::Geo::Cut::DirectDivergence::divengence_cells_gmsh(
   str << "divergenceCells" << sideno << ".pos";
   std::ofstream file(str.str().c_str());
 
-  Core::Geo::Cut::Output::GmshCompleteCutElement(file, elem1_);
+  Cut::Output::GmshCompleteCutElement(file, elem1_);
   volcell_->dump_gmsh(file);
 
   // Activate this if you doubt that something is wrong with the vc
@@ -510,8 +510,7 @@ void Core::Geo::Cut::DirectDivergence::divengence_cells_gmsh(
      Compute the volume of the considered cell by integrating 1 using the Gauss rule obtained.
 sudhakar 04/12 Then the volume in local coordinates is converted to global coordinate value
 *---------------------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::DirectDivergence::debug_volume(
-    const Core::FE::GaussIntegration& gpv, bool& isNeg)
+void Cut::DirectDivergence::debug_volume(const Core::FE::GaussIntegration& gpv, bool& isNeg)
 {
   double TotalInteg = 0.0;
 
@@ -616,12 +615,12 @@ void Core::Geo::Cut::DirectDivergence::debug_volume(
     std::cout << "There are two possible sources of this problem \n";
     std::cout
         << "1. divCells created from facet may fall on a line. Print the main Gauss points from "
-           "Core::Geo::Cut::FacetIntegration::divergence_integration_rule(),"
+           "Cut::FacetIntegration::divergence_integration_rule(),"
            " if this is the case, all points belong to a particular divCells have NaN weights\n";
     std::cout << "2. Global::: The reference plane is not correctly chosen. Print the equation of "
                  "reference plane and if the first component "
                  "is close to zero, then the volume is infinity. Check "
-                 "Core::Geo::Cut::DirectDivergenceGlobalRefplane::GetReferencePlane() \n";
+                 "Cut::DirectDivergenceGlobalRefplane::GetReferencePlane() \n";
     FOUR_C_THROW("Volume is not a number.");
   }
 }

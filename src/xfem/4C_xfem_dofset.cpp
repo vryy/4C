@@ -41,7 +41,7 @@ void XFEM::XFEMDofSet::dof(
  *----------------------------------------------------------------------*/
 int XFEM::XFEMDofSet::num_dof_per_node(const Core::Nodes::Node& node) const
 {
-  Core::Geo::Cut::Node* n = wizard_.get_node(node.id());
+  Cut::Node* n = wizard_.get_node(node.id());
   if (n != nullptr)
   {
     int numdofpernode = Core::DOFSets::DofSet::num_dof_per_node(node);

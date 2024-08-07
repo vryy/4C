@@ -42,13 +42,12 @@ namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
-namespace Core::Geo
+
+namespace Core::Geo::MeshFree
 {
-  namespace MeshFree
-  {
-    class BoundingBox;
-  }
-}  // namespace Core::Geo
+  class BoundingBox;
+}
+
 namespace Solid
 {
   namespace TimeInt
@@ -172,7 +171,8 @@ namespace BEAMINTERACTION
       //! \brief do stuff post reading of model specific restart information
       virtual void post_read_restart() = 0;
 
-      /*! \brief Executed at the end of the ::NOX::Solver::Generic::Step() (f.k.a. Iterate()) method
+      /*! \brief Executed at the end of the ::NOX::Solver::Generic::Step() (f.k.a. Iterate())
+       * method
        *
        *  \param solver (in) : reference to the non-linear nox solver object (read-only)
        *

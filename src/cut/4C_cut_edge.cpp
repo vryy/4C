@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Geo::Cut::Edge> Core::Geo::Cut::Edge::create(
+Teuchos::RCP<Cut::Edge> Cut::Edge::create(
     Core::FE::CellType edgetype, const std::vector<Node*>& nodes)
 {
   EdgeFactory factory;
@@ -31,14 +31,12 @@ Teuchos::RCP<Core::Geo::Cut::Edge> Core::Geo::Cut::Edge::create(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Geo::Cut::Edge> Core::Geo::Cut::Edge::create(
-    unsigned shardskey, const std::vector<Node*>& nodes)
+Teuchos::RCP<Cut::Edge> Cut::Edge::create(unsigned shardskey, const std::vector<Node*>& nodes)
 {
   return Edge::create(Core::Elements::ShardsKeyToDisType(shardskey), nodes);
 }
 
-bool Core::Geo::Cut::Edge::find_cut_points_level_set(
-    Mesh& mesh, Element* element, Side& side, Side& other)
+bool Cut::Edge::find_cut_points_level_set(Mesh& mesh, Element* element, Side& side, Side& other)
 {
   for (PointPositionSet::iterator i = cut_points_.begin(); i != cut_points_.end(); ++i)
   {
@@ -70,7 +68,7 @@ bool Core::Geo::Cut::Edge::find_cut_points_level_set(
   return cut_points.size() > 0;
 }
 
-bool Core::Geo::Cut::Edge::find_cut_points(Mesh& mesh, Element* element, Side& side, Side& other)
+bool Cut::Edge::find_cut_points(Mesh& mesh, Element* element, Side& side, Side& other)
 {
   // dispatch function call between side = LevelSetSide and  normal side
   return other.find_cut_points_dispatch(mesh, element, side, *this);
@@ -80,7 +78,7 @@ bool Core::Geo::Cut::Edge::find_cut_points(Mesh& mesh, Element* element, Side& s
 /*-----------------------------------------------------------------------------*
  *  Find points at which this edge which is in "side" cuts the "other"
  *-----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Edge::find_cut_points_mesh_cut(
+bool Cut::Edge::find_cut_points_mesh_cut(
     Mesh& mesh, Element* element, Side& side, Side& other, PointSet* cutpoints)
 {
   bool cut = false;
@@ -102,7 +100,7 @@ bool Core::Geo::Cut::Edge::find_cut_points_mesh_cut(
   // this should not be possible
   if (point_stack.size() > 2)
   {
-    Core::Geo::Cut::Output::DebugDump_MoreThanTwoIntersectionPoints(this, &other, point_stack);
+    Cut::Output::DebugDump_MoreThanTwoIntersectionPoints(this, &other, point_stack);
     FOUR_C_THROW("Line x Side has more than 2 intersection points.Namely %u", point_stack.size());
   }
 
@@ -193,7 +191,7 @@ bool Core::Geo::Cut::Edge::find_cut_points_mesh_cut(
  * Cut points falling on this edge that are common to the two given sides are
  * extracted
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Edge::get_cut_points(Element* element, Side& side, Side& other, PointSet& cuts)
+void Cut::Edge::get_cut_points(Element* element, Side& side, Side& other, PointSet& cuts)
 {
   for (PointPositionSet::iterator i = cut_points_.begin(); i != cut_points_.end(); ++i)
   {
@@ -209,7 +207,7 @@ void Core::Geo::Cut::Edge::get_cut_points(Element* element, Side& side, Side& ot
  * Cut points falling on this edge that are common to the given edge are
  * extracted
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Edge::get_cut_points(Edge* other, PointSet& cuts)
+void Cut::Edge::get_cut_points(Edge* other, PointSet& cuts)
 {
   for (PointPositionSet::iterator i = cut_points_.begin(); i != cut_points_.end(); ++i)
   {
@@ -222,7 +220,7 @@ void Core::Geo::Cut::Edge::get_cut_points(Edge* other, PointSet& cuts)
 }
 
 /// Find common points (excluding cut_points points) between two edges
-void Core::Geo::Cut::Edge::common_nodal_points(Edge* edge, std::vector<Point*>& common)
+void Cut::Edge::common_nodal_points(Edge* edge, std::vector<Point*>& common)
 {
   const std::vector<Node*>& other_nodes = edge->nodes();
   const std::vector<Node*>& my_nodes = nodes();
@@ -237,7 +235,7 @@ void Core::Geo::Cut::Edge::common_nodal_points(Edge* edge, std::vector<Point*>& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Edge::add_point(Point* cut_point)
+void Cut::Edge::add_point(Point* cut_point)
 {
   // make sure the position of the point on this edge is known
   cut_point->t(this);
@@ -247,8 +245,7 @@ void Core::Geo::Cut::Edge::add_point(Point* cut_point)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Edge::cut_point(
-    Node* edge_start, Node* edge_end, std::vector<Point*>& edge_points)
+void Cut::Edge::cut_point(Node* edge_start, Node* edge_end, std::vector<Point*>& edge_points)
 {
   Point* bp = begin_node()->point();
   Point* ep = end_node()->point();
@@ -270,7 +267,7 @@ void Core::Geo::Cut::Edge::cut_point(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Edge::cut_points(Side* side, PointSet& cut_points)
+void Cut::Edge::cut_points(Side* side, PointSet& cut_points)
 {
   Impl::SideCutFilter filter(side);
   for (PointPositionSet::iterator i = cut_points_.begin(); i != cut_points_.end(); ++i)
@@ -287,7 +284,7 @@ void Core::Geo::Cut::Edge::cut_points(Side* side, PointSet& cut_points)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Edge::cut_points_between(Point* begin, Point* end, std::vector<Point*>& line)
+void Cut::Edge::cut_points_between(Point* begin, Point* end, std::vector<Point*>& line)
 {
   //   PointPositionLess::iterator bi = cut_points_.find( begin );
   //   PointPositionLess::iterator ei = cut_points_.find( end );
@@ -332,7 +329,7 @@ void Core::Geo::Cut::Edge::cut_points_between(Point* begin, Point* end, std::vec
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Edge::cut_points_including(Point* begin, Point* end, std::vector<Point*>& line)
+void Cut::Edge::cut_points_including(Point* begin, Point* end, std::vector<Point*>& line)
 {
   PointPositionSet::iterator bi =
       std::lower_bound(cut_points_.begin(), cut_points_.end(), begin, PointPositionLess(this));
@@ -372,7 +369,7 @@ void Core::Geo::Cut::Edge::cut_points_including(Point* begin, Point* end, std::v
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Edge::cut_points_inside(Element* element, std::vector<Point*>& line)
+void Cut::Edge::cut_points_inside(Element* element, std::vector<Point*>& line)
 {
   Point* first = nullptr;
   Point* last = nullptr;
@@ -416,7 +413,7 @@ void Core::Geo::Cut::Edge::cut_points_inside(Element* element, std::vector<Point
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Edge::is_cut(Side* side)
+bool Cut::Edge::is_cut(Side* side)
 {
   // cutpoints contains end-points and internal cut-points
   for (PointPositionSet::iterator i = cut_points_.begin(); i != cut_points_.end(); ++i)
@@ -432,7 +429,7 @@ bool Core::Geo::Cut::Edge::is_cut(Side* side)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Point* Core::Geo::Cut::Edge::node_in_element(Element* element, Point* other)
+Cut::Point* Cut::Edge::node_in_element(Element* element, Point* other)
 {
   Point* p = begin_node()->point();
   if (p != other and p->is_cut(element))
@@ -449,7 +446,7 @@ Core::Geo::Cut::Point* Core::Geo::Cut::Edge::node_in_element(Element* element, P
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Edge::rectify_cut_numerics()
+void Cut::Edge::rectify_cut_numerics()
 {
   if (cut_points_.size() > 2)
   {
@@ -497,7 +494,7 @@ void Core::Geo::Cut::Edge::rectify_cut_numerics()
  *  Gives this edge a selfcutposition and spreads the positional
  *  information                                                 wirtz 05/13
  *------------------------------------------------------------------------*/
-void Core::Geo::Cut::Edge::self_cut_position(Point::PointPosition pos)
+void Cut::Edge::self_cut_position(Point::PointPosition pos)
 {
   FOUR_C_ASSERT(IsCutPositionUnchanged(selfcutposition_, pos),
       "Are you sure that you want to change the edge-position from inside to outside or vice "
@@ -532,7 +529,7 @@ void Core::Geo::Cut::Edge::self_cut_position(Point::PointPosition pos)
  *  Changes the selfcutposition of this edge and spreads the positional
  *  information                                                 wirtz 07/16
  *------------------------------------------------------------------------*/
-void Core::Geo::Cut::Edge::change_self_cut_position(Point::PointPosition pos)
+void Cut::Edge::change_self_cut_position(Point::PointPosition pos)
 {
   if (selfcutposition_ != pos)
   {
@@ -554,7 +551,7 @@ void Core::Geo::Cut::Edge::change_self_cut_position(Point::PointPosition pos)
  *  Replaces the node "nod" of the edge with given node "replwith"
  *                                                              sudhakar 09/13
  *------------------------------------------------------------------------*/
-void Core::Geo::Cut::Edge::replace_node(Node* nod, Node* replwith)
+void Cut::Edge::replace_node(Node* nod, Node* replwith)
 {
   for (unsigned i = 0; i < nodes_.size(); i++)
   {
@@ -571,10 +568,10 @@ void Core::Geo::Cut::Edge::replace_node(Node* nod, Node* replwith)
  *----------------------------------------------------------------------------*/
 template <unsigned prob_dim, Core::FE::CellType edge_type, unsigned dim_edge,
     unsigned num_nodes_edge>
-bool Core::Geo::Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::cut(
+bool Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::cut(
     Mesh& mesh, Side& side, PointSet& cuts)
 {
-  Teuchos::RCP<Core::Geo::Cut::IntersectionBase> inter_ptr = intersection_ptr(side.shape());
+  Teuchos::RCP<Cut::IntersectionBase> inter_ptr = intersection_ptr(side.shape());
 
   inter_ptr->init(&mesh, this, &side, false, false, true);
   return inter_ptr->intersect(cuts);
@@ -584,10 +581,10 @@ bool Core::Geo::Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>
  *----------------------------------------------------------------------------*/
 template <unsigned prob_dim, Core::FE::CellType edge_type, unsigned dim_edge,
     unsigned num_nodes_edge>
-bool Core::Geo::Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::just_parallel_cut(
+bool Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::just_parallel_cut(
     Mesh& mesh, Side& side, PointSet& cuts, int skip_id)
 {
-  Teuchos::RCP<Core::Geo::Cut::IntersectionBase> inter_ptr = intersection_ptr(side.shape());
+  Teuchos::RCP<Cut::IntersectionBase> inter_ptr = intersection_ptr(side.shape());
 
   inter_ptr->init(&mesh, this, &side, false, false, false);
   return (inter_ptr->handle_parallel_intersection(cuts, skip_id) > 0);
@@ -595,9 +592,8 @@ bool Core::Geo::Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>
 
 template <unsigned prob_dim, Core::FE::CellType edge_type, unsigned dim_edge,
     unsigned num_nodes_edge>
-bool Core::Geo::Cut::ConcreteEdge<prob_dim, edge_type, dim_edge,
-    num_nodes_edge>::handle_parallel_cut(Edge* other, Side* side, PointSet* cut_points,
-    Core::Geo::Cut::CutFloatType floattype)
+bool Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::handle_parallel_cut(
+    Edge* other, Side* side, PointSet* cut_points, Cut::CutFloatType floattype)
 {
   PointSet parallel_cuts;
   if (num_nodes_edge != 2 or other->num_nodes() != 2)
@@ -675,9 +671,8 @@ bool Core::Geo::Cut::ConcreteEdge<prob_dim, edge_type, dim_edge,
 
 template <unsigned prob_dim, Core::FE::CellType edge_type, unsigned dim_edge,
     unsigned num_nodes_edge>
-void Core::Geo::Cut::ConcreteEdge<prob_dim, edge_type, dim_edge,
-    num_nodes_edge>::get_touching_points(const std::vector<Node*>& nodes,
-    std::vector<Node*>& touch_nodes, Core::Geo::Cut::CutFloatType floattype)
+void Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::get_touching_points(
+    const std::vector<Node*>& nodes, std::vector<Node*>& touch_nodes, Cut::CutFloatType floattype)
 {
   bool signeddistance = false;
   double distance = 0;
@@ -702,7 +697,7 @@ void Core::Geo::Cut::ConcreteEdge<prob_dim, edge_type, dim_edge,
     bool SurfaceWithinLimits0 = false;
     switch (floattype)
     {
-      case Core::Geo::Cut::floattype_double:
+      case Cut::floattype_double:
       {
         Kernel::ComputeDistance<prob_dim, edge_type, false> cd(xsi);
         conv = cd(xyze_edge, p_coord, distance, signeddistance);
@@ -711,7 +706,7 @@ void Core::Geo::Cut::ConcreteEdge<prob_dim, edge_type, dim_edge,
           SurfaceWithinLimits0 = cd.surface_within_limits(0.0);
         break;
       }
-      case Core::Geo::Cut::floattype_cln:
+      case Cut::floattype_cln:
       {
         Kernel::ComputeDistance<prob_dim, edge_type, true> cd(xsi);
         conv = cd(xyze_edge, p_coord, distance, signeddistance);
@@ -735,13 +730,13 @@ void Core::Geo::Cut::ConcreteEdge<prob_dim, edge_type, dim_edge,
     {
       Node* edge_node = *jt;
       Point* edge_point = edge_node->point();
-      if (Core::Geo::Cut::DistanceBetweenPoints(p, edge_point) < SIDE_DETECTION_TOLERANCE)
+      if (Cut::DistanceBetweenPoints(p, edge_point) < SIDE_DETECTION_TOLERANCE)
       {
         p->dump_connectivity_info();
         edge_point->dump_connectivity_info();
         std::stringstream err_msg;
         err_msg << "Distance between points is " << std::setprecision(15)
-                << Core::Geo::Cut::DistanceBetweenPoints(p, edge_point)
+                << Cut::DistanceBetweenPoints(p, edge_point)
                 << " This two points should have been merged!";
         FOUR_C_THROW(err_msg.str());
       }
@@ -754,7 +749,7 @@ void Core::Geo::Cut::ConcreteEdge<prob_dim, edge_type, dim_edge,
  *----------------------------------------------------------------------------*/
 template <unsigned prob_dim, Core::FE::CellType edge_type, unsigned dim_edge,
     unsigned num_nodes_edge>
-bool Core::Geo::Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::compute_cut(
+bool Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::compute_cut(
     Mesh* mesh, Edge* other, Side* side, PointSet* cut_points, double& tolerance)
 {
 #if CUT_CREATION_INFO
@@ -773,7 +768,7 @@ bool Core::Geo::Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>
   xyze_other.shape(other->n_prob_dim(), other->num_nodes());
   other->coordinates(xyze_other);
 
-  Teuchos::RCP<Core::Geo::Cut::IntersectionBase> inter_ptr = intersection_ptr(other->shape());
+  Teuchos::RCP<Cut::IntersectionBase> inter_ptr = intersection_ptr(other->shape());
   // other is line element, this is surface
   inter_ptr->init(xyze_other, xyze_this, false, false, false, &(mesh->get_options()));
 
@@ -888,16 +883,16 @@ bool Core::Geo::Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>
  *----------------------------------------------------------------------------*/
 template <unsigned prob_dim, Core::FE::CellType edge_type, unsigned dim_edge,
     unsigned num_nodes_edge>
-Teuchos::RCP<Core::Geo::Cut::IntersectionBase>
-Core::Geo::Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::intersection_ptr(
+Teuchos::RCP<Cut::IntersectionBase>
+Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::intersection_ptr(
     const Core::FE::CellType& sidetype) const
 {
-  return Core::Geo::Cut::IntersectionBase::create(edge_type, sidetype);
+  return Cut::IntersectionBase::create(edge_type, sidetype);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Geo::Cut::Edge> Core::Geo::Cut::EdgeFactory::create_edge(
+Teuchos::RCP<Cut::Edge> Cut::EdgeFactory::create_edge(
     const Core::FE::CellType& edgetype, const std::vector<Node*>& nodes) const
 {
   Teuchos::RCP<Edge> cedge_ptr = Teuchos::null;
@@ -919,7 +914,7 @@ Teuchos::RCP<Core::Geo::Cut::Edge> Core::Geo::Cut::EdgeFactory::create_edge(
   return cedge_ptr;
 }
 
-template class Core::Geo::Cut::ConcreteEdge<2, Core::FE::CellType::line2>;
-template class Core::Geo::Cut::ConcreteEdge<3, Core::FE::CellType::line2>;
+template class Cut::ConcreteEdge<2, Core::FE::CellType::line2>;
+template class Cut::ConcreteEdge<3, Core::FE::CellType::line2>;
 
 FOUR_C_NAMESPACE_CLOSE

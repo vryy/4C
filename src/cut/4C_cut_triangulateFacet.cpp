@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
               Split the facet into appropriate number of tri and quad Sudhakar 04/12 Work well
 for both convex and concave facets
 *------------------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::TriangulateFacet::split_facet()
+void Cut::TriangulateFacet::split_facet()
 {
   // An edge should contain only 2 end points
   // delete all remaining points on the edge
@@ -50,12 +50,12 @@ void Core::Geo::Cut::TriangulateFacet::split_facet()
     split_.clear();
 
     // get concave (reflex) points of polygon
-    Core::Geo::Cut::FacetShape geoType;
+    Cut::FacetShape geoType;
     std::vector<int> ptConcavity = Kernel::CheckConvexity(ptlist_, geoType);
 
     // a convex polygon or a polygon with only one concave point can be
     // very easily split
-    if (geoType == Core::Geo::Cut::Convex or geoType == Core::Geo::Cut::SinglePtConcave)
+    if (geoType == Cut::Convex or geoType == Cut::SinglePtConcave)
     {
       split_convex_1pt_concave_facet(ptConcavity);
     }
@@ -79,24 +79,23 @@ void Core::Geo::Cut::TriangulateFacet::split_facet()
                                / +    + \
                                +        +
 *--------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::TriangulateFacet::split4node_facet(
-    std::vector<Point*>& poly, bool callFromSplitAnyFacet)
+void Cut::TriangulateFacet::split4node_facet(std::vector<Point*>& poly, bool callFromSplitAnyFacet)
 {
   if (poly.size() != 4) FOUR_C_THROW("This is not a 4 noded facet");
 
-  Core::Geo::Cut::FacetShape geoType;
+  Cut::FacetShape geoType;
   std::vector<int> ptConcavity = Kernel::CheckConvexity(poly, geoType);
 
   int indStart = 0;
 
   // convex quad can be directly added
-  if (geoType == Core::Geo::Cut::Convex)
+  if (geoType == Cut::Convex)
   {
     split_.push_back(poly);
     return;
   }
   // concave quad is split into two tri cells
-  else if (geoType == Core::Geo::Cut::SinglePtConcave)
+  else if (geoType == Cut::SinglePtConcave)
   {
     indStart = ptConcavity[0];
 
@@ -153,7 +152,7 @@ void Core::Geo::Cut::TriangulateFacet::split4node_facet(
    inside the newCell formed                                                            Sudhakar
 07/12
 *----------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::TriangulateFacet::split_convex_1pt_concave_facet(std::vector<int> ptConcavity)
+void Cut::TriangulateFacet::split_convex_1pt_concave_facet(std::vector<int> ptConcavity)
 {
   if (ptConcavity.size() > 1)
     FOUR_C_THROW("should be called only when the facet has one or no concave points");
@@ -219,7 +218,7 @@ void Core::Geo::Cut::TriangulateFacet::split_convex_1pt_concave_facet(std::vecto
  * Generalized facet splitting procedure which works for simple facets with any number  sudhakar
  *08/12 of concave points. Involves checking whether a reflex point is inside formed cell
  *---------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::TriangulateFacet::split_general_facet(std::vector<int> ptConcavity)
+void Cut::TriangulateFacet::split_general_facet(std::vector<int> ptConcavity)
 {
   if (ptConcavity.size() < 2)
     FOUR_C_THROW("Call TriangulateFacet::split_convex_1pt_concave_facet in such cases");
@@ -371,7 +370,7 @@ void Core::Geo::Cut::TriangulateFacet::split_general_facet(std::vector<int> ptCo
     else
     {
       ptConcavity.clear();
-      Core::Geo::Cut::FacetShape geoType;
+      Cut::FacetShape geoType;
 
       ptConcavity = Kernel::CheckConvexity(ptlist_, geoType);
 
@@ -399,7 +398,7 @@ void Core::Geo::Cut::TriangulateFacet::split_general_facet(std::vector<int> ptCo
             check whether the polygon has two continuous concave points.
             At the moment this is unused                                         sudhakar 04/12
 *-------------------------------------------------------------------------------------------------------*/
-bool Core::Geo::Cut::TriangulateFacet::has_two_continuous_concave_pts(std::vector<int> ptConcavity)
+bool Cut::TriangulateFacet::has_two_continuous_concave_pts(std::vector<int> ptConcavity)
 {
   int siz = ptConcavity.size();
   if (siz < 2) return false;
@@ -419,21 +418,20 @@ bool Core::Geo::Cut::TriangulateFacet::has_two_continuous_concave_pts(std::vecto
 }
 
 
-void Core::Geo::Cut::TriangulateFacet::restore_last_ear(
-    int ear_head_index, std::vector<int>& ptConcavity)
+void Cut::TriangulateFacet::restore_last_ear(int ear_head_index, std::vector<int>& ptConcavity)
 {
   std::vector<Point*> last_added_ear = split_.back();
   split_.pop_back();
   ptlist_.insert(ptlist_.begin() + ear_head_index, last_added_ear[1]);
 
-  Core::Geo::Cut::FacetShape str1;
+  Cut::FacetShape str1;
   ptConcavity.clear();
   ptConcavity =
       Kernel::CheckConvexity(ptlist_, str1, true, false);  // concave points for the new polygon
 }
 
 
-void Core::Geo::Cut::TriangulateFacet::split_triangle_with_points_on_line(unsigned int start_id)
+void Cut::TriangulateFacet::split_triangle_with_points_on_line(unsigned int start_id)
 {
   unsigned int polPts = ptlist_.size();
   unsigned int split_start = (start_id + 1) % polPts;
@@ -453,7 +451,7 @@ void Core::Geo::Cut::TriangulateFacet::split_triangle_with_points_on_line(unsign
 }
 
 
-unsigned int Core::Geo::Cut::TriangulateFacet::find_second_best_ear(
+unsigned int Cut::TriangulateFacet::find_second_best_ear(
     std::vector<std::pair<std::vector<Point*>, unsigned int>>& ears, const std::vector<int>& reflex)
 {
   unsigned int polPts = ptlist_.size();
@@ -485,8 +483,8 @@ unsigned int Core::Geo::Cut::TriangulateFacet::find_second_best_ear(
       if (reflInd == ind0 || reflInd == ind2) continue;
 
       Core::LinAlg::Matrix<3, 1> point_cord(ptlist_[reflInd]);
-      Teuchos::RCP<Core::Geo::Cut::Position> pos =
-          Core::Geo::Cut::Position::create(tri_coord, point_cord, Core::FE::CellType::tri3);
+      Teuchos::RCP<Cut::Position> pos =
+          Cut::Position::create(tri_coord, point_cord, Core::FE::CellType::tri3);
       // precice computation if it is inside
       bool is_inside = pos->compute(0.0);
       if (is_inside)
@@ -519,14 +517,12 @@ unsigned int Core::Geo::Cut::TriangulateFacet::find_second_best_ear(
       [&](const int& a, const int& b)
       {
         std::vector<Point*> tri_a = ears[a].first;
-        const double tri_ear_head_proximity_a =
-            Core::Geo::Cut::DistanceBetweenPoints(tri_a[1], tri_a[0]) +
-            Core::Geo::Cut::DistanceBetweenPoints(tri_a[1], tri_a[2]);
+        const double tri_ear_head_proximity_a = Cut::DistanceBetweenPoints(tri_a[1], tri_a[0]) +
+                                                Cut::DistanceBetweenPoints(tri_a[1], tri_a[2]);
 
         std::vector<Point*> tri_b = ears[b].first;
-        const double tri_ear_head_proximity_b =
-            Core::Geo::Cut::DistanceBetweenPoints(tri_b[1], tri_b[0]) +
-            Core::Geo::Cut::DistanceBetweenPoints(tri_b[1], tri_b[2]);
+        const double tri_ear_head_proximity_b = Cut::DistanceBetweenPoints(tri_b[1], tri_b[0]) +
+                                                Cut::DistanceBetweenPoints(tri_b[1], tri_b[2]);
 
         return tri_ear_head_proximity_a < tri_ear_head_proximity_b;
       });
@@ -537,10 +533,9 @@ unsigned int Core::Geo::Cut::TriangulateFacet::find_second_best_ear(
     Called when facets have two adjacent concave points
     During the process, if facet is free of adjacent concave points, splitanyfacet() is called
 *--------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::TriangulateFacet::ear_clipping(
-    std::vector<int> ptConcavity,  // list of concave points
-    bool triOnly,                  // whether to create triangles only?
-    bool DeleteInlinePts)          // how to deal with collinear points?
+void Cut::TriangulateFacet::ear_clipping(std::vector<int> ptConcavity,  // list of concave points
+    bool triOnly,          // whether to create triangles only?
+    bool DeleteInlinePts)  // how to deal with collinear points?
 {
   std::vector<int> convex;
 
@@ -572,7 +567,7 @@ void Core::Geo::Cut::TriangulateFacet::ear_clipping(
     }
 
     ptConcavity.clear();
-    Core::Geo::Cut::FacetShape geoType;
+    Cut::FacetShape geoType;
 
     ptConcavity = Kernel::CheckConvexity(ptlist_, geoType, true, DeleteInlinePts);
   }
@@ -697,7 +692,7 @@ void Core::Geo::Cut::TriangulateFacet::ear_clipping(
       break;
     }
 
-    Core::Geo::Cut::FacetShape str1;
+    Cut::FacetShape str1;
     ptConcavity.clear();
     ptConcavity = Kernel::CheckConvexity(
         ptlist_, str1, true, DeleteInlinePts);  // concave points for the new polygon
@@ -739,7 +734,7 @@ void Core::Geo::Cut::TriangulateFacet::ear_clipping(
         }
         /// update triangle shape info
         ptConcavity.clear();
-        Core::Geo::Cut::FacetShape str1;
+        Cut::FacetShape str1;
         ptConcavity = Kernel::CheckConvexity(
             ptlist_, str1, true, DeleteInlinePts);  // concave points for the new polygon
         last_added_ear = tri;
@@ -802,7 +797,7 @@ void Core::Geo::Cut::TriangulateFacet::ear_clipping(
 (ptlist_) and the inner polygons (inlists_) are required. Triangles will be generated as output,
 which are all combined in one vector (split_).
 *------------------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
+void Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
 {
   while (inlists_.size() != 0)
   {
@@ -1002,7 +997,7 @@ void Core::Geo::Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
         potentuallyvisiblepoint(2, 0) = 0;
       }
       // 6) Reflex points in triangle
-      Core::Geo::Cut::FacetShape geoType;
+      Cut::FacetShape geoType;
       std::vector<int> reflexmaincyclepointids =
           Kernel::CheckConvexity(ptlist_, geoType, false, false);
       for (std::vector<int>::iterator i = reflexmaincyclepointids.begin();
@@ -1025,8 +1020,8 @@ void Core::Geo::Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
         int reflexmaincyclepointid = *i;
         Core::LinAlg::Matrix<3, 1> reflexmaincyclepoint =
             localmaincyclepoints[reflexmaincyclepointid];
-        Teuchos::RCP<Position> pos = Core::Geo::Cut::Position::create(
-            triangle, reflexmaincyclepoint, Core::FE::CellType::tri3);
+        Teuchos::RCP<Position> pos =
+            Cut::Position::create(triangle, reflexmaincyclepoint, Core::FE::CellType::tri3);
         bool within = pos->is_given_point_within_element();
         if (within)
         {
@@ -1128,7 +1123,7 @@ void Core::Geo::Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
   this->ear_clipping(ptConcavity, true, false);
 }
 
-bool Core::Geo::Cut::TriangulateFacet::hasequal_ptlist_inlist(
+bool Cut::TriangulateFacet::hasequal_ptlist_inlist(
     std::vector<Point*> ptlist, std::vector<std::vector<Point*>> inlists)
 {
   if (inlists.size() != 1)

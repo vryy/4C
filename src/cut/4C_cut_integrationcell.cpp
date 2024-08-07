@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::IntegrationCell::contains(Core::LinAlg::Matrix<3, 1>& x)
+bool Cut::IntegrationCell::contains(Core::LinAlg::Matrix<3, 1>& x)
 {
   switch (this->shape())
   {
@@ -48,14 +48,13 @@ bool Core::Geo::Cut::IntegrationCell::contains(Core::LinAlg::Matrix<3, 1>& x)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType celltype>
-bool Core::Geo::Cut::IntegrationCell::contains(Core::LinAlg::Matrix<probdim, 1>& x)
+bool Cut::IntegrationCell::contains(Core::LinAlg::Matrix<probdim, 1>& x)
 {
   const int ncn = Core::FE::num_nodes<celltype>;
 
   Core::LinAlg::Matrix<probdim, ncn> coords(xyz_);
 
-  Teuchos::RCP<Core::Geo::Cut::Position> pos =
-      Core::Geo::Cut::Position::create(coords, x, celltype);
+  Teuchos::RCP<Cut::Position> pos = Cut::Position::create(coords, x, celltype);
   pos->compute();
 
   return pos->within_limits();
@@ -63,21 +62,18 @@ bool Core::Geo::Cut::IntegrationCell::contains(Core::LinAlg::Matrix<probdim, 1>&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::IntegrationCell::dump_gmsh(std::ofstream& file, int* value)
+void Cut::IntegrationCell::dump_gmsh(std::ofstream& file, int* value)
 {
   Output::GmshCellDump(file, shape(), xyz_, &position_, value);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Core::Geo::Cut::IntegrationCell::volume() const
-{
-  return Core::Geo::ElementVolume(shape(), xyz_);
-}
+double Cut::IntegrationCell::volume() const { return Core::Geo::ElementVolume(shape(), xyz_); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::Geo::Cut::Line2IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const
+int Cut::Line2IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const
 {
   // not 100% sure what this value really means, but 4 seems more than sufficient.
   return 4;
@@ -85,21 +81,15 @@ int Core::Geo::Cut::Line2IntegrationCell::cubature_degree(Core::FE::CellType ele
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::Geo::Cut::Tri3IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const
-{
-  return 4;
-}
+int Cut::Tri3IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const { return 4; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::Geo::Cut::Quad4IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const
-{
-  return 4;
-}
+int Cut::Quad4IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const { return 4; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::Geo::Cut::Hex8IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const
+int Cut::Hex8IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const
 {
   switch (elementshape)
   {
@@ -127,7 +117,7 @@ int Core::Geo::Cut::Hex8IntegrationCell::cubature_degree(Core::FE::CellType elem
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::Geo::Cut::Tet4IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const
+int Cut::Tet4IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const
 {
   switch (elementshape)
   {
@@ -155,21 +145,18 @@ int Core::Geo::Cut::Tet4IntegrationCell::cubature_degree(Core::FE::CellType elem
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::Geo::Cut::Wedge6IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const
+int Cut::Wedge6IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const { return 4; }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int Cut::Pyramid5IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const
 {
   return 4;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::Geo::Cut::Pyramid5IntegrationCell::cubature_degree(Core::FE::CellType elementshape) const
-{
-  return 4;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::IntegrationCell::print(std::ostream& stream) const
+void Cut::IntegrationCell::print(std::ostream& stream) const
 {
   stream << "--- integration cell ( address: " << std::setw(10) << this << " )\n";
   stream << "pos = " << Point::point_position2_string(position()) << " "

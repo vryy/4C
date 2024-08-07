@@ -36,14 +36,13 @@ namespace Core::FE
   class Discretization;
 }  // namespace Core::FE
 
-namespace Core::Geo
+
+namespace Cut
 {
-  namespace Cut
-  {
-    class ElementHandle;
-    class LevelSetIntersection;
-  }  // namespace Cut
-}  // namespace Core::Geo
+  class ElementHandle;
+  class LevelSetIntersection;
+}  // namespace Cut
+
 
 namespace ScaTra
 {
@@ -82,8 +81,7 @@ namespace ScaTra
        *  outside domain will be considered.
        *
        *  \author hiermeier \date 11/16 */
-      void set_desired_positions(
-          const std::vector<Core::Geo::Cut::Point::PointPosition>& desired_pos);
+      void set_desired_positions(const std::vector<Cut::Point::PointPosition>& desired_pos);
 
      protected:
       /// reset class member variables
@@ -125,7 +123,7 @@ namespace ScaTra
        *      inside  --> minus domain
        *
        *  \author hiermeier \date 11/16 */
-      void add_to_volume(Core::Geo::Cut::Point::PointPosition pos, double vol);
+      void add_to_volume(Cut::Point::PointPosition pos, double vol);
 
       /// access the boundary cell surface value
       inline double& surface() { return surface_; };
@@ -139,51 +137,51 @@ namespace ScaTra
           std::vector<int>& node_ids) const;
 
       /// perform the cut operation
-      Core::Geo::Cut::ElementHandle* cut(Core::Geo::Cut::LevelSetIntersection& levelset,
+      Cut::ElementHandle* cut(Cut::LevelSetIntersection& levelset,
           const Core::LinAlg::SerialDenseMatrix& xyze, const std::vector<double>& phi_nodes,
           bool cut_screenoutput) const;
 
       /// collect the cut elements after a successful cut operation
-      void collect_cut_eles(Core::Geo::Cut::ElementHandle& ehandle,
-          Core::Geo::Cut::plain_element_set& cuteles, Core::FE::CellType distype) const;
+      void collect_cut_eles(Cut::ElementHandle& ehandle, Cut::plain_element_set& cuteles,
+          Core::FE::CellType distype) const;
 
       /** \brief check the point position (OR-combination)
        *
        *  \param curr_pos (in) : current position of the volume cell
        *
        *  \author hiermeier \date 11/16 */
-      bool is_point_position(const Core::Geo::Cut::Point::PointPosition& curr_pos)
+      bool is_point_position(const Cut::Point::PointPosition& curr_pos)
       {
         return is_point_position(curr_pos, desired_positions());
       }
-      bool is_point_position(const Core::Geo::Cut::Point::PointPosition& curr_pos,
-          const std::vector<Core::Geo::Cut::Point::PointPosition>& desired_pos) const;
+      bool is_point_position(const Cut::Point::PointPosition& curr_pos,
+          const std::vector<Cut::Point::PointPosition>& desired_pos) const;
 
       /** \brief get the zero level-set
        *
        *  \author rasthofer \date 09/13 */
-      void get_zero_level_set_contour(const Core::Geo::Cut::plain_element_set& cuteles,
+      void get_zero_level_set_contour(const Cut::plain_element_set& cuteles,
           const Core::LinAlg::SerialDenseMatrix& xyze, Core::FE::CellType distype);
 
       /// check for supported boundary cell discretization types
       virtual void check_boundary_cell_type(Core::FE::CellType distype_bc) const;
 
       virtual void add_to_boundary_int_cells_per_ele(const Core::LinAlg::SerialDenseMatrix& xyze,
-          const Core::Geo::Cut::BoundaryCell& bcell, Core::FE::CellType distype_ele);
+          const Cut::BoundaryCell& bcell, Core::FE::CellType distype_ele);
 
       /// access the private boundary cell vector
       template <typename T>
       T& boundary_int_cells_per_ele();
 
-      const std::vector<Core::Geo::Cut::Point::PointPosition>& desired_positions();
+      const std::vector<Cut::Point::PointPosition>& desired_positions();
 
      protected:
       /** check the level set values before we add a new element to the
-       *  Core::Geo::Cut::LevelSetIntersection object */
+       *  Cut::LevelSetIntersection object */
       bool check_lsv_;
 
       /// vector containing the desired positions ( default: outside )
-      std::vector<Core::Geo::Cut::Point::PointPosition> desired_positions_;
+      std::vector<Cut::Point::PointPosition> desired_positions_;
 
      private:
       /// boundary cell vector

@@ -882,13 +882,13 @@ bool XFEM::ConditionManager::has_averaging_strategy(Inpar::XFEM::AveragingStrate
 }
 
 void XFEM::ConditionManager::get_volume_cell_material(Core::Elements::Element* actele,
-    Teuchos::RCP<Core::Mat::Material>& mat, const Core::Geo::Cut::VolumeCell* vc)
+    Teuchos::RCP<Core::Mat::Material>& mat, const Cut::VolumeCell* vc)
 {
   XFEM::UTILS::get_volume_cell_material(actele, mat, vc->position());
 }
 
 void XFEM::ConditionManager::get_interface_master_material(Core::Elements::Element* actele,
-    Teuchos::RCP<Core::Mat::Material>& mat, const Core::Geo::Cut::VolumeCell* vc)
+    Teuchos::RCP<Core::Mat::Material>& mat, const Cut::VolumeCell* vc)
 {
   XFEM::UTILS::get_volume_cell_material(actele, mat, vc->position());
 }
@@ -912,7 +912,7 @@ void XFEM::ConditionManager::get_interface_slave_material(
         coup_sid);
 }
 
-bool XFEM::ConditionManager::initialize_fluid_state(Teuchos::RCP<Core::Geo::CutWizard> cutwizard,
+bool XFEM::ConditionManager::initialize_fluid_state(Teuchos::RCP<Cut::CutWizard> cutwizard,
     Teuchos::RCP<Core::FE::Discretization> fluiddis,
     Teuchos::RCP<XFEM::ConditionManager> condition_manager,
     Teuchos::RCP<Teuchos::ParameterList> fluidparams)
@@ -1021,7 +1021,7 @@ void XFEM::ConditionManager::get_coupling_ele_location_vector(
 // comment: as soon as we start doing mesh and levelset coupling with overlapping interfaces, we
 // need to provide the position of the volumecells down here as well to choose the correct material.
 // atm the position this is hardcoded in the coupling objects
-// (all assume Core::Geo::Cut::Point::outside, exept TwoPhaseFlow Master outside, Slave inside)
+// (all assume Cut::Point::outside, exept TwoPhaseFlow Master outside, Slave inside)
 void XFEM::ConditionManager::get_average_weights(
     const int coup_sid,              ///< the overall global coupling side id
     Core::Elements::Element* xfele,  ///< xfluid ele

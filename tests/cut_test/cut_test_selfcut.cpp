@@ -22,7 +22,7 @@
 
 void test_hex8quad4selfcut20()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -114,12 +114,12 @@ void test_hex8quad4selfcut20()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut21()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -211,12 +211,12 @@ void test_hex8quad4selfcut21()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut22()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -308,12 +308,12 @@ void test_hex8quad4selfcut22()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut23()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -405,12 +405,12 @@ void test_hex8quad4selfcut23()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut24()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -502,12 +502,12 @@ void test_hex8quad4selfcut24()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut30()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -626,12 +626,12 @@ void test_hex8quad4selfcut30()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut31()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -750,12 +750,12 @@ void test_hex8quad4selfcut31()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut32()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -874,12 +874,12 @@ void test_hex8quad4selfcut32()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut33()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -998,12 +998,12 @@ void test_hex8quad4selfcut33()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut34()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -1122,12 +1122,12 @@ void test_hex8quad4selfcut34()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut35()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -1246,12 +1246,12 @@ void test_hex8quad4selfcut35()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut36()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -1370,12 +1370,12 @@ void test_hex8quad4selfcut36()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut37()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -1494,12 +1494,12 @@ void test_hex8quad4selfcut37()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut38()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -1618,12 +1618,12 @@ void test_hex8quad4selfcut38()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut39()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -1742,12 +1742,12 @@ void test_hex8quad4selfcut39()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut41()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -1893,12 +1893,12 @@ void test_hex8quad4selfcut41()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut42()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -2044,16 +2044,16 @@ void test_hex8quad4selfcut42()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 
   std::vector<double> dirdivVol;
 
-  Core::Geo::Cut::Mesh mesh = intersection.normal_mesh();
-  const std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>& other_cells = mesh.volume_cells();
-  for (std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  Cut::Mesh mesh = intersection.normal_mesh();
+  const std::list<Teuchos::RCP<Cut::VolumeCell>>& other_cells = mesh.volume_cells();
+  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
-    Core::Geo::Cut::VolumeCell* vc = &**i;
+    Cut::VolumeCell* vc = &**i;
     dirdivVol.push_back(vc->volume());
   }
 
@@ -2063,7 +2063,7 @@ void test_hex8quad4selfcut42()
 
 void test_hex8quad4selfcut43()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -2209,12 +2209,12 @@ void test_hex8quad4selfcut43()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut51()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -2387,12 +2387,12 @@ void test_hex8quad4selfcut51()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut52()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -2565,12 +2565,12 @@ void test_hex8quad4selfcut52()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut53()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -2743,12 +2743,12 @@ void test_hex8quad4selfcut53()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut61()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -2948,12 +2948,12 @@ void test_hex8quad4selfcut61()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut62()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -3153,12 +3153,12 @@ void test_hex8quad4selfcut62()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut63()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -3358,12 +3358,12 @@ void test_hex8quad4selfcut63()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut64()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -3563,12 +3563,12 @@ void test_hex8quad4selfcut64()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut65()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -3768,12 +3768,12 @@ void test_hex8quad4selfcut65()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut66()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -3973,12 +3973,12 @@ void test_hex8quad4selfcut66()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut71()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -4205,34 +4205,33 @@ void test_hex8quad4selfcut71()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 
   std::vector<double> tessVol, momFitVol, dirDivVol;
 
-  Core::Geo::Cut::Mesh mesh = intersection.normal_mesh();
-  const std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>& other_cells = mesh.volume_cells();
-  for (std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  Cut::Mesh mesh = intersection.normal_mesh();
+  const std::list<Teuchos::RCP<Cut::VolumeCell>>& other_cells = mesh.volume_cells();
+  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
-    Core::Geo::Cut::VolumeCell* vc = &**i;
+    Cut::VolumeCell* vc = &**i;
     tessVol.push_back(vc->volume());
   }
 
-  for (std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
-    Core::Geo::Cut::VolumeCell* vc = &**i;
-    vc->moment_fit_gauss_weights(
-        vc->parent_element(), mesh, true, Core::Geo::Cut::BCellGaussPts_Tessellation);
+    Cut::VolumeCell* vc = &**i;
+    vc->moment_fit_gauss_weights(vc->parent_element(), mesh, true, Cut::BCellGaussPts_Tessellation);
     momFitVol.push_back(vc->volume());
   }
 
-  for (std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
-    Core::Geo::Cut::VolumeCell* vc = &**i;
+    Cut::VolumeCell* vc = &**i;
     vc->direct_divergence_gauss_rule(
-        vc->parent_element(), mesh, true, Core::Geo::Cut::BCellGaussPts_Tessellation);
+        vc->parent_element(), mesh, true, Cut::BCellGaussPts_Tessellation);
     dirDivVol.push_back(vc->volume());
   }
 
@@ -4247,7 +4246,7 @@ void test_hex8quad4selfcut71()
 
 void test_hex8quad4selfcut72()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -4474,12 +4473,12 @@ void test_hex8quad4selfcut72()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut81()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -4733,12 +4732,12 @@ void test_hex8quad4selfcut81()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut82()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -4992,12 +4991,12 @@ void test_hex8quad4selfcut82()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut83()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -5252,12 +5251,12 @@ void test_hex8quad4selfcut83()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut84()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -5512,12 +5511,12 @@ void test_hex8quad4selfcut84()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut85()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -5772,12 +5771,12 @@ void test_hex8quad4selfcut85()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut86()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -6032,12 +6031,12 @@ void test_hex8quad4selfcut86()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut91()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -6318,12 +6317,12 @@ void test_hex8quad4selfcut91()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut92()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -6604,7 +6603,7 @@ void test_hex8quad4selfcut92()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
 /*------------------------------------------------------------------------------------*
@@ -6613,7 +6612,7 @@ void test_hex8quad4selfcut92()
  *------------------------------------------------------------------------------------*/
 void test_hex8quad4alignedEdges()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -6705,5 +6704,5 @@ void test_hex8quad4alignedEdges()
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
 
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }

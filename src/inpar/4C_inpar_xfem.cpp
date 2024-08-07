@@ -55,26 +55,23 @@ void Inpar::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Strategy used for the nodal dofset management per node",
       tuple<std::string>(
           "OneDofset_PerNodeAndPosition", "ConnectGhostDofsets_PerNodeAndPosition", "full"),
-      tuple<int>(Core::Geo::Cut::NDS_Strategy_OneDofset_PerNodeAndPosition,
-          Core::Geo::Cut::NDS_Strategy_ConnectGhostDofsets_PerNodeAndPosition,
-          Core::Geo::Cut::NDS_Strategy_full),
+      tuple<int>(Cut::NDS_Strategy_OneDofset_PerNodeAndPosition,
+          Cut::NDS_Strategy_ConnectGhostDofsets_PerNodeAndPosition, Cut::NDS_Strategy_full),
       &xfem_general);
 
   // Integration options
   setStringToIntegralParameter<int>("VOLUME_GAUSS_POINTS_BY", "Tessellation",
       "Method for finding Gauss Points for the cut volumes",
       tuple<std::string>("Tessellation", "MomentFitting", "DirectDivergence"),
-      tuple<int>(Core::Geo::Cut::VCellGaussPts_Tessellation,
-          Core::Geo::Cut::VCellGaussPts_MomentFitting,
-          Core::Geo::Cut::VCellGaussPts_DirectDivergence),
+      tuple<int>(Cut::VCellGaussPts_Tessellation, Cut::VCellGaussPts_MomentFitting,
+          Cut::VCellGaussPts_DirectDivergence),
       &xfem_general);
 
   setStringToIntegralParameter<int>("BOUNDARY_GAUSS_POINTS_BY", "Tessellation",
       "Method for finding Gauss Points for the boundary cells",
       tuple<std::string>("Tessellation", "MomentFitting", "DirectDivergence"),
-      tuple<int>(Core::Geo::Cut::BCellGaussPts_Tessellation,
-          Core::Geo::Cut::BCellGaussPts_MomentFitting,
-          Core::Geo::Cut::BCellGaussPts_DirectDivergence),
+      tuple<int>(Cut::BCellGaussPts_Tessellation, Cut::BCellGaussPts_MomentFitting,
+          Cut::BCellGaussPts_DirectDivergence),
       &xfem_general);
 
   /*----------------------------------------------------------------------*/

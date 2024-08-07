@@ -33,14 +33,13 @@ namespace Mat
   class Material;
 }
 
-namespace Core::Geo
+
+namespace Cut
 {
-  namespace Cut
-  {
-    class BoundaryCell;
-    class VolumeCell;
-  }  // namespace Cut
-}  // namespace Core::Geo
+  class BoundaryCell;
+  class VolumeCell;
+}  // namespace Cut
+
 
 namespace XFEM
 {
@@ -109,7 +108,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
           const std::vector<Core::FE::GaussIntegration>& intpoints,
-          const Core::Geo::Cut::plain_volumecell_set& cells, bool offdiag = false) = 0;
+          const Cut::plain_volumecell_set& cells, bool offdiag = false) = 0;
 
       virtual int integrate_shape_function(Discret::ELEMENTS::Fluid* ele,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
@@ -120,7 +119,7 @@ namespace Discret
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           const std::vector<Core::FE::GaussIntegration>& intpoints,
-          const Core::Geo::Cut::plain_volumecell_set& cells) = 0;
+          const Cut::plain_volumecell_set& cells) = 0;
 
       /// Evaluate supporting methods of the element
       virtual int evaluate_service(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
@@ -140,12 +139,11 @@ namespace Discret
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           Teuchos::RCP<Core::Mat::Material>& mat,                    ///< material
           Core::LinAlg::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
-          const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>&
-              bcells,  ///< boundary cells
+          const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,  ///< boundary cells
           const std::map<int, std::vector<Core::FE::GaussIntegration>>&
-              bintpoints,                                     ///< boundary integration points
-          const Core::Geo::Cut::plain_volumecell_set& vcSet,  ///< set of plain volume cells
-          Teuchos::ParameterList& params                      ///< parameter list
+              bintpoints,                          ///< boundary integration points
+          const Cut::plain_volumecell_set& vcSet,  ///< set of plain volume cells
+          Teuchos::ParameterList& params           ///< parameter list
           ) = 0;
 
       virtual void element_xfem_interface_hybrid_lm(
@@ -154,8 +152,7 @@ namespace Discret
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           const std::vector<Core::FE::GaussIntegration>& intpoints,  ///< element gauss points
-          const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>&
-              bcells,  ///< boundary cells
+          const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,  ///< boundary cells
           const std::map<int, std::vector<Core::FE::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>&
@@ -169,7 +166,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector&
               elevec1_epetra,                      ///< local element vector of intersected element
           Core::LinAlg::SerialDenseMatrix& Cuiui,  ///< coupling matrix of a side with itself
-          const Core::Geo::Cut::plain_volumecell_set& vcSet  ///< set of plain volume cells
+          const Cut::plain_volumecell_set& vcSet   ///< set of plain volume cells
           ) = 0;
 
       /// add interface condition at cut to element matrix and rhs (two-sided Nitsche coupling)
@@ -177,17 +174,16 @@ namespace Discret
           Core::FE::Discretization& dis,                             ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-          const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>&
-              bcells,  ///< boundary cells
+          const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,  ///< boundary cells
           const std::map<int, std::vector<Core::FE::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>& patchcouplm,
-          Teuchos::ParameterList& params,                     ///< parameter list
-          Teuchos::RCP<Core::Mat::Material>& mat_master,      ///< material for the coupled side
-          Teuchos::RCP<Core::Mat::Material>& mat_slave,       ///< material for the coupled side
-          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,    ///< element matrix
-          Core::LinAlg::SerialDenseVector& elevec1_epetra,    ///< element vector
-          const Core::Geo::Cut::plain_volumecell_set& vcSet,  ///< volumecell sets in this element
+          Teuchos::ParameterList& params,                   ///< parameter list
+          Teuchos::RCP<Core::Mat::Material>& mat_master,    ///< material for the coupled side
+          Teuchos::RCP<Core::Mat::Material>& mat_slave,     ///< material for the coupled side
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  ///< element matrix
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,  ///< element vector
+          const Cut::plain_volumecell_set& vcSet,           ///< volumecell sets in this element
           std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>&
               side_coupling,                       ///< side coupling matrices
           Core::LinAlg::SerialDenseMatrix& Cuiui,  ///< ui-ui coupling matrix

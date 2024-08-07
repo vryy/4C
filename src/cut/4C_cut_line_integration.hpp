@@ -42,7 +42,7 @@ class LineIntegration
   /*!
   \brief Choose the base function to be integrated
   */
-  void set_integ_type(Core::Geo::Cut::ProjectionDirection inttype) { int_type_ = inttype; }
+  void set_integ_type(Cut::ProjectionDirection inttype) { int_type_ = inttype; }
 
   /*!
   \brief Transform the Gauss integration point available in the limit (-1,1) to the actual line
@@ -72,7 +72,7 @@ class LineIntegration
 
   //! over which plane (x, y or z) boundarycell has to be projected when performing boundarycell
   //! integration
-  Core::Geo::Cut::ProjectionDirection int_type_;
+  Cut::ProjectionDirection int_type_;
 };
 
 FOUR_C_NAMESPACE_CLOSE

@@ -26,7 +26,7 @@
 
 void test_generated_75358()
 {
-  Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -430,8 +430,8 @@ void test_generated_75358()
     intersection.add_element(75358, nids, hex8_xyze, Core::FE::CellType::hex8);
   }
 
-  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
-      Core::Geo::Cut::BCellGaussPts_Tessellation);
-  intersection.Cut_Finalize(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
-      Core::Geo::Cut::BCellGaussPts_Tessellation, false, true);
+  intersection.CutTest_Cut(
+      true, Cut::VCellGaussPts_DirectDivergence, Cut::BCellGaussPts_Tessellation);
+  intersection.Cut_Finalize(
+      true, Cut::VCellGaussPts_DirectDivergence, Cut::BCellGaussPts_Tessellation, false, true);
 }

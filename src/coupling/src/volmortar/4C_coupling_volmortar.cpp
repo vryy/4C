@@ -1628,21 +1628,21 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
   // Initialize the cut wizard
 
   // create new cut wizard
-  Teuchos::RCP<Core::Geo::CutWizard> wizard = Teuchos::rcp(new Core::Geo::CutWizard(mauxdis));
+  Teuchos::RCP<Cut::CutWizard> wizard = Teuchos::rcp(new Cut::CutWizard(mauxdis));
 
   // *************************************
   // TESSELATION *************************
   if (Core::UTILS::IntegralValue<CutType>(params(), "CUTTYPE") == cuttype_tessellation)
   {
     // Set options for the cut wizard
-    wizard->set_options(cut_params_, Core::Geo::Cut::NDS_Strategy_full,
-        Core::Geo::Cut::VCellGaussPts_Tessellation,  // how to create volume cell Gauss points?
-        Core::Geo::Cut::BCellGaussPts_Tessellation,  // how to create boundary cell Gauss points?
-        "invalid_file",                              // no file needed
-        false,                                       // gmsh output for cut library
-        true,                                        // find point positions
-        true,                                        // generate only tet cells
-        false                                        // print screen output
+    wizard->set_options(cut_params_, Cut::NDS_Strategy_full,
+        Cut::VCellGaussPts_Tessellation,  // how to create volume cell Gauss points?
+        Cut::BCellGaussPts_Tessellation,  // how to create boundary cell Gauss points?
+        "invalid_file",                   // no file needed
+        false,                            // gmsh output for cut library
+        true,                             // find point positions
+        true,                             // generate only tet cells
+        false                             // print screen output
     );
 
     // cut in reference configuration
@@ -1652,9 +1652,9 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
     wizard->prepare();
     wizard->cut(true);  // include_inner
 
-    Core::Geo::Cut::plain_volumecell_set mcells_out;
-    Core::Geo::Cut::plain_volumecell_set mcells_in;
-    Core::Geo::Cut::ElementHandle* em = wizard->get_element(mele);
+    Cut::plain_volumecell_set mcells_out;
+    Cut::plain_volumecell_set mcells_in;
+    Cut::ElementHandle* em = wizard->get_element(mele);
 
     // is mele in cut involved?
     if (em != nullptr)
@@ -1663,16 +1663,15 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
 
       int count = 0;
 
-      for (Core::Geo::Cut::plain_volumecell_set::iterator u = mcells_in.begin();
-           u != mcells_in.end(); u++)
+      for (Cut::plain_volumecell_set::iterator u = mcells_in.begin(); u != mcells_in.end(); u++)
       {
-        Core::Geo::Cut::VolumeCell* vc = *u;
-        const Core::Geo::Cut::plain_integrationcell_set& intcells = vc->integration_cells();
+        Cut::VolumeCell* vc = *u;
+        const Cut::plain_integrationcell_set& intcells = vc->integration_cells();
 
-        for (Core::Geo::Cut::plain_integrationcell_set::const_iterator z = intcells.begin();
+        for (Cut::plain_integrationcell_set::const_iterator z = intcells.begin();
              z != intcells.end(); z++)
         {
-          Core::Geo::Cut::IntegrationCell* ic = *z;
+          Cut::IntegrationCell* ic = *z;
 
           IntCells.push_back(Teuchos::rcp(
               new Coupling::VolMortar::Cell(count, 4, ic->coordinates(), ic->shape())));
@@ -1698,14 +1697,14 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
   else if (Core::UTILS::IntegralValue<CutType>(params(), "CUTTYPE") == cuttype_directdivergence)
   {
     // Set options for the cut wizard
-    wizard->set_options(cut_params_, Core::Geo::Cut::NDS_Strategy_full,
-        Core::Geo::Cut::VCellGaussPts_DirectDivergence,  // how to create volume cell Gauss points?
-        Core::Geo::Cut::BCellGaussPts_Tessellation,  // how to create boundary cell Gauss points?
-        "invalid_file",                              // no file needed
-        false,                                       // gmsh output for cut library
-        true,                                        // find point positions
-        false,                                       // generate only tet cells
-        false                                        // print screen output
+    wizard->set_options(cut_params_, Cut::NDS_Strategy_full,
+        Cut::VCellGaussPts_DirectDivergence,  // how to create volume cell Gauss points?
+        Cut::BCellGaussPts_Tessellation,      // how to create boundary cell Gauss points?
+        "invalid_file",                       // no file needed
+        false,                                // gmsh output for cut library
+        true,                                 // find point positions
+        false,                                // generate only tet cells
+        false                                 // print screen output
     );
 
     // cut in reference configuration
@@ -1714,9 +1713,9 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
 
     wizard->cut(true);  // include_inner
 
-    Core::Geo::Cut::plain_volumecell_set mcells_out;
-    Core::Geo::Cut::plain_volumecell_set mcells_in;
-    Core::Geo::Cut::ElementHandle* em = wizard->get_element(mele);
+    Cut::plain_volumecell_set mcells_out;
+    Cut::plain_volumecell_set mcells_in;
+    Cut::ElementHandle* em = wizard->get_element(mele);
 
     // for safety
     volcell_.clear();
@@ -3038,12 +3037,11 @@ void Coupling::VolMortar::VolMortarCoupl::integrate_3d_cell_direct_divergence(
     std::cout << "****************************   CELL SIZE > 1 ***************************"
               << std::endl;
 
-  for (Core::Geo::Cut::plain_volumecell_set::iterator i = volcell_.begin(); i != volcell_.end();
-       i++)
+  for (Cut::plain_volumecell_set::iterator i = volcell_.begin(); i != volcell_.end(); i++)
   {
     if (*i == nullptr) continue;
 
-    Core::Geo::Cut::VolumeCell* vc = *i;
+    Cut::VolumeCell* vc = *i;
 
     if (vc->is_negligibly_small()) continue;
 

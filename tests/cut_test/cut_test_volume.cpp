@@ -18,21 +18,21 @@
 
 void test_cut_volumes()
 {
-  Core::Geo::Cut::Options options;
+  Cut::Options options;
   options.init_for_cuttests();
   // this is meant to be used with matching boundaries. Thus, no
   // inside/outside positions.
   options.set_find_positions(false);
 
-  Core::Geo::Cut::Mesh mesh1(options);
-  Core::Geo::Cut::Mesh mesh2(options, 1, mesh1.points());
+  Cut::Mesh mesh1(options);
+  Cut::Mesh mesh2(options, 1, mesh1.points());
 
   create_hex8_mesh(mesh1, 4, 4, 4);
   create_hex8_mesh(mesh2, 3, 5, 2);
 
   mesh2.create_side_ids_cut_test();
 
-  Core::Geo::Cut::plain_element_set elements_done;
+  Cut::plain_element_set elements_done;
 
   mesh2.cut(mesh1, elements_done);
 
@@ -49,21 +49,21 @@ void test_cut_volumes2()
     {
       for (int k = 2; k < 5; ++k)
       {
-        Core::Geo::Cut::Options options;
+        Cut::Options options;
         options.init_for_cuttests();
         // this is meant to be used with matching boundaries. Thus, no
         // inside/outside positions.
         options.set_find_positions(false);
 
-        Core::Geo::Cut::Mesh mesh1(options);
-        Core::Geo::Cut::Mesh mesh2(options, 1, mesh1.points());
+        Cut::Mesh mesh1(options);
+        Cut::Mesh mesh2(options, 1, mesh1.points());
 
         create_hex8_mesh(mesh1, 1, 1, 1);
         create_hex8_mesh(mesh2, i, j, k);
 
         mesh2.create_side_ids_cut_test();
 
-        Core::Geo::Cut::plain_element_set elements_done;
+        Cut::plain_element_set elements_done;
 
         mesh2.cut(mesh1, elements_done);
 

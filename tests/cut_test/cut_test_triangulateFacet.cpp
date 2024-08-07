@@ -13,84 +13,52 @@
 
 #include "cut_test_utils.hpp"
 
-void check4nodedInline(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check4nodedconcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check5nodedInline(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check5nodedconvex(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check5nodedconcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check5nodedAdjacentconcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check6nodedconvex(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check6nodedconcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check7nodedconvex(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check7nodedconcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check8nodedconvex(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check8nodedconcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check8nodedAdjacentconcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check9nodedconvex(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check9nodedconcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check10nodedconvex(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check10nodedconcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
+void check4nodedInline(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check4nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check5nodedInline(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check5nodedconvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check5nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check5nodedAdjacentconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check6nodedconvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check6nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check7nodedconvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check7nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check8nodedconvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check8nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check8nodedAdjacentconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check9nodedconvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check9nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check10nodedconvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check10nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void check5nodedTwinConcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check6nodedTwinConcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check8nodedTriConcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
-void check8nodedTriConcaveGenPlane(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
+void check5nodedTwinConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check6nodedTwinConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check8nodedTriConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check8nodedTriConcaveGenPlane(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void check13nodedConvex(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
+void check13nodedConvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void check7nodedconti3concave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
+void check7nodedconti3concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void check10nodedShift1ptConcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
+void check10nodedShift1ptConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void check8nodedEarClip(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
+void check8nodedEarClip(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void check7noded2concave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
+void check7noded2concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void ProblemSplitAnyFacet1(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
+void ProblemSplitAnyFacet1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void InsideChcek1(Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
+void InsideChcek1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void check15node5concave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
+void check15node5concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void check8nodeQuadInsidePt(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
+void check8nodeQuadInsidePt(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void checkTemporary(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
+void checkTemporary(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void checkTemporary2(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s);
+void checkTemporary2(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-Core::Geo::Cut::Side* Create_quad4(
-    Core::Geo::Cut::Mesh& mesh, double x, double dx, double dz, bool reverse = false)
+Cut::Side* Create_quad4(Cut::Mesh& mesh, double x, double dx, double dz, bool reverse = false)
 {
   Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
@@ -123,11 +91,11 @@ Core::Geo::Cut::Side* Create_quad4(
 void test_facet_split()
 {
   std::cout << "checking triangulation of facets...\n";
-  Core::Geo::Cut::Options options;
+  Cut::Options options;
   options.init_for_cuttests();
-  Core::Geo::Cut::Mesh mesh(options);
-  Core::Geo::Cut::Element* e = create_hex8(mesh);
-  Core::Geo::Cut::Side* s = Create_quad4(mesh, 0.5, 0.1, 0);
+  Cut::Mesh mesh(options);
+  Cut::Element* e = create_hex8(mesh);
+  Cut::Side* s = Create_quad4(mesh, 0.5, 0.1, 0);
 
   check4nodedInline(mesh, e, s);
   check4nodedconcave(mesh, e, s);
@@ -170,62 +138,61 @@ void test_facet_split()
 /*---------------------------------------------------------------------------------------*
  *      out of 4 nodes one should be deleted because it falls on the same line           *
  *---------------------------------------------------------------------------------------*/
-void check4nodedInline(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check4nodedInline(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check4nodedInline...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(4);
+  std::vector<Cut::Point*> ptlist(4);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 1.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 0.5;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell1 = split[0];
   if (cell1[0] != p1 || cell1[1] != p2 || cell1[2] != p4)
     FOUR_C_THROW("triangulation failed for check4nodedInline");
 }
@@ -233,63 +200,62 @@ void check4nodedInline(
 /*---------------------------------------------------------------------------------------*
  *                A 4 noded concave facet is split into 2 triangles                      *
  *---------------------------------------------------------------------------------------*/
-void check4nodedconcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check4nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check4nodedConcave...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(4);
+  std::vector<Cut::Point*> ptlist(4);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 1.0;
   x[1] = 0.5;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 2.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
   if (cell1[0] != p2 || cell1[1] != p3 || cell1[2] != p4)
     FOUR_C_THROW("triangulation failed for check4nodedInline");
   if (cell2[0] != p2 || cell2[1] != p4 || cell2[2] != p1)
@@ -299,67 +265,66 @@ void check4nodedconcave(
 /*---------------------------------------------------------------------------------------*
  *        Out of 5 nodes, one inline node is deleted and a Quad cell is formed           *
  *---------------------------------------------------------------------------------------*/
-void check5nodedInline(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check5nodedInline(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check5nodedInline...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(5);
+  std::vector<Cut::Point*> ptlist(5);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 1.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 0.5;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.0;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell1 = split[0];
   if (cell1[0] != p1 || cell1[1] != p2 || cell1[2] != p4 || cell1[3] != p5)
     FOUR_C_THROW("triangulation failed for check5nodedInline");
 }
@@ -367,68 +332,67 @@ void check5nodedInline(
 /*---------------------------------------------------------------------------------------*
  *         A 5 noded convex facet is split into a Tri and a Quad cell                    *
  *---------------------------------------------------------------------------------------*/
-void check5nodedconvex(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check5nodedconvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check5nodedconvex...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(5);
+  std::vector<Cut::Point*> ptlist(5);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 1.0;
   x[1] = 0.2;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.2;
   x[1] = 0.9;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 0.5;
   x[1] = 1.5;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.1;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
   if (cell1[0] != p1 || cell1[1] != p2 || cell1[2] != p3 || cell1[3] != p4)
     FOUR_C_THROW("triangulation failed for check5nodedconvex");
   if (cell2[0] != p1 || cell2[1] != p4 || cell2[2] != p5)
@@ -438,60 +402,59 @@ void check5nodedconvex(
 /*---------------------------------------------------------------------------------------*
  *    A 5 noded facet with one concave point is split into a Tri and a Quad cell         *
  *---------------------------------------------------------------------------------------*/
-void check5nodedconcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check5nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check5nodedconcave...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(5);
+  std::vector<Cut::Point*> ptlist(5);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 1.0;
   x[1] = 0.2;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.2;
   x[1] = 0.9;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 0.5;
   x[1] = 0.7;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.1;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
@@ -499,8 +462,8 @@ void check5nodedconcave(
   }*/
 
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
   if (cell1[0] != p4 || cell1[1] != p5 || cell1[2] != p1 || cell1[3] != p2)
     FOUR_C_THROW("triangulation failed for check5nodedconcave");
   if (cell2[0] != p4 || cell2[1] != p2 || cell2[2] != p3)
@@ -511,60 +474,59 @@ void check5nodedconcave(
  *          A 5 noded facet with 2 adjacent concave points --> 3 Tri cells               *
  *          This is test for EarClipping                                                 *
  *---------------------------------------------------------------------------------------*/
-void check5nodedAdjacentconcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check5nodedAdjacentconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check5nodedAdjacentconcave...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(5);
+  std::vector<Cut::Point*> ptlist(5);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.4;
   x[1] = 0.2;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.6;
   x[1] = 0.2;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 2.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.0;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
@@ -572,9 +534,9 @@ void check5nodedAdjacentconcave(
   }*/
 
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
   if (cell1[0] != p5 || cell1[1] != p1 || cell1[2] != p2)
     FOUR_C_THROW("triangulation failed for check5nodedAdjacentconcave");
   if (cell2[0] != p3 || cell2[1] != p4 || cell2[2] != p5)
@@ -586,73 +548,72 @@ void check5nodedAdjacentconcave(
 /*---------------------------------------------------------------------------------------*
  *                A 6 noded convex facet is split into 2 Quad cells                      *
  *---------------------------------------------------------------------------------------*/
-void check6nodedconvex(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check6nodedconvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check6nodedconvex...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(6);
+  std::vector<Cut::Point*> ptlist(6);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.4;
   x[1] = -0.3;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 0.2;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.2;
   x[1] = 0.9;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.5;
   x[1] = 1.5;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.1;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
   if (cell1[0] != p1 || cell1[1] != p2 || cell1[2] != p3 || cell1[3] != p4)
     FOUR_C_THROW("triangulation failed for check6nodedconvex");
   if (cell2[0] != p1 || cell2[1] != p4 || cell2[2] != p5 || cell2[3] != p6)
@@ -662,65 +623,64 @@ void check6nodedconvex(
 /*---------------------------------------------------------------------------------------*
  *          A 6 noded facet with one concave points is split into 2 Quad cells           *
  *---------------------------------------------------------------------------------------*/
-void check6nodedconcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check6nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check6nodedconcave...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(6);
+  std::vector<Cut::Point*> ptlist(6);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.4;
   x[1] = -0.3;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 0.2;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.2;
   x[1] = 0.9;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.5;
   x[1] = 0.7;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.1;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
@@ -728,8 +688,8 @@ void check6nodedconcave(
   }*/
 
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
   if (cell1[0] != p5 || cell1[1] != p6 || cell1[2] != p1 || cell1[3] != p2)
     FOUR_C_THROW("triangulation failed for check6nodedconcave");
   if (cell2[0] != p5 || cell2[1] != p2 || cell2[2] != p3 || cell2[3] != p4)
@@ -739,79 +699,78 @@ void check6nodedconcave(
 /*---------------------------------------------------------------------------------------*
  *      7 noded facet with one concave points is split into 1 Tri and 2 Quad cells       *
  *---------------------------------------------------------------------------------------*/
-void check7nodedconvex(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check7nodedconvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check7nodedconvex...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(7);
+  std::vector<Cut::Point*> ptlist(7);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.4;
   x[1] = -0.3;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 0.2;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.4;
   x[1] = 0.6;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.1;
   x[1] = 0.9;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.3;
   x[1] = 1.5;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.1;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
   if (cell1[0] != p1 || cell1[1] != p2 || cell1[2] != p3 || cell1[3] != p4)
     FOUR_C_THROW("triangulation failed for check7nodedconvex");
   if (cell2[0] != p1 || cell2[1] != p4 || cell2[2] != p5 || cell2[3] != p6)
@@ -823,79 +782,78 @@ void check7nodedconvex(
 /*---------------------------------------------------------------------------------------*
  *     A 6 noded facet with one concave points is split into 2 Quad and 1 Tri cells      *
  *---------------------------------------------------------------------------------------*/
-void check7nodedconcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check7nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check7nodedconcave...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(7);
+  std::vector<Cut::Point*> ptlist(7);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.4;
   x[1] = -0.3;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 0.2;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.4;
   x[1] = 0.6;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.1;
   x[1] = 0.9;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.3;
   x[1] = 0.7;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.1;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
   if (cell1[0] != p6 || cell1[1] != p7 || cell1[2] != p1 || cell1[3] != p2)
     FOUR_C_THROW("triangulation failed for check7nodedconcave");
   if (cell2[0] != p6 || cell2[1] != p2 || cell2[2] != p3 || cell2[3] != p4)
@@ -907,84 +865,83 @@ void check7nodedconcave(
 /*---------------------------------------------------------------------------------------*
  *                8 noded convex facet is split into 3 Quad cells                        *
  *---------------------------------------------------------------------------------------*/
-void check8nodedconvex(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check8nodedconvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check8nodedconvex...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(8);
+  std::vector<Cut::Point*> ptlist(8);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.2;
   x[1] = -0.3;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.5;
   x[1] = -0.4;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = -0.05;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.1;
   x[1] = 0.4;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.8;
   x[1] = 0.8;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.4;
   x[1] = 0.7;
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = -0.1;
   x[1] = 0.1;
-  Core::Geo::Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
   if (cell1[0] != p1 || cell1[1] != p2 || cell1[2] != p3 || cell1[3] != p4)
     FOUR_C_THROW("triangulation failed for check8nodedconvex");
   if (cell2[0] != p1 || cell2[1] != p4 || cell2[2] != p5 || cell2[3] != p6)
@@ -996,84 +953,83 @@ void check8nodedconvex(
 /*---------------------------------------------------------------------------------------*
  *       A 8 noded facet with one concave points is split into 3 Quad cells              *
  *---------------------------------------------------------------------------------------*/
-void check8nodedconcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check8nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check8nodedconcave...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(8);
+  std::vector<Cut::Point*> ptlist(8);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.2;
   x[1] = -0.3;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.5;
   x[1] = -0.4;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = -0.05;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.1;
   x[1] = 0.4;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.8;
   x[1] = 0.8;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.4;
   x[1] = 0.7;
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 0.4;
   x[1] = 0.1;
-  Core::Geo::Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
   if (cell1[0] != p8 || cell1[1] != p1 || cell1[2] != p2 || cell1[3] != p3)
     FOUR_C_THROW("triangulation failed for check8nodedconcave");
   if (cell2[0] != p8 || cell2[1] != p3 || cell2[2] != p4 || cell2[3] != p5)
@@ -1087,84 +1043,83 @@ void check8nodedconcave(
  * First earclipping is called, and once adjacent concave pts are removed,               *
  * SplitAnyFacet is used to get Quad cells                                               *
  *---------------------------------------------------------------------------------------*/
-void check8nodedAdjacentconcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check8nodedAdjacentconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check8nodedAdjacentconcave...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(8);
+  std::vector<Cut::Point*> ptlist(8);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 1.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 2.0;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 2.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 3.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 3.0;
   x[1] = 2.0;
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 0.0;
   x[1] = 2.0;
-  Core::Geo::Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
   if (cell1[0] != p4 || cell1[1] != p5 || cell1[2] != p6 || cell1[3] != p7)
     FOUR_C_THROW("triangulation failed for check8nodedAdjacentconcave");
   if (cell2[0] != p3 || cell2[1] != p4 || cell2[2] != p7 || cell2[3] != p8)
@@ -1176,90 +1131,89 @@ void check8nodedAdjacentconcave(
 /*---------------------------------------------------------------------------------------*
  *        9 noded convex facet is split into 3 Quad and 1 Tri cells                      *
  *---------------------------------------------------------------------------------------*/
-void check9nodedconvex(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check9nodedconvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check9nodedconvex...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(9);
+  std::vector<Cut::Point*> ptlist(9);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.2;
   x[1] = -0.3;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.5;
   x[1] = -0.4;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = -0.05;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.15;
   x[1] = 0.3;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 1.1;
   x[1] = 0.4;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.8;
   x[1] = 0.8;
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 0.4;
   x[1] = 0.7;
-  Core::Geo::Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   x[0] = -0.1;
   x[1] = 0.1;
-  Core::Geo::Cut::Point* p9 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p9 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[8] = p9;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
-  std::vector<Core::Geo::Cut::Point*> cell4 = split[3];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell4 = split[3];
   if (cell1[0] != p1 || cell1[1] != p2 || cell1[2] != p3 || cell1[3] != p4)
     FOUR_C_THROW("triangulation failed for check9nodedconvex");
   if (cell2[0] != p1 || cell2[1] != p4 || cell2[2] != p5 || cell2[3] != p6)
@@ -1273,90 +1227,89 @@ void check9nodedconvex(
 /*---------------------------------------------------------------------------------------*
  *    A 9 noded facet with one concave points is split into 1 Tri and3 Quad cells        *
  *---------------------------------------------------------------------------------------*/
-void check9nodedconcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check9nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check9nodedconcave...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(9);
+  std::vector<Cut::Point*> ptlist(9);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.2;
   x[1] = -0.3;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.5;
   x[1] = -0.4;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = -0.05;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.15;
   x[1] = 0.3;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 1.1;
   x[1] = 0.4;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.8;
   x[1] = 0.8;
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 0.4;
   x[1] = 0.7;
-  Core::Geo::Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   x[0] = 0.1;
   x[1] = 0.1;
-  Core::Geo::Cut::Point* p9 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p9 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[8] = p9;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
-  std::vector<Core::Geo::Cut::Point*> cell4 = split[3];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell4 = split[3];
   if (cell1[0] != p9 || cell1[1] != p1 || cell1[2] != p2 || cell1[3] != p3)
     FOUR_C_THROW("triangulation failed for check9nodedconcave");
   if (cell2[0] != p9 || cell2[1] != p3 || cell2[2] != p4 || cell2[3] != p5)
@@ -1370,95 +1323,94 @@ void check9nodedconcave(
 /*---------------------------------------------------------------------------------------*
  *              10 noded convex facet is split into 4 Quad cells                         *
  *---------------------------------------------------------------------------------------*/
-void check10nodedconvex(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check10nodedconvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check10nodedconvex...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(10);
+  std::vector<Cut::Point*> ptlist(10);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.2;
   x[1] = -0.3;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.4;
   x[1] = -0.3;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.3;
   x[1] = 0.2;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 1.0;
   x[1] = 0.4;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.4;
   x[1] = 0.7;
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 0.2;
   x[1] = 0.7;
-  Core::Geo::Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   x[0] = 0.0;
   x[1] = 0.4;
-  Core::Geo::Cut::Point* p9 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p9 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[8] = p9;
 
   x[0] = -0.1;
   x[1] = 0.2;
-  Core::Geo::Cut::Point* p10 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p10 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[9] = p10;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
-  std::vector<Core::Geo::Cut::Point*> cell4 = split[3];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell4 = split[3];
   if (cell1[0] != p1 || cell1[1] != p2 || cell1[2] != p3 || cell1[3] != p4)
     FOUR_C_THROW("triangulation failed for check10nodedconvex");
   if (cell2[0] != p1 || cell2[1] != p4 || cell2[2] != p5 || cell2[3] != p6)
@@ -1472,95 +1424,94 @@ void check10nodedconvex(
 /*---------------------------------------------------------------------------------------*
  *        A 10 noded facet with one concave points is split into 4 Quad cells            *
  *---------------------------------------------------------------------------------------*/
-void check10nodedconcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check10nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check10nodedconcave...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(10);
+  std::vector<Cut::Point*> ptlist(10);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.2;
   x[1] = -0.3;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.4;
   x[1] = -0.3;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.3;
   x[1] = 0.2;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 1.0;
   x[1] = 0.4;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.4;
   x[1] = 0.7;
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 0.2;
   x[1] = 0.7;
-  Core::Geo::Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   x[0] = 0.0;
   x[1] = 0.4;
-  Core::Geo::Cut::Point* p9 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p9 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[8] = p9;
 
   x[0] = 0.1;
   x[1] = 0.3;
-  Core::Geo::Cut::Point* p10 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p10 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[9] = p10;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
-  std::vector<Core::Geo::Cut::Point*> cell4 = split[3];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell4 = split[3];
   if (cell1[0] != p10 || cell1[1] != p1 || cell1[2] != p2 || cell1[3] != p3)
     FOUR_C_THROW("triangulation failed for check10nodedconcave");
   if (cell2[0] != p10 || cell2[1] != p3 || cell2[2] != p4 || cell2[3] != p5)
@@ -1575,69 +1526,68 @@ void check10nodedconcave(
  *     A 5 noded facet with 2 (non-adjacent) concave pt is split into 3 Tri cells        *
  *     Check for SplitAnyFacet                                                           *
  *---------------------------------------------------------------------------------------*/
-void check5nodedTwinConcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check5nodedTwinConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check5nodedTwinConcave...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(5);
+  std::vector<Cut::Point*> ptlist(5);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.2;
   x[1] = 0.1;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 0.3;
   x[1] = 0.2;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.2;
   x[1] = 0.7;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
   if (cell1[0] != p5 || cell1[1] != p1 || cell1[2] != p2)
     FOUR_C_THROW("triangulation failed for check5nodedTwinConcave");
   if (cell2[0] != p4 || cell2[1] != p5 || cell2[2] != p2)
@@ -1650,74 +1600,73 @@ void check5nodedTwinConcave(
  *     A 6 noded special facet with 2 (non-adjacent) concave pt is split into            *
  *     2 Quad cells  -- Check for SplitAnyFacet                                          *
  *---------------------------------------------------------------------------------------*/
-void check6nodedTwinConcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check6nodedTwinConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check6nodedTwinConcave...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(6);
+  std::vector<Cut::Point*> ptlist(6);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 2.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.3;
   x[1] = 0.7;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 2.0;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.0;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.9;
   x[1] = 0.7;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
 
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
   if (cell1[0] != p3 || cell1[1] != p4 || cell1[2] != p5 || cell1[3] != p6)
     FOUR_C_THROW("triangulation failed for check6nodedTwinConcave");
   if (cell2[0] != p1 || cell2[1] != p2 || cell2[2] != p3 || cell2[3] != p6)
@@ -1728,85 +1677,84 @@ void check6nodedTwinConcave(
  *     A 8 noded facet with 3 (no non-adjacent) concave pts is split into                *
  *     3 Quad cells  -- Check for SplitAnyFacet                                          *
  *---------------------------------------------------------------------------------------*/
-void check8nodedTriConcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check8nodedTriConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check8nodedTriConcave...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(8);
+  std::vector<Cut::Point*> ptlist(8);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.5;
   x[1] = 0.2;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.5;
   x[1] = 0.7;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.0;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.0;
   x[1] = 0.8;
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 0.2;
   x[1] = 0.5;
-  Core::Geo::Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
 
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
   if (cell1[0] != p2 || cell1[1] != p3 || cell1[2] != p4 || cell1[3] != p5)
     FOUR_C_THROW("triangulation failed for check8nodedTriConcave");
   if (cell2[0] != p8 || cell2[1] != p1 || cell2[2] != p2 || cell2[3] != p5)
@@ -1821,92 +1769,91 @@ void check8nodedTriConcave(
  *     Except this all other tests contains facets that are in z=0 plane                 *
  *     facet in this example is in 2x+3y+4z=7 plane                                      *
  *---------------------------------------------------------------------------------------*/
-void check8nodedTriConcaveGenPlane(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check8nodedTriConcaveGenPlane(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check8nodedTriConcaveGenPlane...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(8);
+  std::vector<Cut::Point*> ptlist(8);
   double x[3];
 
   x[1] = 0.0;
   x[2] = 0.0;
   x[0] = 0.5 * (7.0 - 3.0 * x[1] - 4.0 * x[2]);
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[1] = 0.5;
   x[2] = 0.2;
   x[0] = 0.5 * (7.0 - 3.0 * x[1] - 4.0 * x[2]);
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[1] = 1.0;
   x[2] = 0.0;
   x[0] = 0.5 * (7.0 - 3.0 * x[1] - 4.0 * x[2]);
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[1] = 1.0;
   x[2] = 1.0;
   x[0] = 0.5 * (7.0 - 3.0 * x[1] - 4.0 * x[2]);
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[1] = 0.5;
   x[2] = 0.7;
   x[0] = 0.5 * (7.0 - 3.0 * x[1] - 4.0 * x[2]);
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[1] = 0.0;
   x[2] = 1.0;
   x[0] = 0.5 * (7.0 - 3.0 * x[1] - 4.0 * x[2]);
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[1] = 0.0;
   x[2] = 0.8;
   x[0] = 0.5 * (7.0 - 3.0 * x[1] - 4.0 * x[2]);
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[1] = 0.2;
   x[2] = 0.5;
   x[0] = 0.5 * (7.0 - 3.0 * x[1] - 4.0 * x[2]);
-  Core::Geo::Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
 
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
   if (cell1[0] != p2 || cell1[1] != p3 || cell1[2] != p4 || cell1[3] != p5)
     FOUR_C_THROW("triangulation failed for check8nodedTriConcaveGenPlane");
   if (cell2[0] != p8 || cell2[1] != p1 || cell2[2] != p2 || cell2[3] != p5)
@@ -1918,11 +1865,10 @@ void check8nodedTriConcaveGenPlane(
 /*---------------------------------------------------------------------------------------*
  *          13 noded convex facet is split into 5 Quad and a Tri cell                    *
  *---------------------------------------------------------------------------------------*/
-void check13nodedConvex(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check13nodedConvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check13nodedConvex...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(13);
+  std::vector<Cut::Point*> ptlist(13);
   double x[3];
   x[2] = 0.0;
 
@@ -1933,32 +1879,32 @@ void check13nodedConvex(
     x[0] = cos(theta);
     x[1] = sin(theta);
 
-    Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+    Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
     ptlist[i] = p1;
   }
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
 
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
@@ -1969,7 +1915,7 @@ void check13nodedConvex(
 
   for (int i = 0; i < 6; i++)
   {
-    std::vector<Core::Geo::Cut::Point*> cell = split[i];
+    std::vector<Cut::Point*> cell = split[i];
     if (i == 5)
     {
       if (cell[0] != ptlist[0] || cell[1] != ptlist[i * 2 + 1] || cell[2] != ptlist[i * 2 + 2])
@@ -1988,82 +1934,81 @@ void check13nodedConvex(
  *     7 noded facet with 3 continuous concave points is split into 5 Tri cells          *
  *     call split_general_facet first, and moves to EarClipping                            *
  *---------------------------------------------------------------------------------------*/
-void check7nodedconti3concave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check7nodedconti3concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check7nodedconti3concave...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(7);
+  std::vector<Cut::Point*> ptlist(7);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 1.0;
   x[1] = 0.728885;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.992803;
   x[1] = 0.726274;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.958516;
   x[1] = 0.710801;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 0.950656;
   x[1] = 0.706818;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.916667;
   x[1] = 0.671407;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.916667;
   x[1] = 0.75;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 1.0;
   x[1] = 0.75;
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
 
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
-  std::vector<Core::Geo::Cut::Point*> cell4 = split[3];
-  std::vector<Core::Geo::Cut::Point*> cell5 = split[4];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell4 = split[3];
+  std::vector<Cut::Point*> cell5 = split[4];
   if (cell1[0] != p4 || cell1[1] != p5 || cell1[2] != p6)
     FOUR_C_THROW("triangulation failed for check7nodedconti3concave");
   if (cell2[0] != p4 || cell2[1] != p6 || cell2[2] != p7)
@@ -2079,96 +2024,95 @@ void check7nodedconti3concave(
 /*---------------------------------------------------------------------------------------*
  *    A 10 noded facet: first call SplitGeneralFafet, then move to 1ptconcave split      *
  *---------------------------------------------------------------------------------------*/
-void check10nodedShift1ptConcave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check10nodedShift1ptConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check10nodedShiftEarClipToSplit...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(10);
+  std::vector<Cut::Point*> ptlist(10);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 1.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 2.0;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 2.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 3.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 2.5;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 3.0;
   x[1] = 2.0;
-  Core::Geo::Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   x[0] = 1.5;
   x[1] = 1.5;
-  Core::Geo::Cut::Point* p9 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p9 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[8] = p9;
 
   x[0] = 0.0;
   x[1] = 2.0;
-  Core::Geo::Cut::Point* p10 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p10 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[9] = p10;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
 
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
-  std::vector<Core::Geo::Cut::Point*> cell4 = split[3];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell4 = split[3];
   if (cell1[0] != p4 || cell1[1] != p5 || cell1[2] != p6 || cell1[3] != p7)
     FOUR_C_THROW("triangulation failed for check10nodedShiftEarClipToSplit");
   if (cell2[0] != p3 || cell2[1] != p7 || cell2[2] != p8 || cell2[3] != p9)
@@ -2182,90 +2126,89 @@ void check10nodedShift1ptConcave(
 /*---------------------------------------------------------------------------------------*
  *        Check for EarClipping -- 8 noded facet is split to yield 6 triangles           *
  *---------------------------------------------------------------------------------------*/
-void check8nodedEarClip(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check8nodedEarClip(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check8nodedEarClip...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(8);
+  std::vector<Cut::Point*> ptlist(8);
   double x[3];
   x[1] = 0.426667;
 
   x[0] = 0.888889;
   x[2] = 0.333333;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.944444;
   x[2] = 0.333333;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.944444;
   x[2] = 0.291667;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 0.942495;
   x[2] = 0.291667;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.942497;
   x[2] = 0.320888;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.916262;
   x[2] = 0.320832;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.916332;
   x[2] = 0.291667;
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 0.888889;
   x[2] = 0.291667;
-  Core::Geo::Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
 
   std::vector<int> ptc;
   tf.ear_clipping(ptc, true);
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
 
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
-  std::vector<Core::Geo::Cut::Point*> cell4 = split[3];
-  std::vector<Core::Geo::Cut::Point*> cell5 = split[4];
-  std::vector<Core::Geo::Cut::Point*> cell6 = split[5];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell4 = split[3];
+  std::vector<Cut::Point*> cell5 = split[4];
+  std::vector<Cut::Point*> cell6 = split[5];
   if (cell1[0] != p2 || cell1[1] != p3 || cell1[2] != p4)
     FOUR_C_THROW("triangulation failed for check8nodedEarClip");
   if (cell2[0] != p2 || cell2[1] != p4 || cell2[2] != p5)
@@ -2283,82 +2226,81 @@ void check8nodedEarClip(
 /*---------------------------------------------------------------------------------------*
  *           A noded 2 continuous concave pts facet split into 5 Tri                     *
  *---------------------------------------------------------------------------------------*/
-void check7noded2concave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check7noded2concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check7nodedShiftSplitToEarClip...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(7);
+  std::vector<Cut::Point*> ptlist(7);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.0;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = 0.5;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.75;
   x[1] = 0.8;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.5;
   x[1] = 0.3;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.25;
   x[1] = 0.5;
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
 
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
-  std::vector<Core::Geo::Cut::Point*> cell4 = split[3];
-  std::vector<Core::Geo::Cut::Point*> cell5 = split[4];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell4 = split[3];
+  std::vector<Cut::Point*> cell5 = split[4];
   if (cell1[0] != p5 || cell1[1] != p6 || cell1[2] != p7)
     FOUR_C_THROW("triangulation failed for check7nodedShiftSplitToEarClip");
   if (cell2[0] != p7 || cell2[1] != p1 || cell2[2] != p2)
@@ -2374,75 +2316,74 @@ void check7noded2concave(
 /*---------------------------------------------------------------------------------------*
  * 6 noded facet with 2 concave points --- old SplitAnyFacet produced intersecting cells *
  *---------------------------------------------------------------------------------------*/
-void ProblemSplitAnyFacet1(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void ProblemSplitAnyFacet1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "ProblemSplitAnyFacet...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(6);
+  std::vector<Cut::Point*> ptlist(6);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.0;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 1.0;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 0.8;
   x[1] = 0.95;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.8;
   x[1] = 0.2;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.5;
   x[1] = 0.5;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
 
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
   if (cell1[0] != p4 || cell1[1] != p5 || cell1[2] != p6)
     FOUR_C_THROW("triangulation failed for ProblemSplitAnyFacet1");
   if (cell2[0] != p4 || cell2[1] != p6 || cell2[2] != p1 || cell2[3] != p2)
@@ -2454,79 +2395,79 @@ void ProblemSplitAnyFacet1(
 /*---------------------------------------------------------------------------------------*
  *     A 7 noded facet that make sure that inside checking of points is necessary        *
  *---------------------------------------------------------------------------------------*/
-void InsideChcek1(Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void InsideChcek1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "InsideChcek1...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(7);
+  std::vector<Cut::Point*> ptlist(7);
   double x[3];
   x[2] = 0.0;
 
   x[0] = -0.5;
   x[1] = -0.5;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = -0.5;
   x[1] = 0.5;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = 0.5;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.0;
   x[1] = -0.5;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.5;
   x[1] = -0.5;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.5;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
 
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
   if (cell1[0] != p4 || cell1[1] != p5 || cell1[2] != p6 || cell1[3] != p7)
     FOUR_C_THROW("triangulation failed for InsideChcek1");
   if (cell2[0] != p3 || cell2[1] != p4 || cell2[2] != p7 || cell2[3] != p1)
@@ -2538,125 +2479,124 @@ void InsideChcek1(Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::
 /*---------------------------------------------------------------------------------------*
  *                 A 15 noded facet with 5 concave points                                *
  *---------------------------------------------------------------------------------------*/
-void check15node5concave(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check15node5concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check15node5concave...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(15);
+  std::vector<Cut::Point*> ptlist(15);
   double x[3];
   x[2] = 0.0;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.5;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.5;
   x[1] = -1.0;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.5;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 1.3;
   x[1] = -0.8;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 1.5;
   x[1] = -0.8;
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 2.0;
   x[1] = -0.5;
-  Core::Geo::Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   x[0] = 2.0;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p9 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p9 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[8] = p9;
 
   x[0] = 2.2;
   x[1] = 0.0;
-  Core::Geo::Cut::Point* p10 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p10 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[9] = p10;
 
   x[0] = 2.2;
   x[1] = -2.0;
-  Core::Geo::Cut::Point* p11 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p11 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[10] = p11;
 
   x[0] = 1.5;
   x[1] = -2.0;
-  Core::Geo::Cut::Point* p12 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p12 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[11] = p12;
 
   x[0] = 0.8;
   x[1] = -0.8;
-  Core::Geo::Cut::Point* p13 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p13 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[12] = p13;
 
   x[0] = 0.8;
   x[1] = -2.0;
-  Core::Geo::Cut::Point* p14 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p14 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[13] = p14;
 
   x[0] = 0.0;
   x[1] = -2.0;
-  Core::Geo::Cut::Point* p15 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p15 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[14] = p15;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
 
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
-  std::vector<Core::Geo::Cut::Point*> cell4 = split[3];
-  std::vector<Core::Geo::Cut::Point*> cell5 = split[4];
-  std::vector<Core::Geo::Cut::Point*> cell6 = split[5];
-  std::vector<Core::Geo::Cut::Point*> cell7 = split[6];
-  std::vector<Core::Geo::Cut::Point*> cell8 = split[7];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell4 = split[3];
+  std::vector<Cut::Point*> cell5 = split[4];
+  std::vector<Cut::Point*> cell6 = split[5];
+  std::vector<Cut::Point*> cell7 = split[6];
+  std::vector<Cut::Point*> cell8 = split[7];
   if (cell1[0] != p4 || cell1[1] != p5 || cell1[2] != p6)
     FOUR_C_THROW("triangulation failed for check15node5concave");
   if (cell2[0] != p8 || cell2[1] != p9 || cell2[2] != p10 || cell2[3] != p11)
@@ -2678,86 +2618,85 @@ void check15node5concave(
 /*---------------------------------------------------------------------------------------*
  *                 A 8 noded facet -- check for QuadInsidePt                             *
  *---------------------------------------------------------------------------------------*/
-void check8nodeQuadInsidePt(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void check8nodeQuadInsidePt(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check8nodeQuadInsidePt...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(8);
+  std::vector<Cut::Point*> ptlist(8);
   double x[3];
   x[0] = 5.44;
 
   x[1] = 4.8;
   x[2] = 4.88;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[1] = 4.8;
   x[2] = 4.8;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[1] = 4.88;
   x[2] = 4.8;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[1] = 4.88;
   x[2] = 4.80242;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[1] = 4.85799;
   x[2] = 4.81544;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[1] = 4.83652;
   x[2] = 4.83652;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[1] = 4.81544;
   x[2] = 4.85799;
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[1] = 4.80242;
   x[2] = 4.88;
-  Core::Geo::Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
   /*std::cout<<"the corner points of facet are\n";
-  for( std::vector<Geo::Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
+  for( std::vector<Cut::Point*>::iterator i=ptlist.begin();i!=ptlist.end();i++ )
   {
-    Geo::Cut::Point* pt = *i;
+    Cut::Point* pt = *i;
     double coo[3];
     pt->coordinates(coo);
     std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
   }
 
-  for( std::vector<std::vector<Geo::Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  for( std::vector<std::vector<Cut::Point*> >::iterator i=split.begin();i!=split.end();i++ )
   {
     std::cout<<"cell\n";
-    std::vector<Geo::Cut::Point*> cell = *i;;
-    for( std::vector<Geo::Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    std::vector<Cut::Point*> cell = *i;;
+    for( std::vector<Cut::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
     {
-      Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }*/
 
-  std::vector<Core::Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Core::Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Core::Geo::Cut::Point*> cell3 = split[2];
-  std::vector<Core::Geo::Cut::Point*> cell4 = split[3];
+  std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell4 = split[3];
   if (cell1[0] != p7 || cell1[1] != p8 || cell1[2] != p1 || cell1[3] != p2)
     FOUR_C_THROW("triangulation failed for check8nodeQuadInsidePt");
   if (cell2[0] != p2 || cell2[1] != p3 || cell2[2] != p4 || cell2[3] != p5)
@@ -2768,110 +2707,109 @@ void check8nodeQuadInsidePt(
     FOUR_C_THROW("triangulation failed for check8nodeQuadInsidePt");
 }
 
-void checkTemporary(Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void checkTemporary(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "checkTemporary...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist(12);
+  std::vector<Cut::Point*> ptlist(12);
   double x[3];
 
   x[0] = 0.88888889999999998182;
   x[1] = 0.42666670000000000984;
   x[2] = 0.33333329999999999904;
-  Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.94444439999999996171;
   x[1] = 0.42666670000000000984;
   x[2] = 0.33333329999999999904;
-  Core::Geo::Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p2 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.94444439999999996171;
   x[1] = 0.42666670000000000984;
   x[2] = 0.29166670000000000096;
-  Core::Geo::Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p3 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 0.94249491196456902653;
   x[1] = 0.42666670000000000984;
   x[2] = 0.29166670000000000096;
-  Core::Geo::Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p4 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.94249721210427384044;
   x[1] = 0.42666670000000006535;
   x[2] = 0.31880103717759145088;
-  Core::Geo::Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p5 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.94249702599927487334;
   x[1] = 0.42666670000000000984;
   x[2] = 0.32088789735568812311;
-  Core::Geo::Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p6 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.92175085458703109875;
   x[1] = 0.42666669999999995433;
   x[2] = 0.32084499284473377845;
-  Core::Geo::Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p7 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 0.91626198313675544238;
   x[1] = 0.42666670000000000984;
   x[2] = 0.32083212917404180242;
-  Core::Geo::Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p8 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   x[0] = 0.91628195746516871711;
   x[1] = 0.42666670000000006535;
   x[2] = 0.31289655478182087922;
-  Core::Geo::Cut::Point* p9 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p9 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[8] = p9;
 
   x[0] = 0.91631968416588871484;
   x[1] = 0.42666669999999989882;
   x[2] = 0.29666529690944831721;
-  Core::Geo::Cut::Point* p10 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p10 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[9] = p10;
 
   x[0] = 0.9163322539230824848;
   x[1] = 0.42666670000000000984;
   x[2] = 0.29166670000000000096;
-  Core::Geo::Cut::Point* p11 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p11 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[10] = p11;
 
   x[0] = 0.88888889999999998182;
   x[1] = 0.42666670000000000984;
   x[2] = 0.29166670000000000096;
-  Core::Geo::Cut::Point* p12 = mesh.new_point(x, nullptr, s, 0.0);
+  Cut::Point* p12 = mesh.new_point(x, nullptr, s, 0.0);
   ptlist[11] = p12;
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
-  for (std::vector<std::vector<Core::Geo::Cut::Point*>>::iterator i = split.begin();
-       i != split.end(); i++)
+  for (std::vector<std::vector<Cut::Point*>>::iterator i = split.begin(); i != split.end(); i++)
   {
     std::cout << "cell\n";
-    std::vector<Core::Geo::Cut::Point*> cell = *i;
+    std::vector<Cut::Point*> cell = *i;
     ;
-    for (std::vector<Core::Geo::Cut::Point*>::iterator j = cell.begin(); j != cell.end(); j++)
+    for (std::vector<Cut::Point*>::iterator j = cell.begin(); j != cell.end(); j++)
     {
-      Core::Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout << coo[0] << "\t" << coo[1] << "\t" << coo[2] << "\n";
     }
   }
 
-  /*std::vector<Geo::Cut::Point*> cell1 = split[0];
-  std::vector<Geo::Cut::Point*> cell2 = split[1];
-  std::vector<Geo::Cut::Point*> cell3 = split[2];
-  std::vector<Geo::Cut::Point*> cell4 = split[3];
-  std::vector<Geo::Cut::Point*> cell5 = split[4];
+  /*std::vector<Cut::Point*> cell1 = split[0];
+  std::vector<Cut::Point*> cell2 = split[1];
+  std::vector<Cut::Point*> cell3 = split[2];
+  std::vector<Cut::Point*> cell4 = split[3];
+  std::vector<Cut::Point*> cell5 = split[4];
   if( cell1[0]!=p10 || cell1[1]!=p1 || cell1[2]!=p2 )
     FOUR_C_THROW( "triangulation failed for check10nodedShiftEarClipToSplit" );
   if( cell2[0]!=p10 || cell2[1]!=p2 || cell2[2]!=p3 )
@@ -2884,11 +2822,10 @@ void checkTemporary(Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core
     FOUR_C_THROW( "triangulation failed for check10nodedShiftEarClipToSplit" );*/
 }
 
-void checkTemporary2(
-    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::Element* e, Core::Geo::Cut::Side* s)
+void checkTemporary2(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "checkTemporary2...\n";
-  std::vector<Core::Geo::Cut::Point*> ptlist;
+  std::vector<Cut::Point*> ptlist;
   double x[3];
   x[2] = 0.0;
 
@@ -2900,25 +2837,24 @@ void checkTemporary2(
     double theta = i * 2.0 * 22.0 / 7.0 / num;
     x[0] = cos(theta);
     x[1] = sin(theta);
-    Core::Geo::Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
+    Cut::Point* p1 = mesh.new_point(x, nullptr, s, 0.0);
     ptlist[i] = p1;
   }
 
-  Core::Geo::Cut::TriangulateFacet tf(ptlist);
+  Cut::TriangulateFacet tf(ptlist);
   tf.split_facet();
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+  std::vector<std::vector<Cut::Point*>> split;
   split = tf.get_split_cells();
 
-  for (std::vector<std::vector<Core::Geo::Cut::Point*>>::iterator i = split.begin();
-       i != split.end(); i++)
+  for (std::vector<std::vector<Cut::Point*>>::iterator i = split.begin(); i != split.end(); i++)
   {
     std::cout << "cell\n";
-    std::vector<Core::Geo::Cut::Point*> cell = *i;
+    std::vector<Cut::Point*> cell = *i;
     ;
-    for (std::vector<Core::Geo::Cut::Point*>::iterator j = cell.begin(); j != cell.end(); j++)
+    for (std::vector<Cut::Point*>::iterator j = cell.begin(); j != cell.end(); j++)
     {
-      Core::Geo::Cut::Point* pt = *j;
+      Cut::Point* pt = *j;
       double coo[3];
       pt->coordinates(coo);
       std::cout << coo[0] << "\t" << coo[1] << "\t" << coo[2] << "\n";

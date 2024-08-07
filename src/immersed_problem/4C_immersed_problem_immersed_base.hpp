@@ -1027,8 +1027,7 @@ namespace Immersed
             Core::FE::ExtractMyValues(*dispnp, mysourcedispnp, la[0].lm_);
 
             // construct bounding box around current source element
-            Teuchos::RCP<Core::Geo::Cut::BoundingBox> bbside =
-                Teuchos::rcp(Core::Geo::Cut::BoundingBox::create());
+            Teuchos::RCP<Cut::BoundingBox> bbside = Teuchos::rcp(Cut::BoundingBox::create());
             Core::LinAlg::Matrix<3, 1> nodalpos;
             for (int i = 0; i < (int)(sourceele->num_node()); ++i)
             {

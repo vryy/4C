@@ -25,16 +25,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::Geo
+namespace Cut
 {
   class CutWizard;
+  class SideHandle;
+  class VolumeCell;
+}  // namespace Cut
 
-  namespace Cut
-  {
-    class SideHandle;
-    class VolumeCell;
-  }  // namespace Cut
-}  // namespace Core::Geo
 
 namespace XFEM
 {
@@ -90,8 +87,8 @@ namespace XFEM
 
       //! constructor for basic data for standard computation in Semi-Lagrangean algorithm
       TimeIntData(Core::Nodes::Node& node,  //! node for which SL-algorithm is called
-          int nds_np,  //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo
-                       //! is called
+          int nds_np,  //! nds (nodal dofset) number w.r.t new interface position, for which
+                       //! SL-algo is called
           Core::LinAlg::Matrix<3, 1> vel,  //! velocity at point x (=x_Lagr(t^n+1))
           std::vector<Core::LinAlg::Matrix<3, 3>>
               velDeriv,  //! velocity gradient at point x (=x_Lagr(t^n+1))
@@ -129,8 +126,8 @@ namespace XFEM
       //! constructor for current data in Semi-Lagrangean algorithm (used for receiving data from
       //! other procs)
       TimeIntData(Core::Nodes::Node& node,
-          int nds_np,  //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo
-                       //! is called
+          int nds_np,  //! nds (nodal dofset) number w.r.t new interface position, for which
+                       //! SL-algo is called
           Core::LinAlg::Matrix<3, 1>& vel, std::vector<Core::LinAlg::Matrix<3, 3>>& velDeriv,
           std::vector<Core::LinAlg::Matrix<1, 3>>& presDeriv,
           Core::LinAlg::Matrix<3, 1> dispnp,  //! displacement at point x (=x_Lagr(t^n+1))
@@ -164,8 +161,8 @@ namespace XFEM
 
       //! constructor for failed data in Semi-Lagrange, standard computation
       TimeIntData(Core::Nodes::Node& node,
-          int nds_np,  //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo
-                       //! is called
+          int nds_np,  //! nds (nodal dofset) number w.r.t new interface position, for which
+                       //! SL-algo is called
           Core::LinAlg::Matrix<3, 1>& vel, std::vector<Core::LinAlg::Matrix<3, 3>>& velDeriv,
           std::vector<Core::LinAlg::Matrix<1, 3>>& presDeriv,
           Core::LinAlg::Matrix<3, 1> dispnp,  //! displacement at point x (=x_Lagr(t^n+1))
@@ -190,8 +187,8 @@ namespace XFEM
       //! constructor for done data in standard computation (at the end of Semi-Lagrangean
       //! algorithm)
       TimeIntData(Core::Nodes::Node& node,
-          int nds_np,  //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo
-                       //! is called
+          int nds_np,  //! nds (nodal dofset) number w.r.t new interface position, for which
+                       //! SL-algo is called
           Core::LinAlg::Matrix<3, 1> dispnp,  //! displacement at point x (=x_Lagr(t^n+1))
           Core::LinAlg::Matrix<3, 1>& startpoint,
           std::vector<Core::LinAlg::Matrix<3, 1>>& velValues, std::vector<double>& presValues,
@@ -275,14 +272,14 @@ namespace XFEM
       //! called
       //------------------------------------------
       Core::Nodes::Node node_;  //! node for which SL-algorithm is called, no pointer!
-      int nds_np_;  //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo is
-                    //! called
+      int nds_np_;  //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo
+                    //! is called
 
       //------------------------------------------
       //! @name data for the quantities at the node
       //------------------------------------------
-      Core::LinAlg::Matrix<3, 1> vel_;  //! velocity at point x (=x_Lagr(t^n+1))=node, only for the
-                                        //! real velocity vector (transport velocity)
+      Core::LinAlg::Matrix<3, 1> vel_;  //! velocity at point x (=x_Lagr(t^n+1))=node, only for
+                                        //! the real velocity vector (transport velocity)
       std::vector<Core::LinAlg::Matrix<3, 3>>
           velDeriv_;  //! velocity gradient at point x (=x_Lagr(t^n+1))=node, averaged around
                       //! elements, for all vectors to be reconstructed
@@ -303,7 +300,7 @@ namespace XFEM
                             //! moves inside the structure, or changes the side
       int last_valid_ele_;  //! last valid element id (used, when iteration of Lagrangean origin
                             //! moves inside the structure, or changes the side
-      Core::Geo::Cut::VolumeCell*
+      Cut::VolumeCell*
           last_valid_vc_;  //! last valid fluid volumecell (used, when iteration of Lagrangean
                            //! origin moves inside the structure, or changes the side
       bool changedside_;   //! changed side compared to initial point
@@ -338,9 +335,9 @@ namespace XFEM
       //------------------------------------------
       //! @name state, type of time-integration approach
       //------------------------------------------
-      State
-          state_;  //! status for both the used special algorithm and the state within the algorithm
-      Type type_;  //! basic computation type due to FGI and FRS
+      State state_;  //! status for both the used special algorithm and the state within the
+                     //! algorithm
+      Type type_;    //! basic computation type due to FGI and FRS
 
      protected:
       explicit TimeIntData();  // don't want default constructor
@@ -353,8 +350,8 @@ namespace XFEM
     explicit XfluidTimeintBase(
         const Teuchos::RCP<Core::FE::Discretization> discret,      /// background discretization
         const Teuchos::RCP<Core::FE::Discretization> boundarydis,  /// cut discretization
-        Teuchos::RCP<Core::Geo::CutWizard> wizard_old,  /// cut wizard w.r.t. old interface position
-        Teuchos::RCP<Core::Geo::CutWizard> wizard_new,  /// cut wizard w.r.t. new interface position
+        Teuchos::RCP<Cut::CutWizard> wizard_old,    /// cut wizard w.r.t. old interface position
+        Teuchos::RCP<Cut::CutWizard> wizard_new,    /// cut wizard w.r.t. new interface position
         Teuchos::RCP<XFEM::XFEMDofSet> dofset_old,  /// XFEM dofset w.r.t. old interface position
         Teuchos::RCP<XFEM::XFEMDofSet> dofset_new,  /// XFEM dofset w.r.t. new interface position
         std::vector<Teuchos::RCP<Epetra_Vector>>
@@ -483,19 +480,19 @@ namespace XFEM
 
 
     //! check if edge between x1 and x2 cuts the side
-    bool call_side_edge_intersection(Core::Geo::Cut::SideHandle* sh,  /// side handle
-        int sid,                                                      /// side id
-        Core::LinAlg::Matrix<3, 1>& x1,  /// coordinates of edge's start point
-        Core::LinAlg::Matrix<3, 1>& x2   /// coordinates of edge's end point
+    bool call_side_edge_intersection(Cut::SideHandle* sh,  /// side handle
+        int sid,                                           /// side id
+        Core::LinAlg::Matrix<3, 1>& x1,                    /// coordinates of edge's start point
+        Core::LinAlg::Matrix<3, 1>& x2                     /// coordinates of edge's end point
     ) const;
 
 
     //! check if edge between x1 and x2 cuts the side
     template <Core::FE::CellType sidetype>
-    bool call_side_edge_intersection_t(Core::Geo::Cut::SideHandle* sh,  /// side handle
-        int sid,                                                        /// side id
-        Core::LinAlg::Matrix<3, 1>& x1,  /// coordinates of edge's start point
-        Core::LinAlg::Matrix<3, 1>& x2   /// coordinates of edge's end point
+    bool call_side_edge_intersection_t(Cut::SideHandle* sh,  /// side handle
+        int sid,                                             /// side id
+        Core::LinAlg::Matrix<3, 1>& x1,                      /// coordinates of edge's start point
+        Core::LinAlg::Matrix<3, 1>& x2                       /// coordinates of edge's end point
     ) const;
 
 
@@ -578,8 +575,8 @@ namespace XFEM
     Teuchos::RCP<Core::FE::Discretization> discret_;      //! background discretization
     Teuchos::RCP<Core::FE::Discretization> boundarydis_;  //! cut discretization
 
-    Teuchos::RCP<Core::Geo::CutWizard> wizard_old_;  //! cut wizard w.r.t. old interface position
-    Teuchos::RCP<Core::Geo::CutWizard> wizard_new_;  //! cut wizard w.r.t. new interface position
+    Teuchos::RCP<Cut::CutWizard> wizard_old_;  //! cut wizard w.r.t. old interface position
+    Teuchos::RCP<Cut::CutWizard> wizard_new_;  //! cut wizard w.r.t. new interface position
 
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_old_;  //! XFEM dofset w.r.t. old interface position
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_new_;  //! XFEM dofset w.r.t. new interface position
@@ -590,8 +587,8 @@ namespace XFEM
     const std::vector<Teuchos::RCP<Epetra_Vector>>
         oldVectors_;  //! vector of col!-vectors w.r.t. old interface position
     std::vector<Teuchos::RCP<Epetra_Vector>>
-        newVectors_;  //! vector of row!-vectors w.r.t. new interface position (overwritten with new
-                      //! information for non-predictor case and filled otherwise)
+        newVectors_;  //! vector of row!-vectors w.r.t. new interface position (overwritten with
+                      //! new information for non-predictor case and filled otherwise)
 
     Teuchos::RCP<Epetra_Vector>
         dispn_;  //! col!-displacement vector for timestep n w.r.t. old interface position
@@ -622,8 +619,8 @@ namespace XFEM
     const int
         newton_max_iter_;      //! maximal number of newton iterations for Semi-Lagrangean algorithm
     const double limits_tol_;  //! newton tolerance for Semi-Lagrangean algorithm
-    const double TOL_dist_;  //! tolerance to find the shortest distance of point to its projection
-                             //! on the surface dis
+    const double TOL_dist_;    //! tolerance to find the shortest distance of point to its
+                               //! projection on the surface dis
 
     //@}
 
@@ -633,8 +630,8 @@ namespace XFEM
 
 
   /*!
-  \brief this class provides the basic functionality used for the reconstruction of standard degrees
-         of freedom in XFEM-problems between consecutive time steps
+  \brief this class provides the basic functionality used for the reconstruction of standard
+  degrees of freedom in XFEM-problems between consecutive time steps
    */
   class XfluidStd : public XfluidTimeintBase
   {
@@ -762,15 +759,15 @@ namespace XFEM
         Core::LinAlg::Matrix<3, 1>& proj_x,                 ///< coords of projected point
         const std::string state,                            ///< state n or np?
         std::set<int>& points,  ///< node Ids of surface for that distance has to be computed
-        std::set<int>& sides  ///< side Ids of surface for that and it's lines the distances have to
-                              ///< be computed
+        std::set<int>& sides    ///< side Ids of surface for that and it's lines the distances have
+                                ///< to be computed
     );
 
     //! find the nearest surface point, return if successful
     bool find_nearest_surf_point(
         Core::LinAlg::Matrix<3, 1>& x,       ///< coords of point to be projected
         Core::LinAlg::Matrix<3, 1>& proj_x,  ///< coords of projected point
-        Core::Geo::Cut::VolumeCell* vc,      ///< volumcell on that's cut-surface we want to project
+        Cut::VolumeCell* vc,                 ///< volumcell on that's cut-surface we want to project
         const std::string state              ///< state n or np?
     );
 
@@ -799,8 +796,8 @@ namespace XFEM
         double& min_dist,   ///< minimal distance, potentially updated
         Core::LinAlg::Matrix<3, 1>& proj_x_np,  ///< projection of point on this side
         std::map<std::vector<int>, std::vector<double>>&
-            proj_xi_line,  ///< std::map<sorted nids, local line coordinates of projection of point
-                           ///< w.r.t sides >
+            proj_xi_line,  ///< std::map<sorted nids, local line coordinates of projection of
+                           ///< point w.r.t sides >
         std::map<std::vector<int>, std::vector<int>>&
             proj_lineid,  ///< std::map<sorted nids, local line id w.r.t sides>
         std::map<std::vector<int>, std::vector<int>>&
@@ -819,8 +816,8 @@ namespace XFEM
         Core::LinAlg::Matrix<3, 1>& proj_x_np,  ///< projection of point on this side
         int& proj_sid,                          ///< id of side that contains the projected point
         std::map<std::vector<int>, std::vector<double>>
-            proj_xi_line,  ///< std::map<side ID, local coordinates of projection of point w.r.t to
-                           ///< this line>
+            proj_xi_line,  ///< std::map<side ID, local coordinates of projection of point w.r.t
+                           ///< to this line>
         std::map<std::vector<int>, std::vector<int>>
             proj_lineid,  ///< std::map<side ID, local line id>
         std::map<std::vector<int>, std::vector<int>>
@@ -867,8 +864,8 @@ namespace XFEM
     template <Core::FE::CellType elementtype>
     bool within_limits(Core::LinAlg::Matrix<3, 1>& xsi_, const double TOL);
 
-    //! compute reasonable start point for finding the Lagrangean origin, when projected point lies
-    //! on a side
+    //! compute reasonable start point for finding the Lagrangean origin, when projected point
+    //! lies on a side
     void compute_start_point_side(Core::Elements::Element* side,  ///< pointer to side element
         Core::LinAlg::SerialDenseMatrix& side_xyze,               ///< side's node coordinates
         const std::vector<int>& lm,                               ///< local map
@@ -878,8 +875,8 @@ namespace XFEM
         Core::LinAlg::Matrix<3, 1>& start_point  ///< final start point
     );
 
-    //! compute reasonable start point for finding the Lagrangean origin, when projected point lies
-    //! on a line
+    //! compute reasonable start point for finding the Lagrangean origin, when projected point
+    //! lies on a line
     void compute_start_point_line(Core::Elements::Element* side1,  ///< pointer to side element
         Core::LinAlg::SerialDenseMatrix& side1_xyze,               ///< side's node coordinates
         Core::Elements::Element* side2,                            ///< pointer to side element
@@ -891,8 +888,8 @@ namespace XFEM
         Core::LinAlg::Matrix<3, 1>& start_point  ///< final start point
     );
 
-    //! compute reasonable start point for finding the Lagrangean origin, when projected point lies
-    //! on a point
+    //! compute reasonable start point for finding the Lagrangean origin, when projected point
+    //! lies on a point
     void compute_start_point_avg(
         const std::vector<Core::Elements::Element*>& sides,        ///< pointer to side element
         std::vector<Core::LinAlg::SerialDenseMatrix>& sides_xyze,  ///< side's node coordinates

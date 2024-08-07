@@ -26,7 +26,7 @@
 
 void test_generated_1901()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -3263,5 +3263,5 @@ void test_generated_1901()
 
 
 
-  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }

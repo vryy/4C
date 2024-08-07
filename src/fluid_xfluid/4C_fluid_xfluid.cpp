@@ -864,11 +864,11 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
     Discret::ELEMENTS::FluidEleInterface* impl =
         Discret::ELEMENTS::FluidFactory::provide_impl_xfem(actele->shape(), "xfem");
 
-    Core::Geo::Cut::ElementHandle* e = state_->wizard()->get_element(actele);
+    Cut::ElementHandle* e = state_->wizard()->get_element(actele);
 
     if (e != nullptr)
     {
-      std::vector<Core::Geo::Cut::plain_volumecell_set> cell_sets;
+      std::vector<Cut::plain_volumecell_set> cell_sets;
       std::vector<std::vector<int>> nds_sets;
       std::vector<std::vector<Core::FE::GaussIntegration>> intpoints_sets;
 
@@ -880,10 +880,10 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
       int set_counter = 0;
 
-      for (std::vector<Core::Geo::Cut::plain_volumecell_set>::iterator s = cell_sets.begin();
+      for (std::vector<Cut::plain_volumecell_set>::iterator s = cell_sets.begin();
            s != cell_sets.end(); s++)
       {
-        Core::Geo::Cut::plain_volumecell_set& cells = *s;
+        Cut::plain_volumecell_set& cells = *s;
         const std::vector<int>& nds = nds_sets[set_counter];
 
         // Pointer to material of current volume cell
@@ -945,12 +945,11 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
         // map of sid and corresponding boundary cells ( for quadratic elements: collected via
         // volumecells of subelements)
-        std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>> element_bcells;
+        std::map<int, std::vector<Cut::BoundaryCell*>> element_bcells;
 
-        for (Core::Geo::Cut::plain_volumecell_set::iterator i = cells.begin(); i != cells.end();
-             ++i)
+        for (Cut::plain_volumecell_set::iterator i = cells.begin(); i != cells.end(); ++i)
         {
-          Core::Geo::Cut::VolumeCell* vc = *i;
+          Cut::VolumeCell* vc = *i;
 
           vc->get_boundary_cells_to_be_integrated(element_bcells);
         }
@@ -966,16 +965,16 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
         // split the boundary cells by the different mesh couplings / levelset couplings
         // coupling matrices have to be evaluated for each coupling time separtely and cannot be
         // mixed up e.g. do not mix two-phase flow coupling matrices with XFSI coupling matrices
-        std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>> empty_map;
+        std::map<int, std::vector<Cut::BoundaryCell*>> empty_map;
         empty_map.clear();
 
         const int num_coupling = condition_manager_->num_coupling();
 
         // TODO: use a map instead of a vector, see handling of C_sx... matrices in state-class
-        std::vector<std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>> coupling_bcells(
+        std::vector<std::map<int, std::vector<Cut::BoundaryCell*>>> coupling_bcells(
             num_coupling, empty_map);
 
-        for (std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::const_iterator bc =
+        for (std::map<int, std::vector<Cut::BoundaryCell*>>::const_iterator bc =
                  element_bcells.begin();
              bc != element_bcells.end(); ++bc)
         {
@@ -984,10 +983,9 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
           const int coup_idx = condition_manager_->get_coupling_index(coup_sid, actele->id());
 
-          std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>& bcells =
-              coupling_bcells[coup_idx];
+          std::map<int, std::vector<Cut::BoundaryCell*>>& bcells = coupling_bcells[coup_idx];
 
-          std::vector<Core::Geo::Cut::BoundaryCell*>& bc_new = bcells[bc->first];
+          std::vector<Cut::BoundaryCell*>& bc_new = bcells[bc->first];
           bc_new.clear();
           std::copy(bc->second.begin(), bc->second.end(), std::inserter(bc_new, bc_new.end()));
 
@@ -998,11 +996,10 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
             //            std::cout << "XFluid - Cloning News: " << coup_idx << " --> " <<
             //            cloning_information.first << ", " <<
             //                coup_sid << " --> " << cloning_information.second << std::endl;
-            std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>& bcells =
+            std::map<int, std::vector<Cut::BoundaryCell*>>& bcells =
                 coupling_bcells[cloning_information[clone_id].first];
 
-            std::vector<Core::Geo::Cut::BoundaryCell*>& bc_new =
-                bcells[cloning_information[clone_id].second];
+            std::vector<Cut::BoundaryCell*>& bc_new = bcells[cloning_information[clone_id].second];
             bc_new.clear();
             std::copy(bc->second.begin(), bc->second.end(), std::inserter(bc_new, bc_new.end()));
           }
@@ -1011,8 +1008,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
         // loop all the different couplings
         for (int coupl_idx = 0; coupl_idx < num_coupling; coupl_idx++)
         {
-          std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>& bcells =
-              coupling_bcells[coupl_idx];
+          std::map<int, std::vector<Cut::BoundaryCell*>>& bcells = coupling_bcells[coupl_idx];
           std::map<int, std::vector<Core::FE::GaussIntegration>> bintpoints;
 
           // for each side that is involved in the cut for this element,
@@ -1024,8 +1020,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
             TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 2) interface");
 
             // Regist the Processor of this side on the mesh coupling object if required
-            for (std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::iterator bit =
-                     bcells.begin();
+            for (std::map<int, std::vector<Cut::BoundaryCell*>>::iterator bit = bcells.begin();
                  bit != bcells.end(); ++bit)
             {
               Teuchos::RCP<XFEM::CouplingBase> mc = condition_manager_->get_coupling_by_idx(
@@ -1051,8 +1046,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
                                                // the current bg element
 
             // initialize the coupling lm vectors for each coupling side
-            for (std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::const_iterator bc =
-                     bcells.begin();
+            for (std::map<int, std::vector<Cut::BoundaryCell*>>::const_iterator bc = bcells.begin();
                  bc != bcells.end(); ++bc)
             {
               int coup_sid = bc->first;  // all boundary cells within the current iterator belong to
@@ -1087,10 +1081,10 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
                 if (bc->second.empty()) FOUR_C_THROW("no boundary cells stored!");
 
-                Core::Geo::Cut::BoundaryCell* boundcell = bc->second[0];  // first boundary-cell
-                Core::Geo::Cut::Facet* f = boundcell->get_facet();
+                Cut::BoundaryCell* boundcell = bc->second[0];  // first boundary-cell
+                Cut::Facet* f = boundcell->get_facet();
 
-                const Core::Geo::Cut::plain_volumecell_set& vcs = f->cells();
+                const Cut::plain_volumecell_set& vcs = f->cells();
                 if (vcs.size() != 2)
                   FOUR_C_THROW(
                       "for the given boundary-cells facet, exactly two volume-cells have to be "
@@ -1098,18 +1092,17 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
                 std::vector<int> nds_other;
 
-                for (Core::Geo::Cut::plain_volumecell_set::const_iterator it = vcs.begin();
-                     it != vcs.end(); it++)
+                for (Cut::plain_volumecell_set::const_iterator it = vcs.begin(); it != vcs.end();
+                     it++)
                 {
-                  if ((*it)->position() ==
-                      Core::Geo::Cut::Point::inside)  // now take the inside volume-cell
+                  if ((*it)->position() == Cut::Point::inside)  // now take the inside volume-cell
                   {
                     nds_other = (*it)->nodal_dof_set();
                     break;
                   }
                 }
 
-                if ((*cells.begin())->position() == Core::Geo::Cut::Point::inside)
+                if ((*cells.begin())->position() == Cut::Point::inside)
                   FOUR_C_THROW(
                       "For a two-sided level set coupling, we should not enter here with inside "
                       "volume-cells!!!");
@@ -1296,8 +1289,8 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
 void FLD::XFluid::assemble_mat_and_rhs_face_terms(
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& sysmat,
-    const Teuchos::RCP<Epetra_Vector>& residual_col,
-    const Teuchos::RCP<Core::Geo::CutWizard>& wizard, bool is_ghost_penalty_reconstruct)
+    const Teuchos::RCP<Epetra_Vector>& residual_col, const Teuchos::RCP<Cut::CutWizard>& wizard,
+    bool is_ghost_penalty_reconstruct)
 {
   // call edge stabilization
   if (eval_eos_ || is_ghost_penalty_reconstruct)
@@ -1380,12 +1373,12 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
     Discret::ELEMENTS::FluidEleInterface* impl =
         Discret::ELEMENTS::FluidFactory::provide_impl_xfem(actele->shape(), "xfem");
 
-    Core::Geo::Cut::ElementHandle* e = state_->wizard()->get_element(actele);
+    Cut::ElementHandle* e = state_->wizard()->get_element(actele);
 
 
     if (e != nullptr)
     {
-      std::vector<Core::Geo::Cut::plain_volumecell_set> cell_sets;
+      std::vector<Cut::plain_volumecell_set> cell_sets;
       std::vector<std::vector<int>> nds_sets;
       std::vector<std::vector<Core::FE::GaussIntegration>> intpoints_sets;
 
@@ -1397,10 +1390,10 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
 
       int set_counter = 0;
 
-      for (std::vector<Core::Geo::Cut::plain_volumecell_set>::iterator s = cell_sets.begin();
+      for (std::vector<Cut::plain_volumecell_set>::iterator s = cell_sets.begin();
            s != cell_sets.end(); s++)
       {
-        Core::Geo::Cut::plain_volumecell_set& cells = *s;
+        Cut::plain_volumecell_set& cells = *s;
         const std::vector<int>& nds = nds_sets[set_counter];
 
         // we have to assemble all volume cells of this set
@@ -1972,7 +1965,7 @@ void FLD::XFluid::compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVect
 
     Discret::ELEMENTS::Fluid* ele = dynamic_cast<Discret::ELEMENTS::Fluid*>(actele);
 
-    Core::Geo::Cut::ElementHandle* e = state_->wizard()()->get_element(actele);
+    Cut::ElementHandle* e = state_->wizard()()->get_element(actele);
 
     Core::Elements::Element::LocationArray la(1);
 
@@ -1982,7 +1975,7 @@ void FLD::XFluid::compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVect
     // xfem element
     if (e != nullptr)
     {
-      std::vector<Core::Geo::Cut::plain_volumecell_set> cell_sets;
+      std::vector<Cut::plain_volumecell_set> cell_sets;
       std::vector<std::vector<int>> nds_sets;
       std::vector<std::vector<Core::FE::GaussIntegration>> intpoints_sets;
 
@@ -1993,10 +1986,10 @@ void FLD::XFluid::compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVect
         FOUR_C_THROW("number of cell_sets and nds_sets not equal!");
 
       // loop over volume cells
-      for (std::vector<Core::Geo::Cut::plain_volumecell_set>::iterator s = cell_sets.begin();
+      for (std::vector<Cut::plain_volumecell_set>::iterator s = cell_sets.begin();
            s != cell_sets.end(); s++)
       {
-        Core::Geo::Cut::plain_volumecell_set& cells = *s;
+        Cut::plain_volumecell_set& cells = *s;
         const int set_counter = s - cell_sets.begin();
         const std::vector<int>& nds = nds_sets[set_counter];
 
@@ -2009,14 +2002,13 @@ void FLD::XFluid::compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVect
 
         // maps of sid and corresponding boundary cells ( for quadratic elements: collected via
         // volumecells of subelements)
-        std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>> bcells;
+        std::map<int, std::vector<Cut::BoundaryCell*>> bcells;
         std::map<int, std::vector<Core::FE::GaussIntegration>> bintpoints;
 
-        for (Core::Geo::Cut::plain_volumecell_set::iterator i = cells.begin(); i != cells.end();
-             ++i)
+        for (Cut::plain_volumecell_set::iterator i = cells.begin(); i != cells.end(); ++i)
         {
-          Core::Geo::Cut::VolumeCell* vc = *i;
-          if (vc->position() == Core::Geo::Cut::Point::outside)
+          Cut::VolumeCell* vc = *i;
+          if (vc->position() == Cut::Point::outside)
           {
             vc->get_boundary_cells(bcells);
           }
@@ -2114,8 +2106,8 @@ void FLD::XFluid::check_x_fluid_params() const
 
   Teuchos::ParameterList& params_xfem = params_->sublist("XFEM");
   if (ghost_penalty_add_inner_faces_ &&
-      !(Core::UTILS::IntegralValue<Core::Geo::Cut::NodalDofSetStrategy>(params_xfem,
-            "NODAL_DOFSET_STRATEGY") == Core::Geo::Cut::NDS_Strategy_OneDofset_PerNodeAndPosition))
+      !(Core::UTILS::IntegralValue<Cut::NodalDofSetStrategy>(params_xfem,
+            "NODAL_DOFSET_STRATEGY") == Cut::NDS_Strategy_OneDofset_PerNodeAndPosition))
     FOUR_C_THROW(
         "The option GHOST_PENALTY_ADD_INNER_FACES is only availabe if you use max 1 nodal dofset!");
 
@@ -4592,7 +4584,7 @@ void FLD::XFluid::set_initial_flow_field(
     // vector of DOF-IDs which are Dirichlet BCs for ghost penalty reconstruction method
     Teuchos::RCP<std::set<int>> dbcgids = Teuchos::rcp(new std::set<int>());
 
-    const Teuchos::RCP<Core::Geo::CutWizard>& wizard = state_->wizard();
+    const Teuchos::RCP<Cut::CutWizard>& wizard = state_->wizard();
     const Teuchos::RCP<XFEM::XFEMDofSet>& dofset = state_->dof_set();
     const Epetra_Map* dofrowmap = dofset->dof_row_map();
 
@@ -4671,13 +4663,12 @@ void FLD::XFluid::set_initial_flow_field(
 
       // get the node from the cut wizard
       const int gid = lnode->id();
-      Core::Geo::Cut::Node* cut_node = wizard->get_node(gid);
+      Cut::Node* cut_node = wizard->get_node(gid);
 
       // ask for the number of dofsets
       const int numDofSets = cut_node->num_dof_sets();
 
-      const std::vector<Teuchos::RCP<Core::Geo::Cut::NodalDofSet>>& nodaldofsets =
-          cut_node->nodal_dof_sets();
+      const std::vector<Teuchos::RCP<Cut::NodalDofSet>>& nodaldofsets = cut_node->nodal_dof_sets();
 
       // set values just for the standard dofset, all ghost sets are determined by a ghost-penalty
       // time integration solve!
@@ -4691,15 +4682,14 @@ void FLD::XFluid::set_initial_flow_field(
         //-------------------------------------------
         // just FOR STD SETS
         //-------------------------------------------
-        Core::Geo::Cut::Point::PointPosition pos = nodaldofsets[i]->position();
+        Cut::Point::PointPosition pos = nodaldofsets[i]->position();
 
         //----------------------------------------
         // set density with respect to flame front
         //----------------------------------------
 
-        if (pos ==
-            Core::Geo::Cut::Point::inside)  // plus/burnt domain -> burnt material (
-                                            // Core::Geo::Cut::Position is inside ) / slave side
+        if (pos == Cut::Point::inside)  // plus/burnt domain -> burnt material (
+                                        // Cut::Position is inside ) / slave side
         {
           pres = 0.0;  // matching the zero pressure condition at outflow
         }

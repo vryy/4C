@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::BoundaryCell::BoundaryCell(const Core::LinAlg::SerialDenseMatrix& xyz, Facet* facet,
+Cut::BoundaryCell::BoundaryCell(const Core::LinAlg::SerialDenseMatrix& xyz, Facet* facet,
     const std::vector<Point*>& points, int cubature_degree)
     : facet_(facet), points_(Teuchos::rcp(new Cycle(points))), cubature_degree_(cubature_degree)
 {
@@ -42,24 +42,24 @@ Core::Geo::Cut::BoundaryCell::BoundaryCell(const Core::LinAlg::SerialDenseMatrix
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::BoundaryCell::clear() { points_->clear(); }
+void Cut::BoundaryCell::clear() { points_->clear(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::BoundaryCell::is_valid() const { return points_->size() > 0; }
+bool Cut::BoundaryCell::is_valid() const { return points_->size() > 0; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::Geo::Cut::BoundaryCell::get_global_boundary_cell_id() { return facet_->side_id(); }
+int Cut::BoundaryCell::get_global_boundary_cell_id() { return facet_->side_id(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <Core::FE::CellType celldistype>
-void Core::Geo::Cut::BoundaryCell::transform_local_coords(Element* elem1,
+void Cut::BoundaryCell::transform_local_coords(Element* elem1,
     const Core::LinAlg::Matrix<2, 1>& eta, Core::LinAlg::Matrix<3, 1>& x_gp_lin,
     Core::LinAlg::Matrix<3, 1>& normal, double& drs, bool shadow)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "Core::Geo::Cut::BoundaryCell::transform_local_coords" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "Cut::BoundaryCell::transform_local_coords" );
 
 
   const int numnodes = Core::FE::num_nodes<celldistype>;
@@ -101,18 +101,15 @@ void Core::Geo::Cut::BoundaryCell::transform_local_coords(Element* elem1,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::vector<Core::Geo::Cut::Point*>& Core::Geo::Cut::BoundaryCell::points() const
-{
-  return (*points_)();
-}
+const std::vector<Cut::Point*>& Cut::BoundaryCell::points() const { return (*points_)(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Core::Geo::Cut::Line2BoundaryCell::area() { return Core::Geo::ElementArea(shape(), xyz_); }
+double Cut::Line2BoundaryCell::area() { return Core::Geo::ElementArea(shape(), xyz_); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Core::Geo::Cut::Tri3BoundaryCell::area()
+double Cut::Tri3BoundaryCell::area()
 {
   const int numnodes = Core::FE::num_nodes<Core::FE::CellType::tri3>;
 
@@ -148,12 +145,12 @@ double Core::Geo::Cut::Tri3BoundaryCell::area()
     {
       std::ofstream file("invalid_boundary_cell.pos");
       // Write BCs for outside VolumeCell:
-      Core::Geo::Cut::Output::GmshNewSection(file, "BoundaryCells");
+      Cut::Output::GmshNewSection(file, "BoundaryCells");
       dump_gmsh(file);
-      Core::Geo::Cut::Output::GmshEndSection(file, false);
-      Core::Geo::Cut::Output::GmshNewSection(file, "BoundaryCellsNormal");
+      Cut::Output::GmshEndSection(file, false);
+      Cut::Output::GmshNewSection(file, "BoundaryCellsNormal");
       dump_gmsh_normal(file);
-      Core::Geo::Cut::Output::GmshEndSection(file);
+      Cut::Output::GmshEndSection(file);
       FOUR_C_THROW("Boundary Cell not valid! Written GMSH output in Invalid_boundary_cell.pos!");
     }
     else
@@ -177,7 +174,7 @@ double Core::Geo::Cut::Tri3BoundaryCell::area()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::BoundaryCell::dump_gmsh(std::ofstream& file, int* value)
+void Cut::BoundaryCell::dump_gmsh(std::ofstream& file, int* value)
 {
   int default_value = facet_->side_id();
   if (not value) value = &default_value;
@@ -187,7 +184,7 @@ void Core::Geo::Cut::BoundaryCell::dump_gmsh(std::ofstream& file, int* value)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Point1BoundaryCell::dump_gmsh_normal(std::ofstream& file)
+void Cut::Point1BoundaryCell::dump_gmsh_normal(std::ofstream& file)
 {
   // there is no normal for one point
   return;
@@ -195,7 +192,7 @@ void Core::Geo::Cut::Point1BoundaryCell::dump_gmsh_normal(std::ofstream& file)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Tri3BoundaryCell::dump_gmsh_normal(std::ofstream& file)
+void Cut::Tri3BoundaryCell::dump_gmsh_normal(std::ofstream& file)
 {
   file.precision(16);
 
@@ -227,7 +224,7 @@ void Core::Geo::Cut::Tri3BoundaryCell::dump_gmsh_normal(std::ofstream& file)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Quad4BoundaryCell::dump_gmsh_normal(std::ofstream& file)
+void Cut::Quad4BoundaryCell::dump_gmsh_normal(std::ofstream& file)
 {
   file.precision(16);
 
@@ -259,7 +256,7 @@ void Core::Geo::Cut::Quad4BoundaryCell::dump_gmsh_normal(std::ofstream& file)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Line2BoundaryCell::dump_gmsh_normal(std::ofstream& file)
+void Cut::Line2BoundaryCell::dump_gmsh_normal(std::ofstream& file)
 {
   file.precision(16);
 
@@ -297,7 +294,7 @@ void Core::Geo::Cut::Line2BoundaryCell::dump_gmsh_normal(std::ofstream& file)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::ArbitraryBoundaryCell::dump_gmsh_normal(std::ofstream& file)
+void Cut::ArbitraryBoundaryCell::dump_gmsh_normal(std::ofstream& file)
 {
   // TO DO: implement gmsh output for arbitrarily shaped bcell
   //  FOUR_C_THROW("not implemented");
@@ -305,7 +302,7 @@ void Core::Geo::Cut::ArbitraryBoundaryCell::dump_gmsh_normal(std::ofstream& file
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Point1BoundaryCell::normal(
+void Cut::Point1BoundaryCell::normal(
     const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const
 {
   normal.put_scalar(0.0);
@@ -313,7 +310,7 @@ void Core::Geo::Cut::Point1BoundaryCell::normal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Line2BoundaryCell::normal(
+void Cut::Line2BoundaryCell::normal(
     const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const
 {
   const unsigned probdim = facet_->parent_side()->n_prob_dim();
@@ -330,7 +327,7 @@ void Core::Geo::Cut::Line2BoundaryCell::normal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Tri3BoundaryCell::normal(
+void Cut::Tri3BoundaryCell::normal(
     const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const
 {
   // get derivatives at pos
@@ -353,7 +350,7 @@ void Core::Geo::Cut::Tri3BoundaryCell::normal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Quad4BoundaryCell::normal(
+void Cut::Quad4BoundaryCell::normal(
     const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const
 {
   // get derivatives at pos
@@ -378,7 +375,7 @@ void Core::Geo::Cut::Quad4BoundaryCell::normal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::ArbitraryBoundaryCell::normal(
+void Cut::ArbitraryBoundaryCell::normal(
     const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const
 {
   FOUR_C_THROW("Call get_normal_vector() to get normal for arbitrary boundarycells");
@@ -386,7 +383,7 @@ void Core::Geo::Cut::ArbitraryBoundaryCell::normal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::FE::GaussIntegration Core::Geo::Cut::Point1BoundaryCell::gauss_rule(int cubaturedegree)
+Core::FE::GaussIntegration Cut::Point1BoundaryCell::gauss_rule(int cubaturedegree)
 {
   Core::FE::GaussIntegration gi(Core::FE::CellType::point1, cubaturedegree);
   return gi;
@@ -394,7 +391,7 @@ Core::FE::GaussIntegration Core::Geo::Cut::Point1BoundaryCell::gauss_rule(int cu
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::FE::GaussIntegration Core::Geo::Cut::Line2BoundaryCell::gauss_rule(int cubaturedegree)
+Core::FE::GaussIntegration Cut::Line2BoundaryCell::gauss_rule(int cubaturedegree)
 {
   Core::FE::GaussIntegration gi(Core::FE::CellType::line2, cubaturedegree);
   return gi;
@@ -402,7 +399,7 @@ Core::FE::GaussIntegration Core::Geo::Cut::Line2BoundaryCell::gauss_rule(int cub
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::FE::GaussIntegration Core::Geo::Cut::Tri3BoundaryCell::gauss_rule(int cubaturedegree)
+Core::FE::GaussIntegration Cut::Tri3BoundaryCell::gauss_rule(int cubaturedegree)
 {
   Core::FE::GaussIntegration gi(Core::FE::CellType::tri3, cubaturedegree);
   return gi;
@@ -410,7 +407,7 @@ Core::FE::GaussIntegration Core::Geo::Cut::Tri3BoundaryCell::gauss_rule(int cuba
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::FE::GaussIntegration Core::Geo::Cut::Quad4BoundaryCell::gauss_rule(int cubaturedegree)
+Core::FE::GaussIntegration Cut::Quad4BoundaryCell::gauss_rule(int cubaturedegree)
 {
   Core::FE::GaussIntegration gi(Core::FE::CellType::quad4, cubaturedegree);
   return gi;
@@ -418,28 +415,28 @@ Core::FE::GaussIntegration Core::Geo::Cut::Quad4BoundaryCell::gauss_rule(int cub
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::FE::GaussIntegration Core::Geo::Cut::ArbitraryBoundaryCell::gauss_rule(int cubaturedegree)
+Core::FE::GaussIntegration Cut::ArbitraryBoundaryCell::gauss_rule(int cubaturedegree)
 {
   return gauss_rule_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::ArbitraryBoundaryCell::element_center(Core::LinAlg::Matrix<3, 1>& midpoint)
+void Cut::ArbitraryBoundaryCell::element_center(Core::LinAlg::Matrix<3, 1>& midpoint)
 {
   FOUR_C_THROW("Element Center for ArbitraryBoundaryCells not implemented!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Point1BoundaryCell::element_center(Core::LinAlg::Matrix<3, 1>& midpoint)
+void Cut::Point1BoundaryCell::element_center(Core::LinAlg::Matrix<3, 1>& midpoint)
 {
   std::copy(xyz_.values(), xyz_.values() + 3, midpoint.data());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Line2BoundaryCell::element_center(Core::LinAlg::Matrix<3, 1>& midpoint)
+void Cut::Line2BoundaryCell::element_center(Core::LinAlg::Matrix<3, 1>& midpoint)
 {
   Core::LinAlg::Matrix<3, 1> center_rst(true);
   my_element_center<Core::FE::CellType::line2>(center_rst, midpoint);
@@ -447,7 +444,7 @@ void Core::Geo::Cut::Line2BoundaryCell::element_center(Core::LinAlg::Matrix<3, 1
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Tri3BoundaryCell::element_center(Core::LinAlg::Matrix<3, 1>& midpoint)
+void Cut::Tri3BoundaryCell::element_center(Core::LinAlg::Matrix<3, 1>& midpoint)
 {
   Core::LinAlg::Matrix<3, 1> center;
   center(0, 0) = 0.25;
@@ -458,7 +455,7 @@ void Core::Geo::Cut::Tri3BoundaryCell::element_center(Core::LinAlg::Matrix<3, 1>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Quad4BoundaryCell::element_center(Core::LinAlg::Matrix<3, 1>& midpoint)
+void Cut::Quad4BoundaryCell::element_center(Core::LinAlg::Matrix<3, 1>& midpoint)
 {
   Core::LinAlg::Matrix<3, 1> center;
   center(0, 0) = 0.0;
@@ -469,7 +466,7 @@ void Core::Geo::Cut::Quad4BoundaryCell::element_center(Core::LinAlg::Matrix<3, 1
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::LinAlg::Matrix<3, 1> Core::Geo::Cut::Point1BoundaryCell::get_normal_vector()
+Core::LinAlg::Matrix<3, 1> Cut::Point1BoundaryCell::get_normal_vector()
 {
   FOUR_C_THROW("There is no normal for Point1 boundarycell");
   exit(EXIT_FAILURE);
@@ -477,7 +474,7 @@ Core::LinAlg::Matrix<3, 1> Core::Geo::Cut::Point1BoundaryCell::get_normal_vector
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::LinAlg::Matrix<3, 1> Core::Geo::Cut::Line2BoundaryCell::get_normal_vector()
+Core::LinAlg::Matrix<3, 1> Cut::Line2BoundaryCell::get_normal_vector()
 {
   Core::LinAlg::Matrix<3, 1> normal_v(true);
   Core::LinAlg::Matrix<2, 1> xsi(true);
@@ -489,7 +486,7 @@ Core::LinAlg::Matrix<3, 1> Core::Geo::Cut::Line2BoundaryCell::get_normal_vector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::LinAlg::Matrix<3, 1> Core::Geo::Cut::Tri3BoundaryCell::get_normal_vector()
+Core::LinAlg::Matrix<3, 1> Cut::Tri3BoundaryCell::get_normal_vector()
 {
   FOUR_C_THROW("Call Transform function to get normal for Tri3 boundarycell");
   exit(EXIT_FAILURE);
@@ -497,7 +494,7 @@ Core::LinAlg::Matrix<3, 1> Core::Geo::Cut::Tri3BoundaryCell::get_normal_vector()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::LinAlg::Matrix<3, 1> Core::Geo::Cut::Quad4BoundaryCell::get_normal_vector()
+Core::LinAlg::Matrix<3, 1> Cut::Quad4BoundaryCell::get_normal_vector()
 {
   FOUR_C_THROW("Call Transform function to get normal for Quad4 boundarycell");
   exit(EXIT_FAILURE);
@@ -505,14 +502,11 @@ Core::LinAlg::Matrix<3, 1> Core::Geo::Cut::Quad4BoundaryCell::get_normal_vector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::LinAlg::Matrix<3, 1> Core::Geo::Cut::ArbitraryBoundaryCell::get_normal_vector()
-{
-  return normal_;
-}
+Core::LinAlg::Matrix<3, 1> Cut::ArbitraryBoundaryCell::get_normal_vector() { return normal_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::BoundaryCell::print(std::ostream& stream)
+void Cut::BoundaryCell::print(std::ostream& stream)
 {
   stream << "--- boundary cell ( address: " << std::setw(10) << this << " )\n";
   for (unsigned i = 0; i < points_->size(); i++)
@@ -524,7 +518,7 @@ void Core::Geo::Cut::BoundaryCell::print(std::ostream& stream)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::vector<std::vector<double>> Core::Geo::Cut::BoundaryCell::coordinates_v()
+std::vector<std::vector<double>> Cut::BoundaryCell::coordinates_v()
 {
   std::vector<std::vector<double>> corners;
   for (std::vector<Point*>::const_iterator j = (*points_)().begin(); j != (*points_)().end(); ++j)
@@ -538,7 +532,7 @@ std::vector<std::vector<double>> Core::Geo::Cut::BoundaryCell::coordinates_v()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Tri3BoundaryCell::is_valid_boundary_cell()
+bool Cut::Tri3BoundaryCell::is_valid_boundary_cell()
 {
   const int numnodes = Core::FE::num_nodes<Core::FE::CellType::tri3>;
 
@@ -594,11 +588,11 @@ bool Core::Geo::Cut::Tri3BoundaryCell::is_valid_boundary_cell()
 }
 
 // function specializations
-template void Core::Geo::Cut::BoundaryCell::transform_local_coords<Core::FE::CellType::tri3>(
-    Element* elem1, const Core::LinAlg::Matrix<2, 1>& eta, Core::LinAlg::Matrix<3, 1>& x_gp_lin,
+template void Cut::BoundaryCell::transform_local_coords<Core::FE::CellType::tri3>(Element* elem1,
+    const Core::LinAlg::Matrix<2, 1>& eta, Core::LinAlg::Matrix<3, 1>& x_gp_lin,
     Core::LinAlg::Matrix<3, 1>& normal, double& drs, bool shadow);
-template void Core::Geo::Cut::BoundaryCell::transform_local_coords<Core::FE::CellType::quad4>(
-    Element* elem1, const Core::LinAlg::Matrix<2, 1>& eta, Core::LinAlg::Matrix<3, 1>& x_gp_lin,
+template void Cut::BoundaryCell::transform_local_coords<Core::FE::CellType::quad4>(Element* elem1,
+    const Core::LinAlg::Matrix<2, 1>& eta, Core::LinAlg::Matrix<3, 1>& x_gp_lin,
     Core::LinAlg::Matrix<3, 1>& normal, double& drs, bool shadow);
 
 FOUR_C_NAMESPACE_CLOSE

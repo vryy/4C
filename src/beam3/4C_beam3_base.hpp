@@ -36,13 +36,12 @@ namespace Core::LinAlg
   class SerialDenseVector;
   class SerialDenseMatrix;
 }  // namespace Core::LinAlg
-namespace Core::Geo
+
+namespace Core::Geo::MeshFree
 {
-  namespace MeshFree
-  {
-    class BoundingBox;
-  }
-}  // namespace Core::Geo
+  class BoundingBox;
+}
+
 namespace Solid
 {
   namespace ELEMENTS
@@ -113,7 +112,8 @@ namespace Discret
 
       virtual void set_brownian_dyn_params_interface_ptr();
 
-      /** \brief returns true if the parameter interface is defined and initialized, otherwise false
+      /** \brief returns true if the parameter interface is defined and initialized, otherwise
+       * false
        *
        *  \author hiermeier
        *  \date 04/16 */
@@ -127,8 +127,8 @@ namespace Discret
       virtual Teuchos::RCP<BrownianDynamics::ParamsInterface> brownian_dyn_params_interface_ptr()
           const;
 
-      //! computes the number of different random numbers required in each time step for generation
-      //! of stochastic forces
+      //! computes the number of different random numbers required in each time step for
+      //! generation of stochastic forces
       virtual int how_many_random_numbers_i_need() const = 0;
 
       /** \brief get access to the element reference length
@@ -140,8 +140,8 @@ namespace Discret
 
       /** \brief get the radius of the element which is used for interactions (contact, viscous,
        *         potential-based, ...)
-       *         - if needed, extend this to other than circular cross-section shapes and dimensions
-       *           to be specified via input file
+       *         - if needed, extend this to other than circular cross-section shapes and
+       * dimensions to be specified via input file
        *         - allow for different assumed shapes for different interaction types if needed
        *
        *  \author grill
@@ -167,7 +167,8 @@ namespace Discret
       std::vector<int> get_additive_dof_gi_ds(
           const Core::FE::Discretization& discret, const Core::Nodes::Node& node) const;
 
-      /** \brief return GIDs of all non-additive, i.e. rotation pseudo vector DoFs for a given node
+      /** \brief return GIDs of all non-additive, i.e. rotation pseudo vector DoFs for a given
+       * node
        *
        *  \author grill
        *  \date 07/16 */
@@ -181,8 +182,8 @@ namespace Discret
       virtual void position_dof_indices(
           std::vector<int>& posdofs, const Core::Nodes::Node& node) const = 0;
 
-      /** \brief add indices of those DOFs of a given node that are tangents (in the case of Hermite
-       * interpolation)
+      /** \brief add indices of those DOFs of a given node that are tangents (in the case of
+       * Hermite interpolation)
        *
        *  \author grill
        *  \date 07/16 */
@@ -214,7 +215,8 @@ namespace Discret
       virtual void tangent_length_dof_indices(
           std::vector<int>& tangnormdofs, const Core::Nodes::Node& node) const = 0;
 
-      /** \brief get element local indices of those Dofs that are used for centerline interpolation
+      /** \brief get element local indices of those Dofs that are used for centerline
+       * interpolation
        *
        *  \author grill
        *  \date 12/16 */
@@ -334,9 +336,8 @@ namespace Discret
         FOUR_C_THROW("not implemented");
       }
 
-      /** \brief get generalized interpolation matrix which yields the variation of the position and
-       *         orientation at xi \in [-1,1] if multiplied with the vector of primary DoF
-       * variations
+      /** \brief get generalized interpolation matrix which yields the variation of the position
+       * and orientation at xi \in [-1,1] if multiplied with the vector of primary DoF variations
        *
        *  \author grill
        *  \date 11/16 */
@@ -454,7 +455,8 @@ namespace Discret
        * start for a newton iteration.
        *
        * see "Meier, C.: Geometrically exact finite element formulations for slender beams and
-       * their contact interaction, Technical University of Munich, Germany, 2016", chapter 3.2.2.2
+       * their contact interaction, Technical University of Munich, Germany, 2016",
+       * chapter 3.2.2.2
        */
       template <unsigned int nnode, unsigned int vpernode>
       double calc_reflength(
@@ -508,7 +510,8 @@ namespace Discret
         calc_r<nnode, vpernode, T>(disp_totlag, N_i, r);
       }
 
-      /** \brief compute beam centerline position vector at position \xi in element parameter space
+      /** \brief compute beam centerline position vector at position \xi in element parameter
+       * space
        * [-1,1] via interpolation of nodal DoFs based on given shape function values
        *
        *  \author grill
@@ -523,8 +526,8 @@ namespace Discret
       }
 
       /** \brief compute derivative of beam centerline (i.e. tangent vector) at position \xi in
-       *         element parameter space [-1,1] with respect to \xi via interpolation of nodal DoFs
-       *         based on given shape function derivative values
+       *         element parameter space [-1,1] with respect to \xi via interpolation of nodal
+       * DoFs based on given shape function derivative values
        *
        *  \author grill
        *  \date 03/16 */
@@ -538,8 +541,8 @@ namespace Discret
       }
 
       /** \brief compute derivative of beam centerline (i.e. tangent vector) at position \xi in
-       *         element parameter space [-1,1] with respect to arc-length parameter s in reference
-       *         configuration via interpolation of nodal DoFs based on given shape function
+       *         element parameter space [-1,1] with respect to arc-length parameter s in
+       * reference configuration via interpolation of nodal DoFs based on given shape function
        * derivative values
        *
        *  \author grill

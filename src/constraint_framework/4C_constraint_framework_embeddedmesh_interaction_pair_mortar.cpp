@@ -56,8 +56,8 @@ template <typename Interface, typename Background, typename Mortar>
 CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface, Background,
     Mortar>::SurfaceToBackgroundCouplingPairMortar(Teuchos::RCP<Core::Elements::Element> element1,
     Core::Elements::Element* element2, CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr,
-    Teuchos::RCP<Core::Geo::CutWizard>& cutwizard_ptr,
-    std::vector<Teuchos::RCP<Core::Geo::Cut::BoundaryCell>>& boundary_cells)
+    Teuchos::RCP<Cut::CutWizard>& cutwizard_ptr,
+    std::vector<Teuchos::RCP<Cut::BoundaryCell>>& boundary_cells)
     : SolidInteractionPair(element1, element2, params_ptr, cutwizard_ptr, boundary_cells)
 {
   // Define the mortar shape functions in the parameters
@@ -196,8 +196,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface,
 
 template <typename Surface, Core::FE::CellType boundarycell_distype>
 Teuchos::RCP<Core::FE::GaussPoints> ProjectBoundaryCellGaussRuleOnInterface(
-    Core::Geo::Cut::BoundaryCell* boundary_cell,
-    GEOMETRYPAIR::ElementData<Surface, double>& ele1pos)
+    Cut::BoundaryCell* boundary_cell, GEOMETRYPAIR::ElementData<Surface, double>& ele1pos)
 {
   // Get the coordinates of the vertices of the boundary cell
   const Core::LinAlg::SerialDenseMatrix vertices_boundary_cell = boundary_cell->coordinates();
@@ -345,7 +344,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface,
   // Get the gauss rule of the background cut element
   std::vector<Core::FE::GaussIntegration> gp_intpoints_cut;
 
-  Core::Geo::Cut::ElementHandle* element_handle = get_cutwizard()->get_element(&element_2());
+  Cut::ElementHandle* element_handle = get_cutwizard()->get_element(&element_2());
 
   element_handle->get_gauss_rule_integration_cells(
       gp_intpoints_cut, get_cutwizard()->do_inside_cells_have_physical_meaning());

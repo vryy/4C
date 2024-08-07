@@ -29,7 +29,7 @@
 
 void test_generated_26182()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -48,12 +48,11 @@ void test_generated_26182()
   tri3_xyze(1, 2) = -0.211531138629892;
   tri3_xyze(2, 2) = 0.2847992842204971;
   nids.push_back(3681);
-  Core::Geo::Cut::SideHandle* sh =
-      intersection.add_cut_side(0, nids, tri3_xyze, Core::FE::CellType::tri3);
+  Cut::SideHandle* sh = intersection.add_cut_side(0, nids, tri3_xyze, Core::FE::CellType::tri3);
 
-  std::vector<Core::Geo::Cut::Point*> maincylcepoints;
-  std::vector<std::vector<Core::Geo::Cut::Point*>> mainholecyclepoints;
-  mainholecyclepoints.push_back(std::vector<Core::Geo::Cut::Point*>());
+  std::vector<Cut::Point*> maincylcepoints;
+  std::vector<std::vector<Cut::Point*>> mainholecyclepoints;
+  mainholecyclepoints.push_back(std::vector<Cut::Point*>());
   std::vector<double> coord(3);
   {  // 1
     coord.clear();
@@ -190,33 +189,31 @@ void test_generated_26182()
         intersection.normal_mesh().new_point(&coord[0], nullptr, nullptr, 0.0));
   }
 
-  Core::Geo::Cut::Side* cutside;
-  Core::Geo::Cut::plain_side_set sides;
+  Cut::Side* cutside;
+  Cut::plain_side_set sides;
   sh->collect_sides(sides);
   if (sides.size() != 1) FOUR_C_THROW("More than one side!");
 
   cutside = sides[0];
 
-  Core::Geo::Cut::TriangulateFacet triangulatefacet(maincylcepoints, mainholecyclepoints);
+  Cut::TriangulateFacet triangulatefacet(maincylcepoints, mainholecyclepoints);
   triangulatefacet.ear_clipping_with_holes(cutside);
   // std::vector<int> ptConcavity;
   // triangulatefacet.EarClipping(ptConcavity, true, false);
 
-  std::vector<std::vector<Core::Geo::Cut::Point*>> maincycletriangles =
-      triangulatefacet.get_split_cells();
-  for (std::vector<std::vector<Core::Geo::Cut::Point*>>::iterator i = maincycletriangles.begin();
+  std::vector<std::vector<Cut::Point*>> maincycletriangles = triangulatefacet.get_split_cells();
+  for (std::vector<std::vector<Cut::Point*>>::iterator i = maincycletriangles.begin();
        i != maincycletriangles.end(); ++i)
   {
-    std::vector<Core::Geo::Cut::Point*> maincycletriangle = *i;
-    if (Core::Geo::Cut::Kernel::IsOnLine(
-            maincycletriangle[0], maincycletriangle[1], maincycletriangle[2]))
+    std::vector<Cut::Point*> maincycletriangle = *i;
+    if (Cut::Kernel::IsOnLine(maincycletriangle[0], maincycletriangle[1], maincycletriangle[2]))
     {
       FOUR_C_THROW("maincycletriangle is on lines!");
     }
   }
 
   std::cout << "==| The full triangulation: |==" << std::endl;
-  for (std::vector<std::vector<Core::Geo::Cut::Point*>>::iterator ii = maincycletriangles.begin();
+  for (std::vector<std::vector<Cut::Point*>>::iterator ii = maincycletriangles.begin();
        ii != maincycletriangles.end(); ++ii)
   {
     std::cout << "ST(" << (*ii)[0]->x()[0] << ", " << (*ii)[0]->x()[1] << ", " << (*ii)[0]->x()[2]

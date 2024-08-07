@@ -22,6 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 void Inpar::Cut::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace Input;
+  using namespace FourC::Cut;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -30,39 +31,34 @@ void Inpar::Cut::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // intersection precision (double or cln)
   setStringToIntegralParameter<int>("KERNEL_INTERSECTION_FLOATTYPE", "double",
       "The floattype of the cut surface-edge intersection", tuple<std::string>("cln", "double"),
-      tuple<int>(Core::Geo::Cut::floattype_cln, Core::Geo::Cut::floattype_double), &cut_general);
+      tuple<int>(floattype_cln, floattype_double), &cut_general);
 
   // Computing disctance surface to point precision (double or cln)
   setStringToIntegralParameter<int>("KERNEL_DISTANCE_FLOATTYPE", "double",
       "The floattype of the cut distance computation", tuple<std::string>("cln", "double"),
-      tuple<int>(Core::Geo::Cut::floattype_cln, Core::Geo::Cut::floattype_double), &cut_general);
+      tuple<int>(floattype_cln, floattype_double), &cut_general);
 
-  // A general floattype for Core::Geo::Cut::Position for Embedded Elements (compute_distance)
-  // If specified this floattype is used for all computations of Core::Geo::Cut::Position with
+  // A general floattype for Cut::Position for Embedded Elements (compute_distance)
+  // If specified this floattype is used for all computations of Cut::Position with
   // embedded elements
   setStringToIntegralParameter<int>("GENERAL_POSITON_DISTANCE_FLOATTYPE", "none",
-      "A general floattype for Core::Geo::Cut::Position for Embedded Elements (compute_distance)",
+      "A general floattype for Cut::Position for Embedded Elements (compute_distance)",
       tuple<std::string>("none", "cln", "double"),
-      tuple<int>(Core::Geo::Cut::floattype_none, Core::Geo::Cut::floattype_cln,
-          Core::Geo::Cut::floattype_double),
-      &cut_general);
+      tuple<int>(floattype_none, floattype_cln, floattype_double), &cut_general);
 
-  // A general floattype for Core::Geo::Cut::Position for Elements (ComputePosition)
-  // If specified this floattype is used for all computations of Core::Geo::Cut::Position
+  // A general floattype for Cut::Position for Elements (ComputePosition)
+  // If specified this floattype is used for all computations of Cut::Position
   setStringToIntegralParameter<int>("GENERAL_POSITON_POSITION_FLOATTYPE", "none",
-      "A general floattype for Core::Geo::Cut::Position Elements (ComputePosition)",
+      "A general floattype for Cut::Position Elements (ComputePosition)",
       tuple<std::string>("none", "cln", "double"),
-      tuple<int>(Core::Geo::Cut::floattype_none, Core::Geo::Cut::floattype_cln,
-          Core::Geo::Cut::floattype_double),
-      &cut_general);
+      tuple<int>(floattype_none, floattype_cln, floattype_double), &cut_general);
 
   // Specifiy which Referenceplanes are used in DirectDivergence
   setStringToIntegralParameter<int>("DIRECT_DIVERGENCE_REFPLANE", "all",
       "Specifiy which Referenceplanes are used in DirectDivergence",
       tuple<std::string>("all", "diagonal_side", "facet", "diagonal", "side", "none"),
-      tuple<int>(Core::Geo::Cut::DirDiv_refplane_all, Core::Geo::Cut::DirDiv_refplane_diagonal_side,
-          Core::Geo::Cut::DirDiv_refplane_facet, Core::Geo::Cut::DirDiv_refplane_diagonal,
-          Core::Geo::Cut::DirDiv_refplane_side, Core::Geo::Cut::DirDiv_refplane_none),
+      tuple<int>(DirDiv_refplane_all, DirDiv_refplane_diagonal_side, DirDiv_refplane_facet,
+          DirDiv_refplane_diagonal, DirDiv_refplane_side, DirDiv_refplane_none),
       &cut_general);
 
   // Specifiy is Cutsides are triangulated

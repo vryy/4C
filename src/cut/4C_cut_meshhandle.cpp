@@ -18,8 +18,8 @@ FOUR_C_NAMESPACE_OPEN
  * create a new side (sidehandle) of the cutter discretization and return the sidehandle
  * non-tri3 sides will be subdivided into tri3 subsides
  *-----------------------------------------------------------------------------------------*/
-Core::Geo::Cut::SideHandle* Core::Geo::Cut::MeshHandle::create_side(int sid,
-    const std::vector<int>& nids, Core::FE::CellType distype, Core::Geo::Cut::Options& options)
+Cut::SideHandle* Cut::MeshHandle::create_side(
+    int sid, const std::vector<int>& nids, Core::FE::CellType distype, Cut::Options& options)
 {
 #ifdef CUT_DUMPCREATION
   std::cout << "create_side( " << sid << ", ";
@@ -100,7 +100,7 @@ Core::Geo::Cut::SideHandle* Core::Geo::Cut::MeshHandle::create_side(int sid,
  * create a new data structure for face oriented stabilization; the sides of
  * the linear element are included into a sidehandle                            wirtz 11/13
  *-----------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::MeshHandle::create_element_sides(Element& element)
+void Cut::MeshHandle::create_element_sides(Element& element)
 {
   std::vector<Side*> elementsides = element.sides();
   for (std::vector<Side*>::iterator i = elementsides.begin(); i != elementsides.end(); ++i)
@@ -141,8 +141,7 @@ void Core::Geo::Cut::MeshHandle::create_element_sides(Element& element)
  * create a new data structure for face oriented stabilization; the sides of
  * the quadratic element are included into a sidehandle                         wirtz 11/13
  *-----------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::MeshHandle::create_element_sides(
-    const std::vector<int>& nids, Core::FE::CellType distype)
+void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::FE::CellType distype)
 {
   switch (distype)
   {
@@ -709,7 +708,7 @@ void Core::Geo::Cut::MeshHandle::create_element_sides(
  * create a new element (elementhandle) of the background discretization and return the
  *elementhandle, quadratic elements will create linear shadow elements
  *-----------------------------------------------------------------------------------------*/
-Core::Geo::Cut::ElementHandle* Core::Geo::Cut::MeshHandle::create_element(
+Cut::ElementHandle* Cut::MeshHandle::create_element(
     int eid, const std::vector<int>& nids, Core::FE::CellType distype)
 {
 #ifdef CUT_DUMPCREATION
@@ -793,16 +792,13 @@ Core::Geo::Cut::ElementHandle* Core::Geo::Cut::MeshHandle::create_element(
 /*-----------------------------------------------------------------------------------------*
  * get the node based on node id
  *-----------------------------------------------------------------------------------------*/
-Core::Geo::Cut::Node* Core::Geo::Cut::MeshHandle::get_node(int nid) const
-{
-  return mesh_.get_node(nid);
-}
+Cut::Node* Cut::MeshHandle::get_node(int nid) const { return mesh_.get_node(nid); }
 
 
 /*-----------------------------------------------------------------------------------------*
  * get the side (handle) based on side id of the cut mesh
  *-----------------------------------------------------------------------------------------*/
-Core::Geo::Cut::SideHandle* Core::Geo::Cut::MeshHandle::get_side(int sid) const
+Cut::SideHandle* Cut::MeshHandle::get_side(int sid) const
 {
   // loop the linear sides
   std::map<int, LinearSideHandle>::const_iterator i = linearsides_.find(sid);
@@ -825,7 +821,7 @@ Core::Geo::Cut::SideHandle* Core::Geo::Cut::MeshHandle::get_side(int sid) const
 /*-----------------------------------------------------------------------------------------*
  * get the mesh's element based on element id
  *-----------------------------------------------------------------------------------------*/
-Core::Geo::Cut::ElementHandle* Core::Geo::Cut::MeshHandle::get_element(int eid) const
+Cut::ElementHandle* Cut::MeshHandle::get_element(int eid) const
 {
   // loop the linear elements
   std::map<int, LinearElementHandle>::const_iterator i = linearelements_.find(eid);
@@ -849,7 +845,7 @@ Core::Geo::Cut::ElementHandle* Core::Geo::Cut::MeshHandle::get_element(int eid) 
 /*-----------------------------------------------------------------------------------------*
  * get the element' side of the mesh's element based on node ids
  *-----------------------------------------------------------------------------------------*/
-Core::Geo::Cut::SideHandle* Core::Geo::Cut::MeshHandle::get_side(std::vector<int>& nodeids) const
+Cut::SideHandle* Cut::MeshHandle::get_side(std::vector<int>& nodeids) const
 {
   plain_int_set nids;
   for (std::vector<int>::iterator i = nodeids.begin(); i != nodeids.end(); i++)
@@ -871,7 +867,7 @@ Core::Geo::Cut::SideHandle* Core::Geo::Cut::MeshHandle::get_side(std::vector<int
   return nullptr;
 }
 
-void Core::Geo::Cut::MeshHandle::remove_sub_side(Core::Geo::Cut::Side* side)
+void Cut::MeshHandle::remove_sub_side(Cut::Side* side)
 {
   std::map<int, LinearSideHandle>::iterator lit = linearsides_.find(side->id());
   if (lit != linearsides_.end())
@@ -895,7 +891,7 @@ void Core::Geo::Cut::MeshHandle::remove_sub_side(Core::Geo::Cut::Side* side)
   }
 }
 
-void Core::Geo::Cut::MeshHandle::add_sub_side(Core::Geo::Cut::Side* side)
+void Cut::MeshHandle::add_sub_side(Cut::Side* side)
 {
   std::map<int, LinearSideHandle>::iterator lit = linearsides_.find(side->id());
   if (lit != linearsides_.end())
@@ -923,7 +919,7 @@ void Core::Geo::Cut::MeshHandle::add_sub_side(Core::Geo::Cut::Side* side)
   }
 }
 
-void Core::Geo::Cut::MeshHandle::mark_sub_sideas_unphysical(Core::Geo::Cut::Side* side)
+void Cut::MeshHandle::mark_sub_sideas_unphysical(Cut::Side* side)
 {
   std::map<int, LinearSideHandle>::iterator lit = linearsides_.find(side->id());
   if (lit != linearsides_.end())

@@ -32,14 +32,13 @@ namespace Core::LinAlg
   class SerialDenseMatrix;
   class SparseMatrix;
 }  // namespace Core::LinAlg
-namespace Core::Geo
+
+namespace Cut
 {
   class CutWizard;
-  namespace Cut
-  {
-    class BoundaryCell;
-  }  // namespace Cut
-}  // namespace Core::Geo
+  class BoundaryCell;
+}  // namespace Cut
+
 namespace DRT
 {
   class Discretization;
@@ -63,8 +62,8 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     SolidInteractionPair(Teuchos::RCP<Core::Elements::Element> element1,
         Core::Elements::Element* element2,
         CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr,
-        Teuchos::RCP<Core::Geo::CutWizard> cutwizard_ptr,
-        std::vector<Teuchos::RCP<Core::Geo::Cut::BoundaryCell>>& boundary_cells);
+        Teuchos::RCP<Cut::CutWizard> cutwizard_ptr,
+        std::vector<Teuchos::RCP<Cut::BoundaryCell>>& boundary_cells);
 
     /*!
     \brief Destructor
@@ -145,17 +144,14 @@ namespace CONSTRAINTS::EMBEDDEDMESH
         Core::FE::Discretization const& discret, const Epetra_Vector& displacement_vector) = 0;
 
     //! Get the cutwizard
-    Teuchos::RCP<Core::Geo::CutWizard> get_cutwizard()
+    Teuchos::RCP<Cut::CutWizard> get_cutwizard()
     {
       if (cutwizard_ptr_ == Teuchos::null) FOUR_C_THROW("The cut wizard hasn't been initialized!");
       return cutwizard_ptr_;
     }
 
     //! Get the boundary cells
-    std::vector<Teuchos::RCP<Core::Geo::Cut::BoundaryCell>> get_boundary_cells()
-    {
-      return boundary_cells_;
-    }
+    std::vector<Teuchos::RCP<Cut::BoundaryCell>> get_boundary_cells() { return boundary_cells_; }
 
    protected:
     //! embedded mesh parameter data container
@@ -170,10 +166,10 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     const Core::Elements::Element* element2_;
 
     //! pointer to the cutwizard
-    Teuchos::RCP<Core::Geo::CutWizard> cutwizard_ptr_ = Teuchos::null;
+    Teuchos::RCP<Cut::CutWizard> cutwizard_ptr_ = Teuchos::null;
 
     //! boundary cells that are related to this coupling pair
-    std::vector<Teuchos::RCP<Core::Geo::Cut::BoundaryCell>> boundary_cells_;
+    std::vector<Teuchos::RCP<Cut::BoundaryCell>> boundary_cells_;
   };
 }  // namespace CONSTRAINTS::EMBEDDEDMESH
 

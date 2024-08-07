@@ -17,8 +17,7 @@
 int numnode;
 int numele;
 
-Core::Geo::Cut::Element* create_hex8(
-    Core::Geo::Cut::Mesh& mesh, Core::LinAlg::SerialDenseMatrix& xyze)
+Cut::Element* create_hex8(Cut::Mesh& mesh, Core::LinAlg::SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(8);
@@ -31,8 +30,7 @@ Core::Geo::Cut::Element* create_hex8(
   return mesh.create_hex8(numele++, nids);
 }
 
-Core::Geo::Cut::Element* create_tet4(
-    Core::Geo::Cut::Mesh& mesh, Core::LinAlg::SerialDenseMatrix& xyze)
+Cut::Element* create_tet4(Cut::Mesh& mesh, Core::LinAlg::SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(4);
@@ -45,8 +43,7 @@ Core::Geo::Cut::Element* create_tet4(
   return mesh.create_tet4(numele++, nids);
 }
 
-Core::Geo::Cut::Element* create_wedge6(
-    Core::Geo::Cut::Mesh& mesh, Core::LinAlg::SerialDenseMatrix& xyze)
+Cut::Element* create_wedge6(Cut::Mesh& mesh, Core::LinAlg::SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(6);
@@ -59,8 +56,7 @@ Core::Geo::Cut::Element* create_wedge6(
   return mesh.create_wedge6(numele++, nids);
 }
 
-Core::Geo::Cut::Element* create_pyramid5(
-    Core::Geo::Cut::Mesh& mesh, Core::LinAlg::SerialDenseMatrix& xyze)
+Cut::Element* create_pyramid5(Cut::Mesh& mesh, Core::LinAlg::SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(5);
@@ -73,8 +69,7 @@ Core::Geo::Cut::Element* create_pyramid5(
   return mesh.create_pyramid5(numele++, nids);
 }
 
-Core::Geo::Cut::Side* create_quad4(
-    Core::Geo::Cut::Mesh& mesh, Core::LinAlg::SerialDenseMatrix& xyze)
+Cut::Side* create_quad4(Cut::Mesh& mesh, Core::LinAlg::SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(4);
@@ -129,14 +124,14 @@ void create_hex8(Core::LinAlg::SerialDenseMatrix& xyze, double dx, double dy, do
   }
 }
 
-Core::Geo::Cut::Element* create_hex8(Core::Geo::Cut::Mesh& mesh, double dx, double dy, double dz)
+Cut::Element* create_hex8(Cut::Mesh& mesh, double dx, double dy, double dz)
 {
   Core::LinAlg::SerialDenseMatrix xyze(3, 8);
   create_hex8(xyze, dx, dy, dz);
   return create_hex8(mesh, xyze);
 }
 
-void create_hex8_mesh(Core::Geo::Cut::Mesh& mesh, int rows, int cols, int depth)
+void create_hex8_mesh(Cut::Mesh& mesh, int rows, int cols, int depth)
 {
   for (int i = 0; i < rows + 1; ++i)
   {
@@ -182,8 +177,7 @@ void create_hex8_mesh(Core::Geo::Cut::Mesh& mesh, int rows, int cols, int depth)
   numnode += (rows + 1) * (cols + 1) * (depth + 1);
 }
 
-void create_quad4_mesh(
-    Core::Geo::Cut::Mesh& mesh, int rows, int cols, std::vector<Core::Geo::Cut::Side*>& sides)
+void create_quad4_mesh(Cut::Mesh& mesh, int rows, int cols, std::vector<Cut::Side*>& sides)
 {
   double sqrt2 = 1. / sqrt(2.);
 
@@ -224,7 +218,7 @@ void create_quad4_mesh(
 }
 
 void create_quad4_cylinder_mesh(
-    Core::Geo::Cut::MeshIntersection& intersection, double x, double y, int rows, int cols)
+    Cut::MeshIntersection& intersection, double x, double y, int rows, int cols)
 {
   double r = 1.;
 
@@ -266,7 +260,7 @@ void create_quad4_cylinder_mesh(
   numnode += rownodes * colnodes;
 }
 
-void cutmesh(Core::Geo::Cut::Mesh& mesh)
+void cutmesh(Cut::Mesh& mesh)
 {
   mesh.make_cut_lines();
   mesh.make_facets();
@@ -287,7 +281,7 @@ void cutmesh(Core::Geo::Cut::Mesh& mesh)
 
 SimpleWrapper::SimpleWrapper() : side_count_(0)
 {
-  mesh_ = new Core::Geo::Cut::MeshIntersection;
+  mesh_ = new Cut::MeshIntersection;
   mesh_->get_options().init_for_cuttests();  // use full cln
 }
 
@@ -436,8 +430,8 @@ void SimpleWrapper::assume_volume_cells(unsigned num)
 
 void SimpleWrapper::cut_test_cut(bool include_inner, bool do_Cut_Positions_Dofsets)
 {
-  mesh_->cut_test_cut(include_inner, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
-      Core::Geo::Cut::BCellGaussPts_Tessellation, true, true, do_Cut_Positions_Dofsets);
+  mesh_->cut_test_cut(include_inner, Cut::VCellGaussPts_DirectDivergence,
+      Cut::BCellGaussPts_Tessellation, true, true, do_Cut_Positions_Dofsets);
 }
 
 void SimpleWrapper::create_element(

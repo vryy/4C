@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  * Constructor for the selfcut                                     wirtz 05/13
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Impl::PointGraph::PointGraph(Side *side) : graph_(create_graph(side->n_dim()))
+Cut::Impl::PointGraph::PointGraph(Side *side) : graph_(create_graph(side->n_dim()))
 {
   Cycle cycle;
   fill_graph(side, cycle);
@@ -47,7 +47,7 @@ Core::Geo::Cut::Impl::PointGraph::PointGraph(Side *side) : graph_(create_graph(s
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Impl::PointGraph::PointGraph(
+Cut::Impl::PointGraph::PointGraph(
     Mesh &mesh, Element *element, Side *side, Location location, Strategy strategy)
     : graph_(create_graph(element->n_dim()))
 {
@@ -85,7 +85,7 @@ Core::Geo::Cut::Impl::PointGraph::PointGraph(
   catch (Core::Exception &err)
   {
     std::ofstream file("failed_pointgraph.pos");
-    Core::Geo::Cut::Output::GmshSideDump(file, side, std::string("Side"));
+    Cut::Output::GmshSideDump(file, side, std::string("Side"));
 
     // add cut lines to graph
     const std::vector<Line *> &cut_lines = side->cut_lines();
@@ -96,12 +96,12 @@ Core::Geo::Cut::Impl::PointGraph::PointGraph(
       std::stringstream section_name;
       section_name << "Cut_lines" << line_index;
       Line *l = *i;
-      Core::Geo::Cut::Output::GmshNewSection(file, section_name.str());
-      Core::Geo::Cut::Output::GmshLineDump(file, l, false, nullptr);
-      Core::Geo::Cut::Output::GmshEndSection(file, false);
+      Cut::Output::GmshNewSection(file, section_name.str());
+      Cut::Output::GmshLineDump(file, l, false, nullptr);
+      Cut::Output::GmshEndSection(file, false);
       // output distance between points of the line
       file << "// Distance between points of the line is"
-           << Core::Geo::Cut::DistanceBetweenPoints(l->begin_point(), l->end_point()) << std::endl;
+           << Cut::DistanceBetweenPoints(l->begin_point(), l->end_point()) << std::endl;
     }
     file.close();
     FOUR_C_THROW("");
@@ -112,7 +112,7 @@ Core::Geo::Cut::Impl::PointGraph::PointGraph(
  * Graph is filled wihl all edges of the selfcut: uncutted edges, selfcutedges
  * and new splitted edges; but no the cutted edges                          wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::Impl::PointGraph::fill_graph(Side *side, Cycle &cycle)
+void Cut::Impl::PointGraph::fill_graph(Side *side, Cycle &cycle)
 {
   const std::vector<Node *> &nodes = side->nodes();
   const std::vector<Edge *> &edges = side->edges();
@@ -158,7 +158,7 @@ void Core::Geo::Cut::Impl::PointGraph::fill_graph(Side *side, Cycle &cycle)
  * Get all edges created on this side after cut, store cycle of points on this
  * side to create facet. Also add cut lines to the graph
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Impl::PointGraph::fill_graph(
+void Cut::Impl::PointGraph::fill_graph(
     Element *element, Side *side, Cycle &cycle, Strategy strategy)
 {
   const std::vector<Node *> &nodes = side->nodes();
@@ -214,8 +214,7 @@ void Core::Geo::Cut::Impl::PointGraph::fill_graph(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Impl::PointGraph::build_cycle(
-    const std::vector<Point *> &edge_points, Cycle &cycle) const
+void Cut::Impl::PointGraph::build_cycle(const std::vector<Point *> &edge_points, Cycle &cycle) const
 {
   for (std::vector<Point *>::const_iterator i = edge_points.begin() + 1; i != edge_points.end();
        ++i)
@@ -227,8 +226,7 @@ void Core::Geo::Cut::Impl::PointGraph::build_cycle(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Impl::PointGraph::add_cut_lines_to_graph(
-    Element *element, Side *side, Strategy strategy)
+void Cut::Impl::PointGraph::add_cut_lines_to_graph(Element *element, Side *side, Strategy strategy)
 {
   const std::vector<Line *> &cut_lines = side->cut_lines();
 
@@ -253,7 +251,7 @@ void Core::Geo::Cut::Impl::PointGraph::add_cut_lines_to_graph(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Impl::PointGraph::Graph::add_edge(int row, int col)
+void Cut::Impl::PointGraph::Graph::add_edge(int row, int col)
 {
   graph_[row].insert(col);
   graph_[col].insert(row);
@@ -261,7 +259,7 @@ void Core::Geo::Cut::Impl::PointGraph::Graph::add_edge(int row, int col)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Impl::PointGraph::Graph::add_edge(Point *p1, Point *p2)
+void Cut::Impl::PointGraph::Graph::add_edge(Point *p1, Point *p2)
 {
   all_points_[p1->id()] = p1;
   all_points_[p2->id()] = p2;
@@ -271,7 +269,7 @@ void Core::Geo::Cut::Impl::PointGraph::Graph::add_edge(Point *p1, Point *p2)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Impl::PointGraph::Graph::print(std::ostream &stream)
+void Cut::Impl::PointGraph::Graph::print(std::ostream &stream)
 {
   stream << "--- PointGraph::Graph ---\n";
   for (std::map<int, plain_int_set>::iterator i = graph_.begin(); i != graph_.end(); ++i)
@@ -291,7 +289,7 @@ void Core::Geo::Cut::Impl::PointGraph::Graph::print(std::ostream &stream)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Impl::PointGraph::Graph::plot_all_points(std::ostream &stream)
+void Cut::Impl::PointGraph::Graph::plot_all_points(std::ostream &stream)
 {
   for (std::map<int, Point *>::iterator i = all_points_.begin(); i != all_points_.end(); ++i)
   {
@@ -301,7 +299,7 @@ void Core::Geo::Cut::Impl::PointGraph::Graph::plot_all_points(std::ostream &stre
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Impl::PointGraph::Graph::plot_points(Element *element)
+void Cut::Impl::PointGraph::Graph::plot_points(Element *element)
 {
   for (std::map<int, Point *>::iterator i = all_points_.begin(); i != all_points_.end(); ++i)
   {
@@ -313,9 +311,9 @@ void Core::Geo::Cut::Impl::PointGraph::Graph::plot_points(Element *element)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Impl::find_cycles(graph_t &g, Core::Geo::Cut::Cycle &cycle,
+bool Cut::Impl::find_cycles(graph_t &g, Cut::Cycle &cycle,
     std::map<vertex_t, Core::LinAlg::Matrix<3, 1>> &local,
-    std::vector<Core::Geo::Cut::Cycle> &cycles) /* non-member function */
+    std::vector<Cut::Cycle> &cycles) /* non-member function */
 {
   name_map_t name_map = boost::get(boost::vertex_name, g);
 
@@ -395,14 +393,13 @@ bool Core::Geo::Cut::Impl::find_cycles(graph_t &g, Core::Geo::Cut::Cycle &cycle,
 
         std::ofstream file("double_arc.pos");
 
-        Core::Geo::Cut::Output::GmshNewSection(file, "NewLine");
-        Core::Geo::Cut::Output::GmshLineDump(
-            file, first, second, first->id(), second->id(), false, nullptr);
-        Core::Geo::Cut::Output::GmshEndSection(file);
-        Core::Geo::Cut::Output::GmshNewSection(file, "OldLine");
-        Core::Geo::Cut::Output::GmshLineDump(
+        Cut::Output::GmshNewSection(file, "NewLine");
+        Cut::Output::GmshLineDump(file, first, second, first->id(), second->id(), false, nullptr);
+        Cut::Output::GmshEndSection(file);
+        Cut::Output::GmshNewSection(file, "OldLine");
+        Cut::Output::GmshLineDump(
             file, first, previous, first->id(), previous->id(), false, nullptr);
-        Core::Geo::Cut::Output::GmshEndSection(file, true);
+        Cut::Output::GmshEndSection(file, true);
 
         err_msg
             << "Numerical error: double arc when trying to create arc with between points with Id="
@@ -520,7 +517,7 @@ bool Core::Geo::Cut::Impl::find_cycles(graph_t &g, Core::Geo::Cut::Cycle &cycle,
  * Creates maincycles (outer polygons) and holecycles (inner polygons = holes)
  * of the selfcut graph                                                     wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::Impl::PointGraph::Graph::find_cycles(Side *side, Cycle &cycle)
+void Cut::Impl::PointGraph::Graph::find_cycles(Side *side, Cycle &cycle)
 {
   graph_t g;
 
@@ -609,7 +606,7 @@ void Core::Geo::Cut::Impl::PointGraph::Graph::find_cycles(Side *side, Cycle &cyc
 
   if (num_comp == 1)
   {
-    Core::Geo::Cut::Impl::find_cycles(g, cycle, local, main_cycles_);
+    Cut::Impl::find_cycles(g, cycle, local, main_cycles_);
   }
   else if (num_comp > 1)
   {
@@ -624,7 +621,7 @@ void Core::Geo::Cut::Impl::PointGraph::Graph::find_cycles(Side *side, Cycle &cyc
       graph_t cg;
       boost::copy_graph(fg, cg);
 
-      bool main_cycle = Core::Geo::Cut::Impl::find_cycles(cg, cycle, local, filtered_cycles);
+      bool main_cycle = Cut::Impl::find_cycles(cg, cycle, local, filtered_cycles);
 
       if (main_cycle)
       {
@@ -645,7 +642,7 @@ void Core::Geo::Cut::Impl::PointGraph::Graph::find_cycles(Side *side, Cycle &cyc
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Impl::PointGraph::Graph::find_cycles(
+void Cut::Impl::PointGraph::Graph::find_cycles(
     Element *element, Side *side, Cycle &cycle, Location location, Strategy strategy)
 {
   graph_t g;
@@ -786,7 +783,7 @@ void Core::Geo::Cut::Impl::PointGraph::Graph::find_cycles(
 
     if (num_comp == 1)
     {
-      bool main_cycle = Core::Geo::Cut::Impl::find_cycles(g, cycle, local, main_cycles_);
+      bool main_cycle = Cut::Impl::find_cycles(g, cycle, local, main_cycles_);
       if (location == element_side and not main_cycle)
       {
         gnuplot_dump_cycles("cycles", main_cycles_);
@@ -807,7 +804,7 @@ void Core::Geo::Cut::Impl::PointGraph::Graph::find_cycles(
 
         graph_t cg;
         boost::copy_graph(fg, cg);
-        bool main_cycle = Core::Geo::Cut::Impl::find_cycles(cg, cycle, local, filtered_cycles);
+        bool main_cycle = Cut::Impl::find_cycles(cg, cycle, local, filtered_cycles);
 
         if (main_cycle)
         {
@@ -866,7 +863,7 @@ void Core::Geo::Cut::Impl::PointGraph::Graph::find_cycles(
 /*---------------------------------------------------------------------------------*
  * In graph, if any edge has a single point, it will be deleted
  *---------------------------------------------------------------------------------*/
-void Core::Geo::Cut::Impl::PointGraph::Graph::fix_single_points(Cycle &cycle)
+void Cut::Impl::PointGraph::Graph::fix_single_points(Cycle &cycle)
 {
   for (;;)
   {
@@ -906,8 +903,7 @@ void Core::Geo::Cut::Impl::PointGraph::Graph::fix_single_points(Cycle &cycle)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Impl::PointGraph::Graph::has_single_points(
-    Core::Geo::Cut::Impl::PointGraph::Location location)
+bool Cut::Impl::PointGraph::Graph::has_single_points(Cut::Impl::PointGraph::Location location)
 {
   for (std::map<int, plain_int_set>::iterator i = graph_.begin(); i != graph_.end(); ++i)
   {
@@ -923,7 +919,7 @@ bool Core::Geo::Cut::Impl::PointGraph::Graph::has_single_points(
 
 // Check if this side has single point in the pointgraph, because other
 // side was touched by the "tip" at this point
-bool Core::Geo::Cut::Impl::PointGraph::Graph::has_touching_edge(Element *element, Side *side)
+bool Cut::Impl::PointGraph::Graph::has_touching_edge(Element *element, Side *side)
 {
   for (std::map<int, plain_int_set>::iterator i = graph_.begin(); i != graph_.end(); ++i)
   {
@@ -998,13 +994,13 @@ bool Core::Geo::Cut::Impl::PointGraph::Graph::has_touching_edge(Element *element
 #ifdef DEBUG_POINTGRAPH
           std::ofstream file("touchign_element_detectiong_failed.pos");
 
-          Core::Geo::Cut::Output::GmshNewSection(file, "Element");
-          Core::Geo::Cut::Output::GmshElementDump(file, element, false);
-          Core::Geo::Cut::Output::GmshEndSection(file, false);
+          Cut::Output::GmshNewSection(file, "Element");
+          Cut::Output::GmshElementDump(file, element, false);
+          Cut::Output::GmshEndSection(file, false);
 
-          Core::Geo::Cut::Output::GmshSideDump(file, side, std::string("Side"));
-          Core::Geo::Cut::Output::GmshEdgeDump(file, ed, std::string("EdgeContainingPoint"));
-          Core::Geo::Cut::Output::GmshPointDump(
+          Cut::Output::GmshSideDump(file, side, std::string("Side"));
+          Cut::Output::GmshEdgeDump(file, ed, std::string("EdgeContainingPoint"));
+          Cut::Output::GmshPointDump(
               file, cut_point, cut_point->id(), std::string("CutPoint"), false, nullptr);
 
 
@@ -1025,10 +1021,10 @@ bool Core::Geo::Cut::Impl::PointGraph::Graph::has_touching_edge(Element *element
           {
             std::stringstream point_section_name;
             point_section_name << "Point" << (it->second)->id();
-            Core::Geo::Cut::Output::GmshNewSection(file_pgraph, point_section_name.str());
-            Core::Geo::Cut::Output::GmshPointDump(
+            Cut::Output::GmshNewSection(file_pgraph, point_section_name.str());
+            Cut::Output::GmshPointDump(
                 file_pgraph, (it->second), (it->second)->id(), false, nullptr);
-            Core::Geo::Cut::Output::GmshEndSection(file_pgraph, false);
+            Cut::Output::GmshEndSection(file_pgraph, false);
             (it->second)->dump_connectivity_info();
           }
 
@@ -1048,7 +1044,7 @@ bool Core::Geo::Cut::Impl::PointGraph::Graph::has_touching_edge(Element *element
   return true;
 }
 
-bool Core::Geo::Cut::Impl::PointGraph::Graph::simplify_connections(Element *element, Side *side)
+bool Cut::Impl::PointGraph::Graph::simplify_connections(Element *element, Side *side)
 {
   for (std::map<int, plain_int_set>::iterator i = graph_.begin(); i != graph_.end(); ++i)
   {
@@ -1094,7 +1090,7 @@ bool Core::Geo::Cut::Impl::PointGraph::Graph::simplify_connections(Element *elem
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Impl::PointGraph::Graph::gnuplot_dump_cycles(
+void Cut::Impl::PointGraph::Graph::gnuplot_dump_cycles(
     const std::string &filename, const std::vector<Cycle> &cycles)
 {
   int counter = 0;
@@ -1114,7 +1110,7 @@ void Core::Geo::Cut::Impl::PointGraph::Graph::gnuplot_dump_cycles(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Point *Core::Geo::Cut::Impl::PointGraph::Graph::get_point(int i)
+Cut::Point *Cut::Impl::PointGraph::Graph::get_point(int i)
 {
   std::map<int, Point *>::iterator j = all_points_.find(i);
   if (j != all_points_.end()) return j->second;
@@ -1123,8 +1119,8 @@ Core::Geo::Cut::Point *Core::Geo::Cut::Impl::PointGraph::Graph::get_point(int i)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Impl::PointGraph *Core::Geo::Cut::Impl::PointGraph::create(Mesh &mesh,
-    Element *element, Side *side, PointGraph::Location location, PointGraph::Strategy strategy)
+Cut::Impl::PointGraph *Cut::Impl::PointGraph::create(Mesh &mesh, Element *element, Side *side,
+    PointGraph::Location location, PointGraph::Strategy strategy)
 {
   PointGraph *pg = nullptr;
   const unsigned dim = element->n_dim();
@@ -1148,8 +1144,7 @@ Core::Geo::Cut::Impl::PointGraph *Core::Geo::Cut::Impl::PointGraph::create(Mesh 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Geo::Cut::Impl::PointGraph::Graph>
-Core::Geo::Cut::Impl::PointGraph::create_graph(unsigned dim)
+Teuchos::RCP<Cut::Impl::PointGraph::Graph> Cut::Impl::PointGraph::create_graph(unsigned dim)
 {
   switch (dim)
   {

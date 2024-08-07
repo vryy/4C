@@ -27,7 +27,7 @@
 //(to sides with 3 common cut points - because of tolerances!)
 void test_christoph_1()
 {
-  Core::Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -467,17 +467,17 @@ void test_christoph_1()
 
     intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
 
-    intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+    intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
   }
 
   std::vector<double> dirDivVol;
 
-  Core::Geo::Cut::Mesh mesh = intersection.normal_mesh();
-  const std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>& other_cells = mesh.volume_cells();
-  for (std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  Cut::Mesh mesh = intersection.normal_mesh();
+  const std::list<Teuchos::RCP<Cut::VolumeCell>>& other_cells = mesh.volume_cells();
+  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
-    Core::Geo::Cut::VolumeCell* vc = &**i;
+    Cut::VolumeCell* vc = &**i;
     std::cout << "Volume of Volumecell: " << vc->volume() << std::endl;
   }
 }

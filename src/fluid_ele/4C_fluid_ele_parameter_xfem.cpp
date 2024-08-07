@@ -33,8 +33,8 @@ Discret::ELEMENTS::FluidEleParameterXFEM* Discret::ELEMENTS::FluidEleParameterXF
 //----------------------------------------------------------------------*/
 Discret::ELEMENTS::FluidEleParameterXFEM::FluidEleParameterXFEM()
     : Discret::ELEMENTS::FluidEleParameterStd::FluidEleParameterStd(),
-      vcellgausspts_(Core::Geo::Cut::VCellGaussPts_DirectDivergence),
-      bcellgausspts_(Core::Geo::Cut::BCellGaussPts_Tessellation),
+      vcellgausspts_(Cut::VCellGaussPts_DirectDivergence),
+      bcellgausspts_(Cut::BCellGaussPts_Tessellation),
       coupling_method_(Inpar::XFEM::Nitsche),
       hybrid_lm_l2_proj_(Inpar::XFEM::Hybrid_LM_L2_Proj_part),
       visc_stab_trace_estimate_(Inpar::XFEM::ViscStab_TraceEstimate_CT_div_by_hk),
@@ -166,10 +166,10 @@ void Discret::ELEMENTS::FluidEleParameterXFEM::set_element_xfem_parameter(
   //----------------------------------------------------------------
   Teuchos::ParameterList& params_xfem = params.sublist("XFEM");
 
-  vcellgausspts_ = Core::UTILS::IntegralValue<Core::Geo::Cut::VCellGaussPts>(
-      params_xfem, "VOLUME_GAUSS_POINTS_BY");
-  bcellgausspts_ = Core::UTILS::IntegralValue<Core::Geo::Cut::BCellGaussPts>(
-      params_xfem, "BOUNDARY_GAUSS_POINTS_BY");
+  vcellgausspts_ =
+      Core::UTILS::IntegralValue<Cut::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY");
+  bcellgausspts_ =
+      Core::UTILS::IntegralValue<Cut::BCellGaussPts>(params_xfem, "BOUNDARY_GAUSS_POINTS_BY");
 
   //----------------------------------------------------------------
   Teuchos::ParameterList& params_xf_gen = params.sublist("XFLUID DYNAMIC/GENERAL");
