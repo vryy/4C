@@ -120,7 +120,7 @@ Teuchos::RCP<Core::Elements::ParamsInterface> Discret::ELEMENTS::Beam3Base::para
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<BROWNIANDYN::ParamsInterface>
+Teuchos::RCP<BrownianDynamics::ParamsInterface>
 Discret::ELEMENTS::Beam3Base::brownian_dyn_params_interface_ptr() const
 {
   return browndyn_interface_ptr_;
@@ -245,7 +245,7 @@ void Discret::ELEMENTS::Beam3Base::get_damping_coefficients(Core::LinAlg::Matrix
 {
   switch (brownian_dyn_params_interface().how_beam_damping_coefficients_are_specified())
   {
-    case Inpar::BROWNIANDYN::cylinder_geometry_approx:
+    case Inpar::BrownianDynamics::cylinder_geometry_approx:
     {
       /* These are coefficients for a straight cylindrical rod taken from
        * Howard, p. 107, table 6.2. The order is as follows:
@@ -265,7 +265,7 @@ void Discret::ELEMENTS::Beam3Base::get_damping_coefficients(Core::LinAlg::Matrix
       break;
     }
 
-    case Inpar::BROWNIANDYN::input_file:
+    case Inpar::BrownianDynamics::input_file:
     {
       gamma(0) = brownian_dyn_params_interface()
                      .get_beam_damping_coefficient_prefactors_from_input_file()[0] *

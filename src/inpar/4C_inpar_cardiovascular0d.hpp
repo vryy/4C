@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 // forward declaration
 namespace Inpar
 {
-  namespace CARDIOVASCULAR0D
+  namespace Cardiovascular0D
   {
     /// possible 0D cardiovascular-structural solvers
     enum Cardvasc0DSolveAlgo
@@ -59,7 +59,7 @@ namespace Inpar
     void SetValidConditions(
         std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
-  }  // namespace CARDIOVASCULAR0D
+  }  // namespace Cardiovascular0D
 }  // namespace Inpar
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

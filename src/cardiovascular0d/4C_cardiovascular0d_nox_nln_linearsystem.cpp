@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::Nln::CARDIOVASCULAR0D::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+NOX::Nln::Cardiovascular0D::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
@@ -42,7 +42,7 @@ NOX::Nln::CARDIOVASCULAR0D::LinearSystem::LinearSystem(Teuchos::ParameterList& p
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::Nln::CARDIOVASCULAR0D::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+NOX::Nln::Cardiovascular0D::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
@@ -58,7 +58,7 @@ NOX::Nln::CARDIOVASCULAR0D::LinearSystem::LinearSystem(Teuchos::ParameterList& p
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::Nln::CARDIOVASCULAR0D::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+NOX::Nln::Cardiovascular0D::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
@@ -73,7 +73,7 @@ NOX::Nln::CARDIOVASCULAR0D::LinearSystem::LinearSystem(Teuchos::ParameterList& p
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::Nln::CARDIOVASCULAR0D::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+NOX::Nln::Cardiovascular0D::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
@@ -86,7 +86,7 @@ NOX::Nln::CARDIOVASCULAR0D::LinearSystem::LinearSystem(Teuchos::ParameterList& p
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::LinAlg::SolverParams NOX::Nln::CARDIOVASCULAR0D::LinearSystem::set_solver_options(
+Core::LinAlg::SolverParams NOX::Nln::Cardiovascular0D::LinearSystem::set_solver_options(
     Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::Solver>& solverPtr,
     const NOX::Nln::SolutionType& solverType)
 {
@@ -116,7 +116,7 @@ Core::LinAlg::SolverParams NOX::Nln::CARDIOVASCULAR0D::LinearSystem::set_solver_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::Nln::SolutionType NOX::Nln::CARDIOVASCULAR0D::LinearSystem::get_active_lin_solver(
+NOX::Nln::SolutionType NOX::Nln::Cardiovascular0D::LinearSystem::get_active_lin_solver(
     const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
     Teuchos::RCP<Core::LinAlg::Solver>& currSolver)
 {
@@ -131,12 +131,12 @@ NOX::Nln::SolutionType NOX::Nln::CARDIOVASCULAR0D::LinearSystem::get_active_lin_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::Nln::CARDIOVASCULAR0D::LinearSystem::throw_error(
+void NOX::Nln::Cardiovascular0D::LinearSystem::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils_.isPrintType(::NOX::Utils::Error))
   {
-    utils_.out() << "NOX::Nln::CARDIOVASCULAR0D::LinearSystem::" << functionName << " - "
+    utils_.out() << "NOX::Nln::Cardiovascular0D::LinearSystem::" << functionName << " - "
                  << errorMsg << std::endl;
   }
   throw "NOX Error";

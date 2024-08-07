@@ -147,10 +147,10 @@ UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::
   // set number of degrees of freedom
   switch (respiratory_model_)
   {
-    case Inpar::CARDIOVASCULAR0D::resp_none:
+    case Inpar::Cardiovascular0D::resp_none:
       num_dof_ = num_dof_cardio_;
       break;
-    case Inpar::CARDIOVASCULAR0D::resp_standard:
+    case Inpar::Cardiovascular0D::resp_standard:
       num_dof_ = num_dof_cardio_ + num_dof_respir_;
       break;
     default:
@@ -337,19 +337,19 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
 
   switch (atrium_model_)
   {
-    case Inpar::CARDIOVASCULAR0D::atr_elastance_0d:
+    case Inpar::Cardiovascular0D::atr_elastance_0d:
     {
       E_at_l_np = (e_at_max_l_ - e_at_min_l_) * y_at_l_np + e_at_min_l_;
       E_at_r_np = (e_at_max_r_ - e_at_min_r_) * y_at_r_np + e_at_min_r_;
     }
     break;
-    case Inpar::CARDIOVASCULAR0D::atr_structure_3d:
+    case Inpar::Cardiovascular0D::atr_structure_3d:
     {
       E_at_l_np = 0.;
       E_at_r_np = 0.;
     }
     break;
-    case Inpar::CARDIOVASCULAR0D::atr_prescribed:
+    case Inpar::Cardiovascular0D::atr_prescribed:
     {
       E_at_l_np = E_at_l_prescr_np;
       E_at_r_np = E_at_r_prescr_np;
@@ -362,19 +362,19 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
 
   switch (ventricle_model_)
   {
-    case Inpar::CARDIOVASCULAR0D::ventr_elastance_0d:
+    case Inpar::Cardiovascular0D::ventr_elastance_0d:
     {
       E_v_l_np = (e_v_max_l_ - e_v_min_l_) * y_v_l_np + e_v_min_l_;
       E_v_r_np = (e_v_max_r_ - e_v_min_r_) * y_v_r_np + e_v_min_r_;
     }
     break;
-    case Inpar::CARDIOVASCULAR0D::ventr_structure_3d:
+    case Inpar::Cardiovascular0D::ventr_structure_3d:
     {
       E_v_l_np = 0.;
       E_v_r_np = 0.;
     }
     break;
-    case Inpar::CARDIOVASCULAR0D::ventr_prescribed:
+    case Inpar::Cardiovascular0D::ventr_prescribed:
     {
       E_v_l_np = E_v_l_prescr_np;
       E_v_r_np = E_v_r_prescr_np;
@@ -492,14 +492,14 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
 
     switch (atrium_model_)
     {
-      case Inpar::CARDIOVASCULAR0D::atr_elastance_0d:
-      case Inpar::CARDIOVASCULAR0D::atr_prescribed:
+      case Inpar::Cardiovascular0D::atr_elastance_0d:
+      case Inpar::Cardiovascular0D::atr_prescribed:
       {
         df_np[0] = p_at_l_np / E_at_l_np;
         df_np[24] = p_at_r_np / E_at_r_np;
       }
       break;
-      case Inpar::CARDIOVASCULAR0D::atr_structure_3d:
+      case Inpar::Cardiovascular0D::atr_structure_3d:
       {
         df_np[0] = V_at_l_np;
         df_np[24] = V_at_r_np;
@@ -512,14 +512,14 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
 
     switch (ventricle_model_)
     {
-      case Inpar::CARDIOVASCULAR0D::ventr_structure_3d:
+      case Inpar::Cardiovascular0D::ventr_structure_3d:
       {
         df_np[2] = V_v_l_np;
         df_np[26] = V_v_r_np;
       }
       break;
-      case Inpar::CARDIOVASCULAR0D::ventr_elastance_0d:
-      case Inpar::CARDIOVASCULAR0D::ventr_prescribed:
+      case Inpar::Cardiovascular0D::ventr_elastance_0d:
+      case Inpar::Cardiovascular0D::ventr_prescribed:
       {
         df_np[2] = p_v_l_np / E_v_l_np;
         df_np[26] = p_v_r_np / E_v_r_np;
@@ -622,16 +622,16 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
     f_np[33] = (p_at_l_np - p_ven_pul_np) / r_ven_pul_ + q_ven_pul_np;
 
     // insert volumes of all the compartments into vol vector v_np
-    if (atrium_model_ == Inpar::CARDIOVASCULAR0D::atr_elastance_0d or
-        atrium_model_ == Inpar::CARDIOVASCULAR0D::atr_prescribed)
+    if (atrium_model_ == Inpar::Cardiovascular0D::atr_elastance_0d or
+        atrium_model_ == Inpar::Cardiovascular0D::atr_prescribed)
     {
       // 0D left atrial volume
       (*sysvec5)[0] = p_at_l_np / E_at_l_np + v_at_l_u_;
       // 0D right atrial volume
       (*sysvec5)[24] = p_at_r_np / E_at_r_np + v_at_r_u_;
     }
-    if (ventricle_model_ == Inpar::CARDIOVASCULAR0D::ventr_elastance_0d or
-        ventricle_model_ == Inpar::CARDIOVASCULAR0D::ventr_prescribed)
+    if (ventricle_model_ == Inpar::Cardiovascular0D::ventr_elastance_0d or
+        ventricle_model_ == Inpar::Cardiovascular0D::ventr_prescribed)
     {
       // 0D left ventricular volume
       (*sysvec5)[2] = p_v_l_np / E_v_l_np + v_v_l_u_;
@@ -672,9 +672,9 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
     // residual!!!
     switch (respiratory_model_)
     {
-      case Inpar::CARDIOVASCULAR0D::resp_none:
+      case Inpar::Cardiovascular0D::resp_none:
         break;
-      case Inpar::CARDIOVASCULAR0D::resp_standard:
+      case Inpar::Cardiovascular0D::resp_standard:
         evaluate_respiratory(params, df_np, f_np, wkstiff, sysvec4, sysvec5, false);
         break;
     }
@@ -687,12 +687,12 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
     // atrium - left and right
     switch (atrium_model_)
     {
-      case Inpar::CARDIOVASCULAR0D::atr_elastance_0d:
-      case Inpar::CARDIOVASCULAR0D::atr_prescribed:
+      case Inpar::Cardiovascular0D::atr_elastance_0d:
+      case Inpar::Cardiovascular0D::atr_prescribed:
         wkstiff(0, 0) = 1. / (E_at_l_np * ts_size);
         wkstiff(24, 24) = 1. / (E_at_r_np * ts_size);
         break;
-      case Inpar::CARDIOVASCULAR0D::atr_structure_3d:
+      case Inpar::Cardiovascular0D::atr_structure_3d:
         wkstiff(0, 0) = 0.;
         wkstiff(24, 24) = 0.;
         break;
@@ -704,12 +704,12 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
     // ventricle - left and right
     switch (ventricle_model_)
     {
-      case Inpar::CARDIOVASCULAR0D::ventr_structure_3d:
+      case Inpar::Cardiovascular0D::ventr_structure_3d:
         wkstiff(2, 3) = 0.;
         wkstiff(26, 27) = 0.;
         break;
-      case Inpar::CARDIOVASCULAR0D::ventr_elastance_0d:
-      case Inpar::CARDIOVASCULAR0D::ventr_prescribed:
+      case Inpar::Cardiovascular0D::ventr_elastance_0d:
+      case Inpar::Cardiovascular0D::ventr_prescribed:
         wkstiff(2, 3) = 1. / (E_v_l_np * ts_size);
         wkstiff(26, 27) = 1. / (E_v_r_np * ts_size);
         break;
@@ -884,9 +884,9 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
     // call sub evaluate method for respiratory model
     switch (respiratory_model_)
     {
-      case Inpar::CARDIOVASCULAR0D::resp_none:
+      case Inpar::Cardiovascular0D::resp_none:
         break;
-      case Inpar::CARDIOVASCULAR0D::resp_standard:
+      case Inpar::Cardiovascular0D::resp_standard:
         evaluate_respiratory(params, df_np, f_np, wkstiff, sysvec4, sysvec5, true);
         break;
     }
@@ -1000,7 +1000,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
         // transport residual expressions
         switch (respiratory_model_)
         {
-          case Inpar::CARDIOVASCULAR0D::resp_none:
+          case Inpar::Cardiovascular0D::resp_none:
           {
             if (conditiontype == "ventricle_left") colvec[0] = gindex[2];
             if (conditiontype == "ventricle_right") colvec[0] = gindex[26];
@@ -1010,7 +1010,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
             sysmat2->assemble(eid, lmstride, elevector2, lm, lmowner, colvec);
           }
           break;
-          case Inpar::CARDIOVASCULAR0D::resp_standard:
+          case Inpar::Cardiovascular0D::resp_standard:
           {
             if (conditiontype == "ventricle_left")
             {
@@ -2095,19 +2095,19 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate_respira
 
     switch (atrium_model_)
     {
-      case Inpar::CARDIOVASCULAR0D::atr_elastance_0d:
+      case Inpar::Cardiovascular0D::atr_elastance_0d:
       {
         dV_at_l_dp = df_np[0] / p_at_l_np;
         dV_at_r_dp = df_np[24] / p_at_r_np;
       }
       break;
-      case Inpar::CARDIOVASCULAR0D::atr_structure_3d:
+      case Inpar::Cardiovascular0D::atr_structure_3d:
       {
         dV_at_l_dp = 0.;
         dV_at_r_dp = 0.;
       }
       break;
-      case Inpar::CARDIOVASCULAR0D::atr_prescribed:
+      case Inpar::Cardiovascular0D::atr_prescribed:
       {
         dV_at_l_dp = df_np[0] / p_at_l_np;
         dV_at_r_dp = df_np[24] / p_at_r_np;
@@ -2120,19 +2120,19 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate_respira
 
     switch (ventricle_model_)
     {
-      case Inpar::CARDIOVASCULAR0D::ventr_structure_3d:
+      case Inpar::Cardiovascular0D::ventr_structure_3d:
       {
         dV_v_l_dp = 0.;
         dV_v_r_dp = 0.;
       }
       break;
-      case Inpar::CARDIOVASCULAR0D::ventr_elastance_0d:
+      case Inpar::Cardiovascular0D::ventr_elastance_0d:
       {
         dV_v_l_dp = df_np[2] / p_v_l_np;
         dV_v_r_dp = df_np[26] / p_v_r_np;
       }
       break;
-      case Inpar::CARDIOVASCULAR0D::ventr_prescribed:
+      case Inpar::Cardiovascular0D::ventr_prescribed:
       {
         dV_v_l_dp = df_np[2] / p_v_l_np;
         dV_v_r_dp = df_np[26] / p_v_r_np;
@@ -9126,9 +9126,9 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::initialize(
 
   switch (respiratory_model_)
   {
-    case Inpar::CARDIOVASCULAR0D::resp_none:
+    case Inpar::Cardiovascular0D::resp_none:
       break;
-    case Inpar::CARDIOVASCULAR0D::resp_standard:
+    case Inpar::Cardiovascular0D::resp_standard:
 
       // initial value of time-varying pleural pressure
       double U_t_0 = 0.0;
@@ -9265,7 +9265,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::initialize(
   {
     switch (respiratory_model_)
     {
-      case Inpar::CARDIOVASCULAR0D::resp_none:
+      case Inpar::Cardiovascular0D::resp_none:
       {
         std::cout << "============ Welcome to monolithic coupling of 3D structural dynamics to 0D "
                      "cardiovascular flow models ======================="
@@ -9278,7 +9278,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::initialize(
                   << std::endl;
       }
       break;
-      case Inpar::CARDIOVASCULAR0D::resp_standard:
+      case Inpar::Cardiovascular0D::resp_standard:
       {
         std::cout << "============ Welcome to monolithic coupling of 3D structural dynamics to 0D "
                      "cardiovascular flow models ======================="

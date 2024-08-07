@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::Cardiovascular0D::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -49,9 +49,9 @@ void Inpar::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
 
   setStringToIntegralParameter<int>("SOLALGORITHM", "direct", "",
       tuple<std::string>("simple", "direct", "AMGnxn"),
-      tuple<int>(Inpar::CARDIOVASCULAR0D::cardvasc0dsolve_simple,
-          Inpar::CARDIOVASCULAR0D::cardvasc0dsolve_direct,
-          Inpar::CARDIOVASCULAR0D::cardvasc0dsolve_AMGnxn),
+      tuple<int>(Inpar::Cardiovascular0D::cardvasc0dsolve_simple,
+          Inpar::Cardiovascular0D::cardvasc0dsolve_direct,
+          Inpar::Cardiovascular0D::cardvasc0dsolve_AMGnxn),
       &cardvasc0dstruct);
 
   Core::UTILS::DoubleParameter("T_PERIOD", -1.0, "periodic time", &cardvasc0dstruct);
@@ -86,8 +86,8 @@ void Inpar::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
 
   setStringToIntegralParameter<int>("ATRIUM_MODEL", "0D", "",
       tuple<std::string>("0D", "3D", "prescribed"),
-      tuple<int>(Inpar::CARDIOVASCULAR0D::atr_elastance_0d,
-          Inpar::CARDIOVASCULAR0D::atr_structure_3d, Inpar::CARDIOVASCULAR0D::atr_prescribed),
+      tuple<int>(Inpar::Cardiovascular0D::atr_elastance_0d,
+          Inpar::Cardiovascular0D::atr_structure_3d, Inpar::Cardiovascular0D::atr_prescribed),
       &cardvasc0dsyspulcirc);
   Core::UTILS::IntParameter("Atrium_act_curve_l", -1,
       "left atrial activation curve (ONLY for ATRIUM_MODEL '0D'!)", &cardvasc0dsyspulcirc);
@@ -110,8 +110,8 @@ void Inpar::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
 
   setStringToIntegralParameter<int>("VENTRICLE_MODEL", "3D", "",
       tuple<std::string>("3D", "0D", "prescribed"),
-      tuple<int>(Inpar::CARDIOVASCULAR0D::ventr_structure_3d,
-          Inpar::CARDIOVASCULAR0D::ventr_elastance_0d, Inpar::CARDIOVASCULAR0D::ventr_prescribed),
+      tuple<int>(Inpar::Cardiovascular0D::ventr_structure_3d,
+          Inpar::Cardiovascular0D::ventr_elastance_0d, Inpar::Cardiovascular0D::ventr_prescribed),
       &cardvasc0dsyspulcirc);
   Core::UTILS::IntParameter("Ventricle_act_curve_l", -1,
       "left ventricular activation curve (ONLY for VENTRICLE_MODEL '0D'!)", &cardvasc0dsyspulcirc);
@@ -337,7 +337,7 @@ void Inpar::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
 
   setStringToIntegralParameter<int>("RESPIRATORY_MODEL", "None", "",
       tuple<std::string>("None", "Standard"),
-      tuple<int>(Inpar::CARDIOVASCULAR0D::resp_none, Inpar::CARDIOVASCULAR0D::resp_standard),
+      tuple<int>(Inpar::Cardiovascular0D::resp_none, Inpar::Cardiovascular0D::resp_standard),
       &cardvascrespir0d);
 
 
@@ -520,7 +520,7 @@ void Inpar::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
 
 
 
-void Inpar::CARDIOVASCULAR0D::SetValidConditions(
+void Inpar::Cardiovascular0D::SetValidConditions(
     std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;
