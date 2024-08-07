@@ -1,5 +1,6 @@
-# configure a header file to pass some of the CMake settings
-# to the source code
+# This module is special since files need to be generated.
+
+# configure a header file to pass some of the CMake settings to the source code
 configure_file("4C_config.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/4C_config.hpp")
 
 four_c_get_git_revision_information()
@@ -18,9 +19,10 @@ set(_headers
     ${CMAKE_CURRENT_BINARY_DIR}/4C_config_trilinos_version.hpp
     )
 
+# Use the automatic definition which will create the usual targets.
 four_c_auto_define_module()
 
-# Manually add the configured headers to the config target
+# Manually add the configured headers to the config target.
 target_sources(
   ${AUTO_DEFINED_MODULE_NAME}_deps
   INTERFACE FILE_SET
