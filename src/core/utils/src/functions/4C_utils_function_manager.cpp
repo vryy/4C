@@ -8,7 +8,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "4C_global_data.hpp"
 #include "4C_io_dat_file_utils.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -45,14 +44,13 @@ namespace
   }
 
 
-  template <int dim>
-  std::any CreateBuiltinFunction(const std::vector<Input::LineDefinition>& function_line_defs)
+  std::any create_builtin_function(const std::vector<Input::LineDefinition>& function_line_defs)
   {
     // List all known TryCreate functions in a vector, so they can be called with a unified
     // syntax below. Also, erase their exact return type, since we can only store std::any.
     std::vector<TypeErasedFunctionCreator> try_create_function_vector{
-        WrapFunction(Core::UTILS::TryCreateSymbolicFunctionOfAnything<dim>),
-        WrapFunction(Core::UTILS::TryCreateSymbolicFunctionOfSpaceTime<dim>),
+        WrapFunction(Core::UTILS::TryCreateSymbolicFunctionOfAnything),
+        WrapFunction(Core::UTILS::TryCreateSymbolicFunctionOfSpaceTime),
         WrapFunction(Core::UTILS::TryCreateFunctionOfTime)};
 
     for (const auto& try_create_function : try_create_function_vector)
@@ -64,22 +62,6 @@ namespace
     FOUR_C_THROW("Internal error: could not create a function that I should be able to create.");
   }
 
-  // add one level of indirection to dispatch on the dimension later when the global problem is
-  // available.
-  auto CreateBuiltinFunctionDispatch(const std::vector<Input::LineDefinition>& function_line_defs)
-  {
-    switch (Global::Problem::instance()->n_dim())
-    {
-      case 1:
-        return CreateBuiltinFunction<1>(function_line_defs);
-      case 2:
-        return CreateBuiltinFunction<2>(function_line_defs);
-      case 3:
-        return CreateBuiltinFunction<3>(function_line_defs);
-      default:
-        FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::instance()->n_dim());
-    }
-  }
 }  // namespace
 
 
@@ -133,7 +115,7 @@ void Core::UTILS::AddValidBuiltinFunctions(Core::UTILS::FunctionManager& functio
               "CONSTANTS", LengthFromIntNamed("NUMCONSTANTS"))
           .build()};
 
-  function_manager.add_function_definition(possible_lines, CreateBuiltinFunctionDispatch);
+  function_manager.add_function_definition(possible_lines, create_builtin_function);
 }
 
 

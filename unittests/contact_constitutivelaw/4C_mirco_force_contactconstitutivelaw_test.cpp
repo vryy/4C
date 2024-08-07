@@ -33,10 +33,10 @@ namespace
       Global::Problem& problem = (*Global::Problem::instance());
       problem.materials()->set_read_from_problem(problemid);
 
-      Teuchos::RCP<Core::UTILS::SymbolicFunctionOfSpaceTime<1>> FFUNCT1 =
-          Teuchos::rcp(new Core::UTILS::SymbolicFunctionOfSpaceTime<1>({"0.7"}, {}));
-      Teuchos::RCP<Core::UTILS::SymbolicFunctionOfSpaceTime<1>> FFUNCT2 =
-          Teuchos::rcp(new Core::UTILS::SymbolicFunctionOfSpaceTime<1>({"20.0"}, {}));
+      Teuchos::RCP<Core::UTILS::SymbolicFunctionOfSpaceTime> FFUNCT1 =
+          Teuchos::rcp(new Core::UTILS::SymbolicFunctionOfSpaceTime({"0.7"}, {}));
+      Teuchos::RCP<Core::UTILS::SymbolicFunctionOfSpaceTime> FFUNCT2 =
+          Teuchos::rcp(new Core::UTILS::SymbolicFunctionOfSpaceTime({"20.0"}, {}));
 
       Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> FUNCT1 = FFUNCT1;
       Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> FUNCT2 = FFUNCT2;

@@ -18,7 +18,6 @@
 
 #include <Sacado.hpp>
 
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -59,14 +58,11 @@ namespace
 
 
   /// sets the values of the variables in second derivative of expression
-  template <int dim>
   void SetValuesInExpressionSecondDeriv(
       const std::vector<Teuchos::RCP<Core::UTILS::FunctionVariable>>& variables, const double* x,
       const double t,
       std::map<std::string, Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>& variable_values)
   {
-    static_assert(dim >= 0 && dim <= 3, "Spatial dimension has to be 1, 2 or 3.");
-
     // define Fad object for evaluation
     using FAD = Sacado::Fad::DFad<Sacado::Fad::DFad<double>>;
 
@@ -93,26 +89,9 @@ namespace
           Sacado::Fad::DFad<double>(fad_size, number_of_arguments + i, variables[i]->value(t));
     }
 
-    // initialize spatial variables with zero
-
-    if constexpr (dim == 1)
-    {
-      variable_values.emplace("x", xfad);
-      variable_values.emplace("y", 0);
-      variable_values.emplace("z", 0);
-    }
-    else if constexpr (dim == 2)
-    {
-      variable_values.emplace("x", xfad);
-      variable_values.emplace("y", yfad);
-      variable_values.emplace("z", 0);
-    }
-    if constexpr (dim == 3)
-    {
-      variable_values.emplace("x", xfad);
-      variable_values.emplace("y", yfad);
-      variable_values.emplace("z", zfad);
-    }
+    variable_values.emplace("x", xfad);
+    variable_values.emplace("y", yfad);
+    variable_values.emplace("z", zfad);
 
     // set temporal variable
     variable_values.emplace("t", tfad);
@@ -184,7 +163,6 @@ namespace
 
 
 
-template <int dim>
 Teuchos::RCP<Core::UTILS::FunctionOfAnything> Core::UTILS::TryCreateSymbolicFunctionOfAnything(
     const std::vector<Input::LineDefinition>& function_line_defs)
 {
@@ -205,7 +183,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfAnything> Core::UTILS::TryCreateSymbolicFunc
           "CONSTANTS");
     }
 
-    return Teuchos::rcp(new Core::UTILS::SymbolicFunctionOfAnything<dim>(component, constants));
+    return Teuchos::rcp(new Core::UTILS::SymbolicFunctionOfAnything(component, constants));
   }
   else
   {
@@ -215,7 +193,6 @@ Teuchos::RCP<Core::UTILS::FunctionOfAnything> Core::UTILS::TryCreateSymbolicFunc
 
 
 
-template <int dim>
 Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> Core::UTILS::TryCreateSymbolicFunctionOfSpaceTime(
     const std::vector<Input::LineDefinition>& function_line_defs)
 {
@@ -389,11 +366,10 @@ Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> Core::UTILS::TryCreateSymbolicFun
     }
   }
 
-  return Teuchos::rcp(new SymbolicFunctionOfSpaceTime<dim>(functstring, functvarvector));
+  return Teuchos::rcp(new SymbolicFunctionOfSpaceTime(functstring, functvarvector));
 }
 
-template <int dim>
-Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::SymbolicFunctionOfSpaceTime(
+Core::UTILS::SymbolicFunctionOfSpaceTime::SymbolicFunctionOfSpaceTime(
     const std::vector<std::string>& expressions,
     std::vector<Teuchos::RCP<FunctionVariable>> variables)
     : variables_(std::move(variables))
@@ -408,8 +384,7 @@ Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::SymbolicFunctionOfSpaceTime(
   }
 }
 
-template <int dim>
-double Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate(
+double Core::UTILS::SymbolicFunctionOfSpaceTime::evaluate(
     const double* x, const double t, const std::size_t component) const
 {
   std::size_t component_mod = FindModifiedComponent(component, expr_);
@@ -422,9 +397,9 @@ double Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate(
   std::map<std::string, double> variable_values;
 
   // set spatial variables
-  if constexpr (dim > 0) variable_values.emplace("x", x[0]);
-  if constexpr (dim > 1) variable_values.emplace("y", x[1]);
-  if constexpr (dim > 2) variable_values.emplace("z", x[2]);
+  variable_values.emplace("x", x[0]);
+  variable_values.emplace("y", x[1]);
+  variable_values.emplace("z", x[2]);
 
   // set temporal variable
   variable_values.emplace("t", t);
@@ -439,8 +414,7 @@ double Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate(
   return expr_[component_mod]->value(variable_values);
 }
 
-template <int dim>
-std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate_spatial_derivative(
+std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime::evaluate_spatial_derivative(
     const double* x, const double t, const std::size_t component) const
 {
   std::size_t component_mod = FindModifiedComponent(component, expr_);
@@ -453,7 +427,7 @@ std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate_spat
   // variables
   std::map<std::string, Sacado::Fad::DFad<Sacado::Fad::DFad<double>>> variable_values;
 
-  SetValuesInExpressionSecondDeriv<dim>(variables_, x, t, variable_values);
+  SetValuesInExpressionSecondDeriv(variables_, x, t, variable_values);
 
   // The expression evaluates to an FAD object for up to second derivatives
   SecondDerivativeType fdfad = expr_[component_mod]->second_derivative(variable_values, {});
@@ -462,8 +436,7 @@ std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate_spat
   return {fdfad.dx(0).val(), fdfad.dx(1).val(), fdfad.dx(2).val()};
 }
 
-template <int dim>
-std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate_time_derivative(
+std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime::evaluate_time_derivative(
     const double* x, const double t, const unsigned deg, const std::size_t component) const
 {
   // result vector
@@ -474,7 +447,7 @@ std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate_time
   // variables
   std::map<std::string, Sacado::Fad::DFad<Sacado::Fad::DFad<double>>> variable_values;
 
-  SetValuesInExpressionSecondDeriv<dim>(variables_, x, t, variable_values);
+  SetValuesInExpressionSecondDeriv(variables_, x, t, variable_values);
 
   // FAD object for evaluation of derivatives
   Sacado::Fad::DFad<Sacado::Fad::DFad<double>> fdfad;
@@ -550,8 +523,7 @@ std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate_time
 }
 
 
-template <int dim>
-Core::UTILS::SymbolicFunctionOfAnything<dim>::SymbolicFunctionOfAnything(
+Core::UTILS::SymbolicFunctionOfAnything::SymbolicFunctionOfAnything(
     const std::string& component, std::vector<std::pair<std::string, double>> constants)
     : constants_from_input_(std::move(constants))
 {
@@ -564,8 +536,7 @@ Core::UTILS::SymbolicFunctionOfAnything<dim>::SymbolicFunctionOfAnything(
 
 
 
-template <int dim>
-double Core::UTILS::SymbolicFunctionOfAnything<dim>::evaluate(
+double Core::UTILS::SymbolicFunctionOfAnything::evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const std::size_t component) const
 {
@@ -595,8 +566,7 @@ double Core::UTILS::SymbolicFunctionOfAnything<dim>::evaluate(
 }
 
 
-template <int dim>
-std::vector<double> Core::UTILS::SymbolicFunctionOfAnything<dim>::evaluate_derivative(
+std::vector<double> Core::UTILS::SymbolicFunctionOfAnything::evaluate_derivative(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const std::size_t component) const
 {
@@ -627,36 +597,5 @@ std::vector<double> Core::UTILS::SymbolicFunctionOfAnything<dim>::evaluate_deriv
   return EvaluateAndAssembleExpressionToResultVector(
       variable_values, component, expr_, constant_values);
 }
-
-
-// explicit instantiations
-
-template class Core::UTILS::SymbolicFunctionOfSpaceTime<1>;
-template class Core::UTILS::SymbolicFunctionOfSpaceTime<2>;
-template class Core::UTILS::SymbolicFunctionOfSpaceTime<3>;
-
-template class Core::UTILS::SymbolicFunctionOfAnything<1>;
-template class Core::UTILS::SymbolicFunctionOfAnything<2>;
-template class Core::UTILS::SymbolicFunctionOfAnything<3>;
-
-template Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime>
-Core::UTILS::TryCreateSymbolicFunctionOfSpaceTime<1>(
-    const std::vector<Input::LineDefinition>& function_line_defs);
-template Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime>
-Core::UTILS::TryCreateSymbolicFunctionOfSpaceTime<2>(
-    const std::vector<Input::LineDefinition>& function_line_defs);
-template Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime>
-Core::UTILS::TryCreateSymbolicFunctionOfSpaceTime<3>(
-    const std::vector<Input::LineDefinition>& function_line_defs);
-
-template Teuchos::RCP<Core::UTILS::FunctionOfAnything>
-Core::UTILS::TryCreateSymbolicFunctionOfAnything<1>(
-    const std::vector<Input::LineDefinition>& function_line_defs);
-template Teuchos::RCP<Core::UTILS::FunctionOfAnything>
-Core::UTILS::TryCreateSymbolicFunctionOfAnything<2>(
-    const std::vector<Input::LineDefinition>& function_line_defs);
-template Teuchos::RCP<Core::UTILS::FunctionOfAnything>
-Core::UTILS::TryCreateSymbolicFunctionOfAnything<3>(
-    const std::vector<Input::LineDefinition>& function_line_defs);
 
 FOUR_C_NAMESPACE_CLOSE
