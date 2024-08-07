@@ -14,6 +14,8 @@ function(four_c_auto_define_module)
     add_library(${_target}_deps INTERFACE)
     # Link against all default external libraries
     four_c_link_default_external_libraries(${_target}_deps INTERFACE)
+    # Always add the special config target as a dependency
+    four_c_add_dependency(${_target} config)
 
     # Define an object library containing the actual sources.
     # We need to add a dummy file to have at least one file in case a module does not have any compiled sources.
