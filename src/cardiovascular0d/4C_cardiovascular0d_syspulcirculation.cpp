@@ -210,19 +210,19 @@ void UTILS::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& 
 
   switch (atrium_model_)
   {
-    case Inpar::CARDIOVASCULAR0D::atr_elastance_0d:
+    case Inpar::Cardiovascular0D::atr_elastance_0d:
     {
       E_at_l_np = (e_at_max_l_ - e_at_min_l_) * y_at_l_np + e_at_min_l_;
       E_at_r_np = (e_at_max_r_ - e_at_min_r_) * y_at_r_np + e_at_min_r_;
     }
     break;
-    case Inpar::CARDIOVASCULAR0D::atr_structure_3d:
+    case Inpar::Cardiovascular0D::atr_structure_3d:
     {
       E_at_l_np = 0.;
       E_at_r_np = 0.;
     }
     break;
-    case Inpar::CARDIOVASCULAR0D::atr_prescribed:
+    case Inpar::Cardiovascular0D::atr_prescribed:
     {
       E_at_l_np = E_at_l_prescr_np;
       E_at_r_np = E_at_r_prescr_np;
@@ -235,19 +235,19 @@ void UTILS::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& 
 
   switch (ventricle_model_)
   {
-    case Inpar::CARDIOVASCULAR0D::ventr_elastance_0d:
+    case Inpar::Cardiovascular0D::ventr_elastance_0d:
     {
       E_v_l_np = (e_v_max_l_ - e_v_min_l_) * y_v_l_np + e_v_min_l_;
       E_v_r_np = (e_v_max_r_ - e_v_min_r_) * y_v_r_np + e_v_min_r_;
     }
     break;
-    case Inpar::CARDIOVASCULAR0D::ventr_structure_3d:
+    case Inpar::Cardiovascular0D::ventr_structure_3d:
     {
       E_v_l_np = 0.;
       E_v_r_np = 0.;
     }
     break;
-    case Inpar::CARDIOVASCULAR0D::ventr_prescribed:
+    case Inpar::Cardiovascular0D::ventr_prescribed:
     {
       E_v_l_np = E_v_l_prescr_np;
       E_v_r_np = E_v_r_prescr_np;
@@ -326,14 +326,14 @@ void UTILS::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& 
 
     switch (atrium_model_)
     {
-      case Inpar::CARDIOVASCULAR0D::atr_elastance_0d:
-      case Inpar::CARDIOVASCULAR0D::atr_prescribed:
+      case Inpar::Cardiovascular0D::atr_elastance_0d:
+      case Inpar::Cardiovascular0D::atr_prescribed:
       {
         df_np[0] = p_at_l_np / E_at_l_np;
         df_np[8] = p_at_r_np / E_at_r_np;
       }
       break;
-      case Inpar::CARDIOVASCULAR0D::atr_structure_3d:
+      case Inpar::Cardiovascular0D::atr_structure_3d:
       {
         df_np[0] = V_at_l_np;
         df_np[8] = V_at_r_np;
@@ -346,14 +346,14 @@ void UTILS::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& 
 
     switch (ventricle_model_)
     {
-      case Inpar::CARDIOVASCULAR0D::ventr_structure_3d:
+      case Inpar::Cardiovascular0D::ventr_structure_3d:
       {
         df_np[2] = V_v_l_np;
         df_np[10] = V_v_r_np;
       }
       break;
-      case Inpar::CARDIOVASCULAR0D::ventr_elastance_0d:
-      case Inpar::CARDIOVASCULAR0D::ventr_prescribed:
+      case Inpar::Cardiovascular0D::ventr_elastance_0d:
+      case Inpar::Cardiovascular0D::ventr_prescribed:
       {
         df_np[2] = p_v_l_np / E_v_l_np;
         df_np[10] = p_v_r_np / E_v_r_np;
@@ -420,12 +420,12 @@ void UTILS::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& 
     // atrium - left and right
     switch (atrium_model_)
     {
-      case Inpar::CARDIOVASCULAR0D::atr_elastance_0d:
-      case Inpar::CARDIOVASCULAR0D::atr_prescribed:
+      case Inpar::Cardiovascular0D::atr_elastance_0d:
+      case Inpar::Cardiovascular0D::atr_prescribed:
         wkstiff(0, 0) = 1. / (E_at_l_np * ts_size);
         wkstiff(8, 8) = 1. / (E_at_r_np * ts_size);
         break;
-      case Inpar::CARDIOVASCULAR0D::atr_structure_3d:
+      case Inpar::Cardiovascular0D::atr_structure_3d:
         wkstiff(0, 0) = 0.;
         wkstiff(8, 8) = 0.;
         break;
@@ -434,12 +434,12 @@ void UTILS::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& 
     // ventricle - left and right
     switch (ventricle_model_)
     {
-      case Inpar::CARDIOVASCULAR0D::ventr_structure_3d:
+      case Inpar::Cardiovascular0D::ventr_structure_3d:
         wkstiff(2, 3) = 0.;
         wkstiff(10, 11) = 0.;
         break;
-      case Inpar::CARDIOVASCULAR0D::ventr_elastance_0d:
-      case Inpar::CARDIOVASCULAR0D::ventr_prescribed:
+      case Inpar::Cardiovascular0D::ventr_elastance_0d:
+      case Inpar::Cardiovascular0D::ventr_prescribed:
         wkstiff(2, 3) = 1. / (E_v_l_np * ts_size);
         wkstiff(10, 11) = 1. / (E_v_r_np * ts_size);
         break;
@@ -574,16 +574,16 @@ void UTILS::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& 
     p_ar_pul_np = (*sysvec4)[12];
     p_ven_pul_np = (*sysvec4)[14];
 
-    if (atrium_model_ == Inpar::CARDIOVASCULAR0D::atr_elastance_0d or
-        atrium_model_ == Inpar::CARDIOVASCULAR0D::atr_prescribed)
+    if (atrium_model_ == Inpar::Cardiovascular0D::atr_elastance_0d or
+        atrium_model_ == Inpar::Cardiovascular0D::atr_prescribed)
     {
       // 0D left atrial volume
       (*sysvec5)[0] = p_at_l_np / E_at_l_np + v_at_l_u_;
       // 0D right atrial volume
       (*sysvec5)[8] = p_at_r_np / E_at_r_np + v_at_r_u_;
     }
-    if (ventricle_model_ == Inpar::CARDIOVASCULAR0D::ventr_elastance_0d or
-        ventricle_model_ == Inpar::CARDIOVASCULAR0D::ventr_prescribed)
+    if (ventricle_model_ == Inpar::Cardiovascular0D::ventr_elastance_0d or
+        ventricle_model_ == Inpar::Cardiovascular0D::ventr_prescribed)
     {
       // 0D left ventricular volume
       (*sysvec5)[2] = p_v_l_np / E_v_l_np + v_v_l_u_;

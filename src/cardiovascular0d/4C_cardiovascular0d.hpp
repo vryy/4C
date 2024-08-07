@@ -129,7 +129,7 @@ namespace UTILS
       return cardiovascular0dstructcoupcond_;
     }
 
-    Inpar::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel get_respiratory_model()
+    Inpar::Cardiovascular0D::Cardvasc0DRespiratoryModel get_respiratory_model()
     {
       return respiratory_model_;
     }
@@ -149,9 +149,9 @@ namespace UTILS
     std::vector<Core::Conditions::Condition*>
         cardiovascular0dstructcoupcond_;  ///< 0D cardiovascular structure coupling conditions
     Cardiovascular0DType cardiovascular0dtype_;  ///< Cardiovascular0D type
-    const Inpar::CARDIOVASCULAR0D::Cardvasc0DAtriumModel atrium_model_;
-    const Inpar::CARDIOVASCULAR0D::Cardvasc0DVentricleModel ventricle_model_;
-    const Inpar::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel respiratory_model_;
+    const Inpar::Cardiovascular0D::Cardvasc0DAtriumModel atrium_model_;
+    const Inpar::Cardiovascular0D::Cardvasc0DVentricleModel ventricle_model_;
+    const Inpar::Cardiovascular0D::Cardvasc0DRespiratoryModel respiratory_model_;
     //! gaussian integration to be used
     Core::FE::GaussRule2D gaussrule_;
 

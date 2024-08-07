@@ -98,7 +98,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
       adaptolbetter_(0.01),
       tolres_struct_(strparams.get("TOLRES", 1.0e-8)),
       tolres_cardvasc0d_(cv0dparams.get("TOL_CARDVASC0D_RES", 1.0e-8)),
-      algochoice_(Core::UTILS::IntegralValue<Inpar::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo>(
+      algochoice_(Core::UTILS::IntegralValue<Inpar::Cardiovascular0D::Cardvasc0DSolveAlgo>(
           cv0dparams, "SOLALGORITHM")),
       dirichtoggle_(Teuchos::null),
       zeros_(Core::LinAlg::CreateVector(*(actdisc_->dof_row_map()), true)),
@@ -177,10 +177,10 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
     // set number of degrees of freedom
     switch (cardvasc0d_model_->get_respiratory_model())
     {
-      case Inpar::CARDIOVASCULAR0D::resp_none:
+      case Inpar::Cardiovascular0D::resp_none:
         num_cardiovascular0_did_ = 34;
         break;
-      case Inpar::CARDIOVASCULAR0D::resp_standard:
+      case Inpar::Cardiovascular0D::resp_standard:
         num_cardiovascular0_did_ = 82;
         break;
       default:
@@ -1082,9 +1082,9 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   switch (algochoice_)
   {
-    case Inpar::CARDIOVASCULAR0D::cardvasc0dsolve_direct:
+    case Inpar::Cardiovascular0D::cardvasc0dsolve_direct:
       break;
-    case Inpar::CARDIOVASCULAR0D::cardvasc0dsolve_simple:
+    case Inpar::Cardiovascular0D::cardvasc0dsolve_simple:
     {
       const auto prec = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
           Global::Problem::instance()->solver_params(linsolvernumber), "AZPREC");
@@ -1115,7 +1115,7 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
       }
     }
     break;
-    case Inpar::CARDIOVASCULAR0D::cardvasc0dsolve_AMGnxn:
+    case Inpar::Cardiovascular0D::cardvasc0dsolve_AMGnxn:
     {
       solver_->params().sublist("Inverse1").sublist("Belos Parameters");
       solver_->params().sublist("Inverse1").sublist("MueLu Parameters");

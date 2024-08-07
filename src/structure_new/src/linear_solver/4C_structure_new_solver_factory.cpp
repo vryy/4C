@@ -445,15 +445,15 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_cardiovascular0
           Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   // solution algorithm - direct or simple
-  Inpar::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo algochoice =
-      Core::UTILS::IntegralValue<Inpar::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo>(
+  Inpar::Cardiovascular0D::Cardvasc0DSolveAlgo algochoice =
+      Core::UTILS::IntegralValue<Inpar::Cardiovascular0D::Cardvasc0DSolveAlgo>(
           cardvasc0dstructparams, "SOLALGORITHM");
 
   switch (algochoice)
   {
-    case Inpar::CARDIOVASCULAR0D::cardvasc0dsolve_direct:
+    case Inpar::Cardiovascular0D::cardvasc0dsolve_direct:
       break;
-    case Inpar::CARDIOVASCULAR0D::cardvasc0dsolve_simple:
+    case Inpar::Cardiovascular0D::cardvasc0dsolve_simple:
     {
       const auto prec = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
           Global::Problem::instance()->solver_params(linsolvernumber), "AZPREC");

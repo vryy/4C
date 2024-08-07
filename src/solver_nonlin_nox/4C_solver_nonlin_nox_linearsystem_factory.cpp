@@ -100,7 +100,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::Factory::build_li
     // structural/cardiovascular0d case
     case NOX::Nln::LinSystem::linear_system_structure_cardiovascular0d:
     {
-      linSys = Teuchos::rcp(new NOX::Nln::CARDIOVASCULAR0D::LinearSystem(printParams, lsParams,
+      linSys = Teuchos::rcp(new NOX::Nln::Cardiovascular0D::LinearSystem(printParams, lsParams,
           linSolvers, iReq, iJac, jac, iPrec, precMat, *cloneVector, scalingObject));
       break;
     }

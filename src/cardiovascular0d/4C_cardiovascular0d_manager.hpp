@@ -394,7 +394,7 @@ namespace UTILS
     double adaptolbetter_;      ///< adaptive tolerance for solver useful?
     double tolres_struct_;      ///< tolerace for structural residual
     double tolres_cardvasc0d_;  ///< tolerace for cardiovascular0d residual
-    Inpar::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo algochoice_;
+    Inpar::Cardiovascular0D::Cardvasc0DSolveAlgo algochoice_;
     Teuchos::RCP<Epetra_Vector> dirichtoggle_;  ///< \b only for compatability: dirichlet toggle --
                                                 ///< monitor its target change!
     Teuchos::RCP<Epetra_Vector> zeros_;         ///< a zero vector of full length

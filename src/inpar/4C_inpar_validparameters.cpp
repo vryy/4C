@@ -366,7 +366,7 @@ Teuchos::RCP<const Teuchos::ParameterList> Input::ValidParameters()
   Inpar::ArteryNetwork::SetValidParameters(list);
   Inpar::BioFilm::SetValidParameters(list);
   Inpar::ReducedLung::SetValidParameters(list);
-  Inpar::CARDIOVASCULAR0D::SetValidParameters(list);
+  Inpar::Cardiovascular0D::SetValidParameters(list);
   Inpar::Immersed::SetValidParameters(list);
   Inpar::FPSI::SetValidParameters(list);
   Inpar::FBI::SetValidParameters(list);

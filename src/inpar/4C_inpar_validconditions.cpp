@@ -948,7 +948,7 @@ Input::ValidConditions()
   Inpar::BioFilm::SetValidConditions(condlist);
   Inpar::ArteryNetwork::SetValidConditions(condlist);
   Inpar::ReducedLung::SetValidConditions(condlist);
-  Inpar::CARDIOVASCULAR0D::SetValidConditions(condlist);
+  Inpar::Cardiovascular0D::SetValidConditions(condlist);
   Inpar::Solid::SetValidConditions(condlist);
   Inpar::THR::SetValidConditions(condlist);
   Inpar::SSI::SetValidConditions(condlist);

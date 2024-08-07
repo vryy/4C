@@ -25,7 +25,7 @@ namespace NOX
 {
   namespace Nln
   {
-    namespace CARDIOVASCULAR0D
+    namespace Cardiovascular0D
     {
       class LinearSystem : public NOX::Nln::LinearSystem
       {
@@ -87,7 +87,7 @@ namespace NOX
         void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
       };  // class LinearSystem
-    }     // namespace CARDIOVASCULAR0D
+    }     // namespace Cardiovascular0D
   }       // namespace Nln
 }  // namespace NOX
 
