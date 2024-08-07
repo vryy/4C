@@ -9,7 +9,6 @@
 
 #include "4C_contact_meshtying_penalty_strategy.hpp"
 
-#include "4C_contact_meshtying_defines.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"

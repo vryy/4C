@@ -26,8 +26,6 @@
 FOUR_C_NAMESPACE_OPEN
 
 #define NODETOL 1e-9
-// turn on if problems with mean values in planes occur
-// #define NO_VALUES_IN_PLANES
 
 /*----------------------------------------------------------------------
 
@@ -1367,9 +1365,7 @@ void FLD::TurbulenceStatisticsCha::do_time_sample(
   //----------------------------------------------------------------------
   // loop planes and calculate integral means in each plane
 
-#ifndef NO_VALUES_IN_PLANES
   this->evaluate_integral_mean_values_in_planes();
-#endif
 
   //----------------------------------------------------------------------
   // loop planes and calculate pointwise means in each plane

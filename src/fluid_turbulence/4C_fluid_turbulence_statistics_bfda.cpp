@@ -17,8 +17,6 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-// #define COMBINE_SAMPLES
-
 /*----------------------------------------------------------------------*/
 /*!
   \brief Standard Constructor (public)

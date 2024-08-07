@@ -39,8 +39,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-// #define OCTREEDEBUG
-
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     meier 01/11|
  *----------------------------------------------------------------------*/
@@ -187,57 +185,27 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
 std::vector<std::vector<Core::Elements::Element*>> Beam3ContactOctTree::oct_tree_search(
     std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions, int step)
 {
-#ifdef OCTREEDEBUG
-  double t_start = Teuchos::Time::wallTime();
-#endif
   // initialize class vectors
   initialize_octree_search();
 
-#ifdef OCTREEDEBUG
-  double t_01 = Teuchos::Time::wallTime();
-#endif
   // build axis aligned bounding boxes
   create_bounding_boxes(currentpositions);
 
-#ifdef OCTREEDEBUG
-  double t_02 = Teuchos::Time::wallTime();
-#endif
   // call recursive octtree build
   // clear vector for assigning bounding boxes to octants to be on the safe side before
   // (re)assigning bounding boxes
   bool bboxesfound = locate_all();
 
-#ifdef OCTREEDEBUG
-  double t_03 = Teuchos::Time::wallTime();
-  double t_04 = 0.0;
-#endif
   // intersection checks
   std::vector<std::vector<Core::Elements::Element*>> contactpairelements;
   if (bboxesfound)
   {
     bounding_box_intersection(currentpositions, contactpairelements);
 
-#ifdef OCTREEDEBUG
-    t_04 = Teuchos::Time::wallTime();
-#endif
     // output
     octree_output(contactpairelements, step);
   }
 
-#ifdef OCTREEDEBUG
-  if (!discret_.Comm().MyPID())
-  {
-    std::cout << "Initialization     :\t\t" << t_01 - t_start << " seconds" << std::endl;
-    std::cout << "Bound. Box Creation:\t\t" << t_02 - t_01 << " seconds" << std::endl;
-    std::cout << "Octree Search      :\t\t" << t_03 - t_02 << " seconds" << std::endl;
-    std::cout << "intersection       :\t\t" << t_04 - t_03 << " seconds" << std::endl;
-    std::cout << "Octree output      :\t\t" << Teuchos::Time::wallTime() - t_04 << " seconds"
-              << std::endl;
-    std::cout << "=============================================================" << std::endl;
-    std::cout << "Octree Search time :\t\t" << Teuchos::Time::wallTime() - t_start << " seconds"
-              << std::endl;
-  }
-#endif
   // return contactpairs;
   return contactpairelements;
 }  // OctTreeSearch()
@@ -419,19 +387,6 @@ void Beam3ContactOctTree::octree_output(
       for (int u = 0; u < (int)rootbox_.num_rows(); u++)
         out << std::scientific << rootbox_(u) << " ";
       out << '\n';
-
-#ifdef OCTREEDEBUG
-      for (int u = 0; u < (int)octreelimits_.size(); u++)
-        for (int v = 0; v < (int)octreelimits_[u].numRows(); v++)
-          if (v % 2 == 0 && octreelimits_[u](v) < rootbox_(v) &&
-              fabs(octreelimits_[u](v) - rootbox_(v)) > 1e-8)
-            FOUR_C_THROW("Octant minimum %4.10f below root box minimum %4.10f", octreelimits_[u](v),
-                rootbox_(v));
-          else if (v % 2 == 1 && octreelimits_[u](v) > rootbox_(v) &&
-                   fabs(octreelimits_[u](v) - rootbox_(v)) > 1e-8)
-            FOUR_C_THROW("Octant maximum %4.10f above root box minimum %4.10f", octreelimits_[u](v),
-                rootbox_(v));
-#endif
     }
     // bounding box coords output
     if (allbboxes_ != Teuchos::null)
@@ -458,11 +413,6 @@ void Beam3ContactOctTree::octree_output(
  *----------------------------------------------------------------------*/
 void Beam3ContactOctTree::initialize_octree_search()
 {
-#ifdef OCTREEDEBUG
-  if (!discret_.Comm().MyPID())
-    std::cout << "Searchdis: " << searchdis_.ElementColMap()->NumMyElements()
-              << ", Probdis: " << discret_.NumGlobalElements() << std::endl;
-#endif
   // number of shifts across volume boundaries in case of periodic boundary conditions (for
   // intersection optimization)
   if (periodic_bc_)
@@ -1081,24 +1031,6 @@ bool Beam3ContactOctTree::locate_all()
     // Communication
     communicate_multi_vector(bboxinoctrow, *bboxesinoctants_);
 
-#ifdef OCTREEDEBUG
-    std::ostringstream filename;
-    if (!discret_.Comm().MyPID())
-    {
-      filename << "BBinOct_" << searchdis_.Comm().NumProc() << "_procs.dat";
-      FILE* fp = nullptr;
-      fp = fopen(filename.str().c_str(), "w");
-      std::stringstream myfile;
-      for (int u = 0; u < bboxesinoctants_->MyLength(); u++)
-      {
-        for (int v = 0; v < bboxesinoctants_->NumVectors(); v++)
-          myfile << std::scientific << (*bboxesinoctants_)[v][u] << " ";
-        myfile << std::endl;
-      }
-      fprintf(fp, myfile.str().c_str());
-      fclose(fp);
-    }
-#endif
 #ifdef MEASURETIME
     if (!searchdis_.Comm().MyPID())
       std::cout << "\nOctree building time:\t\t" << Teuchos::Time::wallTime() - t_octree
