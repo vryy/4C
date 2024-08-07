@@ -74,6 +74,8 @@ Core::IO::DatFileUtils::read_matching_lines_in_section(Core::IO::DatFileReader& 
   std::vector<std::string> unparsed_lines;
   std::vector<Input::LineDefinition> parsed_lines;
 
+  Input::LineDefinition::ReadContext context{.input_file = reader.my_inputfile_name()};
+
   const auto process_line = [&](const std::string& input_line)
   {
     for (const auto& definition : possible_lines)
@@ -82,7 +84,7 @@ Core::IO::DatFileUtils::read_matching_lines_in_section(Core::IO::DatFileReader& 
 
       // Make a copy that potentially gets filled by the Read.
       auto parsed_definition = definition;
-      if (parsed_definition.read(l))
+      if (parsed_definition.read(l, context))
       {
         parsed_lines.emplace_back(std::move(parsed_definition));
         return;
