@@ -20,13 +20,55 @@
 #include "4C_mat_membrane_material_interfaces.hpp"
 #include "4C_material_base.hpp"
 #include "4C_membrane.hpp"
-#include "4C_membrane_service.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_utils_function_of_time.hpp"
 
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
+
+
+namespace Internal
+{
+  namespace
+  {
+    /*!
+     * @brief Get stress like voigt notation stress tensor from 3D stress matrix assuming plane
+     * stress in the x-y plane
+     *
+     * @param stress (in) : Stress in Matrix notation
+     * @param planeStressStressLike (out) : Stress in voigt notation assuming plane stress in the
+     * x-y plane
+     */
+    inline void LocalPlaneStressToStressLikeVoigt(
+        const Core::LinAlg::Matrix<3, 3>& stress, Core::LinAlg::Matrix<3, 1>& planeStressStressLike)
+    {
+      planeStressStressLike(0) = stress(0, 0);
+      planeStressStressLike(1) = stress(1, 1);
+      planeStressStressLike(2) = 0.5 * (stress(0, 1) + stress(1, 0));
+    }
+
+    /*!
+     * @brief Subpart of the linearization assuming plane stress in the x-y plane
+     *
+     * @param cmat (in) : Full linearization
+     * @param cmatred (out) : Reduced linearization assuming plane stress in the x-y plane
+     */
+    inline void LocalFourthTensorPlaneStressToStressLikeVoigt(
+        const Core::LinAlg::Matrix<6, 6>& cmat, Core::LinAlg::Matrix<3, 3>& cmatred)
+    {
+      cmatred(0, 0) = cmat(0, 0);
+      cmatred(0, 1) = cmat(0, 1);
+      cmatred(0, 2) = cmat(0, 3);
+      cmatred(1, 0) = cmat(1, 0);
+      cmatred(1, 1) = cmat(1, 1);
+      cmatred(1, 2) = cmat(1, 3);
+      cmatred(2, 0) = cmat(3, 0);
+      cmatred(2, 1) = cmat(3, 1);
+      cmatred(2, 2) = cmat(3, 3);
+    }
+  }  // namespace
+}  // namespace Internal
 
 
 /*----------------------------------------------------------------------*
@@ -783,11 +825,11 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
       // Transform stress and elasticity into the local membrane coordinate system
       Core::LinAlg::Matrix<3, 3> pk2M_loc(true);
       Core::LinAlg::Tensor::InverseTensorRotation<3>(Q_localToGlobal, pk2M_glob, pk2M_loc);
-      MEMBRANE::LocalPlaneStressToStressLikeVoigt(pk2M_loc, pk2red_loc);
+      Internal::LocalPlaneStressToStressLikeVoigt(pk2M_loc, pk2red_loc);
 
       Core::LinAlg::Matrix<6, 6> cmat_loc(true);
       Core::LinAlg::Tensor::InverseFourthTensorRotation(Q_localToGlobal, cmat_glob, cmat_loc);
-      MEMBRANE::LocalFourthTensorPlaneStressToStressLikeVoigt(cmat_loc, cmatred_loc);
+      Internal::LocalFourthTensorPlaneStressToStressLikeVoigt(cmat_loc, cmatred_loc);
     }
     else
     {
