@@ -1058,9 +1058,27 @@ Teuchos::RCP<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_binnin
   Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
       "spatial_approximation_type", spatial_approximation_type, binning_params);
 
+  // Special case for mortar nodes that store their displacements themselves
+  const auto determine_relevant_points =
+      [](const Core::FE::Discretization& discret, const Core::Elements::Element& ele,
+          Teuchos::RCP<const Epetra_Vector>) -> std::vector<std::array<double, 3>>
+  {
+    std::vector<std::array<double, 3>> relevant_points;
+    const auto* mortar_ele = dynamic_cast<const Mortar::Element*>(&ele);
+    FOUR_C_THROW_UNLESS(mortar_ele, "Element is not a Mortar::Element.");
+
+    for (int j = 0; j < mortar_ele->num_node(); ++j)
+    {
+      const Core::Nodes::Node* node = mortar_ele->nodes()[j];
+      const double* coords = dynamic_cast<const Mortar::Node*>(node)->xspatial();
+      relevant_points.push_back({coords[0], coords[1], coords[2]});
+    }
+    return relevant_points;
+  };
+
   Teuchos::RCP<Core::Binstrategy::BinningStrategy> binningstrategy =
-      Teuchos::rcp(new Core::Binstrategy::BinningStrategy(
-          binning_params, output_control, get_comm(), get_comm().MyPID()));
+      Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params, output_control,
+          get_comm(), get_comm().MyPID(), nullptr, determine_relevant_points));
   return binningstrategy;
 }
 
@@ -1488,9 +1506,16 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
 
       // fill master and slave elements into bins
       std::map<int, std::set<int>> slavebinelemap;
-      binningstrategy->distribute_eles_to_bins(discret(), slavebinelemap, true);
+      binningstrategy->distribute_elements_to_bins_using_ele_aabb(discret(),
+          std_20::ranges::views::filter(discret().my_col_element_range(), [](const auto* ele)
+              { return dynamic_cast<const Mortar::Element*>(ele)->is_slave(); }),
+          slavebinelemap);
+
       std::map<int, std::set<int>> masterbinelemap;
-      binningstrategy->distribute_eles_to_bins(discret(), masterbinelemap, false);
+      binningstrategy->distribute_elements_to_bins_using_ele_aabb(discret(),
+          std_20::ranges::views::filter(discret().my_col_element_range(), [](const auto* ele)
+              { return !dynamic_cast<const Mortar::Element*>(ele)->is_slave(); }),
+          masterbinelemap);
 
       // Extend ghosting of the master elements
       std::map<int, std::set<int>> ext_bin_to_ele_map;

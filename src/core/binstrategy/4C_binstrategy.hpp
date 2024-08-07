@@ -280,7 +280,7 @@ namespace Core::Binstrategy
      * \param[out] binIds all bin ids in the specified range
      * \param[in] checkexistence check can be added whether the gids are woned from myrank
      */
-    void gids_inijk_range(const int* ijk_range, std::set<int>& binIds, bool checkexistence) const;
+    void gids_in_ijk_range(const int* ijk_range, std::set<int>& binIds, bool checkexistence) const;
     /*!
      * \brief get all bin ids for given range of ijk
      *
@@ -288,7 +288,7 @@ namespace Core::Binstrategy
      * \param[out] binIds all bin ids in the specified range
      * \param[in] checkexistence check can be added whether gids are owned from myrank
      */
-    void gids_inijk_range(
+    void gids_in_ijk_range(
         const int* ijk_range, std::vector<int>& binIds, bool checkexistence) const;
 
     /*!
@@ -298,7 +298,7 @@ namespace Core::Binstrategy
      *
      * \return number of bins in requested ijk range
      */
-    int get_number_of_bins_inijk_range(int const ijk_range[6]) const;
+    int get_number_of_bins_in_ijk_range(int const ijk_range[6]) const;
 
     /*!
      * \brief convert ijk reference to bin to its gid
@@ -307,7 +307,7 @@ namespace Core::Binstrategy
      *
      * \return gid of requested bin
      */
-    int convertijk_to_gid(int* ijk) const;
+    int convert_ijk_to_gid(int* ijk) const;
 
     /*!
      * \brief convert bin id into ijk specification of bin
@@ -315,7 +315,7 @@ namespace Core::Binstrategy
      * \param[in] gid bin id to be converted in ijk
      * \param[out] ijk  resulting ijk
      */
-    void convert_gid_toijk(int gid, int* ijk) const;
+    void convert_gid_to_ijk(int gid, int* ijk) const;
 
     /*!
      * \brief convert a position to its corresponding bin
@@ -332,7 +332,7 @@ namespace Core::Binstrategy
      * \param[in] pos  position to be converted into ijk
      * \param[out] ijk resulting ijk
      */
-    void convert_pos_toijk(const double* pos, int* ijk) const;
+    void convert_pos_to_ijk(const double* pos, int* ijk) const;
 
     /*!
      * \brief convert a position to its corresponding ijk
@@ -340,7 +340,7 @@ namespace Core::Binstrategy
      * \param[in] pos  position to be converted into ijk
      * \param[out] ijk resulting ijk
      */
-    void convert_pos_toijk(const Core::LinAlg::Matrix<3, 1>& pos, int* ijk) const;
+    void convert_pos_to_ijk(const Core::LinAlg::Matrix<3, 1>& pos, int* ijk) const;
 
     /*!
      * \brief convert position to bin id
@@ -472,43 +472,20 @@ namespace Core::Binstrategy
      * \param[in] ijk ijk to be added to ijk range
      * \param[out] ijk_range extended ijk range
      */
-    void addijk_to_axis_alignedijk_range_of_beam_element(int const ijk[3], int ijk_range[6]) const;
+    void add_ijk_to_axis_aligned_ijk_range(int const ijk[3], int ijk_range[6]) const;
 
-
-    /// fixme: the following function needs to be replaced by
-    /// distribute_row_elements_to_bins_using_ele_aabb()
-    /*!
-     * \brief elements are assigned to bins (either slave or master side of mortar interface)
-     *
-     * \param[in] mortardis mortar interface discretization
-     * \param[out] binelemap map of bins and assigned elements
-     * \param[in] isslave decide whether slave or master side is processed
-     */
-    void distribute_eles_to_bins(const Core::FE::Discretization& mortardis,
-        std::map<int, std::set<int>>& binelemap, bool isslave) const;
-
-    /*!
-     * \brief distribute all row elements to bins exploiting axis aligned bounding box idea
+    /**
+     * Distribute all elements in the @p element_range to bins by constructing axis-aligned bounding
+     * boxes.
      *
      * \param[in] discret discretization containing the elements that are distributed to bins
-     * \param[out] bintorowelemap map of bins and assigned row elements
+     * \param[in] element_range range of elements that are distributed to bins
+     * \param[out] bin_to_ele_map map of bins and assigned row elements
      * \param[in] disnp current col displacement state
      */
-    void distribute_row_elements_to_bins_using_ele_aabb(
-        Teuchos::RCP<Core::FE::Discretization> const& discret,
-        std::map<int, std::set<int>>& bintorowelemap,
-        Teuchos::RCP<const Epetra_Vector> disnp = Teuchos::null) const;
-
-    /*!
-     * \brief distribute all column elements to bins exploiting axis aligned bounding box idea
-     *
-     * \param[in] discret discretization containing the elements that are distributed to bins
-     * \param[out] bintocolelemap map of bins and assigned column elements
-     * \param[in] disnp current col displacement state
-     */
-    void distribute_col_elements_to_bins_using_ele_aabb(
-        Teuchos::RCP<Core::FE::Discretization> const& discret,
-        std::map<int, std::set<int>>& bintocolelemap,
+    template <typename Range>
+    void distribute_elements_to_bins_using_ele_aabb(const Core::FE::Discretization& discret,
+        Range element_range, std::map<int, std::set<int>>& bin_to_ele_map,
         Teuchos::RCP<const Epetra_Vector> disnp = Teuchos::null) const;
 
     /*!
@@ -519,9 +496,9 @@ namespace Core::Binstrategy
      * \param[out] binIds ids of bins tuuched by aabb of current element
      * \param[in] disnp current col displacement state
      */
-    void distribute_single_element_to_bins_using_ele_aabb(
-        Teuchos::RCP<Core::FE::Discretization> const& discret, Core::Elements::Element* eleptr,
-        std::vector<int>& binIds, Teuchos::RCP<const Epetra_Vector> const& disnp) const;
+    void distribute_single_element_to_bins_using_ele_aabb(const Core::FE::Discretization& discret,
+        Core::Elements::Element* eleptr, std::vector<int>& binIds,
+        Teuchos::RCP<const Epetra_Vector> const& disnp) const;
 
     /*!
      * \brief elements of input discretization are assigned to bins
@@ -861,6 +838,25 @@ namespace Core::Binstrategy
       return first->Id() < second->Id();
     }
   };
+
+
+  // --- template and inline functions --- //
+  template <typename Range>
+  void BinningStrategy::distribute_elements_to_bins_using_ele_aabb(
+      const Core::FE::Discretization& discret, Range element_range,
+      std::map<int, std::set<int>>& bin_to_ele_map, Teuchos::RCP<const Epetra_Vector> disnp) const
+  {
+    bin_to_ele_map.clear();
+
+    for (auto* eleptr : element_range)
+    {
+      // get corresponding bin ids in ijk range
+      std::vector<int> bin_ids;
+      distribute_single_element_to_bins_using_ele_aabb(discret, eleptr, bin_ids, disnp);
+
+      for (const int b : bin_ids) bin_to_ele_map[b].insert(eleptr->id());
+    }
+  }
 
 }  // namespace Core::Binstrategy
 
