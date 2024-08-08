@@ -710,31 +710,6 @@ void Solid::ModelEvaluator::BrownianDyn::generate_gaussian_random_numbers()
   }
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-bool Solid::ModelEvaluator::BrownianDyn::
-    is_any_beam_element_length_larger_than_min_half_pbb_edge_length() const
-{
-  const int numroweles = discret().num_my_row_elements();
-  const double halfofminimalperiodlength =
-      0.5 * eval_browniandyn_ptr_->get_periodic_bounding_box()->edge_length(0);
-  for (int i = 1; i < 3; ++i)
-    std::min(halfofminimalperiodlength,
-        0.5 * eval_browniandyn_ptr_->get_periodic_bounding_box()->edge_length(i));
-
-  if (halfofminimalperiodlength != 0.0)
-  {
-    for (int elelid = 0; elelid < numroweles; ++elelid)
-    {
-      const Discret::ELEMENTS::Beam3Base* beamele =
-          dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(discret().l_row_element(elelid));
-
-      if (beamele != nullptr and beamele->ref_length() >= halfofminimalperiodlength) return true;
-    }
-  }
-
-  return false;
-}
 
 /*
 ----------------------------------------------------------------------------*
