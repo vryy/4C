@@ -50,8 +50,10 @@ namespace Core::Conditions
   // forward declaration
   class ConditionSelector;
 
-  /// std unary function version of Epetra_Map::MyGID()
-  struct MyGID : public std::unary_function<int, bool>
+  /**
+   * A functor that returns true if the given global id is owned by the emap.
+   */
+  struct MyGID
   {
     const Epetra_Map* emap_;
     MyGID(const Epetra_Map* emap) : emap_(emap) {}
