@@ -530,7 +530,7 @@ void Core::LinAlg::DefaultBlockMatrixStrategy::complete(bool enforce_complete)
     {
       int rgid = rowmap.GID(rlid);
       std::transform(ghost_[rgid].begin(), ghost_[rgid].end(), std::inserter(cgids, cgids.begin()),
-          Select1st<std::map<int, double>::value_type>());
+          [](const auto& pair) { return pair.first; });
     }
   }
 

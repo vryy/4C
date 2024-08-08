@@ -669,20 +669,6 @@ namespace Core::LinAlg
       const Epetra_Comm& comm, const std::vector<std::vector<int>>& send, std::vector<int>& recv);
 
 
-  /*!
-   \brief Return the first slot of a pair
-
-   To be used with stl algorithms.
-
-   This should be part of stl but is not. So we define our own version.
-   */
-  template <typename PairType>
-  struct Select1st
-      : public std::unary_function<const PairType&, const typename PairType::first_type&>
-  {
-    const typename PairType::first_type& operator()(const PairType& v) const { return v.first; }
-  };
-
 }  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
