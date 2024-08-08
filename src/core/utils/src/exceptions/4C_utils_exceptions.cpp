@@ -19,6 +19,7 @@
 
 #include <boost/stacktrace.hpp>
 
+#include <array>
 #include <cstdarg>
 #include <iostream>
 #include <sstream>

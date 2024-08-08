@@ -20,6 +20,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+#include <functional>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
