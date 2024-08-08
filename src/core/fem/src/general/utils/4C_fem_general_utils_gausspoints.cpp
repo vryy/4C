@@ -88,7 +88,7 @@ namespace Core::FE
     class IntrepidGaussPoints<shards::Pyramid<5>> : public GaussPoints
     {
      public:
-      explicit IntrepidGaussPoints<shards::Pyramid<5>>(int cubDegree)
+      explicit IntrepidGaussPoints(int cubDegree)
       {
         cub_points_.resize(8, 3);
         cub_weights_.resize(8);
