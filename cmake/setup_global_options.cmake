@@ -26,11 +26,15 @@ function(enable_linker_flag_if_supported _flag)
   four_c_check_compiles(FOUR_C_LINKER_HAS_FLAG_${_flag_var} LINK_OPTIONS ${_flag} APPEND_ON_SUCCESS)
 endfunction()
 
+# Enable all warnings that are supported by the compiler
 enable_compiler_flag_if_supported("-Wall")
 enable_compiler_flag_if_supported("-Wextra")
+enable_compiler_flag_if_supported("-Wvla")
+
 # Disable unused parameter detection since there would be too many hits to fix
 enable_compiler_flag_if_supported("-Wno-unused-parameter")
-enable_compiler_flag_if_supported("-Wvla")
+# Disable overloaded virtual function detection. This requires a lot of architectural changes to fix.
+enable_compiler_flag_if_supported("-Wno-overloaded-virtual")
 
 # Export symbols (necessary for stacktraces)
 enable_linker_flag_if_supported("-rdynamic")
@@ -53,7 +57,6 @@ endif()
 
 # For clang: do not error for a number of checks that are not yet fixed
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  enable_compiler_flag_if_supported("-Wno-error=overloaded-virtual")
   enable_compiler_flag_if_supported("-Wno-error=unused-variable")
   enable_compiler_flag_if_supported("-Wno-error=undefined-var-template")
   enable_compiler_flag_if_supported("-Wno-error=potentially-evaluated-expression")
