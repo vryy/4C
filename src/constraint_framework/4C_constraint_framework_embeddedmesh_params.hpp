@@ -41,16 +41,15 @@ namespace CONSTRAINTS::EMBEDDEDMESH
         Inpar::CONSTRAINTS::SolidToSolidMortarShapefunctions::none;
 
     //! Nodal Dof set strategy for XFEM
-    Core::Geo::Cut::NodalDofSetStrategy xfem_nodal_dof_set_strategy_ =
-        Core::Geo::Cut::NodalDofSetStrategy::NDS_Strategy_OneDofset_PerNodeAndPosition;
+    Cut::NodalDofSetStrategy xfem_nodal_dof_set_strategy_ =
+        Cut::NodalDofSetStrategy::NDS_Strategy_OneDofset_PerNodeAndPosition;
 
     //! Integration method for volume cells for XFEM
-    Core::Geo::Cut::VCellGaussPts xfem_volume_cell_gauss_point_by_ =
-        Core::Geo::Cut::VCellGaussPts::VCellGaussPts_Tessellation;
+    Cut::VCellGaussPts xfem_volume_cell_gauss_point_by_ =
+        Cut::VCellGaussPts::VCellGaussPts_Tessellation;
 
     //! Integration method for boundary cells for XFEM
-    Core::Geo::Cut::BCellGaussPts xfem_bcell_gauss_point_by_ =
-        Core::Geo::Cut::BCellGaussPts::BCellGaussPts_Tessellation;
+    Cut::BCellGaussPts xfem_bcell_gauss_point_by_ = Cut::BCellGaussPts::BCellGaussPts_Tessellation;
 
     //! Get gmsh output of cut
     bool gmsh_cut_out_ = false;

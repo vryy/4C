@@ -17,104 +17,103 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::Geo
+
+namespace Cut
 {
-  namespace Cut
+  namespace Impl
   {
-    namespace Impl
+    class LineBetweenFilter
     {
-      class LineBetweenFilter
-      {
-       public:
-        LineBetweenFilter(Point* me, Point* other) : me_(me), other_(other) {}
+     public:
+      LineBetweenFilter(Point* me, Point* other) : me_(me), other_(other) {}
 
-        bool operator()(Line* line) { return line->between(me_, other_); }
+      bool operator()(Line* line) { return line->between(me_, other_); }
 
-       private:
-        Point* me_;
-        Point* other_;
-      };
+     private:
+      Point* me_;
+      Point* other_;
+    };
 
-      class LineHasSideFilter
-      {
-       public:
-        explicit LineHasSideFilter(Side* side) : side_(side) {}
-
-        /// true if the line is cut by the side but not on any side's edges
-        bool operator()(Line* line) { return line->is_internal_cut(side_); }
-
-       private:
-        Side* side_;
-      };
-
-      class NextLineOnElementCutFilter
-      {
-       public:
-        NextLineOnElementCutFilter(Line* line, Side* side, Element* element)
-            : line_(line), side_(side), element_(element)
-        {
-        }
-
-        bool operator()(Line* line)
-        {
-          return line != line_ and line->is_cut(side_) and
-                 (element_ == nullptr or line->is_cut(element_));
-        }
-
-       private:
-        Line* line_;
-        Side* side_;
-        Element* element_;
-      };
-
-    }  // namespace Impl
-
-    template <class Filter>
-    Line* Point::find(Filter& filter, bool unique)
+    class LineHasSideFilter
     {
-      Line* line_found = nullptr;
-      for (plain_line_set::iterator i = lines_.begin(); i != lines_.end(); ++i)
+     public:
+      explicit LineHasSideFilter(Side* side) : side_(side) {}
+
+      /// true if the line is cut by the side but not on any side's edges
+      bool operator()(Line* line) { return line->is_internal_cut(side_); }
+
+     private:
+      Side* side_;
+    };
+
+    class NextLineOnElementCutFilter
+    {
+     public:
+      NextLineOnElementCutFilter(Line* line, Side* side, Element* element)
+          : line_(line), side_(side), element_(element)
       {
-        Line* line = *i;
-        if (filter(line))
+      }
+
+      bool operator()(Line* line)
+      {
+        return line != line_ and line->is_cut(side_) and
+               (element_ == nullptr or line->is_cut(element_));
+      }
+
+     private:
+      Line* line_;
+      Side* side_;
+      Element* element_;
+    };
+
+  }  // namespace Impl
+
+  template <class Filter>
+  Line* Point::find(Filter& filter, bool unique)
+  {
+    Line* line_found = nullptr;
+    for (plain_line_set::iterator i = lines_.begin(); i != lines_.end(); ++i)
+    {
+      Line* line = *i;
+      if (filter(line))
+      {
+        if (line_found == nullptr)
         {
-          if (line_found == nullptr)
+          line_found = line;
+          if (not unique)
           {
-            line_found = line;
-            if (not unique)
-            {
-              break;
-            }
+            break;
           }
-          else
-          {
-            FOUR_C_THROW("not unique");
-          }
+        }
+        else
+        {
+          FOUR_C_THROW("not unique");
         }
       }
-      return line_found;
     }
+    return line_found;
+  }
 
-    inline Line* Point::common_line(Point* other)
-    {
-      Impl::LineBetweenFilter filter(this, other);
-      return find(filter, true);
-    }
+  inline Line* Point::common_line(Point* other)
+  {
+    Impl::LineBetweenFilter filter(this, other);
+    return find(filter, true);
+  }
 
-    inline Line* Point::cut_line(Side* side, bool unique)
-    {
-      Impl::LineHasSideFilter filter(side);
-      return find(filter, unique);
-    }
+  inline Line* Point::cut_line(Side* side, bool unique)
+  {
+    Impl::LineHasSideFilter filter(side);
+    return find(filter, unique);
+  }
 
-    inline Line* Point::cut_line(Line* line, Side* side, Element* element)
-    {
-      Impl::NextLineOnElementCutFilter filter(line, side, element);
-      return find(filter, true);
-    }
+  inline Line* Point::cut_line(Line* line, Side* side, Element* element)
+  {
+    Impl::NextLineOnElementCutFilter filter(line, side, element);
+    return find(filter, true);
+  }
 
-  }  // namespace Cut
-}  // namespace Core::Geo
+}  // namespace Cut
+
 
 FOUR_C_NAMESPACE_CLOSE
 

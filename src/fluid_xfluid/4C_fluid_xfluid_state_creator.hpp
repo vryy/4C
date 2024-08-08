@@ -30,7 +30,8 @@ namespace Core::FE
   class Discretization;
 }  // namespace Core::FE
 
-namespace Core::Geo
+
+namespace Cut
 {
   class CutWizard;
 }
@@ -77,11 +78,11 @@ namespace FLD
         Teuchos::ParameterList& params_xfem, int maxnumdofsets, int minnumdofsets,
         bool include_inner)
         : condition_manager_(condition_manager),
-          nodal_dofset_strategy_(Core::UTILS::IntegralValue<Core::Geo::Cut::NodalDofSetStrategy>(
+          nodal_dofset_strategy_(Core::UTILS::IntegralValue<Cut::NodalDofSetStrategy>(
               params_xfem, "NODAL_DOFSET_STRATEGY")),
-          volume_cell_gauss_point_by_(Core::UTILS::IntegralValue<Core::Geo::Cut::VCellGaussPts>(
+          volume_cell_gauss_point_by_(Core::UTILS::IntegralValue<Cut::VCellGaussPts>(
               params_xfem, "VOLUME_GAUSS_POINTS_BY")),
-          bound_cell_gauss_point_by_(Core::UTILS::IntegralValue<Core::Geo::Cut::BCellGaussPts>(
+          bound_cell_gauss_point_by_(Core::UTILS::IntegralValue<Cut::BCellGaussPts>(
               params_xfem, "BOUNDARY_GAUSS_POINTS_BY")),
           gmsh_cut_out_(Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_CUT_OUT")),
           maxnumdofsets_(maxnumdofsets),
@@ -117,7 +118,7 @@ namespace FLD
     /// create wizard, perform cut, create new dofset and update xfem discretization
     void create_new_cut_state(
         Teuchos::RCP<XFEM::XFEMDofSet>& dofset,  //!< xfem dofset obtained from the new wizard
-        Teuchos::RCP<Core::Geo::CutWizard>&
+        Teuchos::RCP<Cut::CutWizard>&
             wizard,  //!< cut wizard associated with current intersection state
         const Teuchos::RCP<XFEM::DiscretizationXFEM>&
             xdiscret,  //!< xfluid background discretization
@@ -132,10 +133,10 @@ namespace FLD
     Teuchos::RCP<XFEM::ConditionManager> condition_manager_;
 
     //! strategy for nodal dofset management
-    const Core::Geo::Cut::NodalDofSetStrategy nodal_dofset_strategy_;
+    const Cut::NodalDofSetStrategy nodal_dofset_strategy_;
 
-    const Core::Geo::Cut::VCellGaussPts volume_cell_gauss_point_by_;
-    const Core::Geo::Cut::BCellGaussPts bound_cell_gauss_point_by_;
+    const Cut::VCellGaussPts volume_cell_gauss_point_by_;
+    const Cut::BCellGaussPts bound_cell_gauss_point_by_;
 
     /// is gmsh-output active?
     const bool gmsh_cut_out_;

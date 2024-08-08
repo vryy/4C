@@ -120,16 +120,15 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
     else if (gdofs_current.size() % gdofs_original.size() == 0)  // multiple dofsets
     {
       // if there are multiple dofsets we write output for the standard dofset
-      Core::Geo::Cut::Node* node = state->wizard()->get_node(xfemnode->id());
+      Cut::Node* node = state->wizard()->get_node(xfemnode->id());
 
-      const std::vector<Teuchos::RCP<Core::Geo::Cut::NodalDofSet>>& dofcellsets =
-          node->nodal_dof_sets();
+      const std::vector<Teuchos::RCP<Cut::NodalDofSet>>& dofcellsets = node->nodal_dof_sets();
 
       int nds = 0;
       bool is_std_set = false;
 
       // find the standard dofset
-      for (std::vector<Teuchos::RCP<Core::Geo::Cut::NodalDofSet>>::const_iterator cellsets =
+      for (std::vector<Teuchos::RCP<Cut::NodalDofSet>>::const_iterator cellsets =
                dofcellsets.begin();
            cellsets != dofcellsets.end(); cellsets++)
       {
@@ -262,8 +261,8 @@ FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(Teuchos::ParameterList& pa
       gmsh_eos_out_((bool)Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_EOS_OUT")),
       gmsh_discret_out_((bool)Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_DISCRET_OUT")),
       gmsh_step_diff_(500),
-      volume_cell_gauss_point_by_(Core::UTILS::IntegralValue<Core::Geo::Cut::VCellGaussPts>(
-          params_xfem, "VOLUME_GAUSS_POINTS_BY")),
+      volume_cell_gauss_point_by_(
+          Core::UTILS::IntegralValue<Cut::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY")),
       include_inner_(include_inner)
 {
   if (!(bool)Core::UTILS::IntegralValue<int>(
@@ -403,10 +402,10 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
     const std::string& prefix,         ///< data prefix
     int step,                          ///< step number
     int count,                         ///< counter for iterations within a global time step
-    const Teuchos::RCP<Core::Geo::CutWizard>& wizard,  ///< cut wizard
-    Teuchos::RCP<const Epetra_Vector> vel,    ///< vector holding velocity and pressure dofs
-    Teuchos::RCP<const Epetra_Vector> acc,    ///< vector holding acceleration
-    Teuchos::RCP<const Epetra_Vector> dispnp  ///< vector holding acceleration
+    const Teuchos::RCP<Cut::CutWizard>& wizard,  ///< cut wizard
+    Teuchos::RCP<const Epetra_Vector> vel,       ///< vector holding velocity and pressure dofs
+    Teuchos::RCP<const Epetra_Vector> acc,       ///< vector holding acceleration
+    Teuchos::RCP<const Epetra_Vector> dispnp     ///< vector holding acceleration
 )
 {
   // Todo: should be private
@@ -536,11 +535,11 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
   for (int i = 0; i < numrowele; ++i)
   {
     Core::Elements::Element* actele = (discret_)->l_row_element(i);
-    Core::Geo::Cut::ElementHandle* e = wizard->get_element(actele);
+    Cut::ElementHandle* e = wizard->get_element(actele);
 
     if (e != nullptr)
     {
-      std::vector<Core::Geo::Cut::plain_volumecell_set> cell_sets;
+      std::vector<Cut::plain_volumecell_set> cell_sets;
       std::vector<std::vector<int>> nds_sets;
 
       e->get_volume_cells_dof_sets(cell_sets, nds_sets, include_inner_);
@@ -550,24 +549,23 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
       {
         int set_counter = 0;
 
-        for (std::vector<Core::Geo::Cut::plain_volumecell_set>::iterator s = cell_sets.begin();
+        for (std::vector<Cut::plain_volumecell_set>::iterator s = cell_sets.begin();
              s != cell_sets.end(); s++)
         {
-          Core::Geo::Cut::plain_volumecell_set& cells = *s;
+          Cut::plain_volumecell_set& cells = *s;
 
           std::vector<int>& nds = nds_sets[set_counter];
 
 
-          for (Core::Geo::Cut::plain_volumecell_set::iterator i = cells.begin(); i != cells.end();
-               ++i)
+          for (Cut::plain_volumecell_set::iterator i = cells.begin(); i != cells.end(); ++i)
           {
-            Core::Geo::Cut::VolumeCell* vc = *i;
+            Cut::VolumeCell* vc = *i;
 
             if (e->is_cut())
             {
               gmsh_output_volume_cell(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
                   gmshfilecontent_acc, actele, e, vc, nds, vel, acc);
-              if (vc->position() == Core::Geo::Cut::Point::outside)
+              if (vc->position() == Cut::Point::outside)
               {
                 if (cond_manager_->has_mesh_coupling())
                   gmsh_output_boundary_cell(*discret_, gmshfilecontent_bound, vc, wizard);
@@ -626,7 +624,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
   if (myrank == 0) std::cout << " done\n" << std::flush;
 }
 
-/// Gmsh output function for elements without an Core::Geo::Cut::ElementHandle
+/// Gmsh output function for elements without an Cut::ElementHandle
 void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
     Core::FE::Discretization& discret,        ///< background fluid discretization
     std::ofstream& vel_f,                     ///< output file stream for velocity
@@ -766,8 +764,8 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
     std::ofstream& press_f,                    ///< output file stream for pressure
     std::ofstream& acc_f,                      ///< output file stream for acceleration
     Core::Elements::Element* actele,           ///< element
-    Core::Geo::Cut::ElementHandle* e,          ///< elementhandle
-    Core::Geo::Cut::VolumeCell* vc,            ///< volumecell
+    Cut::ElementHandle* e,                     ///< elementhandle
+    Cut::VolumeCell* vc,                       ///< volumecell
     const std::vector<int>& nds,               ///< vector holding the nodal dofsets
     Teuchos::RCP<const Epetra_Vector> velvec,  ///< vector holding velocity and pressure dofs
     Teuchos::RCP<const Epetra_Vector> accvec   ///< vector holding acceleration
@@ -824,15 +822,15 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
 
   // facet based output for cut volumes
   // integrationcells are not available because tessellation is not used
-  if (volume_cell_gauss_point_by_ != Core::Geo::Cut::VCellGaussPts_Tessellation)
+  if (volume_cell_gauss_point_by_ != Cut::VCellGaussPts_Tessellation)
   {
-    const Core::Geo::Cut::plain_facet_set& facete = vc->facets();
-    for (Core::Geo::Cut::plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)
+    const Cut::plain_facet_set& facete = vc->facets();
+    for (Cut::plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)
     {
       // split facet into tri and quad cell
-      Core::Geo::Cut::Facet* fe = *i;
-      std::vector<std::vector<Core::Geo::Cut::Point*>> split;
-      std::vector<Core::Geo::Cut::Point*> corners = fe->corner_points();
+      Cut::Facet* fe = *i;
+      std::vector<std::vector<Cut::Point*>> split;
+      std::vector<Cut::Point*> corners = fe->corner_points();
 
       if (corners.size() == 3)  // only Tri can be used directly. Quad may be concave
         split.push_back(corners);
@@ -842,10 +840,10 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
         split = fe->get_split_cells();
       }
 
-      for (std::vector<std::vector<Core::Geo::Cut::Point*>>::const_iterator j = split.begin();
+      for (std::vector<std::vector<Cut::Point*>>::const_iterator j = split.begin();
            j != split.end(); j++)
       {
-        std::vector<Core::Geo::Cut::Point*> cell = *j;
+        std::vector<Cut::Point*> cell = *j;
 
         switch (cell.size())
         {
@@ -889,7 +887,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
           Core::LinAlg::Matrix<1, 1> p(true);
           Core::LinAlg::Matrix<3, 1> a(true);
 
-          Core::Geo::Cut::Point* point = cell[k];
+          Cut::Point* point = cell[k];
           const Core::LinAlg::Matrix<3, 1>& rst = e->local_coordinates(point);
 
           switch (actele->shape())
@@ -966,13 +964,13 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
   // integrationcells based output for tessellation
   else
   {
-    const Core::Geo::Cut::plain_integrationcell_set& intcells = vc->integration_cells();
-    for (Core::Geo::Cut::plain_integrationcell_set::const_iterator i = intcells.begin();
-         i != intcells.end(); ++i)
+    const Cut::plain_integrationcell_set& intcells = vc->integration_cells();
+    for (Cut::plain_integrationcell_set::const_iterator i = intcells.begin(); i != intcells.end();
+         ++i)
     {
-      Core::Geo::Cut::IntegrationCell* ic = *i;
+      Cut::IntegrationCell* ic = *i;
 
-      const std::vector<Core::Geo::Cut::Point*>& points = ic->points();
+      const std::vector<Cut::Point*>& points = ic->points();
 
       switch (ic->shape())
       {
@@ -1016,7 +1014,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
         Core::LinAlg::Matrix<1, 1> p(true);
         Core::LinAlg::Matrix<3, 1> a(true);
 
-        Core::Geo::Cut::Point* point = points[i];
+        Cut::Point* point = points[i];
         const Core::LinAlg::Matrix<3, 1>& rst = e->local_coordinates(point);
 
         switch (actele->shape())
@@ -1149,10 +1147,10 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
 
 /// Gmsh output function for boundarycells
 void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
-    Core::FE::Discretization& discret,                ///< background fluid discretization
-    std::ofstream& bound_f,                           ///< output file stream for boundary mesh
-    Core::Geo::Cut::VolumeCell* vc,                   ///< volumecell
-    const Teuchos::RCP<Core::Geo::CutWizard>& wizard  ///< cut wizard
+    Core::FE::Discretization& discret,          ///< background fluid discretization
+    std::ofstream& bound_f,                     ///< output file stream for boundary mesh
+    Cut::VolumeCell* vc,                        ///< volumecell
+    const Teuchos::RCP<Cut::CutWizard>& wizard  ///< cut wizard
 )
 {
   bound_f.setf(std::ios::scientific, std::ios::floatfield);
@@ -1162,19 +1160,19 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
   Core::LinAlg::Matrix<2, 2> metrictensor;
   double drs;
 
-  std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>> bcells;
+  std::map<int, std::vector<Cut::BoundaryCell*>> bcells;
   vc->get_boundary_cells(bcells);
-  for (std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::iterator i = bcells.begin();
+  for (std::map<int, std::vector<Cut::BoundaryCell*>>::iterator i = bcells.begin();
        i != bcells.end(); ++i)
   {
     int sid = i->first;
-    std::vector<Core::Geo::Cut::BoundaryCell*>& bcs = i->second;
+    std::vector<Cut::BoundaryCell*>& bcs = i->second;
 
     if (!cond_manager_->is_mesh_coupling(sid)) continue;
 
     Core::Elements::Element* side = cond_manager_->get_side(sid);
 
-    Core::Geo::Cut::SideHandle* s = wizard->get_mesh_cutting_side(sid, 0);
+    Cut::SideHandle* s = wizard->get_mesh_cutting_side(sid, 0);
 
     const int numnodes = side->num_node();
     Core::Nodes::Node** nodes = side->nodes();
@@ -1185,9 +1183,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
       std::copy(x, x + 3, &side_xyze(0, i));
     }
 
-    for (std::vector<Core::Geo::Cut::BoundaryCell*>::iterator i = bcs.begin(); i != bcs.end(); ++i)
+    for (std::vector<Cut::BoundaryCell*>::iterator i = bcs.begin(); i != bcs.end(); ++i)
     {
-      Core::Geo::Cut::BoundaryCell* bc = *i;
+      Cut::BoundaryCell* bc = *i;
 
       // Issue with boundary cell outputs for marked background sides
       if (bc->get_facet()->on_marked_background_side()) continue;
@@ -1205,11 +1203,10 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
           break;
       }
 
-      const std::vector<Core::Geo::Cut::Point*>& points = bc->points();
-      for (std::vector<Core::Geo::Cut::Point*>::const_iterator i = points.begin();
-           i != points.end(); ++i)
+      const std::vector<Cut::Point*>& points = bc->points();
+      for (std::vector<Cut::Point*>::const_iterator i = points.begin(); i != points.end(); ++i)
       {
-        Core::Geo::Cut::Point* p = *i;
+        Cut::Point* p = *i;
 
         if (i != points.begin()) bound_f << ",";
 
@@ -1219,10 +1216,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
 
       bound_f << "){";
 
-      for (std::vector<Core::Geo::Cut::Point*>::const_iterator i = points.begin();
-           i != points.end(); ++i)
+      for (std::vector<Cut::Point*>::const_iterator i = points.begin(); i != points.end(); ++i)
       {
-        Core::Geo::Cut::Point* p = *i;
+        Cut::Point* p = *i;
 
         // the bc corner points will always lie on the respective side
         const Core::LinAlg::Matrix<2, 1>& eta = s->local_coordinates(p);

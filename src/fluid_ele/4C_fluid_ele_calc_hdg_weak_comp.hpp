@@ -61,7 +61,7 @@ namespace Discret
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           const std::vector<Core::FE::GaussIntegration>& intpoints,
-          const Core::Geo::Cut::plain_volumecell_set& cells) override
+          const Cut::plain_volumecell_set& cells) override
       {
         FOUR_C_THROW("Not implemented!");
         return 1;
@@ -157,12 +157,11 @@ namespace Discret
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           Teuchos::RCP<Core::Mat::Material>& mat,                    ///< material
           Core::LinAlg::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
-          const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>&
-              bcells,  ///< boundary cells
+          const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,  ///< boundary cells
           const std::map<int, std::vector<Core::FE::GaussIntegration>>&
-              bintpoints,                                     ///< boundary integration points
-          const Core::Geo::Cut::plain_volumecell_set& vcSet,  ///< set of plain volume cells
-          Teuchos::ParameterList& params                      ///< parameter list
+              bintpoints,                          ///< boundary integration points
+          const Cut::plain_volumecell_set& vcSet,  ///< set of plain volume cells
+          Teuchos::ParameterList& params           ///< parameter list
           ) override
       {
         FOUR_C_THROW("Not implemented!");
@@ -178,7 +177,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
           const std::vector<Core::FE::GaussIntegration>& intpoints,
-          const Core::Geo::Cut::plain_volumecell_set& cells, bool offdiag = false) override
+          const Cut::plain_volumecell_set& cells, bool offdiag = false) override
       {
         FOUR_C_THROW("Not implemented!");
         return 1;
@@ -190,8 +189,7 @@ namespace Discret
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           const std::vector<Core::FE::GaussIntegration>& intpoints,  ///< element gauss points
-          const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>&
-              bcells,  ///< boundary cells
+          const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,  ///< boundary cells
           const std::map<int, std::vector<Core::FE::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>&
@@ -205,7 +203,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector&
               elevec1_epetra,                      ///< local element vector of intersected element
           Core::LinAlg::SerialDenseMatrix& Cuiui,  ///< coupling matrix of a side with itself
-          const Core::Geo::Cut::plain_volumecell_set& vcSet  ///< set of plain volume cells
+          const Cut::plain_volumecell_set& vcSet   ///< set of plain volume cells
           ) override
       {
         FOUR_C_THROW("Not implemented!");
@@ -216,17 +214,16 @@ namespace Discret
           Core::FE::Discretization& dis,                              ///< background discretization
           const std::vector<int>& lm,                                 ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,   ///< XFEM condition manager
-          const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>&
-              bcells,  ///< boundary cells
+          const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,  ///< boundary cells
           const std::map<int, std::vector<Core::FE::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>& patchcouplm,
-          Teuchos::ParameterList& params,                     ///< parameter list
-          Teuchos::RCP<Core::Mat::Material>& mat_master,      ///< material master side
-          Teuchos::RCP<Core::Mat::Material>& mat_slave,       ///< material slave side
-          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,    ///< element matrix
-          Core::LinAlg::SerialDenseVector& elevec1_epetra,    ///< element vector
-          const Core::Geo::Cut::plain_volumecell_set& vcSet,  ///< volumecell sets in this element
+          Teuchos::ParameterList& params,                   ///< parameter list
+          Teuchos::RCP<Core::Mat::Material>& mat_master,    ///< material master side
+          Teuchos::RCP<Core::Mat::Material>& mat_slave,     ///< material slave side
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  ///< element matrix
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,  ///< element vector
+          const Cut::plain_volumecell_set& vcSet,           ///< volumecell sets in this element
           std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>&
               side_coupling,                       ///< side coupling matrices
           Core::LinAlg::SerialDenseMatrix& Cuiui,  ///< ui-ui coupling matrix

@@ -19,7 +19,8 @@ between the xfluid class and the cut-library
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::Geo
+
+namespace Cut
 {
   class CutWizard;
 }
@@ -662,7 +663,7 @@ namespace XFEM
     void register_side_proc(int sid);
 
     /// Initialize Fluid State
-    bool initialize_fluid_state(Teuchos::RCP<Core::Geo::CutWizard> cutwizard,
+    bool initialize_fluid_state(Teuchos::RCP<Cut::CutWizard> cutwizard,
         Teuchos::RCP<Core::FE::Discretization> fluiddis,
         Teuchos::RCP<XFEM::ConditionManager> condition_manager,
         Teuchos::RCP<Teuchos::ParameterList> fluidparams);

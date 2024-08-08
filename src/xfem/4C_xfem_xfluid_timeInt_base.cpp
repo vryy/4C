@@ -39,10 +39,10 @@ FOUR_C_NAMESPACE_OPEN
 XFEM::XfluidTimeintBase::XfluidTimeintBase(
     const Teuchos::RCP<Core::FE::Discretization> discret,      /// background discretization
     const Teuchos::RCP<Core::FE::Discretization> boundarydis,  /// cut discretization
-    Teuchos::RCP<Core::Geo::CutWizard> wizard_old,  /// cut wizard w.r.t. old interface position
-    Teuchos::RCP<Core::Geo::CutWizard> wizard_new,  /// cut wizard w.r.t. new interface position
-    Teuchos::RCP<XFEM::XFEMDofSet> dofset_old,      /// XFEM dofset w.r.t. old interface position
-    Teuchos::RCP<XFEM::XFEMDofSet> dofset_new,      /// XFEM dofset w.r.t. new interface position
+    Teuchos::RCP<Cut::CutWizard> wizard_old,    /// cut wizard w.r.t. old interface position
+    Teuchos::RCP<Cut::CutWizard> wizard_new,    /// cut wizard w.r.t. new interface position
+    Teuchos::RCP<XFEM::XFEMDofSet> dofset_old,  /// XFEM dofset w.r.t. old interface position
+    Teuchos::RCP<XFEM::XFEMDofSet> dofset_new,  /// XFEM dofset w.r.t. new interface position
     std::vector<Teuchos::RCP<Epetra_Vector>>
         oldVectors,                      /// vector of col-vectors w.r.t. old interface position
     Teuchos::RCP<Epetra_Vector> dispn,   /// old col displacement vector
@@ -138,7 +138,7 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
   //-----------------------------------------------------------------------
   // standard case of a real line between x1 and x2
 
-  Teuchos::RCP<Core::Geo::CutWizard> wizard = newTimeStep ? wizard_new_ : wizard_old_;
+  Teuchos::RCP<Cut::CutWizard> wizard = newTimeStep ? wizard_new_ : wizard_old_;
 
   // REMARK:
   // changing the side of a point at two times (newton steps) with coordinates x1 and x2 is done
@@ -261,7 +261,7 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
     {
       Core::Elements::Element* ele = discret_->g_element(*e_it);
 
-      Core::Geo::Cut::ElementHandle* eh = wizard->get_element(ele);
+      Cut::ElementHandle* eh = wizard->get_element(ele);
 
       // no cutsides within this element, then no side changing possible
       if (eh == nullptr)
@@ -271,23 +271,22 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
 
       //--------------------------------------------------------
       // get involved side ids
-      Core::Geo::Cut::plain_element_set elements;
+      Cut::plain_element_set elements;
       eh->collect_elements(elements);
 
       // get all side-ids
-      for (Core::Geo::Cut::plain_element_set::iterator eles = elements.begin();
-           eles != elements.end(); eles++)
+      for (Cut::plain_element_set::iterator eles = elements.begin(); eles != elements.end(); eles++)
       {
-        Core::Geo::Cut::Element* sub_ele = *eles;
+        Cut::Element* sub_ele = *eles;
 
-        Core::Geo::Cut::plain_facet_set facets = sub_ele->facets();
+        Cut::plain_facet_set facets = sub_ele->facets();
 
-        for (Core::Geo::Cut::plain_facet_set::const_iterator facet_it = facets.begin();
+        for (Cut::plain_facet_set::const_iterator facet_it = facets.begin();
              facet_it != facets.end(); facet_it++)
         {
-          Core::Geo::Cut::Facet* facet = *facet_it;
+          Cut::Facet* facet = *facet_it;
 
-          Core::Geo::Cut::Side* parent_side = facet->parent_side();
+          Cut::Side* parent_side = facet->parent_side();
 
           bool is_elements_side = sub_ele->owned_side(parent_side);
 
@@ -312,7 +311,7 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
   for (std::set<int>::iterator side_it = cut_sides.begin(); side_it != cut_sides.end(); side_it++)
   {
     // get the side via sidehandle
-    Core::Geo::Cut::SideHandle* sh = wizard->get_mesh_cutting_side(*side_it, mi);
+    Cut::SideHandle* sh = wizard->get_mesh_cutting_side(*side_it, mi);
 
 #ifdef DEBUG_TIMINT_STD
     Core::IO::cout << "\n\t\t\t\t\t SIDE-CHECK with side=" << *side_it << Core::IO::endl;
@@ -387,9 +386,8 @@ bool XFEM::XfluidTimeintBase::neighbors(
 /*------------------------------------------------------------------------------------------------*
  * check if edge between x1 and x2 cuts the side                                     schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-bool XFEM::XfluidTimeintBase::call_side_edge_intersection(
-    Core::Geo::Cut::SideHandle* sh,  /// side handle
-    int sid,                         /// side id
+bool XFEM::XfluidTimeintBase::call_side_edge_intersection(Cut::SideHandle* sh,  /// side handle
+    int sid,                                                                    /// side id
     Core::LinAlg::Matrix<3, 1>& x1,  /// coordinates of edge's start point
     Core::LinAlg::Matrix<3, 1>& x2   /// coordinates of edge's end point
 ) const
@@ -426,9 +424,8 @@ bool XFEM::XfluidTimeintBase::call_side_edge_intersection(
  * check if edge between x1 and x2 cuts the side (templated)                         schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType sidetype>
-bool XFEM::XfluidTimeintBase::call_side_edge_intersection_t(
-    Core::Geo::Cut::SideHandle* sh,  /// side handle
-    int sid,                         /// side id
+bool XFEM::XfluidTimeintBase::call_side_edge_intersection_t(Cut::SideHandle* sh,  /// side handle
+    int sid,                                                                      /// side id
     Core::LinAlg::Matrix<3, 1>& x1,  /// coordinates of edge's start point
     Core::LinAlg::Matrix<3, 1>& x2   /// coordinates of edge's end point
 ) const
@@ -452,11 +449,11 @@ bool XFEM::XfluidTimeintBase::call_side_edge_intersection_t(
   Core::LinAlg::Matrix<3, 1> xsi(true);
 
 
-  Teuchos::RCP<Core::Geo::Cut::IntersectionBase> intersect =
-      Core::Geo::Cut::IntersectionBase::create(Core::FE::CellType::line2, sidetype);
-  Teuchos::RCP<Core::Geo::Cut::Options> options =
-      Teuchos::rcp(new Core::Geo::Cut::Options());  // Create cut options for intersection
-                                                    // (specify to use double prec.)
+  Teuchos::RCP<Cut::IntersectionBase> intersect =
+      Cut::IntersectionBase::create(Core::FE::CellType::line2, sidetype);
+  Teuchos::RCP<Cut::Options> options =
+      Teuchos::rcp(new Cut::Options());  // Create cut options for intersection
+                                         // (specify to use double prec.)
   intersect->init(xyze_lineElement, xyze_surfaceElement, false, false, false, options.getRawPtr());
 
   // check also limits during the newton scheme and when converged
@@ -564,8 +561,7 @@ void XFEM::XfluidTimeintBase::x_to_xi_coords(
 
   Core::LinAlg::Matrix<nsd, numnode> xyze(xyz);
 
-  Teuchos::RCP<Core::Geo::Cut::Position> pos =
-      Core::Geo::Cut::PositionFactory::build_position<3, distype>(xyze, x);
+  Teuchos::RCP<Cut::Position> pos = Cut::PositionFactory::build_position<3, distype>(xyze, x);
   pos->compute();
   pos->local_coordinates(xi);  // local coordinates
 
@@ -1248,7 +1244,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
 
   // determine the smallest distance of node at t^(n+1) to the current side elements
 
-  Core::Geo::Cut::Node* n_new = wizard_new_->get_node(data.node_.id());
+  Cut::Node* n_new = wizard_new_->get_node(data.node_.id());
 
   //------------------------------------
   // find all involved nodes and sides (edges) for computing distance to node
@@ -1264,26 +1260,24 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
     //--------------------------------------------------------
 
     // set of side-ids involved in cutting the current connection of volumecells at t^(n+1)
-    std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>> bcells_new;
+    std::map<int, std::vector<Cut::BoundaryCell*>> bcells_new;
 
     // the std-set
-    const std::set<Core::Geo::Cut::plain_volumecell_set,
-        Core::Geo::Cut::Cmp>& cell_set_new =
-        n_new->get_nodal_dof_set(data.nds_np_)
-            ->volume_cell_composite();  // always the standard dofset
+    const std::set<Cut::plain_volumecell_set,
+        Cut::Cmp>& cell_set_new = n_new->get_nodal_dof_set(data.nds_np_)
+                                      ->volume_cell_composite();  // always the standard dofset
 
     // get all side-ids w.r.t to all volumecells contained in current new set around the current
     // node
-    for (std::set<Core::Geo::Cut::plain_volumecell_set>::const_iterator adj_eles =
-             cell_set_new.begin();
+    for (std::set<Cut::plain_volumecell_set>::const_iterator adj_eles = cell_set_new.begin();
          adj_eles != cell_set_new.end(); adj_eles++)
     {
-      const Core::Geo::Cut::plain_volumecell_set ele_vc = *adj_eles;
+      const Cut::plain_volumecell_set ele_vc = *adj_eles;
 
-      for (Core::Geo::Cut::plain_volumecell_set::const_iterator vcs = ele_vc.begin();
-           vcs != ele_vc.end(); vcs++)
+      for (Cut::plain_volumecell_set::const_iterator vcs = ele_vc.begin(); vcs != ele_vc.end();
+           vcs++)
       {
-        Core::Geo::Cut::VolumeCell* vc = *vcs;
+        Cut::VolumeCell* vc = *vcs;
 
         // get sides involved in creation boundary cells (std::map<sideId,bcells>)
         vc->get_boundary_cells(bcells_new);
@@ -1296,8 +1290,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
     //--------------------------------------------------------
 
     // loop bcs and extract sides and nodes
-    for (std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::iterator bcells_it =
-             bcells_new.begin();
+    for (std::map<int, std::vector<Cut::BoundaryCell*>>::iterator bcells_it = bcells_new.begin();
          bcells_it != bcells_new.end(); bcells_it++)
     {
       int sid = bcells_it->first;
@@ -1727,7 +1720,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
 bool XFEM::XfluidStd::find_nearest_surf_point(
     Core::LinAlg::Matrix<3, 1>& x,       ///< coords of point to be projected
     Core::LinAlg::Matrix<3, 1>& proj_x,  ///< coords of projected point
-    Core::Geo::Cut::VolumeCell* vc,      ///< volumcell on that's cut-surface we want to project
+    Cut::VolumeCell* vc,                 ///< volumcell on that's cut-surface we want to project
     const std::string state              ///< state n or np?
 )
 {
@@ -1739,7 +1732,7 @@ bool XFEM::XfluidStd::find_nearest_surf_point(
   //--------------------------------------------------------
 
   // set of side-ids involved in cutting the current connection of volumecells at t^(n+1)
-  std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>> bcells_new;
+  std::map<int, std::vector<Cut::BoundaryCell*>> bcells_new;
 
   // get sides involved in creation boundary cells (std::map<sideId,bcells>)
   vc->get_boundary_cells(bcells_new);
@@ -1750,8 +1743,7 @@ bool XFEM::XfluidStd::find_nearest_surf_point(
   std::set<int> sides;
 
   // loop bcs and extract sides and nodes
-  for (std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::iterator bcells_it =
-           bcells_new.begin();
+  for (std::map<int, std::vector<Cut::BoundaryCell*>>::iterator bcells_it = bcells_new.begin();
        bcells_it != bcells_new.end(); bcells_it++)
   {
     int sid = bcells_it->first;

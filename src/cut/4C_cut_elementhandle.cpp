@@ -33,8 +33,8 @@ FOUR_C_NAMESPACE_OPEN
 // integation-cells to the local coordinates of background element
 /*----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::ElementHandle::create_projected(
-    const std::vector<Core::Geo::Cut::Point*>& cpoints, Teuchos::RCP<Core::FE::GaussPoints> gp_ic)
+Teuchos::RCP<Core::FE::GaussPoints> Cut::ElementHandle::create_projected(
+    const std::vector<Cut::Point*>& cpoints, Teuchos::RCP<Core::FE::GaussPoints> gp_ic)
 {
   const unsigned nen = Core::FE::num_nodes<distype>;
   const unsigned dim = Core::FE::dim<distype>;
@@ -44,7 +44,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::ElementHandle::create_projec
   // Find the local coordinates of given corner points w.r. to background ElementHandle
   for (unsigned i = 0; i < nen; ++i)
   {
-    Core::Geo::Cut::Point* p = cpoints[i];
+    Cut::Point* p = cpoints[i];
     const Core::LinAlg::Matrix<3, 1>& xi = local_coordinates(p);
 
     // copy first dim entries into xie
@@ -65,7 +65,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::ElementHandle::create_projec
 // Collect the Gaussian points of all volume-cells belonging to this element in such a way
 // that Gaussian rule for every volume-cell can be separated
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::ElementHandle::volume_cell_gauss_points(
+void Cut::ElementHandle::volume_cell_gauss_points(
     plain_volumecell_set& cells, std::vector<Core::FE::GaussIntegration>& intpoints)
 {
   intpoints.clear();
@@ -73,7 +73,7 @@ void Core::Geo::Cut::ElementHandle::volume_cell_gauss_points(
 
   for (plain_volumecell_set::iterator i = cells.begin(); i != cells.end(); ++i)
   {
-    Core::Geo::Cut::VolumeCell* vc = *i;
+    Cut::VolumeCell* vc = *i;
 
     Teuchos::RCP<Core::FE::GaussPointsComposite> gpc =
         Teuchos::rcp(new Core::FE::GaussPointsComposite(0));
@@ -130,22 +130,21 @@ void Core::Geo::Cut::ElementHandle::volume_cell_gauss_points(
 }
 
 
-void Core::Geo::Cut::ElementHandle::append_volume_cell_gauss_points_tessellation(
-    Teuchos::RCP<Core::FE::GaussPointsComposite> gpc, Core::Geo::Cut::VolumeCell* vc)
+void Cut::ElementHandle::append_volume_cell_gauss_points_tessellation(
+    Teuchos::RCP<Core::FE::GaussPointsComposite> gpc, Cut::VolumeCell* vc)
 {
   //---------------
   // For tessellation, we have Gauss points calculated at local coordinates of each integrationcells
   // we transform this to local coordinates of background ElementHandle
   //----------------
-  const Core::Geo::Cut::plain_integrationcell_set& cells = vc->integration_cells();
-  for (Core::Geo::Cut::plain_integrationcell_set::const_iterator i = cells.begin();
-       i != cells.end(); ++i)
+  const Cut::plain_integrationcell_set& cells = vc->integration_cells();
+  for (Cut::plain_integrationcell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
   {
-    Core::Geo::Cut::IntegrationCell* ic = *i;
+    Cut::IntegrationCell* ic = *i;
 
     Teuchos::RCP<Core::FE::GaussPoints> gp_ic =
         Core::FE::GaussPointCache::instance().create(ic->shape(), ic->cubature_degree(ic->shape()));
-    const std::vector<Core::Geo::Cut::Point*>& cpoints = ic->points();
+    const std::vector<Cut::Point*>& cpoints = ic->points();
 
     switch (ic->shape())
     {
@@ -199,8 +198,8 @@ void Core::Geo::Cut::ElementHandle::append_volume_cell_gauss_points_tessellation
   }
 }
 
-void Core::Geo::Cut::ElementHandle::append_volume_cell_gauss_points_moment_fitting(
-    Teuchos::RCP<Core::FE::GaussPointsComposite> gpc, Core::Geo::Cut::VolumeCell* vc)
+void Cut::ElementHandle::append_volume_cell_gauss_points_moment_fitting(
+    Teuchos::RCP<Core::FE::GaussPointsComposite> gpc, Cut::VolumeCell* vc)
 {
   //-------------------
   // For MomentFitting, we have Gauss points that are calculated w.r to local coordinates of linear
@@ -209,7 +208,7 @@ void Core::Geo::Cut::ElementHandle::append_volume_cell_gauss_points_moment_fitti
   //-------------------
 
   //---------------------------------------------
-  const std::vector<Core::Geo::Cut::Point*>& cpoints = vc->parent_element()->points();
+  const std::vector<Cut::Point*>& cpoints = vc->parent_element()->points();
   Teuchos::RCP<Core::FE::GaussPoints> gp_ic = vc->get_gauss_rule();
 
 
@@ -248,8 +247,8 @@ void Core::Geo::Cut::ElementHandle::append_volume_cell_gauss_points_moment_fitti
 }
 
 
-void Core::Geo::Cut::ElementHandle::append_volume_cell_gauss_points_direct_divergence(
-    Teuchos::RCP<Core::FE::GaussPointsComposite> gpc, Core::Geo::Cut::VolumeCell* vc)
+void Cut::ElementHandle::append_volume_cell_gauss_points_direct_divergence(
+    Teuchos::RCP<Core::FE::GaussPointsComposite> gpc, Cut::VolumeCell* vc)
 {
   //-------------------
   // For DirectDivergence, we calculate Gauss points at the correct local coord. during construction
@@ -261,7 +260,7 @@ void Core::Geo::Cut::ElementHandle::append_volume_cell_gauss_points_direct_diver
   Teuchos::RCP<Core::FE::GaussPoints> gp = vc->get_gauss_rule();
 
   // volume cell gausspoints are identified to be negligible in
-  // Core::Geo::Cut::VolumeCell::direct_divergence_gauss_rule
+  // Cut::VolumeCell::direct_divergence_gauss_rule
   if (gp == Teuchos::null) return;
 
   gpc->append(gp);
@@ -271,7 +270,7 @@ void Core::Geo::Cut::ElementHandle::append_volume_cell_gauss_points_direct_diver
 // Collect the Gaussian points of all the volume-cells belonging to this element.
 // The integration rules over all the volume-cells are connected.
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::GaussPointsComposite> Core::Geo::Cut::ElementHandle::gauss_points_connected(
+Teuchos::RCP<Core::FE::GaussPointsComposite> Cut::ElementHandle::gauss_points_connected(
     plain_volumecell_set& cells, VCellGaussPts gausstype)
 {
   Teuchos::RCP<Core::FE::GaussPointsComposite> gpc =
@@ -279,7 +278,7 @@ Teuchos::RCP<Core::FE::GaussPointsComposite> Core::Geo::Cut::ElementHandle::gaus
 
   for (plain_volumecell_set::iterator i = cells.begin(); i != cells.end(); ++i)
   {
-    Core::Geo::Cut::VolumeCell* vc = *i;
+    Cut::VolumeCell* vc = *i;
 
     const plain_integrationcell_set& cells = vc->integration_cells();
 
@@ -288,11 +287,11 @@ Teuchos::RCP<Core::FE::GaussPointsComposite> Core::Geo::Cut::ElementHandle::gaus
     {
       for (plain_integrationcell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
       {
-        Core::Geo::Cut::IntegrationCell* ic = *i;
+        Cut::IntegrationCell* ic = *i;
 
         Teuchos::RCP<Core::FE::GaussPoints> gp_ic = Core::FE::GaussPointCache::instance().create(
             ic->shape(), ic->cubature_degree(ic->shape()));
-        const std::vector<Core::Geo::Cut::Point*>& cpoints = ic->points();
+        const std::vector<Cut::Point*>& cpoints = ic->points();
 
         switch (ic->shape())
         {
@@ -346,17 +345,17 @@ Teuchos::RCP<Core::FE::GaussPointsComposite> Core::Geo::Cut::ElementHandle::gaus
 // Collect the Gauss points of all the boundary-cells belong to this element.
 // This is the method used now in the new implementation
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::ElementHandle::boundary_cell_gauss_points_lin(
-    const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>& bcells,
+void Cut::ElementHandle::boundary_cell_gauss_points_lin(
+    const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,
     std::map<int, std::vector<Core::FE::GaussIntegration>>& intpoints, const int bc_cubaturedegree)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "Core::Geo::Cut::ElementHandle::boundary_cell_gauss_points_lin" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "Cut::ElementHandle::boundary_cell_gauss_points_lin" );
 
-  for (std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::const_iterator i = bcells.begin();
+  for (std::map<int, std::vector<Cut::BoundaryCell*>>::const_iterator i = bcells.begin();
        i != bcells.end(); ++i)
   {
     int sid = i->first;
-    const std::vector<Core::Geo::Cut::BoundaryCell*>& cells = i->second;
+    const std::vector<Cut::BoundaryCell*>& cells = i->second;
     std::vector<Core::FE::GaussIntegration>& cell_points = intpoints[sid];
 
     //    // safety check
@@ -381,10 +380,9 @@ void Core::Geo::Cut::ElementHandle::boundary_cell_gauss_points_lin(
     cell_points.clear();
     cell_points.reserve(cells.size());
 
-    for (std::vector<Core::Geo::Cut::BoundaryCell*>::const_iterator i = cells.begin();
-         i != cells.end(); ++i)
+    for (std::vector<Cut::BoundaryCell*>::const_iterator i = cells.begin(); i != cells.end(); ++i)
     {
-      Core::Geo::Cut::BoundaryCell* bc = *i;
+      Cut::BoundaryCell* bc = *i;
 
       // Create (unmodified) gauss points for integration cell with requested
       // polynomial order. This is supposed to be fast, since there is a cache.
@@ -395,12 +393,11 @@ void Core::Geo::Cut::ElementHandle::boundary_cell_gauss_points_lin(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::ElementHandle::get_boundary_cell_sets(
-    const std::vector<Core::Geo::Cut::Point::PointPosition>& desired_positions,
+void Cut::ElementHandle::get_boundary_cell_sets(
+    const std::vector<Cut::Point::PointPosition>& desired_positions,
     std::vector<plain_boundarycell_set>& bcellsets)
 {
-  for (std::vector<Core::Geo::Cut::Point::PointPosition>::const_iterator ip =
-           desired_positions.begin();
+  for (std::vector<Cut::Point::PointPosition>::const_iterator ip = desired_positions.begin();
        ip != desired_positions.end(); ++ip)
   {
     const std::vector<plain_boundarycell_set>& ele_bcellsets = get_boundary_cell_set(*ip);
@@ -413,9 +410,8 @@ void Core::Geo::Cut::ElementHandle::get_boundary_cell_sets(
 /*----------------------------------------------------------------------*/
 // get all the element' sets of volume-cells and nds-vectors
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::ElementHandle::get_volume_cells_dof_sets(
-    std::vector<plain_volumecell_set>& cellsets, std::vector<std::vector<int>>& nds_sets,
-    bool include_inner)
+void Cut::ElementHandle::get_volume_cells_dof_sets(std::vector<plain_volumecell_set>& cellsets,
+    std::vector<std::vector<int>>& nds_sets, bool include_inner)
 {
   const std::vector<plain_volumecell_set>& ele_vc_sets_inside = get_vc_sets_inside();
   const std::vector<plain_volumecell_set>& ele_vc_sets_outside = get_vc_sets_outside();
@@ -442,7 +438,7 @@ void Core::Geo::Cut::ElementHandle::get_volume_cells_dof_sets(
 /*----------------------------------------------------------------------*/
 //! Collect all volume-cells belonging to this elements
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::LinearElementHandle::get_volume_cells(plain_volumecell_set& cells)
+void Cut::LinearElementHandle::get_volume_cells(plain_volumecell_set& cells)
 {
   const plain_volumecell_set& cs = element_->volume_cells();
   std::copy(cs.begin(), cs.end(), std::inserter(cells, cells.begin()));
@@ -452,7 +448,7 @@ void Core::Geo::Cut::LinearElementHandle::get_volume_cells(plain_volumecell_set&
 /*----------------------------------------------------------------------*/
 //! Collect all volume-cells belonging to this element ordered by position
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::LinearElementHandle::collect_volume_cells(
+void Cut::LinearElementHandle::collect_volume_cells(
     plain_volumecell_set& cells_inside, plain_volumecell_set& cells_outside)
 {
   const plain_volumecell_set& ecells = element_->volume_cells();
@@ -460,7 +456,7 @@ void Core::Geo::Cut::LinearElementHandle::collect_volume_cells(
   // sort for inside and outside volume cells
   for (plain_volumecell_set::const_iterator i = ecells.begin(); i != ecells.end(); i++)
   {
-    if ((*i)->position() == Core::Geo::Cut::Point::outside)
+    if ((*i)->position() == Cut::Point::outside)
     {
       cells_outside.insert(*i);
     }
@@ -476,11 +472,11 @@ void Core::Geo::Cut::LinearElementHandle::collect_volume_cells(
   get all the element sets of volume-cells, nds-vectors and integration points
   return true if a specific XFEM-Gaussrule is available and necessary
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::ElementHandle::get_cell_sets_dof_sets_gauss_points(
+bool Cut::ElementHandle::get_cell_sets_dof_sets_gauss_points(
     std::vector<plain_volumecell_set>& cell_sets, std::vector<std::vector<int>>& nds_sets,
     std::vector<std::vector<Core::FE::GaussIntegration>>& intpoints_sets, bool include_inner)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::Cut::ElementHandle::get_cell_sets_dof_sets_gauss_points");
+  TEUCHOS_FUNC_TIME_MONITOR("Cut::ElementHandle::get_cell_sets_dof_sets_gauss_points");
 
   get_volume_cells_dof_sets(cell_sets, nds_sets, include_inner);
 
@@ -523,7 +519,7 @@ bool Core::Geo::Cut::ElementHandle::get_cell_sets_dof_sets_gauss_points(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::ElementHandle::get_gauss_rule_integration_cells(
+bool Cut::ElementHandle::get_gauss_rule_integration_cells(
     std::vector<Core::FE::GaussIntegration>& intpoints_vec, bool integrate_inside_volumecells)
 {
   // Get the volume cells for this background element
@@ -571,7 +567,7 @@ bool Core::Geo::Cut::ElementHandle::get_gauss_rule_integration_cells(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::LinearElementHandle::boundary_cell_set(Point::PointPosition position)
+void Cut::LinearElementHandle::boundary_cell_set(Point::PointPosition position)
 {
   // boundary cell sets were already added
   if (bcell_sets_.find(position) != bcell_sets_.end()) return;
@@ -607,7 +603,7 @@ void Core::Geo::Cut::LinearElementHandle::boundary_cell_set(Point::PointPosition
 /*----------------------------------------------------------------------*/
 // get the element's sets of volume-cells ordered by inside/outside position
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::LinearElementHandle::volume_cell_sets()
+void Cut::LinearElementHandle::volume_cell_sets()
 {
   if (!cells_set_)
   {
@@ -616,7 +612,7 @@ void Core::Geo::Cut::LinearElementHandle::volume_cell_sets()
     // sort for inside and outside volume cells
     for (plain_volumecell_set::const_iterator i = ecells.begin(); i != ecells.end(); i++)
     {
-      if ((*i)->position() == Core::Geo::Cut::Point::outside)
+      if ((*i)->position() == Cut::Point::outside)
       {
         plain_volumecell_set s;  // plain volume cell set with only one entry
         s.insert(*i);
@@ -641,7 +637,7 @@ void Core::Geo::Cut::LinearElementHandle::volume_cell_sets()
 // i.e. also for touched cases (at points, edges or sides),
 // or when an element side has more than one facet or is touched by fully/partially by the cut side
 /*----------------------------------------------------------------------*/
-bool Core::Geo::Cut::QuadraticElementHandle::is_cut()
+bool Cut::QuadraticElementHandle::is_cut()
 {
   for (std::vector<Element*>::iterator i = subelements_.begin(); i != subelements_.end(); ++i)
   {
@@ -659,9 +655,9 @@ bool Core::Geo::Cut::QuadraticElementHandle::is_cut()
 // return true if one of the sub-elements is intersected or the sub-elements
 // have different positions and therefore the global element is intersected by a cut-side
 /*----------------------------------------------------------------------*/
-bool Core::Geo::Cut::QuadraticElementHandle::is_intersected()
+bool Cut::QuadraticElementHandle::is_intersected()
 {
-  Core::Geo::Cut::Point::PointPosition unique_pos = Core::Geo::Cut::Point::undecided;
+  Cut::Point::PointPosition unique_pos = Cut::Point::undecided;
 
   for (std::vector<Element*>::iterator i = subelements_.begin(); i != subelements_.end(); ++i)
   {
@@ -674,7 +670,7 @@ bool Core::Geo::Cut::QuadraticElementHandle::is_intersected()
 
     // do the sub-elements have different positions ? (e.g. when the cut side directly cuts between
     // sub-elements)
-    if (unique_pos == Core::Geo::Cut::Point::undecided)
+    if (unique_pos == Cut::Point::undecided)
     {
       // assume a new unique position for all sub elements
       unique_pos = (*e->volume_cells().begin())->position();
@@ -691,7 +687,7 @@ bool Core::Geo::Cut::QuadraticElementHandle::is_intersected()
 /*----------------------------------------------------------------------*/
 // Collect all volume-cells belonging to this elements
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::get_volume_cells(plain_volumecell_set& cells)
+void Cut::QuadraticElementHandle::get_volume_cells(plain_volumecell_set& cells)
 {
   for (std::vector<Element*>::iterator i = subelements_.begin(); i != subelements_.end(); ++i)
   {
@@ -705,7 +701,7 @@ void Core::Geo::Cut::QuadraticElementHandle::get_volume_cells(plain_volumecell_s
 /*----------------------------------------------------------------------*/
 // Collect all volume-cells belonging to this element ordered by position
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::collect_volume_cells(
+void Cut::QuadraticElementHandle::collect_volume_cells(
     plain_volumecell_set& cells_inside, plain_volumecell_set& cells_outside)
 {
   for (std::vector<Element*>::const_iterator i = subelements_.begin(); i != subelements_.end(); ++i)
@@ -716,7 +712,7 @@ void Core::Geo::Cut::QuadraticElementHandle::collect_volume_cells(
     // sort for inside and outside volume-cells
     for (plain_volumecell_set::const_iterator i = ecells.begin(); i != ecells.end(); i++)
     {
-      if ((*i)->position() == Core::Geo::Cut::Point::outside)
+      if ((*i)->position() == Cut::Point::outside)
       {
         cells_outside.insert(*i);
       }
@@ -732,7 +728,7 @@ void Core::Geo::Cut::QuadraticElementHandle::collect_volume_cells(
 /*----------------------------------------------------------------------*/
 //  get the quadratic element's volumetric integration cells (just for Tessellation)
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::get_integration_cells(plain_integrationcell_set& cells)
+void Cut::QuadraticElementHandle::get_integration_cells(plain_integrationcell_set& cells)
 {
   for (std::vector<Element*>::iterator i = subelements_.begin(); i != subelements_.end(); ++i)
   {
@@ -747,7 +743,7 @@ void Core::Geo::Cut::QuadraticElementHandle::get_integration_cells(plain_integra
 //  TODO: this has to be corrected such that just the bcs which belong the
 //  outside vcs will be returned
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::get_boundary_cells(plain_boundarycell_set& bcells)
+void Cut::QuadraticElementHandle::get_boundary_cells(plain_boundarycell_set& bcells)
 {
   FOUR_C_THROW("Deprecated version!");
   for (std::vector<Element*>::iterator i = subelements_.begin(); i != subelements_.end(); ++i)
@@ -759,7 +755,7 @@ void Core::Geo::Cut::QuadraticElementHandle::get_boundary_cells(plain_boundaryce
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::boundary_cell_set(Point::PointPosition position)
+void Cut::QuadraticElementHandle::boundary_cell_set(Point::PointPosition position)
 {
   if (connected_bcell_sets_.find(position) != connected_bcell_sets_.end()) return;
 
@@ -768,7 +764,7 @@ void Core::Geo::Cut::QuadraticElementHandle::boundary_cell_set(Point::PointPosit
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::connect_boundary_cells(Point::PointPosition position)
+void Cut::QuadraticElementHandle::connect_boundary_cells(Point::PointPosition position)
 {
   plain_volumecell_set evolcells_position;
   collect_volume_cells(position, evolcells_position);
@@ -781,7 +777,7 @@ void Core::Geo::Cut::QuadraticElementHandle::connect_boundary_cells(Point::Point
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::build_boundary_cell_sets(
+void Cut::QuadraticElementHandle::build_boundary_cell_sets(
     const std::vector<plain_volumecell_set>& connected_vcell_set,
     std::vector<plain_boundarycell_set>& connected_bcell_set) const
 {
@@ -810,7 +806,7 @@ void Core::Geo::Cut::QuadraticElementHandle::build_boundary_cell_sets(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::collect_volume_cells(
+void Cut::QuadraticElementHandle::collect_volume_cells(
     Point::PointPosition position, plain_volumecell_set& evolcells_position) const
 {
   for (std::vector<Element*>::const_iterator i = subelements_.begin(); i != subelements_.end(); ++i)
@@ -835,7 +831,7 @@ void Core::Geo::Cut::QuadraticElementHandle::collect_volume_cells(
 /*----------------------------------------------------------------------*/
 //! get the element's sets of volume-cells ordered by inside/outside position
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::volume_cell_sets()
+void Cut::QuadraticElementHandle::volume_cell_sets()
 {
   // connect volumecells of subelements
   connect_volume_cells();
@@ -845,7 +841,7 @@ void Core::Geo::Cut::QuadraticElementHandle::volume_cell_sets()
 /*----------------------------------------------------------------------*/
 //! connect volume-cells to sets of volume-cells
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::connect_volume_cells()
+void Cut::QuadraticElementHandle::connect_volume_cells()
 {
   // find the connection between volumecells of all subelements for the current element (hex8,
   // hex20, tet4, tet10 etc.) remark: this function determines not the connection outside this
@@ -869,7 +865,7 @@ void Core::Geo::Cut::QuadraticElementHandle::connect_volume_cells()
 /*----------------------------------------------------------------------*/
 //! build sets
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::QuadraticElementHandle::build_cell_sets(
+void Cut::QuadraticElementHandle::build_cell_sets(
     plain_volumecell_set& cells_to_connect, std::vector<plain_volumecell_set>& connected_sets)
 {
   plain_volumecell_set done;
@@ -902,8 +898,7 @@ void Core::Geo::Cut::QuadraticElementHandle::build_cell_sets(
 /*----------------------------------------------------------------------*/
 // constructor
 /*----------------------------------------------------------------------*/
-Core::Geo::Cut::Hex20ElementHandle::Hex20ElementHandle(
-    Mesh& mesh, int eid, const std::vector<int>& node_ids)
+Cut::Hex20ElementHandle::Hex20ElementHandle(Mesh& mesh, int eid, const std::vector<int>& node_ids)
     : QuadraticElementHandle()
 {
   subelements_.reserve(8);
@@ -1125,8 +1120,7 @@ Core::Geo::Cut::Hex20ElementHandle::Hex20ElementHandle(
 /*----------------------------------------------------------------------*/
 // constructor
 /*----------------------------------------------------------------------*/
-Core::Geo::Cut::Hex27ElementHandle::Hex27ElementHandle(
-    Mesh& mesh, int eid, const std::vector<int>& node_ids)
+Cut::Hex27ElementHandle::Hex27ElementHandle(Mesh& mesh, int eid, const std::vector<int>& node_ids)
     : QuadraticElementHandle()
 {
   subelements_.reserve(8);
@@ -1268,8 +1262,7 @@ Core::Geo::Cut::Hex27ElementHandle::Hex27ElementHandle(
 /*----------------------------------------------------------------------*/
 // constructor
 /*----------------------------------------------------------------------*/
-Core::Geo::Cut::Tet10ElementHandle::Tet10ElementHandle(
-    Mesh& mesh, int eid, const std::vector<int>& nids)
+Cut::Tet10ElementHandle::Tet10ElementHandle(Mesh& mesh, int eid, const std::vector<int>& nids)
     : QuadraticElementHandle()
 {
   subelements_.reserve(8);
@@ -1378,7 +1371,7 @@ Core::Geo::Cut::Tet10ElementHandle::Tet10ElementHandle(
 /*----------------------------------------------------------------------*/
 // constructor
 /*----------------------------------------------------------------------*/
-Core::Geo::Cut::Wedge15ElementHandle::Wedge15ElementHandle(
+Cut::Wedge15ElementHandle::Wedge15ElementHandle(
     Mesh& mesh, int eid, const std::vector<int>& node_ids)
     : QuadraticElementHandle()
 {
@@ -1585,11 +1578,11 @@ Core::Geo::Cut::Wedge15ElementHandle::Wedge15ElementHandle(
 /*----------------------------------------------------------------------*/
 // compute local coordinates of the element for given global coordinates
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::Hex20ElementHandle::local_coordinates(
+void Cut::Hex20ElementHandle::local_coordinates(
     const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<3, 1>& rst)
 {
-  Teuchos::RCP<Core::Geo::Cut::Position> pos =
-      Core::Geo::Cut::PositionFactory::build_position<3, Core::FE::CellType::hex20>(nodes_, xyz);
+  Teuchos::RCP<Cut::Position> pos =
+      Cut::PositionFactory::build_position<3, Core::FE::CellType::hex20>(nodes_, xyz);
 
   bool success = pos->compute(1e-10);
   if (not success)
@@ -1612,11 +1605,11 @@ void Core::Geo::Cut::Hex20ElementHandle::local_coordinates(
 /*----------------------------------------------------------------------*/
 // compute local coordinates of the element for given global coordinates
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::Hex27ElementHandle::local_coordinates(
+void Cut::Hex27ElementHandle::local_coordinates(
     const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<3, 1>& rst)
 {
-  Teuchos::RCP<Core::Geo::Cut::Position> pos =
-      Core::Geo::Cut::PositionFactory::build_position<3, Core::FE::CellType::hex27>(nodes_, xyz);
+  Teuchos::RCP<Cut::Position> pos =
+      Cut::PositionFactory::build_position<3, Core::FE::CellType::hex27>(nodes_, xyz);
 
   bool success = pos->compute();
   if (not success)
@@ -1629,11 +1622,11 @@ void Core::Geo::Cut::Hex27ElementHandle::local_coordinates(
 /*----------------------------------------------------------------------*/
 // compute local coordinates of the element for given global coordinates
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::Tet10ElementHandle::local_coordinates(
+void Cut::Tet10ElementHandle::local_coordinates(
     const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<3, 1>& rst)
 {
-  Teuchos::RCP<Core::Geo::Cut::Position> pos =
-      Core::Geo::Cut::PositionFactory::build_position<3, Core::FE::CellType::tet10>(nodes_, xyz);
+  Teuchos::RCP<Cut::Position> pos =
+      Cut::PositionFactory::build_position<3, Core::FE::CellType::tet10>(nodes_, xyz);
 
   bool success = pos->compute();
   if (not success)
@@ -1645,11 +1638,11 @@ void Core::Geo::Cut::Tet10ElementHandle::local_coordinates(
 /*----------------------------------------------------------------------*/
 // compute local coordinates of the element for given global coordinates
 /*----------------------------------------------------------------------*/
-void Core::Geo::Cut::Wedge15ElementHandle::local_coordinates(
+void Cut::Wedge15ElementHandle::local_coordinates(
     const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<3, 1>& rst)
 {
-  Teuchos::RCP<Core::Geo::Cut::Position> pos =
-      Core::Geo::Cut::PositionFactory::build_position<3, Core::FE::CellType::wedge15>(nodes_, xyz);
+  Teuchos::RCP<Cut::Position> pos =
+      Cut::PositionFactory::build_position<3, Core::FE::CellType::wedge15>(nodes_, xyz);
 
   bool success = pos->compute();
   if (not success)

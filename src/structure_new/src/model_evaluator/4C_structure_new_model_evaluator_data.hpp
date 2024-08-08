@@ -34,13 +34,12 @@ class Epetra_Comm;
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::Geo
+
+namespace Core::Geo::MeshFree
 {
-  namespace MeshFree
-  {
-    class BoundingBox;
-  }
-}  // namespace Core::Geo
+  class BoundingBox;
+}
+
 
 namespace Solid
 {
@@ -61,8 +60,8 @@ namespace Solid
 
     /*! \brief Discrete implementation of the Solid::ELEMENTS::ParamsInterface
      *
-     * This class represents an actual implementation of the Solid::ELEMENTS::ParamsInterface class
-     * and gives you all the functionality to interchange data between the elements and the
+     * This class represents an actual implementation of the Solid::ELEMENTS::ParamsInterface
+     * class and gives you all the functionality to interchange data between the elements and the
      * structural time integrators.
      *
      * To add a new and more specialized data container or method
@@ -319,7 +318,8 @@ namespace Solid
           const int& numentries, const double* my_update_values, const double* my_new_sol_values,
           const double& step_length, const int& owner) override;
 
-      /*! brief Collect and calculate solution norm of previous accepted Newton step on current proc
+      /*! brief Collect and calculate solution norm of previous accepted Newton step on current
+       * proc
        *
        * @param[in] qtype Quantity type which is tested
        * @param[in] numentries Length/size of the value arrays
@@ -368,8 +368,8 @@ namespace Solid
         return c_it->second;
       }
 
-      /*! \brief Return partial solution norm of previous accepted Newton step of given quantity on
-       *  current processor
+      /*! \brief Return partial solution norm of previous accepted Newton step of given quantity
+       * on current processor
        *
        * \todo Complete documentation of return parameters.
        *
@@ -808,8 +808,8 @@ namespace Solid
        * \todo Complete documentation of input parameters.
        *
        * (1) \f$ v_i = x_{i}^{k-1} = x_{i}^{k} - sl* \Delta x_{i}^{k} \f$
-       * (2) \f$ my_rms_norm = \sum_{i} [(x_i^{k}-x_{i}^{k-1}) / (RTOL * |x_{i}^{k-1}| + ATOL)]^{2}
-       * \f$
+       * (2) \f$ my_rms_norm = \sum_{i} [(x_i^{k}-x_{i}^{k-1}) / (RTOL * |x_{i}^{k-1}| +
+       * ATOL)]^{2} \f$
        *
        * \param[in] atol Absolute tolerance
        * \param[in] rtol Relative tolerance
@@ -1444,8 +1444,8 @@ namespace Solid
       double viscosity_;
       /// thermal energy
       double kt_;
-      /// any random force beyond MAXRANDFORCE*(standdev) will be omitted and redrawn. -1.0 means no
-      /// bounds.
+      /// any random force beyond MAXRANDFORCE*(standdev) will be omitted and redrawn. -1.0 means
+      /// no bounds.
       double maxrandforce_;
       /// within this time interval the random numbers remain constant. -1.0 means no prescribed
       /// time interval

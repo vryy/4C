@@ -23,13 +23,12 @@ xfluid class and the cut-library
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::Geo
+
+namespace Cut
 {
-  namespace Cut
-  {
-    class BoundaryCell;
-  }
-}  // namespace Core::Geo
+  class BoundaryCell;
+}
+
 
 namespace XFEM
 {
@@ -100,7 +99,8 @@ namespace XFEM
 
     /*!
      Return prescribed velocities and traction vectors for a GNBC boundary condition.
-     Also returns the projection matrix (to the plane of the surface) needed for the GNBC condition.
+     Also returns the projection matrix (to the plane of the surface) needed for the GNBC
+     condition.
      */
     template <Core::FE::CellType distype, class T1, class M3>
     void evaluate_coupling_conditions(T1& projection_matrix,  ///< Projection matrix
@@ -162,7 +162,7 @@ namespace XFEM
     void reconnect_parent_pointers();
 
     /// Initialize Fluid State
-    bool initialize_fluid_state(Teuchos::RCP<Core::Geo::CutWizard> cutwizard,
+    bool initialize_fluid_state(Teuchos::RCP<Cut::CutWizard> cutwizard,
         Teuchos::RCP<Core::FE::Discretization> fluiddis,
         Teuchos::RCP<XFEM::ConditionManager> condition_manager,
         Teuchos::RCP<Teuchos::ParameterList> fluidparams);

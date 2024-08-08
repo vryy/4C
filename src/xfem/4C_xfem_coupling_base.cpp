@@ -682,7 +682,7 @@ void XFEM::CouplingBase::get_viscosity_master(Core::Elements::Element* xfele,  /
   // Todo: As soon as the master side may not be position = outside anymore we need to take that
   // into account
   // by an additional input parameter here (e.g. XFSI with TwoPhase)
-  XFEM::UTILS::get_volume_cell_material(xfele, mat_m, Core::Geo::Cut::Point::outside);
+  XFEM::UTILS::get_volume_cell_material(xfele, mat_m, Cut::Point::outside);
   if (mat_m->material_type() == Core::Materials::m_fluid)
     visc_m = Teuchos::rcp_dynamic_cast<Mat::NewtonianFluid>(mat_m)->viscosity();
   else

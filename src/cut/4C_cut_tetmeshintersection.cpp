@@ -45,7 +45,7 @@ FOUR_C_NAMESPACE_OPEN
    mesh object.
 
  */
-Core::Geo::Cut::TetMeshIntersection::TetMeshIntersection(Options& options, Element* element,
+Cut::TetMeshIntersection::TetMeshIntersection(Options& options, Element* element,
     const std::vector<std::vector<int>>& tets, const std::vector<int>& accept_tets,
     const std::vector<Point*>& points, const plain_side_set& cut_sides)
     : pp_(Teuchos::rcp(new PointPool)), mesh_(options, 1, pp_), cut_mesh_(options, 1, pp_, true)
@@ -206,7 +206,7 @@ Core::Geo::Cut::TetMeshIntersection::TetMeshIntersection(Options& options, Eleme
   }
 }
 
-void Core::Geo::Cut::TetMeshIntersection::find_edge_cuts()
+void Cut::TetMeshIntersection::find_edge_cuts()
 {
   plain_edge_set cut_edges;
   const std::map<plain_int_set, Teuchos::RCP<Edge>>& c_edges = mesh_.edges();
@@ -256,7 +256,7 @@ void Core::Geo::Cut::TetMeshIntersection::find_edge_cuts()
             edges.reserve(2);
             edges.insert(e);
             edges.insert(ce);
-            Core::Geo::Cut::Output::GmshEdgesOnly(edges);
+            Cut::Output::GmshEdgesOnly(edges);
             throw;
           }
         }
@@ -269,7 +269,7 @@ void Core::Geo::Cut::TetMeshIntersection::find_edge_cuts()
  * However it is not done exactly the same way... It seems to be quite complex...
  * One would have to spend quite some time to find out the thinking behind it and
  * maybe connect it to the existing algo. */
-void Core::Geo::Cut::TetMeshIntersection::cut(Mesh& parent_mesh, Element* element,
+void Cut::TetMeshIntersection::cut(Mesh& parent_mesh, Element* element,
     const plain_volumecell_set& parent_cells, int count, bool tetcellsonly)
 {
   find_edge_cuts();
@@ -304,7 +304,7 @@ void Core::Geo::Cut::TetMeshIntersection::cut(Mesh& parent_mesh, Element* elemen
 
 /// Make sure connectivity between the new VolumeCell (of the children of the VC) are correctly
 /// connected to its parents. However not sure exactly how this is done....
-void Core::Geo::Cut::TetMeshIntersection::map_volume_cells(Mesh& parent_mesh, Element* element,
+void Cut::TetMeshIntersection::map_volume_cells(Mesh& parent_mesh, Element* element,
     const plain_volumecell_set& parent_cells, std::map<VolumeCell*, ChildCell>& cellmap)
 {
   plain_volumecell_set done_child_cells;
@@ -684,7 +684,7 @@ void Core::Geo::Cut::TetMeshIntersection::map_volume_cells(Mesh& parent_mesh, El
   }
 }
 
-void Core::Geo::Cut::TetMeshIntersection::seed_cells(Mesh& parent_mesh,
+void Cut::TetMeshIntersection::seed_cells(Mesh& parent_mesh,
     const plain_volumecell_set& parent_cells, std::map<VolumeCell*, ChildCell>& cellmap,
     plain_volumecell_set& done_child_cells)
 {
@@ -821,7 +821,7 @@ void Core::Geo::Cut::TetMeshIntersection::seed_cells(Mesh& parent_mesh,
   }
 }
 
-void Core::Geo::Cut::TetMeshIntersection::build_surface_cell_map(VolumeCell* vc, ChildCell& cc)
+void Cut::TetMeshIntersection::build_surface_cell_map(VolumeCell* vc, ChildCell& cc)
 {
   // find parent facets on cut surface
 
@@ -846,7 +846,7 @@ void Core::Geo::Cut::TetMeshIntersection::build_surface_cell_map(VolumeCell* vc,
   }
 }
 
-void Core::Geo::Cut::TetMeshIntersection::fill(Mesh& parent_mesh, Element* element,
+void Cut::TetMeshIntersection::fill(Mesh& parent_mesh, Element* element,
     const plain_volumecell_set& parent_cells, std::map<VolumeCell*, ChildCell>& cellmap)
 {
   for (std::map<VolumeCell*, ChildCell>::iterator i = cellmap.begin(); i != cellmap.end(); ++i)
@@ -978,7 +978,7 @@ void Core::Geo::Cut::TetMeshIntersection::fill(Mesh& parent_mesh, Element* eleme
   }
 }
 
-void Core::Geo::Cut::TetMeshIntersection::fill(VolumeCell* parent_cell, ChildCell& childcell)
+void Cut::TetMeshIntersection::fill(VolumeCell* parent_cell, ChildCell& childcell)
 {
   plain_volumecell_set& child_cells = childcell.cells_;
 
@@ -1100,7 +1100,7 @@ void Core::Geo::Cut::TetMeshIntersection::fill(VolumeCell* parent_cell, ChildCel
   build_surface_cell_map(parent_cell, childcell);
 }
 
-void Core::Geo::Cut::TetMeshIntersection::register_new_points(
+void Cut::TetMeshIntersection::register_new_points(
     Mesh& parent_mesh, const plain_volumecell_set& childset)
 {
   for (plain_volumecell_set::const_iterator i = childset.begin(); i != childset.end(); ++i)
@@ -1128,7 +1128,7 @@ void Core::Geo::Cut::TetMeshIntersection::register_new_points(
   }
 }
 
-void Core::Geo::Cut::TetMeshIntersection::find_volume_cell(Point* p, plain_volumecell_set& childset)
+void Cut::TetMeshIntersection::find_volume_cell(Point* p, plain_volumecell_set& childset)
 {
   const plain_facet_set& facets = p->facets();
   for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); ++i)
@@ -1139,7 +1139,7 @@ void Core::Geo::Cut::TetMeshIntersection::find_volume_cell(Point* p, plain_volum
   }
 }
 
-void Core::Geo::Cut::TetMeshIntersection::swap_points(
+void Cut::TetMeshIntersection::swap_points(
     Mesh& mesh, const std::map<Point*, Point*>& pointmap, std::vector<Point*>& points)
 {
   std::vector<Point*> new_points;
@@ -1161,7 +1161,7 @@ void Core::Geo::Cut::TetMeshIntersection::swap_points(
   std::swap(new_points, points);
 }
 
-void Core::Geo::Cut::TetMeshIntersection::swap_points(
+void Cut::TetMeshIntersection::swap_points(
     const std::map<Point*, Point*>& pointmap, std::vector<Point*>& points)
 {
   std::vector<Point*> new_points;
@@ -1179,7 +1179,7 @@ void Core::Geo::Cut::TetMeshIntersection::swap_points(
   std::swap(new_points, points);
 }
 
-void Core::Geo::Cut::TetMeshIntersection::swap_points(
+void Cut::TetMeshIntersection::swap_points(
     const std::map<Point*, Point*>& pointmap, PointSet& points)
 {
   PointSet new_points;
@@ -1196,7 +1196,7 @@ void Core::Geo::Cut::TetMeshIntersection::swap_points(
   std::swap(new_points, points);
 }
 
-Core::Geo::Cut::Point* Core::Geo::Cut::TetMeshIntersection::swap_point(
+Cut::Point* Cut::TetMeshIntersection::swap_point(
     const std::map<Point*, Point*>& pointmap, Point* point)
 {
   std::map<Point*, Point*>::const_iterator j = pointmap.find(point);
@@ -1208,13 +1208,13 @@ Core::Geo::Cut::Point* Core::Geo::Cut::TetMeshIntersection::swap_point(
   return j->second;
 }
 
-void Core::Geo::Cut::TetMeshIntersection::do_register(Point* parent_point, Point* child_point)
+void Cut::TetMeshIntersection::do_register(Point* parent_point, Point* child_point)
 {
   child_to_parent_[child_point] = parent_point;
   parent_to_child_[parent_point] = child_point;
 }
 
-void Core::Geo::Cut::TetMeshIntersection::copy_cut_side(Side* s, Facet* f)
+void Cut::TetMeshIntersection::copy_cut_side(Side* s, Facet* f)
 {
   const std::vector<Node*>& nodes = s->nodes();
   std::vector<int> nids;

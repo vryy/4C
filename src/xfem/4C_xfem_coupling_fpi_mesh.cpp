@@ -1067,7 +1067,7 @@ double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-bool XFEM::MeshCouplingFPI::initialize_fluid_state(Teuchos::RCP<Core::Geo::CutWizard> cutwizard,
+bool XFEM::MeshCouplingFPI::initialize_fluid_state(Teuchos::RCP<Cut::CutWizard> cutwizard,
     Teuchos::RCP<Core::FE::Discretization> fluiddis,
     Teuchos::RCP<XFEM::ConditionManager> condition_manager,
     Teuchos::RCP<Teuchos::ParameterList> fluidparams)

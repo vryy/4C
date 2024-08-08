@@ -29,18 +29,18 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-int Core::Geo::Cut::VolumeCell::hex8totet4[5][4] = {
+int Cut::VolumeCell::hex8totet4[5][4] = {
     {0, 1, 3, 4}, {1, 2, 3, 6}, {4, 5, 1, 6}, {6, 7, 3, 4}, {1, 6, 3, 4}};
 
-int Core::Geo::Cut::VolumeCell::wedge6totet4[3][4] = {{0, 1, 2, 3}, {3, 4, 1, 5}, {1, 5, 2, 3}};
+int Cut::VolumeCell::wedge6totet4[3][4] = {{0, 1, 2, 3}, {3, 4, 1, 5}, {1, 5, 2, 3}};
 
 
-int Core::Geo::Cut::VolumeCell::pyramid5totet4[2][4] = {{0, 1, 3, 4}, {1, 2, 3, 4}};
+int Cut::VolumeCell::pyramid5totet4[2][4] = {{0, 1, 3, 4}, {1, 2, 3, 4}};
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::VolumeCell::VolumeCell(const plain_facet_set& facets,
+Cut::VolumeCell::VolumeCell(const plain_facet_set& facets,
     const std::map<std::pair<Point*, Point*>, plain_facet_set>& volume_lines, Element* element)
     : element_(element),
       position_(Point::undecided),
@@ -57,7 +57,7 @@ Core::Geo::Cut::VolumeCell::VolumeCell(const plain_facet_set& facets,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::VolumeCell::is_equal(const plain_facet_set& vcell) const
+bool Cut::VolumeCell::is_equal(const plain_facet_set& vcell) const
 {
   bool isequal = false;
   for (plain_facet_set::const_iterator ci = facets_.begin(); ci != facets_.end(); ++ci)
@@ -81,7 +81,7 @@ bool Core::Geo::Cut::VolumeCell::is_equal(const plain_facet_set& vcell) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::neighbors(Point* p, const plain_volumecell_set& cells,
+void Cut::VolumeCell::neighbors(Point* p, const plain_volumecell_set& cells,
     const plain_volumecell_set& done, plain_volumecell_set& connected, plain_element_set& elements)
 {
   if (done.count(this) == 0)
@@ -120,7 +120,7 @@ void Core::Geo::Cut::VolumeCell::neighbors(Point* p, const plain_volumecell_set&
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 // without check for elements
-void Core::Geo::Cut::VolumeCell::neighbors(Point* p, const plain_volumecell_set& cells,
+void Cut::VolumeCell::neighbors(Point* p, const plain_volumecell_set& cells,
     const plain_volumecell_set& done, plain_volumecell_set& connected)
 {
   if (done.count(this) == 0)
@@ -158,7 +158,7 @@ void Core::Geo::Cut::VolumeCell::neighbors(Point* p, const plain_volumecell_set&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::get_all_points(Mesh& mesh, PointSet& cut_points)
+void Cut::VolumeCell::get_all_points(Mesh& mesh, PointSet& cut_points)
 {
   for (plain_facet_set::iterator i = facets_.begin(); i != facets_.end(); ++i)
   {
@@ -169,7 +169,7 @@ void Core::Geo::Cut::VolumeCell::get_all_points(Mesh& mesh, PointSet& cut_points
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::VolumeCell::contains(Point* p)
+bool Cut::VolumeCell::contains(Point* p)
 {
   for (plain_facet_set::const_iterator i = facets_.begin(); i != facets_.end(); ++i)
   {
@@ -184,17 +184,17 @@ bool Core::Geo::Cut::VolumeCell::contains(Point* p)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::VolumeCell::contains(Core::LinAlg::Matrix<3, 1>& x)
+bool Cut::VolumeCell::contains(Core::LinAlg::Matrix<3, 1>& x)
 {
   if (integrationcells_.size() == 0)
     FOUR_C_THROW(
         "no integrationcells for volumecell stored, implement Contains check without "
         "integrationcells");
 
-  for (Core::Geo::Cut::plain_integrationcell_set::iterator it = integrationcells_.begin();
+  for (Cut::plain_integrationcell_set::iterator it = integrationcells_.begin();
        it != integrationcells_.end(); it++)
   {
-    Core::Geo::Cut::IntegrationCell* intcell = *it;
+    Cut::IntegrationCell* intcell = *it;
 
     if (intcell->contains(x)) return true;
   }
@@ -204,7 +204,7 @@ bool Core::Geo::Cut::VolumeCell::contains(Core::LinAlg::Matrix<3, 1>& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::create_tet4_integration_cells(Mesh& mesh,
+void Cut::VolumeCell::create_tet4_integration_cells(Mesh& mesh,
     const std::vector<std::vector<Point*>>& tets,
     const std::map<Facet*, std::vector<Point*>>& sides_xyz)
 {
@@ -240,7 +240,7 @@ void Core::Geo::Cut::VolumeCell::create_tet4_integration_cells(Mesh& mesh,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::get_integration_cells(plain_integrationcell_set& cells)
+void Cut::VolumeCell::get_integration_cells(plain_integrationcell_set& cells)
 {
   std::copy(
       integrationcells_.begin(), integrationcells_.end(), std::inserter(cells, cells.begin()));
@@ -248,8 +248,7 @@ void Core::Geo::Cut::VolumeCell::get_integration_cells(plain_integrationcell_set
 
 /// get a map of boundary cells for all cutting sides, key= side-Id, value= vector of boundary cells
 /// note that the boundary cells of subsides with the same side id are stored now in one key
-void Core::Geo::Cut::VolumeCell::get_boundary_cells(
-    std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>& bcells)
+void Cut::VolumeCell::get_boundary_cells(std::map<int, std::vector<Cut::BoundaryCell*>>& bcells)
 {
   for (plain_boundarycell_set::iterator i = bcells_.begin(); i != bcells_.end(); ++i)
   {
@@ -268,8 +267,8 @@ void Core::Geo::Cut::VolumeCell::get_boundary_cells(
 
 /// get a map of boundary cells for all cutting sides, key= side-Id, value= vector of boundary cells
 /// note that the boundary cells of subsides with the same side id are stored now in one key
-void Core::Geo::Cut::VolumeCell::get_boundary_cells_to_be_integrated(
-    std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>& bcells)
+void Cut::VolumeCell::get_boundary_cells_to_be_integrated(
+    std::map<int, std::vector<Cut::BoundaryCell*>>& bcells)
 {
   for (plain_boundarycell_set::iterator i = bcells_.begin(); i != bcells_.end(); ++i)
   {
@@ -277,7 +276,7 @@ void Core::Geo::Cut::VolumeCell::get_boundary_cells_to_be_integrated(
     Facet* f = bc->get_facet();
     // Get all bc's for cuts from only the outside vc's
     //  as to not integrate twice over the same surface
-    if ((f->on_cut_side() and position() == Core::Geo::Cut::Point::outside))
+    if ((f->on_cut_side() and position() == Cut::Point::outside))
     {
       int sid = f->side_id();  // f->OnCutSide => sid>-1
       // usually there are more facets with the same side id as the cutting sides have been
@@ -289,11 +288,11 @@ void Core::Geo::Cut::VolumeCell::get_boundary_cells_to_be_integrated(
     else if (f->on_marked_background_side())
     {
       // Loop over all marked actions and extract bc's for corresponding coupling object.
-      for (std::map<Core::Geo::Cut::MarkedActions, int>::iterator markit =
+      for (std::map<Cut::MarkedActions, int>::iterator markit =
                f->parent_side()->get_markedsidemap().begin();
            markit != f->parent_side()->get_markedsidemap().end(); ++markit)
       {
-        if (markit->first == Core::Geo::Cut::mark_and_create_boundarycells)
+        if (markit->first == Cut::mark_and_create_boundarycells)
           bcells[markit->second].push_back(bc);
       }
     }
@@ -303,7 +302,7 @@ void Core::Geo::Cut::VolumeCell::get_boundary_cells_to_be_integrated(
 /*----------------------------------------------------------------------------*
  * SideId() of Facet (used for timeintegration)
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::collect_cut_sides(plain_int_set& cutside_ids)
+void Cut::VolumeCell::collect_cut_sides(plain_int_set& cutside_ids)
 {
   for (plain_facet_set::iterator i = facets_.begin(); i != facets_.end(); ++i)
   {
@@ -320,11 +319,11 @@ void Core::Geo::Cut::VolumeCell::collect_cut_sides(plain_int_set& cutside_ids)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::Geo::Cut::VolumeCell::get_parent_element_id() const { return element_->get_parent_id(); }
+int Cut::VolumeCell::get_parent_element_id() const { return element_->get_parent_id(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::connect_nodal_dof_sets(bool include_inner)
+void Cut::VolumeCell::connect_nodal_dof_sets(bool include_inner)
 {
   //   if ( Empty() )
   //     return;
@@ -342,7 +341,7 @@ void Core::Geo::Cut::VolumeCell::connect_nodal_dof_sets(bool include_inner)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::position(Point::PointPosition position)
+void Cut::VolumeCell::position(Point::PointPosition position)
 {
   if (position_ != position)
   {
@@ -362,7 +361,7 @@ void Core::Geo::Cut::VolumeCell::position(Point::PointPosition position)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::print(std::ostream& stream) const
+void Cut::VolumeCell::print(std::ostream& stream) const
 {
   stream << "\n==========================================\n";
   stream << "=== VolumeCell ( address: " << std::setw(10) << this << " ) ===\n";
@@ -401,7 +400,7 @@ void Core::Geo::Cut::VolumeCell::print(std::ostream& stream) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::new_boundary_cell(
+void Cut::VolumeCell::new_boundary_cell(
     Mesh& mesh, Core::FE::CellType shape, Facet* f, const std::vector<Point*>& x)
 {
   if (facets_.count(f) == 0)
@@ -430,42 +429,41 @@ void Core::Geo::Cut::VolumeCell::new_boundary_cell(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::new_point1_cell(Mesh& mesh, Facet* f, const std::vector<Point*>& x)
+void Cut::VolumeCell::new_point1_cell(Mesh& mesh, Facet* f, const std::vector<Point*>& x)
 {
   f->new_point1_cell(mesh, this, x, bcells_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::new_line2_cell(Mesh& mesh, Facet* f, const std::vector<Point*>& x)
+void Cut::VolumeCell::new_line2_cell(Mesh& mesh, Facet* f, const std::vector<Point*>& x)
 {
   f->new_line2_cell(mesh, this, x, bcells_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::new_tri3_cell(Mesh& mesh, Facet* f, const std::vector<Point*>& x)
+void Cut::VolumeCell::new_tri3_cell(Mesh& mesh, Facet* f, const std::vector<Point*>& x)
 {
   f->new_tri3_cell(mesh, this, x, bcells_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::new_quad4_cell(Mesh& mesh, Facet* f, const std::vector<Point*>& x)
+void Cut::VolumeCell::new_quad4_cell(Mesh& mesh, Facet* f, const std::vector<Point*>& x)
 {
   f->new_quad4_cell(mesh, this, x, bcells_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::new_arbitrary_cell(Mesh& mesh, Facet* f,
-    const std::vector<Point*>& x, const Core::FE::GaussIntegration& gp,
-    const Core::LinAlg::Matrix<3, 1>& normal)
+void Cut::VolumeCell::new_arbitrary_cell(Mesh& mesh, Facet* f, const std::vector<Point*>& x,
+    const Core::FE::GaussIntegration& gp, const Core::LinAlg::Matrix<3, 1>& normal)
 {
   f->new_arbitrary_cell(mesh, this, x, bcells_, gp, normal);
 }
 
-/*double Core::Geo::Cut::VolumeCell::Volume()
+/*double Cut::VolumeCell::Volume()
 {
   double volume = 0;
   for ( plain_integrationcell_set::iterator i=integrationcells_.begin(); i!=integrationcells_.end();
@@ -479,7 +477,7 @@ void Core::Geo::Cut::VolumeCell::new_arbitrary_cell(Mesh& mesh, Facet* f,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::Geo::Cut::VolumeCell::num_gauss_points(Core::FE::CellType shape)
+int Cut::VolumeCell::num_gauss_points(Core::FE::CellType shape)
 {
   int numgp = 0;
 
@@ -501,7 +499,7 @@ int Core::Geo::Cut::VolumeCell::num_gauss_points(Core::FE::CellType shape)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::disconnect()
+void Cut::VolumeCell::disconnect()
 {
   for (plain_facet_set::iterator i = facets_.begin(); i != facets_.end(); ++i)
   {
@@ -512,7 +510,7 @@ void Core::Geo::Cut::VolumeCell::disconnect()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::new_integration_cell(
+void Cut::VolumeCell::new_integration_cell(
     Mesh& mesh, Core::FE::CellType shape, const std::vector<Point*>& x)
 {
   switch (shape)
@@ -549,7 +547,7 @@ void Core::Geo::Cut::VolumeCell::new_integration_cell(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::new_line2_cell(Mesh& mesh, const std::vector<Point*>& points)
+void Cut::VolumeCell::new_line2_cell(Mesh& mesh, const std::vector<Point*>& points)
 {
   Point::PointPosition position = VolumeCell::position();
   integrationcells_.insert(mesh.new_line2_cell(position, points, this));
@@ -557,7 +555,7 @@ void Core::Geo::Cut::VolumeCell::new_line2_cell(Mesh& mesh, const std::vector<Po
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::new_tri3_cell(Mesh& mesh, const std::vector<Point*>& points)
+void Cut::VolumeCell::new_tri3_cell(Mesh& mesh, const std::vector<Point*>& points)
 {
   Point::PointPosition position = VolumeCell::position();
   integrationcells_.insert(mesh.new_tri3_cell(position, points, this));
@@ -565,7 +563,7 @@ void Core::Geo::Cut::VolumeCell::new_tri3_cell(Mesh& mesh, const std::vector<Poi
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::new_quad4_cell(Mesh& mesh, const std::vector<Point*>& points)
+void Cut::VolumeCell::new_quad4_cell(Mesh& mesh, const std::vector<Point*>& points)
 {
   Point::PointPosition position = VolumeCell::position();
   integrationcells_.insert(mesh.new_quad4_cell(position, points, this));
@@ -573,7 +571,7 @@ void Core::Geo::Cut::VolumeCell::new_quad4_cell(Mesh& mesh, const std::vector<Po
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::new_hex8_cell(Mesh& mesh, const std::vector<Point*>& points)
+void Cut::VolumeCell::new_hex8_cell(Mesh& mesh, const std::vector<Point*>& points)
 {
   Point::PointPosition position = VolumeCell::position();
   if (mesh.create_options().gen_hex8())
@@ -593,8 +591,7 @@ void Core::Geo::Cut::VolumeCell::new_hex8_cell(Mesh& mesh, const std::vector<Poi
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::IntegrationCell* Core::Geo::Cut::VolumeCell::new_tet4_cell(
-    Mesh& mesh, const std::vector<Point*>& points)
+Cut::IntegrationCell* Cut::VolumeCell::new_tet4_cell(Mesh& mesh, const std::vector<Point*>& points)
 {
   Point::PointPosition position = VolumeCell::position();
   IntegrationCell* ic = mesh.new_tet4_cell(position, points, this);
@@ -604,7 +601,7 @@ Core::Geo::Cut::IntegrationCell* Core::Geo::Cut::VolumeCell::new_tet4_cell(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::new_wedge6_cell(Mesh& mesh, const std::vector<Point*>& points)
+void Cut::VolumeCell::new_wedge6_cell(Mesh& mesh, const std::vector<Point*>& points)
 {
   Point::PointPosition position = VolumeCell::position();
   if (mesh.create_options().gen_wedge6())
@@ -624,7 +621,7 @@ void Core::Geo::Cut::VolumeCell::new_wedge6_cell(Mesh& mesh, const std::vector<P
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::new_pyramid5_cell(Mesh& mesh, const std::vector<Point*>& points)
+void Cut::VolumeCell::new_pyramid5_cell(Mesh& mesh, const std::vector<Point*>& points)
 {
   Point::PointPosition position = VolumeCell::position();
   if (mesh.create_options().gen_pyramid5())
@@ -646,7 +643,7 @@ void Core::Geo::Cut::VolumeCell::new_pyramid5_cell(Mesh& mesh, const std::vector
  * Check wheter the point is inside, outside or on the boundary
  * of this volumecelll                                    sudhakar 07/12
  *--------------------------------------------------------------------*/
-std::string Core::Geo::Cut::VolumeCell::is_this_point_inside(Point* pt)
+std::string Cut::VolumeCell::is_this_point_inside(Point* pt)
 {
   Core::LinAlg::Matrix<3, 1> xglo;
   pt->coordinates(xglo.data());
@@ -658,12 +655,12 @@ std::string Core::Geo::Cut::VolumeCell::is_this_point_inside(Point* pt)
  * Check whether the point with this global coordinates is inside, outside or on the boundary
  * of this volumecell                                                               sudhakar 07/12
  *-----------------------------------------------------------------------------------------------*/
-std::string Core::Geo::Cut::VolumeCell::is_this_point_inside(Core::LinAlg::Matrix<3, 1>& xglo)
+std::string Cut::VolumeCell::is_this_point_inside(Core::LinAlg::Matrix<3, 1>& xglo)
 {
   Core::LinAlg::Matrix<3, 1> xloc;
   element_->local_coordinates(xglo, xloc);
 
-  const Core::Geo::Cut::Point::PointPosition posi = position();
+  const Cut::Point::PointPosition posi = position();
   if (posi == 0) FOUR_C_THROW("undefined position for the volumecell");
 
   VolumeIntegration vc(this, element_, posi, 0);
@@ -679,7 +676,7 @@ std::string Core::Geo::Cut::VolumeCell::is_this_point_inside(Core::LinAlg::Matri
  * points added from the tesselation connected correctly?
  *
  */
-void Core::Geo::Cut::VolumeCell::test_surface()
+void Cut::VolumeCell::test_surface()
 {
   if (empty())
   {
@@ -793,7 +790,7 @@ void Core::Geo::Cut::VolumeCell::test_surface()
                 Write the bounding lines of volumecell details for visualization
                 Gausspoints of moment fitting are not included
 *--------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::dump_gmsh(std::ofstream& file)
+void Cut::VolumeCell::dump_gmsh(std::ofstream& file)
 {
   const plain_facet_set& facete = facets();
 
@@ -828,7 +825,7 @@ void Core::Geo::Cut::VolumeCell::dump_gmsh(std::ofstream& file)
  * Write the geometry of the volumecell based on facet surfaces            sudhakar 07/15
  * Can be used to check if the geometry of vc is correct or not
  *---------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::dump_gmsh_solid(std::ofstream& file, Mesh& mesh)
+void Cut::VolumeCell::dump_gmsh_solid(std::ofstream& file, Mesh& mesh)
 {
   const plain_facet_set& facete = facets();
   file << "View \"Volume Cell \" {\n";
@@ -886,7 +883,7 @@ void Core::Geo::Cut::VolumeCell::dump_gmsh_solid(std::ofstream& file, Mesh& mesh
         Moment fitting for visualization a separate file with "Mom_volcell" prefix is generated
         for every volumecell as the gausspoint distribution can be clearly seen
 *---------------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::dump_gmsh_gauss_points_mom_fit(
+void Cut::VolumeCell::dump_gmsh_gauss_points_mom_fit(
     const std::vector<std::vector<double>>& gauspts)
 {
   static int sideno = 0;
@@ -915,7 +912,7 @@ void Core::Geo::Cut::VolumeCell::dump_gmsh_gauss_points_mom_fit(
         write the boundaries of volumecell and the positions of Gauss points for visualization
         a separate file when using tessellation
 *---------------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::dump_gmsh_gauss_points_tessellation()
+void Cut::VolumeCell::dump_gmsh_gauss_points_tessellation()
 {
   static int sideno = 0;
   sideno++;
@@ -932,7 +929,7 @@ void Core::Geo::Cut::VolumeCell::dump_gmsh_gauss_points_tessellation()
   const plain_integrationcell_set& cells = integration_cells();
   for (plain_integrationcell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
   {
-    Core::Geo::Cut::IntegrationCell* ic = *i;
+    Cut::IntegrationCell* ic = *i;
     switch (ic->shape())
     {
       case Core::FE::CellType::hex8:
@@ -976,7 +973,7 @@ void Core::Geo::Cut::VolumeCell::dump_gmsh_gauss_points_tessellation()
  * Perform integration of a pre-defined function over this vc using gauss points          Sudhakar
  *01/13 generated from tessellation
  *----------------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::integrate_specific_functions_tessellation()
+void Cut::VolumeCell::integrate_specific_functions_tessellation()
 {
   Teuchos::RCP<Core::FE::GaussPointsComposite> gpc =
       Teuchos::rcp(new Core::FE::GaussPointsComposite(0));
@@ -984,7 +981,7 @@ void Core::Geo::Cut::VolumeCell::integrate_specific_functions_tessellation()
   const plain_integrationcell_set& cells = integration_cells();
   for (plain_integrationcell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
   {
-    Core::Geo::Cut::IntegrationCell* ic = *i;
+    Cut::IntegrationCell* ic = *i;
     switch (ic->shape())
     {
       case Core::FE::CellType::hex8:
@@ -1026,19 +1023,18 @@ void Core::Geo::Cut::VolumeCell::integrate_specific_functions_tessellation()
 }
 
 template <Core::FE::CellType distype>
-Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::VolumeCell::create_projected(
-    Core::Geo::Cut::IntegrationCell* ic)
+Teuchos::RCP<Core::FE::GaussPoints> Cut::VolumeCell::create_projected(Cut::IntegrationCell* ic)
 {
   const unsigned nen = Core::FE::num_nodes<distype>;
 
   Core::LinAlg::Matrix<3, nen> xie;
 
-  const std::vector<Core::Geo::Cut::Point*>& cpoints = ic->points();
+  const std::vector<Cut::Point*>& cpoints = ic->points();
   if (cpoints.size() != nen) FOUR_C_THROW("non-matching number of points");
 
   for (unsigned i = 0; i < nen; ++i)
   {
-    Core::Geo::Cut::Point* p = cpoints[i];
+    Cut::Point* p = cpoints[i];
     Core::LinAlg::Matrix<3, 1> xg, xi;
     p->coordinates(xg.data());
     element_->local_coordinates(xg, xi);
@@ -1053,7 +1049,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::VolumeCell::create_projected
 /*------------------------------------------------------------------------------------------------------*
     convert the Gaussian points and weights into appropriate Gauss rule as per 4C implementation
 *-------------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::VolumeCell::gauss_points_fitting()
+Teuchos::RCP<Core::FE::GaussPoints> Cut::VolumeCell::gauss_points_fitting()
 {
   Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp =
       Teuchos::rcp(new Core::FE::CollectedGaussPoints(0));
@@ -1074,11 +1070,10 @@ Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::VolumeCell::gauss_points_fit
 /*--------------------------------------------------------------------------------------------*
                  Generate boundary cells for the cut facets of the volumecell
 *---------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::generate_boundary_cells(Mesh& mesh,
-    const Core::Geo::Cut::Point::PointPosition posi, Element* elem, int BaseNos,
-    Core::Geo::Cut::BCellGaussPts BCellgausstype)
+void Cut::VolumeCell::generate_boundary_cells(Mesh& mesh, const Cut::Point::PointPosition posi,
+    Element* elem, int BaseNos, Cut::BCellGaussPts BCellgausstype)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "Core::Geo::Cut::VolumeCell::generate_boundary_cells" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "Cut::VolumeCell::generate_boundary_cells" );
 
 
   // TODO: we have to restructure the creation of boundary cells.
@@ -1128,7 +1123,7 @@ void Core::Geo::Cut::VolumeCell::generate_boundary_cells(Mesh& mesh,
     }
 
     // For Marked sides the boundary-cells on outside vc's need to be the same as for inside.
-    if (fac->on_marked_background_side() and posi == Core::Geo::Cut::Point::outside) rever = !rever;
+    if (fac->on_marked_background_side() and posi == Cut::Point::outside) rever = !rever;
 
     if (rever)  // normal from facet is in wrong direction
     {
@@ -1140,7 +1135,7 @@ void Core::Geo::Cut::VolumeCell::generate_boundary_cells(Mesh& mesh,
     // if no of corners are 3 or 4, just add them as boundary integrationcells directly
     if (corners.size() == 3)
     {
-      double areaCell = Core::Geo::Cut::Kernel::getAreaTri(corners);
+      double areaCell = Cut::Kernel::getAreaTri(corners);
       if (areaCell <
           REF_AREA_BCELL)  // What is this Ref_AREA_CELL TOLERANCE?! Make it viable for GLOBAL!!!
         continue;
@@ -1148,9 +1143,8 @@ void Core::Geo::Cut::VolumeCell::generate_boundary_cells(Mesh& mesh,
     }
     else
     {
-      if (BCellgausstype ==
-          Core::Geo::Cut::BCellGaussPts_Tessellation)  // generate boundarycell
-                                                       // gausspoints by triangulation
+      if (BCellgausstype == Cut::BCellGaussPts_Tessellation)  // generate boundarycell
+                                                              // gausspoints by triangulation
       {
         if (!fac->is_triangulated()) fac->do_triangulation(mesh, corners);
         const std::vector<std::vector<Point*>>& triangulation = fac->triangulation();
@@ -1162,13 +1156,13 @@ void Core::Geo::Cut::VolumeCell::generate_boundary_cells(Mesh& mesh,
 
           if (tri.size() == 3)
           {
-            double areaCell = Core::Geo::Cut::Kernel::getAreaTri(tri);
+            double areaCell = Cut::Kernel::getAreaTri(tri);
             if (areaCell < REF_AREA_BCELL) continue;
             new_tri3_cell(mesh, fac, tri);
           }
           else if (tri.size() == 4)
           {
-            double areaCell = Core::Geo::Cut::Kernel::getAreaConvexQuad(tri);
+            double areaCell = Cut::Kernel::getAreaConvexQuad(tri);
             if (areaCell < REF_AREA_BCELL) continue;
             new_quad4_cell(mesh, fac, tri);
           }
@@ -1177,8 +1171,8 @@ void Core::Geo::Cut::VolumeCell::generate_boundary_cells(Mesh& mesh,
         }
       }
       else if (BCellgausstype ==
-               Core::Geo::Cut::BCellGaussPts_MomentFitting)  // generate boundarycell gausspoints by
-                                                             // solving moment fitting equations
+               Cut::BCellGaussPts_MomentFitting)  // generate boundarycell gausspoints by
+                                                  // solving moment fitting equations
       {
         FOUR_C_THROW("Not supported.");
       }
@@ -1192,14 +1186,14 @@ void Core::Geo::Cut::VolumeCell::generate_boundary_cells(Mesh& mesh,
                COMMENT:  Might need to rethink BC-creation, as it generates a lot of tris now.
                          Could probably be enough with quads some times?
 *---------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::generate_boundary_cells_level_set_side(Mesh& mesh,
-    const Core::Geo::Cut::Point::PointPosition posi, Element* elem, Facet* fac, int BaseNos,
-    Core::Geo::Cut::BCellGaussPts BCellgausstype)
+void Cut::VolumeCell::generate_boundary_cells_level_set_side(Mesh& mesh,
+    const Cut::Point::PointPosition posi, Element* elem, Facet* fac, int BaseNos,
+    Cut::BCellGaussPts BCellgausstype)
 {
   if (not fac->belongs_to_level_set_side())
     FOUR_C_THROW("Why would you call BC-creation for LS-Side without a LS side?");
 
-  if (BCellgausstype == Core::Geo::Cut::BCellGaussPts_MomentFitting)
+  if (BCellgausstype == Cut::BCellGaussPts_MomentFitting)
     FOUR_C_THROW("Not supported for BC-Cell creation for LevelSetSides.");
 
   // Is the facet split/triangulated and if it consists of 4 corners is it planar.
@@ -1254,21 +1248,21 @@ void Core::Geo::Cut::VolumeCell::generate_boundary_cells_level_set_side(Mesh& me
       double dotProduct = fac_tri_normal[0] * fac_ls_normal[0] +
                           fac_tri_normal[1] * fac_ls_normal[1] +
                           fac_tri_normal[2] * fac_ls_normal[2];
-      if (posi == Core::Geo::Cut::Point::outside)
+      if (posi == Cut::Point::outside)
       {
         if (dotProduct > 0.0)
         {
           std::reverse(tri_temp.begin(), tri_temp.end());
         }
       }
-      else if (posi == Core::Geo::Cut::Point::inside)
+      else if (posi == Cut::Point::inside)
       {
         if (dotProduct < 0.0)  // ( < ) should be correct solution.
           std::reverse(tri_temp.begin(), tri_temp.end());
       }
       if (tri_temp.size() == 3)
       {
-        double areaCell = Core::Geo::Cut::Kernel::getAreaTri(tri_temp);
+        double areaCell = Cut::Kernel::getAreaTri(tri_temp);
         if (areaCell < REF_AREA_BCELL)
         {
           std::cout << "BCell NOT ADDED! areaCell: " << areaCell << std::endl;
@@ -1278,7 +1272,7 @@ void Core::Geo::Cut::VolumeCell::generate_boundary_cells_level_set_side(Mesh& me
       }
       else if (tri_temp.size() == 4)
       {
-        double areaCell = Core::Geo::Cut::Kernel::getAreaConvexQuad(tri_temp);
+        double areaCell = Cut::Kernel::getAreaConvexQuad(tri_temp);
         if (areaCell < REF_AREA_BCELL)
         {
           std::cout << "BCell NOT ADDED! areaCell: " << areaCell << std::endl;
@@ -1310,14 +1304,14 @@ void Core::Geo::Cut::VolumeCell::generate_boundary_cells_level_set_side(Mesh& me
         elem->get_level_set_gradient(ls_coord);  // fac->GetLevelSetFacetNormal(elem);
     double dotProduct = fac_tri_normal[0] * fac_ls_normal[0] +
                         fac_tri_normal[1] * fac_ls_normal[1] + fac_tri_normal[2] * fac_ls_normal[2];
-    if (posi == Core::Geo::Cut::Point::outside)
+    if (posi == Cut::Point::outside)
     {
       if (dotProduct > 0.0)
       {
         std::reverse(tri_temp.begin(), tri_temp.end());
       }
     }
-    else if (posi == Core::Geo::Cut::Point::inside)
+    else if (posi == Cut::Point::inside)
     {
       if (dotProduct < 0.0)  // ( < ) should be correct solution.
         std::reverse(tri_temp.begin(), tri_temp.end());
@@ -1326,7 +1320,7 @@ void Core::Geo::Cut::VolumeCell::generate_boundary_cells_level_set_side(Mesh& me
     // Add boundary cell
     if (tri_temp.size() == 3)
     {
-      double areaCell = Core::Geo::Cut::Kernel::getAreaTri(tri_temp);
+      double areaCell = Cut::Kernel::getAreaTri(tri_temp);
       if (areaCell < REF_AREA_BCELL)
       {
         std::cout << "BCell NOT ADDED! areaCell: " << areaCell << std::endl;
@@ -1335,7 +1329,7 @@ void Core::Geo::Cut::VolumeCell::generate_boundary_cells_level_set_side(Mesh& me
     }
     else if (tri_temp.size() == 4)
     {
-      double areaCell = Core::Geo::Cut::Kernel::getAreaConvexQuad(tri_temp);
+      double areaCell = Cut::Kernel::getAreaConvexQuad(tri_temp);
       if (areaCell < REF_AREA_BCELL)
       {
         std::cout << "BCell NOT ADDED! areaCell: " << areaCell << std::endl;
@@ -1351,13 +1345,13 @@ void Core::Geo::Cut::VolumeCell::generate_boundary_cells_level_set_side(Mesh& me
     This is to check whether the corner points of the cut side facet is aligned to give outward
 normal
 *---------------------------------------------------------------------------------------------------------*/
-bool Core::Geo::Cut::VolumeCell::to_reverse(const Core::Geo::Cut::Point::PointPosition posi,
+bool Cut::VolumeCell::to_reverse(const Cut::Point::PointPosition posi,
     const std::vector<double>& parEqn, const std::vector<double>& facetEqn)
 {
   bool rever = false;
 
   // position is inside
-  if (posi == Core::Geo::Cut::Point::outside)  //-3 before...
+  if (posi == Cut::Point::outside)  //-3 before...
   {
     if (fabs(parEqn[0]) > TOL_EQN_PLANE && parEqn[0] * facetEqn[0] > 0.0)
       rever = true;
@@ -1370,7 +1364,7 @@ bool Core::Geo::Cut::VolumeCell::to_reverse(const Core::Geo::Cut::Point::PointPo
   }
 
   // position is outside
-  else if (posi == Core::Geo::Cut::Point::inside)  //-2 before...
+  else if (posi == Cut::Point::inside)  //-2 before...
   {
     if (fabs(parEqn[0]) > TOL_EQN_PLANE && parEqn[0] * facetEqn[0] < 0.0)
       rever = true;
@@ -1388,10 +1382,10 @@ bool Core::Geo::Cut::VolumeCell::to_reverse(const Core::Geo::Cut::Point::PointPo
    When DirectDivergence method is used for gauss point generation, for every gauss point
    on the facet, an internal gauss rule is to be generated to find the modified integrand
 *-------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::VolumeCell::generate_internal_gauss_rule(
+Teuchos::RCP<Core::FE::GaussPoints> Cut::VolumeCell::generate_internal_gauss_rule(
     Teuchos::RCP<Core::FE::GaussPoints>& gp)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "Core::Geo::Cut::VolumeCell::generate_internal_gauss_rule" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "Cut::VolumeCell::generate_internal_gauss_rule" );
 
 
   Core::FE::GaussIntegration grule(gp);
@@ -1442,8 +1436,8 @@ Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::VolumeCell::generate_interna
 /*------------------------------------------------------------------------------------------*
    Moment fitting equations are solved at each volume cell to construct integration rules
 *-------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::moment_fit_gauss_weights(
-    Element* elem, Mesh& mesh, bool include_inner, Core::Geo::Cut::BCellGaussPts BCellgausstype)
+void Cut::VolumeCell::moment_fit_gauss_weights(
+    Element* elem, Mesh& mesh, bool include_inner, Cut::BCellGaussPts BCellgausstype)
 {
 #ifdef LOCAL
   // position is used to decide whether the ordering of points are in clockwise or not
@@ -1487,15 +1481,15 @@ void Core::Geo::Cut::VolumeCell::moment_fit_gauss_weights(
 03/12 The gauss integration rules are generated by applying divergence theorem The reference facet
 is identified which will be used to find the modified integral in fluid integration
 *----------------------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::direct_divergence_gauss_rule(
-    Element* elem, Mesh& mesh, bool include_inner, Core::Geo::Cut::BCellGaussPts BCellgausstype)
+void Cut::VolumeCell::direct_divergence_gauss_rule(
+    Element* elem, Mesh& mesh, bool include_inner, Cut::BCellGaussPts BCellgausstype)
 {
   if (elem->shape() != Core::FE::CellType::hex8 && elem->shape() != Core::FE::CellType::hex20)
     FOUR_C_THROW("direct_divergence_gauss_rule: Just hex8 and hex20 avaiable yet in DD!");
 
-  if (BCellgausstype != Core::Geo::Cut::BCellGaussPts_Tessellation)
+  if (BCellgausstype != Cut::BCellGaussPts_Tessellation)
     FOUR_C_THROW(
-        "direct_divergence_gauss_rule: just Core::Geo::Cut::BCellGaussPts_Tessellation supported "
+        "direct_divergence_gauss_rule: just Cut::BCellGaussPts_Tessellation supported "
         "at "
         "the "
         "moment!");
@@ -1566,7 +1560,7 @@ void Core::Geo::Cut::VolumeCell::direct_divergence_gauss_rule(
  * Project the integration rule generated on global coordinate system of sudhakar 05/15 the
  *background element to its local coordinates
  *----------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::project_gauss_points_to_local_coodinates()
+void Cut::VolumeCell::project_gauss_points_to_local_coodinates()
 {
   if (element_->shape() != Core::FE::CellType::hex8)
     FOUR_C_THROW(
@@ -1617,7 +1611,7 @@ void Core::Geo::Cut::VolumeCell::project_gauss_points_to_local_coodinates()
 /*-------------------------------------------------------------------------------------*
 | Return Ids of all the points associated with this volumecell           shahmiri 06/12
 *--------------------------------------------------------------------------------------*/
-const std::set<int>& Core::Geo::Cut::VolumeCell::volume_cell_point_ids()
+const std::set<int>& Cut::VolumeCell::volume_cell_point_ids()
 {
   if (vcpoints_ids_.size() != 0)
   {
@@ -1649,7 +1643,7 @@ const std::set<int>& Core::Geo::Cut::VolumeCell::volume_cell_point_ids()
 /*-------------------------------------------------------------------------------------*
 | Find Position of the Volumecell based on the orientation of the cut_sides   ager 08/15
 *--------------------------------------------------------------------------------------*/
-bool Core::Geo::Cut::VolumeCell::set_position_cut_side_based()
+bool Cut::VolumeCell::set_position_cut_side_based()
 {
   if (position() != Point::undecided)
     FOUR_C_THROW(

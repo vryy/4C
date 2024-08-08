@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /// Initializes Cut Parameters by Parameterlist (typically from *.dat-file section CUT GENERAL)
-void Core::Geo::Cut::Options::init_by_paramlist(const Teuchos::ParameterList& cutparams)
+void Cut::Options::init_by_paramlist(const Teuchos::ParameterList& cutparams)
 {
   geomintersect_floattype_ =
       Core::UTILS::IntegralValue<CutFloatType>(cutparams, "KERNEL_INTERSECTION_FLOATTYPE");
@@ -28,8 +28,8 @@ void Core::Geo::Cut::Options::init_by_paramlist(const Teuchos::ParameterList& cu
       Core::UTILS::IntegralValue<CutFloatType>(cutparams, "GENERAL_POSITON_POSITION_FLOATTYPE");
   direct_divergence_refplane_ = Core::UTILS::IntegralValue<CutDirectDivergenceRefplane>(
       cutparams, "DIRECT_DIVERGENCE_REFPLANE");
-  Core::Geo::Cut::PositionFactory::specify_general_dist_floattype(general_position_dist_floattype_);
-  Core::Geo::Cut::PositionFactory::specify_general_pos_floattype(general_position_pos_floattype_);
+  Cut::PositionFactory::specify_general_dist_floattype(general_position_dist_floattype_);
+  Cut::PositionFactory::specify_general_pos_floattype(general_position_pos_floattype_);
   split_cutsides_ = Core::UTILS::IntegralValue<bool>(cutparams, "SPLIT_CUTSIDES");
   do_selfcut_ = Core::UTILS::IntegralValue<bool>(cutparams, "DO_SELFCUT");
   selfcut_do_meshcorrection_ =
@@ -40,15 +40,15 @@ void Core::Geo::Cut::Options::init_by_paramlist(const Teuchos::ParameterList& cu
 }
 
 /// Initializes Cut Parameters for Cuttests (use full cln) -- slowest option
-void Core::Geo::Cut::Options::init_for_cuttests()
+void Cut::Options::init_for_cuttests()
 {
   geomintersect_floattype_ = floattype_cln;
   geomdistance_floattype_ = floattype_cln;
   general_position_dist_floattype_ = floattype_cln;
   general_position_pos_floattype_ = floattype_cln;
   direct_divergence_refplane_ = DirDiv_refplane_all;
-  Core::Geo::Cut::PositionFactory::specify_general_dist_floattype(general_position_dist_floattype_);
-  Core::Geo::Cut::PositionFactory::specify_general_pos_floattype(general_position_pos_floattype_);
+  Cut::PositionFactory::specify_general_dist_floattype(general_position_dist_floattype_);
+  Cut::PositionFactory::specify_general_pos_floattype(general_position_pos_floattype_);
   split_cutsides_ = true;
   selfcut_do_meshcorrection_ = false;
   bc_cubaturedegree_ = 20;

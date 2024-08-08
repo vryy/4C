@@ -23,7 +23,7 @@
 
 void test_sud_sc1()
 {
-  Geo::Cut::MeshIntersection intersection;
+  Cut::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
@@ -208,27 +208,27 @@ void test_sud_sc1()
 
   std::vector<double> tessVol, momFitVol, dirDivVol;
 
-  Geo::Cut::Mesh mesh = intersection.NormalMesh();
-  const std::list<Teuchos::RCP<Geo::Cut::VolumeCell>>& other_cells = mesh.VolumeCells();
-  for (std::list<Teuchos::RCP<Geo::Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  Cut::Mesh mesh = intersection.NormalMesh();
+  const std::list<Teuchos::RCP<Cut::VolumeCell>>& other_cells = mesh.VolumeCells();
+  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
-    Geo::Cut::VolumeCell* vc = &**i;
+    Cut::VolumeCell* vc = &**i;
     tessVol.push_back(vc->Volume());
   }
 
-  for (std::list<Teuchos::RCP<Geo::Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
-    Geo::Cut::VolumeCell* vc = &**i;
+    Cut::VolumeCell* vc = &**i;
     vc->moment_fit_gauss_weights(vc->parent_element(), mesh, true, "Tessellation");
     momFitVol.push_back(vc->Volume());
   }
 
-  for (std::list<Teuchos::RCP<Geo::Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
-    Geo::Cut::VolumeCell* vc = &**i;
+    Cut::VolumeCell* vc = &**i;
     vc->direct_divergence_gauss_rule(vc->parent_element(), mesh, true, "DirectDivergence");
     dirDivVol.push_back(vc->Volume());
   }

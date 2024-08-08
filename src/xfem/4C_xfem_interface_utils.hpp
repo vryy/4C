@@ -31,13 +31,12 @@ namespace Discret
   }
 }  // namespace Discret
 
-namespace Core::Geo
+
+namespace Cut
 {
-  namespace Cut
-  {
-    class BoundaryCell;
-  }
-}  // namespace Core::Geo
+  class BoundaryCell;
+}
+
 
 namespace XFEM
 {
@@ -53,8 +52,8 @@ namespace XFEM
 
     //! @name nit_get_trace_estimate_constant
     /*!
-    \brief get the constant which satisfies the trace inequality depending on the spatial dimension
-    and polynomial order of the element
+    \brief get the constant which satisfies the trace inequality depending on the spatial
+    dimension and polynomial order of the element
      */
     double nit_get_trace_estimate_constant(
         const Core::FE::CellType ele_distype, const bool is_pseudo_2D);
@@ -93,7 +92,7 @@ namespace XFEM
     void ComputeSurfaceTransformation(double& drs,  ///< surface transformation factor
         Core::LinAlg::Matrix<3, 1>& x_gp_lin,       ///< global coordiantes of gaussian point
         Core::LinAlg::Matrix<3, 1>& normal,         ///< normal vector on boundary cell
-        Core::Geo::Cut::BoundaryCell* bc,           ///< boundary cell
+        Cut::BoundaryCell* bc,                      ///< boundary cell
         const Core::LinAlg::Matrix<2, 1>&
             eta,                   ///< local coordinates of gaussian point w.r.t boundarycell
         bool referencepos = false  ///< use the bc reference position for transformation
@@ -102,7 +101,7 @@ namespace XFEM
     //! pre-compute the measure of the element's intersecting surface
     double ComputeMeasCutSurf(const std::map<int, std::vector<Core::FE::GaussIntegration>>&
                                   bintpoints,  ///< boundary cell integration points
-        const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>& bcells  ///< boundary cells
+        const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells  ///< boundary cells
     );
 
     //! compute the measure of the elements surface with given local id
@@ -132,9 +131,8 @@ namespace XFEM
     double ComputeCharEleLength(Core::Elements::Element* ele,      ///< fluid element
         Core::LinAlg::SerialDenseMatrix& ele_xyze,                 ///< element coordinates
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-        const Core::Geo::Cut::plain_volumecell_set&
-            vcSet,  ///< volumecell sets for volume integration
-        const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>&
+        const Cut::plain_volumecell_set& vcSet,  ///< volumecell sets for volume integration
+        const std::map<int, std::vector<Cut::BoundaryCell*>>&
             bcells,  ///< bcells for boundary cell integration
         const std::map<int, std::vector<Core::FE::GaussIntegration>>&
             bintpoints,  ///< integration points for boundary cell integration

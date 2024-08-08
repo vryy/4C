@@ -30,7 +30,7 @@ namespace Core::FE
   class Discretization;
 }  // namespace Core::FE
 
-namespace Core::Geo
+namespace Cut
 {
   class CutWizard;
 }
@@ -137,8 +137,7 @@ namespace FLD
      @param xfluiddofrowmap dof-rowmap of intersected fluid
      */
     explicit XFluidState(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-        const Teuchos::RCP<Core::Geo::CutWizard>& wizard,
-        const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
+        const Teuchos::RCP<Cut::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
         const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
         const Teuchos::RCP<const Epetra_Map>& xfluiddofcolmap);
 
@@ -168,7 +167,7 @@ namespace FLD
     //@{
 
     /// access to the cut wizard
-    Teuchos::RCP<Core::Geo::CutWizard> wizard() const
+    Teuchos::RCP<Cut::CutWizard> wizard() const
     {
       if (wizard_ == Teuchos::null) FOUR_C_THROW("Cut wizard is uninitialized!");
       return wizard_;
@@ -301,7 +300,7 @@ namespace FLD
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_;
 
     /// cut wizard
-    Teuchos::RCP<Core::Geo::CutWizard> wizard_;
+    Teuchos::RCP<Cut::CutWizard> wizard_;
 
     /// condition manager
     Teuchos::RCP<XFEM::ConditionManager> condition_manager_;

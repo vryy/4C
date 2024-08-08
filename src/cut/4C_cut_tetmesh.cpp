@@ -23,37 +23,36 @@ extern "C"
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::Geo
+
+namespace Cut
 {
-  namespace Cut
+  namespace
   {
-    namespace
+    class NullFile
     {
-      class NullFile
+     public:
+      NullFile() : f_(nullptr) {}
+
+      ~NullFile()
       {
-       public:
-        NullFile() : f_(nullptr) {}
+        if (f_ != nullptr) fclose(f_);
+      }
 
-        ~NullFile()
-        {
-          if (f_ != nullptr) fclose(f_);
-        }
+      operator FILE*()
+      {
+        if (f_ == nullptr) f_ = fopen("/dev/null", "w");
+        return f_;
+      }
 
-        operator FILE*()
-        {
-          if (f_ == nullptr) f_ = fopen("/dev/null", "w");
-          return f_;
-        }
-
-       private:
-        FILE* f_;
-      };
-    }  // namespace
-  }    // namespace Cut
-}  // namespace Core::Geo
+     private:
+      FILE* f_;
+    };
+  }  // namespace
+}  // namespace Cut
 
 
-Core::Geo::Cut::TetMesh::TetMesh(
+
+Cut::TetMesh::TetMesh(
     const std::vector<Point*>& points, const plain_facet_set& facets, bool project)
     : points_(points), facets_(facets)
 {
@@ -91,7 +90,7 @@ Core::Geo::Cut::TetMesh::TetMesh(
    triangulated point is added to the cut information. Might have to look into this....
 
 */
-bool Core::Geo::Cut::TetMesh::fill_facet_mesh()
+bool Cut::TetMesh::fill_facet_mesh()
 {
   for (plain_facet_set::const_iterator i = facets_.begin(); i != facets_.end(); ++i)
   {
@@ -118,17 +117,18 @@ bool Core::Geo::Cut::TetMesh::fill_facet_mesh()
 
 
 /* From the input create TETs.
-   1) First remove the TETs which are too small for arithmetic precision from the "accepted_tet_set"
-   of TETs. However they might be needed later (for boundary-cell creation) so don't throw them
-   away. 2) Try to "fill_facet_mesh(...)", this means that for the given given element (either a tet
-   or a hex8) find the facets on the boundaries and find if they are associated with an unique TET.
+   1) First remove the TETs which are too small for arithmetic precision from the
+   "accepted_tet_set" of TETs. However they might be needed later (for boundary-cell creation) so
+   don't throw them away. 2) Try to "fill_facet_mesh(...)", this means that for the given given
+   element (either a tet or a hex8) find the facets on the boundaries and find if they are
+   associated with an unique TET.
 
     2.1) If NOT assume the tesselation (i.e. on TET or more) is cut, and call the Tesselation
    recursively. 2.2) If YES fill the inner part of the element with accepted tets and finish the
    tesselation for this element.
 
 */
-void Core::Geo::Cut::TetMesh::create_element_tets(Mesh& mesh, Element* element,
+void Cut::TetMesh::create_element_tets(Mesh& mesh, Element* element,
     const plain_volumecell_set& cells,
     const plain_side_set& cut_sides,  //<- cut_facets_ of parent ele.
     int count, bool tetcellsonly)
@@ -266,8 +266,8 @@ void Core::Geo::Cut::TetMesh::create_element_tets(Mesh& mesh, Element* element,
                              // coordinates
           std::vector<std::vector<int>> sides;
           find_proper_sides(tris, sides, &cell_members);
-          collect_coordinates(sides, side_coords);  // fill the side coordinates, if all the side's
-                                                    // coordinates are on cut surface
+          collect_coordinates(sides, side_coords);  // fill the side coordinates, if all the
+                                                    // side's coordinates are on cut surface
         }
       }
 
@@ -294,7 +294,7 @@ void Core::Geo::Cut::TetMesh::create_element_tets(Mesh& mesh, Element* element,
 /* Initialize the data-structures needed for the TetMesh. The call to Qhull has to be performed
  * before.
  */
-void Core::Geo::Cut::TetMesh::init()
+void Cut::TetMesh::init()
 {
   unsigned numtets = tets_.size();
 
@@ -325,13 +325,14 @@ void Core::Geo::Cut::TetMesh::init()
 }
 
 
-/* Call up QHull and let it create the delauney-cells. There are different options for how QHull can
-   be called. 3 options are tested in order, if the previous option failed. Fill the std::vector
-   tets with tetrahedrons provided from the delauney triangulization of the "convex"-hull.
+/* Call up QHull and let it create the delauney-cells. There are different options for how QHull
+   can be called. 3 options are tested in order, if the previous option failed. Fill the
+   std::vector tets with tetrahedrons provided from the delauney triangulization of the
+   "convex"-hull.
 
    One might want to take a look at the call to Qhull to improve it for non-local coordinate cuts.
 */
-void Core::Geo::Cut::TetMesh::call_q_hull(
+void Cut::TetMesh::call_q_hull(
     const std::vector<Point*>& points, std::vector<std::vector<int>>& tets, bool project)
 {
   const int dim = 3;
@@ -402,8 +403,8 @@ void Core::Geo::Cut::TetMesh::call_q_hull(
 
   // Qhull options:
   //      Qbb - scale last coordinate to [0,m]. Preferable for integer input
-  //      QbB - scales input to unit cube [-0.5,0.5]^3. Scaling can reduce precision errors if coord
-  //      values wary widely.
+  //      QbB - scales input to unit cube [-0.5,0.5]^3. Scaling can reduce precision errors if
+  //      coord values wary widely.
 #ifdef DIFF_QHULL_CALL
   options.push_back("qhull d Qt QbB Qc Pp");
 #endif
@@ -551,17 +552,17 @@ void Core::Geo::Cut::TetMesh::call_q_hull(
                                                       if no  -> TET IS INVALID.
 
   + This was the way envisioned by Kuettler. However, it makes little sense accepting a TET
- completely on a cut-side. A simplification by me (Magnus) is to remove TETS whos points are all on
- a cut-side or more than one cut-side (A case not uncommon for MeshIntersection, however this works?
- Would it imply a TET is on a line?).
+ completely on a cut-side. A simplification by me (Magnus) is to remove TETS whos points are all
+ on a cut-side or more than one cut-side (A case not uncommon for MeshIntersection, however this
+ works? Would it imply a TET is on a line?).
   + The change proposed does not change any existing test-case or any cut-test. However, the
- algorithm implemented, by Kuettler, is probably not there unnecessarily (hopefully?). Thus keep the
- code for reference in the future.
- !+ For now use the old way of Kuettler as after further investigation it seems to be somewhat more
- exact...
+ algorithm implemented, by Kuettler, is probably not there unnecessarily (hopefully?). Thus keep
+ the code for reference in the future.
+ !+ For now use the old way of Kuettler as after further investigation it seems to be somewhat
+ more exact...
 
 */
-bool Core::Geo::Cut::TetMesh::is_valid_tet(const std::vector<Point*>& t)
+bool Cut::TetMesh::is_valid_tet(const std::vector<Point*>& t)
 {
   plain_side_set sides;
   // Find if the points of the tet share a common side.
@@ -576,11 +577,11 @@ bool Core::Geo::Cut::TetMesh::is_valid_tet(const std::vector<Point*>& t)
     {
       return true;
     }
-    // Why do we have to enter here? Shouldn't it be clear already if the side=0, the points of the
-    // tet
-    //  can't share a common facet? A cut-side can be outside of the element, thus a case can occur,
-    //  when a tet is not on a cut-side. BUT shares a facet. However this is already tested in
-    //  FindCommonSides, as the points know what sides it cuts.
+    // Why do we have to enter here? Shouldn't it be clear already if the side=0, the points of
+    // the tet
+    //  can't share a common facet? A cut-side can be outside of the element, thus a case can
+    //  occur, when a tet is not on a cut-side. BUT shares a facet. However this is already tested
+    //  in FindCommonSides, as the points know what sides it cuts.
     FOUR_C_THROW(
         "You have encountered a case where the a tet is not on a cut-side BUT is on a facet!!! "
         "CHECK IT!");
@@ -603,8 +604,8 @@ bool Core::Geo::Cut::TetMesh::is_valid_tet(const std::vector<Point*>& t)
   {
     // Is this side a LevelSetSide, i.e. does the cut lie on a LevelSetSide?
     // The points of a tet can all be on a cut-side that is a LevelSetSide, but not share a common
-    // facet. This occurs when there exists a degenerate cut (i.e. a cut we can't cut well). One VC
-    // is created and that's about all.... Might have to investigate...
+    // facet. This occurs when there exists a degenerate cut (i.e. a cut we can't cut well). One
+    // VC is created and that's about all.... Might have to investigate...
     if ((*sides.begin())->is_level_set_side())
     {
       // This part is done mainly for debugging purposes. It is probably not necessary,
@@ -681,7 +682,7 @@ bool Core::Geo::Cut::TetMesh::is_valid_tet(const std::vector<Point*>& t)
 
 /* This function is unused....
  */
-void Core::Geo::Cut::TetMesh::test_used_points(const std::vector<std::vector<int>>& tets)
+void Cut::TetMesh::test_used_points(const std::vector<std::vector<int>>& tets)
 {
   plain_int_set used_points;
   for (std::vector<std::vector<int>>::const_iterator i = tets.begin(); i != tets.end(); ++i)
@@ -698,7 +699,7 @@ void Core::Geo::Cut::TetMesh::test_used_points(const std::vector<std::vector<int
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::TetMesh::fix_broken_tets()
+void Cut::TetMesh::fix_broken_tets()
 {
   for (std::vector<std::vector<int>>::iterator i = tets_.begin(); i != tets_.end(); ++i)
   {
@@ -738,7 +739,8 @@ void Core::Geo::Cut::TetMesh::fix_broken_tets()
     temp(2, 0) = p2.norm2();
     temp(3, 0) = p3.norm2();
 
-    // This is to scale the tolerance, it determines our maximum precision (i.e. machine precision)
+    // This is to scale the tolerance, it determines our maximum precision (i.e. machine
+    // precision)
     double max_dist_to_orgin = temp.norm_inf();
 
     Core::LinAlg::Matrix<3, 1> v04;
@@ -788,7 +790,7 @@ void Core::Geo::Cut::TetMesh::fix_broken_tets()
 /* Take the tri from the facet and test whether it belongs to more than one tet,
    if not add the tri as a side with an error check.
  */
-void Core::Geo::Cut::TetMesh::find_proper_sides(const PlainEntitySet<3>& tris,
+void Cut::TetMesh::find_proper_sides(const PlainEntitySet<3>& tris,
     std::vector<std::vector<int>>& sides, const PlainEntitySet<4>* members)
 {
   sides.reserve(tris.size());
@@ -852,7 +854,7 @@ void Core::Geo::Cut::TetMesh::find_proper_sides(const PlainEntitySet<3>& tris,
 }
 
 /// Collects the coordinates for the tri3 sides of the facet if all its points are on cut surface
-void Core::Geo::Cut::TetMesh::collect_coordinates(
+void Cut::TetMesh::collect_coordinates(
     const std::vector<std::vector<int>>& sides, std::vector<Point*>& side_coords)
 {
   for (std::vector<std::vector<int>>::const_iterator i = sides.begin(); i != sides.end(); ++i)

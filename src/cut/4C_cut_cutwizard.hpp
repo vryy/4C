@@ -45,15 +45,13 @@ namespace XFEM
   class ConditionManager;
 }
 
-namespace Core::Geo
+
+namespace Cut
 {
-  namespace Cut
-  {
-    class CombIntersection;
-    class ElementHandle;
-    class Node;
-    class SideHandle;
-  }  // namespace Cut
+  class CombIntersection;
+  class ElementHandle;
+  class Node;
+  class SideHandle;
 
   /// contains the cut, and shared functionality between the level set and mesh cut.
   class CutWizard
@@ -68,7 +66,7 @@ namespace Core::Geo
      public:
       /// constructor
       explicit BackMesh(
-          const Teuchos::RCP<Core::FE::Discretization>& backdis, Core::Geo::CutWizard* wizard)
+          const Teuchos::RCP<Core::FE::Discretization>& backdis, Cut::CutWizard* wizard)
           : wizard_(wizard),
             back_discret_(backdis),
             back_disp_col_(Teuchos::null),
@@ -114,7 +112,7 @@ namespace Core::Geo
 
 
      protected:
-      Core::Geo::CutWizard* wizard_;
+      Cut::CutWizard* wizard_;
 
      private:
       /// background discretization
@@ -238,25 +236,25 @@ namespace Core::Geo
     /*========================================================================*/
 
     //! Get this side (not from cut meshes) (faces of background elements) from the cut libraries
-    Core::Geo::Cut::SideHandle* get_side(std::vector<int>& nodeids);
+    Cut::SideHandle* get_side(std::vector<int>& nodeids);
 
     //! Get this side (not from cut meshes) from the cut libraries
-    Core::Geo::Cut::SideHandle* get_side(int sid);
+    Cut::SideHandle* get_side(int sid);
 
     //! Get this side from cut meshes from the cut libraries
-    Core::Geo::Cut::SideHandle* get_cut_side(int sid);
+    Cut::SideHandle* get_cut_side(int sid);
 
     //! Get this element from the cut libraries by element id
-    Core::Geo::Cut::ElementHandle* get_element(const int eleid) const;
+    Cut::ElementHandle* get_element(const int eleid) const;
 
     //! Get this element from the cut libraries by element pointer
-    Core::Geo::Cut::ElementHandle* get_element(const Core::Elements::Element* ele) const;
+    Cut::ElementHandle* get_element(const Core::Elements::Element* ele) const;
 
     //! Get this node from the cut libraries
-    Core::Geo::Cut::Node* get_node(int nid);
+    Cut::Node* get_node(int nid);
 
     //! Get the sidehandle for cutting sides
-    Core::Geo::Cut::SideHandle* get_mesh_cutting_side(int sid, int mi);
+    Cut::SideHandle* get_mesh_cutting_side(int sid, int mi);
 
     //! is there a level-set side with the given sid?
     bool has_ls_cutting_side(int sid);
@@ -273,7 +271,7 @@ namespace Core::Geo
     bool do_inside_cells_have_physical_meaning();
 
     //! Get the main intersection
-    Teuchos::RCP<Core::Geo::Cut::CombIntersection> get_intersection();
+    Teuchos::RCP<Cut::CombIntersection> get_intersection();
 
     //! Check if the construction of the coupling pairs can be perfomed
     void check_if_mesh_intersection_and_cut();
@@ -292,7 +290,7 @@ namespace Core::Geo
     Core::LinAlg::SerialDenseMatrix get_current_element_position(
         const Core::Elements::Element* element);
 
-    Core::Geo::Cut::CombIntersection& intersection()
+    Cut::CombIntersection& intersection()
     {
       if (intersection_.is_null()) FOUR_C_THROW("nullptr pointer!");
 
@@ -393,7 +391,7 @@ namespace Core::Geo
 
     //---------------------------------main intersection class----------------------------
     //! @name main intersection class and flags
-    Teuchos::RCP<Core::Geo::Cut::CombIntersection>
+    Teuchos::RCP<Cut::CombIntersection>
         intersection_;  ///< combined intersection object which handles cutting mesh sides and a
                         ///< level-set side
 
@@ -430,7 +428,8 @@ namespace Core::Geo
     //@}
 
   };  // class CutWizard
-}  // namespace Core::Geo
+}  // namespace Cut
+
 
 FOUR_C_NAMESPACE_CLOSE
 

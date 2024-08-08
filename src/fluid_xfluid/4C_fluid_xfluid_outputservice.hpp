@@ -44,16 +44,15 @@ namespace Core::LinAlg
   class MapExtractor;
 }
 
-namespace Core::Geo
+
+
+namespace Cut
 {
   class CutWizard;
+  class ElementHandle;
+  class VolumeCell;
+}  // namespace Cut
 
-  namespace Cut
-  {
-    class ElementHandle;
-    class VolumeCell;
-  }  // namespace Cut
-}  // namespace Core::Geo
 
 namespace XFEM
 {
@@ -132,8 +131,8 @@ namespace FLD
         const std::string& prefix,                              ///< data prefix
         int step,                                               ///< step number
         int count,  ///< counter for iterations within a global time step
-        const Teuchos::RCP<Core::Geo::CutWizard>& wizard,  ///< cut wizard
-        Teuchos::RCP<const Epetra_Vector> vel,  ///< vector holding velocity and pressure dofs
+        const Teuchos::RCP<Cut::CutWizard>& wizard,  ///< cut wizard
+        Teuchos::RCP<const Epetra_Vector> vel,       ///< vector holding velocity and pressure dofs
         Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null  ///< vector holding acceleration
     ){};
 
@@ -218,8 +217,8 @@ namespace FLD
         const std::string& prefix,                      ///< data prefix (e.g. "SOL")
         int step,                                       ///< step number
         int count,  ///< counter for iterations within a global time step
-        const Teuchos::RCP<Core::Geo::CutWizard>& wizard,  ///< cut wizard
-        Teuchos::RCP<const Epetra_Vector> vel,  ///< vector holding velocity and pressure dofs
+        const Teuchos::RCP<Cut::CutWizard>& wizard,  ///< cut wizard
+        Teuchos::RCP<const Epetra_Vector> vel,       ///< vector holding velocity and pressure dofs
         Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null,  ///< vector holding acceleration
         Teuchos::RCP<const Epetra_Vector> dispnp =
             Teuchos::null  ///< vector holding ale displacements
@@ -231,7 +230,7 @@ namespace FLD
         ) override;
 
    private:
-    /// Gmsh output function for elements without an Core::Geo::Cut::ElementHandle
+    /// Gmsh output function for elements without an Cut::ElementHandle
     void gmsh_output_element(
         Core::FE::Discretization& discret,      ///< background fluid discretization
         std::ofstream& vel_f,                   ///< output file stream for velocity
@@ -252,8 +251,8 @@ namespace FLD
         std::ofstream& press_f,                    ///< output file stream for pressure
         std::ofstream& acc_f,                      ///< output file stream for acceleration
         Core::Elements::Element* actele,           ///< element
-        Core::Geo::Cut::ElementHandle* e,          ///< elementhandle
-        Core::Geo::Cut::VolumeCell* vc,            ///< volumecell
+        Cut::ElementHandle* e,                     ///< elementhandle
+        Cut::VolumeCell* vc,                       ///< volumecell
         const std::vector<int>& nds,               ///< vector holding the nodal dofsets
         Teuchos::RCP<const Epetra_Vector> velvec,  ///< vector holding velocity and pressure dofs
         Teuchos::RCP<const Epetra_Vector> accvec = Teuchos::null  ///< vector holding acceleration
@@ -261,10 +260,10 @@ namespace FLD
 
     /// Gmsh output function for boundarycells
     void gmsh_output_boundary_cell(
-        Core::FE::Discretization& discret,                ///< background fluid discretization
-        std::ofstream& bound_f,                           ///< output file stream for boundary mesh
-        Core::Geo::Cut::VolumeCell* vc,                   ///< volumecell
-        const Teuchos::RCP<Core::Geo::CutWizard>& wizard  ///< cut wizard
+        Core::FE::Discretization& discret,          ///< background fluid discretization
+        std::ofstream& bound_f,                     ///< output file stream for boundary mesh
+        Cut::VolumeCell* vc,                        ///< volumecell
+        const Teuchos::RCP<Cut::CutWizard>& wizard  ///< cut wizard
     );
 
     //! @name flags for detailed gmsh output
@@ -272,14 +271,14 @@ namespace FLD
     const bool gmsh_ref_sol_out_;       ///< Gmsh reference solution output
     const bool gmsh_debug_out_;         ///< Gmsh debug output (increment, residual, etc.)
     const bool gmsh_debug_out_screen_;  ///< print information about output to screen
-    const bool
-        gmsh_eos_out_;  ///< output for edge-oriented stabilization and ghost-penalty stabilization
+    const bool gmsh_eos_out_;      ///< output for edge-oriented stabilization and ghost-penalty
+                                   ///< stabilization
     const bool gmsh_discret_out_;  ///< output of XFEM discretization
     const int gmsh_step_diff_;     ///< no. of kept steps
     //@}
 
     //! integration approach
-    const Core::Geo::Cut::VCellGaussPts volume_cell_gauss_point_by_;
+    const Cut::VCellGaussPts volume_cell_gauss_point_by_;
 
     //! include elements with inside position?
     const bool include_inner_;

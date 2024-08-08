@@ -35,7 +35,7 @@ XFEM::XFieldState::XFieldState()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFEM::XFieldState::init(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-    const Teuchos::RCP<Core::Geo::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& xdofset,
+    const Teuchos::RCP<Cut::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& xdofset,
     const Teuchos::RCP<Core::FE::Discretization>& xfielddiscret,
     const Teuchos::RCP<Core::FE::Discretization>& fielddiscret)
 {

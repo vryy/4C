@@ -22,7 +22,8 @@ bridge between the xfluid class and the cut-library
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::Geo
+
+namespace Cut
 {
   class CutWizard;
 }

@@ -52,15 +52,14 @@ namespace Core::Elements
   class Element;
 }
 
-namespace Core::Geo
+
+
+namespace Cut
 {
   class CutWizard;
+  class SideHandle;
+}  // namespace Cut
 
-  namespace Cut
-  {
-    class SideHandle;
-  }
-}  // namespace Core::Geo
 
 namespace Core::LinAlg
 {
@@ -85,8 +84,8 @@ namespace XFEM
                                                   /// step transfer?
         const Teuchos::RCP<Core::FE::Discretization>& dis,              /// discretization
         const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,  /// condition manager
-        const Teuchos::RCP<Core::Geo::CutWizard>& wizard_old,           /// cut wizard at t^n
-        const Teuchos::RCP<Core::Geo::CutWizard>& wizard_new,           /// cut wizard at t^(n+1)
+        const Teuchos::RCP<Cut::CutWizard>& wizard_old,                 /// cut wizard at t^n
+        const Teuchos::RCP<Cut::CutWizard>& wizard_new,                 /// cut wizard at t^(n+1)
         const Teuchos::RCP<XFEM::XFEMDofSet>& dofset_old,               /// XFEM dofset at t^n
         const Teuchos::RCP<XFEM::XFEMDofSet>& dofset_new,               /// XFEM dofset at t^(n+1)
         const Inpar::XFEM::XFluidTimeIntScheme xfluid_timintapproach,   /// xfluid_timintapproch
@@ -130,8 +129,8 @@ namespace XFEM
     /// be applied on this proc
     std::map<Inpar::XFEM::XFluidTimeInt, int>& get_reconstr_counts() { return reconstr_counts_; };
 
-    /// get for each type of reconstruction method the node ids with corresponding dof its for that
-    /// this method has to be applied on this proc
+    /// get for each type of reconstruction method the node ids with corresponding dof its for
+    /// that this method has to be applied on this proc
     std::map<int, std::set<int>>& get_node_to_dof_map_for_reconstr(
         Inpar::XFEM::XFluidTimeInt reconstr);
 
@@ -158,8 +157,7 @@ namespace XFEM
     std::string map_method_enum_to_string(const enum Inpar::XFEM::XFluidTimeInt term);
 
     /// all surrounding elements non-intersected?
-    bool non_intersected_elements(
-        Core::Nodes::Node* n, const Teuchos::RCP<Core::Geo::CutWizard> wizard);
+    bool non_intersected_elements(Core::Nodes::Node* n, const Teuchos::RCP<Cut::CutWizard> wizard);
 
     /// find all ghost dofsets around this node and its std-dofset
     void find_surrounding_ghost_dofsets(
@@ -206,26 +204,25 @@ namespace XFEM
     );
 
     /// identify cellsets at time t^n with cellsets at time t^(n+1)
-    int identify_old_sets(const Core::Geo::Cut::Node* n_old,  /// node w.r.t to old wizard
-        const Core::Geo::Cut::Node* n_new,                    /// node w.r.t to new wizard
-        const std::vector<Teuchos::RCP<Core::Geo::Cut::NodalDofSet>>&
-            dof_cellsets_old,  /// all dofcellsets at t^n
-        const Core::Geo::Cut::NodalDofSet*
-            cell_set_new  /// dofcellset at t^(n+1) which has to be identified
+    int identify_old_sets(const Cut::Node* n_old,  /// node w.r.t to old wizard
+        const Cut::Node* n_new,                    /// node w.r.t to new wizard
+        const std::vector<Teuchos::RCP<Cut::NodalDofSet>>&
+            dof_cellsets_old,                 /// all dofcellsets at t^n
+        const Cut::NodalDofSet* cell_set_new  /// dofcellset at t^(n+1) which has to be identified
     );
 
     /// special check if the node slides along the cut surface
     bool special_check_sliding_on_surface(bool& changed_side,
-        const Core::Geo::Cut::Node* n_old,  /// node w.r.t to old wizard
-        const Core::Geo::Cut::Node* n_new   /// node w.r.t to new wizard
+        const Cut::Node* n_old,  /// node w.r.t to old wizard
+        const Cut::Node* n_new   /// node w.r.t to new wizard
     );
 
-    /// check if the node has changed the side w.r.t identified sides at t^n and t^(n+1), return if
-    /// check was successful
+    /// check if the node has changed the side w.r.t identified sides at t^n and t^(n+1), return
+    /// if check was successful
     bool special_check_interface_tips(bool& changed_side,  /// did the node change the side ?
         std::vector<int>& identified_sides,                /// side Id of identified side
-        const Core::Geo::Cut::Node* n_old,                 /// node w.r.t to old wizard
-        const Core::Geo::Cut::Node* n_new                  /// node w.r.t to new wizard
+        const Cut::Node* n_old,                            /// node w.r.t to old wizard
+        const Cut::Node* n_new                             /// node w.r.t to new wizard
     );
 
     /// special check for level-set based interface tips, note: currently empty, can be filled if
@@ -253,7 +250,8 @@ namespace XFEM
     template <Core::FE::CellType space_time_distype, const int numnode_space_time>
     bool check_st_side_volume(const Core::LinAlg::Matrix<3, numnode_space_time>& xyze_st);
 
-    /// export data about reconstruction method to neighbor proc and receive data from previous proc
+    /// export data about reconstruction method to neighbor proc and receive data from previous
+    /// proc
     void export_methods(
         const std::vector<Teuchos::RCP<Epetra_Vector>>&
             newRowStateVectors,  /// row map based vectors w.r.t new interface position
@@ -270,15 +268,15 @@ namespace XFEM
         std::vector<char>& dataRecv                            //!< received data
     ) const;
 
-    const bool is_newton_increment_transfer_;  /// monolithic newton increment transfer or time step
-                                               /// transfer?
+    const bool is_newton_increment_transfer_;  /// monolithic newton increment transfer or time
+                                               /// step transfer?
 
     Teuchos::RCP<Core::FE::Discretization> dis_;  /// background  discretization
 
     Teuchos::RCP<XFEM::ConditionManager> condition_manager_;  /// condition manager
 
-    Teuchos::RCP<Core::Geo::CutWizard> wizard_old_;  /// old cut wizard w.r.t old interface position
-    Teuchos::RCP<Core::Geo::CutWizard> wizard_new_;  /// new cut wizard w.r.t new interface position
+    Teuchos::RCP<Cut::CutWizard> wizard_old_;  /// old cut wizard w.r.t old interface position
+    Teuchos::RCP<Cut::CutWizard> wizard_new_;  /// new cut wizard w.r.t new interface position
 
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_old_;  /// old XFEM dofset w.r.t old interface position
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_new_;  /// new XFEM dofset w.r.t new interface position
@@ -299,8 +297,8 @@ namespace XFEM
                                    /// dofset-id (inverse to node_to_reconstr_method)
 
     std::map<Inpar::XFEM::XFluidTimeInt, int>
-        reconstr_counts_;  /// counts the number of dofsets that have to be reconstructed using each
-                           /// method
+        reconstr_counts_;  /// counts the number of dofsets that have to be reconstructed using
+                           /// each method
 
     std::map<int, std::map<int, int>>
         dofset_marker_export_;  /// std::map<nid, std::map<dofset_number,method> > that contains

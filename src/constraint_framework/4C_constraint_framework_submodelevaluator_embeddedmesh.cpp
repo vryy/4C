@@ -35,11 +35,11 @@ CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager::EmbeddedMeshConst
   auto embedded_mesh_constraint_penalty_parameter =
       embedded_mesh_parameter_list.get<double>("CONSTRAINT_ENFORCEMENT_PENALTYPARAM");
 
-  auto nodal_dofset_strategy = Core::UTILS::IntegralValue<Core::Geo::Cut::NodalDofSetStrategy>(
+  auto nodal_dofset_strategy = Core::UTILS::IntegralValue<Cut::NodalDofSetStrategy>(
       xfem_parameter_list, "NODAL_DOFSET_STRATEGY");
-  auto volume_cell_gauss_point_by = Core::UTILS::IntegralValue<Core::Geo::Cut::VCellGaussPts>(
-      xfem_parameter_list, "VOLUME_GAUSS_POINTS_BY");
-  auto bound_cell_gauss_point_by = Core::UTILS::IntegralValue<Core::Geo::Cut::BCellGaussPts>(
+  auto volume_cell_gauss_point_by =
+      Core::UTILS::IntegralValue<Cut::VCellGaussPts>(xfem_parameter_list, "VOLUME_GAUSS_POINTS_BY");
+  auto bound_cell_gauss_point_by = Core::UTILS::IntegralValue<Cut::BCellGaussPts>(
       xfem_parameter_list, "BOUNDARY_GAUSS_POINTS_BY");
 
   bool gmsh_cut_out = (Core::UTILS::IntegralValue<int>(xfem_parameter_list, "GMSH_CUT_OUT"));

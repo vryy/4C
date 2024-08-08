@@ -36,8 +36,8 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     SurfaceToBackgroundCouplingPairMortar(Teuchos::RCP<Core::Elements::Element> element1,
         Core::Elements::Element* element2,
         CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr,
-        Teuchos::RCP<Core::Geo::CutWizard>& cutwizard_ptr,
-        std::vector<Teuchos::RCP<Core::Geo::Cut::BoundaryCell>>& boundary_cells);
+        Teuchos::RCP<Cut::CutWizard>& cutwizard_ptr,
+        std::vector<Teuchos::RCP<Cut::BoundaryCell>>& boundary_cells);
 
     /**
      * \brief Destructor.

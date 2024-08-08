@@ -499,8 +499,7 @@ namespace Coupling::VolMortar
     //@}
 
     // cut specific quantities
-    Core::Geo::Cut::plain_volumecell_set
-        volcell_;  /// set of volume cells for direct divergence integration
+    Cut::plain_volumecell_set volcell_;  /// set of volume cells for direct divergence integration
 
     // search algorithm
     Core::LinAlg::Matrix<9, 3> dopnormals_;  /// dop normals for seach algorithm

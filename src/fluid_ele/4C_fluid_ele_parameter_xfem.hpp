@@ -44,10 +44,10 @@ namespace Discret
       //@{
 
       //! get the volumecell integration method used for integrating cut elements?
-      Core::Geo::Cut::VCellGaussPts volume_cell_gauss_points() const { return vcellgausspts_; };
+      Cut::VCellGaussPts volume_cell_gauss_points() const { return vcellgausspts_; };
 
       //! get the boundarycell integration method used for integrating the surface in cut elements?
-      Core::Geo::Cut::BCellGaussPts boundary_cell_gauss_points() const { return bcellgausspts_; };
+      Cut::BCellGaussPts boundary_cell_gauss_points() const { return bcellgausspts_; };
 
       //@}
 
@@ -184,10 +184,10 @@ namespace Discret
       //@{
 
       //! which volumecell integration is used for integrating cut elements?
-      Core::Geo::Cut::VCellGaussPts vcellgausspts_;
+      Cut::VCellGaussPts vcellgausspts_;
 
       //! which boundarycell integration is used for integrating the surface in cut elements?
-      Core::Geo::Cut::BCellGaussPts bcellgausspts_;
+      Cut::BCellGaussPts bcellgausspts_;
 
       //@}
 

@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 FLD::XFluidFluidState::XFluidFluidState(
     const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-    const Teuchos::RCP<Core::Geo::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
+    const Teuchos::RCP<Cut::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
     const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
     const Teuchos::RCP<const Epetra_Map>& xfluiddofcolmap,
     const Teuchos::RCP<const Epetra_Map>& embfluiddofrowmap)

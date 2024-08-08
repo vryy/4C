@@ -32,8 +32,8 @@ FOUR_C_NAMESPACE_OPEN
 /*
   Free function that prepares and performs the cut.
 */
-void CONSTRAINTS::EMBEDDEDMESH::prepare_and_perform_cut(
-    Teuchos::RCP<Core::Geo::CutWizard> cutwizard, Teuchos::RCP<Core::FE::Discretization>& discret,
+void CONSTRAINTS::EMBEDDEDMESH::prepare_and_perform_cut(Teuchos::RCP<Cut::CutWizard> cutwizard,
+    Teuchos::RCP<Core::FE::Discretization>& discret,
     CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& embedded_mesh_coupling_params)
 {
   //! vector of all coupling discretizations, the background mesh is coupled with
@@ -109,8 +109,8 @@ Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair> coupling_pair_mort
     Teuchos::RCP<Core::Elements::Element> interfaceele_real,
     Core::Elements::Element* background_ele,
     CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr,
-    Teuchos::RCP<Core::Geo::CutWizard>& cutwizard_ptr,
-    std::vector<Teuchos::RCP<Core::Geo::Cut::BoundaryCell>>& boundary_cells)
+    Teuchos::RCP<Cut::CutWizard>& cutwizard_ptr,
+    std::vector<Teuchos::RCP<Cut::BoundaryCell>>& boundary_cells)
 {
   switch (interfaceele_real->shape())
   {
@@ -159,7 +159,7 @@ Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair> coupling_pair_mort
 }
 
 void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
-    Teuchos::RCP<Core::Geo::CutWizard>& cutwizard,
+    Teuchos::RCP<Cut::CutWizard>& cutwizard,
     CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr,
     Teuchos::RCP<Core::FE::Discretization>& discret,
     std::vector<Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair>>&
@@ -170,10 +170,10 @@ void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
   cutwizard->check_if_mesh_intersection_and_cut();
 
   // Get the mesh that represents the background mesh
-  Core::Geo::Cut::Mesh background_mesh = (cutwizard->get_intersection())->normal_mesh();
+  Cut::Mesh background_mesh = (cutwizard->get_intersection())->normal_mesh();
 
   // Get the elements inside the background mesh
-  const std::map<int, Teuchos::RCP<Core::Geo::Cut::Element>> background_elements =
+  const std::map<int, Teuchos::RCP<Cut::Element>> background_elements =
       background_mesh.get_mesh_elements();
 
   // Do a loop to check all the elements of the background mesh, if the element is cut, then
@@ -181,7 +181,7 @@ void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
   for (auto background_ele_iter = background_elements.begin();
        background_ele_iter != background_elements.end(); background_ele_iter++)
   {
-    const Teuchos::RCP<Core::Geo::Cut::Element> background_element = background_ele_iter->second;
+    const Teuchos::RCP<Cut::Element> background_element = background_ele_iter->second;
 
     if (background_element->is_cut())
     {
@@ -189,8 +189,8 @@ void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
       Core::Elements::Element* background_ele = discret->g_element(background_element->id());
 
       // Create a multimap the boundary cells and their ids of this background element
-      std::multimap<int, Core::Geo::Cut::BoundaryCell*> boundarycells_ids_multimap;
-      Core::Geo::Cut::plain_volumecell_set volume_cells = background_element->volume_cells();
+      std::multimap<int, Cut::BoundaryCell*> boundarycells_ids_multimap;
+      Cut::plain_volumecell_set volume_cells = background_element->volume_cells();
 
       for (auto volume_cell : volume_cells)
       {
@@ -199,9 +199,9 @@ void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
         // volume cells, they will get repeated if we save all the boundary sides of the inside
         // and outside volume cells. Therefore, we take only the boundary cells of the outside
         // volume cells, although we could also check for the inside cells.
-        if (volume_cell->position() == Core::Geo::Cut::Point::PointPosition::outside)
+        if (volume_cell->position() == Cut::Point::PointPosition::outside)
         {
-          Core::Geo::Cut::plain_boundarycell_set bc_temp = volume_cell->boundary_cells();
+          Cut::plain_boundarycell_set bc_temp = volume_cell->boundary_cells();
 
           for (auto it_boundarycell = bc_temp.begin(); it_boundarycell != bc_temp.end();
                ++it_boundarycell)
@@ -233,11 +233,11 @@ void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
         if (surface_ele == Teuchos::null) FOUR_C_THROW("No face/surface was found");
 
         // Get the boundary cells of background element related to this coupling pair
-        std::vector<Teuchos::RCP<Core::Geo::Cut::BoundaryCell>> coupling_pair_boundary_cells;
+        std::vector<Teuchos::RCP<Cut::BoundaryCell>> coupling_pair_boundary_cells;
         auto boundarycells = boundarycells_ids_multimap.equal_range(*iter_id);
         for (auto iter = boundarycells.first; iter != boundarycells.second; ++iter)
         {
-          Teuchos::RCP<Core::Geo::Cut::BoundaryCell> boundaryCell(iter->second, false);
+          Teuchos::RCP<Cut::BoundaryCell> boundaryCell(iter->second, false);
           coupling_pair_boundary_cells.push_back(boundaryCell);
         }
 
@@ -265,7 +265,7 @@ void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
 
 void CONSTRAINTS::EMBEDDEDMESH::change_gauss_rule_of_cut_elements(
     std::vector<Core::Elements::Element*> cut_elements_vector,
-    Teuchos::RCP<Core::Geo::CutWizard>& cutwizard)
+    Teuchos::RCP<Cut::CutWizard>& cutwizard)
 {
   // loop over column elements
   for (Core::Elements::Element* cut_ele : cut_elements_vector)
@@ -277,7 +277,7 @@ void CONSTRAINTS::EMBEDDEDMESH::change_gauss_rule_of_cut_elements(
           "This implementation of the embedded mesh method only works for new solid elements.");
 
     // Get the element handle. If this element is a background element, this will exist
-    Core::Geo::Cut::ElementHandle* elementHandle = cutwizard->get_element(cut_ele);
+    Cut::ElementHandle* elementHandle = cutwizard->get_element(cut_ele);
     if (!elementHandle) FOUR_C_THROW("No element handle found for this cut element");
 
     std::vector<Core::FE::GaussIntegration> gp_intpoints_cut;

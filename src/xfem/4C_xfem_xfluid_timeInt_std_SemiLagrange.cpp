@@ -183,7 +183,7 @@ void XFEM::XfluidSemiLagrange::compute(
 
             if (nds_curr.size() == 0) FOUR_C_THROW("no valid nds-vector for initial point found");
             if (data->last_valid_vc_ != nullptr and  // not an uncut element
-                data->last_valid_vc_->position() != Core::Geo::Cut::Point::outside)
+                data->last_valid_vc_->position() != Cut::Point::outside)
             {
               FOUR_C_THROW("initial point does not lie in the fluid");
             }
@@ -981,23 +981,23 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
     std::vector<std::vector<int>> eles_avg_nds;
 
 
-    Core::Geo::Cut::Node* n = wizard_new_->get_node(node->id());
+    Cut::Node* n = wizard_new_->get_node(node->id());
 
     if (n != nullptr)
     {
       // get the nodal dofset w.r.t the Lagrangean origin
-      const std::set<Core::Geo::Cut::plain_volumecell_set, Core::Geo::Cut::Cmp>& cellset =
+      const std::set<Cut::plain_volumecell_set, Cut::Cmp>& cellset =
           n->get_nodal_dof_set(0)->volume_cell_composite();  // always the standard dofset
 
       // get for each adjacent element contained in the nodal dofset the first vc, its parent
       // element is used for the reconstruction REMARK: adjacent elements for that no elementhandle
       // exists in the cut won't be found here
-      for (std::set<Core::Geo::Cut::plain_volumecell_set, Core::Geo::Cut::Cmp>::const_iterator
-               cellset_it = cellset.begin();
+      for (std::set<Cut::plain_volumecell_set, Cut::Cmp>::const_iterator cellset_it =
+               cellset.begin();
            cellset_it != cellset.end(); cellset_it++)
       {
         // the first vc representing the set
-        Core::Geo::Cut::VolumeCell* vc = *((*cellset_it).begin());
+        Cut::VolumeCell* vc = *((*cellset_it).begin());
         int peid = vc->parent_element()->get_parent_id();
 
         if (!discret_->have_global_element(peid))
@@ -1021,7 +1021,7 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
     // add surrounding std uncut elements for that no elementhandle is available
     for (int i = 0; i < numele; i++)
     {
-      Core::Geo::Cut::ElementHandle* eh = wizard_new_->get_element(eles[i]);
+      Cut::ElementHandle* eh = wizard_new_->get_element(eles[i]);
 
       if (eh != nullptr)
         continue;  // element and the right nds-vec should have been found using the for-loop before
@@ -1400,24 +1400,24 @@ void XFEM::XfluidSemiLagrange::back_tracking(
     std::vector<std::vector<int>> eles_avg_nds;
 
 
-    Core::Geo::Cut::Node* n = wizard_old_->get_node(node->id());
+    Cut::Node* n = wizard_old_->get_node(node->id());
 
     if (n != nullptr)
     {
       // get the nodal dofset w.r.t the Lagrangean origin
-      const std::set<Core::Geo::Cut::plain_volumecell_set, Core::Geo::Cut::Cmp>& cellset =
+      const std::set<Cut::plain_volumecell_set, Cut::Cmp>& cellset =
           n->get_nodal_dof_set(data->nds_[inode])->volume_cell_composite();
 
 
       // get for each adjacent element contained in the nodal dofset the first vc, its parent
       // element is used for the reconstruction REMARK: adjacent elements for that no elementhandle
       // exists in the cut won't be found here
-      for (std::set<Core::Geo::Cut::plain_volumecell_set, Core::Geo::Cut::Cmp>::const_iterator
-               cellset_it = cellset.begin();
+      for (std::set<Cut::plain_volumecell_set, Cut::Cmp>::const_iterator cellset_it =
+               cellset.begin();
            cellset_it != cellset.end(); cellset_it++)
       {
         // the first vc representing the set
-        Core::Geo::Cut::VolumeCell* vc = *((*cellset_it).begin());
+        Cut::VolumeCell* vc = *((*cellset_it).begin());
         int peid = vc->parent_element()->get_parent_id();
 
         if (!discret_->have_global_element(peid))
@@ -1441,7 +1441,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
     // add surrounding std uncut elements for that no elementhandle is available
     for (int i = 0; i < numele; i++)
     {
-      Core::Geo::Cut::ElementHandle* eh = wizard_old_->get_element(eles[i]);
+      Cut::ElementHandle* eh = wizard_old_->get_element(eles[i]);
 
       if (eh != nullptr)
         continue;  // element and the right nds-vec should have been found using the for-loop before
@@ -1552,8 +1552,8 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
     Core::Elements::Element* ele,   /// pointer to element
     Core::LinAlg::Matrix<3, 1>& x,  /// global coordinates of point
     std::vector<int>& nds,          /// determine the points dofset w.r.t old/new interface position
-    Core::Geo::Cut::VolumeCell*& vc,  /// valid fluid volumecell the point x lies in
-    bool step_np                      /// computation w.r.t old or new interface position?
+    Cut::VolumeCell*& vc,           /// valid fluid volumecell the point x lies in
+    bool step_np                    /// computation w.r.t old or new interface position?
 )
 {
   nds.clear();
@@ -1564,30 +1564,30 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
 #endif
 
 
-  Teuchos::RCP<Core::Geo::CutWizard> wizard = step_np ? wizard_new_ : wizard_old_;
+  Teuchos::RCP<Cut::CutWizard> wizard = step_np ? wizard_new_ : wizard_old_;
 
-  Core::Geo::Cut::ElementHandle* e = wizard->get_element(ele);
+  Cut::ElementHandle* e = wizard->get_element(ele);
 
   bool inside_structure = false;
 
   if (e != nullptr)  // element in cut involved
   {
-    Core::Geo::Cut::plain_volumecell_set cells;
+    Cut::plain_volumecell_set cells;
     e->get_volume_cells(cells);
 
     if (cells.size() == 0)
-      FOUR_C_THROW("Core::Geo::Cut::Element %d does not contain any volume cell", ele->id());
+      FOUR_C_THROW("Cut::Element %d does not contain any volume cell", ele->id());
 
-    for (Core::Geo::Cut::plain_volumecell_set::iterator cell_it = cells.begin();
-         cell_it != cells.end(); cell_it++)
+    for (Cut::plain_volumecell_set::iterator cell_it = cells.begin(); cell_it != cells.end();
+         cell_it++)
     {
-      Core::Geo::Cut::VolumeCell* cell = *cell_it;
+      Cut::VolumeCell* cell = *cell_it;
       //      if(cell->Contains(x))
       // cell contains the point inside or on one of its boundaries and the cell is an outside
       // (fluid) cell
       if (((cell->is_this_point_inside(x) == "inside") or
               (cell->is_this_point_inside(x) == "onBoundary")) and
-          cell->position() == Core::Geo::Cut::Point::outside)
+          cell->position() == Cut::Point::outside)
       {
 #ifdef DEBUG_SEMILAGRANGE
         Core::IO::cout << "\n\t\t\t -> Position of point w.r.t volumecell is "
@@ -1617,7 +1617,7 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
       // point lies within the structure or on Boundary
       else if ((cell->is_this_point_inside(x) == "inside" or
                    cell->is_this_point_inside(x) == "onBoundary") and
-               (cell->position() == Core::Geo::Cut::Point::inside))
+               (cell->position() == Cut::Point::inside))
       {
 #ifdef DEBUG_SEMILAGRANGE
         Core::IO::cout << "\n\t\t\t -> Position of point w.r.t volumecell is "
@@ -1640,14 +1640,14 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
 
     if (!inside_structure and (int)(nds.size()) != ele->num_node())
     {
-      Core::Geo::Cut::plain_volumecell_set cells;
+      Cut::plain_volumecell_set cells;
       e->get_volume_cells(cells);
 
       Core::IO::cout << "point: " << x << Core::IO::endl;
-      for (Core::Geo::Cut::plain_volumecell_set::iterator cell_it = cells.begin();
-           cell_it != cells.end(); cell_it++)
+      for (Cut::plain_volumecell_set::iterator cell_it = cells.begin(); cell_it != cells.end();
+           cell_it++)
       {
-        Core::Geo::Cut::VolumeCell* cell = *cell_it;
+        Cut::VolumeCell* cell = *cell_it;
         Core::IO::cout << "vc-pos: " << cell->position() << Core::IO::endl;
       }
 

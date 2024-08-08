@@ -58,19 +58,18 @@ namespace Core::Elements
   class Element;
 }
 
-namespace Core::Geo
+
+namespace Cut
 {
-  namespace Cut
-  {
-    class SideHandle;
-    class VolumeCell;
-    class Facet;
-    class Element;
-    class ElementHandle;
-    class Side;
-  }  // namespace Cut
   class CutWizard;
-}  // namespace Core::Geo
+  class SideHandle;
+  class VolumeCell;
+  class Facet;
+  class Element;
+  class ElementHandle;
+  class Side;
+}  // namespace Cut
+
 
 namespace XFEM
 {
@@ -120,7 +119,7 @@ namespace XFEM
     //! destructor
     virtual ~XFluidContactComm() = default;
     /// Initialize overall Fluid State (includes the Cut intersection information)
-    void initialize_fluid_state(Teuchos::RCP<Core::Geo::CutWizard> cutwizard,
+    void initialize_fluid_state(Teuchos::RCP<Cut::CutWizard> cutwizard,
         Teuchos::RCP<Core::FE::Discretization> fluiddis,
         Teuchos::RCP<XFEM::ConditionManager> condition_manager,
         Teuchos::RCP<Teuchos::ParameterList> fluidparams);
@@ -263,42 +262,38 @@ namespace XFEM
         Core::LinAlg::Matrix<3, 3>& vderxy_m, Core::LinAlg::Matrix<3, 1>& velpf_s);
 
     /// Get the Nitsche penalty parameter
-    void get_penalty_param(Core::Elements::Element* fluidele,
-        Core::Geo::Cut::VolumeCell* volumecell, Core::LinAlg::SerialDenseMatrix& ele_xyze,
-        const Core::LinAlg::Matrix<3, 1>& elenormal, double& penalty_fac,
-        const Core::LinAlg::Matrix<3, 1>& vel_m);
+    void get_penalty_param(Core::Elements::Element* fluidele, Cut::VolumeCell* volumecell,
+        Core::LinAlg::SerialDenseMatrix& ele_xyze, const Core::LinAlg::Matrix<3, 1>& elenormal,
+        double& penalty_fac, const Core::LinAlg::Matrix<3, 1>& vel_m);
 
     /// Get the Nitsche penalty parameter
     void get_penalty_param(Discret::ELEMENTS::StructuralSurface* sele, double& penalty_fac);
 
     /// Get the volumecell for local coord xsi on sele
     bool get_volumecell(Discret::ELEMENTS::StructuralSurface*& sele,
-        Core::LinAlg::Matrix<2, 1>& xsi, Core::Geo::Cut::SideHandle*& sidehandle,
-        std::vector<int>& nds, int& eleid, Core::Geo::Cut::VolumeCell*& volumecell,
-        Core::LinAlg::Matrix<3, 1>& elenormal, Core::LinAlg::Matrix<3, 1>& x, bool& FSI_integrated,
-        double& distance);
+        Core::LinAlg::Matrix<2, 1>& xsi, Cut::SideHandle*& sidehandle, std::vector<int>& nds,
+        int& eleid, Cut::VolumeCell*& volumecell, Core::LinAlg::Matrix<3, 1>& elenormal,
+        Core::LinAlg::Matrix<3, 1>& x, bool& FSI_integrated, double& distance);
 
     /// Evaluate the distance of x the boundary of a side
-    double distanceto_side(Core::LinAlg::Matrix<3, 1>& x, Core::Geo::Cut::Side* side,
-        Core::LinAlg::Matrix<3, 1>& closest_x);
+    double distanceto_side(
+        Core::LinAlg::Matrix<3, 1>& x, Cut::Side* side, Core::LinAlg::Matrix<3, 1>& closest_x);
 
     /// Find the next physical interface side to x
-    Core::Geo::Cut::Side* findnext_physical_side(Core::LinAlg::Matrix<3, 1>& x,
-        Core::Geo::Cut::Side* initSide, Core::Geo::Cut::SideHandle*& sidehandle,
-        Core::LinAlg::Matrix<2, 1>& newxsi, double& distance);
+    Cut::Side* findnext_physical_side(Core::LinAlg::Matrix<3, 1>& x, Cut::Side* initSide,
+        Cut::SideHandle*& sidehandle, Core::LinAlg::Matrix<2, 1>& newxsi, double& distance);
 
     /// Get list of potentiall next physical sides
-    void update_physical_sides(Core::Geo::Cut::Side* side,
-        std::set<Core::Geo::Cut::Side*>& performed_sides,
-        std::set<Core::Geo::Cut::Side*>& physical_sides);
+    void update_physical_sides(Cut::Side* side, std::set<Cut::Side*>& performed_sides,
+        std::set<Cut::Side*>& physical_sides);
 
     /// Get neighboring sides
-    std::vector<Core::Geo::Cut::Side*> get_new_neighboring_sides(
-        Core::Geo::Cut::Side* side, std::set<Core::Geo::Cut::Side*>& performed_sides);
+    std::vector<Cut::Side*> get_new_neighboring_sides(
+        Cut::Side* side, std::set<Cut::Side*>& performed_sides);
 
     /// Get next element
-    Core::Geo::Cut::Element* get_next_element(Core::Geo::Cut::Element* ele,
-        std::set<Core::Geo::Cut::Element*>& performed_elements, int& lastid);
+    Cut::Element* get_next_element(
+        Cut::Element* ele, std::set<Cut::Element*>& performed_elements, int& lastid);
 
     /// access to contact/meshtying bridge
     CONTACT::NitscheStrategy& get_contact_strategy() { return contact_strategy_; }
@@ -308,7 +303,7 @@ namespace XFEM
     /// Surface element pointers setup
     bool ele_ptrs_already_setup_;
     /// The XFluid CutWizard
-    Teuchos::RCP<Core::Geo::CutWizard> cutwizard_;
+    Teuchos::RCP<Cut::CutWizard> cutwizard_;
     /// The Background Fluid discretization
     Teuchos::RCP<Core::FE::Discretization> fluiddis_;
     /// The XFEM Condition Manager
@@ -386,7 +381,7 @@ namespace XFEM
     std::vector<int> sum_gps_;
 
     /// store the last evaluted set of physical sides for solid side with id key
-    std::pair<int, std::set<Core::Geo::Cut::Side*>> last_physical_sides_;
+    std::pair<int, std::set<Cut::Side*>> last_physical_sides_;
 
     /// last computed element h measure with key fluidele id
     std::pair<int, double> last_ele_h_;

@@ -39,10 +39,9 @@ namespace XFEM
 
      */
     void get_volume_cell_material(Core::Elements::Element* actele,  // element for volume cell INPUT
-        Teuchos::RCP<Core::Mat::Material>& mat,  // material of volume cell OUTPUT
-        Core::Geo::Cut::Point::PointPosition position =
-            Core::Geo::Cut::Point::outside  // position of volume cell INPUT to determine
-                                            // position
+        Teuchos::RCP<Core::Mat::Material>& mat,                   // material of volume cell OUTPUT
+        Cut::Point::PointPosition position = Cut::Point::outside  // position of volume cell INPUT
+                                                                  // to determine position
     );
 
 

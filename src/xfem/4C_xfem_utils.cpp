@@ -51,12 +51,12 @@ void XFEM::UTILS::extract_node_vectors(Teuchos::RCP<Core::FE::Discretization> di
 // set master and slave parameters (winter 01/2015)
 // -------------------------------------------------------------------
 void XFEM::UTILS::get_volume_cell_material(Core::Elements::Element* actele,
-    Teuchos::RCP<Core::Mat::Material>& mat, Core::Geo::Cut::Point::PointPosition position)
+    Teuchos::RCP<Core::Mat::Material>& mat, Cut::Point::PointPosition position)
 {
   int position_id = 0;
-  if (position == Core::Geo::Cut::Point::inside)  // minus domain, Omega^i with i<j
+  if (position == Cut::Point::inside)  // minus domain, Omega^i with i<j
     position_id = 1;
-  else if (position != Core::Geo::Cut::Point::outside)  // plus domain, \Omega^j with j>i
+  else if (position != Cut::Point::outside)  // plus domain, \Omega^j with j>i
     FOUR_C_THROW("Volume cell is either undecided or on surface. That can't be good....");
 
   Teuchos::RCP<Core::Mat::Material> material = actele->material();

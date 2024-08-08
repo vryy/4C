@@ -28,8 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Side::Side(
-    int sid, const std::vector<Node*>& nodes, const std::vector<Edge*>& edges)
+Cut::Side::Side(int sid, const std::vector<Node*>& nodes, const std::vector<Edge*>& edges)
     : sid_(sid), nodes_(nodes), edges_(edges)
 {
   for (std::vector<Edge*>::const_iterator i = edges.begin(); i != edges.end(); ++i)
@@ -48,7 +47,7 @@ Core::Geo::Cut::Side::Side(
 /*----------------------------------------------------------------------------*
       Returns the edge of this side with given begin and end points
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Edge* Core::Geo::Cut::Side::find_edge(Point* begin, Point* end)
+Cut::Edge* Cut::Side::find_edge(Point* begin, Point* end)
 {
   for (std::vector<Edge*>::iterator i = edges_.begin(); i != edges_.end(); ++i)
   {
@@ -61,8 +60,7 @@ Core::Geo::Cut::Edge* Core::Geo::Cut::Side::find_edge(Point* begin, Point* end)
   return nullptr;
 }
 
-bool Core::Geo::Cut::Side::find_cut_points_dispatch(
-    Mesh& mesh, Element* element, Side& side, Edge& e)
+bool Cut::Side::find_cut_points_dispatch(Mesh& mesh, Element* element, Side& side, Edge& e)
 {
   return e.find_cut_points_mesh_cut(mesh, element, side, *this);
 }
@@ -71,7 +69,7 @@ bool Core::Geo::Cut::Side::find_cut_points_dispatch(
  * Calculate the points at which the other side intersects with this considered
  * side
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Side::find_cut_points(Mesh& mesh, Element* element, Side& other)
+bool Cut::Side::find_cut_points(Mesh& mesh, Element* element, Side& other)
 {
   bool cut = false;
   const std::vector<Edge*>& edges = Side::edges();
@@ -88,7 +86,7 @@ bool Core::Geo::Cut::Side::find_cut_points(Mesh& mesh, Element* element, Side& o
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Side::find_cut_lines(Mesh& mesh, Element* element, Side& other)
+bool Cut::Side::find_cut_lines(Mesh& mesh, Element* element, Side& other)
 {
   /* check whether cut lines are already created (still need to create lines new
    * in case we create AmbiguousCutLines!) */
@@ -160,7 +158,7 @@ bool Core::Geo::Cut::Side::find_cut_lines(Mesh& mesh, Element* element, Side& ot
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Side::all_on_nodes(const PointSet& points)
+bool Cut::Side::all_on_nodes(const PointSet& points)
 {
   const std::vector<Node*>& nodes = Side::nodes();
   for (PointSet::const_iterator i = points.begin(); i != points.end(); ++i)
@@ -176,7 +174,7 @@ bool Core::Geo::Cut::Side::all_on_nodes(const PointSet& points)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Side::get_cut_points(Element* element, Side& other, PointSet& cuts)
+void Cut::Side::get_cut_points(Element* element, Side& other, PointSet& cuts)
 {
   // Get all Cut Points intersecting this side and an edge of the other side
   {
@@ -200,11 +198,11 @@ void Core::Geo::Cut::Side::get_cut_points(Element* element, Side& other, PointSe
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Side::add_point(Point* cut_point) { cut_points_.insert(cut_point); }
+void Cut::Side::add_point(Point* cut_point) { cut_points_.insert(cut_point); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Side::add_line(Line* cut_line)
+void Cut::Side::add_line(Line* cut_line)
 {
   if (std::find(cut_lines_.begin(), cut_lines_.end(), cut_line) == cut_lines_.end())
   {
@@ -214,7 +212,7 @@ void Core::Geo::Cut::Side::add_line(Line* cut_line)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Facet* Core::Geo::Cut::Side::find_facet(const std::vector<Point*>& facet_points)
+Cut::Facet* Cut::Side::find_facet(const std::vector<Point*>& facet_points)
 {
   for (std::vector<Facet*>::const_iterator i = facets_.begin(); i != facets_.end(); ++i)
   {
@@ -229,7 +227,7 @@ Core::Geo::Cut::Facet* Core::Geo::Cut::Side::find_facet(const std::vector<Point*
 
 
 
-bool Core::Geo::Cut::Side::is_touched(Side& other, Point* p)
+bool Cut::Side::is_touched(Side& other, Point* p)
 {
   // first we check if it is a nodal point of one of the surface
   if (not((p->nodal_point(other.nodes())) || (p->nodal_point(nodes()))))
@@ -268,12 +266,11 @@ bool Core::Geo::Cut::Side::is_touched(Side& other, Point* p)
     if (!on_my_edge || !on_other_edge)
     {
       std::ofstream file("touching_point_between_two_sides_is_not_on_edge.pos");
-      Core::Geo::Cut::Output::GmshSideDump(file, this, std::string("ThisSide"));
-      Core::Geo::Cut::Output::GmshSideDump(file, &other, std::string("OtherSide"));
-      Core::Geo::Cut::Output::GmshPointDump(
-          file, p, p->id(), std::string("CutPoint"), false, nullptr);
+      Cut::Output::GmshSideDump(file, this, std::string("ThisSide"));
+      Cut::Output::GmshSideDump(file, &other, std::string("OtherSide"));
+      Cut::Output::GmshPointDump(file, p, p->id(), std::string("CutPoint"), false, nullptr);
       p->dump_connectivity_info();
-      Core::Geo::Cut::Output::GmshWriteSection(file, "Edge", p->cut_edges());
+      Cut::Output::GmshWriteSection(file, "Edge", p->cut_edges());
       file.close();
       FOUR_C_THROW(
           "Touching point between two sides does not lie on edge. This case should be analyzed");
@@ -284,7 +281,7 @@ bool Core::Geo::Cut::Side::is_touched(Side& other, Point* p)
 
 
 
-bool Core::Geo::Cut::Side::is_touched_at(Side* other, Point* p)
+bool Cut::Side::is_touched_at(Side* other, Point* p)
 {
   // count of edges from other side touching at this point
   int count = 0;
@@ -314,7 +311,7 @@ bool Core::Geo::Cut::Side::is_touched_at(Side* other, Point* p)
 // Find Cut Lines for two Cut Sides, which have more than two common cut points!
 //(This happens if the cutsides are in the same plane )              ager 08/15
 /*----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Side::find_touching_cut_lines(
+bool Cut::Side::find_touching_cut_lines(
     Mesh& mesh, Element* element, Side& side, const PointSet& cut)
 {
   // More that two cut points show a touch.
@@ -353,7 +350,7 @@ bool Core::Geo::Cut::Side::find_touching_cut_lines(
 
 
 // Try to find intersection of edges of "this" side  with side.
-bool Core::Geo::Cut::Side::find_parallel_intersection(
+bool Cut::Side::find_parallel_intersection(
     Mesh& mesh, Element* element, Side& side, const PointSet& cut, point_line_set& new_lines)
 {
   // number of lines that could be created
@@ -413,7 +410,7 @@ bool Core::Geo::Cut::Side::find_parallel_intersection(
         {
           if ((not(*c_it)->nodal_point(e->nodes())) and (not(*c_it)->nodal_point(side.nodes())))
           {
-            Core::Geo::Cut::Output::DebugDump_ThreePointsOnEdge(this, &side, e, c[0], cut);
+            Cut::Output::DebugDump_ThreePointsOnEdge(this, &side, e, c[0], cut);
             FOUR_C_THROW(
                 "Uknown case of three intersection point lying on side's edge in side-side "
                 "intersection, this case should be reported");
@@ -470,7 +467,7 @@ bool Core::Geo::Cut::Side::find_parallel_intersection(
  *   (This happens if the cut sides are in the same plane or due to numerical
  *   tolerances!)                                                    ager 08/15
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Side::find_ambiguous_cut_lines(
+bool Cut::Side::find_ambiguous_cut_lines(
     Mesh& mesh, Element* element, Side& side, const PointSet& cut)
 {
   /* More than two cut points shows a touch.
@@ -560,18 +557,18 @@ bool Core::Geo::Cut::Side::find_ambiguous_cut_lines(
         else
         {
           std::ofstream file("more_than_3_points_in_the_parallel_surface.pos");
-          Core::Geo::Cut::Output::GmshSideDump(file, this, std::string("ThisSide"));
-          Core::Geo::Cut::Output::GmshSideDump(file, &side, std::string("OtherSide"));
+          Cut::Output::GmshSideDump(file, this, std::string("ThisSide"));
+          Cut::Output::GmshSideDump(file, &side, std::string("OtherSide"));
           for (PointSet::const_iterator it = cut.begin(); it != cut.end(); ++it)
           {
-            Core::Geo::Cut::Output::GmshPointDump(
+            Cut::Output::GmshPointDump(
                 file, (*it), (*it)->id(), std::string("CutPoint"), false, nullptr);
           }
           file.close();
           FOUR_C_THROW("This case is not handled yet, generate GMSH output and look into it!");
         }
       }
-      Core::Geo::Cut::Output::DebugDump_MultipleCutPointsSpecial(
+      Cut::Output::DebugDump_MultipleCutPointsSpecial(
           this, &side, cut, collected_points, new_lines);
       FOUR_C_THROW("This case should be reported probably");
     }
@@ -582,7 +579,7 @@ bool Core::Geo::Cut::Side::find_ambiguous_cut_lines(
 
 
 // Create paralel cut surface based on intersection with the other side, and "cut" cut_points
-bool Core::Geo::Cut::Side::create_parallel_cut_surface(Mesh& mesh, Element* element, Side& other,
+bool Cut::Side::create_parallel_cut_surface(Mesh& mesh, Element* element, Side& other,
     const PointSet& cut, std::vector<Point*>* cut_point_for_lines_out)
 {
   std::list<Edge*> edges_cycle;
@@ -878,17 +875,17 @@ bool Core::Geo::Cut::Side::create_parallel_cut_surface(Mesh& mesh, Element* elem
       {
         std::stringstream pname;
         pname << "Point_for_line" << (*it)->id();
-        Core::Geo::Cut::Output::GmshPointDump(file, *it, (*it)->id(), pname.str(), false, nullptr);
+        Cut::Output::GmshPointDump(file, *it, (*it)->id(), pname.str(), false, nullptr);
       }
       for (PointSet::const_iterator it = cut.begin(); it != cut.end(); ++it)
       {
         std::stringstream pname;
         pname << "CutPoint" << (*it)->id();
-        Core::Geo::Cut::Output::GmshPointDump(file, *it, (*it)->id(), pname.str(), false, nullptr);
+        Cut::Output::GmshPointDump(file, *it, (*it)->id(), pname.str(), false, nullptr);
         (*it)->dump_connectivity_info();
       }
-      Core::Geo::Cut::Output::GmshSideDump(file, &other, std::string("OtherSide"));
-      Core::Geo::Cut::Output::GmshSideDump(file, this, std::string("ThisSide"));
+      Cut::Output::GmshSideDump(file, &other, std::string("OtherSide"));
+      Cut::Output::GmshSideDump(file, this, std::string("ThisSide"));
       file.close();
       FOUR_C_THROW("Trying to create line between two points, which are the same!");
     }
@@ -902,8 +899,8 @@ bool Core::Geo::Cut::Side::create_parallel_cut_surface(Mesh& mesh, Element* elem
   }
 }
 
-void Core::Geo::Cut::Side::simplify_mixed_parallel_cut_surface(Mesh& mesh, Element* element,
-    Side& other, std::set<Point*>& new_surface, std::vector<Point*>& cut_points_for_lines)
+void Cut::Side::simplify_mixed_parallel_cut_surface(Mesh& mesh, Element* element, Side& other,
+    std::set<Point*>& new_surface, std::vector<Point*>& cut_points_for_lines)
 {
   auto& existing_surfaces = has_mixed_parallel_cut_surface(new_surface)
                                 ? this->parallel_cut_surfaces_
@@ -933,7 +930,7 @@ void Core::Geo::Cut::Side::simplify_mixed_parallel_cut_surface(Mesh& mesh, Eleme
         Point* p_keep = common_points[(std::distance(common_points.begin(), p_delete_it) + 1) %
                                       common_points.size()];
 
-        if (Core::Geo::Cut::DistanceBetweenPoints(p_delete, p_keep) > 10.0 * MERGING_TOLERANCE)
+        if (Cut::DistanceBetweenPoints(p_delete, p_keep) > 10.0 * MERGING_TOLERANCE)
           FOUR_C_THROW("Trying to merge points, that are too far");
 
         std::cout << "WARNING: Perfoming simplification of the parallel surface geometry by "
@@ -965,7 +962,7 @@ void Core::Geo::Cut::Side::simplify_mixed_parallel_cut_surface(Mesh& mesh, Eleme
   }
 }
 
-void Core::Geo::Cut::Side::get_boundary_cells(plain_boundarycell_set& bcells)
+void Cut::Side::get_boundary_cells(plain_boundarycell_set& bcells)
 {
   for (std::vector<Facet*>::iterator i = facets_.begin(); i != facets_.end(); ++i)
   {
@@ -976,8 +973,7 @@ void Core::Geo::Cut::Side::get_boundary_cells(plain_boundarycell_set& bcells)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Side::make_owned_side_facets(
-    Mesh& mesh, Element* element, plain_facet_set& facets)
+void Cut::Side::make_owned_side_facets(Mesh& mesh, Element* element, plain_facet_set& facets)
 {
   // --- facet already created from another element ---------------------------
   // fill the output variable and return
@@ -1038,8 +1034,7 @@ void Core::Geo::Cut::Side::make_owned_side_facets(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Side::make_internal_facets(
-    Mesh& mesh, Element* element, plain_facet_set& facets)
+void Cut::Side::make_internal_facets(Mesh& mesh, Element* element, plain_facet_set& facets)
 {
   // create the pointgraph for the cut_side
   Teuchos::RCP<Impl::PointGraph> pg = Teuchos::rcp(Impl::PointGraph::create(
@@ -1063,7 +1058,7 @@ void Core::Geo::Cut::Side::make_internal_facets(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Side::make_internal_facets(
+void Cut::Side::make_internal_facets(
     Mesh& mesh, Element* element, const Cycle& points, plain_facet_set& facets)
 {
   /* ignore cycles with all points on one and the same edge
@@ -1134,9 +1129,9 @@ void Core::Geo::Cut::Side::make_internal_facets(
         {
           std::stringstream side_name;
           side_name << "ElementSide" << counter;
-          Core::Geo::Cut::Output::GmshSideDump(file, *it, side_name.str());
+          Cut::Output::GmshSideDump(file, *it, side_name.str());
         }
-        Core::Geo::Cut::Output::GmshSideDump(file, this, std::string("ThisSide"));
+        Cut::Output::GmshSideDump(file, this, std::string("ThisSide"));
         file << "//Cycle dump\n";
 
         const std::vector<Facet*> side_facets = s->facets();
@@ -1183,7 +1178,7 @@ void Core::Geo::Cut::Side::make_internal_facets(
           Point* first = points()[i];
           Point* next = points()[(i + 1) % points.size()];
           std::cout << "Between" << first->id() << " and " << next->id() << " is "
-                    << Core::Geo::Cut::DistanceBetweenPoints(first, next) << std::endl;
+                    << Cut::DistanceBetweenPoints(first, next) << std::endl;
         }
 
 
@@ -1197,8 +1192,7 @@ void Core::Geo::Cut::Side::make_internal_facets(
           {
             Point* cycle_point = *cit;
             std::cout << "Between" << element_point->id() << " and " << cycle_point->id() << " is "
-                      << Core::Geo::Cut::DistanceBetweenPoints(element_point, cycle_point)
-                      << std::endl;
+                      << Cut::DistanceBetweenPoints(element_point, cycle_point) << std::endl;
           }
         }
 
@@ -1230,7 +1224,7 @@ void Core::Geo::Cut::Side::make_internal_facets(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Side::on_side(const PointSet& points)
+bool Cut::Side::on_side(const PointSet& points)
 {
   if (nodes_.size() == points.size())
   {
@@ -1249,7 +1243,7 @@ bool Core::Geo::Cut::Side::on_side(const PointSet& points)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Side::on_edge(Point* point)
+bool Cut::Side::on_edge(Point* point)
 {
   for (std::vector<Edge*>::const_iterator i = edges_.begin(); i != edges_.end(); ++i)
   {
@@ -1264,7 +1258,7 @@ bool Core::Geo::Cut::Side::on_edge(Point* point)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Side::on_edge(Line* line)
+bool Cut::Side::on_edge(Line* line)
 {
   for (std::vector<Edge*>::const_iterator i = edges_.begin(); i != edges_.end(); ++i)
   {
@@ -1279,7 +1273,7 @@ bool Core::Geo::Cut::Side::on_edge(Line* line)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Side::all_points_common(Side& side)
+bool Cut::Side::all_points_common(Side& side)
 {
   const std::vector<Node*>& other_nodes = side.nodes();
   for (std::vector<Node*>::const_iterator i = nodes_.begin(); i != nodes_.end(); ++i)
@@ -1302,7 +1296,7 @@ bool Core::Geo::Cut::Side::all_points_common(Side& side)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Side::have_common_node(Side& side)
+bool Cut::Side::have_common_node(Side& side)
 {
   const std::vector<Node*>& other_nodes = side.nodes();
   for (std::vector<Node*>::const_iterator i = nodes_.begin(); i != nodes_.end(); ++i)
@@ -1318,7 +1312,7 @@ bool Core::Geo::Cut::Side::have_common_node(Side& side)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Side::have_common_edge(Side& side)
+bool Cut::Side::have_common_edge(Side& side)
 {
   const std::vector<Edge*>& other_edges = side.edges();
   for (std::vector<Edge*>::const_iterator i = edges_.begin(); i != edges_.end(); ++i)
@@ -1334,7 +1328,7 @@ bool Core::Geo::Cut::Side::have_common_edge(Side& side)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Element* Core::Geo::Cut::Side::common_element(Side* other)
+Cut::Element* Cut::Side::common_element(Side* other)
 {
   plain_element_set intersection;
   std::set_intersection(elements_.begin(), elements_.end(), other->elements_.begin(),
@@ -1352,7 +1346,7 @@ Core::Geo::Cut::Element* Core::Geo::Cut::Side::common_element(Side* other)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Side::print()
+void Cut::Side::print()
 {
   std::cout << "[ ";
   for (std::vector<Edge*>::iterator i = edges_.begin(); i != edges_.end(); ++i)
@@ -1367,7 +1361,7 @@ void Core::Geo::Cut::Side::print()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-unsigned Core::Geo::Cut::Side::uncut_facet_number_per_side() const
+unsigned Cut::Side::uncut_facet_number_per_side() const
 {
   if (elements_.size() < 1)
     FOUR_C_THROW(
@@ -1398,7 +1392,7 @@ unsigned Core::Geo::Cut::Side::uncut_facet_number_per_side() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Side::is_cut()
+bool Cut::Side::is_cut()
 {
   if (facets_.size() > uncut_facet_number_per_side())
   {
@@ -1413,13 +1407,13 @@ bool Core::Geo::Cut::Side::is_cut()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& stream, Core::Geo::Cut::Side& s)
+std::ostream& operator<<(std::ostream& stream, Cut::Side& s)
 {
   stream << "side: {";
-  const std::vector<Core::Geo::Cut::Node*>& nodes = s.nodes();
-  for (std::vector<Core::Geo::Cut::Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
+  const std::vector<Cut::Node*>& nodes = s.nodes();
+  for (std::vector<Cut::Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
   {
-    Core::Geo::Cut::Node* n = *i;
+    Cut::Node* n = *i;
     n->point()->print(stream);
     stream << ",";
   }
@@ -1430,7 +1424,7 @@ std::ostream& operator<<(std::ostream& stream, Core::Geo::Cut::Side& s)
 /*----------------------------------------------------------------------------*
  *  Gets the selfcutposition and spreads the positional information wirtz 05/13
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Side::get_self_cut_position(Point::PointPosition position)
+void Cut::Side::get_self_cut_position(Point::PointPosition position)
 {
   if (selfcutposition_ != position)
   {
@@ -1457,7 +1451,7 @@ void Core::Geo::Cut::Side::get_self_cut_position(Point::PointPosition position)
  *  Changes the selfcutposition of this cutside and spreads the positional
  *  information                                                    wirtz 07/16
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Side::change_self_cut_position(Point::PointPosition position)
+void Cut::Side::change_self_cut_position(Point::PointPosition position)
 {
   if (selfcutposition_ != position)
   {
@@ -1475,7 +1469,7 @@ void Core::Geo::Cut::Side::change_self_cut_position(Point::PointPosition positio
 /*----------------------------------------------------------------------------*
  * returns true if the hole is inside the facet                     wirtz 05/13
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Side::hole_of_facet(Facet& facet, const std::vector<Cycle>& hole)
+bool Cut::Side::hole_of_facet(Facet& facet, const std::vector<Cycle>& hole)
 {
   int intersectioncount = 0;
   bool intersectioninpoint = true;
@@ -1555,7 +1549,7 @@ bool Core::Geo::Cut::Side::hole_of_facet(Facet& facet, const std::vector<Cycle>&
  * replace the Node "nod" with the new node "replwith"         sudhakar 10/13
  * Modify also the edge informations correspondingly
  *--------------------------------------------------------------------------*/
-void Core::Geo::Cut::Side::replace_nodes(Node* nod, Node* replwith)
+void Cut::Side::replace_nodes(Node* nod, Node* replwith)
 {
   bool replaced = false;
 
@@ -1583,9 +1577,8 @@ void Core::Geo::Cut::Side::replace_nodes(Node* nod, Node* replwith)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType sidetype, unsigned num_nodes_side, unsigned dim>
-bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::is_closer_side(
-    const Core::LinAlg::Matrix<probdim, 1>& startpoint_xyz, Core::Geo::Cut::Side* other,
-    bool& is_closer)
+bool Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::is_closer_side(
+    const Core::LinAlg::Matrix<probdim, 1>& startpoint_xyz, Cut::Side* other, bool& is_closer)
 {
   /* shoot a ray starting from the startpoint through the midpoint of this side
    * and find an intersection point with the other side */
@@ -1755,7 +1748,7 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::is_cl
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType sidetype, unsigned num_nodes_side, unsigned dim>
 ///  lies point with given coordinates within this side?
-bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::within_side(
+bool Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::within_side(
     const Core::LinAlg::Matrix<probdim, 1>& xyz, Core::LinAlg::Matrix<dim, 1>& rs, double& dist)
 {
   FOUR_C_THROW("Do we use this function?");
@@ -1779,7 +1772,7 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::withi
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType sidetype, unsigned num_nodes_side, unsigned dim>
 ///  lies point with given coordinates within this side?
-bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::local_coordinates(
+bool Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::local_coordinates(
     const Core::LinAlg::Matrix<probdim, 1>& xyz, Core::LinAlg::Matrix<probdim, 1>& rsd,
     bool allow_dist, double tol)
 {
@@ -1824,7 +1817,7 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::local
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType sidetype, unsigned num_nodes_side, unsigned dim>
 ///  lies point with given coordinates within this side?
-bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::ray_cut(
+bool Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::ray_cut(
     const Core::LinAlg::Matrix<probdim, 1>& p1_xyz, const Core::LinAlg::Matrix<probdim, 1>& p2_xyz,
     Core::LinAlg::Matrix<dim, 1>& rs, double& line_xi)
 {
@@ -1845,9 +1838,9 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::ray_c
   // allowed to be not within the side and line
   bool checklimits = false;
   // do not use cln here
-  Core::Geo::Cut::Kernel::ComputeIntersection<probdim, Core::FE::CellType::line2, sidetype, false>
-      ci(xsi, checklimits);
-  // Core::Geo::Cut::Kernel::DebugComputeIntersection<probdim,Core::FE::CellType::line2,
+  Cut::Kernel::ComputeIntersection<probdim, Core::FE::CellType::line2, sidetype, false> ci(
+      xsi, checklimits);
+  // Cut::Kernel::DebugComputeIntersection<probdim,Core::FE::CellType::line2,
   // sidetype,false>
   //      ci( xsi, checklimits );
 
@@ -1865,7 +1858,7 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::ray_c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Side* Core::Geo::Cut::SideFactory::create_side(Core::FE::CellType sidetype, int sid,
+Cut::Side* Cut::SideFactory::create_side(Core::FE::CellType sidetype, int sid,
     const std::vector<Node*>& nodes, const std::vector<Edge*>& edges) const
 {
   Side* s = nullptr;
@@ -1895,7 +1888,7 @@ Core::Geo::Cut::Side* Core::Geo::Cut::SideFactory::create_side(Core::FE::CellTyp
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Side* Core::Geo::Cut::Side::create_level_set_side(const int& sid)
+Cut::Side* Cut::Side::create_level_set_side(const int& sid)
 {
   Side* lvs_side_ptr = nullptr;
 
@@ -1917,8 +1910,8 @@ Core::Geo::Cut::Side* Core::Geo::Cut::Side::create_level_set_side(const int& sid
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Side* Core::Geo::Cut::Side::create(const Core::FE::CellType& sidetype,
-    const int& sid, const std::vector<Node*>& nodes, const std::vector<Edge*>& edges)
+Cut::Side* Cut::Side::create(const Core::FE::CellType& sidetype, const int& sid,
+    const std::vector<Node*>& nodes, const std::vector<Edge*>& edges)
 {
   SideFactory factory;
   return factory.create_side(sidetype, sid, nodes, edges);
@@ -1926,16 +1919,16 @@ Core::Geo::Cut::Side* Core::Geo::Cut::Side::create(const Core::FE::CellType& sid
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Side* Core::Geo::Cut::Side::create(const unsigned& shardskey, const int& sid,
+Cut::Side* Cut::Side::create(const unsigned& shardskey, const int& sid,
     const std::vector<Node*>& nodes, const std::vector<Edge*>& edges)
 {
   return create(Core::Elements::ShardsKeyToDisType(shardskey), sid, nodes, edges);
 }
 
 
-template class Core::Geo::Cut::ConcreteSide<2, Core::FE::CellType::line2>;
-template class Core::Geo::Cut::ConcreteSide<3, Core::FE::CellType::line2>;
-template class Core::Geo::Cut::ConcreteSide<3, Core::FE::CellType::quad4>;
-template class Core::Geo::Cut::ConcreteSide<3, Core::FE::CellType::tri3>;
+template class Cut::ConcreteSide<2, Core::FE::CellType::line2>;
+template class Cut::ConcreteSide<3, Core::FE::CellType::line2>;
+template class Cut::ConcreteSide<3, Core::FE::CellType::quad4>;
+template class Cut::ConcreteSide<3, Core::FE::CellType::tri3>;
 
 FOUR_C_NAMESPACE_CLOSE

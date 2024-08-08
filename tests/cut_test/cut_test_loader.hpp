@@ -31,15 +31,15 @@ class MeshLoader
   void cut_test_cut(bool include_inner, bool do_Cut_Positions_Dofsets = false)
   {
     mesh_.get_options().init_for_cuttests();  // use full cln
-    mesh_.cut_test_cut(include_inner, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
-        Core::Geo::Cut::BCellGaussPts_Tessellation, true, true, do_Cut_Positions_Dofsets);
+    mesh_.cut_test_cut(include_inner, Cut::VCellGaussPts_DirectDivergence,
+        Cut::BCellGaussPts_Tessellation, true, true, do_Cut_Positions_Dofsets);
     mesh_.print_cell_stats();
   }
 
  private:
   void fill(std::map<int, std::vector<double>>& nodes, int nid, double* values);
 
-  Core::Geo::Cut::MeshIntersection mesh_;
+  Cut::MeshIntersection mesh_;
   std::map<int, std::vector<double>> nodes_;
   std::map<int, std::vector<double>> cut_nodes_;
 };

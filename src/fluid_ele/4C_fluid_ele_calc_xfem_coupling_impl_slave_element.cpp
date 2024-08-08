@@ -354,9 +354,8 @@ namespace Discret
         }
 
         // find element local position of gauss point
-        Teuchos::RCP<Core::Geo::Cut::Position> pos =
-            Core::Geo::Cut::PositionFactory::build_position<nsd_, slave_distype>(
-                slave_xyze_, xslave);
+        Teuchos::RCP<Cut::Position> pos =
+            Cut::PositionFactory::build_position<nsd_, slave_distype>(slave_xyze_, xslave);
         pos->compute();
 
         if (slave_nsd_ == nsd_)

@@ -28,13 +28,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*/
 /* forward declarations */
-namespace Core::Geo
+
+namespace Core::Geo::MeshFree
 {
-  namespace MeshFree
-  {
-    class BoundingBox;
-  }
-}  // namespace Core::Geo
+  class BoundingBox;
+}
+
 
 namespace Core::FE
 {
@@ -276,7 +275,8 @@ class BeamDiscretizationRuntimeOutputWriter
   void append_continuous_stress_strain_resultants(const StressStrainField stress_strain_field);
 
  private:
-  //! discretization containing beam elements of which geometry and result data shall be visualized
+  //! discretization containing beam elements of which geometry and result data shall be
+  //! visualized
   Teuchos::RCP<const Core::FE::Discretization> discretization_;
 
   //! all local row indices of beam elements in the given discretization

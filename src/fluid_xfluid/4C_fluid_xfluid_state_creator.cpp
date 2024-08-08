@@ -48,7 +48,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::create(
 
   //--------------------------------------------------------------------------------------
   // create new cut wizard &dofset
-  Teuchos::RCP<Core::Geo::CutWizard> wizard;
+  Teuchos::RCP<Cut::CutWizard> wizard;
   Teuchos::RCP<XFEM::XFEMDofSet> dofset;
 
   create_new_cut_state(dofset, wizard, xdiscret, back_disp_col, solver_params, step);
@@ -92,7 +92,7 @@ Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::create(
 
   //--------------------------------------------------------------------------------------
   // create new cut wizard & dofset
-  Teuchos::RCP<Core::Geo::CutWizard> wizard;
+  Teuchos::RCP<Cut::CutWizard> wizard;
   Teuchos::RCP<XFEM::XFEMDofSet> dofset;
 
   create_new_cut_state(dofset, wizard, xdiscret, back_disp_col, solver_params, step);
@@ -124,7 +124,7 @@ Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::create(
  *----------------------------------------------------------------------*/
 void FLD::XFluidStateCreator::create_new_cut_state(
     Teuchos::RCP<XFEM::XFEMDofSet>& dofset,  //!< xfem dofset obtained from the new wizard
-    Teuchos::RCP<Core::Geo::CutWizard>&
+    Teuchos::RCP<Cut::CutWizard>&
         wizard,  //!< cut wizard associated with current intersection state
     const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,  //!< xfluid background discretization
     Teuchos::RCP<const Epetra_Vector>
@@ -134,9 +134,9 @@ void FLD::XFluidStateCreator::create_new_cut_state(
 )
 {
   // new wizard using information about cutting sides from the condition_manager
-  wizard = Teuchos::rcp(new Core::Geo::CutWizard(xdiscret,
-      [xdiscret](const Core::Nodes::Node& node, std::vector<int>& lm)
-      { xdiscret->initial_dof(&node, lm); }));
+  wizard = Teuchos::rcp(
+      new Cut::CutWizard(xdiscret, [xdiscret](const Core::Nodes::Node& node, std::vector<int>& lm)
+          { xdiscret->initial_dof(&node, lm); }));
 
   // Set options for the cut wizard
   wizard->set_options(Global::Problem::instance()->cut_general_params(),

@@ -54,15 +54,14 @@ namespace Core::Mat
   class Material;
 }
 
-namespace Core::Geo
+
+
+namespace Cut
 {
   class CutWizard;
+  class SideHandle;
+}  // namespace Cut
 
-  namespace Cut
-  {
-    class SideHandle;
-  }
-}  // namespace Core::Geo
 
 namespace Core::LinAlg
 {
@@ -87,14 +86,14 @@ namespace XFEM
         Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
         Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
         Teuchos::RCP<Epetra_Vector> systemvector,               ///< systemvector
-        Teuchos::RCP<Core::Geo::CutWizard> wizard,              ///< cut wizard
+        Teuchos::RCP<Cut::CutWizard> wizard,                    ///< cut wizard
         bool include_inner,        ///< stabilize also facets with inside position
         bool include_inner_faces,  ///< stabilize also faces with inside position if possible
         bool gmsh_eos_out = true   ///< stabilization gmsh output
     );
 
-    //! calls the evaluate and assemble routine for edge based stabilization and ghost penaly in the
-    //! XFEM
+    //! calls the evaluate and assemble routine for edge based stabilization and ghost penaly in
+    //! the XFEM
     void assemble_edge_stab_ghost_penalty(
         Teuchos::ParameterList& eleparams,         ///< element parameter list
         const Inpar::XFEM::FaceType& face_type,    ///< which type of face std, ghost, ghost-penalty
@@ -137,15 +136,15 @@ namespace XFEM
 
    private:
     //! get the cut side for face's element identified using the sorted node ids
-    Core::Geo::Cut::SideHandle* get_face(
-        Core::Elements::Element* faceele, Teuchos::RCP<Core::Geo::CutWizard> wizard);
+    Cut::SideHandle* get_face(
+        Core::Elements::Element* faceele, Teuchos::RCP<Cut::CutWizard> wizard);
 
     // reset maps for output
     void reset();
 
     std::map<int, int> ghost_penalty_stab_;  ///< map of face elements stabilized with ghost penalty
-    std::map<int, int>
-        edge_based_stab_;  ///< map of face elements stabilized with edge based fluid stabilization
+    std::map<int, int> edge_based_stab_;     ///< map of face elements stabilized with edge based
+                                             ///< fluid stabilization
   };
 
 }  // namespace XFEM

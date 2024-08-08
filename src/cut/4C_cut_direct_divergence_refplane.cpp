@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------*
  * Perform all the operations related to computing reference plane           sudhakar 06/15
  *-----------------------------------------------------------------------------------*/
-std::vector<double> Core::Geo::Cut::DirectDivergenceGlobalRefplane::get_reference_plane()
+std::vector<double> Cut::DirectDivergenceGlobalRefplane::get_reference_plane()
 {
   if (elem1_->shape() != Core::FE::CellType::hex8)
   {
@@ -72,13 +72,13 @@ std::vector<double> Core::Geo::Cut::DirectDivergenceGlobalRefplane::get_referenc
     {
       std::stringstream str;
       str << ".no_refplane_" << refplaneattempt << "_CUTFAIL.pos";
-      std::string filename(Core::Geo::Cut::Output::GenerateGmshOutputFilename(str.str()));
+      std::string filename(Cut::Output::GenerateGmshOutputFilename(str.str()));
       std::ofstream file(filename.c_str());
 
-      Core::Geo::Cut::Output::GmshCompleteCutElement(file, elem1_);
-      Core::Geo::Cut::Output::GmshNewSection(file, "VolumeCell");
-      Core::Geo::Cut::Output::GmshVolumecellDump(file, volcell_);
-      Core::Geo::Cut::Output::GmshEndSection(file, true);
+      Cut::Output::GmshCompleteCutElement(file, elem1_);
+      Cut::Output::GmshNewSection(file, "VolumeCell");
+      Cut::Output::GmshVolumecellDump(file, volcell_);
+      Cut::Output::GmshEndSection(file, true);
     }
 
     if (!refplaneattempt)
@@ -122,7 +122,7 @@ std::vector<double> Core::Geo::Cut::DirectDivergenceGlobalRefplane::get_referenc
  *considers all 6 diagonals of background Hex element, and choose the one that has maximum normal
  *component in x-direction
  *-------------------------------------------------------------------------------------------------------*/
-bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::diagonal_based_ref(
+bool Cut::DirectDivergenceGlobalRefplane::diagonal_based_ref(
     std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol)
 {
   if (options_.direct_divergence_refplane() != DirDiv_refplane_all &&
@@ -192,7 +192,7 @@ bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::diagonal_based_ref(
  *02/16 Sort all the sides based on n_x (the one has more n_x gets on the top) Iterate through all
  *the sides to get the correct reference plane
  *-------------------------------------------------------------------------------------------------------*/
-bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::facet_based_ref(
+bool Cut::DirectDivergenceGlobalRefplane::facet_based_ref(
     std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol)
 {
   if (options_.direct_divergence_refplane() != DirDiv_refplane_all &&
@@ -262,7 +262,7 @@ bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::facet_based_ref(
  *the sides based on n_x (the one has more n_x gets on the top) Iterate through all the sides to get
  *the correct reference plane
  *-------------------------------------------------------------------------------------------------------*/
-bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::side_based_ref(
+bool Cut::DirectDivergenceGlobalRefplane::side_based_ref(
     std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol)
 {
   if (options_.direct_divergence_refplane() != DirDiv_refplane_all &&
@@ -355,7 +355,7 @@ bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::side_based_ref(
  * we project all the corner points of the element onto this reference plane sudhakar 06/15 If all
  *these projected points are within the element, then we got the correct ref plane
  *---------------------------------------------------------------------------------------------------------------*/
-bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::is_all_projected_corners_inside_ele(
+bool Cut::DirectDivergenceGlobalRefplane::is_all_projected_corners_inside_ele(
     std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol)
 {
   for (std::vector<Point*>::iterator it = points.begin(); it != points.end(); it++)
@@ -389,20 +389,19 @@ bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::is_all_projected_corners_in
 /*----------------------------------------------------------------------------------------------------------*
  * Scale the equation of plane to enable comparison of normals sudhakar 07/15
  *----------------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::DirectDivergenceGlobalRefplane::scale_equation_of_plane(
-    std::vector<double>& RefPlaneEqn)
+void Cut::DirectDivergenceGlobalRefplane::scale_equation_of_plane(std::vector<double>& RefPlaneEqn)
 {
   double scale =
       sqrt(pow(RefPlaneEqn[0], 2.0) + pow(RefPlaneEqn[1], 2.0) + pow(RefPlaneEqn[2], 2.0));
   for (unsigned i = 0; i < 4; i++) RefPlaneEqn[i] /= scale;
 }
 
-const unsigned Core::Geo::Cut::DirectDivergenceGlobalRefplane::tri_diags_[24][3] = {{1, 6, 7},
-    {0, 6, 7}, {0, 1, 7}, {0, 1, 6}, {3, 4, 5}, {2, 4, 5}, {2, 3, 5}, {2, 3, 4}, {6, 3, 0},
-    {5, 3, 0}, {5, 6, 0}, {5, 6, 3}, {7, 2, 1}, {4, 2, 1}, {4, 7, 1}, {4, 7, 2}, {4, 6, 2},
-    {0, 6, 2}, {0, 4, 2}, {0, 4, 6}, {1, 3, 7}, {5, 3, 7}, {5, 1, 7}, {5, 1, 3}};
+const unsigned Cut::DirectDivergenceGlobalRefplane::tri_diags_[24][3] = {{1, 6, 7}, {0, 6, 7},
+    {0, 1, 7}, {0, 1, 6}, {3, 4, 5}, {2, 4, 5}, {2, 3, 5}, {2, 3, 4}, {6, 3, 0}, {5, 3, 0},
+    {5, 6, 0}, {5, 6, 3}, {7, 2, 1}, {4, 2, 1}, {4, 7, 1}, {4, 7, 2}, {4, 6, 2}, {0, 6, 2},
+    {0, 4, 2}, {0, 4, 6}, {1, 3, 7}, {5, 3, 7}, {5, 1, 7}, {5, 1, 3}};
 
-const unsigned Core::Geo::Cut::DirectDivergenceGlobalRefplane::side_split_[4][3] = {
+const unsigned Cut::DirectDivergenceGlobalRefplane::side_split_[4][3] = {
     {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}};
 
 FOUR_C_NAMESPACE_CLOSE

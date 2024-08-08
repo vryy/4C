@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  * constructur for Combined intersection class (Levelset and Mesh intersection in one class)
  *-----------------------------------------------------------------------------------------*/
 
-Core::Geo::Cut::CombIntersection::CombIntersection(int myrank)
+Cut::CombIntersection::CombIntersection(int myrank)
     : ParentIntersection(myrank), LevelSetIntersection(myrank, false), MeshIntersection(1, myrank)
 {
   // call also the ParentIntersection-constructor first, otherwise according to the public virtual
@@ -32,9 +32,9 @@ Core::Geo::Cut::CombIntersection::CombIntersection(int myrank)
 }
 
 
-void Core::Geo::Cut::CombIntersection::cut(bool screenoutput)
+void Cut::CombIntersection::cut(bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CUT --- 4/6 --- Cut_Intersection");
+  TEUCHOS_FUNC_TIME_MONITOR("Cut --- 4/6 --- Cut_Intersection");
 
   if (myrank_ == 0 and screenoutput) Core::IO::cout << "\t * 4/6 Cut_Intersection ...";
 
@@ -87,7 +87,7 @@ void Core::Geo::Cut::CombIntersection::cut(bool screenoutput)
 }
 
 
-void Core::Geo::Cut::CombIntersection::find_node_positions()
+void Cut::CombIntersection::find_node_positions()
 {
   // TODO: this function and the overall inside-outside position strategy still has to be adapted
   // for more complex cases
@@ -104,11 +104,11 @@ void Core::Geo::Cut::CombIntersection::find_node_positions()
 }
 
 
-void Core::Geo::Cut::CombIntersection::add_element(int eid, const std::vector<int>& nids,
+void Cut::CombIntersection::add_element(int eid, const std::vector<int>& nids,
     const Core::LinAlg::SerialDenseMatrix& xyz, Core::FE::CellType distype, const double* lsv,
     const bool lsv_only_plus_domain)
 {
-  Core::Geo::Cut::ElementHandle* e = nullptr;
+  Cut::ElementHandle* e = nullptr;
 
   // consider level-set values to decide whether the element has to be added or not
   if (lsv != nullptr)
@@ -129,12 +129,12 @@ void Core::Geo::Cut::CombIntersection::add_element(int eid, const std::vector<in
   MeshIntersection::add_element(eid, nids, xyz, distype, lsv);
 }
 
-void Core::Geo::Cut::CombIntersection::add_level_set_side(int levelset_side)
+void Cut::CombIntersection::add_level_set_side(int levelset_side)
 {
   LevelSetIntersection::add_cut_side(levelset_side);
 }
 
-void Core::Geo::Cut::CombIntersection::add_mesh_cutting_side(int sid, const std::vector<int>& nids,
+void Cut::CombIntersection::add_mesh_cutting_side(int sid, const std::vector<int>& nids,
     const Core::LinAlg::SerialDenseMatrix& xyz, Core::FE::CellType distype, int mi)
 {
   MeshIntersection::add_cut_side(sid, nids, xyz, distype, mi);

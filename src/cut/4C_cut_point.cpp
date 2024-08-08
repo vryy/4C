@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Point* Core::Geo::Cut::Point::new_point(
+Cut::Point* Cut::Point::new_point(
     Mesh& mesh, const double* x, double t, Edge* cut_edge, Side* cut_side, double tolerance)
 {
   Point* p = mesh.new_point(x, cut_edge, cut_side, tolerance);
@@ -35,7 +35,7 @@ Core::Geo::Cut::Point* Core::Geo::Cut::Point::new_point(
   return p;
 }
 
-void Core::Geo::Cut::Point::add_edge_intersection(Edge* first, Edge* second,
+void Cut::Point::add_edge_intersection(Edge* first, Edge* second,
     const std::pair<Side*, Edge*>& original_cut_pair, const std::string& extra_msg)
 {
 #if CUT_CREATION_INFO
@@ -66,14 +66,14 @@ void Core::Geo::Cut::Point::add_edge_intersection(Edge* first, Edge* second,
   }
 }
 
-void Core::Geo::Cut::Point::add_edge_intersection(Edge* first, Edge* second, Side* original_side,
+void Cut::Point::add_edge_intersection(Edge* first, Edge* second, Side* original_side,
     Edge* original_edge, const std::string& extra_msg)
 {
   add_edge_intersection(first, second, std::make_pair(original_side, original_edge), extra_msg);
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Point* Core::Geo::Cut::Point::insert_cut(Edge* cut_edge, Side* cut_side, Node* n)
+Cut::Point* Cut::Point::insert_cut(Edge* cut_edge, Side* cut_side, Node* n)
 {
   Point* p = n->point();
   const plain_edge_set& edges = n->edges();
@@ -98,7 +98,7 @@ Core::Geo::Cut::Point* Core::Geo::Cut::Point::insert_cut(Edge* cut_edge, Side* c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Point::Point(unsigned pid, double tolerance)
+Cut::Point::Point(unsigned pid, double tolerance)
     : pid_(pid),
       position_(undecided),
       tol_(tolerance)
@@ -112,7 +112,7 @@ Core::Geo::Cut::Point::Point(unsigned pid, double tolerance)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Point::add_edge(Edge* cut_edge)
+void Cut::Point::add_edge(Edge* cut_edge)
 {
   cut_edges_.insert(cut_edge);
 
@@ -129,7 +129,7 @@ void Core::Geo::Cut::Point::add_edge(Edge* cut_edge)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Point::add_side(Side* s)
+void Cut::Point::add_side(Side* s)
 {
   cut_sides_.insert(s);
 
@@ -147,7 +147,7 @@ void Core::Geo::Cut::Point::add_side(Side* s)
 /*-----------------------------------------------------------------------------------*
  *    Identifies the edges that are cut by considered point and given point
  *-----------------------------------------------------------------------------------*/
-void Core::Geo::Cut::Point::common_edge(Point* other, plain_edge_set& edges)
+void Cut::Point::common_edge(Point* other, plain_edge_set& edges)
 {
   for (plain_edge_set::iterator i = cut_edges_.begin(); i != cut_edges_.end(); ++i)
   {
@@ -162,7 +162,7 @@ void Core::Geo::Cut::Point::common_edge(Point* other, plain_edge_set& edges)
 /*-----------------------------------------------------------------------------------*
  *    Identifies the sides that are cut by considered point and given point
  *-----------------------------------------------------------------------------------*/
-void Core::Geo::Cut::Point::common_side(Point* other, plain_side_set& sides)
+void Cut::Point::common_side(Point* other, plain_side_set& sides)
 {
   for (plain_side_set::iterator i = cut_sides_.begin(); i != cut_sides_.end(); ++i)
   {
@@ -174,7 +174,7 @@ void Core::Geo::Cut::Point::common_side(Point* other, plain_side_set& sides)
   }
 }
 
-void Core::Geo::Cut::Point::cut_edge(Side* side, Line* other_line, std::vector<Edge*>& matches)
+void Cut::Point::cut_edge(Side* side, Line* other_line, std::vector<Edge*>& matches)
 {
   for (plain_edge_set::iterator i = cut_edges_.begin(); i != cut_edges_.end(); ++i)
   {
@@ -198,8 +198,7 @@ void Core::Geo::Cut::Point::cut_edge(Side* side, Line* other_line, std::vector<E
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Line* Core::Geo::Cut::Point::cut_line(
-    const Impl::PointLineFilter& filter, bool unique)
+Cut::Line* Cut::Point::cut_line(const Impl::PointLineFilter& filter, bool unique)
 {
   Line* line_found = nullptr;
   for (plain_line_set::iterator i = lines_.begin(); i != lines_.end(); ++i)
@@ -226,15 +225,13 @@ Core::Geo::Cut::Line* Core::Geo::Cut::Point::cut_line(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Line* Core::Geo::Cut::Point::cut_line(
-    Line* line, const Impl::PointLineFilter& filter, bool unique)
+Cut::Line* Cut::Point::cut_line(Line* line, const Impl::PointLineFilter& filter, bool unique)
 {
   Impl::ExcludeLineFilter f(line, filter);
   return cut_line(f, unique);
 }
 
-void Core::Geo::Cut::Point::cut_lines(
-    const Impl::PointLineFilter& filter, plain_line_set& cut_lines)
+void Cut::Point::cut_lines(const Impl::PointLineFilter& filter, plain_line_set& cut_lines)
 {
   for (plain_line_set::iterator i = lines_.begin(); i != lines_.end(); ++i)
   {
@@ -246,14 +243,14 @@ void Core::Geo::Cut::Point::cut_lines(
   }
 }
 
-void Core::Geo::Cut::Point::cut_lines(Side* side, plain_line_set& cut_lines)
+void Cut::Point::cut_lines(Side* side, plain_line_set& cut_lines)
 {
   Impl::SideCutFilter filter(side);
   Point::cut_lines(filter, cut_lines);
 }
 
 
-double Core::Geo::Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& coord)
+double Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& coord)
 {
   std::map<Edge*, double>::iterator i = t_.find(edge);
   if (i == t_.end())
@@ -341,9 +338,8 @@ double Core::Geo::Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& co
     if (x.norm2() > (tolerance() + p1->tolerance() + p2->tolerance()))
     {
       std::ofstream file("point_not_on_on_edge.pos");
-      Core::Geo::Cut::Output::GmshEdgeDump(file, edge, std::string("Edge"));
-      Core::Geo::Cut::Output::GmshPointDump(
-          file, this, this->id(), std::string("Point"), false, nullptr);
+      Cut::Output::GmshEdgeDump(file, edge, std::string("Edge"));
+      Cut::Output::GmshPointDump(file, this, this->id(), std::string("Point"), false, nullptr);
       file.close();
 
       std::stringstream str;
@@ -387,7 +383,7 @@ double Core::Geo::Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& co
           str << "Two points with the same local coordinates on the edge. " << id()
               << "will not be added to a list because of existing " << (*it)->id()
               << " in pointposition list\n";
-          str << "Distance between points is " << Core::Geo::Cut::DistanceBetweenPoints(this, *it)
+          str << "Distance between points is " << Cut::DistanceBetweenPoints(this, *it)
               << std::endl;
           str << this << std::endl;
           str << *it << std::endl;
@@ -400,7 +396,7 @@ double Core::Geo::Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& co
             str << "Two non end-point have same coordinates\n";
 
           std::ofstream file("t_failed.pos");
-          Core::Geo::Cut::Output::GmshEdgeDump(file, edge);
+          Cut::Output::GmshEdgeDump(file, edge);
           file.close();
           dump_connectivity_info();
           (*it)->dump_connectivity_info();
@@ -414,17 +410,17 @@ double Core::Geo::Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& co
   return i->second;
 }
 
-double Core::Geo::Cut::Point::t(Edge* edge)
+double Cut::Point::t(Edge* edge)
 {
   Core::LinAlg::Matrix<3, 1> x;
   coordinates(x.data());
-  double rv = Core::Geo::Cut::Point::t(edge, x);
+  double rv = Cut::Point::t(edge, x);
   return rv;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Point::intersection(plain_edge_set& edges)
+void Cut::Point::intersection(plain_edge_set& edges)
 {
   plain_edge_set intersection;
   std::set_intersection(cut_edges_.begin(), cut_edges_.end(), edges.begin(), edges.end(),
@@ -434,7 +430,7 @@ void Core::Geo::Cut::Point::intersection(plain_edge_set& edges)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Point::intersection(plain_side_set& sides)
+void Cut::Point::intersection(plain_side_set& sides)
 {
   plain_side_set intersection;
   std::set_intersection(cut_sides_.begin(), cut_sides_.end(), sides.begin(), sides.end(),
@@ -444,7 +440,7 @@ void Core::Geo::Cut::Point::intersection(plain_side_set& sides)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Point::intersection(plain_facet_set& facets)
+void Cut::Point::intersection(plain_facet_set& facets)
 {
   plain_facet_set intersection;
   std::set_intersection(facets_.begin(), facets_.end(), facets.begin(), facets.end(),
@@ -454,7 +450,7 @@ void Core::Geo::Cut::Point::intersection(plain_facet_set& facets)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Point::intersection(plain_element_set& elements)
+void Cut::Point::intersection(plain_element_set& elements)
 {
   plain_element_set intersection;
   std::set_intersection(cut_elements_.begin(), cut_elements_.end(), elements.begin(),
@@ -464,7 +460,7 @@ void Core::Geo::Cut::Point::intersection(plain_element_set& elements)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Point::nodal_point(const std::vector<Node*>& nodes) const
+bool Cut::Point::nodal_point(const std::vector<Node*>& nodes) const
 {
   for (std::vector<Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
   {
@@ -479,8 +475,7 @@ bool Core::Geo::Cut::Point::nodal_point(const std::vector<Node*>& nodes) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Point::almost_nodal_point(
-    const std::vector<Node*>& nodes, double tolerance) const
+bool Cut::Point::almost_nodal_point(const std::vector<Node*>& nodes, double tolerance) const
 {
   Core::LinAlg::Matrix<3, 1> np;
   Core::LinAlg::Matrix<3, 1> p;
@@ -503,7 +498,7 @@ bool Core::Geo::Cut::Point::almost_nodal_point(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Node* Core::Geo::Cut::Point::cut_node()
+Cut::Node* Cut::Point::cut_node()
 {
   for (plain_edge_set::iterator i = cut_edges_.begin(); i != cut_edges_.end(); ++i)
   {
@@ -523,7 +518,7 @@ Core::Geo::Cut::Node* Core::Geo::Cut::Point::cut_node()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Point::position(Point::PointPosition pos)
+void Cut::Point::position(Point::PointPosition pos)
 {
   if (position_ != pos)
   {
@@ -554,7 +549,7 @@ void Core::Geo::Cut::Point::position(Point::PointPosition pos)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Point::has_associated_boundary_cell_facet()
+bool Cut::Point::has_associated_boundary_cell_facet()
 {
   for (plain_facet_set::const_iterator ifacet = facets_.begin(); ifacet != facets_.end(); ++ifacet)
   {
@@ -565,7 +560,7 @@ bool Core::Geo::Cut::Point::has_associated_boundary_cell_facet()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Side* Core::Geo::Cut::Point::cut_side(Side* side, Point* other)
+Cut::Side* Cut::Point::cut_side(Side* side, Point* other)
 {
   Side* found_side = nullptr;
   for (plain_side_set::iterator i = cut_sides_.begin(); i != cut_sides_.end(); ++i)
@@ -588,7 +583,7 @@ Core::Geo::Cut::Side* Core::Geo::Cut::Point::cut_side(Side* side, Point* other)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Geo::Cut::Point> Core::Geo::Cut::create_point(
+Teuchos::RCP<Cut::Point> Cut::create_point(
     unsigned pid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance)
 {
   const PointFactory factory;
@@ -598,27 +593,23 @@ Teuchos::RCP<Core::Geo::Cut::Point> Core::Geo::Cut::create_point(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Impl::SideCutFilter::operator()(Line* line) const
-{
-  return line->is_internal_cut(side_);
-}
+bool Cut::Impl::SideCutFilter::operator()(Line* line) const { return line->is_internal_cut(side_); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Impl::SideElementCutFilter::operator()(Line* line) const
+bool Cut::Impl::SideElementCutFilter::operator()(Line* line) const
 {
   // return line->IsCut( side_ ) and line->IsCut( element_ );
   return line->is_internal_cut(side_) and line->is_cut(element_);
 }
 
-bool Core::Geo::Cut::Point::is_cut(Side* side, Edge* edge)
+bool Cut::Point::is_cut(Side* side, Edge* edge)
 {
   bool ret = cut_pairs_.find(std::pair<Side*, Edge*>(side, edge)) != cut_pairs_.end();
   return ret;
 }
 
-void Core::Geo::Cut::Point::add_pair(
-    Side* side, Edge* edge, const std::pair<Side*, Edge*>& original_pair)
+void Cut::Point::add_pair(Side* side, Edge* edge, const std::pair<Side*, Edge*>& original_pair)
 {
   cut_pairs_.insert(std::pair<Side*, Edge*>(side, edge));
   // does not overwrite existing value
@@ -628,7 +619,7 @@ void Core::Geo::Cut::Point::add_pair(
 #endif
 }
 
-void Core::Geo::Cut::Point::add_pair(const std::pair<Side*, Edge*>& pair,
+void Cut::Point::add_pair(const std::pair<Side*, Edge*>& pair,
     const std::pair<Side*, Edge*>& original_pair, Point* source)
 {
   cut_pairs_.insert(pair);
@@ -638,12 +629,12 @@ void Core::Geo::Cut::Point::add_pair(const std::pair<Side*, Edge*>& pair,
 }
 
 
-void Core::Geo::Cut::Point::add_pair(Side* side, Edge* edge)
+void Cut::Point::add_pair(Side* side, Edge* edge)
 {
   add_pair(side, edge, std::make_pair(side, edge));
 }
 
-bool Core::Geo::Cut::Point::is_cut(Side* s1, Side* s2)
+bool Cut::Point::is_cut(Side* s1, Side* s2)
 {
   const std::vector<Edge*>& edges_s1 = s1->edges();
   const std::vector<Edge*>& edges_s2 = s2->edges();
@@ -662,7 +653,7 @@ bool Core::Geo::Cut::Point::is_cut(Side* s1, Side* s2)
   return false;
 }
 
-void Core::Geo::Cut::Point::dump_connectivity_info()
+void Cut::Point::dump_connectivity_info()
 {
   std::stringstream p;
   p << "Point" << id() << "ConnectivityDump.pos";
@@ -691,7 +682,7 @@ void Core::Geo::Cut::Point::dump_connectivity_info()
   file << "// This point coordinates" << std::endl;
   std::stringstream point_name;
   point_name << "Point" << Id();
-  Core::Geo::Cut::Output::GmshPointDump(file, this, Id(), point_name.str(), false, nullptr);
+  Cut::Output::GmshPointDump(file, this, Id(), point_name.str(), false, nullptr);
 
   if (merged_to_)
   {
@@ -738,29 +729,29 @@ void Core::Geo::Cut::Point::dump_connectivity_info()
         file << "// original intersection was and because of it" << std::endl;
         std::stringstream side_section_name;
         side_section_name << "OriginalSide" << pre << counter;
-        Core::Geo::Cut::Output::GmshNewSection(file, side_section_name.str());
-        Core::Geo::Cut::Output::GmshSideDump(file, original_connection.first, false, nullptr);
-        Core::Geo::Cut::Output::GmshEndSection(file, false);
+        Cut::Output::GmshNewSection(file, side_section_name.str());
+        Cut::Output::GmshSideDump(file, original_connection.first, false, nullptr);
+        Cut::Output::GmshEndSection(file, false);
 
         std::stringstream edge_section_name;
         edge_section_name << "OriginalEdge" << pre << counter;
-        Core::Geo::Cut::Output::GmshNewSection(file, edge_section_name.str());
-        Core::Geo::Cut::Output::GmshEdgeDump(file, original_connection.second, false, nullptr);
-        Core::Geo::Cut::Output::GmshEndSection(file, false);
+        Cut::Output::GmshNewSection(file, edge_section_name.str());
+        Cut::Output::GmshEdgeDump(file, original_connection.second, false, nullptr);
+        Cut::Output::GmshEndSection(file, false);
         or_cut = original_connection;
         file << "// " << GetCreationInfo(or_cut) << "\n";
         file << "// following connection is added later" << std::endl;
       }
       std::stringstream edge_section_name;
       edge_section_name << "Edge" << pre << counter;
-      Core::Geo::Cut::Output::GmshNewSection(file, edge_section_name.str());
-      Core::Geo::Cut::Output::GmshEdgeDump(file, (*it).second);
-      Core::Geo::Cut::Output::GmshEndSection(file, false);
+      Cut::Output::GmshNewSection(file, edge_section_name.str());
+      Cut::Output::GmshEdgeDump(file, (*it).second);
+      Cut::Output::GmshEndSection(file, false);
       std::stringstream side_section_name;
       side_section_name << "Side" << pre << counter;
-      Core::Geo::Cut::Output::GmshNewSection(file, side_section_name.str());
-      Core::Geo::Cut::Output::GmshSideDump(file, (*it).first);
-      Core::Geo::Cut::Output::GmshEndSection(file, false);
+      Cut::Output::GmshNewSection(file, side_section_name.str());
+      Cut::Output::GmshSideDump(file, (*it).first);
+      Cut::Output::GmshEndSection(file, false);
       file << "// " << GetCreationInfo(*it) << "\n";
 
       std::map<std::pair<Side*, Edge*>, std::pair<Core::LinAlg::Matrix<3, 1>, bool>>::iterator
@@ -773,13 +764,13 @@ void Core::Geo::Cut::Point::dump_connectivity_info()
           file << "// original point coordinates from real intersection \n";
           file << "View \"MergedPoint" << Id() << "_" << counter << "\"{\n";
           file << "SP (";
-          Core::Geo::Cut::Output::GmshWriteCoords(file, merged_coord.first, false, nullptr);
+          Cut::Output::GmshWriteCoords(file, merged_coord.first, false, nullptr);
           file << "){";
           file << 0;
-          Core::Geo::Cut::Output::GmshEndSection(file, false);
-          Core::Geo::Cut::Output::GmshEndSection(file, false);
+          Cut::Output::GmshEndSection(file, false);
+          Cut::Output::GmshEndSection(file, false);
           file << "// Norm2 between point and merged is "
-               << Core::Geo::Cut::DistanceBetweenPoints(this, merged_coord.first) << std::endl;
+               << Cut::DistanceBetweenPoints(this, merged_coord.first) << std::endl;
         }
         else
           file << "// Another point was merged here during insert cut\n";
@@ -800,9 +791,9 @@ void Core::Geo::Cut::Point::dump_connectivity_info()
       {
         std::stringstream section_name;
         section_name << "IndividualEdge" << counter;
-        Core::Geo::Cut::Output::GmshNewSection(file, section_name.str());
-        Core::Geo::Cut::Output::GmshEdgeDump(file, (*it));
-        Core::Geo::Cut::Output::GmshEndSection(file, false);
+        Cut::Output::GmshNewSection(file, section_name.str());
+        Cut::Output::GmshEdgeDump(file, (*it));
+        Cut::Output::GmshEndSection(file, false);
         if (not NodalPoint((*it)->Nodes())) file << "// it is not a nodal point!" << std::endl;
       }
     }
@@ -813,9 +804,9 @@ void Core::Geo::Cut::Point::dump_connectivity_info()
       {
         std::stringstream section_name;
         section_name << "IndividualSide" << counter;
-        Core::Geo::Cut::Output::GmshNewSection(file, section_name.str());
-        Core::Geo::Cut::Output::GmshSideDump(file, (*it));
-        Core::Geo::Cut::Output::GmshEndSection(file, false);
+        Cut::Output::GmshNewSection(file, section_name.str());
+        Cut::Output::GmshSideDump(file, (*it));
+        Cut::Output::GmshEndSection(file, false);
         if (not NodalPoint((*it)->Nodes())) file << " // it is not a nodal point!" << std::endl;
       }
     }
@@ -825,7 +816,7 @@ void Core::Geo::Cut::Point::dump_connectivity_info()
 }
 
 /// Remove info about this point from all the cut_sides and cut_edges
-void Core::Geo::Cut::Point::remove_connectivity_info()
+void Cut::Point::remove_connectivity_info()
 {
   for (plain_side_set::iterator it = cut_sides_.begin(); it != cut_sides_.end(); ++it)
     (*it)->remove_point(this);
@@ -839,7 +830,7 @@ void Core::Geo::Cut::Point::remove_connectivity_info()
   cut_elements_.clear();
 }
 
-void Core::Geo::Cut::Point::replace(Point* p)
+void Cut::Point::replace(Point* p)
 {
   p->cut_pairs_.insert(cut_pairs_.begin(), cut_pairs_.end());
   p->cut_sides_.insert(cut_sides_.begin(), cut_sides_.end());
@@ -920,7 +911,7 @@ void Core::Geo::Cut::Point::replace(Point* p)
   p->merged_points_.push_back(this);
 }
 
-void Core::Geo::Cut::Point::merge(Point* dest)
+void Cut::Point::merge(Point* dest)
 {
 #if CUT_CREATION_INFO
   merged_to_ = dest;
@@ -928,19 +919,19 @@ void Core::Geo::Cut::Point::merge(Point* dest)
 #endif
 }
 
-void Core::Geo::Cut::Point::remove_side(Side* side)
+void Cut::Point::remove_side(Side* side)
 {
   side->remove_point(this);
   cut_sides_.erase(side);
 }
 
-void Core::Geo::Cut::Point::remove_edge(Edge* edge)
+void Cut::Point::remove_edge(Edge* edge)
 {
   edge->remove_point(this);
   cut_edges_.erase(edge);
 }
 
-void Core::Geo::Cut::Point::erased_containing_cut_pairs(Side* side)
+void Cut::Point::erased_containing_cut_pairs(Side* side)
 {
   for (std::set<std::pair<Side*, Edge*>>::iterator i = cut_pairs_.begin(); i != cut_pairs_.end();)
   {
@@ -956,7 +947,7 @@ void Core::Geo::Cut::Point::erased_containing_cut_pairs(Side* side)
   }
 }
 
-void Core::Geo::Cut::Point::erased_containing_cut_pairs(Edge* edge)
+void Cut::Point::erased_containing_cut_pairs(Edge* edge)
 {
   for (std::set<std::pair<Side*, Edge*>>::iterator i = cut_pairs_.begin(); i != cut_pairs_.end();)
   {
@@ -975,8 +966,7 @@ void Core::Geo::Cut::Point::erased_containing_cut_pairs(Edge* edge)
 
 #if CUT_CREATION_INFO
 
-void Core::Geo::Cut::Point::AddCreationInfo(
-    const std::pair<Side*, Edge*>& cut_pair, const std::string& info)
+void Cut::Point::AddCreationInfo(const std::pair<Side*, Edge*>& cut_pair, const std::string& info)
 {
   typedef std::map<std::pair<Side*, Edge*>, std::string>::iterator info_iterator;
   std::pair<info_iterator, bool> inserted = creation_info_.insert(std::make_pair(cut_pair, info));
@@ -986,19 +976,16 @@ void Core::Geo::Cut::Point::AddCreationInfo(
   }
 }
 
-void Core::Geo::Cut::Point::AddAdditionalCreationInfo(const std::string& info)
+void Cut::Point::AddAdditionalCreationInfo(const std::string& info)
 {
   additional_creation_info_.append("// And more: \n");
   additional_creation_info_.append(info);
 }
 
-const std::string& Core::Geo::Cut::Point::GetAdditionalCreationInfo()
-{
-  return additional_creation_info_;
-}
+const std::string& Cut::Point::GetAdditionalCreationInfo() { return additional_creation_info_; }
 
 
-void Core::Geo::Cut::Point::AddMergedPair(
+void Cut::Point::AddMergedPair(
     const std::pair<Side*, Edge*>& inter, Core::LinAlg::Matrix<3, 1>* coord)
 {
   std::map<std::pair<Side*, Edge*>, std::pair<Core::LinAlg::Matrix<3, 1>, bool>>::iterator merged =
@@ -1021,14 +1008,14 @@ void Core::Geo::Cut::Point::AddMergedPair(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Core::Geo::Cut::Impl::SideSideCutFilter::operator()(Line* line) const
+bool Cut::Impl::SideSideCutFilter::operator()(Line* line) const
 {
   return line->is_cut(side1_) and line->is_cut(side2_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::Edge* Core::Geo::Cut::Point::common_cut_edge(Side* side)
+Cut::Edge* Cut::Point::common_cut_edge(Side* side)
 {
   for (plain_edge_set::iterator i = cut_edges_.begin(); i != cut_edges_.end(); ++i)
   {
@@ -1043,7 +1030,7 @@ Core::Geo::Cut::Edge* Core::Geo::Cut::Point::common_cut_edge(Side* side)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& stream, Core::Geo::Cut::Point& point)
+std::ostream& operator<<(std::ostream& stream, Cut::Point& point)
 {
   point.print(stream);
   return stream;
@@ -1051,7 +1038,7 @@ std::ostream& operator<<(std::ostream& stream, Core::Geo::Cut::Point& point)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& stream, Core::Geo::Cut::Point* point)
+std::ostream& operator<<(std::ostream& stream, Cut::Point* point)
 {
   point->print(stream);
   return stream;
@@ -1059,8 +1046,7 @@ std::ostream& operator<<(std::ostream& stream, Core::Geo::Cut::Point* point)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::FindCommonElements(
-    const std::vector<Point*>& element, plain_element_set& elements)
+void Cut::FindCommonElements(const std::vector<Point*>& element, plain_element_set& elements)
 {
   std::vector<Point*>::const_iterator ie = element.begin();
   elements = (*ie)->elements();
@@ -1075,7 +1061,7 @@ void Core::Geo::Cut::FindCommonElements(
   }
 }
 
-double Core::Geo::Cut::DistanceBetweenPoints(Point* p1, Point* p2)
+double Cut::DistanceBetweenPoints(Point* p1, Point* p2)
 {
   Core::LinAlg::Matrix<3, 1> p1_x;
   p1->coordinates(p1_x.data());
@@ -1084,7 +1070,7 @@ double Core::Geo::Cut::DistanceBetweenPoints(Point* p1, Point* p2)
   return DistanceBetweenPoints(p1_x, p2_x);
 }
 
-double Core::Geo::Cut::DistanceBetweenPoints(Point* p1, const Core::LinAlg::Matrix<3, 1>& coord_b)
+double Cut::DistanceBetweenPoints(Point* p1, const Core::LinAlg::Matrix<3, 1>& coord_b)
 {
   Core::LinAlg::Matrix<3, 1> p1_x;
   p1->coordinates(p1_x.data());
@@ -1092,7 +1078,7 @@ double Core::Geo::Cut::DistanceBetweenPoints(Point* p1, const Core::LinAlg::Matr
 }
 
 
-bool Core::Geo::Cut::IsCutPositionUnchanged(Point::PointPosition position, Point::PointPosition pos)
+bool Cut::IsCutPositionUnchanged(Point::PointPosition position, Point::PointPosition pos)
 {
   if ((position == Point::inside and pos == Point::outside) or
       (position == Point::outside and pos == Point::inside))
@@ -1102,10 +1088,10 @@ bool Core::Geo::Cut::IsCutPositionUnchanged(Point::PointPosition position, Point
 }
 
 template <unsigned prob_dim>
-void Core::Geo::Cut::ConcretePoint<prob_dim>::move_point(const double* new_coord)
+void Cut::ConcretePoint<prob_dim>::move_point(const double* new_coord)
 {
   Core::LinAlg::Matrix<3, 1> coordm(new_coord, true);
-  if (Core::Geo::Cut::DistanceBetweenPoints(this, coordm) > BOXOVERLAP)
+  if (Cut::DistanceBetweenPoints(this, coordm) > BOXOVERLAP)
     FOUR_C_THROW("The point is not allowed to be moved that much");
 
 #if CUT_CREATION_INFO

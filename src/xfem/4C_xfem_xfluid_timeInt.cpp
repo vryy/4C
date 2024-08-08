@@ -50,8 +50,8 @@ XFEM::XFluidTimeInt::XFluidTimeInt(
                                               /// transfer?
     const Teuchos::RCP<Core::FE::Discretization>& dis,              /// discretization
     const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,  /// condition manager
-    const Teuchos::RCP<Core::Geo::CutWizard>& wizard_old,           /// cut wizard at t^n
-    const Teuchos::RCP<Core::Geo::CutWizard>& wizard_new,           /// cut wizard at t^(n+1)
+    const Teuchos::RCP<Cut::CutWizard>& wizard_old,                 /// cut wizard at t^n
+    const Teuchos::RCP<Cut::CutWizard>& wizard_new,                 /// cut wizard at t^(n+1)
     const Teuchos::RCP<XFEM::XFEMDofSet>& dofset_old,               /// XFEM dofset at t^n
     const Teuchos::RCP<XFEM::XFEMDofSet>& dofset_new,               /// XFEM dofset at t^(n+1)
     const Inpar::XFEM::XFluidTimeIntScheme xfluid_timintapproach,   /// xfluid_timintapproch
@@ -276,8 +276,8 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
   Core::Nodes::Node* node = dis_->g_node(gid);
 
   // get cut nodes with respect to cut wizards at t^n and t^(n+1)
-  Core::Geo::Cut::Node* n_new = wizard_new_->get_node(gid);
-  Core::Geo::Cut::Node* n_old = wizard_old_->get_node(gid);
+  Cut::Node* n_new = wizard_new_->get_node(gid);
+  Cut::Node* n_old = wizard_old_->get_node(gid);
 
 
   //---------------------------------------------------------------------------------
@@ -358,10 +358,10 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
     // t^(n+1)
     // assume one unique dofset
     const int nds_new = 0;
-    Core::Geo::Cut::Point::PointPosition pos_new = Core::Geo::Cut::Point::undecided;
+    Cut::Point::PointPosition pos_new = Cut::Point::undecided;
 
     if (n_new == nullptr)
-      pos_new = Core::Geo::Cut::Point::outside;  // by default for nodes outside the cut-boundingbox
+      pos_new = Cut::Point::outside;  // by default for nodes outside the cut-boundingbox
     else
     {
       if (n_new->nodal_dof_sets().size() == 1)
@@ -373,7 +373,7 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
             "1");
     }
 
-    if (pos_new != Core::Geo::Cut::Point::outside and pos_new != Core::Geo::Cut::Point::inside)
+    if (pos_new != Cut::Point::outside and pos_new != Cut::Point::inside)
       FOUR_C_THROW("position of unique std-dofset is not inside and not outside, can this happen?");
 
     std::vector<int> dofs_new;
@@ -548,8 +548,7 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
 
     //-------------------------------
     // t^(n+1)
-    const std::vector<Teuchos::RCP<Core::Geo::Cut::NodalDofSet>>& dof_cellsets_new =
-        n_new->nodal_dof_sets();
+    const std::vector<Teuchos::RCP<Cut::NodalDofSet>>& dof_cellsets_new = n_new->nodal_dof_sets();
 
 
 
@@ -565,7 +564,7 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
       const int nds_new = 0;
 
       // get the unique cellset
-      const Core::Geo::Cut::NodalDofSet* nodaldofset = &*(dof_cellsets_new[nds_new]);
+      const Cut::NodalDofSet* nodaldofset = &*(dof_cellsets_new[nds_new]);
 
       if (nodaldofset->is_standard_dof_set())  // case b)
       {
@@ -602,11 +601,11 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
       //------------------------------------------
 
       // loop new dofsets
-      for (std::vector<Teuchos::RCP<Core::Geo::Cut::NodalDofSet>>::const_iterator sets =
+      for (std::vector<Teuchos::RCP<Cut::NodalDofSet>>::const_iterator sets =
                dof_cellsets_new.begin();
            sets != dof_cellsets_new.end(); sets++)
       {
-        Teuchos::RCP<Core::Geo::Cut::NodalDofSet> nodaldofset_new = *sets;
+        Teuchos::RCP<Cut::NodalDofSet> nodaldofset_new = *sets;
         int nds_new = sets - dof_cellsets_new.begin();
 
         if (nodaldofset_new
@@ -669,21 +668,19 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
 
     //-------------------------------
     // t^n
-    const std::vector<Teuchos::RCP<Core::Geo::Cut::NodalDofSet>>& dof_cellsets_old =
-        n_old->nodal_dof_sets();
+    const std::vector<Teuchos::RCP<Cut::NodalDofSet>>& dof_cellsets_old = n_old->nodal_dof_sets();
 
 
     //-------------------------------
     // t^(n+1)
-    const std::vector<Teuchos::RCP<Core::Geo::Cut::NodalDofSet>>& dof_cellsets_new =
-        n_new->nodal_dof_sets();
+    const std::vector<Teuchos::RCP<Cut::NodalDofSet>>& dof_cellsets_new = n_new->nodal_dof_sets();
 
     // loop new dofsets
-    for (std::vector<Teuchos::RCP<Core::Geo::Cut::NodalDofSet>>::const_iterator sets =
+    for (std::vector<Teuchos::RCP<Cut::NodalDofSet>>::const_iterator sets =
              dof_cellsets_new.begin();
          sets != dof_cellsets_new.end(); sets++)
     {
-      const Core::Geo::Cut::NodalDofSet* cell_set = &**sets;
+      const Cut::NodalDofSet* cell_set = &**sets;
 
       int nds_new = sets - dof_cellsets_new.begin();  // nodal dofset counter
 
@@ -866,7 +863,7 @@ std::map<int, std::set<int>>& XFEM::XFluidTimeInt::get_node_to_dof_map_for_recon
 // all surrounding elements non-intersected ?
 // -------------------------------------------------------------------
 bool XFEM::XFluidTimeInt::non_intersected_elements(
-    Core::Nodes::Node* n, const Teuchos::RCP<Core::Geo::CutWizard> wizard)
+    Core::Nodes::Node* n, const Teuchos::RCP<Cut::CutWizard> wizard)
 {
   const int numele = n->num_element();
 
@@ -878,7 +875,7 @@ bool XFEM::XFluidTimeInt::non_intersected_elements(
     Core::Elements::Element* e = elements[i];
 
     // we have to check elements and its sub-elements in case of quadratic elements
-    Core::Geo::Cut::ElementHandle* ehandle = wizard->get_element(e);
+    Cut::ElementHandle* ehandle = wizard->get_element(e);
 
     // elements which do not have an element-handle are non-intersected anyway
     if (ehandle == nullptr) continue;
@@ -912,7 +909,7 @@ void XFEM::XFluidTimeInt::find_surrounding_ghost_dofsets(
     FOUR_C_THROW("do you really want to find ghost dofsets surrounding a non-std node with id %i?",
         node->id());
 
-  Core::Geo::Cut::Node* n = wizard_new_->get_node(node->id());
+  Cut::Node* n = wizard_new_->get_node(node->id());
 
   if (n == nullptr)
   {
@@ -922,21 +919,20 @@ void XFEM::XFluidTimeInt::find_surrounding_ghost_dofsets(
     return;
   }
 
-  const std::vector<Teuchos::RCP<Core::Geo::Cut::NodalDofSet>>& dof_cellsets = n->nodal_dof_sets();
+  const std::vector<Teuchos::RCP<Cut::NodalDofSet>>& dof_cellsets = n->nodal_dof_sets();
 
 
   // get the corresponding cellset
-  const std::set<Core::Geo::Cut::plain_volumecell_set, Core::Geo::Cut::Cmp>& cellset =
+  const std::set<Cut::plain_volumecell_set, Cut::Cmp>& cellset =
       dof_cellsets[nds_new]->volume_cell_composite();
 
   // get for each plain_volumecell_set of the surrounding elements the ghost dofs
 
   // loop the surrounding (sub-)elements
-  for (std::set<Core::Geo::Cut::plain_volumecell_set, Core::Geo::Cut::Cmp>::const_iterator e_vcset =
-           cellset.begin();
+  for (std::set<Cut::plain_volumecell_set, Cut::Cmp>::const_iterator e_vcset = cellset.begin();
        e_vcset != cellset.end(); e_vcset++)
   {
-    const Core::Geo::Cut::plain_volumecell_set& vcs = *e_vcset;
+    const Cut::plain_volumecell_set& vcs = *e_vcset;
 
     // get the element, ask the first vc
     int peid = (*vcs.begin())->parent_element()->get_parent_id();
@@ -951,7 +947,7 @@ void XFEM::XFluidTimeInt::find_surrounding_ghost_dofsets(
       const Core::Nodes::Node* ghost_node = nodes[n_it];
       const int ghost_nid = ghost_node->id();
 
-      Core::Geo::Cut::Node* ghost_node_cut = wizard_new_->get_node(ghost_nid);
+      Cut::Node* ghost_node_cut = wizard_new_->get_node(ghost_nid);
 
       if (ghost_node_cut == nullptr)
         continue;  // this node is then a standard node or not on this proc
@@ -1226,7 +1222,7 @@ bool XFEM::XFluidTimeInt::set_reconstr_method(const Core::Nodes::Node* node,  //
     const Inpar::XFEM::XFluidTimeInt method  /// which type of reconstruction method
 )
 {
-  Core::Geo::Cut::Node* n = wizard_new_->get_node(node->id());
+  Cut::Node* n = wizard_new_->get_node(node->id());
 
   int numdofsets = -1;
   if (n != nullptr)
@@ -1303,26 +1299,23 @@ bool XFEM::XFluidTimeInt::set_reconstr_method(const Core::Nodes::Node* node,  //
 // -------------------------------------------------------------------
 // identify cellsets at time t^n with cellsets at time t^(n+1)
 // -------------------------------------------------------------------
-int XFEM::XFluidTimeInt::identify_old_sets(
-    const Core::Geo::Cut::Node* n_old,  /// node w.r.t to old wizard
-    const Core::Geo::Cut::Node* n_new,  /// node w.r.t to new wizard
-    const std::vector<Teuchos::RCP<Core::Geo::Cut::NodalDofSet>>&
-        dof_cellsets_old,  /// all dofcellsets at t^n
-    const Core::Geo::Cut::NodalDofSet*
-        cell_set_new  /// dofcellset at t^(n+1) which has to be identified
+int XFEM::XFluidTimeInt::identify_old_sets(const Cut::Node* n_old,  /// node w.r.t to old wizard
+    const Cut::Node* n_new,                                         /// node w.r.t to new wizard
+    const std::vector<Teuchos::RCP<Cut::NodalDofSet>>& dof_cellsets_old,  /// all dofcellsets at t^n
+    const Cut::NodalDofSet* cell_set_new  /// dofcellset at t^(n+1) which has to be identified
 )
 {
   // is current set at t^(n+1) std or ghost or dofset
   bool is_std_set_np = cell_set_new->is_standard_dof_set();
 
-  const Core::Geo::Cut::Point::PointPosition pos_new = cell_set_new->position();
+  const Cut::Point::PointPosition pos_new = cell_set_new->position();
 
   //--------------------------------------------------------
   // t^(n+1)
   // set of side-ids involved in cutting the current connection of volumecells at t^(n+1)
   // get all side-ids w.r.t to all volumecells contained in current new set around the current node
 
-  Core::Geo::Cut::plain_int_set cutsides_new;
+  Cut::plain_int_set cutsides_new;
   cell_set_new->collect_cut_sides(cutsides_new);
 
   //--------------------------------------------------------
@@ -1336,13 +1329,13 @@ int XFEM::XFluidTimeInt::identify_old_sets(
   // are possible sets)
   //--------------------------------------------------------
   // check each old dofset for identification with new dofset
-  for (std::vector<Teuchos::RCP<Core::Geo::Cut::NodalDofSet>>::const_iterator old_sets =
+  for (std::vector<Teuchos::RCP<Cut::NodalDofSet>>::const_iterator old_sets =
            dof_cellsets_old.begin();
        old_sets != dof_cellsets_old.end(); old_sets++)
   {
     const int setnumber = old_sets - dof_cellsets_old.begin();
 
-    Core::Geo::Cut::plain_int_set cutsides_old;
+    Cut::plain_int_set cutsides_old;
     (*old_sets)->collect_cut_sides(cutsides_old);
 
     //--------------------------------------------------------------
@@ -1381,7 +1374,7 @@ int XFEM::XFluidTimeInt::identify_old_sets(
   )
   {
     // look again in the old sets if there was a standard dofset
-    for (std::vector<Teuchos::RCP<Core::Geo::Cut::NodalDofSet>>::const_iterator old_sets =
+    for (std::vector<Teuchos::RCP<Cut::NodalDofSet>>::const_iterator old_sets =
              dof_cellsets_old.begin();
          old_sets != dof_cellsets_old.end(); old_sets++)
     {
@@ -1437,10 +1430,9 @@ int XFEM::XFluidTimeInt::identify_old_sets(
         continue;
       }
 
-      const Core::Geo::Cut::Point::PointPosition pos_old = dof_cellsets_old[nds_old]->position();
+      const Cut::Point::PointPosition pos_old = dof_cellsets_old[nds_old]->position();
 
-      if (pos_old == Core::Geo::Cut::Point::undecided or
-          pos_old == Core::Geo::Cut::Point::oncutsurface)
+      if (pos_old == Cut::Point::undecided or pos_old == Cut::Point::oncutsurface)
         FOUR_C_THROW(
             "why is the cellcet position undecided or oncutsurface %i, something wrong", pos_old);
 
@@ -1561,8 +1553,8 @@ int XFEM::XFluidTimeInt::identify_old_sets(
 
 
 bool XFEM::XFluidTimeInt::special_check_sliding_on_surface(bool& changed_side,
-    const Core::Geo::Cut::Node* n_old,  /// node w.r.t to old wizard
-    const Core::Geo::Cut::Node* n_new   /// node w.r.t to new wizard
+    const Cut::Node* n_old,  /// node w.r.t to old wizard
+    const Cut::Node* n_new   /// node w.r.t to new wizard
 )
 {
   if (n_old->id() != n_new->id())
@@ -1573,21 +1565,20 @@ bool XFEM::XFluidTimeInt::special_check_sliding_on_surface(bool& changed_side,
   // space-time sides
 
   // check when point moves on the surface of the same side
-  Core::Geo::Cut::Point* p_old = n_old->point();
-  Core::Geo::Cut::Point* p_new = n_new->point();
+  Cut::Point* p_old = n_old->point();
+  Cut::Point* p_new = n_new->point();
 
-  Core::Geo::Cut::Point::PointPosition pos_old = p_old->position();
-  Core::Geo::Cut::Point::PointPosition pos_new = p_new->position();
+  Cut::Point::PointPosition pos_old = p_old->position();
+  Cut::Point::PointPosition pos_new = p_new->position();
 
-  if ((pos_old == Core::Geo::Cut::Point::oncutsurface and
-          pos_new == Core::Geo::Cut::Point::oncutsurface))
+  if ((pos_old == Cut::Point::oncutsurface and pos_new == Cut::Point::oncutsurface))
   {
     // first case: point slides on the cut surface (within one side or from 'within the side' to
     // point or edge and vice versa) second case: point moves from one side to another side (->
     // decide if the sides are neighbors and so on)
 
-    const Core::Geo::Cut::plain_side_set& cut_sides_old = p_old->cut_sides();
-    const Core::Geo::Cut::plain_side_set& cut_sides_new = p_new->cut_sides();
+    const Cut::plain_side_set& cut_sides_old = p_old->cut_sides();
+    const Cut::plain_side_set& cut_sides_new = p_new->cut_sides();
 
 
 #ifdef DEBUG_TIMINT
@@ -1606,7 +1597,7 @@ bool XFEM::XFluidTimeInt::special_check_sliding_on_surface(bool& changed_side,
     std::set<int> on_cut_sides_new;
 
     // loop cutsides and extract side ids
-    for (Core::Geo::Cut::plain_side_set::const_iterator side_it = cut_sides_old.begin();
+    for (Cut::plain_side_set::const_iterator side_it = cut_sides_old.begin();
          side_it != cut_sides_old.end(); side_it++)
     {
       int sid = (*side_it)->id();
@@ -1614,7 +1605,7 @@ bool XFEM::XFluidTimeInt::special_check_sliding_on_surface(bool& changed_side,
     }
 
     // loop cutsides and extract side ids
-    for (Core::Geo::Cut::plain_side_set::const_iterator side_it = cut_sides_new.begin();
+    for (Cut::plain_side_set::const_iterator side_it = cut_sides_new.begin();
          side_it != cut_sides_new.end(); side_it++)
     {
       int sid = (*side_it)->id();
@@ -1673,8 +1664,8 @@ bool XFEM::XFluidTimeInt::special_check_sliding_on_surface(bool& changed_side,
 bool XFEM::XFluidTimeInt::special_check_interface_tips(
     bool& changed_side,                  /// did the node change the side ?
     std::vector<int>& identified_sides,  /// side Id of identified side
-    const Core::Geo::Cut::Node* n_old,   /// node w.r.t to old wizard
-    const Core::Geo::Cut::Node* n_new    /// node w.r.t to new wizard
+    const Cut::Node* n_old,              /// node w.r.t to old wizard
+    const Cut::Node* n_new               /// node w.r.t to new wizard
 )
 {
   bool successful_check = true;
@@ -1689,18 +1680,18 @@ bool XFEM::XFluidTimeInt::special_check_interface_tips(
   // space-time sides
 
   // check when point moves on the surface of the same side
-  Core::Geo::Cut::Point* p_old = n_old->point();
-  Core::Geo::Cut::Point* p_new = n_new->point();
+  Cut::Point* p_old = n_old->point();
+  Cut::Point* p_new = n_new->point();
 
 
-  Core::Geo::Cut::Point::PointPosition pos_old = p_old->position();
-  Core::Geo::Cut::Point::PointPosition pos_new = p_new->position();
+  Cut::Point::PointPosition pos_old = p_old->position();
+  Cut::Point::PointPosition pos_new = p_new->position();
 
-  if (pos_old == Core::Geo::Cut::Point::undecided or pos_new == Core::Geo::Cut::Point::undecided)
+  if (pos_old == Cut::Point::undecided or pos_new == Cut::Point::undecided)
     FOUR_C_THROW("at least one node position undecided!");
 
-  if ((pos_old == Core::Geo::Cut::Point::outside and pos_new == Core::Geo::Cut::Point::outside) or
-      (pos_old == Core::Geo::Cut::Point::inside and pos_new == Core::Geo::Cut::Point::inside))
+  if ((pos_old == Cut::Point::outside and pos_new == Cut::Point::outside) or
+      (pos_old == Cut::Point::inside and pos_new == Cut::Point::inside))
   {
     // continue with check based on space time sides
     // REMARK: the point could have moved through an inside/outside volumecell
@@ -2024,8 +2015,8 @@ bool XFEM::XFluidTimeInt::within_space_time_side(
 
   if (!successful_check) return successful_check;
 
-  Teuchos::RCP<Core::Geo::Cut::Position> pos =
-      Core::Geo::Cut::PositionFactory::build_position<3, space_time_distype>(xyze_st, n_coord);
+  Teuchos::RCP<Cut::Position> pos =
+      Cut::PositionFactory::build_position<3, space_time_distype>(xyze_st, n_coord);
   within_space_time_side = pos->compute();
 
 #ifdef DEBUG_TIMINT

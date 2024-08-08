@@ -44,13 +44,12 @@ namespace Core::Nodes
   class Node;
 }
 
-namespace Core::Geo
+
+namespace Core::Geo::MeshFree
 {
-  namespace MeshFree
-  {
-    class BoundingBox;
-  }
-}  // namespace Core::Geo
+  class BoundingBox;
+}
+
 
 namespace BEAMINTERACTION
 {
@@ -244,8 +243,8 @@ namespace BEAMINTERACTION
      * \brief Get the global indices of the centerline DOFs of a beam element.
      * @param discret (in) Pointer to the discretization.
      * @param ele (in) Pointer to the element.
-     * @param ele_centerline_dof_indices (out) Vector with global indices of centerline DOFs in the
-     * element.
+     * @param ele_centerline_dof_indices (out) Vector with global indices of centerline DOFs in
+     * the element.
      */
     template <unsigned int n_centerline_dof>
     void GetElementCenterlineGIDIndices(Core::FE::Discretization const& discret,
@@ -278,8 +277,8 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Assemble a matrix with columns based on centerline DOFs of an element into a matrix
-     * with columns based on all DOFs of the element. Example: Mortar coupling matrices as the rows
-     * correspond the Lagrange multipliers and the columns correspond to the centerline DOFs.
+     * with columns based on all DOFs of the element. Example: Mortar coupling matrices as the
+     * rows correspond the Lagrange multipliers and the columns correspond to the centerline DOFs.
      * @param discret (in) Pointer to the discretization.
      * @param element (in) Pointer to the element.
      * @param row_matrix_centerlineDOFs (in) Matrix where the columns correspond to the centerline

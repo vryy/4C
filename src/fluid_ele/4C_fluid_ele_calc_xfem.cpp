@@ -96,7 +96,7 @@ namespace Discret
         Core::LinAlg::SerialDenseVector& elevec2_epetra,
         Core::LinAlg::SerialDenseVector& elevec3_epetra,
         const std::vector<Core::FE::GaussIntegration>& intpoints,
-        const Core::Geo::Cut::plain_volumecell_set& cells, bool offdiag)
+        const Cut::plain_volumecell_set& cells, bool offdiag)
     {
       int err = 0;
 
@@ -119,7 +119,7 @@ namespace Discret
         Core::FE::Discretization& discretization, const std::vector<int>& lm,
         Core::LinAlg::SerialDenseVector& elevec1_epetra,
         const std::vector<Core::FE::GaussIntegration>& intpoints,
-        const Core::Geo::Cut::plain_volumecell_set& cells)
+        const Cut::plain_volumecell_set& cells)
     {
       int err = 0;
 
@@ -787,12 +787,11 @@ namespace Discret
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
         Teuchos::RCP<Core::Mat::Material>& mat,                    ///< material
         Core::LinAlg::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
-        const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>&
-            bcells,  ///< boundary cells
+        const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,  ///< boundary cells
         const std::map<int, std::vector<Core::FE::GaussIntegration>>&
-            bintpoints,                                     ///< boundary integration points
-        const Core::Geo::Cut::plain_volumecell_set& vcSet,  ///< set of plain volume cells
-        Teuchos::ParameterList& params                      ///< parameter list
+            bintpoints,                          ///< boundary integration points
+        const Cut::plain_volumecell_set& vcSet,  ///< set of plain volume cells
+        Teuchos::ParameterList& params           ///< parameter list
     )
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -954,11 +953,10 @@ namespace Discret
 
         const std::vector<Core::FE::GaussIntegration>& cutintpoints = i->second;
 
-        std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::const_iterator j =
-            bcells.find(coup_sid);
+        std::map<int, std::vector<Cut::BoundaryCell*>>::const_iterator j = bcells.find(coup_sid);
         if (j == bcells.end()) FOUR_C_THROW("missing boundary cell");
 
-        const std::vector<Core::Geo::Cut::BoundaryCell*>& bcs = j->second;
+        const std::vector<Cut::BoundaryCell*>& bcs = j->second;
         if (bcs.size() != cutintpoints.size())
           FOUR_C_THROW("boundary cell integration rules mismatch");
 
@@ -1039,7 +1037,7 @@ namespace Discret
              i != cutintpoints.end(); ++i)
         {
           const Core::FE::GaussIntegration& gi = *i;
-          Core::Geo::Cut::BoundaryCell* bc =
+          Cut::BoundaryCell* bc =
               bcs[i - cutintpoints.begin()];  // get the corresponding boundary cell
 
           //--------------------------------------------
@@ -1074,8 +1072,8 @@ namespace Discret
             }
 
             // find element local position of gauss point
-            Teuchos::RCP<Core::Geo::Cut::Position> pos =
-                Core::Geo::Cut::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_gp_lin);
+            Teuchos::RCP<Cut::Position> pos =
+                Cut::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_gp_lin);
             pos->compute();
             pos->local_coordinates(rst);
 
@@ -1280,8 +1278,7 @@ namespace Discret
         const std::vector<int>& lm,                                ///< element local map
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
         const std::vector<Core::FE::GaussIntegration>& intpoints,  ///< element gauss points
-        const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>&
-            bcells,  ///< boundary cells
+        const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,  ///< boundary cells
         const std::map<int, std::vector<Core::FE::GaussIntegration>>&
             bintpoints,  ///< boundary integration points
         const std::map<int, std::vector<int>>&
@@ -1295,7 +1292,7 @@ namespace Discret
         Core::LinAlg::SerialDenseVector&
             elevec1_epetra,                      ///< local element vector of intersected element
         Core::LinAlg::SerialDenseMatrix& Cuiui,  ///< coupling matrix of a side with itself
-        const Core::Geo::Cut::plain_volumecell_set& vcSet  ///< set of plain volume cells
+        const Cut::plain_volumecell_set& vcSet   ///< set of plain volume cells
     )
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -1479,8 +1476,7 @@ namespace Discret
       // auxiliary coupling implementation for terms
       // find all the intersecting elements of actele
       std::set<int> begids;
-      for (std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::const_iterator bc =
-               bcells.begin();
+      for (std::map<int, std::vector<Cut::BoundaryCell*>>::const_iterator bc = bcells.begin();
            bc != bcells.end(); ++bc)
       {
         const int coup_sid = bc->first;
@@ -1592,11 +1588,10 @@ namespace Discret
         const std::vector<Core::FE::GaussIntegration>& cutintpoints = i->second;
 
         // get side's boundary cells
-        std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::const_iterator j =
-            bcells.find(coup_sid);
+        std::map<int, std::vector<Cut::BoundaryCell*>>::const_iterator j = bcells.find(coup_sid);
         if (j == bcells.end()) FOUR_C_THROW("missing boundary cell");
 
-        const std::vector<Core::Geo::Cut::BoundaryCell*>& bcs = j->second;
+        const std::vector<Cut::BoundaryCell*>& bcs = j->second;
         if (bcs.size() != cutintpoints.size())
           FOUR_C_THROW("boundary cell integration rules mismatch");
 
@@ -1821,7 +1816,7 @@ namespace Discret
              i != cutintpoints.end(); ++i)
         {
           const Core::FE::GaussIntegration& gi = *i;
-          Core::Geo::Cut::BoundaryCell* bc =
+          Cut::BoundaryCell* bc =
               bcs[i - cutintpoints.begin()];  // get the corresponding boundary cell
 
           //--------------------------------------------
@@ -1856,8 +1851,8 @@ namespace Discret
             }
 
             // find element local position of gauss point
-            Teuchos::RCP<Core::Geo::Cut::Position> pos =
-                Core::Geo::Cut::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_gp_lin);
+            Teuchos::RCP<Cut::Position> pos =
+                Cut::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_gp_lin);
             pos->compute();
             pos->local_coordinates(rst);
 
@@ -2638,7 +2633,7 @@ namespace Discret
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::hybrid_lm_build_vol_based(
         const std::vector<Core::FE::GaussIntegration>& intpoints,
-        const Core::Geo::Cut::plain_volumecell_set& cells,
+        const Cut::plain_volumecell_set& cells,
         const Core::LinAlg::Matrix<nsd_, nen_>& evelaf,  ///< element velocity
         const Core::LinAlg::Matrix<nen_, 1>& epreaf,     ///< element pressure
         Core::LinAlg::Matrix<nen_, nen_>& bK_ss,         ///< block K_ss matrix
@@ -3193,7 +3188,7 @@ namespace Discret
     void FluidEleCalcXFEM<distype>::element_xfem_interface_nit(Discret::ELEMENTS::Fluid* ele,
         Core::FE::Discretization& dis, const std::vector<int>& lm,
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-        const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>& bcells,
+        const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,
         const std::map<int, std::vector<Core::FE::GaussIntegration>>& bintpoints,
         const std::map<int, std::vector<int>>&
             patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
@@ -3201,8 +3196,7 @@ namespace Discret
         Teuchos::RCP<Core::Mat::Material>& mat_master,  ///< material for the background
         Teuchos::RCP<Core::Mat::Material>& mat_slave,   ///< material for the coupled side
         Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
-        Core::LinAlg::SerialDenseVector& elevec1_epetra,
-        const Core::Geo::Cut::plain_volumecell_set& vcSet,
+        Core::LinAlg::SerialDenseVector& elevec1_epetra, const Cut::plain_volumecell_set& vcSet,
         std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>& side_coupling,
         Core::LinAlg::SerialDenseMatrix& Cuiui, bool evaluated_cut)
     {
@@ -3278,8 +3272,7 @@ namespace Discret
       // Dirichlet problems...)
 
       // loop all the intersecting sides of actele
-      for (std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::const_iterator bc =
-               bcells.begin();
+      for (std::map<int, std::vector<Cut::BoundaryCell*>>::const_iterator bc = bcells.begin();
            bc != bcells.end(); ++bc)
       {
         const int coup_sid = bc->first;
@@ -3399,11 +3392,10 @@ namespace Discret
 
         const std::vector<Core::FE::GaussIntegration>& cutintpoints = i->second;
 
-        std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::const_iterator j =
-            bcells.find(coup_sid);
+        std::map<int, std::vector<Cut::BoundaryCell*>>::const_iterator j = bcells.find(coup_sid);
         if (j == bcells.end()) FOUR_C_THROW("missing boundary cell");
 
-        const std::vector<Core::Geo::Cut::BoundaryCell*>& bcs = j->second;
+        const std::vector<Cut::BoundaryCell*>& bcs = j->second;
         if (bcs.size() != cutintpoints.size())
           FOUR_C_THROW("boundary cell integration rules mismatch");
 
@@ -3618,7 +3610,7 @@ namespace Discret
              i != cutintpoints.end(); ++i)
         {
           const Core::FE::GaussIntegration& gi = *i;
-          Core::Geo::Cut::BoundaryCell* bc =
+          Cut::BoundaryCell* bc =
               bcs[i - cutintpoints.begin()];  // get the corresponding boundary cell
 
           //-------------------------------------------------------------------------------
@@ -3652,7 +3644,7 @@ namespace Discret
             }
 
             {
-              TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::Core::Geo::Cut::Position");
+              TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::Cut::Position");
 
               if (!evaluated_cut)  // compute the local coordiante based on the reference position
                                    // (first time the cut was frozen)
@@ -3667,18 +3659,16 @@ namespace Discret
                 }
 
                 // find element local position of gauss point
-                Teuchos::RCP<Core::Geo::Cut::Position> pos =
-                    Core::Geo::Cut::PositionFactory::build_position<nsd_, distype>(
-                        my::xyze_, x_ref);
+                Teuchos::RCP<Cut::Position> pos =
+                    Cut::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_ref);
                 pos->compute();
                 pos->local_coordinates(rst_);
               }
               else  // compute the local coordiante based on the current position
               {
                 // find element local position of gauss point
-                Teuchos::RCP<Core::Geo::Cut::Position> pos =
-                    Core::Geo::Cut::PositionFactory::build_position<nsd_, distype>(
-                        my::xyze_, x_gp_lin_);
+                Teuchos::RCP<Cut::Position> pos =
+                    Cut::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_gp_lin_);
                 pos->compute();
                 pos->local_coordinates(rst_);
               }

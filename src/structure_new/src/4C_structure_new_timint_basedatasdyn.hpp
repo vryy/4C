@@ -40,13 +40,12 @@ namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
-namespace Core::Geo
+
+namespace Core::Geo::MeshFree
 {
-  namespace MeshFree
-  {
-    class BoundingBox;
-  }  // namespace MeshFree
-}  // namespace Core::Geo
+  class BoundingBox;
+}  // namespace Core::Geo::MeshFree
+
 namespace Solid
 {
   namespace ModelEvaluator
@@ -233,7 +232,8 @@ namespace Solid
         return mid_time_energy_type_;
       }
 
-      /// Returns number of times you want to halve your timestep in case nonlinear solver diverges
+      /// Returns number of times you want to halve your timestep in case nonlinear solver
+      /// diverges
       const int& get_max_div_con_refine_level() const
       {
         check_init_setup();
@@ -857,8 +857,8 @@ namespace Solid
       /// tolerance incompressible residual/ residual pressure forces
       double tol_inco_;
 
-      /// tolerance type for the convergence check if the incompressible residual/ residual pressure
-      /// forces
+      /// tolerance type for the convergence check if the incompressible residual/ residual
+      /// pressure forces
       enum Inpar::Solid::ConvNorm toltype_inco_;
 
       /// tolerance plasticity residual
@@ -949,19 +949,22 @@ namespace Solid
       /// type of combination of the force and the contact residual
       enum Inpar::Solid::BinaryOp normcombo_fres_contact_res_;
 
-      /// type of combination of the displacement and the contact lagrange multiplier increment test
+      /// type of combination of the displacement and the contact lagrange multiplier increment
+      /// test
       enum Inpar::Solid::BinaryOp normcombo_disp_contact_lm_incr_;
 
       /// type of combination of the force and the 0D cardiovascular model residual
       enum Inpar::Solid::BinaryOp normcombo_fres_cardvasc0d_res_;
 
-      /// type of combination of the displacement and the 0D cardiovascular model dof increment test
+      /// type of combination of the displacement and the 0D cardiovascular model dof increment
+      /// test
       enum Inpar::Solid::BinaryOp normcombo_disp_cardvasc0d_incr_;
 
       /// type of combination of the force and the constraint residual
       enum Inpar::Solid::BinaryOp normcombo_fres_constr_res_;
 
-      /// type of combination of the displacement and the 0D cardiovascular model dof increment test
+      /// type of combination of the displacement and the 0D cardiovascular model dof increment
+      /// test
       enum Inpar::Solid::BinaryOp normcombo_disp_constr_incr_;
 
       /// random factor for modifying time-step size in case this way of continuing non-linear
