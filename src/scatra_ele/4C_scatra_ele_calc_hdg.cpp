@@ -1144,7 +1144,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::compute
 
   for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
   {
-    Core::LinAlg::Matrix<nsd_, 1> xyz;
+    Core::LinAlg::Matrix<3, 1> xyz;
     // add it all up
     for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
       for (unsigned int j = 0; j < shapes_->ndofs_; ++j)
@@ -1655,7 +1655,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::set_initial_field(
     for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
     {
       const double fac = shapes_->jfac(q);
-      double xyz[nsd_];
+      std::array<double, 3> xyz{};
       for (unsigned int d = 0; d < nsd_; ++d)
         xyz[d] = shapes_->xyzreal(d, q);  // coordinates of quadrature point in real coordinates
       double phi;
@@ -1675,11 +1675,11 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::set_initial_field(
 
       phi = Global::Problem::instance()
                 ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(*start_func - 1)
-                .evaluate(xyz, 0, 0);
+                .evaluate(xyz.data(), 0, 0);
       for (unsigned int i = 0; i < nsd_; ++i)
         gradphi[i] = Global::Problem::instance()
                          ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(*start_func - 1)
-                         .evaluate(xyz, 0, 1 + i);
+                         .evaluate(xyz.data(), 0, 1 + i);
 
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
@@ -1726,13 +1726,13 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::set_initial_field(
     for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
     {
       const double fac = shapesface_->jfac(q);
-      double xyz[nsd_];
+      std::array<double, 3> xyz{};
       for (unsigned int d = 0; d < nsd_; ++d) xyz[d] = shapesface_->xyzreal(d, q);
 
       double trphi;
       trphi = Global::Problem::instance()
                   ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(*start_func - 1)
-                  .evaluate(xyz, 0, nsd_ + 1);
+                  .evaluate(xyz.data(), 0, nsd_ + 1);
 
       // now fill the components in the mass matrix and the right hand side
       for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
@@ -2181,7 +2181,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::calc_error(
         "The number of component must be one. The grandient is computed with forward auomatic "
         "differentiation.");
 
-  Core::LinAlg::Matrix<nsd_, 1> xsi;
+  Core::LinAlg::Matrix<3, 1> xsi;
   double phi(nsd_);
   Core::LinAlg::SerialDenseVector gradPhi(nsd_);
 
