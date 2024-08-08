@@ -211,14 +211,9 @@ namespace XFEM
       std::vector<int> totaldof;
       dofsets_[nds]->dof(totaldof, node, nodaldofset);
 
-      if (element == nullptr && element->shape() == Core::FE::CellType::hex8)
-        FOUR_C_THROW("element required for location vector of hex8 element");
+      FOUR_C_THROW_UNLESS(element, "element required for location vector of hex8 element");
 
-      int size;
-      if (element != nullptr)
-        size = std::min((int)totaldof.size(), element->num_dof_per_node(*node));
-      else
-        size = (int)totaldof.size();
+      const int size = std::min((int)totaldof.size(), element->num_dof_per_node(*node));
       // only take the first dofs that have a meaning for all elements at this node
       for (int i = 0; i < size; i++) dof.push_back(totaldof.at(i));
 
