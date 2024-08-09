@@ -16,6 +16,7 @@ ENV LC_ALL en_US.UTF-8
 
 RUN apt-get update && apt-get install -y \
       build-essential \
+      flex \
       ffmpeg \
       git \
       libglu1-mesa \
@@ -81,6 +82,9 @@ RUN mkdir ${FOUR_C_TESTING_DEPENDENCIES_DIR}
 
 # Install LLVM (use standard install directory)
 RUN /dependencies/testing/llvm/install.sh /usr/local
+
+# Install newer GCC
+RUN /dependencies/testing/gcc/install.sh ${FOUR_C_TESTING_DEPENDENCIES_DIR}
 
 # Install Mathjax
 RUN /dependencies/testing/mathjax/install.sh ${FOUR_C_TESTING_DEPENDENCIES_DIR}
