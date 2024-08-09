@@ -14,7 +14,7 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_solid_3D_ele_calc.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
-#include "4C_solid_3D_ele_calc_lib_fbar.H"
+#include "4C_solid_3D_ele_calc_lib_fbar.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
