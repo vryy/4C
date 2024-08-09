@@ -173,9 +173,6 @@ namespace Solid
       //! "standarddeviation" for parallel use
       void generate_gaussian_random_numbers();
 
-      //! \brief safety check whether this condition is fulfilled
-      bool is_any_beam_element_length_larger_than_min_half_pbb_edge_length() const;
-
      private:
       //! struct containing all information for random number generator
       struct BrownDynStateData

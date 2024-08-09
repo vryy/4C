@@ -128,16 +128,7 @@ int Discret::ELEMENTS::Beam3r::evaluate(Teuchos::ParameterList& params,
 
     case Core::Elements::struct_calc_energy:
     {
-      if (elevec1 != Teuchos::null)  // old structural time integration
-      {
-        if (elevec1.numRows() != 1)
-          FOUR_C_THROW(
-              "energy vector of invalid size %i, expected row dimension 1 (total elastic energy of "
-              "element)!",
-              elevec1.numRows());
-        elevec1(0) = eint_;
-      }
-      else if (is_params_interface())  // new structural time integration
+      if (is_params_interface())  // new structural time integration
       {
         params_interface().add_contribution_to_energy_type(eint_, Solid::internal_energy);
         params_interface().add_contribution_to_energy_type(ekin_, Solid::kinetic_energy);

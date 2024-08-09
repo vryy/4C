@@ -1115,18 +1115,25 @@ Core::LinAlg::SerialDenseMatrix Core::FE::getEleNodeNumbering_nodes_paramspace(
     const Core::FE::CellType celltype)
 {
   return Core::FE::CellTypeSwitch(celltype,
-      [&](auto celltype_t)
+      [&](auto celltype_t) -> Core::LinAlg::SerialDenseMatrix
       {
         constexpr Core::FE::CellType my_celltype = celltype_t();
 
-        Core::LinAlg::SerialDenseMatrix map(
-            Core::FE::dim<my_celltype>, Core::FE::num_nodes<my_celltype>);
-        for (int inode = 0; inode < Core::FE::num_nodes<my_celltype>; inode++)
+        if constexpr (Core::FE::dim<my_celltype> == 0)
         {
-          for (int isd = 0; isd < Core::FE::dim<my_celltype>; isd++)
-            map(isd, inode) = get_element_nodes_in_parameter_space<my_celltype>()[inode][isd];
+          FOUR_C_THROW("Cannot happen.");
         }
-        return map;
+        else
+        {
+          Core::LinAlg::SerialDenseMatrix map(
+              Core::FE::dim<my_celltype>, Core::FE::num_nodes<my_celltype>);
+          for (int inode = 0; inode < Core::FE::num_nodes<my_celltype>; inode++)
+          {
+            for (int isd = 0; isd < Core::FE::dim<my_celltype>; isd++)
+              map(isd, inode) = get_element_nodes_in_parameter_space<my_celltype>()[inode][isd];
+          }
+          return map;
+        }
       });
 }
 

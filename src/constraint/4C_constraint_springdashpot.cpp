@@ -797,8 +797,8 @@ void CONSTRAINTS::SpringDashpot::get_area(
     std::vector<int> lmowner;
     std::vector<int> lmstride;
     element->location_vector(*(actdisc_), lm, lmowner, lmstride);
-    Core::LinAlg::SerialDenseMatrix dummat(0, 0);
-    Core::LinAlg::SerialDenseVector dumvec(0);
+    Core::LinAlg::SerialDenseMatrix dummat;
+    Core::LinAlg::SerialDenseVector dumvec;
     Core::LinAlg::SerialDenseVector elevector;
     const int eledim = (int)lm.size();
     elevector.size(eledim);
