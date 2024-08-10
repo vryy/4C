@@ -14,7 +14,6 @@
 #include "4C_tsi_partitioned.hpp"
 
 #include "4C_adapter_str_structure.hpp"
-#include "4C_adapter_thermo.hpp"
 #include "4C_contact_abstract_strategy.hpp"
 #include "4C_contact_lagrange_strategy_tsi.hpp"
 #include "4C_contact_meshtying_contact_bridge.hpp"
@@ -27,6 +26,7 @@
 #include "4C_mortar_manager_base.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_model_evaluator_generic.hpp"
+#include "4C_thermo_adapter.hpp"
 #include "4C_tsi_defines.hpp"
 #include "4C_tsi_utils.hpp"
 

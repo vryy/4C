@@ -10,9 +10,9 @@
 
 #include "4C_thermo_dyn.hpp"
 
-#include "4C_adapter_thermo.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
+#include "4C_thermo_adapter.hpp"
 #include "4C_thermo_resulttest.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>

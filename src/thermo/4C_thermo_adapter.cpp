@@ -11,7 +11,7 @@
 /*----------------------------------------------------------------------*
  | headers                                                  bborn 08/09 |
  *----------------------------------------------------------------------*/
-#include "4C_adapter_thermo.hpp"
+#include "4C_thermo_adapter.hpp"
 
 #include "4C_global_data.hpp"
 #include "4C_inpar_thermo.hpp"

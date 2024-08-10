@@ -18,7 +18,6 @@
 
 #include "4C_config.hpp"
 
-#include "4C_adapter_thermo.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
@@ -27,6 +26,7 @@
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_thermo_adapter.hpp"
 #include "4C_timestepping_mstep.hpp"
 
 FOUR_C_NAMESPACE_OPEN

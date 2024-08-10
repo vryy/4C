@@ -68,7 +68,6 @@ adapter/4C_adapter_str_*                       @baci/team_structure
 adapter/4C_adapter_str_fpsiwrapper*            @baci/team_poro @baci/team_fluid
 adapter/4C_adapter_str_poro_wrapper*           @baci/team_poro
 adapter/4C_adapter_structure_scatra_ele*       @baci/team_scatra
-adapter/4C_adapter_thermo*                     @baci/team_thermo
 
 ale/                       @baci/team_fluid
 
