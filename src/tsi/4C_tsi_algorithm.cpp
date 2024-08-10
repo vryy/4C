@@ -96,9 +96,8 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     FOUR_C_THROW("old structural time integration no longer supported in tsi");
   else
   {
-    Teuchos::RCP<Adapter::ThermoBaseAlgorithm> thermo =
-        Teuchos::rcp(new Adapter::ThermoBaseAlgorithm(
-            Global::Problem::instance()->tsi_dynamic_params(), thermodis));
+    Teuchos::RCP<Thermo::BaseAlgorithm> thermo = Teuchos::rcp(
+        new Thermo::BaseAlgorithm(Global::Problem::instance()->tsi_dynamic_params(), thermodis));
     thermo_ = thermo->thermo_fieldrcp();
 
     //  // access structural dynamic params list which will be possibly modified while creating the
@@ -335,7 +334,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
 
 
 /*----------------------------------------------------------------------*
- | communicate the displacement vector to THR field          dano 12/11 |
+ | communicate the displacement vector to Thermo field          dano 12/11 |
  | enable visualisation of thermal variables on deformed body           |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::output_deformation_in_thr(

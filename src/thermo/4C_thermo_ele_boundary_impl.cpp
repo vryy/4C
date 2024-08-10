@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief internal implementation of thermo boundary elements (ThermoBoundary)
+\brief internal implementation of thermo boundary elements (FaceElement)
 
 \level 1
 
@@ -31,8 +31,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::TemperBoundaryImplInterface*
-Discret::ELEMENTS::TemperBoundaryImplInterface::impl(const Core::Elements::Element* ele)
+Thermo::TemperBoundaryImplInterface* Thermo::TemperBoundaryImplInterface::impl(
+    const Core::Elements::Element* ele)
 {
   // we assume here, that numdofpernode is equal for every node within
   // the discretization and does not change during the computations
@@ -102,7 +102,7 @@ Discret::ELEMENTS::TemperBoundaryImplInterface::impl(const Core::Elements::Eleme
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl(int numdofpernode)
+Thermo::TemperBoundaryImpl<distype>::TemperBoundaryImpl(int numdofpernode)
     : numdofpernode_(numdofpernode),
       xyze_(true),
       xsi_(true),
@@ -121,9 +121,8 @@ Discret::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl(int numdofper
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
-    const Discret::ELEMENTS::ThermoBoundary* ele, Teuchos::ParameterList& params,
-    const Core::FE::Discretization& discretization,
+int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
+    Teuchos::ParameterList& params, const Core::FE::Discretization& discretization,
     const Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -144,14 +143,15 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
   // get the material (of the parent element)
   Core::Elements::Element* genericparent = ele->parent_element();
   // make sure the static cast below is really valid
-  FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::Thermo*>(genericparent) != nullptr,
+  FOUR_C_ASSERT(dynamic_cast<Thermo::Element*>(genericparent) != nullptr,
       "Parent element is no fluid element");
-  Discret::ELEMENTS::Thermo* parentele = static_cast<Discret::ELEMENTS::Thermo*>(genericparent);
+  Thermo::Element* parentele = static_cast<Thermo::Element*>(genericparent);
   Teuchos::RCP<Core::Mat::Material> mat = parentele->material();
 
   // Now, check for the action parameter
-  const THR::BoundaryAction action = Core::UTILS::GetAsEnum<THR::BoundaryAction>(params, "action");
-  if (action == THR::calc_normal_vectors)
+  const Thermo::BoundaryAction action =
+      Core::UTILS::GetAsEnum<Thermo::BoundaryAction>(params, "action");
+  if (action == Thermo::calc_normal_vectors)
   {
     // access the global vector
     const Teuchos::RCP<Epetra_MultiVector> normals =
@@ -185,7 +185,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
     }
   }
 
-  else if (action == THR::ba_integrate_shape_functions)
+  else if (action == Thermo::ba_integrate_shape_functions)
   {
     // NOTE: add area value only for elements which are NOT ghosted!
     const bool addarea = (ele->owner() == discretization.get_comm().MyPID());
@@ -193,7 +193,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
   }
 
   // surface heat transfer boundary condition q^_c = h (T - T_infty)
-  else if (action == THR::calc_thermo_fextconvection)
+  else if (action == Thermo::calc_thermo_fextconvection)
   {
     // get node coordinates ( (nsd_+1): domain, nsd_: boundary )
     Core::Geo::fillInitialPositionArray<distype, nsd_ + 1, Core::LinAlg::Matrix<nsd_ + 1, nen_>>(
@@ -313,7 +313,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
     }  // geo_linear
 
     // initialise the vectors
-    // evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
+    // evaluate() is called the first time in Thermo::BaseAlgorithm: at this stage
     // the coupling field is not yet known. Pass coupling vectors filled with zeros
     // the size of the vectors is the length of the location vector*nsd_
     std::vector<double> mydisp(((la[0].lm_).size()) * nsd_, 0.0);
@@ -349,18 +349,18 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
 
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
     // check the time integrator
-    const Inpar::THR::DynamicType timint = Core::UTILS::GetAsEnum<Inpar::THR::DynamicType>(
-        params, "time integrator", Inpar::THR::dyna_undefined);
+    const Inpar::Thermo::DynamicType timint = Core::UTILS::GetAsEnum<Inpar::Thermo::DynamicType>(
+        params, "time integrator", Inpar::Thermo::dyna_undefined);
     switch (timint)
     {
-      case Inpar::THR::dyna_statics:
+      case Inpar::Thermo::dyna_statics:
       {
         if (*tempstate == "Tempn")
           FOUR_C_THROW("Old temperature T_n is not allowed with static time integrator");
         // continue
         break;
       }
-      case Inpar::THR::dyna_onesteptheta:
+      case Inpar::Thermo::dyna_onesteptheta:
       {
         // Note: efext is scaled with theta in thrtimint_ost.cpp. Because the
         // convective boundary condition is nonlinear and produces a term in the
@@ -370,14 +370,14 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
         etang.scale(theta);
         break;
       }
-      case Inpar::THR::dyna_genalpha:
+      case Inpar::Thermo::dyna_genalpha:
       {
         const double alphaf = params.get<double>("alphaf");
         // combined tangent and conductivity matrix to one global matrix
         etang.scale(alphaf);
         break;
       }
-      case Inpar::THR::dyna_undefined:
+      case Inpar::Thermo::dyna_undefined:
       default:
       {
         FOUR_C_THROW("Don't know what to do...");
@@ -390,7 +390,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
   // evaluate coupling matrix k_Td for surface heat transfer boundary condition
   // q^_c da = h (T - T_infty) da with da(u)
   // --> k_Td: d(da(u))/du
-  else if (action == THR::calc_thermo_fextconvection_coupltang)
+  else if (action == Thermo::calc_thermo_fextconvection_coupltang)
   {
     // -------------------------- geometrically nonlinear TSI problem
 
@@ -398,7 +398,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
     Inpar::Solid::KinemType kintype = parentele->kintype_;
 
     // initialise the vectors
-    // evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
+    // evaluate() is called the first time in Thermo::BaseAlgorithm: at this stage
     // the coupling field is not yet known. Pass coupling vectors filled with zeros
     // the size of the vectors is the length of the location vector*nsd_
     std::vector<double> mydisp(((la[0].lm_).size()) * nsd_, 0.0);
@@ -530,18 +530,19 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
 
         // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
         // check the time integrator
-        const Inpar::THR::DynamicType timint = Core::UTILS::GetAsEnum<Inpar::THR::DynamicType>(
-            params, "time integrator", Inpar::THR::dyna_undefined);
+        const Inpar::Thermo::DynamicType timint =
+            Core::UTILS::GetAsEnum<Inpar::Thermo::DynamicType>(
+                params, "time integrator", Inpar::Thermo::dyna_undefined);
         switch (timint)
         {
-          case Inpar::THR::dyna_statics:
+          case Inpar::Thermo::dyna_statics:
           {
             if (*tempstate == "Tempn")
               FOUR_C_THROW("Old temperature T_n is not allowed with static time integrator");
             // continue
             break;
           }
-          case Inpar::THR::dyna_onesteptheta:
+          case Inpar::Thermo::dyna_onesteptheta:
           {
             // Note: efext is scaled with theta in thrtimint_ost.cpp. Because the
             // convective boundary condition is nonlinear and produces a term in the
@@ -551,7 +552,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
             etangcoupl.scale(theta);
             break;
           }
-          case Inpar::THR::dyna_genalpha:
+          case Inpar::Thermo::dyna_genalpha:
           {
             // Note: efext is scaled with theta in thrtimint_ost.cpp. Because the
             // convective boundary condition is nonlinear and produces a term in the
@@ -561,7 +562,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
             etangcoupl.scale(alphaf);
             break;
           }
-          case Inpar::THR::dyna_undefined:
+          case Inpar::Thermo::dyna_undefined:
           default:
           {
             FOUR_C_THROW("Don't know what to do...");
@@ -575,7 +576,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
 
   else
     FOUR_C_THROW("Unknown type of action for Temperature Implementation: %s",
-        THR::BoundaryActionToString(action).c_str());
+        Thermo::BoundaryActionToString(action).c_str());
 
   return 0;
 }  // evaluate()
@@ -586,10 +587,10 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
  | i.e. calculate q^ = q . n over surface da                            |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate_neumann(
-    const Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    const Core::FE::Discretization& discretization, const Core::Conditions::Condition& condition,
-    const std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1)
+int Thermo::TemperBoundaryImpl<distype>::evaluate_neumann(const Core::Elements::Element* ele,
+    Teuchos::ParameterList& params, const Core::FE::Discretization& discretization,
+    const Core::Conditions::Condition& condition, const std::vector<int>& lm,
+    Core::LinAlg::SerialDenseVector& elevec1)
 {
   // prepare nurbs
   prepare_nurbs_eval(ele, discretization);
@@ -599,7 +600,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate_neumann(
       ele, xyze_);
 
   // integration points and weights
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
 
   // find out whether we will use a time curve
   const double time = params.get("total time", -1.0);
@@ -669,7 +670,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate_neumann(
  | evaluate a convective thermo boundary condition          dano 12/10 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_convection_fint_cond(
+void Thermo::TemperBoundaryImpl<distype>::calculate_convection_fint_cond(
     const Core::Elements::Element* ele, Core::LinAlg::Matrix<nen_, nen_>* econd,
     Core::LinAlg::Matrix<nen_, 1>* efext, const double coeff, const double surtemp,
     const std::string& tempstate)
@@ -677,7 +678,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_convection_fint_c
   // ------------------------------- integration loop for one element
 
   // integrations points and weights
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // ----------------------------------------- loop over Gauss Points
@@ -751,7 +752,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_convection_fint_c
  | evaluate a convective thermo boundary condition          dano 11/12 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_nln_convection_fint_cond(
+void Thermo::TemperBoundaryImpl<distype>::calculate_nln_convection_fint_cond(
     const Core::Elements::Element* ele,
     const std::vector<double>& disp,  // current displacements
     Core::LinAlg::Matrix<nen_, nen_>* econd,
@@ -777,7 +778,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_nln_convection_fi
   // ------------------------------- integration loop for one element
 
   // integrations points and weights for 2D, i.e. dim of boundary element
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // set up matrices and parameters needed for the evaluation of current
@@ -949,7 +950,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_nln_convection_fi
  | evaluate shape functions and int. factor at int. point     gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::TemperBoundaryImpl<distype>::eval_shape_func_and_int_fac(
+void Thermo::TemperBoundaryImpl<distype>::eval_shape_func_and_int_fac(
     const Core::FE::IntPointsAndWeights<nsd_>& intpoints,  // integration points
     const int& iquad,                                      // id of current Gauss point
     const int& eleid                                       // the element id
@@ -991,7 +992,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::eval_shape_func_and_int_fac
  | get constant normal                                        gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::TemperBoundaryImpl<distype>::get_const_normal(
+void Thermo::TemperBoundaryImpl<distype>::get_const_normal(
     Core::LinAlg::Matrix<nsd_ + 1, 1>& normal,
     const Core::LinAlg::Matrix<nsd_ + 1, nen_>& xyze  // node coordinates
 ) const
@@ -1045,7 +1046,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::get_const_normal(
  | integrate shapefunctions over surface (private)            gjb 02/09 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::TemperBoundaryImpl<distype>::integrate_shape_functions(
+void Thermo::TemperBoundaryImpl<distype>::integrate_shape_functions(
     const Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec1, const bool addarea)
 {
@@ -1057,7 +1058,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::integrate_shape_functions(
       ele, xyze_);
 
   // integrations points and weights
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
   for (int iquad = 0; iquad < intpoints.ip().nquad; iquad++)
@@ -1093,7 +1094,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::integrate_shape_functions(
  | evaluate sqrt of determinant of metric at gp (private)    dano 12/12 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::TemperBoundaryImpl<distype>::surface_integration(
+void Thermo::TemperBoundaryImpl<distype>::surface_integration(
     double& detA, Core::LinAlg::Matrix<nsd_ + 1, 1>& normal,
     const Core::LinAlg::Matrix<nen_, nsd_ + 1>& xcurr  // current coordinates of nodes
 )
@@ -1157,7 +1158,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::surface_integration(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::TemperBoundaryImpl<distype>::prepare_nurbs_eval(
+void Thermo::TemperBoundaryImpl<distype>::prepare_nurbs_eval(
     const Core::Elements::Element* ele,             // the element whose matrix is calculated
     const Core::FE::Discretization& discretization  // current discretisation
 )

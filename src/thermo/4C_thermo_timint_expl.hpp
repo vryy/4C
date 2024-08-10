@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* belongs to thermal dynamics namespace */
-namespace THR
+namespace Thermo
 {
   /*====================================================================*/
   /*!
@@ -26,7 +26,7 @@ namespace THR
    *        with \b explicit time integrators
    *
    * <h3> About </h3>
-   * This object bridges the gap between the base time integator THR::TimInt
+   * This object bridges the gap between the base time integator Thermo::TimInt
    * and the specific implementation of explicit time integrators.
    *
    * \author bborn
@@ -66,10 +66,10 @@ namespace THR
 
     //! Solve dynamic equilibrium
     //! This is a general wrapper around the specific techniques.
-    Inpar::THR::ConvergenceStatus solve() override
+    Inpar::Thermo::ConvergenceStatus solve() override
     {
       integrate_step();
-      return Inpar::THR::conv_success;
+      return Inpar::Thermo::conv_success;
     }
 
     //! build linear system tangent matrix, rhs/force residual
@@ -154,7 +154,7 @@ namespace THR
     //@{
 
     //! Return time integrator name
-    enum Inpar::THR::DynamicType method_name() const override = 0;
+    enum Inpar::Thermo::DynamicType method_name() const override = 0;
 
     //! These time integrators are all explicit (mark their name)
     bool method_implicit() override { return false; }
@@ -210,7 +210,7 @@ namespace THR
     // currently nothing
   };
 
-}  // namespace THR
+}  // namespace Thermo
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

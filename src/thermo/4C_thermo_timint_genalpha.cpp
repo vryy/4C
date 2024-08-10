@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | calc coefficients for given rho_inf                      seitz 03/16 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::calc_coeff()
+void Thermo::TimIntGenAlpha::calc_coeff()
 {
   // rho_inf specified --> calculate optimal parameters
   if (rho_inf_ != -1.)
@@ -33,7 +33,7 @@ void THR::TimIntGenAlpha::calc_coeff()
 /*----------------------------------------------------------------------*
  | check if coefficients are in correct regime               dano 10/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::verify_coeff()
+void Thermo::TimIntGenAlpha::verify_coeff()
 {
   // alpha_f
   if ((alphaf_ < 0.0) or (alphaf_ > 1.0)) FOUR_C_THROW("alpha_f out of range [0.0,1.0]");
@@ -51,7 +51,7 @@ void THR::TimIntGenAlpha::verify_coeff()
   // are exclusively(!) carried out at the end-point t_{n+1} of each time interval, but
   // never explicitly at some generalised midpoint, such as t_{n+1-\alpha_f}. Thus, any
   // cumbersome extrapolation of history variables, etc. becomes obsolete.
-  if (midavg_ != Inpar::THR::midavg_trlike)
+  if (midavg_ != Inpar::Thermo::midavg_trlike)
     FOUR_C_THROW("mid-averaging of internal forces only implemented TR-like");
 
   // done
@@ -63,12 +63,12 @@ void THR::TimIntGenAlpha::verify_coeff()
 /*----------------------------------------------------------------------*
  | constructor                                               dano 10/09 |
  *----------------------------------------------------------------------*/
-THR::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& ioparams,
+Thermo::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimIntImpl(ioparams, tdynparams, xparams, actdis, solver, output),
-      midavg_(Core::UTILS::IntegralValue<Inpar::THR::MidAverageEnum>(
+      midavg_(Core::UTILS::IntegralValue<Inpar::Thermo::MidAverageEnum>(
           tdynparams.sublist("GENALPHA"), "GENAVG")),
       /* iterupditer_(false), */
       gamma_(tdynparams.sublist("GENALPHA").get<double>("GAMMA")),
@@ -101,7 +101,7 @@ THR::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& ioparams,
               << "   alpha_f = " << alphaf_ << std::endl
               << "   alpha_m = " << alpham_ << std::endl
               << "   gamma = " << gamma_ << std::endl
-              << "   midavg = " << Inpar::THR::MidAverageString(midavg_) << std::endl;
+              << "   midavg = " << Inpar::Thermo::MidAverageString(midavg_) << std::endl;
   }
 
   // determine capacity and initial temperature rates
@@ -153,7 +153,7 @@ THR::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& ioparams,
  | Consistent predictor with constant temperatures           dano 10/09 |
  | and consistent temperature rates and temperatures                    |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::predict_const_temp_consist_rate()
+void Thermo::TimIntGenAlpha::predict_const_temp_consist_rate()
 {
   // time step size
   const double dt = (*dt_)[0];
@@ -176,7 +176,7 @@ void THR::TimIntGenAlpha::predict_const_temp_consist_rate()
  | evaluate residual force and its tangent, ie derivative    dano 10/09 |
  | with respect to end-point temperatures \f$T_{n+1}\f$                 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::evaluate_rhs_tang_residual()
+void Thermo::TimIntGenAlpha::evaluate_rhs_tang_residual()
 {
   // build by last converged state and predicted target state
   // the predicted mid-state
@@ -246,7 +246,7 @@ void THR::TimIntGenAlpha::evaluate_rhs_tang_residual()
  | evaluate mid-state vectors by averaging end-point         dano 05/13 |
  | vectors                                                              |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::evaluate_mid_state()
+void Thermo::TimIntGenAlpha::evaluate_mid_state()
 {
   // be careful: in contrast to temporal discretisation of structural field
   // (1-alpha) is used for OLD solution at t_n
@@ -269,7 +269,7 @@ void THR::TimIntGenAlpha::evaluate_mid_state()
  | calculate characteristic/reference norms for              dano 10/09 |
  | temperatures originally by lw                                        |
  *----------------------------------------------------------------------*/
-double THR::TimIntGenAlpha::calc_ref_norm_temperature()
+double Thermo::TimIntGenAlpha::calc_ref_norm_temperature()
 {
   // The reference norms are used to scale the calculated iterative
   // temperature norm and/or the residual force norm. For this
@@ -278,7 +278,7 @@ double THR::TimIntGenAlpha::calc_ref_norm_temperature()
   // points within the timestep (end point, generalized midpoint).
 
   double charnormtemp = 0.0;
-  charnormtemp = THR::Aux::calculate_vector_norm(iternorm_, (*temp_)(0));
+  charnormtemp = Thermo::Aux::calculate_vector_norm(iternorm_, (*temp_)(0));
 
   // rise your hat
   return charnormtemp;
@@ -290,7 +290,7 @@ double THR::TimIntGenAlpha::calc_ref_norm_temperature()
  | calculate characteristic/reference norms for forces       dano 10/09 |
  | originally by lw                                                     |
  *----------------------------------------------------------------------*/
-double THR::TimIntGenAlpha::calc_ref_norm_force()
+double Thermo::TimIntGenAlpha::calc_ref_norm_force()
 {
   // The reference norms are used to scale the calculated iterative
   // temperature norm and/or the residual force norm. For this
@@ -300,19 +300,19 @@ double THR::TimIntGenAlpha::calc_ref_norm_force()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  fintnorm = THR::Aux::calculate_vector_norm(iternorm_, fintm_);
+  fintnorm = Thermo::Aux::calculate_vector_norm(iternorm_, fintm_);
 
   // norm of the external forces
   double fextnorm = 0.0;
-  fextnorm = THR::Aux::calculate_vector_norm(iternorm_, fextm_);
+  fextnorm = Thermo::Aux::calculate_vector_norm(iternorm_, fextm_);
 
   // norm of the capacity forces
   double fcapnorm = 0.0;
-  fcapnorm = THR::Aux::calculate_vector_norm(iternorm_, fcapm_);
+  fcapnorm = Thermo::Aux::calculate_vector_norm(iternorm_, fcapm_);
 
   // norm of the reaction forces
   double freactnorm = 0.0;
-  freactnorm = THR::Aux::calculate_vector_norm(iternorm_, freact_);
+  freactnorm = Thermo::Aux::calculate_vector_norm(iternorm_, freact_);
 
   // determine worst value ==> charactersitic norm
   return std::max(fcapnorm, std::max(fintnorm, std::max(fextnorm, freactnorm)));
@@ -323,7 +323,7 @@ double THR::TimIntGenAlpha::calc_ref_norm_force()
 /*----------------------------------------------------------------------*
  | update after time step                                    dano 05/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::update_iter_incrementally()
+void Thermo::TimIntGenAlpha::update_iter_incrementally()
 {
   // auxiliary global vector holding new temperature rates
   // by extrapolation/scheme on __all__ DOFs. This includes
@@ -356,7 +356,7 @@ void THR::TimIntGenAlpha::update_iter_incrementally()
 /*----------------------------------------------------------------------*
  | iterative iteration update of state                       dano 10/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::update_iter_iteratively()
+void Thermo::TimIntGenAlpha::update_iter_iteratively()
 {
   // new end-point temperatures
   // T_{n+1}^{i+1} := T_{n+1}^{i} + IncT_{n+1}^{i}
@@ -375,7 +375,7 @@ void THR::TimIntGenAlpha::update_iter_iteratively()
 /*----------------------------------------------------------------------*
  | update after time step                                    dano 10/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::update_step_state()
+void Thermo::TimIntGenAlpha::update_step_state()
 {
   // update all old state at t_{n-1} etc
   // important for step size adaptivity
@@ -408,7 +408,7 @@ void THR::TimIntGenAlpha::update_step_state()
  | update after time step after output on element level      dano 05/13 |
  | update anything that needs to be updated at the element level        |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::update_step_element()
+void Thermo::TimIntGenAlpha::update_step_element()
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -416,7 +416,7 @@ void THR::TimIntGenAlpha::update_step_element()
   p.set("total time", timen_);
   p.set("delta time", (*dt_)[0]);
   // action for elements
-  p.set<int>("action", THR::calc_thermo_update_istep);
+  p.set<int>("action", Thermo::calc_thermo_update_istep);
   // go to elements
   discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
@@ -426,7 +426,7 @@ void THR::TimIntGenAlpha::update_step_element()
 /*----------------------------------------------------------------------*
  | read restart forces                                       dano 10/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::read_restart_force()
+void Thermo::TimIntGenAlpha::read_restart_force()
 {
   // read the vectors that were written in WriteRestartForce()
   Core::IO::DiscretizationReader reader(
@@ -444,7 +444,8 @@ void THR::TimIntGenAlpha::read_restart_force()
 /*----------------------------------------------------------------------*
  | write internal and external forces for restart            dano 07/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+void Thermo::TimIntGenAlpha::write_restart_force(
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   // in contrast to former implementation we save the current vectors.
   // This is required in case of materials with history.
@@ -460,13 +461,13 @@ void THR::TimIntGenAlpha::write_restart_force(Teuchos::RCP<Core::IO::Discretizat
 /*----------------------------------------------------------------------*
  | evaluate the internal force and the tangent               dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::apply_force_tang_internal(const double time,  //!< evaluation time
-    const double dt,                                                    //!< step size
-    const Teuchos::RCP<Epetra_Vector> temp,                             //!< temperature state
-    const Teuchos::RCP<Epetra_Vector> tempi,                            //!< residual temperatures
-    Teuchos::RCP<Epetra_Vector> fcap,                                   //!< capacity force
-    Teuchos::RCP<Epetra_Vector> fint,                                   //!< internal force
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang                       //!< tangent matrix
+void Thermo::TimIntGenAlpha::apply_force_tang_internal(const double time,  //!< evaluation time
+    const double dt,                                                       //!< step size
+    const Teuchos::RCP<Epetra_Vector> temp,                                //!< temperature state
+    const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperatures
+    Teuchos::RCP<Epetra_Vector> fcap,              //!< capacity force
+    Teuchos::RCP<Epetra_Vector> fint,              //!< internal force
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang  //!< tangent matrix
 )
 {
   //! create the parameters for the discretization
@@ -490,11 +491,11 @@ void THR::TimIntGenAlpha::apply_force_tang_internal(const double time,  //!< eva
 /*----------------------------------------------------------------------*
  | evaluate the internal force                               dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::apply_force_internal(const double time,  //!< evaluation time
-    const double dt,                                               //!< step size
-    const Teuchos::RCP<Epetra_Vector> temp,                        //!< temperature state
-    const Teuchos::RCP<Epetra_Vector> tempi,                       //!< incremental temperatures
-    Teuchos::RCP<Epetra_Vector> fint                               //!< internal force
+void Thermo::TimIntGenAlpha::apply_force_internal(const double time,  //!< evaluation time
+    const double dt,                                                  //!< step size
+    const Teuchos::RCP<Epetra_Vector> temp,                           //!< temperature state
+    const Teuchos::RCP<Epetra_Vector> tempi,                          //!< incremental temperatures
+    Teuchos::RCP<Epetra_Vector> fint                                  //!< internal force
 )
 {
   //! create the parameters for the discretization
@@ -514,7 +515,7 @@ void THR::TimIntGenAlpha::apply_force_internal(const double time,  //!< evaluati
 /*----------------------------------------------------------------------*
  | evaluate the convective boundary condition                dano 06/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::apply_force_external_conv(const double time,  //!< evaluation time
+void Thermo::TimIntGenAlpha::apply_force_external_conv(const double time,  //!< evaluation time
     const Teuchos::RCP<Epetra_Vector> tempn,       //!< old temperature state T_n
     const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state T_n+1
     Teuchos::RCP<Epetra_Vector> fext,              //!< external force

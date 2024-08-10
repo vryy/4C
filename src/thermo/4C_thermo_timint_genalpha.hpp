@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                     dano 05/13 |
  *----------------------------------------------------------------------*/
-namespace THR
+namespace Thermo
 {
   /*====================================================================*/
   /*!
@@ -80,7 +80,10 @@ namespace THR
     //@{
 
     //! Return name
-    enum Inpar::THR::DynamicType method_name() const override { return Inpar::THR::dyna_genalpha; }
+    enum Inpar::Thermo::DynamicType method_name() const override
+    {
+      return Inpar::Thermo::dyna_genalpha;
+    }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
@@ -201,7 +204,7 @@ namespace THR
     //! @name set-up
     //@{
     //! mid-average type more at #MidAverageEnum
-    enum Inpar::THR::MidAverageEnum midavg_;
+    enum Inpar::Thermo::MidAverageEnum midavg_;
     //@}
 
     //! @name Key coefficients
@@ -259,7 +262,7 @@ namespace THR
 
   };  // class TimIntGenAlpha
 
-}  // namespace THR
+}  // namespace Thermo
 
 
 FOUR_C_NAMESPACE_CLOSE

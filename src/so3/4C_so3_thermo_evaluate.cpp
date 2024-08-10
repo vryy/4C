@@ -213,7 +213,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       Core::LinAlg::Matrix<numdofperelement_, numdofperelement_> myemat(true);
 
       // initialise the vectors
-      // evaluate() is called the first time in ThermoBaseAlgorithm: at this stage the
+      // evaluate() is called the first time in Thermo::BaseAlgorithm: at this stage the
       // coupling field is not yet known. Pass coupling vectors filled with zeros
       // the size of the vectors is the length of the location vector/nsd_
       std::vector<double> mytempnp(((la[0].lm_).size()) / nsd_, 0.0);
@@ -303,7 +303,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       Core::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       // initialise the vectors
-      // evaluate() is called the first time in ThermoBaseAlgorithm: at this stage the
+      // evaluate() is called the first time in Thermo::BaseAlgorithm: at this stage the
       // coupling field is not yet known. Pass coupling vectors filled with zeros
       // the size of the vectors is the length of the location vector/nsd_
       std::vector<double> mytempnp(((la[0].lm_).size()) / nsd_, 0.0);
@@ -505,7 +505,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       Core::LinAlg::Matrix<numgpt_post, numstr_> couplstress(true);
 
       // initialise the vectors
-      // evaluate() is called the first time in ThermoBaseAlgorithm: at this stage the
+      // evaluate() is called the first time in Thermo::BaseAlgorithm: at this stage the
       // coupling field is not yet known. Pass coupling vectors filled with zeros
       // the size of the vectors is the length of the location vector/nsd_
       std::vector<double> mytempnp(((la[0].lm_).size()) / nsd_, 0.0);

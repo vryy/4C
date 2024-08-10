@@ -85,7 +85,7 @@ namespace Discret
       int numgpt_;
       //! static const is required for fixedsizematrices
       //! TODO maybe more beauty is possible
-      static constexpr int numgpt_post = THR::DisTypeToSTRNumGaussPoints<distype>::nquad;
+      static constexpr int numgpt_post = Thermo::DisTypeToSTRNumGaussPoints<distype>::nquad;
 
       //! @name Acess methods
 

@@ -35,7 +35,7 @@ namespace TSI
   //!
   //!
   //!  Base class of TSI algorithms. Derives from structure_base_algorithm and
-  //!  ThermoBaseAlgorithm with temperature field.
+  //!  Thermo::BaseAlgorithm with temperature field.
   //!  There can (and will) be different subclasses that implement different
   //!  coupling schemes.
   //!

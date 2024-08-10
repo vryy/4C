@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                           dano 08/09 |
  *----------------------------------------------------------------------*/
-namespace THR
+namespace Thermo
 {
   //! Template Meta Programming version of switch over discretization type
   template <Core::FE::CellType distype>
@@ -325,7 +325,7 @@ namespace THR
     static constexpr int nquad = 27;
   };
 
-}  // namespace THR
+}  // namespace Thermo
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

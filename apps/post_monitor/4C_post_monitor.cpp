@@ -1539,7 +1539,7 @@ void ThermoMonWriter::write_thr_result(std::ofstream& outfile, PostField*& field
   // extrapolate heatfluxes/temperature gradients to nodes
   // and assemble them in two global vectors
   Teuchos::ParameterList p;
-  p.set("action", THR::postproc_thermo_heatflux);
+  p.set("action", Thermo::postproc_thermo_heatflux);
   p.set("heatfluxtype", "ndxyz");
   p.set("gpheatfluxmap", data);
   p.set("total time", -1.0);

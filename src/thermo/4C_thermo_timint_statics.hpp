@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                    bborn 08/09 |
  *----------------------------------------------------------------------*/
-namespace THR
+namespace Thermo
 {
   /*====================================================================*/
   /*!
@@ -69,7 +69,10 @@ namespace THR
     //@{
 
     //! Return name
-    enum Inpar::THR::DynamicType method_name() const override { return Inpar::THR::dyna_statics; }
+    enum Inpar::Thermo::DynamicType method_name() const override
+    {
+      return Inpar::Thermo::dyna_statics;
+    }
 
     //! Provide number of steps, a single-step method returns 1
     int method_steps() override { return 1; }
@@ -196,7 +199,7 @@ namespace THR
 
   };  // class TimIntStatics
 
-}  // namespace THR
+}  // namespace Thermo
 
 
 /*----------------------------------------------------------------------*/

@@ -578,7 +578,7 @@ bool Discret::ELEMENTS::So3Plast<distype>::read_element(const std::string& elety
   }
   else  // default integration
   {
-    Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+    Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
     numgpt_ = intpoints.ip().nquad;
     xsi_.resize(numgpt_);
     wgt_.resize(numgpt_);

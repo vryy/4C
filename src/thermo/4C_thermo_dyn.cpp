@@ -34,8 +34,8 @@ void thr_dyn_drt()
   const Teuchos::ParameterList& tdyn = Global::Problem::instance()->thermal_dynamic_params();
 
   // create instance of thermo basis algorithm (no structure discretization)
-  Teuchos::RCP<Adapter::ThermoBaseAlgorithm> thermoonly =
-      Teuchos::rcp(new Adapter::ThermoBaseAlgorithm(tdyn, thermodis));
+  Teuchos::RCP<Thermo::BaseAlgorithm> thermoonly =
+      Teuchos::rcp(new Thermo::BaseAlgorithm(tdyn, thermodis));
 
   // do restart if demanded from input file
   const int restart = Global::Problem::instance()->restart();

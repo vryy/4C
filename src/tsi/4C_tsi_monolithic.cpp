@@ -489,7 +489,7 @@ void TSI::Monolithic::newton_full()
 
   // create full monolithic rhs vector
   // make negative residual not necessary: rhs_ is already negative
-  // (STR/THR)-RHS is put negative in prepare_system_for_newton_solve()
+  // (STR/Thermo)-RHS is put negative in prepare_system_for_newton_solve()
   setup_rhs();
 
   // do the thermo contact modifications all at once
@@ -559,7 +559,7 @@ void TSI::Monolithic::newton_full()
 
     // create full monolithic rhs vector
     // make negative residual not necessary: rhs_ is already negative
-    // (STR/THR)-RHS is put negative in prepare_system_for_newton_solve()
+    // (STR/Thermo)-RHS is put negative in prepare_system_for_newton_solve()
     setup_rhs();
 
     // do the thermo contact modifications all at once
@@ -734,7 +734,7 @@ void TSI::Monolithic::ptc()
 
   // create full monolithic rhs vector
   // make negative residual not necessary: rhs_ is already negative
-  // (STR/THR)-RHS is put negative in prepare_system_for_newton_solve()
+  // (STR/Thermo)-RHS is put negative in prepare_system_for_newton_solve()
   setup_rhs();
 
   apply_dbc();
@@ -839,7 +839,7 @@ void TSI::Monolithic::ptc()
 
     // create full monolithic rhs vector
     // make negative residual not necessary: rhs_ is already negative
-    // (STR/THR)-RHS is put negative in prepare_system_for_newton_solve()
+    // (STR/Thermo)-RHS is put negative in prepare_system_for_newton_solve()
     setup_rhs();
 
     // apply Dirichlet boundary conditions on System matrix and RHS
@@ -1044,7 +1044,7 @@ void TSI::Monolithic::evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
 #endif
 
 #ifdef TSIMONOLITHASOUTPUT
-  std::cout << "d_n+1 inserted in THR field\n" << *(structure_field()->Dispnp()) << std::endl;
+  std::cout << "d_n+1 inserted in Thermo field\n" << *(structure_field()->Dispnp()) << std::endl;
   std::cout << "v_n+1\n" << *vel_ << std::endl;
 #endif  // TSIMONOLITHASOUTPUT
 
@@ -1475,13 +1475,13 @@ bool TSI::Monolithic::converged()
   // thermal residual forces
   switch (normtypethrrhs_)
   {
-    case Inpar::THR::convnorm_abs:
+    case Inpar::Thermo::convnorm_abs:
       convthrrhs = normthrrhs_ < tolthrrhs_;
       break;
-    case Inpar::THR::convnorm_rel:
+    case Inpar::Thermo::convnorm_rel:
       convthrrhs = normthrrhs_ < normthrrhsiter0_ * tolthrrhs_;
       break;
-    case Inpar::THR::convnorm_mix:
+    case Inpar::Thermo::convnorm_mix:
       convthrrhs = ((normthrrhs_ < tolthrrhs_) or (normthrrhs_ < normthrrhsiter0_ * tolthrrhs_));
       break;
     default:
@@ -1492,13 +1492,13 @@ bool TSI::Monolithic::converged()
   // residual temperatures
   switch (normtypetempi_)
   {
-    case Inpar::THR::convnorm_abs:
+    case Inpar::Thermo::convnorm_abs:
       convtemp = normtempi_ < toltempi_;
       break;
-    case Inpar::THR::convnorm_rel:
+    case Inpar::Thermo::convnorm_rel:
       convtemp = normtempi_ < normtempiiter0_ * toltempi_;
       break;
-    case Inpar::THR::convnorm_mix:
+    case Inpar::Thermo::convnorm_mix:
       convtemp = ((normtempi_ < toltempi_) or (normtempi_ < normtempiiter0_ * toltempi_));
       break;
     default:
@@ -1643,13 +1643,13 @@ void TSI::Monolithic::print_newton_iter_header(FILE* ofile)
   // ------------------------------------------------------------- thermo
   switch (normtypethrrhs_)
   {
-    case Inpar::THR::convnorm_rel:
+    case Inpar::Thermo::convnorm_rel:
       oss << std::setw(18) << "rel-thr-res-norm";
       break;
-    case Inpar::THR::convnorm_abs:
+    case Inpar::Thermo::convnorm_abs:
       oss << std::setw(18) << "abs-thr-res-norm";
       break;
-    case Inpar::THR::convnorm_mix:
+    case Inpar::Thermo::convnorm_mix:
       oss << std::setw(18) << "mix-thr-res-norm";
       break;
     default:
@@ -1659,13 +1659,13 @@ void TSI::Monolithic::print_newton_iter_header(FILE* ofile)
 
   switch (normtypetempi_)
   {
-    case Inpar::THR::convnorm_rel:
+    case Inpar::Thermo::convnorm_rel:
       oss << std::setw(16) << "rel-temp-norm";
       break;
-    case Inpar::THR::convnorm_abs:
+    case Inpar::Thermo::convnorm_abs:
       oss << std::setw(16) << "abs-temp-norm";
       break;
-    case Inpar::THR::convnorm_mix:
+    case Inpar::Thermo::convnorm_mix:
       oss << std::setw(16) << "mix-temp-norm";
       break;
     default:
@@ -1809,14 +1809,14 @@ void TSI::Monolithic::print_newton_iter_text(FILE* ofile)
   // ------------------------------------------------------------- thermo
   switch (normtypethrrhs_)
   {
-    case Inpar::THR::convnorm_abs:
+    case Inpar::Thermo::convnorm_abs:
       oss << std::setw(18) << std::setprecision(5) << std::scientific << normthrrhs_;
       break;
-    case Inpar::THR::convnorm_rel:
+    case Inpar::Thermo::convnorm_rel:
       oss << std::setw(18) << std::setprecision(5) << std::scientific
           << normthrrhs_ / normthrrhsiter0_;
       break;
-    case Inpar::THR::convnorm_mix:
+    case Inpar::Thermo::convnorm_mix:
       oss << std::setw(18) << std::setprecision(5) << std::scientific
           << std::min(normthrrhs_, normthrrhs_ / normthrrhsiter0_);
       break;
@@ -1827,14 +1827,14 @@ void TSI::Monolithic::print_newton_iter_text(FILE* ofile)
 
   switch (normtypetempi_)
   {
-    case Inpar::THR::convnorm_abs:
+    case Inpar::Thermo::convnorm_abs:
       oss << std::setw(16) << std::setprecision(5) << std::scientific << normtempi_;
       break;
-    case Inpar::THR::convnorm_rel:
+    case Inpar::Thermo::convnorm_rel:
       oss << std::setw(16) << std::setprecision(5) << std::scientific
           << normtempi_ / normtempiiter0_;
       break;
-    case Inpar::THR::convnorm_mix:
+    case Inpar::Thermo::convnorm_mix:
       oss << std::setw(16) << std::setprecision(5) << std::scientific
           << std::min(normtempi_, normtempi_ / normtempiiter0_);
       break;
@@ -2005,7 +2005,7 @@ void TSI::Monolithic::apply_thr_coupl_matrix(
   // create the parameters for the discretization
   Teuchos::ParameterList tparams;
   // action for elements
-  const THR::Action action = THR::calc_thermo_coupltang;
+  const Thermo::Action action = Thermo::calc_thermo_coupltang;
   tparams.set<int>("action", action);
   // other parameters that might be needed by the elements
   tparams.set("delta time", dt());
@@ -2013,21 +2013,21 @@ void TSI::Monolithic::apply_thr_coupl_matrix(
 
   // create specific time integrator
   const Teuchos::ParameterList& tdyn = Global::Problem::instance()->thermal_dynamic_params();
-  tparams.set<int>(
-      "time integrator", Core::UTILS::IntegralValue<Inpar::THR::DynamicType>(tdyn, "DYNAMICTYP"));
+  tparams.set<int>("time integrator",
+      Core::UTILS::IntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYP"));
   tparams.set<int>("structural time integrator", strmethodname_);
   double timefac = -1.;
-  switch (Core::UTILS::IntegralValue<Inpar::THR::DynamicType>(tdyn, "DYNAMICTYP"))
+  switch (Core::UTILS::IntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYP"))
   {
     // static analysis
-    case Inpar::THR::dyna_statics:
+    case Inpar::Thermo::dyna_statics:
     {
       timefac = 1.;
       // continue
       break;
     }
     // dynamic analysis
-    case Inpar::THR::dyna_onesteptheta:
+    case Inpar::Thermo::dyna_onesteptheta:
     {
       // K_Td = theta . k_Td^e
       double theta = tdyn.sublist("ONESTEPTHETA").get<double>("THETA");
@@ -2035,7 +2035,7 @@ void TSI::Monolithic::apply_thr_coupl_matrix(
       timefac = theta;
       break;
     }
-    case Inpar::THR::dyna_genalpha:
+    case Inpar::Thermo::dyna_genalpha:
     {
       double alphaf = tdyn.sublist("GENALPHA").get<double>("ALPHA_F");
       tparams.set("alphaf", alphaf);
@@ -2043,13 +2043,13 @@ void TSI::Monolithic::apply_thr_coupl_matrix(
       timefac = alphaf;
       break;
     }
-    case Inpar::THR::dyna_undefined:
+    case Inpar::Thermo::dyna_undefined:
     default:
     {
       FOUR_C_THROW("Don't know what to do...");
       break;
     }
-  }  // switch (THR::DynamicType)
+  }  // switch (Thermo::DynamicType)
 
   switch (strmethodname_)
   {
@@ -2129,25 +2129,25 @@ void TSI::Monolithic::apply_thr_coupl_matrix_conv_bc(
     // create the parameters for the discretization
     Teuchos::ParameterList tparams;
     // action for elements
-    const THR::BoundaryAction action = THR::calc_thermo_fextconvection_coupltang;
+    const Thermo::BoundaryAction action = Thermo::calc_thermo_fextconvection_coupltang;
     tparams.set<int>("action", action);
     // other parameters that might be needed by the elements
     tparams.set("delta time", dt());
     tparams.set("total time", time());
     // create specific time integrator
     const Teuchos::ParameterList& tdyn = Global::Problem::instance()->thermal_dynamic_params();
-    tparams.set<int>(
-        "time integrator", Core::UTILS::IntegralValue<Inpar::THR::DynamicType>(tdyn, "DYNAMICTYP"));
+    tparams.set<int>("time integrator",
+        Core::UTILS::IntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYP"));
     tparams.set<int>("structural time integrator", strmethodname_);
-    switch (Core::UTILS::IntegralValue<Inpar::THR::DynamicType>(tdyn, "DYNAMICTYP"))
+    switch (Core::UTILS::IntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYP"))
     {
       // static analysis
-      case Inpar::THR::dyna_statics:
+      case Inpar::Thermo::dyna_statics:
       {
         break;
       }
       // dynamic analysis
-      case Inpar::THR::dyna_onesteptheta:
+      case Inpar::Thermo::dyna_onesteptheta:
       {
         // K_Td = theta . k_Td^e
         double theta = tdyn.sublist("ONESTEPTHETA").get<double>("THETA");
@@ -2157,7 +2157,7 @@ void TSI::Monolithic::apply_thr_coupl_matrix_conv_bc(
         tparams.set("str_theta", str_theta);
         break;
       }
-      case Inpar::THR::dyna_genalpha:
+      case Inpar::Thermo::dyna_genalpha:
       {
         // K_Td = alphaf . k_Td^e
         double alphaf = tdyn.sublist("GENALPHA").get<double>("ALPHA_F");
@@ -2170,7 +2170,7 @@ void TSI::Monolithic::apply_thr_coupl_matrix_conv_bc(
         tparams.set("str_gamma", str_gamma);
         break;
       }
-      case Inpar::THR::dyna_undefined:
+      case Inpar::Thermo::dyna_undefined:
       default:
       {
         FOUR_C_THROW("Don't know what to do...");
@@ -2408,10 +2408,10 @@ void TSI::Monolithic::set_default_parameters()
   normtypestrrhs_ = Core::UTILS::IntegralValue<Inpar::Solid::ConvNorm>(sdyn_, "NORM_RESF");
   enum Inpar::Solid::VectorNorm striternorm =
       Core::UTILS::IntegralValue<Inpar::Solid::VectorNorm>(sdyn_, "ITERNORM");
-  normtypetempi_ = Core::UTILS::IntegralValue<Inpar::THR::ConvNorm>(tdyn, "NORM_TEMP");
-  normtypethrrhs_ = Core::UTILS::IntegralValue<Inpar::THR::ConvNorm>(tdyn, "NORM_RESF");
-  enum Inpar::THR::VectorNorm thriternorm =
-      Core::UTILS::IntegralValue<Inpar::THR::VectorNorm>(tdyn, "ITERNORM");
+  normtypetempi_ = Core::UTILS::IntegralValue<Inpar::Thermo::ConvNorm>(tdyn, "NORM_TEMP");
+  normtypethrrhs_ = Core::UTILS::IntegralValue<Inpar::Thermo::ConvNorm>(tdyn, "NORM_RESF");
+  enum Inpar::Thermo::VectorNorm thriternorm =
+      Core::UTILS::IntegralValue<Inpar::Thermo::VectorNorm>(tdyn, "ITERNORM");
   // in total when do we reach a converged state for complete problem
   combincrhs_ = Core::UTILS::IntegralValue<Inpar::TSI::BinaryOp>(tsidynmono_, "NORMCOMBI_RESFINC");
 
@@ -2491,22 +2491,22 @@ void TSI::Monolithic::set_default_parameters()
   // what norm is used for thermo
   switch (thriternorm)
   {
-    case Inpar::THR::norm_l1:
+    case Inpar::Thermo::norm_l1:
       iternormthr_ = Inpar::TSI::norm_l1;
       break;
-    case Inpar::THR::norm_l2:
+    case Inpar::Thermo::norm_l2:
       iternormthr_ = Inpar::TSI::norm_l2;
       break;
-    case Inpar::THR::norm_rms:
+    case Inpar::Thermo::norm_rms:
       iternormthr_ = Inpar::TSI::norm_rms;
       break;
-    case Inpar::THR::norm_inf:
+    case Inpar::Thermo::norm_inf:
       iternormthr_ = Inpar::TSI::norm_inf;
       break;
-    case Inpar::THR::norm_vague:
+    case Inpar::Thermo::norm_vague:
     default:
     {
-      FOUR_C_THROW("THR norm is not determined.");
+      FOUR_C_THROW("Thermo norm is not determined.");
       break;
     }
   }  // switch (thriternorm)
@@ -2868,9 +2868,9 @@ void TSI::Monolithic::apply_struct_coupling_state(
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::fix_time_integration_params()
 {
-  if (Core::UTILS::IntegralValue<Inpar::THR::DynamicType>(
+  if (Core::UTILS::IntegralValue<Inpar::Thermo::DynamicType>(
           Global::Problem::instance()->thermal_dynamic_params(), "DYNAMICTYP") ==
-      Inpar::THR::dyna_genalpha)
+      Inpar::Thermo::dyna_genalpha)
   {
     Teuchos::ParameterList& ga = const_cast<Teuchos::ParameterList&>(
         Global::Problem::instance()->thermal_dynamic_params().sublist("GENALPHA"));

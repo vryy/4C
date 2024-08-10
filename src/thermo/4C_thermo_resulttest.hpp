@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                     dano 08/09 |
  *----------------------------------------------------------------------*/
-namespace THR
+namespace Thermo
 {
   //!
   //! \brief Thermo specific result test class
@@ -66,7 +66,7 @@ namespace THR
 
   };  // Core::UTILS::ResultTest
 
-}  // namespace THR
+}  // namespace Thermo
 
 
 /*----------------------------------------------------------------------*/

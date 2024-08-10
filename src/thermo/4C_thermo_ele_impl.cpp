@@ -149,7 +149,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
 {
   prepare_nurbs_eval(ele, discretization);
 
-  const auto action = Core::UTILS::GetAsEnum<THR::Action>(params, "action");
+  const auto action = Core::UTILS::GetAsEnum<Thermo::Action>(params, "action");
 
   // check length
   if (la[0].size() != nen_ * numdofpernode_) FOUR_C_THROW("Location vector length does not match!");
@@ -179,7 +179,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
 
   double time = 0.0;
 
-  if (action != THR::calc_thermo_energy)
+  if (action != Thermo::calc_thermo_energy)
   {
     // extract time
     time = params.get<double>("total time");
@@ -205,7 +205,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
   //============================================================================
   // calculate tangent K and internal force F_int = K * Theta
   // --> for static case
-  if (action == THR::calc_thermo_fintcond)
+  if (action == Thermo::calc_thermo_fintcond)
   {
     // set views
     Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> etang(
@@ -222,7 +222,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
   }
   //============================================================================
   // calculate only the internal force F_int, needed for restart
-  else if (action == THR::calc_thermo_fint)
+  else if (action == Thermo::calc_thermo_fint)
   {
     // set views
     Core::LinAlg::Matrix<nen_ * numdofpernode_, 1> efint(
@@ -236,7 +236,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
   //============================================================================
   // calculate the capacity matrix and the internal force F_int
   // --> for dynamic case, called only once in determine_capa_consist_temp_rate()
-  else if (action == THR::calc_thermo_fintcapa)
+  else if (action == Thermo::calc_thermo_fintcapa)
   {
     // set views
     Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapa(
@@ -251,24 +251,24 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
     // lumping
     if (params.get<bool>("lump capa matrix", false))
     {
-      const auto timint = Core::UTILS::GetAsEnum<Inpar::THR::DynamicType>(
-          params, "time integrator", Inpar::THR::dyna_undefined);
+      const auto timint = Core::UTILS::GetAsEnum<Inpar::Thermo::DynamicType>(
+          params, "time integrator", Inpar::Thermo::dyna_undefined);
       switch (timint)
       {
-        case Inpar::THR::dyna_expleuler:
-        case Inpar::THR::dyna_onesteptheta:
+        case Inpar::Thermo::dyna_expleuler:
+        case Inpar::Thermo::dyna_onesteptheta:
         {
           calculate_lump_matrix(&ecapa);
 
           break;
         }
-        case Inpar::THR::dyna_genalpha:
-        case Inpar::THR::dyna_statics:
+        case Inpar::Thermo::dyna_genalpha:
+        case Inpar::Thermo::dyna_statics:
         {
           FOUR_C_THROW("Lumped capacity matrix has not yet been tested");
           break;
         }
-        case Inpar::THR::dyna_undefined:
+        case Inpar::Thermo::dyna_undefined:
         default:
         {
           FOUR_C_THROW("Undefined time integration scheme for thermal problem!");
@@ -284,7 +284,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
   // calculate effective dynamic tangent matrix K_{T, effdyn},
   // i.e. sum consistent capacity matrix C + its linearization and scaled conductivity matrix
   // --> for dynamic case
-  else if (action == THR::calc_thermo_finttang)
+  else if (action == Thermo::calc_thermo_finttang)
   {
     // set views
     Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> etang(
@@ -329,16 +329,16 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
     // combine capacity and conductivity matrix to one global tangent matrix
     // check the time integrator
     // K_T = fac_capa . C + fac_cond . K
-    const auto timint = Core::UTILS::GetAsEnum<Inpar::THR::DynamicType>(
-        params, "time integrator", Inpar::THR::dyna_undefined);
+    const auto timint = Core::UTILS::GetAsEnum<Inpar::Thermo::DynamicType>(
+        params, "time integrator", Inpar::Thermo::dyna_undefined);
     switch (timint)
     {
-      case Inpar::THR::dyna_statics:
+      case Inpar::Thermo::dyna_statics:
       {
         // continue
         break;
       }
-      case Inpar::THR::dyna_onesteptheta:
+      case Inpar::Thermo::dyna_onesteptheta:
       {
         // extract time values from parameter list
         const double theta = params.get<double>("theta");
@@ -362,7 +362,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
         break;
       }  // ost
 
-      case Inpar::THR::dyna_genalpha:
+      case Inpar::Thermo::dyna_genalpha:
       {
         // extract time values from parameter list
         const double alphaf = params.get<double>("alphaf");
@@ -395,19 +395,19 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
         break;
 
       }  // genalpha
-      case Inpar::THR::dyna_undefined:
+      case Inpar::Thermo::dyna_undefined:
       default:
       {
         FOUR_C_THROW("Don't know what to do...");
         break;
       }
     }  // end of switch(timint)
-  }    // action == THR::calc_thermo_finttang
+  }    // action == Thermo::calc_thermo_finttang
 
   //============================================================================
   // Calculate/ evaluate heatflux q and temperature gradients gradtemp at
   // gauss points
-  else if (action == THR::calc_thermo_heatflux)
+  else if (action == Thermo::calc_thermo_heatflux)
   {
     // set views
     // efext, efcap not needed for this action, elemat1+2,elevec1-3 are not used anyway
@@ -421,8 +421,8 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
     Core::LinAlg::Matrix<nquad_, nsd_> eheatflux(false);
     Core::LinAlg::Matrix<nquad_, nsd_> etempgrad(false);
 
-    // if ele is a thermo element --> the THR element method KinType() exists
-    const auto* therm = dynamic_cast<const Discret::ELEMENTS::Thermo*>(ele);
+    // if ele is a thermo element --> the Thermo element method KinType() exists
+    const auto* therm = dynamic_cast<const Thermo::Element*>(ele);
     const Inpar::Solid::KinemType kintype = therm->kin_type();
     // thermal problem or geometrically linear TSI problem
     if (kintype == Inpar::Solid::KinemType::linear)
@@ -451,11 +451,11 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
 
     copy_matrix_into_char_vector(*heatfluxdata, eheatflux);
     copy_matrix_into_char_vector(*tempgraddata, etempgrad);
-  }  // action == THR::calc_thermo_heatflux
+  }  // action == Thermo::calc_thermo_heatflux
 
   //============================================================================
   // Calculate heatflux q and temperature gradients gradtemp at gauss points
-  else if (action == THR::postproc_thermo_heatflux)
+  else if (action == Thermo::postproc_thermo_heatflux)
   {
     // set views
     Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> etang(
@@ -520,10 +520,10 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
     if (not processed)
       FOUR_C_THROW("unknown type of heatflux/temperature gradient output on element level");
 
-  }  // action == THR::postproc_thermo_heatflux
+  }  // action == Thermo::postproc_thermo_heatflux
 
   //============================================================================
-  else if (action == THR::integrate_shape_functions)
+  else if (action == Thermo::integrate_shape_functions)
   {
     // calculate integral of shape functions
     const auto dofids = params.get<Teuchos::RCP<Core::LinAlg::IntSerialDenseVector>>("dofids");
@@ -531,7 +531,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
   }
 
   //============================================================================
-  else if (action == THR::calc_thermo_update_istep)
+  else if (action == Thermo::calc_thermo_update_istep)
   {
     // call material specific update
     Teuchos::RCP<Core::Mat::Material> material = ele->material();
@@ -539,13 +539,13 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
     Teuchos::RCP<Mat::Trait::Thermo> thermoMat =
         Teuchos::rcp_dynamic_cast<Mat::Trait::Thermo>(material, true);
 
-    Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+    Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
     if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
   }
 
   //==================================================================================
   // allowing the predictor TangTemp in .dat --> can be decisive in compressible case!
-  else if (action == THR::calc_thermo_reset_istep)
+  else if (action == Thermo::calc_thermo_reset_istep)
   {
     // we have to have a thermo-capable material here -> throw error if not
     Teuchos::RCP<Mat::Trait::Thermo> thermoMat =
@@ -555,7 +555,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
 
   //============================================================================
   // evaluation of internal thermal energy
-  else if (action == THR::calc_thermo_energy)
+  else if (action == Thermo::calc_thermo_energy)
   {
     // check length of elevec1
     if (elevec1_epetra.length() < 1) FOUR_C_THROW("The given result vector is too short.");
@@ -570,7 +570,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
     // ----------------------------- integration loop for one element
 
     // integrations points and weights
-    Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+    Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
     if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
     // --------------------------------------- loop over Gauss Points
@@ -596,7 +596,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
   //============================================================================
   // add linearistion of velocity for dynamic time integration to the stiffness term
   // calculate thermal mechanical tangent matrix K_Td
-  else if (action == THR::calc_thermo_coupltang)
+  else if (action == Thermo::calc_thermo_coupltang)
   {
     Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_> etangcoupl(
         elemat1_epetra.values(), true);
@@ -606,7 +606,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
 
   }  // action == "calc_thermo_coupltang"
   //============================================================================
-  else if (action == THR::calc_thermo_error)
+  else if (action == Thermo::calc_thermo_error)
   {
     Core::LinAlg::Matrix<nen_ * numdofpernode_, 1> evector(
         elevec1_epetra.values(), true);  // view only!
@@ -617,7 +617,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
   else
   {
     FOUR_C_THROW("Unknown type of action for Temperature Implementation: %s",
-        THR::ActionToString(action).c_str());
+        Thermo::ActionToString(action).c_str());
   }
 
 #ifdef THRASOUTPUT
@@ -651,12 +651,12 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate_neumann(const Core::Element
     etempn_.update(etemp);                                                        // copy
   }
   // check for the action parameter
-  const auto action = Core::UTILS::GetAsEnum<THR::Action>(params, "action");
+  const auto action = Core::UTILS::GetAsEnum<Thermo::Action>(params, "action");
   // extract time
   const double time = params.get<double>("total time");
 
   // perform actions
-  if (action == THR::calc_thermo_fext)
+  if (action == Thermo::calc_thermo_fext)
   {
     // so far we assume deformation INdependent external loads, i.e. NO
     // difference between geometrically (non)linear TSI
@@ -667,7 +667,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate_neumann(const Core::Element
   else
   {
     FOUR_C_THROW("Unknown type of action for Temperature Implementation: %s",
-        THR::ActionToString(action).c_str());
+        Thermo::ActionToString(action).c_str());
   }
 
   return 0;
@@ -683,11 +683,11 @@ void Discret::ELEMENTS::TemperImpl<distype>::evaluate_tang_capa_fint(
     Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapalin,
     Core::LinAlg::Matrix<nen_ * numdofpernode_, 1>* efint, Teuchos::ParameterList& params)
 {
-  const auto* therm = dynamic_cast<const Discret::ELEMENTS::Thermo*>(ele);
+  const auto* therm = dynamic_cast<const Thermo::Element*>(ele);
   const Inpar::Solid::KinemType kintype = therm->kin_type();
 
   // initialise the vectors
-  // evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
+  // evaluate() is called the first time in Thermo::BaseAlgorithm: at this stage
   // the coupling field is not yet known. Pass coupling vectors filled with zeros
   // the size of the vectors is the length of the location vector*nsd_
   std::vector<double> mydisp(((la[0].lm_).size()) * nsd_, 0.0);
@@ -740,7 +740,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::evaluate_coupled_tang(
     Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_>* etangcoupl,
     Teuchos::ParameterList& params)
 {
-  const auto* therm = dynamic_cast<const Discret::ELEMENTS::Thermo*>(ele);
+  const auto* therm = dynamic_cast<const Thermo::Element*>(ele);
   const Inpar::Solid::KinemType kintype = therm->kin_type();
 
   if (la.size() > 1)
@@ -788,7 +788,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::evaluate_fext(
   // ------------------------------- integration loop for one element
 
   // integrations points and weights
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // ----------------------------------------- loop over Gauss Points
@@ -829,7 +829,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_thermo_contribution(
   // ------------------------------- integration loop for one element
 
   // integrations points and weights
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // ----------------------------------------- loop over Gauss Points
@@ -983,7 +983,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_disp_contribution(
   // ----------------------------------- integration loop for one element
 
   // integrations points and weights
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // --------------------------------------------- loop over Gauss Points
@@ -1164,8 +1164,8 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_coupled_tang(
 
   // --------------------------------------------------- time integration
   // check the time integrator and add correct time factor
-  const auto timint = Core::UTILS::GetAsEnum<Inpar::THR::DynamicType>(
-      params, "time integrator", Inpar::THR::dyna_undefined);
+  const auto timint = Core::UTILS::GetAsEnum<Inpar::Thermo::DynamicType>(
+      params, "time integrator", Inpar::Thermo::dyna_undefined);
 
   // get step size dt
   const double stepsize = params.get<double>("delta time");
@@ -1176,7 +1176,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_coupled_tang(
   // consider linearisation of velocities due to displacements
   switch (timint)
   {
-    case Inpar::THR::dyna_statics:
+    case Inpar::Thermo::dyna_statics:
     {
       // k_Td = k_Td^e . time_fac_d'
       timefac = 1.0;
@@ -1185,7 +1185,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_coupled_tang(
       timefac_d = 1.0 / stepsize;
       break;
     }
-    case Inpar::THR::dyna_onesteptheta:
+    case Inpar::Thermo::dyna_onesteptheta:
     {
       // k_Td = theta . k_Td^e . time_fac_d'
       timefac = params.get<double>("theta");
@@ -1195,7 +1195,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_coupled_tang(
       timefac_d = 1.0 / (str_theta * stepsize);
       break;
     }
-    case Inpar::THR::dyna_genalpha:
+    case Inpar::Thermo::dyna_genalpha:
     {
       // k_Td = alphaf . k_Td^e . time_fac_d'
       timefac = params.get<double>("alphaf");
@@ -1206,7 +1206,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_coupled_tang(
       timefac_d = str_gamma / (str_beta * stepsize);
       break;
     }
-    case Inpar::THR::dyna_undefined:
+    case Inpar::Thermo::dyna_undefined:
     default:
     {
       FOUR_C_THROW("Add correct temporal coefficent here!");
@@ -1217,7 +1217,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_coupled_tang(
   // ----------------------------------- integration loop for one element
 
   // integrations points and weights
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // --------------------------------------------- loop over Gauss Points
@@ -1339,7 +1339,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_thermo_disp_contribution(
   // ----------------------------------- integration loop for one element
 
   // integrations points and weights
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // --------------------------------------------- loop over Gauss Points
@@ -1626,16 +1626,16 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
   double timefac_d = 0.0;
   double timefac = 0.0;
   // check the time integrator and add correct time factor
-  const auto timint = Core::UTILS::GetAsEnum<Inpar::THR::DynamicType>(
-      params, "time integrator", Inpar::THR::dyna_undefined);
+  const auto timint = Core::UTILS::GetAsEnum<Inpar::Thermo::DynamicType>(
+      params, "time integrator", Inpar::Thermo::dyna_undefined);
   switch (timint)
   {
-    case Inpar::THR::dyna_statics:
+    case Inpar::Thermo::dyna_statics:
     {
       timefac = 1.0;
       break;
     }
-    case Inpar::THR::dyna_onesteptheta:
+    case Inpar::Thermo::dyna_onesteptheta:
     {
       // k^e_Td += + theta . N_T^T . (-C_T) . 1/2 dC'/dd . N_T . T . detJ . w(gp) -
       //           - theta . ( B_T^T . C_mat . dC^{-1}/dd . B_T . T . detJ . w(gp) )
@@ -1645,12 +1645,12 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
       timefac = theta;
       break;
     }
-    case Inpar::THR::dyna_genalpha:
+    case Inpar::Thermo::dyna_genalpha:
     {
       timefac = params.get<double>("alphaf");
       break;
     }
-    case Inpar::THR::dyna_undefined:
+    case Inpar::Thermo::dyna_undefined:
     default:
     {
       FOUR_C_THROW("Add correct temporal coefficent here!");
@@ -1709,7 +1709,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
   // ------------------------------- integration loop for one element
 
   // integrations points and weights
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // ----------------------------------------- loop over Gauss Points
@@ -2022,7 +2022,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_dissipation_fint(
   // ----------------------------------- integration loop for one element
 
   // integrations points and weights
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // --------------------------------------------------- loop over Gauss Points
@@ -2115,34 +2115,34 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_dissipation_coupled_tang(
   const double stepsize = params.get<double>("delta time");
 
   // check the time integrator and add correct time factor
-  const auto timint = Core::UTILS::GetAsEnum<Inpar::THR::DynamicType>(
-      params, "time integrator", Inpar::THR::dyna_undefined);
+  const auto timint = Core::UTILS::GetAsEnum<Inpar::Thermo::DynamicType>(
+      params, "time integrator", Inpar::Thermo::dyna_undefined);
   // initialise time_fac of velocity discretisation w.r.t. displacements
   double timefac = 0.0;
   switch (timint)
   {
-    case Inpar::THR::dyna_statics:
+    case Inpar::Thermo::dyna_statics:
     {
       // evolution equation of plastic material use implicit Euler
       // put str_timefac = 1.0
       timefac = 1.0;
       break;
     }
-    case Inpar::THR::dyna_onesteptheta:
+    case Inpar::Thermo::dyna_onesteptheta:
     {
       // k_Td = theta . k_Td^e . timefac_Dgamma = theta . k_Td / Dt
       double theta = params.get<double>("theta");
       timefac = theta;
       break;
     }
-    case Inpar::THR::dyna_genalpha:
+    case Inpar::Thermo::dyna_genalpha:
     {
       // k_Td = alphaf . k_Td^e . timefac_Dgamma = alphaf . k_Td / Dt
       double alphaf = params.get<double>("alphaf");
       timefac = alphaf;
       break;
     }
-    case Inpar::THR::dyna_undefined:
+    case Inpar::Thermo::dyna_undefined:
     default:
     {
       FOUR_C_THROW("Add correct temporal coefficent here!");
@@ -2153,7 +2153,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_dissipation_coupled_tang(
   // ----------------------------------- integration loop for one element
 
   // integrations points and weights
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // --------------------------------------------- loop over Gauss Points
@@ -2293,7 +2293,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_dissipation_fint_tang(
   // ----------------------------------------- integration loop for one element
 
   // integrations points and weights
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // initialise the deformation gradient w.r.t. material configuration
@@ -2394,34 +2394,34 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_dissipation_coupled_tang(
   const double stepsize = params.get<double>("delta time");
 
   // check the time integrator and add correct time factor
-  const auto timint = Core::UTILS::GetAsEnum<Inpar::THR::DynamicType>(
-      params, "time integrator", Inpar::THR::dyna_undefined);
+  const auto timint = Core::UTILS::GetAsEnum<Inpar::Thermo::DynamicType>(
+      params, "time integrator", Inpar::Thermo::dyna_undefined);
   // initialise time_fac of velocity discretisation w.r.t. displacements
   double timefac = 0.0;
   switch (timint)
   {
-    case Inpar::THR::dyna_statics:
+    case Inpar::Thermo::dyna_statics:
     {
       // evolution equation of plastic material use implicit Euler
       // put str_timefac = 1.0
       timefac = 1.0;
       break;
     }
-    case Inpar::THR::dyna_onesteptheta:
+    case Inpar::Thermo::dyna_onesteptheta:
     {
       // k_Td = theta . k_Td^e . timefac_Dgamma = theta . k_Td / Dt
       double theta = params.get<double>("theta");
       timefac = theta;
       break;
     }
-    case Inpar::THR::dyna_genalpha:
+    case Inpar::Thermo::dyna_genalpha:
     {
       // k_Td = alphaf . k_Td^e . timefac_Dgamma = alphaf . k_Td / Dt
       double alphaf = params.get<double>("alphaf");
       timefac = alphaf;
       break;
     }
-    case Inpar::THR::dyna_undefined:
+    case Inpar::Thermo::dyna_undefined:
     default:
     {
       FOUR_C_THROW("Add correct temporal coefficent here!");
@@ -2431,7 +2431,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_dissipation_coupled_tang(
 
   // ----------------------------------------- integration loop for one element
   // integrations points and weights
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // --------------------------------------------------- loop over Gauss Points
@@ -2483,7 +2483,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_heatflux_tempgrad(
   Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // integrations points and weights
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // ----------------------------------------- loop over Gauss Points
@@ -2522,10 +2522,10 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_heatflux_tempgrad(
     Teuchos::ParameterList& params)
 {
   // specific choice of heat flux / temperature gradient
-  const auto ioheatflux = Core::UTILS::GetAsEnum<Inpar::THR::HeatFluxType>(
-      params, "ioheatflux", Inpar::THR::heatflux_none);
-  const auto iotempgrad = Core::UTILS::GetAsEnum<Inpar::THR::TempGradType>(
-      params, "iotempgrad", Inpar::THR::tempgrad_none);
+  const auto ioheatflux = Core::UTILS::GetAsEnum<Inpar::Thermo::HeatFluxType>(
+      params, "ioheatflux", Inpar::Thermo::heatflux_none);
+  const auto iotempgrad = Core::UTILS::GetAsEnum<Inpar::Thermo::TempGradType>(
+      params, "iotempgrad", Inpar::Thermo::tempgrad_none);
 
   // update element geometry
   Core::LinAlg::Matrix<nen_, nsd_> xcurr;      // current  coord. of element
@@ -2538,7 +2538,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_heatflux_tempgrad(
   Core::LinAlg::Matrix<nsd_, nsd_> invdefgrd(false);
 
   // ----------------------------------- integration loop for one element
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // --------------------------------------------- loop over Gauss Points
@@ -2571,14 +2571,14 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_heatflux_tempgrad(
 
     switch (iotempgrad)
     {
-      case Inpar::THR::tempgrad_initial:
+      case Inpar::Thermo::tempgrad_initial:
       {
         if (etempgrad == nullptr) FOUR_C_THROW("tempgrad data not available");
         // etempgrad = Grad T
         for (int idim = 0; idim < nsd_; ++idim) (*etempgrad)(iquad, idim) = gradtemp_(idim);
         break;
       }
-      case Inpar::THR::tempgrad_current:
+      case Inpar::Thermo::tempgrad_current:
       {
         if (etempgrad == nullptr) FOUR_C_THROW("tempgrad data not available");
         // etempgrad = grad T = Grad T . F^{-1} =  F^{-T} . Grad T
@@ -2589,7 +2589,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_heatflux_tempgrad(
         for (int idim = 0; idim < nsd_; ++idim) (*etempgrad)(iquad, idim) = currentgradT(idim);
         break;
       }
-      case Inpar::THR::tempgrad_none:
+      case Inpar::Thermo::tempgrad_none:
       {
         // no postprocessing of temperature gradients
         break;
@@ -2601,7 +2601,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_heatflux_tempgrad(
 
     switch (ioheatflux)
     {
-      case Inpar::THR::heatflux_initial:
+      case Inpar::Thermo::heatflux_initial:
       {
         if (eheatflux == nullptr) FOUR_C_THROW("heat flux data not available");
         Core::LinAlg::Matrix<nsd_, 1> initialheatflux(false);
@@ -2610,7 +2610,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_heatflux_tempgrad(
         for (int idim = 0; idim < nsd_; ++idim) (*eheatflux)(iquad, idim) = -initialheatflux(idim);
         break;
       }
-      case Inpar::THR::heatflux_current:
+      case Inpar::Thermo::heatflux_current:
       {
         if (eheatflux == nullptr) FOUR_C_THROW("heat flux data not available");
         // eheatflux := q = - k_0 . 1/(detF) . F^{-T} . Grad T
@@ -2621,7 +2621,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_heatflux_tempgrad(
         for (int idim = 0; idim < nsd_; ++idim) (*eheatflux)(iquad, idim) = -spatialq(idim);
         break;
       }
-      case Inpar::THR::heatflux_none:
+      case Inpar::Thermo::heatflux_none:
       {
         // no postprocessing of heat fluxes, continue!
         break;
@@ -2722,7 +2722,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::radiation(
 
 
     // integrations points and weights
-    Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+    Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
     if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
     radiation_.clear();
@@ -2915,7 +2915,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::integrate_shape_functions(
   Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // integrations points and weights
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
@@ -2958,7 +2958,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::extrapolate_from_gauss_points_to_no
     FOUR_C_THROW("Works only if number of gauss points and nodes match");
 
   // integrations points and weights
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // build matrix of shape functions at Gauss points
@@ -3251,11 +3251,11 @@ void Discret::ELEMENTS::TemperImpl<distype>::compute_error(
   // ------------------------------- integration loop for one element
 
   // integrations points and weights
-  Core::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
   //  if (intpoints.ip().nquad != nquad_)
   //    FOUR_C_THROW("Trouble with number of Gauss points");
 
-  const auto calcerr = Core::UTILS::GetAsEnum<Inpar::THR::CalcError>(params, "calculate error");
+  const auto calcerr = Core::UTILS::GetAsEnum<Inpar::Thermo::CalcError>(params, "calculate error");
   const int errorfunctno = params.get<int>("error function number");
   const double t = params.get<double>("total time");
 
@@ -3283,7 +3283,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::compute_error(
     // Compute analytical solution
     switch (calcerr)
     {
-      case Inpar::THR::calcerror_byfunct:
+      case Inpar::Thermo::calcerror_byfunct:
       {
         // get coordinates at integration point
         // gp reference coordinates

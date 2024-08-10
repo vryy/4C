@@ -132,7 +132,7 @@ namespace Discret
       static constexpr int numdofpernode_ = 1;
 
       //! number of Gauss points
-      static constexpr int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
+      static constexpr int nquad_ = Thermo::DisTypeToNumGaussPoints<distype>::nquad;
 
       //! Evaluate for multiple dofsets
       int evaluate(const Core::Elements::Element* ele,     //!< current element

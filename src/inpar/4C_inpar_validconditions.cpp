@@ -950,7 +950,7 @@ Input::ValidConditions()
   Inpar::ReducedLung::SetValidConditions(condlist);
   Inpar::Cardiovascular0D::SetValidConditions(condlist);
   Inpar::Solid::SetValidConditions(condlist);
-  Inpar::THR::SetValidConditions(condlist);
+  Inpar::Thermo::SetValidConditions(condlist);
   Inpar::SSI::SetValidConditions(condlist);
   Inpar::SSTI::SetValidConditions(condlist);
   Inpar::PARTICLE::SetValidConditions(condlist);

@@ -21,17 +21,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::ThermoType Discret::ELEMENTS::ThermoType::instance_;
+Thermo::ElementType Thermo::ElementType::instance_;
 
-Discret::ELEMENTS::ThermoType& Discret::ELEMENTS::ThermoType::instance() { return instance_; }
+Thermo::ElementType& Thermo::ElementType::instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
  | create the new element type (public)                      dano 09/09 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::ThermoType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Thermo::ElementType::create(const std::vector<char>& data)
 {
-  Discret::ELEMENTS::Thermo* object = new Discret::ELEMENTS::Thermo(-1, -1);
+  Thermo::Element* object = new Thermo::Element(-1, -1);
   object->unpack(data);
   return object;
 }  // Create()
@@ -41,13 +41,12 @@ Core::Communication::ParObject* Discret::ELEMENTS::ThermoType::create(const std:
  | create the new element type (public)                      dano 09/09 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ThermoType::create(
+Teuchos::RCP<Core::Elements::Element> Thermo::ElementType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "THERMO")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Thermo(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(new Thermo::Element(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -58,11 +57,9 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ThermoType::create(
  | create the new element type (public)                      dano 09/09 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ThermoType::create(
-    const int id, const int owner)
+Teuchos::RCP<Core::Elements::Element> Thermo::ElementType::create(const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::Thermo(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(new Thermo::Element(id, owner));
   return ele;
 }  // Create()
 
@@ -70,7 +67,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ThermoType::create(
 /*----------------------------------------------------------------------*
  |                                                           dano 08/12 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ThermoType::nodal_block_information(
+void Thermo::ElementType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = dwele->num_dof_per_node(*(dwele->nodes()[0]));
@@ -82,7 +79,7 @@ void Discret::ELEMENTS::ThermoType::nodal_block_information(
 /*----------------------------------------------------------------------*
  | ctor (public)                                             dano 08/12 |
  *----------------------------------------------------------------------*/
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::ThermoType::compute_null_space(
+Core::LinAlg::SerialDenseMatrix Thermo::ElementType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   Core::LinAlg::SerialDenseMatrix nullspace;
@@ -95,10 +92,9 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::ThermoType::compute_null_spac
  | create the new element type (public)                      dano 09/09 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ThermoBoundaryType::create(
-    const int id, const int owner)
+Teuchos::RCP<Core::Elements::Element> Thermo::FaceElementType::create(const int id, const int owner)
 {
-  // return Teuchos::rcp(new Discret::ELEMENTS::ThermoBoundary(id,owner));
+  // return Teuchos::rcp(new FaceElement(id,owner));
   return Teuchos::null;
 }  // Create()
 
@@ -106,7 +102,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ThermoBoundaryType::cre
 /*----------------------------------------------------------------------*
  | setup element                                             dano 09/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ThermoType::setup_element_definition(
+void Thermo::ElementType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions["THERMO"];
@@ -167,17 +163,14 @@ void Discret::ELEMENTS::ThermoType::setup_element_definition(
 }  // setup_element_definition()
 
 
-Discret::ELEMENTS::ThermoBoundaryType Discret::ELEMENTS::ThermoBoundaryType::instance_;
+Thermo::FaceElementType Thermo::FaceElementType::instance_;
 
-Discret::ELEMENTS::ThermoBoundaryType& Discret::ELEMENTS::ThermoBoundaryType::instance()
-{
-  return instance_;
-}
+Thermo::FaceElementType& Thermo::FaceElementType::instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                             dano 09/09 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Thermo::Thermo(int id, int owner)
+Thermo::Element::Element(int id, int owner)
     : Core::Elements::Element(id, owner), distype_(Core::FE::CellType::dis_none)
 {
   // default: geometrically linear, also including purely thermal probelm
@@ -189,7 +182,7 @@ Discret::ELEMENTS::Thermo::Thermo(int id, int owner)
 /*----------------------------------------------------------------------*
  | copy-ctor (public)                                        dano 09/09 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Thermo::Thermo(const Discret::ELEMENTS::Thermo& old)
+Thermo::Element::Element(const Element& old)
     : Core::Elements::Element(old), kintype_(old.kintype_), distype_(old.distype_)
 {
 }  // copy-ctor
@@ -199,9 +192,9 @@ Discret::ELEMENTS::Thermo::Thermo(const Discret::ELEMENTS::Thermo& old)
  | deep copy this instance of Thermo and return              dano 09/09 |
  | pointer to it (public)                                               |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Thermo::clone() const
+Core::Elements::Element* Thermo::Element::clone() const
 {
-  Discret::ELEMENTS::Thermo* newelement = new Discret::ELEMENTS::Thermo(*this);
+  Thermo::Element* newelement = new Thermo::Element(*this);
   return newelement;
 }  // clone()
 
@@ -209,13 +202,13 @@ Core::Elements::Element* Discret::ELEMENTS::Thermo::clone() const
 /*----------------------------------------------------------------------*
  | return the shape of a Thermo element (public)             dano 09/09 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Thermo::shape() const { return distype_; }  // Shape()
+Core::FE::CellType Thermo::Element::shape() const { return distype_; }  // Shape()
 
 
 /*----------------------------------------------------------------------*
  | pack data (public)                                        dano 09/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Thermo::pack(Core::Communication::PackBuffer& data) const
+void Thermo::Element::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -223,7 +216,7 @@ void Discret::ELEMENTS::Thermo::pack(Core::Communication::PackBuffer& data) cons
   int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
-  Element::pack(data);
+  Core::Elements::Element::pack(data);
   // kintype
   add_to_pack(data, kintype_);
   // distype
@@ -236,7 +229,7 @@ void Discret::ELEMENTS::Thermo::pack(Core::Communication::PackBuffer& data) cons
 /*----------------------------------------------------------------------*
  | unpack data (public)                                      dano 09/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Thermo::unpack(const std::vector<char>& data)
+void Thermo::Element::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -245,7 +238,7 @@ void Discret::ELEMENTS::Thermo::unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
-  Element::unpack(basedata);
+  Core::Elements::Element::unpack(basedata);
   // kintype_
   kintype_ = static_cast<Inpar::Solid::KinemType>(extract_int(position, data));
   // distype
@@ -261,10 +254,10 @@ void Discret::ELEMENTS::Thermo::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  | print this element (public)                               dano 09/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Thermo::print(std::ostream& os) const
+void Thermo::Element::print(std::ostream& os) const
 {
   os << "Thermo element";
-  Element::print(os);
+  Core::Elements::Element::print(os);
   std::cout << std::endl;
   std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(distype_) << std::endl;
   std::cout << std::endl;
@@ -277,24 +270,24 @@ void Discret::ELEMENTS::Thermo::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | get vector of lines (public)                              dano 09/09 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Thermo::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Thermo::Element::lines()
 {
-  return Core::Communication::GetElementLines<ThermoBoundary, Thermo>(*this);
+  return Core::Communication::GetElementLines<FaceElement, Element>(*this);
 }  // Lines()
 
 
 /*----------------------------------------------------------------------*
  | get vector of surfaces (public)                           dano 09/09 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Thermo::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Thermo::Element::surfaces()
 {
-  return Core::Communication::GetElementSurfaces<ThermoBoundary, Thermo>(*this);
+  return Core::Communication::GetElementSurfaces<FaceElement, Element>(*this);
 }  // Surfaces()
 
 /*----------------------------------------------------------------------*
  | return names of visualization data (public)               dano 09/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Thermo::vis_names(std::map<std::string, int>& names)
+void Thermo::Element::vis_names(std::map<std::string, int>& names)
 {
   // see whether we have additional data for visualization in our container
   for (int k = 0; k < numdofpernode_; k++)
@@ -310,7 +303,7 @@ void Discret::ELEMENTS::Thermo::vis_names(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  | return visualization data (public)                        dano 09/09 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Thermo::vis_data(const std::string& name, std::vector<double>& data)
+bool Thermo::Element::vis_data(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (Core::Elements::Element::vis_data(name, data)) return true;
@@ -319,15 +312,15 @@ bool Discret::ELEMENTS::Thermo::vis_data(const std::string& name, std::vector<do
 }  // vis_data()
 
 /*----------------------------------------------------------------------------*
- | ENDE Discret::ELEMENTS::Thermo
+ | ENDE Thermo::Element
  *----------------------------------------------------------------------------*/
 
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                             dano 09/09 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ThermoBoundary::ThermoBoundary(int id, int owner, int nnode, const int* nodeids,
-    Core::Nodes::Node** nodes, Discret::ELEMENTS::Thermo* parent, const int lsurface)
+Thermo::FaceElement::FaceElement(int id, int owner, int nnode, const int* nodeids,
+    Core::Nodes::Node** nodes, Element* parent, const int lsurface)
     : Core::Elements::FaceElement(id, owner)
 {
   set_node_ids(nnode, nodeids);
@@ -340,8 +333,7 @@ Discret::ELEMENTS::ThermoBoundary::ThermoBoundary(int id, int owner, int nnode, 
 /*----------------------------------------------------------------------*
  | copy-ctor (public)                                        dano 09/09 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ThermoBoundary::ThermoBoundary(const Discret::ELEMENTS::ThermoBoundary& old)
-    : Core::Elements::FaceElement(old)
+Thermo::FaceElement::FaceElement(const FaceElement& old) : Core::Elements::FaceElement(old)
 {
   return;
 }  // copy-ctor
@@ -350,9 +342,9 @@ Discret::ELEMENTS::ThermoBoundary::ThermoBoundary(const Discret::ELEMENTS::Therm
 /*----------------------------------------------------------------------*
  | deep copy this instance return pointer to it (public)     dano 09/09 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::ThermoBoundary::clone() const
+Core::Elements::Element* Thermo::FaceElement::clone() const
 {
-  Discret::ELEMENTS::ThermoBoundary* newelement = new Discret::ELEMENTS::ThermoBoundary(*this);
+  FaceElement* newelement = new FaceElement(*this);
   return newelement;
 }  // clone()
 
@@ -360,7 +352,7 @@ Core::Elements::Element* Discret::ELEMENTS::ThermoBoundary::clone() const
 /*----------------------------------------------------------------------*
  | return shape of this element (public)                     dano 09/09 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::ThermoBoundary::shape() const
+Core::FE::CellType Thermo::FaceElement::shape() const
 {
   switch (num_node())
   {
@@ -400,9 +392,9 @@ Core::FE::CellType Discret::ELEMENTS::ThermoBoundary::shape() const
 /*----------------------------------------------------------------------*
  | pack data (public)                                        dano 09/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ThermoBoundary::pack(std::vector<char>& data) const
+void Thermo::FaceElement::pack(std::vector<char>& data) const
 {
-  FOUR_C_THROW("This ThermoBoundary element does not support communication");
+  FOUR_C_THROW("This FaceElement element does not support communication");
 
   return;
 }  // pack()
@@ -411,9 +403,9 @@ void Discret::ELEMENTS::ThermoBoundary::pack(std::vector<char>& data) const
 /*----------------------------------------------------------------------*
  | unpack data (public)                                      dano 09/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ThermoBoundary::unpack(const std::vector<char>& data)
+void Thermo::FaceElement::unpack(const std::vector<char>& data)
 {
-  FOUR_C_THROW("This ThermoBoundary element does not support communication");
+  FOUR_C_THROW("This FaceElement element does not support communication");
   return;
 }  // unpack()
 
@@ -422,9 +414,9 @@ void Discret::ELEMENTS::ThermoBoundary::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  | print this element (public)                               dano 09/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ThermoBoundary::print(std::ostream& os) const
+void Thermo::FaceElement::print(std::ostream& os) const
 {
-  os << "ThermoBoundary ";
+  os << "FaceElement ";
   Element::print(os);
   return;
 }  // print()
@@ -433,18 +425,18 @@ void Discret::ELEMENTS::ThermoBoundary::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | get vector of lines (public)                              dano 09/09 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ThermoBoundary::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Thermo::FaceElement::lines()
 {
-  FOUR_C_THROW("Lines of ThermoBoundary not implemented");
+  FOUR_C_THROW("Lines of FaceElement not implemented");
 }  // Lines()
 
 
 /*----------------------------------------------------------------------*
  | get vector of lines (public)                              dano 09/09 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ThermoBoundary::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Thermo::FaceElement::surfaces()
 {
-  FOUR_C_THROW("Surfaces of ThermoBoundary not implemented");
+  FOUR_C_THROW("Surfaces of FaceElement not implemented");
 }  // Surfaces()
 
 FOUR_C_NAMESPACE_CLOSE

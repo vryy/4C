@@ -258,7 +258,7 @@ void TSI::Partitioned::time_loop_one_way()
 
     // use the structural solution calculated in do_structure_step
 
-    // call the current displacements and velocities and pass it to THR
+    // call the current displacements and velocities and pass it to Thermo
     apply_struct_coupling_state(disp_, vel_);
 
     // call the predictor here, because the displacement field is now also
@@ -326,7 +326,7 @@ void TSI::Partitioned::time_loop_sequ_stagg()
     // ----------------------------------------------------- thermo field
 
     // solve thermo field with predicted structural values (Apply d_n,v_n to
-    // THR, solve coupled equation, extract new temperatures T_n+1)
+    // Thermo, solve coupled equation, extract new temperatures T_n+1)
 
     // pass the current displacements and velocities to the thermo field
     apply_struct_coupling_state(disp_, vel_);
