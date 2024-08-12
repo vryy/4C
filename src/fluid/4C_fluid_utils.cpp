@@ -660,12 +660,12 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const Core::FE::Discretization> dis
       std::set<Core::Nodes::Node*>& nodes = ldnodemap[label];
 
       // center coordinates to present label
-      ldcoordmap[label] = &ldconds[i]->parameters().get<std::vector<double>>("centerCoord");
+      ldcoordmap[label] = &ldconds[i]->parameters().get<std::vector<double>>("CENTER");
 
       // axis of rotation for present label (only needed for 3D)
       if (ldconds[i]->type() == Core::Conditions::SurfLIFTDRAG)
       {
-        ldaxismap[label] = &ldconds[i]->parameters().get<std::vector<double>>("axis");
+        ldaxismap[label] = &ldconds[i]->parameters().get<std::vector<double>>("AXIS");
         // get pointer to axis vector (if available)
         const std::vector<double>* axisvecptr = ldaxismap[label];
         if (axisvecptr->size() != 3) FOUR_C_THROW("axis vector has not length 3");

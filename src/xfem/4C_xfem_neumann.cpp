@@ -138,9 +138,9 @@ void XFEM::EvaluateNeumannStandard(
     const std::vector<int>* nodeids = cond.get_nodes();
     if (!nodeids) FOUR_C_THROW("PointNeumann condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
-    const auto* funct = cond.parameters().get_if<std::vector<int>>("funct");
-    const auto* onoff = cond.parameters().get_if<std::vector<int>>("onoff");
-    const auto* val = cond.parameters().get_if<std::vector<double>>("val");
+    const auto* funct = cond.parameters().get_if<std::vector<int>>("FUNCT");
+    const auto* onoff = cond.parameters().get_if<std::vector<int>>("ONOFF");
+    const auto* val = cond.parameters().get_if<std::vector<double>>("VAL");
     // Neumann BCs for some historic reason only have one curve
     int functnum = -1;
     if (funct) functnum = (*funct)[0];

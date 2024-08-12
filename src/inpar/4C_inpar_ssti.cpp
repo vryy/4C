@@ -162,9 +162,7 @@ void Inpar::SSTI::SetValidConditions(
         Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
         Teuchos::tuple<int>(
             Inpar::S2I::side_undefined, Inpar::S2I::side_slave, Inpar::S2I::side_master))));
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("S2I_KINETICS_ID")));
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("S2IKineticsID")));
-
+    add_named_int(cond, "S2I_KINETICS_ID");
     condlist.push_back(cond);
   }
 }

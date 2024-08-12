@@ -696,41 +696,41 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::pre_evaluate(
   eleparams.set<Core::Conditions::ConditionType>(
       "condition type", Core::Conditions::ConditionType::S2IKinetics);
 
-  switch (scatra_manifold_coupling->condition_kinetics()->parameters().get<int>("kinetic model"))
+  switch (scatra_manifold_coupling->condition_kinetics()->parameters().get<int>("KINETIC_MODEL"))
   {
     case Inpar::S2I::kinetics_constantinterfaceresistance:
     {
-      eleparams.set<int>("kinetic model", Inpar::S2I::kinetics_constantinterfaceresistance);
-      eleparams.set<double>("resistance",
-          scatra_manifold_coupling->condition_kinetics()->parameters().get<double>("resistance"));
-      eleparams.set<const std::vector<int>*>("onoff",
+      eleparams.set<int>("KINETIC_MODEL", Inpar::S2I::kinetics_constantinterfaceresistance);
+      eleparams.set<double>("RESISTANCE",
+          scatra_manifold_coupling->condition_kinetics()->parameters().get<double>("RESISTANCE"));
+      eleparams.set<const std::vector<int>*>("ONOFF",
           &scatra_manifold_coupling->condition_kinetics()->parameters().get<std::vector<int>>(
-              "onoff"));
+              "ONOFF"));
       eleparams.set<int>("numelectrons",
-          scatra_manifold_coupling->condition_kinetics()->parameters().get<int>("e-"));
+          scatra_manifold_coupling->condition_kinetics()->parameters().get<int>("E-"));
       break;
     }
     case Inpar::S2I::kinetics_butlervolmerreduced:
     {
-      eleparams.set<int>("kinetic model", Inpar::S2I::kinetics_butlervolmerreduced);
-      eleparams.set<int>("numscal",
-          scatra_manifold_coupling->condition_kinetics()->parameters().get<int>("numscal"));
-      eleparams.set<const std::vector<int>*>("stoichiometries",
+      eleparams.set<int>("KINETIC_MODEL", Inpar::S2I::kinetics_butlervolmerreduced);
+      eleparams.set<int>("NUMSCAL",
+          scatra_manifold_coupling->condition_kinetics()->parameters().get<int>("NUMSCAL"));
+      eleparams.set<const std::vector<int>*>("STOICHIOMETRIES",
           &scatra_manifold_coupling->condition_kinetics()->parameters().get<std::vector<int>>(
-              "stoichiometries"));
+              "STOICHIOMETRIES"));
       eleparams.set<int>("numelectrons",
-          scatra_manifold_coupling->condition_kinetics()->parameters().get<int>("e-"));
+          scatra_manifold_coupling->condition_kinetics()->parameters().get<int>("E-"));
       eleparams.set<double>(
-          "k_r", scatra_manifold_coupling->condition_kinetics()->parameters().get<double>("k_r"));
-      eleparams.set<double>("alpha_a",
-          scatra_manifold_coupling->condition_kinetics()->parameters().get<double>("alpha_a"));
-      eleparams.set<double>("alpha_c",
-          scatra_manifold_coupling->condition_kinetics()->parameters().get<double>("alpha_c"));
+          "K_R", scatra_manifold_coupling->condition_kinetics()->parameters().get<double>("K_R"));
+      eleparams.set<double>("ALPHA_A",
+          scatra_manifold_coupling->condition_kinetics()->parameters().get<double>("ALPHA_A"));
+      eleparams.set<double>("ALPHA_C",
+          scatra_manifold_coupling->condition_kinetics()->parameters().get<double>("ALPHA_C"));
       break;
     }
     case Inpar::S2I::kinetics_nointerfaceflux:
     {
-      eleparams.set<int>("kinetic model", Inpar::S2I::kinetics_nointerfaceflux);
+      eleparams.set<int>("KINETIC_MODEL", Inpar::S2I::kinetics_nointerfaceflux);
       break;
     }
     default:

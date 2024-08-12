@@ -2440,7 +2440,7 @@ void Airway::RedAirwayImplicitTimeInt::set_airway_flux_from_tissue(
     Core::Conditions::Condition* cond = coupcond_[condID];
     std::vector<double> newval(1, 0.0);
     newval[0] = (*coupflux)[i];
-    cond->parameters().add("val", newval);
+    cond->parameters().add("VAL", newval);
   }
 }
 

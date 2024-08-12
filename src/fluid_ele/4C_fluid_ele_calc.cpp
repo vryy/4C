@@ -1424,12 +1424,12 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force(Discret::ELEM
 
   if (myneumcond.size() == 1)
   {
-    const auto condtype = myneumcond[0]->parameters().get<std::string>("type");
+    const auto condtype = myneumcond[0]->parameters().get<std::string>("TYPE");
 
     // get values and switches from the condition
-    const auto* onoff = &myneumcond[0]->parameters().get<std::vector<int>>("onoff");
-    const auto* val = &myneumcond[0]->parameters().get<std::vector<double>>("val");
-    const auto* functions = &myneumcond[0]->parameters().get<std::vector<int>>("funct");
+    const auto* onoff = &myneumcond[0]->parameters().get<std::vector<int>>("ONOFF");
+    const auto* val = &myneumcond[0]->parameters().get<std::vector<double>>("VAL");
+    const auto* functions = &myneumcond[0]->parameters().get<std::vector<int>>("FUNCT");
 
     // factor given by spatial function
     double functionfac = 1.0;
@@ -1528,7 +1528,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force(Discret::ELEM
     if (myscatraneumcond.size() == 1)
     {
       // check for potential time curve
-      const auto* funct = &myscatraneumcond[0]->parameters().get<std::vector<int>>("funct");
+      const auto* funct = &myscatraneumcond[0]->parameters().get<std::vector<int>>("FUNCT");
       int functnum = -1;
       if (funct) functnum = (*funct)[0];
 
@@ -1550,8 +1550,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force(Discret::ELEM
         functfac = 1.0;
 
       // get values and switches from the condition
-      const auto* onoff = &myscatraneumcond[0]->parameters().get<std::vector<int>>("onoff");
-      const auto* val = &myscatraneumcond[0]->parameters().get<std::vector<double>>("val");
+      const auto* onoff = &myscatraneumcond[0]->parameters().get<std::vector<int>>("ONOFF");
+      const auto* val = &myscatraneumcond[0]->parameters().get<std::vector<double>>("VAL");
 
       // set this condition to the bodyforce array
       for (int jnode = 0; jnode < nen_; jnode++)

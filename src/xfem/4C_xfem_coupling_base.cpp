@@ -342,7 +342,7 @@ void XFEM::CouplingBase::get_condition_by_coupling_id(
   // select the conditions with specified "couplingID"
   for (auto* cond : mycond)
   {
-    const int id = cond->parameters().get<int>("label");
+    const int id = cond->parameters().get<int>("COUPLINGID");
 
     if (id == coupling_id) mynewcond.push_back(cond);
   }
@@ -517,7 +517,7 @@ void XFEM::CouplingBase::evaluate_neumann_function(Core::LinAlg::Matrix<3, 1>& i
   std::vector<double> final_values(3, 0.0);
 
   //---------------------------------------
-  const auto condtype = cond->parameters().get<std::string>("type");
+  const auto condtype = cond->parameters().get<std::string>("TYPE");
 
   // get usual body force
   if (!(condtype == "neum_dead" or condtype == "neum_live"))
@@ -537,7 +537,7 @@ void XFEM::CouplingBase::evaluate_neumann_function(Core::LinAlg::Matrix<6, 1>& i
   std::vector<double> final_values(6, 0.0);
 
   //---------------------------------------
-  const auto condtype = cond->parameters().get<std::string>("type");
+  const auto condtype = cond->parameters().get<std::string>("TYPE");
 
   // get usual body force
   if (!(condtype == "neum_dead" or condtype == "neum_live"))
@@ -554,7 +554,7 @@ void XFEM::CouplingBase::evaluate_function(std::vector<double>& final_values, co
 {
   if (cond == nullptr) FOUR_C_THROW("invalid condition");
 
-  const int numdof = cond->parameters().get<int>("numdof");
+  const int numdof = cond->parameters().get<int>("NUMDOF");
 
   if (numdof != (int)final_values.size())
     FOUR_C_THROW("you specified NUMDOF %i in the input file, however, only %i dofs allowed!",
@@ -562,14 +562,14 @@ void XFEM::CouplingBase::evaluate_function(std::vector<double>& final_values, co
 
   //---------------------------------------
   // get values and switches from the condition
-  const auto* onoff = &cond->parameters().get<std::vector<int>>("onoff");
-  const auto* val = &cond->parameters().get<std::vector<double>>("val");
-  const auto* functions = cond->parameters().get_if<std::vector<int>>("funct");
+  const auto* onoff = &cond->parameters().get<std::vector<int>>("ONOFF");
+  const auto* val = &cond->parameters().get<std::vector<double>>("VAL");
+  const auto* functions = cond->parameters().get_if<std::vector<int>>("FUNCT");
 
   // uniformly distributed random noise
 
   auto& secondary = const_cast<Core::Conditions::Condition&>(*cond);
-  const auto* percentage = secondary.parameters().get_if<double>("randnoise");
+  const auto* percentage = secondary.parameters().get_if<double>("RANDNOISE");
 
   if (time < -1e-14) FOUR_C_THROW("Negative time in curve/function evaluation: time = %f", time);
 
@@ -622,11 +622,11 @@ void XFEM::CouplingBase::evaluate_scalar_function(double& final_values, const do
 
   //---------------------------------------
   // get values and switches from the condition
-  const auto* function = cond->parameters().get_if<int>("funct");
+  const auto* function = cond->parameters().get_if<int>("FUNCT");
 
   // uniformly distributed random noise
   auto& secondary = const_cast<Core::Conditions::Condition&>(*cond);
-  const auto* percentage = secondary.parameters().get_if<double>("randnoise");
+  const auto* percentage = secondary.parameters().get_if<double>("RANDNOISE");
 
   if (time < -1e-14) FOUR_C_THROW("Negative time in curve/function evaluation: time = %f", time);
 

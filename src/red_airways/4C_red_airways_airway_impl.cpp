@@ -89,7 +89,7 @@ namespace
       {
         const auto* curve = condition->parameters().get_if<std::vector<int>>("curve");
         double curvefac = 1.0;
-        const auto* vals = &condition->parameters().get<std::vector<double>>("val");
+        const auto* vals = &condition->parameters().get<std::vector<double>>("VAL");
 
         // -----------------------------------------------------------------
         // Read in the value of the applied BC
@@ -106,7 +106,7 @@ namespace
         bcVal = (*vals)[0] * curvefac;
 
         // get funct 1
-        const int* function = condition->parameters().get_if<int>("funct");
+        const int* function = condition->parameters().get_if<int>("VAL");
         int functnum = -1;
         if (function) functnum = (*function);
 
@@ -964,7 +964,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
             //  Val = curve1*val1 + curve2*func
             // -----------------------------------------------------------------
             const auto* curve = condition->parameters().get_if<std::vector<int>>("curve");
-            const auto* vals = &condition->parameters().get<std::vector<double>>("val");
+            const auto* vals = &condition->parameters().get<std::vector<double>>("VAL");
 
             // get factor of curve1 or curve2
             const auto curvefac = [&](unsigned id)
@@ -1105,7 +1105,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
 
           const auto* curve = condition->parameters().get_if<std::vector<int>>("curve");
           double curvefac = 1.0;
-          const auto* vals = &condition->parameters().get<std::vector<double>>("val");
+          const auto* vals = &condition->parameters().get<std::vector<double>>("VAL");
 
           // -----------------------------------------------------------------
           // Read in the value of the applied BC

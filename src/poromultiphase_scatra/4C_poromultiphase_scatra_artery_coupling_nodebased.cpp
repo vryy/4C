@@ -59,7 +59,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::init()
 
   for (auto& iter : artCoupcond)
   {
-    int myID = iter->parameters().get<int>("coupling id");
+    int myID = iter->parameters().get<int>("COUPID");
     condIDs[0].push_back(myID);
   }
 
@@ -69,7 +69,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::init()
 
   for (auto& iter : contfieldCoupcond)
   {
-    int myID = iter->parameters().get<int>("coupling id");
+    int myID = iter->parameters().get<int>("COUPID");
     condIDs[1].push_back(myID);
   }
 

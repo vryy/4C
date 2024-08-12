@@ -311,8 +311,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
           {
             const int myid =
                 mysurfpbcs_[numcond]->parameters().get<int>("Id of periodic boundary condition");
-            const int mylayer =
-                mysurfpbcs_[numcond]->parameters().get<int>("Layer of periodic boundary condition");
+            const int mylayer = mysurfpbcs_[numcond]->parameters().get<int>("LAYER");
             // yes, I am the condition with id pbcid and in the desired layer
 
             if (myid == pbcid && (mylayer + 1) == nlayer)
@@ -329,8 +328,8 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
                 // check whether this periodic boundary condition belongs
                 // to thisplane
 
-                const std::string& dofsforpbcplanename = mastercond->parameters().get<std::string>(
-                    "degrees of freedom for the pbc plane");
+                const std::string& dofsforpbcplanename =
+                    mastercond->parameters().get<std::string>("PLANE");
 
                 if (dofsforpbcplanename == *thisplane)
                 {
@@ -352,7 +351,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
                   }
 
                   // check for angle of rotation (has to be zero for master plane)
-                  const double angle = mastercond->parameters().get<double>("Angle of rotation");
+                  const double angle = mastercond->parameters().get<double>("ANGLE");
                   if (abs(angle) > 1e-13)
                     FOUR_C_THROW("Angle is not zero for master plane: %f", angle);
                 }
@@ -364,8 +363,8 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
                 //--------------------------------------------------
                 // check whether this periodic boundary condition belongs
                 // to thisplane
-                const std::string& dofsforpbcplanename = slavecond->parameters().get<std::string>(
-                    "degrees of freedom for the pbc plane");
+                const std::string& dofsforpbcplanename =
+                    slavecond->parameters().get<std::string>("PLANE");
 
                 if (dofsforpbcplanename == *thisplane)
                 {
@@ -387,7 +386,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
                   }
 
                   // check for angle of rotation of slave plane and store it
-                  const double angle = slavecond->parameters().get<double>("Angle of rotation");
+                  const double angle = slavecond->parameters().get<double>("ANGLE");
                   if (abs(angle) > 1e-13)
                   {
                     if ((*thisplane != "xz") && (*thisplane != "yz"))
@@ -411,8 +410,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
 
 
               // set tolerance for octree
-              const double tol = mysurfpbcs_[numcond]->parameters().get<double>(
-                  "Tolerance for nodematching in octree");
+              const double tol = mysurfpbcs_[numcond]->parameters().get<double>("ABSTREETOL");
 
               if (!tol_set)
               {

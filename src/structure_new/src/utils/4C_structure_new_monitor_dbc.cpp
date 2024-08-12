@@ -80,7 +80,7 @@ void Solid::MonitorDbc::get_tagged_condition(
 
   for (auto& cond_ptr : cond_vec)
   {
-    const std::string& cptr = cond_ptr->parameters().get<std::string>("tag");
+    const std::string& cptr = cond_ptr->parameters().get<std::string>("TAG");
 
     if (cptr == tag_name) tagged_conds.push_back(cond_ptr.get());
   }
@@ -115,7 +115,7 @@ void Solid::MonitorDbc::create_reaction_force_condition(
       Teuchos::rcp(new Core::Conditions::Condition(
           new_id, Core::Conditions::ElementTag, true, tagged_cond.g_type()));
 
-  rcond_ptr->parameters().add("onoff", (tagged_cond.parameters().get<std::vector<int>>("onoff")));
+  rcond_ptr->parameters().add("ONOFF", (tagged_cond.parameters().get<std::vector<int>>("ONOFF")));
   rcond_ptr->set_nodes(*tagged_cond.get_nodes());
 
   dynamic_cast<Core::FE::Discretization&>(discret).set_condition("ReactionForce", rcond_ptr);
@@ -187,7 +187,7 @@ void Solid::MonitorDbc::setup()
 void Solid::MonitorDbc::create_reaction_maps(const Core::FE::Discretization& discret,
     const Core::Conditions::Condition& rcond, Teuchos::RCP<Epetra_Map>* react_maps) const
 {
-  const auto* onoff = &rcond.parameters().get<std::vector<int>>("onoff");
+  const auto* onoff = &rcond.parameters().get<std::vector<int>>("ONOFF");
   const auto* nids = rcond.get_nodes();
   std::vector<int> my_dofs[DIM];
   int ndof = 0;
@@ -541,7 +541,7 @@ double Solid::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmom
   Core::LinAlg::Matrix<DIM, 1> node_reaction_moment(true);
   std::vector<int> node_gid(3);
 
-  const auto* onoff = &rcond->parameters().get<std::vector<int>>("onoff");
+  const auto* onoff = &rcond->parameters().get<std::vector<int>>("ONOFF");
   const std::vector<int>* nids = rcond->get_nodes();
   std::vector<int> my_dofs[DIM];
   int ndof = 0;

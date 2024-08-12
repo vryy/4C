@@ -63,7 +63,7 @@ void Adapter::StructureRedAirway::set_pressure(Teuchos::RCP<Epetra_Vector> coupp
     Core::Conditions::Condition* cond = coupcond_[condID];
     std::vector<double> newval(6, 0.0);
     newval[0] = (*couppres)[i];
-    cond->parameters().add("val", newval);
+    cond->parameters().add("VAL", newval);
   }
 }
 

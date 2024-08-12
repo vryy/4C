@@ -1856,7 +1856,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
 
       // set slip coefficient
       Core::Conditions::Condition* currnavierslip = nscond[nscondid];
-      const double beta = currnavierslip->parameters().get<double>("slipcoefficient");
+      const double beta = currnavierslip->parameters().get<double>("SLIPCOEFFICIENT");
       navierslipparams.set<double>("beta", beta);
 
       // evaluate navier slip boundary condition
@@ -2543,13 +2543,13 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
     }
 
     // Get coupling type
-    std::string coupling = (selectedCond[0]->parameters().get<std::string>("coupling"));
+    std::string coupling = (selectedCond[0]->parameters().get<std::string>("COUPLING"));
 
     // Get scaling value
-    const double scalingValue = selectedCond[0]->parameters().get<double>("val");
+    const double scalingValue = selectedCond[0]->parameters().get<double>("VAL");
 
     // Get function for node normal calculation
-    const int nodeNormalFunct = selectedCond[0]->parameters().get<int>("nodenormalfunct");
+    const int nodeNormalFunct = selectedCond[0]->parameters().get<int>("NODENORMALFUNCT");
 
     // Get a vector layout from the discretization to construct matching
     // vectors and matrices

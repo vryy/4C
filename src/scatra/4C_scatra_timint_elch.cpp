@@ -170,11 +170,11 @@ void ScaTra::ScaTraTimIntElch::setup()
       runtime_csvwriter_soc_[cond_id]->register_data_vector("CRate", 1, 16);
 
       // safety checks
-      const double one_hour = electrodeSocCondition->parameters().get<double>("one_hour");
+      const double one_hour = electrodeSocCondition->parameters().get<double>("ONE_HOUR");
       if (one_hour <= 0.0) FOUR_C_THROW("One hour must not be negative");
       if (std::fmod(std::log10(one_hour / 3600.0), 1.0) != 0)
         FOUR_C_THROW("This is not one hour in SI units");
-      if (electrode_soc_conditions[0]->parameters().get<double>("one_hour") != one_hour)
+      if (electrode_soc_conditions[0]->parameters().get<double>("ONE_HOUR") != one_hour)
         FOUR_C_THROW("Different definitions of one hour in Electrode STATE OF CHARGE CONDITIONS.");
     }
   }
@@ -306,8 +306,8 @@ void ScaTra::ScaTraTimIntElch::setup()
             "Found constant-current constant-voltage (CCCV) cell cycling boundary condition, but "
             "no CCCV half-cycle boundary conditions!");
       }
-      if (cccvcyclingcondition.parameters().get<int>("ConditionIDForCharge") < 0 or
-          cccvcyclingcondition.parameters().get<int>("ConditionIDForDischarge") < 0)
+      if (cccvcyclingcondition.parameters().get<int>("CONDITION_ID_FOR_CHARGE") < 0 or
+          cccvcyclingcondition.parameters().get<int>("CONDITION_ID_FOR_DISCHARGE") < 0)
       {
         FOUR_C_THROW(
             "Invalid ID of constant-current constant-voltage (CCCV) half-cycle boundary condition "
@@ -901,7 +901,7 @@ void ScaTra::ScaTraTimIntElch::read_restart_problem_specific(
     // only slave side has relevant information
     if (s2ikinetics_cond->parameters().get<int>("interface side") ==
             static_cast<int>(Inpar::S2I::side_slave) and
-        s2ikinetics_cond->parameters().get<int>("kinetic model") ==
+        s2ikinetics_cond->parameters().get<int>("KINETIC_MODEL") ==
             static_cast<int>(Inpar::S2I::kinetics_butlervolmerreducedcapacitance))
     {
       reader.read_vector(phidtnp_, "phidtnp");
@@ -1396,12 +1396,12 @@ void ScaTra::ScaTraTimIntElch::evaluate_electrode_info_interior()
 
       // extract reference concentrations at 0% and 100% state of charge
       const double volratio = isale_ ? electrodeinitvols_[condid] / intdomain : 1.0;
-      const double c_0 = condition->parameters().get<double>("c_0%") * volratio;
-      const double c_100 = condition->parameters().get<double>("c_100%") * volratio;
+      const double c_0 = condition->parameters().get<double>("C_0%") * volratio;
+      const double c_100 = condition->parameters().get<double>("C_100%") * volratio;
       const double c_delta_inv = 1.0 / (c_100 - c_0);
 
       // get one hour for c_rate
-      const double one_hour = condition->parameters().get<double>("one_hour");
+      const double one_hour = condition->parameters().get<double>("ONE_HOUR");
 
       // compute state of charge and C rate for current electrode
       const double c_avg = (*scalars)(0) / intdomain;
@@ -1633,7 +1633,7 @@ void ScaTra::ScaTraTimIntElch::write_restart() const
     // only slave side has relevant information
     if (s2ikinetics_cond->parameters().get<int>("interface side") ==
             static_cast<int>(Inpar::S2I::side_slave) and
-        s2ikinetics_cond->parameters().get<int>("kinetic model") ==
+        s2ikinetics_cond->parameters().get<int>("KINETIC_MODEL") ==
             static_cast<int>(Inpar::S2I::kinetics_butlervolmerreducedcapacitance))
     {
       output_->write_vector("phidtnp", phidtnp_);
@@ -1816,7 +1816,7 @@ void ScaTra::ScaTraTimIntElch::init_nernst_bc()
   for (unsigned icond = 0; icond < Elchcond.size(); ++icond)
   {
     // check if Nernst-BC is defined on electrode kinetics condition
-    if (Elchcond[icond]->parameters().get<int>("kinetic model") == Inpar::ElCh::nernst)
+    if (Elchcond[icond]->parameters().get<int>("KINETIC_MODEL") == Inpar::ElCh::nernst)
     {
       // safety check
       if (!Elchcond[icond]->geometry_description())
@@ -2311,7 +2311,7 @@ bool ScaTra::ScaTraTimIntElch::apply_galvanostatic_control()
           break;
         }
       }
-      const double potold = cathode_condition->parameters().get<double>("pot");
+      const double potold = cathode_condition->parameters().get<double>("POT");
       double potnew = potold;
 
       // bulk voltage loss
@@ -2600,7 +2600,7 @@ bool ScaTra::ScaTraTimIntElch::apply_galvanostatic_control()
       //      }
 
       // replace potential value of the boundary condition (on all processors)
-      cathode_condition->parameters().add("pot", potnew);
+      cathode_condition->parameters().add("POT", potnew);
       gstatnumite_++;
       return false;  // not yet converged -> continue Newton iteration with updated potential
     }
@@ -2871,7 +2871,7 @@ void ScaTra::ScaTraTimIntElch::apply_dirichlet_bc(
         {
           // extract cutoff voltage from condition and perform safety check
           const double cutoff_voltage =
-              cccvhalfcyclecondition->parameters().get<double>("CutoffVoltage");
+              cccvhalfcyclecondition->parameters().get<double>("CUT_OFF_VOLTAGE");
           if (cutoff_voltage < 0.)
           {
             FOUR_C_THROW(
@@ -2965,12 +2965,12 @@ void ScaTra::ScaTraTimIntElch::apply_neumann_bc(const Teuchos::RCP<Epetra_Vector
             // condition with some features to make it look like a standard Neumann boundary
             // condition.
             const std::vector<int> onoff = {0, 1};
-            const std::vector<double> val = {0.0, condition->parameters().get<double>("Current")};
+            const std::vector<double> val = {0.0, condition->parameters().get<double>("CURRENT")};
             const std::vector<int> funct = {0, 0};
-            condition->parameters().add("numdof", 2);
-            condition->parameters().add("funct", funct);
-            condition->parameters().add("onoff", onoff);
-            condition->parameters().add("val", val);
+            condition->parameters().add("NUMDOF", 2);
+            condition->parameters().add("FUNCT", funct);
+            condition->parameters().add("ONOFF", onoff);
+            condition->parameters().add("VAL", val);
 
             // create parameter list for elements
             Teuchos::ParameterList params;
@@ -3008,7 +3008,7 @@ void ScaTra::ScaTraTimIntElch::apply_neumann_bc(const Teuchos::RCP<Epetra_Vector
               const int dof_gid = dofs[2];
               const int dof_lid = dof_row_map()->LID(dof_gid);
 
-              const auto neumann_value = condition->parameters().get<double>("Current");
+              const auto neumann_value = condition->parameters().get<double>("CURRENT");
 
               constexpr double four_pi = 4.0 * M_PI;
               const double fac =

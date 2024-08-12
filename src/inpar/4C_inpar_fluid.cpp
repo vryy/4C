@@ -15,6 +15,7 @@
 #include "4C_fem_condition_definition.hpp"
 #include "4C_inpar_turbulence.hpp"
 #include "4C_io_geometry_type.hpp"
+#include "4C_io_linecomponent.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -1370,20 +1371,6 @@ void Inpar::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // transfer boundary condition for turbulent inflow
 
-  std::vector<Teuchos::RCP<Input::LineComponent>> tbc_turb_inflow_components;
-
-  tbc_turb_inflow_components.push_back(Teuchos::rcp(new Input::SeparatorComponent("ID")));
-  tbc_turb_inflow_components.push_back(Teuchos::rcp(new Input::IntComponent("id", {0, true})));
-  tbc_turb_inflow_components.push_back(Teuchos::rcp(new Input::SelectionComponent("toggle",
-      "master", Teuchos::tuple<std::string>("master", "slave"),
-      Teuchos::tuple<std::string>("master", "slave"))));
-  tbc_turb_inflow_components.push_back(Teuchos::rcp(new Input::SeparatorComponent("DIRECTION")));
-  tbc_turb_inflow_components.push_back(
-      Teuchos::rcp(new Input::SelectionComponent("transfer direction", "x",
-          Teuchos::tuple<std::string>("x", "y", "z"), Teuchos::tuple<std::string>("x", "y", "z"))));
-  tbc_turb_inflow_components.push_back(
-      Teuchos::rcp(new Input::IntComponent("curve", {0, true, true})));
-
   Teuchos::RCP<Core::Conditions::ConditionDefinition> tbc_turb_inflow =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURF TURBULENT INFLOW TRANSFER", "TransferTurbulentInflow",
@@ -1391,10 +1378,14 @@ void Inpar::FLUID::SetValidConditions(
           Core::Conditions::geometry_type_surface));
 
   // we attach all the components of this condition to this weak line DBC
-  for (unsigned i = 0; i < tbc_turb_inflow_components.size(); ++i)
-  {
-    tbc_turb_inflow->add_component(tbc_turb_inflow_components[i]);
-  }
+  add_named_int(tbc_turb_inflow, "ID", "", 0, false, false, true);
+  tbc_turb_inflow->add_component(Teuchos::rcp(new Input::SelectionComponent("toggle", "master",
+      Teuchos::tuple<std::string>("master", "slave"),
+      Teuchos::tuple<std::string>("master", "slave"))));
+  add_named_selection_component(tbc_turb_inflow, "DIRECTION", "transfer direction", "x",
+      Teuchos::tuple<std::string>("x", "y", "z"), Teuchos::tuple<std::string>("x", "y", "z"));
+  tbc_turb_inflow->add_component(
+      Teuchos::rcp(new Input::IntComponent("curve", {0, true, true, false})));
 
   // and append it to the list of all conditions
   condlist.push_back(tbc_turb_inflow);
@@ -1458,11 +1449,6 @@ void Inpar::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Slip Supplemental Curved Boundary conditions
 
-  std::vector<Teuchos::RCP<Input::LineComponent>> slipsuppcomponents;
-
-  slipsuppcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("USEUPDATEDNODEPOS")));
-  slipsuppcomponents.push_back(Teuchos::rcp(new Input::IntComponent("useupdatednodepos")));
-
   Teuchos::RCP<Core::Conditions::ConditionDefinition> lineslipsupp =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN LINE SLIP SUPPLEMENTAL CURVED BOUNDARY CONDITIONS", "LineSlipSupp",
@@ -1475,22 +1461,14 @@ void Inpar::FLUID::SetValidConditions(
           "SurfaceSlipSupp", Core::Conditions::SurfaceSlipSupp, true,
           Core::Conditions::geometry_type_surface));
 
-  for (unsigned i = 0; i < slipsuppcomponents.size(); ++i)
+  for (const auto& cond : {lineslipsupp, surfslipsupp})
   {
-    lineslipsupp->add_component(slipsuppcomponents[i]);
-    surfslipsupp->add_component(slipsuppcomponents[i]);
+    add_named_real(cond, "USEUPDATEDNODEPOS");
+    condlist.emplace_back(cond);
   }
-
-  condlist.push_back(lineslipsupp);
-  condlist.push_back(surfslipsupp);
 
   /*--------------------------------------------------------------------*/
   // Navier-slip boundary conditions
-
-  std::vector<Teuchos::RCP<Input::LineComponent>> navierslipcomponents;
-
-  navierslipcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("SLIPCOEFFICIENT")));
-  navierslipcomponents.push_back(Teuchos::rcp(new Input::RealComponent("slipcoefficient")));
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> linenavierslip =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition(
@@ -1502,14 +1480,11 @@ void Inpar::FLUID::SetValidConditions(
           "DESIGN SURF NAVIER-SLIP BOUNDARY CONDITIONS", "SurfNavierSlip", "SurfNavierSlip",
           Core::Conditions::SurfNavierSlip, true, Core::Conditions::geometry_type_surface));
 
-  for (unsigned i = 0; i < navierslipcomponents.size(); ++i)
+  for (const auto& cond : {linenavierslip, surfnavierslip})
   {
-    linenavierslip->add_component(navierslipcomponents[i]);
-    surfnavierslip->add_component(navierslipcomponents[i]);
+    add_named_real(cond, "SLIPCOEFFICIENT");
+    condlist.emplace_back(cond);
   }
-
-  condlist.push_back(linenavierslip);
-  condlist.push_back(surfnavierslip);
 
   /*--------------------------------------------------------------------*/
   // consistent outflow bcs for conservative element formulations
@@ -1592,33 +1567,14 @@ void Inpar::FLUID::SetValidConditions(
           "SurfaceStress", "Surface Stress (ideal water)", Core::Conditions::SurfaceTension, true,
           Core::Conditions::geometry_type_surface));
 
-  surftension->add_component(Teuchos::rcp(new Input::IntComponent("curve", {0, true, true})));
+  surftension->add_component(
+      Teuchos::rcp(new Input::IntComponent("curve", {0, true, true, false})));
   Input::add_named_real(surftension, "gamma");
 
   condlist.push_back(surftension);
 
   /*--------------------------------------------------------------------*/
   // FREESURF
-
-  std::vector<Teuchos::RCP<Input::LineComponent>> freesurfcomponents;
-
-  freesurfcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("FIELD")));
-  freesurfcomponents.push_back(Teuchos::rcp(new Input::SelectionComponent("field", "fluid",
-      Teuchos::tuple<std::string>("fluid", "ale"), Teuchos::tuple<std::string>("fluid", "ale"))));
-
-  freesurfcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("COUPLING")));
-  freesurfcomponents.push_back(Teuchos::rcp(new Input::SelectionComponent("coupling", "lagrange",
-      Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
-          "meantangentialvelocity", "meantangentialvelocityscaled"),
-      Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
-          "meantangentialvelocity", "meantangentialvelocityscaled"),
-      true)));
-
-  freesurfcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("VAL")));
-  freesurfcomponents.push_back(Teuchos::rcp(new Input::RealComponent("val")));
-
-  freesurfcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("NODENORMALFUNCT")));
-  freesurfcomponents.push_back(Teuchos::rcp(new Input::IntComponent("nodenormalfunct")));
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> linefreesurf =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition(
@@ -1629,19 +1585,25 @@ void Inpar::FLUID::SetValidConditions(
           "DESIGN FLUID FREE SURFACE SURF CONDITIONS", "FREESURFCoupling", "FREESURF Coupling",
           Core::Conditions::FREESURFCoupling, true, Core::Conditions::geometry_type_surface));
 
-  for (unsigned i = 0; i < freesurfcomponents.size(); ++i)
+  for (const auto& cond : {linefreesurf, surffreesurf})
   {
-    linefreesurf->add_component(freesurfcomponents[i]);
-    surffreesurf->add_component(freesurfcomponents[i]);
-  }
+    add_named_selection_component(cond, "FIELD", "", "fluid",
+        Teuchos::tuple<std::string>("fluid", "ale"), Teuchos::tuple<std::string>("fluid", "ale"));
+    add_named_selection_component(cond, "COUPLING", "", "lagrange",
+        Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
+            "meantangentialvelocity", "meantangentialvelocityscaled"),
+        Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
+            "meantangentialvelocity", "meantangentialvelocityscaled"),
+        true);
+    add_named_real(cond, "VAL");
+    add_named_int(cond, "NODENORMALFUNCT");
 
-  condlist.push_back(linefreesurf);
-  condlist.push_back(surffreesurf);
+    condlist.push_back(cond);
+  }
 
   /*--------------------------------------------------------------------*/
   // fluid stress
 
-  std::vector<Teuchos::RCP<Input::LineComponent>> fluidstresscomponents;
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> linefluidstress = Teuchos::rcp(
       new Core::Conditions::ConditionDefinition("DESIGN FLUID STRESS CALC LINE CONDITIONS",
@@ -1652,27 +1614,11 @@ void Inpar::FLUID::SetValidConditions(
           "FluidStressCalc", "Surf Fluid Stress Calculation", Core::Conditions::FluidStressCalc,
           true, Core::Conditions::geometry_type_surface));
 
-  for (unsigned i = 0; i < fluidstresscomponents.size(); ++i)
-  {
-    linefluidstress->add_component(fluidstresscomponents[i]);
-    surffluidstress->add_component(fluidstresscomponents[i]);
-  }
-
   condlist.push_back(linefluidstress);
   condlist.push_back(surffluidstress);
 
   /*--------------------------------------------------------------------*/
   // lift & drag
-
-  std::vector<Teuchos::RCP<Input::LineComponent>> liftdragcomponents;
-
-  liftdragcomponents.push_back(Teuchos::rcp(new Input::IntComponent("label")));
-  liftdragcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("CENTER")));
-  liftdragcomponents.push_back(Teuchos::rcp(new Input::RealVectorComponent("centerCoord", 3)));
-  // optional
-  liftdragcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("AXIS", "", true)));
-  liftdragcomponents.push_back(Teuchos::rcp(new Input::RealVectorComponent("axis", 3, {0, true})));
-
   Teuchos::RCP<Core::Conditions::ConditionDefinition> lineliftdrag =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN FLUID LINE LIFT&DRAG",
           "LIFTDRAG", "Line LIFTDRAG", Core::Conditions::LineLIFTDRAG, true,
@@ -1682,67 +1628,50 @@ void Inpar::FLUID::SetValidConditions(
           "LIFTDRAG", "Surface LIFTDRAG", Core::Conditions::SurfLIFTDRAG, true,
           Core::Conditions::geometry_type_surface));
 
-  for (unsigned i = 0; i < liftdragcomponents.size(); ++i)
+  for (const auto& cond : {lineliftdrag, surfliftdrag})
   {
-    lineliftdrag->add_component(liftdragcomponents[i]);
-    surfliftdrag->add_component(liftdragcomponents[i]);
+    cond->add_component(Teuchos::rcp(new Input::IntComponent("label")));
+    add_named_real_vector(cond, "CENTER", "", 3);
+    add_named_real_vector(cond, "AXIS", "", 3, 0.0, true);
+
+    condlist.push_back(cond);
   }
-
-  condlist.push_back(lineliftdrag);
-  condlist.push_back(surfliftdrag);
-
 
   /*--------------------------------------------------------------------*/
   // flow rate through line
-
-  std::vector<Teuchos::RCP<Input::LineComponent>> lineflowratecomponents;
-  lineflowratecomponents.push_back(Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> lineflowrate =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN FLOW RATE LINE CONDITIONS",
           "LineFlowRate", "Line Flow Rate", Core::Conditions::FlowRateThroughLine_2D, true,
           Core::Conditions::geometry_type_line));
 
-  for (unsigned i = 0; i < lineflowratecomponents.size(); ++i)
-  {
-    lineflowrate->add_component(lineflowratecomponents[i]);
-  }
+  lineflowrate->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+
   condlist.push_back(lineflowrate);
 
   /*--------------------------------------------------------------------*/
   // flow rate through surface
-
-  std::vector<Teuchos::RCP<Input::LineComponent>> flowratecomponents;
-  flowratecomponents.push_back(Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surfflowrate =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN FLOW RATE SURF CONDITIONS",
           "SurfFlowRate", "Surface Flow Rate", Core::Conditions::FlowRateThroughSurface_3D, true,
           Core::Conditions::geometry_type_surface));
 
-  for (unsigned i = 0; i < flowratecomponents.size(); ++i)
-  {
-    surfflowrate->add_component(flowratecomponents[i]);
-  }
+  surfflowrate->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+
   condlist.push_back(surfflowrate);
 
   /*--------------------------------------------------------------------*/
   // impuls rate through surface
-
-  std::vector<Teuchos::RCP<Input::LineComponent>> impulsratecomponents;
-  impulsratecomponents.push_back(Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surfimpulsrate =
       Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN IMPULS RATE SURF CONDITIONS",
           "SurfImpulsRate", "Surface Impuls Rate", Core::Conditions::ImpulsRateThroughSurface_3D,
           true, Core::Conditions::geometry_type_surface));
 
-  for (unsigned i = 0; i < impulsratecomponents.size(); ++i)
-  {
-    surfimpulsrate->add_component(impulsratecomponents[i]);
-  }
-  condlist.push_back(surfimpulsrate);
+  surfimpulsrate->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
+  condlist.push_back(surfimpulsrate);
 
   /*--------------------------------------------------------------------*/
   // Volumetric surface flow profile condition
@@ -1751,8 +1680,6 @@ void Inpar::FLUID::SetValidConditions(
           "DESIGN SURF VOLUMETRIC FLOW CONDITIONS", "VolumetricSurfaceFlowCond",
           "volumetric surface flow condition", Core::Conditions::VolumetricSurfaceFlowCond, true,
           Core::Conditions::geometry_type_surface));
-
-  std::vector<Teuchos::RCP<Input::LineComponent>> inflownormalcomponents;
 
   volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
@@ -1813,7 +1740,6 @@ void Inpar::FLUID::SetValidConditions(
           Core::Conditions::VolumetricFlowBorderNodes, true, Core::Conditions::geometry_type_line));
 
   volumetric_border_nodes_cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
-
 
   condlist.push_back(volumetric_border_nodes_cond);
 
@@ -1885,7 +1811,6 @@ void Inpar::FLUID::SetValidConditions(
 
   traction_corrector_border_nodes_cond->add_component(
       Teuchos::rcp(new Input::IntComponent("ConditionID")));
-
 
   condlist.push_back(traction_corrector_border_nodes_cond);
 

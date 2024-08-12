@@ -84,7 +84,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<Core::FE::Discretization>
       std::vector<const std::string*> condtype(cardiovascular0dcond_.size());
       for (unsigned int i = 0; i < cardiovascular0dcond_.size(); i++)
       {
-        condtype[i] = &cardiovascular0dcond_[i]->parameters().get<std::string>("type");
+        condtype[i] = &cardiovascular0dcond_[i]->parameters().get<std::string>("TYPE");
 
         if (atrium_model_ == Inpar::Cardiovascular0D::atr_elastance_0d or
             atrium_model_ == Inpar::Cardiovascular0D::atr_prescribed)
@@ -168,12 +168,12 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<Core::FE::Discretization>
       coupcondID[i] = cardiovascular0dstructcoupcond_[i]->parameters().get<int>("coupling_id");
 
       std::string type = "neum_orthopressure";
-      cardiovascular0dstructcoupcond_[i]->parameters().add("type", type);
+      cardiovascular0dstructcoupcond_[i]->parameters().add("TYPE", type);
       std::vector<int> onoff(6, 0);
       onoff[0] = 1;
-      cardiovascular0dstructcoupcond_[i]->parameters().add("onoff", onoff);
+      cardiovascular0dstructcoupcond_[i]->parameters().add("ONOFF", onoff);
       std::vector<double> val(6, 0.0);
-      cardiovascular0dstructcoupcond_[i]->parameters().add("val", val);
+      cardiovascular0dstructcoupcond_[i]->parameters().add("VAL", val);
     }
 
     if (cardiovascular0dcond_.size() != cardiovascular0dstructcoupcond_.size())
@@ -442,7 +442,7 @@ void UTILS::Cardiovascular0D::evaluate_d_struct_dp(
             {
               // get the type of the corresponding cardiovascular0D condition
               const std::string* conditiontype =
-                  &cardiovascular0dcond_[j]->parameters().get<std::string>("type");
+                  &cardiovascular0dcond_[j]->parameters().get<std::string>("TYPE");
               if (*conditiontype == "ventricle_left") colvec[0] = gindex_syspulcirculation[3];
               if (*conditiontype == "ventricle_right") colvec[0] = gindex_syspulcirculation[11];
               if (*conditiontype == "atrium_left") colvec[0] = gindex_syspulcirculation[0];
@@ -462,7 +462,7 @@ void UTILS::Cardiovascular0D::evaluate_d_struct_dp(
             {
               // get the type of the corresponding cardiovascular0D condition
               const std::string* conditiontype =
-                  &cardiovascular0dcond_[j]->parameters().get<std::string>("type");
+                  &cardiovascular0dcond_[j]->parameters().get<std::string>("TYPE");
               if (*conditiontype == "ventricle_left") colvec[0] = gindex_syspulperiphcirculation[3];
               if (*conditiontype == "ventricle_right")
                 colvec[0] = gindex_syspulperiphcirculation[27];

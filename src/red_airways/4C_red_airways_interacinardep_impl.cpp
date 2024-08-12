@@ -206,7 +206,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInt
 
           const auto* curve = &condition->parameters().get<std::vector<int>>("curve");
           double curvefac = 1.0;
-          const auto* vals = &condition->parameters().get<std::vector<double>>("val");
+          const auto* vals = &condition->parameters().get<std::vector<double>>("VAL");
           const auto* functions = &condition->parameters().get<std::vector<int>>("funct");
 
           // Read in the value of the applied BC
@@ -276,7 +276,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInt
             {
               const auto* curve = &pplCond->parameters().get<std::vector<int>>("curve");
               double curvefac = 1.0;
-              const auto* vals = &pplCond->parameters().get<std::vector<double>>("val");
+              const auto* vals = &pplCond->parameters().get<std::vector<double>>("VAL");
 
               // Read in the value of the applied BC
               if ((*curve)[0] >= 0)

@@ -281,22 +281,22 @@ void FS3I::FS3IBase::check_f_s3_i_inputs()
 
     for (auto& iter : coupcond)
     {
-      int myID = iter->parameters().get<int>("coupling id");
+      int myID = iter->parameters().get<int>("COUPID");
       condIDs[i].insert(myID);
 
       if (!infperm_)  // get all FS3I interface condition parameters from the input file
       {
         // initialize a large enough vector
         auto* params = new std::vector<double>(7, true);
-        params->at(0) = iter->parameters().get<double>("permeability coefficient");
-        params->at(1) = iter->parameters().get<double>("hydraulic conductivity");
-        params->at(2) = iter->parameters().get<double>("filtration coefficient");
-        params->at(3) = (double)iter->parameters().get<int>("wss onoff");
-        const auto& mywsscoeffs = iter->parameters().get<std::vector<double>>("wss coeffs");
+        params->at(0) = iter->parameters().get<double>("PERMCOEF");
+        params->at(1) = iter->parameters().get<double>("CONDUCT");
+        params->at(2) = iter->parameters().get<double>("FILTR");
+        params->at(3) = (double)iter->parameters().get<int>("WSSONOFF");
+        const auto& mywsscoeffs = iter->parameters().get<std::vector<double>>("WSSCOEFFS");
         params->at(4) = mywsscoeffs.at(0);
         params->at(5) = mywsscoeffs.at(1);
-        params->at(6) = (double)(iter->parameters().get<int>("numscal"));
-        const auto& onoffs = iter->parameters().get<std::vector<int>>("onoff");
+        params->at(6) = (double)(iter->parameters().get<int>("NUMSCAL"));
+        const auto& onoffs = iter->parameters().get<std::vector<int>>("ONOFF");
         for (int k = 0; k < numscal; k++)
         {
           params->push_back((double)(onoffs.at(k)));

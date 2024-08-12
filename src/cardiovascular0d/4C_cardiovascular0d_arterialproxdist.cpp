@@ -110,7 +110,7 @@ void UTILS::Cardiovascular0DArterialProxDist::evaluate(Teuchos::ParameterList& p
     double p_at_fac = cardiovascular0dcond_[condID]->parameters().get<double>("fac");
 
     // find out whether we will use a time curve and get the factor
-    const int curvenum = cardiovascular0dcond_[condID]->parameters().get<int>("curve");
+    const int curvenum = cardiovascular0dcond_[condID]->parameters().get<int>("crv");
     double curvefac_np = 1.0;
 
     if (curvenum >= 0 && usetime)

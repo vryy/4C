@@ -192,10 +192,10 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neu
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
-  const int numdof = condition.parameters().get<int>("numdof");
-  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().get<std::vector<double>>("val");
-  const auto* func = &condition.parameters().get<std::vector<int>>("funct");
+  const int numdof = condition.parameters().get<int>("NUMDOF");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("ONOFF");
+  const auto* val = &condition.parameters().get<std::vector<double>>("VAL");
+  const auto* func = &condition.parameters().get<std::vector<int>>("FUNCT");
 
   if (numdofpernode_ != numdof)
     FOUR_C_THROW(

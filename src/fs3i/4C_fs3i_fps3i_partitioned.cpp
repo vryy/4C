@@ -338,7 +338,7 @@ void FS3I::PartFPS3I::setup()
   std::vector<Core::Conditions::Condition*> coupcond;
   dis->get_condition("ScaTraCoupling", coupcond);
   double myconduct = coupcond[0]->parameters().get<double>(
-      "hydraulic conductivity");  // here we assume the conductivity to be the same in every BC
+      "CONDUCT");  // here we assume the conductivity to be the same in every BC
 
   // conductivity is not only needed in scatracoupling but also in FPSI coupling!
   if (myconduct == 0.0)
@@ -348,8 +348,6 @@ void FS3I::PartFPS3I::setup()
         "CONDITIONS\"");
   }
   fpsi_->set_conductivity(myconduct);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

@@ -278,20 +278,21 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
     time = params.get("total time", -1.0);
 
   // find out whether we will use a time curve and get the factor
-  const auto* tmp_funct = &condition.parameters().get<std::vector<int>>("funct");
+  const auto* tmp_funct = &condition.parameters().get<std::vector<int>>("FUNCT");
 
   // get values and switches from the condition
-  // onoff is related to the first 6 flags of a line Neumann condition in the input file;
+  // "ONOFF" is related to the first 6 flags of a line Neumann condition in the input file;
   // value 1 for flag i says that condition is active for i-th degree of freedom
-  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("ONOFF");
 
-  // val is related to the 6 "val" fields after the onoff flags of the Neumann condition
-  // in the input file; val gives the values of the force as a multiple of the prescribed load curve
-  const auto* val = &condition.parameters().get<std::vector<double>>("val");
+  // val is related to the 6 "VAL" fields after the "ONOFF" flags of the Neumann condition
+  // in the input file; "VAL" gives the values of the force as a multiple of the prescribed load
+  // curve
+  const auto* val = &condition.parameters().get<std::vector<double>>("VAL");
 
 #ifndef BEAM3EBDISCRETELINENEUMANN
-// funct is related to the 6 "funct" fields after the val field of the Neumann condition
-// in the input file; funct gives the number of the function defined in the section FUNCT
+// funct is related to the 6 "FUNCT" fields after the val field of the Neumann condition
+// in the input file; "FUNCT" gives the number of the function defined in the section FUNCT
 #endif
 
   // find out which node is correct

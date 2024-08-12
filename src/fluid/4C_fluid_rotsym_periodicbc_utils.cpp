@@ -82,7 +82,7 @@ bool FLD::IsSlaveNodeOfRotSymPBC(const Core::Nodes::Node* node, double& rotangle
 /*----------------------------------------------------------------------*/
 double FLD::GetRotAngleFromCondition(const Core::Conditions::Condition* cond)
 {
-  const double rotangle_deg = cond->parameters().get<double>("Angle of rotation");
+  const double rotangle_deg = cond->parameters().get<double>("ANGLE");
 
   return rotangle_deg * M_PI / 180.0;  // angle of rotation (RAD);
 }

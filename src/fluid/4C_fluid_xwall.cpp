@@ -1499,7 +1499,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::fix_dirichlet_inflow(
             bool isuglydirnode = false;
             for (unsigned numcond = 0; numcond < dircond.size(); ++numcond)
             {
-              const auto& flag = dircond[numcond]->parameters().get<std::vector<int>>("onoff");
+              const auto& flag = dircond[numcond]->parameters().get<std::vector<int>>("ONOFF");
 
               if (flag[4] or flag[5] or flag[6]) isuglydirnode = true;
             }
@@ -1543,7 +1543,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::fix_dirichlet_inflow(
                     {
                       for (auto& numcond : dircond)
                       {
-                        const auto& flag = numcond->parameters().get<std::vector<int>>("onoff");
+                        const auto& flag = numcond->parameters().get<std::vector<int>>("ONOFF");
                         if (flag[4] or flag[5] or flag[6]) isuglydirnode = true;
                       }
                     }

@@ -831,14 +831,16 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
     std::vector<Core::Conditions::Condition*> InterfaceS2IConditions;
     std::vector<Core::Conditions::Condition*> InterfaceContactConditions;
 
-    const int S2IKineticsID = conditionToBeTested->parameters().get<int>("S2IKineticsID");
-    const int contactconditionID = conditionToBeTested->parameters().get<int>("ContactConditionID");
+    const int S2IKineticsID = conditionToBeTested->parameters().get<int>("S2I_KINETICS_ID");
+    const int contactconditionID =
+        conditionToBeTested->parameters().get<int>("CONTACT_CONDITION_ID");
 
     if (S2IKineticsID != contactconditionID)
     {
       FOUR_C_THROW(
           "For the 'SSIInterfaceContact' condition we have to demand, that the 'S2ICouplingID' and "
-          "the 'ContactConditionID' have the same value as the contact strategy factory relies on "
+          "the 'CONTACT_CONDITION_ID' have the same value as the contact strategy factory relies "
+          "on "
           "this to set the scatra interface parameters correctly.");
     }
 

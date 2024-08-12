@@ -536,8 +536,7 @@ void Inpar::ScaTra::SetValidConditions(
     // insert input file line components into condition definitions
     cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("ID")));
     cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("Function")));
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("FunctionID")));
+    add_named_int(cond, "Function");
 
     // insert condition definitions into global list of valid condition definitions
     condlist.emplace_back(cond);
@@ -551,24 +550,14 @@ void Inpar::ScaTra::SetValidConditions(
           "DESIGN SCATRA COUPLING SURF CONDITIONS", "ScaTraCoupling", "ScaTra Coupling",
           Core::Conditions::ScaTraCoupling, true, Core::Conditions::geometry_type_surface));
 
-  surfscatracoup->add_component(Teuchos::rcp(new Input::SeparatorComponent("NUMSCAL")));
-  surfscatracoup->add_component(Teuchos::rcp(new Input::IntComponent("numscal")));
-  surfscatracoup->add_component(Teuchos::rcp(new Input::SeparatorComponent("ONOFF")));
-  surfscatracoup->add_component(
-      Teuchos::rcp(new Input::IntVectorComponent("onoff", Input::LengthFromInt("numscal"))));
-
-  surfscatracoup->add_component(Teuchos::rcp(new Input::SeparatorComponent("COUPID")));
-  surfscatracoup->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
-  surfscatracoup->add_component(Teuchos::rcp(new Input::SeparatorComponent("PERMCOEF")));
-  surfscatracoup->add_component(Teuchos::rcp(new Input::RealComponent("permeability coefficient")));
-  surfscatracoup->add_component(Teuchos::rcp(new Input::SeparatorComponent("CONDUCT")));
-  surfscatracoup->add_component(Teuchos::rcp(new Input::RealComponent("hydraulic conductivity")));
-  surfscatracoup->add_component(Teuchos::rcp(new Input::SeparatorComponent("FILTR")));
-  surfscatracoup->add_component(Teuchos::rcp(new Input::RealComponent("filtration coefficient")));
-  surfscatracoup->add_component(Teuchos::rcp(new Input::SeparatorComponent("WSSONOFF")));
-  surfscatracoup->add_component(Teuchos::rcp(new Input::IntComponent("wss onoff")));
-  surfscatracoup->add_component(Teuchos::rcp(new Input::SeparatorComponent("WSSCOEFFS")));
-  surfscatracoup->add_component(Teuchos::rcp(new Input::RealVectorComponent("wss coeffs", 2)));
+  add_named_int(surfscatracoup, "NUMSCAL");
+  add_named_int_vector(surfscatracoup, "ONOFF", "", "NUMSCAL");
+  add_named_int(surfscatracoup, "COUPID");
+  add_named_real(surfscatracoup, "PERMCOEF");
+  add_named_real(surfscatracoup, "CONDUCT");
+  add_named_real(surfscatracoup, "FILTR");
+  add_named_int(surfscatracoup, "WSSONOFF");
+  add_named_real_vector(surfscatracoup, "WSSCOEFFS", "", 2);
 
   condlist.emplace_back(surfscatracoup);
 
@@ -587,16 +576,10 @@ void Inpar::ScaTra::SetValidConditions(
 
   for (const auto& cond : {scatrarobinline, scatrarobinsurf})
   {
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("NUMSCAL")));
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("numscal")));
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("ONOFF")));
-    cond->add_component(
-        Teuchos::rcp(new Input::IntVectorComponent("onoff", Input::LengthFromInt("numscal"))));
-
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("PREFACTOR")));
-    cond->add_component(Teuchos::rcp(new Input::RealComponent("prefactor")));
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("REFVALUE")));
-    cond->add_component(Teuchos::rcp(new Input::RealComponent("refvalue")));
+    add_named_int(cond, "NUMSCAL");
+    add_named_int_vector(cond, "ONOFF", "", "NUMSCAL");
+    add_named_real(cond, "PREFACTOR");
+    add_named_real(cond, "REFVALUE");
 
     condlist.emplace_back(cond);
   }
@@ -640,12 +623,12 @@ void Inpar::ScaTra::SetValidConditions(
         Teuchos::tuple<std::string>("Tempnp", "Tempn"))));
     add_named_real(cond, "coeff", "heat transfer coefficient h");
     add_named_real(cond, "surtemp", "surrounding (fluid) temperature T_oo");
-    // time curve to increase the surrounding (fluid) temperature T_oo in time
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("surtempfunct")));
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("surtempfunct", {0, true, true})));
-    // time curve to increase the complete boundary condition, i.e., the heat flux
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("funct")));
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("funct", {0, true, true})));
+    add_named_int(cond, "surtempfunct",
+        "time curve to increase the surrounding (fluid) temperature T_oo in time", 0, false, true,
+        true);
+    add_named_int(cond, "funct",
+        "time curve to increase the complete boundary condition, i.e., the heat flux", 0, false,
+        true, true);
 
     condlist.emplace_back(cond);
   }

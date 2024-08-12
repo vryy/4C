@@ -2109,11 +2109,11 @@ int Discret::ELEMENTS::Beam3k::evaluate_neumann(Teuchos::ParameterList& params,
   // get values and switches from the condition:
   // onoff is related to the first 6 flags of a line Neumann condition in the input file;
   // value 1 for flag i says that condition is active for i-th degree of freedom
-  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("ONOFF");
 
-  // val is related to the 6 "val" fields after the onoff flags of the Neumann condition
+  // val is related to the 6 "VAL" fields after the onoff flags of the Neumann condition
   // in the input file; val gives the values of the force as a multiple of the prescribed load curve
-  const auto* val = &condition.parameters().get<std::vector<double>>("val");
+  const auto* val = &condition.parameters().get<std::vector<double>>("VAL");
 
   // compute the load vector based on value, scaling factor and whether condition is active
   Core::LinAlg::Matrix<6, 1, double> load_vector_neumann(true);
@@ -2125,7 +2125,7 @@ int Discret::ELEMENTS::Beam3k::evaluate_neumann(Teuchos::ParameterList& params,
   if (condition.type() == Core::Conditions::PointNeumannEB)
   {
     // find out whether we will use a time curve and get the factor
-    const auto* funct = &condition.parameters().get<std::vector<int>>("funct");
+    const auto* funct = &condition.parameters().get<std::vector<int>>("FUNCT");
     // amplitude of load curve at current time called
     std::vector<double> functtimefac(6, 1.0);
 
@@ -2170,9 +2170,9 @@ int Discret::ELEMENTS::Beam3k::evaluate_neumann(Teuchos::ParameterList& params,
   // if a line neumann condition needs to be linearized
   else if (condition.type() == Core::Conditions::LineNeumann)
   {
-    // funct is related to the 6 "funct" fields after the val field of the Neumann condition
+    // funct is related to the 6 "FUNCT" fields after the val field of the Neumann condition
     // in the input file; funct gives the number of the function defined in the section FUNCT
-    const auto* function_numbers = &condition.parameters().get<std::vector<int>>("funct");
+    const auto* function_numbers = &condition.parameters().get<std::vector<int>>("FUNCT");
 
     // Check if distributed moment load is applied and throw error
     if (function_numbers != nullptr)

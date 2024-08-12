@@ -94,9 +94,9 @@ int Discret::ELEMENTS::Bele3Line::evaluate_neumann(Teuchos::ParameterList& param
 
   // get values and switches from the condition
   // (assumed to be constant on element boundary)
-  const auto& onoff = condition.parameters().get<std::vector<int>>("onoff");
-  const auto& val = condition.parameters().get<std::vector<double>>("val");
-  const auto& functions = condition.parameters().get<std::vector<int>>("funct");
+  const auto& onoff = condition.parameters().get<std::vector<int>>("ONOFF");
+  const auto& val = condition.parameters().get<std::vector<double>>("VAL");
+  const auto& functions = condition.parameters().get<std::vector<int>>("FUNCT");
 
   // set number of nodes
   const size_t iel = this->num_node();

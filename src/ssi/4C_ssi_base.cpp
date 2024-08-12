@@ -871,9 +871,9 @@ bool SSI::SSIBase::check_s2_i_kinetics_condition_for_pseudo_contact(
   for (auto* s2ikinetics_cond : s2ikinetics_conditons)
   {
     if ((s2ikinetics_cond->parameters().get<int>("interface side") == Inpar::S2I::side_slave) and
-        (s2ikinetics_cond->parameters().get<int>("kinetic model") !=
+        (s2ikinetics_cond->parameters().get<int>("KINETIC_MODEL") !=
             Inpar::S2I::kinetics_nointerfaceflux) and
-        (s2ikinetics_cond->parameters().get<int>("is_pseudo_contact") == 1))
+        (s2ikinetics_cond->parameters().get<int>("IS_PSEUDO_CONTACT") == 1))
     {
       is_s2i_kinetic_with_pseudo_contact = true;
       const int s2i_kinetics_condition_id = s2ikinetics_cond->parameters().get<int>("ConditionID");

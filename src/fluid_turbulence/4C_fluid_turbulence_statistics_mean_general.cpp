@@ -282,8 +282,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
         for (auto* pbc : mypbcs)
         {
           // see whether pbc is active in plane orthogonal to sampling plane
-          const auto dofsforpbcplanename =
-              pbc->parameters().get<std::string>("degrees of freedom for the pbc plane");
+          const auto dofsforpbcplanename = pbc->parameters().get<std::string>("PLANE");
 
           bool active = false;
 
@@ -541,8 +540,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
             Core::Conditions::Condition* pbc = mypbcs[numcond];
 
             // see whether pbc is active in plane orthogonal to sampling plane
-            const std::string& dofsforpbcplanename =
-                pbc->parameters().get<std::string>("degrees of freedom for the pbc plane");
+            const std::string& dofsforpbcplanename = pbc->parameters().get<std::string>("PLANE");
 
             bool active = false;
 
@@ -826,8 +824,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
           Core::Conditions::Condition* pbc = mypbcs[numcond];
 
           // see whether pbc is active in plane orthogonal to sampling plane
-          const std::string& dofsforpbcplanename =
-              pbc->parameters().get<std::string>("degrees of freedom for the pbc plane");
+          const std::string& dofsforpbcplanename = pbc->parameters().get<std::string>("PLANE");
 
           bool active = false;
 

@@ -623,8 +623,7 @@ void ScaTra::LevelSetAlgorithm::reinit_geo(
       }
 
       // Get normal direction of pbc plane
-      const auto pbcplane =
-          surfacepbcs[i]->parameters().get<std::string>("degrees of freedom for the pbc plane");
+      const auto pbcplane = surfacepbcs[i]->parameters().get<std::string>("PLANE");
       if (pbcplane == "yz")
         planenormal.push_back(0);
       else if (pbcplane == "xz")

@@ -397,7 +397,7 @@ void Discret::ELEMENTS::Truss3::location_vector(
                 dirich->type() != Core::Conditions::SurfaceDirichlet &&
                 dirich->type() != Core::Conditions::VolumeDirichlet)
               FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-            flag = &dirich->parameters().get<std::vector<int>>("onoff");
+            flag = &dirich->parameters().get<std::vector<int>>("ONOFF");
           }
           for (unsigned j = 0; j < size; ++j)
           {
@@ -431,7 +431,7 @@ void Discret::ELEMENTS::Truss3::location_vector(
             dirich->type() != Core::Conditions::SurfaceDirichlet &&
             dirich->type() != Core::Conditions::VolumeDirichlet)
           FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-        flag = &dirich->parameters().get<std::vector<int>>("onoff");
+        flag = &dirich->parameters().get<std::vector<int>>("ONOFF");
       }
       for (unsigned j = 0; j < dofs.size(); ++j)
       {

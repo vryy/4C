@@ -937,7 +937,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
     params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(&cond, false));
 
     const std::string conditiontype =
-        cardiovascular0dcond_[i]->parameters().get<std::string>("type");
+        cardiovascular0dcond_[i]->parameters().get<std::string>("TYPE");
 
     // define element matrices and vectors
     Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -9222,7 +9222,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::initialize(
     Core::LinAlg::SerialDenseVector elevector2;
     Core::LinAlg::SerialDenseVector elevector3;
 
-    const std::string conditiontype = cond->parameters().get<std::string>("type");
+    const std::string conditiontype = cond->parameters().get<std::string>("TYPE");
 
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->geometry();
     // no check for empty geometry here since in parallel computations

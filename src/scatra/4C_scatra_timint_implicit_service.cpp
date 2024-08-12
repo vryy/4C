@@ -2207,7 +2207,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
         Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
             "action", ScaTra::Action::calc_error, eleparams);
         eleparams.set<int>("calcerrorflag", Inpar::ScaTra::calcerror_byfunction);
-        const int errorfunctnumber = relerrorconditions[icond]->parameters().get<int>("FunctionID");
+        const int errorfunctnumber = relerrorconditions[icond]->parameters().get<int>("Function");
         if (errorfunctnumber < 1) FOUR_C_THROW("Invalid function number for error calculation!");
         eleparams.set<int>("error function number", errorfunctnumber);
 

@@ -1886,7 +1886,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::evaluate_weak_dbc(
 
   // get values and switches from condition
   // (assumed to be constant on element boundary)
-  const auto* functions = &wdbc_cond->parameters().get<std::vector<int>>("funct");
+  const auto* functions = &wdbc_cond->parameters().get<std::vector<int>>("FUNCT");
 
   // find out whether to apply weak DBC only in normal direction
   bool onlynormal = false;
@@ -1912,7 +1912,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::evaluate_weak_dbc(
 
   // get value for boundary condition and
   // check for Spalding's law in case of prescribed non-zero velocity
-  const auto& val = wdbc_cond->parameters().get<std::vector<double>>("val");
+  const auto& val = wdbc_cond->parameters().get<std::vector<double>>("VAL");
   if (spalding)
   {
     for (int i = 0; i < 3; ++i)

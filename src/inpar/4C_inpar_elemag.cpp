@@ -139,17 +139,10 @@ void Inpar::EleMag::SetValidConditions(
 
   for (const auto& cond : {silvermueller_line, silvermueller_surface})
   {
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("NUMDOF")));
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("numdof")));
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("ONOFF")));
-    cond->add_component(
-        Teuchos::rcp(new Input::IntVectorComponent("onoff", Input::LengthFromInt("numdof"))));
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("FUNCT")));
-    cond->add_component(Teuchos::rcp(new Input::IntVectorComponent(
-        "funct", Input::LengthFromInt("numdof"), {0, false, true, false})));
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("VAL")));
-    cond->add_component(
-        Teuchos::rcp(new Input::RealVectorComponent("val", Input::LengthFromInt("numdof"))));
+    add_named_int(cond, "NUMDOF");
+    add_named_int_vector(cond, "ONOFF", "", "NUMDOF");
+    add_named_int_vector(cond, "FUNCT", "", "NUMDOF", 0, true, true);
+    add_named_real_vector(cond, "VAL", "", "NUMDOF");
 
     condlist.push_back(cond);
   }

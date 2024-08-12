@@ -177,16 +177,14 @@ void Inpar::THR::SetValidConditions(
     cond->add_component(Teuchos::rcp(new Input::SelectionComponent("temperature state", "Tempnp",
         Teuchos::tuple<std::string>("Tempnp", "Tempn"),
         Teuchos::tuple<std::string>("Tempnp", "Tempn"))));
-
     add_named_real(cond, "coeff", "heat transfer coefficient h");
     add_named_real(cond, "surtemp", "surrounding (fluid) temperature T_oo");
-
-    // time curve to increase the surrounding (fluid) temperature T_oo in time
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("surtempfunct")));
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("surtempfunct", {0, true, true})));
-    // time curve to increase the complete boundary condition, i.e., the heat flux
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("funct")));
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("funct", {0, true, true})));
+    add_named_int(cond, "surtempfunct",
+        "time curve to increase the surrounding (fluid) temperature T_oo in time", 0, false, true,
+        true);
+    add_named_int(cond, "funct",
+        "time curve to increase the complete boundary condition, i.e., the heat flux", 0, false,
+        true, true);
 
     condlist.push_back(cond);
   }
@@ -205,16 +203,10 @@ void Inpar::THR::SetValidConditions(
 
   for (const auto& cond : {thermorobinline, thermorobinsurf})
   {
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("NUMSCAL")));
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("numscal")));
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("ONOFF")));
-    cond->add_component(
-        Teuchos::rcp(new Input::IntVectorComponent("onoff", Input::LengthFromInt("numscal"))));
-
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("PREFACTOR")));
-    cond->add_component(Teuchos::rcp(new Input::RealComponent("prefactor")));
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("REFVALUE")));
-    cond->add_component(Teuchos::rcp(new Input::RealComponent("refvalue")));
+    add_named_int(cond, "NUMSCAL");
+    add_named_int_vector(cond, "ONOFF", "", "NUMSCAL");
+    add_named_real(cond, "PREFACTOR");
+    add_named_real(cond, "REFVALUE");
 
     condlist.emplace_back(cond);
   }

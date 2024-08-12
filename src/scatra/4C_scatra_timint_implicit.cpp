@@ -3309,7 +3309,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
 
           // compute matrix and vector contributions according to kinetic model for current
           // macro-micro coupling condition
-          const int kinetic_model = condition->parameters().get<int>("kinetic model");
+          const int kinetic_model = condition->parameters().get<int>("KINETIC_MODEL");
 
           switch (kinetic_model)
           {
@@ -3317,7 +3317,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
             {
               // access real vector of constant permeabilities
               const std::vector<double>* permeabilities =
-                  condition->parameters().get_if<std::vector<double>>("permeabilities");
+                  condition->parameters().get_if<std::vector<double>>("PERMEABILITIES");
               if (permeabilities == nullptr)
                 FOUR_C_THROW("Cannot access vector of permeabilities for macro-micro coupling!");
               if (permeabilities->size() != (unsigned)num_scal())
@@ -3356,7 +3356,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
                 FOUR_C_THROW("Invalid electrode material for multi-scale coupling!");
 
               // access input parameters associated with current condition
-              const int nume = condition->parameters().get<int>("e-");
+              const int nume = condition->parameters().get<int>("E-");
               if (nume != 1)
               {
                 FOUR_C_THROW(
@@ -3364,7 +3364,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
                     "electrode-electrolyte interface!");
               }
               const std::vector<int>* stoichiometries =
-                  condition->parameters().get_if<std::vector<int>>("stoichiometries");
+                  condition->parameters().get_if<std::vector<int>>("STOICHIOMETRIES");
               if (stoichiometries == nullptr)
               {
                 FOUR_C_THROW(
@@ -3385,11 +3385,11 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
                   (gasconstant * (Global::Problem::instance(0)->elch_control_params().get<double>(
                                      "TEMPERATURE")));
               const double alphaa =
-                  condition->parameters().get<double>("alpha_a");  // anodic transfer coefficient
+                  condition->parameters().get<double>("ALPHA_A");  // anodic transfer coefficient
               const double alphac =
-                  condition->parameters().get<double>("alpha_c");  // cathodic transfer coefficient
+                  condition->parameters().get<double>("ALPHA_C");  // cathodic transfer coefficient
               const double kr = condition->parameters().get<double>(
-                  "k_r");  // rate constant of charge transfer reaction
+                  "K_R");  // rate constant of charge transfer reaction
               if (kr < 0.) FOUR_C_THROW("Charge transfer constant k_r is negative!");
 
               // extract saturation value of intercalated lithium concentration from electrode
@@ -3430,7 +3430,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
               const double eta = phinp_macro_[2] - phinp_macro_[1] - epd;
 
               // Butler-Volmer exchange mass flux density
-              const double j0 = condition->parameters().get<int>("kinetic model") ==
+              const double j0 = condition->parameters().get<int>("KINETIC_MODEL") ==
                                         Inpar::S2I::kinetics_butlervolmerreduced
                                     ? kr
                                     : kr * std::pow(conc_el, alphaa) *

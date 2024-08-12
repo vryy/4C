@@ -943,7 +943,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
           {
             if (condition->contains_node(node->id()))
             {
-              const auto& onoff = condition->parameters().get<std::vector<int>>("onoff");
+              const auto& onoff = condition->parameters().get<std::vector<int>>("ONOFF");
               for (unsigned k = 0; k < onoff.size(); k++)
                 if (onoff.at(k) == 1) cnode->dbc_dofs()[k] = true;
               if (stype == Inpar::CONTACT::solution_lagmult &&
@@ -1015,7 +1015,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
           {
             if (condition->contains_node(node->id()))
             {
-              const auto& onoff = condition->parameters().get<std::vector<int>>("onoff");
+              const auto& onoff = condition->parameters().get<std::vector<int>>("ONOFF");
               for (unsigned k = 0; k < onoff.size(); k++)
               {
                 if (onoff.at(k) == 1)

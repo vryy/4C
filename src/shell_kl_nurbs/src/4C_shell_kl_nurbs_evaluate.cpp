@@ -142,9 +142,9 @@ int Discret::ELEMENTS::KirchhoffLoveShellNurbs::evaluate_neumann(Teuchos::Parame
   }
 
   // get values and switches from the condition
-  const auto& onoff = condition.parameters().get<std::vector<int>>("onoff");
-  const auto& val = condition.parameters().get<std::vector<double>>("val");
-  const auto& funct_id = condition.parameters().get<std::vector<int>>("funct");
+  const auto& onoff = condition.parameters().get<std::vector<int>>("ONOFF");
+  const auto& val = condition.parameters().get<std::vector<double>>("VAL");
+  const auto& funct_id = condition.parameters().get<std::vector<int>>("FUNCT");
 
   // ensure that the boundary condition has the correct size
   if (onoff.size() != n_nodal_dof)

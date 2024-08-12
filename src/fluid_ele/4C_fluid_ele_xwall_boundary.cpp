@@ -153,7 +153,7 @@ void Discret::ELEMENTS::FluidXWallBoundary::location_vector(const Core::FE::Disc
                     dirich->type() != Core::Conditions::SurfaceDirichlet &&
                     dirich->type() != Core::Conditions::VolumeDirichlet)
                   FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-                flag = &dirich->parameters().get<std::vector<int>>("onoff");
+                flag = &dirich->parameters().get<std::vector<int>>("ONOFF");
               }
               for (unsigned j = 0; j < dof.size(); ++j)
               {
@@ -216,7 +216,7 @@ void Discret::ELEMENTS::FluidXWallBoundary::location_vector(const Core::FE::Disc
         //              dirich->Type()!=Core::Conditions::geometry_type_surfaceDirichlet &&
         //              dirich->Type()!=Core::Conditions::geometry_type_volumeDirichlet)
         //            FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-        //          flag = dirich->get<std::vector<int> >("onoff");
+        //          flag = dirich->get<std::vector<int> >("ONOFF");
         //        }
         //        for (unsigned j=0; j<dof.size(); ++j)
         //        {

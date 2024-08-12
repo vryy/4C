@@ -359,7 +359,7 @@ void Core::Conditions::FindConditionObjects(const Core::FE::Discretization& dis,
   {
     if (checklabel)
     {
-      const int condlabel = cond->parameters().get<int>("label");
+      const int condlabel = cond->parameters().get<int>("COUPLINGID");
 
       if (condlabel != label) continue;  // do not consider conditions with wrong label
     }

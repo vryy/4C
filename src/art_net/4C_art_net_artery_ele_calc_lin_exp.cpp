@@ -1490,7 +1490,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_scatra_bc(Artery*
 
       const auto* curve = condition->parameters().get_if<int>("curve");
 
-      double curvefac = condition->parameters().get<double>("val");
+      double curvefac = condition->parameters().get<double>("VAL");
       int curvenum = -1;
       if (curve) curvenum = *curve;
       if (curvenum > 0)
