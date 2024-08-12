@@ -376,7 +376,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
             if (contactSymconditions.at(l)->contains_node(node->id()))
             {
               const std::vector<int>& onoff =
-                  contactSymconditions.at(l)->parameters().get<std::vector<int>>("onoff");
+                  contactSymconditions.at(l)->parameters().get<std::vector<int>>("ONOFF");
               for (unsigned k = 0; k < onoff.size(); k++)
                 if (onoff.at(k) == 1) cnode->dbc_dofs()[k] = true;
               if (stype == Inpar::CONTACT::solution_lagmult &&
@@ -434,7 +434,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
             if (contactSymconditions.at(l)->contains_node(node->id()))
             {
               const std::vector<int>& onoff =
-                  contactSymconditions.at(l)->parameters().get<std::vector<int>>("onoff");
+                  contactSymconditions.at(l)->parameters().get<std::vector<int>>("ONOFF");
               for (unsigned k = 0; k < onoff.size(); k++)
                 if (onoff.at(k) == 1) cnode->dbc_dofs()[k] = true;
               if (stype == Inpar::CONTACT::solution_lagmult &&

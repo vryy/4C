@@ -15,6 +15,7 @@
 #include "4C_fem_condition_definition.hpp"
 #include "4C_inpar_beam_to_solid.hpp"
 #include "4C_inpar_beamcontact.hpp"
+#include "4C_io_linecomponent.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -183,17 +184,13 @@ void Inpar::BEAMINTERACTION::SetValidConditions(
           Core::Conditions::FilamentBeamLineCondition, false,
           Core::Conditions::geometry_type_line));
 
-  beam_filament_condition->add_component(Teuchos::rcp(new Input::SeparatorComponent("ID")));
-  beam_filament_condition->add_component(Teuchos::rcp(new Input::IntComponent("FilamentId")));
-  beam_filament_condition->add_component(
-      Teuchos::rcp(new Input::SeparatorComponent("TYPE", "", true)));
-  beam_filament_condition->add_component(
-      Teuchos::rcp(new Input::SelectionComponent("Type", "Arbitrary",
-          Teuchos::tuple<std::string>(
-              "Arbitrary", "arbitrary", "Actin", "actin", "Collagen", "collagen"),
-          Teuchos::tuple<std::string>(
-              "Arbitrary", "arbitrary", "Actin", "actin", "Collagen", "collagen"),
-          true)));
+  add_named_int(beam_filament_condition, "ID", "filament id");
+  add_named_selection_component(beam_filament_condition, "TYPE", "", "Arbitrary",
+      Teuchos::tuple<std::string>(
+          "Arbitrary", "arbitrary", "Actin", "actin", "Collagen", "collagen"),
+      Teuchos::tuple<std::string>(
+          "Arbitrary", "arbitrary", "Actin", "actin", "Collagen", "collagen"),
+      true);
 
   condlist.push_back(beam_filament_condition);
 

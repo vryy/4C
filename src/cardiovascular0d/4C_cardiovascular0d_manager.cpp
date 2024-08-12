@@ -610,7 +610,7 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
           const std::string& conditiontype =
               cardvasc0d_syspulcirculation_->get_cardiovascular0_d_condition()[j]
                   ->parameters()
-                  .get<std::string>("type");
+                  .get<std::string>("TYPE");
           if (conditiontype == "ventricle_left") newval[0] = -(*actpres)[3];
           if (conditiontype == "ventricle_right") newval[0] = -(*actpres)[11];
           if (conditiontype == "atrium_left") newval[0] = -(*actpres)[0];
@@ -635,7 +635,7 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
           const std::string conditiontype =
               cardvascrespir0d_syspulperiphcirculation_->get_cardiovascular0_d_condition()[j]
                   ->parameters()
-                  .get<std::string>("type");
+                  .get<std::string>("TYPE");
           if (conditiontype == "ventricle_left") newval[0] = -(*actpres)[3];
           if (conditiontype == "ventricle_right") newval[0] = -(*actpres)[27];
           if (conditiontype == "atrium_left") newval[0] = -(*actpres)[0];
@@ -644,7 +644,7 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
         }
       }
     }
-    if (assvec) coupcond->parameters().add("val", newval);
+    if (assvec) coupcond->parameters().add("VAL", newval);
 
 
     Teuchos::RCP<const Epetra_Vector> disp =

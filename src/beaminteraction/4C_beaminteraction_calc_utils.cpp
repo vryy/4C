@@ -400,7 +400,7 @@ namespace BEAMINTERACTION
         if (cond == nullptr) continue;
 
         // get filament number
-        int const currfilnum = cond->parameters().get<int>("FilamentId");
+        int const currfilnum = cond->parameters().get<int>("ID");
 
         // if a filament has already been examined --> continue with next node
         if (relevantfilaments.find(currfilnum) != relevantfilaments.end()) continue;

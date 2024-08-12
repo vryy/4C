@@ -381,7 +381,7 @@ void Wear::Algorithm::create_material_interface()
             if (contactSymconditions.at(j)->contains_node(node->id()))
             {
               const std::vector<int>& onoff =
-                  contactSymconditions.at(j)->parameters().get<std::vector<int>>("onoff");
+                  contactSymconditions.at(j)->parameters().get<std::vector<int>>("ONOFF");
               for (unsigned k = 0; k < onoff.size(); k++)
                 if (onoff.at(k) == 1) cnode->dbc_dofs()[k] = true;
               if (stype == Inpar::CONTACT::solution_lagmult &&
@@ -421,7 +421,7 @@ void Wear::Algorithm::create_material_interface()
             if (contactSymconditions.at(j)->contains_node(node->id()))
             {
               const std::vector<int>& onoff =
-                  contactSymconditions.at(j)->parameters().get<std::vector<int>>("onoff");
+                  contactSymconditions.at(j)->parameters().get<std::vector<int>>("ONOFF");
               for (unsigned k = 0; k < onoff.size(); k++)
                 if (onoff.at(k) == 1) cnode->dbc_dofs()[k] = true;
             }

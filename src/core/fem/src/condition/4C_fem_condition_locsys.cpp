@@ -133,14 +133,14 @@ void Core::Conditions::LocsysManager::update(const double time,
       {
         typelocsys_[i] = currlocsys->type();
 
-        const auto* rotangle = &currlocsys->parameters().get<std::vector<double>>("rotangle");
-        const auto* funct = &currlocsys->parameters().get<std::vector<int>>("funct");
-        const auto* useUpdatedNodePos = &currlocsys->parameters().get<int>("useupdatednodepos");
+        const auto* rotangle = &currlocsys->parameters().get<std::vector<double>>("ROTANGLE");
+        const auto* funct = &currlocsys->parameters().get<std::vector<int>>("FUNCT");
+        const auto* useUpdatedNodePos = &currlocsys->parameters().get<int>("USEUPDATEDNODEPOS");
 
         const auto* useConsistentNodeNormal =
             (currlocsys->type() == Core::Conditions::SurfaceLocsys or
                 currlocsys->type() == Core::Conditions::LineLocsys)
-                ? currlocsys->parameters().get_if<int>("useconsistentnodenormal")
+                ? currlocsys->parameters().get_if<int>("USECONSISTENTNODENORMAL")
                 : nullptr;
 
         const std::vector<int>* nodes = currlocsys->get_nodes();

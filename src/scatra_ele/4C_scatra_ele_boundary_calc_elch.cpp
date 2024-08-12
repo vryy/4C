@@ -109,13 +109,13 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_b
   if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchBoundaryKinetics'");
 
   // access parameters of the condition
-  const auto kinetics = cond->parameters().get<int>("kinetic model");
-  auto pot0 = cond->parameters().get<double>("pot");
-  const auto curvenum = cond->parameters().get<int>("funct");
-  const auto nume = cond->parameters().get<int>("e-");
+  const auto kinetics = cond->parameters().get<int>("KINETIC_MODEL");
+  auto pot0 = cond->parameters().get<double>("POT");
+  const auto curvenum = cond->parameters().get<int>("FUNCT");
+  const auto nume = cond->parameters().get<int>("E-");
   // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neuman
   // condition) but the electrode status is evaluated
-  const auto zerocur = cond->parameters().get<int>("zero_cur");
+  const auto zerocur = cond->parameters().get<int>("ZERO_CUR");
   if (nume < 0)
     FOUR_C_THROW(
         "The convention for electrochemical reactions at the electrodes does not allow \n"
@@ -123,7 +123,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_b
 
   // convention for stoichiometric coefficients s_i:
   // Sum_i (s_i  M_i^(z_i)) -> n e- (n needs to be positive)
-  const auto* stoich = &cond->parameters().get<std::vector<int>>("stoich");
+  const auto* stoich = &cond->parameters().get<std::vector<int>>("STOICH");
   if ((unsigned int)my::numscal_ != (*stoich).size())
     FOUR_C_THROW(
         "Electrode kinetics: number of stoichiometry coefficients %u does not match"
@@ -229,7 +229,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_nernst
       params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
   if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchBoundaryKinetics'");
 
-  const auto kinetics = cond->parameters().get<int>("kinetic model");
+  const auto kinetics = cond->parameters().get<int>("KINETIC_MODEL");
 
   // Nernst-BC
   if (kinetics == Inpar::ElCh::nernst)
@@ -238,9 +238,9 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_nernst
     my::extract_node_values(discretization, la);
 
     // access parameters of the condition
-    auto pot0 = cond->parameters().get<double>("pot");
-    const auto curvenum = cond->parameters().get<int>("funct");
-    const auto nume = cond->parameters().get<int>("e-");
+    auto pot0 = cond->parameters().get<double>("POT");
+    const auto curvenum = cond->parameters().get<int>("FUNCT");
+    const auto nume = cond->parameters().get<int>("E-");
     const auto e0 = cond->parameters().get<double>("e0");
     const auto c0 = cond->parameters().get<double>("c0");
 
@@ -249,7 +249,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_nernst
           "The convention for electrochemical reactions at the electrodes does not allow \n"
           "a negative number of transferred electrons");
 
-    const auto* stoich = &cond->parameters().get<std::vector<int>>("stoich");
+    const auto* stoich = &cond->parameters().get<std::vector<int>>("STOICH");
     if ((unsigned int)my::numscal_ != (*stoich).size())
       FOUR_C_THROW(
           "Electrode kinetics: number of stoichiometry coefficients %u does not match"
@@ -425,7 +425,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype,
 
       // get boundary porosity from condition if available, or set equal to volume porosity
       // otherwise
-      auto epsilon = cond->parameters().get<double>("epsilon");
+      auto epsilon = cond->parameters().get<double>("EPSILON");
       if (epsilon == -1)
         epsilon = scalar;
       else if (epsilon <= 0 or epsilon > 1)
@@ -474,10 +474,10 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_el
 
   // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neumann
   // condition) but the electrode status is evaluated
-  const int zerocur = cond->parameters().get<int>("zero_cur");
+  const int zerocur = cond->parameters().get<int>("ZERO_CUR");
 
   // get boundary porosity from condition if available, or set equal to volume porosity otherwise
-  auto epsilon = cond->parameters().get<double>("epsilon");
+  auto epsilon = cond->parameters().get<double>("EPSILON");
   if (epsilon == -1)
     epsilon = scalar;
   else if (epsilon <= 0 or epsilon > 1)

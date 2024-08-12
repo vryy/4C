@@ -493,7 +493,7 @@ void Core::Elements::Element::location_vector(const Core::FE::Discretization& di
                 dirich->type() != Core::Conditions::SurfaceDirichlet &&
                 dirich->type() != Core::Conditions::VolumeDirichlet)
               FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-            flag = &dirich->parameters().get<std::vector<int>>("onoff");
+            flag = &dirich->parameters().get<std::vector<int>>("ONOFF");
           }
           for (unsigned j = 0; j < dof.size(); ++j)
           {
@@ -543,7 +543,7 @@ void Core::Elements::Element::location_vector(const Core::FE::Discretization& di
             dirich->type() != Core::Conditions::SurfaceDirichlet &&
             dirich->type() != Core::Conditions::VolumeDirichlet)
           FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-        flag = &dirich->parameters().get<std::vector<int>>("onoff");
+        flag = &dirich->parameters().get<std::vector<int>>("ONOFF");
       }
       for (unsigned j = 0; j < dof.size(); ++j)
       {
@@ -612,7 +612,7 @@ void Core::Elements::Element::location_vector(
                 dirich->type() != Core::Conditions::SurfaceDirichlet &&
                 dirich->type() != Core::Conditions::VolumeDirichlet)
               FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-            flag = &dirich->parameters().get<std::vector<int>>("onoff");
+            flag = &dirich->parameters().get<std::vector<int>>("ONOFF");
           }
           for (int j = 0; j < size; ++j)
           {
@@ -698,7 +698,7 @@ void Core::Elements::Element::location_vector(
                 dirich->type() != Core::Conditions::SurfaceDirichlet &&
                 dirich->type() != Core::Conditions::VolumeDirichlet)
               FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-            flag = &dirich->parameters().get<std::vector<int>>("onoff");
+            flag = &dirich->parameters().get<std::vector<int>>("ONOFF");
 
             // Every component gets NumDofPerComponent ones or zeros
             for (unsigned j = 0; j < flag->size(); ++j)
@@ -725,7 +725,7 @@ void Core::Elements::Element::location_vector(
             dirich->type() != Core::Conditions::SurfaceDirichlet &&
             dirich->type() != Core::Conditions::VolumeDirichlet)
           FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-        flag = &dirich->parameters().get<std::vector<int>>("onoff");
+        flag = &dirich->parameters().get<std::vector<int>>("ONOFF");
       }
       for (unsigned j = 0; j < dof.size(); ++j)
       {
@@ -786,7 +786,7 @@ void Core::Elements::Element::location_vector(const Core::FE::Discretization& di
             dirich->type() != Core::Conditions::SurfaceDirichlet &&
             dirich->type() != Core::Conditions::VolumeDirichlet)
           FOUR_C_THROW("condition with name dirichlet is not of type Dirichlet");
-        flag = &dirich->parameters().get<std::vector<int>>("onoff");
+        flag = &dirich->parameters().get<std::vector<int>>("ONOFF");
       }
       const int owner = nodes[i]->owner();
       std::vector<int> dof;
@@ -838,7 +838,7 @@ void Core::Elements::Element::location_vector(const Core::FE::Discretization& di
         dirich->type() != Core::Conditions::SurfaceDirichlet &&
         dirich->type() != Core::Conditions::VolumeDirichlet)
       FOUR_C_THROW("condition with name dirichlet is not of type Dirichlet");
-    flag = &dirich->parameters().get<std::vector<int>>("onoff");
+    flag = &dirich->parameters().get<std::vector<int>>("ONOFF");
   }
   const int owner = Element::owner();
   std::vector<int> dof = dis.dof(this);

@@ -191,9 +191,9 @@ void Core::FE::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
     }
     const std::vector<int>* nodeids = cond->get_nodes();
     if (!nodeids) FOUR_C_THROW("PointNeumann condition does not have nodal cloud");
-    const auto* tmp_funct = cond->parameters().get_if<std::vector<int>>("funct");
-    const auto& onoff = cond->parameters().get<std::vector<int>>("onoff");
-    const auto& val = cond->parameters().get<std::vector<double>>("val");
+    const auto* tmp_funct = cond->parameters().get_if<std::vector<int>>("FUNCT");
+    const auto& onoff = cond->parameters().get<std::vector<int>>("ONOFF");
+    const auto& val = cond->parameters().get<std::vector<double>>("VAL");
 
     for (const int nodeid : *nodeids)
     {

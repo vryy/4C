@@ -688,8 +688,8 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate_neumann(Teuchos::ParameterLis
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
-  const auto* onoff = condition.parameters().get_if<std::vector<int>>("onoff");
-  const auto* val = condition.parameters().get_if<std::vector<double>>("val");
+  const auto* onoff = condition.parameters().get_if<std::vector<int>>("ONOFF");
+  const auto* val = condition.parameters().get_if<std::vector<double>>("VAL");
 
   /*
   **    TIME CURVE BUSINESS
@@ -713,7 +713,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate_neumann(Teuchos::ParameterLis
   }
 
   // (SPATIAL) FUNCTION BUSINESS
-  const auto* funct = condition.parameters().get_if<std::vector<int>>("funct");
+  const auto* funct = condition.parameters().get_if<std::vector<int>>("FUNCT");
   Core::LinAlg::Matrix<nsd_, 1> xrefegp(false);
   const bool havefunct = funct != nullptr && std::any_of(funct->begin(), funct->end(),
                                                  [](const int i) { return i > 0; });

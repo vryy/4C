@@ -83,7 +83,7 @@ void ScaTra::ScaTraUtils::CheckConsistencyWithS2IKineticsCondition(
   {
     if (conditionToBeTested->g_type() != Core::Conditions::geometry_type_surface) continue;
     bool isslave(true);
-    const int s2ikinetics_id = conditionToBeTested->parameters().get<int>("S2IKineticsID");
+    const int s2ikinetics_id = conditionToBeTested->parameters().get<int>("S2I_KINETICS_ID");
 
     // check the interface side
     switch (conditionToBeTested->parameters().get<int>("interface side"))

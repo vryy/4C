@@ -1545,11 +1545,11 @@ void CONTACT::Beam3cmanager::fill_potential_pairs_vectors(
 
     for (unsigned int i = 0; i < conds1.size(); ++i)
     {
-      int npotlaw1 = conds1[i]->parameters().get<int>("potlaw");
+      int npotlaw1 = conds1[i]->parameters().get<int>("POTLAW");
 
       for (unsigned int j = 0; j < conds2.size(); ++j)
       {
-        int npotlaw2 = conds2[j]->parameters().get<int>("potlaw");
+        int npotlaw2 = conds2[j]->parameters().get<int>("POTLAW");
 
         // here, we also exclude "self-interaction", i.e. a pair of elements on the same physical
         // beam

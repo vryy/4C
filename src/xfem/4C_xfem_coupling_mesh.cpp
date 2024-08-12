@@ -646,7 +646,7 @@ bool XFEM::MeshCouplingBC::has_moving_interface()
 
   Core::Conditions::Condition* cond = mycond[0];
 
-  const std::string& evaltype = cond->parameters().get<std::string>("evaltype");
+  const std::string& evaltype = cond->parameters().get<std::string>("EVALTYPE");
 
   return evaltype != "zero";
 }
@@ -675,7 +675,8 @@ void XFEM::MeshCouplingBC::evaluate_condition(Teuchos::RCP<Epetra_Vector> ivec,
 
     for (auto* cond : mycond)
     {
-      if (cond->parameters().get<int>("label") == coupling_id_) mycond_by_coupid.push_back(cond);
+      if (cond->parameters().get<int>("COUPLINGID") == coupling_id_)
+        mycond_by_coupid.push_back(cond);
     }
 
     // safety check for unique condition
@@ -718,7 +719,7 @@ void XFEM::MeshCouplingBC::evaluate_condition(Teuchos::RCP<Epetra_Vector> ivec,
 void XFEM::MeshCouplingBC::evaluate_interface_velocity(std::vector<double>& final_values,
     Core::Nodes::Node* node, Core::Conditions::Condition* cond, const double time, const double dt)
 {
-  const std::string* evaltype = &cond->parameters().get<std::string>("evaltype");
+  const std::string* evaltype = &cond->parameters().get<std::string>("EVALTYPE");
 
   if (*evaltype == "zero")
   {
@@ -760,7 +761,7 @@ void XFEM::MeshCouplingBC::evaluate_interface_velocity(std::vector<double>& fina
 void XFEM::MeshCouplingBC::evaluate_interface_displacement(std::vector<double>& final_values,
     Core::Nodes::Node* node, Core::Conditions::Condition* cond, const double time)
 {
-  const std::string& evaltype = cond->parameters().get<std::string>("evaltype");
+  const std::string& evaltype = cond->parameters().get<std::string>("EVALTYPE");
 
   if (evaltype == "zero")
   {
@@ -1058,11 +1059,11 @@ void XFEM::MeshCouplingNeumann::do_condition_specific_setup()
   // Check if Inflow Stabilisation is active
   if (!cutterele_conds_.size()) FOUR_C_THROW("cutterele_conds_.size = 0!");
   Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
-  auto inflow_stab = cond->parameters().get<bool>("InflowStab");
+  auto inflow_stab = cond->parameters().get<bool>("INFLOW_STAB");
   for (auto& cutterele_cond : cutterele_conds_)
   {
     Core::Conditions::Condition* cond = cutterele_cond.second;
-    auto this_inflow = cond->parameters().get<bool>("InflowStab");
+    auto this_inflow = cond->parameters().get<bool>("INFLOW_STAB");
     if (inflow_stab != this_inflow)
       FOUR_C_THROW(
           "You want to stabilized just some of your Neumann Boundaries? - feel free to implement!");
@@ -1248,7 +1249,7 @@ void XFEM::MeshCouplingNavierSlip::evaluate_coupling_conditions(Core::LinAlg::Ma
   if (eval_dirich_at_gp)
   {
     // evaluate interface velocity (given by weak Dirichlet condition)
-    robin_id_dirch = cond->parameters().get<int>("robin_id_dirch");
+    robin_id_dirch = cond->parameters().get<int>("ROBIN_DIRICHLET_ID");
     // Check if int is negative (signbit(x) -> x<0 true, x=>0 false)
     if (!std::signbit(static_cast<double>(robin_id_dirch)))
       evaluate_dirichlet_function(
@@ -1265,7 +1266,7 @@ void XFEM::MeshCouplingNavierSlip::evaluate_coupling_conditions(Core::LinAlg::Ma
   }
 
   // evaluate interface traction (given by Neumann condition)
-  robin_id_dirch = cond->parameters().get<int>("robin_id_neumann");
+  robin_id_dirch = cond->parameters().get<int>("ROBIN_NEUMANN_ID");
   if (!std::signbit(static_cast<double>(robin_id_dirch)))
   {
     // This is maybe not the most efficient implementation as we evaluate dynvisc as well as the
@@ -1338,14 +1339,14 @@ void XFEM::MeshCouplingNavierSlip::evaluate_coupling_conditions_old_state(
   //  }
 
   // evaluate interface velocity (given by weak Dirichlet condition)
-  int robin_id_dirch = cond->parameters().get<int>("robin_id_dirch");
+  int robin_id_dirch = cond->parameters().get<int>("ROBIN_DIRICHLET_ID");
   // Check if int is negative (signbit(x) -> x<0 true, x=>0 false)
   if (!std::signbit(static_cast<double>(robin_id_dirch)))
     evaluate_dirichlet_function(
         ivel, x, conditionsmap_robin_dirch_.find(robin_id_dirch)->second, time_ - dt_);
 
   // evaluate interface traction (given by Neumann condition)
-  robin_id_dirch = cond->parameters().get<int>("robin_id_neumann");
+  robin_id_dirch = cond->parameters().get<int>("ROBIN_NEUMANN_ID");
   if (!std::signbit(static_cast<double>(robin_id_dirch)))
     evaluate_neumann_function(
         itraction, x, conditionsmap_robin_neumann_.find(robin_id_dirch)->second, time_ - dt_);
@@ -1450,22 +1451,22 @@ void XFEM::MeshCouplingNavierSlip::set_condition_specific_parameters()
 
   // Establishes unique connection between Navier Slip section and Robin Dirichlet Neumann sections
   create_robin_id_map(
-      conditions_NS, conditions_dirich, "robin_id_dirch", conditionsmap_robin_dirch_);
+      conditions_NS, conditions_dirich, "ROBIN_DIRICHLET_ID", conditionsmap_robin_dirch_);
 
   create_robin_id_map(
-      conditions_NS, conditions_neumann, "robin_id_neumann", conditionsmap_robin_neumann_);
+      conditions_NS, conditions_neumann, "ROBIN_NEUMANN_ID", conditionsmap_robin_neumann_);
 
   // Create maps for easy extraction at gausspoint level
   for (auto* cond : conditions_NS)
   {
     int cond_int = cond->id();
 
-    double sliplength = cond->parameters().get<double>("slipcoeff");
+    double sliplength = cond->parameters().get<double>("SLIPCOEFFICIENT");
 
     // Is the slip length constant? Don't call functions at GP-level unnecessary.
-    bool slip_bool = (cond->parameters().get<int>("funct") < 1);
+    bool slip_bool = (cond->parameters().get<int>("FUNCT") < 1);
 
-    bool force_tangential = (cond->parameters().get<int>("force_tang_vel") == 1);
+    bool force_tangential = (cond->parameters().get<int>("FORCE_ONLY_TANG_VEL") == 1);
 
     if (!sliplength_map_.insert(std::make_pair(cond_int, std::make_pair(sliplength, slip_bool)))
              .second)
@@ -1479,13 +1480,13 @@ void XFEM::MeshCouplingNavierSlip::set_condition_specific_parameters()
   //       Robin Dirichlet section (Safety check! (not beautiful structure but could be worse..))
   for (auto* tmp_cond : conditions_NS)
   {
-    const int tmp_robin_id = tmp_cond->parameters().get<int>("robin_id_dirch");
+    const int tmp_robin_id = tmp_cond->parameters().get<int>("ROBIN_DIRICHLET_ID");
     if (!std::signbit(static_cast<double>(tmp_robin_id)))
     {
       if ((conditionsmap_robin_dirch_.find(tmp_robin_id)
                   ->second->parameters()
-                  .get<std::string>("evaltype")) !=
-          (tmp_cond->parameters().get<std::string>("evaltype")))
+                  .get<std::string>("EVALTYPE")) !=
+          (tmp_cond->parameters().get<std::string>("EVALTYPE")))
         FOUR_C_THROW("Not same function to evaluate in Dirichlet cond as in Main Cond.");
     }
   }
@@ -1798,10 +1799,10 @@ void XFEM::MeshCouplingFSI::set_condition_specific_parameters()
   {
     int cond_int = cond->id();
 
-    double sliplength = cond->parameters().get<double>("slipcoeff");
+    double sliplength = cond->parameters().get<double>("SLIPCOEFFICIENT");
 
     // Is the slip length constant? Don't call functions at GP-level unnecessary.
-    bool slip_bool = (cond->parameters().get<int>("funct") < 1);
+    bool slip_bool = (cond->parameters().get<int>("FUNCT") < 1);
 
     if (!sliplength_map_.insert(std::make_pair(cond_int, std::make_pair(sliplength, slip_bool)))
              .second)

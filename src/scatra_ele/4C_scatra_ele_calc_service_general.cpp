@@ -707,12 +707,12 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
-      if (params.get<int>("numscal") > numscal_)
+      if (params.get<int>("NUMSCAL") > numscal_)
         FOUR_C_THROW(
             "you requested the pointvalue of the %d-th scalar but there is only %d scalars",
-            params.get<int>("numscal"), numscal_);
+            params.get<int>("NUMSCAL"), numscal_);
 
-      const double value = funct_.dot(ephinp_[params.get<int>("numscal")]);
+      const double value = funct_.dot(ephinp_[params.get<int>("NUMSCAL")]);
 
       params.set<double>("value", value);
 

@@ -318,7 +318,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
       islaveresidual_->PutScalar(0.);
       for (auto kinetics_slave_cond : kinetics_conditions_meshtying_slaveside_)
       {
-        if (kinetics_slave_cond.second->parameters().get<int>("kinetic model") !=
+        if (kinetics_slave_cond.second->parameters().get<int>("KINETIC_MODEL") !=
                 static_cast<int>(Inpar::S2I::kinetics_nointerfaceflux) and
             kinetics_slave_cond.second->g_type() != Core::Conditions::geometry_type_point)
         {
@@ -1396,7 +1396,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
   // evaluate scatra-scatra interface coupling
   for (auto kinetics_slave_cond_cap : kinetics_conditions_meshtying_slaveside_)
   {
-    if (kinetics_slave_cond_cap.second->parameters().get<int>("kinetic model") ==
+    if (kinetics_slave_cond_cap.second->parameters().get<int>("KINETIC_MODEL") ==
         static_cast<int>(Inpar::S2I::kinetics_butlervolmerreducedcapacitance))
     {
       // collect condition specific data and store to scatra boundary parameter class
@@ -1942,7 +1942,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
         FOUR_C_THROW("Invalid condition ID %i for S2IKinetics Condition!", s2ikinetics_cond_id);
 
       // only continue if ID's match
-      if (s2imeshtying_cond->parameters().get<int>("S2IKineticsID") != s2ikinetics_cond_id)
+      if (s2imeshtying_cond->parameters().get<int>("S2I_KINETICS_ID") != s2ikinetics_cond_id)
         continue;
       // only continue if sides match
       if (s2imeshtying_cond->parameters().get<int>("interface side") !=
@@ -1967,7 +1967,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
                 s2ikinetics_cond_id);
           }
 
-          if (s2ikinetics_cond->parameters().get<int>("kinetic model") ==
+          if (s2ikinetics_cond->parameters().get<int>("KINETIC_MODEL") ==
               static_cast<int>(Inpar::S2I::kinetics_butlervolmerreducedcapacitance))
           {
             has_capacitive_contributions_ = true;
@@ -2059,7 +2059,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
                    scatratimint_->num_dof_per_node_in_condition(*kinetics_condition))
             FOUR_C_THROW("all S2I conditions must have the same number of dof per node");
 
-          if (kinetics_condition->parameters().get<int>("kinetic model") !=
+          if (kinetics_condition->parameters().get<int>("KINETIC_MODEL") !=
               static_cast<int>(Inpar::S2I::kinetics_nointerfaceflux))
           {
             Core::Communication::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
@@ -2098,7 +2098,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
                    scatratimint_->num_dof_per_node_in_condition(*kinetics_condition))
             FOUR_C_THROW("all S2I conditions must have the same number of dof per node");
 
-          if (kinetics_condition->parameters().get<int>("kinetic model") !=
+          if (kinetics_condition->parameters().get<int>("KINETIC_MODEL") !=
               static_cast<int>(Inpar::S2I::kinetics_nointerfaceflux))
           {
             Core::Communication::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
@@ -2859,11 +2859,11 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
               condition->parameters().get<int>("ConditionID"))
             // copy conductivity parameter
             icond->parameters().add(
-                "conductivity", condition->parameters().get<double>("conductivity"));
+                "CONDUCTIVITY", condition->parameters().get<double>("CONDUCTIVITY"));
         }
 
         // extract initial scatra-scatra interface layer thickness from condition
-        const double initthickness = condition->parameters().get<double>("initial thickness");
+        const double initthickness = condition->parameters().get<double>("INITTHICKNESS");
 
         // extract nodal cloud from condition
         const std::vector<int>* nodegids = condition->get_nodes();
@@ -2990,13 +2990,13 @@ void ScaTra::MeshtyingStrategyS2I::write_s2_i_kinetics_specific_scatra_parameter
     Core::Conditions::Condition& s2ikinetics_cond, Teuchos::ParameterList& s2icouplingparameters)
 {
   // get kinetic model and condition type
-  const int kineticmodel = s2ikinetics_cond.parameters().get<int>("kinetic model");
+  const int kineticmodel = s2ikinetics_cond.parameters().get<int>("KINETIC_MODEL");
   const Core::Conditions::ConditionType conditiontype = s2ikinetics_cond.type();
 
   // set action, kinetic model, condition type and numscal
   Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
       "action", ScaTra::Action::set_scatra_ele_boundary_parameter, s2icouplingparameters);
-  s2icouplingparameters.set<int>("kinetic model", kineticmodel);
+  s2icouplingparameters.set<int>("KINETIC_MODEL", kineticmodel);
   s2icouplingparameters.set<Core::Conditions::ConditionType>("condition type", conditiontype);
 
   // set the condition type specific parameters
@@ -3011,24 +3011,24 @@ void ScaTra::MeshtyingStrategyS2I::write_s2_i_kinetics_specific_scatra_parameter
         case Inpar::S2I::kinetics_linearperm:
         {
           s2icouplingparameters.set<int>(
-              "numscal", s2ikinetics_cond.parameters().get<int>("numscal"));
-          s2icouplingparameters.set<const std::vector<double>*>("permeabilities",
-              &s2ikinetics_cond.parameters().get<std::vector<double>>("permeabilities"));
+              "NUMSCAL", s2ikinetics_cond.parameters().get<int>("NUMSCAL"));
+          s2icouplingparameters.set<const std::vector<double>*>("PERMEABILITIES",
+              &s2ikinetics_cond.parameters().get<std::vector<double>>("PERMEABILITIES"));
           s2icouplingparameters.set<int>(
-              "is_pseudo_contact", s2ikinetics_cond.parameters().get<int>("is_pseudo_contact"));
+              "IS_PSEUDO_CONTACT", s2ikinetics_cond.parameters().get<int>("IS_PSEUDO_CONTACT"));
           break;
         }
 
         case Inpar::S2I::kinetics_constantinterfaceresistance:
         {
           s2icouplingparameters.set<double>(
-              "resistance", s2ikinetics_cond.parameters().get<double>("resistance"));
+              "RESISTANCE", s2ikinetics_cond.parameters().get<double>("RESISTANCE"));
           s2icouplingparameters.set<const std::vector<int>*>(
-              "onoff", &s2ikinetics_cond.parameters().get<std::vector<int>>("onoff"));
+              "ONOFF", &s2ikinetics_cond.parameters().get<std::vector<int>>("ONOFF"));
           s2icouplingparameters.set<int>(
-              "numelectrons", s2ikinetics_cond.parameters().get<int>("e-"));
+              "numelectrons", s2ikinetics_cond.parameters().get<int>("E-"));
           s2icouplingparameters.set<int>(
-              "is_pseudo_contact", s2ikinetics_cond.parameters().get<int>("is_pseudo_contact"));
+              "IS_PSEUDO_CONTACT", s2ikinetics_cond.parameters().get<int>("IS_PSEUDO_CONTACT"));
           break;
         }
 
@@ -3049,33 +3049,33 @@ void ScaTra::MeshtyingStrategyS2I::write_s2_i_kinetics_specific_scatra_parameter
         case Inpar::S2I::kinetics_butlervolmerreducedresistance:
         {
           s2icouplingparameters.set<int>(
-              "numscal", s2ikinetics_cond.parameters().get<int>("numscal"));
-          s2icouplingparameters.set<const std::vector<int>*>("stoichiometries",
-              &s2ikinetics_cond.parameters().get<std::vector<int>>("stoichiometries"));
+              "NUMSCAL", s2ikinetics_cond.parameters().get<int>("NUMSCAL"));
+          s2icouplingparameters.set<const std::vector<int>*>("STOICHIOMETRIES",
+              &s2ikinetics_cond.parameters().get<std::vector<int>>("STOICHIOMETRIES"));
           s2icouplingparameters.set<int>(
-              "numelectrons", s2ikinetics_cond.parameters().get<int>("e-"));
+              "numelectrons", s2ikinetics_cond.parameters().get<int>("E-"));
           s2icouplingparameters.set<double>(
-              "k_r", s2ikinetics_cond.parameters().get<double>("k_r"));
+              "K_R", s2ikinetics_cond.parameters().get<double>("K_R"));
           s2icouplingparameters.set<double>(
-              "alpha_a", s2ikinetics_cond.parameters().get<double>("alpha_a"));
+              "ALPHA_A", s2ikinetics_cond.parameters().get<double>("ALPHA_A"));
           s2icouplingparameters.set<double>(
-              "alpha_c", s2ikinetics_cond.parameters().get<double>("alpha_c"));
+              "ALPHA_C", s2ikinetics_cond.parameters().get<double>("ALPHA_C"));
           s2icouplingparameters.set<int>(
-              "is_pseudo_contact", s2ikinetics_cond.parameters().get<int>("is_pseudo_contact"));
+              "IS_PSEUDO_CONTACT", s2ikinetics_cond.parameters().get<int>("IS_PSEUDO_CONTACT"));
 
           if (kineticmodel == Inpar::S2I::kinetics_butlervolmerreducedcapacitance)
             s2icouplingparameters.set<double>(
-                "capacitance", s2ikinetics_cond.parameters().get<double>("capacitance"));
+                "CAPACITANCE", s2ikinetics_cond.parameters().get<double>("CAPACITANCE"));
 
           if (kineticmodel == Inpar::S2I::kinetics_butlervolmerpeltier)
             s2icouplingparameters.set<double>(
-                "peltier", s2ikinetics_cond.parameters().get<double>("peltier"));
+                "PELTIER", s2ikinetics_cond.parameters().get<double>("PELTIER"));
 
           if (kineticmodel == Inpar::S2I::kinetics_butlervolmerresistance or
               kineticmodel == Inpar::S2I::kinetics_butlervolmerreducedresistance)
           {
             s2icouplingparameters.set<double>(
-                "resistance", s2ikinetics_cond.parameters().get<double>("resistance"));
+                "RESISTANCE", s2ikinetics_cond.parameters().get<double>("RESISTANCE"));
             s2icouplingparameters.set<double>("CONVTOL_IMPLBUTLERVOLMER",
                 s2ikinetics_cond.parameters().get<double>("CONVTOL_IMPLBUTLERVOLMER"));
             s2icouplingparameters.set<int>("ITEMAX_IMPLBUTLERVOLMER",
@@ -3085,9 +3085,9 @@ void ScaTra::MeshtyingStrategyS2I::write_s2_i_kinetics_specific_scatra_parameter
           if (kineticmodel == Inpar::S2I::kinetics_butlervolmerreducedthermoresistance)
           {
             s2icouplingparameters.set<double>(
-                "thermoperm", s2ikinetics_cond.parameters().get<double>("thermoperm"));
-            s2icouplingparameters.set<double>("molar_heat_capacity",
-                s2ikinetics_cond.parameters().get<double>("molar_heat_capacity"));
+                "THERMOPERM", s2ikinetics_cond.parameters().get<double>("THERMOPERM"));
+            s2icouplingparameters.set<double>("MOLAR_HEAT_CAPACITY",
+                s2ikinetics_cond.parameters().get<double>("MOLAR_HEAT_CAPACITY"));
           }
           break;
         }
@@ -3109,27 +3109,27 @@ void ScaTra::MeshtyingStrategyS2I::write_s2_i_kinetics_specific_scatra_parameter
         case Inpar::S2I::growth_kinetics_butlervolmer:
         {
           s2icouplingparameters.set<int>(
-              "numscal", s2ikinetics_cond.parameters().get<int>("numscal"));
-          s2icouplingparameters.set<const std::vector<int>*>("stoichiometries",
-              &s2ikinetics_cond.parameters().get<std::vector<int>>("stoichiometries"));
+              "NUMSCAL", s2ikinetics_cond.parameters().get<int>("NUMSCAL"));
+          s2icouplingparameters.set<const std::vector<int>*>("STOICHIOMETRIES",
+              &s2ikinetics_cond.parameters().get<std::vector<int>>("STOICHIOMETRIES"));
           s2icouplingparameters.set<int>(
-              "numelectrons", s2ikinetics_cond.parameters().get<int>("e-"));
+              "numelectrons", s2ikinetics_cond.parameters().get<int>("E-"));
           s2icouplingparameters.set<double>(
-              "k_r", s2ikinetics_cond.parameters().get<double>("k_r"));
+              "K_R", s2ikinetics_cond.parameters().get<double>("K_R"));
           s2icouplingparameters.set<double>(
-              "alpha_a", s2ikinetics_cond.parameters().get<double>("alpha_a"));
+              "ALPHA_A", s2ikinetics_cond.parameters().get<double>("ALPHA_A"));
           s2icouplingparameters.set<double>(
-              "alpha_c", s2ikinetics_cond.parameters().get<double>("alpha_c"));
+              "ALPHA_C", s2ikinetics_cond.parameters().get<double>("ALPHA_C"));
           s2icouplingparameters.set<double>(
               "density", s2ikinetics_cond.parameters().get<double>("density"));
           s2icouplingparameters.set<double>(
-              "molar mass", s2ikinetics_cond.parameters().get<double>("molar mass"));
+              "MOLMASS", s2ikinetics_cond.parameters().get<double>("MOLMASS"));
           s2icouplingparameters.set<double>(
-              "regpar", s2ikinetics_cond.parameters().get<double>("regularization parameter"));
+              "REGPAR", s2ikinetics_cond.parameters().get<double>("REGPAR"));
           s2icouplingparameters.set<int>(
-              "regtype", s2ikinetics_cond.parameters().get<int>("regularization type"));
+              "REGTYPE", s2ikinetics_cond.parameters().get<int>("REGTYPE"));
           s2icouplingparameters.set<double>(
-              "conductivity", s2ikinetics_cond.parameters().get<double>("conductivity"));
+              "CONDUCTIVITY", s2ikinetics_cond.parameters().get<double>("CONDUCTIVITY"));
           break;
         }
 
@@ -3486,7 +3486,7 @@ void ScaTra::MeshtyingStrategyS2I::init_meshtying()
           "one-step-theta time integration scheme at the moment!");
     }
     if (intlayergrowth_evaluation_ == Inpar::S2I::growth_evaluation_semi_implicit and
-        conditions[0]->parameters().get<int>("regularization type") !=
+        conditions[0]->parameters().get<int>("REGTYPE") !=
             Inpar::S2I::RegularizationType::regularization_none)
     {
       FOUR_C_THROW(

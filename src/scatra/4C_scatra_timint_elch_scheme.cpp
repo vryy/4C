@@ -125,7 +125,7 @@ void ScaTra::ScaTraTimIntElchOST::write_restart() const
         temp << condid;
 
         // electrode potential of the adjusted electrode kinetics BC at time n+1
-        auto pot = mycond->parameters().get<double>("pot");
+        auto pot = mycond->parameters().get<double>("POT");
         output_->write_double("pot_" + temp.str(), pot);
 
         // electrode potential of the adjusted electrode kinetics BC at time n
@@ -187,7 +187,7 @@ void ScaTra::ScaTraTimIntElchOST::read_restart(
         temp << condid;
 
         double pot = reader->read_double("pot_" + temp.str());
-        mycond->parameters().add("pot", pot);
+        mycond->parameters().add("POT", pot);
         double pot0n = reader->read_double("pot0n_" + temp.str());
         mycond->parameters().add("pot0n", pot0n);
         double pot0hist = reader->read_double("pot0hist_" + temp.str());
@@ -231,7 +231,7 @@ void ScaTra::ScaTraTimIntElchOST::electrode_kinetics_time_update()
     for (auto& condition : conditions)  // we update simply every condition!
     {
       {
-        auto pot0np = condition->parameters().get<double>("pot");
+        auto pot0np = condition->parameters().get<double>("POT");
         condition->parameters().add("pot0n", pot0np);
 
         auto pot0dtnp = condition->parameters().get<double>("pot0dtnp");
@@ -267,9 +267,9 @@ void ScaTra::ScaTraTimIntElchOST::compute_time_deriv_pot0(const bool init)
 
   for (int icond = 0; icond < numcond; icond++)
   {
-    auto pot0np = cond[icond]->parameters().get<double>("pot");
-    const auto functnum = cond[icond]->parameters().get<int>("funct");
-    auto dlcap = cond[icond]->parameters().get<double>("dl_spec_cap");
+    auto pot0np = cond[icond]->parameters().get<double>("POT");
+    const auto functnum = cond[icond]->parameters().get<int>("FUNCT");
+    auto dlcap = cond[icond]->parameters().get<double>("DL_SPEC_CAP");
 
     if (init)
     {
@@ -412,8 +412,8 @@ void ScaTra::ScaTraTimIntElchBDF2::write_restart() const
       if (condid_cathode == condid or dlcapexists_)
       {
         // electrode potential of the adjusted electrode kinetics BC at time n+1
-        auto pot = mycond->parameters().get<double>("pot");
-        output_->write_double("pot", pot);
+        auto pot = mycond->parameters().get<double>("POT");
+        output_->write_double("POT", pot);
 
         // electrode potential of the adjusted electrode kinetics BC at time n
         auto potn = mycond->parameters().get<double>("pot0n");
@@ -469,8 +469,8 @@ void ScaTra::ScaTraTimIntElchBDF2::read_restart(
       const int condid = mycond->parameters().get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
-        double pot = reader->read_double("pot");
-        mycond->parameters().add("pot", pot);
+        double pot = reader->read_double("POT");
+        mycond->parameters().add("POT", pot);
         double potn = reader->read_double("pot0n");
         mycond->parameters().add("pot0n", potn);
         double potnm = reader->read_double("potnm");
@@ -516,7 +516,7 @@ void ScaTra::ScaTraTimIntElchBDF2::electrode_kinetics_time_update()
     for (auto& condition : conditions)  // we update simply every condition!
     {
       {
-        double potnp = condition->parameters().get<double>("pot");
+        double potnp = condition->parameters().get<double>("POT");
         double potn = condition->parameters().get<double>("potn");
         // shift status variables
         condition->parameters().add("potnm", potn);
@@ -539,7 +539,7 @@ void ScaTra::ScaTraTimIntElchBDF2::compute_time_deriv_pot0(const bool init)
 
   for (int icond = 0; icond < numcond; icond++)
   {
-    auto dlcap = cond[icond]->parameters().get<double>("dl_spec_cap");
+    auto dlcap = cond[icond]->parameters().get<double>("DL_SPEC_CAP");
 
     if (init)
     {
@@ -716,8 +716,8 @@ void ScaTra::ScaTraTimIntElchGenAlpha::write_restart() const
       if (condid_cathode == condid or dlcapexists_)
       {
         // electrode potential of the adjusted electrode kinetics BC at time n+1
-        double pot = mycond->parameters().get<double>("pot");
-        output_->write_double("pot", pot);
+        double pot = mycond->parameters().get<double>("POT");
+        output_->write_double("POT", pot);
 
         // electrode potential of the adjusted electrode kinetics BC at time n
         double potn = mycond->parameters().get<double>("pot0n");
@@ -764,8 +764,8 @@ void ScaTra::ScaTraTimIntElchGenAlpha::read_restart(
       const int condid = mycond->parameters().get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
-        double pot = reader->read_double("pot");
-        mycond->parameters().add("pot", pot);
+        double pot = reader->read_double("POT");
+        mycond->parameters().add("POT", pot);
 
         double potn = reader->read_double("pot0n");
         mycond->parameters().add("pot0n", potn);
@@ -806,7 +806,7 @@ void ScaTra::ScaTraTimIntElchGenAlpha::electrode_kinetics_time_update()
     for (auto& condition : conditions)  // we update simply every condition!
     {
       {
-        auto pot0np = condition->parameters().get<double>("pot");
+        auto pot0np = condition->parameters().get<double>("POT");
         condition->parameters().add("pot0n", pot0np);
       }
     }
@@ -827,9 +827,9 @@ void ScaTra::ScaTraTimIntElchGenAlpha::compute_time_deriv_pot0(const bool init)
 
   for (int icond = 0; icond < numcond; icond++)
   {
-    double pot0np = cond[icond]->parameters().get<double>("pot");
-    const int functnum = cond[icond]->parameters().get<int>("funct");
-    double dlcap = cond[icond]->parameters().get<double>("dl_spec_cap");
+    double pot0np = cond[icond]->parameters().get<double>("POT");
+    const int functnum = cond[icond]->parameters().get<int>("FUNCT");
+    double dlcap = cond[icond]->parameters().get<double>("DL_SPEC_CAP");
 
     if (init)
     {
@@ -955,8 +955,8 @@ void ScaTra::ScaTraTimIntElchStationary::write_restart() const
       if (condid_cathode == condid or dlcapexists_)
       {
         // electrode potential of the adjusted electrode kinetics BC at time n+1
-        double pot = mycond->parameters().get<double>("pot");
-        output_->write_double("pot", pot);
+        double pot = mycond->parameters().get<double>("POT");
+        output_->write_double("POT", pot);
       }
     }
   }
@@ -1000,8 +1000,8 @@ void ScaTra::ScaTraTimIntElchStationary::read_restart(
       const int condid = mycond->parameters().get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
-        double pot = reader->read_double("pot");
-        mycond->parameters().add("pot", pot);
+        double pot = reader->read_double("POT");
+        mycond->parameters().add("POT", pot);
         read_pot = true;
         if (myrank_ == 0)
           std::cout << "Successfully read restart data for galvanostatic mode (condid " << condid
@@ -1030,7 +1030,7 @@ void ScaTra::ScaTraTimIntElchStationary::compute_time_deriv_pot0(const bool init
 
   for (int icond = 0; icond < numcond; icond++)
   {
-    auto dlcap = cond[icond]->parameters().get<double>("dl_spec_cap");
+    auto dlcap = cond[icond]->parameters().get<double>("DL_SPEC_CAP");
 
     if (init)
     {

@@ -207,7 +207,7 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
 
     // compute matrix and vector contributions according to kinetic model for current point coupling
     // condition
-    const int kinetic_model = cond_slave->parameters().get<int>("kinetic model");
+    const int kinetic_model = cond_slave->parameters().get<int>("KINETIC_MODEL");
     switch (kinetic_model)
     {
       case Inpar::S2I::kinetics_butlervolmer:
@@ -220,7 +220,7 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
           FOUR_C_THROW("Invalid electrode material for multi-scale coupling!");
 
         // access input parameters associated with current condition
-        const int nume = cond_slave->parameters().get<int>("e-");
+        const int nume = cond_slave->parameters().get<int>("E-");
         if (nume != 1)
         {
           FOUR_C_THROW(
@@ -228,7 +228,7 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
               "electrode-electrolyte interface!");
         }
         const std::vector<int>* stoichiometries =
-            cond_slave->parameters().get_if<std::vector<int>>("stoichiometries");
+            cond_slave->parameters().get_if<std::vector<int>>("STOICHIOMETRIES");
         if (stoichiometries == nullptr)
         {
           FOUR_C_THROW(
@@ -246,9 +246,9 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
             faraday /
             (gasconstant *
                 (Global::Problem::instance(0)->elch_control_params().get<double>("TEMPERATURE")));
-        const double alphaa = cond_slave->parameters().get<double>("alpha_a");
-        const double alphac = cond_slave->parameters().get<double>("alpha_c");
-        const double kr = cond_slave->parameters().get<double>("k_r");
+        const double alphaa = cond_slave->parameters().get<double>("ALPHA_A");
+        const double alphac = cond_slave->parameters().get<double>("ALPHA_C");
+        const double kr = cond_slave->parameters().get<double>("K_R");
         if (kr < 0.0) FOUR_C_THROW("Charge transfer constant k_r is negative!");
 
         // extract saturation value of intercalated lithium concentration from electrode material
@@ -284,7 +284,7 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
         const double eta = ed_pot - el_pot - epd;
 
         // Butler-Volmer exchange mass flux density
-        const double j0 = cond_slave->parameters().get<int>("kinetic model") ==
+        const double j0 = cond_slave->parameters().get<int>("KINETIC_MODEL") ==
                                   Inpar::S2I::kinetics_butlervolmerreduced
                               ? kr
                               : kr * std::pow(el_conc, alphaa) * std::pow(cmax - ed_conc, alphaa) *
@@ -392,22 +392,22 @@ void ScaTra::MeshtyingStrategyS2IElch::update() const
     {
       // extract current condition
       // extract kinetic model from current condition
-      switch (condition->parameters().get<int>("kinetic model"))
+      switch (condition->parameters().get<int>("KINETIC_MODEL"))
       {
         case Inpar::S2I::growth_kinetics_butlervolmer:
         {
           // extract parameters from current condition
-          const auto kr = condition->parameters().get<double>("k_r");
-          const auto alphaa = condition->parameters().get<double>("alpha_a");
-          const auto alphac = condition->parameters().get<double>("alpha_c");
+          const auto kr = condition->parameters().get<double>("K_R");
+          const auto alphaa = condition->parameters().get<double>("ALPHA_A");
+          const auto alphac = condition->parameters().get<double>("ALPHA_C");
           const double frt = elch_tim_int()->frt();
           const double conductivity_inverse =
-              1. / condition->parameters().get<double>("conductivity");
+              1. / condition->parameters().get<double>("CONDUCTIVITY");
           const double faraday =
               Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
 
           // pre-compute integration factor
-          const double integrationfac(condition->parameters().get<double>("molar mass") *
+          const double integrationfac(condition->parameters().get<double>("MOLMASS") *
                                       scatratimint_->dt() /
                                       (condition->parameters().get<double>("density") * faraday));
 
@@ -1221,7 +1221,7 @@ void ScaTra::MeshtyingStrategyS2IElchSCL::setup_meshtying()
 
   for (const auto& s2imeshtying_condition : s2imeshtying_conditions)
   {
-    if (s2imeshtying_condition->parameters().get<int>("S2IKineticsID") != -1)
+    if (s2imeshtying_condition->parameters().get<int>("S2I_KINETICS_ID") != -1)
       FOUR_C_THROW("No kinetics condition is allowed for the coupled space-charge layer problem.");
 
     switch (s2imeshtying_condition->parameters().get<int>("interface side"))

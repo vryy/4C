@@ -188,21 +188,13 @@ Input::ValidConditions()
 
   for (const auto& cond : all_neumann_conditions)
   {
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("NUMDOF")));
-    cond->add_component(Teuchos::rcp(new IntComponent("numdof")));
-
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("ONOFF")));
-    cond->add_component(Teuchos::rcp(new IntVectorComponent("onoff", LengthFromInt("numdof"))));
-
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("VAL")));
-    cond->add_component(Teuchos::rcp(new RealVectorComponent("val", LengthFromInt("numdof"))));
-
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("FUNCT")));
-    cond->add_component(Teuchos::rcp(
-        new IntVectorComponent("funct", LengthFromInt("numdof"), {0, false, true, false})));
+    add_named_int(cond, "NUMDOF");
+    add_named_int_vector(cond, "ONOFF", "", "NUMDOF");
+    add_named_real_vector(cond, "VAL", "", "NUMDOF");
+    add_named_int_vector(cond, "FUNCT", "", "NUMDOF", 0, false, true);
 
     // optional
-    cond->add_component(Teuchos::rcp(new SelectionComponent("type", "Live",
+    cond->add_component(Teuchos::rcp(new SelectionComponent("TYPE", "Live",
         Teuchos::tuple<std::string>("Live", "Dead", "PrescribedDomainLoad", "constHydro_z",
             "increaseHydro_z", "pseudo_orthopressure", "orthopressure", "LAS", "PressureGrad",
             "Torque"),
@@ -334,22 +326,15 @@ Input::ValidConditions()
 
   for (const auto& cond : all_dirichlet_conditions)
   {
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("NUMDOF")));
-    cond->add_component(Teuchos::rcp(new IntComponent("numdof")));
-
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("ONOFF")));
-    cond->add_component(Teuchos::rcp(new IntVectorComponent("onoff", LengthFromInt("numdof"))));
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("VAL")));
-    cond->add_component(Teuchos::rcp(new RealVectorComponent("val", LengthFromInt("numdof"))));
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("FUNCT")));
-    cond->add_component(Teuchos::rcp(
-        new IntVectorComponent("funct", LengthFromInt("numdof"), {0, false, true, false})));
+    add_named_int(cond, "NUMDOF");
+    add_named_int_vector(cond, "ONOFF", "", "NUMDOF");
+    add_named_real_vector(cond, "VAL", "", "NUMDOF");
+    add_named_int_vector(cond, "FUNCT", "", "NUMDOF", 0, false, true);
 
     // optional
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("TAG", "", true)));
-    cond->add_component(Teuchos::rcp(new SelectionComponent("tag", "none",
+    add_named_selection_component(cond, "TAG", "", "none",
         Teuchos::tuple<std::string>("none", "monitor_reaction"),
-        Teuchos::tuple<std::string>("none", "monitor_reaction"), true)));
+        Teuchos::tuple<std::string>("none", "monitor_reaction"), true);
 
     condlist.emplace_back(cond);
   }
@@ -369,10 +354,8 @@ Input::ValidConditions()
 
   for (const auto& cond : {pointcoupling, pointthermocoupling})
   {
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("NUMDOF")));
-    cond->add_component(Teuchos::rcp(new IntComponent("numdof")));
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("ONOFF")));
-    cond->add_component(Teuchos::rcp(new IntVectorComponent("onoff", LengthFromInt("numdof"))));
+    add_named_int(cond, "NUMDOF");
+    add_named_int_vector(cond, "ONOFF", "", "NUMDOF");
 
     condlist.push_back(cond);
   }
@@ -553,19 +536,15 @@ Input::ValidConditions()
   for (const auto& cond : {pointlocsys, linelocsys, surflocsys, vollocsys, pointalelocsys,
            linealelocsys, surfalelocsys, volalelocsys})
   {
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("ROTANGLE")));
-    cond->add_component(Teuchos::rcp(new RealVectorComponent("rotangle", 3)));
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("FUNCT")));
-    cond->add_component(Teuchos::rcp(new IntVectorComponent("funct", 3)));
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("USEUPDATEDNODEPOS")));
-    cond->add_component(Teuchos::rcp(new IntComponent("useupdatednodepos")));
+    add_named_real_vector(cond, "ROTANGLE", "", 3);
+    add_named_int_vector(cond, "FUNCT", "", 3);
+    add_named_int(cond, "USEUPDATEDNODEPOS");
   }
 
   // add node normal system option only for lines and surfaces
   for (const auto& cond : {linelocsys, surflocsys, linealelocsys, surfalelocsys})
   {
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("USECONSISTENTNODENORMAL")));
-    cond->add_component(Teuchos::rcp(new IntComponent("useconsistentnodenormal")));
+    add_named_int(cond, "USECONSISTENTNODENORMAL");
   }
 
   // add conditions to global list of conditions
@@ -589,25 +568,17 @@ Input::ValidConditions()
 
   for (const auto& cond : {lineperiodic, surfperiodic})
   {
-    cond->add_component(
-        Teuchos::rcp(new IntComponent("Id of periodic boundary condition", {0, true})));
+    cond->add_component(Teuchos::rcp(
+        new IntComponent("Id of periodic boundary condition", {0, true, false, false})));
     cond->add_component(Teuchos::rcp(new SelectionComponent("Is slave periodic boundary condition",
         "Master", Teuchos::tuple<std::string>("Master", "Slave"),
         Teuchos::tuple<std::string>("Master", "Slave"))));
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("PLANE")));
-    cond->add_component(Teuchos::rcp(new SelectionComponent("degrees of freedom for the pbc plane",
-        "xy", Teuchos::tuple<std::string>("xy", "yx", "yz", "zy", "xz", "zx", "xyz"),
-        Teuchos::tuple<std::string>("xy", "xy", "yz", "yz", "xz", "xz", "xyz"))));
-
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("LAYER")));
-    cond->add_component(
-        Teuchos::rcp(new IntComponent("Layer of periodic boundary condition", {0, true})));
-
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("ANGLE")));
-    cond->add_component(Teuchos::rcp(new RealComponent("Angle of rotation")));
-
-    cond->add_component(Teuchos::rcp(new SeparatorComponent("ABSTREETOL")));
-    cond->add_component(Teuchos::rcp(new RealComponent("Tolerance for nodematching in octree")));
+    add_named_selection_component(cond, "PLANE", "degrees of freedom for the pbc plane", "xy",
+        Teuchos::tuple<std::string>("xy", "yx", "yz", "zy", "xz", "zx", "xyz"),
+        Teuchos::tuple<std::string>("xy", "xy", "yz", "yz", "xz", "xz", "xyz"));
+    add_named_int(cond, "LAYER", "layer of periodic boundary condition", 0, false, false, true);
+    add_named_real(cond, "ANGLE", "angle of rotation");
+    add_named_real(cond, "ABSTREETOL", "tolerance for nodematching in octree");
 
     condlist.push_back(cond);
   }
@@ -660,10 +631,10 @@ Input::ValidConditions()
         Teuchos::tuple<std::string>("lin_all", "no_lin_conv_inflow"))));
 
     // we provide a vector of 3 values for velocities
-    cond->add_component(Teuchos::rcp(new RealVectorComponent("val", 3)));
+    cond->add_component(Teuchos::rcp(new RealVectorComponent("VAL", 3)));
 
     // and optional spatial functions
-    cond->add_component(Teuchos::rcp(new IntVectorComponent("funct", 3, {0, false, false, true})));
+    cond->add_component(Teuchos::rcp(new IntVectorComponent("FUNCT", 3, {0, false, false, true})));
 
     // append the condition to the list of all conditions
     condlist.push_back(cond);
@@ -693,7 +664,7 @@ Input::ValidConditions()
           true, Core::Conditions::geometry_type_surface));
 
   volumeconstraint->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
-  volumeconstraint->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
+  volumeconstraint->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true, false})));
   volumeconstraint->add_component(Teuchos::rcp(new RealComponent("activTime")));
   volumeconstraint->add_component(Teuchos::rcp(new SelectionComponent("projection", "none",
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"),
@@ -711,7 +682,8 @@ Input::ValidConditions()
           Core::Conditions::geometry_type_surface));
 
   volumeconstraintpen->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
-  volumeconstraintpen->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
+  volumeconstraintpen->add_component(
+      Teuchos::rcp(new IntComponent("curve", {0, true, true, false})));
   volumeconstraintpen->add_component(Teuchos::rcp(new RealComponent("activTime")));
   volumeconstraintpen->add_component(Teuchos::rcp(new RealComponent("penalty")));
   volumeconstraintpen->add_component(Teuchos::rcp(new RealComponent("rho")));
@@ -730,7 +702,7 @@ Input::ValidConditions()
           Core::Conditions::geometry_type_surface));
 
   areaconstraint->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
-  areaconstraint->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
+  areaconstraint->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true, false})));
   areaconstraint->add_component(Teuchos::rcp(new RealComponent("activTime")));
 
   condlist.push_back(areaconstraint);
@@ -744,7 +716,7 @@ Input::ValidConditions()
           Core::Conditions::AreaConstraint_3D_pen, true, Core::Conditions::geometry_type_surface));
 
   areaconstraintpen->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
-  areaconstraintpen->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
+  areaconstraintpen->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true, false})));
   areaconstraintpen->add_component(Teuchos::rcp(new RealComponent("activTime")));
   areaconstraintpen->add_component(Teuchos::rcp(new RealComponent("penalty")));
   areaconstraintpen->add_component(Teuchos::rcp(new RealComponent("rho")));
@@ -791,7 +763,7 @@ Input::ValidConditions()
           Core::Conditions::geometry_type_line));
 
   areaconstraint2D->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
-  areaconstraint2D->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
+  areaconstraint2D->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true, false})));
   areaconstraint2D->add_component(Teuchos::rcp(new RealComponent("activTime")));
   condlist.push_back(areaconstraint2D);
 
@@ -816,7 +788,8 @@ Input::ValidConditions()
 
   nodeonplaneconst3D->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
   nodeonplaneconst3D->add_component(Teuchos::rcp(new RealComponent("amplitude")));
-  nodeonplaneconst3D->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
+  nodeonplaneconst3D->add_component(
+      Teuchos::rcp(new IntComponent("curve", {0, true, true, false})));
   nodeonplaneconst3D->add_component(Teuchos::rcp(new RealComponent("activTime")));
   nodeonplaneconst3D->add_component(Teuchos::rcp(new IntVectorComponent("planeNodes", 3)));
   nodeonplaneconst3D->add_component(Teuchos::rcp(new SelectionComponent("control", "rel",
@@ -834,7 +807,7 @@ Input::ValidConditions()
 
   nodemasterconst3D->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
   nodemasterconst3D->add_component(Teuchos::rcp(new RealComponent("amplitude")));
-  nodemasterconst3D->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
+  nodemasterconst3D->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true, false})));
   nodemasterconst3D->add_component(Teuchos::rcp(new RealComponent("activTime")));
   nodemasterconst3D->add_component(Teuchos::rcp(new IntComponent("masterNode")));
   nodemasterconst3D->add_component(Teuchos::rcp(new RealVectorComponent("direction", 3)));
@@ -855,7 +828,8 @@ Input::ValidConditions()
 
   nodemasterconst3Dpen->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
   nodemasterconst3Dpen->add_component(Teuchos::rcp(new RealComponent("amplitude")));
-  nodemasterconst3Dpen->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
+  nodemasterconst3Dpen->add_component(
+      Teuchos::rcp(new IntComponent("curve", {0, true, true, false})));
   nodemasterconst3Dpen->add_component(Teuchos::rcp(new RealComponent("activTime")));
   nodemasterconst3Dpen->add_component(Teuchos::rcp(new RealComponent("penalty")));
   nodemasterconst3Dpen->add_component(Teuchos::rcp(new IntComponent("masterNode")));
@@ -874,7 +848,7 @@ Input::ValidConditions()
 
   nodeonlineconst2D->add_component(Teuchos::rcp(new IntComponent("ConditionID")));
   nodeonlineconst2D->add_component(Teuchos::rcp(new RealComponent("amplitude")));
-  nodeonlineconst2D->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
+  nodeonlineconst2D->add_component(Teuchos::rcp(new IntComponent("curve", {0, true, true, false})));
   nodeonlineconst2D->add_component(Teuchos::rcp(new IntComponent("constrNode 1")));
   nodeonlineconst2D->add_component(Teuchos::rcp(new IntComponent("constrNode 2")));
   nodeonlineconst2D->add_component(Teuchos::rcp(new IntComponent("constrNode 3")));

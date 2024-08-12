@@ -63,7 +63,7 @@ Discret::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(
 void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_parameters(
     Teuchos::ParameterList& parameters)
 {
-  kineticmodel_ = parameters.get<int>("kinetic model", std::numeric_limits<int>::infinity());
+  kineticmodel_ = parameters.get<int>("KINETIC_MODEL", std::numeric_limits<int>::infinity());
   conditiontype_ = parameters.get<Core::Conditions::ConditionType>(
       "condition type", Core::Conditions::ConditionType::none);
 
@@ -187,8 +187,8 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_parameters(
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_alpha(Teuchos::ParameterList& parameters)
 {
-  alphaa_ = parameters.get<double>("alpha_a", std::numeric_limits<double>::infinity());
-  alphac_ = parameters.get<double>("alpha_c", std::numeric_limits<double>::infinity());
+  alphaa_ = parameters.get<double>("ALPHA_A", std::numeric_limits<double>::infinity());
+  alphac_ = parameters.get<double>("ALPHA_C", std::numeric_limits<double>::infinity());
   if (alphaa_ <= 0.0) FOUR_C_THROW("Alpha a must be positive!");
   if (alphac_ <= 0.0) FOUR_C_THROW("Alpha c must be positive!");
   if (alphaa_ + alphac_ != 1.0) FOUR_C_THROW("Sum of Alpha a and Alpha c must be equal to one!");
@@ -199,7 +199,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_alpha(Teuchos::Parameter
 void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_charge_transfer_constant(
     Teuchos::ParameterList& parameters)
 {
-  kr_ = parameters.get<double>("k_r", -1.0);
+  kr_ = parameters.get<double>("K_R", -1.0);
   if (kr_ <= 0.0) FOUR_C_THROW("Charge transfer constant k_r is negative!");
 }
 
@@ -224,7 +224,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_density_molar_mass(
   density_ = parameters.get<double>("density", std::numeric_limits<double>::infinity());
   if (density_ <= 0.0) FOUR_C_THROW("Density must be positive");
 
-  molarmass_ = parameters.get<double>("molar mass", std::numeric_limits<double>::infinity());
+  molarmass_ = parameters.get<double>("MOLMASS", std::numeric_limits<double>::infinity());
   if (molarmass_ <= 0.0) FOUR_C_THROW("Molar mass must be positive");
 }
 
@@ -234,7 +234,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_energy_substance_ratio(
     Teuchos::ParameterList& parameters)
 {
   molar_heat_capacity_ =
-      parameters.get<double>("molar_heat_capacity", std::numeric_limits<double>::infinity());
+      parameters.get<double>("MOLAR_HEAT_CAPACITY", std::numeric_limits<double>::infinity());
   if (molar_heat_capacity_ < 0.0) FOUR_C_THROW("Ratio of energy- and mass-flux must be positive!");
 }
 
@@ -244,7 +244,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_is_pseudo_contact(
     Teuchos::ParameterList& parameters)
 {
   is_pseudo_contact_ =
-      (parameters.get<int>("is_pseudo_contact", std::numeric_limits<int>::infinity()) == 1);
+      (parameters.get<int>("IS_PSEUDO_CONTACT", std::numeric_limits<int>::infinity()) == 1);
 }
 
 /*----------------------------------------------------------------------*
@@ -262,7 +262,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_num_electrons(
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_num_scal(Teuchos::ParameterList& parameters)
 {
-  numscal_ = parameters.get<int>("numscal", std::numeric_limits<int>::infinity());
+  numscal_ = parameters.get<int>("NUMSCAL", std::numeric_limits<int>::infinity());
   if (numscal_ <= 0) FOUR_C_THROW("Scalar must be positive");
 }
 
@@ -270,7 +270,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_num_scal(Teuchos::Parame
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_peltier(Teuchos::ParameterList& parameters)
 {
-  peltier_ = parameters.get<double>("peltier", std::numeric_limits<double>::infinity());
+  peltier_ = parameters.get<double>("PELTIER", std::numeric_limits<double>::infinity());
 }
 
 /*----------------------------------------------------------------------*
@@ -278,7 +278,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_peltier(Teuchos::Paramet
 void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_permeabilities(
     Teuchos::ParameterList& parameters)
 {
-  permeabilities_ = parameters.get<const std::vector<double>*>("permeabilities");
+  permeabilities_ = parameters.get<const std::vector<double>*>("PERMEABILITIES");
   for (auto permeability : *permeabilities_)
     if (permeability < 0.0) FOUR_C_THROW("Permeability must be positive");
 }
@@ -288,11 +288,11 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_permeabilities(
 void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_regularization(
     Teuchos::ParameterList& parameters)
 {
-  regularizationparameter_ = parameters.get<double>("regpar", -1.0);
+  regularizationparameter_ = parameters.get<double>("REGPAR", -1.0);
   if (regularizationparameter_ < 0.0)
     FOUR_C_THROW("Regularization parameter for lithium stripping must not be negative!");
   regularizationtype_ = static_cast<Inpar::S2I::RegularizationType>(
-      parameters.get<int>("regtype", std::numeric_limits<int>::infinity()));
+      parameters.get<int>("REGTYPE", std::numeric_limits<int>::infinity()));
 }
 
 /*----------------------------------------------------------------------*
@@ -300,7 +300,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_regularization(
 void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_resistance(
     Teuchos::ParameterList& parameters)
 {
-  resistance_ = parameters.get<double>("resistance", std::numeric_limits<double>::infinity());
+  resistance_ = parameters.get<double>("RESISTANCE", std::numeric_limits<double>::infinity());
   if (resistance_ <= 0.0) FOUR_C_THROW("Resistance must be positive");
 }
 
@@ -309,7 +309,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_resistance(
 void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_resistivity(
     Teuchos::ParameterList& parameters)
 {
-  resistivity_ = 1.0 / (parameters.get<double>("conductivity", -1.0));
+  resistivity_ = 1.0 / (parameters.get<double>("CONDUCTIVITY", -1.0));
   if (resistivity_ <= 0.0) FOUR_C_THROW("Conductivity must be positive");
 }
 
@@ -318,7 +318,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_resistivity(
 void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_capacitance(
     Teuchos::ParameterList& parameters)
 {
-  capacitance_ = parameters.get<double>("capacitance", -1.0);
+  capacitance_ = parameters.get<double>("CAPACITANCE", -1.0);
   if (capacitance_ <= 0.0) FOUR_C_THROW("Capacitance must be positive");
 }
 
@@ -327,7 +327,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_capacitance(
 void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_stoichiometries(
     Teuchos::ParameterList& parameters)
 {
-  stoichiometries_ = parameters.get<const std::vector<int>*>("stoichiometries");
+  stoichiometries_ = parameters.get<const std::vector<int>*>("STOICHIOMETRIES");
 
   if (stoichiometries_ == nullptr)
   {
@@ -347,7 +347,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_stoichiometries(
 void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_thermo_perm(
     Teuchos::ParameterList& parameters)
 {
-  thermoperm_ = parameters.get<double>("thermoperm", std::numeric_limits<double>::infinity());
+  thermoperm_ = parameters.get<double>("THERMOPERM", std::numeric_limits<double>::infinity());
   if (thermoperm_ <= 0.0) FOUR_C_THROW("Thermo permeability must be posititve!");
 }
 
@@ -355,7 +355,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_thermo_perm(
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_on_off(Teuchos::ParameterList& parameters)
 {
-  onoff_ = parameters.get<const std::vector<int>*>("onoff");
+  onoff_ = parameters.get<const std::vector<int>*>("ONOFF");
   if (onoff_ == nullptr) FOUR_C_THROW("Cannot get vector 'onoff' from parameter list");
   if (onoff_->size() != 2) FOUR_C_THROW("Only two dofs are supported");
 }

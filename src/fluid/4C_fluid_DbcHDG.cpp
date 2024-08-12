@@ -50,7 +50,7 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
   if (discret.face_row_map() == nullptr) return;
 
   // get onoff toggles
-  const auto& onoff = cond.parameters().get<std::vector<int>>("onoff");
+  const auto& onoff = cond.parameters().get<std::vector<int>>("ONOFF");
 
   if (discret.num_my_row_faces() > 0)
   {
@@ -172,9 +172,9 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
   if (!nodeids) FOUR_C_THROW("Dirichlet condition does not have nodal cloud");
 
   // get curves, functs, vals, and onoff toggles from the condition
-  const auto* funct = &cond.parameters().get<std::vector<int>>("funct");
-  const auto* val = &cond.parameters().get<std::vector<double>>("val");
-  const auto* onoff = &cond.parameters().get<std::vector<int>>("onoff");
+  const auto* funct = &cond.parameters().get<std::vector<int>>("FUNCT");
+  const auto* val = &cond.parameters().get<std::vector<double>>("VAL");
+  const auto* onoff = &cond.parameters().get<std::vector<int>>("ONOFF");
 
   // determine highest degree of time derivative
   // and first existent system vector to apply DBC to

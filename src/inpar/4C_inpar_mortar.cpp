@@ -13,6 +13,7 @@
 #include "4C_inpar_mortar.hpp"
 
 #include "4C_fem_condition_definition.hpp"
+#include "4C_io_linecomponent.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -162,6 +163,7 @@ void Inpar::Mortar::SetValidConditions(
     std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;
+
   /*--------------------------------------------------------------------*/
   // mortar contact
 
@@ -184,11 +186,8 @@ void Inpar::Mortar::SetValidConditions(
         Teuchos::tuple<std::string>("Inactive", "Active"),
         Teuchos::tuple<std::string>("Inactive", "Active"), true)));
 
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("FrCoeffOrBound", "", true)));
-    cond->add_component(Teuchos::rcp(new Input::RealComponent("FrCoeffOrBound", {0., true})));
-
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("AdhesionBound", "", true)));
-    cond->add_component(Teuchos::rcp(new Input::RealComponent("AdhesionBound")));
+    add_named_real(cond, "FrCoeffOrBound", "friction coefficient bound", 0.0, true);
+    add_named_real(cond, "AdhesionBound", "adhesion bound", 0.0, true);
 
     cond->add_component(Teuchos::rcp(new Input::SelectionComponent("Application", "Solidcontact",
         Teuchos::tuple<std::string>("Solidcontact", "Beamtosolidcontact", "Beamtosolidmeshtying"),
@@ -202,19 +201,10 @@ void Inpar::Mortar::SetValidConditions(
             static_cast<int>(DBCHandling::remove_dbc_nodes_from_slave_side)),
         true)));
 
-    // optional two half pass approach
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("TwoHalfPass", "", true)));
-    cond->add_component(Teuchos::rcp(new Input::RealComponent("TwoHalfPass")));
-
-    // optional reference configuration check for non-smooth self contact surfaces
-    cond->add_component(Teuchos::rcp(
-        new Input::SeparatorComponent("RefConfCheckNonSmoothSelfContactSurface", "", true)));
-    cond->add_component(
-        Teuchos::rcp(new Input::RealComponent("RefConfCheckNonSmoothSelfContactSurface")));
-
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("ConstitutiveLawID", "", true)));
-    cond->add_component(
-        Teuchos::rcp(new Input::IntComponent("ConstitutiveLawID", {0, false, true, true})));
+    add_named_real(cond, "TwoHalfPass", "optional two half pass approach", 0.0, true);
+    add_named_real(cond, "RefConfCheckNonSmoothSelfContactSurface",
+        "optional reference configuration check for non-smooth self contact surfaces", 0.0, true);
+    add_named_int(cond, "ConstitutiveLawID", "material id of the constitutive law", 0, true, true);
 
     condlist.push_back(cond);
   }
@@ -260,8 +250,7 @@ void Inpar::Mortar::SetValidConditions(
 
   for (const auto& cond : {linemrtrsym, pointmrtrsym})
   {
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("ONOFF")));
-    cond->add_component(Teuchos::rcp(new Input::IntVectorComponent("onoff", 3)));
+    add_named_int_vector(cond, "ONOFF", "", 3);
 
     condlist.push_back(cond);
   }

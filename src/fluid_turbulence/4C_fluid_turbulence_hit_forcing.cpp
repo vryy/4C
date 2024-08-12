@@ -2028,7 +2028,7 @@ namespace FLD
                 << " is achieved" << std::endl;
     std::vector<Core::Conditions::Condition*> bodycond;
     discret_->get_condition("VolumeNeumann", bodycond);
-    const auto& val = bodycond[0]->parameters().get<std::vector<double>>("val");
+    const auto& val = bodycond[0]->parameters().get<std::vector<double>>("VAL");
     oldforce_ = val.at(0);
   }
 

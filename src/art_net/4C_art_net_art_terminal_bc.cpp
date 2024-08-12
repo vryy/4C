@@ -69,7 +69,7 @@ void Arteries::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<Core::FE::Discretiz
     // -----------------------------------------------------------------
     const auto& curve = condition->parameters().get<std::vector<int>>("curve");
     double curvefac = 1.0;
-    const auto& vals = condition->parameters().get<std::vector<double>>("val");
+    const auto& vals = condition->parameters().get<std::vector<double>>("VAL");
 
     // -----------------------------------------------------------------
     // Check whether the BC is absorbing or forced
@@ -548,7 +548,7 @@ void Arteries::UTILS::SolveReflectiveTerminal(Teuchos::RCP<Core::FE::Discretizat
   // -------------------------------------------------------------------
   const auto& curve = condition->parameters().get<std::vector<int>>("curve");
   double curvefac = 1.0;
-  const auto& vals = condition->parameters().get<std::vector<double>>("val");
+  const auto& vals = condition->parameters().get<std::vector<double>>("VAL");
 
   // if the curve exist => Rf = val*curve(time)
   if (curve[0] >= 0)
@@ -627,7 +627,7 @@ void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Core::FE::Discretizatio
   // -------------------------------------------------------------------
   const auto& curve = condition->parameters().get<std::vector<int>>("curve");
   double curvefac = 1.0;
-  const auto& vals = condition->parameters().get<std::vector<double>>("val");
+  const auto& vals = condition->parameters().get<std::vector<double>>("VAL");
 
   double Wb;
   if (int_type == "ExplicitWindkessel")

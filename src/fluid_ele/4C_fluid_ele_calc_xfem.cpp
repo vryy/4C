@@ -4009,7 +4009,7 @@ namespace Discret
       {
         case Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
         {
-          const std::string& evaltype = cond->parameters().get<std::string>("evaltype");
+          const std::string& evaltype = cond->parameters().get<std::string>("EVALTYPE");
 
           if (evaltype == "funct_gausspoint")
           {
@@ -4035,7 +4035,7 @@ namespace Discret
         case Inpar::XFEM::CouplingCond_LEVELSET_NEUMANN:
         {
           // evaluate condition function at Gaussian point
-          if (cond->parameters().get<int>("numdof") == 6)
+          if (cond->parameters().get<int>("NUMDOF") == 6)
           {
             Core::LinAlg::Matrix<6, 1> fulltraction(
                 true);  // sigma_xx, sigma_yy, sigma_zz, sigma_xy, sigma_yz, sigma_zx
@@ -4083,7 +4083,7 @@ namespace Discret
         case Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP:
         {
           bool eval_dirich_at_gp =
-              ((cond->parameters().get<std::string>("evaltype")) == "funct_gausspoint");
+              ((cond->parameters().get<std::string>("EVALTYPE")) == "funct_gausspoint");
 
           // The velocity is evaluated twice in this framework...
           Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingNavierSlip>(coupling)
@@ -4100,7 +4100,7 @@ namespace Discret
         case Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE:
         {
           bool eval_dirich_at_gp =
-              ((cond->parameters().get<std::string>("evaltype")) == "funct_gausspoint");
+              ((cond->parameters().get<std::string>("EVALTYPE")) == "funct_gausspoint");
 
           Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingNavierSlipTwoPhase>(coupling)
               ->evaluate_coupling_conditions<distype>(ivelint_jump, itraction_jump, x, cond,
@@ -4186,7 +4186,7 @@ namespace Discret
       {
         case Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
         {
-          const std::string& evaltype = cond->parameters().get<std::string>("evaltype");
+          const std::string& evaltype = cond->parameters().get<std::string>("EVALTYPE");
 
           if (evaltype == "funct_gausspoint")
           {

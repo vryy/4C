@@ -58,12 +58,12 @@ Airway::RedAirwayTissue::RedAirwayTissue(
   {
     Core::Conditions::Condition* cond = coupcond[i];
     std::string type = "neum_orthopressure";
-    cond->parameters().add("type", type);
+    cond->parameters().add("TYPE", type);
     std::vector<int> onoff(6, 0);
     onoff[0] = 1;
-    cond->parameters().add("onoff", onoff);
+    cond->parameters().add("ONOFF", onoff);
     std::vector<double> val(6, 0.0);
-    cond->parameters().add("val", val);
+    cond->parameters().add("VAL", val);
 
     int condID = coupcond[i]->parameters().get<int>("coupling id");
     tmp.push_back(condID);
@@ -96,7 +96,7 @@ Airway::RedAirwayTissue::RedAirwayTissue(
     std::string bc_data = "flow";
     cond->parameters().add("boundarycond", bc_data);
     std::vector<double> val(1, 0.0);
-    cond->parameters().add("val", val);
+    cond->parameters().add("VAL", val);
   }
 
 

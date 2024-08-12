@@ -14,6 +14,7 @@
 #include "4C_inpar_cardiovascular0d.hpp"
 
 #include "4C_fem_condition_definition.hpp"
+#include "4C_io_linecomponent.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -577,11 +578,7 @@ void Inpar::Cardiovascular0D::SetValidConditions(
   cardiovascular0darterialproxdistcond->add_component(
       Teuchos::rcp(new Input::SeparatorComponent("P_AT")));
   Input::add_named_real(cardiovascular0darterialproxdistcond, "fac");
-  cardiovascular0darterialproxdistcond->add_component(
-      Teuchos::rcp(new Input::SeparatorComponent("crv")));
-  cardiovascular0darterialproxdistcond->add_component(
-      Teuchos::rcp(new Input::IntComponent("curve", {0, true, true})));
-
+  Input::add_named_int(cardiovascular0darterialproxdistcond, "crv", "curve", 0, false, true, true);
   condlist.push_back(cardiovascular0darterialproxdistcond);
 
   /*--------------------------------------------------------------------*/
@@ -597,15 +594,13 @@ void Inpar::Cardiovascular0D::SetValidConditions(
           Core::Conditions::geometry_type_surface));
 
   Input::add_named_int(cardiovascular0dsyspulcirculationcond, "id");
-  cardiovascular0dsyspulcirculationcond->add_component(
-      Teuchos::rcp(new Input::SeparatorComponent("TYPE")));
-  cardiovascular0dsyspulcirculationcond->add_component(
-      Teuchos::rcp(new Input::SelectionComponent("type", "ventricle_left",
-          Teuchos::tuple<std::string>(
-              "ventricle_left", "ventricle_right", "atrium_left", "atrium_right", "dummy"),
-          Teuchos::tuple<std::string>(
-              "ventricle_left", "ventricle_right", "atrium_left", "atrium_right", "dummy"),
-          false)));
+  Input::add_named_selection_component(cardiovascular0dsyspulcirculationcond, "TYPE", "",
+      "ventricle_left",
+      Teuchos::tuple<std::string>(
+          "ventricle_left", "ventricle_right", "atrium_left", "atrium_right", "dummy"),
+      Teuchos::tuple<std::string>(
+          "ventricle_left", "ventricle_right", "atrium_left", "atrium_right", "dummy"),
+      false);
 
   condlist.push_back(cardiovascular0dsyspulcirculationcond);
 
@@ -623,15 +618,13 @@ void Inpar::Cardiovascular0D::SetValidConditions(
               Core::Conditions::geometry_type_surface));
 
   Input::add_named_int(cardiovascularrespiratory0dsyspulperiphcirculationcond, "id");
-  cardiovascularrespiratory0dsyspulperiphcirculationcond->add_component(
-      Teuchos::rcp(new Input::SeparatorComponent("TYPE")));
-  cardiovascularrespiratory0dsyspulperiphcirculationcond->add_component(
-      Teuchos::rcp(new Input::SelectionComponent("type", "ventricle_left",
-          Teuchos::tuple<std::string>(
-              "ventricle_left", "ventricle_right", "atrium_left", "atrium_right", "dummy"),
-          Teuchos::tuple<std::string>(
-              "ventricle_left", "ventricle_right", "atrium_left", "atrium_right", "dummy"),
-          false)));
+  add_named_selection_component(cardiovascularrespiratory0dsyspulperiphcirculationcond, "TYPE", "",
+      "ventricle_left",
+      Teuchos::tuple<std::string>(
+          "ventricle_left", "ventricle_right", "atrium_left", "atrium_right", "dummy"),
+      Teuchos::tuple<std::string>(
+          "ventricle_left", "ventricle_right", "atrium_left", "atrium_right", "dummy"),
+      false);
 
   condlist.push_back(cardiovascularrespiratory0dsyspulperiphcirculationcond);
 

@@ -97,19 +97,14 @@ void Inpar::ALE::SetValidConditions(
 
   for (const auto& cond : {linealeupdate, surfaleupdate})
   {
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("COUPLING")));
-    cond->add_component(Teuchos::rcp(new Input::SelectionComponent("coupling", "lagrange",
+    add_named_selection_component(cond, "COUPLING", "", "lagrange",
         Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
             "meantangentialvelocity", "meantangentialvelocityscaled"),
         Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
             "meantangentialvelocity", "meantangentialvelocityscaled"),
-        true)));
-
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("VAL")));
-    cond->add_component(Teuchos::rcp(new Input::RealComponent("val")));
-
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("NODENORMALFUNCT")));
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("nodenormalfunct")));
+        true);
+    add_named_real(cond, "VAL");
+    add_named_int(cond, "NODENORMALFUNCT");
 
     condlist.emplace_back(cond);
   }

@@ -335,7 +335,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele
           // Get the type of prescribed bc
           Bc = (condition->parameters().get<std::string>("boundarycond"));
 
-          const auto* vals = &condition->parameters().get<std::vector<double>>("val");
+          const auto* vals = &condition->parameters().get<std::vector<double>>("VAL");
           const auto* curve = &condition->parameters().get<std::vector<int>>("curve");
           const auto* functions = &condition->parameters().get<std::vector<int>>("funct");
 
@@ -481,7 +481,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele
 
           const auto* curve = &condition->parameters().get<std::vector<int>>("curve");
           double curvefac = 1.0;
-          const auto* vals = &condition->parameters().get<std::vector<double>>("val");
+          const auto* vals = &condition->parameters().get<std::vector<double>>("VAL");
 
           // Read in the value of the applied BC
           if ((*curve)[phase_number] >= 0)
@@ -524,7 +524,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele
             {
               const auto* curve = &pplCond->parameters().get<std::vector<int>>("curve");
               double curvefac = 1.0;
-              const auto* vals = &pplCond->parameters().get<std::vector<double>>("val");
+              const auto* vals = &pplCond->parameters().get<std::vector<double>>("VAL");
 
               // Read in the value of the applied BC
               if ((*curve)[0] >= 0)

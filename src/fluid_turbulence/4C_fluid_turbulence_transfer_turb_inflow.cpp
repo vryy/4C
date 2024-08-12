@@ -317,9 +317,9 @@ void FLD::TransferTurbulentInflowCondition::transfer(
 void FLD::TransferTurbulentInflowCondition::get_data(
     int& id, int& direction, ToggleType& type, const Core::Conditions::Condition* cond)
 {
-  id = cond->parameters().get<int>("id");
+  id = cond->parameters().get<int>("ID");
 
-  const auto mydirection = cond->parameters().get<std::string>("transfer direction");
+  const auto mydirection = cond->parameters().get<std::string>("DIRECTION");
   if (mydirection == "x")
   {
     direction = 0;

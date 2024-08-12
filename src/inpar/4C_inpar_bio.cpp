@@ -129,7 +129,7 @@ void Inpar::ArteryNetwork::SetValidConditions(
       Teuchos::tuple<std::string>("forced", "absorbing"), true)));
 
   std::vector<Teuchos::RCP<Input::LineComponent>> artinletcomponents;
-  artinletcomponents.push_back(Teuchos::rcp(new Input::RealVectorComponent("val", 2)));
+  artinletcomponents.push_back(Teuchos::rcp(new Input::RealVectorComponent("VAL", 2)));
   artinletcomponents.push_back(
       Teuchos::rcp(new Input::IntVectorComponent("curve", 2, {0, true, true})));
   for (unsigned i = 0; i < artinletcomponents.size(); ++i)
@@ -145,7 +145,7 @@ void Inpar::ArteryNetwork::SetValidConditions(
           Core::Conditions::ArtRfCond, true, Core::Conditions::geometry_type_point));
 
   std::vector<Teuchos::RCP<Input::LineComponent>> artrfcomponents;
-  artrfcomponents.push_back(Teuchos::rcp(new Input::RealVectorComponent("val", 1)));
+  artrfcomponents.push_back(Teuchos::rcp(new Input::RealVectorComponent("VAL", 1)));
   artrfcomponents.push_back(
       Teuchos::rcp(new Input::IntVectorComponent("curve", 1, {0, true, true})));
   for (unsigned i = 0; i < artrfcomponents.size(); ++i)
@@ -170,7 +170,7 @@ void Inpar::ArteryNetwork::SetValidConditions(
       Teuchos::tuple<std::string>("R", "RC", "RCR", "RCRL", "none"),
       Teuchos::tuple<std::string>("R", "RC", "RCR", "RCRL", "none"), true)));
 
-  artwkcomponents.push_back(Teuchos::rcp(new Input::RealVectorComponent("val", 5)));
+  artwkcomponents.push_back(Teuchos::rcp(new Input::RealVectorComponent("VAL", 5)));
   artwkcomponents.push_back(
       Teuchos::rcp(new Input::IntVectorComponent("curve", 5, {0, true, true})));
   for (unsigned i = 0; i < artwkcomponents.size(); ++i)
@@ -200,8 +200,9 @@ void Inpar::ArteryNetwork::SetValidConditions(
           true, Core::Conditions::geometry_type_point));
 
   std::vector<Teuchos::RCP<Input::LineComponent>> artscatracomponents;
-  artscatracomponents.push_back(Teuchos::rcp(new Input::RealComponent("val")));
-  artscatracomponents.push_back(Teuchos::rcp(new Input::IntComponent("curve", {0, true, true})));
+  artscatracomponents.push_back(Teuchos::rcp(new Input::RealComponent("VAL")));
+  artscatracomponents.push_back(
+      Teuchos::rcp(new Input::IntComponent("curve", {0, true, true, false})));
   for (unsigned i = 0; i < artscatracomponents.size(); ++i)
     art_scatra_bc->add_component(artscatracomponents[i]);
 
@@ -216,8 +217,7 @@ void Inpar::ArteryNetwork::SetValidConditions(
           "Artery coupling with porofluid", Core::Conditions::ArtPorofluidCouplingCondNodebased,
           true, Core::Conditions::geometry_type_point));
 
-  artcoup->add_component(Teuchos::rcp(new Input::SeparatorComponent("COUPID")));
-  artcoup->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
+  add_named_int(artcoup, "COUPID");
 
   condlist.push_back(artcoup);
 
@@ -230,8 +230,7 @@ void Inpar::ArteryNetwork::SetValidConditions(
           "Artery coupling with porofluid", Core::Conditions::ArtScatraCouplingCondNodebased, true,
           Core::Conditions::geometry_type_point));
 
-  artscatracoup->add_component(Teuchos::rcp(new Input::SeparatorComponent("COUPID")));
-  artscatracoup->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
+  add_named_int(artscatracoup, "COUPID");
 
   condlist.push_back(artscatracoup);
 
@@ -480,7 +479,7 @@ void Inpar::ReducedLung::SetValidConditions(
       true)));
 
   // reduced airway inlet components
-  raw_in_bc->add_component(Teuchos::rcp(new Input::RealVectorComponent("val", 1)));
+  raw_in_bc->add_component(Teuchos::rcp(new Input::RealVectorComponent("VAL", 1)));
   raw_in_bc->add_component(
       Teuchos::rcp(new Input::IntVectorComponent("curve", 2, {0, true, true})));
   raw_in_bc->add_component(
@@ -522,7 +521,7 @@ void Inpar::ReducedLung::SetValidConditions(
       Teuchos::tuple<std::string>("ExternalPressure"), true)));
 
   // reduced airway pext components
-  raw_pext_bc->add_component(Teuchos::rcp(new Input::RealVectorComponent("val", 1)));
+  raw_pext_bc->add_component(Teuchos::rcp(new Input::RealVectorComponent("VAL", 1)));
   raw_pext_bc->add_component(
       Teuchos::rcp(new Input::IntVectorComponent("curve", 2, {0, true, true})));
   raw_pext_bc->add_component(
@@ -542,7 +541,7 @@ void Inpar::ReducedLung::SetValidConditions(
           Core::Conditions::geometry_type_point));
 
   // reduced airway inlet scatra components
-  raw_in_scatra_bc->add_component(Teuchos::rcp(new Input::RealVectorComponent("val", 1)));
+  raw_in_scatra_bc->add_component(Teuchos::rcp(new Input::RealVectorComponent("VAL", 1)));
   raw_in_scatra_bc->add_component(
       Teuchos::rcp(new Input::IntVectorComponent("curve", 1, {0, true, true})));
   raw_in_scatra_bc->add_component(
@@ -642,7 +641,7 @@ void Inpar::ReducedLung::SetValidConditions(
   Input::add_named_real(raw_vent_bc, "smoothness_period2");
 
   // reduced airway ventilation components
-  raw_vent_bc->add_component(Teuchos::rcp(new Input::RealVectorComponent("val", 2)));
+  raw_vent_bc->add_component(Teuchos::rcp(new Input::RealVectorComponent("VAL", 2)));
   raw_vent_bc->add_component(
       Teuchos::rcp(new Input::IntVectorComponent("curve", 2, {0, true, true})));
 
@@ -678,7 +677,7 @@ void Inpar::ReducedLung::SetValidConditions(
   Input::add_named_real(raw_volPpl_bc, "TAU");
 
   // raw_volPpl_bc_components
-  raw_volPpl_bc->add_component(Teuchos::rcp(new Input::RealVectorComponent("val", 1)));
+  raw_volPpl_bc->add_component(Teuchos::rcp(new Input::RealVectorComponent("VAL", 1)));
   raw_volPpl_bc->add_component(
       Teuchos::rcp(new Input::IntVectorComponent("curve", 1, {0, true, true})));
 

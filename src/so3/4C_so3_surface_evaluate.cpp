@@ -77,7 +77,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
   Configuration config = config_none;
 
   // get type of condition
-  const auto& type = condition.parameters().get<std::string>("type");
+  const auto& type = condition.parameters().get<std::string>("TYPE");
   if (type == "neum_live")
   {
     ltype = neum_live;
@@ -104,9 +104,9 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
   }
 
   // get values and switches from the condition
-  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().get<std::vector<double>>("val");
-  const auto* spa_func = condition.parameters().get_if<std::vector<int>>("funct");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("ONOFF");
+  const auto* val = &condition.parameters().get<std::vector<double>>("VAL");
+  const auto* spa_func = condition.parameters().get_if<std::vector<int>>("FUNCT");
 
   /*
   **    TIME CURVE BUSINESS
@@ -1612,14 +1612,14 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
       // time-integration factor for stiffness contribution of dashpot, d(v_{n+1})/d(d_{n+1})
       const double time_fac = params.get("time_fac", 0.0);
 
-      const auto* onoff = params.get<const std::vector<int>*>("onoff");
+      const auto* onoff = params.get<const std::vector<int>*>("ONOFF");
       auto springstiff = *(params.get<const std::vector<double>*>("springstiff"));
       auto dashpotvisc = *(params.get<const std::vector<double>*>("dashpotvisc"));
-      auto disploffset = *(params.get<const std::vector<double>*>("disploffset"));
-      const auto* numfuncstiff = params.get<const std::vector<int>*>("funct_stiff");
-      const auto* numfuncvisco = params.get<const std::vector<int>*>("funct_visco");
-      const auto* numfuncdisploffset = params.get<const std::vector<int>*>("funct_disploffset");
-      const auto* numfuncnonlinstiff = params.get<const std::vector<int>*>("funct_nonlinstiff");
+      auto disploffset = *(params.get<const std::vector<double>*>("DISPLOFFSET"));
+      const auto* numfuncstiff = params.get<const std::vector<int>*>("TIMEFUNCTSTIFF");
+      const auto* numfuncvisco = params.get<const std::vector<int>*>("TIMEFUNCTVISCO");
+      const auto* numfuncdisploffset = params.get<const std::vector<int>*>("TIMEFUNCTDISPLOFFSET");
+      const auto* numfuncnonlinstiff = params.get<const std::vector<int>*>("FUNCTNONLINSTIFF");
 
       const double time = parent_element()->is_params_interface()
                               ? parent_element()->params_interface_ptr()->get_total_time()
@@ -1668,7 +1668,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
       RobinType rtype = none;
 
       // get type of Robin condition
-      const std::string* direction = params.get<const std::string*>("direction");
+      const std::string* direction = params.get<const std::string*>("DIRECTION");
       if (*direction == "xyz")
         rtype = xyz;
       else if (*direction == "refsurfnormal")

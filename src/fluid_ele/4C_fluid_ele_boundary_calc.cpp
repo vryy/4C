@@ -249,10 +249,10 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
-  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().get<std::vector<double>>("val");
-  const auto* func = &condition.parameters().get<std::vector<int>>("funct");
-  const std::string* type = &condition.parameters().get<std::string>("type");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("ONOFF");
+  const auto* val = &condition.parameters().get<std::vector<double>>("VAL");
+  const auto* func = &condition.parameters().get<std::vector<int>>("FUNCT");
+  const std::string* type = &condition.parameters().get<std::string>("TYPE");
 
   // get time factor for Neumann term
   const double timefac = fldparatimint_->time_fac_rhs();

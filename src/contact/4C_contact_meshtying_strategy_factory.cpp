@@ -508,7 +508,7 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
           if (contactSymconditions.at(j)->contains_node(node->id()))
           {
             const auto& onoff =
-                contactSymconditions.at(j)->parameters().get<std::vector<int>>("onoff");
+                contactSymconditions.at(j)->parameters().get<std::vector<int>>("ONOFF");
             for (unsigned k = 0; k < onoff.size(); k++)
               if (onoff.at(k) == 1) mtnode->dbc_dofs()[k] = true;
           }

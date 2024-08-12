@@ -340,8 +340,7 @@ void Inpar::SSI::SetValidConditions(
         Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
         Teuchos::tuple<int>(
             Inpar::S2I::side_undefined, Inpar::S2I::side_slave, Inpar::S2I::side_master))));
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("S2I_KINETICS_ID")));
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("S2IKineticsID")));
+    add_named_int(cond, "S2I_KINETICS_ID");
 
     condlist.push_back(cond);
   }
@@ -353,13 +352,10 @@ void Inpar::SSI::SetValidConditions(
       Core::Conditions::SSISurfaceManifold, true, Core::Conditions::geometry_type_surface));
 
   ssisurfacemanifold->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
-
-  ssisurfacemanifold->add_component(Teuchos::rcp(new Input::SeparatorComponent("ImplType")));
-  ssisurfacemanifold->add_component(
-      Teuchos::rcp(new Input::SelectionComponent("ImplType", "Undefined",
-          Teuchos::tuple<std::string>("Undefined", "Standard", "ElchElectrode", "ElchDiffCond"),
-          Teuchos::tuple<int>(Inpar::ScaTra::impltype_undefined, Inpar::ScaTra::impltype_std,
-              Inpar::ScaTra::impltype_elch_electrode, Inpar::ScaTra::impltype_elch_diffcond))));
+  add_named_selection_component(ssisurfacemanifold, "ImplType", "implementation type", "Undefined",
+      Teuchos::tuple<std::string>("Undefined", "Standard", "ElchElectrode", "ElchDiffCond"),
+      Teuchos::tuple<int>(Inpar::ScaTra::impltype_undefined, Inpar::ScaTra::impltype_std,
+          Inpar::ScaTra::impltype_elch_electrode, Inpar::ScaTra::impltype_elch_diffcond));
   add_named_real(ssisurfacemanifold, "thickness");
 
   condlist.emplace_back(ssisurfacemanifold);
@@ -397,14 +393,14 @@ void Inpar::SSI::SetValidConditions(
         constantinterfaceresistance.emplace_back(
             Teuchos::rcp(new Input::SeparatorComponent("ONOFF")));
         constantinterfaceresistance.emplace_back(
-            Teuchos::rcp(new Input::IntVectorComponent("onoff", 2)));
+            Teuchos::rcp(new Input::IntVectorComponent("ONOFF", 2)));
 
         constantinterfaceresistance.emplace_back(
             Teuchos::rcp(new Input::SeparatorComponent("RESISTANCE")));
         constantinterfaceresistance.emplace_back(
-            Teuchos::rcp(new Input::RealComponent("resistance")));
+            Teuchos::rcp(new Input::RealComponent("RESISTANCE")));
         constantinterfaceresistance.emplace_back(new Input::SeparatorComponent("E-"));
-        constantinterfaceresistance.emplace_back(new Input::IntComponent("e-"));
+        constantinterfaceresistance.emplace_back(new Input::IntComponent("E-"));
 
         kinetic_model_choices.emplace(Inpar::S2I::kinetics_constantinterfaceresistance,
             std::make_pair("ConstantInterfaceResistance", constantinterfaceresistance));
@@ -422,7 +418,7 @@ void Inpar::SSI::SetValidConditions(
             new Input::IntVectorComponent("STOICHIOMETRIES", Input::LengthFromInt("NUMSCAL"))));
 
         butlervolmerreduced.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("E-")));
-        butlervolmerreduced.emplace_back(Teuchos::rcp(new Input::IntComponent("e-")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new Input::IntComponent("E-")));
         butlervolmerreduced.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("K_R")));
         butlervolmerreduced.emplace_back(Teuchos::rcp(new Input::RealComponent("K_R")));
         butlervolmerreduced.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ALPHA_A")));
@@ -445,7 +441,7 @@ void Inpar::SSI::SetValidConditions(
     surfmanifoldkinetics->add_component(
         Teuchos::rcp(new Input::SeparatorComponent("KINETIC_MODEL")));
     surfmanifoldkinetics->add_component(Teuchos::rcp(new Input::SwitchComponent(
-        "kinetic model", Inpar::S2I::kinetics_constantinterfaceresistance, kinetic_model_choices)));
+        "KINETIC_MODEL", Inpar::S2I::kinetics_constantinterfaceresistance, kinetic_model_choices)));
   }
 
   condlist.emplace_back(surfmanifoldkinetics);
@@ -463,29 +459,18 @@ void Inpar::SSI::SetValidConditions(
       Core::Conditions::SurfaceDirichlet, false, Core::Conditions::geometry_type_surface));
 
   const auto add_dirichlet_manifold_components =
-      [](Core::Conditions::ConditionDefinition& definition)
+      [](Teuchos::RCP<Core::Conditions::ConditionDefinition> definition)
   {
-    definition.add_component(Teuchos::rcp(new Input::SeparatorComponent("NUMDOF")));
-    definition.add_component(Teuchos::rcp(new Input::IntComponent("numdof")));
-
-    definition.add_component(Teuchos::rcp(new Input::SeparatorComponent("ONOFF")));
-    definition.add_component(
-        Teuchos::rcp(new Input::IntVectorComponent("onoff", Input::LengthFromInt("numdof"))));
-
-    definition.add_component(Teuchos::rcp(new Input::SeparatorComponent("VAL")));
-    definition.add_component(
-        Teuchos::rcp(new Input::RealVectorComponent("val", Input::LengthFromInt("numdof"))));
-
-    definition.add_component(Teuchos::rcp(new Input::SeparatorComponent("FUNCT")));
-    definition.add_component(
-        Teuchos::rcp(new Input::IntVectorComponent("funct", Input::LengthFromInt("numdof"),
-            {/*default=*/0, /*fortranstyle=*/false, /*noneallowed=*/true, /*optional=*/false})));
+    add_named_int(definition, "NUMDOF");
+    add_named_int_vector(definition, "ONOFF", "", "NUMDOF");
+    add_named_real_vector(definition, "VAL", "", "NUMDOF");
+    add_named_int_vector(definition, "FUNCT", "", "NUMDOF", 0, false, true);
   };
 
   {
-    add_dirichlet_manifold_components(*pointmanifolddirichlet);
-    add_dirichlet_manifold_components(*linemanifolddirichlet);
-    add_dirichlet_manifold_components(*surfmanifolddirichlet);
+    add_dirichlet_manifold_components(pointmanifolddirichlet);
+    add_dirichlet_manifold_components(linemanifolddirichlet);
+    add_dirichlet_manifold_components(surfmanifolddirichlet);
   }
 
   condlist.push_back(pointmanifolddirichlet);
@@ -511,10 +496,8 @@ void Inpar::SSI::SetValidConditions(
         Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
         Teuchos::tuple<int>(
             Inpar::S2I::side_undefined, Inpar::S2I::side_slave, Inpar::S2I::side_master))));
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("S2I_KINETICS_ID")));
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("S2IKineticsID")));
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("CONTACT_CONDITION_ID")));
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("ContactConditionID")));
+    add_named_int(cond, "S2I_KINETICS_ID");
+    add_named_int(cond, "CONTACT_CONDITION_ID");
 
     condlist.push_back(cond);
   }

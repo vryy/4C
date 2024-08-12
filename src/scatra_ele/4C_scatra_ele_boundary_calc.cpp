@@ -506,10 +506,10 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_neumann
 
   // get values, switches and spatial functions from the  condition
   // (assumed to be constant on element boundary)
-  const int numdof = condition.parameters().get<int>("numdof");
-  const auto* onoff = &condition.parameters().get<std::vector<int>>("onoff");
-  const auto* val = &condition.parameters().get<std::vector<double>>("val");
-  const auto* func = condition.parameters().get_if<std::vector<int>>("funct");
+  const int numdof = condition.parameters().get<int>("NUMDOF");
+  const auto* onoff = &condition.parameters().get<std::vector<int>>("ONOFF");
+  const auto* val = &condition.parameters().get<std::vector<double>>("VAL");
+  const auto* func = condition.parameters().get_if<std::vector<int>>("FUNCT");
 
   if (numdofpernode_ != numdof)
   {
@@ -1638,7 +1638,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_robin_boun
   if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'TransportRobin'");
 
   // get on/off flags
-  const auto* onoff = &cond->parameters().get<std::vector<int>>("onoff");
+  const auto* onoff = &cond->parameters().get<std::vector<int>>("ONOFF");
 
   // safety check
   if ((int)(onoff->size()) != numscal_)
@@ -1650,8 +1650,8 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_robin_boun
   }
 
   // extract prefactor and reference value from condition
-  const auto prefac = cond->parameters().get<double>("prefactor");
-  const auto refval = cond->parameters().get<double>("refvalue");
+  const auto prefac = cond->parameters().get<double>("PREFACTOR");
+  const auto refval = cond->parameters().get<double>("REFVALUE");
 
   //////////////////////////////////////////////////////////////////////
   //                  read nodal values
@@ -1801,15 +1801,15 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_surfac
       params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
   if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'SurfacePermeability'");
 
-  const auto* onoff = &cond->parameters().get<std::vector<int>>("onoff");
+  const auto* onoff = &cond->parameters().get<std::vector<int>>("ONOFF");
 
-  const auto perm = cond->parameters().get<double>("permeability coefficient");
+  const auto perm = cond->parameters().get<double>("PERMCOEF");
 
   // get flag if concentration flux across membrane is affected by local wall shear stresses: 0->no
   // 1->yes
-  const bool wss_onoff = (bool)cond->parameters().get<int>("wss onoff");
+  const bool wss_onoff = (bool)cond->parameters().get<int>("WSSONOFF");
 
-  const auto* coeffs = &cond->parameters().get<std::vector<double>>("wss coeffs");
+  const auto* coeffs = &cond->parameters().get<std::vector<double>>("WSSCOEFFS");
 
   //////////////////////////////////////////////////////////////////////
   //                  build RHS and StiffMat
@@ -1954,21 +1954,21 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_
   if (cond == Teuchos::null)
     FOUR_C_THROW("Cannot access condition 'DESIGN SCATRA COUPLING SURF CONDITIONS'");
 
-  const auto* onoff = &cond->parameters().get<std::vector<int>>("onoff");
+  const auto* onoff = &cond->parameters().get<std::vector<int>>("ONOFF");
 
   // get the standard permeability of the interface
-  const auto perm = cond->parameters().get<double>("permeability coefficient");
+  const auto perm = cond->parameters().get<double>("PERMCOEF");
 
   // get flag if concentration flux across membrane is affected by local wall shear stresses: 0->no
   // 1->yes
-  const bool wss_onoff = (bool)cond->parameters().get<int>("wss onoff");
-  const auto* coeffs = &cond->parameters().get<std::vector<double>>("wss coeffs");
+  const bool wss_onoff = (bool)cond->parameters().get<int>("WSSONOFF");
+  const auto* coeffs = &cond->parameters().get<std::vector<double>>("WSSCOEFFS");
 
   // hydraulic conductivity at interface
-  const auto conductivity = cond->parameters().get<double>("hydraulic conductivity");
+  const auto conductivity = cond->parameters().get<double>("CONDUCT");
 
   // Staverman filtration coefficient at interface
-  const auto sigma = cond->parameters().get<double>("filtration coefficient");
+  const auto sigma = cond->parameters().get<double>("FILTR");
 
   ///////////////////////////////////////////////////////////////////////////
   // ------------do the actual calculations----------------------------------
@@ -2125,8 +2125,8 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
 
   // get values and spatial functions from condition
   // (assumed to be constant on element boundary)
-  const auto& val = (*dbc).parameters().get<std::vector<double>>("val");
-  const auto& func = (*dbc).parameters().get<std::vector<int>>("funct");
+  const auto& val = (*dbc).parameters().get<std::vector<double>>("VAL");
+  const auto& func = (*dbc).parameters().get<std::vector<int>>("FUNCT");
 
   // assign boundary value multiplied by time-curve factor
   double dirichval = val[0];

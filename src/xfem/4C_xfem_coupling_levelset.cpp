@@ -234,7 +234,7 @@ void XFEM::LevelSetCoupling::set_level_set_boolean_type()
         "no element condition for LevelSetCouplingBC set. Not possible to extract BOOLEANTYPE!");
 
   Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
-  const std::string& booleantype = cond->parameters().get<std::string>("booleantype");
+  const std::string& booleantype = cond->parameters().get<std::string>("BOOLEANTYPE");
 
   if (booleantype == "none")
     ls_boolean_type_ = ls_none;
@@ -260,7 +260,7 @@ bool XFEM::LevelSetCoupling::apply_complementary_operator()
         "no element condition for LevelSetCouplingBC set. Not possible to extract BOOLEANTYPE!");
 
   Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
-  bool complementary = (bool)cond->parameters().get<int>("complementary");
+  bool complementary = (bool)cond->parameters().get<int>("COMPLEMENTARY");
 
   return complementary;
 }
@@ -391,7 +391,7 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
   // get the function from the first element
   const int lid = 0;
   Core::Conditions::Condition* cond = cutterele_conds_[lid].second;
-  const int func_no = cond->parameters().get<int>("levelsetfieldno");
+  const int func_no = cond->parameters().get<int>("LEVELSETFIELDNO");
 
   // loop all nodes on the processor
   for (int lnodeid = 0; lnodeid < cutter_dis_->num_my_row_nodes(); lnodeid++)
@@ -436,7 +436,7 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
     if (projtosurf_ != Inpar::XFEM::Proj_normal)  // and projtosurf_!=Inpar::XFEM::Proj_normal_phi
     {
       // check for potential L2_Projection smoothing
-      const int l2_proj_num = (cond->parameters().get<int>("l2projsolv") + 1);
+      const int l2_proj_num = (cond->parameters().get<int>("L2_PROJECTION_SOLVER") + 1);
       if (l2_proj_num < 1) FOUR_C_THROW("Issue with L2_PROJECTION_SOLVER, smaller than 1!!!");
 
       // SMOOTHED GRAD PHI!!!!!! (Create from nodal map on Xfluid discretization)
@@ -1097,11 +1097,11 @@ void XFEM::LevelSetCouplingNeumann::do_condition_specific_setup()
   // Check if Inflow Stabilisation is active
   if (!cutterele_conds_.size()) FOUR_C_THROW("cutterele_conds_.size = 0!");
   Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
-  auto inflow_stab = cond->parameters().get<bool>("InflowStab");
+  auto inflow_stab = cond->parameters().get<bool>("INFLOW_STAB");
   for (auto& cutterele_cond : cutterele_conds_)
   {
     Core::Conditions::Condition* cond = cutterele_cond.second;
-    auto this_inflow = cond->parameters().get<bool>("InflowStab");
+    auto this_inflow = cond->parameters().get<bool>("INFLOW_STAB");
     if (inflow_stab != this_inflow)
       FOUR_C_THROW(
           "You want to stabilized just some of your Neumann Boundaries? - feel free to implement!");
@@ -1244,8 +1244,8 @@ void XFEM::LevelSetCouplingNavierSlip::set_element_conditions()
   Core::Conditions::Condition* cond = cutterele_conds_[0].second;  // get condition of first element
 
   // Get robin coupling IDs
-  robin_dirichlet_id_ = cond->parameters().get<int>("robin_id_dirch");
-  robin_neumann_id_ = cond->parameters().get<int>("robin_id_neumann");
+  robin_dirichlet_id_ = cond->parameters().get<int>("ROBIN_DIRICHLET_ID");
+  robin_neumann_id_ = cond->parameters().get<int>("ROBIN_NEUMANN_ID");
 
   has_neumann_jump_ = (robin_neumann_id_ < 0) ? false : true;
 
@@ -1397,18 +1397,18 @@ void XFEM::LevelSetCouplingNavierSlip::set_condition_specific_parameters()
   Core::Conditions::Condition* cond = cutterele_conds_[0].second;  // get condition of first element
 
   // Get the scaling factor for the slip length
-  sliplength_ = cond->parameters().get<double>("slipcoeff");
+  sliplength_ = cond->parameters().get<double>("SLIPCOEFFICIENT");
 
   // Temporary variable for readability.
   bool tmp_bool;
 
   // Is the slip length constant? Don't call functions at GP-level unnecessary.
-  tmp_bool = (cond->parameters().get<int>("funct") < 1);
+  tmp_bool = (cond->parameters().get<int>("FUNCT") < 1);
   is_constant_sliplength_ = (tmp_bool) ? true : false;
 
   // Project the prescribed velocity in tangential direction, to remove "spurious velocities"
   //  from the geometry approximation.
-  tmp_bool = ((cond->parameters().get<int>("force_tang_vel")) == 0);
+  tmp_bool = ((cond->parameters().get<int>("FORCE_ONLY_TANG_VEL")) == 0);
   forcetangvel_ = (tmp_bool) ? false : true;
 }
 

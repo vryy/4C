@@ -237,11 +237,11 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force()
 
     for (auto& k : conditions_element1)
     {
-      int npotlaw1 = k->parameters().get<int>("potlaw");
+      int npotlaw1 = k->parameters().get<int>("POTLAW");
 
       for (auto& j : conditions_element2)
       {
-        int npotlaw2 = j->parameters().get<int>("potlaw");
+        int npotlaw2 = j->parameters().get<int>("POTLAW");
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
@@ -326,11 +326,11 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_stiff()
 
     for (unsigned int k = 0; k < conditions_element1.size(); ++k)
     {
-      int npotlaw1 = conditions_element1[k]->parameters().get<int>("potlaw");
+      int npotlaw1 = conditions_element1[k]->parameters().get<int>("POTLAW");
 
       for (unsigned int j = 0; j < conditions_element2.size(); ++j)
       {
-        int npotlaw2 = conditions_element2[j]->parameters().get<int>("potlaw");
+        int npotlaw2 = conditions_element2[j]->parameters().get<int>("POTLAW");
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
@@ -426,11 +426,11 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force_stiff()
 
     for (unsigned int k = 0; k < conditions_element1.size(); ++k)
     {
-      int npotlaw1 = conditions_element1[k]->parameters().get<int>("potlaw");
+      int npotlaw1 = conditions_element1[k]->parameters().get<int>("POTLAW");
 
       for (unsigned int j = 0; j < conditions_element2.size(); ++j)
       {
-        int npotlaw2 = conditions_element2[j]->parameters().get<int>("potlaw");
+        int npotlaw2 = conditions_element2[j]->parameters().get<int>("POTLAW");
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
@@ -778,11 +778,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
 
       for (unsigned int i = 0; i < conds1.size(); ++i)
       {
-        int npotlaw1 = conds1[i]->parameters().get<int>("potlaw");
+        int npotlaw1 = conds1[i]->parameters().get<int>("POTLAW");
 
         for (unsigned int j = 0; j < conds2.size(); ++j)
         {
-          int npotlaw2 = conds2[j]->parameters().get<int>("potlaw");
+          int npotlaw2 = conds2[j]->parameters().get<int>("POTLAW");
 
           // here, we also exclude "self-interaction", i.e. a pair of elements on the same physical
           // beam
