@@ -11,10 +11,10 @@
 
 #include "4C_lubrication_dyn.hpp"
 
-#include "4C_adapter_lubrication.hpp"
 #include "4C_fem_dofset_predefineddofnumber.hpp"
 #include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
+#include "4C_lubrication_adapter.hpp"
 #include "4C_lubrication_timint_implicit.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -69,8 +69,8 @@ void lubrication_dyn(int restart)
         "DYNAMIC to a valid number!");
 
   // create instance of Lubrication basis algorithm
-  Teuchos::RCP<Adapter::LubricationBaseAlgorithm> lubricationonly =
-      Teuchos::rcp(new Adapter::LubricationBaseAlgorithm());
+  Teuchos::RCP<LUBRICATION::LubricationBaseAlgorithm> lubricationonly =
+      Teuchos::rcp(new LUBRICATION::LubricationBaseAlgorithm());
 
   // setup Lubrication basis algorithm
   lubricationonly->setup(

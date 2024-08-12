@@ -7,8 +7,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef FOUR_C_ADAPTER_LUBRICATION_HPP
-#define FOUR_C_ADAPTER_LUBRICATION_HPP
+#ifndef FOUR_C_LUBRICATION_ADAPTER_HPP
+#define FOUR_C_LUBRICATION_ADAPTER_HPP
 
 #include "4C_config.hpp"
 
@@ -39,7 +39,7 @@ namespace Core::IO
   class DiscretizationWriter;
 }
 
-namespace Adapter
+namespace LUBRICATION
 {
   /// general Lubrication field interface for multiphysics problems
   /*!
@@ -79,7 +79,7 @@ namespace Adapter
 
   };  // class LubricationBaseAlgorithm
 
-}  // namespace Adapter
+}  // namespace LUBRICATION
 
 
 FOUR_C_NAMESPACE_CLOSE

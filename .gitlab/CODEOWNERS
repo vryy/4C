@@ -61,7 +61,6 @@ adapter/4C_adapter_field.hpp                     @baci/team_discretization
 adapter/4C_adapter_field_wrapper*              @baci/team_discretization
 adapter/4C_adapter_fld_*                       @baci/team_fluid
 adapter/4C_adapter_fld_poro*                   @baci/team_poro
-adapter/4C_adapter_lubrication*                @baci/team_scatra
 adapter/4C_adapter_poro*                       @baci/team_poro
 adapter/4C_adapter_scatra_*                    @baci/team_scatra
 adapter/4C_adapter_str_*                       @baci/team_structure
