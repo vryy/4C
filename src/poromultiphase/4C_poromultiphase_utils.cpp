@@ -8,7 +8,6 @@
 
 #include "4C_poromultiphase_utils.hpp"
 
-#include "4C_adapter_poromultiphase.hpp"
 #include "4C_fem_dofset_predefineddofnumber.hpp"
 #include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
@@ -16,6 +15,7 @@
 #include "4C_poroelast_utils.hpp"
 #include "4C_porofluidmultiphase_ele.hpp"
 #include "4C_porofluidmultiphase_utils.hpp"
+#include "4C_poromultiphase_adapter.hpp"
 #include "4C_poromultiphase_monolithic_twoway.hpp"
 #include "4C_poromultiphase_partitioned_twoway.hpp"
 #include "4C_poromultiphase_utils_clonestrategy.hpp"
@@ -151,12 +151,12 @@ void POROMULTIPHASE::UTILS::assign_material_pointers(
 /*----------------------------------------------------------------------*
  | create algorithm                                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Adapter::PoroMultiPhase> POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(
+Teuchos::RCP<POROMULTIPHASE::PoroMultiPhase> POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(
     Inpar::POROMULTIPHASE::SolutionSchemeOverFields solscheme,
     const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm)
 {
   // Creation of Coupled Problem algorithm.
-  Teuchos::RCP<Adapter::PoroMultiPhase> algo = Teuchos::null;
+  Teuchos::RCP<POROMULTIPHASE::PoroMultiPhase> algo = Teuchos::null;
 
   switch (solscheme)
   {

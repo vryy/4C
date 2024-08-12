@@ -13,7 +13,7 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_algorithmbase.hpp"
-#include "4C_adapter_poromultiphase.hpp"
+#include "4C_poromultiphase_adapter.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -32,7 +32,7 @@ namespace Core::FE
 namespace POROMULTIPHASE
 {
   //! Base class of all solid-scatra algorithms
-  class PoroMultiPhaseBase : public Adapter::AlgorithmBase, public Adapter::PoroMultiPhase
+  class PoroMultiPhaseBase : public Adapter::AlgorithmBase, public PoroMultiPhase
   {
    public:
     /// create using a Epetra_Comm

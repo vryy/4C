@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef FOUR_C_ADAPTER_POROMULTIPHASE_HPP
-#define FOUR_C_ADAPTER_POROMULTIPHASE_HPP
+#ifndef FOUR_C_POROMULTIPHASE_ADAPTER_HPP
+#define FOUR_C_POROMULTIPHASE_ADAPTER_HPP
 
 #include "4C_config.hpp"
 
@@ -31,7 +31,7 @@ namespace Core::LinAlg
   class Solver;
 }
 
-namespace Adapter
+namespace POROMULTIPHASE
 {
   class PoroMultiPhase
   {
@@ -157,7 +157,7 @@ namespace Adapter
     virtual void build_artery_block_null_space(
         Teuchos::RCP<Core::LinAlg::Solver>& solver, const int& arteryblocknum) = 0;
   };
-}  // namespace Adapter
+}  // namespace POROMULTIPHASE
 
 
 FOUR_C_NAMESPACE_CLOSE

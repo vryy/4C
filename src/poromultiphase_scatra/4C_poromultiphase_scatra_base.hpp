@@ -14,6 +14,7 @@
 #include "4C_adapter_algorithmbase.hpp"
 #include "4C_inpar_poromultiphase_scatra.hpp"
 #include "4C_porofluidmultiphase_utils.hpp"
+#include "4C_poromultiphase_adapter.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
@@ -27,7 +28,6 @@ FOUR_C_NAMESPACE_OPEN
 namespace Adapter
 {
   class ScaTraBaseAlgorithm;
-  class PoroMultiPhase;
 }  // namespace Adapter
 
 namespace Core::FE
@@ -99,7 +99,7 @@ namespace PoroMultiPhaseScaTra
     void apply_additional_dbc_for_vol_frac_species();
 
     //! access to poro field
-    const Teuchos::RCP<Adapter::PoroMultiPhase>& poro_field() { return poromulti_; }
+    const Teuchos::RCP<POROMULTIPHASE::PoroMultiPhase>& poro_field() { return poromulti_; }
 
     //! access to fluid field
     const Teuchos::RCP<Adapter::ScaTraBaseAlgorithm>& scatra_algo() { return scatra_; }
@@ -112,7 +112,7 @@ namespace PoroMultiPhaseScaTra
 
    private:
     //! underlying poroelast multi phase
-    Teuchos::RCP<Adapter::PoroMultiPhase> poromulti_;
+    Teuchos::RCP<POROMULTIPHASE::PoroMultiPhase> poromulti_;
 
     //! underlying scatra problem
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_;
