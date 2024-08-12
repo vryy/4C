@@ -46,6 +46,24 @@
       }
     },
     {
+      "name": "docker_release_assertions_gcc14",
+      "displayName": "Optimized build with assertions for Docker image (with GCC 14)",
+      "description": "Build release version including debug assertions on a Docker image",
+      "inherits": [
+        ".docker_base"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RELEASE",
+        "FOUR_C_ENABLE_ASSERTIONS": "ON",
+        "CMAKE_CXX_COMPILER": "/opt/4C-dependencies-testing/bin/g++",
+        "CMAKE_C_COMPILER": "/opt/4C-dependencies-testing/bin/gcc",
+        "CMAKE_BUILD_RPATH": "/opt/4C-dependencies-testing/lib64",
+        "FOUR_C_BUILD_DOXYGEN": "OFF",
+        "FOUR_C_BUILD_READTHEDOCS": "OFF",
+        "FOUR_C_ENABLE_WARNINGS_AS_ERRORS": "OFF"
+      }
+    },
+    {
       "name": "docker_asan",
       "displayName": "ASAN build for Docker image",
       "description": "Build release version with address sanitizer on a Docker image",

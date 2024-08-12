@@ -39,7 +39,7 @@ variables:
   # Variables for docker
   # Whether to build the docker images and push them to the CI registry
   FOUR_C_DOCKER_BUILD_IMAGES: 'False'
-  FOUR_C_DOCKER_DEPENDENCIES_HASH: 717f70e9
+  FOUR_C_DOCKER_DEPENDENCIES_HASH: f0266699
   FOUR_C_DOCKER_DEPENDENCIES_IMAGE: 4c-dependencies
   FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH: $FOUR_C_DOCKER_DEPENDENCIES_IMAGE:$FOUR_C_DOCKER_DEPENDENCIES_HASH
 
@@ -395,7 +395,7 @@ build_base_dependencies:
     - if: $FOUR_C_DOCKER_BUILD_IMAGES == "True"
       when: manual
 
-buildtest_release:
+gcc9:
   extends: .buildtest_base
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
@@ -411,7 +411,7 @@ buildtest_release:
     - if: $GITLAB_PIPELINE_TYPE == "nightly"
   interruptible: true
 
-buildtest_release_asan:
+gcc9_asan:
   extends: .buildtest_base
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
@@ -428,7 +428,7 @@ buildtest_release_asan:
     - if: $GITLAB_PIPELINE_TYPE == "nightly"
   interruptible: true
 
-buildtest_release_with_assertions:
+gcc9_assertions:
   extends: .buildtest_base
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
@@ -444,7 +444,23 @@ buildtest_release_with_assertions:
     - if: $GITLAB_PIPELINE_TYPE == "nightly"
   interruptible: true
 
-build_verify_headers:
+gcc14_assertions:
+  extends: .buildtest_base
+  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  variables:
+    CMAKE_PRESET: docker_release_assertions_gcc14
+  tags:
+    - buildtest
+  needs:
+    - job: build_base_dependencies
+      optional: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $GITLAB_PIPELINE_TYPE == "nightly"
+  interruptible: true
+
+verify_headers:
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     NUMBER_OF_BUILD_THREADS: '10'
@@ -537,7 +553,7 @@ build_base_dependencies_trilinos_develop:
     - if: $GITLAB_PIPELINE_TYPE == "trilinos develop"
   interruptible: true
 
-buildtest_release_trilinos_develop:
+gcc9_trilinos_develop:
   extends: .buildtest_base
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_TRILINOS
   variables:
@@ -551,7 +567,7 @@ buildtest_release_trilinos_develop:
     - if: $GITLAB_PIPELINE_TYPE == "trilinos develop"
   interruptible: true
 
-buildtest_release_with_assertions_trilinos_develop:
+gcc9_assertions_trilinos_develop:
   extends: .buildtest_base
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_TRILINOS
   variables:
