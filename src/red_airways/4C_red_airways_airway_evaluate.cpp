@@ -72,10 +72,7 @@ int Discret::ELEMENTS::RedAirway::evaluate(Teuchos::ParameterList& params,
     act = RedAirway::calc_elem_volumes;
   else
   {
-    char errorout[200];
-    sprintf(errorout, "Unknown type of action (%s) for reduced dimensional airway", action.c_str());
-
-    FOUR_C_THROW(errorout);
+    FOUR_C_THROW("Unknown type of action (%s) for reduced dimensional airway", action.c_str());
   }
 
   /*

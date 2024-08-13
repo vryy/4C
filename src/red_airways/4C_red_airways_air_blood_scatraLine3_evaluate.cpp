@@ -75,10 +75,7 @@ int Discret::ELEMENTS::RedAirBloodScatraLine3::evaluate(Teuchos::ParameterList& 
     act = RedAirBloodScatraLine3::eval_PO2_from_concentration;
   else
   {
-    char errorout[200];
-    sprintf(errorout, "Unknown type of action (%s) for reduced dimensional acinus", action.c_str());
-
-    FOUR_C_THROW(errorout);
+    FOUR_C_THROW("Unknown type of action (%s) for reduced dimensional acinus", action.c_str());
   }
 
   /*

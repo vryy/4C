@@ -541,8 +541,9 @@ void CONSTRAINTS::MPConstraint3::initialize_constraint(Teuchos::RCP<Core::FE::Di
                      .evaluate(time);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-    char factorname[30];
-    sprintf(factorname, "LoadCurveFactor %d", condID);
+    constexpr unsigned character_length = 30;
+    char factorname[character_length];
+    snprintf(factorname, character_length, "LoadCurveFactor %d", condID);
     params.set(factorname, curvefac);
   }
 }  // end of initialize_constraint
