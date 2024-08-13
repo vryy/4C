@@ -9,7 +9,6 @@ set(_dependencies
     global_data
     inpar
     lubrication
-    lubrication_ele
     mat
     mortar
     )
