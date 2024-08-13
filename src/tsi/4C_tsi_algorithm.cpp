@@ -18,7 +18,6 @@
 #include "4C_adapter_str_factory.hpp"
 #include "4C_adapter_str_structure_new.hpp"
 #include "4C_adapter_str_wrapper.hpp"
-#include "4C_adapter_thermo.hpp"
 #include "4C_contact_lagrange_strategy.hpp"
 #include "4C_contact_lagrange_strategy_tsi.hpp"
 #include "4C_contact_meshtying_contact_bridge.hpp"
@@ -37,6 +36,7 @@
 #include "4C_solid_3D_ele.hpp"
 #include "4C_structure_new_model_evaluator_contact.hpp"
 #include "4C_structure_new_model_evaluator_structure.hpp"
+#include "4C_thermo_adapter.hpp"
 #include "4C_thermo_element.hpp"
 #include "4C_tsi_defines.hpp"
 #include "4C_tsi_utils.hpp"
@@ -96,9 +96,8 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     FOUR_C_THROW("old structural time integration no longer supported in tsi");
   else
   {
-    Teuchos::RCP<Adapter::ThermoBaseAlgorithm> thermo =
-        Teuchos::rcp(new Adapter::ThermoBaseAlgorithm(
-            Global::Problem::instance()->tsi_dynamic_params(), thermodis));
+    Teuchos::RCP<Thermo::BaseAlgorithm> thermo = Teuchos::rcp(
+        new Thermo::BaseAlgorithm(Global::Problem::instance()->tsi_dynamic_params(), thermodis));
     thermo_ = thermo->thermo_fieldrcp();
 
     //  // access structural dynamic params list which will be possibly modified while creating the
@@ -335,7 +334,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
 
 
 /*----------------------------------------------------------------------*
- | communicate the displacement vector to THR field          dano 12/11 |
+ | communicate the displacement vector to Thermo field          dano 12/11 |
  | enable visualisation of thermal variables on deformed body           |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::output_deformation_in_thr(

@@ -120,7 +120,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     // create the parameters for the discretization
     Teuchos::ParameterList p;
     // other parameters that might be needed by the elements
-    p.set<int>("action", THR::postproc_thermo_heatflux);
+    p.set<int>("action", Thermo::postproc_thermo_heatflux);
     p.set("heatfluxtype", "ndxyz");
     p.set("gpheatfluxmap", data);
     p.set("total time", -1.0);
@@ -245,7 +245,7 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
     // create the parameters for the discretization
     Teuchos::ParameterList p;
     // other parameters that might be needed by the elements
-    p.set<int>("action", THR::postproc_thermo_heatflux);
+    p.set<int>("action", Thermo::postproc_thermo_heatflux);
     p.set("heatfluxtype", "cxyz");
     p.set("gpheatfluxmap", data);
     p.set("total time", -1.0);

@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                     dano 08/09 |
  *----------------------------------------------------------------------*/
-namespace THR
+namespace Thermo
 {
   /*====================================================================*/
   /*!
@@ -155,9 +155,9 @@ namespace THR
     //@{
 
     //! Return name
-    enum Inpar::THR::DynamicType method_name() const override
+    enum Inpar::Thermo::DynamicType method_name() const override
     {
-      return Inpar::THR::dyna_onesteptheta;
+      return Inpar::Thermo::dyna_onesteptheta;
     }
 
     //! Provide number of steps, a single-step method returns 1
@@ -298,7 +298,7 @@ namespace THR
 
   };  // class TimIntOneStepTheta
 
-}  // namespace THR
+}  // namespace Thermo
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

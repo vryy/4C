@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                               dano 01/12 |
  *----------------------------------------------------------------------*/
-THR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& ioparams,
+Thermo::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
@@ -53,7 +53,7 @@ THR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& ioparams,
 /*----------------------------------------------------------------------*
  | integrate step                                            dano 01/12 |
  *----------------------------------------------------------------------*/
-void THR::TimIntExplEuler::integrate_step()
+void Thermo::TimIntExplEuler::integrate_step()
 {
   const double dt = (*dt_)[0];  // \f$\Delta t_{n}\f$
 
@@ -133,7 +133,7 @@ void THR::TimIntExplEuler::integrate_step()
 /*----------------------------------------------------------------------*
  | update step                                               dano 01/12 |
  *----------------------------------------------------------------------*/
-void THR::TimIntExplEuler::update_step_state()
+void Thermo::TimIntExplEuler::update_step_state()
 {
   // new temperatures at t_{n+1} -> t_n
   // T_n := T_{n+1}
@@ -151,7 +151,7 @@ void THR::TimIntExplEuler::update_step_state()
  | update after time step after output on element level      dano 01/12 |
  | update anything that needs to be updated at the element level        |
  *----------------------------------------------------------------------*/
-void THR::TimIntExplEuler::update_step_element()
+void Thermo::TimIntExplEuler::update_step_element()
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -160,7 +160,7 @@ void THR::TimIntExplEuler::update_step_element()
   p.set("delta time", (*dt_)[0]);
   // action for elements
   // --> be careful: this action does nothing
-  p.set<int>("action", THR::calc_thermo_update_istep);
+  p.set<int>("action", Thermo::calc_thermo_update_istep);
   // go to elements and do nothing
   discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
@@ -170,7 +170,7 @@ void THR::TimIntExplEuler::update_step_element()
 /*----------------------------------------------------------------------*
  | read restart forces                                       dano 01/12 |
  *----------------------------------------------------------------------*/
-void THR::TimIntExplEuler::read_restart_force()
+void Thermo::TimIntExplEuler::read_restart_force()
 {
   // do nothing
   return;
@@ -181,7 +181,8 @@ void THR::TimIntExplEuler::read_restart_force()
 /*----------------------------------------------------------------------*
  | read restart forces                                       dano 07/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntExplEuler::write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+void Thermo::TimIntExplEuler::write_restart_force(
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   // do nothing
   return;

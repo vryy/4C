@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | read element and set required information                  gjb 01/08 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Thermo::read_element(const std::string& eletype, const std::string& distype,
+bool Thermo::Element::read_element(const std::string& eletype, const std::string& distype,
     const Core::IO::InputParameterContainer& container)
 {
   // read number of material model

@@ -994,17 +994,17 @@ void CONTACT::LagrangeStrategyTsi::update(Teuchos::RCP<const Epetra_Vector> dis)
 
 void CONTACT::LagrangeStrategyTsi::set_alphaf_thermo(const Teuchos::ParameterList& tdyn)
 {
-  Inpar::THR::DynamicType dyn_type =
-      Core::UTILS::IntegralValue<Inpar::THR::DynamicType>(tdyn, "DYNAMICTYP");
+  Inpar::Thermo::DynamicType dyn_type =
+      Core::UTILS::IntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYP");
   switch (dyn_type)
   {
-    case Inpar::THR::dyna_genalpha:
+    case Inpar::Thermo::dyna_genalpha:
       tsi_alpha_ = tdyn.sublist("GENALPHA").get<double>("ALPHA_F");
       break;
-    case Inpar::THR::dyna_onesteptheta:
+    case Inpar::Thermo::dyna_onesteptheta:
       tsi_alpha_ = tdyn.sublist("ONESTEPTHETA").get<double>("THETA");
       break;
-    case Inpar::THR::dyna_statics:
+    case Inpar::Thermo::dyna_statics:
       tsi_alpha_ = 1.;
       break;
     default:

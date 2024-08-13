@@ -95,13 +95,15 @@ void Inpar::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Core::UTILS::BoolParameter("THERM_TEMPERATURE", "No", "", &io);
   setStringToIntegralParameter<int>("THERM_HEATFLUX", "None", "",
       tuple<std::string>("None", "No", "NO", "no", "Current", "Initial"),
-      tuple<int>(Inpar::THR::heatflux_none, Inpar::THR::heatflux_none, Inpar::THR::heatflux_none,
-          Inpar::THR::heatflux_none, Inpar::THR::heatflux_current, Inpar::THR::heatflux_initial),
+      tuple<int>(Inpar::Thermo::heatflux_none, Inpar::Thermo::heatflux_none,
+          Inpar::Thermo::heatflux_none, Inpar::Thermo::heatflux_none,
+          Inpar::Thermo::heatflux_current, Inpar::Thermo::heatflux_initial),
       &io);
   setStringToIntegralParameter<int>("THERM_TEMPGRAD", "None", "",
       tuple<std::string>("None", "No", "NO", "no", "Current", "Initial"),
-      tuple<int>(Inpar::THR::tempgrad_none, Inpar::THR::tempgrad_none, Inpar::THR::tempgrad_none,
-          Inpar::THR::tempgrad_none, Inpar::THR::tempgrad_current, Inpar::THR::tempgrad_initial),
+      tuple<int>(Inpar::Thermo::tempgrad_none, Inpar::Thermo::tempgrad_none,
+          Inpar::Thermo::tempgrad_none, Inpar::Thermo::tempgrad_none,
+          Inpar::Thermo::tempgrad_current, Inpar::Thermo::tempgrad_initial),
       &io);
 
   Core::UTILS::IntParameter(

@@ -25,21 +25,21 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                              bborn 08/09 |
  *----------------------------------------------------------------------*/
-THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
+Thermo::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimInt(ioparams, tdynparams, xparams, actdis, solver, output),
-      pred_(Core::UTILS::IntegralValue<Inpar::THR::PredEnum>(tdynparams, "PREDICT")),
-      itertype_(Core::UTILS::IntegralValue<Inpar::THR::NonlinSolTech>(tdynparams, "NLNSOL")),
-      normtypetempi_(Core::UTILS::IntegralValue<Inpar::THR::ConvNorm>(tdynparams, "NORM_TEMP")),
-      normtypefres_(Core::UTILS::IntegralValue<Inpar::THR::ConvNorm>(tdynparams, "NORM_RESF")),
+      pred_(Core::UTILS::IntegralValue<Inpar::Thermo::PredEnum>(tdynparams, "PREDICT")),
+      itertype_(Core::UTILS::IntegralValue<Inpar::Thermo::NonlinSolTech>(tdynparams, "NLNSOL")),
+      normtypetempi_(Core::UTILS::IntegralValue<Inpar::Thermo::ConvNorm>(tdynparams, "NORM_TEMP")),
+      normtypefres_(Core::UTILS::IntegralValue<Inpar::Thermo::ConvNorm>(tdynparams, "NORM_RESF")),
       combtempifres_(
-          Core::UTILS::IntegralValue<Inpar::THR::BinaryOp>(tdynparams, "NORMCOMBI_RESFTEMP")),
-      iternorm_(Core::UTILS::IntegralValue<Inpar::THR::VectorNorm>(tdynparams, "ITERNORM")),
+          Core::UTILS::IntegralValue<Inpar::Thermo::BinaryOp>(tdynparams, "NORMCOMBI_RESFTEMP")),
+      iternorm_(Core::UTILS::IntegralValue<Inpar::Thermo::VectorNorm>(tdynparams, "ITERNORM")),
       itermax_(tdynparams.get<int>("MAXITER")),
       itermin_(tdynparams.get<int>("MINITER")),
-      divcontype_(Core::UTILS::IntegralValue<Inpar::THR::DivContAct>(tdynparams, "DIVERCONT")),
+      divcontype_(Core::UTILS::IntegralValue<Inpar::Thermo::DivContAct>(tdynparams, "DIVERCONT")),
       divcontrefinelevel_(0),
       divcontfinesteps_(0),
       toltempi_(tdynparams.get<double>("TOLTEMP")),
@@ -96,7 +96,7 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
 /*----------------------------------------------------------------------*
  | integrate step                                           bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::integrate_step()
+void Thermo::TimIntImpl::integrate_step()
 {
   predict();
   solve();
@@ -107,7 +107,7 @@ void THR::TimIntImpl::integrate_step()
  | build linear system tangent matrix, rhs/force residual   bborn 08/09 |
  | Monolithic TSI accesses the linearised thermo problem                |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::evaluate(Teuchos::RCP<const Epetra_Vector> tempi)
+void Thermo::TimIntImpl::evaluate(Teuchos::RCP<const Epetra_Vector> tempi)
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And
@@ -145,7 +145,7 @@ void THR::TimIntImpl::evaluate(Teuchos::RCP<const Epetra_Vector> tempi)
  | build linear system tangent matrix, rhs/force residual    dano 02/11 |
  | Monolithic TSI accesses the linearised thermo problem                |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::evaluate()
+void Thermo::TimIntImpl::evaluate()
 {
   // builds tangent, residual and applies DBC
   evaluate_rhs_tang_residual();
@@ -155,20 +155,20 @@ void THR::TimIntImpl::evaluate()
 /*----------------------------------------------------------------------*
  | predict solution                                         bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::predict()
+void Thermo::TimIntImpl::predict()
 {
   // choose predictor
-  if (pred_ == Inpar::THR::pred_consttemp)
+  if (pred_ == Inpar::Thermo::pred_consttemp)
   {
     predict_const_temp_consist_rate();
     normtempi_ = 1.0e6;
   }
-  else if (pred_ == Inpar::THR::pred_consttemprate)
+  else if (pred_ == Inpar::Thermo::pred_consttemprate)
   {
     predict_const_temp_rate();
     normtempi_ = 1.0e6;
   }
-  else if (pred_ == Inpar::THR::pred_tangtemp)
+  else if (pred_ == Inpar::Thermo::pred_tangtemp)
   {
     predict_tang_temp_consist_rate();
     // normtempi_ has been set
@@ -201,7 +201,7 @@ void THR::TimIntImpl::predict()
   dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
 
   // build residual force norm
-  normfres_ = THR::Aux::calculate_vector_norm(iternorm_, fres_);
+  normfres_ = Thermo::Aux::calculate_vector_norm(iternorm_, fres_);
 
   // determine characteristic norms
   // we set the minimum of calc_ref_norm_force() and #tolfres_, because
@@ -222,7 +222,7 @@ void THR::TimIntImpl::predict()
  | prepare partiton step                                     dano 12/10 |
  | like Predict() but without predict the unknown variables T,R         |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::prepare_partition_step()
+void Thermo::TimIntImpl::prepare_partition_step()
 {
   // set iteration step to 0
   iter_ = 0;
@@ -243,7 +243,7 @@ void THR::TimIntImpl::prepare_partition_step()
 
   // split norms
   // build residual force norm
-  normfres_ = THR::Aux::calculate_vector_norm(iternorm_, fres_);
+  normfres_ = Thermo::Aux::calculate_vector_norm(iternorm_, fres_);
 
   // determine characteristic norms
   // we set the minumum of calc_ref_norm_force() and #tolfres_, because
@@ -265,7 +265,7 @@ void THR::TimIntImpl::prepare_partition_step()
  | predict solution as constant temperatures,               bborn 08/09 |
  | temperature rates                                                    |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::predict_const_temp_rate()
+void Thermo::TimIntImpl::predict_const_temp_rate()
 {
   // constant predictor
   tempn_->Update(1.0, *(*temp_)(0), 0.0);
@@ -279,7 +279,7 @@ void THR::TimIntImpl::predict_const_temp_rate()
  | Predict solution as constant temperatures,               bborn 08/09 |
  | temperature rates and tangent                                        |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::predict_tang_temp_consist_rate()
+void Thermo::TimIntImpl::predict_tang_temp_consist_rate()
 {
   // initialise
   tempn_->Update(1.0, *(*temp_)(0), 0.0);
@@ -341,7 +341,7 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
   solver_->reset();
 
   // build residual temperature norm
-  normtempi_ = THR::Aux::calculate_vector_norm(iternorm_, tempi_);
+  normtempi_ = Thermo::Aux::calculate_vector_norm(iternorm_, tempi_);
 
   // set Dirichlet increments in temperature increments
   tempi_->Update(1.0, *dbcinc, 1.0);
@@ -360,7 +360,7 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
   {
     // create the parameters for the discretization
     Teuchos::ParameterList p;
-    p.set<int>("action", THR::calc_thermo_reset_istep);
+    p.set<int>("action", Thermo::calc_thermo_reset_istep);
     // set the total time
     p.set("total time", (*time_)[0]);
     // go to elements
@@ -376,7 +376,7 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
 /*----------------------------------------------------------------------*
  | prepare time step                                        bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::prepare_time_step()
+void Thermo::TimIntImpl::prepare_time_step()
 {
   // Note: MFSI requires a constant predictor. Otherwise the fields will get
   // out of sync.
@@ -391,7 +391,7 @@ void THR::TimIntImpl::prepare_time_step()
 /*----------------------------------------------------------------------*
  | converged                                                bborn 08/09 |
  *----------------------------------------------------------------------*/
-bool THR::TimIntImpl::converged()
+bool Thermo::TimIntImpl::converged()
 {
   // verify: #normcharforce_ has been delivered strictly larger than zero
   if (normcharforce_ <= 0.0)
@@ -412,13 +412,13 @@ bool THR::TimIntImpl::converged()
   // residual forces
   switch (normtypefres_)
   {
-    case Inpar::THR::convnorm_abs:
+    case Inpar::Thermo::convnorm_abs:
       convfres = normfres_ < tolfres_;
       break;
-    case Inpar::THR::convnorm_rel:
+    case Inpar::Thermo::convnorm_rel:
       convfres = normfres_ < std::max(normcharforce_ * tolfres_, 1e-15);
       break;
-    case Inpar::THR::convnorm_mix:
+    case Inpar::Thermo::convnorm_mix:
       convfres =
           ((normfres_ < tolfres_) or (normfres_ < std::max(normcharforce_ * tolfres_, 1e-15)));
       break;
@@ -430,13 +430,13 @@ bool THR::TimIntImpl::converged()
   // residual temperature
   switch (normtypetempi_)
   {
-    case Inpar::THR::convnorm_abs:
+    case Inpar::Thermo::convnorm_abs:
       convtemp = normtempi_ < toltempi_;
       break;
-    case Inpar::THR::convnorm_rel:
+    case Inpar::Thermo::convnorm_rel:
       convtemp = normtempi_ < std::max(normchartemp_ * toltempi_, 1e-15);
       break;
-    case Inpar::THR::convnorm_mix:
+    case Inpar::Thermo::convnorm_mix:
       convtemp =
           ((normtempi_ < toltempi_) or (normtempi_ < std::max(normchartemp_ * toltempi_, 1e-15)));
       break;
@@ -447,9 +447,9 @@ bool THR::TimIntImpl::converged()
 
   // combine temperature-like and force-like residuals
   bool conv = false;
-  if (combtempifres_ == Inpar::THR::bop_and)
+  if (combtempifres_ == Inpar::Thermo::bop_and)
     conv = convtemp and convfres;
-  else if (combtempifres_ == Inpar::THR::bop_or)
+  else if (combtempifres_ == Inpar::Thermo::bop_or)
     conv = convtemp or convfres;
   else
     FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -461,25 +461,25 @@ bool THR::TimIntImpl::converged()
 /*----------------------------------------------------------------------*
  | solve equilibrium                                        bborn 08/09 |
  *----------------------------------------------------------------------*/
-Inpar::THR::ConvergenceStatus THR::TimIntImpl::solve()
+Inpar::Thermo::ConvergenceStatus Thermo::TimIntImpl::solve()
 {
   // choose solution technique in accordance with user's will
   switch (itertype_)
   {
-    case Inpar::THR::soltech_newtonfull:
+    case Inpar::Thermo::soltech_newtonfull:
       return newton_full();
     // catch problems
     default:
       FOUR_C_THROW("Solution technique \"%s\" is not implemented",
-          Inpar::THR::NonlinSolTechString(itertype_).c_str());
-      return Inpar::THR::conv_nonlin_fail;  // compiler happiness
+          Inpar::Thermo::NonlinSolTechString(itertype_).c_str());
+      return Inpar::Thermo::conv_nonlin_fail;  // compiler happiness
   }
 }
 
 /*----------------------------------------------------------------------*
  | solution with full Newton-Raphson iteration              bborn 08/09 |
  *----------------------------------------------------------------------*/
-Inpar::THR::ConvergenceStatus THR::TimIntImpl::newton_full()
+Inpar::Thermo::ConvergenceStatus Thermo::TimIntImpl::newton_full()
 {
   // we do a Newton-Raphson iteration here.
   // the specific time integration has set the following
@@ -557,7 +557,7 @@ Inpar::THR::ConvergenceStatus THR::TimIntImpl::newton_full()
 }
 
 
-void THR::TimIntImpl::blank_dirichlet_and_calc_norms()
+void Thermo::TimIntImpl::blank_dirichlet_and_calc_norms()
 {
   // extract reaction forces
   // reactions are negative to balance residual on DBC
@@ -574,60 +574,60 @@ void THR::TimIntImpl::blank_dirichlet_and_calc_norms()
   if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->mortar_condensation(tang_, fres_);
 
   // build residual force norm
-  normfres_ = THR::Aux::calculate_vector_norm(iternorm_, fres_);
+  normfres_ = Thermo::Aux::calculate_vector_norm(iternorm_, fres_);
   // build residual temperature norm
-  normtempi_ = THR::Aux::calculate_vector_norm(iternorm_, tempi_);
+  normtempi_ = Thermo::Aux::calculate_vector_norm(iternorm_, tempi_);
 }
 
 
 
-Inpar::THR::ConvergenceStatus THR::TimIntImpl::newton_full_error_check()
+Inpar::Thermo::ConvergenceStatus Thermo::TimIntImpl::newton_full_error_check()
 {
   // do some error checks
-  if ((iter_ >= itermax_) and (divcontype_ == Inpar::THR::divcont_stop))
+  if ((iter_ >= itermax_) and (divcontype_ == Inpar::Thermo::divcont_stop))
   {
     // write restart output of last converged step before stopping
     output(true);
 
     FOUR_C_THROW("Newton unconverged in %d iterations", iter_);
-    return Inpar::THR::conv_nonlin_fail;
+    return Inpar::Thermo::conv_nonlin_fail;
   }
-  else if ((iter_ >= itermax_) and (divcontype_ == Inpar::THR::divcont_continue))
+  else if ((iter_ >= itermax_) and (divcontype_ == Inpar::Thermo::divcont_continue))
   {
     if (myrank_ == 0)
       Core::IO::cout << "Newton unconverged in " << iter_ << " iterations, continuing"
                      << Core::IO::endl;
-    return Inpar::THR::conv_success;
+    return Inpar::Thermo::conv_success;
   }
-  else if ((iter_ >= itermax_) and divcontype_ == Inpar::THR::divcont_halve_step)
+  else if ((iter_ >= itermax_) and divcontype_ == Inpar::Thermo::divcont_halve_step)
   {
     halve_time_step();
-    return Inpar::THR::conv_fail_repeat;
+    return Inpar::Thermo::conv_fail_repeat;
   }
-  else if (divcontype_ == Inpar::THR::divcont_repeat_step or
-           divcontype_ == Inpar::THR::divcont_repeat_simulation)
+  else if (divcontype_ == Inpar::Thermo::divcont_repeat_step or
+           divcontype_ == Inpar::Thermo::divcont_repeat_simulation)
   {
     if (myrank_ == 0)
       FOUR_C_THROW(
           "Fatal failure in newton_full_error_check()! divcont_repeat_step and "
-          "divcont_repeat_simulation not implemented for THR");
-    return Inpar::THR::conv_nonlin_fail;
+          "divcont_repeat_simulation not implemented for Thermo");
+    return Inpar::Thermo::conv_nonlin_fail;
   }
   // if everything is fine print to screen and return
   if (converged())
   {
     check_for_time_step_increase();
-    return Inpar::THR::conv_success;
+    return Inpar::Thermo::conv_success;
   }
   else
-    return Inpar::THR::conv_nonlin_fail;
+    return Inpar::Thermo::conv_nonlin_fail;
 
 }  // NewtonFull()
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::halve_time_step()
+void Thermo::TimIntImpl::halve_time_step()
 {
   const double old_dt = dt();
   const double new_dt = old_dt * 0.5;
@@ -655,11 +655,11 @@ void THR::TimIntImpl::halve_time_step()
  * check, if according to divercont flag                            proell 09/18
  * time step size can be increased
  *-----------------------------------------------------------------------------*/
-void THR::TimIntImpl::check_for_time_step_increase()
+void Thermo::TimIntImpl::check_for_time_step_increase()
 {
   const int maxnumfinestep = 4;
 
-  if (divcontype_ != Inpar::THR::divcont_halve_step)
+  if (divcontype_ != Inpar::Thermo::divcont_halve_step)
     return;
   else if (divcontrefinelevel_ != 0)
   {
@@ -689,7 +689,7 @@ void THR::TimIntImpl::check_for_time_step_increase()
 /*----------------------------------------------------------------------*
  | Prepare system for solving with Newton's method          bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::prepare_system_for_newton_solve()
+void Thermo::TimIntImpl::prepare_system_for_newton_solve()
 {
   // extract reaction forces
   // reactions are negative to balance residual on DBC
@@ -716,7 +716,7 @@ void THR::TimIntImpl::prepare_system_for_newton_solve()
 /*----------------------------------------------------------------------*
  | Update iteration                                         bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::update_iter(const int iter  //!< iteration counter
+void Thermo::TimIntImpl::update_iter(const int iter  //!< iteration counter
 )
 {
   // we need to do an incremental update (expensive)
@@ -742,7 +742,7 @@ void THR::TimIntImpl::update_iter(const int iter  //!< iteration counter
  | Update iteration incrementally with prescribed           bborn 08/09 |
  | residual temperatures                                                |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::update_iter_incrementally(
+void Thermo::TimIntImpl::update_iter_incrementally(
     const Teuchos::RCP<const Epetra_Vector> tempi  //!< input residual temperatures
 )
 {
@@ -764,7 +764,7 @@ void THR::TimIntImpl::update_iter_incrementally(
 /*----------------------------------------------------------------------*
  | update time step                                         bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::update()
+void Thermo::TimIntImpl::update()
 {
   // update temperature and temperature rate
   // after this call we will have tempn_ == temp_ (temp_{n+1} == temp_n), etc.
@@ -784,7 +784,7 @@ void THR::TimIntImpl::update()
 /*----------------------------------------------------------------------*
  | update Newton step                                        dano 02/11 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::update_newton(Teuchos::RCP<const Epetra_Vector> tempi)
+void Thermo::TimIntImpl::update_newton(Teuchos::RCP<const Epetra_Vector> tempi)
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And
@@ -801,23 +801,23 @@ void THR::TimIntImpl::update_newton(Teuchos::RCP<const Epetra_Vector> tempi)
  | print to screen                                          bborn 08/09 |
  | originally by lw 12/07                                               |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::print_predictor()
+void Thermo::TimIntImpl::print_predictor()
 {
   // only master processor
   if ((myrank_ == 0) and printscreen_ and (step_old() % printscreen_ == 0))
   {
     // relative check of force residual
-    if (normtypefres_ == Inpar::THR::convnorm_rel)
+    if (normtypefres_ == Inpar::Thermo::convnorm_rel)
     {
       std::cout << "Predictor thermo scaled res-norm " << normfres_ / normcharforce_ << std::endl;
     }
     // absolute check of force residual
-    else if (normtypefres_ == Inpar::THR::convnorm_abs)
+    else if (normtypefres_ == Inpar::Thermo::convnorm_abs)
     {
       std::cout << "Predictor thermo absolute res-norm " << normfres_ << std::endl;
     }
     // mixed absolute-relative check of force residual
-    else if (normtypefres_ == Inpar::THR::convnorm_mix)
+    else if (normtypefres_ == Inpar::Thermo::convnorm_mix)
     {
       std::cout << "Predictor thermo mixed res-norm "
                 << std::min(normfres_, normfres_ / normcharforce_) << std::endl;
@@ -841,7 +841,7 @@ void THR::TimIntImpl::print_predictor()
  | print Newton-Raphson iteration to screen and error file  bborn 08/09 |
  | originally by lw 12/07, tk 01/08                                     |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::print_newton_iter()
+void Thermo::TimIntImpl::print_newton_iter()
 {
   // print to standard out
   if ((myrank_ == 0) and printscreen_ and printiter_ and (step_old() % printscreen_ == 0))
@@ -856,7 +856,7 @@ void THR::TimIntImpl::print_newton_iter()
 /*----------------------------------------------------------------------*
  | print header                                             bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::print_newton_iter_header(FILE* ofile)
+void Thermo::TimIntImpl::print_newton_iter_header(FILE* ofile)
 {
   // open outstringstream
   std::ostringstream oss;
@@ -868,13 +868,13 @@ void THR::TimIntImpl::print_newton_iter_header(FILE* ofile)
   // temperature
   switch (normtypefres_)
   {
-    case Inpar::THR::convnorm_rel:
+    case Inpar::Thermo::convnorm_rel:
       oss << std::setw(18) << "rel-res-norm";
       break;
-    case Inpar::THR::convnorm_abs:
+    case Inpar::Thermo::convnorm_abs:
       oss << std::setw(18) << "abs-res-norm";
       break;
-    case Inpar::THR::convnorm_mix:
+    case Inpar::Thermo::convnorm_mix:
       oss << std::setw(18) << "mix-res-norm";
       break;
     default:
@@ -884,13 +884,13 @@ void THR::TimIntImpl::print_newton_iter_header(FILE* ofile)
 
   switch (normtypetempi_)
   {
-    case Inpar::THR::convnorm_rel:
+    case Inpar::Thermo::convnorm_rel:
       oss << std::setw(18) << "rel-temp-norm";
       break;
-    case Inpar::THR::convnorm_abs:
+    case Inpar::Thermo::convnorm_abs:
       oss << std::setw(18) << "abs-temp-norm";
       break;
-    case Inpar::THR::convnorm_mix:
+    case Inpar::Thermo::convnorm_mix:
       oss << std::setw(18) << "mix-temp-norm";
       break;
     default:
@@ -919,7 +919,7 @@ void THR::TimIntImpl::print_newton_iter_header(FILE* ofile)
  | print Newton-Raphson iteration to screen                 bborn 08/09 |
  | originally by lw 12/07, tk 01/08                                     |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::print_newton_iter_text(FILE* ofile)
+void Thermo::TimIntImpl::print_newton_iter_text(FILE* ofile)
 {
   // open outstringstream
   std::ostringstream oss;
@@ -931,13 +931,13 @@ void THR::TimIntImpl::print_newton_iter_text(FILE* ofile)
   // temperature
   switch (normtypefres_)
   {
-    case Inpar::THR::convnorm_rel:
+    case Inpar::Thermo::convnorm_rel:
       oss << std::setw(18) << std::setprecision(5) << std::scientific << normfres_ / normcharforce_;
       break;
-    case Inpar::THR::convnorm_abs:
+    case Inpar::Thermo::convnorm_abs:
       oss << std::setw(18) << std::setprecision(5) << std::scientific << normfres_;
       break;
-    case Inpar::THR::convnorm_mix:
+    case Inpar::Thermo::convnorm_mix:
       oss << std::setw(18) << std::setprecision(5) << std::scientific
           << std::min(normfres_, normfres_ / normcharforce_);
       break;
@@ -948,13 +948,13 @@ void THR::TimIntImpl::print_newton_iter_text(FILE* ofile)
 
   switch (normtypetempi_)
   {
-    case Inpar::THR::convnorm_rel:
+    case Inpar::Thermo::convnorm_rel:
       oss << std::setw(18) << std::setprecision(5) << std::scientific << normtempi_ / normchartemp_;
       break;
-    case Inpar::THR::convnorm_abs:
+    case Inpar::Thermo::convnorm_abs:
       oss << std::setw(18) << std::setprecision(5) << std::scientific << normtempi_;
       break;
-    case Inpar::THR::convnorm_mix:
+    case Inpar::Thermo::convnorm_mix:
       oss << std::setw(18) << std::setprecision(5) << std::scientific
           << std::min(normtempi_, normtempi_ / normchartemp_);
       break;
@@ -983,7 +983,7 @@ void THR::TimIntImpl::print_newton_iter_text(FILE* ofile)
 /*----------------------------------------------------------------------*
  | print statistics of converged NRI                        bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::print_newton_conv()
+void Thermo::TimIntImpl::print_newton_conv()
 {
   // somebody did the door
   return;
@@ -993,7 +993,7 @@ void THR::TimIntImpl::print_newton_conv()
 /*----------------------------------------------------------------------*
  | print step summary                                       bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::print_step()
+void Thermo::TimIntImpl::print_step()
 {
   // print out (only on master CPU)
   if ((myrank_ == 0) and printscreen_ and (step_old() % printscreen_ == 0))
@@ -1006,7 +1006,7 @@ void THR::TimIntImpl::print_step()
 /*----------------------------------------------------------------------*
  | print step summary                                       bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::print_step_text(FILE* ofile)
+void Thermo::TimIntImpl::print_step_text(FILE* ofile)
 {
   // the text
   fprintf(ofile,
@@ -1031,7 +1031,7 @@ void THR::TimIntImpl::print_step_text(FILE* ofile)
 /*----------------------------------------------------------------------*
  | finite difference check of thermal tangent                dano 09/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::fd_check()
+void Thermo::TimIntImpl::fd_check()
 {
   // value of disturbance
   const double delta = 1.0e-8;
@@ -1057,12 +1057,13 @@ void THR::TimIntImpl::fd_check()
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tang_copy =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(tang_->epetra_matrix(), Core::LinAlg::Copy));
-  std::cout << "\n****************** THR finite difference check ******************" << std::endl;
+  std::cout << "\n****************** Thermo finite difference check ******************"
+            << std::endl;
   std::cout << "thermo field has " << dofs << " DOFs" << std::endl;
 
   // loop over columns
   // in case of pure thermal problem, start at 0,
-  // BUT in case of TSI vector is filled first with STR DOFs followed by THR
+  // BUT in case of TSI vector is filled first with STR DOFs followed by Thermo
   // i.e. insert maximal value of i=STR_DOFs+dofs
   for (int i = 0; i < dofs; ++i)  // TSI: j=STR_DOFs+dofs
   {

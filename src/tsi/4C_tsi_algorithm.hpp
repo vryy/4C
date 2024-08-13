@@ -42,10 +42,14 @@ namespace CONTACT
 
 namespace Adapter
 {
-  class Thermo;
   class Structure;
   class MortarVolCoupl;
 }  // namespace Adapter
+
+namespace Thermo
+{
+  class Adapter;
+}
 
 namespace Mortar
 {
@@ -62,7 +66,7 @@ namespace TSI
   //!
   //!
   //!  Base class of TSI algorithms. Derives from structure_base_algorithm and
-  //!  ThermoBaseAlgorithm with temperature field.
+  //!  Thermo::BaseAlgorithm with temperature field.
   //!  There can (and will) be different subclasses that implement different
   //!  coupling schemes.
   //!
@@ -99,7 +103,7 @@ namespace TSI
     const Teuchos::RCP<Adapter::Structure>& structure_field() { return structure_; }
 
     //! access to thermal field
-    const Teuchos::RCP<Adapter::Thermo>& thermo_field() { return thermo_; }
+    const Teuchos::RCP<Thermo::Adapter>& thermo_field() { return thermo_; }
 
    protected:
     //! @name Time loop building blocks
@@ -162,7 +166,7 @@ namespace TSI
     Teuchos::RCP<Adapter::Structure> structure_;
 
     //! underlying fluid of the FSI problem
-    Teuchos::RCP<Adapter::Thermo> thermo_;
+    Teuchos::RCP<Thermo::Adapter> thermo_;
 
     //! contact strategies
     Teuchos::RCP<CONTACT::LagrangeStrategyTsi> contact_strategy_lagrange_;

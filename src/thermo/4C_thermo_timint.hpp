@@ -18,7 +18,6 @@
 
 #include "4C_config.hpp"
 
-#include "4C_adapter_thermo.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
@@ -27,6 +26,7 @@
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_thermo_adapter.hpp"
 #include "4C_timestepping_mstep.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -41,7 +41,7 @@ namespace CONTACT
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                    bborn 08/09 |
  *----------------------------------------------------------------------*/
-namespace THR
+namespace Thermo
 {
   /*====================================================================*/
   /*!
@@ -72,7 +72,7 @@ namespace THR
    * \author bborn
    * \date 06/08
    */
-  class TimInt : public Adapter::Thermo
+  class TimInt : public Adapter
   {
    public:
     //! @name Life
@@ -152,7 +152,7 @@ namespace THR
     //! Do the nonlinear solve, i.e. (multiple) corrector,
     //! for the time step. All boundary conditions have
     //! been set.
-    Inpar::THR::ConvergenceStatus solve() override = 0;
+    Inpar::Thermo::ConvergenceStatus solve() override = 0;
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
@@ -192,8 +192,8 @@ namespace THR
     void reset_step() override;
 
     //! set the initial thermal field
-    void set_initial_field(const Inpar::THR::InitialField,  //!< type of initial field
-        const int startfuncno                               //!< number of spatial function
+    void set_initial_field(const Inpar::Thermo::InitialField,  //!< type of initial field
+        const int startfuncno                                  //!< number of spatial function
     );
 
     //@}
@@ -358,10 +358,10 @@ namespace THR
     //@{
 
     //! Provide Name
-    virtual enum Inpar::THR::DynamicType method_name() const = 0;
+    virtual enum Inpar::Thermo::DynamicType method_name() const = 0;
 
     //! Provide title
-    std::string method_title() const { return Inpar::THR::DynamicTypeString(method_name()); }
+    std::string method_title() const { return Inpar::Thermo::DynamicTypeString(method_name()); }
 
     //! Return true, if time integrator is implicit
     virtual bool method_implicit() = 0;
@@ -550,11 +550,11 @@ namespace THR
                              //!< if 0, restart is not written
     bool writeglob_;         //!< write state on/off
     int writeglobevery_;     //!< write state every given step
-    Inpar::THR::HeatFluxType writeheatflux_;
-    Inpar::THR::TempGradType writetempgrad_;
-    int writeenergyevery_;             //!< write system energy every given step
-    std::ofstream* energyfile_;        //!< outputfile for energy
-    Inpar::THR::CalcError calcerror_;  //!< evaluate error compared to analytical solution
+    Inpar::Thermo::HeatFluxType writeheatflux_;
+    Inpar::Thermo::TempGradType writetempgrad_;
+    int writeenergyevery_;                //!< write system energy every given step
+    std::ofstream* energyfile_;           //!< outputfile for energy
+    Inpar::Thermo::CalcError calcerror_;  //!< evaluate error compared to analytical solution
     int errorfunctno_;  //!< function number of analytical solution for error evaluation
     //@}
 
@@ -627,7 +627,7 @@ namespace THR
 
   };  // TimInt
 
-}  // namespace THR
+}  // namespace Thermo
 
 /*----------------------------------------------------------------------*/
 

@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::Thermo::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -151,7 +151,7 @@ void Inpar::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
 
 
-void Inpar::THR::SetValidConditions(
+void Inpar::Thermo::SetValidConditions(
     std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;

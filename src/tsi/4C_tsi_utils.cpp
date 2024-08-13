@@ -83,8 +83,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::set_element_data(
 
   // note: set_material() was reimplemented by the thermo element!
 
-  Teuchos::RCP<Discret::ELEMENTS::Thermo> therm =
-      Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::Thermo>(newele);
+  Teuchos::RCP<Thermo::Element> therm = Teuchos::rcp_dynamic_cast<Thermo::Element>(newele);
   if (therm != Teuchos::null)
   {
     // cloning to same material id -> use the same material instance
@@ -322,7 +321,7 @@ void TSI::UTILS::TSIMaterialStrategy::assign_material1_to2(
   else
     FOUR_C_THROW("ele1 is not a so3_thermo element!");
 
-  Discret::ELEMENTS::Thermo* therm = dynamic_cast<Discret::ELEMENTS::Thermo*>(ele2);
+  Thermo::Element* therm = dynamic_cast<Thermo::Element*>(ele2);
   if (therm != nullptr)
   {
     therm->set_kinematic_type(kintype);  // set kintype in cloned thermal element

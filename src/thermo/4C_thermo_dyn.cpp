@@ -10,9 +10,9 @@
 
 #include "4C_thermo_dyn.hpp"
 
-#include "4C_adapter_thermo.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
+#include "4C_thermo_adapter.hpp"
 #include "4C_thermo_resulttest.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -34,8 +34,8 @@ void thr_dyn_drt()
   const Teuchos::ParameterList& tdyn = Global::Problem::instance()->thermal_dynamic_params();
 
   // create instance of thermo basis algorithm (no structure discretization)
-  Teuchos::RCP<Adapter::ThermoBaseAlgorithm> thermoonly =
-      Teuchos::rcp(new Adapter::ThermoBaseAlgorithm(tdyn, thermodis));
+  Teuchos::RCP<Thermo::BaseAlgorithm> thermoonly =
+      Teuchos::rcp(new Thermo::BaseAlgorithm(tdyn, thermodis));
 
   // do restart if demanded from input file
   const int restart = Global::Problem::instance()->restart();

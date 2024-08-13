@@ -111,7 +111,7 @@ namespace Discret
       static constexpr int numdof_ = noddof_ * numnod_;
 
       //! static const is required for fixedsizematrices
-      static constexpr int numgpt_post_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
+      static constexpr int numgpt_post_ = Thermo::DisTypeToNumGaussPoints<distype>::nquad;
 
       /*!
       \brief Get shape type of element
@@ -500,7 +500,7 @@ namespace Discret
 
       // determine extrapolation matrix for postprocessing purposes
       Core::LinAlg::Matrix<Core::FE::num_nodes<distype>,
-          THR::DisTypeToNumGaussPoints<distype>::nquad>
+          Thermo::DisTypeToNumGaussPoints<distype>::nquad>
       mem_extrapolmat() const;
 
     };  // class Membrane

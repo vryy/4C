@@ -333,7 +333,7 @@ Teuchos::RCP<const Teuchos::ParameterList> Input::ValidParameters()
 
   Inpar::Plasticity::SetValidParameters(list);
 
-  Inpar::THR::SetValidParameters(list);
+  Inpar::Thermo::SetValidParameters(list);
   Inpar::TSI::SetValidParameters(list);
 
   Inpar::FLUID::SetValidParameters(list);

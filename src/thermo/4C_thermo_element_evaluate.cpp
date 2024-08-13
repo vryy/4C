@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | evaluate the element for volume coupling (public)         dano 02/10 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Thermo::evaluate(Teuchos::ParameterList& params,
+int Thermo::Element::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -41,7 +41,7 @@ int Discret::ELEMENTS::Thermo::evaluate(Teuchos::ParameterList& params,
  | integration of the volume neumann (body forces) loads takes place    |
  | in the element. We need it there for the stabilisation terms!        |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Thermo::evaluate_neumann(Teuchos::ParameterList& params,
+int Thermo::Element::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)

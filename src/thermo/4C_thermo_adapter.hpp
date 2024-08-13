@@ -8,12 +8,8 @@
 
 */
 
-
-/*----------------------------------------------------------------------*
- | definitions                                              bborn 08/09 |
- *----------------------------------------------------------------------*/
-#ifndef FOUR_C_ADAPTER_THERMO_HPP
-#define FOUR_C_ADAPTER_THERMO_HPP
+#ifndef FOUR_C_THERMO_ADAPTER_HPP
+#define FOUR_C_THERMO_ADAPTER_HPP
 
 
 /*----------------------------------------------------------------------*
@@ -66,7 +62,7 @@ namespace CONTACT
   class ParamsInterface;
 }  // namespace CONTACT
 
-namespace Adapter
+namespace Thermo
 {
   /// general thermal field interface
   /*!
@@ -99,16 +95,12 @@ namespace Adapter
   building blocks for a block based Newton's method.
 
   \warning Further cleanup is still needed.
-
-  \sa Fluid, Ale, Structure
-  \author cd, bborn
-  \date 07/09
   */
-  class Thermo
+  class Adapter
   {
    public:
     /// virtual to get polymorph destruction
-    virtual ~Thermo() = default;
+    virtual ~Adapter() = default;
 
     /// @name Vector access
     //@{
@@ -242,7 +234,7 @@ namespace Adapter
      *
      * @return status of the solve, which can be used for adaptivity
      */
-    virtual Inpar::THR::ConvergenceStatus solve() = 0;
+    virtual Inpar::Thermo::ConvergenceStatus solve() = 0;
 
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<Core::LinAlg::Solver> linear_solver() = 0;
@@ -272,38 +264,38 @@ namespace Adapter
 
 
   /// thermo field solver
-  class ThermoBaseAlgorithm
+  class BaseAlgorithm
   {
    public:
     /// constructor
-    explicit ThermoBaseAlgorithm(
+    explicit BaseAlgorithm(
         const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Core::FE::Discretization> actdis);
 
     /// virtual destructor to support polymorph destruction
-    virtual ~ThermoBaseAlgorithm() = default;
+    virtual ~BaseAlgorithm() = default;
 
     /// thermal field solver
-    Thermo& thermo_field() { return *thermo_; }
+    Adapter& thermo_field() { return *thermo_; }
     /// const version of thermal field solver
-    const Thermo& thermo_field() const { return *thermo_; }
+    const Adapter& thermo_field() const { return *thermo_; }
     /// Teuchos::rcp version of thermal field solver
-    Teuchos::RCP<Thermo> thermo_fieldrcp() { return thermo_; }
+    Teuchos::RCP<Adapter> thermo_fieldrcp() { return thermo_; }
 
    private:
     /// setup thermo algorithm
     void setup_thermo(
         const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Core::FE::Discretization> actdis);
 
-    /// setup thermo algorithm of THR::TimIntImpl type
-    void setup_tim_int(const Teuchos::ParameterList& prbdyn, Inpar::THR::DynamicType timinttype,
+    /// setup thermo algorithm of Thermo::TimIntImpl type
+    void setup_tim_int(const Teuchos::ParameterList& prbdyn, Inpar::Thermo::DynamicType timinttype,
         Teuchos::RCP<Core::FE::Discretization> actdis);
 
     /// thermal field solver
-    Teuchos::RCP<Thermo> thermo_;
+    Teuchos::RCP<Adapter> thermo_;
 
-  };  // class ThermoBaseAlgorithm
+  };  // class BaseAlgorithm
 
-}  // namespace Adapter
+}  // namespace Thermo
 
 
 /*----------------------------------------------------------------------*/

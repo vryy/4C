@@ -272,7 +272,7 @@ namespace
       << Discret::ELEMENTS::LubricationType::instance().name() << " "
       << Discret::ELEMENTS::PoroFluidMultiPhaseType::instance().name() << " "
       << Discret::ELEMENTS::TransportType::instance().name() << " "
-      << Discret::ELEMENTS::ThermoType::instance().name() << " "
+      << Thermo::ElementType::instance().name() << " "
       << Discret::ELEMENTS::ElemagType::instance().name() << " "
       << Discret::ELEMENTS::ElemagDiffType::instance().name() << " "
       << Discret::ELEMENTS::ElemagBoundaryType::instance().name() << " "

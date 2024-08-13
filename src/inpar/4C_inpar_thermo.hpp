@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 namespace Inpar
 {
-  namespace THR
+  namespace Thermo
   {
     //! @name Time integration
     //@{
@@ -338,19 +338,19 @@ namespace Inpar
     {
       switch (norm)
       {
-        case Inpar::THR::norm_vague:
+        case Inpar::Thermo::norm_vague:
           return "Vague";
           break;
-        case Inpar::THR::norm_l1:
+        case Inpar::Thermo::norm_l1:
           return "L1";
           break;
-        case Inpar::THR::norm_l2:
+        case Inpar::Thermo::norm_l2:
           return "L2";
           break;
-        case Inpar::THR::norm_rms:
+        case Inpar::Thermo::norm_rms:
           return "Rms";
           break;
-        case Inpar::THR::norm_inf:
+        case Inpar::Thermo::norm_inf:
           return "Inf";
           break;
         default:
@@ -375,7 +375,7 @@ namespace Inpar
     void SetValidConditions(
         std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
-  }  // namespace THR
+  }  // namespace Thermo
 
 }  // namespace Inpar
 

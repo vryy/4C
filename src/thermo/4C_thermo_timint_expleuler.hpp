@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                    bborn 01/12 |
  *----------------------------------------------------------------------*/
-namespace THR
+namespace Thermo
 {
   /*====================================================================*/
   /*!
@@ -83,7 +83,10 @@ namespace THR
     //@{
 
     //! Return time integrator name
-    enum Inpar::THR::DynamicType method_name() const override { return Inpar::THR::dyna_expleuler; }
+    enum Inpar::Thermo::DynamicType method_name() const override
+    {
+      return Inpar::Thermo::dyna_expleuler;
+    }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
@@ -133,7 +136,7 @@ namespace THR
 
   };  // class TimIntExplEuler
 
-}  // namespace THR
+}  // namespace Thermo
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

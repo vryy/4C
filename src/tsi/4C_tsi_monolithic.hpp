@@ -64,7 +64,7 @@ namespace TSI
   //! monolithic TSI algorithm
   //!
   //!  Base class of TSI algorithms. Derives from structure_base_algorithm and
-  //!  ThermoBaseAlgorithm with temperature field.
+  //!  Thermo::BaseAlgorithm with temperature field.
   //!  There can (and will) be different subclasses that implement different
   //!  coupling schemes.
   //!
@@ -336,8 +336,9 @@ namespace TSI
     enum Inpar::TSI::ConvNorm normtyperhs_;       //!< convergence check for residual forces
     enum Inpar::Solid::ConvNorm normtypedisi_;    //!< convergence check for residual displacements
     enum Inpar::Solid::ConvNorm normtypestrrhs_;  //!< convergence check for residual forces
-    enum Inpar::THR::ConvNorm normtypetempi_;     //!< convergence check for residual temperatures
-    enum Inpar::THR::ConvNorm normtypethrrhs_;    //!< convergence check for residual thermal forces
+    enum Inpar::Thermo::ConvNorm normtypetempi_;  //!< convergence check for residual temperatures
+    enum Inpar::Thermo::ConvNorm
+        normtypethrrhs_;  //!< convergence check for residual thermal forces
 
     enum Inpar::TSI::BinaryOp combincrhs_;  //!< binary operator to combine increments and forces
 

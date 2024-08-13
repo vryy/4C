@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                           dano 08/09 |
  *----------------------------------------------------------------------*/
-THR::ResultTest::ResultTest(TimInt& tintegrator) : Core::UTILS::ResultTest("THERMAL")
+Thermo::ResultTest::ResultTest(TimInt& tintegrator) : Core::UTILS::ResultTest("THERMAL")
 {
   temp_ = tintegrator.temp();
   rate_ = tintegrator.rate();
@@ -35,7 +35,7 @@ THR::ResultTest::ResultTest(TimInt& tintegrator) : Core::UTILS::ResultTest("THER
 /*----------------------------------------------------------------------*
  |                                                           dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::ResultTest::test_node(
+void Thermo::ResultTest::test_node(
     const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type

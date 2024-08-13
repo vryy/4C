@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace THR
+namespace Thermo
 {
   /*--------------------------------------------------------------------------
    | enum that provides all possible thermo actions
@@ -110,7 +110,7 @@ namespace THR
     };
   }
 
-}  // namespace THR
+}  // namespace Thermo
 
 FOUR_C_NAMESPACE_CLOSE
 

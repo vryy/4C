@@ -14,7 +14,6 @@
 #include "4C_tsi_partitioned.hpp"
 
 #include "4C_adapter_str_structure.hpp"
-#include "4C_adapter_thermo.hpp"
 #include "4C_contact_abstract_strategy.hpp"
 #include "4C_contact_lagrange_strategy_tsi.hpp"
 #include "4C_contact_meshtying_contact_bridge.hpp"
@@ -27,6 +26,7 @@
 #include "4C_mortar_manager_base.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_model_evaluator_generic.hpp"
+#include "4C_thermo_adapter.hpp"
 #include "4C_tsi_defines.hpp"
 #include "4C_tsi_utils.hpp"
 
@@ -258,7 +258,7 @@ void TSI::Partitioned::time_loop_one_way()
 
     // use the structural solution calculated in do_structure_step
 
-    // call the current displacements and velocities and pass it to THR
+    // call the current displacements and velocities and pass it to Thermo
     apply_struct_coupling_state(disp_, vel_);
 
     // call the predictor here, because the displacement field is now also
@@ -326,7 +326,7 @@ void TSI::Partitioned::time_loop_sequ_stagg()
     // ----------------------------------------------------- thermo field
 
     // solve thermo field with predicted structural values (Apply d_n,v_n to
-    // THR, solve coupled equation, extract new temperatures T_n+1)
+    // Thermo, solve coupled equation, extract new temperatures T_n+1)
 
     // pass the current displacements and velocities to the thermo field
     apply_struct_coupling_state(disp_, vel_);
