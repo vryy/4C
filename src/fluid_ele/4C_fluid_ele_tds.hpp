@@ -50,11 +50,6 @@ namespace FLD
   {
    public:
     /*!
-    \brief standard constructor
-    */
-    TDSEleData();
-
-    /*!
     \brief Pack this class so it can be communicated
 
     \ref pack and \ref unpack are used to communicate this class object

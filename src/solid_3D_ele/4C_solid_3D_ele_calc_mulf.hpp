@@ -15,7 +15,7 @@
 #include "4C_solid_3D_ele_calc.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_solid_3D_ele_calc_lib_io.hpp"
-#include "4C_solid_3D_ele_calc_lib_mulf.H"
+#include "4C_solid_3D_ele_calc_lib_mulf.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

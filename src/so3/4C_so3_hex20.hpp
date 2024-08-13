@@ -315,11 +315,6 @@ namespace Discret
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
-
-
-      // const vector<double> GetFibervec(){return fiberdirection_;};
-      std::vector<double> soh20_element_center_refe_coords();
-
       //@}
 
      protected:
