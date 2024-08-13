@@ -17,9 +17,3 @@ if(CLN_FOUND AND NOT TARGET cln::cln)
                INTERFACE_INCLUDE_DIRECTORIES "${CLN_INCLUDE_DIR}"
     )
 endif()
-
-if(CLN_FOUND)
-  target_link_libraries(four_c_all_enabled_external_dependencies INTERFACE cln::cln)
-  message(STATUS "CLN include directory: ${CLN_INCLUDE_DIR}")
-  message(STATUS "CLN library directory: ${CLN_LIBRARY}")
-endif()
