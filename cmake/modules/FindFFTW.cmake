@@ -17,10 +17,3 @@ if(FFTW_FOUND AND NOT TARGET fftw::fftw)
                INTERFACE_INCLUDE_DIRECTORIES "${FFTW_INCLUDE_DIR}"
     )
 endif()
-
-if(FFTW_FOUND)
-  message(STATUS "FFTW include directory: ${FFTW_INCLUDE_DIR}")
-  message(STATUS "FFTW libraries: ${FFTW_LIBRARY}")
-
-  target_link_libraries(four_c_all_enabled_external_dependencies INTERFACE fftw::fftw)
-endif()

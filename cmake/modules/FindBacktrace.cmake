@@ -31,9 +31,3 @@ if(Backtrace_FOUND AND NOT TARGET Backtrace::Backtrace)
                INTERFACE_INCLUDE_DIRECTORIES "${Backtrace_INCLUDE_DIR}"
     )
 endif()
-
-if(Backtrace_FOUND)
-  target_link_libraries(four_c_all_enabled_external_dependencies INTERFACE Backtrace::Backtrace)
-  message(STATUS "Backtrace include directory: ${Backtrace_INCLUDE_DIR}")
-  message(STATUS "Backtrace library directory: ${Backtrace_LIBRARY}")
-endif(Backtrace_FOUND)
