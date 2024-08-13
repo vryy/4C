@@ -18,22 +18,14 @@
 #define H5Dopen_vers 1
 #endif
 
-#include <hdf5.h>
-
-#if H5_VERS_MINOR == 6
-#include <H5LT.h>
-#elif H5_VERS_MINOR == 8 || H5_VERS_MINOR == 10
-#include <hdf5_hl.h>
-#else
-#error Unsupported hdf5 version
-#endif
-
 #include "4C_config.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_MpiComm.h>
 #include <Epetra_Vector.h>
+#include <hdf5.h>
+#include <hdf5_hl.h>
 #include <Teuchos_RCP.hpp>
 
 #include <algorithm>
