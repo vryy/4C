@@ -462,6 +462,22 @@ gcc14_assertions:
     - if: $GITLAB_PIPELINE_TYPE == "nightly"
   interruptible: true
 
+clang18:
+  extends: .buildtest_base
+  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  variables:
+    CMAKE_PRESET: docker_release_clang18
+  tags:
+    - buildtest
+  needs:
+    - job: build_base_dependencies
+      optional: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $GITLAB_PIPELINE_TYPE == "nightly"
+  interruptible: true
+
 verify_headers:
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
