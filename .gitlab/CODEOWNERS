@@ -188,8 +188,6 @@ loma/                      @baci/team_fluid
 
 lubrication/               @baci/team_scatra
 
-lubrication_ele/           @baci/team_scatra
-
 mat/                       @baci/team_material
 mat/4C_mat_anisotropy*            @baci/team_structure @baci/team_material
 mat/4C_mat_beam*                  @baci/team_structure @baci/team_material

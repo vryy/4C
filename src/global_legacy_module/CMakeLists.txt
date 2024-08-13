@@ -15,7 +15,7 @@ set(_dependencies
     fluid
     fluid_ele
     fluid_xfluid
-    lubrication_ele
+    lubrication
     mat
     membrane
     module_registry
