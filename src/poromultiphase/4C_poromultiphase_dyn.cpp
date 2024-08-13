@@ -12,6 +12,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_poromultiphase.hpp"
+#include "4C_poromultiphase_adapter.hpp"
 #include "4C_poromultiphase_base.hpp"
 #include "4C_poromultiphase_utils.hpp"
 
@@ -68,7 +69,7 @@ void poromultiphase_dyn(int restart)
       Core::UTILS::IntegralValue<Inpar::POROMULTIPHASE::SolutionSchemeOverFields>(
           poroparams, "COUPALGO");
 
-  Teuchos::RCP<Adapter::PoroMultiPhase> algo =
+  Teuchos::RCP<POROMULTIPHASE::PoroMultiPhase> algo =
       POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(solscheme, poroparams, comm);
 
   // initialize

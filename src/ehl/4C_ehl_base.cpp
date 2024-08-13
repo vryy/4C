@@ -12,7 +12,6 @@ algorithms
 #include "4C_ehl_base.hpp"
 
 #include "4C_adapter_coupling_ehl_mortar.hpp"
-#include "4C_adapter_lubrication.hpp"
 #include "4C_adapter_str_wrapper.hpp"
 #include "4C_contact_interface.hpp"
 #include "4C_contact_node.hpp"
@@ -24,6 +23,7 @@ algorithms
 #include "4C_io.hpp"
 #include "4C_io_gmsh.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_lubrication_adapter.hpp"
 #include "4C_lubrication_timint_implicit.hpp"
 #include "4C_mat_lubrication_mat.hpp"
 
@@ -81,7 +81,7 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
           *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
   structure_ = Teuchos::rcp_dynamic_cast<Adapter::Structure>(structure->structure_field());
   structure_->setup();
-  lubrication_ = Teuchos::rcp(new Adapter::LubricationBaseAlgorithm());
+  lubrication_ = Teuchos::rcp(new LUBRICATION::LubricationBaseAlgorithm());
   lubrication_->setup(*lubricationtimeparams, lubricationparams,
       problem->solver_params(linsolvernumber), lubrication_disname, isale);
   mortaradapter_->store_dirichlet_status(structure_field()->get_dbc_map_extractor());

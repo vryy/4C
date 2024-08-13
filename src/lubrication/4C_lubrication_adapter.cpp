@@ -8,7 +8,7 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "4C_adapter_lubrication.hpp"
+#include "4C_lubrication_adapter.hpp"
 
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::LubricationBaseAlgorithm::setup(
+void LUBRICATION::LubricationBaseAlgorithm::setup(
     const Teuchos::ParameterList& prbdyn,          ///< parameter list for global problem
     const Teuchos::ParameterList& lubricationdyn,  ///< parameter list for Lubrication subproblem
     const Teuchos::ParameterList& solverparams,    ///< parameter list for Lubrication solver
@@ -104,12 +104,12 @@ void Adapter::LubricationBaseAlgorithm::setup(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::UTILS::ResultTest>
-Adapter::LubricationBaseAlgorithm::create_lubrication_field_test()
+LUBRICATION::LubricationBaseAlgorithm::create_lubrication_field_test()
 {
   return Teuchos::rcp(new LUBRICATION::ResultTest(lubrication_));
 }
 
-Teuchos::RCP<Core::IO::DiscretizationWriter> Adapter::LubricationBaseAlgorithm::disc_writer()
+Teuchos::RCP<Core::IO::DiscretizationWriter> LUBRICATION::LubricationBaseAlgorithm::disc_writer()
 {
   return lubrication_->disc_writer();
 }

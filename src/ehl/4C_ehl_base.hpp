@@ -18,6 +18,7 @@ algorithms
 #include "4C_coupling_adapter.hpp"
 #include "4C_inpar_ehl.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_lubrication_adapter.hpp"
 
 #include <Epetra_Vector.h>
 
@@ -26,7 +27,6 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 namespace Adapter
 {
-  class LubricationBaseAlgorithm;
   class Structure;
   class CouplingEhlMortar;
 }  // namespace Adapter
@@ -85,7 +85,7 @@ namespace EHL
     Teuchos::RCP<Adapter::Structure> structure_;
 
     /// underlying lubrication problem of the EHL problem
-    Teuchos::RCP<Adapter::LubricationBaseAlgorithm> lubrication_;
+    Teuchos::RCP<LUBRICATION::LubricationBaseAlgorithm> lubrication_;
 
     //! Type of coupling strategy between the two fields of the EHL problems
     const Inpar::EHL::FieldCoupling fieldcoupling_;

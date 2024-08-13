@@ -16,7 +16,6 @@
 #include "4C_ehl_monolithic.hpp"
 
 #include "4C_adapter_coupling_ehl_mortar.hpp"
-#include "4C_adapter_lubrication.hpp"
 #include "4C_adapter_str_structure.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_contact_interface.hpp"
@@ -36,6 +35,7 @@
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_lubrication_adapter.hpp"
 #include "4C_lubrication_ele_action.hpp"
 #include "4C_lubrication_timint_implicit.hpp"
 #include "4C_mat_lubrication_mat.hpp"

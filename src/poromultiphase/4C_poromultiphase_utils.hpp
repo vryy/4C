@@ -12,6 +12,7 @@
 #include "4C_config.hpp"
 
 #include "4C_inpar_poromultiphase.hpp"
+#include "4C_poromultiphase_adapter.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
@@ -24,11 +25,6 @@ namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
-
-namespace Adapter
-{
-  class PoroMultiPhase;
-}
 
 namespace POROMULTIPHASE
 {
@@ -44,7 +40,7 @@ namespace POROMULTIPHASE
         const std::string& struct_disname, const std::string& fluid_disname);
 
     /// create solution algorithm depending on input file
-    Teuchos::RCP<Adapter::PoroMultiPhase> CreatePoroMultiPhaseAlgorithm(
+    Teuchos::RCP<POROMULTIPHASE::PoroMultiPhase> CreatePoroMultiPhaseAlgorithm(
         Inpar::POROMULTIPHASE::SolutionSchemeOverFields
             solscheme,                             //!< solution scheme to build (i)
         const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)

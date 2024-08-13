@@ -12,10 +12,10 @@
 #include "4C_ehl_partitioned.hpp"
 
 #include "4C_adapter_coupling_ehl_mortar.hpp"
-#include "4C_adapter_lubrication.hpp"
 #include "4C_adapter_str_wrapper.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_lubrication_adapter.hpp"
 #include "4C_lubrication_timint_implicit.hpp"
 
 FOUR_C_NAMESPACE_OPEN
