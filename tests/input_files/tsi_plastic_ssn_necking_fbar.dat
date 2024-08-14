@@ -51,7 +51,7 @@ DYNAMICTYP                      GenAlpha
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 ITERNORM                        L2
-LINEAR_SOLVER                   2
+LINEAR_SOLVER                   1
 LUMPCAPA                        no
 MAXITER                         50
 MAXTIME                         8.0
@@ -83,20 +83,19 @@ CONVTOL                         1e-10
 TOLINC                          1e-10
 CALC_NECKING_TSI_VALUES         No
 ITERNORM                        L2
-LINEAR_SOLVER                   3
+LINEAR_SOLVER                   2
 NORMCOMBI_RESFINC               And
 NORM_RESF                       Abs
 MERGE_TSI_BLOCK_MATRIX          no
---------------------------------------------------------------------SOLVER 3
-NAME                            TSI_MONOLITHIC_SOLVER
-AZPREC                          BGS2x2
-SOLVER                          Belos
---------------------------------------------------------------------SOLVER 2
-NAME                            THERMAL_SOLVER
-SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 1
-NAME                            Structure_Solver
 SOLVER                          UMFPACK
+--------------------------------------------------------------------SOLVER 2
+NAME                            Thermo_Structure_Interaction_Solver
+SOLVER                          Belos
+SOLVER_XML_FILE                 xml/linear_solver/iterative_gmres_template.xml
+AZPREC                          Teko
+TEKO_XML_FILE                   xml/block_preconditioner/thermo_solid.xml
+AZREUSE                         10
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 4
 ----------------------------------------------------------------------FUNCT1

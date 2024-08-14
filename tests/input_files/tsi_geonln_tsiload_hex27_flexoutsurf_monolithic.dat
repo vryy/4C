@@ -82,7 +82,7 @@ DYNAMICTYP                      GenAlpha
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 ITERNORM                        L2
-LINEAR_SOLVER                   2
+LINEAR_SOLVER                   1
 LUMPCAPA                        No
 MAXITER                         50
 MAXTIME                         5
@@ -121,53 +121,20 @@ CALC_NECKING_TSI_VALUES         No
 CONVTOL                         1e-06
 INFNORMSCALING                  yes
 ITERNORM                        Rms
-LINEAR_SOLVER                   3
+LINEAR_SOLVER                   2
 MERGE_TSI_BLOCK_MATRIX          No
 NORMCOMBI_RESFINC               Coupl_And_Singl
 NORM_RESF                       Rel
 TOLINC                          1e-06
------------------------------------------------------------SOLVER 1
-NAME                            STRUCT SOLVER
+--------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
------------------------------------------------------------SOLVER 2
-NAME                            THERMAL SOLVER
-SOLVER                          UMFPACK
------------------------------------------------------------SOLVER 3
-NAME                            TSI MONOLITHIC SOLVER
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-AZPREC                          BGS2x2
-AZREUSE                         0
-AZSOLVE                         GMRES
-AZSUB                           50
-AZTOL                           1e-08
-BGS2X2_BLOCK1_DAMPING           1
-BGS2X2_BLOCK2_DAMPING           1
-BGS2X2_FLIPORDER                block0_block1_order
-BGS2X2_GLOBAL_DAMPING           1
-IFPACKCOMBINE                   Add
-IFPACKGFILL                     0
-IFPACKOVERLAP                   0
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1
-SIMPLE_DAMPING                  1
+--------------------------------------------------------------------SOLVER 2
+NAME                            Thermo_Structure_Interaction_Solver
 SOLVER                          Belos
+SOLVER_XML_FILE                 xml/linear_solver/iterative_gmres_template.xml
+AZPREC                          Teko
+TEKO_XML_FILE                   xml/block_preconditioner/thermo_solid.xml
+AZREUSE                         10
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 2.1e11 NUE 0.3 DENS 7850 THEXPANS 1.2e-05 CAPA 3297000 CONDUCT 52 INITTEMP 293
 // CAPA = C_V* rho = 420*7850 = 3297000 kg/(ms^2 K)
