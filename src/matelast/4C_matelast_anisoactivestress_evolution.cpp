@@ -13,6 +13,7 @@
 #include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"
 #include "4C_material_parameter_base.hpp"
+#include "4C_utils_exceptions.hpp"
 #include "4C_utils_function.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -114,23 +115,18 @@ void Mat::Elastic::AnisoActiveStressEvolution::add_stress_aniso_principal(
   }
   else if (params_->sourceactiv_ == -1)
   {
-    if (params.isParameter("gp_conc"))
+    if (params.isParameter("scalars"))
     {
       // get pointer to vector containing the scalar values at the Gauss points
-      Teuchos::RCP<std::vector<std::vector<double>>> conc =
-          params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc");
+      Teuchos::RCP<std::vector<double>> scalars =
+          params.get<Teuchos::RCP<std::vector<double>>>("scalars");
+
       // safety check
-      if (conc == Teuchos::null)
-      {
-        FOUR_C_THROW("No concentration from scatra provided for the activation");
-      }
-      // safety check
-      if (gp == -1)
-      {
-        FOUR_C_THROW("No Gauss point number provided in material");
-      }
+      FOUR_C_THROW_UNLESS(
+          scalars != Teuchos::null, "Activation is not provided via scalars parameter");
+
       // check if activation is above the given threshold
-      if (conc->at(gp)[0] >= params_->activationthreshold_)
+      if (scalars->at(0) >= params_->activationthreshold_)
       {
         activationFunction = 1.0;
       }

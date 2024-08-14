@@ -23,6 +23,7 @@ solid formulation
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 #include <optional>
 
@@ -63,7 +64,7 @@ namespace
   }
 
   template <Core::FE::CellType celltype>
-  auto ProjectQuantityToGaussPoint(
+  auto interpolate_quantity_to_point(
       const Discret::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
       const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>>& nodal_quantities)
   {
@@ -77,7 +78,7 @@ namespace
   }
 
   template <Core::FE::CellType celltype>
-  auto ProjectQuantityToGaussPoint(
+  auto interpolate_quantity_to_point(
       const Discret::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
       const Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>& nodal_quantity)
   {
@@ -85,8 +86,8 @@ namespace
   }
 
 
-  template <bool is_scalar, Core::FE::CellType celltype>
-  auto GetElementQuantities(const int num_scalars, const std::vector<double>& quantities_at_dofs)
+  template <Core::FE::CellType celltype, bool is_scalar>
+  auto get_element_quantities(const int num_scalars, const std::vector<double>& quantities_at_dofs)
   {
     if constexpr (is_scalar)
     {
@@ -109,82 +110,84 @@ namespace
     }
   }
 
-  template <bool is_scalar, Core::FE::CellType celltype>
-  void PrepareScatraQuantityInParameterList(const Core::FE::Discretization& discretization,
-      const Core::Elements::Element::LocationArray& la,
-      const Discret::ELEMENTS::ElementNodes<celltype>& element_nodes, const std::string& field_name,
-      const int field_index, const int num_scalars,
-      const Core::FE::GaussIntegration& gauss_integration, Teuchos::ParameterList& params,
-      const std::string& target_name)
+  std::optional<int> detect_field_index(const Core::FE::Discretization& discretization,
+      const Core::Elements::Element::LocationArray& la, const std::string& field_name)
   {
-    FOUR_C_ASSERT(discretization.has_state(field_index, field_name),
-        "Could not find the requested field in the discretization.");
+    std::optional<int> detected_field_index = {};
+    for (int field_index = 0; field_index < la.size(); ++field_index)
+    {
+      if (discretization.has_state(field_index, field_name))
+      {
+        FOUR_C_THROW_UNLESS(!detected_field_index.has_value(),
+            "There are multiple dofsets with the field name %s in the discretization. Found %s at "
+            "least in dofset %d and %d.",
+            field_name.c_str(), *detected_field_index, field_index);
+
+        detected_field_index = field_index;
+      }
+    }
+
+    return detected_field_index;
+  }
+
+  template <Core::FE::CellType celltype, bool is_scalar>
+  auto extract_my_nodal_scalars(const Core::Elements::Element& element,
+      const Core::FE::Discretization& discretization,
+      const Core::Elements::Element::LocationArray& la, const std::string& field_name)
+      -> std::optional<
+          std::conditional_t<is_scalar, Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>,
+              std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>>>>
+  {
+    std::optional<int> field_index = detect_field_index(discretization, la, field_name);
+    if (!field_index.has_value())
+    {
+      return std::nullopt;
+    }
+
+    const int num_scalars = discretization.num_dof(*field_index, element.nodes()[0]);
 
     FOUR_C_ASSERT(
         !is_scalar || num_scalars == 1, "numscalars must be 1 if result type is not a vector!");
 
     // get quantitiy from discretization
     Teuchos::RCP<const Epetra_Vector> quantitites_np =
-        discretization.get_state(field_index, field_name);
+        discretization.get_state(*field_index, field_name);
+
     if (quantitites_np == Teuchos::null)
       FOUR_C_THROW("Cannot get state vector '%s' ", field_name.c_str());
 
-    // extract my values
-    auto my_quantities = std::vector<double>(la[field_index].lm_.size(), 0.0);
-    Core::FE::ExtractMyValues(*quantitites_np, my_quantities, la[field_index].lm_);
+    auto my_quantities = std::vector<double>(la[*field_index].lm_.size(), 0.0);
+    Core::FE::ExtractMyValues(*quantitites_np, my_quantities, la[*field_index].lm_);
 
-    // get nodal quantities for the scalars
-    auto nodal_quantities = GetElementQuantities<is_scalar, celltype>(num_scalars, my_quantities);
-
-    // Determine quantity type at Gauss point (can be double (for scalar) or a std::vector of
-    // scalars)
-    using gp_quantity_type = decltype(ProjectQuantityToGaussPoint(
-        std::declval<const Discret::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>&>(),
-        nodal_quantities));
-
-    // the material expects the gp-quantities at the Gauss points in a rcp-std::vector
-    auto quantity_at_gp =
-        Teuchos::rcp(new std::vector<gp_quantity_type>(gauss_integration.num_points()));
-
-    Discret::ELEMENTS::ForEachGaussPoint(element_nodes, gauss_integration,
-        [&](const Core::LinAlg::Matrix<Core::FE::dim<celltype>, 1>& xi,
-            const Discret::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
-            const Discret::ELEMENTS::JacobianMapping<celltype>& jacobian_mapping,
-            double integration_factor, int gp)
-        {
-          // Project to Gauss point
-          (*quantity_at_gp)[gp] = ProjectQuantityToGaussPoint(shape_functions, nodal_quantities);
-        });
-
-    params.set(target_name, quantity_at_gp);
-  };
+    return get_element_quantities<celltype, is_scalar>(num_scalars, my_quantities);
+  }
 
   template <Core::FE::CellType celltype>
-  void prepare_scatra_quantities_in_parameter_list(const Core::Elements::Element& element,
-      const Core::FE::Discretization& discretization,
-      const Core::Elements::Element::LocationArray& la,
-      const Discret::ELEMENTS::ElementNodes<celltype>& element_nodes,
-      const Core::FE::GaussIntegration& gauss_integration, Teuchos::ParameterList& params)
+  void prepare_scalar_in_parameter_list(Teuchos::ParameterList& params, const std::string& name,
+      const Discret::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+      const std::optional<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>>& nodal_quantities)
   {
-    if (la.size() > 1)
-    {
-      // prepare data from the scatra-field
-      if (discretization.has_state(1, "scalarfield"))
-      {
-        const int num_scalars = discretization.num_dof(1, element.nodes()[0]);
-        constexpr bool is_scalar = false;
-        PrepareScatraQuantityInParameterList<is_scalar>(discretization, la, element_nodes,
-            "scalarfield", 1, num_scalars, gauss_integration, params, "gp_conc");
-      }
+    if (!nodal_quantities) return;
 
-      // additionally prepare temperature-filed if available
-      if (discretization.num_dof_sets() == 3 && discretization.has_state(2, "tempfield"))
-      {
-        constexpr bool is_scalar = true;
-        PrepareScatraQuantityInParameterList<is_scalar>(discretization, la, element_nodes,
-            "tempfield", 2, 1, gauss_integration, params, "gp_temp");
-      }
-    }
+    auto gp_quantities = interpolate_quantity_to_point(shape_functions, *nodal_quantities);
+
+    params.set(name, gp_quantities);
+  }
+
+  template <Core::FE::CellType celltype>
+  void prepare_scalar_in_parameter_list(Teuchos::ParameterList& params, const std::string& name,
+      const Discret::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+      const std::optional<std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>>>&
+          nodal_quantities)
+  {
+    if (!nodal_quantities) return;
+
+    // the value of a Teuchos::ParameterList needs to be printable. Until we get rid of the
+    // parameter list here, we wrap it into a Teuchos::RCP<> :(
+    auto gp_quantities = Teuchos::rcp<std::vector<double>>(new std::vector<double>());
+    *gp_quantities = interpolate_quantity_to_point(shape_functions, *nodal_quantities);
+
+    params.set(name, gp_quantities);
   }
 
 
@@ -280,9 +283,16 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype,
   const ElementNodes<celltype> nodal_coordinates =
       evaluate_element_nodes<celltype>(ele, discretization, la[0].lm_);
 
-  // prepare scatra data in the parameter list
-  prepare_scatra_quantities_in_parameter_list(
-      ele, discretization, la, nodal_coordinates, stiffness_matrix_integration_, params);
+  constexpr bool scalars_are_scalar = false;
+  std::optional<std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>>> nodal_scalars =
+      extract_my_nodal_scalars<celltype, scalars_are_scalar>(
+          ele, discretization, la, "scalarfield");
+
+  constexpr bool temperature_is_scalar = true;
+  std::optional<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>> nodal_temperatures =
+      extract_my_nodal_scalars<celltype, temperature_is_scalar>(
+          ele, discretization, la, "tempfield");
+
 
   bool equal_integration_mass_stiffness =
       compare_gauss_integration(mass_matrix_integration_, stiffness_matrix_integration_);
@@ -301,6 +311,11 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype,
       {
         evaluate_gp_coordinates_and_add_to_parameter_list(
             nodal_coordinates, shape_functions, params);
+
+        prepare_scalar_in_parameter_list(params, "scalars", shape_functions, nodal_scalars);
+        prepare_scalar_in_parameter_list(
+            params, "temperature", shape_functions, nodal_temperatures);
+
         evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping, preparation_data,
             history_data_, gp,
             [&](const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
@@ -373,9 +388,15 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate
   const ElementNodes<celltype> nodal_coordinates =
       evaluate_element_nodes<celltype>(ele, discretization, la[0].lm_);
 
-  // prepare scatra data in the parameter list
-  prepare_scatra_quantities_in_parameter_list(
-      ele, discretization, la, nodal_coordinates, stiffness_matrix_integration_, params);
+  constexpr bool scalars_are_scalar = false;
+  std::optional<std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>>> nodal_scalars =
+      extract_my_nodal_scalars<celltype, scalars_are_scalar>(
+          ele, discretization, la, "scalarfield");
+
+  constexpr bool temperature_is_scalar = true;
+  std::optional<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>> nodal_temperatures =
+      extract_my_nodal_scalars<celltype, temperature_is_scalar>(
+          ele, discretization, la, "tempfield");
 
   evaluate_centroid_coordinates_and_add_to_parameter_list(nodal_coordinates, params);
 
@@ -392,6 +413,11 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate
       {
         evaluate_gp_coordinates_and_add_to_parameter_list(
             nodal_coordinates, shape_functions, params);
+
+        prepare_scalar_in_parameter_list(params, "scalars", shape_functions, nodal_scalars);
+        prepare_scalar_in_parameter_list(
+            params, "temperature", shape_functions, nodal_temperatures);
+
         evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping, preparation_data,
             history_data_, gp,
             [&](const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
@@ -446,9 +472,15 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::update(
   const ElementNodes<celltype> nodal_coordinates =
       evaluate_element_nodes<celltype>(ele, discretization, la[0].lm_);
 
-  // prepare scatra data in the parameter list
-  prepare_scatra_quantities_in_parameter_list(
-      ele, discretization, la, nodal_coordinates, stiffness_matrix_integration_, params);
+  constexpr bool scalars_are_scalar = false;
+  std::optional<std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>>> nodal_scalars =
+      extract_my_nodal_scalars<celltype, scalars_are_scalar>(
+          ele, discretization, la, "scalarfield");
+
+  constexpr bool temperature_is_scalar = true;
+  std::optional<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>> nodal_temperatures =
+      extract_my_nodal_scalars<celltype, temperature_is_scalar>(
+          ele, discretization, la, "tempfield");
 
   evaluate_centroid_coordinates_and_add_to_parameter_list(nodal_coordinates, params);
 
@@ -462,6 +494,11 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::update(
       {
         evaluate_gp_coordinates_and_add_to_parameter_list(
             nodal_coordinates, shape_functions, params);
+
+        prepare_scalar_in_parameter_list(params, "scalars", shape_functions, nodal_scalars);
+        prepare_scalar_in_parameter_list(
+            params, "temperature", shape_functions, nodal_temperatures);
+
         evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping, preparation_data,
             history_data_, gp,
             [&](const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
@@ -482,9 +519,15 @@ double Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::calcul
   const ElementNodes<celltype> nodal_coordinates =
       evaluate_element_nodes<celltype>(ele, discretization, la[0].lm_);
 
-  // prepare scatra data in the parameter list
-  prepare_scatra_quantities_in_parameter_list(
-      ele, discretization, la, nodal_coordinates, stiffness_matrix_integration_, params);
+  constexpr bool scalars_are_scalar = false;
+  std::optional<std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>>> nodal_scalars =
+      extract_my_nodal_scalars<celltype, scalars_are_scalar>(
+          ele, discretization, la, "scalarfield");
+
+  constexpr bool temperature_is_scalar = true;
+  std::optional<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>> nodal_temperatures =
+      extract_my_nodal_scalars<celltype, temperature_is_scalar>(
+          ele, discretization, la, "tempfield");
 
   evaluate_centroid_coordinates_and_add_to_parameter_list(nodal_coordinates, params);
 
@@ -499,6 +542,11 @@ double Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::calcul
       {
         evaluate_gp_coordinates_and_add_to_parameter_list(
             nodal_coordinates, shape_functions, params);
+
+        prepare_scalar_in_parameter_list(params, "scalars", shape_functions, nodal_scalars);
+        prepare_scalar_in_parameter_list(
+            params, "temperature", shape_functions, nodal_temperatures);
+
         evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping, preparation_data,
             history_data_, gp,
             [&](const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
@@ -528,9 +576,15 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::calculat
   const ElementNodes<celltype> nodal_coordinates =
       evaluate_element_nodes<celltype>(ele, discretization, la[0].lm_);
 
-  // prepare scatra data in the parameter list
-  prepare_scatra_quantities_in_parameter_list(
-      ele, discretization, la, nodal_coordinates, stiffness_matrix_integration_, params);
+  constexpr bool scalars_are_scalar = false;
+  std::optional<std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>>> nodal_scalars =
+      extract_my_nodal_scalars<celltype, scalars_are_scalar>(
+          ele, discretization, la, "scalarfield");
+
+  constexpr bool temperature_is_scalar = true;
+  std::optional<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>> nodal_temperatures =
+      extract_my_nodal_scalars<celltype, temperature_is_scalar>(
+          ele, discretization, la, "tempfield");
 
   evaluate_centroid_coordinates_and_add_to_parameter_list(nodal_coordinates, params);
 
@@ -544,6 +598,11 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::calculat
       {
         evaluate_gp_coordinates_and_add_to_parameter_list(
             nodal_coordinates, shape_functions, params);
+
+        prepare_scalar_in_parameter_list(params, "scalars", shape_functions, nodal_scalars);
+        prepare_scalar_in_parameter_list(
+            params, "temperature", shape_functions, nodal_temperatures);
+
         evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping, preparation_data,
             history_data_, gp,
             [&](const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>&

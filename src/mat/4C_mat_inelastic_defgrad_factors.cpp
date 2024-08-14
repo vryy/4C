@@ -189,7 +189,7 @@ Mat::PAR::InelasticDefgradTimeFunct::InelasticDefgradTimeFunct(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::InelasticDefgradFactors::InelasticDefgradFactors(Core::Mat::PAR::Parameter* params)
-    : gp_(-1), params_(params)
+    : params_(params)
 {
 }
 
@@ -292,25 +292,16 @@ Mat::InelasticDefgradScalar::InelasticDefgradScalar(Core::Mat::PAR::Parameter* p
  *--------------------------------------------------------------------*/
 void Mat::InelasticDefgradScalar::pre_evaluate(Teuchos::ParameterList& params, const int gp)
 {
-  set_gp(gp);
-
-  // set pointer to vector of gp_conc, only if gp is 0, because this is the first gp
-  if (gp == 0)
-    concentrations_ = params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc");
+  // store scalars of current gauss point
+  concentrations_ = params.get<Teuchos::RCP<std::vector<double>>>("scalars");
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void Mat::InelasticDefgradScalar::set_concentration_gp(const double concentration)
 {
-  // this method is only called for a certain gauss point whose id is not accessible, thus we set a
-  // dummy id here and set the corresponding concentration value afterwards
-  const int dummy_gp(0);
-  set_gp(dummy_gp);
-
   const int scalar1 = parameter()->scalar1();
-
-  get_concentration_gp().at(scalar1 - 1) = concentration;
+  concentrations_->at(scalar1 - 1) = concentration;
 }
 
 /*--------------------------------------------------------------------*
@@ -942,7 +933,7 @@ void Mat::InelasticDefgradPolynomialShape::check_polynomial_bounds(const double 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::InelasticDefgradLinTempIso::InelasticDefgradLinTempIso(Core::Mat::PAR::Parameter* params)
-    : InelasticDefgradFactors(params), temperatures_(Teuchos::null)
+    : InelasticDefgradFactors(params)
 {
 }
 
@@ -950,11 +941,7 @@ Mat::InelasticDefgradLinTempIso::InelasticDefgradLinTempIso(Core::Mat::PAR::Para
  *--------------------------------------------------------------------*/
 void Mat::InelasticDefgradLinTempIso::pre_evaluate(Teuchos::ParameterList& params, int gp)
 {
-  // get Gauss point number
-  set_gp(gp);
-
-  // set pointer to vector of gp_temp, only if gp is 0, because this is the first gp
-  if (gp == 0) temperatures_ = params.get<Teuchos::RCP<std::vector<double>>>("gp_temp");
+  temperature_ = params.get<double>("temperature");
 }
 
 /*--------------------------------------------------------------------*
@@ -966,7 +953,7 @@ void Mat::InelasticDefgradLinTempIso::evaluate_inverse_inelastic_def_grad(
   const double tempgrowthfac = parameter()->get_temp_growth_fac();
   const double reftemp = parameter()->ref_temp();
 
-  const double growthfactor = 1.0 + tempgrowthfac * (get_temperature_gp() - reftemp);
+  const double growthfactor = 1.0 + tempgrowthfac * (temperature_ - reftemp);
   if (growthfactor <= 0.0) FOUR_C_THROW("Determinante of growth must not become negative");
   const double isoinelasticdefo = std::pow(growthfactor, (1.0 / 3.0));
 
@@ -983,7 +970,7 @@ void Mat::InelasticDefgradLinTempIso::evaluate_inelastic_def_grad_derivative(
   const double tempgrowthfac = parameter()->get_temp_growth_fac();
   const double reftemp = parameter()->ref_temp();
 
-  const double growthfactor = 1.0 + tempgrowthfac * (get_temperature_gp() - reftemp);
+  const double growthfactor = 1.0 + tempgrowthfac * (temperature_ - reftemp);
   const double scalefac = tempgrowthfac / 3.0 * std::pow(growthfactor, -2.0 / 3.0);
 
   // prepare identity tensor as 9x1 vector
@@ -1018,7 +1005,7 @@ void Mat::InelasticDefgradLinTempIso::evaluate_od_stiff_mat(
   const double tempgrowthfac = parameter()->get_temp_growth_fac();
   const double reftemp = parameter()->ref_temp();
 
-  const double growthfactor = 1.0 + tempgrowthfac * (get_temperature_gp() - reftemp);
+  const double growthfactor = 1.0 + tempgrowthfac * (temperature_ - reftemp);
   if (growthfactor <= 0.0) FOUR_C_THROW("Determinante of growth must not become negative");
 
   const double scalefac = -tempgrowthfac / (3.0 * std::pow(growthfactor, 4.0 / 3.0));

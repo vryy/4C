@@ -83,9 +83,8 @@ namespace
       // parameter list to be passed to pre_evaluate
       Teuchos::ParameterList params_lin;
       // set up a dummy concentration vector and store it to the parameter list
-      auto gpconc_lin =
-          Teuchos::rcp(new std::vector<std::vector<double>>(1, std::vector<double>(1, 44327.362)));
-      params_lin.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpconc_lin);
+      auto gpconc_lin = Teuchos::RCP<std::vector<double>>(new std::vector<double>({44327.362}));
+      params_lin.set<Teuchos::RCP<std::vector<double>>>("scalars", gpconc_lin);
 
       // create InelasticDefgradLinScalarIso object initialize container for material parameters
       Core::IO::InputParameterContainer inelastic_defgrad_scalar_data;
@@ -174,9 +173,8 @@ namespace
       // parameter list to be passed to pre_evaluate
       Teuchos::ParameterList params_poly;
       // set up a dummy concentration vector and store it to the parameter list
-      auto gpconc_poly =
-          Teuchos::rcp(new std::vector<std::vector<double>>(1, std::vector<double>(1, 22641.893)));
-      params_poly.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpconc_poly);
+      auto gpconc_poly = Teuchos::RCP<std::vector<double>>(new std::vector<double>({22641.893}));
+      params_poly.set<Teuchos::RCP<std::vector<double>>>("scalars", gpconc_poly);
 
       // initialize container for material parameters
       Core::IO::InputParameterContainer inelastic_defgrad_poly_intercal_frac_data;
@@ -257,9 +255,8 @@ namespace
       lin_temp_iso_ = Teuchos::rcp(new Mat::InelasticDefgradLinTempIso(params_lin_temp_iso_.get()));
 
       // parameter list for pre_evaluate call with gp temerature
-      Teuchos::ParameterList params_temp;
-      auto gptemp = Teuchos::rcp(new std::vector<double>(1, 280.0));
-      params_temp.set<Teuchos::RCP<std::vector<double>>>("gp_temp", gptemp);
+      Teuchos::ParameterList params_temp{};
+      params_temp.set<double>("temperature", 280.0);
       // call pre_evaluate to set the temperature
       lin_temp_iso_->pre_evaluate(params_temp, 0);
     }

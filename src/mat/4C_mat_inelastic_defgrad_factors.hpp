@@ -13,6 +13,9 @@
 
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_material_parameter_base.hpp"
+#include "4C_utils_exceptions.hpp"
+
+#include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -477,17 +480,7 @@ namespace Mat
     /// Get type of scalar, that leads to deformation
     virtual PAR::InelasticSource get_inelastic_source() = 0;
 
-   protected:
-    //! Get ID of current Gauss point
-    int get_gp() const { return gp_; };
-
-    //! Set ID of current Gauss point
-    void set_gp(int gp) { gp_ = gp; };
-
    private:
-    //! ID of current Gauss point
-    int gp_;
-
     /// material parameters
     Core::Mat::PAR::Parameter* params_;
   };
@@ -624,12 +617,15 @@ namespace Mat
 
    protected:
     //! Get vector of concentration at current Gauss point
-    std::vector<double>& get_concentration_gp() const { return concentrations_->at(get_gp()); };
+    [[nodiscard]] const std::vector<double>& get_concentration_gp() const
+    {
+      FOUR_C_THROW_UNLESS(concentrations_ != Teuchos::null, "Concentrations are not set");
+      return *concentrations_;
+    };
 
    private:
-    /// store vector of gauss point concentrations calculated in the pre-evaluate of the so3_scatra
-    /// element
-    Teuchos::RCP<std::vector<std::vector<double>>> concentrations_;
+    /// vector of concentations at the gauss points
+    Teuchos::RCP<std::vector<double>> concentrations_{};
   };
 
   /*--------------------------------------------------------------------*/
@@ -964,12 +960,8 @@ namespace Mat
     void pre_evaluate(Teuchos::ParameterList& params, int gp) override;
 
    private:
-    //! Get temperature at current Gauss point
-    double get_temperature_gp() const { return temperatures_->at(get_gp()); };
-
-    /// store vector of gauss point temperature calculated in the pre-evaluate of the so3_scatra
-    /// element
-    Teuchos::RCP<std::vector<double>> temperatures_;
+    /// temperature at the gauss point
+    double temperature_ = 0.0;
   };
 }  // namespace Mat
 

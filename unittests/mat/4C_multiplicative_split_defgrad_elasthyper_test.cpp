@@ -227,9 +227,10 @@ namespace
       Teuchos::ParameterList params;
 
       // set up a concentration vector and store it to the parameter list
-      auto gpconc_lin = Teuchos::rcp(
-          new std::vector<std::vector<double>>(1, std::vector<double>(1, concentration)));
-      params.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpconc_lin);
+      auto gpconc_lin = Teuchos::RCP<std::vector<double>>(new std::vector<double>({concentration}));
+      params.set<Teuchos::RCP<std::vector<double>>>("scalars", gpconc_lin);
+
+
 
       // call pre evaluate to have concentration during actual call
       multiplicative_split_defgrad_->pre_evaluate(params, 0);
