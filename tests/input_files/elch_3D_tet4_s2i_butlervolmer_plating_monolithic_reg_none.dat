@@ -15,10 +15,14 @@ Test case for electrode-electrolyte interface coupling involving lithium plating
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electrochemistry
+-------------------------------------------------------IO/RUNTIME VTK OUTPUT
+OUTPUT_DATA_FORMAT              ascii
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
 NUMSTEP                         35
+RESULTSEVRY                     25
+RESTARTEVRY                     25
 TIMESTEP                        1.0
 THETA                           0.5
 INITIALFIELD                    field_by_condition

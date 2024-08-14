@@ -82,6 +82,7 @@ namespace ScaTra
     interpolate_hdg_to_node,      ///< interpolate hdg to node,
     micro_scale_initialize,       ///< initialize micro scale in multi-scale simulations
     micro_scale_output,           ///< output micro-scale quantities in multi-scale simulations
+    collect_micro_scale_output,   ///< output micro-scale quantities in multi-scale simulations
     micro_scale_prepare_time_step,  ///< prepare time step on micro scale in multi-scale simulations
     micro_scale_read_restart,       ///< read restart on micro scale in multi-scale simulations
     micro_scale_solve,              ///< solve micro scale in multi-scale simulations

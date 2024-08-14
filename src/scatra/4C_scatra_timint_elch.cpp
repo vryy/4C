@@ -841,14 +841,6 @@ void ScaTra::ScaTraTimIntElch::check_and_write_output_and_restart()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElch::output_problem_specific()
-{
-  // for elch problems with moving boundary
-  if (isale_) output_->write_vector("trueresidual", trueresidual_);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElch::read_restart_problem_specific(
     const int step, Core::IO::DiscretizationReader& reader)
 {
@@ -1566,6 +1558,9 @@ void ScaTra::ScaTraTimIntElch::evaluate_cell_voltage()
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElch::write_restart() const
 {
+  // for elch problems with moving boundary
+  if (isale_) output_->write_vector("trueresidual", trueresidual_);
+
   // output restart data associated with electrode state of charge conditions if applicable,
   // needed for correct evaluation of cell C rate at the beginning of the first time step after
   // restart
@@ -1639,6 +1634,23 @@ void ScaTra::ScaTraTimIntElch::write_restart() const
       output_->write_vector("phidtnp", phidtnp_);
       break;
     }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ScaTra::ScaTraTimIntElch::collect_runtime_output_data()
+{
+  // call base class first
+  ScaTraTimIntImpl::collect_runtime_output_data();
+
+  // for elch problems with moving boundary
+  if (isale_)
+  {
+    std::vector<std::optional<std::string>> context(
+        scalarhandler_->num_dof_per_node(), "trueresidual");
+    visualization_writer().append_result_data_vector_with_context(
+        *trueresidual_, Core::IO::OutputEntity::dof, context);
   }
 }
 
@@ -3085,37 +3097,6 @@ void ScaTra::ScaTraTimIntElch::perform_aitken_relaxation(
   else
     // call base class routine
     ScaTraTimIntImpl::perform_aitken_relaxation(phinp, phinp_inc_diff);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElch::output_flux(
-    Teuchos::RCP<Epetra_MultiVector> flux, const std::string& fluxtype)
-{
-  // safety check
-  if (flux == Teuchos::null) FOUR_C_THROW("Invalid flux vector!");
-
-  if (fluxtype == "domain")
-  {
-    // In this case, flux output can be straightforwardly performed without additional
-    // manipulation.
-  }
-
-  else if (fluxtype == "boundary")
-  {
-    // The closing equation for the electric potential is internally scaled by the factor 1/F for
-    // better conditioning. Therefore, the associated boundary flux computed by the function
-    // CalcFluxAtBoundary is also scaled by this factor. To avoid confusion, we remove the scaling
-    // factor from the boundary flux before outputting it, so that the result can be physically
-    // interpreted as the plain boundary current density without any scaling.
-    splitter_->scale(*flux, 1, elchparams_->get<double>("FARADAY_CONSTANT"));
-  }
-
-  else
-    FOUR_C_THROW("Unknown flux type! Must be either 'domain' or 'boundary'!");
-
-  // perform actual flux output by calling base class routine
-  ScaTraTimIntImpl::output_flux(flux, fluxtype);
 }
 
 /*----------------------------------------------------------------------*

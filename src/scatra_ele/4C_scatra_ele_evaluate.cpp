@@ -276,6 +276,7 @@ int Discret::ELEMENTS::Transport::evaluate(Teuchos::ParameterList& params,
     case ScaTra::Action::micro_scale_solve:
     case ScaTra::Action::micro_scale_update:
     case ScaTra::Action::micro_scale_output:
+    case ScaTra::Action::collect_micro_scale_output:
     case ScaTra::Action::micro_scale_read_restart:
     case ScaTra::Action::micro_scale_set_time:
     case ScaTra::Action::calc_heteroreac_mat_and_rhs:

@@ -34,6 +34,8 @@ namespace ScaTra
     //! setup
     void setup() override;
 
+    void setup_context_vector() override{};
+
     //! set theta_ to its value, dependent on integration method for GenAlpha and BDF2
     virtual void set_theta();
 
@@ -47,13 +49,9 @@ namespace ScaTra
     //! current solution becomes old solution of next time step
     void update() override;
 
-    //  //! Initialization procedure before the first time step is done
-    //  void prepare_first_time_step ();
-
-    //! update configuration and output to file/screen
-    void output_state() override;
-
     void write_restart() const override;
+
+    void collect_runtime_output_data() override;
 
     //! read restart
     void read_restart(
@@ -67,7 +65,6 @@ namespace ScaTra
     //! accessor to interior concentrations
     virtual Teuchos::RCP<Epetra_Vector> return_int_phinp() { return intphinp_; }
     virtual Teuchos::RCP<Epetra_Vector> return_int_phin() { return intphin_; }
-    //  virtual Teuchos::RCP<Epetra_Vector>  ReturnIntPhinm(){return intphinm_;}
 
     virtual Teuchos::RCP<Epetra_Vector> interpolated_phinp() const { return interpolatedPhinp_; }
 
@@ -99,18 +96,6 @@ namespace ScaTra
     //@{
     Teuchos::RCP<Epetra_Vector> intphinp_;  //!< concentration at time \f$t^{n+1}\f$
     Teuchos::RCP<Epetra_Vector> intphin_;   //!< concentration at time \f$t^{n}\f$
-    //  Teuchos::RCP<Epetra_Vector> intphinm_;   //!< concentration at time \f$t^{n-1}\f$
-    //  Teuchos::RCP<Epetra_Vector> intphiaf_;   //!< concentration at time \f$t^{n+\alpha_F}\f$
-    //  Teuchos::RCP<Epetra_Vector> intphiam_;   //!< concentration at time \f$t^{n+\alpha_M}\f$
-    //@}
-
-    //! @name scalar time derivative of concentration and concentration gradient
-    //! at time n+1, n and n+alpha_M/(n+alpha_M/n) and n-1 for element interior in HDG
-    //@{
-    //  Teuchos::RCP<Epetra_Vector> intphidtnp_;   //!< time derivative at time \f$t^{n+1}\f$
-    //  Teuchos::RCP<Epetra_Vector> intphidtn_;    //!< time derivative at time \f$t^{n}\f$
-    //  Teuchos::RCP<Epetra_Vector> intphidtnm_;   //!< time derivative at time \f$t^{n-1}\f$
-    //  Teuchos::RCP<Epetra_Vector> intphidtam_;   //!< time derivative at time \f$t^{n+\alpha_M}\f$
     //@}
 
     //! @name other HDG-specific auxiliary vectors
@@ -129,13 +114,15 @@ namespace ScaTra
     virtual void update_interior_variables(Teuchos::RCP<Epetra_Vector> updatevector);
 
     //! write problem specific output
-    virtual void write_problem_specific_output(Teuchos::RCP<Epetra_Vector> interpolatedPhi)
+    virtual void write_problem_specific_output(Teuchos::RCP<Epetra_Vector> interpolatedPhi) {}
+
+    virtual void collect_problem_specific_runtime_output_data(
+        Teuchos::RCP<Epetra_Vector> interpolatedPhi)
     {
-      return;
     }
 
     //! calculate consistent initial scalar time derivatives in compliance with initial scalar field
-    void calc_initial_time_derivative() override { return; };
+    void calc_initial_time_derivative() override {}
 
     //! fd check
     void fd_check() override;
@@ -162,13 +149,13 @@ namespace ScaTra
     void assemble_rhs();
 
     //! pack material
-    virtual void pack_material() { return; };
+    virtual void pack_material() {}
 
     //! adapt material
-    virtual void unpack_material() { return; };
+    virtual void unpack_material() {}
 
     //! project material field
-    virtual void project_material() { return; };
+    virtual void project_material() {}
 
    private:
     //! time algorithm flag actually set (we internally reset it)

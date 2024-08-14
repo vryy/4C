@@ -144,11 +144,7 @@ namespace Discret
       /*!
       \brief set discretization type of element
       */
-      virtual void set_dis_type(Core::FE::CellType shape)
-      {
-        distype_ = shape;
-        return;
-      };
+      virtual void set_dis_type(Core::FE::CellType shape) { distype_ = shape; }
 
       /*!
       \brief Return number of lines of this element

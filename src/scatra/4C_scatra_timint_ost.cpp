@@ -17,6 +17,8 @@
 #include "4C_scatra_turbulence_hit_scalar_forcing.hpp"
 #include "4C_utils_parameter_list.hpp"
 
+#include <utility>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
@@ -416,8 +418,9 @@ void ScaTra::TimIntOneStepTheta::post_calc_initial_time_derivative()
 void ScaTra::TimIntOneStepTheta::set_state(Teuchos::RCP<Epetra_Vector> phin,
     Teuchos::RCP<Epetra_Vector> phinp, Teuchos::RCP<Epetra_Vector> phidtn,
     Teuchos::RCP<Epetra_Vector> phidtnp, Teuchos::RCP<Epetra_Vector> hist,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output, const std::vector<double>& phinp_macro,
-    const int step, const double time)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output,
+    std::shared_ptr<Core::IO::DiscretizationVisualizationWriterMesh> visualization_writer,
+    const std::vector<double>& phinp_macro, const int step, const double time)
 {
   phin_ = phin;
   phinp_ = phinp;
@@ -425,6 +428,7 @@ void ScaTra::TimIntOneStepTheta::set_state(Teuchos::RCP<Epetra_Vector> phin,
   phidtnp_ = phidtnp;
   hist_ = hist;
   output_ = output;
+  set_visualization_writer(std::move(visualization_writer));
   phinp_macro_ = phinp_macro;
   dq_dphi_.resize(phinp_macro_.size(), 0.);
   step_ = step;

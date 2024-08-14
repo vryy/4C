@@ -423,11 +423,10 @@ void ScaTra::LevelSetAlgorithm::check_and_write_output_and_restart()
     // write domain decomposition for visualization (only once at step "upres"!)
     if (step_ == upres_) output_->write_element_data(true);
 
-    // write state vectors
-    output_state();
-
     // write output to Gmsh postprocessing files
     if (outputgmsh_) output_to_gmsh(step_, time_);
+
+    write_runtime_output();
   }
 
   // add restart data

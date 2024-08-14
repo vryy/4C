@@ -69,8 +69,10 @@ void ScaTra::TimIntCardiacMonodomainOST::update()
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntCardiacMonodomainOST::write_restart() const
 {
-  // Call function from baseclass
+  // Call functions from base class
   TimIntOneStepTheta::write_restart();
+
+  TimIntCardiacMonodomain::write_restart();
 
   // Cardiac Monodomain specific
   output_->write_mesh(
@@ -169,6 +171,8 @@ void ScaTra::TimIntCardiacMonodomainBDF2::write_restart() const
   // Call function from baseclass
   TimIntBDF2::write_restart();
 
+  TimIntCardiacMonodomain::write_restart();
+
   // Cardiac Monodomain specific
   output_->write_mesh(
       step_, time_);  // add info to control file for reading all variables in restart
@@ -254,6 +258,8 @@ void ScaTra::TimIntCardiacMonodomainGenAlpha::write_restart() const
 {
   // Call function from baseclass
   TimIntGenAlpha::write_restart();
+
+  TimIntCardiacMonodomain::write_restart();
 
   // Cardiac Monodomain specific
   output_->write_mesh(

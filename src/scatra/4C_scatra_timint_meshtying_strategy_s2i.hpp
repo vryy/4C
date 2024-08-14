@@ -222,6 +222,8 @@ namespace ScaTra
     //! return mortar interface discretization associated with particular condition ID
     Core::FE::Discretization& mortar_discretization(const int& condid) const;
 
+    void collect_output_data() const override;
+
     //! output solution for post-processing
     void output() const override;
 

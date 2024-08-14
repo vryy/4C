@@ -348,32 +348,6 @@ namespace
   }
 }  // namespace
 
-
-/*----------------------------------------------------------------------*
- | output of solution vector to binio                     hoermann 09/15|
- *----------------------------------------------------------------------*/
-void ScaTra::TimIntHDG::output_state()
-{
-  // output of solution
-
-  Teuchos::RCP<Epetra_MultiVector> interpolatedGradPhi;
-  Teuchos::RCP<Epetra_Vector> interpolatedtracePhi;
-  // get (averaged) values at element nodes
-  getNodeVectorsHDG(*discret_, intphinp_, phinp_, Global::Problem::instance()->n_dim(),
-      interpolatedPhinp_, interpolatedGradPhi, interpolatedtracePhi, nds_intvar_,
-      discret_->num_dof_sets());
-
-  // write vector to output file
-  output_->write_vector("phi_hdg", interpolatedPhinp_, Core::IO::nodevector);
-  output_->write_vector("gradphi_hdg", interpolatedGradPhi, Core::IO::nodevector);
-  output_->write_vector("tracephi_hdg", interpolatedtracePhi, Core::IO::nodevector);
-
-  write_problem_specific_output(interpolatedPhinp_);
-
-  output_->write_vector("elementdegree", elementdegree_, Core::IO::elementvector);
-
-}  // output_state
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntHDG::write_restart() const
@@ -385,6 +359,36 @@ void ScaTra::TimIntHDG::write_restart() const
 
   output_->write_mesh(
       step_, time_);  // add info to control file for reading all variables in restart
+}
+
+/*----------------------------------------------------------------------*
+ -----------------------------------------------------------------------*/
+void ScaTra::TimIntHDG::collect_runtime_output_data()
+{
+  Teuchos::RCP<Epetra_MultiVector> interpolatedGradPhi;
+  Teuchos::RCP<Epetra_Vector> interpolatedtracePhi;
+  // get (averaged) values at element nodes
+  getNodeVectorsHDG(*discret_, intphinp_, phinp_, Global::Problem::instance()->n_dim(),
+      interpolatedPhinp_, interpolatedGradPhi, interpolatedtracePhi, nds_intvar_,
+      discret_->num_dof_sets());
+
+  // write vector to output file
+  std::vector<std::optional<std::string>> context(interpolatedPhinp_->NumVectors(), "phi");
+  visualization_writer().append_result_data_vector_with_context(
+      *interpolatedPhinp_, Core::IO::OutputEntity::node, context);
+
+  context.assign(interpolatedGradPhi->NumVectors(), "grad_phi");
+  visualization_writer().append_result_data_vector_with_context(
+      *interpolatedGradPhi, Core::IO::OutputEntity::node, context);
+
+  context.assign(interpolatedtracePhi->NumVectors(), "trace_phi");
+  visualization_writer().append_result_data_vector_with_context(
+      *interpolatedtracePhi, Core::IO::OutputEntity::node, context);
+
+  collect_problem_specific_runtime_output_data(interpolatedPhinp_);
+
+  visualization_writer().append_result_data_vector_with_context(
+      *elementdegree_, Core::IO::OutputEntity::element, {"elementdegree"});
 }
 
 /*----------------------------------------------------------------------*

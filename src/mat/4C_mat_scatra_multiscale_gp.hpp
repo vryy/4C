@@ -14,6 +14,7 @@ transport problems
 
 #include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <vector>
 
 // forward declarations
@@ -29,7 +30,8 @@ namespace ScaTra
 namespace Core::IO
 {
   class DiscretizationWriter;
-}
+  class DiscretizationVisualizationWriterMesh;
+}  // namespace Core::IO
 
 namespace Mat
 {
@@ -77,6 +79,9 @@ namespace Mat
 
     //! output micro-scale quantities
     void output();
+
+    //! collect the micro scale output data
+    void collect_and_write_output_data();
 
     //! read restart on micro scale
     void read_restart();
@@ -134,6 +139,9 @@ namespace Mat
 
     //! micro-scale discretization writer
     Teuchos::RCP<Core::IO::DiscretizationWriter> micro_output_;
+
+    //! micro-scale visualization writer
+    std::shared_ptr<Core::IO::DiscretizationVisualizationWriterMesh> micro_visualization_writer_;
 
     //! file name prefix for restart
     std::string restartname_;

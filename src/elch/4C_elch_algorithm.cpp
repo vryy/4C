@@ -31,7 +31,6 @@ void ElCh::Algorithm::prepare_time_loop()
   // provide information about initial field (do not do for restarts!)
   if (step() == 0)
   {
-    scatra_field()->output_problem_specific();
     scatra_field()->output_total_and_mean_scalars();
 
     // compute error for problems with analytical solution (initial field!)

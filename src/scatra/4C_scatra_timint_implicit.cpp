@@ -26,13 +26,12 @@
 #include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_fem_nurbs_discretization.hpp"
 #include "4C_fem_nurbs_discretization_initial_condition.hpp"
-#include "4C_fluid_rotsym_periodicbc_utils.hpp"
 #include "4C_fluid_turbulence_dyn_vreman.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_validparameters.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
+#include "4C_io_visualization_parameters.hpp"
 #include "4C_linalg_krylov_projector.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_linear_solver_method_parameters.hpp"
@@ -212,6 +211,20 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
       issetup_(false),
       isinit_(false)
 {
+  const int restart_step = problem_->restart();
+  if (restart_step > 0)
+  {
+    auto reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
+        discret_, Global::Problem::instance()->input_control_file(), restart_step));
+
+    time_ = reader->read_double("time");
+  }
+
+  visualization_writer_ = std::make_shared<Core::IO::DiscretizationVisualizationWriterMesh>(
+      actdis, Core::IO::VisualizationParametersFactory(
+                  Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
+                  *Global::Problem::instance()->output_control_file(), time_));
+
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
   // this has to be done before all state vectors are initialized
@@ -361,6 +374,9 @@ void ScaTra::ScaTraTimIntImpl::setup()
   // solutions at time n+1 and n
   phinp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
   phin_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+
+  setup_context_vector();
+
   if (nds_micro() != -1)
     phinp_micro_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(nds_micro()));
 
@@ -659,6 +675,29 @@ void ScaTra::ScaTraTimIntImpl::setup()
   set_is_setup(true);
 }  // ScaTraTimIntImpl::setup()
 
+/*------------------------------------------------------------------------*
+ *------------------------------------------------------------------------*/
+void ScaTra::ScaTraTimIntImpl::setup_context_vector()
+{
+  if (scalarhandler_->equal_num_dof())
+  {
+    std::vector<std::string> context;
+    context.reserve(num_dof_per_node());
+    for (int i = 0; i < num_dof_per_node(); ++i)
+    {
+      phi_components_.emplace_back("phi_" + std::to_string(i + 1));
+    }
+  }
+  else
+  {
+    std::vector<std::string> context;
+    context.reserve(max_num_dof_per_node());
+    for (int i = 0; i < max_num_dof_per_node(); ++i)
+    {
+      phi_components_.emplace_back("phi_" + std::to_string(i + 1));
+    }
+  }
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1671,6 +1710,8 @@ void ScaTra::ScaTraTimIntImpl::check_and_write_output_and_restart()
   // write result and potentially flux data
   if (is_result_step()) write_result();
 
+  if (is_result_step()) write_runtime_output();
+
   // add restart data
   if (is_restart_step()) write_restart();
 }
@@ -1679,32 +1720,8 @@ void ScaTra::ScaTraTimIntImpl::check_and_write_output_and_restart()
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::write_result()
 {
-  // step number and time (only after that data output is possible)
-  output_->new_step(step_, time_);
-
-  // write domain decomposition for visualization (only once at the first time step!)
-  if (step_ == 0) output_->write_element_data(true);
-
-  // write state vectors
-  output_state();
-
   // write output to Gmsh postprocessing files
   if (outputgmsh_) output_to_gmsh(step_, time_);
-
-  // write flux vector field (only writing, calculation was done during update() call)
-  if (calcflux_domain_ != Inpar::ScaTra::flux_none or
-      calcflux_boundary_ != Inpar::ScaTra::flux_none)
-  {
-    // for flux output of initial field (before first solve) do:
-    // flux_domain_ and flux_boundary_ vectors are initialized when CalcFlux() is called
-    if (step_ == 0 or
-        (calcflux_domain_ != Inpar::ScaTra::flux_none and flux_domain_ == Teuchos::null) or
-        (calcflux_boundary_ != Inpar::ScaTra::flux_none and flux_boundary_ == Teuchos::null))
-      calc_flux(true);
-
-    if (calcflux_domain_ != Inpar::ScaTra::flux_none) output_flux(flux_domain_, "domain");
-    if (calcflux_boundary_ != Inpar::ScaTra::flux_none) output_flux(flux_boundary_, "boundary");
-  }
 
   // write mean values of scalar(s)
   output_total_and_mean_scalars();
@@ -1715,21 +1732,6 @@ void ScaTra::ScaTraTimIntImpl::write_result()
 
   // write integral values of reaction(s)
   output_integr_reac();
-
-  // problem-specific outputs
-  output_problem_specific();
-
-  // biofilm growth
-  if (scfldgrdisp_ != Teuchos::null)
-  {
-    output_->write_vector("scfld_growth_displ", scfldgrdisp_);
-  }
-
-  // biofilm growth
-  if (scstrgrdisp_ != Teuchos::null)
-  {
-    output_->write_vector("scstr_growth_displ", scstrgrdisp_);
-  }
 
   // generate output associated with meshtying strategy
   strategy_->output();
@@ -1755,6 +1757,134 @@ void ScaTra::ScaTraTimIntImpl::write_result()
     filename << problem_->output_control_file()->file_name() << "-Result_Step" << step_ << ".m";
     Core::LinAlg::PrintVectorInMatlabFormat(filename.str(), *phinp_);
   }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ScaTra::ScaTraTimIntImpl::collect_runtime_output_data()
+{
+  visualization_writer_->append_element_owner("Owner");
+
+  visualization_writer_->append_result_data_vector_with_context(
+      *phinp_, Core::IO::OutputEntity::dof, phi_components_);
+
+  // convective velocity (written in case of coupled simulations since volmortar is now possible)
+  if (velocity_field_type_ == Inpar::ScaTra::velocity_function or
+      velocity_field_type_ == Inpar::ScaTra::velocity_Navier_Stokes)
+  {
+    auto convel = discret_->get_state(nds_vel(), "convective velocity field");
+    if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
+
+    // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
+    auto convel_multi = Epetra_MultiVector(*discret_->node_row_map(), nsd_, true);
+    for (int inode = 0; inode < discret_->num_my_row_nodes(); ++inode)
+    {
+      Core::Nodes::Node* node = discret_->l_row_node(inode);
+      for (int idim = 0; idim < nsd_; ++idim)
+        (convel_multi)[idim][inode] =
+            (*convel)[convel->Map().LID(discret_->dof(nds_vel(), node, idim))];
+    }
+
+    std::vector<std::optional<std::string>> context(nsd_, "convec_velocity");
+    visualization_writer_->append_result_data_vector_with_context(
+        convel_multi, Core::IO::OutputEntity::node, context);
+  }
+
+  // displacement field
+  if (isale_)
+  {
+    Teuchos::RCP<const Epetra_Vector> dispnp = discret_->get_state(nds_disp(), "dispnp");
+    if (dispnp == Teuchos::null)
+      FOUR_C_THROW("Cannot extract displacement field from discretization");
+
+    // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
+    auto dispnp_multi = Epetra_MultiVector(*discret_->node_row_map(), nsd_, true);
+    for (int inode = 0; inode < discret_->num_my_row_nodes(); ++inode)
+    {
+      Core::Nodes::Node* node = discret_->l_row_node(inode);
+      for (int idim = 0; idim < nsd_; ++idim)
+        (dispnp_multi)[idim][inode] =
+            (*dispnp)[dispnp->Map().LID(discret_->dof(nds_disp(), node, idim))];
+    }
+
+    std::vector<std::optional<std::string>> context(nsd_, "ale-displacement");
+    visualization_writer_->append_result_data_vector_with_context(
+        dispnp_multi, Core::IO::OutputEntity::node, context);
+  }
+
+  if (nds_micro() != -1)
+  {
+    // convert vector to multi vector
+    auto micro_conc_multi = Epetra_MultiVector(*discret_->node_row_map(), 1, true);
+
+    for (int inode = 0; inode < discret_->num_my_row_nodes(); ++inode)
+      (micro_conc_multi)[0][inode] = (*phinp_micro_)[inode];
+
+    visualization_writer_->append_result_data_vector_with_context(
+        micro_conc_multi, Core::IO::OutputEntity::node, {"micro_conc"});
+  }
+
+  if (calcflux_domain_ != Inpar::ScaTra::flux_none or
+      calcflux_boundary_ != Inpar::ScaTra::flux_none)
+  {
+    // for flux output of initial field (before first solve) do:
+    // flux_domain_ and flux_boundary_ vectors are initialized when CalcFlux() is called
+    if (step_ == 0 or
+        (calcflux_domain_ != Inpar::ScaTra::flux_none and flux_domain_ == Teuchos::null) or
+        (calcflux_boundary_ != Inpar::ScaTra::flux_none and flux_boundary_ == Teuchos::null))
+      calc_flux(true);
+
+    if (calcflux_domain_ != Inpar::ScaTra::flux_none)
+      collect_output_flux_data(flux_domain_, "domain");
+    if (calcflux_boundary_ != Inpar::ScaTra::flux_none)
+      collect_output_flux_data(flux_boundary_, "boundary");
+  }
+
+  // biofilm growth
+  if (scfldgrdisp_ != Teuchos::null)
+  {
+    std::vector<std::optional<std::string>> context(
+        scfldgrdisp_->NumVectors(), "scfld_growth_displ");
+    visualization_writer_->append_result_data_vector_with_context(
+        *scfldgrdisp_, Core::IO::OutputEntity::node, context);
+  }
+
+  // biofilm growth
+  if (scstrgrdisp_ != Teuchos::null)
+  {
+    std::vector<std::optional<std::string>> context(
+        scstrgrdisp_->NumVectors(), "scstr_growth_displ");
+    visualization_writer_->append_result_data_vector_with_context(
+        *scstrgrdisp_, Core::IO::OutputEntity::node, context);
+  }
+
+  strategy_->collect_output_data();
+
+  // generate output on micro scale if necessary
+  if (macro_scale_)
+  {
+    // create parameter list for macro elements
+    Teuchos::ParameterList eleparams;
+
+    // set action
+    Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+        "action", ScaTra::Action::collect_micro_scale_output, eleparams);
+
+    // loop over macro-scale elements
+    discret_->evaluate(
+        eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ScaTra::ScaTraTimIntImpl::write_runtime_output()
+{
+  visualization_writer_->reset();
+
+  collect_runtime_output_data();
+
+  visualization_writer_->write_to_disk(time_, step_);
 }
 
 /*----------------------------------------------------------------------*
@@ -3025,68 +3155,6 @@ std::string ScaTra::ScaTraTimIntImpl::map_tim_int_enum_to_string(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntImpl::output_state()
-{
-  // solution
-  output_->write_vector("phinp", phinp_);
-
-  // convective velocity (written in case of coupled simulations since volmortar is now possible)
-  if (velocity_field_type_ == Inpar::ScaTra::velocity_function or
-      velocity_field_type_ == Inpar::ScaTra::velocity_Navier_Stokes)
-  {
-    Teuchos::RCP<const Epetra_Vector> convel =
-        discret_->get_state(nds_vel(), "convective velocity field");
-    if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
-
-    Teuchos::RCP<Epetra_MultiVector> convel_multi =
-        convert_dof_vector_to_componentwise_node_vector(convel, nds_vel());
-
-    output_->write_vector("convec_velocity", convel_multi, Core::IO::nodevector);
-  }
-
-  // displacement field
-  if (isale_)
-  {
-    Teuchos::RCP<const Epetra_Vector> dispnp = discret_->get_state(nds_disp(), "dispnp");
-    if (dispnp == Teuchos::null)
-      FOUR_C_THROW("Cannot extract displacement field from discretization");
-
-    Teuchos::RCP<Epetra_MultiVector> dispnp_multi =
-        convert_dof_vector_to_componentwise_node_vector(dispnp, nds_disp());
-
-    output_->write_vector("dispnp", dispnp_multi, Core::IO::nodevector);
-  }
-
-  if (nds_micro() != -1)
-  {
-    // convert vector to multi vector
-    auto micro_conc_multi =
-        Teuchos::rcp(new Epetra_MultiVector(*discret_->node_row_map(), 1, true));
-
-    for (int inode = 0; inode < discret_->num_my_row_nodes(); ++inode)
-      (*micro_conc_multi)[0][inode] = (*phinp_micro_)[inode];
-
-    output_->write_vector("micro_conc", micro_conc_multi, Core::IO::nodevector);
-  }
-
-  if (has_external_force_)
-  {
-    Teuchos::RCP<const Epetra_Vector> external_force =
-        discret_->get_state(nds_vel_, "external_force");
-    Teuchos::RCP<Epetra_MultiVector> output_external_force =
-        convert_dof_vector_to_componentwise_node_vector(external_force, nds_vel());
-    output_->write_vector("external_force", output_external_force, Core::IO::nodevector);
-
-    Teuchos::RCP<const Epetra_Vector> mobility =
-        discret_->get_state(nds_vel_, "intrinsic_mobility");
-    Teuchos::RCP<Epetra_MultiVector> output_intrinsic_mobility =
-        convert_dof_vector_to_componentwise_node_vector(mobility, nds_vel());
-    output_->write_vector("intrinsic_mobility", output_intrinsic_mobility, Core::IO::nodevector);
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector>
 ScaTra::ScaTraTimIntImpl::convert_dof_vector_to_componentwise_node_vector(
     const Teuchos::RCP<const Epetra_Vector>& dof_vector, const int nds) const
@@ -3194,6 +3262,14 @@ Teuchos::RCP<const Epetra_Map> ScaTra::ScaTraTimIntImpl::dof_row_map(int nds)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map(nds);
   return Teuchos::rcp(dofrowmap, false);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int ScaTra::ScaTraTimIntImpl::max_num_dof_per_node() const
+{
+  FOUR_C_THROW_UNLESS(scalarhandler_ != Teuchos::null, "scalar handler was not initialized!");
+  return scalarhandler_->max_num_dof_per_node();
 }
 
 /*----------------------------------------------------------------------*

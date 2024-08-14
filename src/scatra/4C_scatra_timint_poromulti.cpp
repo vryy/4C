@@ -12,6 +12,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_io.hpp"
 #include "4C_poromultiphase_scatra_utils.hpp"
+#include "4C_scatra_ele_action.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -125,56 +126,36 @@ void ScaTra::ScaTraTimIntPoroMulti::add_problem_specific_parameters_and_vectors(
 }
 
 /*----------------------------------------------------------------------*
- |  write current state to BINIO                           vuong  08/16 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMulti::output_state()
+void ScaTra::ScaTraTimIntPoroMulti::collect_runtime_output_data()
 {
-  // solution
-  output_->write_vector("phinp", phinp_);
+  visualization_writer().append_element_owner("Owner");
+
+  visualization_writer().append_result_data_vector_with_context(
+      *phinp_, Core::IO::OutputEntity::dof, phi_components_);
 
   // displacement field
   if (isale_)
   {
-    const auto dispnp = discret_->get_state(nds_disp(), "dispnp");
+    Teuchos::RCP<const Epetra_Vector> dispnp = discret_->get_state(nds_disp(), "dispnp");
     if (dispnp == Teuchos::null)
       FOUR_C_THROW("Cannot extract displacement field from discretization");
 
-    const auto dispnp_multi = convert_dof_vector_to_componentwise_node_vector(dispnp, nds_disp());
-    output_->write_vector("dispnp", dispnp_multi, Core::IO::nodevector);
+    // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
+    auto dispnp_multi = Epetra_MultiVector(*discret_->node_row_map(), nsd_, true);
+    for (int inode = 0; inode < discret_->num_my_row_nodes(); ++inode)
+    {
+      Core::Nodes::Node* node = discret_->l_row_node(inode);
+      for (int idim = 0; idim < nsd_; ++idim)
+        (dispnp_multi)[idim][inode] =
+            (*dispnp)[dispnp->Map().LID(discret_->dof(nds_disp(), node, idim))];
+    }
+
+    std::vector<std::optional<std::string>> context(nsd_, "ale-displacement");
+    visualization_writer().append_result_data_vector_with_context(
+        dispnp_multi, Core::IO::OutputEntity::node, context);
   }
 
-  if (has_external_force_)
-  {
-    const int nds_vel = ScaTraTimIntPoroMulti::nds_vel();
-
-    const auto external_force = discret_->get_state(nds_vel, "external_force");
-    const auto output_external_force = convert_dof_vector_to_componentwise_node_vector(
-        external_force, ScaTraTimIntPoroMulti::nds_vel());
-    output_->write_vector("external_force", output_external_force, Core::IO::nodevector);
-
-    const auto mobility = discret_->get_state(nds_vel, "intrinsic_mobility");
-    const auto output_intrinsic_mobility =
-        convert_dof_vector_to_componentwise_node_vector(mobility, ScaTraTimIntPoroMulti::nds_vel());
-    output_->write_vector("intrinsic_mobility", output_intrinsic_mobility, Core::IO::nodevector);
-  }
-}  // ScaTraTimIntImpl::output_state
-
-/*----------------------------------------------------------------------*
- | problem specific output                             kremheller 10/18 |
- *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMulti::output_problem_specific()
-{
-  // oxygen partial pressure (if desired)
-  output_oxygen_partial_pressure();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | output of oxygen partial pressure                   kremheller 10/18 |
- *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
-{
   // extract conditions for oxygen partial pressure
   std::vector<Core::Conditions::Condition*> conditions;
   discret_->get_condition("PoroMultiphaseScatraOxyPartPressCalcCond", conditions);
@@ -183,8 +164,7 @@ void ScaTra::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
   // pressure
   if (conditions.size() > 0)
   {
-    const Teuchos::RCP<Epetra_Vector> oxypartpress =
-        Teuchos::rcp(new Epetra_Vector(*discret_->node_row_map(), true));
+    auto oxypartpress = Epetra_Vector(*discret_->node_row_map(), true);
 
     // this condition is supposed to be for output of oxygen partial pressure over whole domain
     // it does not make sense to have more than one condition
@@ -199,19 +179,17 @@ void ScaTra::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
     double Pb = 0.0;
 
     // read input from condition
-    const auto oxyscalar = conditions[0]->parameters().get<int>("SCALARID") - 1;
-    const auto CaO2_max = conditions[0]->parameters().get<double>("CaO2_max");
-    const auto Pb50 = conditions[0]->parameters().get<double>("Pb50");
-    const auto n = conditions[0]->parameters().get<double>("n");
-    const auto alpha_eff = conditions[0]->parameters().get<double>("alpha_bl_eff");
-    const auto rho_oxy = conditions[0]->parameters().get<double>("rho_oxy");
-    const auto rho_bl = conditions[0]->parameters().get<double>("rho_bl");
+    const int oxyscalar = conditions[0]->parameters().get<int>("SCALARID") - 1;
+    const double CaO2_max = conditions[0]->parameters().get<double>("CaO2_max");
+    const double Pb50 = conditions[0]->parameters().get<double>("Pb50");
+    const double n = conditions[0]->parameters().get<double>("n");
+    const double alpha_eff = conditions[0]->parameters().get<double>("alpha_bl_eff");
+    const double rho_oxy = conditions[0]->parameters().get<double>("rho_oxy");
+    const double rho_bl = conditions[0]->parameters().get<double>("rho_bl");
 
     // loop over all nodes
-    for (unsigned inode = 0; inode < nodegids->size(); ++inode)
+    for (int nodegid : *nodegids)
     {
-      // extract global ID of current node
-      const int nodegid((*nodegids)[inode]);
       // process only nodes stored by current processor
       if (discret_->have_global_node(nodegid))
       {
@@ -231,13 +209,17 @@ void ScaTra::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
           PoroMultiPhaseScaTra::UTILS::GetOxyPartialPressureFromConcentration<double>(
               Pb, CaO2, CaO2_max, Pb50, n, alpha_eff);
           // replace value
-          oxypartpress->ReplaceGlobalValue(node->id(), 0, Pb);
+          oxypartpress.ReplaceGlobalValue(node->id(), 0, Pb);
         }
       }
     }
-    output_->write_vector("oxypartpress", oxypartpress, Core::IO::nodevector);
+
+    std::vector<std::optional<std::string>> context(oxypartpress.NumVectors(), "oxypartpress");
+    visualization_writer().append_result_data_vector_with_context(
+        oxypartpress, Core::IO::OutputEntity::node, context);
   }
-  return;
+
+  strategy_->collect_output_data();
 }
 
 /*----------------------------------------------------------------------*

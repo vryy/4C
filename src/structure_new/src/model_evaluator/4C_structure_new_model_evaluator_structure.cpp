@@ -706,13 +706,19 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
 
   // append displacement if desired
   if (structure_output_params.output_displacement_state())
-    vtu_writer_ptr_->append_dof_based_result_data_vector(
-        *displacement_state_vector, global_state().get_dim(), 0, "displacement");
+  {
+    std::vector<std::optional<std::string>> context(global_state().get_dim(), "displacement");
+    vtu_writer_ptr_->append_result_data_vector_with_context(
+        *displacement_state_vector, Core::IO::OutputEntity::dof, context);
+  }
 
   // append velocity if desired
   if (structure_output_params.output_velocity_state())
-    vtu_writer_ptr_->append_dof_based_result_data_vector(
-        *velocity_state_vector, global_state().get_dim(), 0, "velocity");
+  {
+    std::vector<std::optional<std::string>> context(global_state().get_dim(), "velocity");
+    vtu_writer_ptr_->append_result_data_vector_with_context(
+        *velocity_state_vector, Core::IO::OutputEntity::dof, context);
+  }
 
   // append element owner if desired
   if (structure_output_params.output_element_owner())
@@ -748,12 +754,15 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
     }
 
     // Write nodal stress data.
-    vtu_writer_ptr_->append_node_based_result_data_vector(
-        *eval_data().get_stress_data_node_postprocessed(), 6, name_nodal);
+    std::vector<std::optional<std::string>> context(6, name_nodal);
+    vtu_writer_ptr_->append_result_data_vector_with_context(
+        *eval_data().get_stress_data_node_postprocessed(), Core::IO::OutputEntity::node, context);
 
     // Write element stress data.
-    vtu_writer_ptr_->append_element_based_result_data_vector(
-        *eval_data().get_stress_data_element_postprocessed(), 6, name_element);
+    context.assign(6, name_element);
+    vtu_writer_ptr_->append_result_data_vector_with_context(
+        *eval_data().get_stress_data_element_postprocessed(), Core::IO::OutputEntity::element,
+        context);
   }
 
   // append strain if desired.
@@ -780,12 +789,15 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
     }
 
     // Write nodal strain data.
-    vtu_writer_ptr_->append_node_based_result_data_vector(
-        *eval_data().get_strain_data_node_postprocessed(), 6, name_nodal);
+    std::vector<std::optional<std::string>> context(6, name_nodal);
+    vtu_writer_ptr_->append_result_data_vector_with_context(
+        *eval_data().get_strain_data_node_postprocessed(), Core::IO::OutputEntity::node, context);
 
     // Write element strain data.
-    vtu_writer_ptr_->append_element_based_result_data_vector(
-        *eval_data().get_strain_data_element_postprocessed(), 6, name_element);
+    context.assign(6, name_element);
+    vtu_writer_ptr_->append_result_data_vector_with_context(
+        *eval_data().get_strain_data_element_postprocessed(), Core::IO::OutputEntity::element,
+        context);
   }
 
   // Add gauss point data if desired
@@ -803,9 +815,11 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
       {
         case Inpar::Solid::GaussPointDataOutputType::element_center:
         {
+          std::vector<std::optional<std::string>> context(size, name);
           Teuchos::RCP<Epetra_MultiVector> data =
               elementDataManager.get_element_center_data().at(name);
-          vtu_writer_ptr_->append_element_based_result_data_vector(*data, size, name);
+          vtu_writer_ptr_->append_result_data_vector_with_context(
+              *data, Core::IO::OutputEntity::element, context);
           break;
         }
         case Inpar::Solid::GaussPointDataOutputType::gauss_points:
@@ -815,15 +829,18 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
           for (std::size_t gp = 0; gp < data_list.size(); ++gp)
           {
             const std::string name_with_gp = name + "_gp_" + std::to_string(gp);
-            vtu_writer_ptr_->append_element_based_result_data_vector(
-                *data_list[gp], size, name_with_gp);
+            std::vector<std::optional<std::string>> context(size, name_with_gp);
+            vtu_writer_ptr_->append_result_data_vector_with_context(
+                *data_list[gp], Core::IO::OutputEntity::element, context);
           }
           break;
         }
         case Inpar::Solid::GaussPointDataOutputType::nodes:
         {
+          std::vector<std::optional<std::string>> context(size, name);
           Teuchos::RCP<Epetra_MultiVector> data = elementDataManager.get_nodal_data().at(name);
-          vtu_writer_ptr_->append_node_based_result_data_vector(*data, size, name);
+          vtu_writer_ptr_->append_result_data_vector_with_context(
+              *data, Core::IO::OutputEntity::node, context);
           break;
         }
         case Inpar::Solid::GaussPointDataOutputType::none:

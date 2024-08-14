@@ -40,14 +40,15 @@ namespace ScaTra
     //! Current solution becomes old solution of next timestep.
     void update() override;
 
-    //! write current state to BINIO
-    void output_state() override;
+    void collect_runtime_output_data() override;
 
    protected:
     void element_material_time_update() override;
 
-    //! write problem specific output
-    void write_problem_specific_output(Teuchos::RCP<Epetra_Vector> interpolatedPhi) override;
+    void write_restart() const override;
+
+    void collect_problem_specific_runtime_output_data(
+        Teuchos::RCP<Epetra_Vector> interpolatedPhi) override;
 
     //! adapt material
     void pack_material() override;

@@ -78,11 +78,7 @@ namespace ScaTra
           " Use SetSolutionFields(...) instead!");
     };
 
-    //! write state vectors (phinp and convective velocity) to BINIO
-    void output_state() override;
-
-    //! problem specific output
-    void output_problem_specific() override;
+    void collect_runtime_output_data() override;
 
     //! add parameters depending on the problem
     void add_problem_specific_parameters_and_vectors(
@@ -90,8 +86,6 @@ namespace ScaTra
         ) override;
 
    protected:
-    //! output of oxygen partial pressure
-    void output_oxygen_partial_pressure();
     //! do we employ L2-projection for reconstruction of velocity field
     bool L2_projection_;
   };

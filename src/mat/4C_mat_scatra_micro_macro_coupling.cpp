@@ -64,6 +64,17 @@ void Mat::ScatraMicroMacroCoupling::prepare_time_step(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
+void Mat::ScatraMicroMacroCoupling::collect_output_data(const int gp_id) const
+{
+  // safety check
+  FOUR_C_THROW_UNLESS(gp_id >= 0, "Invalid macro-scale Gauss point ID: %i!", gp_id);
+
+  // create output on micro scale
+  matgp_.at(gp_id)->collect_and_write_output_data();
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 void Mat::ScatraMicroMacroCoupling::evaluate(const int gp_id,
     const std::vector<double>& phinp_macro, double& q_micro, std::vector<double>& dq_dphi_micro,
     const double detF, const bool solve) const

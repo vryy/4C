@@ -642,8 +642,9 @@ void Core::Geo::MeshFree::BoundingBox::runtime_output_step_state(double timen, i
 
   // reset the writer object
   visualization_output_writer_ptr_->reset();
-  visualization_output_writer_ptr_->append_dof_based_result_data_vector(
-      *disn_col_, 3, 0, "displacement");
+  std::vector<std::optional<std::string>> context(3, "displacement");
+  visualization_output_writer_ptr_->append_result_data_vector_with_context(
+      *disn_col_, Core::IO::OutputEntity::dof, context);
 
   // finalize everything and write all required VTU files to filesystem
   visualization_output_writer_ptr_->write_to_disk(timen, stepn);

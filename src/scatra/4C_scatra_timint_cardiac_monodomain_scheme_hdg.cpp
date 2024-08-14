@@ -91,10 +91,10 @@ void ScaTra::TimIntCardiacMonodomainHDG::element_material_time_update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomainHDG::output_state()
+void ScaTra::TimIntCardiacMonodomainHDG::collect_runtime_output_data()
 {
-  // Call function from base class
-  ScaTra::TimIntHDG::output_state();
+  // call base class first
+  TimIntHDG::collect_runtime_output_data();
 
   if (nb_max_mat_int_state_vars_)
   {
@@ -110,7 +110,10 @@ void ScaTra::TimIntCardiacMonodomainHDG::output_state()
     if (material_internal_state_np_ == Teuchos::null)
       FOUR_C_THROW("Cannot get state vector material internal state");
 
-    output_->write_vector("ionic_currents_hdg", material_internal_state_np_);
+    std::vector<std::optional<std::string>> context(
+        material_internal_state_np_->NumVectors(), "ionic_currents");
+    visualization_writer().append_result_data_vector_with_context(
+        *material_internal_state_np_, Core::IO::OutputEntity::element, context);
 
     for (int k = 0; k < material_internal_state_np_->NumVectors(); ++k)
     {
@@ -118,11 +121,27 @@ void ScaTra::TimIntCardiacMonodomainHDG::output_state()
       temp << k + 1;
       material_internal_state_np_component_ =
           Teuchos::rcp((*material_internal_state_np_)(k), false);
-      output_->write_vector("mat_int_state_hdg" + temp.str(), material_internal_state_np_component_,
-          Core::IO::elementvector);
+
+      visualization_writer().append_result_data_vector_with_context(
+          *material_internal_state_np_component_, Core::IO::OutputEntity::element,
+          {"mat_int_state" + temp.str()});
     }
   }
+}
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ScaTra::TimIntCardiacMonodomainHDG::write_restart() const
+{
+  // step number and time (only after that data output is possible)
+  output_->new_step(step_, time_);
+
+  // output restart information associated with mesh tying strategy
+  strategy_->write_restart();
+
+  output_->write_vector("intphinp", intphinp_);
+  output_->write_vector("phinp_trace", phinp_);
+  output_->write_vector("intphin", intphin_);
 
   // copy values from node to dof vector
   Teuchos::RCP<Epetra_Vector> dofphi = Core::LinAlg::CreateVector(*discret_->node_row_map());
@@ -132,12 +151,16 @@ void ScaTra::TimIntCardiacMonodomainHDG::output_state()
     int dofgid = discret_->node_row_map()->GID(i);
     dofphi->ReplaceMyValue(discret_->node_row_map()->LID(dofgid), 0, (*interpolatedPhinp_)[i]);
   }
+
   output_->write_vector("phinp", dofphi);
+
+  // add info to control file for reading all variables in restart
+  output_->write_mesh(step_, time_);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomainHDG::write_problem_specific_output(
+void ScaTra::TimIntCardiacMonodomainHDG::collect_problem_specific_runtime_output_data(
     Teuchos::RCP<Epetra_Vector> interpolatedPhi)
 {
   // Compute and write activation time
@@ -149,8 +172,8 @@ void ScaTra::TimIntCardiacMonodomainHDG::write_problem_specific_output(
           (*activation_time_interpol_)[k] <= dta_ * 0.9)
         (*activation_time_interpol_)[k] = time_;
     }
-    output_->write_vector(
-        "activation_time_np_hdg", activation_time_interpol_, Core::IO::nodevector);
+    visualization_writer().append_result_data_vector_with_context(
+        *activation_time_interpol_, Core::IO::OutputEntity::node, {"activation_time"});
   }
 }
 
