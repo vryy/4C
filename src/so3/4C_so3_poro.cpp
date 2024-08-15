@@ -16,6 +16,7 @@
 #include "4C_so3_line.hpp"
 #include "4C_so3_poro_eletypes.hpp"
 #include "4C_so3_surface.hpp"
+#include "4C_solid_3D_ele_calc_lib_integration.hpp"
 
 #include <vector>
 
@@ -24,7 +25,8 @@ FOUR_C_NAMESPACE_OPEN
 template <class So3Ele, Core::FE::CellType distype>
 Discret::ELEMENTS::So3Poro<So3Ele, distype>::So3Poro(int id, int owner)
     : So3Ele(id, owner),
-      intpoints_(distype),
+      intpoints_(Discret::ELEMENTS::create_gauss_integration<distype>(
+          Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule)),
       init_(false),
       isNurbs_(false),
       weights_(true),
@@ -49,7 +51,8 @@ Discret::ELEMENTS::So3Poro<So3Ele, distype>::So3Poro(
       invJ_(old.invJ_),
       detJ_(old.detJ_),
       xsi_(old.xsi_),
-      intpoints_(distype),
+      intpoints_(Discret::ELEMENTS::create_gauss_integration<distype>(
+          Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule)),
       init_(old.init_),
       isNurbs_(old.isNurbs_),
       weights_(old.weights_),

@@ -29,6 +29,8 @@ template <Core::FE::CellType celltype>
 void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::poro_setup(
     Mat::StructPoro& porostructmat, const Core::IO::InputParameterContainer& container)
 {
+  // attention: Make sure to use the same gauss integration rule as in the solid elements in case
+  // you use a material, in which the fluid terms are dependent on solid history terms
   porostructmat.poro_setup(gauss_integration_.num_points(), container);
 }
 
@@ -81,26 +83,26 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlin
             evaluate_strain_gradient(jacobian_mapping, spatial_material_mapping);
 
         Core::LinAlg::Matrix<num_str_, num_dof_per_ele_> dInverseRightCauchyGreen_dDisp =
-            EvaluateInverseCauchyGreenLinearization(
+            evaluate_inverse_cauchy_green_linearization(
                 cauchygreen, jacobian_mapping, spatial_material_mapping);
 
-        const double volchange = ComputeVolumeChange<celltype>(spatial_material_mapping,
+        const double volchange = compute_volume_change<celltype>(spatial_material_mapping,
             jacobian_mapping, ele, discretization, la[0].lm_, kinematictype);
 
         Core::LinAlg::Matrix<1, num_dof_per_ele_> dDetDefGrad_dDisp =
-            ComputeLinearizationOfDetDefGradWrtDisp<celltype>(
+            compute_linearization_of_detdefgrad_wrt_disp<celltype>(
                 spatial_material_mapping, jacobian_mapping, kinematictype);
 
         const Core::LinAlg::Matrix<1, num_dof_per_ele_> dVolchange_dDisp =
-            ComputeLinearizationOfVolchangeWrtDisp<celltype>(
+            compute_linearization_of_volchange_wrt_disp<celltype>(
                 dDetDefGrad_dDisp, jacobian_mapping, kinematictype);
 
         std::vector<double> fluidmultiphase_phiAtGP =
-            ComputeFluidMultiPhasePrimaryVariablesAtGP<celltype>(
+            compute_fluid_multiphase_primary_variables_at_gp<celltype>(
                 fluidmultiphase_ephi, nummultifluiddofpernode, shape_functions);
 
         double solidpressure = compute_sol_pressure_at_gp<celltype>(
-            nummultifluiddofpernode, numfluidphases, fluidmultiphase_phiAtGP, porofluidmat);
+            numfluidphases, fluidmultiphase_phiAtGP, porofluidmat);
         // derivative of press w.r.t. displacements (only in case of volfracs)
         Core::LinAlg::Matrix<1, num_dof_per_ele_> dSolidpressure_dDisp(true);
 
@@ -119,7 +121,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlin
           solidpressure = recalculate_sol_pressure_at_gp(fluidpress, porosity,
               nummultifluiddofpernode, numfluidphases, numvolfrac, fluidmultiphase_phiAtGP);
 
-          RecalculateLinearizationOfSolPressWrtDisp<celltype>(fluidpress, porosity,
+          recalculate_linearization_of_solpress_wrt_disp<celltype>(fluidpress, porosity,
               nummultifluiddofpernode, numfluidphases, numvolfrac, fluidmultiphase_phiAtGP,
               dPorosity_dDisp, dSolidpressure_dDisp);
         }
@@ -136,7 +138,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlin
         // update internal force vector
         if (force.has_value())
         {
-          UpdateInternalForceVectorMultiPhasePressureBased<celltype>(integration_factor,
+          update_internal_forcevector_with_fluidstressterm<celltype>(integration_factor,
               solidpressure, spatial_material_mapping.determinant_deformation_gradient_, BopCinv,
               *force);
         }
@@ -144,23 +146,29 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlin
         // update stiffness matrix
         if (stiff.has_value())
         {
-          UpdateElasticStiffnessMatrixMultiPhasePressureBased<celltype>(integration_factor,
-              solidpressure, spatial_material_mapping.determinant_deformation_gradient_, BopCinv,
-              Bop, dDetDefGrad_dDisp, dSolidpressure_dDisp, dInverseRightCauchyGreen_dDisp, *stiff);
+          update_elastic_stiffness_matrix<celltype>(integration_factor, solidpressure,
+              spatial_material_mapping.determinant_deformation_gradient_, BopCinv, Bop,
+              dDetDefGrad_dDisp, dSolidpressure_dDisp, dInverseRightCauchyGreen_dDisp, *stiff);
 
-          UpdateGeometricStiffnessMatrixMultiPhasePressureBased<celltype>(integration_factor,
-              solidpressure, spatial_material_mapping.determinant_deformation_gradient_, C_inv_vec,
-              jacobian_mapping.N_XYZ_, *stiff);
+          // factor for `geometric' stiffness matrix
+          Core::LinAlg::Matrix<num_str_, 1> sfac(C_inv_vec);  // auxiliary integrated stress
+
+          // scale
+          sfac.scale((-integration_factor * solidpressure *
+                      spatial_material_mapping.determinant_deformation_gradient_));
+
+          update_geometric_stiffness_matrix<celltype>(sfac, jacobian_mapping.N_XYZ_, *stiff);
         }
       });
 }
 
 template <Core::FE::CellType celltype>
-void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroelast(
-    const Core::Elements::Element& ele, Mat::StructPoro& porostructmat,
-    Mat::FluidPoroMultiPhase& porofluidmat, const Inpar::Solid::KinemType& kinematictype,
-    const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
-    Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix& stiffness_matrix)
+void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<
+    celltype>::evaluate_nonlinear_force_stiffness_od(const Core::Elements::Element& ele,
+    Mat::StructPoro& porostructmat, Mat::FluidPoroMultiPhase& porofluidmat,
+    const Inpar::Solid::KinemType& kinematictype, const Core::FE::Discretization& discretization,
+    Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
+    Core::LinAlg::SerialDenseMatrix& stiffness_matrix)
 {
   // get primary variables of multiphase porous medium flow
   std::vector<double> fluidmultiphase_ephi(la[1].size());
@@ -196,20 +204,20 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroel
             evaluate_strain_gradient(jacobian_mapping, spatial_material_mapping);
 
         // volume change (used for porosity law). Same as J in nonlinear theory.
-        const double volchange = ComputeVolumeChange<celltype>(spatial_material_mapping,
+        const double volchange = compute_volume_change<celltype>(spatial_material_mapping,
             jacobian_mapping, ele, discretization, la[0].lm_, kinematictype);
 
         std::vector<double> fluidmultiphase_phiAtGP =
-            ComputeFluidMultiPhasePrimaryVariablesAtGP<celltype>(
+            compute_fluid_multiphase_primary_variables_at_gp<celltype>(
                 fluidmultiphase_ephi, nummultifluiddofpernode, shape_functions);
 
-        std::vector<double> solidpressurederiv = ComputeSolidPressureDeriv<celltype>(
+        std::vector<double> solidpressurederiv = compute_solid_pressure_deriv<celltype>(
             porofluidmat, fluidmultiphase_phiAtGP, numfluidphases);
 
         if (hasvolfracs)
         {
           double solidpressure = compute_sol_pressure_at_gp<celltype>(
-              nummultifluiddofpernode, numfluidphases, fluidmultiphase_phiAtGP, porofluidmat);
+              numfluidphases, fluidmultiphase_phiAtGP, porofluidmat);
 
           double porosity =
               compute_porosity<celltype>(porostructmat, params, solidpressure, volchange, gp);
@@ -229,9 +237,10 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroel
         Core::LinAlg::Matrix<num_dof_per_ele_, 1> BopCinv(true);
         BopCinv.multiply_tn(Bop, C_inv_vec);
 
-        UpdateStiffnessMatrixCouplingMultiPhasePressureBased<celltype>(detJ_w, solidpressurederiv,
-            BopCinv, shape_functions, spatial_material_mapping.determinant_deformation_gradient_,
-            nummultifluiddofpernode, stiffness_matrix);
+        update_stiffness_matrix_coupling_multiphase_pressurebased<celltype>(detJ_w,
+            solidpressurederiv, BopCinv, shape_functions,
+            spatial_material_mapping.determinant_deformation_gradient_, nummultifluiddofpernode,
+            stiffness_matrix);
       });
 }
 

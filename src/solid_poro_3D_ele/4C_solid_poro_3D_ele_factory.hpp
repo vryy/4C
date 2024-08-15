@@ -12,10 +12,9 @@
 
 #include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_fem_general_element.hpp"
-#include "4C_inpar_poro.hpp"
-#include "4C_inpar_scatra.hpp"
 #include "4C_solid_3D_ele_factory_lib.hpp"
 #include "4C_solid_poro_3D_ele_calc_pressure_based.hpp"
+#include "4C_solid_poro_3D_ele_calc_pressure_velocity_based.hpp"
 
 #include <memory>
 #include <variant>
@@ -24,40 +23,55 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret::ELEMENTS
 {
-  /*!
-   *  @brief struct for managing solidporo element properties
-   */
-  struct SolidPoroElementProperties
-  {
-    //! porosity implementation type (physics)
-    Inpar::Poro::PoroType porotype{Inpar::Poro::PoroType::undefined};
-
-    //! scalar transport implementation type (physics)
-    Inpar::ScaTra::ImplType impltype{Inpar::ScaTra::ImplType::impltype_undefined};
-  };
 
   namespace Details
   {
     using ImplementedSolidPoroCellTypes = Core::FE::CelltypeSequence<Core::FE::CellType::hex8,
         Core::FE::CellType::hex27, Core::FE::CellType::tet4, Core::FE::CellType::tet10>;
+
     using PoroPressureBasedEvaluators =
-        Core::FE::apply_celltype_sequence<SolidPoroPressureBasedEleCalc,
+        Core::FE::apply_celltype_sequence<Discret::ELEMENTS::SolidPoroPressureBasedEleCalc,
             ImplementedSolidPoroCellTypes>;
 
-    using SolidPoroEvaluators = Core::FE::Join<PoroPressureBasedEvaluators>;
+    using SolidPoroPressureBasedEvaluators = Core::FE::Join<PoroPressureBasedEvaluators>;
+
+    using ImplementedSolidPoroPressureVelocityBasedCellTypes =
+        Core::FE::CelltypeSequence<Core::FE::CellType::hex8, Core::FE::CellType::hex27,
+            Core::FE::CellType::tet4, Core::FE::CellType::tet10>;
+
+
+    using PoroPressureVelocityBasedEvaluators =
+        Core::FE::apply_celltype_sequence<Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc,
+            ImplementedSolidPoroPressureVelocityBasedCellTypes>;
+
+
+    using SolidPoroPressureVelocityBasedEvaluators =
+        Core::FE::Join<PoroPressureVelocityBasedEvaluators>;
+
+
   }  // namespace Details
-  using SolidPoroCalcVariant = CreateVariantType<Details::SolidPoroEvaluators>;
-
-  // forward declaration
-  class SolidPoroEleCalcInterface;
-  class SolidPoro;
 
 
-  SolidPoroCalcVariant create_solid_poro_calculation_interface(
-      Core::Elements::Element& ele, Inpar::Poro::PoroType porotype);
+  using SolidPoroPressureBasedCalcVariant =
+      CreateVariantType<Details::SolidPoroPressureBasedEvaluators>;
+
+  SolidPoroPressureBasedCalcVariant create_solid_poro_pressure_based_calculation_interface(
+      Core::FE::CellType celltype);
 
   template <Core::FE::CellType celltype>
-  SolidPoroCalcVariant create_solid_poro_calculation_interface(Inpar::Poro::PoroType porotype);
+  SolidPoroPressureBasedCalcVariant create_solid_poro_pressure_based_calculation_interface();
+
+  using SolidPoroPressureVelocityBasedCalcVariant =
+      CreateVariantType<Details::SolidPoroPressureVelocityBasedEvaluators>;
+
+
+  SolidPoroPressureVelocityBasedCalcVariant
+  create_solid_poro_pressure_velocity_based_calculation_interface(Core::FE::CellType celltype);
+
+  template <Core::FE::CellType celltype>
+  SolidPoroPressureVelocityBasedCalcVariant
+  create_solid_poro_pressure_velocity_based_calculation_interface();
+
 }  // namespace Discret::ELEMENTS
 
 

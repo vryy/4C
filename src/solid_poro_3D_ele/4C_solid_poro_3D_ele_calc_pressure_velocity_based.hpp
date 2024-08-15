@@ -6,21 +6,23 @@ implementation
 \level 1
 */
 
-#ifndef FOUR_C_SOLID_PORO_3D_ELE_CALC_PRESSURE_BASED_HPP
-#define FOUR_C_SOLID_PORO_3D_ELE_CALC_PRESSURE_BASED_HPP
+#ifndef FOUR_C_SOLID_PORO_3D_ELE_CALC_PRESSURE_VELOCITY_BASED_HPP
+#define FOUR_C_SOLID_PORO_3D_ELE_CALC_PRESSURE_VELOCITY_BASED_HPP
 
 
 #include "4C_config.hpp"
 
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_utils_gausspoints.hpp"
-#include "4C_inpar_structure.hpp"
+#include "4C_solid_poro_3D_ele_calc_interface.hpp"
+#include "4C_solid_poro_3D_ele_calc_lib_io.hpp"
+#include "4C_solid_poro_3D_ele_properties.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace Mat
 {
-  class FluidPoroMultiPhase;
+  class FluidPoro;
   class StructPoro;
 }  // namespace Mat
 namespace Solid::ELEMENTS
@@ -34,32 +36,38 @@ namespace Discret
   namespace ELEMENTS
   {
     template <Core::FE::CellType celltype>
-    class SolidPoroPressureBasedEleCalc
+    class SolidPoroPressureVelocityBasedEleCalc
     {
      public:
-      SolidPoroPressureBasedEleCalc();
+      SolidPoroPressureVelocityBasedEleCalc();
 
       void evaluate_nonlinear_force_stiffness(const Core::Elements::Element& ele,
-          Mat::StructPoro& porostructmat, Mat::FluidPoroMultiPhase& porofluidmat,
-          const Inpar::Solid::KinemType& kinematictype,
+          Mat::StructPoro& porostructmat, Mat::FluidPoro& porofluidmat,
+          AnisotropyProperties anisotropy_properties, const Inpar::Solid::KinemType& kinematictype,
           const Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
           Core::LinAlg::SerialDenseVector* force_vector,
-          Core::LinAlg::SerialDenseMatrix* stiffness_matrix);
+          Core::LinAlg::SerialDenseMatrix* stiffness_matrix,
+          Core::LinAlg::SerialDenseMatrix* reactive_matrix);
 
       void evaluate_nonlinear_force_stiffness_od(const Core::Elements::Element& ele,
-          Mat::StructPoro& porostructmat, Mat::FluidPoroMultiPhase& porofluidmat,
-          const Inpar::Solid::KinemType& kinematictype,
+          Mat::StructPoro& porostructmat, Mat::FluidPoro& porofluidmat,
+          AnisotropyProperties anisotropy_properties, const Inpar::Solid::KinemType& kinematictype,
           const Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
-          Core::LinAlg::SerialDenseMatrix& stiffness_matrix);
-
-      void coupling_stress(const Core::Elements::Element& ele,
-          const Core::FE::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params);
+          Core::LinAlg::SerialDenseMatrix* stiffness_matrix);
 
       void poro_setup(
           Mat::StructPoro& porostructmat, const Core::IO::InputParameterContainer& container);
+
+
+
+      void coupling_stress_poroelast(const Core::Elements::Element& ele,
+          Mat::StructPoro& porostructmat, const Inpar::Solid::KinemType& kinematictype,
+          const CouplStressIO& couplingstressIO, const Core::FE::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
+
+
 
      private:
       /// static values for matrix sizes
@@ -74,5 +82,6 @@ namespace Discret
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
+
 
 #endif

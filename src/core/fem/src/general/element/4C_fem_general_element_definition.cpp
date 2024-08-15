@@ -46,7 +46,8 @@ void Core::Elements::ElementDefinition::print_element_dat_header_to_stream(std::
   print_element_lines(stream, "SHELL7PSCATRA");
   print_element_lines(stream, "SHELL_KIRCHHOFF_LOVE_NURBS");
   print_element_lines(stream, "SOLID");
-  print_element_lines(stream, "SOLIDPORO");
+  print_element_lines(stream, "SOLIDPORO_PRESSURE_BASED");
+  print_element_lines(stream, "SOLIDPORO_PRESSURE_VELOCITY_BASED");
   print_element_lines(stream, "SOLIDSCATRA");
   print_element_lines(stream, "SOLIDH18_DEPRECATED");
   print_element_lines(stream, "SOLIDH20_DEPRECATED");

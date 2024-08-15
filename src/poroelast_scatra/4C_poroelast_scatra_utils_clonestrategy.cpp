@@ -24,7 +24,7 @@
 #include "4C_so3_poro_scatra.hpp"
 #include "4C_so3_tet10.hpp"
 #include "4C_so3_tet4.hpp"
-#include "4C_solid_poro_3D_ele.hpp"
+#include "4C_solid_poro_3D_ele_pressure_based.hpp"
 #include "4C_w1_poro_p1_scatra.hpp"
 #include "4C_w1_poro_scatra.hpp"
 
@@ -94,9 +94,9 @@ Inpar::ScaTra::ImplType PoroElastScaTra::UTILS::PoroScatraCloneStrategy::get_imp
         ->impl_type();
   }
   // Solidporo
-  else if (eletypename == "SolidPoroType")
+  else if (eletypename == "SolidPoroPressureBasedType")
   {
-    return (dynamic_cast<Discret::ELEMENTS::SolidPoro*>(ele))->get_impl_type();
+    return (dynamic_cast<Discret::ELEMENTS::SolidPoroPressureBased*>(ele))->get_impl_type();
   }
   // wall poro scatra elements
   // quad 4
@@ -199,7 +199,8 @@ void PoroElastScaTra::UTILS::PoroScatraCloneStrategy::set_element_data(
         "to scatra elements "
         "or the ImplType is set 'Undefined' which is not meaningful for the created scatra "
         "discretization! "
-        "Use SOLIDSCATRA, WALLSCATRA, SHELLSCATRA, SOLIDPOROSCATRA, SOLIDPOROP1SCATRA, SOLIDPORO"
+        "Use SOLIDSCATRA, WALLSCATRA, SHELLSCATRA, SOLIDPOROSCATRA, SOLIDPOROP1SCATRA, "
+        "SOLIDPORO_PRESSURE_BASED"
         "WALLPOROSCATRA or "
         "WALLPOROP1SCATRA Elements with meaningful ImplType instead!");
 

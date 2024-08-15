@@ -7,58 +7,44 @@
 
 #include "4C_solid_poro_3D_ele_factory.hpp"
 
-#include "4C_solid_poro_3D_ele_calc_pressure_based.hpp"
-
-#include <memory>
-
 FOUR_C_NAMESPACE_OPEN
 
 
 
-Discret::ELEMENTS::SolidPoroCalcVariant Discret::ELEMENTS::create_solid_poro_calculation_interface(
-    Core::Elements::Element& ele, Inpar::Poro::PoroType porotype)
+Discret::ELEMENTS::SolidPoroPressureBasedCalcVariant
+Discret::ELEMENTS::create_solid_poro_pressure_based_calculation_interface(
+    Core::FE::CellType celltype)
 {
-  switch (ele.shape())
-  {
-    case Core::FE::CellType::hex8:
-      return create_solid_poro_calculation_interface<Core::FE::CellType::hex8>(porotype);
-      break;
-    case Core::FE::CellType::hex27:
-      return create_solid_poro_calculation_interface<Core::FE::CellType::hex27>(porotype);
-      break;
-    case Core::FE::CellType::tet4:
-      return create_solid_poro_calculation_interface<Core::FE::CellType::tet4>(porotype);
-      break;
-    case Core::FE::CellType::tet10:
-      return create_solid_poro_calculation_interface<Core::FE::CellType::tet10>(porotype);
-      break;
-    default:
-      FOUR_C_THROW("unknown celltype provided");
-      break;
-  }
-  return {};
+  return Core::FE::CellTypeSwitch<Discret::ELEMENTS::Details::ImplementedSolidPoroCellTypes>(
+      celltype, [&](auto celltype_t)
+      { return create_solid_poro_pressure_based_calculation_interface<celltype_t()>(); });
 }
 
 template <Core::FE::CellType celltype>
-Discret::ELEMENTS::SolidPoroCalcVariant Discret::ELEMENTS::create_solid_poro_calculation_interface(
-    Inpar::Poro::PoroType porotype)
+Discret::ELEMENTS::SolidPoroPressureBasedCalcVariant
+Discret::ELEMENTS::create_solid_poro_pressure_based_calculation_interface()
 {
-  // here we go into the different cases for poro type
-  switch (porotype)
-  {
-    case Inpar::Poro::PoroType::pressure_velocity_based:
-      FOUR_C_THROW("POROTYPE: 'pressure_velocity_based' not yet implemented!");
-      return {};
-      break;
-    case Inpar::Poro::PoroType::pressure_based:
-    {
-      return Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>();
-      break;
-    }
-    default:
-      FOUR_C_THROW("Wrong POROTYPE for evaluation in SolidPoro elements!");
-  }
-  return {};
+  return SolidPoroPressureBasedEleCalc<celltype>();
 }
+
+Discret::ELEMENTS::SolidPoroPressureVelocityBasedCalcVariant
+Discret::ELEMENTS::create_solid_poro_pressure_velocity_based_calculation_interface(
+    Core::FE::CellType celltype)
+{
+  return Core::FE::CellTypeSwitch<
+      Discret::ELEMENTS::Details::ImplementedSolidPoroPressureVelocityBasedCellTypes>(celltype,
+      [&](auto celltype_t)
+      { return create_solid_poro_pressure_velocity_based_calculation_interface<celltype_t()>(); });
+}
+
+
+template <Core::FE::CellType celltype>
+Discret::ELEMENTS::SolidPoroPressureVelocityBasedCalcVariant
+Discret::ELEMENTS::create_solid_poro_pressure_velocity_based_calculation_interface()
+{
+  return SolidPoroPressureVelocityBasedEleCalc<celltype>();
+}
+
+
 
 FOUR_C_NAMESPACE_CLOSE

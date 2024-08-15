@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Solid::UTILS::read_element
 {
-  Inpar::ScaTra::ImplType read_type(const Core::IO::InputParameterContainer& container)
+  inline Inpar::ScaTra::ImplType read_type(const Core::IO::InputParameterContainer& container)
   {
     auto impltype = container.get_or<std::string>("TYPE", "Undefined");
 
@@ -49,29 +49,10 @@ namespace Solid::UTILS::read_element
       return Inpar::ScaTra::impltype_std;
     else
     {
-      FOUR_C_THROW("Invalid TYPE for SOLIDPORO elements!");
+      FOUR_C_THROW("Invalid TYPE for SOLIDPORO_PRESSURE_BASED elements!");
       return Inpar::ScaTra::impltype_undefined;
     }
   }
-
-  Inpar::Poro::PoroType read_poro_type(const Core::IO::InputParameterContainer& container)
-  {
-    auto impltype = container.get_or<std::string>("POROTYPE", "Undefined");
-
-    if (impltype == "Undefined")
-      return Inpar::Poro::PoroType::undefined;
-    else if (impltype == "PressureVelocityBased")
-      return Inpar::Poro::PoroType::pressure_velocity_based;
-    else if (impltype == "PressureBased")
-      return Inpar::Poro::PoroType::pressure_based;
-    else
-    {
-      FOUR_C_THROW("Invalid POROTYPE for SolidPoro elements!");
-      return Inpar::Poro::PoroType::undefined;
-    }
-  }
-
-
 
 }  // namespace Solid::UTILS::read_element
 
