@@ -61,7 +61,7 @@ DYNAMICTYP                      OneStepTheta
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 ITERNORM                        L2
-LINEAR_SOLVER                   2
+LINEAR_SOLVER                   1
 LUMPCAPA                        No
 MAXITER                         50
 MAXTIME                         5
@@ -93,48 +93,18 @@ RESULTSEVRY                           2
 CONVTOL                         1e-06
 TOLINC                          1e-06
 ITERNORM                        L2
-LINEAR_SOLVER                   3
+LINEAR_SOLVER                   2
 NORMCOMBI_RESFINC               And
 NORM_RESF                       Rel
 --------------------------------------------------------------------SOLVER 1
-NAME                            Structural Solver
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
-NAME                            Thermal Solver
-SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 3
-NAME                            TSI Monolithic Solver
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-AZPREC                          BGS2x2
-AZREUSE                         0
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-BGS2X2_FLIPORDER                block1_block0_order
-IFPACKCOMBINE                   Add
-IFPACKGFILL                     0
-IFPACKOVERLAP                   0
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1
-SIMPLE_DAMPING                  1
+NAME                            Thermo_Structure_Interaction_Solver
 SOLVER                          Belos
+SOLVER_XML_FILE                 xml/linear_solver/iterative_gmres_template.xml
+AZPREC                          Teko
+TEKO_XML_FILE                   xml/block_preconditioner/thermo_solid.xml
+AZREUSE                         10
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_Robinson KIND arya_narloyz YOUNGNUM 1 YOUNG 1.395e8 NUE 0.296 DENS 7.850e-6 THEXPANS 0 INITTEMP 699.81667 HRDN_FACT 2.468e-13 HRDN_EXPO 4 SHRTHRSHLDNUM 1 SHRTHRSHLD 3.196e7 RCVRY 6.37e-11 ACTV_ERGY 0 ACTV_TMPR 0 G0 0.14 M_EXPO 7.73 BETANUM 1 BETA 1.5 H_FACT 6.82e7
 MAT 2 THERM_FourierIso CAPA 3.375e3 CONDUCT 5.2e4
