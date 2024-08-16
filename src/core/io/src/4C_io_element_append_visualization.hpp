@@ -202,16 +202,18 @@ namespace Core::IO
 
       for (unsigned int idof = 0; idof < result_num_dofs_per_node; ++idof)
       {
-        const int lid =
-            result_data_dofbased.Map().LID(nodedofs[idof + read_result_data_from_dofindex]);
-
-        if (lid > -1)
+        // We have to make sure that this dof is actually available at this node. It can happen that
+        // this is not the case e.g. in multi-scale simulations where different nodes in the mesh
+        // have a different number of dofs.
+        // Since this is not supported by vtu, we add a NaN in this case, see else branch
+        if (nodedofs.size() > read_result_data_from_dofindex + idof)
+        {
+          const int lid =
+              result_data_dofbased.Map().LID(nodedofs[idof + read_result_data_from_dofindex]);
           vtu_point_result_data.push_back((result_data_dofbased)[lid]);
+        }
         else
         {
-          // This is not nice, but necessary for fields, e.g., in multiscale simulations where
-          // different nodes in the mesh have different number of dofs. Since this is not supported
-          // by vtu, we add a NaN here
           vtu_point_result_data.push_back(std::numeric_limits<double>::quiet_NaN());
         }
       }
