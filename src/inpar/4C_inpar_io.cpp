@@ -37,6 +37,9 @@ void Inpar::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Core::UTILS::IntParameter(
       "OEI_FILE_COUNTER", 0, "Add an output name affix by introducing a additional number", &io);
 
+  Core::UTILS::BoolParameter(
+      "ELEMENT_MAT_ID", "No", "Output of the material id of each element", &io);
+
   // Structural output
   Core::UTILS::BoolParameter("STRUCT_ELE", "Yes", "Output of element properties", &io);
   Core::UTILS::BoolParameter("STRUCT_DISP", "Yes", "Output of displacements", &io);

@@ -1324,6 +1324,8 @@ namespace ScaTra
     //! the last step number when fluxes have been computed
     int lastfluxoutputstep_;
 
+    //! boolean to write the material id of each element (input parameter)
+    const bool output_element_material_id_;
     //! flag for printing out total and mean values of transported scalars
     const Inpar::ScaTra::OutputScalarType outputscalars_;
 

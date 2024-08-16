@@ -164,6 +164,9 @@ namespace Core::IO
      */
     void append_element_ghosting_information();
 
+    //! Write the material id for each element to the output
+    void append_element_material_id();
+
     /**
      * \brief Write the 4C internal node GIDs for each node
      *

@@ -17,6 +17,8 @@ to disk
 #include "4C_io_element_vtk_cell_type_register.hpp"
 #include "4C_io_visualization_manager.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_FEVector.h>
@@ -407,6 +409,25 @@ namespace Core::IO
   {
     Core::IO::append_element_ghosting_information(
         *discretization_, *visualization_manager_, element_filter_);
+  }
+
+  /*-----------------------------------------------------------------------------------------------*
+   *-----------------------------------------------------------------------------------------------*/
+  void DiscretizationVisualizationWriterMesh::append_element_material_id()
+  {
+    // vector with material IDs for elements in the row map.
+    std::vector<int> material_id_of_row_elements;
+    material_id_of_row_elements.reserve(discretization_->num_my_row_elements());
+
+    for (const Core::Elements::Element* ele : discretization_->my_row_element_range())
+    {
+      if (element_filter_(ele))
+        material_id_of_row_elements.push_back(ele->material(0)->parameter()->id());
+    }
+
+    // Pass data to the output writer.
+    visualization_manager_->get_visualization_data().set_cell_data_vector(
+        "material_id", material_id_of_row_elements, 1);
   }
 
   /*-----------------------------------------------------------------------------------------------*
