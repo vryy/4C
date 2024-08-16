@@ -63,6 +63,9 @@ void Discret::ELEMENTS::SolidScatraType::setup_element_definition(
 
   defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet10)] =
       GetDefaultLineDefinitionBuilder<Core::FE::CellType::tet10>().build();
+
+  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::nurbs27)] =
+      GetDefaultLineDefinitionBuilder<Core::FE::CellType::nurbs27>().build();
 }
 
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidScatraType::create(
@@ -136,11 +139,15 @@ void Discret::ELEMENTS::SolidScatra::set_params_interface_ptr(const Teuchos::Par
 {
   if (p.isParameter("interface"))
   {
-    interface_ptr_ = Teuchos::rcp_dynamic_cast<Solid::ELEMENTS::ParamsInterface>(
-        p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
+    interface_ptr_ = p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface");
+    solid_interface_ptr_ =
+        Teuchos::rcp_dynamic_cast<Solid::ELEMENTS::ParamsInterface>(interface_ptr_);
   }
   else
+  {
     interface_ptr_ = Teuchos::null;
+    solid_interface_ptr_ = Teuchos::null;
+  }
 }
 
 bool Discret::ELEMENTS::SolidScatra::read_element(const std::string& eletype,

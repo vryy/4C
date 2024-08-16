@@ -206,7 +206,7 @@ int Discret::ELEMENTS::SolidPoroPressureVelocityBased::evaluate(Teuchos::Paramet
           [&](auto& interface)
           {
             interface->initialize_gauss_point_data_output(*this, solid_poro_material(),
-                *params_interface().gauss_point_data_output_manager_ptr());
+                *get_solid_params_interface().gauss_point_data_output_manager_ptr());
           },
           solid_calc_variant_);
       return 0;
@@ -217,7 +217,7 @@ int Discret::ELEMENTS::SolidPoroPressureVelocityBased::evaluate(Teuchos::Paramet
           [&](auto& interface)
           {
             interface->evaluate_gauss_point_data_output(*this, solid_poro_material(),
-                *params_interface().gauss_point_data_output_manager_ptr());
+                *get_solid_params_interface().gauss_point_data_output_manager_ptr());
           },
           solid_calc_variant_);
       return 0;

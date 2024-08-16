@@ -13,6 +13,8 @@
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_fem_nurbs_discretization.hpp"
 #include "4C_global_data.hpp"
+#include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_fixedsizematrix_generators.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_mat_robinson.hpp"
 #include "4C_mat_thermoplastichyperelast.hpp"
@@ -862,7 +864,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::lin_fint_tsi(
     // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
     double scalartemp = NT(0, 0);
     // insert T_{n+1} into parameter list
-    params.set<double>("scalartemp", scalartemp);
+    params.set<double>("temperature", scalartemp);
 
     // calculate the stress part dependent on the temperature in the material
     Core::LinAlg::Matrix<numstr_, 1> ctemp(true);
@@ -1027,7 +1029,14 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::lin_kd_t_tsi(
       thermoSolidMaterial->reinit(nullptr, &strain, NT(0), map_my_gp_to_so_hex8(gp));
       // full thermal derivative of stress wrt to scalar temperature (needs to be post-multiplied
       // with shape functions)
-      thermoSolidMaterial->getd_sd_t(&ctemp);
+
+      // this element will be removed anyway: create dummy matrices for defgrd and gl strain
+      Core::LinAlg::Matrix<3, 3> defgrd = Core::LinAlg::IdentityMatrix<3>();
+      Core::LinAlg::Matrix<6, 1> glstrain(true);
+
+      params.set("temperature", NT(0));
+      ctemp = thermoSolidMaterial->evaluate_d_stress_d_scalar(
+          defgrd, glstrain, params, map_my_gp_to_so_hex8(gp), id());
     }
     // get thermal material tangent
     else
@@ -1197,7 +1206,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi(
     // scalar-valued current element temperature T_{n+1}
     // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
     // insert T_{n+1} into parameter list
-    params.set<double>("scalartemp", NT(0, 0));
+    params.set<double>("temperature", NT(0, 0));
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1461,7 +1470,9 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi(
       thermoSolidMaterial->reinit(nullptr, &glstrain, NT(0), map_my_gp_to_so_hex8(gp));
       // full thermal derivative of stress wrt to scalar temperature (needs to be post-multiplied
       // with shape functions)
-      thermoSolidMaterial->getd_sd_t(&ctemp);
+      params.set("temperature", NT(0));
+      ctemp = thermoSolidMaterial->evaluate_d_stress_d_scalar(
+          defgrd, glstrain, params, map_my_gp_to_so_hex8(gp), id());
     }
     else if (material()->material_type() == Core::Materials::m_thermoplhyperelast)
     {
@@ -1692,7 +1703,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi_fbar(
       // scalar-valued current element temperature T_{n+1}
       // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
       // insert T_{n+1} into parameter list
-      params.set<double>("scalartemp", NT(0, 0));
+      params.set<double>("temperature", NT(0, 0));
 
       // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1963,7 +1974,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi_fbar(
       // scalar-valued current element temperature T_{n+1}
       // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
       // insert T_{n+1} into parameter list
-      params.set<double>("scalartemp", NT(0, 0));
+      params.set<double>("temperature", NT(0, 0));
 
       /* get the inverse of the Jacobian matrix which looks like:
       **            [ x_,r  y_,r  z_,r ]^-1
@@ -2037,7 +2048,9 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi_fbar(
         thermoSolidMaterial->reinit(nullptr, &glstrain, NT(0), map_my_gp_to_so_hex8(gp));
         // full thermal derivative of stress wrt to scalar temperature (needs to be post-multiplied
         // with shape functions)
-        thermoSolidMaterial->getd_sd_t(&ctemp);
+        params.set("temperature", NT(0));
+        ctemp = thermoSolidMaterial->evaluate_d_stress_d_scalar(
+            defgrd, glstrain, params, map_my_gp_to_so_hex8(gp), id());
       }
       else
         // get temperature-dependent material tangent

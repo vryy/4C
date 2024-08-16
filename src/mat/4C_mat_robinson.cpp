@@ -354,7 +354,7 @@ void Mat::Robinson::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   straininc.update(-1., strain_last_[gp], 1.);
   strain_last_[gp] = *strain;
   // if no temperature has been set use the initial value
-  const double scalartemp = params.get<double>("scalartemp", init_temp());
+  const double scalartemp = params.get<double>("temperature", init_temp());
 
   // update history of the condensed variables plastic strain and back stress
   // iterative update of the current history vectors at current Gauss point gp

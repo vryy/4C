@@ -14,6 +14,7 @@
 #include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_solid_3D_ele_calc_displacement_based.hpp"
+#include "4C_solid_3D_ele_calc_displacement_based_linear_kinematics.hpp"
 #include "4C_solid_3D_ele_calc_fbar.hpp"
 #include "4C_solid_3D_ele_factory_lib.hpp"
 #include "4C_solid_3D_ele_properties.hpp"
@@ -45,8 +46,9 @@ namespace Discret::ELEMENTS
   namespace Details
   {
 
-    using ImplementedSolidScatraCellTypes = Core::FE::CelltypeSequence<Core::FE::CellType::hex8,
-        Core::FE::CellType::hex27, Core::FE::CellType::tet4, Core::FE::CellType::tet10>;
+    using ImplementedSolidScatraCellTypes =
+        Core::FE::CelltypeSequence<Core::FE::CellType::hex8, Core::FE::CellType::hex27,
+            Core::FE::CellType::tet4, Core::FE::CellType::tet10, Core::FE::CellType::nurbs27>;
 
     // Displacement based integrators
     template <Core::FE::CellType celltype>
@@ -56,14 +58,23 @@ namespace Discret::ELEMENTS
         Core::FE::apply_celltype_sequence<DisplacementBasedSolidScatraIntegrator,
             ImplementedSolidScatraCellTypes>;
 
+    // Displacement based integrators with linear kinematics
+    template <Core::FE::CellType celltype>
+    using DisplacementBasedLinearKinematicsSolidScatraIntegrator =
+        SolidScatraEleCalc<celltype, DisplacementBasedLinearKinematicsFormulation<celltype>>;
+    using DisplacementBasedLinearKinematicsSolidScatraEvaluator =
+        Core::FE::apply_celltype_sequence<DisplacementBasedLinearKinematicsSolidScatraIntegrator,
+            ImplementedSolidScatraCellTypes>;
+
+
     // FBar evaluators
     template <Core::FE::CellType celltype>
     using FBarSolidScatraIntegrator = SolidScatraEleCalc<celltype, FBarFormulation<celltype>>;
     using FbarScatraEvaluators = Core::FE::apply_celltype_sequence<FBarSolidScatraIntegrator,
         Core::FE::CelltypeSequence<Core::FE::CellType::hex8>>;
 
-    using SolidScatraEvaluators =
-        Core::FE::Join<DisplacementBasedSolidScatraEvaluator, FbarScatraEvaluators>;
+    using SolidScatraEvaluators = Core::FE::Join<DisplacementBasedSolidScatraEvaluator,
+        DisplacementBasedLinearKinematicsSolidScatraEvaluator, FbarScatraEvaluators>;
   }  // namespace Details
 
   /// Variant holding the different implementations for the solid-scatra element

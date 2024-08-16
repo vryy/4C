@@ -165,11 +165,15 @@ void Discret::ELEMENTS::SolidPoroPressureVelocityBased::set_params_interface_ptr
 {
   if (p.isParameter("interface"))
   {
-    interface_ptr_ = Teuchos::rcp_dynamic_cast<FourC::Solid::ELEMENTS::ParamsInterface>(
-        p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
+    interface_ptr_ = p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface");
+    solid_interface_ptr_ =
+        Teuchos::rcp_dynamic_cast<FourC::Solid::ELEMENTS::ParamsInterface>(interface_ptr_);
   }
   else
+  {
     interface_ptr_ = Teuchos::null;
+    solid_interface_ptr_ = Teuchos::null;
+  }
 }
 
 bool Discret::ELEMENTS::SolidPoroPressureVelocityBased::read_element(const std::string& eletype,
