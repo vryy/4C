@@ -23,6 +23,7 @@
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_linear_solver_method_parameters.hpp"
 #include "4C_scatra_timint_loma.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -191,7 +192,7 @@ void LowMach::Algorithm::setup()
 
     const auto azprectype = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
         lomasolverparams, "AZPREC");
-    if (azprectype != Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2)
+    if (azprectype != Core::LinearSolver::PreconditionerType::block_teko)
       FOUR_C_THROW(
           "SOLVER %i is not valid for LOMA. It has to be an iterative Solver with BGS2x2 block "
           "preconditioner",
@@ -234,10 +235,10 @@ void LowMach::Algorithm::setup()
         Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY"));
 
-    fluid_field()->discretization()->compute_null_space_if_necessary(
-        lomasolver_->params().sublist("Inverse1"));
-    scatra_field()->discretization()->compute_null_space_if_necessary(
-        lomasolver_->params().sublist("Inverse2"));
+    Core::LinearSolver::Parameters::compute_solver_parameters(
+        *fluid_field()->discretization(), lomasolver_->params().sublist("Inverse1"));
+    Core::LinearSolver::Parameters::compute_solver_parameters(
+        *scatra_field()->discretization(), lomasolver_->params().sublist("Inverse2"));
 
     // create loma block matrix
     lomasystemmatrix_ =
