@@ -79,7 +79,7 @@ NAME                            Fsi_Solver
 SOLVER                          Belos
 SOLVER_XML_FILE                 xml/linear_solver/iterative_gmres_template.xml
 AZPREC                          Teko
-TEKO_XML_FILE                   xml/block_preconditioner/fluid_solid.xml
+TEKO_XML_FILE                   xml/block_preconditioner/fluid_solid_ale.xml
 AZREUSE                         10
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
