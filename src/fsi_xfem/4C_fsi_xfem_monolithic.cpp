@@ -36,6 +36,7 @@
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_linear_solver_method_parameters.hpp"
 #include "4C_poroelast_monolithic.hpp"
 #include "4C_utils_parameter_list.hpp"
 #include "4C_xfem_condition_manager.hpp"
@@ -2099,6 +2100,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
   switch (azprectype)
   {
     case Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2:
+    case Core::LinearSolver::PreconditionerType::block_teko:
       break;
     case Core::LinearSolver::PreconditionerType::multigrid_muelu:
     case Core::LinearSolver::PreconditionerType::multigrid_nxn:
@@ -2191,7 +2193,6 @@ void FSI::MonolithicXFEM::create_linear_solver()
         // implementation
         solver_->params().set<bool>("GENERAL", true);
       }
-
       break;
     }
     case Core::LinearSolver::PreconditionerType::multigrid_muelu:
@@ -2254,6 +2255,72 @@ void FSI::MonolithicXFEM::create_linear_solver()
       // TODO: muelu for XFSI similar to TSI?
       FOUR_C_THROW("MueLu for XFSI?");
       solver_->params().sublist("MueLu Parameters").set("TSI", true);
+      break;
+    }
+    case Core::LinearSolver::PreconditionerType::block_teko:
+    {
+      // This should be the default case (well-tested and used)
+      solver_ = Teuchos::rcp(new Core::LinAlg::Solver(xfsisolverparams,
+          // ggfs. explizit Comm von STR wie lungscatra
+          get_comm(), Global::Problem::instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::instance()->io_params(), "VERBOSITY")));
+
+      // use solver blocks for structure and fluid
+      const Teuchos::ParameterList& ssolverparams =
+          Global::Problem::instance()->solver_params(slinsolvernumber);
+      const Teuchos::ParameterList& fsolverparams =
+          Global::Problem::instance()->solver_params(flinsolvernumber);
+
+      solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
+          Global::Problem::instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
+      Core::LinearSolver::Parameters::compute_solver_parameters(
+          *structure_poro()->discretization(), solver_->params().sublist("Inverse1"));
+
+      solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams,
+          Global::Problem::instance()->solver_params_callback(),
+          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
+      Core::LinearSolver::Parameters::compute_solver_parameters(
+          *fluid_field()->discretization(), solver_->params().sublist("Inverse2"));
+
+      if (structure_poro()->is_poro())
+      {
+        solver_->put_solver_params_to_sub_params("Inverse3", fsolverparams,
+            Global::Problem::instance()->solver_params_callback(),
+            Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                Global::Problem::instance()->io_params(), "VERBOSITY"));
+        Core::LinearSolver::Parameters::compute_solver_parameters(
+            *structure_poro()->fluid_field()->discretization(),
+            solver_->params().sublist("Inverse3"));
+      }
+      if (have_ale())
+      {
+        const Teuchos::ParameterList& asolverparams =
+            Global::Problem::instance()->solver_params(alinsolvernumber);
+        if (ale_i_block_ == 3)
+        {
+          solver_->put_solver_params_to_sub_params("Inverse3", asolverparams,
+              Global::Problem::instance()->solver_params_callback(),
+              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                  Global::Problem::instance()->io_params(), "VERBOSITY"));
+          Core::LinearSolver::Parameters::compute_solver_parameters(
+              *ale_field()->write_access_discretization(), solver_->params().sublist("Inverse3"));
+        }
+        else if (ale_i_block_ == 4)
+        {
+          solver_->put_solver_params_to_sub_params("Inverse4", asolverparams,
+              Global::Problem::instance()->solver_params_callback(),
+              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                  Global::Problem::instance()->io_params(), "VERBOSITY"));
+          Core::LinearSolver::Parameters::compute_solver_parameters(
+              *ale_field()->write_access_discretization(), solver_->params().sublist("Inverse4"));
+        }
+        else
+          FOUR_C_THROW("You have more than 4 Fields? --> add another Inverse 5 here!");
+      }
       break;
     }
     default:
