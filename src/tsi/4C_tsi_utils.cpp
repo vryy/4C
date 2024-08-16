@@ -24,6 +24,7 @@
 #include "4C_global_data.hpp"
 #include "4C_so3_plast_ssn.hpp"
 #include "4C_so3_thermo.hpp"
+#include "4C_solid_scatra_3D_ele.hpp"
 #include "4C_thermo_ele_impl_utils.hpp"
 #include "4C_thermo_element.hpp"
 
@@ -75,9 +76,14 @@ void TSI::UTILS::ThermoStructureCloneStrategy::set_element_data(
   // kintype is passed to the cloned thermo element
   Inpar::Solid::KinemType kintype = Inpar::Solid::KinemType::linear;
   // if oldele is a so3_base element or a so3_Plast element
-  Discret::ELEMENTS::SoBase* so_base = dynamic_cast<Discret::ELEMENTS::SoBase*>(oldele);
-  if (so_base != nullptr)
+  if (const auto* const so_base = dynamic_cast<Discret::ELEMENTS::SoBase*>(oldele))
+  {
     kintype = so_base->kinematic_type();
+  }
+  else if (const auto* const so_base = dynamic_cast<Discret::ELEMENTS::SolidScatra*>(oldele))
+  {
+    kintype = so_base->get_solid_element_properties().kintype;
+  }
   else
     FOUR_C_THROW("oldele is neither a So_base element!");
 
@@ -87,8 +93,8 @@ void TSI::UTILS::ThermoStructureCloneStrategy::set_element_data(
   if (therm != Teuchos::null)
   {
     // cloning to same material id -> use the same material instance
-    if (so_base->material()->parameter()->id() == matid)
-      therm->set_material(0, so_base->material());
+    if (oldele->material()->parameter()->id() == matid)
+      therm->set_material(0, oldele->material());
     else
       therm->set_material(0, Mat::Factory(matid));
     therm->set_dis_type(oldele->shape());  // set distype as well!
@@ -315,11 +321,18 @@ void TSI::UTILS::TSIMaterialStrategy::assign_material1_to2(
   }
 
   // if Aele is a so3_base element
-  Discret::ELEMENTS::SoBase* so_base = dynamic_cast<Discret::ELEMENTS::SoBase*>(ele1);
-  if (so_base != nullptr)
+  if (const auto* const so_base = dynamic_cast<Discret::ELEMENTS::SoBase*>(ele1))
+  {
     kintype = so_base->kinematic_type();
+  }
+  else if (const auto* const so_base = dynamic_cast<Discret::ELEMENTS::SolidScatra*>(ele1))
+  {
+    kintype = so_base->get_solid_element_properties().kintype;
+  }
   else
-    FOUR_C_THROW("ele1 is not a so3_thermo element!");
+  {
+    FOUR_C_THROW("Unsupported solid element type!");
+  }
 
   Thermo::Element* therm = dynamic_cast<Thermo::Element*>(ele2);
   if (therm != nullptr)

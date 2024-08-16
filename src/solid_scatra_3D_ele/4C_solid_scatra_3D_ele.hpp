@@ -123,10 +123,23 @@ namespace Discret::ELEMENTS
       return (not interface_ptr_.is_null());
     }
 
-    [[nodiscard]] inline FourC::Solid::ELEMENTS::ParamsInterface& params_interface() const
+    [[nodiscard]] inline bool is_solid_params_interface() const
     {
-      if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
+      return (not solid_interface_ptr_.is_null());
+    }
+
+
+    [[nodiscard]] inline Core::Elements::ParamsInterface& params_interface() const
+    {
+      FOUR_C_THROW_UNLESS(
+          interface_ptr_.getRawPtr(), "The parameter interface pointer is not set.");
       return *interface_ptr_;
+    }
+    [[nodiscard]] inline FourC::Solid::ELEMENTS::ParamsInterface& get_solid_params_interface() const
+    {
+      FOUR_C_THROW_UNLESS(solid_interface_ptr_.getRawPtr(),
+          "The parameter interface pointer is not set or not a solid parameter interface.");
+      return *solid_interface_ptr_;
     }
 
     void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
@@ -137,6 +150,11 @@ namespace Discret::ELEMENTS
 
     /// return ScaTra::ImplType
     [[nodiscard]] Inpar::ScaTra::ImplType impl_type() const { return properties_.impltype; }
+
+    [[nodiscard]] const SolidElementProperties& get_solid_element_properties() const
+    {
+      return properties_.solid;
+    }
 
     /*!
      * @brief Returns the Cauchy stress in the direction @p dir at @p xi with normal @p n
@@ -167,7 +185,11 @@ namespace Discret::ELEMENTS
     SolidScatraElementProperties properties_{};
 
     //! interface pointer for data exchange between the element and the time integrator.
-    Teuchos::RCP<FourC::Solid::ELEMENTS::ParamsInterface> interface_ptr_;
+    Teuchos::RCP<Core::Elements::ParamsInterface> interface_ptr_;
+
+    //! interface pointer for data exchange between the element and the solid time integrator.
+    Teuchos::RCP<FourC::Solid::ELEMENTS::ParamsInterface> solid_interface_ptr_;
+
 
     //! solid element calculation holding one of the implemented variants
     SolidScatraCalcVariant solid_scatra_calc_variant_;

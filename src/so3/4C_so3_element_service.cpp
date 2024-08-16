@@ -84,5 +84,8 @@ template std::vector<double> Discret::ELEMENTS::ProjectNodalQuantityToXi<Core::F
 template std::vector<double>
 Discret::ELEMENTS::ProjectNodalQuantityToXi<Core::FE::CellType::wedge6>(
     const Core::LinAlg::Matrix<3, 1>&, const std::vector<double>&);
+template std::vector<double>
+Discret::ELEMENTS::ProjectNodalQuantityToXi<Core::FE::CellType::nurbs27>(
+    const Core::LinAlg::Matrix<3, 1>&, const std::vector<double>&);
 
 FOUR_C_NAMESPACE_CLOSE

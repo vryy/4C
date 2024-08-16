@@ -170,7 +170,7 @@ void SSI::SSICouplingMatchingVolume::set_scalar_field_micro(
 void SSI::SSICouplingMatchingVolume::set_temperature_field(
     Core::FE::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp)
 {
-  structdis.set_state(2, "tempfield", temp);
+  structdis.set_state(2, "temperature", temp);
 }
 
 /*----------------------------------------------------------------------*/
@@ -178,7 +178,7 @@ void SSI::SSICouplingMatchingVolume::set_temperature_field(
 void SSI::SSICouplingMatchingVolumeAndBoundary::set_temperature_field(
     Core::FE::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp)
 {
-  structdis.set_state(2, "tempfield", temp);
+  structdis.set_state(2, "temperature", temp);
 }
 
 /*----------------------------------------------------------------------*/

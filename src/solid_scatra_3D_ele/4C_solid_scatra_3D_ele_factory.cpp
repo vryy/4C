@@ -47,6 +47,19 @@ namespace
   };
 
   /*!
+   * @brief Standard nonlinear displacement based total lagrangian formulation valid for all
+   * celltypes
+   */
+  template <Core::FE::CellType celltype>
+  struct SolidScatraCalculationFormulation<celltype, Inpar::Solid::KinemType::linear,
+      Discret::ELEMENTS::ElementTechnology::none, Discret::ELEMENTS::PrestressTechnology::none>
+  {
+    using type = Discret::ELEMENTS::Details::DisplacementBasedLinearKinematicsSolidScatraIntegrator<
+        celltype>;
+  };
+
+
+  /*!
    * @brief Nonlinear total lagrangian formulation with F-Bar for hex8 and pyramid 5
    */
   template <Core::FE::CellType celltype>

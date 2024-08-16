@@ -219,7 +219,9 @@ namespace Mat
     void reinit(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, double temperature, unsigned gp) override;
 
-    void getd_sd_t(Core::LinAlg::Matrix<6, 1>* dS_dT) override;
+    Core::LinAlg::Matrix<6, 1> evaluate_d_stress_d_scalar(const Core::LinAlg::Matrix<3, 3>& defgrad,
+        const Core::LinAlg::Matrix<6, 1>& glstrain, Teuchos::ParameterList& params, int gp,
+        int eleGID) override;
 
     void stress_temperature_modulus_and_deriv(
         Core::LinAlg::Matrix<6, 1>& stm, Core::LinAlg::Matrix<6, 1>& stm_dT) override;
@@ -274,9 +276,6 @@ namespace Mat
 
     //! current temperature (set by Reinit())
     double current_temperature_{};
-
-    //! current Green-Lagrange strain
-    const Core::LinAlg::Matrix<6, 1>* current_glstrain_{};
 
   };  // ThermoStVenantKirchhoff
 }  // namespace Mat

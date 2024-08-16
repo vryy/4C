@@ -12,6 +12,7 @@ multiplicatively into elastic and inelastic parts
 
 #include "4C_global_data.hpp"
 #include "4C_inpar_ssi.hpp"
+#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_anisotropy.hpp"
 #include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_inelastic_defgrad_factors.hpp"
@@ -21,6 +22,75 @@ multiplicatively into elastic and inelastic parts
 #include "4C_structure_new_enum_lists.hpp"
 
 FOUR_C_NAMESPACE_OPEN
+
+namespace
+{
+  struct KineamticQuantities
+  {
+    Core::LinAlg::Matrix<6, 6> cmatiso{true};
+    Core::LinAlg::Matrix<6, 9> dSdiFin{true};
+    Core::LinAlg::Matrix<6, 6> cmatadd{true};
+
+    // variables of kinetic quantities
+    Core::LinAlg::Matrix<6, 1> iCV{true};
+    Core::LinAlg::Matrix<6, 1> iCinV{true};
+    Core::LinAlg::Matrix<6, 1> iCinCiCinV{true};
+    Core::LinAlg::Matrix<3, 3> iCinCM{true};
+    Core::LinAlg::Matrix<3, 3> iFinCeM{true};
+    Core::LinAlg::Matrix<9, 1> CiFin9x1{true};
+    Core::LinAlg::Matrix<9, 1> CiFinCe9x1{true};
+    Core::LinAlg::Matrix<9, 1> CiFiniCe9x1{true};
+    Core::LinAlg::Matrix<3, 1> prinv{true};
+    Core::LinAlg::Matrix<3, 3> iFinM{true};
+
+    double detFin = 1.0;
+
+    // derivatives of principle invariants
+    Core::LinAlg::Matrix<3, 1> dPIe{true};
+    Core::LinAlg::Matrix<6, 1> ddPIIe{true};
+
+    // 2nd Piola Kirchhoff stresses factors (according to Holzapfel-Nonlinear Solid Mechanics p.
+    // 216)
+    Core::LinAlg::Matrix<3, 1> gamma{true};
+    // constitutive tensor factors (according to Holzapfel-Nonlinear Solid Mechanics p. 261)
+    Core::LinAlg::Matrix<8, 1> delta{true};
+  };
+
+  KineamticQuantities evaluate_kinematic_quantities(
+      const Mat::MultiplicativeSplitDefgradElastHyper& splitdefgrd,
+      Mat::InelasticFactorsHandler& inelastic_factors_handler,
+      const Core::LinAlg::Matrix<3, 3>& defgrad, const int gp, const int eleGID)
+  {
+    KineamticQuantities quantities{};
+
+    // build inverse inelastic deformation gradient
+    inelastic_factors_handler.evaluate_inverse_inelastic_def_grad(&defgrad, quantities.iFinM);
+
+    // determinante of inelastic deformation gradient
+    quantities.detFin = 1.0 / quantities.iFinM.determinant();
+
+    splitdefgrd.evaluate_kin_quant_elast(&defgrad, quantities.iFinM, quantities.iCinV,
+        quantities.iCinCiCinV, quantities.iCV, quantities.iCinCM, quantities.iFinCeM,
+        quantities.CiFin9x1, quantities.CiFinCe9x1, quantities.CiFiniCe9x1, quantities.prinv);
+
+    // derivatives of principle invariants
+    splitdefgrd.evaluate_invariant_derivatives(
+        quantities.prinv, gp, eleGID, quantities.dPIe, quantities.ddPIIe);
+
+
+    // compose coefficients
+    Mat::CalculateGammaDelta(
+        quantities.gamma, quantities.delta, quantities.prinv, quantities.dPIe, quantities.ddPIIe);
+
+    // evaluate dSdiFin
+    splitdefgrd.evaluated_sdi_fin(quantities.gamma, quantities.delta, quantities.iFinM,
+        quantities.iCinCM, quantities.iCinV, quantities.CiFin9x1, quantities.CiFinCe9x1,
+        quantities.iCinCiCinV, quantities.CiFiniCe9x1, quantities.iCV, quantities.iFinCeM,
+        quantities.detFin, quantities.dSdiFin);
+
+    return quantities;
+  }
+}  // namespace
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
@@ -181,80 +251,50 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
   // do all stuff that only has to be done once per evaluate() call
   pre_evaluate(params, gp);
 
-  // static variables
-  static Core::LinAlg::Matrix<6, 6> cmatiso(true);
-  static Core::LinAlg::Matrix<6, 9> dSdiFin(true);
-  static Core::LinAlg::Matrix<6, 6> cmatadd(true);
+  KineamticQuantities kinematic_quantities =
+      evaluate_kinematic_quantities(*this, *inelastic_, *defgrad, gp, eleGID);
 
-  // build inverse inelastic deformation gradient
-  static Core::LinAlg::Matrix<3, 3> iFinM(true);
-  inelastic_->evaluate_inverse_inelastic_def_grad(defgrad, iFinM);
+  // cmat = 2 dS/dC = 2 \frac{\partial S}{\partial C} + 2 \frac{\partial S}{\partial F_{in}^{-1}}
+  // : \frac{\partial F_{in}^{-1}}{\partial C} = cmatiso + cmatadd
+  evaluate_stress_cmat_iso(kinematic_quantities.iCV, kinematic_quantities.iCinV,
+      kinematic_quantities.iCinCiCinV, kinematic_quantities.gamma, kinematic_quantities.delta,
+      kinematic_quantities.detFin, *stress, kinematic_quantities.cmatiso);
+  cmat->update(1.0, kinematic_quantities.cmatiso, 0.0);
 
-  // determinante of inelastic deformation gradient
-  const double detFin = 1.0 / iFinM.determinant();
+  // evaluate additional terms for the elasticity tensor
+  // cmatadd = 2 \frac{\partial S}{\partial F_{in}^{-1}} : \frac{\partial F_{in}^{-1}}{\partial
+  // C}, where F_{in}^{-1} can be multiplicatively composed of several inelastic contributions
+  evaluate_additional_cmat(defgrad, kinematic_quantities.iCV, kinematic_quantities.dSdiFin,
+      kinematic_quantities.cmatadd);
+  cmat->update(1.0, kinematic_quantities.cmatadd, 1.0);
+}
 
-  // static variables of kinetic quantities
-  static Core::LinAlg::Matrix<6, 1> iCV(true);
-  static Core::LinAlg::Matrix<6, 1> iCinV(true);
-  static Core::LinAlg::Matrix<6, 1> iCinCiCinV(true);
-  static Core::LinAlg::Matrix<3, 3> iCinCM(true);
-  static Core::LinAlg::Matrix<3, 3> iFinCeM(true);
-  static Core::LinAlg::Matrix<9, 1> CiFin9x1(true);
-  static Core::LinAlg::Matrix<9, 1> CiFinCe9x1(true);
-  static Core::LinAlg::Matrix<9, 1> CiFiniCe9x1(true);
-  static Core::LinAlg::Matrix<3, 1> prinv(true);
-  evaluate_kin_quant_elast(defgrad, iFinM, iCinV, iCinCiCinV, iCV, iCinCM, iFinCeM, CiFin9x1,
-      CiFinCe9x1, CiFiniCe9x1, prinv);
+Core::LinAlg::Matrix<6, 1> Mat::MultiplicativeSplitDefgradElastHyper::evaluate_d_stress_d_scalar(
+    const Core::LinAlg::Matrix<3, 3>& defgrad, const Core::LinAlg::Matrix<6, 1>& glstrain,
+    Teuchos::ParameterList& params, int gp, int eleGID)
+{
+  // do all stuff that only has to be done once per evaluate() call
+  pre_evaluate(params, gp);
 
-  // derivatives of principle invariants
-  static Core::LinAlg::Matrix<3, 1> dPIe(true);
-  static Core::LinAlg::Matrix<6, 1> ddPIIe(true);
-  evaluate_invariant_derivatives(prinv, gp, eleGID, dPIe, ddPIIe);
-
-  // 2nd Piola Kirchhoff stresses factors (according to Holzapfel-Nonlinear Solid Mechanics p. 216)
-  static Core::LinAlg::Matrix<3, 1> gamma(true);
-  // constitutive tensor factors (according to Holzapfel-Nonlinear Solid Mechanics p. 261)
-  static Core::LinAlg::Matrix<8, 1> delta(true);
-  // compose coefficients
-  CalculateGammaDelta(gamma, delta, prinv, dPIe, ddPIIe);
-
-  // evaluate dSdiFin
-  evaluated_sdi_fin(gamma, delta, iFinM, iCinCM, iCinV, CiFin9x1, CiFinCe9x1, iCinCiCinV,
-      CiFiniCe9x1, iCV, iFinCeM, detFin, dSdiFin);
-
-  // if cmat != nullptr, we are evaluating the structural residual and linearizations, so we need to
-  // calculate the stresses and the cmat if you like to evaluate the off-diagonal block of your
-  // monolithic system (structural residual w.r.t. dofs of another field), you need to pass nullptr
-  // as the cmat when you call evaluate() in the element
-  if (cmat != nullptr)
-  {
-    // cmat = 2 dS/dC = 2 \frac{\partial S}{\partial C} + 2 \frac{\partial S}{\partial F_{in}^{-1}}
-    // : \frac{\partial F_{in}^{-1}}{\partial C} = cmatiso + cmatadd
-    evaluate_stress_cmat_iso(iCV, iCinV, iCinCiCinV, gamma, delta, detFin, *stress, cmatiso);
-    cmat->update(1.0, cmatiso, 0.0);
-
-    // evaluate additional terms for the elasticity tensor
-    // cmatadd = 2 \frac{\partial S}{\partial F_{in}^{-1}} : \frac{\partial F_{in}^{-1}}{\partial
-    // C}, where F_{in}^{-1} can be multiplicatively composed of several inelastic contributions
-    evaluate_additional_cmat(defgrad, iCV, dSdiFin, cmatadd);
-    cmat->update(1.0, cmatadd, 1.0);
-  }
-  // evaluate OD Block
+  // get source of deformation for this OD block depending on the differentiation type
+  auto source(PAR::InelasticSource::none);
+  const int differentiationtype =
+      params.get<int>("differentiationtype", static_cast<int>(Solid::DifferentiationType::none));
+  if (differentiationtype == static_cast<int>(Solid::DifferentiationType::elch))
+    source = PAR::InelasticSource::concentration;
+  else if (differentiationtype == static_cast<int>(Solid::DifferentiationType::temp))
+    source = PAR::InelasticSource::temperature;
   else
-  {
-    // get source of deformation for this OD block depending on the differentiation type
-    auto source(PAR::InelasticSource::none);
-    const int differentiationtype =
-        params.get<int>("differentiationtype", static_cast<int>(Solid::DifferentiationType::none));
-    if (differentiationtype == static_cast<int>(Solid::DifferentiationType::elch))
-      source = PAR::InelasticSource::concentration;
-    else if (differentiationtype == static_cast<int>(Solid::DifferentiationType::temp))
-      source = PAR::InelasticSource::temperature;
-    else
-      FOUR_C_THROW("unknown scalaratype");
+    FOUR_C_THROW("unknown scalaratype");
 
-    evaluate_od_stiff_mat(source, defgrad, dSdiFin, *stress);
-  }
+
+
+  KineamticQuantities kinematic_quantities =
+      evaluate_kinematic_quantities(*this, *inelastic_, defgrad, gp, eleGID);
+
+  Core::LinAlg::Matrix<6, 1> d_stress_d_scalar(true);
+  evaluate_od_stiff_mat(source, &defgrad, kinematic_quantities.dSdiFin, d_stress_d_scalar);
+  return d_stress_d_scalar;
 }
 
 /*--------------------------------------------------------------------*

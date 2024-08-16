@@ -7,6 +7,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_mat_monolithic_solid_scalar_material.hpp"
 #include "4C_mat_trait_solid.hpp"
 #include "4C_mat_trait_thermo.hpp"
 
@@ -18,7 +19,7 @@ namespace Mat
 {
   namespace Trait
   {
-    class ThermoSolid : public Thermo, public Solid
+    class ThermoSolid : public Thermo, public Solid, public MonolithicSolidScalarMaterial
     {
      public:
       /*!
@@ -33,16 +34,6 @@ namespace Mat
        */
       virtual void reinit(const Core::LinAlg::Matrix<3, 3>* defgrd,
           const Core::LinAlg::Matrix<6, 1>* glstrain, double temperature, unsigned gp) = 0;
-
-      //! @name Coupled derivatives
-      //! @{
-
-      /// @brief  get derivative of 2nd PK stress wrt temperature
-      ///
-      /// this term arises for coupled thermo-mechanical materials
-      virtual void getd_sd_t(Core::LinAlg::Matrix<6, 1>* dS_dT) = 0;
-
-      //! @}
 
       /*!
        * Return stress-temperature modulus and thermal derivative for coupled thermomechanics

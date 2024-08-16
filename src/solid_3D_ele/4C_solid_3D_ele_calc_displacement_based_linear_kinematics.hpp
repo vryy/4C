@@ -107,6 +107,15 @@ namespace Discret::ELEMENTS
           Core::FE::num_nodes<celltype> * Core::FE::dim<celltype> * Core::FE::dim<celltype>>(true);
     }
 
+    static Core::LinAlg::Matrix<Details::num_str<celltype>,
+        Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
+    get_linear_b_operator(
+        const DisplacementBasedLinearKinematicsLinearizationContainer<celltype>& linearization)
+    {
+      return linearization.linear_b_operator_;
+    }
+
+
     static void add_internal_force_vector(
         const DisplacementBasedLinearKinematicsLinearizationContainer<celltype>& linearization,
         const Stress<celltype>& stress, const double integration_factor,

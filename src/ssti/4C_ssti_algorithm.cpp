@@ -159,7 +159,7 @@ void SSTI::SSTIAlgorithm::setup()
   // pass initial scalar field to structural discretization to correctly compute initial
   // accelerations
   problem->get_dis("structure")->set_state(1, "scalarfield", scatra_->scatra_field()->phinp());
-  problem->get_dis("structure")->set_state(2, "tempfield", thermo_->scatra_field()->phinp());
+  problem->get_dis("structure")->set_state(2, "temperature", thermo_->scatra_field()->phinp());
 
   // set up structural base algorithm
   struct_adapterbase_ptr_->setup();
@@ -311,7 +311,8 @@ void SSTI::SSTIAlgorithm::distribute_scatra_solution()
 /*----------------------------------------------------------------------*/
 void SSTI::SSTIAlgorithm::distribute_thermo_solution()
 {
-  structure_field()->discretization()->set_state(2, "tempfield", thermo_->scatra_field()->phinp());
+  structure_field()->discretization()->set_state(
+      2, "temperature", thermo_->scatra_field()->phinp());
 
   scatra_field()->discretization()->set_state(2, "thermo", thermo_->scatra_field()->phinp());
 

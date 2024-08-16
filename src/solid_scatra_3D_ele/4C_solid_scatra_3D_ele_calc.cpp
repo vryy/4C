@@ -12,8 +12,10 @@ solid formulation
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_fem_general_extract_values.hpp"
+#include "4C_mat_monolithic_solid_scalar_material.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_solid_3D_ele_calc_displacement_based.hpp"
+#include "4C_solid_3D_ele_calc_displacement_based_linear_kinematics.hpp"
 #include "4C_solid_3D_ele_calc_fbar.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_solid_3D_ele_calc_lib_formulation.hpp"
@@ -53,12 +55,16 @@ namespace
       const Core::LinAlg::Matrix<num_str<celltype>, 1>& gl_strain, Teuchos::ParameterList& params,
       const int gp, const int eleGID)
   {
-    Core::LinAlg::Matrix<num_str<celltype>, 1> dStressDScalar(true);
+    auto* monolithic_material = dynamic_cast<Mat::MonolithicSolidScalarMaterial*>(&solid_material);
 
-    // The derivative of the solid stress w.r.t. the scalar is implemented in the normal material
-    // Evaluate call by not passing the linearization matrix.
-    solid_material.evaluate(
-        &deformation_gradient, &gl_strain, params, &dStressDScalar, nullptr, gp, eleGID);
+    FOUR_C_THROW_UNLESS(
+        monolithic_material, "Your material does not allow to evaluate a monolithic ssi material!");
+
+    // The derivative of the solid stress w.r.t. the scalar is implemented in the normal
+    // material Evaluate call by not passing the linearization matrix.
+    Core::LinAlg::Matrix<num_str<celltype>, 1> dStressDScalar =
+        monolithic_material->evaluate_d_stress_d_scalar(
+            deformation_gradient, gl_strain, params, gp, eleGID);
 
     return dStressDScalar;
   }
@@ -167,7 +173,7 @@ namespace
       const Discret::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
       const std::optional<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>>& nodal_quantities)
   {
-    if (!nodal_quantities) return;
+    if (!nodal_quantities.has_value()) return;
 
     auto gp_quantities = interpolate_quantity_to_point(shape_functions, *nodal_quantities);
 
@@ -291,7 +297,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype,
   constexpr bool temperature_is_scalar = true;
   std::optional<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>> nodal_temperatures =
       extract_my_nodal_scalars<celltype, temperature_is_scalar>(
-          ele, discretization, la, "tempfield");
+          ele, discretization, la, "temperature");
 
 
   bool equal_integration_mass_stiffness =
@@ -396,7 +402,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate
   constexpr bool temperature_is_scalar = true;
   std::optional<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>> nodal_temperatures =
       extract_my_nodal_scalars<celltype, temperature_is_scalar>(
-          ele, discretization, la, "tempfield");
+          ele, discretization, la, "temperature");
 
   evaluate_centroid_coordinates_and_add_to_parameter_list(nodal_coordinates, params);
 
@@ -480,7 +486,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::update(
   constexpr bool temperature_is_scalar = true;
   std::optional<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>> nodal_temperatures =
       extract_my_nodal_scalars<celltype, temperature_is_scalar>(
-          ele, discretization, la, "tempfield");
+          ele, discretization, la, "temperature");
 
   evaluate_centroid_coordinates_and_add_to_parameter_list(nodal_coordinates, params);
 
@@ -527,7 +533,7 @@ double Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::calcul
   constexpr bool temperature_is_scalar = true;
   std::optional<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>> nodal_temperatures =
       extract_my_nodal_scalars<celltype, temperature_is_scalar>(
-          ele, discretization, la, "tempfield");
+          ele, discretization, la, "temperature");
 
   evaluate_centroid_coordinates_and_add_to_parameter_list(nodal_coordinates, params);
 
@@ -584,7 +590,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::calculat
   constexpr bool temperature_is_scalar = true;
   std::optional<Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>> nodal_temperatures =
       extract_my_nodal_scalars<celltype, temperature_is_scalar>(
-          ele, discretization, la, "tempfield");
+          ele, discretization, la, "temperature");
 
   evaluate_centroid_coordinates_and_add_to_parameter_list(nodal_coordinates, params);
 
@@ -764,6 +770,21 @@ template class Discret::ELEMENTS::SolidScatraEleCalc<Core::FE::CellType::tet4,
     Discret::ELEMENTS::DisplacementBasedFormulation<Core::FE::CellType::tet4>>;
 template class Discret::ELEMENTS::SolidScatraEleCalc<Core::FE::CellType::tet10,
     Discret::ELEMENTS::DisplacementBasedFormulation<Core::FE::CellType::tet10>>;
+template class Discret::ELEMENTS::SolidScatraEleCalc<Core::FE::CellType::nurbs27,
+    Discret::ELEMENTS::DisplacementBasedFormulation<Core::FE::CellType::nurbs27>>;
+
+// for displacement based formulation with linear kinematics
+template class Discret::ELEMENTS::SolidScatraEleCalc<Core::FE::CellType::hex8,
+    Discret::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::hex8>>;
+template class Discret::ELEMENTS::SolidScatraEleCalc<Core::FE::CellType::hex27,
+    Discret::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::hex27>>;
+template class Discret::ELEMENTS::SolidScatraEleCalc<Core::FE::CellType::tet4,
+    Discret::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tet4>>;
+template class Discret::ELEMENTS::SolidScatraEleCalc<Core::FE::CellType::tet10,
+    Discret::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tet10>>;
+template class Discret::ELEMENTS::SolidScatraEleCalc<Core::FE::CellType::nurbs27,
+    Discret::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::nurbs27>>;
+
 
 // FBar based formulation
 template class Discret::ELEMENTS::SolidScatraEleCalc<Core::FE::CellType::hex8,

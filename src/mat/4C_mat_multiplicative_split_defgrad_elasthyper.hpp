@@ -14,6 +14,7 @@ multiplicatively into elastic and inelastic parts
 
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_mat_anisotropy.hpp"
+#include "4C_mat_monolithic_solid_scalar_material.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_material_parameter_base.hpp"
 
@@ -143,7 +144,8 @@ namespace Mat
     that are needed to set up the system to be solved are evaluated in the derived classes
     of the interface class 'InelasticDefgradFactors'.
 */
-  class MultiplicativeSplitDefgradElastHyper : public So3Material
+  class MultiplicativeSplitDefgradElastHyper : public So3Material,
+                                               public MonolithicSolidScalarMaterial
   {
    public:
     /// construct empty material object
@@ -185,6 +187,10 @@ namespace Mat
     void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrad,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
+        int eleGID) override;
+
+    Core::LinAlg::Matrix<6, 1> evaluate_d_stress_d_scalar(const Core::LinAlg::Matrix<3, 3>& defgrad,
+        const Core::LinAlg::Matrix<6, 1>& glstrain, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
 
     void evaluate_cauchy_n_dir_and_derivatives(const Core::LinAlg::Matrix<3, 3>& defgrd,

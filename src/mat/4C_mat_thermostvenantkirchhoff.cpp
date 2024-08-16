@@ -158,12 +158,24 @@ void Mat::ThermoStVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<3, 3>* de
 {
   // fixme this backwards compatibility modification should be moved outside
   // use initial value as a default value
-  double temperature = params.get<double>("scalartemp", params_->thetainit_);
+  const double temperature = [&]()
+  {
+    if (params.isParameter("temperature"))
+    {
+      return params.get<double>("temperature");
+    }
+    else
+    {
+      // std::cout << "using initial temperature" << std::endl;
+      return params_->thetainit_;
+    }
+  }();
+
   reinit(defgrd, glstrain, temperature, gp);  // fixme call this before
 
   setup_cmat(*cmat);
   // purely mechanical part
-  stress->multiply_nn(*cmat, *current_glstrain_);
+  stress->multiply_nn(*cmat, *glstrain);
 
   // additive thermal part
   double Tref = params_->thetainit_;
@@ -245,12 +257,29 @@ void Mat::ThermoStVenantKirchhoff::commit_current_state()
 void Mat::ThermoStVenantKirchhoff::reinit(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, double temperature, unsigned gp)
 {
-  current_glstrain_ = glstrain;
   reinit(temperature, gp);
 }
 
-void Mat::ThermoStVenantKirchhoff::getd_sd_t(Core::LinAlg::Matrix<6, 1>* dS_dT)
+Core::LinAlg::Matrix<6, 1> Mat::ThermoStVenantKirchhoff::evaluate_d_stress_d_scalar(
+    const Core::LinAlg::Matrix<3, 3>& defgrad, const Core::LinAlg::Matrix<6, 1>& glstrain,
+    Teuchos::ParameterList& params, int gp, int eleGID)
 {
+  const double temperature = [&]()
+  {
+    if (params.isParameter("temperature"))
+    {
+      return params.get<double>("temperature");
+    }
+    else
+    {
+      return params_->thetainit_;
+    }
+  }();
+
+  reinit(&defgrad, &glstrain, temperature, gp);  // fixme call this before
+
+  Core::LinAlg::Matrix<6, 1> dS_dT(true);
+
   // total derivative of stress (mechanical + thermal part) wrt. temperature
   // calculate derivative of cmat w.r.t. T_{n+1}
   Core::LinAlg::Matrix<6, 6> cmat_T(false);
@@ -258,7 +287,7 @@ void Mat::ThermoStVenantKirchhoff::getd_sd_t(Core::LinAlg::Matrix<6, 1>* dS_dT)
 
   // evaluate meachnical stress part
   // \f \sigma = {\mathbf C}_{,T} \,\varepsilon_{\rm GL} \f
-  dS_dT->multiply_nn(cmat_T, *current_glstrain_);
+  dS_dT.multiply_nn(cmat_T, glstrain);
 
   // calculate the temperature difference
   // Delta T = T - T_0
@@ -270,10 +299,12 @@ void Mat::ThermoStVenantKirchhoff::getd_sd_t(Core::LinAlg::Matrix<6, 1>* dS_dT)
 
   // temperature dependent stress part
   // sigma = C_T . Delta T = m . I . Delta T
-  dS_dT->update(deltaT, ctemp_T, 1.0);
+  dS_dT.update(deltaT, ctemp_T, 1.0);
 
   setup_cthermo(ctemp_T);
-  dS_dT->update(1.0, ctemp_T, 1.0);
+  dS_dT.update(1.0, ctemp_T, 1.0);
+
+  return dS_dT;
 }
 
 void Mat::ThermoStVenantKirchhoff::stress_temperature_modulus_and_deriv(

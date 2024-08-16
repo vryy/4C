@@ -147,15 +147,27 @@ namespace Discret::ELEMENTS
       return interface_ptr_;
     }
 
+    [[nodiscard]] inline bool is_solid_params_interface() const
+    {
+      return (not solid_interface_ptr_.is_null());
+    }
+
     [[nodiscard]] inline bool is_params_interface() const override
     {
       return (not interface_ptr_.is_null());
     }
 
-    [[nodiscard]] inline FourC::Solid::ELEMENTS::ParamsInterface& params_interface() const
+    [[nodiscard]] inline Core::Elements::ParamsInterface& params_interface() const
     {
       if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
       return *interface_ptr_;
+    }
+
+    [[nodiscard]] inline FourC::Solid::ELEMENTS::ParamsInterface& get_solid_params_interface() const
+    {
+      FOUR_C_THROW_UNLESS(solid_interface_ptr_.getRawPtr(),
+          "The parameter interface pointer is not set or not a solid parameter interface.");
+      return *solid_interface_ptr_;
     }
 
     [[nodiscard]] Mat::StructPoro& struct_poro_material(int nummat = 0) const;
@@ -204,7 +216,10 @@ namespace Discret::ELEMENTS
     AnisotropyProperties anisotropic_permeability_property_{};
 
     //! interface pointer for data exchange between the element and the time integrator.
-    Teuchos::RCP<FourC::Solid::ELEMENTS::ParamsInterface> interface_ptr_;
+    Teuchos::RCP<Core::Elements::ParamsInterface> interface_ptr_;
+
+    //! interface pointer for data exchange between the element and the solid time integrator.
+    Teuchos::RCP<FourC::Solid::ELEMENTS::ParamsInterface> solid_interface_ptr_;
 
     //! element calculation holding one of the implemented variants
     SolidCalcVariant solid_calc_variant_;

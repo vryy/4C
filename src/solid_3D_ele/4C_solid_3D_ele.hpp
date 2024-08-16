@@ -139,6 +139,12 @@ namespace Discret::ELEMENTS
       return interface_ptr_;
     }
 
+    [[nodiscard]] inline bool is_solid_params_interface() const
+    {
+      return (not interface_ptr_.is_null());
+    }
+
+
     [[nodiscard]] inline bool is_params_interface() const override
     {
       return (not interface_ptr_.is_null());
@@ -149,6 +155,12 @@ namespace Discret::ELEMENTS
       if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
       return *interface_ptr_;
     }
+
+    [[nodiscard]] inline FourC::Solid::ELEMENTS::ParamsInterface& get_solid_params_interface() const
+    {
+      return params_interface();
+    }
+
 
     void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
 

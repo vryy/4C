@@ -472,10 +472,10 @@ void Mat::ThermoPlasticHyperElast::evaluate(const Core::LinAlg::Matrix<3, 3>* de
   // -------------------------- extract scalar-valued element temperature
   // initialise temperature
   double scalartemp = 0.0;
-  if (params.getEntryPtr("scalartemp") != nullptr)
+  if (params.getEntryPtr("temperature") != nullptr)
   {
     // TSI, i.e. temperature is available --> use this temperature
-    scalartemp = params.get<double>("scalartemp", -1.0);
+    scalartemp = params.get<double>("temperature", -1.0);
     if (scalartemp < 0.0) FOUR_C_THROW("INadmissible value for the temperature: T=%3d", scalartemp);
   }
   // in case of purely structural analysis, i.e. isothermal: T = T_0, DeltaT = 0

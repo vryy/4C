@@ -23,9 +23,9 @@ namespace Discret::ELEMENTS
   template <typename T>
   inline std::vector<char>& get_couplstress_data(const T& ele, const Teuchos::ParameterList& params)
   {
-    if (ele.is_params_interface())
+    if (ele.is_solid_params_interface())
     {
-      return *ele.params_interface().coupling_stress_data_ptr();
+      return *ele.get_solid_params_interface().coupling_stress_data_ptr();
     }
     else
     {
@@ -37,9 +37,9 @@ namespace Discret::ELEMENTS
   inline Inpar::Solid::StressType get_io_couplstress_type(
       const T& ele, const Teuchos::ParameterList& params)
   {
-    if (ele.is_params_interface())
+    if (ele.is_solid_params_interface())
     {
-      return ele.params_interface().get_coupling_stress_output_type();
+      return ele.get_solid_params_interface().get_coupling_stress_output_type();
     }
     else
     {

@@ -84,7 +84,7 @@ void Discret::ELEMENTS::UTILS::get_temperature_for_structural_material(
     }
 
     // insert current element temperature T_{n+1} into parameter list
-    params.set<double>("scalartemp", scalartemp);
+    params.set<double>("temperature", scalartemp);
   }
 }
 

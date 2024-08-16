@@ -9,6 +9,7 @@ evaluate(...), evaluate_neumann(...), etc.
 */
 
 #include "4C_fem_general_elements_paramsinterface.hpp"
+#include "4C_legacy_enum_definitions_element_actions.hpp"
 #include "4C_solid_3D_ele_neumann_evaluator.hpp"
 #include "4C_solid_scatra_3D_ele.hpp"
 #include "4C_solid_scatra_3D_ele_calc_lib_nitsche.hpp"
@@ -42,6 +43,8 @@ int Discret::ELEMENTS::SolidScatra::evaluate(Teuchos::ParameterList& params,
 
   switch (action)
   {
+    case Core::Elements::ActionType::struct_calc_stifftemp:  // Todo: use stiffscalar also in tsi
+                                                             // algorithm
     case Core::Elements::ActionType::calc_struct_stiffscalar:
       // Evaluate off-diagonal block for SSI
       std::visit(
@@ -112,6 +115,14 @@ int Discret::ELEMENTS::SolidScatra::evaluate(Teuchos::ParameterList& params,
                 StrainIO{get_io_strain_type(*this, params), get_strain_data(*this, params)},
                 discretization, la, params);
           },
+          solid_scatra_calc_variant_);
+
+      return 0;
+    }
+    case Core::Elements::struct_calc_reset_istep:
+    {
+      std::visit([&](auto& interface)
+          { interface->reset_to_last_converged(*this, solid_material()); },
           solid_scatra_calc_variant_);
 
       return 0;
