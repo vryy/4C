@@ -80,12 +80,14 @@ void TSI::UTILS::ThermoStructureCloneStrategy::set_element_data(
   {
     kintype = so_base->kinematic_type();
   }
-  else if (const auto* const so_base = dynamic_cast<Discret::ELEMENTS::SolidScatra*>(oldele))
+  else if (const auto* const solid_ele = dynamic_cast<Discret::ELEMENTS::SolidScatra*>(oldele))
   {
-    kintype = so_base->get_solid_element_properties().kintype;
+    kintype = solid_ele->get_solid_element_properties().kintype;
   }
   else
-    FOUR_C_THROW("oldele is neither a So_base element!");
+  {
+    FOUR_C_THROW("Unsupported solid element type!");
+  }
 
   // note: set_material() was reimplemented by the thermo element!
 
