@@ -78,7 +78,7 @@ NAME                            Fsi_Solver
 SOLVER                          Belos
 SOLVER_XML_FILE                 xml/linear_solver/iterative_gmres_template.xml
 AZPREC                          MueLu
-MUELU_XML_FILE                  xml/multigrid/fluid_solid.xml
+MUELU_XML_FILE                  xml/multigrid/fluid_solid_ale.xml
 AZREUSE                         10
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           4
