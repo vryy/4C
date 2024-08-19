@@ -164,9 +164,6 @@ INT_STRATEGY                   Standard
 //     ExplicitEuler
 //     CentrDiff
 //     AdamsBashforth2
-//     EulerMaruyama
-//     EulerImpStoch
-//     StatMech
 DYNAMICTYP                      GenAlpha
 //
 // prestressing takes values none mulf id

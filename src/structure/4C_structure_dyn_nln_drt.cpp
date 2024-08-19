@@ -50,8 +50,6 @@ void caldyn_drt()
     case Inpar::Solid::dyna_centrdiff:
     case Inpar::Solid::dyna_ab2:
     case Inpar::Solid::dyna_ab4:
-    case Inpar::Solid::dyna_euma:
-    case Inpar::Solid::dyna_euimsto:
       dyn_nlnstructural_drt();
       break;
     default:

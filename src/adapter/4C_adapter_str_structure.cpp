@@ -70,8 +70,6 @@ void Adapter::StructureBaseAlgorithm::create_structure(const Teuchos::ParameterL
     case Inpar::Solid::dyna_expleuler:
     case Inpar::Solid::dyna_centrdiff:
     case Inpar::Solid::dyna_ab2:
-    case Inpar::Solid::dyna_euma:
-    case Inpar::Solid::dyna_euimsto:
       create_tim_int(prbdyn, sdyn, actdis);  // <-- here is the show
       break;
     default:

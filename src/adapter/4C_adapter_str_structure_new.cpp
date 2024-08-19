@@ -111,8 +111,6 @@ void Adapter::StructureBaseAlgorithmNew::setup()
     case Inpar::Solid::dyna_centrdiff:
     case Inpar::Solid::dyna_ab2:
     case Inpar::Solid::dyna_ab4:
-    case Inpar::Solid::dyna_euma:
-    case Inpar::Solid::dyna_euimsto:
       setup_tim_int();  // <-- here is the show
       break;
     default:

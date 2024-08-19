@@ -200,9 +200,7 @@ namespace Inpar
       dyna_expleuler,          ///< forward Euler (explicit)
       dyna_centrdiff,          ///< central differences (explicit)
       dyna_ab2,                ///< Adams-Bashforth 2nd order (explicit)
-      dyna_ab4,                ///< Adams-Bashforth 4th order (explicit)
-      dyna_euma,               ///< Euler-Maruyama scheme (stochastic, explicit)
-      dyna_euimsto             ///< Euler implicit scheme for SDE's (stochastic, implicit)
+      dyna_ab4                 ///< Adams-Bashforth 4th order (explicit)
     };
 
     /// Map time integrator to std::string
@@ -348,15 +346,6 @@ namespace Inpar
     /// @name Solution technique and related
     //!@{
 
-    /// type of control
-    enum ControlType
-    {
-      control_load,  ///< load control
-      control_disp,  ///< disp control
-      control_arc1,  ///< arclength RIKS control
-      control_arc2   ///< arclength Crisfield control
-    };
-
     /// have inertia forces to be linearized?
     enum MassLin
     {
@@ -371,7 +360,6 @@ namespace Inpar
       soltech_vague,                ///< undefined
       soltech_newtonfull,           ///< full Newton-Raphson iteration
       soltech_newtonls,             ///< line search Newton-Raphson
-      soltech_newtonopp,            ///< oppositely converging Newton-Raphson
       soltech_newtonmod,            ///< modified Newton-Raphson iteration
       soltech_newtonuzawalin,       ///< linear Uzawa iteration for
                                     ///< constraint system
@@ -400,9 +388,6 @@ namespace Inpar
           break;
         case soltech_newtonls:
           return "lsnewton";
-          break;
-        case soltech_newtonopp:
-          return "oppnewton";
           break;
         case soltech_newtonmod:
           return "modnewton";

@@ -1333,17 +1333,10 @@ DIVERCONT                       stop
 //                              ExplicitEuler
 //                              CentrDiff
 //                              AdamsBashforth2
-//                              EulerMaruyama
-//                              EulerImpStoch
-//                              StatMech
 DYNAMICTYP                      GenAlpha
 //
-// EIGEN make eigenanalysis of the initial dynamic system
-//
 // type of norm to be applied to residuals
-//                              L1,L2,Rms,Inf
 ITERNORM                        L2
-//
 //
 K_DAMP                          0.5
 //
