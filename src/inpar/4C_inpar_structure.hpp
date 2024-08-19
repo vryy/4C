@@ -346,15 +346,6 @@ namespace Inpar
     /// @name Solution technique and related
     //!@{
 
-    /// type of control
-    enum ControlType
-    {
-      control_load,  ///< load control
-      control_disp,  ///< disp control
-      control_arc1,  ///< arclength RIKS control
-      control_arc2   ///< arclength Crisfield control
-    };
-
     /// have inertia forces to be linearized?
     enum MassLin
     {
