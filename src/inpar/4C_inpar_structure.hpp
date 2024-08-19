@@ -200,9 +200,7 @@ namespace Inpar
       dyna_expleuler,          ///< forward Euler (explicit)
       dyna_centrdiff,          ///< central differences (explicit)
       dyna_ab2,                ///< Adams-Bashforth 2nd order (explicit)
-      dyna_ab4,                ///< Adams-Bashforth 4th order (explicit)
-      dyna_euma,               ///< Euler-Maruyama scheme (stochastic, explicit)
-      dyna_euimsto             ///< Euler implicit scheme for SDE's (stochastic, implicit)
+      dyna_ab4                 ///< Adams-Bashforth 4th order (explicit)
     };
 
     /// Map time integrator to std::string
