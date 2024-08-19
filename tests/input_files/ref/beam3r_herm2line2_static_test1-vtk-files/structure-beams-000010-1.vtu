@@ -149,10 +149,10 @@
 -1.837520043658602e-03 -1.837520043658602e-03
 -9.184370679452165e-04 -9.184370679452183e-04
         </DataArray>
-        <DataArray type="Float64" Name="element_gid" format="ascii">
-1.000000000000000e+00
-3.000000000000000e+00
-4.000000000000000e+00
+		<DataArray type="Int32" Name="element_gid" format="ascii">
+1
+3
+4
         </DataArray>
         <DataArray type="Float64" Name="element_owner" format="ascii">
 1.000000000000000e+00

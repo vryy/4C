@@ -6,44 +6,66 @@
   <UnstructuredGrid>
     <FieldData>
       <DataArray type="Float64" Name="TIME" NumberOfTuples="1" format="ascii">
-0.4
+4.000000000000003e-01 
       </DataArray>
     </FieldData>
 
     <Piece NumberOfPoints="6" NumberOfCells="0" >
       <Points>
-        <DataArray type="Float64" NumberOfComponents="3" format="binary">
-AQAAAJAAAACQAAAANgAAAA==eNrjXZDPw2N6eP+smSBwEk7zQsUZoABdHMq3h4n7PFtuYjZppT26OTBxdHPQ1MP1AQBALEYv
+        <DataArray type="Float64" NumberOfComponents="3" format="ascii">
+-1.500563679430801e-01 -2.000000000000000e-01 -2.000000000000000e-01
+-1.500563679430801e-01 0.000000000000000e+00 -2.000000000000000e-01
+-1.500563679430801e-01 2.000000000000000e-01 -2.000000000000000e-01
+4.994363205692007e-02 -2.000000000000000e-01 -2.000000000000000e-01
+4.994363205692007e-02 0.000000000000000e+00 -2.000000000000000e-01
+4.994363205692007e-02 2.000000000000000e-01 -2.000000000000000e-01
         </DataArray>
       </Points>
 
       <Cells>
-        <DataArray type="Int32" Name="connectivity" format="binary">
-AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+        <DataArray type="Int32" Name="connectivity" format="ascii">
 
         </DataArray>
-        <DataArray type="Int32" Name="offsets" format="binary">
-AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+        <DataArray type="Int32" Name="offsets" format="ascii">
 
         </DataArray>
-        <DataArray type="UInt8" Name="types" format="binary">
-AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+        <DataArray type="UInt8" Name="types" format="ascii">
 
         </DataArray>
       </Cells>
 
   <PointData>
-        <DataArray type="Float64" Name="acceleration" NumberOfComponents="3" format="binary">
-AQAAAJAAAACQAAAAFgAAAA==eNqz4GuqXbWY24EBDVgMkDgAZacRLw==
+        <DataArray type="Float64" Name="acceleration" NumberOfComponents="3" format="ascii">
+3.454915028125267e+00 0.000000000000000e+00 0.000000000000000e+00
+3.454915028125267e+00 0.000000000000000e+00 0.000000000000000e+00
+3.454915028125267e+00 0.000000000000000e+00 0.000000000000000e+00
+3.454915028125267e+00 0.000000000000000e+00 0.000000000000000e+00
+3.454915028125267e+00 0.000000000000000e+00 0.000000000000000e+00
+3.454915028125267e+00 0.000000000000000e+00 0.000000000000000e+00
         </DataArray>
-        <DataArray type="Float64" Name="globalid" format="binary">
-AQAAADAAAAAwAAAAGQAAAA==eNpjYEAGHA4QWgJKK0FpDSit5wAAHUAB2Q==
+        <DataArray type="Int32" Name="globalid" format="ascii">
+0
+3
+6
+9
+12
+15
         </DataArray>
-        <DataArray type="Float64" Name="owner" format="binary">
-AQAAADAAAAAwAAAADAAAAA==eNpjYCANAAAAMAAB
+        <DataArray type="Int32" Name="owner" format="ascii">
+0
+0
+0
+0
+0
+0
         </DataArray>
-        <DataArray type="Float64" Name="velocity" NumberOfComponents="3" format="binary">
-AQAAAJAAAACQAAAAFgAAAA==eNqbemp2RZDCfXsGNDB1gMQBm1cYDQ==
+        <DataArray type="Float64" Name="velocity" NumberOfComponents="3" format="ascii">
+4.863477876489609e-01 0.000000000000000e+00 0.000000000000000e+00
+4.863477876489609e-01 0.000000000000000e+00 0.000000000000000e+00
+4.863477876489609e-01 0.000000000000000e+00 0.000000000000000e+00
+4.863477876489609e-01 0.000000000000000e+00 0.000000000000000e+00
+4.863477876489609e-01 0.000000000000000e+00 0.000000000000000e+00
+4.863477876489609e-01 0.000000000000000e+00 0.000000000000000e+00
         </DataArray>
       </PointData>
 

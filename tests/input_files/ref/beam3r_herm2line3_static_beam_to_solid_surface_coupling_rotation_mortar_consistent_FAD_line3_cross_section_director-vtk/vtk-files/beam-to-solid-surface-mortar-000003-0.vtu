@@ -42,15 +42,15 @@
 -5.969048341244424e-04 1.020956227268024e-02 8.618729106964337e-03
 -4.911074276829062e-04 -6.693458818196291e-06 -3.298745689753172e-03
         </DataArray>
-        <DataArray type="Float64" Name="uid_0_pair_beam_id" format="ascii">
-2.000000000000000e+00
-2.000000000000000e+00
-2.000000000000000e+00
+		<DataArray type="Int32" Name="uid_0_pair_beam_id" format="ascii">
+2
+2
+2
         </DataArray>
-        <DataArray type="Float64" Name="uid_1_pair_solid_id" format="ascii">
-0.000000000000000e+00
-0.000000000000000e+00
-0.000000000000000e+00
+		<DataArray type="Int32" Name="uid_1_pair_solid_id" format="ascii">
+0
+0
+0
         </DataArray>
       </PointData>
 
