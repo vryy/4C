@@ -360,7 +360,6 @@ namespace Inpar
       soltech_vague,                ///< undefined
       soltech_newtonfull,           ///< full Newton-Raphson iteration
       soltech_newtonls,             ///< line search Newton-Raphson
-      soltech_newtonopp,            ///< oppositely converging Newton-Raphson
       soltech_newtonmod,            ///< modified Newton-Raphson iteration
       soltech_newtonuzawalin,       ///< linear Uzawa iteration for
                                     ///< constraint system
@@ -389,9 +388,6 @@ namespace Inpar
           break;
         case soltech_newtonls:
           return "lsnewton";
-          break;
-        case soltech_newtonopp:
-          return "oppnewton";
           break;
         case soltech_newtonmod:
           return "modnewton";
