@@ -156,8 +156,6 @@ global_full/               @baci/team_discretization
 
 global_legacy_module/      @baci/team_infrastructure
 
-headers/                   @baci/team_discretization
-
 immersed_problem/          @baci/team_fsi
 
 inpar/                     @baci/team_input
@@ -181,8 +179,6 @@ inpar/4C_inpar_validmaterials*                         @baci/team_material
 io/                        @baci/team_input @baci/team_output
 
 levelset/                  @baci/team_fluid
-
-lib/                       @baci/team_discretization
 
 loma/                      @baci/team_fluid
 
