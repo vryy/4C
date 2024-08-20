@@ -20,7 +20,7 @@ RANDSEED                        -1
 DYNAMICTYP                      OneStepTheta
 DAMPING                         Material
 PREDICT                         ConstDis
-LINEAR_SOLVER                   2
+LINEAR_SOLVER                   1
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
 ---------------------------------------------POROELASTICITY DYNAMIC
@@ -34,11 +34,11 @@ ITEMIN                          1
 RESULTSEVRY                           1
 SECONDORDER                     Yes
 CONTIPARTINT                    yes
-LINEAR_SOLVER                   1
+LINEAR_SOLVER                   2
 PHYSICAL_TYPE                   Poro
 EQUILIBRATION                   rows_full
 ------------------------------------------------------FLUID DYNAMIC
-LINEAR_SOLVER                   3
+LINEAR_SOLVER                   1
 TIMEINTEGR                      One_Step_Theta
 PREDICTOR                       steady_state
 CONVFORM                        convective
@@ -65,29 +65,16 @@ EVALUATION_MAT                  integration_point
 STAB_BIOT                       yes
 STAB_BIOT_SCALING               3.0
 -----------------------------------------------------------SOLVER 1
-SOLVER                         Belos
-AZSOLVE                        GMRES
-AZPREC                         AMGnxn
-AZSUB                          300
-AZCONV                         AZ_r0
-AZOUTPUT                       10
-AZITER                         400
-AZTOL                          1e-9
-NAME                           Poro_solver
-AMGNXN_TYPE                    XML
-AMGNXN_XML_FILE                poro_3D_hex8_amgnxn_BGSAMG.xml
+SOLVER                          UMFPACK
 -----------------------------------------------------------SOLVER 2
-NAME                           solidsolver
-SOLVER                         Belos
-AZSOLVE                        GMRES
-AZPREC                         MueLu
-MUELU_XML_FILE                 xml/multigrid/elasticity_template.xml
------------------------------------------------------------SOLVER 3
-NAME                           fluidsolver
-SOLVER                         Belos
-AZSOLVE                        GMRES
-AZPREC                         MueLu
-MUELU_XML_FILE                 xml/multigrid/fluid_template.xml
+NAME                            Poro_Interaction_Solver
+SOLVER                          Belos
+AZSOLVE                         GMRES
+AZTOL                           1e-9
+AZCONV                          AZ_r0
+AZPREC                          Teko
+TEKO_XML_FILE                   xml/block_preconditioner/poro.xml
+AZREUSE                         10
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 POROLAWID 5 INITPOROSITY 0.8
 MAT 5 MAT_PoroLawNeoHooke BULKMODULUS 2.0e8 PENALTYPARAMETER 0.001

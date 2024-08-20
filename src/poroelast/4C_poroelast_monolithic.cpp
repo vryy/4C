@@ -30,6 +30,7 @@
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_linear_solver_method_parameters.hpp"
 #include "4C_mortar_manager_base.hpp"
 #include "4C_structure_aux.hpp"
 
@@ -651,22 +652,6 @@ void PoroElast::Monolithic::create_linear_solver()
   const auto azprectype =
       Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(porosolverparams, "AZPREC");
 
-  // plausibility check
-  switch (azprectype)
-  {
-    case Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2:
-      break;
-    case Core::LinearSolver::PreconditionerType::multigrid_nxn:
-    {
-      // no plausibility checks here
-      // if you forget to declare an xml file you will get an error message anyway
-    }
-    break;
-    default:
-      FOUR_C_THROW("Block Gauss-Seidel BGS2x2 preconditioner expected");
-      break;
-  }
-
   solver_ = Teuchos::rcp(new Core::LinAlg::Solver(porosolverparams, get_comm(),
       Global::Problem::instance()->solver_params_callback(),
       Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
@@ -687,11 +672,29 @@ void PoroElast::Monolithic::create_linear_solver()
       Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
 
-  // prescribe rigid body modes
-  structure_field()->discretization()->compute_null_space_if_necessary(
-      solver_->params().sublist("Inverse1"));
-  fluid_field()->discretization()->compute_null_space_if_necessary(
-      solver_->params().sublist("Inverse2"));
+  switch (azprectype)
+  {
+    case Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2:
+    case Core::LinearSolver::PreconditionerType::multigrid_nxn:
+    {
+      structure_field()->discretization()->compute_null_space_if_necessary(
+          solver_->params().sublist("Inverse1"));
+      fluid_field()->discretization()->compute_null_space_if_necessary(
+          solver_->params().sublist("Inverse2"));
+    }
+    break;
+    case Core::LinearSolver::PreconditionerType::block_teko:
+    {
+      Core::LinearSolver::Parameters::compute_solver_parameters(
+          *structure_field()->discretization(), solver_->params().sublist("Inverse1"));
+      Core::LinearSolver::Parameters::compute_solver_parameters(
+          *fluid_field()->discretization(), solver_->params().sublist("Inverse2"));
+    }
+    break;
+    default:
+      FOUR_C_THROW("Block Gauss-Seidel BGS2x2 preconditioner expected");
+      break;
+  }
 }
 
 void PoroElast::Monolithic::initial_guess(Teuchos::RCP<Epetra_Vector> ig)
